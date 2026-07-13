@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Side_bar_menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ============ Design tokens (measured on live build 8.2.6 @172.16.14.71) ============ */
+:root{
+  --bg:#07101f; --header:#07101f; --sidebar:#172336; --sidebar-panel:#172336;
+  --card:#0b1627; --card-head:#0f1c30; --panel:#0a1322; --panel-2:#0c1728;
+  --border:#1d2a3e; --border-soft:#131f31; --hover:#101d30; --hover-side:#22314a;
+  --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f;
+  --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
+  --white:#f4f7fb; --ink:#172336;
+  --pill:#c9d4e4;            /* selected sidebar pill */
+  --track:#485975;           /* timeline selection track (measured on live 8.2.6) */
+  --teal:#14b8a6; --teal-dim:#0e8578;
+  --red:#f2504b; --orange:#fb923c; --yellow:#eab308; --green:#22c55e; --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
+  --ok-bg:rgba(34,197,94,.15); --ok-bd:rgba(34,197,94,.45);
+  --pend-bg:rgba(251,146,60,.14); --pend-bd:rgba(251,146,60,.45);
+  --radius:8px; --radius-sm:4px;
+  --shadow:0 12px 40px rgba(0,0,0,.55); --pop-shadow:0 2px 8px rgba(0,0,0,.35);
+  --scrim:rgba(4,10,20,.45);
+}
+html[data-theme="light"]{
+  --bg:#eef1f6; --header:#ffffff; --sidebar:#ffffff; --sidebar-panel:#ffffff;
+  --card:#ffffff; --card-head:#f4f6fa; --panel:#f7f9fc; --panel-2:#eef2f8;
+  --border:#dfe5ee; --border-soft:#e8edf4; --hover:#f0f4f9; --hover-side:#eef2f8;
+  --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4;
+  --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
+  --white:#16233a; --ink:#f4f7fb;
+  --pill:#24344d; --track:#8fa3c2;
+  --shadow:0 12px 40px rgba(23,35,54,.18); --pop-shadow:0 4px 16px rgba(23,35,54,.14);
+  --scrim:rgba(23,35,54,.28);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:Inter,system-ui,sans-serif; font-size:12.8px; line-height:1.45;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+.mono{font-family:"JetBrains Mono",monospace}
+button{font-family:inherit;color:inherit;cursor:pointer;background:transparent;border:0;font-size:inherit}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#1c2c44;border-radius:6px}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c6d0e0}
+::-webkit-scrollbar-track{background:transparent}
+svg{display:block}
+.ic{width:20px;height:20px;fill:currentColor}
+
+/* ============ Shell ============ */
+.shell{display:flex;flex-direction:column;height:100vh;padding-left:64px}
+
+/* ---------- Header removed — page title bars sit at the top; actions live in the sidebar ---------- */
+.build{height:22px;line-height:22px;padding:0 7px;background:var(--chip);
+  color:var(--text);opacity:.85;border-radius:4px;font-size:11.5px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+
+/* ---------- Sidebar (live: rail 64px → overlay 170px, bg #172336) ---------- */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:64px;z-index:60;background:var(--sidebar);
+  display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;border-right:1px solid var(--border-soft)}
+.sidebar.open{width:170px;box-shadow:var(--shadow)}
+.strigger{height:53px;flex:0 0 53px;display:flex;align-items:center;gap:9px;padding:0 15px;cursor:pointer;white-space:nowrap}
+.strigger img{width:33px;height:33px;flex:0 0 33px}
+html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
+.strigger .brand{font-size:14px;font-weight:600;color:var(--text);opacity:0;transition:opacity .15s}
+.sidebar.open .strigger .brand{opacity:1}
+.smenu{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 0 8px;position:relative;z-index:1;scrollbar-width:thin}
+.sgroup-label{display:none;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);padding:12px 16px 4px;white-space:nowrap}
+.sidebar.open.grouped .sgroup-label{display:block}
+.sidebar.grouped:not(.open) .sgroup-gap{display:block;height:1px;margin:6px 14px;background:var(--border)}
+.sgroup-gap{display:none}
+.sitem{position:relative;display:flex;align-items:center;gap:11px;height:40px;margin:0 8px 4px;padding:0 7px;
+  border-radius:4px;cursor:pointer;color:var(--text);white-space:nowrap}
+.sitem:hover{background:var(--hover-side)}
+.sitem.on{background:var(--pill);color:var(--ink)}
+.sitem .ic{flex:0 0 20px;margin-left:5px}
+.sitem .lbl{font-size:13px;font-weight:500;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:7px}
+.sidebar.open .sitem .lbl{opacity:1}
+.beta{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:3px;background:var(--chip);color:var(--text)}
+.sitem.on .beta{background:rgba(23,35,54,.16);color:var(--ink)}
+/* tooltip (collapsed rail only) */
+.sidebar:not(.open) .sitem::after{content:attr(data-tip);position:absolute;left:56px;top:50%;transform:translateY(-50%) translateX(-4px);
+  background:var(--pop);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:500;
+  padding:5px 10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s,transform .12s;
+  box-shadow:var(--pop-shadow);z-index:99}
+.sidebar:not(.open) .sitem:hover::after{opacity:1;transform:translateY(-50%) translateX(0)}
+/* search pinned at top, under the logo */
+.stop{flex:0 0 auto;border-bottom:1px solid rgba(255,255,255,.08);margin:0 8px 4px;padding:0 0 6px}
+html[data-theme="light"] .stop{border-bottom-color:var(--border)}
+.stop .sitem{margin:0}
+/* profile as the very last row */
+.sfoot .sitem{margin:6px 0 0;padding:0 7px}
+/* utility section — header actions pinned at bottom of the rail */
+.sutil{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);margin:4px 8px 0;padding:7px 0 2px;position:relative;z-index:1}
+html[data-theme="light"] .sutil{border-top-color:var(--border)}
+.sutil .sitem{margin:0 0 4px}
+.sitem .iwrap{position:relative;flex:0 0 20px;margin-left:5px}
+.sitem .iwrap .ic{margin-left:0}
+.ibadge{position:absolute;top:-7px;left:11px;min-width:18px;height:14px;padding:0 4px;background:#ec5b5b;color:#fff;
+  border-radius:9px;font-size:9.5px;font-weight:700;line-height:14px;text-align:center;box-shadow:0 0 0 1px var(--sidebar)}
+.miniav{width:24px;height:24px;border-radius:50%;background:var(--white);color:var(--ink);
+  font-weight:700;font-size:10px;display:grid;place-items:center;flex:0 0 24px;margin-left:3px}
+.sbuild{font-size:10.5px;color:var(--text-dim);padding:0 13px 6px;letter-spacing:.04em;white-space:nowrap;opacity:0;transition:opacity .15s}
+.sidebar.open .sbuild{opacity:.85}
+/* grouped-view toggle pinned at bottom */
+.sfoot{flex:0 0 auto;padding:8px 10px 12px;position:relative;z-index:1}
+.gtoggle{display:flex;align-items:center;gap:9px;height:32px;padding:0 7px;border-radius:4px;color:var(--text-dim);cursor:pointer;white-space:nowrap;width:100%}
+.gtoggle:hover{background:var(--hover-side);color:var(--text)}
+.gtoggle .ic{flex:0 0 18px;width:18px;height:18px;margin-left:6px}
+.gtoggle .lbl{font-size:12px;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:8px;flex:1;justify-content:space-between}
+.sidebar.open .gtoggle .lbl{opacity:1}
+.sidebar:not(.open) .gtoggle::after{content:attr(data-tip);position:absolute;left:56px;top:50%;transform:translateY(-50%);
+  background:var(--pop);border:1px solid var(--border);color:var(--text);font-size:12px;padding:5px 10px;border-radius:4px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;box-shadow:var(--pop-shadow);z-index:99}
+.sidebar:not(.open) .gtoggle:hover::after{opacity:1}
+/* expand/collapse button — chevron flips with sidebar state */
+#collapseArrow{transition:transform .18s;transform-origin:28.5px 24px}
+.sidebar.open #collapseArrow{transform:scaleX(-1)}
+
+/* ---------- Main / views ---------- */
+.main{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.view{flex:1;display:none;flex-direction:column;min-height:0}
+.view.on{display:flex}
+.pagehead{height:44px;flex:0 0 44px;display:flex;align-items:center;gap:9px;padding:0 14px;border-bottom:1px solid var(--border-soft)}
+.pagehead .ttl{font-size:15px;font-weight:600;color:var(--text)}
+.pagehead .ic{width:18px;height:18px}
+.pagebody{flex:1;overflow:auto;padding:12px 14px;min-height:0}
+.card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.card .chead{padding:9px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);display:flex;align-items:center;gap:8px}
+.card .cbody{padding:12px}
+table{border-collapse:collapse;width:100%}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:600;
+  text-align:left;padding:8px 12px;border-bottom:1px solid var(--border-soft);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border-soft);font-size:12.5px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:var(--hover)}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600;letter-spacing:.04em;background:var(--chip);color:var(--text)}
+.tag.ok{background:var(--ok-bg);color:var(--green);border:1px solid var(--ok-bd)}
+.tag.pend{background:var(--pend-bg);color:var(--orange);border:1px solid var(--pend-bd)}
+.searchbox{display:flex;align-items:center;gap:8px;width:290px;height:32px;padding:0 10px;border:1px solid var(--border);
+  border-radius:4px;background:transparent;color:var(--text-dim)}
+.searchbox input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-family:inherit;font-size:12.5px}
+.searchbox .ic{width:14px;height:14px}
+.chipbtn{height:30px;padding:0 12px;border:1px solid var(--border);border-radius:4px;background:var(--panel-2);font-size:12px;font-weight:500}
+.chipbtn:hover{border-color:var(--muted)}
+.iconbtn{width:34px;height:32px;border:1px solid var(--border);border-radius:4px;display:grid;place-items:center;background:var(--panel-2)}
+.iconbtn:hover{border-color:var(--muted)}
+.iconbtn svg{width:15px;height:15px;fill:currentColor}
+.kebab{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;color:var(--text-dim)}
+.kebab:hover{background:var(--chip);color:var(--text)}
+.pager{display:flex;align-items:center;gap:6px;padding:9px 12px;border-top:1px solid var(--border-soft);color:var(--text-dim);font-size:12px}
+.pager .pg{min-width:26px;height:26px;border:1px solid var(--border);border-radius:4px;display:grid;place-items:center}
+.pager .pg.cur{background:var(--chip);border-color:var(--muted);color:var(--text)}
+.pager .grow{flex:1}
+
+.nodata{display:grid;place-items:center;min-height:150px;color:var(--text-dim);font-size:14px}
+
+/* health tabs */
+.tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--border-soft);flex:0 0 auto}
+.tab{padding:10px 12px;font-size:12.8px;font-weight:500;color:var(--text-dim);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--teal);font-weight:600}
+.verbadge{margin-left:auto;background:var(--chip);border-radius:4px;padding:3px 9px;font-size:11.5px;color:var(--text-dim)}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);padding:12px 14px}
+.stat .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);font-weight:600}
+.stat .v{font-size:21px;font-weight:600;margin-top:5px;font-family:"JetBrains Mono",monospace}
+.stat .s{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ---------- Popovers ---------- */
+.scrimlayer{position:fixed;inset:0;z-index:80;display:none}
+.scrimlayer.on{display:block}
+.pop{position:fixed;z-index:90;background:var(--pop);border-radius:4px;box-shadow:var(--pop-shadow);
+  border:1px solid var(--border);display:none;flex-direction:column}
+.pop.on{display:flex}
+.pop::before{content:"";position:absolute;top:-5px;width:10px;height:10px;background:var(--pop);
+  transform:rotate(45deg);border-left:1px solid var(--border);border-top:1px solid var(--border)}
+
+/* user menu (live: 320px, bg #1d2a3e, radius 4) — opens beside the sidebar */
+#userPop{width:320px;left:74px;bottom:10px}
+#userPop::before,#notifPop::before{top:auto;left:-5px;right:auto;border:0;
+  border-left:1px solid var(--border);border-bottom:1px solid var(--border)}
+#userPop::before{bottom:22px}
+.uhead{display:flex;gap:14px;padding:16px;border-bottom:1px solid var(--border)}
+.upavatar{width:50px;height:50px;border-radius:50%;background:var(--white);color:var(--ink);display:grid;place-items:center;font-size:19px;font-weight:700;flex:0 0 50px}
+.uhead .nm{font-size:14.5px;font-weight:600;margin-top:4px}
+.uhead .rl{font-size:12px;color:var(--text-dim);margin-top:2px}
+.umenu{list-style:none;margin:0;padding:8px 16px 14px}
+.umenu li.item a{display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:4px;font-size:13px;font-weight:500}
+.umenu li.item a:hover{background:var(--pop-item-hover)}
+.umenu .ic{width:17px;height:17px;color:var(--text-dim)}
+.umenu li.div{height:1px;background:var(--border);margin:7px 0}
+.newchip{margin-left:auto;background:var(--chip);border:1px solid var(--border);color:var(--text);font-size:10px;font-weight:600;padding:2px 8px;border-radius:9px}
+.themerow{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px;gap:3px;margin:4px 0}
+html[data-theme="light"] .themerow{background:var(--panel-2)}
+.tseg{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:30px;border-radius:4px;font-size:12.5px;font-weight:500;color:var(--text-dim)}
+.tseg svg{width:15px;height:15px;fill:currentColor}
+.tseg:hover{color:var(--text)}
+.tseg.on{background:var(--chip);color:var(--text);font-weight:600}
+.umenu li.logout a{display:block;padding:10px 6px;border-radius:4px;color:var(--red);font-weight:500;font-size:13px}
+.umenu li.logout a:hover{background:var(--pop-item-hover)}
+
+/* notifications (live: "Alerts & Notifications", 600px, tabs Alerts / System Notification) — opens beside the sidebar */
+#notifPop{width:600px;left:74px;bottom:56px;max-height:min(620px,calc(100vh - 70px))}
+#notifPop::before{bottom:80px}
+.nhead{padding:11px 14px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border)}
+.ntabs{display:flex;gap:20px;padding:0 14px;border-bottom:1px solid var(--border)}
+.ntab{padding:11px 2px;font-size:12.8px;font-weight:500;color:var(--text-dim);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ntab.on{color:var(--text);border-bottom-color:var(--teal);font-weight:600}
+.nbody{flex:1;overflow:auto;min-height:220px;max-height:440px}
+.nempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:56px 0;color:var(--text)}
+.nempty .big{font-size:21px;font-weight:500}
+.nitem{display:flex;flex-direction:column;gap:3px;padding:10px 14px 10px 16px;border-bottom:1px solid var(--border-soft);position:relative}
+.nitem::before{content:"";position:absolute;left:6px;top:10px;bottom:10px;width:3px;border-radius:2px;background:var(--faint)}
+.nitem.err::before{background:var(--red)}
+.nitem .msg{font-size:12.8px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nitem .ts{font-size:11.5px;color:var(--text-dim)}
+.nfoot{display:flex;justify-content:center;gap:8px;padding:10px;border-top:1px solid var(--border);font-size:12.5px}
+.nfoot a{text-decoration:underline;font-weight:500}
+.nfoot span{color:var(--faint)}
+
+/* ---------- Search spotlight (live: page blur + centered bar) ---------- */
+#searchLayer{position:fixed;inset:0;z-index:100;display:none;background:var(--scrim);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#searchLayer.on{display:block}
+.spot{position:absolute;left:50%;top:140px;transform:translateX(-50%);width:min(1280px,88vw);display:flex;align-items:stretch;
+  background:var(--bg);border:1px solid var(--border);border-radius:4px;box-shadow:var(--shadow)}
+.spot .cat{display:flex;align-items:center;gap:9px;padding:0 14px;background:var(--pop);border-right:1px solid var(--border);
+  border-radius:4px 0 0 4px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.spot .cat svg{width:15px;height:15px;fill:currentColor;color:var(--text-dim)}
+.spot .cat .car{font-size:9px;color:var(--text-dim)}
+.spot input{flex:1;background:transparent;border:0;outline:0;color:var(--text);
+  font-family:"JetBrains Mono",monospace;font-size:16px;padding:17px 16px}
+.spot input::placeholder{color:var(--text-dim)}
+.spot .time{display:flex;align-items:center;gap:9px;padding:0 16px;border-left:1px solid var(--border);font-size:13px;white-space:nowrap}
+.spot .time b{background:var(--chip);border-radius:3px;padding:2px 7px;font-size:11.5px;font-weight:600}
+.catmenu{position:absolute;left:0;top:56px;width:170px;background:var(--pop);border:1px solid var(--border);border-radius:4px;
+  box-shadow:var(--pop-shadow);padding:5px;display:none}
+.catmenu.on{display:block}
+.catmenu button{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:4px;font-size:12.8px}
+.catmenu button:hover,.catmenu button.on{background:var(--pop-item-hover)}
+.sugg{position:absolute;left:50%;top:202px;transform:translateX(-50%);width:min(1280px,88vw);background:var(--bg);
+  border:1px solid var(--border);border-radius:4px;box-shadow:var(--shadow);padding:6px;display:none}
+.sugg.on{display:block}
+.sugg .si{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;font-family:"JetBrains Mono",monospace;font-size:13px;cursor:pointer}
+.sugg .si:hover{background:var(--hover)}
+.sugg .si .tag{margin-left:auto;font-family:Inter}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(12px);background:var(--pop);color:var(--text);
+  border:1px solid var(--border);border-radius:6px;padding:10px 18px;font-size:12.8px;box-shadow:var(--pop-shadow);
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:200;max-width:70vw}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* generic module view */
+.modwrap{flex:1;display:grid;place-items:center}
+.modcard{text-align:center;color:var(--text-dim)}
+.modcard .ic{width:44px;height:44px;margin:0 auto 14px;color:var(--muted)}
+.modcard .nm{font-size:19px;font-weight:600;color:var(--text)}
+.modcard .sub{margin-top:6px;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<!-- ============ Sidebar ============ -->
+<aside class="sidebar grouped" id="sidebar">
+  <div class="strigger" onclick="toggleSidebar()" title="Expand / collapse">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAdVBMVEUAAADvcGD/cHD////3d2j////////////zc2T////////////0dmb////////zdWX////////zdGT////////0dmT////////0dWX////////zdWT////zdWT////zdWT////0dmX////zdWT////zdWT///++yfDhAAAAJXRSTlMAEBAQICAwP0BAT1BfX2Bvb3B/f4CPj5Cfn6Cvr7+/z8/f3+/vnUSo/gAAAdFJREFUSMe1l2tXwyAMhpkMu2utVqc4RFYb/v9PtG5uI1zDPOZbDzwn4SUXyljU+LqXZrDb48fT4o6RjT9re7ITDAAfmzkJXZ5JF55sv6hCMQxwyOMCoT4M8JYJ/nG0eRgOmxT7am0JBniJa2wsBYbPSOhisDQYDnMSG4fhMPNgY+kwfJa0ysFYtTYCjnrXiQQMm9yBR9VclyPw11U06bM77sYVgWF/yWcPHRosSAyGc557QSvOCPBH1LEM8gcyrhViNSPCR9cCn1dQYZgFd7xiZPhhWtL5A6fhKW6OHIsKeIp7WVArAy9YHxYCFX7AFyVYnbl6mUoW5aaqhVEx/QXu/xm+bx2rDXvntptawdybHVDPHcqwQfmI+hcvsah+Fevcz64Et1hfQmEk8tE2XkkuK6L+OaSucC39vR3ddRsMMl5sgImpJAIRrOGkOz5nVLHp/9o73tdE9J98C8qTRacGXaR5L/0p3CRHrPScCxXsuIY0Bu8Ctb0Ix1sdLLuXso49SIzqJ5Mm/ViJ1DjBdukiL5ohPB5TNnB2Mx3LYE6MPJG//Q1aOSU3lNAx06iEzLNaVP1lILQpduZG3owevYfJrHtOH3+86ZU+yjcY2a0S5Dc67Qu3xZ6tHwAAAABJRU5ErkJggg==" alt="ObserveOps" />
+    <span class="brand">ObserveOps</span>
+  </div>
+  <div class="stop">
+    <div class="sitem" id="sbSearch" data-tip="Search" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search</span></div>
+  </div>
+  <nav class="smenu" id="smenu"></nav>
+  <div class="sutil">
+    <div class="sitem" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
+    <div class="sitem" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
+    <div class="sitem" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
+  </div>
+  <div class="sfoot">
+    <div class="sbuild">BUILD : 8.2.6</div>
+    <button class="gtoggle" id="collapseBtn" data-tip="Expand sidebar" onclick="toggleSidebar()">
+      <svg class="ic" viewBox="0 0 48 48" fill="currentColor">
+        <path fill-rule="evenodd" d="M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Zm0 3.6c-.8 0-1.4.6-1.4 1.4v22c0 .8.6 1.4 1.4 1.4h26c.8 0 1.4-.6 1.4-1.4V13c0-.8-.6-1.4-1.4-1.4H11Z"/>
+        <path d="M16.2 9.5h3.4v29h-3.4z"/>
+        <g id="collapseArrow"><path d="M26.5 17.6 32.9 24l-6.4 6.4-2.4-2.4 4-4-4-4 2.4-2.4Z"/></g>
+      </svg>
+      <span class="lbl">Collapse</span>
+    </button>
+    <div class="sitem" id="sbUser" data-tip="motadata admin" onclick="togglePop('userPop',event)"><span class="miniav">MA</span><span class="lbl">motadata admin</span></div>
+  </div>
+</aside>
+
+<div class="shell">
+  <main class="main">
+    <!-- ===== Dashboard view (next-gen canvas per Dashboard-NextGen proposal) ===== -->
+    <!-- ===== Approval view (live: /ncm-approval) ===== -->
+    <section class="view" id="view-approval">
+      <div class="pagehead">
+        <svg class="ic" id="aprHeadIc" viewBox="0 0 48 48"></svg>
+        <span class="ttl">Approval</span>
+      </div>
+      <div class="pagebody">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <label class="searchbox"><svg class="ic" viewBox="0 0 48 48" id="aprSearchIc"></svg><input placeholder="Search" /></label>
+          <span class="spacer" style="flex:1"></span>
+          <button class="iconbtn" title="Export PDF"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg></button>
+          <button class="iconbtn" title="Export CSV"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm2 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg></button>
+          <button class="iconbtn" title="Column visibility"><svg viewBox="0 0 24 24"><path d="M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7Zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg></button>
+          <button class="iconbtn" title="Filter"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/></svg></button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="chipbtn">Device Name</button>
+          <button class="chipbtn">Device Type</button>
+          <button class="chipbtn">Approver</button>
+          <button class="chipbtn">＋ Filter</button>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <table id="aprTable">
+            <thead><tr><th>Approvals</th><th>Device Name</th><th>Device Type</th><th>Approver</th><th>Status</th><th>Type</th><th>Requested On</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="pager">
+            <span class="pg">«</span><span class="pg">‹</span><span class="pg cur">1</span><span class="pg">›</span><span class="pg">»</span>
+            <span class="pg" style="min-width:52px">50 ▾</span><span>items per page</span>
+            <span class="grow"></span><span>1 – 7 of 7 items</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Health view (live: /health/ "Motadata Health") ===== -->
+    <section class="view" id="view-health">
+      <div class="pagehead">
+        <svg class="ic" id="hlHeadIc" viewBox="0 0 48 48"></svg>
+        <span class="ttl">Motadata Health</span>
+        <span class="verbadge">Motadata ObserveOps Version: 8.2.6</span>
+      </div>
+      <div class="tabs" id="healthTabs"></div>
+      <div class="pagebody" id="healthBody"></div>
+    </section>
+
+    <!-- ===== Generic module view ===== -->
+    <section class="view on" id="view-module">
+      <div class="pagehead">
+        <svg class="ic" id="modHeadIc" viewBox="0 0 48 48"></svg>
+        <span class="ttl" id="modHeadTtl">Module</span>
+      </div>
+      <div class="modwrap"><div class="modcard">
+        <svg class="ic" id="modBigIc" viewBox="0 0 48 48"></svg>
+        <div class="nm" id="modName">Module</div>
+        <div class="sub" id="modRoute">/route/</div>
+        <div class="sub">Module screen — chrome prototype focuses on sidebar &amp; header actions.</div>
+      </div></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ Popovers ============ -->
+<div class="scrimlayer" id="scrim" onclick="closePops()"></div>
+
+<div class="pop" id="userPop">
+  <div class="uhead">
+    <div class="upavatar">MA</div>
+    <div><div class="nm">motadata admin</div><div class="rl">admin</div><span class="build" style="display:inline-block;margin:7px 0 0">BUILD : 8.2.6</span></div>
+  </div>
+  <ul class="umenu">
+    <li class="item"><a href="javascript:;" onclick="toast('→ /settings/my-account/my-profile — Profile Picture, First/Last Name, User Name, Email, Mobile, Change Password')"><svg class="ic" viewBox="0 0 48 48" id="icMyProfile"></svg> My Profile</a></li>
+    <li class="item"><a href="javascript:;" onclick="toast('→ /setup/ — Product Setup Guide')"><svg class="ic" viewBox="0 0 48 48" id="icTour"></svg> Product Setup Guide</a></li>
+    <li class="item"><a href="https://docs.motadata.com/motadata-aiops-docs/" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 48 48" id="icHelp"></svg> Documentation</a></li>
+    <li class="item"><a href="javascript:;" onclick="toast('Download mobile app — scan QR to install ObserveOps mobile')"><svg class="ic" viewBox="0 0 48 48" id="icMobile"></svg> Download mobile app <span class="newchip">New</span></a></li>
+    <li class="div"></li>
+    <li>
+      <div class="themerow">
+        <button class="tseg" data-mode="dark" onclick="setTheme('dark')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M18.7215 6.58584C19.3318 7.19608 19.4818 8.12893 19.0936 8.8997C18.0814 10.9094 17.5104 13.1807 17.5104 15.5912C17.5104 23.8194 24.1807 30.4896 32.4088 30.4896C34.8192 30.4896 37.0907 29.9187 39.1003 28.9064C39.8712 28.5184 40.804 28.6683 41.4141 29.2784C42.0245 29.8888 42.1744 30.8216 41.7861 31.5923C38.6792 37.7613 32.2856 42 24.8985 42C14.4611 42 6 33.5389 6 23.1016C6 15.7144 10.2388 9.32082 16.4077 6.21381C17.1785 5.82562 18.1113 5.9756 18.7215 6.58584ZM13.6434 13.3392C11.3727 15.9549 10 19.3687 10 23.1016C10 31.3299 16.6703 38 24.8985 38C28.6315 38 32.0453 36.6272 34.6608 34.3565C33.9221 34.4445 33.1707 34.4896 32.4088 34.4896C21.9715 34.4896 13.5104 26.0285 13.5104 15.5912C13.5104 14.8295 13.5556 14.0779 13.6434 13.3392Z"/></svg> Dark</button>
+        <button class="tseg" data-mode="light" onclick="setTheme('light')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C25.1046 4 26 4.89544 26 6V8C26 9.10456 25.1046 10 24 10C22.8954 10 22 9.10456 22 8V6C22 4.89544 22.8954 4 24 4ZM38.1421 9.85784C38.9232 10.6389 38.9232 11.9052 38.1421 12.6863L36.728 14.1005C35.9469 14.8815 34.6805 14.8815 33.8997 14.1005C33.1187 13.3194 33.1187 12.0531 33.8997 11.2721L35.3139 9.85784C36.0949 9.0768 37.3611 9.0768 38.1421 9.85784ZM9.85784 9.85784C10.6389 9.0768 11.9052 9.0768 12.6863 9.85784L14.1005 11.2721C14.8815 12.0531 14.8815 13.3194 14.1005 14.1005C13.3194 14.8815 12.0531 14.8815 11.2721 14.1005L9.85784 12.6863C9.0768 11.9052 9.0768 10.6389 9.85784 9.85784ZM24 16C19.5817 16 16 19.5817 16 24C16 28.4184 19.5817 32 24 32C28.4184 32 32 28.4184 32 24C32 19.5817 28.4184 16 24 16ZM12 24C12 17.3726 17.3726 12 24 12C30.6275 12 36 17.3726 36 24C36 30.6275 30.6275 36 24 36C17.3726 36 12 30.6275 12 24ZM4 24C4 22.8954 4.89544 22 6 22H8C9.10456 22 10 22.8954 10 24C10 25.1046 9.10456 26 8 26H6C4.89544 26 4 25.1046 4 24ZM38 24C38 22.8954 38.8955 22 40 22H42C43.1045 22 44 22.8954 44 24C44 25.1046 43.1045 26 42 26H40C38.8955 26 38 25.1046 38 24ZM11.2721 33.8995C12.0531 33.1184 13.3194 33.1184 14.1005 33.8995C14.8815 34.6805 14.8815 35.9469 14.1005 36.728L12.6863 38.1421C11.9052 38.9232 10.6389 38.9232 9.85784 38.1421C9.0768 37.3611 9.0768 36.0947 9.85784 35.3136L11.2721 33.8995ZM33.8997 36.728C33.1187 35.9469 33.1187 34.6805 33.8997 33.8995C34.6805 33.1184 35.9469 33.1184 36.728 33.8995L38.1421 35.3136C38.9232 36.0947 38.9232 37.3611 38.1421 38.1421C37.3611 38.9232 36.0949 38.9232 35.3139 38.1421L33.8997 36.728ZM24 38C25.1046 38 26 38.8955 26 40V42C26 43.1045 25.1046 44 24 44C22.8954 44 22 43.1045 22 42V40C22 38.8955 22.8954 38 24 38Z"/></svg> Light</button>
+        <button class="tseg" data-mode="auto" onclick="setTheme('auto')"><svg viewBox="0 0 48 48"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M24 4.7998L24.4951 4.80566C34.8702 5.06837 43.2002 13.5617 43.2002 24C43.2001 34.4383 34.8701 42.9306 24.4951 43.1934L24 43.2002L23.5234 43.1943C23.4625 43.1928 23.4017 43.1886 23.3408 43.1865C18.8412 43.0347 14.7347 41.336 11.5361 38.6035C11.5101 38.5813 11.4839 38.5594 11.458 38.5371C10.8999 38.0552 10.3703 37.5414 9.87109 36.999C9.79127 36.9123 9.71285 36.8244 9.63477 36.7363C9.47574 36.5571 9.31932 36.3756 9.16699 36.1904C9.13202 36.1479 9.09708 36.1053 9.0625 36.0625C6.58781 33.0019 5.03397 29.166 4.82422 24.9756C4.82047 24.9018 4.81833 24.8278 4.81543 24.7539C4.80577 24.5038 4.79981 24.2525 4.7998 24C4.7998 23.738 4.80699 23.4772 4.81738 23.2178C4.82614 23.0028 4.83662 22.7882 4.85254 22.5742C5.14832 18.5444 6.68782 14.8606 9.08887 11.9043C9.11496 11.8721 9.14068 11.8396 9.16699 11.8076C9.33852 11.5992 9.51531 11.3953 9.69531 11.1943C9.81028 11.0659 9.92722 10.9391 10.0459 10.8135C10.3834 10.4564 10.7329 10.1106 11.0967 9.78027C11.1295 9.75051 11.1633 9.7219 11.1963 9.69238C11.3964 9.51317 11.6001 9.3378 11.8076 9.16699C11.8611 9.12301 11.9158 9.08048 11.9697 9.03711C15.0251 6.57743 18.8485 5.03317 23.0244 4.82422C23.0956 4.8206 23.167 4.81826 23.2383 4.81543C23.4909 4.80558 23.745 4.7998 24 4.7998ZM24 39.2002C32.3945 39.2001 39.2001 32.3945 39.2002 24C39.2002 15.7366 32.6057 9.01301 24.3926 8.80469L24 8.7998V39.2002Z"/></svg> Auto</button>
+      </div>
+    </li>
+    <li class="div"></li>
+    <li class="logout"><a href="javascript:;" onclick="toast('Logout — ends the session and returns to /login')">Logout</a></li>
+  </ul>
+</div>
+
+<div class="pop" id="notifPop">
+  <div class="nhead">Alerts &amp; Notifications</div>
+  <div class="ntabs">
+    <button class="ntab on" id="ntabAlerts" onclick="notifTab('alerts')">Alerts (<span id="alertCount">0</span>)</button>
+    <button class="ntab" id="ntabSys" onclick="notifTab('sys')">System Notification (<span id="sysCount">9,086</span>)</button>
+  </div>
+  <div class="nbody" id="nbody"></div>
+  <div class="nfoot"><a href="javascript:;" onclick="toast('View All — opens the full notification list')">View All</a><span>|</span><a href="javascript:;" onclick="clearNotifs()">Clear All</a></div>
+</div>
+
+<!-- ============ Search spotlight ============ -->
+<div id="searchLayer">
+  <div class="spot" onclick="event.stopPropagation()">
+    <div class="cat" id="catBtn" onclick="toggleCatMenu(event)">
+      <svg viewBox="0 0 48 48" id="spotSearchIc"></svg>
+      <span id="catLabel">Metric</span><span class="car">▼</span>
+      <div class="catmenu" id="catMenu"></div>
+    </div>
+    <input id="spotInput" placeholder="Start Typing..." autocomplete="off" oninput="suggest(this.value)" />
+    <div class="time"><b>1h</b> Last 1 Hour</div>
+  </div>
+  <div class="sugg" id="sugg"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= Icon registry (extracted from live js/icons bundle via DOM) ================= */
+const ICONS = {
+ "dashboard": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M19.5,26.7H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5v-12.2h12.2v12.2Zm26.5-15.7h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2v-12.2h12.2v12.2ZM19.5,2H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5V5.5h12.2v12.2ZM44.2,2h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2V5.5h12.2v12.2Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "navbar-monitor": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M4.6 16.6H43.4C44.4 16.6 45.2 15.8 45.2 14.8V3.49995C45.2 2.49995 44.4 1.69995 43.4 1.69995H4.6C3.6 1.69995 2.8 2.49995 2.8 3.49995V14.9C2.8 15.9 3.6 16.7 4.6 16.7V16.6ZM37.9 7.89995H36.7L34.6 6.59995C34.2 6.29995 33.6 6.29995 33.2 6.59995L30.8 7.89995L28.1 5.49995H41.7V13.4H23.2C23.6 13.4 23.9 13.2 24.1 12.9L27.3 8.69995L29.7 10.8C30.1 11.2 30.8 11.3 31.3 11L33.8 9.69995L35.5 10.8C35.7 10.9 36 11 36.3 11H38C38.8 11 39.4 10.4 39.4 9.59995C39.4 8.79995 38.8 8.19995 38 8.19995L37.9 7.89995ZM6.4 5.29995H26.3C26.3 5.29995 26.1 5.49995 26 5.59995L22.7 9.79995L19.6 7.19995C19.1 6.79995 18.4 6.79995 17.9 7.19995L16.4 8.19995H10.6C9.8 8.19995 9.2 8.79995 9.2 9.59995C9.2 10.4 9.8 11 10.6 11H16.8C17.1 11 17.4 11 17.6 10.8L18.5 10.2L21.9 13.1C22.1 13.3 22.4 13.4 22.7 13.4H6.4V5.29995ZM44 42.7H30.2V38.4C30.2 37.4 29.4 36.5999 28.4 36.5999H25.7V33.9H43.3C44.3 33.9 45.1 33.0999 45.1 32.0999V20.7C45.1 19.7 44.3 18.9 43.3 18.9H4.6C3.6 18.9 2.8 19.7 2.8 20.7V32.0999C2.8 33.0999 3.6 33.9 4.6 33.9H22.2V36.5999H19.5C18.5 36.5999 17.7 37.4 17.7 38.4V42.7H4C3 42.7 2.2 43.5 2.2 44.5C2.2 45.5 3 46.2999 4 46.2999H44C45 46.2999 45.8 45.5 45.8 44.5C45.8 43.5 45 42.7 44 42.7ZM37.9 25.2H36.7L34.6 23.9C34.2 23.6 33.6 23.6 33.2 23.9L30.8 25.2L28.1 22.7999H41.7V30.7H23.2C23.6 30.7 23.9 30.5 24.1 30.2L27.3 26L29.7 28.1C30.1 28.5 30.8 28.5999 31.3 28.2999L33.8 27L35.5 28.1C35.7 28.2 36 28.2999 36.3 28.2999H38C38.8 28.2999 39.4 27.7 39.4 26.9C39.4 26.1 38.8 25.5 38 25.5L37.9 25.2ZM6.4 30.5V22.6H26.3C26.3 22.6 26.1 22.8 26 22.9L22.7 27.1L19.6 24.5C19.1 24.1 18.4 24.1 17.9 24.5L16.4 25.5H10.6C9.8 25.5 9.2 26.1 9.2 26.9C9.2 27.7 9.8 28.2999 10.6 28.2999H16.8C17.1 28.2999 17.4 28.3 17.6 28.1L18.5 27.5L21.9 30.4C22.1 30.6 22.4 30.7 22.7 30.7H6.4V30.5ZM26.8 42.7999H21.3V40.2999H26.8V42.7999Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "alert": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M24.2,45c2.2,0,3.9-1.7,4.1-3.9h-8.1c.1,2.1,1.9,3.9,4.1,3.9Zm16.6-10.2l-3.1-3.3v-10.8c0-6.4-3.7-12.8-12-13.6v-2.4c0-1-.8-1.8-1.8-1.8s-1.8,.8-1.8,1.8v2.4c-8.3,.8-12,7.2-12,13.6v10.8l-3.1,3.2c-.5,.5-.6,1.3-.3,1.9,.3,.6,.9,1.1,1.6,1.1h31.1c.7,0,1.3-.4,1.6-1.1,.3-.6,.1-1.4-.3-1.9Zm-28.3-.5l.7-.8c.3-.3,.5-.8,.5-1.2v-11.5c0-4.9,2.7-10.2,10.2-10.2s10.2,5.2,10.2,10.2v11.5c0,.5,.2,1,.6,1.3l.7,.7H12.5Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "slo": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M16 23C22.0751 23 27 27.9249 27 34C27 40.0751 22.0751 45 16 45C9.92487 45 5 40.0751 5 34C5 27.9249 9.92487 23 16 23ZM16 27C12.134 27 9 30.134 9 34C9 37.866 12.134 41 16 41C19.866 41 23 37.866 23 34C23 30.134 19.866 27 16 27ZM31 3C31.5304 3 32.039 3.21086 32.4141 3.58594L42.4141 13.5859C42.7891 13.961 43 14.4696 43 15V35C43 37.2091 41.2091 39 39 39H28.002C28.522 37.7531 28.8499 36.408 28.957 35H39V19H29C27.8954 19 27 18.1046 27 17V7H15V21.041C13.5922 21.1481 12.2468 21.4762 11 21.9961V7C11 4.79086 12.7909 3 15 3H31ZM15 29C16.1046 29 17 29.8954 17 31V33H19C20.1046 33 21 33.8954 21 35C21 36.1046 20.1046 37 19 37H15C13.8954 37 13 36.1046 13 35V31C13 29.8954 13.8954 29 15 29ZM31 15H38.1719L31 7.82812V15Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "report": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M16.6,31.8h14.6c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-14.6c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8Zm7.7-6.5c4.7,0,8.6-3.9,8.6-8.6s-.1-1.6-.3-2.4c-.1-.4-.4-.8-.9-1-.4-.2-.9-.3-1.3-.1l-2.2,.7,1.2-2c.5-.8,.2-1.9-.6-2.4-1.3-.8-2.9-1.2-4.4-1.2-4.7,0-8.6,3.9-8.6,8.6s3.9,8.6,8.6,8.6Zm0-13.7c.3,0,.7,0,1,0l-2.5,4.2c-.4,.6-.3,1.4,.1,2,.4,.6,1.2,.8,1.9,.6l4.6-1.4c-.2,2.6-2.4,4.7-5.1,4.7s-5.1-2.3-5.1-5.1,2.3-5.1,5.1-5.1Zm-7.7,26.8h14.6c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-14.6c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8ZM37.7,2.2H10.3c-1,0-1.8,.8-1.8,1.8V44c0,1,.8,1.8,1.8,1.8h27.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8Zm-1.8,40H12V5.8h23.9V42.2Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "topology": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M44.2,33h-3.1v-2.9c0-3.8-1.9-5.8-5.5-5.8h-5.3v-2.5c0-1-.8-1.8-1.8-1.8h-2.7v-4.9h3.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8h-10.2c-1,0-1.8,.8-1.8,1.8V13.3c0,1,.8,1.8,1.8,1.8h3.3v4.9h-2.5c-1,0-1.8,.8-1.8,1.8v2.5h-5.4c-3.7,0-5.5,1.9-5.5,5.8v2.9H3.8c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8H14c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8h-3.3v-2.9c0-2,.4-2.2,2-2.2h5.4v1.7c0,1,.8,1.8,1.8,1.8h8.6c1,0,1.8-.8,1.8-1.8v-1.7h5.3c1.6,0,2,.2,2,2.2v2.9h-3.6c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8h10.2c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8Zm-32,3.5v5.7H5.5v-5.7h6.7ZM20.8,11.5V5.8h6.7v5.7h-6.7Zm6,16.2h-5.1v-4.3h5.1v4.3Zm15.7,14.4h-6.7v-5.7h6.7v5.7Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "ncm": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M24.57,20.52c-.73,0-1.38,.3-1.85,.78-.45,.46-.72,1.1-.72,1.79,0,1.42,1.15,2.58,2.58,2.58,.73,0,1.39-.3,1.86-.79,.44-.46,.72-1.09,.72-1.78,0-1.42-1.15-2.58-2.58-2.58Zm9.56,4.01c.07-.47,.12-.95,.12-1.44,0-.4-.03-.79-.08-1.18l2.54-.78-1.03-3.34-2.55,.79c-.41-.77-.92-1.48-1.52-2.11l1.6-2.17-2.82-2.08-1.6,2.17c-.77-.37-1.59-.65-2.46-.81v-2.7h-3.5v2.7c-.74,.13-1.46,.35-2.14,.65l-1.52-2.22-2.89,1.97,1.52,2.22c-.05,.05-.11,.1-.17,.16-.56,.58-1.03,1.22-1.42,1.9l-2.53-.88-1.15,3.3,2.51,.88c-.08,.5-.13,1.01-.13,1.53,0,.37,.03,.73,.07,1.09l-2.53,.78,1.03,3.34,2.51-.78c.41,.79,.92,1.51,1.52,2.15l-1.56,2.11,2.82,2.08,1.55-2.1c.78,.39,1.62,.67,2.51,.83v2.6h3.5v-2.6c.76-.14,1.5-.36,2.19-.68l1.47,2.15,2.89-1.97-1.48-2.16c.05-.05,.1-.09,.15-.15,.57-.59,1.05-1.25,1.44-1.95l2.48,.87,1.15-3.3-2.5-.87Zm-5.1,2.84c-1.17,1.22-2.76,1.9-4.45,1.9-3.4,0-6.17-2.77-6.17-6.17,0-1.61,.62-3.14,1.74-4.29,1.17-1.21,2.75-1.88,4.44-1.88,3.4,0,6.17,2.77,6.17,6.17,0,1.6-.61,3.12-1.72,4.28ZM6.85,23.1c0-3.3,.92-6.47,2.61-9.23l.11,1.55,3.49-.25-.55-7.69-7.78,.6,.27,3.49,1.85-.14c-2.27,3.44-3.5,7.47-3.5,11.67,0,11.7,9.52,21.22,21.22,21.22v-3.5c-9.77,0-17.72-7.95-17.72-17.72Zm35.4,11.72c2.29-3.45,3.54-7.5,3.54-11.72C45.79,11.4,36.27,1.88,24.57,1.88v3.5c9.77,0,17.72,7.95,17.72,17.72,0,3.22-.88,6.31-2.48,9.01l-.09-1.31-3.49,.25,.55,7.69,7.78-.6-.27-3.49-2.03,.16Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "netroute": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M42.54,27.3h-6.89v-11.79c1.68-.68,2.88-2.32,2.88-4.24,0-2.53-2.05-4.58-4.58-4.58-1.9,0-3.52,1.15-4.22,2.8h-4.09v-4.78c0-.94-.76-1.71-1.71-1.71H6.98c-.94,0-1.71.76-1.71,1.71v12.61c-.85.1-1.51.79-1.51,1.67,0,.94.76,1.71,1.71,1.71h8.32v11.3c-1.66.69-2.83,2.32-2.83,4.23,0,2.53,2.05,4.58,4.58,4.58,1.97,0,3.45-1.21,4.09-2.81h4.26v5.31c0,.94.76,1.71,1.71,1.71h16.96c.94,0,1.71-.76,1.71-1.71v-14.28c0-.94-.76-1.71-1.71-1.71ZM33.94,10.11c.64,0,1.16.52,1.16,1.16s-.52,1.16-1.16,1.16-1.16-.52-1.16-1.16.52-1.16,1.16-1.16ZM8.68,17.28V6.42h13.54v10.87h-13.54ZM15.53,37.38c-.64,0-1.16-.52-1.16-1.16s.52-1.16,1.16-1.16c.52,0,1.01.39,1.01,1.16s-.49,1.16-1.01,1.16ZM23.87,29.01v5.56h-4.22c-.42-1.16-1.29-2.12-2.46-2.59v-11.28h8.25c.94,0,1.71-.76,1.71-1.71,0-.87-.67-1.57-1.51-1.67v-4.42h4.04c.45,1.18,1.37,2.12,2.54,2.6v11.8h-6.65c-.94,0-1.71.76-1.71,1.71ZM40.83,41.58h-13.54v-10.87h6.65s0,0,0,0,0,0,0,0h6.89v10.87Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "metric-explorer": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M7.1,27.2l3.3,1.1-1.5,3.2c-1.9,.3-3.3,2.1-2.9,4.2s1.3,2.3,2.6,2.6c2.3,.5,4.3-1.2,4.3-3.4s-.3-1.5-.7-2.1l1.6-3.5,7.9,2.6c.2,0,.4,0,.5,0,.7,0,1.3-.4,1.6-1.1l3-6.8,5.8,2.7c.4,1.8,2.2,3,4.2,2.5s2.4-1.4,2.6-2.7-.2-2.5-1-3.2l1.5-6.6,2.9-.2c.8,0,1.5-.6,1.6-1.3,.3-1.2-.7-2.3-1.9-2.2l-1.9,.2,.7-3.2c1.5-.6,2.6-2.2,2.2-4s-1.3-2.4-2.6-2.7c-2.3-.5-4.3,1.2-4.3,3.4s.5,2,1.3,2.7l-.9,4.1-8.6,.7c-.6,0-1.2,.5-1.5,1l-1.9,4.2-5-2.3c-.5-1.8-2.4-3.1-4.5-2.5s-1.9,1.1-2.2,2.1-.1,2.6,.7,3.5l-2.2,4.7-3.8-1.2c-1.1-.4-2.3,.4-2.3,1.7s.6,1.4,1.3,1.7Zm22.7-9.6l6.5-.5-1.2,5.5c-.5,.2-.9,.4-1.3,.8l-5.4-2.5,1.5-3.3Zm-12.3,3.8c.6-.1,1.2-.4,1.6-.9l4.5,2.1-2.4,5.4-6-1.9,2.2-4.7Zm26.7,19.9H3.8c-.8,0-1.5,.5-1.8,1.2-.4,1.2,.5,2.3,1.7,2.3H44.2c.8,0,1.5-.5,1.8-1.2,.4-1.2-.5-2.3-1.7-2.3Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "log": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M41.4,16.1s0,0,0-.1c0,0,0-.1,0-.2,0,0,0,0,0-.1,0,0,0-.1,0-.2,0,0,0,0,0-.1,0,0,0,0,0-.1L29.5,2.6s0,0,0,0c0,0-.1-.1-.2-.1,0,0,0,0-.1,0,0,0-.1,0-.2-.1,0,0,0,0,0,0,0,0-.2,0-.3,0,0,0,0,0,0,0-.1,0-.2,0-.4,0H8.4c-1,0-1.8,.8-1.8,1.8V44.2c0,1,.8,1.8,1.8,1.8h31.2c1,0,1.8-.8,1.8-1.8V16.4c0-.1,0-.2,0-.3Zm-11.4-7.7l5.7,6.3h-5.7v-6.3Zm7.9,34.1H10.1V5.5H26.4v10.9c0,1,.8,1.8,1.8,1.8h9.6v24.2ZM15.5,27.9c0,1,.8,1.8,1.8,1.8h12c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-12c-1,0-1.8,.8-1.8,1.8Zm13.8,5.9h-12c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h12c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "apm": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M42,5.1H6c-2.2,0-4,1.8-4,4V31.3c0,2.2,1.8,4,4,4h11v4.1h-3c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h20.1c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-3.2v-4.1h11.2c2.2,0,4-1.8,4-4V9.1c0-2.2-1.8-4-4-4Zm-14.7,34.2h-6.8v-4.1h6.8v4.1Zm15.1-8.1c0,.2-.2,.4-.4,.4H6c-.2,0-.4-.2-.4-.4V9.1c0-.2,.2-.4,.4-.4H42c.2,0,.4,.2,.4,.4V31.3ZM17.9,14.8c-.6-.8-1.7-1-2.5-.4l-5.1,3.8c-.5,.3-.7,.9-.7,1.4s.3,1.1,.7,1.4l5.1,3.8c.3,.2,.7,.3,1.1,.3,.5,0,1.1-.2,1.4-.7,.6-.8,.4-1.9-.4-2.5l-3.2-2.3,3.2-2.3c.8-.6,1-1.7,.4-2.5Zm20,3.4l-5.1-3.8c-.8-.6-1.9-.4-2.5,.4-.6,.8-.4,1.9,.4,2.5l3.2,2.3-3.2,2.3c-.8,.6-1,1.7-.4,2.5,.3,.5,.9,.7,1.4,.7s.7-.1,1.1-.3l5.1-3.8c.5-.3,.7-.9,.7-1.4s-.3-1.1-.7-1.4Zm-10.4-4.9c-.9-.5-1.9-.2-2.4,.7l-5.2,9.4c-.5,.9-.2,1.9,.7,2.4,.3,.2,.6,.2,.9,.2,.6,0,1.2-.3,1.5-.9l5.2-9.4c.5-.9,.2-1.9-.7-2.4Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "rum": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38.2422 3.25781C39.5465 3.2579 40.7974 3.77601 41.7197 4.69824C42.6422 5.62067 43.1602 6.87224 43.1602 8.17676V17.5039C43.9826 17.5462 44.7635 17.8914 45.3486 18.4766C45.9742 19.1022 46.3252 19.9512 46.3252 20.8359V41.4072C46.3252 42.292 45.9742 43.1409 45.3486 43.7666C44.723 44.3922 43.874 44.7431 42.9893 44.7432H30.3301C29.4453 44.7432 28.5964 44.3922 27.9707 43.7666C27.345 43.1409 26.9932 42.2921 26.9932 41.4072V38.4141H8.17578C6.45167 38.414 4.79826 37.7289 3.5791 36.5098C2.35999 35.2906 1.67489 33.6372 1.6748 31.9131V30.3301C1.67487 29.4454 2.02675 28.5973 2.65234 27.9717C3.23749 27.3865 4.01745 27.0403 4.83984 26.998V8.17676C4.83984 6.87224 5.35784 5.62067 6.28027 4.69824C7.2027 3.77587 8.45432 3.25781 9.75879 3.25781H38.2422ZM30.501 41.2354H42.8174V21.0068H30.501V41.2354ZM36.6592 34.9062C37.6278 34.9062 38.4131 35.6915 38.4131 36.6602C38.413 37.6287 37.6278 38.4141 36.6592 38.4141C35.6907 38.4139 34.9054 37.6286 34.9053 36.6602C34.9053 35.6916 35.6907 34.9064 36.6592 34.9062ZM5.18262 31.9131C5.1827 32.7069 5.49827 33.468 6.05957 34.0293C6.6209 34.5906 7.38197 34.9062 8.17578 34.9062H26.9932V30.502H5.18262V31.9131ZM9.75879 6.76562C9.38462 6.76562 9.02534 6.91416 8.76074 7.17871C8.49613 7.44332 8.34766 7.80254 8.34766 8.17676V26.9941H26.9932V20.8359C26.9932 19.9511 27.345 19.1022 27.9707 18.4766C28.5964 17.851 29.4453 17.5 30.3301 17.5H39.6523V8.17676C39.6523 7.80254 39.5039 7.44332 39.2393 7.17871C38.9747 6.91429 38.6162 6.76572 38.2422 6.76562H9.75879Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "flow": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M42.9,28.1h-2v-4.8c0-1-.8-1.8-1.8-1.8h-11.5c-.3-.7-.8-1.2-1.5-1.6v-3.5h9.8c2.5,0,4.6-2.1,4.6-4.6V7c0-2.5-2.1-4.6-4.6-4.6H12.3c-2.5,0-4.6,2.1-4.6,4.6v4.8c0,2.5,2.1,4.6,4.6,4.6h10.3v3.7c-.5,.4-.9,.8-1.2,1.4H9.1c-1,0-1.8,.8-1.8,1.8v4.8h-2.3c-1.7,0-3.1,1.4-3.1,3.1v5.5c0,1.7,1.4,3.1,3.1,3.1h2.2v2.3h-1.4c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h6.3c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-1.4v-2.3h2.2c1.7,0,3.1-1.4,3.1-3.1v-5.5c0-1.7-1.4-3.1-3.1-3.1h-2.2v-3h11.1c.6,.7,1.5,1.2,2.6,1.2s2-.5,2.6-1.2h10.2v3h-2.4c-1.7,0-3.1,1.4-3.1,3.1v5.5c0,1.7,1.4,3.1,3.1,3.1h2.2v2.3h-1.4c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h6.3c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-1.4v-2.3h2.2c1.7,0,3.1-1.4,3.1-3.1v-5.5c0-1.7-1.4-3.1-3.1-3.1Zm-30.3,3.5v4.6H5.5v-4.6h7.1Zm-.3-18.7c-.6,0-1.1-.5-1.1-1.1V7c0-.6,.5-1.1,1.1-1.1h23.6c.6,0,1.1,.5,1.1,1.1v4.8c0,.6-.5,1.1-1.1,1.1H12.3Zm30.2,23.3h-7.1v-4.6h7.1v4.6ZM17.6,7.7c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8,1.8-.8,1.8-1.8-.8-1.8-1.8-1.8Zm6.5,0c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8,1.8-.8,1.8-1.8-.8-1.8-1.8-1.8Zm6.5,0c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8,1.8-.8,1.8-1.8-.8-1.8-1.8-1.8Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "trap-viewer": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.9,25.4c-.4-.9-4.9-10.1-6.2-12.6-.6-1.2-1.7-2.4-3.3-2.9-.3-1.6-1.3-2.3-1.9-2.6-1.6-.7-3.5,0-4.6,1.2-.6,.7-.6,1.6-.3,2.3l.3,.8c-.8,.9-1.2,2-1.3,3.2h-5c0-1.2-.5-2.2-1.2-3.1l.4-.8h0c.2-.8,.3-2.1-.8-2.9-1.1-.8-3-1.5-4.5-.7-.7,.4-1.5,1.1-1.7,2.6-1.6,.5-2.6,1.8-3.3,2.9-1.4,2.5-5.8,11.7-6.2,12.6-1.2,1.6-1.9,3.6-1.9,5.8,0,5.5,4.5,10,10,10s8.1-2.9,9.5-6.8h4.5c1.3,3.9,5.1,6.8,9.5,6.8s10-4.5,10-10-.7-4.1-1.9-5.8ZM13.4,14.5c.8-1.5,1.7-1.6,2.9-1.3,.7,.2,1.6,.6,1.7,1.8,0,1,.2,4.8,.4,8.2-1.7-1.3-3.8-2.1-6.1-2.1s-1.6,.1-2.4,.3c1.3-2.8,2.8-5.8,3.5-7Zm-1.1,23.2c-3.6,0-6.5-2.9-6.5-6.5s2.9-6.5,6.5-6.5,6.5,2.9,6.5,6.5-2.9,6.5-6.5,6.5Zm13.6-8.5c-.1,.5-.2,1.1-.2,1.7h-3.5c0-.6,0-1.1-.2-1.7h0c0-.1,0-.7,0-1.7h3.9c0,1,0,1.6,0,1.7h0Zm.2-5.2h-4.2c0-1.9-.2-4-.2-5.7h4.7c0,1.7-.2,3.8-.2,5.7Zm3.9-9c0-1.2,1-1.6,1.7-1.8,1.2-.3,2.1-.2,2.9,1.3,.7,1.2,2.1,4.2,3.5,7-.8-.2-1.6-.3-2.4-.3-2.3,0-4.4,.8-6.1,2.1,.1-3.4,.3-7.2,.4-8.2Zm5.7,22.7c-3.6,0-6.5-2.9-6.5-6.5s2.9-6.5,6.5-6.5,6.5,2.9,6.5,6.5-2.9,6.5-6.5,6.5Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "audit": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M23.7,17c0-1-.8-1.8-1.8-1.8h-7.5c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h7.5c1,0,1.8-.8,1.8-1.8Zm-9.2-4.3h5.2c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-5.2c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8Zm4.8,16.4c-.6-.7-1.7-.8-2.5-.2-.7,.6-.8,1.7-.2,2.5l3.7,4.3c.3,.4,.8,.6,1.3,.6,0,0,0,0,0,0,.5,0,.9-.2,1.2-.5l7.9-7.8c.7-.7,.7-1.8,0-2.5-.7-.7-1.8-.7-2.5,0l-6.6,6.5-2.4-2.9Zm21.9-12.8s0,0,0-.1c0,0,0-.1,0-.2,0,0,0,0,0-.1,0,0,0-.1,0-.2,0,0,0,0,0-.1,0,0,0,0,0-.1L29.5,2.8s0,0,0,0c0,0-.1-.1-.2-.1,0,0,0,0-.1,0,0,0-.1,0-.2-.1,0,0,0,0,0,0,0,0-.2,0-.3,0,0,0,0,0,0,0-.1,0-.2,0-.4,0H8.6c-1,0-1.8,.8-1.8,1.8V44c0,1,.8,1.8,1.8,1.8h30.9c1,0,1.8-.8,1.8-1.8V16.5c0-.1,0-.2,0-.3Zm-11.3-7.6l5.6,6.2h-5.6v-6.2Zm7.8,33.7H10.3V5.8H26.4v10.8c0,1,.8,1.8,1.8,1.8h9.5v24Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "settings": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z"
+  ],
+  "from": "sidebar.html"
+ },
+ "search": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.4,40.6l-7.4-7.3c2.9-3.6,4.3-8.2,3.9-12.8-.4-4.6-2.5-8.9-5.9-11.9-3.4-3-7.9-4.7-12.5-4.6s-9,2-12.2,5.2c-3.2,3.2-5.2,7.7-5.3,12.3s1.5,9,4.6,12.5c3,3.4,7.3,5.5,11.9,5.9s9.1-1,12.8-3.9l7.3,7.3c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4h0Zm-11.5-8.6c-2.7,2.7-6.2,4.1-9.9,4.1s-5.4-.9-7.8-2.4c-2.3-1.5-4.1-3.7-5.1-6.3-1-2.6-1.3-5.3-.8-8.1,.6-2.7,1.9-5.2,3.8-7.1,2-2,4.5-3.3,7.1-3.8,2.7-.6,5.5-.3,8.1,.8s4.8,2.9,6.3,5.1c1.5,2.3,2.4,5,2.4,7.8s-1.4,7.2-4.1,9.9Z"
+  ],
+  "from": "header.html"
+ },
+ "ncm-approval": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M23.4727 28.0469C23.745 28.0469 24.0513 28.0562 24.3916 28.0732C24.7322 28.0903 25.0391 28.1154 25.3115 28.1494C25.8564 28.2175 26.3075 28.4733 26.665 28.916C27.0226 29.3587 27.1677 29.8526 27.0996 30.3975C27.0315 30.8741 26.8268 31.2825 26.4863 31.623C26.1458 31.9636 25.6862 32.1337 25.1074 32.1338H23.4727C21.0546 32.1338 18.8832 32.424 16.959 33.0029C15.0348 33.5819 13.4594 34.2114 12.2334 34.8926C11.9269 35.0629 11.6805 35.3019 11.4932 35.6084C11.3059 35.9149 11.2119 36.2553 11.2119 36.6299V38.2646H25.0049C25.5838 38.2646 26.0693 38.46 26.4609 38.8516C26.8525 39.2432 27.0488 39.7288 27.0488 40.3076C27.0488 40.8865 26.8525 41.372 26.4609 41.7637C26.0693 42.1553 25.5839 42.3516 25.0049 42.3516H11.2119C10.088 42.3516 9.12554 41.9507 8.3252 41.1504C7.52514 40.3502 7.12505 39.3883 7.125 38.2646V36.6299C7.125 35.506 7.41419 34.4496 7.99316 33.4619C8.57212 32.4744 9.37292 31.7257 10.3945 31.2148C12.1314 30.3294 14.0899 29.5798 16.2695 28.9668C18.4491 28.3538 20.8504 28.0469 23.4727 28.0469ZM45.1328 27.9961C45.7117 27.9961 46.1889 28.184 46.5635 28.5586C46.9378 28.9331 47.1249 29.4097 47.125 29.9883C47.125 30.5671 46.938 31.0444 46.5635 31.4189L36.2441 41.7383C35.8355 42.1469 35.3583 42.3515 34.8135 42.3516C34.2686 42.3516 33.7915 42.147 33.3828 41.7383L29.1943 37.5488C28.8198 37.1743 28.6319 36.698 28.6318 36.1191C28.6318 35.5402 28.8197 35.0631 29.1943 34.6885C29.5689 34.314 30.0453 34.127 30.624 34.127C31.203 34.127 31.6801 34.3139 32.0547 34.6885L34.8135 37.4473L43.7021 28.5586C44.0768 28.184 44.5538 27.9961 45.1328 27.9961ZM23.4727 9.65625C25.7203 9.65632 27.6445 10.457 29.2451 12.0576C30.8457 13.6583 31.6465 15.5824 31.6465 17.8301C31.6465 20.0777 30.8457 22.0019 29.2451 23.6025C27.6445 25.2032 25.7203 26.0038 23.4727 26.0039C21.2249 26.0039 19.3009 25.2032 17.7002 23.6025C16.0995 22.0019 15.2988 20.0778 15.2988 17.8301C15.2989 15.5824 16.0995 13.6583 17.7002 12.0576C19.3008 10.4571 21.225 9.65625 23.4727 9.65625ZM23.4727 13.7432C22.3488 13.7432 21.3863 14.144 20.5859 14.9443C19.7858 15.7446 19.3858 16.7064 19.3857 17.8301C19.3857 18.954 19.7856 19.9165 20.5859 20.7168C21.3863 21.5171 22.3488 21.917 23.4727 21.917C24.5963 21.9169 25.5582 21.5169 26.3584 20.7168C27.1587 19.9165 27.5596 18.954 27.5596 17.8301C27.5595 16.7063 27.1587 15.7446 26.3584 14.9443C25.5581 14.1441 24.5964 13.7432 23.4727 13.7432Z"
+  ],
+  "from": "header.html"
+ },
+ "health-monitoring": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M36.8,19h-1.6l-1.8-2.7c-.3-.5-.9-.8-1.5-.9-.6,0-1.2,.2-1.6,.7l-1.3,1.6-2.1-4.3c-.3-.7-1.1-1.1-1.8-1.1-.8,0-1.4,.6-1.7,1.3l-2.7,7.8-2-3.9c-.3-.6-.9-1-1.6-1-.7,0-1.3,.3-1.7,.9l-1.2,2h-3c-1.1,0-1.9,.9-1.9,1.9s.9,1.9,1.9,1.9h4.1c.7,0,1.3-.3,1.6-.9h0l2.5,4.8c.3,.6,1,1,1.7,1s0,0,.1,0c.8,0,1.4-.6,1.7-1.3l2.6-7.7,1.4,2.9c.3,.6,.9,1,1.5,1.1,.6,0,1.3-.2,1.7-.7l1.5-1.9,.9,1.4c.4,.5,1,.9,1.6,.9h2.6c1.1,0,1.9-.9,1.9-1.9s-.9-1.9-1.9-1.9Zm2.4-14.1H8.7c-3.2,0-5.7,2.6-5.7,5.7V29.7c0,3.2,2.6,5.7,5.7,5.7h13.4v3.8h-5.7c-1.1,0-1.9,.9-1.9,1.9s.9,1.9,1.9,1.9h15.3c1.1,0,1.9-.9,1.9-1.9s-.9-1.9-1.9-1.9h-5.7v-3.8h13.4c3.2,0,5.7-2.6,5.7-5.7V10.6c0-3.2-2.6-5.7-5.7-5.7Zm1.9,24.8c0,1.1-.9,1.9-1.9,1.9H8.7c-1.1,0-1.9-.9-1.9-1.9V10.6c0-1.1,.9-1.9,1.9-1.9h30.5c1.1,0,1.9,.9,1.9,1.9V29.7Z"
+  ],
+  "from": "header.html"
+ },
+ "bell": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.1,32.4c0,0-5.1-3.8-5.1-16.4s-1.5-7.3-4.1-9.9c-2.6-2.6-6.2-4.1-9.9-4.1s-7.3,1.5-9.9,4.1c-2.6,2.6-4.1,6.2-4.1,9.9,0,12.5-5.1,16.3-5.1,16.3-.7,.5-1.1,1.4-.8,2.2,.3,.8,1,1.4,1.9,1.4H42c.9,0,1.6-.6,1.9-1.4s0-1.7-.8-2.2Zm-32.9-.4c1.8-3,3.7-8,3.7-16s1-5.2,2.9-7.1c1.9-1.9,4.4-2.9,7.1-2.9s5.2,1.1,7.1,2.9,2.9,4.4,2.9,7.1c0,8,1.9,13,3.7,16H10.3Zm18.2,8.3c-1-.6-2.2-.2-2.7,.7-.2,.3-.4,.6-.7,.7-.6,.3-1.4,.3-2,0-.3-.2-.6-.4-.7-.7-.6-1-1.8-1.3-2.7-.7-1,.6-1.3,1.8-.7,2.7,.5,.9,1.3,1.7,2.2,2.2,.9,.5,1.9,.8,3,.8s2.1-.3,3-.8c.9-.5,1.7-1.3,2.2-2.2,.6-1,.2-2.2-.7-2.7Z"
+  ],
+  "from": "header.html"
+ },
+ "my-profile": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M24,27.4c6.5,0,11.7-5.2,11.7-11.7s-5.2-11.7-11.7-11.7-11.7,5.2-11.7,11.7,5.2,11.7,11.7,11.7Zm0-19.5c4.3,0,7.8,3.5,7.8,7.8s-3.5,7.8-7.8,7.8-7.8-3.5-7.8-7.8,3.5-7.8,7.8-7.8Zm7.8,23.4h-15.6c-5.4,0-9.7,4.4-9.7,9.7s.8,1.9,1.9,1.9,1.9-.8,1.9-1.9c0-3.2,2.6-5.8,5.8-5.8h15.6c3.2,0,5.8,2.6,5.8,5.8s.8,1.9,1.9,1.9,1.9-.8,1.9-1.9c0-5.4-4.4-9.7-9.7-9.7Z"
+  ],
+  "from": "12-profile.html"
+ },
+ "tour": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38,4H18c-1.6,0-3.1,.6-4.2,1.8-1.1,1.1-1.8,2.7-1.8,4.2v2h-2c-1.6,0-3.1,.6-4.2,1.8-1.1,1.1-1.8,2.7-1.8,4.2v20c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8H30c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2v-2h2c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V10c0-1.6-.6-3.1-1.8-4.2-1.1-1.1-2.7-1.8-4.2-1.8Zm-6,34c0,.5-.2,1-.6,1.4-.4,.4-.9,.6-1.4,.6H10c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4v-14H32v14Zm0-18H8v-2c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6H30c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v2Zm8,10c0,.5-.2,1-.6,1.4-.4,.4-.9,.6-1.4,.6h-2v-14c0-.7-.1-1.4-.4-2h4.4v14Zm0-18H16v-2c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h20c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v2Z"
+  ],
+  "from": "12-profile.html"
+ },
+ "help": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M25.4,30.6c-.2-.2-.4-.3-.7-.4-.2-.1-.5-.2-.8-.2s-.5,0-.8,.2c-.2,.1-.5,.3-.7,.4,0,0-.2,.2-.2,.3,0,.1-.1,.2-.2,.4,0,.1,0,.2-.1,.4,0,.1,0,.3,0,.4,0,.3,0,.5,.2,.8,0,.2,.2,.5,.4,.7s.4,.3,.7,.4c.2,.1,.5,.2,.8,.2s.5,0,.8-.2c.2,0,.5-.2,.7-.4,.2-.2,.3-.4,.4-.7,0-.2,.1-.5,.1-.8,0-.3,0-.5-.1-.8,0-.2-.2-.5-.4-.7Zm2.4-15.2c-1.1-.9-2.4-1.4-3.8-1.4-1.1,0-2.1,.3-3,.8s-1.7,1.3-2.2,2.2c-.1,.2-.2,.5-.3,.7,0,.3,0,.5,0,.8,0,.3,.2,.5,.3,.7,.2,.2,.4,.4,.6,.5,.2,.1,.5,.2,.8,.3,.3,0,.5,0,.8,0,.3,0,.5-.2,.7-.4,.2-.2,.4-.4,.5-.6,.2-.3,.4-.6,.7-.7,.3-.2,.7-.3,1-.3,.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4s-.2,1-.6,1.4-.9,.6-1.4,.6-1,.2-1.4,.6-.6,.9-.6,1.4v2c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-.4c1.3-.5,2.4-1.4,3.1-2.6,.7-1.2,1-2.6,.7-4-.2-1.4-1-2.6-2-3.6Zm14.6,.9c-1-2.4-2.5-4.6-4.3-6.5s-4.1-3.3-6.5-4.3c-2.4-1-5-1.5-7.7-1.5-4,0-7.8,1.2-11.1,3.4-3.3,2.2-5.9,5.3-7.4,9-1.5,3.7-1.9,7.7-1.1,11.6,.8,3.9,2.7,7.4,5.5,10.2,2.8,2.8,6.4,4.7,10.2,5.5,3.9,.8,7.9,.4,11.6-1.1,3.7-1.5,6.8-4.1,9-7.4,2.2-3.3,3.4-7.2,3.4-11.1s-.5-5.2-1.5-7.7Zm-7.2,19c-3,3-7.1,4.7-11.3,4.7s-6.3-.9-8.9-2.7c-2.6-1.8-4.7-4.3-5.9-7.2-1.2-2.9-1.5-6.1-.9-9.2,.6-3.1,2.1-6,4.4-8.2s5.1-3.8,8.2-4.4c3.1-.6,6.3-.3,9.2,.9,2.9,1.2,5.4,3.3,7.2,5.9,1.8,2.6,2.7,5.7,2.7,8.9s-1.7,8.3-4.7,11.3Z"
+  ],
+  "from": "12-profile.html"
+ },
+ "mobile": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M25.4,32.6l-.3-.2c-.1,0-.2-.1-.4-.2l-.4-.2c-.3,0-.7,0-1,0-.3,0-.6,.3-.8,.5-.2,.2-.3,.4-.4,.7-.2,.4-.2,.8-.1,1.2,0,.4,.3,.7,.5,1,.3,.3,.6,.5,1,.6,.4,0,.8,0,1.2-.1,.2-.1,.5-.3,.7-.4,.3-.3,.5-.6,.5-1,0-.4,0-.8-.1-1.2,0-.2-.2-.4-.4-.6Zm6.6-28.6h-16c-1.6,0-3.1,.6-4.2,1.8-1.1,1.1-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h16c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V10c0-1.6-.6-3.1-1.8-4.2-1.1-1.1-2.7-1.8-4.2-1.8Zm2,34c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6h-16c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V10c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h16c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v28Z"
+  ],
+  "from": "12-profile.html"
+ }
+};
+function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
+  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" fill="currentColor">` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
+function setIco(el, name){ const i = ICONS[name]; if(!el||!i) return; el.setAttribute('viewBox', i.viewBox); el.innerHTML = i.paths.map(d=>`<path fill="currentColor" d="${d}"/>`).join(''); }
+
+/* ================= Sidebar model (live ul.mainMenu, 16 modules; groups from docs IA) ================= */
+const MODULES = [
+  { name:'Dashboards',      icon:'dashboard',       route:'/dashboard',        group:'Observability' },
+  { name:'Monitors',        icon:'navbar-monitor',  route:'/inventory/',       group:'Observability' },
+  { name:'Alerts',          icon:'alert',           route:'/alerts/',          group:'Observability' },
+  { name:'SLO',             icon:'slo',             route:'/slo/',             group:'Observability', beta:true },
+  { name:'Reports',         icon:'report',          route:'/reports/',         group:'Observability' },
+  { name:'Topology',        icon:'topology',        route:'/topology/network', group:'Network' },
+  { name:'NCCM',            icon:'ncm',             route:'/nccm/',            group:'Network' },
+  { name:'NetRoute',        icon:'netroute',        route:'/netroute/',        group:'Network' },
+  { name:'Metric Explorer', icon:'metric-explorer', route:'/metric-explorer/', group:'Explorers' },
+  { name:'Log Explorer',    icon:'log',             route:'/log/',             group:'Explorers' },
+  { name:'APM Explorer',    icon:'apm',             route:'/apm/',             group:'Explorers' },
+  { name:'RUM Explorer',    icon:'rum',             route:'/rum/',             group:'Explorers' },
+  { name:'Flow Explorer',   icon:'flow',            route:'/flow/',            group:'Explorers' },
+  { name:'Trap Explorer',   icon:'trap-viewer',     route:'/trap-explorer/',   group:'Explorers' },
+  { name:'Audits',          icon:'audit',           route:'/audit/',           group:'Management' },
+  { name:'Settings',        icon:'settings',        route:'/settings/',        group:'Management' },
+];
+let activeModule = 0;
+
+function renderMenu(){
+  const grouped = document.getElementById('sidebar').classList.contains('grouped');
+  let html = '', lastGroup = null;
+  MODULES.forEach((m,i)=>{
+    if (grouped && m.group !== lastGroup){
+      if (lastGroup !== null) html += '<div class="sgroup-gap"></div>';
+      html += `<div class="sgroup-label">${m.group}</div>`;
+      lastGroup = m.group;
+    }
+    html += `<div class="sitem${i===activeModule?' on':''}" data-tip="${m.name}" onclick="selectModule(${i})">
+      ${ico(m.icon)}<span class="lbl">${m.name}${m.beta?' <span class="beta">BETA</span>':''}</span></div>`;
+  });
+  document.getElementById('smenu').innerHTML = html;
+}
+function selectModule(i){
+  activeModule = i; renderMenu();
+  const m = MODULES[i];
+  setIco(document.getElementById('modHeadIc'), m.icon);
+  setIco(document.getElementById('modBigIc'), m.icon);
+  document.getElementById('modHeadTtl').textContent = m.name;
+  document.getElementById('modName').textContent = m.name;
+  document.getElementById('modRoute').textContent = m.route;
+  showView('module');
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+
+/* ================= Views ================= */
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('on');
+  document.getElementById('sbApproval').classList.toggle('on', v==='approval');
+  document.getElementById('sbHealth').classList.toggle('on', v==='health');
+  if (v==='approval' || v==='health'){ activeModule = -1; renderMenu(); } /* live: these pages highlight no module */
+  closePops();
+}
+
+/* ================= Approval grid (rows captured from live /ncm-approval) ================= */
+const ROUTER_SVG = `<svg style="width:100%;height:100%" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M174.15 242.32a14.76 14.76 0 0010.49 4.36 14.85 14.85 0 0010.49-25.36 86.13 86.13 0 010-121.69 14.85 14.85 0 00-21-21 115.89 115.89 0 000 163.67zM88.87 380.85H256V186.69a14.85 14.85 0 00-14.85 14.85v112.81H48.5A42.51 42.51 0 006 356.86v77.63A42.51 42.51 0 0048.5 477H256v-66.46H88.87a14.85 14.85 0 010-29.69zM139.61 285a14.76 14.76 0 005.68 1.13 14.84 14.84 0 0010.49-25.36 141.88 141.88 0 010-200.42 14.85 14.85 0 10-21-21 171.6 171.6 0 000 242.4 14.73 14.73 0 004.83 3.25z" fill="#00c8c8"/><path d="M312.77 229a14.93 14.93 0 0025.08 13.52 115.88 115.88 0 000-163.8 14.85 14.85 0 00-21 21 86.16 86.16 0 010 121.68 14.9 14.9 0 00-4.08 7.6zM387 106.36a141.69 141.69 0 01-30.76 154.44 14.85 14.85 0 0010.51 25.36 14.92 14.92 0 005.71-1.14 14.73 14.73 0 004.82-3.24 171.58 171.58 0 000-242.4 14.86 14.86 0 00-21 21A141.82 141.82 0 01387 106.36zm106.51 220.46a42.53 42.53 0 00-30-12.42H270.83V201.54A14.83 14.83 0 00256 186.69v194.16h62.89a14.85 14.85 0 110 29.69H256V477h207.47A42.51 42.51 0 00506 434.49v-77.65a42.53 42.53 0 00-12.49-30.02zm-105.64 74.55a14.84 14.84 0 01-13.72 9.17 14.85 14.85 0 01-12.34-23.1 14.85 14.85 0 0126.06 13.93zm49 0a14.84 14.84 0 01-13.71 9.17 14.85 14.85 0 01-12.35-23.1 14.85 14.85 0 0126.06 13.93z" fill="#00a0aa"/><path d="M256 216.3a55.72 55.72 0 1139.39-16.3A55.69 55.69 0 01256 216.3z" fill="#ff7045"/><path d="M256 104.82V216.3a55.75 55.75 0 100-111.48z" fill="#f64c1c"/></svg>`;
+const APPROVALS = [
+  ['APR: 01 – Cisco IOS Router …','bgp1.bgp1.com','admin','ok','Approved','Sync','Fri, Jun 05, 2026 03:43:05 PM', false],
+  ['APR: 02 – ospf3.ospf3.com …','ospf3.ospf3.com','—','pend','Pending','Restore','Fri, Jun 05, 2026 03:48:21 PM', true],
+  ['APR: 03 – site1.test1.com – r…','site1.test1.com','—','pend','Pending','Execute Runbook','Fri, Jun 05, 2026 03:48:52 PM', true],
+  ['APR: 06 – ospf3.ospf3.com …','ospf3.ospf3.com','—','pend','Pending','Sync','Thu, Jun 25, 2026 01:34:00 PM', true],
+  ['APR: 05 – Cisco IOS Router …','bgp1.bgp1.com','—','pend','Pending','Restore','Fri, Jun 05, 2026 05:51:32 PM', true],
+  ['APR: 04 – cisco841.motadat…','cisco841.motadata.local','—','pend','Pending','Firmware Upgrade','Fri, Jun 05, 2026 03:49:23 PM', true],
+  ['APR: 07 – ospf3.ospf3.com …','ospf3.ospf3.com','—','pend','Pending','Sync','Thu, Jun 25, 2026 01:45:29 PM', true],
+];
+function renderApprovals(){
+  document.querySelector('#aprTable tbody').innerHTML = APPROVALS.map(r=>`<tr>
+    <td style="font-weight:600">${r[0]}</td><td>${r[1]}</td>
+    <td><span style="display:inline-block;width:22px;height:22px">${ROUTER_SVG}</span></td>
+    <td>${r[2]}</td><td><span class="tag ${r[3]}">${r[4]}</span></td><td>${r[5]}</td>
+    <td style="color:var(--text-dim)">${r[6]}</td>
+    <td>${r[7]?'<button class="kebab" onclick="toast(\'Actions — Approve · Reject · View request\')">⋮</button>':''}</td>
+  </tr>`).join('');
+}
+
+/* ================= Health screens (live /health/ tabs + tables) ================= */
+const HEALTH_TABS = ['Health Overview','Application','Database','Live Session','Alert','Upgrade','Restore'];
+let healthTab = 0;
+function renderHealthTabs(){
+  document.getElementById('healthTabs').innerHTML = HEALTH_TABS.map((t,i)=>
+    `<button class="tab${i===healthTab?' on':''}" onclick="setHealthTab(${i})">${t}</button>`).join('');
+}
+function setHealthTab(i){ healthTab = i; renderHealthTabs(); renderHealthBody(); }
+function healthCard(title, inner){ return `<div class="card"><div class="chead">${title}</div>${inner}</div>`; }
+function renderHealthBody(){
+  const b = document.getElementById('healthBody');
+  const t = HEALTH_TABS[healthTab];
+  if (t === 'Health Overview'){
+    b.innerHTML =
+      healthCard('Deployment Status', `<div class="cbody" style="padding-bottom:0"><label class="searchbox"><svg class="ic" viewBox="0 0 48 48">${ICONS['search'].paths.map(d=>`<path fill="currentColor" d="${d}"/>`).join('')}</svg><input placeholder="Search"/></label></div>
+        <table><thead><tr><th>Server</th><th>IP</th><th>Type</th><th>Deployment</th><th>Duration</th><th>State</th></tr></thead><tbody>
+        <tr><td>AIOps</td><td class="mono">172.16.14.71</td><td><span class="tag">DATASTORE</span></td><td><span class="tag">STANDALONE</span></td><td>🕓 1 day 6 hours 50 minutes</td><td><span class="tag ok">Running</span></td></tr>
+        <tr><td>AIOps</td><td class="mono">172.16.14.71</td><td><span class="tag">APP</span></td><td><span class="tag">STANDALONE</span></td><td>🕓 1 day 6 hours 50 minutes</td><td><span class="tag ok">Running</span></td></tr>
+        </tbody></table>`) +
+      healthCard('Default Engine Statistics', `<table><thead><tr><th>IP</th><th>Type</th><th>Name</th><th>Pending Events</th><th>Queued Events</th><th>Finished Events</th></tr></thead><tbody>
+        ${[['0','0','50'],['0','0','0'],['0','0','50'],['0','0','0'],['0','0','1'],['0','0','1']].map((r,i)=>
+          `<tr><td class="mono">172.16.14.71</td><td><span class="tag">APP</span></td><td class="mono">datastore.write.${i%4}.42AE727913054942…</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
+        </tbody></table>`) +
+      healthCard('Core Engine Statistics', `<div class="cbody nodata" style="min-height:90px">Engine polling summary — no issues detected</div>`);
+  } else if (t === 'Application'){
+    b.innerHTML = `<div class="statrow">
+      <div class="stat"><div class="k">JVM Threads</div><div class="v">142</div><div class="s">peak 178</div></div>
+      <div class="stat"><div class="k">Heap Memory Used</div><div class="v">3.1 GB</div><div class="s">of 8 GB</div></div>
+      <div class="stat"><div class="k">GC Collections</div><div class="v">1,204</div><div class="s">last hour</div></div>
+      <div class="stat"><div class="k">GC Pause Time</div><div class="v">86 ms</div><div class="s">avg</div></div></div>` +
+      healthCard('JVM Performance', `<div class="cbody nodata" style="min-height:120px">Thread count, memory usage &amp; garbage-collection trends</div>`);
+  } else if (t === 'Database'){
+    b.innerHTML = `<div class="statrow">
+      <div class="stat"><div class="k">Cache Hit Ratio</div><div class="v">97.4%</div><div class="s">last hour</div></div>
+      <div class="stat"><div class="k">Active Connections</div><div class="v">24</div><div class="s">max 100</div></div>
+      <div class="stat"><div class="k">Slow Queries</div><div class="v">3</div><div class="s">last 24h</div></div>
+      <div class="stat"><div class="k">DB Size</div><div class="v">41.8 GB</div><div class="s">+310 MB today</div></div></div>` +
+      healthCard('Query Metrics', `<div class="cbody nodata" style="min-height:120px">Cache details &amp; query performance insights</div>`);
+  } else if (t === 'Live Session'){
+    b.innerHTML = healthCard('Active User Sessions', `<table><thead><tr><th>User</th><th>Role</th><th>IP Address</th><th>Login Time</th><th>Status</th></tr></thead><tbody>
+      <tr><td>motadata admin</td><td>admin</td><td class="mono">172.16.8.114</td><td>Fri, Jul 10, 2026 09:12:04 AM</td><td><span class="tag ok">Active</span></td></tr>
+      <tr><td>noc.operator</td><td>operator</td><td class="mono">172.16.8.131</td><td>Fri, Jul 10, 2026 08:47:52 AM</td><td><span class="tag ok">Active</span></td></tr>
+      </tbody></table>`);
+  } else if (t === 'Alert'){
+    b.innerHTML = healthCard('Platform Alerts', `<table><thead><tr><th>Source</th><th>Severity</th><th>Message</th><th>Time</th></tr></thead><tbody>
+      <tr><td>Application Server</td><td><span class="tag pend">Warning</span></td><td>Event queue briefly exceeded threshold</td><td>Fri, Jul 10, 2026 02:10 PM</td></tr>
+      <tr><td>Collector</td><td><span class="tag ok">Cleared</span></td><td>Collector reconnected after network blip</td><td>Fri, Jul 10, 2026 11:36 AM</td></tr>
+      </tbody></table>`);
+  } else if (t === 'Upgrade'){
+    b.innerHTML = healthCard('System Upgrade', `<div class="cbody"><div style="font-size:14px;font-weight:600">Current version: 8.2.6</div>
+      <div style="color:var(--text-dim);margin:6px 0 14px">You are on the latest build. Upgrades are applied from this screen.</div>
+      <button class="chipbtn" onclick="toast('Check for Upgrade — no newer build available')">Check for Upgrade</button></div>`);
+  } else {
+    b.innerHTML = healthCard('Restore Backup', `<table><thead><tr><th>Backup Version</th><th>Created On</th><th>Size</th><th></th></tr></thead><tbody>
+      <tr><td class="mono">8.2.6-backup-0709</td><td>Thu, Jul 09, 2026 01:00 AM</td><td>2.4 GB</td><td><button class="chipbtn" onclick="toast('Restore — requires confirmation in the live product')">Restore</button></td></tr>
+      <tr><td class="mono">8.2.5-backup-0702</td><td>Thu, Jul 02, 2026 01:00 AM</td><td>2.3 GB</td><td><button class="chipbtn" onclick="toast('Restore — requires confirmation in the live product')">Restore</button></td></tr>
+      </tbody></table>`);
+  }
+}
+
+/* ================= Notifications (live "Alerts & Notifications" popover) ================= */
+let notifMode = 'alerts';
+const SYS_NOTIFS = [
+  ['err','Failed to execute query for widget custom granularity, Possible reason: no valid data found for the specified time range','Fri, Jul 10, 2026 04:55:18 PM'],
+  ['inf','admin User modified successfully','Fri, Jul 10, 2026 04:55:18 PM'],
+  ['err','Failed to execute query for widget Preview Widget, Possible reason: Failed to execute query for widget','Fri, Jul 10, 2026 04:55:18 PM'],
+  ['err','Failed to execute query for widget Preview Widget, Possible reason: no valid data found for the specified time range','Fri, Jul 10, 2026 04:55:18 PM'],
+  ['err','Failed to execute query for widget wan-link test, Possible reason: Failed to execute query for widget','Fri, Jul 10, 2026 04:55:18 PM'],
+  ['err','Failed to execute query for widget wan-link test, Possible reason: Failed to execute query for widget','Fri, Jul 10, 2026 04:53:42 PM'],
+  ['err','Failed to execute query for widget custom granularity, Possible reason: no valid data found for the specified time range','Fri, Jul 10, 2026 04:53:42 PM'],
+  ['inf','admin User modified successfully','Fri, Jul 10, 2026 04:53:42 PM'],
+  ['err','Failed to execute query for widget Preview Widget, Possible reason: failed to parse the result, reason unknown','Fri, Jul 10, 2026 04:51:10 PM'],
+  ['err','Failed to execute query for widget Preview Widget, Possible reason: failed to parse the result, reason unknown','Fri, Jul 10, 2026 04:51:10 PM'],
+];
+let notifsCleared = false;
+const EMPTY_SVG = `<svg width="120" height="90" viewBox="0 0 120 90" fill="none">
+  <rect x="18" y="10" width="72" height="14" rx="3" fill="var(--chip)"/>
+  <rect x="12" y="30" width="84" height="14" rx="3" fill="var(--chip)"/>
+  <rect x="18" y="50" width="72" height="14" rx="3" fill="var(--chip)"/>
+  <rect x="24" y="14" width="20" height="6" rx="2" fill="var(--muted)"/>
+  <rect x="18" y="34" width="20" height="6" rx="2" fill="var(--muted)"/>
+  <circle cx="86" cy="52" r="18" fill="var(--pop)" stroke="var(--muted)" stroke-width="3"/>
+  <path d="M80 46 L92 58 M92 46 L80 58" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="99" y1="65" x2="110" y2="76" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/>
+</svg>`;
+function notifTab(m){
+  notifMode = m;
+  document.getElementById('ntabAlerts').classList.toggle('on', m==='alerts');
+  document.getElementById('ntabSys').classList.toggle('on', m==='sys');
+  renderNotifs();
+}
+function renderNotifs(){
+  const b = document.getElementById('nbody');
+  if (notifMode==='alerts' || notifsCleared){
+    b.innerHTML = `<div class="nempty">${EMPTY_SVG}<div class="big">No data found</div></div>`;
+  } else {
+    b.innerHTML = SYS_NOTIFS.map(n=>`<div class="nitem ${n[0]==='err'?'err':''}"><div class="msg">${n[1]}</div><div class="ts">${n[2]}</div></div>`).join('');
+  }
+}
+function clearNotifs(){
+  notifsCleared = true;
+  document.getElementById('sysCount').textContent = '0';
+  document.getElementById('alertCount').textContent = '0';
+  document.getElementById('nbadge').style.display = 'none';
+  renderNotifs();
+  toast('All notifications cleared');
+}
+
+/* ================= Popover plumbing ================= */
+function togglePop(id, ev){
+  ev && ev.stopPropagation();
+  const el = document.getElementById(id), was = el.classList.contains('on');
+  closePops();
+  if (!was){ el.classList.add('on'); document.getElementById('scrim').classList.add('on'); if(id==='notifPop') renderNotifs(); }
+}
+function closePops(){
+  document.querySelectorAll('.pop').forEach(p=>p.classList.remove('on'));
+  document.getElementById('scrim').classList.remove('on');
+}
+
+/* ================= Search spotlight ================= */
+const CATS = ['Metric','Log','Flow','Trap','Monitor','Alert'];
+const SUGGESTIONS = ['system.cpu.percent','system.memory.used.percent','system.disk.used.percent','ping.latency.ms','interface.traffic.in.bytes','interface.traffic.out.bytes','system.network.tcp.connections','process.cpu.percent'];
+function openSearch(){
+  closePops();
+  document.getElementById('searchLayer').classList.add('on');
+  document.getElementById('catMenu').innerHTML = CATS.map(c=>`<button class="${c==='Metric'?'on':''}" onclick="pickCat('${c}',event)">${c}</button>`).join('');
+  setTimeout(()=>document.getElementById('spotInput').focus(), 40);
+}
+function closeSearch(){
+  document.getElementById('searchLayer').classList.remove('on');
+  document.getElementById('catMenu').classList.remove('on');
+  document.getElementById('sugg').classList.remove('on');
+  document.getElementById('spotInput').value='';
+}
+function toggleCatMenu(ev){ ev.stopPropagation(); document.getElementById('catMenu').classList.toggle('on'); }
+function pickCat(c, ev){
+  ev.stopPropagation();
+  document.getElementById('catLabel').textContent = c;
+  document.getElementById('catMenu').classList.remove('on');
+  document.querySelectorAll('#catMenu button').forEach(b=>b.classList.toggle('on', b.textContent===c));
+  document.getElementById('spotInput').focus();
+}
+function suggest(v){
+  const s = document.getElementById('sugg');
+  if (!v){ s.classList.remove('on'); return; }
+  const hits = SUGGESTIONS.filter(x=>x.includes(v.toLowerCase())).slice(0,6);
+  if (!hits.length){ s.classList.remove('on'); return; }
+  s.innerHTML = hits.map(h=>`<div class="si" onclick="toast('Query composer — ${h}')">${h}<span class="tag">${document.getElementById('catLabel').textContent}</span></div>`).join('');
+  s.classList.add('on');
+}
+document.getElementById('searchLayer').addEventListener('click', closeSearch);
+
+/* ================= Theme (Dark / Light / Auto — like live UI Preference) ================= */
+const mq = window.matchMedia('(prefers-color-scheme: light)');
+function applyTheme(mode){
+  const eff = mode==='auto' ? (mq.matches?'light':'dark') : mode;
+  document.documentElement.setAttribute('data-theme', eff);
+  document.querySelectorAll('.tseg').forEach(b=>b.classList.toggle('on', b.dataset.mode===mode));
+}
+function setTheme(mode){
+  try{ localStorage.setItem('oo-theme', mode); }catch(e){}
+  applyTheme(mode);
+}
+mq.addEventListener && mq.addEventListener('change', ()=>{ const m = localStorage.getItem('oo-theme')||'dark'; if(m==='auto') applyTheme('auto'); });
+
+/* ================= Misc ================= */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('on'), 2600);
+}
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape'){ closeSearch(); closePops(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
+});
+document.addEventListener('click', e=>{
+  if (!e.target.closest('.pop') && !e.target.closest('.sitem')) closePops();
+});
+
+/* ================= Init ================= */
+(function init(){
+  // sidebar utility icons (former header actions)
+  setIco(document.getElementById('sbSearchIc'),'search');
+  setIco(document.getElementById('sbApprovalIc'),'ncm-approval');
+  setIco(document.getElementById('sbHealthIc'),'health-monitoring');
+  setIco(document.getElementById('sbBellIc'),'bell');
+  setIco(document.getElementById('aprHeadIc'),'ncm-approval');
+  setIco(document.getElementById('hlHeadIc'),'health-monitoring');
+  setIco(document.getElementById('aprSearchIc'),'search');
+  setIco(document.getElementById('spotSearchIc'),'search');
+  setIco(document.getElementById('icMyProfile'),'my-profile');
+  setIco(document.getElementById('icTour'),'tour');
+  setIco(document.getElementById('icHelp'),'help');
+  setIco(document.getElementById('icMobile'),'mobile');
+  selectModule(0);
+  renderApprovals();
+  renderHealthTabs();
+  renderHealthBody();
+  renderNotifs();
+  applyTheme((()=>{ try{ return localStorage.getItem('oo-theme')||'dark'; }catch(e){ return 'dark'; } })());
+})();
+</script>
+<script src="_variants.js"></script>
+</body>
+</html>
