@@ -3,17 +3,22 @@
    ------------------------------------------------------------
    Connects every visualization variant in this folder.
 
-   TO ADD A NEW VARIANT:
-   1. Add one line to the VARIANTS list below: { file, label }
-   2. In the new HTML file, add this line just before </body>:
-        <script src="_variants.js"></script>
-   That's it — every page picks up the new entry automatically.
+   TO ADD A NEW VARIANT: just create the .html file in this
+   folder — nothing manual. `node _sync_variants.js` scans the
+   folder, adds every page to the list below, and injects this
+   script into any file missing it. It runs automatically via
+   the Claude Code hook (on file create/edit) and in the GitHub
+   Pages deploy workflow (on push). New pages are labelled from
+   their <title> tag.
    ============================================================ */
 (function () {
+  /* VARIANTS:BEGIN (managed by _sync_variants.js — do not edit by hand) */
   var VARIANTS = [
-    { file: 'index copy.html', label: 'V1 · Sidebar & Header Actions' },
-    { file: 'index.html',      label: 'V2 · Grouped Sidebar' },
+    {"file":"index copy.html","label":"V1 · Sidebar & Header Actions"},
+    {"file":"index.html","label":"V2 · Grouped Sidebar"},
+    {"file":"dashboard-picker-advanced.html","label":"V3 · Advanced Dashboard Picker"}
   ];
+  /* VARIANTS:END */
 
   var here = decodeURIComponent(location.pathname.split('/').pop() || 'index.html');
 
