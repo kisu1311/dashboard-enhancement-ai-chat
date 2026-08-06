@@ -1,95 +1,108 @@
-# Handoff — 2026-07-14 18:37
+# Handoff — 2026-08-06 23:36
 
 ## Read first
-CLAUDE.md top-to-bottom — especially the **MANDATORY research-notes rule** (every
-task here must be grounded in `Dashboard-Research-Notes.md`) and the **Pages
-(variants)** section, which now describes what each HTML file contains.
+`CLAUDE.md` top to bottom — especially the **MANDATORY research-notes rule**, the
+new **AI panel**, **V1's module rail**, **Agentation** and **Gotchas** sections.
+All four are new or heavily rewritten this session. Note the folder was renamed
+`Side_bar_menu` → `Dashboard_with_AI_Chat`; the git remote and live URL did not
+change.
 
 ## What we worked on this session
-Built the variant auto-sync system, then turned `index.html` (V2) into a fully
-interactive Dashboard module — picker redesigns (three iterations driven by user
-feedback), timeline system, Create/Edit drawer, dynamic widget canvas with every
-documented action, NOC playback — plus a profile-popover redesign. Everything was
-published live.
+Two long sessions in one: ported the ObserveOps AI panel into V2 and V3, then
+rebuilt V1 almost end to end from Agentation feedback — dashboard panel, timeline
+strip, widget Share, and finally a Datadog-style module rail grounded in the real
+product docs. Also fixed Agentation itself, which had stopped being able to attach
+notes.
 
 ## Completed
-- **Variant auto-sync**: `_sync_variants.js` scans the folder, adds every `.html`
-  as a switcher option (label from `<title>`), injects the script include, prunes
-  deleted files. Runs in the deploy workflow; MANDATORY manual run after
-  creating/renaming/deleting a page (rule in CLAUDE.md).
-- **V2 picker (index.html)**: flat list w/ sticky category headers, quick-access
-  2-col grid (favorites ★ + recents 🕓), category jump bar, search w/ teal
-  highlight + ✕ clear, collapse/expand (only current category open by default),
-  neutral type icons per row + footer legend (System Defaults / Created by Me /
-  Shared with Me).
-- **All dashboard actions real** (per notes §4): row + header kebab menu — Open,
-  favorite, Clone (with widgets), Edit (opens the drawer pre-filled, "Update
-  Dashboard" really renames/moves/re-shares), default landing (teal home badge),
-  Make private/public, Export PDF/schedule toasts, red Delete.
-- **Create Dashboard drawer** (notes §5): 560px right drawer — Name*, Category* +
-  Create New, Public/Private with exact docs notes + user picker, default-landing
-  switch + radios, 4 layout sliders driving a live preview, collapsible Advanced
-  Settings (Description, time-range presets, auto-refresh, Sticky Timeline, Add
-  to NOC View), Reset, docs link. Creating really adds (new categories included).
-- **Timeline system** (notes §1+§6): chip (pill+label+⊗), preset menu with
-  "Type Range…" type-ahead, Custom dual-month calendar w/ From/To time, slider
-  strip (~100 dots, 2-handle window, domain = 4× window right-pinned at now,
-  drag → Custom), from/to stamps, clear empties all widgets, sticky-pin toggle,
-  widget badges + data follow the range.
-- **Widget canvas** (notes §7+§9): dynamic `DASH_WIDGETS` list; floating ＋ →
-  Add New Widget drawer (Create Widget = 17 types in 6 groups, Predefined w/
-  used-counts, User Define, search, docs link); widget kebab (Edit/Clone/Full
-  Screen/Share/Remove); drag-reorder; vertical resize grips; drill-down side
-  drawer on availability counters; Metric Insight (3 tabs) on time-series
-  widgets; Export menu (PDF / email / schedule).
-- **NOC View**: rows/▶ open a real kiosk playback overlay (‹name› arrows, live
-  countdown, pause, ✕/Esc); ＋ New NOC View form really appends. Manage modal
-  (labeled "concept — not captured from live").
-- **Profile popover redesign**: avatar + status dot + role chip + email, grouped
-  ACCOUNT/RESOURCES/THEME sections with icon tiles, chevron/↗ affordances,
-  bordered red Logout button, build caption in footer.
-- **V3 `dashboard-picker-advanced.html`** preserved as its own variant (the
-  denser chips/tiles/tree picker) with the same actions menu.
-- **Published**: commit `6a2ea89` pushed; Pages deploy green; new version
-  verified live (all 3 variants in the live switcher).
+
+**AI panel port**
+- AI **Option 1** (from `dashboard-ai-insights.html`) → `index.html`;
+  AI **Option 2** (from `ai-chat-option2.html`) → `dashboard-picker-advanced.html`.
+  Extracted by marker, injected with asserted anchors, into their own `<script>`
+  blocks. Checked first: **zero** JS global collisions, all colliding CSS classes
+  scoped under `.oa*`.
+- Added the 4 missing tokens (`--card2`, `--raise`, `--sel`, `--text-dim2`),
+  inlined the one icon dependency, wired the context chips to the host dashboard.
+- The two source pages moved to `_ai-source/` — on disk, out of the switcher.
+- Switcher is now 3 options: V1 · Sidebar & Header Actions, V2 · Grouped Sidebar +
+  AI Option 1, V3 · Advanced Picker + AI Option 2.
+
+**Agentation fixed**
+- Notes could not be attached to anything inside a drawer — a z-index collision,
+  not a broken widget. The dev-only loader now lifts Agentation's layers above the
+  app. Verified end to end by attaching a note inside the Add Widget drawer.
+- Cleared an `agentation-rearrange-*` localStorage record I created by accident.
+
+**V1 (`index copy.html`) — 19 annotations resolved plus this session's asks**
+- Dashboard kebab: removed Open / favourites / Export PDF / Create schedule,
+  regrouped into related blocks, two-line Clone & Edit labels.
+- Found the invisible-divider bug: in dark theme `--pop` and `--border` are the
+  same colour. Added `--pop-line`.
+- Panel toggle → chevron; Quick access header made consistent; category jump bar
+  removed; dashboard panel widened to 340px and now floats over the canvas.
+- Sidebar hover-to-expand + pin; user/notification popovers clear the rail.
+- Global filter bar replaced with V2's **time-slider strip**, driven by V1's own
+  `tlA`/`tlB` so the strip and the chip stay in sync both ways.
+- Widget **Share** is now a real drawer (recipient chips + validation, type-ahead,
+  message, time-range toggle, copy link, send) instead of a toast.
+- Auto-refresh button and Create Schedule removed.
+- Breadcrumb no longer navigates out of the prototype; it opens the dashboard list
+  panel in place. Then, on request, **V2's complete panel was ported in** (tabs,
+  search, quick access, category tree, legend, footer, NOC playback, row kebab).
+- **Module rail rebuilt twice.** First as collapsible sections — rejected. Then as
+  the real Datadog pattern: flat rows with hairline dividers only, and a mega-menu
+  flyout per module. Finally regrouped from `docs.motadata.com`: **7 main rail
+  entries**, everything else nested as sub-menus using the docs' own page names.
+- Last fix of the session: hovering a collapsed rail now **only expands it**; the
+  sub-menu waits for the rail to be open, and anchors off the width **tokens** so
+  it can never be positioned against the 64px rail and then covered.
 
 ## In progress
-Nothing mid-flight.
+Nothing mid-flight. Everything above is verified and error-free.
+
+**Uncommitted:** `_variants.js`, `index.html`, `index copy.html`,
+`dashboard-picker-advanced.html` modified; `_ai-source/` and `agentation-embed.js`
+untracked. Nothing has been pushed — run `/publish` when you want it live.
 
 ## Next steps
-- Optional: make widget "Edit Widget…" open a real widget-builder modal (type
-  tabs + query builder) instead of a toast — the last remaining toast-only stub
-  alongside dashboard Export sub-actions and Share.
-- Optional: capture the live manage-dashboards (grid-pencil) view + widget Share
-  dialog on the demo instance (notes §13 lists them as un-captured) and align
-  the concept Manage modal.
-- Optional: delete V1 (`index copy.html`) if no longer needed — `rm` + run
-  `node _sync_variants.js`.
+1. **Publish** — nothing from this session is live yet.
+2. Replace V1's placeholder sub-menu labels for the 15 non-Dashboards modules with
+   the real routes (only the Dashboards flyout is fully grounded).
+3. Decide on two judgement calls in V1's rail: **Reports** folded under Dashboards,
+   and **SLO** kept as its own entry.
+4. If wanted, port V2's **Create Dashboard drawer** into V1 — `＋ New Dashboard`
+   and `Edit` in the ported panel are toasts because V1 lacks that drawer.
+5. Optional: scrub internal IPs / `*.motadata.local` hostnames before a public push
+   (the repo rule); every page in this folder still carries them.
 
 ## Decisions made
-- V2 = the *simple* picker (user called the first rich design "very complex");
-  the rich design lives on as V3 for comparison. A drill-down variant was built
-  and then deleted at the user's request.
-- Every task in this folder must be grounded in `Dashboard-Research-Notes.md`
-  (user rule, Jul 14). Features beyond the live product get flagged (e.g. the
-  Manage modal is labeled "concept").
-- Only the current dashboard's category opens by default in the picker.
-- Old rich-picker design was preserved as a new variant *before* replacing V2 —
-  preserve, don't destroy.
+- **AI panel goes in its own `<script>` block**, not the page's flat script — it is
+  self-contained apart from `toast()`, so this avoids the folder's known
+  duplicate-function trap.
+- **Only the row-menu element id was renamed** (`#dashMenu` → `#dpRowMenu`) when
+  porting V2's panel into V1, so the two panels stay genuinely identical.
+- **Did not resurrect the standalone "Create Dashboard with AI" drawer** — the
+  source files' own notes say it was deliberately removed; the reachable
+  create-dashboard flow is the AI panel's workflow mode.
+- **Rail diverges from the live product on purpose** (7 entries vs 16), flagged in
+  code and to the user, because the ask was explicitly to reduce it.
+- **Create Schedule removed everywhere** even though docs list it as a real Export
+  action — user's call, flagged in a code comment.
+- Kept V1's hover-expand rail rather than Datadog's always-open 160px rail, since
+  hover-expand was an earlier explicit request.
 
 ## Gotchas & notes
-- **Prototype state is in-memory only** — clones/deletes/creates reset on
-  reload. Intentional.
-- **z-index**: the variant-switcher pill is z 99999 — any drawer/overlay must
-  sit above 100000 (drawers/kiosk already do; the floating ＋ sits at bottom:72px
-  to clear the pill).
-- **CSS scoping trap** (hit 3×): shared bits like `MICON.lock` (`class="lock"`)
-  and `mark` styles are scoped per row class — new row classes need their own
-  `.x .lock{…}` sizing rules or icons render giant / marks go browser-yellow.
-- Re-`Read` files before `Edit` (IDE Prettier can reformat); screenshot-inject
-  state via `_shot-tmp.html` sed copies (underscore keeps sync away), delete after.
-- A Claude Code PostToolUse hook for the variant sync was attempted but denied
-  by the permission classifier — needs explicit user approval if wanted; the
-  CLAUDE.md rule + deploy-workflow step cover it meanwhile.
-- `gh` CLI not installed; `git push` works via keychain. Deploy status checked
-  via the public GitHub API.
+- **Headless Chrome misreports in-flight transitions** with
+  `--virtual-time-budget` — `getComputedStyle` can lag the paint. This sent me
+  chasing a phantom "`.sidebar.open` isn't applying" bug. Verify which CSS rules
+  match before concluding a rule is broken.
+- **A backgrounded tab freezes CSS transitions entirely** (`visibilityState:
+  hidden`), so anything measured through browser automation while the tab is not
+  focused reads the *start* value. Cost me a wrong diagnosis of the Create New
+  category button, which was fine all along.
+- Screenshots hang if the Agentation loader is left in — strip it in the temp copy.
+- The variant sync appends and prunes but never reorders; hand-edit the block to
+  reorder, then re-run it to confirm stability.
+- Datadog reference metrics, measured live: rail **160px**, 13px type, ~31px rows,
+  flyout flush at the rail edge with ~220px columns and 28px rows.

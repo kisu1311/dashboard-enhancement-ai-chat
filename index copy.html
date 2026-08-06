@@ -16,6 +16,7 @@
   --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f;
   --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
   --white:#f4f7fb; --ink:#172336;
+  --rail-w:64px; --rail-w-open:170px;   /* the flyout anchors off these, not off the animating box */
   --pill:#c9d4e4;            /* selected sidebar pill */
   --track:#485975;           /* timeline selection track (measured on live 8.2.6) */
   --teal:#14b8a6; --teal-dim:#0e8578;
@@ -55,28 +56,40 @@ svg{display:block}
 .ic{width:20px;height:20px;fill:currentColor}
 
 /* ============ Shell ============ */
-.shell{display:flex;flex-direction:column;height:100vh;padding-left:64px}
+.shell{display:flex;flex-direction:column;height:100vh;padding-left:64px;transition:padding-left .18s ease}
+/* pinned sidebar pushes the page instead of covering it (hover-peek still overlays) */
+body.pinned .shell{padding-left:170px}
+body.pinned .sidebar{box-shadow:none;border-right:1px solid var(--border)}
+/* Full Screen (live 8.2.6 dashboard action) — canvas takes the whole viewport */
+body.fs .sidebar{transform:translateX(-100%)}
+body.fs .shell{padding-left:0}
+body.fs .tstrip{display:none}
+.exitfs{position:fixed;right:14px;bottom:16px;z-index:70;display:none;align-items:center;gap:7px;height:30px;padding:0 13px;
+  border-radius:15px;background:var(--pop);border:1px solid var(--border);box-shadow:var(--pop-shadow);
+  font-size:12px;font-weight:600;color:var(--text)}
+body.fs .exitfs{display:inline-flex}
 
 /* ---------- Header removed — page title bars sit at the top; actions live in the sidebar ---------- */
 .build{height:22px;line-height:22px;padding:0 7px;background:var(--chip);
   color:var(--text);opacity:.85;border-radius:4px;font-size:11.5px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
 
 /* ---------- Sidebar (live: rail 64px → overlay 170px, bg #172336) ---------- */
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:64px;z-index:60;background:var(--sidebar);
-  display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease;border-right:1px solid var(--border-soft)}
-.sidebar.open{width:170px;box-shadow:var(--shadow)}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--rail-w);z-index:60;background:var(--sidebar);
+  display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease,transform .22s ease;border-right:1px solid var(--border-soft)}
+.sidebar.open{width:var(--rail-w-open);box-shadow:var(--shadow)}
 .strigger{height:53px;flex:0 0 53px;display:flex;align-items:center;gap:9px;padding:0 15px;cursor:pointer;white-space:nowrap}
 .strigger img{width:33px;height:33px;flex:0 0 33px}
 html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
 .strigger .brand{font-size:14px;font-weight:600;color:var(--text);opacity:0;transition:opacity .15s}
 .sidebar.open .strigger .brand{opacity:1}
 .smenu{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 0 8px;position:relative;z-index:1;scrollbar-width:thin}
-.sgroup-label{display:none;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--muted);padding:12px 16px 4px;white-space:nowrap}
-.sidebar.open.grouped .sgroup-label{display:block}
-.sidebar.grouped:not(.open) .sgroup-gap{display:block;height:1px;margin:6px 14px;background:var(--border)}
+/* Datadog groups with a hairline only — no caption, no count, no chevron. The grouping is
+   felt, not read, and every module stays one click away. */
+.sgroup-label{display:none}
+.sidebar.grouped .sgroup-gap{display:block;height:1px;margin:7px 14px;background:var(--border)}
 .sgroup-gap{display:none}
-.sitem{position:relative;display:flex;align-items:center;gap:11px;height:40px;margin:0 8px 4px;padding:0 7px;
+/* 34px rows (Datadog's are 31px) — all 16 modules fit without scrolling */
+.sitem{position:relative;display:flex;align-items:center;gap:11px;height:34px;margin:0 8px 2px;padding:0 7px;
   border-radius:4px;cursor:pointer;color:var(--text);white-space:nowrap}
 .sitem:hover{background:var(--hover-side)}
 .sitem.on{background:var(--pill);color:var(--ink)}
@@ -84,6 +97,37 @@ html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
 .sitem .lbl{font-size:13px;font-weight:500;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:7px}
 .sidebar.open .sitem .lbl{opacity:1}
 .beta{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:3px;background:var(--chip);color:var(--text)}
+/* ---------- module flyout (Datadog mega-menu): hovering a rail entry opens that module's
+   own navigation, grouped under bold headings in columns. Measured on Datadog: flush to the
+   rail, ~220px columns, 28px rows, 13px type. ---------- */
+.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);border:1px solid var(--border);
+  border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:86vh;overflow:auto}
+html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
+.mflyout.on{display:flex;gap:0}
+.mfcol{width:216px;padding:0 14px;flex:0 0 auto}
+.mfcol+.mfcol{border-left:1px solid var(--pop-line,var(--border))}
+.mfsec{font-size:13px;font-weight:700;color:var(--white);padding:7px 8px 5px}
+.mfsec.tight{padding-top:0}
+.mflist{border-left:1px solid var(--pop-line,var(--border));margin:0 0 8px 12px}
+.mfi{display:flex;align-items:center;gap:7px;height:28px;padding:0 9px;margin-left:-1px;border-left:1px solid transparent;
+  font-size:12.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:0 4px 4px 0}
+.mfi:hover{background:var(--pop-item-hover);color:var(--text);border-left-color:var(--teal)}
+.mfi.on{color:var(--teal)}
+.mfi .plus{color:var(--teal);font-weight:700}
+.mfflat{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:4px;
+  font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
+.mfflat:hover{background:var(--pop-item-hover)}
+.mftag{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;
+  background:rgba(139,92,246,.18);color:#a78bfa}
+.mftag.new{background:rgba(20,184,166,.18);color:var(--teal)}
+.mfsearch{display:flex;align-items:center;gap:7px;height:30px;padding:0 9px;margin:2px 8px 8px;
+  border:1px solid var(--border);border-radius:5px;background:var(--panel-2);color:var(--text-dim)}
+.mfsearch input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:12.5px}
+.mfstar{display:flex;align-items:center;gap:8px;height:28px;padding:0 9px;border-radius:4px;font-size:12.5px;
+  color:var(--text);cursor:pointer;white-space:nowrap}
+.mfstar:hover{background:var(--pop-item-hover)}
+.mfstar .st{color:var(--yellow);font-size:11px}
+.mfempty{padding:8px 10px;font-size:11.5px;color:var(--faint)}
 .sitem.on .beta{background:rgba(23,35,54,.16);color:var(--ink)}
 /* tooltip (collapsed rail only) */
 .sidebar:not(.open) .sitem::after{content:attr(data-tip);position:absolute;left:56px;top:50%;transform:translateY(-50%) translateX(-4px);
@@ -95,6 +139,9 @@ html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
 .stop{flex:0 0 auto;border-bottom:1px solid rgba(255,255,255,.08);margin:0 8px 4px;padding:0 0 6px}
 html[data-theme="light"] .stop{border-bottom-color:var(--border)}
 .stop .sitem{margin:0}
+.stop .sitem .lbl{flex:1}
+.kbd{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;color:var(--text-dim);
+  background:var(--chip);border-radius:3px;padding:1px 5px}
 /* profile as the very last row */
 .sfoot .sitem{margin:6px 0 0;padding:0 7px}
 /* utility section — header actions pinned at bottom of the rail */
@@ -162,9 +209,13 @@ tr:hover td{background:var(--hover)}
 
 /* dashboard widgets */
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.widget{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
-.widget .whead{padding:8px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);display:flex;align-items:center}
-.widget .wbody{padding:10px 12px;min-height:120px}
+.widget{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;transition:border-color .14s,box-shadow .14s}
+.widget:hover{border-color:var(--border);box-shadow:0 3px 12px rgba(0,0,0,.24)}
+html[data-theme="light"] .widget:hover{box-shadow:0 3px 12px rgba(23,35,54,.09)}
+.widget .whead{flex:0 0 auto;padding:8px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);
+  display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border-soft)}
+.widget .wbody{flex:1;min-height:0;padding:10px 12px;overflow:hidden;display:flex;flex-direction:column}
 .nodata{display:grid;place-items:center;min-height:150px;color:var(--text-dim);font-size:14px}
 /* ---------- Compact time-range control (Grafana/Datadog pattern): a single 28px chip in
    the pagehead shows just the selected range; presets (searchable) + absolute From/To
@@ -199,8 +250,11 @@ tr:hover td{background:var(--hover)}
 .crumbs .cur{color:var(--text);font-weight:700;font-size:14.5px;white-space:nowrap}
 .crumbs .csep{color:var(--faint)}
 .favstar{color:var(--faint);font-size:15px;cursor:pointer}
-.favstar.on{color:var(--yellow)}
+.favstar.on,.favstar.faved{color:var(--yellow)}   /* .faved is what the ported panel toggles */
 .vbadge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;border-radius:3px;padding:0 6px;line-height:17px;background:var(--ok-bg);color:var(--green)}
+/* from → to stamps beside the time chip (live 8.2.6 header row) */
+.tstamp{display:flex;align-items:center;gap:5px;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.tstamp .arw{color:var(--faint)}
 .btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:5px;font-weight:600;font-size:12px;border:1px solid var(--border);color:var(--text)}
 .btn:hover{background:var(--hover-side)}
 .btn.pri{background:var(--teal);border-color:var(--teal);color:#04211d}
@@ -216,18 +270,279 @@ tr:hover td{background:var(--hover)}
 .emptyst{grid-column:span 12;border:1px dashed var(--faint);border-radius:8px;padding:34px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text-dim)}
 .undobar{grid-column:span 12;background:var(--pend-bg);border:1px solid var(--pend-bd);border-radius:8px;padding:14px 18px;display:flex;align-items:center;gap:12px}
 .tabs .tmeta{margin-left:auto;align-self:center;font-size:11px;color:var(--muted)}
-.gfilters{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border-soft);flex:0 0 auto}
-.gfilters .glabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
-.fchip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:12px;border:1px dashed var(--faint);color:var(--text-dim);font-size:11.5px;cursor:pointer}
-.fchip.set{border-style:solid;border-color:var(--border);background:var(--panel-2);color:var(--text)}
-.fchip:hover{border-color:var(--muted)}
+/* ---------- dashboard list panel — ported verbatim from V2 ---------- */
+.sugg .si:hover{background:var(--hover)}
+.sugg .si .tag{margin-left:auto;font-family:Inter}
+
+/* ---------- Dashboard module: list panel (redesigned picker) ---------- */
+/* position:relative so the absolute panel is bounded by the canvas area, not the viewport */
+.dwrap{flex:1;display:flex;min-height:0;overflow:hidden;position:relative}
+/* The picker floats over the canvas instead of pushing it: the widgets keep their full
+   width whether the list is open or not, so opening it never re-flows the dashboard. */
+.dpanel{position:absolute;left:0;top:0;bottom:0;z-index:40;width:340px;max-width:86vw;
+  display:flex;flex-direction:column;min-height:0;background:var(--panel);
+  border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.34);
+  transform:translateX(0);transition:transform .2s ease}
+html[data-theme="light"] .dpanel{box-shadow:6px 0 24px rgba(23,35,54,.12)}
+.dpanel.hid{transform:translateX(-101%);box-shadow:none}
+/* chevron flips to point the way the panel will move */
+.dpchev svg{transition:transform .2s ease}
+.dpchev.flip svg{transform:scaleX(-1)}
+.dtabs{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px;gap:3px;margin:10px 10px 8px;flex:0 0 auto}
+html[data-theme="light"] .dtabs{background:var(--panel-2)}
+.dtab{flex:1;height:27px;border-radius:4px;font-size:12px;font-weight:500;color:var(--text-dim)}
+.dtab:hover{color:var(--text)}
+.dtab.on{background:var(--chip);color:var(--text);font-weight:600}
+.dsearch{margin:0 10px 8px;display:flex;align-items:center;gap:7px;height:30px;padding:0 9px;flex:0 0 auto;
+  border:1px solid var(--border);border-radius:4px;color:var(--text-dim);background:var(--panel-2)}
+.dsearch:focus-within{border-color:var(--muted)}
+.dsearch svg{width:13px;height:13px;fill:currentColor;flex:0 0 13px}
+.dsearch input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:12.3px;font-family:inherit;min-width:0}
+.dsearch input::placeholder{color:var(--text-dim)}
+.dchips{display:flex;gap:4px;margin:0 10px 8px;flex-wrap:wrap;flex:0 0 auto}
+.dchip{display:flex;align-items:center;gap:5px;height:24px;padding:0 9px;border:1px solid var(--border);border-radius:999px;
+  font-size:11px;font-weight:500;color:var(--text-dim);background:transparent}
+.dchip:hover{border-color:var(--muted);color:var(--text)}
+.dchip.on{background:var(--chip);border-color:var(--muted);color:var(--text);font-weight:600}
+.dchip svg{width:11px;height:11px;fill:currentColor}
+.dchip .c-sys{color:var(--blue)}.dchip .c-mine{color:var(--teal)}.dchip .c-shared{color:var(--purple)}.dchip .c-fav{color:var(--yellow)}
+.dtree{flex:1;overflow-y:auto;min-height:0;padding:0 8px 12px}
+.dgrp{display:flex;align-items:center;gap:7px;width:100%;text-align:left;padding:7px 7px;border-radius:4px;
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)}
+.dgrp:hover{background:var(--hover)}
+.dgrp .car{font-size:8.5px;color:var(--muted);transition:transform .15s;width:10px}
+.dgrp.openg .car{transform:rotate(90deg)}
+.dgrp .gic{width:12px;height:12px;fill:var(--yellow)}
+.dgrp .gic.rec{fill:var(--muted)}
+.dgrp .cnt{margin-left:auto;background:var(--chip);border-radius:9px;min-width:20px;text-align:center;padding:1px 7px;
+  font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:0;text-transform:none}
+.drow{position:relative;display:flex;align-items:center;gap:8px;padding:4px 4px 4px 9px;border-radius:4px;cursor:pointer;min-height:30px}
+.drow:hover{background:var(--hover)}
+.drow.cur{background:var(--hover-side)}
+.drow.cur::before{content:"";position:absolute;left:1px;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--teal)}
+.dtype{width:22px;height:22px;flex:0 0 22px;border-radius:5px;display:grid;place-items:center}
+.dtype svg{width:12px;height:12px;fill:currentColor}
+.dtype.sys{color:var(--blue);background:rgba(59,130,246,.13)}
+.dtype.mine{color:var(--teal);background:rgba(20,184,166,.13)}
+.dtype.shared{color:var(--purple);background:rgba(168,85,247,.14)}
+.drow .dnm{flex:1;font-size:12.4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drow .dnm mark{background:rgba(20,184,166,.32);color:inherit;border-radius:2px;padding:0 1px}
+.drow .lock{width:11px;height:11px;fill:var(--faint);flex:0 0 11px}
+.dstar,.dkebab{width:22px;height:22px;border-radius:4px;display:grid;place-items:center;color:var(--faint);flex:0 0 22px;opacity:0;transition:opacity .1s}
+.drow:hover .dstar,.drow:hover .dkebab{opacity:1}
+.dstar svg{width:13px;height:13px;fill:currentColor}
+.dstar.faved{opacity:1;color:var(--yellow)}
+.dstar:hover{background:var(--chip);color:var(--yellow)}
+.dkebab{font-size:13px;font-weight:700}
+.dkebab:hover{background:var(--chip);color:var(--text)}
+.dempty{padding:26px 12px;text-align:center;color:var(--text-dim);font-size:12.3px}
+.dempty a{color:var(--teal);text-decoration:underline;cursor:pointer}
+.dfoot{flex:0 0 auto;display:flex;gap:7px;align-items:center;padding:9px 10px;border-top:1px solid var(--border-soft)}
+.dnew{flex:1;height:31px;border-radius:5px;background:var(--teal);color:#04211d;font-weight:700;font-size:12.3px;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.dnew:hover{filter:brightness(1.09)}
+.dmanage{width:34px;height:31px;border:1px solid var(--border);border-radius:5px;display:grid;place-items:center;background:var(--panel-2);color:var(--text-dim)}
+.dmanage:hover{border-color:var(--muted);color:var(--text)}
+.dmanage svg{width:14px;height:14px;fill:currentColor}
+/* NOC View tab */
+.dhint{margin:2px 10px 10px;padding:9px 11px;border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:4px;
+  font-size:11.6px;color:var(--text-dim);line-height:1.5;background:var(--panel-2)}
+.nrow{display:flex;align-items:center;gap:10px;margin:0 4px 7px;padding:9px 10px;border:1px solid var(--border-soft);
+  border-radius:6px;background:var(--card);cursor:pointer}
+.nrow:hover{border-color:var(--muted)}
+.nrow .nvic{width:26px;height:26px;flex:0 0 26px;border-radius:5px;background:rgba(20,184,166,.13);color:var(--teal);display:grid;place-items:center}
+.nrow .nvic svg{width:13px;height:13px;fill:currentColor}
+.nrow .nvnm{flex:1;min-width:0}
+.nrow .nvnm .t{display:block;font-size:12.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .nvnm .s{display:block;font-size:11px;color:var(--text-dim);margin-top:1px}
+.nplay{width:28px;height:28px;flex:0 0 28px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;color:var(--teal)}
+.nplay:hover{background:rgba(20,184,166,.13);border-color:var(--teal)}
+.nplay svg{width:11px;height:11px;fill:currentColor;margin-left:2px}
+/* dashboard canvas (skeleton widgets behind the panel) */
+.dcanvas{flex:1;overflow:auto;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start}
+.dwidget{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);min-height:178px;display:flex;flex-direction:column}
+.dwidget .wh{padding:8px 8px 8px 12px;font-size:12.2px;font-weight:600;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border-soft)}
+.dwidget .wh .wtime{margin-left:auto;background:var(--chip);border-radius:3px;padding:1px 7px;font-size:10px;font-weight:600;color:var(--text-dim)}
+.dwidget .wb{flex:1;padding:11px 12px;min-height:0}
+.hbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:11.4px}
+.hbar .hl{width:88px;flex:0 0 88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim)}
+.hbar .ht{flex:1;height:9px;border-radius:4px;background:var(--panel-2);overflow:hidden}
+.hbar .hf{height:100%;border-radius:4px;background:var(--blue)}
+.hbar .hv{width:24px;text-align:right;font-family:"JetBrains Mono",monospace;font-size:11px}
+.avrow{display:flex;gap:9px;height:100%;align-items:stretch}
+.avstat{flex:1;border:1px solid var(--border-soft);border-radius:6px;padding:10px;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+.avstat:hover{background:var(--hover)}
+.avstat .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600}
+.avstat .v{font-size:22px;font-weight:600;font-family:"JetBrains Mono",monospace;margin-top:4px}
+.sevbars{display:flex;align-items:flex-end;gap:7px;height:100%;padding-top:4px}
+.sevbars .sb{flex:1;display:flex;flex-direction:column-reverse;gap:2px;height:100%}
+.sevbars .sb div{border-radius:2px}
+
+/* ---------- V2 friendly picker — one flat list, sticky headers, zero navigation ---------- */
+.shead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:13px 10px 9px;
+  background:var(--panel);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-dim);cursor:pointer;user-select:none}
+.shead:not(.static):hover{color:var(--text)}
+.shead.static{cursor:default}
+.shead svg{width:12px;height:12px;fill:var(--yellow)}
+.shead .shcar{font-size:8.5px;color:var(--muted);width:11px;flex:0 0 11px;text-align:center;
+  transition:transform .15s;transform:rotate(90deg)}
+.shead.closed .shcar{transform:rotate(0deg)}
+.shead .cnt2{margin-left:auto;background:var(--chip);border-radius:9px;min-width:20px;text-align:center;
+  padding:1px 7px;font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:0}
+/* Quick access keeps its count next to the label and says what it holds on the right */
+.shead.qhead .cnt2{margin-left:0}
+.shead .shsub{margin-left:auto;font-size:9.5px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--faint);white-space:nowrap}
+.frow{position:relative;display:flex;align-items:center;gap:9px;height:38px;padding:0 8px 0 24px;
+  border-radius:6px;cursor:pointer;margin:0 2px 1px}
+.rtic{width:20px;height:20px;flex:0 0 20px;border-radius:5px;background:var(--chip);display:grid;place-items:center;color:var(--text-dim)}
+.rtic svg{width:12px;height:12px;fill:currentColor}
+.frow.cur .rtic{color:var(--teal)}
+/* bottom type legend (matches the live product's footer legend) */
+.dlegend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:8px 12px;border-top:1px solid var(--border-soft);flex:0 0 auto}
+.dlegend>span{display:flex;align-items:center;gap:6px;font-size:10.8px;color:var(--text-dim);white-space:nowrap}
+.lgic{width:18px;height:18px;border-radius:4px;background:var(--chip);display:grid;place-items:center;color:var(--text-dim)}
+.lgic svg{width:11px;height:11px;fill:currentColor}
+.frow:hover{background:var(--hover)}
+.frow.cur{background:var(--hover-side)}
+.frow.cur .dnm{font-weight:600;color:var(--teal)}
+.frow.cur::before{content:"";position:absolute;left:2px;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--teal)}
+.frow .pre{width:13px;height:13px;flex:0 0 13px;fill:var(--yellow)}
+.frow .pre.rec{fill:var(--muted)}
+.frow .dnm{flex:1;font-size:12.8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .dnm mark{background:rgba(20,184,166,.32);color:inherit;border-radius:2px;padding:0 1px}
+.frow .lock{width:11px;height:11px;fill:var(--faint);flex:0 0 11px}
+.qgap{height:8px;border-bottom:1px solid var(--border-soft);margin:0 6px 8px}
+/* quick access — compact 2-column cards instead of full rows */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px 10px 10px}
+.qcard{display:flex;align-items:center;gap:7px;height:36px;padding:0 10px;border:1px solid var(--border);
+  border-radius:6px;background:var(--panel-2);cursor:pointer;min-width:0;color:var(--text)}
+.qcard:hover{border-color:var(--muted)}
+.qcard.cur{background:rgba(20,184,166,.12);border-color:var(--teal);color:var(--teal)}
+.qcard .qic{width:12px;height:12px;flex:0 0 12px;fill:var(--muted)}
+.qcard .qic.fav{fill:var(--yellow)}
+.qcard span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.8px;font-weight:500}
+/* search clear button */
+.dsearch .dclr{display:none;width:18px;height:18px;border-radius:50%;background:var(--chip);
+  color:var(--text-dim);font-size:10px;line-height:1;flex:0 0 18px;place-items:center;padding:0}
+.dsearch .dclr:hover{color:var(--text)}
+.dsearch.hasq .dclr{display:grid}
+
+/* ---------- Working sidebar actions: row menu, NOC playback, NOC create, manage ---------- */
+.frow:hover .dstar,.frow:hover .dkebab{opacity:1}
+#dashMenu{width:236px;padding:5px;z-index:95}
+#dashMenu::before{display:none}
+.dmhead{padding:7px 9px 7px;font-size:10.8px;color:var(--text-dim);border-bottom:1px solid var(--pop-line);margin-bottom:4px}
+.dmhead b{display:block;font-size:12.6px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px}
+.dmi{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:7px 9px;border-radius:4px;font-size:12.5px;color:var(--text)}
+/* two-line item: the action, then what it actually does — replaces parenthetical labels */
+.dmtx{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dmtx i{font-style:normal;font-size:10.5px;line-height:1.3;color:var(--text-dim);white-space:normal}
+.dmi:hover .dmtx i{color:var(--text-dim)}
+.dmi:hover{background:var(--pop-item-hover)}
+.dmi svg{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
+.dmi.danger{color:var(--red)}
+.dmi.danger svg{color:var(--red)}
+.dmdiv{height:1px;background:var(--pop-line);margin:5px 2px}
+.homeb{width:16px;height:16px;flex:0 0 16px;display:grid;place-items:center}
+.homeb svg{width:12px;height:12px;fill:var(--teal)}
+/* NOC kiosk playback (live: chromeless, ‹name› arrows, countdown, pause, close) */
+#nocPlay{position:fixed;inset:0;z-index:200000;background:var(--bg);display:none;flex-direction:column}
+#nocPlay.on{display:flex}
+.nphead{height:52px;flex:0 0 52px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border-soft)}
+.nphead img{width:28px;height:28px}
+.npcenter{flex:1;display:flex;align-items:center;justify-content:center;gap:14px;font-size:15.5px;font-weight:600}
+.nparrow{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;color:var(--text-dim);font-size:13px}
+.nparrow:hover{border-color:var(--teal);color:var(--teal)}
+.npcount{font-family:"JetBrains Mono",monospace;font-size:12px;background:var(--chip);border-radius:4px;padding:3px 9px;min-width:42px;text-align:center}
+.npbtn{width:30px;height:30px;border-radius:4px;display:grid;place-items:center;color:var(--text-dim);font-size:14px}
+.npbtn:hover{background:var(--chip);color:var(--text)}
+.npbody{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}
+/* create-NOC-view + manage popups */
+#nocNewPop{left:50%;top:12%;transform:translateX(-50%);width:330px}
+#nocNewPop::before,#managePop::before{display:none}
+#managePop{left:50%;top:8%;transform:translateX(-50%);width:560px}
+.mgbody{max-height:70vh;overflow-y:auto;padding:6px}
+.mgrow{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:5px}
+.mgrow:hover{background:var(--pop-item-hover)}
+.mgnm{flex:1;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mgcat{font-size:10.5px;color:var(--muted);white-space:nowrap;background:var(--chip);border-radius:9px;padding:1px 8px}
+.mgbtn{width:24px;height:24px;border-radius:4px;display:grid;place-items:center;color:var(--text-dim)}
+.mgbtn:hover{background:var(--chip);color:var(--text)}
+.mgbtn svg{width:12px;height:12px;fill:currentColor}
+.mgbtn.fv{color:var(--yellow)}
+.mgbtn.danger:hover{color:var(--red)}
+
+.dwrap .pagebody{flex:1;min-width:0}
+/* widget Share drawer */
+.wsh-w{display:flex;gap:10px;align-items:center;padding:9px 10px;background:var(--panel-2);border:1px solid var(--border);border-radius:6px}
+.wsh-thumb{width:34px;height:26px;border-radius:4px;background:var(--card);border:1px solid var(--border);flex:0 0 34px;
+  background-image:linear-gradient(90deg,transparent 0 3px,var(--teal) 3px 5px,transparent 5px 9px,var(--teal) 9px 11px,transparent 11px);background-size:14px 100%;opacity:.85}
+.wsh-lbl{font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:5px}
+.wsh-box{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:34px;padding:5px 7px;background:var(--panel-2);
+  border:1px solid var(--border);border-radius:5px;cursor:text}
+.wsh-box:focus-within{border-color:var(--teal)}
+.wsh-box input{flex:1;min-width:130px;background:transparent;border:0;outline:0;color:var(--text);font-family:inherit;font-size:12px}
+.wsh-chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 5px 0 8px;border-radius:11px;
+  background:var(--chip);color:var(--text);font-size:11.5px}
+.wsh-chip b{font-weight:500}
+.wsh-chip span{cursor:pointer;color:var(--muted);font-size:12px}
+.wsh-chip span:hover{color:var(--red)}
+.wsh-sug{display:flex;flex-direction:column;margin-top:5px;border:1px solid var(--border);border-radius:5px;overflow:hidden;background:var(--pop)}
+.wsh-sug:empty{display:none}
+.wsh-sug button{text-align:left;padding:7px 10px;font-size:12px;color:var(--text)}
+.wsh-sug button:hover{background:var(--pop-item-hover)}
+#drawer-wshare textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:5px;
+  padding:7px 9px;color:var(--text);font-family:inherit;font-size:12px;outline:0;resize:vertical}
+#drawer-wshare textarea:focus{border-color:var(--teal)}
+.wsh-chk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);cursor:pointer}
+.wsh-chk b{color:var(--text);font-weight:600;font-size:11px}
+/* time-slider strip — replaces the global filter bar (live 8.2.6 chrome) */
+.tstrip{flex:0 0 46px;height:46px;border-bottom:1px solid var(--border-soft);padding:6px 22px 0;user-select:none}
+.tstrip.off{display:none}
+.tdots{position:relative;height:16px;background-image:radial-gradient(circle,var(--faint) 1.3px,transparent 1.4px);
+  background-size:calc(100%/100) 100%;background-position:center}
+.twin{position:absolute;top:-2px;bottom:-2px;background:rgba(72,89,117,.32);border:1px solid var(--track);border-radius:4px;cursor:grab}
+.twin:active{cursor:grabbing}
+.thandle{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#c9d4e4;
+  transform:translate(-50%,-50%);cursor:ew-resize;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.thandle.r{left:100%}
+.tmarks{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px;font-family:"JetBrains Mono",monospace}
 .dgrid12{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
-.widget .whead .wdots{margin-left:auto;color:var(--muted);opacity:0;transition:opacity .12s;cursor:pointer}
+.widget .whead .wdots{color:var(--muted);opacity:0;transition:opacity .12s;cursor:pointer}
 .widget:hover .whead .wdots{opacity:1}
-.wstat .wbody{min-height:0}
+/* per-widget time-range badge (live 8.2.6 reveals this on widget hover) */
+.wtime{margin-left:auto;background:var(--chip);color:var(--text-dim);border-radius:3px;
+  font-size:10px;font-weight:600;padding:0 5px;line-height:16px;opacity:0;transition:opacity .12s;white-space:nowrap}
+.widget:hover .wtime{opacity:1}
+.wcount{background:var(--chip);border-radius:3px;font-size:10px;padding:0 5px;line-height:16px;color:var(--text-dim)}
+.wstat .wbody{min-height:0;gap:2px;padding-bottom:0}
+.statsp{flex:1;min-height:24px;margin:10px -12px 0;opacity:.9}
+.statsp svg{width:100%;height:100%;display:block}
 .wstat .v{font-size:22px;font-weight:700;font-family:"JetBrains Mono",monospace}
 .wstat .k{font-size:11px;color:var(--text-dim)}
 .wstat .delta{font-size:11px;font-weight:600}
+/* chart wrapper — the SVG stretches to fill the body; scale labels stay in HTML so they never distort */
+.cw{position:relative;flex:1;min-height:0}
+.cw svg{width:100%;height:100%;display:block}
+.cw .ax{position:absolute;left:2px;font-size:9.5px;font-family:"JetBrains Mono",monospace;color:var(--faint);pointer-events:none;line-height:1}
+.cw .ax.hi{top:1px}
+.cw .ax.lo{bottom:1px}
+.cw .lastv{position:absolute;right:3px;transform:translateY(-50%);font-size:10.5px;font-weight:700;
+  font-family:"JetBrains Mono",monospace;background:var(--card);border-radius:3px;padding:1px 4px;pointer-events:none}
+.wlegend{flex:0 0 auto;display:flex;gap:14px;justify-content:center;padding-top:9px;font-size:10.5px;color:var(--text-dim)}
+.wlegend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px}
+/* widget Full Screen (research notes §9) */
+.wfull{position:fixed;inset:0;z-index:120;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:none;place-items:center;padding:40px}
+.wfull.on{display:grid}
+.wfbox{width:min(1180px,92vw);height:min(680px,84vh);background:var(--card);border:1px solid var(--border);
+  border-radius:10px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.wfh{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--card-head);
+  border-bottom:1px solid var(--border-soft);font-size:14px;font-weight:700}
+.wfh .x{margin-left:auto;color:var(--text-dim);font-size:15px;cursor:pointer}
+.wfh .x:hover{color:var(--text)}
+.wfb{flex:1;min-height:0;padding:16px 18px;display:flex;flex-direction:column}
 .scrim2{position:fixed;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s;z-index:80}
 .scrim2.on{opacity:1;pointer-events:auto}
 .sdrawer{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--panel);border-left:1px solid var(--border);box-shadow:var(--shadow);z-index:90;transition:right .22s ease;display:flex;flex-direction:column}
@@ -361,13 +676,13 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
 <body>
 
 <!-- ============ Sidebar ============ -->
-<aside class="sidebar grouped" id="sidebar">
+<aside class="sidebar grouped" id="sidebar" onmouseenter="sbHover(1)" onmouseleave="sbHover(0);mfLater()">
   <div class="strigger" onclick="toggleSidebar()" title="Expand / collapse">
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAdVBMVEUAAADvcGD/cHD////3d2j////////////zc2T////////////0dmb////////zdWX////////zdGT////////0dmT////////0dWX////////zdWT////zdWT////zdWT////0dmX////zdWT////zdWT///++yfDhAAAAJXRSTlMAEBAQICAwP0BAT1BfX2Bvb3B/f4CPj5Cfn6Cvr7+/z8/f3+/vnUSo/gAAAdFJREFUSMe1l2tXwyAMhpkMu2utVqc4RFYb/v9PtG5uI1zDPOZbDzwn4SUXyljU+LqXZrDb48fT4o6RjT9re7ITDAAfmzkJXZ5JF55sv6hCMQxwyOMCoT4M8JYJ/nG0eRgOmxT7am0JBniJa2wsBYbPSOhisDQYDnMSG4fhMPNgY+kwfJa0ysFYtTYCjnrXiQQMm9yBR9VclyPw11U06bM77sYVgWF/yWcPHRosSAyGc557QSvOCPBH1LEM8gcyrhViNSPCR9cCn1dQYZgFd7xiZPhhWtL5A6fhKW6OHIsKeIp7WVArAy9YHxYCFX7AFyVYnbl6mUoW5aaqhVEx/QXu/xm+bx2rDXvntptawdybHVDPHcqwQfmI+hcvsah+Fevcz64Et1hfQmEk8tE2XkkuK6L+OaSucC39vR3ddRsMMl5sgImpJAIRrOGkOz5nVLHp/9o73tdE9J98C8qTRacGXaR5L/0p3CRHrPScCxXsuIY0Bu8Ctb0Ix1sdLLuXso49SIzqJ5Mm/ViJ1DjBdukiL5ohPB5TNnB2Mx3LYE6MPJG//Q1aOSU3lNAx06iEzLNaVP1lILQpduZG3owevYfJrHtOH3+86ZU+yjcY2a0S5Dc67Qu3xZ6tHwAAAABJRU5ErkJggg==" alt="ObserveOps" />
     <span class="brand">ObserveOps</span>
   </div>
   <div class="stop">
-    <div class="sitem" id="sbSearch" data-tip="Search" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search</span></div>
+    <div class="sitem" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search<span class="kbd" id="sbKbd">⌘K</span></span></div>
   </div>
   <nav class="smenu" id="smenu"></nav>
   <div class="sutil">
@@ -389,19 +704,26 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
   </div>
 </aside>
 
+<!-- module flyout: the module's own navigation, opened by hovering a rail entry -->
+<div class="mflyout" id="mflyout" onmouseenter="clearTimeout(mfTimer)" onmouseleave="mfHide()"></div>
+
 <div class="shell">
   <main class="main">
     <!-- ===== Dashboard view (next-gen canvas per Dashboard-NextGen proposal) ===== -->
     <section class="view on" id="view-dashboard">
       <div class="pagehead">
+        <!-- the crumb no longer jumps to another prototype: it opens the dashboard list
+             panel in place, the same flow as V2 -->
+        <button class="icobtn dpchev" id="dpanelBtn" title="Hide dashboard list" onclick="toggleDPanel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>
+        </button>
         <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
         <span class="crumbs">
-          <a href="../Dashboard-NextGen/prototype.html" title="Open the Dashboard Manager prototype">Dashboards</a><span class="csep">/</span>
-          <a href="../Dashboard-NextGen/prototype.html" title="Open the Dashboard Manager prototype">Infrastructure</a><span class="csep">/</span>
-          <a href="../Dashboard-NextGen/prototype.html" title="Open the Dashboard Manager prototype">Network</a><span class="csep">/</span>
+          <a onclick="openDPanel()" title="Browse all dashboards">Dashboards</a><span class="csep">/</span>
+          <a onclick="openDPanel(document.getElementById('crumbCat').textContent)" title="Browse this category" id="crumbCat">Infrastructure</a><span class="csep">/</span>
           <span class="cur" id="dashTitle">Network Operations</span>
         </span>
-        <span class="favstar on" title="Favorite" onclick="this.classList.toggle('on')">★</span>
+        <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()">★</span>
         <span class="vbadge" title="Visible to the whole org">Public</span>
         <span class="spacer" style="flex:1"></span>
         <span style="position:relative">
@@ -424,21 +746,45 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
             </div>
           </div>
         </span>
-        <button class="btn" title="Auto refresh" onclick="cycleRefresh(this)">⟳ 30s</button>
+        <span class="tstamp" id="tcStamp"></span>
         <button class="btn" onclick="openDrawer('drawer-share')"><svg viewBox="0 0 24 24"><path d="M18 8a3 3 0 1 0-2.8-4H15a3 3 0 0 0 .2 1.2L8.9 8.8a3 3 0 1 0 0 6.4l6.3 3.6A3 3 0 1 0 16 17l-6.3-3.6a3 3 0 0 0 0-.8L16 9a3 3 0 0 0 2 .9V8Z"/></svg>Share</button>
+        <button class="btn" title="Export" onclick="openCMenu(event,'exportMenu')"><svg viewBox="0 0 24 24"><path d="M12 3l4.5 4.5-1.4 1.4L13 6.8V15h-2V6.8L8.9 8.9 7.5 7.5 12 3ZM5 17h14v2H5v-2Z"/></svg>Export</button>
         <button class="btn pri" onclick="openDrawer('drawer-widget')">＋ Add widget</button>
+        <button class="icobtn" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
         <button class="icobtn" title="More" onclick="openCMenu(event,'dashMenu')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></svg></button>
       </div>
       <!-- sub-dashboards (rendered from data — tabs can be added at runtime) -->
       <div class="tabs" id="subTabs"></div>
-      <!-- global filters (saved with the dashboard, applied to every widget) -->
-      <div class="gfilters">
-        <span class="glabel">Filters</span>
-        <span id="gfChips" style="display:flex;gap:8px;align-items:center"></span>
-        <span class="fchip" onclick="openFilterMenu(event)">＋ Add filter</span>
+      <!-- time-slider strip (live 8.2.6: ~100 tick dots, draggable 2-handle window,
+           domain = 4× the selected window, right-pinned at now — research notes §1) -->
+      <div class="tstrip" id="tstrip">
+        <div class="tdots" id="tdots">
+          <div class="twin" id="twin"><span class="thandle" id="thL"></span><span class="thandle r" id="thR"></span></div>
+        </div>
+        <div class="tmarks" id="tmarks"></div>
       </div>
-      <div class="pagebody">
-        <div class="dgrid12" id="dashGrid"></div>
+      <div class="dwrap">
+        <aside class="dpanel" id="dpanel">
+          <div class="dtabs">
+            <button class="dtab on" id="dtabDash" onclick="setDashTab('dash')">Dashboard</button>
+            <button class="dtab" id="dtabNoc" onclick="setDashTab('noc')">NOC View</button>
+          </div>
+          <label class="dsearch" id="dsearchBox"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg><input id="dsearchIn" placeholder="Search dashboards…" oninput="dashSearch(this.value)" /><button class="dclr" title="Clear search" onclick="dashSearch('')">✕</button></label>
+          <div class="dtree" id="dtree"></div>
+          <div class="dlegend" id="dlegend">
+            <span><span class="lgic"><svg viewBox="0 0 24 24"><path d="M3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-7v2h3v2H7v-2h3v-2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm1 2v9h16V6H4Z"/></svg></span>System Defaults</span>
+            <span><span class="lgic"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-8 1.7-8 5v2h16v-2c0-3.3-4.7-5-8-5Z"/></svg></span>Created by Me</span>
+            <span><span class="lgic"><svg viewBox="0 0 24 24"><path d="M18 16.1a3 3 0 0 0-2 .8l-7.1-4.2a3 3 0 0 0 0-1.4L16 7.1a3 3 0 1 0-1-1.7L7.9 9.6a3 3 0 1 0 0 4.8l7.2 4.2a3 3 0 1 0 2.9-2.5Z"/></svg></span>Shared with Me</span>
+          </div>
+          <div class="dfoot">
+            <button class="dnew" id="dnewBtn" onclick="dashNew()">＋ New Dashboard</button>
+            <button class="dmanage" title="Manage dashboards" onclick="openManage()"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm8-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm15.1-1.9 1.8 1.8-6.1 6.1H14v-1.8l6.1-6.1Z"/></svg></button>
+          </div>
+        </aside>
+        <!-- V1 keeps its own widget canvas here; V2's #dcanvas is not used -->
+        <div class="pagebody">
+          <div class="dgrid12" id="dashGrid"></div>
+        </div>
       </div>
     </section>
 
@@ -535,6 +881,35 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
   <div class="dr-f"><button class="btn" onclick="closeOverlays()">Done</button></div>
 </div>
 
+<!-- widget Share — docs: a widget can be e-mailed to several people at once (notes §9) -->
+<div class="sdrawer" id="drawer-wshare">
+  <div class="dr-h">Share widget <span class="x" onclick="closeOverlays()">✕</span></div>
+  <div class="dr-b">
+    <div class="wsh-w"><span class="wsh-thumb" id="wshThumb"></span><div><b id="wshName">Widget</b><div class="who" id="wshMeta">—</div></div></div>
+    <div>
+      <div class="wsh-lbl">Send to</div>
+      <div class="wsh-box" id="wshBox" onclick="document.getElementById('wshIn').focus()">
+        <span id="wshChips"></span>
+        <input id="wshIn" placeholder="name@example.com, then Enter" onkeydown="wshKey(event)" oninput="wshSuggest(this.value)" />
+      </div>
+      <div class="wsh-sug" id="wshSug"></div>
+    </div>
+    <div>
+      <div class="wsh-lbl">Message <span style="color:var(--faint);font-weight:400">optional</span></div>
+      <textarea id="wshMsg" rows="3" placeholder="Why you are sending this…"></textarea>
+    </div>
+    <label class="wsh-chk"><input type="checkbox" id="wshRange" checked /> Include the current time range <b class="mono" id="wshRangeTxt"></b></label>
+    <div>
+      <div class="wsh-lbl">Or copy a read-only link</div>
+      <div style="display:flex;gap:8px">
+        <input class="mono" id="wshLink" readonly style="flex:1;background:var(--panel-2);border:1px solid var(--border);border-radius:5px;height:28px;padding:0 9px;color:var(--text);font-size:11.5px"/>
+        <button class="btn" onclick="wshCopy()">Copy</button>
+      </div>
+    </div>
+  </div>
+  <div class="dr-f"><button class="btn" onclick="closeOverlays()">Cancel</button><button class="btn pri" onclick="wshSend()">Send</button></div>
+</div>
+
 <div class="sdrawer" id="drawer-versions">
   <div class="dr-h">Version history <span class="x" onclick="closeOverlays()">✕</span></div>
   <div class="dr-b">
@@ -558,16 +933,36 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
   <div class="cmi danger" onclick="closeOverlays();dashDelete()">Delete</div>
 </div>
 
-<!-- widget ⋮ menu (operates on the clicked widget) -->
+<!-- widget ⋮ menu — matches the live 8.2.6 widget menu (research notes §9), plus V1's sub-dashboard move -->
 <div class="cmenu" id="wMenu">
-  <div class="cmi" onclick="wDuplicate()">Duplicate widget</div>
-  <div class="cmi" onclick="wMove()">Move to next tab</div>
+  <div class="cmi" onclick="wEditW()">Edit Widget</div>
+  <div class="cmi" onclick="wDuplicate()">Clone Widget</div>
+  <div class="cmi" onclick="wFull()">Full Screen</div>
+  <div class="cmi" onclick="wShareW()">Share</div>
   <div class="cmsep"></div>
-  <div class="cmi danger" onclick="wRemove()">Remove widget</div>
+  <div class="cmi" onclick="wMove()">Move to next tab</div>
+  <div class="cmi danger" onclick="wRemove()">Remove Widget</div>
 </div>
 
-<!-- add-filter menu (options not yet applied) -->
-<div class="cmenu" id="filterMenu"></div>
+<!-- Export menu — the documented dashboard Export actions (research notes §4) -->
+<div class="cmenu" id="exportMenu">
+  <div class="cmi" onclick="closeOverlays();toast('Export as PDF — snapshot of every widget at the current time range')">Export as PDF</div>
+  <div class="cmi" onclick="closeOverlays();toast('Email — PDF sent as a password-protected attachment')">Email PDF…</div>
+  <div class="cmsep"></div>
+  <div class="cmi" onclick="closeOverlays();dashExport()">Export JSON <span style="margin-left:auto;color:var(--faint);font-size:10.5px">concept</span></div>
+</div>
+
+<!-- widget Full Screen overlay -->
+<div class="wfull" id="wFullView" onclick="if(event.target===this) closeWFull()">
+  <div class="wfbox">
+    <div class="wfh"><span id="wfTitle">Widget</span><span class="wtime" style="opacity:1" id="wfTime">today</span>
+      <span class="x" onclick="closeWFull()">✕</span></div>
+    <div class="wfb" id="wfBody"></div>
+  </div>
+</div>
+
+<button class="exitfs" onclick="toggleFS()">✕ Exit full screen <span class="kbd" style="margin-left:2px">Esc</span></button>
+
 
 <!-- dashboard settings drawer — values apply live -->
 <div class="sdrawer" id="drawer-settings">
@@ -584,11 +979,7 @@ html[data-theme="light"] .themerow{background:var(--panel-2)}
         <button class="btn" id="denCompact" style="flex:1" onclick="setDensity(.8,this)">Compact</button>
       </div>
     </div>
-    <div>
-      <div style="font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px">Default auto refresh</div>
-      <div style="font-size:12px;color:var(--text-dim)">Set from the toolbar ⟳ button — currently <b id="setRef">30s</b></div>
-    </div>
-    <div style="font-size:11px;color:var(--faint)">Header font size, kiosk/NOC rotation and row height would live here in the product.</div>
+    <div style="font-size:11px;color:var(--faint)">Header font size, auto refresh, kiosk/NOC rotation and row height would live here in the product.</div>
   </div>
   <div class="dr-f"><button class="btn" onclick="closeOverlays()">Done</button></div>
 </div>
@@ -842,22 +1233,192 @@ const MODULES = [
 ];
 let activeModule = 0;
 
+/* Datadog-style grouping: the 16 modules are folded into their sections. Expanded, each
+   section is a collapsible header with a count and only the section holding the current
+   module starts open, so the rail is four lines instead of sixteen. Collapsed to icons,
+   every module stays reachable — folding a section away would hide its icon. */
+/* ============================================================================
+   Rail + flyout — grouped from the real product IA
+   ----------------------------------------------------------------------------
+   Structure taken from docs.motadata.com/motadata-aiops-docs (top-level sections
+   and their nested pages, read Aug 2026). The rail carries only the sections an
+   operator lives in; everything else is a sub-menu item, so all 16 of the live
+   product's modules stay reachable in one hover.
+
+     RAIL ENTRY   COVERS THESE DOCS SECTIONS
+     Dashboards   Dashboards and Insights · Reports
+     Monitors     Monitors · Adding and Managing Devices · Agent-Based Monitoring
+     Alerts       Alerts and Policies
+     Explorers    Metric · Log · Flow · APM · RUM · SNMP Trap Analysis
+     Network      Topology · NCCM · Netroute · Dependency Mapper
+     SLO          SLO & Insights
+     Settings     Settings and Configurations · Tag Management · Integration
+                  Profile · Audit Trail
+
+   ⚠ This is a deliberate divergence from the live 8.2.6 nav, which lists all 16
+   modules flat (research notes §1).
+   ========================================================================== */
+const RAIL = [
+  { name:'Dashboards', icon:'dashboard',       mod:'Dashboards', group:'work' },
+  { name:'Monitors',   icon:'navbar-monitor',  mod:'Monitors',   group:'work' },
+  { name:'Alerts',     icon:'alert',           mod:'Alerts',     group:'work' },
+  { name:'Explorers',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
+  { name:'Network',    icon:'topology',        mod:'Topology',   group:'analyse' },
+  { name:'SLO',        icon:'slo',             mod:'SLO',        group:'analyse', beta:true },
+  { name:'Settings',   icon:'settings',        mod:'Settings',   group:'admin' },
+];
+let activeRail = 0;
+
+/* Sub-menus. Each item is [label, module-to-open | null, action | null, kind].
+   Page names are the docs' own wording wherever the docs name that page. */
+const SUBNAV = {
+  'Dashboards': [
+    { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()'],
+                              ['＋ New dashboard', null, 'dashNew()', 'plus'],
+                              ['Manage dashboards', null, 'openManage()'] ]},
+    { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()"],
+                              ['＋ New NOC view', null, 'openNocNew()', 'plus'] ]},
+    { h:'Reports',    items:[ ['Report list', 'Reports'], ['Scheduled reports', 'Reports'] ]},
+  ],
+  'Monitors': [
+    { h:'Monitors',   items:[ ['Monitor list', 'Monitors'], ['Monitor settings', 'Monitors'],
+                              ['Monitor rediscovery', 'Monitors'],
+                              ['Maintenance window', 'Monitors'], ['Custom monitoring fields', 'Monitors'] ]},
+    { h:'Discovery',  items:[ ['Adding and managing devices', 'Monitors'], ['Topology scanner', 'Monitors'],
+                              ['SNMP device catalog', 'Monitors'] ]},
+    { h:'Agent',      items:[ ['Agent-based monitoring', 'Monitors'] ]},
+    { h:'Specialised',items:[ ['Process monitoring', 'Monitors'], ['Service monitoring', 'Monitors'],
+                              ['File and directory monitoring', 'Monitors'], ['NetRoute monitoring', 'NetRoute'] ]},
+  ],
+  'Alerts': [
+    { h:'Alerts',   items:[ ['View and manage alerts', 'Alerts'], ['Alert severities', 'Alerts'],
+                            ['Alert types', 'Alerts'], ['Alert correlation', 'Alerts'] ]},
+    { h:'Policies', items:[ ['Configure policies', 'Alerts'], ['Basic policies', 'Alerts'],
+                            ['AI/ML policies', 'Alerts'], ['Macros in alerts & policies', 'Alerts'] ]},
+  ],
+  'Explorers': [
+    { h:'Metrics', items:[ ['Metric explorer', 'Metric Explorer'], ['Anomaly detection', 'Metric Explorer'],
+                           ['Forecasting', 'Metric Explorer'], ['Compare with past values', 'Metric Explorer'] ]},
+    { h:'Logs',    items:[ ['Log explorer', 'Log Explorer'], ['Log search', 'Log Explorer'],
+                           ['Live trail', 'Log Explorer'], ['Log inventory', 'Log Explorer'],
+                           ['Log parsing', 'Log Explorer'], ['Log forwarder', 'Log Explorer'] ]},
+    { h:'Flow',    items:[ ['Flow analysis', 'Flow Explorer'] ]},
+  ],
+  'Network': [
+    { h:'Topology', items:[ ['Network topology', 'Topology'], ['Dependency mapper', 'Topology'] ]},
+    { h:'NCCM',     items:[ ['Configuration management', 'NCCM'], ['Compliance management', 'NCCM'],
+                            ['Onboarding process', 'NCCM'], ['Approvals', null, "showView('approval')"] ]},
+    { h:'NetRoute', items:[ ['NetRoute analysis', 'NetRoute'], ['Path monitoring', 'NetRoute'] ]},
+  ],
+  'SLO': [
+    { h:'Service Level Objective', items:[ ['SLO list', 'SLO'], ['＋ New SLO', 'SLO', null, 'plus'],
+                                           ['Error budget', 'SLO'] ]},
+  ],
+  'Settings': [
+    { h:'User settings',    items:[ ['Users', 'Settings'], ['User profiles', 'Settings'], ['Groups', 'Settings'],
+                                    ['Password policy', 'Settings'], ['LDAP server', 'Settings'],
+                                    ['Single sign-on', 'Settings'], ['Personal access token', 'Settings'] ]},
+    { h:'System settings',  items:[ ['Mail server', 'Settings'], ['Health monitoring', null, "showView('health')"] ]},
+    { h:'Plugin management',items:[ ['Metric plugins', 'Settings'] ]},
+    { h:'Governance',       items:[ ['Tag management', 'Settings'], ['Integration profile', 'Settings'],
+                                    ['Audit trail', 'Audits'] ]},
+  ],
+};
+/* the second column of the Explorers / Settings flyouts — keeps them two-up like Datadog */
+const SUBNAV2 = {
+  'Explorers': [
+    { h:'APM',   items:[ ['APM management', 'APM Explorer'], ['Services', 'APM Explorer'], ['Traces', 'APM Explorer'] ]},
+    { h:'RUM',   items:[ ['RUM management', 'RUM Explorer'], ['Sessions', 'RUM Explorer'] ]},
+    { h:'Traps', items:[ ['SNMP trap management', 'Trap Explorer'], ['Trap profiles', 'Trap Explorer'] ]},
+  ],
+};
+
+/* every one of the live product's 16 modules maps back to the rail entry that owns it,
+   so opening a module from a sub-menu still lights the right rail row */
+const MOD_TO_RAIL = {};
+[['Dashboards',0],['Reports',0],['Monitors',1],['Alerts',2],
+ ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],['Trap Explorer',3],
+ ['Topology',4],['NCCM',4],['NetRoute',4],['SLO',5],['Settings',6],['Audits',6]
+].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 function renderMenu(){
-  const grouped = document.getElementById('sidebar').classList.contains('grouped');
-  let html = '', lastGroup = null;
-  MODULES.forEach((m,i)=>{
-    if (grouped && m.group !== lastGroup){
-      if (lastGroup !== null) html += '<div class="sgroup-gap"></div>';
-      html += `<div class="sgroup-label">${m.group}</div>`;
-      lastGroup = m.group;
-    }
-    html += `<div class="sitem${i===activeModule?' on':''}" data-tip="${m.name}" onclick="selectModule(${i})">
-      ${ico(m.icon)}<span class="lbl">${m.name}${m.beta?' <span class="beta">BETA</span>':''}</span></div>`;
+  let html = '', last = null;
+  RAIL.forEach((r,i)=>{
+    if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
+    last = r.group;
+    html += `<div class="sitem${i===activeRail?' on':''}" data-tip="${r.name}" onclick="pickRail(${i})"
+        onmouseenter="mfOpen(${i},this)">
+      ${ico(r.icon)}<span class="lbl">${r.name}${r.beta?' <span class="beta">BETA</span>':''}</span></div>`;
   });
   document.getElementById('smenu').innerHTML = html;
 }
+function pickRail(i){
+  activeRail = i; mfHide(); renderMenu();
+  selectModuleByName(RAIL[i].mod);
+}
+function selectModuleByName(n){
+  const i = MODULES.findIndex(m=>m.name===n);
+  if (i >= 0) selectModule(i);
+}
+
+/* ---- flyout ---------------------------------------------------------------- */
+let mfTimer = null, mfHoverIdx = -1;
+function railWidth(){
+  const open = document.getElementById('sidebar').classList.contains('open');
+  return parseInt(getComputedStyle(document.documentElement)
+    .getPropertyValue(open ? '--rail-w-open' : '--rail-w')) || (open ? 170 : 64);
+}
+/* JSON.stringify emits double quotes, which would close the onclick attribute — escape them */
+const mfAttr = v => JSON.stringify(v||'').replace(/"/g,'&quot;');
+function mfCol(secs, width){
+  return `<div class="mfcol"${width?` style="width:${width}px"`:''}>` + secs.map((s,si)=>
+    `<div class="mfsec${si?'':' tight'}">${s.h}</div><div class="mflist">` +
+    s.items.map(([label, mod, act, kind])=>
+      `<div class="mfi" onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${
+        kind==='plus' ? '<span class="plus">＋</span>'+label.replace('＋ ','') : label}</div>`).join('') +
+    `</div>`).join('') + `</div>`;
+}
+function mfOpen(i, el){
+  clearTimeout(mfTimer);
+  mfHoverIdx = i;
+  const sb0 = document.getElementById('sidebar');
+  /* hovering the collapsed rail expands it and nothing else — sub-menus only once open */
+  if(!sb0.classList.contains('open')){ mfHide(); return; }
+  const r = RAIL[i], secs = SUBNAV[r.name], fly = document.getElementById('mflyout');
+  if(!secs){ fly.classList.remove('on'); return; }
+  let cols = mfCol(secs);
+  if (SUBNAV2[r.name]) cols += mfCol(SUBNAV2[r.name]);
+  /* Dashboards gets Datadog's starred column, built from the prototype's real favourites */
+  if (r.name==='Dashboards'){
+    const fav = [...DASH_FAVS].slice(0,8);
+    cols += `<div class="mfcol" style="width:250px"><div class="mfsec tight">Starred dashboards</div>
+      <div class="mfsearch"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
+        <input placeholder="Search all dashboards" onkeydown="if(event.key==='Enter'){mfHide();openDPanel();dashSearch(this.value)}" onclick="event.stopPropagation()"/></div>` +
+      (fav.length ? fav.map(n=>`<div class="mfstar" onclick="mfHide();pickDash('${n.replace(/'/g,"\\'")}')"><span class="st">★</span>${n}</div>`).join('')
+                  : '<div class="mfempty">No starred dashboards yet.</div>') + `</div>`;
+  }
+  fly.innerHTML = cols;
+  const sb = document.getElementById('sidebar'), b = el.getBoundingClientRect();
+  /* Anchor to the rail's TARGET width, read from the custom property. Measuring the box
+     instead would catch the width mid-transition and park the flyout at 64px, which is
+     what put the menu underneath the expanding rail. */
+  fly.style.left = railWidth() + 'px';
+  fly.classList.add('on');
+  fly.style.top = Math.max(8, Math.min(b.top - 12, innerHeight - fly.offsetHeight - 8)) + 'px';
+}
+function mfHide(){ document.getElementById('mflyout').classList.remove('on'); }
+function mfLater(){ mfTimer = setTimeout(mfHide, 180); }   /* grace period to cross the gap */
+function mfGo(mod, act){
+  mfHide();
+  if (act){ try{ (0,eval)(act); }catch(e){ toast('…'); } return; }
+  if (mod) selectModuleByName(mod);
+}
+
 function selectModule(i){
-  activeModule = i; renderMenu();
+  activeModule = i;
+  mfHide();
+  const g = MOD_TO_RAIL[(MODULES[i]||{}).name];
+  if (g !== undefined) activeRail = g;
+  renderMenu();
   const m = MODULES[i];
   if (m.name === 'Dashboards'){ showView('dashboard'); return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
@@ -867,7 +1428,40 @@ function selectModule(i){
   document.getElementById('modRoute').textContent = m.route;
   showView('module');
 }
-function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+/* Sidebar: hover peeks (overlays, no layout shift), the button pins it open (pushes the page).
+   Before, expanding always covered the canvas and there was no way to keep the labels visible. */
+let sbPinned = false, sbHoverT = null;
+function toggleSidebar(){
+  sbPinned = !sbPinned;
+  const sb = document.getElementById('sidebar');
+  document.body.classList.toggle('pinned', sbPinned);
+  sb.classList.toggle('open', sbPinned);
+  const b = document.getElementById('collapseBtn');
+  b.setAttribute('data-tip', sbPinned? 'Collapse sidebar':'Expand sidebar');
+  b.querySelector('.lbl').textContent = sbPinned? 'Collapse':'Expand';
+  renderMenu();                                  /* sections only fold while the rail is open */
+  requestAnimationFrame(()=>{ if(!trashed) fitCanvas(); });
+}
+function sbHover(on){
+  if(sbPinned) return;
+  const sb = document.getElementById('sidebar');
+  clearTimeout(sbHoverT);
+  if(on){
+    sbHoverT = setTimeout(()=>{
+      sb.classList.add('open'); renderMenu();
+      /* the rail is 170px only after the .18s width transition — open the sub-menu after
+         it lands, so the flyout is never positioned against the 64px rail and then covered */
+      setTimeout(()=>{
+        if(mfHoverIdx < 0) return;
+        const el = document.querySelectorAll('#smenu .sitem')[mfHoverIdx];
+        if(el && el.matches(':hover')) mfOpen(mfHoverIdx, el);
+      }, 210);
+    }, 130);
+  } else if(!document.querySelector('.pop.on')){
+    mfHoverIdx = -1;
+    sb.classList.remove('open'); renderMenu();
+  }
+}
 
 /* ================= Views ================= */
 function showView(v){
@@ -1014,7 +1608,11 @@ function togglePop(id, ev){
   ev && ev.stopPropagation();
   const el = document.getElementById(id), was = el.classList.contains('on');
   closePops();
-  if (!was){ el.classList.add('on'); document.getElementById('scrim').classList.add('on'); if(id==='notifPop') renderNotifs(); }
+  if (!was){
+    el.style.left = (document.getElementById('sidebar').offsetWidth + 10) + 'px';  // clear the rail even when it is expanded
+    el.classList.add('on'); document.getElementById('scrim').classList.add('on');
+    if(id==='notifPop') renderNotifs();
+  }
 }
 function closePops(){
   document.querySelectorAll('.pop').forEach(p=>p.classList.remove('on'));
@@ -1129,15 +1727,23 @@ function trStart(key){                                             // window sta
 function trSync(){                                                 // reflect tlA/tlB in the From/To inputs
   document.getElementById('trFrom').value = trFmtIn(tlA);
   document.getElementById('trTo').value = trFmtIn(tlB);
+  trStamp();
+  if (typeof tsRender === 'function') tsRender();   /* the strip follows the chip */
+}
+function trStamp(){                                                // from → to stamps beside the chip (live header row)
+  const el = document.getElementById('tcStamp');
+  if(el) el.innerHTML = trFmtShort(tlA)+' <span class="arw">→</span> '+trFmtShort(tlB);
 }
 function trSet(i){                                                 // apply preset i
   const [label,key] = TR_PRESETS[i];
   trSelIdx = i; tlB = TL_NOW; tlA = trStart(key);
   document.getElementById('tcPill').textContent = key;
   document.getElementById('tcLabel').textContent = label;
-  trSync(); trRenderPop();
+  trSync(); trRenderPop(); trRefresh();
   document.getElementById('trPop').classList.remove('on');
 }
+let canvasReady = false;
+function trRefresh(){ if(!canvasReady || trashed) return; wShift++; renderCanvas(); }
 function trApply(e){                                               // absolute range from the From/To inputs
   e.stopPropagation();
   const a = new Date(document.getElementById('trFrom').value.trim().replace(' ','T')).getTime();
@@ -1146,7 +1752,7 @@ function trApply(e){                                               // absolute r
   tlA = a; tlB = b; trSelIdx = -1;
   document.getElementById('tcPill').textContent = 'custom';
   document.getElementById('tcLabel').textContent = trFmtShort(a)+' – '+trFmtShort(b);
-  trRenderPop();
+  trStamp(); trRenderPop(); trRefresh();
   document.getElementById('trPop').classList.remove('on');
 }
 function trRenderPop(){
@@ -1171,8 +1777,6 @@ document.addEventListener('keydown', e => {
 let subTab = 0, editMode = false, trashed = false, wShift = 0, refTimer = null, hMul = 1, curW = -1, newTabN = 0;
 let dashVer = 14;
 const TABS = ['Overview','Traffic','Devices','Capacity Planning'];
-let FILTERS = [['Site','Ahmedabad HQ'],['Device group','Core']];
-const FILTER_OPTS = [['Site','Ahmedabad HQ'],['Device group','Core'],['Region','West'],['Vendor','Cisco'],['Severity','Major +'],['Interface','Uplinks only']];
 const DEV_TABLE = `<table style="width:100%"><thead><tr><th style="text-align:left;color:var(--muted);font-size:10.5px">Monitor</th><th style="text-align:left;color:var(--muted);font-size:10.5px">system.oid.last</th><th style="text-align:left;color:var(--muted);font-size:10.5px">serial</th></tr></thead>
   <tbody><tr><td>cisco_core.motadata.local</td><td class="mono">.1.3.6.1.4.1.9.1.2494</td><td class="mono">FCW2353C0AQ</td></tr>
   <tr><td>juniper_edge.motadata.local</td><td class="mono">.1.3.6.1.4.1.2636.1.1.1</td><td class="mono">JN126FA0AB</td></tr></tbody></table>`;
@@ -1180,44 +1784,76 @@ const WIDGETS = [
  [ {t:'stat',title:'Availability',v:'99.98%',vc:'var(--green)',k:'fleet, current window',d:'▲ 0.02%',dc:'var(--green)'},
    {t:'stat',title:'Active Alerts',v:'7',vc:'var(--orange)',k:'2 critical · 5 major',d:'▲ 3 vs prev hour',dc:'var(--red)'},
    {t:'stat',title:'Avg Latency',v:'23<span style="font-size:13px"> ms</span>',vc:'var(--text)',k:'core uplinks',d:'▼ 4 ms',dc:'var(--green)'},
-   {t:'spark',title:'Total Traffic — In / Out',span:6,h:150,seed:42,color:'#14b8a6'},
-   {t:'bars',title:'Interface Utilization — Top 14',span:7,h:180,seed:7,color:'#3b82f6'},
+   {t:'spark',title:'Total Traffic — In / Out',span:6,h:150,seed:42,color:'#14b8a6',max:8,u:' Gb'},
+   {t:'bars',title:'Interface Utilization — Top 14',span:7,h:180,seed:7,color:'#3b82f6',max:100,u:'%',cat:'Interface'},
    {t:'honey',title:'Device Health',span:5,h:180,seed:1311,n:28},
-   {t:'spark',title:'Packet Loss %',span:5,h:150,seed:99,color:'#fb923c'},
-   {t:'spark',title:'Errors & Discards',span:7,h:150,seed:1979,color:'#a855f7'} ],
+   {t:'spark',title:'Packet Loss %',span:5,h:150,seed:99,color:'#fb923c',max:2.5,u:'%'},
+   {t:'spark',title:'Errors & Discards',span:7,h:150,seed:1979,color:'#a855f7',max:400} ],
  [ {t:'stat',title:'Total In',v:'4.2<span style="font-size:13px"> Gbps</span>',vc:'var(--text)',k:'95th percentile',d:'▲ 8%',dc:'var(--orange)'},
    {t:'stat',title:'Total Out',v:'3.1<span style="font-size:13px"> Gbps</span>',vc:'var(--text)',k:'95th percentile',d:'▼ 2%',dc:'var(--green)'},
    {t:'stat',title:'Top Talker',v:'MPLS-01',vc:'var(--teal)',k:'1.1 Gbps sustained',d:'▲ new entry',dc:'var(--orange)'},
-   {t:'spark',title:'Traffic In / Out — Trend',span:6,h:150,seed:142,color:'#14b8a6'},
-   {t:'bars',title:'Interface Utilization — Top 14',span:7,h:170,seed:109,color:'#3b82f6'},
-   {t:'bars',title:'Flow by Application',span:5,h:170,seed:131,color:'#06b6d4'},
-   {t:'spark',title:'Packet Loss %',span:12,h:140,seed:199,color:'#fb923c'} ],
+   {t:'spark',title:'Traffic In / Out — Trend',span:6,h:150,seed:142,color:'#14b8a6',max:8,u:' Gb'},
+   {t:'bars',title:'Interface Utilization — Top 14',span:7,h:170,seed:109,color:'#3b82f6',max:100,u:'%',cat:'Interface'},
+   {t:'bars',title:'Flow by Application',span:5,h:170,seed:131,color:'#06b6d4',max:1.4,u:' Gb',cat:'App'},
+   {t:'spark',title:'Packet Loss %',span:12,h:140,seed:199,color:'#fb923c',max:2.5,u:'%'} ],
  [ {t:'stat',title:'Devices Up',v:'142',vc:'var(--green)',k:'of 149 monitored',d:'▲ 2 recovered',dc:'var(--green)'},
    {t:'stat',title:'Devices Down',v:'4',vc:'var(--red)',k:'2 core · 2 edge',d:'▲ 1 vs yesterday',dc:'var(--red)'},
    {t:'stat',title:'In Maintenance',v:'3',vc:'var(--text)',k:'scheduled window',d:'— unchanged',dc:'var(--text-dim)'},
    {t:'honey',title:'Device Health',span:6,h:170,seed:1311,n:28},
    {t:'table',title:'Inventory Sample',span:6,h:170,html:DEV_TABLE},
-   {t:'bars',title:'CPU by Device — Top 14',span:12,h:160,seed:207,color:'#a855f7'} ],
+   {t:'bars',title:'CPU by Device — Top 14',span:12,h:160,seed:207,color:'#a855f7',max:100,u:'%',cat:'Device'} ],
  [ {t:'stat',title:'Links > 80%',v:'6',vc:'var(--orange)',k:'of 84 uplinks',d:'▲ 2 this week',dc:'var(--orange)'},
    {t:'stat',title:'Forecast Breach',v:'18d',vc:'var(--red)',k:'WAN-Mumbai-02',d:'model: linear 30d',dc:'var(--text-dim)'},
    {t:'stat',title:'Headroom',v:'34%',vc:'var(--green)',k:'fleet median',d:'▼ 3% MoM',dc:'var(--orange)'},
-   {t:'spark',title:'Utilization Forecast — 30d',span:7,h:180,seed:305,color:'#eab308'},
-   {t:'bars',title:'Growth by Site',span:5,h:180,seed:377,color:'#a855f7'},
+   {t:'spark',title:'Utilization Forecast — 30d',span:7,h:180,seed:305,color:'#eab308',max:100,u:'%'},
+   {t:'bars',title:'Growth by Site',span:5,h:180,seed:377,color:'#a855f7',max:40,u:'%',cat:'Site'},
    {t:'note',title:'Capacity Notes',span:12,h:110,html:'Mumbai WAN upgrade PO raised · Core switch refresh planned Q4 · <span style="color:var(--teal);cursor:pointer" onclick="toast(\'Text sections keep runbook context next to the data\')">edit note…</span>'} ]
 ];
-function wSpark(seed,color){ const r=rng(seed+wShift*13),W=560,H=96,n=40,st=W/(n-1); let v=.5,p=[];
+/* Charts stretch to fill their card (preserveAspectRatio="none" + non-scaling strokes);
+   scale labels are HTML so they never distort with the box. */
+const wGrid = (W,H) => [.25,.5,.75].map(g=>
+  `<line x1="0" y1="${(H*g).toFixed(1)}" x2="${W}" y2="${(H*g).toFixed(1)}" stroke="var(--border-soft)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('');
+const wFmt = (q,w) => { const lo=w&&w.min!=null?w.min:0, hi=w&&w.max!=null?w.max:100, u=(w&&w.u)||'';
+  const v=lo+(hi-lo)*q; return (Math.abs(v)>=100? v.toFixed(0) : Math.abs(v)>=10? v.toFixed(1) : v.toFixed(2))+u; };
+
+function wSpark(seed,color,w){ const r=rng(seed+wShift*13),W=560,H=100,n=40,st=W/(n-1); let v=.5,p=[];
   for(let i=0;i<n;i++){ v=Math.max(.08,Math.min(.92,v+(r()-.5)*.25)); p.push(v); }
-  const line=p.map((q,i)=>`${i?'L':'M'}${(i*st).toFixed(1)},${(H-6-q*(H-14)).toFixed(1)}`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%"><path d="${line} L${W},${H} L0,${H} Z" fill="${color}" opacity=".14"/><path d="${line}" fill="none" stroke="${color}" stroke-width="1.8"/></svg>`;
+  const y=q=>H-4-q*(H-10);
+  const line=p.map((q,i)=>`${i?'L':'M'}${(i*st).toFixed(1)},${y(q).toFixed(1)}`).join('');
+  const last=p[p.length-1];
+  return `<div class="cw"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${wGrid(W,H)}
+      <path d="${line} L${W},${H} L0,${H} Z" fill="${color}" opacity=".14"/>
+      <path d="${line}" fill="none" stroke="${color}" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>
+    <span class="ax hi">${wFmt(1,w)}</span><span class="ax lo">${wFmt(0,w)}</span>
+    <span class="lastv" style="color:${color};top:${(y(last)/H*100).toFixed(1)}%">${wFmt(last,w)}</span></div>`;
 }
-function wBars(seed,color){ const r=rng(seed+wShift*13),W=560,H=118,n=14,bw=W/n; let o='';
-  for(let i=0;i<n;i++){ const h=(0.2+r()*0.75)*(H-8); o+=`<rect x="${(i*bw+2).toFixed(1)}" y="${(H-h).toFixed(1)}" width="${(bw-4).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${color}" opacity=".85"/>`; }
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%">${o}</svg>`;
+function wBars(seed,color,w){ const r=rng(seed+wShift*13),W=560,H=120,n=14,bw=W/n, vals=[];
+  for(let i=0;i<n;i++) vals.push(0.14+r()*0.82);
+  const mx=Math.max(...vals); let o='';
+  vals.forEach((q,i)=>{ const h=q*(H-5);
+    o+=`<rect x="${(i*bw+2.5).toFixed(1)}" y="${(H-h).toFixed(1)}" width="${(bw-5).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"
+      fill="${color}" opacity="${q===mx?'1':'.6'}"><title>${(w&&w.cat?w.cat:'Item')} ${i+1} — ${wFmt(q,w)}</title></rect>`; });
+  return `<div class="cw"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${wGrid(W,H)}${o}
+      <line x1="0" y1="${H-.5}" x2="${W}" y2="${H-.5}" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+    <span class="ax hi">${wFmt(1,w)}</span><span class="ax lo">${wFmt(0,w)}</span></div>`;
 }
-function wHoney(seed,n){ const r=rng(seed+wShift); let o='';
-  for(let i=0;i<n;i++){ const p=r(); const c=p<.75?'var(--green)':p<.88?'var(--yellow)':p<.96?'var(--orange)':'var(--red)';
-    o+=`<span style="width:19px;height:19px;border-radius:5px;background:${c};opacity:.85;display:inline-block"></span>`; }
-  return `<div style="display:grid;grid-template-columns:repeat(14,19px);gap:5px;justify-content:center">${o}</div>`;
+/* trend strip inside a KPI tile — a value with no shape is hard to judge */
+function wMini(seed,color){ const r=rng(seed+wShift*7),W=200,H=40,n=28,st=W/(n-1); let v=.5,p=[];
+  for(let i=0;i<n;i++){ v=Math.max(.12,Math.min(.9,v+(r()-.5)*.3)); p.push(v); }
+  const line=p.map((q,i)=>`${i?'L':'M'}${(i*st).toFixed(1)},${(H-q*H).toFixed(1)}`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <path d="${line} L${W},${H} L0,${H} Z" fill="${color}" opacity=".16"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function wHoney(seed,n){ const r=rng(seed+wShift), c={up:0,warn:0,maj:0,crit:0};
+  const nm={up:'Up',warn:'Warning',maj:'Major',crit:'Critical'},
+        cl={up:'var(--green)',warn:'var(--yellow)',maj:'var(--orange)',crit:'var(--red)'};
+  let o='';
+  for(let i=0;i<n;i++){ const p=r(), k=p<.75?'up':p<.88?'warn':p<.96?'maj':'crit'; c[k]++;
+    o+=`<span title="Monitor ${i+1} — ${nm[k]}" style="width:19px;height:19px;border-radius:5px;background:${cl[k]};opacity:.88;display:inline-block;cursor:pointer"></span>`; }
+  return `<div style="flex:1;min-height:0;display:grid;place-items:center">
+      <div style="display:grid;grid-template-columns:repeat(14,19px);gap:5px;justify-content:center">${o}</div></div>
+    <div class="wlegend">${Object.keys(nm).map(k=>`<span><i style="background:${cl[k]}"></i>${nm[k]} ${c[k]}</span>`).join('')}</div>`;
 }
 function wGauge(seed){ const r=rng(seed+wShift), v=.25+r()*.65, a=Math.PI*(1-v);
   const x=(60+52*Math.cos(a)).toFixed(1), y=(64-52*Math.sin(a)).toFixed(1);
@@ -1228,11 +1864,11 @@ function wGauge(seed){ const r=rng(seed+wShift), v=.25+r()*.65, a=Math.PI*(1-v);
     <text x="60" y="58" text-anchor="middle" font-size="17" font-weight="700" fill="var(--text)" font-family="JetBrains Mono,monospace">${Math.round(v*100)}%</text></svg>`;
 }
 function wBody(w){
-  if(w.t==='spark') return wSpark(w.seed,w.color);
-  if(w.t==='bars')  return wBars(w.seed,w.color);
-  if(w.t==='honey') return `<div style="display:grid;place-items:center;height:100%">${wHoney(w.seed,w.n)}</div>`;
-  if(w.t==='gauge') return `<div style="display:grid;place-items:center;height:100%">${wGauge(w.seed)}</div>`;
-  if(w.t==='table') return w.html;
+  if(w.t==='spark') return wSpark(w.seed,w.color,w);
+  if(w.t==='bars')  return wBars(w.seed,w.color,w);
+  if(w.t==='honey') return wHoney(w.seed,w.n);
+  if(w.t==='gauge') return `<div style="flex:1;min-height:0;display:grid;place-items:center">${wGauge(w.seed)}</div>`;
+  if(w.t==='table') return `<div style="flex:1;min-height:0;overflow:auto">${w.html}</div>`;
   if(w.t==='note')  return `<div style="font-size:12px;color:var(--text-dim)">${w.html}</div>`;
   return '';
 }
@@ -1254,54 +1890,117 @@ function renderCanvas(){
       <button class="btn" onclick="addWidgetFromLib('ai')">✦ AI suggest</button></div></div>`;
     return;
   }
+  const tb = `<span class="wtime" title="Widget time range — follows the dashboard">${trSelIdx>=0?TR_PRESETS[trSelIdx][1]:'custom'}</span>`;
   g.innerHTML = ws.map((w,i)=>{
     const dots = `<span class="wdots" onclick="openWMenu(event,${i})">⋮</span>` + (editMode?`<span class="wremove" title="Remove" onclick="event.stopPropagation();curW=${i};wRemove()">✕</span>`:'');
-    const extra = w.t==='honey'? ` <span style="background:var(--chip);border-radius:3px;font-size:10px;padding:0 5px;margin-left:6px">${w.n} monitors</span>`:'';
-    if(w.t==='stat') return `<div class="widget wstat" style="grid-column:span 2"><div class="whead">${w.title}${dots}</div>
-      <div class="wbody"><div class="v" style="color:${w.vc}">${w.v}</div><div class="k">${w.k}</div><div class="delta" style="color:${w.dc}">${w.d}</div></div></div>`;
-    return `<div class="widget" style="grid-column:span ${w.span};height:${Math.round(w.h*hMul)}px"><div class="whead">${w.title}${extra}${dots}</div><div class="wbody">${wBody(w)}</div></div>`;
+    const extra = w.t==='honey'? `<span class="wcount">${w.n} monitors</span>`:'';
+    if(w.t==='stat') return `<div class="widget wstat" style="grid-column:span 2"><div class="whead">${w.title}${tb}${dots}</div>
+      <div class="wbody"><div class="v" style="color:${w.vc}">${w.v}</div><div class="k">${w.k}</div><div class="delta" style="color:${w.dc}">${w.d}</div>
+      <div class="statsp">${wMini((subTab+1)*97+i*31, w.sc||w.vc)}</div></div></div>`;
+    return `<div class="widget" data-h="${w.h}" style="grid-column:span ${w.span};height:${Math.round(w.h*hMul)}px"><div class="whead">${w.title}${extra}${tb}${dots}</div><div class="wbody">${wBody(w)}</div></div>`;
   }).join('');
+  fitCanvas();
 }
+/* Grow the widget rows so the canvas fills the viewport instead of leaving dead space
+   below the fold (V1 used to stop two-thirds down the screen). Total height is linear in
+   the scale factor — gaps and the KPI row are fixed — so two probes solve it exactly.
+   Only ever grows past the authored height, never shrinks below it. */
+function fitCanvas(){
+  const g = document.getElementById('dashGrid'), pb = g.parentElement;
+  const list = [...g.querySelectorAll('.widget[data-h]')];
+  if(!list.length || !pb.clientHeight) return;
+  const cs = getComputedStyle(pb), avail = pb.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
+  const set = k => list.forEach(el=>el.style.height = Math.round(+el.dataset.h * k) + 'px');
+  set(hMul);            const u1 = g.scrollHeight;
+  const k2 = hMul*1.25; set(k2); const u2 = g.scrollHeight;
+  const slope = (u2-u1)/(k2-hMul);
+  let k = slope > 1 ? hMul + (avail-u1)/slope : hMul;
+  k = Math.max(hMul, Math.min(hMul*2.2, k));
+  set(k);
+  if(g.scrollHeight > avail) set(Math.max(hMul, k*avail/g.scrollHeight));   // rounding guard
+}
+addEventListener('resize', ()=>{ if(!trashed) fitCanvas(); });
 function renderTabs(){
   document.getElementById('subTabs').innerHTML =
     TABS.map((n,i)=>`<button class="tab ${i===subTab?'on':''}" onclick="pickSubTab(${i})">${n}</button>`).join('') +
     `<button class="tab tplus" title="Add sub-dashboard" onclick="addSubTab()">＋</button>
      <span class="tmeta" id="dashMeta">Edited 12 min ago · v${dashVer}</span>`;
 }
-function renderFilters(){
-  document.getElementById('gfChips').innerHTML = FILTERS.map(([k,v],i)=>
-    `<span class="fchip set">${k}: ${v} <span style="cursor:pointer;color:var(--muted)" onclick="removeFilter(${i})">×</span></span>`).join('');
-}
 function pickSubTab(i){ subTab=i; renderTabs(); renderCanvas(); }
 function addSubTab(){ newTabN++; TABS.push('New page'+(newTabN>1?' '+newTabN:'')); WIDGETS.push([]); subTab=TABS.length-1;
-  renderTabs(); renderCanvas(); toast('Sub-dashboard added — it inherits the dashboard filters & time range'); }
-function removeFilter(i){ FILTERS.splice(i,1); renderFilters(); wShift++; renderCanvas(); toast('Filter removed — widgets recomputed'); }
-function openFilterMenu(ev){
-  const opts = FILTER_OPTS.filter(o=>!FILTERS.some(f=>f[0]===o[0]));
-  document.getElementById('filterMenu').innerHTML = opts.length? opts.map(o=>
-    `<div class="cmi" onclick="FILTERS.push(['${o[0]}','${o[1]}']);renderFilters();wShift++;renderCanvas();closeOverlays();toast('Filter applied — widgets recomputed')">${o[0]}: ${o[1]}</div>`).join('')
-    : '<div class="cmi" style="color:var(--text-dim)">All filters applied</div>';
-  openCMenu(ev,'filterMenu');
+  renderTabs(); renderCanvas(); toast('Sub-dashboard added — it inherits the dashboard time range'); }
+
+
+/* ================= Time-slider strip (live 8.2.6 chrome, research notes §1) =================
+   Replaces the global filter bar. It reads the SAME state as the time chip (tlA/tlB) rather
+   than carrying a second time model: domain = 4× the selected window, right-pinned at now, so
+   the selection sits in the last quarter for a "Today"-style range. Dragging a handle or the
+   window rewrites tlA/tlB and flips the chip to Custom, exactly like the From/To form does. */
+let tsDrag = null;
+function tsDomain(){
+  const win = Math.max(6e4, tlB - tlA);
+  return { start: TL_NOW - win*4, end: TL_NOW, win };
 }
-function cycleRefresh(b){
-  const s=['⟳ Off','⟳ 10s','⟳ 30s','⟳ 1m','⟳ 5m'], ms={'⟳ 10s':1e4,'⟳ 30s':3e4,'⟳ 1m':6e4,'⟳ 5m':3e5};
-  b.textContent = s[(s.indexOf(b.textContent)+1)%s.length];
-  const el=document.getElementById('setRef'); if(el) el.textContent=b.textContent.slice(2);
-  clearInterval(refTimer); refTimer=null;
-  if(ms[b.textContent]) refTimer=setInterval(()=>{ wShift++; if(!trashed) renderCanvas(); }, ms[b.textContent]);
-  toast('Auto refresh: '+b.textContent.slice(2)+(ms[b.textContent]?' — charts update live':''));
+function tsRender(){
+  const strip = document.getElementById('tstrip'); if(!strip) return;
+  const d = tsDomain(), len = d.end - d.start;
+  const pc = t => Math.max(0, Math.min(100, (t - d.start) / len * 100));
+  const w = document.getElementById('twin');
+  w.style.left = pc(tlA) + '%';
+  w.style.width = Math.max(1.2, pc(tlB) - pc(tlA)) + '%';
+  const fmt = ts => { const x = new Date(ts);
+    return len <= 1728e5 ? trP2(x.getHours())+':'+trP2(x.getMinutes()) : (x.getMonth()+1)+'/'+x.getDate(); };
+  document.getElementById('tmarks').innerHTML =
+    Array.from({length:11},(_,i)=>`<span>${fmt(d.start + len*i/10)}</span>`).join('');
+}
+function tsStart(mode, ev){
+  ev.preventDefault(); ev.stopPropagation();
+  const dots = document.getElementById('tdots'), r = dots.getBoundingClientRect(), d = tsDomain();
+  tsDrag = { mode, r, d, a0: tlA, b0: tlB, x0: ev.clientX };
+  dots.setPointerCapture && dots.setPointerCapture(ev.pointerId);
+  window.addEventListener('pointermove', tsMove);
+  window.addEventListener('pointerup', tsEnd, { once:true });
+}
+function tsMove(ev){
+  if(!tsDrag) return;
+  const { mode, r, d, a0, b0, x0 } = tsDrag, len = d.end - d.start;
+  const dt = (ev.clientX - x0) / r.width * len;
+  const at = t => Math.max(d.start, Math.min(d.end, t));
+  let a = tlA, b = tlB;
+  if (mode==='l'){ a = at(Math.min(a0 + dt, b0 - 6e4)); }
+  else if (mode==='r'){ b = at(Math.max(b0 + dt, a0 + 6e4)); }
+  else { const span = b0 - a0;
+    a = at(a0 + dt); b = a + span;
+    if (b > d.end){ b = d.end; a = b - span; } }
+  tlA = a; tlB = b;
+  tsRender(); trStamp();
+  document.getElementById('tcPill').textContent = 'custom';
+  document.getElementById('tcLabel').textContent = trFmtShort(tlA)+' – '+trFmtShort(tlB);
+}
+function tsEnd(){
+  window.removeEventListener('pointermove', tsMove);
+  if(!tsDrag) return;
+  tsDrag = null; trSelIdx = -1;
+  trSync(); trRenderPop(); trRefresh();
+  toast('Custom range '+trFmtShort(tlA)+' – '+trFmtShort(tlB)+' — widgets recomputed');
+}
+function tsBind(){
+  document.getElementById('thL').addEventListener('pointerdown', e=>tsStart('l', e));
+  document.getElementById('thR').addEventListener('pointerdown', e=>tsStart('r', e));
+  document.getElementById('twin').addEventListener('pointerdown', e=>{
+    if(e.target.classList.contains('thandle')) return; tsStart('m', e); });
 }
 function addWidgetFromLib(t){
   const n = WIDGETS[subTab].length, seed = (subTab+1)*1000 + n*37;
   const map = {
-    spark:{t:'spark',title:'New time series',span:6,h:150,seed,color:'#14b8a6'},
-    bars:{t:'bars',title:'New bar chart',span:6,h:160,seed,color:'#3b82f6'},
+    spark:{t:'spark',title:'New time series',span:6,h:150,seed,color:'#14b8a6',max:100,u:'%'},
+    bars:{t:'bars',title:'New bar chart',span:6,h:160,seed,color:'#3b82f6',max:100,u:'%',cat:'Item'},
     stat:{t:'stat',title:'New KPI',v:'98.2%',vc:'var(--teal)',k:'edit query to bind a metric',d:'▲ 1.2%',dc:'var(--green)'},
     table:{t:'table',title:'New table',span:6,h:170,html:DEV_TABLE},
     honey:{t:'honey',title:'New status grid',span:6,h:170,seed,n:28},
     gauge:{t:'gauge',title:'New gauge',span:3,h:150,seed},
     note:{t:'note',title:'Text section',span:12,h:100,html:'Add context for this row of widgets — runbooks, owners, escalation…'},
-    ai:{t:'spark',title:'✦ Suggested: Errors & Discards — Core',span:6,h:150,seed:seed+7,color:'#a855f7'}
+    ai:{t:'spark',title:'✦ Suggested: Errors & Discards — Core',span:6,h:150,seed:seed+7,color:'#a855f7',max:400}
   };
   WIDGETS[subTab].push(map[t]||map.spark);
   closeOverlays(); renderCanvas();
@@ -1315,6 +2014,91 @@ function wRemove(){ closeOverlays(); if(curW<0) return;
 function wMove(){ closeOverlays(); if(curW<0) return;
   const w=WIDGETS[subTab].splice(curW,1)[0], dest=(subTab+1)%TABS.length;
   WIDGETS[dest].push(w); renderCanvas(); toast('Moved to “'+TABS[dest]+'”'); }
+function wEditW(){ closeOverlays(); if(curW<0) return;
+  toast('Edit Widget — opens the builder: type tabs, style options and the query builder (not built in this variant)'); }
+/* ---- widget Share: real recipient picker + send, per docs §9 (e-mail a widget to
+   several people at once). Was a toast stub. ---- */
+const WSH_PEOPLE = ['ronak.patel@example.com','meet.shah@example.com','noc-engineers@example.com',
+                    'it-managers@example.com','network-ops@example.com','riya.patel@example.com'];
+let wshTo = [], wshW = null;
+function wShareW(){
+  closeOverlays(); if(curW<0) return;
+  wshW = WIDGETS[subTab][curW];
+  wshTo = [];
+  const plain = wshW.title.replace(/<[^>]*>/g,'');
+  document.getElementById('wshName').textContent = plain;
+  document.getElementById('wshMeta').textContent =
+    ({spark:'Time series',bars:'Bar chart',stat:'KPI',honey:'Status grid',gauge:'Gauge',table:'Table',note:'Text'}[wshW.t]||'Widget')
+    + ' · on “' + document.getElementById('dashTitle').textContent + '” · ' + TABS[subTab];
+  document.getElementById('wshMsg').value = '';
+  document.getElementById('wshIn').value = '';
+  document.getElementById('wshRange').checked = true;
+  document.getElementById('wshRangeTxt').textContent = trFmtShort(tlA)+' – '+trFmtShort(tlB);
+  document.getElementById('wshLink').value =
+    'https://observeops/share/w/' + plain.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,26);
+  wshChips(); wshSuggest('');
+  openDrawer('drawer-wshare');
+  setTimeout(()=>document.getElementById('wshIn').focus(), 80);
+}
+function wshChips(){
+  document.getElementById('wshChips').innerHTML = wshTo.map((e,i)=>
+    `<span class="wsh-chip"><b>${e}</b><span title="Remove" onclick="event.stopPropagation();wshDrop(${i})">✕</span></span>`).join('');
+}
+function wshDrop(i){ wshTo.splice(i,1); wshChips(); wshSuggest(document.getElementById('wshIn').value); }
+function wshAdd(v){
+  const e = (v||'').trim().replace(/,$/,'');
+  if(!e) return;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){ toast('“'+e+'” is not a valid e-mail address'); return; }
+  if(wshTo.includes(e)){ toast('Already added'); return; }
+  wshTo.push(e); document.getElementById('wshIn').value=''; wshChips(); wshSuggest('');
+}
+function wshKey(ev){
+  if(ev.key==='Enter' || ev.key===','){ ev.preventDefault(); wshAdd(ev.target.value); return; }
+  if(ev.key==='Backspace' && !ev.target.value && wshTo.length){ wshDrop(wshTo.length-1); }
+}
+function wshSuggest(v){
+  const q=(v||'').trim().toLowerCase();
+  const hits = WSH_PEOPLE.filter(p=>!wshTo.includes(p) && (!q || p.includes(q))).slice(0, q?5:0);
+  document.getElementById('wshSug').innerHTML =
+    hits.map(p=>`<button onclick="wshAdd('${p}')">${p}</button>`).join('');
+}
+function wshCopy(){
+  const i=document.getElementById('wshLink'); i.select();
+  try{ document.execCommand('copy'); toast('Read-only widget link copied'); }
+  catch(e){ toast('Copy the selected link with ⌘C'); }
+}
+function wshSend(){
+  const pending = document.getElementById('wshIn').value.trim();
+  if(pending) wshAdd(pending);
+  if(!wshTo.length){ toast('Add at least one recipient'); document.getElementById('wshIn').focus(); return; }
+  const rng = document.getElementById('wshRange').checked;
+  const note = document.getElementById('wshMsg').value.trim();
+  const name = wshW ? wshW.title.replace(/<[^>]*>/g,'') : 'widget';
+  closeOverlays();
+  toast('“'+name+'” sent to '+wshTo.length+' recipient'+(wshTo.length>1?'s':'')
+    + (rng ? ' · '+trFmtShort(tlA)+' – '+trFmtShort(tlB) : ' · no time range')
+    + (note ? ' · with a message' : ''));
+}
+function wFull(){ closeOverlays(); if(curW<0) return;
+  const w=WIDGETS[subTab][curW];
+  document.getElementById('wfTitle').innerHTML = w.title;
+  document.getElementById('wfTime').textContent = trSelIdx>=0? TR_PRESETS[trSelIdx][1] : 'custom';
+  document.getElementById('wfBody').innerHTML = w.t==='stat'
+    ? `<div style="flex:1;display:grid;place-items:center;text-align:center">
+         <div><div style="font-size:64px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${w.vc}">${w.v}</div>
+         <div style="margin-top:8px;color:var(--text-dim)">${w.k}</div>
+         <div style="margin-top:4px;font-weight:600;color:${w.dc}">${w.d}</div></div></div>`
+    : wBody(w);
+  document.getElementById('wFullView').classList.add('on');
+}
+function closeWFull(){ document.getElementById('wFullView').classList.remove('on'); }
+/* Dashboard-level Full Screen (live 8.2.6 header action) */
+function toggleFS(){
+  const on = document.body.classList.toggle('fs');
+  document.getElementById('fsBtn').title = on? 'Exit Full Screen':'Full Screen';
+  requestAnimationFrame(()=>{ if(!trashed) fitCanvas(); });
+  if(on) toast('Full screen — Esc or the chip at bottom-right exits');
+}
 function dashEdit(){ editMode=!editMode;
   document.getElementById('miEdit').textContent = editMode? 'Done editing':'Edit dashboard';
   renderCanvas(); toast(editMode? 'Edit mode — ✕ removes a widget; ⋮ duplicates or moves it':'Edit mode off'); }
@@ -1322,7 +2106,7 @@ function dashDuplicate(){ const t=document.getElementById('dashTitle');
   t.textContent += ' (copy)'; dashVer=1; renderTabs(); toast('Duplicated in the same folder — you are now on the copy'); }
 function dashExport(){
   const model={ name:document.getElementById('dashTitle').textContent, folder:'Infrastructure/Network',
-    version:dashVer, filters:FILTERS.map(([k,v])=>({key:k,value:v})),
+    version:dashVer,
     timeRange:{ from:new Date(tlA).toISOString(), to:new Date(tlB).toISOString() },
     subDashboards:TABS.map((n,i)=>({name:n,widgets:WIDGETS[i]})) };
   const a=document.createElement('a');
@@ -1348,7 +2132,16 @@ function openCMenu(ev,id){ ev.stopPropagation(); closeOverlays(); const m=docume
   m.style.left=Math.max(8,x)+'px'; m.style.top=y+'px'; }
 function closeOverlays(){ document.querySelectorAll('.sdrawer.on,.cmenu.on').forEach(d=>d.classList.remove('on')); document.getElementById('scrim2').classList.remove('on'); }
 document.addEventListener('click', e=>{ if(!e.target.closest('.cmenu')) document.querySelectorAll('.cmenu.on').forEach(m=>m.classList.remove('on')); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeOverlays(); });
+/* One Escape ladder: full-screen widget → search → popovers/drawers → dashboard full screen.
+   ⌘K / Ctrl+K opens the spotlight from anywhere. */
+document.addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openSearch(); return; }
+  if(e.key!=='Escape') return;
+  if(document.getElementById('wFullView').classList.contains('on')) return closeWFull();
+  if(document.getElementById('searchLayer').classList.contains('on')) return closeSearch();
+  if(document.querySelector('.pop.on,.sdrawer.on,.cmenu.on')){ closePops(); closeOverlays(); return; }
+  if(document.body.classList.contains('fs')) toggleFS();
+});
 
 /* ================= Init ================= */
 (function init(){
@@ -1373,9 +2166,496 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeOverlays(); 
   renderNotifs();
   trSet(8);
   applyTheme((()=>{ try{ return localStorage.getItem('oo-theme')||'dark'; }catch(e){ return 'dark'; } })());
-  renderTabs(); renderFilters(); renderCanvas();
+  if(!/Mac|iP(hone|ad)/.test(navigator.platform||'')){
+    document.getElementById('sbKbd').textContent = 'Ctrl K';
+    document.getElementById('sbSearch').setAttribute('data-tip','Search  Ctrl K');
+  }
+  renderTabs(); renderCanvas();
+  tsBind(); tsRender();
+  /* the dashboard panel boots at the end of its own script block, below */
+  canvasReady = true;
 })();
 </script>
+<div class="pop" id="dpRowMenu"></div>
+<div class="pop" id="nocNewPop"></div>
+<div class="pop" id="managePop"></div>
+<div id="nocPlay">
+  <div class="nphead">
+    <img id="npLogo" alt="" /><span style="font-weight:600">ObserveOps</span>
+    <div class="npcenter">
+      <button class="nparrow" onclick="nocNav(-1)" title="Previous dashboard">‹</button>
+      <span id="npName">—</span>
+      <button class="nparrow" onclick="nocNav(1)" title="Next dashboard">›</button>
+    </div>
+    <span class="npcount" id="npCount">20s</span>
+    <button class="npbtn" id="npPause" onclick="nocPause()" title="Pause rotation">⏸</button>
+    <button class="npbtn" onclick="closeNocPlay()" title="Exit NOC View">✕</button>
+  </div>
+  <div class="npbody" id="npBody"></div>
+</div>
+
+
+<script>
+const DTYPE = { sys:'System default', mine:'Created by me', shared:'Shared with me' };
+const MICON = {
+  sys:   '<svg viewBox="0 0 24 24"><path d="M3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-7v2h3v2H7v-2h3v-2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm1 2v9h16V6H4Z"/></svg>',
+  mine:  '<svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-8 1.7-8 5v2h16v-2c0-3.3-4.7-5-8-5Z"/></svg>',
+  shared:'<svg viewBox="0 0 24 24"><path d="M18 16.1a3 3 0 0 0-2 .8l-7.1-4.2a3 3 0 0 0 0-1.4L16 7.1a3 3 0 1 0-1-1.7L7.9 9.6a3 3 0 1 0 0 4.8l7.2 4.2a3 3 0 1 0 2.9-2.5Z"/></svg>',
+  star:  '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>',
+  lock:  '<svg class="lock" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Z"/></svg>',
+  clock: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm1-13h-2v6l5 3 1-1.7-4-2.3V7Z"/></svg>',
+  play:  '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5Z"/></svg>',
+};
+/* [name, type, private] */
+const DASH_GROUPS = [
+  { name:'PMG', items:[
+    ['Log Statistics','sys',0], ['Application Performance','mine',0], ['Application Performance – Staging','mine',1],
+    ['Linux Server Overview','shared',0], ['Alert Summary','shared',0], ['Server','shared',0],
+    ['Windows Server Overview','mine',0], ['Al Mulla Group','sys',0], ['Aruba Wireless','sys',0], ['Backup Jobs Overview','mine',1] ]},
+  { name:'Network', items:[
+    ['Network Overview','sys',0], ['Interface Utilization','sys',0], ['WAN Link Health','mine',1],
+    ['Wireless Clients','shared',0], ['BGP & Routing','mine',0] ]},
+  { name:'Server', items:[
+    ['Linux Servers','sys',0], ['Windows Servers','sys',0], ['Server Capacity Planning','mine',0] ]},
+  { name:'Virtualization', items:[
+    ['VMware vCenter Overview','sys',0], ['ESXi Hosts','sys',0], ['VM CPU Hotspots','mine',0],
+    ['VM Memory Ballooning','mine',0], ['Datastore Usage','sys',0], ['Hyper-V Cluster','shared',0],
+    ['Nutanix HCI','shared',0], ['VM Snapshot Age','mine',1], ['vSAN Health','sys',0],
+    ['VDI Sessions','shared',0], ['Kubernetes Nodes','mine',0] ]},
+  { name:'Log', items:[
+    ['Logs by Severity','sys',0], ['Windows AD Login Events','mine',0], ['Firewall Denies','mine',0],
+    ['Syslog Volume','sys',0], ['Error Log Trends','shared',0], ['Linux Auth Failures','mine',1],
+    ['Application Errors','shared',0], ['Log Forwarder Health','sys',0], ['Audit Trail','sys',0], ['SIEM Export Status','mine',0] ]},
+  { name:'Flow', items:[ ['Bandwidth by Application','sys',0] ]},
+  { name:'Trap', items:[
+    ['SNMP Trap Overview','sys',0], ['Link Down Traps','mine',0], ['UPS Traps','shared',0],
+    ['Environment Sensors','shared',0], ['Trap Storm Watch','mine',1] ]},
+  { name:'Security Analysis', items:[
+    ['Threat Overview','sys',0], ['Failed Logins','sys',0], ['Brute-force Watch','mine',0],
+    ['Geo Anomalies','mine',0], ['Privilege Escalations','shared',0], ['Malware Alerts','sys',0],
+    ['Phishing Reports','shared',0], ['DNS Tunneling','mine',1], ['Data Exfiltration','mine',1],
+    ['Ransomware Indicators','sys',0], ['Firewall Policy Hits','sys',0], ['IDS / IPS Events','sys',0],
+    ['VPN Access','shared',0], ['Zero-Day Watch','mine',0], ['USB Device Audit','shared',0],
+    ['Cloud IAM Changes','mine',0], ['Certificate Expiry','sys',0], ['Patch Compliance','sys',0],
+    ['Endpoint Isolation','shared',0], ['SOC Handover','mine',0], ['MITRE Coverage','shared',0] ]},
+];
+/* NOC views (live: groups rotate their dashboards full-screen at an interval) */
+const NOC_VIEWS = [
+  ['NOC – Main Wall', 6, 20], ['demo', 5, 21], ['JS', 4, 15], ['KOL', 2, 30], ['test view', 2, 10],
+];
+const DASH_INDEX = {};
+DASH_GROUPS.forEach(g => g.items.forEach(it => DASH_INDEX[it[0]] = { n:it[0], t:it[1], p:it[2], g:g.name }));
+const DASH_FAVS = new Set(['Log Statistics','Al Mulla Group','Aruba Wireless','Server Capacity Planning','VMware vCenter Overview','Threat Overview']);
+const DASH_RECENT = ['Log Statistics','Threat Overview','Network Overview','VMware vCenter Overview','Alert Summary','Bandwidth by Application'];
+const dashState = { tab:'dash', filter:'all', q:'', cur:'Log Statistics' };
+/* collapsed by default — only the current dashboard's category starts open */
+const DASH_CLOSED = new Set(DASH_GROUPS.map(g=>g.name).filter(n=>n!==(DASH_INDEX[dashState.cur]||{}).g));
+
+function dashItemVisible(it){
+  const f = dashState.filter;
+  if (f==='fav' && !DASH_FAVS.has(it.n)) return false;
+  if ((f==='sys'||f==='mine'||f==='shared') && it.t!==f) return false;
+  if (dashState.q && !it.n.toLowerCase().includes(dashState.q)) return false;
+  return true;
+}
+function dashHl(name){
+  if (!dashState.q) return name;
+  const i = name.toLowerCase().indexOf(dashState.q);
+  if (i<0) return name;
+  return name.slice(0,i) + '<mark>' + name.slice(i, i+dashState.q.length) + '</mark>' + name.slice(i+dashState.q.length);
+}
+function dashRow(it){
+  const fav = DASH_FAVS.has(it.n);
+  const k = it.n.replace(/'/g,"\\'");
+  return `<div class="frow${it.n===dashState.cur?' cur':''}" onclick="pickDash('${k}')" title="${it.n} — ${DTYPE[it.t]}${it.p?' · Private':''}">
+    <span class="rtic" title="${DTYPE[it.t]}">${MICON[it.t]}</span>
+    <span class="dnm">${dashHl(it.n)}</span>
+    ${DASH_DEFAULT===it.n ? '<span class="homeb" title="Default landing dashboard — opens first on sign-in"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8Z"/></svg></span>' : ''}
+    ${it.p ? MICON.lock : ''}
+    <button class="dstar${fav?' faved':''}" title="${fav?'Remove from favorites':'Add to favorites'}" onclick="favDash(event,'${k}')">${MICON.star}</button>
+    <button class="dkebab" title="Dashboard actions" onclick="openDashMenu(event,'${k}')">⋮</button>
+  </div>`;
+}
+function qCard(it, pre){
+  const k = it.n.replace(/'/g,"\\'");
+  const icon = pre==='fav'
+    ? '<svg class="qic fav" viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>'
+    : '<svg class="qic" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm1-13h-2v6l5 3 1-1.7-4-2.3V7Z"/></svg>';
+  return `<button class="qcard${it.n===dashState.cur?' cur':''}" title="${it.n}${pre==='fav'?' — favorite':' — recently viewed'}" onclick="pickDash('${k}')">${icon}<span>${it.n}</span></button>`;
+}
+/* the category jump bar was removed — the sticky category headers already do this job.
+   jumpCat() stays: the Manage modal still scrolls the tree to a category. */
+function toggleCat(n){
+  DASH_CLOSED.has(n) ? DASH_CLOSED.delete(n) : DASH_CLOSED.add(n);
+  const t = document.getElementById('dtree'), s = t.scrollTop;
+  renderDashTree(); t.scrollTop = s;
+}
+function jumpCat(gi){
+  const g = DASH_GROUPS[gi];
+  if (g && DASH_CLOSED.delete(g.name)) renderDashTree(); /* jump auto-expands a collapsed category */
+  const el = document.getElementById('sh-'+gi);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function renderDashTree(){
+  const t = document.getElementById('dtree');
+  if (dashState.tab==='noc'){
+    const q = dashState.q;
+    const rows = NOC_VIEWS.filter(v=>!q || v[0].toLowerCase().includes(q)).map(v=>
+      `<div class="nrow" onclick="openNocPlay('${v[0].replace(/'/g,"\\'")}',${v[1]},${v[2]})">
+        <span class="nvic">${MICON.clock}</span>
+        <span class="nvnm"><span class="t">${dashHl(v[0])}</span><span class="s">${v[1]} dashboards · rotates every ${v[2]}s</span></span>
+        <button class="nplay" title="Play on this screen" onclick="event.stopPropagation();openNocPlay('${v[0].replace(/'/g,"\\'")}',${v[1]},${v[2]})">${MICON.play}</button>
+      </div>`).join('');
+    t.innerHTML = `<div class="dhint">NOC views rotate a set of dashboards full-screen — built for large NOC displays. Press ▶ to start playback.</div>` +
+      (rows || `<div class="dempty">No NOC views match “${q}”.<br/><a onclick="dashSearch('')">Clear search</a></div>`);
+    return;
+  }
+  /* ONE flat list: Quick access on top, then every category under a sticky header.
+     Nothing to expand or filter — just scroll, or type to search. */
+  const q = dashState.q;
+  let html = '';
+  if (!q){
+    const quick = [];
+    DASH_FAVS.forEach(n=>{ const it = DASH_INDEX[n]; if (it) quick.push([it,'fav']); });
+    DASH_RECENT.forEach(n=>{ if (!DASH_FAVS.has(n)){ const it = DASH_INDEX[n]; if (it) quick.push([it,'rec']); } });
+    if (quick.length){
+      const top = quick.slice(0,8);
+      /* Same header treatment as every category below it — chevron, collapsible, count
+         beside the label instead of pinned to the far edge. It used to be the one
+         header in the list that behaved differently. */
+      const shut = DASH_CLOSED.has('__quick');
+      const nf = top.filter(p=>p[1]==='fav').length;
+      html += `<div class="shead qhead${shut?' closed':''}" onclick="toggleCat('__quick')" title="${shut?'Expand':'Collapse'} quick access">
+          <span class="shcar">❯</span>
+          <svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>
+          Quick access<span class="cnt2">${top.length}</span>
+          <span class="shsub">${nf} favourite${nf===1?'':'s'} · ${top.length-nf} recent</span>
+        </div>` +
+        (shut ? '' : `<div class="qgrid">` + top.map(p=>qCard(p[0], p[1])).join('') + `</div>`) + `<div class="qgap"></div>`;
+    }
+  }
+  let shown = 0;
+  DASH_GROUPS.forEach((g,gi)=>{
+    const vis = g.items.map(it=>DASH_INDEX[it[0]]).filter(dashItemVisible);
+    if (!vis.length) return;
+    shown += vis.length;
+    const closed = !q && DASH_CLOSED.has(g.name); /* searching always expands matches */
+    html += `<div class="shead${closed?' closed':''}" id="sh-${gi}" onclick="toggleCat('${g.name.replace(/'/g,"\\'")}')" title="${closed?'Expand':'Collapse'} ${g.name}">
+        <span class="shcar">❯</span>${g.name}<span class="cnt2">${q ? vis.length+'/'+g.items.length : g.items.length}</span></div>` +
+      (closed ? '' : vis.map(it=>dashRow(it)).join(''));
+  });
+  t.innerHTML = (q && !shown)
+    ? `<div class="dempty">No dashboards match “${q}”.<br/><a onclick="dashClear()">Clear search</a></div>`
+    : html;
+}
+function renderDashPanel(){ renderDashTree();
+  document.getElementById('dlegend').style.display = dashState.tab==='dash' ? 'flex' : 'none';
+  document.getElementById('dnewBtn').innerHTML = dashState.tab==='dash' ? '＋ New Dashboard' : '＋ New NOC View'; }
+function setDashTab(tb){ dashState.tab = tb;
+  document.getElementById('dtabDash').classList.toggle('on', tb==='dash');
+  document.getElementById('dtabNoc').classList.toggle('on', tb==='noc');
+  document.getElementById('dsearchIn').placeholder = tb==='dash' ? 'Search dashboards…' : 'Search NOC views…';
+  renderDashPanel(); }
+function dashSearch(v){ dashState.q = v.trim().toLowerCase();
+  if (document.getElementById('dsearchIn').value !== v) document.getElementById('dsearchIn').value = v;
+  document.getElementById('dsearchBox').classList.toggle('hasq', !!dashState.q);
+  renderDashTree(); }
+function dashClear(){ dashState.filter='all'; dashSearch(''); renderDashPanel(); }
+function toggleDPanel(){
+  const hid = document.getElementById('dpanel').classList.toggle('hid');
+  const b = document.getElementById('dpanelBtn');
+  b.classList.toggle('flip', hid);                        /* chevron points the way it will move */
+  b.title = hid ? 'Show dashboard list' : 'Hide dashboard list';
+}
+function pickDash(n){ dashState.cur = n;
+  document.getElementById('dashTitle').textContent = n;
+  document.getElementById('dashHeadStar').classList.toggle('faved', DASH_FAVS.has(n));
+  const t = document.getElementById('dtree'), s = t.scrollTop;
+  renderDashTree(); t.scrollTop = s;
+  toast(`→ /dashboard — ${n}`); }
+function favDash(ev, n){ ev.stopPropagation();
+  DASH_FAVS.has(n) ? DASH_FAVS.delete(n) : DASH_FAVS.add(n);
+  if (n===dashState.cur) document.getElementById('dashHeadStar').classList.toggle('faved', DASH_FAVS.has(n));
+  const t = document.getElementById('dtree'), s = t.scrollTop;
+  renderDashPanel(); t.scrollTop = s; }
+function favCurrent(){ favDash({stopPropagation(){}} , dashState.cur); }
+function dashNew(){
+  if (dashState.tab==='dash'){ openCreateDrawer(); return; }
+  openNocNew();
+}
+
+/* ================= Dashboard actions menu (research §4: Clone/Edit/Delete + favorite,
+   default landing, visibility, PDF export, schedule) — kebab ⋮ on rows + page header ====== */
+let DASH_DEFAULT = null;
+const DMI = {
+  open:  '<svg viewBox="0 0 24 24"><path d="M5 5h6v2H7v10h10v-4h2v6H5V5Zm9 0h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14V5Z"/></svg>',
+  star:  '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>',
+  clone: '<svg viewBox="0 0 24 24"><path d="M8 8h12v12H8V8Zm2 2v8h8v-8h-8ZM4 4h12v2H6v10H4V4Z"/></svg>',
+  edit:  '<svg viewBox="0 0 24 24"><path d="M4 20v-4L14.5 5.5l4 4L8 20H4Zm14.7-12.7-4-4 1.6-1.6a1 1 0 0 1 1.4 0l2.6 2.6a1 1 0 0 1 0 1.4l-1.6 1.6Z"/></svg>',
+  home:  '<svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8Z"/></svg>',
+  locki: '<svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Z"/></svg>',
+  pub:   '<svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5h-2a3 3 0 0 0-6 0v3h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5Z"/></svg>',
+  pdf:   '<svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5ZM8 13h8v2H8v-2Zm0 4h5v2H8v-2Z"/></svg>',
+  sched: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm1-13h-2v6l5 3 1-1.7-4-2.3V7Z"/></svg>',
+  del:   '<svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2ZM6 8h12l-1 13H7L6 8Zm4 2v9h1.6v-9H10Zm3.4 0v9H15v-9h-1.6Z"/></svg>',
+};
+function openDashMenu(ev, n){
+  ev.stopPropagation();
+  const it = DASH_INDEX[n]; if (!it) return;
+  const m = document.getElementById('dpRowMenu');
+  const k = n.replace(/'/g,"\\'");
+  m.innerHTML = `
+    <div class="dmhead">${DTYPE[it.t]} · ${it.p?'Private':'Public'}${DASH_DEFAULT===n?' · Default landing':''}<b>${n}</b></div>
+    <button class="dmi" onclick="dmAct('clone','${k}')">${DMI.clone}<span class="dmtx">Clone<i>Copies every widget and its configuration</i></span></button>
+    <button class="dmi" onclick="dmAct('edit','${k}')">${DMI.edit}<span class="dmtx">Edit<i>Name, category, visibility, layout</i></span></button>
+    <div class="dmdiv"></div>
+    <button class="dmi" onclick="dmAct('default','${k}')">${DMI.home}${DASH_DEFAULT===n?'Remove default landing':'Set as default landing'}</button>
+    <button class="dmi" onclick="dmAct('vis','${k}')">${it.p?DMI.pub+'Make public':DMI.locki+'Make private'}</button>
+    <div class="dmdiv"></div>
+    <button class="dmi danger" onclick="dmAct('del','${k}')">${DMI.del}Delete</button>`;
+  closePops();
+  m.classList.add('on');
+  const r = ev.currentTarget.getBoundingClientRect(), mw = 236, mh = m.offsetHeight;
+  let x = r.left; if (x + mw > window.innerWidth - 10) x = Math.max(10, r.right - mw);
+  let y = r.bottom + 6; if (y + mh > window.innerHeight - 10) y = Math.max(10, r.top - mh - 6);
+  m.style.left = x + 'px'; m.style.top = y + 'px';
+}
+function dmAct(a, n){
+  closePops();
+  const it = DASH_INDEX[n]; if (!it) return;
+  if (a==='open'){ pickDash(n); }
+  else if (a==='fav'){
+    favDash({stopPropagation(){}}, n);
+    toast(DASH_FAVS.has(n) ? `★ "${n}" added to favorites` : `"${n}" removed from favorites`);
+  }
+  else if (a==='clone'){
+    const g = DASH_GROUPS.find(x=>x.name===it.g);
+    let nn = `${n} (Copy)`, i = 2;
+    while (DASH_INDEX[nn]) nn = `${n} (Copy ${i++})`;
+    const pos = g.items.findIndex(x=>x[0]===n);
+    g.items.splice(pos+1, 0, [nn,'mine',it.p]);
+    DASH_INDEX[nn] = { n:nn, t:'mine', p:it.p, g:g.name };
+    DASH_CLOSED.delete(g.name);
+    renderDashPanel();
+    toast(`Cloned → "${nn}" — all widgets & configurations copied`);
+  }
+  else if (a==='edit'){ openEditDash(n); }
+  else if (a==='default'){
+    DASH_DEFAULT = DASH_DEFAULT===n ? null : n;
+    renderDashTree();
+    toast(DASH_DEFAULT ? `"${n}" is the default landing — opens first on sign-in (Only for me / For specific users)` : 'Default landing removed');
+  }
+  else if (a==='vis'){
+    it.p = it.p ? 0 : 1;
+    const g = DASH_GROUPS.find(x=>x.name===it.g), row = g.items.find(x=>x[0]===n);
+    if (row) row[2] = it.p;
+    renderDashTree();
+    toast(it.p ? `"${n}" is now Private — share it with specific users via the Users list`
+               : `"${n}" is now Public — anyone in the organization can view; edit access stays with you and Dashboard Admins`);
+  }
+  else if (a==='pdf'){ toast(`Export "${n}" as PDF — share via password-protected email attachment`); }
+  else if (a==='sched'){ toast(`Create Schedule — email "${n}" data on a recurring schedule`); }
+  else if (a==='del'){
+    const g = DASH_GROUPS.find(x=>x.name===it.g);
+    g.items = g.items.filter(x=>x[0]!==n);
+    delete DASH_INDEX[n];
+    DASH_FAVS.delete(n);
+    const ri = DASH_RECENT.indexOf(n); if (ri>-1) DASH_RECENT.splice(ri,1);
+    if (DASH_DEFAULT===n) DASH_DEFAULT = null;
+    if (dashState.cur===n){
+      const first = Object.keys(DASH_INDEX)[0];
+      dashState.cur = first;
+      document.getElementById('dashTitle').textContent = first;
+      document.getElementById('dashHeadStar').classList.toggle('faved', DASH_FAVS.has(first));
+    }
+    renderDashPanel();
+    toast(`Deleted "${n}" — reload the page to restore (prototype only)`);
+  }
+}
+
+/* ================= NOC View playback (research §3: kiosk mode, auto-rotate, countdown) ====== */
+let nocState = null, nocTimer = null;
+function openNocPlay(name, count, interval){
+  const members = Object.keys(DASH_INDEX).slice(0, Math.max(2, Math.min(count, 8)));
+  nocState = { name:name, members:members, idx:0, remain:interval, interval:interval, paused:false };
+  document.getElementById('npLogo').src = document.querySelector('.strigger img').src;
+  document.getElementById('nocPlay').classList.add('on');
+  nocRender();
+  clearInterval(nocTimer);
+  nocTimer = setInterval(nocTick, 1000);
+  toast(`NOC View "${name}" — rotating ${members.length} dashboards every ${interval}s (live opens this in a new tab: /dashboard?noc=…)`);
+}
+function nocRender(){
+  document.getElementById('npName').textContent = nocState.members[nocState.idx];
+  document.getElementById('npCount').textContent = nocState.remain + 's';
+  document.getElementById('npBody').innerHTML = document.getElementById('dcanvas').innerHTML;
+}
+function nocTick(){
+  if (!nocState || nocState.paused) return;
+  nocState.remain--;
+  if (nocState.remain <= 0){
+    nocState.idx = (nocState.idx + 1) % nocState.members.length;
+    nocState.remain = nocState.interval;
+    nocRender();
+  } else {
+    document.getElementById('npCount').textContent = nocState.remain + 's';
+  }
+}
+function nocNav(d){
+  if (!nocState) return;
+  nocState.idx = (nocState.idx + d + nocState.members.length) % nocState.members.length;
+  nocState.remain = nocState.interval;
+  nocRender();
+}
+function nocPause(){
+  if (!nocState) return;
+  nocState.paused = !nocState.paused;
+  document.getElementById('npPause').textContent = nocState.paused ? '▶' : '⏸';
+  document.getElementById('npPause').title = nocState.paused ? 'Resume rotation' : 'Pause rotation';
+}
+function closeNocPlay(){
+  clearInterval(nocTimer); nocTimer = null; nocState = null;
+  document.getElementById('nocPlay').classList.remove('on');
+}
+
+/* ================= Create NOC View (name + dashboards + rotation interval) ====== */
+function openNocNew(){
+  closePops();
+  const p = document.getElementById('nocNewPop');
+  const names = [...DASH_FAVS, ...Object.keys(DASH_INDEX).filter(n=>!DASH_FAVS.has(n))].slice(0,10);
+  p.innerHTML = `<div class="nhead">Create NOC View</div>
+    <div style="padding:12px 14px">
+      <div class="ddlbl">Name <span class="req">*</span></div>
+      <input class="ddin" id="nvName" placeholder="e.g. NOC – Left Wall" />
+      <div class="ddlbl" style="margin-top:13px">Rotation interval (seconds)</div>
+      <select class="ddin" id="nvInt"><option>10</option><option>15</option><option selected>20</option><option>30</option><option>60</option></select>
+      <div class="ddlbl" style="margin-top:13px">Dashboards</div>
+      <div class="ddusers" style="margin-top:0;max-height:150px;overflow-y:auto">
+        ${names.map(n=>`<label class="dduser"><input type="checkbox"${DASH_FAVS.has(n)?' checked':''} />${n}</label>`).join('')}
+      </div>
+      <div class="tcbtns"><button class="no" onclick="closePops()">Cancel</button><button class="ok" onclick="nvCreate()">Create NOC View</button></div>
+    </div>`;
+  p.classList.add('on');
+  document.getElementById('scrim').classList.add('on');
+  setTimeout(()=>document.getElementById('nvName').focus(), 40);
+}
+function nvCreate(){
+  const nm = document.getElementById('nvName').value.trim();
+  if (!nm){ toast('NOC View name is required'); return; }
+  const cnt = document.querySelectorAll('#nocNewPop input[type=checkbox]:checked').length;
+  if (!cnt){ toast('Pick at least one dashboard for the rotation'); return; }
+  const iv = +document.getElementById('nvInt').value;
+  NOC_VIEWS.push([nm, cnt, iv]);
+  closePops();
+  renderDashTree();
+  toast(`✓ NOC View "${nm}" created — ${cnt} dashboards · rotates every ${iv}s`);
+}
+
+
+/* ================= Manage Dashboards (concept — live grid-pencil view was not captured) ====== */
+function openManage(){
+  closePops();
+  const p = document.getElementById('managePop');
+  p.innerHTML = `<div class="nhead">Manage Dashboards <span style="font-weight:400;color:var(--muted);font-size:10.5px">concept view — not captured from live</span></div>
+    <div class="mgbody">` +
+    Object.values(DASH_INDEX).map(it=>{
+      const k = it.n.replace(/'/g,"\\'");
+      return `<div class="mgrow">
+        <span class="rtic" title="${DTYPE[it.t]}">${MICON[it.t]}</span>
+        <span class="mgnm" title="${it.n}">${it.n}</span>
+        <span class="mgcat">${it.g}</span>
+        <button class="mgbtn" title="${it.p?'Private — make public':'Public — make private'}" onclick="mgAct('vis','${k}')">${it.p?DMI.locki:DMI.pub}</button>
+        <button class="mgbtn${DASH_FAVS.has(it.n)?' fv':''}" title="Favorite" onclick="mgAct('fav','${k}')">${DMI.star}</button>
+        <button class="mgbtn danger" title="Delete" onclick="mgAct('del','${k}')">${DMI.del}</button>
+      </div>`;
+    }).join('') + `</div>`;
+  p.classList.add('on');
+  document.getElementById('scrim').classList.add('on');
+}
+function mgAct(a, n){
+  const it = DASH_INDEX[n]; if (!it) return;
+  if (a==='vis'){
+    it.p = it.p ? 0 : 1;
+    const g = DASH_GROUPS.find(x=>x.name===it.g), row = g.items.find(x=>x[0]===n);
+    if (row) row[2] = it.p;
+  } else if (a==='fav'){
+    DASH_FAVS.has(n) ? DASH_FAVS.delete(n) : DASH_FAVS.add(n);
+  } else if (a==='del'){
+    dmAct('del', n);   /* full delete incl. cur fallback + toast */
+    openManage();      /* dmAct closes pops — reopen the manager */
+    return;
+  }
+  renderDashPanel();
+  openManage();        /* re-render rows in place */
+}
+
+/* full screen (real browser fullscreen) */
+function toggleFullscreen(){
+  if (document.fullscreenElement){ document.exitFullscreen(); }
+  else if (document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen(); }
+  else toast('Full Screen not available in this browser');
+}
+
+
+/* ---- shims: these two flows live in V2's Create Dashboard drawer, which V1 does not carry ---- */
+function openCreateDrawer(){ toast('Create Dashboard — name, category, visibility, default landing, layout sliders + live preview (built in V2)'); }
+function openEditDash(n){ toast('Edit “'+n+'” — opens the same drawer pre-filled (built in V2)'); }
+/* the panel drives V1's canvas, which re-seeds from wShift rather than a widget list */
+function renderDashCanvas(){ wShift++; if(!trashed) renderCanvas(); }
+/* keep V1's breadcrumb in step with the panel selection */
+(function(){ const orig = pickDash;
+  pickDash = function(n){ orig(n);
+    const it = DASH_INDEX[n];
+    if(it) document.getElementById('crumbCat').textContent = it.g;
+    renderDashCanvas();
+  };
+})();
+function openDPanel(cat){
+  const p = document.getElementById('dpanel');
+  if(p.classList.contains('hid')) toggleDPanel();
+  if(cat){ DASH_CLOSED.delete(cat); renderDashTree();
+    const gi = DASH_GROUPS.findIndex(g=>g.name===cat), el = document.getElementById('sh-'+gi);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  const s = document.getElementById('dsearchIn'); if(s) s.focus();
+}
+function closeDPanel(){ if(!document.getElementById('dpanel').classList.contains('hid')) toggleDPanel(); }
+
+/* boot the panel — this block is parsed after the page's main script, so it initialises itself */
+renderDashPanel();
+document.getElementById('dashTitle').textContent = dashState.cur;
+document.getElementById('dashHeadStar').classList.toggle('faved', DASH_FAVS.has(dashState.cur));
+document.getElementById('crumbCat').textContent = (DASH_INDEX[dashState.cur]||{}).g || 'Dashboards';
+
+</script>
 <script src="_variants.js"></script>
+<!-- Agentation visual-feedback widget (DEV-ONLY: loads only on file:// / localhost;
+     no-ops on the deployed GitHub Pages site so it is never shipped to end users) -->
+<script>
+(function () {
+  var dev = location.protocol === 'file:' ||
+            location.hostname === 'localhost' ||
+            location.hostname === '127.0.0.1';
+  if (!dev) return;
+  /* Agentation paints its toolbar at z-index 100000 and its marker / draw layers at
+     99996-99998. This prototype's drawers and full-screen overlays sit at 100001 and
+     200001 (they have to clear the variant-switcher pill at 99999), so an open drawer
+     buried the annotation layers: the pin never showed and a note could not be attached
+     to anything inside the drawer. Lift Agentation's own layers above everything. The
+     first rule clears the app whatever the build's hashed class names are; the last two
+     restore Agentation's internal order (toolbar over markers over canvas).
+     Dev-only, and it never touches the product's z-index scale. */
+  var st = document.createElement('style');
+  st.id = 'agentation-stacking-fix';
+  st.textContent =
+    '[data-agentation-root] > *{z-index:2147483000 !important}' +
+    '[data-agentation-root] > [class*="markersLayer" i]{z-index:2147483001 !important}' +
+    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}';
+  document.head.appendChild(st);
+  var s = document.createElement('script');
+  s.src = 'agentation-embed.js';
+  s.defer = true;
+  document.body.appendChild(s);
+})();
+</script>
 </body>
 </html>

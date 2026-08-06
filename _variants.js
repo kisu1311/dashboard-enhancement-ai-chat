@@ -15,8 +15,8 @@
   /* VARIANTS:BEGIN (managed by _sync_variants.js — do not edit by hand) */
   var VARIANTS = [
     {"file":"index copy.html","label":"V1 · Sidebar & Header Actions"},
-    {"file":"index.html","label":"V2 · Grouped Sidebar"},
-    {"file":"dashboard-picker-advanced.html","label":"V3 · Advanced Dashboard Picker"}
+    {"file":"index.html","label":"V2 · Grouped Sidebar + AI Option 1"},
+    {"file":"dashboard-picker-advanced.html","label":"V3 · Advanced Picker + AI Option 2"}
   ];
   /* VARIANTS:END */
 
