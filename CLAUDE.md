@@ -170,8 +170,14 @@ Agentation, not the app** — pause it (⏸) to use the UI.
 ## Deployment
 Repo: https://github.com/kisu1311/Side_bar_menu (unchanged by the folder rename)
 Live URL: https://kisu1311.github.io/Side_bar_menu/
+
 Push to `main` → GitHub Actions deploys Pages (workflow also runs the variant
-sync). `gh` CLI is NOT installed — plain `git push` works via keychain.
+sync). `gh` CLI is NOT installed — plain `git push` works via keychain, and no
+`gh` is needed since the repo, remote, workflow and Pages source already exist.
+
+`agentation-embed.js` is **gitignored** — it is a 540 KB dev-only widget and the
+loader no-ops off localhost, so the live site never fetches it. Keep your local
+copy; if a teammate clones the repo they will need their own.
 
 ## Handoff
 Latest session state is in [HANDOFF.md](HANDOFF.md) — read it first.
