@@ -1670,6 +1670,10 @@ the `.wadd` CSS block.
   ⚠️ This is **not** the whole-board empty state: a flat empty dashboard still gets the big
   `.wadd` tile, because *"this dashboard has nothing on it"* is a different sentence from
   *"this group is waiting for widgets"*. (`.gempty`, the old text row, is still gone.)
+  ⚠️ **The `＋ New group` button (`.gnew`) is gone too** (annotation, 19 Aug 2026), along with
+  its CSS — the drawer tile is the single entry point now, and it is the one that knows how
+  to convert a flat board. The `G` shortcut survives but runs **`awAddGroup()`**, not
+  `addGroup()`, and its `sel` is empty because there is no control left to carry the keycap.
   ⚠️ The end-of-board tile is back to its original test, `WIDGETS.some(a => a.length)`. It
   was briefly also skipped when the last group was empty (18 Aug 2026), because an empty
   group rendered the same `.wadd` tile and the two stacked one under the other. With
@@ -1713,6 +1717,16 @@ picked by `KMOD` / `KREDO`), plus the two toolbar buttons `#undoBtn` / `#redoBtn
 - The buttons **name the edit** ("Undo remove widget") and **dim rather than
   disable**, because `pointer-events:none` would stop the tooltip explaining why
   nothing happens (`.icobtn.off`).
+
+### The time-range chip lights only while its popover is open
+
+⚠️ `trToggle()` lit `.timechip` and opened `#trPop`, but **click-outside and Escape stripped
+`.on` from the popover only** — so dismissing it left the chip wearing its teal active
+border with nothing open, and it stayed lit for the rest of the session (annotation,
+19 Aug 2026). All four close paths go through one **`trClose()` → `trPaint()`** now:
+click-outside, Escape, `trSet()` (picking a preset) and `trApply()` (an absolute range).
+Anything that closes that popover in future has to call `trClose()`, not
+`trPop.classList.remove('on')`.
 
 ## Create Dashboard drawer — now in Option 1 too
 

@@ -604,9 +604,6 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .gmi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gmi .ct{color:var(--muted);font-size:11px}
 .gmi.cur{color:var(--teal);font-weight:600}
-.gnew{display:flex;align-items:center;gap:8px;width:100%;padding:11px 12px;border:1px dashed var(--border);
-  border-radius:8px;color:var(--text-dim);font-size:12.5px;font-weight:600;background:transparent}
-.gnew:hover{border-color:var(--teal);color:var(--teal);background:var(--hover)}
 
 /* ---- "Add widget" as the last tile ON the canvas (was a toolbar button) -------------
    Grounded, not invented. Grafana reveals an "Add panel" control on the canvas inside the
@@ -5089,7 +5086,11 @@ const KREDO = KMOD === '⌘' ? '⇧⌘Z' : 'Ctrl+Y';   /* Windows' usual redo ke
 const KB = [
   {k:'n', cap:'N',  grp:'Dashboard',  label:'Create new dashboard',   sel:'#newDashBtn,#dnewBtn',  run:()=>dashNew()},
   {k:'w', cap:'W',  grp:'Dashboard',  label:'Add widget',             sel:'.cwfab,.waMain,.gaddw', run:()=>openAwDrawer()},
-  {k:'g', cap:'G',  grp:'Dashboard',  label:'New group',              sel:'.gnew',                 run:()=>addGroup()},
+  /* ⚠️ `sel` is empty because the ＋ New group button is gone — there is no control left to
+     hang the keycap on, and `kbTag()` would search for a node that never exists. It runs
+     `awAddGroup()`, not `addGroup()`, so pressing G on a FLAT board converts it properly
+     instead of pushing a second tab the renderer would not draw. */
+  {k:'g', cap:'G',  grp:'Dashboard',  label:'New group',              sel:'',                      run:()=>awAddGroup()},
   {k:'e', cap:'E',  grp:'Dashboard',  label:'Edit mode (remove widgets)', sel:'',                  run:()=>dashEdit()},
   /* undo/redo carry a modifier, so they are handled by their own listener — but they still
      belong in the registry, which is what puts the key on the button and in the sheet */
@@ -5223,7 +5224,7 @@ function trSet(i){                                                 // apply pres
   trSelIdx = i; tlB = TL_NOW; tlA = trStart(key);
   document.getElementById('tcLabel').textContent = label;
   trSync(); trRenderPop(); trRefresh();
-  document.getElementById('trPop').classList.remove('on');
+  trClose();                       /* ⚠️ not `trPop.classList.remove` — the chip has to unlight too */
 }
 let canvasReady = false;
 function trRefresh(){ if(!canvasReady || trashed) return; wShift++; renderCanvas(); }
@@ -5235,7 +5236,7 @@ function trApply(e){                                               // absolute r
   tlA = a; tlB = b; trSelIdx = -1;
   document.getElementById('tcLabel').textContent = 'Custom';
   trStamp(); trRenderPop(); trRefresh();
-  document.getElementById('trPop').classList.remove('on');
+  trClose();                       /* ⚠️ same — see trPaint */
 }
 function trRenderPop(){
   const q = (document.getElementById('trSearch').value || '').toLowerCase();
@@ -5245,16 +5246,25 @@ function trRenderPop(){
     .map(o => `<div class="range-item${o.i===trSelIdx?' sel':''}" onclick="trSet(${o.i})">${o.label}<span class="pill">${o.key}</span></div>`)
     .join('') || '<div style="padding:8px;font-size:11.5px;color:var(--text-dim)">No matching range</div>';
 }
+/* ⚠️ ONE place closes the popover, because the chip's lit state has to move with it
+   (annotation, 19 Aug 2026: "make to active this button"). Click-outside and Escape used to
+   strip `.on` from the POPOVER only — so dismissing it left the chip wearing its teal
+   active border with nothing open, and it stayed lit for the rest of the session. */
+function trPaint(on){
+  const p = document.getElementById('trPop'); if (p) p.classList.toggle('on', !!on);
+  const c = document.querySelector('.timechip'); if (c) c.classList.toggle('on', !!on);
+}
+function trClose(){ trPaint(false); }
 function trToggle(e){ e.stopPropagation();
   const p = document.getElementById('trPop');
-  p.classList.toggle('on');
-  document.querySelector('.timechip').classList.toggle('on', p.classList.contains('on'));
-  if(p.classList.contains('on')) trSync(); }
+  const on = !p.classList.contains('on');
+  trPaint(on);
+  if(on) trSync(); }
 document.addEventListener('click', e => {                          // click outside closes the popover
   const p = document.getElementById('trPop');
-  if(p && p.classList.contains('on') && !p.contains(e.target)) p.classList.remove('on'); });
+  if(p && p.classList.contains('on') && !p.contains(e.target)) trClose(); });
 document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') document.getElementById('trPop').classList.remove('on'); });
+  if(e.key === 'Escape') trClose(); });
 
 /* ================= Next-gen dashboard canvas — data-driven, all actions functional ================= */
 let curG = 0, editMode = false, trashed = false, wShift = 0, refTimer = null, hMul = 1, curW = -1, newTabN = 0;
@@ -5665,7 +5675,12 @@ function renderCanvas(){
           ondragover="wDragOverGroup(event,${TABS.length-1})" ondrop="wDrop(event,${TABS.length-1},-1)"
           ondragleave="wDragLeave(event)">${addTile(TABS.length-1, TABS[TABS.length-1], false)}</div>`
      : '') +
-  (ungrouped ? '' : `<button class="gnew" onclick="addGroup()">＋ New group</button>`);
+  /* ⚠️ the "＋ New group" button was HERE and was removed (annotation, 19 Aug 2026:
+     "remove this"). Adding a group is the Add New Widget drawer's *Empty group* tile now —
+     one entry point instead of two, and the drawer is the one that also knows how to
+     convert a flat board (see `awAddGroup`). The `G` shortcut still works and points at
+     the same function. */
+  '';
   renderOutline();
 }
 /* Grow the widget rows so the canvas fills the viewport instead of leaving dead space
