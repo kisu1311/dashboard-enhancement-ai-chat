@@ -535,11 +535,22 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .dgroup{margin-bottom:16px}
 .ghead{display:flex;align-items:center;gap:9px;padding:2px 2px 8px;position:sticky;top:0;z-index:3;
   background:var(--bg);border-bottom:1px solid var(--border-soft);margin-bottom:10px}
-.gtog{display:flex;align-items:center;gap:8px;padding:3px 4px;border-radius:5px;color:var(--text);min-width:0}
+/* ⚠️ the caret COLLAPSES, the name RENAMES (annotation, 19 Aug 2026). The name used to sit
+   inside this button, so clicking it collapsed the group and renaming was only reachable
+   from the ⋮ menu's prompt(). They are two controls now, side by side. */
+.gtog{display:flex;align-items:center;padding:3px 4px;border-radius:5px;color:var(--text);flex:0 0 auto}
 .gtog:hover{background:var(--hover)}
 .gcar{font-size:9px;color:var(--muted);width:10px;flex:0 0 10px;transition:transform .15s;transform:rotate(90deg)}
 .ghead.closed .gcar{transform:rotate(0)}
-.gnm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gnm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  margin-left:-3px;padding:3px 6px;border-radius:5px;cursor:text;max-width:340px}
+.gnm:hover{background:var(--hover)}
+.gnm:focus-visible{outline:none;box-shadow:0 0 0 2px var(--teal)}
+/* ⚠️ inherits the title's own type so the row does not jump by a pixel when it swaps in */
+.gnmin{width:100%;min-width:120px;background:var(--panel-2);border:1px solid var(--teal);
+  border-radius:5px;padding:2px 6px;margin:-1px 0;outline:none;color:var(--text);
+  font:600 13.5px/1.45 inherit;font-family:inherit}
+.gnm.ed{padding:0;background:none;max-width:none;flex:0 1 340px}
 .gcnt{font-size:11px;color:var(--muted);background:var(--chip);border-radius:9px;padding:1px 8px;white-space:nowrap}
 .gsp{flex:1}
 .gact{width:24px;height:24px;border-radius:5px;display:grid;place-items:center;color:var(--text-dim);
@@ -5610,7 +5621,9 @@ function renderCanvas(){
   g.innerHTML = TABS.map((name, gi) => {
     const ws = WIDGETS[gi] || [], shut = !ungrouped && GRP_SHUT.has(gi);
     const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}">
-        <button class="gtog" onclick="toggleGroup(${gi})" title="${shut?'Expand':'Collapse'} ${name}"><span class="gcar">❯</span><span class="gnm">${name}</span></button>
+        <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">❯</span></button>
+        <span class="gnm" role="button" tabindex="0" data-tip="Rename group" onclick="gNameEdit(${gi})"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();gNameEdit(${gi})}">${name}</span>
         <span class="gcnt">${ws.length} widget${ws.length===1?'':'s'}</span>
         <span class="gsp"></span>
         <button class="gact gaddw" title="Add a widget to this group" onclick="curG=${gi};openAwDrawer()">＋</button>
@@ -6341,10 +6354,42 @@ function expandAllGroups(){ closeOverlays(); GRP_SHUT = new Set(); renderCanvas(
 /* ---- group actions ---- */
 let gMenuIdx = -1;
 function openGMenu(ev, gi){ gMenuIdx = gi; curG = gi; openCMenu(ev,'gMenu'); }
+/* ── rename a group from its own title (annotation, 19 Aug 2026) ──────────────────────
+   ⚠️ The name must NOT live inside the collapse `<button>`: this swaps it for an `<input>`,
+   and interactive content inside a button is invalid and eats the clicks — the same lesson
+   the AI panel's chat-name trigger records.
+   ⚠️ Clear `onblur` BEFORE the swap back. Removing a focused input fires blur
+   synchronously, which re-enters `done()` mid-swap (the `acNameDone` gotcha). */
+function gNameEdit(gi){
+  const host = document.querySelector('#grp-' + gi + ' .gnm');
+  if (!host || host.dataset.ed) return;
+  const cur = TABS[gi];
+  host.dataset.ed = '1'; host.classList.add('ed');
+  host.innerHTML = '<input class="gnmin" value="' + String(cur).replace(/"/g, '&quot;') + '" />';
+  const inp = host.firstChild;
+  const done = keep => {
+    inp.onblur = null; inp.onkeydown = null;
+    const v = inp.value.trim();
+    delete host.dataset.ed;
+    if (keep && v && v !== cur){
+      histDo('Rename group'); TABS[gi] = v; renderCanvas();
+      toast('Group renamed to “' + v + '”');
+    } else renderCanvas();          /* re-render puts the plain title back */
+  };
+  inp.onkeydown = e => {
+    e.stopPropagation();            /* the board's single-key shortcuts must not fire */
+    if (e.key === 'Enter'){ e.preventDefault(); done(true); }
+    else if (e.key === 'Escape'){ e.preventDefault(); done(false); }
+  };
+  inp.onblur = () => done(true);    /* clicking away commits, the way the chat name does */
+  inp.focus(); inp.select();
+}
+/* the ⋮ menu's Rename now opens the SAME inline editor rather than a native prompt() —
+   one implementation, and the drawer/menu design language here has no browser dialogs */
 function gRename(){
-  closeOverlays(); if(gMenuIdx<0) return;
-  const n = prompt('Group name', TABS[gMenuIdx]);
-  if(n && n.trim() && n.trim()!==TABS[gMenuIdx]){ histDo('Rename group'); TABS[gMenuIdx] = n.trim(); renderCanvas(); toast('Group renamed'); }
+  const gi = gMenuIdx;
+  closeOverlays(); if (gi < 0) return;
+  gNameEdit(gi);
 }
 function gAddWidget(){ closeOverlays(); curG = gMenuIdx; openAwDrawer(); }
 function gCollapseOthers(){

@@ -1646,6 +1646,18 @@ the `.wadd` CSS block.
   the last group. It used to be one per group, which put four identical add buttons on a
   four-group board — clutter, not affordance. Adding to one specific group is still the `＋`
   in that group's header.
+- **The group title renames in place** (`gNameEdit`, annotation 19 Aug 2026). The caret is
+  the collapse control and the **name is its own trigger** — click it (or Enter/Space on it)
+  and it swaps for an input; **Enter or clicking away commits, Esc cancels**, and the rename
+  goes through `histDo()` so ⌘Z reverses it. The ⋮ menu's *Rename group* opens the **same**
+  editor; it used to be a native `prompt()`, which nothing else in this file uses.
+  ⚠️ **The name must NOT be inside the collapse `<button>`** — it was, which is why clicking
+  the title collapsed the group instead of editing it, and interactive content inside a
+  button is invalid and eats the clicks anyway. Same lesson as the AI panel's chat-name
+  trigger.
+  ⚠️ **Clear `onblur` before swapping the input away.** Removing a focused input fires blur
+  synchronously and re-enters the commit mid-swap — the `acNameDone` gotcha, in a second
+  place now.
 - ⚠️ **An empty GROUP is a bare drop area (`.gdrop`), not an add tile** (annotation,
   19 Aug 2026: *"add empty group only"*, with a pointer to Datadog). **Checked against
   Datadog**, which this group model is copied from: a group there is a **container** — you
