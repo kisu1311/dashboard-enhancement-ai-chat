@@ -569,7 +569,21 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .whbt i{display:block;height:100%;border-radius:2px}
 .whbv{flex:0 0 auto;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:10.5px;min-width:28px}
 
-/* .gempty is gone — an empty group now renders the .wadd tile instead of a text row */
+/* ── an empty GROUP is a bare drop area (annotation, 19 Aug 2026: "add empty group only")
+   Researched against Datadog, which is what this whole group model is copied from: there a
+   group is a CONTAINER — you select widgets and press Group (⌘G), each group gets a custom
+   header and is collapsible, and widgets are dragged in and out of it. It carries no
+   add-widget button of its own. So neither does this: the group's ＋ lives in its header,
+   where Datadog puts the group's controls too.
+   ⚠️ This is NOT the whole-board empty state. A flat, empty dashboard still gets the big
+   `.wadd` tile — that one is "this dashboard has nothing on it", which is a different
+   sentence from "this group is waiting for widgets". */
+.gdrop{grid-column:span 12;display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:96px;padding:14px;border:1px dashed var(--border);border-radius:var(--radius);
+  color:var(--muted);font-size:12.4px;text-align:center}
+.gdrop svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.dgrid12.dropinto .gdrop{border-color:var(--teal);color:var(--text-dim)}
 .grpbtn .cr{font-size:9px;color:var(--text-dim);margin-left:1px}
 #grpMenu{min-width:230px}
 .gmi{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:7px 9px;border-radius:4px;
@@ -5619,16 +5633,21 @@ function renderCanvas(){
           return `<div class="widget" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${tb}${dots}</div><div class="wbody">${wBody(w)}</div>${WGRIPS}</div>`;
         }).join('') + `</div>`
       : `<div class="dgrid12" style="gap:${gap}px" ondragover="wDragOverGroup(event,${gi})" ondrop="wDrop(event,${gi},-1)" ondragleave="wDragLeave(event)">`
-        + addTile(gi, name, true) + `</div>`);
+        /* ⚠️ a flat board's empty state is the board's, and keeps the big add tile; an empty
+           GROUP is a container waiting to be filled, so it is a drop area — see `.gdrop`. */
+        + (ungrouped ? addTile(gi, name, true)
+                     : `<div class="gdrop"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4"/>`
+                       + `<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>`
+                       + `Empty group — drag widgets here, or use ＋ in the header</div>`)
+        + `</div>`);
     return `<section class="dgroup" id="grp-${gi}">${head}${body}</section>`;
   }).join('') +
-  /* The single end-of-board add tile. ⚠️ It is skipped whenever the LAST GROUP IS EMPTY,
-     not just when the whole board is (annotation, 18 Aug 2026 — adding an Empty group put
-     two of these one under the other). That group already renders its own bigger
-     empty-state tile directly above, and this one targets `TABS.length-1` — the very same
-     group — so the two were the same button twice.
-     A middle group being empty is fine: its tile is not adjacent to this one. */
-  ((WIDGETS[TABS.length - 1] || []).length
+  /* The single end-of-board add tile — skipped only when the board is empty, because the
+     board's own empty state above is already showing its (bigger) one.
+     ⚠️ It was briefly also skipped when the LAST GROUP was empty (18 Aug 2026), because an
+     empty group rendered the same `.wadd` tile and the two stacked. An empty group is a
+     `.gdrop` area now, so there is nothing to duplicate and this is back to its own test. */
+  (WIDGETS.some(a => (a||[]).length)
      ? `<div class="dgrid12" style="gap:${gap}px;margin:10px 0 2px"
           ondragover="wDragOverGroup(event,${TABS.length-1})" ondrop="wDrop(event,${TABS.length-1},-1)"
           ondragleave="wDragLeave(event)">${addTile(TABS.length-1, TABS[TABS.length-1], false)}</div>`

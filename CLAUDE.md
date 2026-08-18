@@ -1646,14 +1646,22 @@ the `.wadd` CSS block.
   the last group. It used to be one per group, which put four identical add buttons on a
   four-group board — clutter, not affordance. Adding to one specific group is still the `＋`
   in that group's header.
-- An **empty group** keeps its own `span 4` `.big` tile — that is an empty state, not a
-  repeated button (it replaced the old `.gempty` text row; that class is gone).
-  ⚠️ **The end-of-board tile is skipped whenever the LAST GROUP is empty**, not merely when
-  the whole board is (annotation, 18 Aug 2026). The test was `WIDGETS.some(a => a.length)`,
-  so adding an *Empty group* to a board that already had widgets drew **two add tiles one
-  under the other** — and both targeted `TABS.length-1`, the same group, so it was
-  literally the same button twice. It is `(WIDGETS[TABS.length-1] || []).length` now.
-  A *middle* group being empty still shows both: those two tiles are not adjacent.
+- ⚠️ **An empty GROUP is a bare drop area (`.gdrop`), not an add tile** (annotation,
+  19 Aug 2026: *"add empty group only"*, with a pointer to Datadog). **Checked against
+  Datadog**, which this group model is copied from: a group there is a **container** — you
+  select widgets and press **Group** (⌘G), each group gets a custom header and is
+  collapsible, and widgets are **dragged** in and out. It carries no add-widget button of
+  its own; the group's ＋ lives in its **header**, which is where Datadog puts group
+  controls too. Notably **Datadog has no "create an empty group" flow at all** — its Group
+  widget schema makes `widgets` required — so the drawer's *Empty group* tile is ours, and
+  the empty state it produces is the one thing that had to be designed rather than copied.
+  ⚠️ This is **not** the whole-board empty state: a flat empty dashboard still gets the big
+  `.wadd` tile, because *"this dashboard has nothing on it"* is a different sentence from
+  *"this group is waiting for widgets"*. (`.gempty`, the old text row, is still gone.)
+  ⚠️ The end-of-board tile is back to its original test, `WIDGETS.some(a => a.length)`. It
+  was briefly also skipped when the last group was empty (18 Aug 2026), because an empty
+  group rendered the same `.wadd` tile and the two stacked one under the other. With
+  `.gdrop` there is nothing to duplicate.
 - Tile body → the three-tab Add New Widget drawer. Five **quick-add buttons**
   (`.waQb`) add the four most-used catalogue types plus the AI suggestion in one
   click, through the same `awAdd()` / `addWidgetFromLib('ai')` the drawer uses.
