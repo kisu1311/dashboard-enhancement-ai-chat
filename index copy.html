@@ -1697,10 +1697,19 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ `.bx` is a MODIFIER, not a change to `.aitk.run`. The thinking trail uses the same
    `.aitk.run` and puts its task rows inside — boxing that too would restyle a surface
    nobody asked about. */
-.aitk.run.bx{padding:7px 10px 9px 8px;margin-left:-8px;border-radius:10px;
-  background:var(--ai-soft);border:1px solid var(--ai-line)}
-.aitk.run.bx .aitkh{padding:0;margin-left:0;background:none;border:0;border-radius:0}
-.aitk.run.bx .aiagsay{margin:8px 1px 0;font-size:12.6px;line-height:1.55;color:var(--text-dim)}
+/* ⚠️ ONE box across both states (request, 18 Aug 2026: "this result will be show in this
+   box and it will be expand and collapse"). The card does not disappear when the run ends —
+   it stays, quietens down, and the trail expands and collapses INSIDE it. */
+.aitk.bx{padding:7px 10px 9px 8px;margin-left:-8px;border-radius:10px;
+  border:1px solid var(--border-soft);background:var(--panel-2)}
+.aitk.run.bx{background:var(--ai-soft);border-color:var(--ai-line)}
+.aitk.bx .aitkh{padding:0;margin-left:0;background:none;border:0;border-radius:0;
+  border-radius:0}
+.aitk.cl.bx .aitkh{cursor:pointer;gap:7px}
+.aitk.cl.bx:hover{border-color:var(--border)}
+.aitk.bx .aiagsay{margin:8px 1px 0;font-size:12.6px;line-height:1.55;color:var(--text-dim)}
+/* the trail sits inside the card, so it does not need the card's own left inset again */
+.aitk.cl.bx .aitkl{margin:8px 0 0 6px}
 .aitk.run .aitkh{padding:5px 10px 5px 7px;margin-left:-7px;border-radius:9px;
   background:var(--ai-soft);border:1px solid var(--ai-line)}
 .aitk.run .aitkm{background:transparent}
@@ -9281,7 +9290,11 @@ function aiAgStart(q, sp, fam){
     title: (sp.name || fam.key + ' metrics').replace(/^./, c => c.toUpperCase()),
     board: s.dash, target: s.dash,   /* where it will land — the open board until changed */
     time: s.time, seed: 4207, state:'run', n:1, bs:[], open:{think:true}, pace: aiPace(q),
-    t0: Date.now() };                      /* the loader's elapsed clock reads this */
+    t0: Date.now(),                        /* the loader's elapsed clock reads this */
+    /* ⚠️ the loader's headline. It used to read a constant "Reasoning" on every prompt
+       (annotation, 18 Aug 2026), which told you nothing about what was being worked on. */
+    label: 'Designing the ' + (/time.?series/i.test(q) ? 'time-series' :
+      (AI_CHARTS[sp.chart] || 'Line').toLowerCase()) + ' widget' };
   a.bs = aiAgPairSays(aiAgBeats(a));
   aiThread.push({ r:'agent', a: a });
   aiRender();
@@ -9334,6 +9347,7 @@ function aiAgSumStart(q){
   const s = aiScope();
   const a = { kind:'summary', board:s.dash, time:s.time, n:1, state:'run', bs:[], open:{think:true},
     t0: Date.now(),                        /* the loader's elapsed clock reads this */
+    label: 'Reading “' + s.dash + '”',     /* see the note at aiAgStart */
               pace: aiPace(q), ans: aiBuildAnswer('summary', q), nw:s.n,
               up:s.up, down:s.down, crit:s.crit, major:s.major };
   a.bs = aiAgPairSays(aiAgSumBeats(a, s));
@@ -9670,10 +9684,19 @@ function aiAgHTML(a, i){
        single icon — putting the grid, the label and the clock inside it stacked all three
        vertically and pushed Skip onto its own line. `.aitkh` is already a flex row with a
        gap, so the three parts go in as direct children of it. */
+    /* ⚠️ the label is not a constant. It reads the tool beat that is actually happening, so
+       it moves with the work — "Read the board" → "Fetched the counters behind it". The
+       first beat is titled "Reasoning" for the disclosure's heading, which says nothing on
+       its own, so THAT one falls back to the agent's own per-request headline. */
+    const cur = pre[pre.length - 1];
+    const lbl = (cur && cur.t && cur.t !== 'Reasoning') ? cur.t : (a.label || 'Reasoning');
     const head = running
-      ? aiLdHTML('Reasoning')
+      ? aiLdHTML(lbl)
+      /* the finished header carries the same per-request headline, for the same reason:
+         a thread of five answers that all say "Reasoning" tells you nothing about which
+         is which. The step count stays beside it. */
       : '<span class="aitkm">' + AI_SPARK + '</span>' +
-        '<span class="aitkt">Reasoning</span>' +
+        '<span class="aitkt">' + aiEsc(a.label || 'Reasoning') + '</span>' +
         '<span class="aitkn">' + steps + ' step' + (steps > 1 ? 's' : '') + '</span>';
     /* ⚠️ `open.think` DEFAULTS TO TRUE (request, 18 Aug 2026: the finished trail was
        hidden behind a click and "doesn't show currently"). So the moment the flow ends,
@@ -9689,7 +9712,7 @@ function aiAgHTML(a, i){
        all three inside the one box (`.bx`). Skip sits where `.aitksk`'s `margin-left:auto`
        was always designed to put it, which is also where the thinking trail keeps it. */
     const liveSay = (running && says.length) ? says[says.length - 1][1].x : '';
-    out.push('<div class="aitk ' + (running ? 'run bx' : 'cl') + (op ? ' op' : '') + '">' +
+    out.push('<div class="aitk bx ' + (running ? 'run' : 'cl') + (op ? ' op' : '') + '">' +
       (running
         ? '<div class="aitkh">' + head +
             '<button class="aitksk" title="Show the result now" onclick="aiAgSkip(' + i + ')">Skip</button>' +

@@ -518,6 +518,21 @@ improvement**, which is also a fairer reading of "what changed".
   thinking box**; once done, every line is in the disclosure and nothing is printed loose.
   `.aiagblk` renders nothing at all now, and the narration block's feedback row went with it
   — the answer card below carries its own.
+- ⚠️ **The loader's label is NOT a constant** (annotation, 18 Aug 2026: *"is same in every
+  prompt"*). It read the literal word "Reasoning" on every question, which said nothing
+  about what was being worked on. Two things now feed it:
+  - each agent carries a per-request **`a.label`** — `Reading “<board>”` for a summary,
+    `Designing the <chart> widget` for a build;
+  - while running it shows **the tool beat that is actually happening** (`Read the board` →
+    `Fetched the counters behind it`). The first beat is titled `Reasoning` because that is
+    its heading in the disclosure, so *that one* falls back to `a.label`.
+  The finished header carries `a.label` too — a thread of five answers all headed
+  "Reasoning" tells you nothing about which is which. The step count stays beside it.
+- **The box survives the run** (request, 18 Aug 2026: *"this result will be show in this box
+  and it will be expand and collapse"*). `.aitk.bx` is now on both states: it glows
+  (`--ai-soft` / `--ai-line`) while working and settles to a quiet `--panel-2` card when
+  done, with the whole trail expanding and collapsing **inside** it. The card no longer
+  disappears and hand over to a separate disclosure.
 - ⚠️ **The finished Reasoning trail OPENS ITSELF** — `open:{think:true}` at both agent
   creation sites (request, 18 Aug 2026: the result *"doesn't show currently"*). It used to
   land collapsed, so the groups, their ✓ rows and the narration under each were all behind a
