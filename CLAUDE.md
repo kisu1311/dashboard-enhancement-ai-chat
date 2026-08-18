@@ -467,6 +467,14 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   `.aiauto.on .aisw::after` moved 13→**11px** — change both together or the knob overshoots.
 - `.aicmd` menus (slash, @-mention) still anchor to `.aicomp`, which is unchanged, so the
   typeahead was not affected.
+- ⚠️ **The Context chip is GONE from that row** (annotation, 18 Aug 2026: *"in chat area
+  remove the Context"*). Row 1 is the **pinned context only** — the open board, @-mentions,
+  uploads. The scope itself is untouched: `aiScopeSel` still gates every question through
+  `aiInScope()` / `aiScopeNeeds()`, it is still defaulted from where the chat was opened
+  (`aiScopeFrom`), and the mismatch card's *Expand to `<module>`* button still widens it.
+  **What is gone is the only way to set it by hand** — `aiScopeMenu` / `aiScopeMenuHTML` /
+  `aiScopePick` / `aiScopeChip` are kept and unreferenced (the way `iFocus` is in Option 2),
+  so the chip can be pointed back in one edit.
 - **While generating, the send button becomes a filled ACCENT CIRCLE with a white rounded
   square** (request + reference image, 17 Aug 2026) — `.aisend` → `.aisend.stop`.
   ⚠️ **It went through two shapes in one session; do not restore either earlier one.**
@@ -802,6 +810,19 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     new question — *"Reject it and build something else"* is not a question.
   - **Edit** calls the existing `aiAgEdit(i)`, which primes the composer with the request so
     it can be changed and re-sent. It does not open the Create/Edit Widget modal.
+  - ⚠️ **The `Add to <dashboard>` row (`.aiagdst`) left the card too** (annotation, 18 Aug
+    2026) and is now the **first** follow-up chip. It **names** the destination —
+    *Adding to “Application Performance” — put it somewhere else* — because the card no
+    longer says where Accept puts it, and that chip is the only place it is stated.
+    `a.target` is unchanged and `aiAgAccept()` still reads it.
+    ⚠️ `aiAgDest()` used to anchor its menu with
+    `ev.target.closest('.aiagc') || …('.aiagpl')`; a chip is in neither, so it threw on
+    `null.appendChild`. It now tries `.aiagfu` first and **guards for no host**. `.aiagfu`
+    is `position:relative` and shares `.aiagpl`'s `bottom:calc(100% + 6px)` rule, or the
+    picker would render off the card.
+  - ⚠️ **The ⤴ menu has NO Copy row on a widget** (annotation, 18 Aug 2026) — a widget is a
+    thing you place, not text you paste. The **summary's** menu keeps *Copy summary*, which
+    is text. The `<hr>` went with it, or the menu would open on a divider.
   - ⚠️ `aiAgSave(i)` early-returns unless `a.state === 'card'`. A probe that fakes a
     pre-accept card with any other state silently does nothing and looks like a bug in the
     button.
@@ -849,6 +870,10 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   - ⚠️ **They FILL the composer, they do not send** — `aiDashFuPick`, not `aiFollow`. The
     board does not exist yet, so firing *"Add an Interface Traffic chart"* here would ask
     for a widget on a board that is not there.
+  - ⚠️ **No heading over them** (annotation, 18 Aug 2026: *"remove the 'Widgets for this
+    board'"*). The pills say what they are, and a `.aiful` heading read as a second section
+    between the plan and the gate. The wrapper `.aidfu` carries the spacing the heading
+    used to give them.
 - Families live in `AI_AG_FAM` (CPU · Memory · Disk · **APM** · Traffic · Latency ·
   Availability · Alerts · Logs · Flow). ⚠️ APM sits **above** Traffic and Latency: first
   match wins and both own words APM uses, so "APM response time" was building a ping

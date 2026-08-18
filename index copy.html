@@ -1419,6 +1419,9 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aisugg .aifu.sel{border-color:var(--ai-line);background:var(--ai-soft);color:var(--text)}
 .aisugg .aifu.sel .cv{color:var(--ai-2)}
 .aiful{font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--muted);margin:18px 0 9px}
+/* the create-dashboard plan's widget suggestions, which carry no heading — the
+   wrapper holds the spacing `.aiful` used to give them */
+.aidfu{margin:14px 0 1px}
 .aifu{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:8px 14px;
   margin:0 6px 7px 0;border:1px solid var(--border);border-radius:999px;background:transparent;
   color:var(--text-dim);font:inherit;font-size:12.7px;line-height:1.35;cursor:pointer;
@@ -1849,8 +1852,8 @@ html[data-theme="light"] .aitk.run.bx{
 .aiagdb .cv{margin-left:auto;font-size:9px;color:var(--muted)}
 .aiagm.dest{left:12px;right:12px;top:auto;bottom:96px;max-height:210px;overflow:auto}
 /* opened from the summary's action row instead of the card: anchor to that row */
-.aiagpl{position:relative}
-.aiagpl .aiagm.dest{left:0;right:auto;min-width:250px;bottom:calc(100% + 6px)}
+.aiagpl,.aiagfu{position:relative}
+.aiagpl .aiagm.dest,.aiagfu .aiagm.dest{left:0;right:auto;min-width:250px;bottom:calc(100% + 6px)}
 .aiagm .gp{padding:7px 9px 3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
   color:var(--muted)}
 .aiagm .k{flex:0 0 14px;width:14px;height:14px;display:grid;place-items:center}
@@ -7841,9 +7844,13 @@ function aiDashHTML(d, i){
     '<div class="aidwarn">⚠ This creates a new dashboard. Existing dashboards are not touched.</div>' +
     /* what to put on it, shown while you are still deciding — not after the board is blank */
     (editing ? '' :
-      '<div class="aiful">Widgets for this board</div>' +
+      /* ⚠ NO heading over these (annotation, 18 Aug 2026: "remove the 'Widgets for this
+         board'"). The pills say what they are — "Add an Interface Traffic Utilization
+         chart" needs no label above it — and a `.aiful` heading here read as a second
+         section between the plan and the gate. They stay directly above Approve & create. */
+      '<div class="aidfu">' +
       aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuPick(this)">' +
-        '<span class="cv">›</span>' + aiEsc(q) + '</button>').join('')) +
+        '<span class="cv">›</span>' + aiEsc(q) + '</button>').join('') + '</div>') +
     '<div class="aiacts">' +
       (editing
         ? '<button class="aiapv" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
@@ -8098,10 +8105,15 @@ function aiInScope(q){ return AI_DOMAIN.test(String(q || '')); }
 
 function aiCtxBar(){
   const el = document.getElementById('aiCtx'); if (!el) return;
+  /* ⚠️ NO Context chip here any more (annotation, 18 Aug 2026: "in chat area remove the
+     Context"). The row is the PINNED context only — the open board, @-mentions, uploads.
+     ⚠️ The scope itself is untouched: `aiScopeSel` still gates every question through
+     `aiInScope()` / `aiScopeNeeds()`, it is still defaulted from where the chat was opened
+     (`aiScopeFrom`), and the mismatch card's "Expand to <module>" button still widens it.
+     What is gone is the only way to set it BY HAND. `aiScopeMenu` / `aiScopeMenuHTML` /
+     `aiScopePick` / `aiScopeChip` are kept and unreferenced, the way `iFocus` is in Option
+     2, so the chip can be pointed back in one edit. */
   el.innerHTML =
-    '<button class="aiscp" title="What data the AI reads — ' + aiEsc(aiScopeCur) +
-      ' · pick more than one" onclick="aiScopeMenu(event)">' +
-      '<span class="lb">Context</span>' + aiEsc(aiScopeChip()) + '<span class="cv">▾</span></button>' +
     /* an uploaded file is context like anything else — it just wears a clip instead of the dot */
     aiCtxItems.map((c, i) =>
       '<span class="aictx" title="' + aiEsc(c.k) + '">' +
@@ -9634,8 +9646,9 @@ function aiAgShare(ev, i){
       '<hr><div class="hd">Use within ObserveOps</div>' +
       '<button onclick="aiAgShareDo(' + i + ',\'report\')">Add to a report</button>' +
       '<button onclick="aiAgShareDo(' + i + ',\'pdf\')">Export as PDF</button>'
-    : '<button onclick="aiAgShareDo(' + i + ',\'copy\')">Copy<i>⌘C</i></button>' +
-      '<hr><div class="hd">Use within ObserveOps</div>' +
+    /* ⚠️ NO Copy row here (annotation, 18 Aug 2026). A widget is a thing you place, not
+       text you paste; the summary's menu keeps its "Copy summary", which is text. */
+    : '<div class="hd">Use within ObserveOps</div>' +
       '<button onclick="aiAgShareDo(' + i + ',\'dash\')">Add to another dashboard</button>' +
       '<button onclick="aiAgShareDo(' + i + ',\'report\')">Add to a report</button>' +
       '<button onclick="aiAgShareDo(' + i + ',\'csv\')">Export as CSV</button>';
@@ -9659,8 +9672,12 @@ function aiAgDest(ev, i){
           (on ? AI_TK_TICK : '') + '</span>' + aiEsc(n) +
           (n === dashState.cur ? '<i>open</i>' : '') + '</button>';
       }).join('')).join('');
-  /* opened from the card while choosing, or from the summary's action row after saving */
-  (ev.target.closest('.aiagc') || ev.target.closest('.aiagpl')).appendChild(el);
+  /* opened from the follow-up chip while choosing, from the summary's action row after
+     saving, or (nothing does this now) from inside the card itself */
+  const host = ev.target.closest('.aiagfu') || ev.target.closest('.aiagpl') ||
+               ev.target.closest('.aiagc');
+  if (!host) return;
+  host.appendChild(el);
   setTimeout(() => document.addEventListener('mousedown', aiAgShareAway), 0);
 }
 function aiAgDestPick(i, name){
@@ -9981,12 +9998,9 @@ function aiAgHTML(a, i){
               '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>') +
         '</div>' +
         (shut ? '' : '<div class="aiagcb">' + aiAgChart(a) + '</div>') +
-        /* ── WHERE it goes. Applies to Accept, which places it. */
-        (made ? '' :
-          '<div class="aiagdst"><span class="lb">Add to</span>' +
-            '<button class="aiagdb" onclick="aiAgDest(event,' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg>' +
-              aiEsc(a.target || a.board) + '<span class="cv">▾</span></button></div>') +
+        /* ⚠️ The "Add to <dashboard>" row was HERE and is now a follow-up chip below the
+           card (annotation, 18 Aug 2026). The destination still exists — `a.target`, which
+           Accept reads — the chip just names it and opens the same picker. */
         /* ── the footer carries the two decisions you make ON the widget in front of you:
            Edit it, or Accept it (annotation, 18 Aug 2026). The other two outcomes are still
            here — Save the definition without placing it, and Reject — but as follow-up
@@ -10007,7 +10021,11 @@ function aiAgHTML(a, i){
          directly. They must NOT go through aiFollow(), which sends the label as a new
          question — "Reject it and build something else" is not a question. */
       (made ? '' :
-        '<div class="aiagblk"><div class="aiful">Follow ups</div>' +
+        '<div class="aiagblk aiagfu"><div class="aiful">Follow ups</div>' +
+          /* ⚠️ names the destination rather than only offering to change it — the card no
+             longer shows where Accept puts it, so this chip is the only place it is said. */
+          '<button class="aifu" onclick="aiAgDest(event,' + i + ')"><span class="cv">\u203a</span>' +
+            'Adding to \u201c' + aiEsc(a.target || a.board) + '\u201d \u2014 put it somewhere else</button>' +
           '<button class="aifu" onclick="aiAgSave(' + i + ')"><span class="cv">\u203a</span>' +
             'Save it to the library without adding it</button>' +
           '<button class="aifu" onclick="aiAgReject(' + i + ')"><span class="cv">\u203a</span>' +
