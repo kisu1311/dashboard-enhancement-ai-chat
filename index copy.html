@@ -7776,7 +7776,19 @@ function aiDashFu(d){
     'Add an Alert Count donut by severity',
     'Add Top Monitor by Alert Count' ];
 }
-/* ⚠️ fills the composer rather than sending — see the note above */
+/* On the CREATED card the board is real, so a chip SENDS. ⚠️ It opens the new board first:
+   the widget builder places onto whatever canvas is open, and this card deliberately does
+   not redirect you when it creates (see aiDashHTML's 'done' note), so without this the
+   widget would land on the board you were reading from. */
+function aiDashFuGo(btn){
+  const q = btn.textContent.replace(/^\u203a?\s*/, '').trim();
+  const d = aiDashState();
+  if (d && d.name && typeof DASH_INDEX !== 'undefined' && DASH_INDEX[d.name]) aiDashGo(d.name);
+  aiPush(q);
+}
+/* ⚠️ kept and UNREFERENCED — the plan card no longer carries these chips. It fills the
+   composer rather than sending, which is what they needed while the board did not exist;
+   restore it if they are ever moved back before the gate. */
 function aiDashFuPick(btn){
   const q = btn.textContent.replace(/^›\s*/, '').trim();
   const el = document.getElementById('aiIn');
@@ -7800,7 +7812,13 @@ function aiDashHTML(d, i){
       '<div class="aiacts">' +
         '<button class="aialt" onclick="aiDashUndo()">Undo</button>' +
         '<button class="aialt" onclick="aiDashAddW(&quot;' + nq + '&quot;)">Add a widget</button>' +
-      '</div>' + aiFbHTML(i, 0) + '</div>';
+      '</div>' + aiFbHTML(i, 0) +
+      /* what to put on the board that was just made (request, 18 Aug 2026). The board
+         EXISTS now, so unlike the plan-card version these SEND — see aiDashFuGo. */
+      '<div class="aiful">Follow ups</div>' +
+      aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuGo(this)">' +
+        '<span class="cv">\u203a</span>' + aiEsc(q) + '</button>').join('') +
+      '</div>';
   }
   if (d.state === 'cancelled'){
     return '<div class="aistep"><i></i>Cancelled</div>' +
@@ -7842,15 +7860,11 @@ function aiDashHTML(d, i){
     '</ol></div>' +
     '<div class="aidform">' + params + '</div>' +
     '<div class="aidwarn">⚠ This creates a new dashboard. Existing dashboards are not touched.</div>' +
-    /* what to put on it, shown while you are still deciding — not after the board is blank */
-    (editing ? '' :
-      /* ⚠ NO heading over these (annotation, 18 Aug 2026: "remove the 'Widgets for this
-         board'"). The pills say what they are — "Add an Interface Traffic Utilization
-         chart" needs no label above it — and a `.aiful` heading here read as a second
-         section between the plan and the gate. They stay directly above Approve & create. */
-      '<div class="aidfu">' +
-      aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuPick(this)">' +
-        '<span class="cv">›</span>' + aiEsc(q) + '</button>').join('') + '</div>') +
+    /* ⚠️ The widget suggestions used to sit HERE, between the warning and the gate
+       (18 Aug 2026), and they moved to the CREATED card later the same day on request.
+       The reason is better there: on the plan the board does not exist, so a chip could
+       only prime the composer; once it is created the same chip can be sent and actually
+       build the widget. See `aiDashFuGo`. */
     '<div class="aiacts">' +
       (editing
         ? '<button class="aiapv" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
@@ -8179,7 +8193,9 @@ function aiScopePick(n, ev){
    not a word in the question, and leaving both would send the AI the name twice. */
 const AI_ENT_C = { dashboard:'var(--teal)', widget:'var(--blue)', monitor:'var(--green)',
                    metric:'var(--purple)', service:'var(--cyan)', incident:'var(--red)',
-                   alert:'var(--red)' };
+                   alert:'var(--red)',
+                   /* a module is the AI's own reach, so it wears the AI accent */
+                   module:'var(--ai-2)' };
 const AI_ENT_FIXED = [
   {t:'monitor',  n:'srv-app-04',                     s:'192.0.2.24 · Linux'},
   {t:'monitor',  n:'srv-app-05',                     s:'192.0.2.25 · Linux'},
@@ -8195,12 +8211,30 @@ const AI_ENT_FIXED = [
   {t:'incident', n:'INC-4821 · CPU saturation',      s:'Critical · open 22m'},
   {t:'incident', n:'INC-4805 · Latency breach',      s:'Major · resolved'}
 ];
+/* what each module holds, so the @ list says what picking one would let you ask about */
+/* ⚠️ keep these SHORT. The row is name + description on one line in a ~408px panel and
+   the description wins the space — 'everything the AI can read' truncated the name to
+   "All modu…", which is the one row whose name has to be readable. */
+const AI_MOD_S = { 'All modules':'the whole product', 'Dashboard':'boards and widgets',
+  'Monitor':'devices and availability', 'Alerts':'alerts and policies',
+  'Logs':'events and patterns', 'Flow':'network flow', 'APM':'traces and services',
+  'RUM':'real-user sessions', 'NetRoute':'hop-to-hop latency', 'NCCM':'config backups' };
 function aiEntList(){
-  const out = [], cur = (typeof dashState !== 'undefined' ? dashState.cur : '');
+  const cur = (typeof dashState !== 'undefined' ? dashState.cur : '');
+  const dash = [];
   /* the board you are on, first — "@this dashboard" is the common case */
   if (typeof DASH_GROUPS !== 'undefined') DASH_GROUPS.forEach(g => g.items.forEach(it =>
-    out.push({ t:'dashboard', n: it[0], s: (it[0] === cur ? 'this dashboard · ' : '') + g.name })));
-  out.sort((a, b) => (b.n === cur) - (a.n === cur));
+    dash.push({ t:'dashboard', n: it[0], s: (it[0] === cur ? 'this dashboard · ' : '') + g.name })));
+  dash.sort((a, b) => (b.n === cur) - (a.n === cur));
+  /* ── MODULES are context too (annotation, 18 Aug 2026: "in this context show also module
+     context"). They are the broadest thing you can pin, so they sit just under the board
+     you are on rather than at the bottom with the sample fleet. Picking one also widens
+     `aiScopeSel` — see aiMentPick. This is what gives the scope a hand control again now
+     that the Context chip has gone from the composer. */
+  const mods = AI_MODULES.map(n => ({ t:'module', n: n,
+    s: aiScopeSel.indexOf(n) > -1 ? 'Module · already in context'
+                                  : 'Module · ' + (AI_MOD_S[n] || '') }));
+  const out = dash.length ? [dash.shift()].concat(mods, dash) : mods;
   const gi = (typeof curG === 'number' ? curG : 0);
   ((typeof WIDGETS !== 'undefined' && WIDGETS[gi]) || []).forEach(w => {
     if (w.title) out.push({ t:'widget', n: w.title, s: (w.t || 'widget') + ' · ' + cur });
@@ -8280,7 +8314,11 @@ function aiSuggPick(i){
 }
 function aiMentShow(q){
   const s = String(q || '').trim().toLowerCase();
-  aiMent = aiEntList().filter(e => !s || e.n.toLowerCase().indexOf(s) > -1).slice(0, 20);
+  /* ⚠️ the cap was 20, which the list exactly filled before the ten modules were added
+     — they pushed the sample monitors/metrics/services off the end, so an unfiltered
+     @ could no longer reach them at all. The menu scrolls (`.aicmd.ment` is
+     max-height:280px), so a bigger cap costs nothing but a longer scroll. */
+  aiMent = aiEntList().filter(e => !s || e.n.toLowerCase().indexOf(s) > -1).slice(0, 34);
   aiMentSel = 0;
   aiMentPaint();
 }
@@ -8318,8 +8356,14 @@ function aiMentPick(i){
   t.selectionStart = t.selectionEnd = cut;
   aiMentHide();
   aiCtxAdd(e.n, e.t);
+  /* ⚠️ a module chip that did not move the scope would be decoration — it is the scope */
+  if (e.t === 'module'){
+    if (aiScopeSel.indexOf(e.n) < 0) aiScopeSel.push(e.n);
+    aiScopeSync(); aiScopeLine();
+  }
   aiGrow(t); t.focus();
-  toast('Pinned ' + e.t + ' “' + e.n + '” to the context');
+  toast(e.t === 'module' ? 'Reading ' + aiScopeCur
+                         : 'Pinned ' + e.t + ' “' + e.n + '” to the context');
 }
 function aiCtxAdd(name, kind){
   if (aiCtxItems.some(c => c.n === name)) return;
@@ -8328,6 +8372,12 @@ function aiCtxAdd(name, kind){
 }
 function aiCtxRemove(i){
   const gone = aiCtxItems.splice(i, 1)[0];
+  /* a module chip carries the scope, so taking it off has to narrow it — aiScopeSync()
+     falls back to "All modules" rather than leaving nothing selected */
+  if (gone && gone.k === 'module'){
+    aiScopeSel = aiScopeSel.filter(x => x !== gone.n);
+    aiScopeSync(); aiScopeLine();
+  }
   aiCtxBar();
   toast(aiCtxItems.length
     ? 'Removed “' + gone.n + '” from context'
@@ -10077,13 +10127,25 @@ function aiAgHTML(a, i){
           ? 'You can <a class="ailink" onclick="aiInvestigate(' +
             JSON.stringify(nm).replace(/"/g, '&quot;') + ')">view the widget on the dashboard</a>. '
           : 'Find it under <b>Add New Widget → User Define</b>, or put it on a dashboard now. ') +
-          'Would you like to add more widgets, or change this one?</p>' +
+        '</p>' +
         aiFbHTML(i, b.fb || 0, k) +
-        '<div class="aiacts aiagpl">' +
+        /* ⚠️ the closing actions are FOLLOW-UP CHIPS, not a button row (annotation, 18 Aug
+           2026) — the same shape the widget card's own Save / Reject use, so every "what
+           next" in this flow reads as one thing. They are ACTIONS wearing `.aifu`, so they
+           call their handler directly and must not go through `aiFollow()`.
+           ⚠️ The wrapper keeps `.aiagpl`: that is what `aiAgDest()` anchors its dashboard
+           picker to, and it is `position:relative` for exactly that.
+           ⚠️ The paragraph above used to end "Would you like to add more widgets, or change
+           this one?" — the chips ARE those two options, so the sentence was asking a
+           question the row below it already answered. */
+        '<div class="aiagpl"><div class="aiful">Follow ups</div>' +
           (a.placed ? '' :
-            '<button class="aialt" onclick="aiAgDest(event,' + i + ')">Add to a dashboard ▾</button>') +
-          '<button class="aialt" onclick="aiAgMore()">Add another widget</button>' +
-          '<button class="aialt" onclick="aiAgEdit(' + i + ')">Change the counters</button>' +
+            '<button class="aifu" onclick="aiAgDest(event,' + i + ')"><span class="cv">\u203a</span>' +
+              'Put it on a dashboard</button>') +
+          '<button class="aifu" onclick="aiAgMore()"><span class="cv">\u203a</span>' +
+            'Add another widget</button>' +
+          '<button class="aifu" onclick="aiAgEdit(' + i + ')"><span class="cv">\u203a</span>' +
+            'Change the counters</button>' +
         '</div></div>');
     }
   }

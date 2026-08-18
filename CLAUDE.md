@@ -467,6 +467,22 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   `.aiauto.on .aisw::after` moved 13→**11px** — change both together or the knob overshoots.
 - `.aicmd` menus (slash, @-mention) still anchor to `.aicomp`, which is unchanged, so the
   typeahead was not affected.
+- **Modules are in the @-mention list** (`AI_MOD_S` / `aiEntList`, annotation 18 Aug 2026:
+  *"in this context show also module context"*). All ten of `AI_MODULES` appear as pickable
+  context, directly under the board you are on, each with a one-line description and marked
+  `already in context` when it is in scope. They wear the **AI accent dot** (`AI_ENT_C.module
+  = --ai-2`), since a module is the AI's own reach rather than a product entity.
+  - ⚠️ **Picking one widens `aiScopeSel`, and removing its chip narrows it back** — a module
+    chip that did not move the scope would be decoration. `aiScopeSync()` falls back to
+    `All modules` rather than leaving the selection empty. **This is what gives scope a hand
+    control again** after the Context chip was removed.
+  - ⚠️ **`aiMentShow`'s cap went 20 → 34.** The list previously filled exactly 20 rows, so
+    the ten modules pushed the sample monitors / metrics / services off the end and an
+    unfiltered `@` could no longer reach them. The menu scrolls, so a bigger cap costs a
+    longer scroll and nothing else.
+  - ⚠️ **Keep `AI_MOD_S`'s descriptions short.** The row is name + description on one line
+    in a ~408px panel and the description wins the space — *"everything the AI can read"*
+    truncated the name to **"All modu…"**, the one row whose name has to be readable.
 - ⚠️ **The Context chip is GONE from that row** (annotation, 18 Aug 2026: *"in chat area
   remove the Context"*). Row 1 is the **pinned context only** — the open board, @-mentions,
   uploads. The scope itself is untouched: `aiScopeSel` still gates every question through
@@ -828,7 +844,13 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     button.
   - **Save widget** writes the definition into `W_USER` (the drawer's *User Define* tab)
     and **touches no board** — the live product's own *Create Widget* button. The summary
-    then says it is not on a dashboard and offers **Add to a dashboard ▾**.
+    then says it is not on a dashboard and offers **Put it on a dashboard**.
+  - ⚠️ **The flow's LAST step closes on follow-up chips, not a button row** (annotation,
+    18 Aug 2026). `Add another widget` / `Change the counters` — plus `Put it on a
+    dashboard` when it was only saved — are `.aifu` chips inside a `.aiagpl` wrapper
+    (`position:relative`, which is what `aiAgDest()` anchors its picker to). The paragraph
+    above them lost its *"Would you like to add more widgets, or change this one?"* tail:
+    the chips **are** those two options.
   - **Accept** saves *and* places it on the board named in the row, via the host's
     `awAdd()`, so ⌘Z / drag / resize all work.
   - ⚠️ Placing on a board you are **not** on opens it first: `awAdd()` writes to the open
@@ -867,13 +889,17 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   are staring at a blank board. The pills sit between the `.aidwarn` line and the gate, are
   chosen from the **dashboard's name** (network · alert · server · log · slo, with a
   generic fallback), and are hidden while the form is in its `edit` state.
-  - ⚠️ **They FILL the composer, they do not send** — `aiDashFuPick`, not `aiFollow`. The
-    board does not exist yet, so firing *"Add an Interface Traffic chart"* here would ask
-    for a widget on a board that is not there.
-  - ⚠️ **No heading over them** (annotation, 18 Aug 2026: *"remove the 'Widgets for this
-    board'"*). The pills say what they are, and a `.aiful` heading read as a second section
-    between the plan and the gate. The wrapper `.aidfu` carries the spacing the heading
-    used to give them.
+  - ⚠️ **They are on the CREATED card, NOT the plan.** They went onto the plan first
+    (18 Aug 2026), lost their *"Widgets for this board"* heading, and then moved below
+    *Undo · Add a widget* on the created card later the same day — all three by request.
+    Don't move them back without re-reading all three.
+  - ⚠️ **They SEND** (`aiDashFuGo`), because on the created card the board is real.
+    `aiDashFuGo` **opens the new board first**: the widget builder places onto whatever
+    canvas is open, and the created card deliberately does *not* redirect you, so without
+    that the widget would land on the board you were reading from.
+  - `aiDashFuPick` — the plan-card version, which **filled** the composer rather than
+    sending because the board did not exist yet — is **kept and unreferenced**, so the
+    chips can be moved back before the gate in one edit.
 - Families live in `AI_AG_FAM` (CPU · Memory · Disk · **APM** · Traffic · Latency ·
   Availability · Alerts · Logs · Flow). ⚠️ APM sits **above** Traffic and Latency: first
   match wins and both own words APM uses, so "APM response time" was building a ping
