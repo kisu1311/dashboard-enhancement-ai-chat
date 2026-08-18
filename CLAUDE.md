@@ -528,6 +528,13 @@ improvement**, which is also a fairer reading of "what changed".
     its heading in the disclosure, so *that one* falls back to `a.label`.
   The finished header carries `a.label` too — a thread of five answers all headed
   "Reasoning" tells you nothing about which is which. The step count stays beside it.
+- ⚠️ **A NESTED box, from equal specificity losing to source order.** `.aitk.run .aitkh`
+  further down the stylesheet still draws the *thinking trail's* own violet pill, and
+  `.aitk.bx .aitkh` — same three-class weight, declared earlier — lost to it, so the header
+  painted a second bordered box inside the card (annotation, 18 Aug 2026: *"remove inside
+  box"*). The overrides are `.aitk.bx.run .aitkh` / `.aitk.bx.cl .aitkh` (**four** classes),
+  which outrank it without reordering the sheet and leave the unboxed trail's pill intact.
+  There is a probe assertion that the header has no border and no background inside `.bx`.
 - **The box survives the run** (request, 18 Aug 2026: *"this result will be show in this box
   and it will be expand and collapse"*). `.aitk.bx` is now on both states: it glows
   (`--ai-soft` / `--ai-line`) while working and settles to a quiet `--panel-2` card when
