@@ -1667,10 +1667,25 @@ picked by `KMOD` / `KREDO`), plus the two toolbar buttons `#undoBtn` / `#redoBtn
 
 Option 2's drawer (`#ddrawer` / `#ddScrim`, `openCreateDrawer` / `ddCreate` / `ddUpdate` /
 `ddReset` / `ddPrev` / `ddVis` / `ddNewCat`, `DD_USERS` / `DD_PREV_W`) was **ported verbatim**
-into Option 1, so ＋ Create New Dashboard opens the real form: Dashboard Name* · Category* +
-Create New · Public/Private with the live note text · Default landing switch · the four
-layout sliders with the live preview · Advanced Settings · docs link / Reset / Create.
+into Option 1, so ＋ Create New Dashboard opens the real form: **Description** ·
+Dashboard Name* · Category* + Create New · Public/Private with the live note text ·
+Default landing switch · the four layout sliders with the live preview · Advanced
+Settings · docs link / Reset / Create.
 `openEditDash()` is the same drawer pre-filled — both were toast stubs here before.
+
+⚠️ **Option 1's drawer has DIVERGED from Option 2's** (requests, 18 Aug 2026). Two changes,
+neither ported:
+- **Advanced Settings is always open and is no longer a disclosure.** `ddAdvToggle()` is
+  **deleted**, `.ddadv` is `display:block` with no `.on`, and the header is a `<div>`, not a
+  `<button>` — the caret (`.ddcar`), the `:hover` and the pointer cursor went with it,
+  because a heading that cannot be clicked must not look clickable. `ddReset()` no longer
+  strips the classes either. It still carries `optional` on the right.
+- **Description leads the form**, above Dashboard Name. It used to be the first field
+  *inside* Advanced Settings.
+  ⚠️ The consequence to know: the first thing in the drawer is now an **optional** field,
+  and `openCreateDrawer()` still focuses `#ddName` on open — so the caret lands on the
+  second field. That is deliberate (the required field is still what you type into first);
+  change `ddName` in that `setTimeout` if the focus should follow the order instead.
 
 - `.ddhead` / `.ddx` already existed in Option 1 for the Add New Widget drawer, so those two
   rules were **not** re-copied. Nothing else collided (checked before porting).
