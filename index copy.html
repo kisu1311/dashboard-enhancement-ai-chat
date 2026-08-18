@@ -7525,7 +7525,13 @@ function aiRoute(q){
       && !/dashboard\s+with\s+\S+\s*(,|\band\b)/.test(t)) return 'newdash';
   /* ⚠️ "Make a dashboard with…" matched none of the old alternatives and fell through
      to `metric`, so a starter answered the wrong question entirely. */
-  if (/build|create|generate|add a widget|chart of|graph of|grid of|make (a|me)|set up|dashboard with/.test(t))
+  /* ⚠️ "Add an Interface Traffic Utilization chart" matched NONE of these — no "chart of",
+     no "add a widget" — so it fell through to `metric`, and on the freshly created (empty)
+     board that answered "Nothing to report". The created-dashboard follow-up chips are
+     phrased exactly that way, so every one of them was unanswerable. Any "add a/an <thing>"
+     naming a visualization is a build. */
+  if (/build|create|generate|add a widget|chart of|graph of|grid of|make (a|me)|set up|dashboard with/.test(t)
+      || /\badd\b.*\b(chart|widget|graph|grid|donut|gauge|table|map|top ?n|kpi|heat ?map|stream|tile|panel)\b/.test(t))
     return 'build';
   return 'metric';
 }
@@ -7772,35 +7778,46 @@ function aiDashState(){
    ⚠️ They FILL THE COMPOSER, they do not send. The board does not exist yet, so firing
    "Add X to Network health" here would ask for a widget on a board that is not there. You
    approve first, then send. `aiDashFuPick` says so in its toast. */
+/* ⚠️ EVERY ONE OF THESE IS SENT VERBATIM TO `aiRoute`, so each has to route to `build`
+   AND name a family `aiAgFam` knows — or it lands somewhere else entirely. They opened as
+   "Add Top Network Monitors by Alert Count", which matched none of the build alternatives,
+   fell through to `metric`, and on the empty board that had just been created answered
+   "Nothing to report" (annotation, 18 Aug 2026 — the screenshot showed it twice).
+   Rules for editing this list:
+     · lead with "Build", which is the router's own word;
+     · never use "summary" — `aiRoute` tests that FIRST and it wins;
+     · name a family from AI_AG_FAM (CPU · Memory · Disk · APM · Traffic · Latency ·
+       Availability · Alerts · Logs · Flow), or it drops to the plain preview instead of
+       the narrated build. */
 const AI_DASH_FU = [
   [/network|switch|router|interface|bandwidth|wan/i, [
-    'Add an Interface Traffic Utilization chart',
-    'Add Top Network Monitors by Alert Count',
-    'Add a monitor availability donut' ]],
+    'Build an Interface Traffic Utilization chart',
+    'Build a Top N of network monitors by alert count',
+    'Build a monitor availability donut' ]],
   [/alert|incident|severity|policy/i, [
-    'Add an Alert Count donut by severity',
-    'Add Top Policy by Alert Count',
-    'Add an active alerts stream' ]],
+    'Build an Alert Count donut by severity',
+    'Build a Top N of policies by alert count',
+    'Build an active alerts stream' ]],
   [/server|host|cpu|memory|disk|infra/i, [
-    'Add a CPU utilization chart by host',
-    'Add a memory utilization Top N',
-    'Add an infrastructure heatmap' ]],
+    'Build a CPU utilization chart by host',
+    'Build a memory utilization Top N',
+    'Build a CPU heat map by host' ]],
   [/log|syslog|event/i, [
-    'Add Logs by Severity',
-    'Add Top Log Sources',
-    'Add an events-per-second KPI' ]],
+    'Build a log severity chart',
+    'Build a Top N of log sources',
+    'Build a log events-per-second KPI' ]],
   [/slo|uptime|availab/i, [
-    'Add an SLO Achieved Summary',
-    'Add a monitor availability donut',
-    'Add an uptime trend chart' ]],
+    'Build an uptime availability gauge',
+    'Build a monitor availability donut',
+    'Build an availability trend chart' ]],
 ];
 function aiDashFu(d){
   const hit = AI_DASH_FU.find(([re]) => re.test(d.name || ''));
   /* nothing in the name to go on — offer what every board starts with */
   return hit ? hit[1] : [
-    'Add a monitor availability donut',
-    'Add an Alert Count donut by severity',
-    'Add Top Monitor by Alert Count' ];
+    'Build a monitor availability donut',
+    'Build an Alert Count donut by severity',
+    'Build a Top N of monitors by alert count' ];
 }
 /* On the CREATED card the board is real, so a chip SENDS. ⚠️ It opens the new board first:
    the widget builder places onto whatever canvas is open, and this card deliberately does
@@ -7840,10 +7857,18 @@ function aiDashHTML(d, i){
         '<button class="aialt" onclick="aiDashAddW(&quot;' + nq + '&quot;)">Add a widget</button>' +
       '</div>' + aiFbHTML(i, 0) +
       /* what to put on the board that was just made (request, 18 Aug 2026). The board
-         EXISTS now, so unlike the plan-card version these SEND — see aiDashFuGo. */
-      '<div class="aiful">Follow ups</div>' +
-      aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuGo(this)">' +
-        '<span class="cv">\u203a</span>' + aiEsc(q) + '</button>').join('') +
+         EXISTS now, so unlike the plan-card version these SEND — see aiDashFuGo.
+         ⚠️ ONLY WHILE THIS CARD IS THE END OF THE THREAD (annotation, 18 Aug 2026: "show
+         the follow ups before I click any action — the follow up will show before your
+         next prompt"). They used to render forever, so after asking for one widget the
+         same three chips were still sitting halfway up the conversation, inviting a second
+         identical request. A follow-up is a suggestion for what to do NEXT; once something
+         has been asked, it is not next any more. */
+      (i === aiThread.length - 1
+        ? '<div class="aiful">Follow ups</div>' +
+          aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuGo(this)">' +
+            '<span class="cv">\u203a</span>' + aiEsc(q) + '</button>').join('')
+        : '') +
       '</div>';
   }
   if (d.state === 'cancelled'){

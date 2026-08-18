@@ -924,6 +924,23 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     `aiDashFuGo` **opens the new board first**: the widget builder places onto whatever
     canvas is open, and the created card deliberately does *not* redirect you, so without
     that the widget would land on the board you were reading from.
+  - ⚠️ **They render ONLY while the card is the last thing in the thread**
+    (`i === aiThread.length - 1`, annotation 18 Aug 2026). They used to render forever, so
+    after asking for one widget the same three chips were still sitting halfway up the
+    conversation inviting an identical second request — which is exactly what the reported
+    screenshot showed. A follow-up suggests what to do **next**; once something has been
+    asked it is not next. (The widget flow's own closing chips are *not* gated this way —
+    an undecided widget's Save / Reject stay live wherever they are.)
+  - ⚠️ **EVERY CHIP IS SENT VERBATIM TO `aiRoute`**, so each must route to `build` *and*
+    name a family `aiAgFam` knows. They opened as *"Add Top Network Monitors by Alert
+    Count"*, which matched none of the build alternatives, fell through to **`metric`**, and
+    on the board that had just been created answered *"Nothing to report — this board has
+    no counters"*. Rules for editing `AI_DASH_FU`: **lead with "Build"** (the router's own
+    word); **never use "summary"** (`aiRoute` tests it first and it wins); and name a family
+    from `AI_AG_FAM`, or it drops to the plain preview instead of the narrated build. There
+    is a probe over all six buckets asserting both.
+  - `aiRoute`'s build test also gained `add <anything> <chart|widget|donut|gauge|Top N|…>`,
+    so the same phrasing typed by hand works too.
   - `aiDashFuPick` — the plan-card version, which **filled** the composer rather than
     sending because the board did not exist yet — is **kept and unreferenced**, so the
     chips can be moved back before the gate in one edit.
