@@ -528,6 +528,12 @@ improvement**, which is also a fairer reading of "what changed".
     its heading in the disclosure, so *that one* falls back to `a.label`.
   The finished header carries `a.label` too — a thread of five answers all headed
   "Reasoning" tells you nothing about which is which. The step count stays beside it.
+- **The card's background is a WASH, not a fill** (annotation, 18 Aug 2026: *"improve the
+  box background colour"*). `--ai-soft` flat was a solid lavender block on white. It is now
+  a gradient from a hint of `--ai` at the top to almost nothing at the bottom, over
+  `--card` — and light theme gets its **own weaker mix** (8%→2% vs 13%→4%), because white
+  takes a tint far more strongly than the dark canvas does. The finished card drops the
+  accent entirely and sits on plain `--card`.
 - ⚠️ **A NESTED box, from equal specificity losing to source order.** `.aitk.run .aitkh`
   further down the stylesheet still draws the *thinking trail's* own violet pill, and
   `.aitk.bx .aitkh` — same three-class weight, declared earlier — lost to it, so the header
@@ -540,10 +546,22 @@ improvement**, which is also a fairer reading of "what changed".
   (`--ai-soft` / `--ai-line`) while working and settles to a quiet `--panel-2` card when
   done, with the whole trail expanding and collapsing **inside** it. The card no longer
   disappears and hand over to a separate disclosure.
-- ⚠️ **The finished Reasoning trail OPENS ITSELF** — `open:{think:true}` at both agent
-  creation sites (request, 18 Aug 2026: the result *"doesn't show currently"*). It used to
-  land collapsed, so the groups, their ✓ rows and the narration under each were all behind a
-  click that nothing invited. Clicking the header still collapses it.
+- ⚠️ **The finished trail is COLLAPSED by default** — `open:{}` at all three agent creation
+  sites. It briefly defaulted *open* (18 Aug 2026), because at that point the finished trail
+  was hidden with nothing on screen to say it existed. Once the card started surviving the
+  run — labelled header, step count, chevron — the affordance became visible and the default
+  went back to collapsed, so the thread stays short. Don't flip it again without re-reading
+  both requests.
+- **"Create a dashboard" runs the SAME agentic flow as a summary** (`aiAgDashStart` /
+  `aiAgDashBeats` / `aiAgDashLand`, request 18 Aug 2026). It used to render the `lx`-era
+  task rows; `aiLand()` now routes `newdash` to the agent, so both prompts produce the same
+  loader card and grouped disclosure.
+  ⚠️ **The approval gate is untouched.** The beats only narrate the planning — the existing
+  `{r:'dash'}` plan card is still the only thing that creates a dashboard, and only on
+  Approve. That flow has never been allowed to auto-create a shared object.
+  ⚠️ It has **no card BEAT** (unlike the summary's `scard`), so it lands from `aiAgRun`'s
+  tail *and* from `aiAgSkip` — both call `aiAgDashLand()`, which is idempotent via `a.landed`
+  so a Skip during the last beat cannot push two gates.
   ⚠️ **`op && !running`** is what keeps the running box to just the loader and its line. A
   tool beat reveals ALL of its sub-steps at once, so rendering the body live would tick
   three rows in a single frame — they belong to the finished trail, not to the wait.

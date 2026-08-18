@@ -1700,9 +1700,26 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* ⚠️ ONE box across both states (request, 18 Aug 2026: "this result will be show in this
    box and it will be expand and collapse"). The card does not disappear when the run ends —
    it stays, quietens down, and the trail expands and collapses INSIDE it. */
+/* ⚠️ The card sits ON `--panel`, so its base is `--card` — one step of lift, not a tint.
+   `--panel-2` was a flat grey slab in light theme and read heavier than the answer below. */
 .aitk.bx{padding:9px 12px 11px;border-radius:10px;
-  border:1px solid var(--border-soft);background:var(--panel-2)}
-.aitk.run.bx{background:var(--ai-soft);border-color:var(--ai-line)}
+  border:1px solid var(--border-soft);background:var(--card)}
+/* while working it takes an accent WASH, not a fill: a gradient that fades from a hint of
+   `--ai` at the top to almost nothing at the bottom, over the same card base. A flat
+   `--ai-soft` was a solid lavender block on white — loud for a state that lasts seconds
+   (annotation, 18 Aug 2026: "improve the box background colour"). */
+.aitk.run.bx{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--ai) 13%,transparent) 0%,
+    color-mix(in srgb,var(--ai)  4%,transparent) 100%), var(--card);
+  border-color:color-mix(in srgb,var(--ai) 34%,transparent)}
+/* white takes a tint far more strongly than the dark canvas does, so light gets its own
+   (weaker) mix rather than sharing one value that has to work for both */
+html[data-theme="light"] .aitk.run.bx{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--ai) 8%,transparent) 0%,
+    color-mix(in srgb,var(--ai) 2%,transparent) 100%), var(--card);
+  border-color:color-mix(in srgb,var(--ai) 24%,transparent)}
 /* ⚠️ FOUR classes, not three. `.aitk.run .aitkh` further down this stylesheet still draws
    the trail's own violet pill, and at equal specificity the LATER rule wins — so the header
    was painting a second bordered box inside this one (annotation, 18 Aug 2026: "remove
@@ -9294,7 +9311,7 @@ function aiAgStart(q, sp, fam){
     chartName: /time.?series/i.test(q) ? 'time-series' : (AI_CHARTS[sp.chart] || 'Line').toLowerCase(),
     title: (sp.name || fam.key + ' metrics').replace(/^./, c => c.toUpperCase()),
     board: s.dash, target: s.dash,   /* where it will land — the open board until changed */
-    time: s.time, seed: 4207, state:'run', n:1, bs:[], open:{think:true}, pace: aiPace(q),
+    time: s.time, seed: 4207, state:'run', n:1, bs:[], open:{}, pace: aiPace(q),
     t0: Date.now(),                        /* the loader's elapsed clock reads this */
     /* ⚠️ the loader's headline. It used to read a constant "Reasoning" on every prompt
        (annotation, 18 Aug 2026), which told you nothing about what was being worked on. */
@@ -9350,7 +9367,7 @@ function aiAgBeats(a){
    built from one model — the flow cannot describe a step the answer did not take. */
 function aiAgSumStart(q){
   const s = aiScope();
-  const a = { kind:'summary', board:s.dash, time:s.time, n:1, state:'run', bs:[], open:{think:true},
+  const a = { kind:'summary', board:s.dash, time:s.time, n:1, state:'run', bs:[], open:{},
     t0: Date.now(),                        /* the loader's elapsed clock reads this */
     label: 'Reading “' + s.dash + '”',     /* see the note at aiAgStart */
               pace: aiPace(q), ans: aiBuildAnswer('summary', q), nw:s.n,
@@ -9383,6 +9400,54 @@ function aiAgSumBeats(a, s){
     { k:'scard', ms:0 }
   ];
 }
+/* ── "create a dashboard" runs the SAME agentic flow as a summary ──────────────────────────
+   (annotation, 18 Aug 2026: the task-rows trail was removed from this flow and it was asked
+   to behave like "Give me a summary of this dashboard".) Same loader card, same grouped
+   disclosure, same narration under each group.
+   ⚠️ The APPROVAL GATE is untouched. The beats only narrate the planning; the existing
+   `{r:'dash'}` plan card is still what creates anything, and only on Approve. A dashboard
+   is a shared object — this flow was never allowed to auto-create one and still is not. */
+function aiAgDashBeats(a, d){
+  const taken = (typeof DASH_INDEX !== 'undefined' && DASH_INDEX[d.name]);
+  return [
+    { k:'tool', t:'Reasoning', ms:1900, st:[
+      'Read the request — a new dashboard called “' + d.name + '”',
+      'Context is ' + aiScopeCur + ' · creating alongside “' + a.board + '”',
+      'A dashboard is shared, so this needs your approval before anything is made' ] },
+    { k:'say', ms:1150, x:'Let me check the name is free and fill the form from your defaults.' },
+    { k:'tool', t:'Checked the name', ms:2200, st:[
+      'Looked “' + d.name + '” up in the dashboard list',
+      taken ? 'A dashboard with this name already exists — flagged it'
+            : 'The name is not taken' ] },
+    { k:'say', ms:1150, x: taken
+      ? 'That name is already in use — you will want to change it before approving.'
+      : 'The name is free. Now the settings.' },
+    { k:'tool', t:'Filled the Create Dashboard form', ms:2400, st:[
+      'Category — ' + d.cat,
+      'Security — ' + d.sec,
+      'Row height ' + (d.row || 60) + 'px · gaps ' + d.hgap + '/' + d.vgap + 'px',
+      'Default landing — ' + (d.land ? 'yes' : 'no') ] },
+    { k:'say', ms:1150, x:'Here is the plan. Nothing is created until you approve it.' }
+  ];
+}
+function aiAgDashStart(q){
+  const s = aiScope(), d = aiDashSpec(q);
+  const a = { kind:'dash', board:s.dash, time:s.time, n:1, state:'run', bs:[], open:{},
+    t0: Date.now(), pace: aiPace(q), d: d,
+    label: 'Planning “' + d.name + '”' };
+  a.bs = aiAgPairSays(aiAgDashBeats(a, d));
+  aiThread.push({ r:'agent', a: a });
+  aiRender();
+  aiAgRun(a);
+}
+/* the beats narrate; THIS lands the gate, once */
+function aiAgDashLand(a){
+  if (a.landed) return;
+  a.landed = 1; a.state = 'done';
+  a.d.tk = 1;
+  aiThread.push({ r:'dash', d: a.d });
+  aiSetBusy(false);
+}
 function aiAgRun(a){
   aiAgStop();
   let t = 0;
@@ -9392,6 +9457,9 @@ function aiAgRun(a){
     aiAgT.push(setTimeout(() => { a.n = k + 1; aiRender(); }, t));
   }
   aiAgT.push(setTimeout(() => {
+    /* the dashboard flow has no card BEAT — its gate is a separate `{r:'dash'}` thread
+       entry, so it lands here rather than switching to the `card` state */
+    if (a.kind === 'dash'){ aiAgDashLand(a); aiRender(); return; }
     a.state = (a.state === 'run') ? 'card' : a.state;   /* the gate */
     if (a.state === 'card') aiSetBusy(false);
     aiRender();
@@ -9404,6 +9472,7 @@ function aiAgSkip(i){
   const a = m.a;
   aiAgStop();
   a.n = a.bs.length;
+  if (a.kind === 'dash'){ aiAgDashLand(a); aiRender(); return; }
   if (a.state === 'run'){ a.state = 'card'; aiSetBusy(false); }
   else if (a.state === 'adding') a.state = 'done';
   aiRender();
@@ -9703,10 +9772,10 @@ function aiAgHTML(a, i){
       : '<span class="aitkm">' + AI_SPARK + '</span>' +
         '<span class="aitkt">' + aiEsc(a.label || 'Reasoning') + '</span>' +
         '<span class="aitkn">' + steps + ' step' + (steps > 1 ? 's' : '') + '</span>';
-    /* ⚠️ `open.think` DEFAULTS TO TRUE (request, 18 Aug 2026: the finished trail was
-       hidden behind a click and "doesn't show currently"). So the moment the flow ends,
-       the groups, their ✓ rows and the narration under each are on screen. Clicking the
-       header still collapses it.
+    /* ⚠️ The trail DEFAULTS TO COLLAPSED (request, 18 Aug 2026). It briefly defaulted open,
+       because before the card persisted the finished trail was hidden with nothing to say it
+       was there. Now the box stays put with a labelled header, a step count and a chevron —
+       the affordance is visible, so the thread stays short and you open what you want.
        ⚠️ `op && !running` is what keeps the running box just the loader and its line: a
        tool beat reveals ALL of its sub-steps at once, so showing them live would tick
        three rows in one frame. They belong to the finished trail, not the wait. */
@@ -9946,6 +10015,8 @@ function aiPush(text){
     return;
   }
   if (type === 'summary'){ aiAgSumStart(text); return; }
+  /* same flow as a summary, by request — the task-rows trail is gone from here */
+  if (type === 'newdash'){ aiAgDashStart(text); return; }
   if (type === 'build'){
     const sp = aiBuildSpec(text), fam = sp.dash ? null : aiAgFam(text);
     if (fam){ aiAgStart(text, sp, fam); return; }
