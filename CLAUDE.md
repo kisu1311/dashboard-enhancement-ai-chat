@@ -491,6 +491,33 @@ improvement**, which is also a fairer reading of "what changed".
     were wrong in the first draft and rendered `undefined` into the details.
   - The **collapsed summary header is unchanged** — a finished trail wants one line, not a
     stack of cards. The agentic build's own `.aitki` rows are untouched.
+- **The running Reasoning row is a PIXEL-GRID LOADER** (`.aild*` / `aiLdHTML` / `aiLdStart`,
+  component supplied 18 Aug 2026). Three parts, all from the reference: a 3×3 grid of 4px
+  cells lit by a chevron wavefront, a label whose gradient shimmers across it, and a **live
+  elapsed clock** in mono tabular figures (`3m 52.6s`). It replaced a plain spinner.
+  - Delays are the reference's own formula, `(col + |row-1|) × 90ms`. ⚠️ The 650ms cycle is
+    **shorter than the sweep**, so two wavefronts are always in flight — that is what makes
+    it read as continuous work rather than a blink.
+  - ⚠️ **The loader is NOT wrapped in `.aitkm`.** That is a 26×26 `display:grid` box for a
+    single icon; putting the grid, label and clock inside it stacked all three vertically
+    and pushed Skip onto its own line. `.aitkh` is already a flex row — they go in as direct
+    children of it.
+  - ⚠️ **The clock writes `textContent` on its own 100ms interval**, not through
+    `aiRender()`. Re-rendering the thread ten times a second would fight the running
+    animations and throw away every open/closed state in it. It is started at the END of
+    `aiRender()` (the node does not exist while the string is still being built) and stops
+    itself when the node goes away. `a.t0` was added to both agent objects to feed it.
+  - Running and done are different objects: running is loader + shimmer + clock, done goes
+    back to ✦ + the step count. `prefers-reduced-motion` freezes the grid but **keeps the
+    clock ticking** — that is information, not decoration.
+- **Each `say` beat now closes its own group inside the Reasoning disclosure** (request,
+  18 Aug 2026), rendered as `.aiagsl`. The beat order is tool → say → tool → say, so
+  `aiAgPairSays()` attaches a say to the group it **follows**: what I did, then what I said
+  I would do next.
+  ⚠️ **They no longer repeat below.** `.aiagblk` now renders **only while running**, and
+  only the *current* line — so you get live narration during the run and the full set in the
+  disclosure afterwards, instead of the same three sentences on screen twice. The narration
+  block's feedback row went with them; the answer card below carries its own.
 - ⚠️ **The panel-wide ambient "thinking" glow (`.aiamb`) was BUILT AND THEN REMOVED, both
   on 18 Aug 2026.** Built from a Gemini Live reference (three blurred orbs drifting behind
   the rim from send until the answer landed, then sped up and given an ignition), and

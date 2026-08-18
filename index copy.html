@@ -1651,6 +1651,37 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitkm svg{width:14px;height:14px;fill:var(--ai-2)}
 .aitkt{font-size:13px;font-weight:600;color:var(--ai-2);letter-spacing:-.005em}
 .aitkh .aidots span{background:var(--ai-3)}
+/* ── pixel-grid loader for long-running work (component supplied 18 Aug 2026) ──────────────
+   Replaces the plain spinner on the running Reasoning row. Three parts, all from the
+   reference: a 3×3 grid of 4px cells lit by a chevron wavefront, a label whose gradient
+   shimmers across it, and a live elapsed timer in mono tabular figures.
+   ⚠️ The 650ms cycle is SHORTER than the sweep across the grid, so two wavefronts are
+   always in flight — that is what makes it read as continuous work rather than a blink.
+   Delays are the reference's own formula, (col + |row-1|) × 90ms. */
+.aild{display:inline-grid;grid-template-columns:repeat(3,4px);gap:1.5px;flex:0 0 auto}
+.aild i{width:4px;height:4px;background:var(--text);opacity:.15;border-radius:1px;
+  animation:aipix 650ms ease-in-out infinite}
+@keyframes aipix{0%,100%{opacity:.15}50%{opacity:1}}
+/* ⚠️ background-clip:text needs a TRANSPARENT colour or the fill paints over the gradient */
+.aildl{background-image:linear-gradient(90deg,var(--muted) 35%,var(--white) 50%,var(--muted) 65%);
+  background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+  color:transparent;font-size:13px;font-weight:500;
+  animation:aishim 1.4s linear infinite}
+@keyframes aishim{from{background-position:200% 0}to{background-position:-200% 0}}
+.aildt{font:400 12px/1 'JetBrains Mono',monospace;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+/* reduced motion freezes the grid to its dim state — the timer still ticks, because it is
+   information rather than decoration */
+@media (prefers-reduced-motion:reduce){
+  .aild i{animation:none}
+  .aildl{animation:none;background:none;-webkit-background-clip:border-box;
+    background-clip:border-box;color:var(--ai-2)}
+}
+/* ── the narration line, inside the Reasoning disclosure ───────────────────────────────────
+   (request, 18 Aug 2026.) Each `say` beat now also closes its own group inside the panel,
+   so expanding the trail reads as: what I did → what I said I would do next. */
+.aiagsl{margin:7px 0 2px;padding-left:23px;font-size:12.4px;line-height:1.5;
+  color:var(--text-dim);font-style:italic}
 /* ── the running Reasoning row (annotation, 17 Aug 2026: "improve this") ─────────────────
    It was a bare mark + violet text on the panel background, so while it was working it
    looked the same as when it had finished — only the spinner differed. It now sits in its
@@ -8779,6 +8810,11 @@ function aiRender(){
       return aiAnswerHTML(m, i);
     }).join('');
   b.scrollTop = b.scrollHeight;
+  /* ⚠️ the elapsed clock is started HERE, after the markup is in the DOM — the loader's
+     `#aiLdClock` does not exist while the string is still being built. One running agent
+     at a time, so one interval; aiLdStart() stops any previous one itself. */
+  const runAg = aiThread.find(m => m.r === 'agent' && m.a && m.a.state === 'run');
+  if (runAg) aiLdStart(runAg.a.t0); else aiLdStop();
 }
 function aiAnswerHTML(m, i){
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
@@ -9232,11 +9268,23 @@ function aiAgStart(q, sp, fam){
     chartName: /time.?series/i.test(q) ? 'time-series' : (AI_CHARTS[sp.chart] || 'Line').toLowerCase(),
     title: (sp.name || fam.key + ' metrics').replace(/^./, c => c.toUpperCase()),
     board: s.dash, target: s.dash,   /* where it will land — the open board until changed */
-    time: s.time, seed: 4207, state:'run', n:1, bs:[], open:{}, pace: aiPace(q) };
-  a.bs = aiAgBeats(a);
+    time: s.time, seed: 4207, state:'run', n:1, bs:[], open:{}, pace: aiPace(q),
+    t0: Date.now() };                      /* the loader's elapsed clock reads this */
+  a.bs = aiAgPairSays(aiAgBeats(a));
   aiThread.push({ r:'agent', a: a });
   aiRender();
   aiAgRun(a);
+}
+/* ⚠️ pair each `say` beat onto the tool group BEFORE it, so the disclosure can close each
+   group with the line the agent said next. Order is tool → say → tool → say, so a say
+   belongs to the group it follows, not the one after it. */
+function aiAgPairSays(bs){
+  let last = null;
+  bs.forEach(b => {
+    if (b.k === 'tool'){ last = b; return; }
+    if (b.k === 'say' && last && !last.say) last.say = b.x;
+  });
+  return bs;
 }
 function aiAgBeats(a){
   const cs = a.ctrs.map(c => c.c), n = cs.length;
@@ -9273,9 +9321,10 @@ function aiAgBeats(a){
 function aiAgSumStart(q){
   const s = aiScope();
   const a = { kind:'summary', board:s.dash, time:s.time, n:1, state:'run', bs:[], open:{},
+    t0: Date.now(),                        /* the loader's elapsed clock reads this */
               pace: aiPace(q), ans: aiBuildAnswer('summary', q), nw:s.n,
               up:s.up, down:s.down, crit:s.crit, major:s.major };
-  a.bs = aiAgSumBeats(a, s);
+  a.bs = aiAgPairSays(aiAgSumBeats(a, s));
   aiThread.push({ r:'agent', a: a });
   aiRender();
   aiAgRun(a);
@@ -9510,7 +9559,7 @@ function aiAgRetry(i){
   const m = aiThread[i]; if (!m) return;
   const a = m.a;
   a.state = 'run'; a.n = 1; a.open = {};
-  a.bs = aiAgBeats(a);
+  a.bs = aiAgPairSays(aiAgBeats(a));
   aiRender(); aiAgRun(a);
 }
 /* the preview: a real multi-series line chart, seeded so it draws the same every time */
@@ -9543,6 +9592,38 @@ function aiAgChart(a){
       '<span><i style="background:' + c.col + '"></i>' + aiEsc(c.l) + ' <b>avg ' + c.avg + '</b></span>').join('') +
     '</div>';
 }
+/* ── pixel-grid loader + shimmer label + elapsed clock ─────────────────────────────────────
+   (component supplied 18 Aug 2026, replacing the spinner on the running Reasoning row.)
+   The chevron wavefront is the reference's own delay formula: (col + |row-1|) × 90ms. */
+const AI_LD_DELAY = Array.from({ length: 9 }, (_, i) =>
+  ((i % 3) + Math.abs(Math.floor(i / 3) - 1)) * 90);
+const AI_LD_GRID = '<span class="aild" aria-hidden="true">' +
+  AI_LD_DELAY.map(d => '<i style="animation-delay:' + d + 'ms"></i>').join('') + '</span>';
+/* the label shimmers and the clock ticks — one is the state, the other is how long it has
+   been in it, which is the thing a long run actually needs to say */
+function aiLdHTML(label){
+  return AI_LD_GRID + '<span class="aildl">' + aiEsc(label) + '</span>' +
+    '<span class="aildt" id="aiLdClock">0.0s</span>';
+}
+function aiLdFmt(ms){
+  const t = ms / 1000;
+  return t < 60 ? t.toFixed(1) + 's'
+                : Math.floor(t / 60) + 'm ' + (t % 60).toFixed(1) + 's';
+}
+/* ⚠️ the clock writes textContent on its own interval rather than going through aiRender().
+   Re-rendering the whole thread ten times a second would fight the running animations and
+   throw away every open/closed state in it. */
+let aiLdT = null;
+function aiLdStart(t0){
+  aiLdStop();
+  if (!t0) return;
+  aiLdT = setInterval(() => {
+    const el = document.getElementById('aiLdClock');
+    if (!el){ aiLdStop(); return; }        /* the row went away — stop by itself */
+    el.textContent = aiLdFmt(Date.now() - t0);
+  }, 100);
+}
+function aiLdStop(){ if (aiLdT){ clearInterval(aiLdT); aiLdT = null; } }
 const AI_AG_SPIN = '<span class="aitksp"></span>';
 function aiAgHTML(a, i){
   /* ⚠️ a summary agent has no counters — this must stay guarded, not hoisted */
@@ -9569,9 +9650,19 @@ function aiAgHTML(a, i){
     const steps = pre.reduce((s, b) => s + b.st.length, 0);
     const running = a.state === 'run';
     const op = !!a.open.think;
-    const head = '<span class="aitkm">' + (running ? AI_AG_SPIN : AI_SPARK) + '</span>' +
-      '<span class="aitkt">Reasoning</span>' +
-      '<span class="aitkn">' + steps + ' step' + (steps > 1 ? 's' : '') + '</span>';
+    /* ⚠️ RUNNING and DONE are different objects now. Running shows the pixel-grid loader,
+       a shimmering "Reasoning" and a live clock — a long run has to say how long it has
+       been going. Done goes back to ✦ + the step count, which is what a finished trail
+       needs. `aiLdStart` is called after this HTML is in the DOM, at the end of aiRender. */
+    /* ⚠️ the loader is NOT wrapped in `.aitkm`. That is a 26×26 `display:grid` box for a
+       single icon — putting the grid, the label and the clock inside it stacked all three
+       vertically and pushed Skip onto its own line. `.aitkh` is already a flex row with a
+       gap, so the three parts go in as direct children of it. */
+    const head = running
+      ? aiLdHTML('Reasoning')
+      : '<span class="aitkm">' + AI_SPARK + '</span>' +
+        '<span class="aitkt">Reasoning</span>' +
+        '<span class="aitkn">' + steps + ' step' + (steps > 1 ? 's' : '') + '</span>';
     /* ⚠️ a RUNNING block is a plain div: its later steps have not happened yet, so
        expanding it would show them ticked before they are. Same rule as the trail. */
     /* ⚠️ `run` while it works, `cl` once it is done — the same two states the thinking trail
@@ -9582,17 +9673,25 @@ function aiAgHTML(a, i){
         ? '<div class="aitkh">' + head + '</div>'
         : '<button class="aitkh" onclick="aiAgTog(' + i + ',\'think\')" aria-expanded="' + op + '">' + head +
           '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></button>') +
+      /* ⚠️ the narration line that FOLLOWS each tool group is rendered inside the group
+         (request, 18 Aug 2026). The beat order is tool → say → tool → say, so a say closes
+         the group before it: what I did, then what I said I would do next. It still streams
+         live in .aiagblk below while the run is going — this is the same trail read twice,
+         the way the thinking trail is both live and in its collapsed disclosure. */
       (op ? '<div class="aitkl">' + pre.map(b =>
         '<div class="aitkg">' + aiEsc(b.t) + '</div>' + b.st.map(s =>
           '<div class="aitki done"><span class="ic">' + AI_TK_TICK + '</span>' + aiEsc(s) + '</div>'
-        ).join('')).join('') + '</div>' : '') + '</div>');
+        ).join('') + (b.say ? '<p class="aiagsl">' + aiEsc(b.say) + '</p>' : '')
+      ).join('') + '</div>' : '') + '</div>');
   }
-  if (says.length){
+  /* ⚠️ WHILE RUNNING this shows the CURRENT narration line only; once the run is done it
+     renders nothing at all, because every line now lives under its own group inside the
+     Reasoning disclosure (request, 18 Aug 2026). Printing them in both places left the same
+     three sentences on screen twice. The feedback row went with them — the answer card
+     below carries its own, and a lone thumbs-up under nothing has nothing to rate. */
+  if (says.length && a.state === 'run'){
     const last = says[says.length - 1];
-    out.push('<div class="aiagblk">' +
-      says.map(([k, b]) => '<p class="aiagsay">' + aiEsc(b.x) + '</p>').join('') +
-      /* one feedback row, and only once it has something to rate */
-      (a.state === 'run' ? '' : aiFbHTML(i, last[1].fb || 0, last[0])) + '</div>');
+    out.push('<div class="aiagblk"><p class="aiagsay">' + aiEsc(last[1].x) + '</p></div>');
   }
   for (let k = 0; k < N; k++){
     const b = a.bs[k];
