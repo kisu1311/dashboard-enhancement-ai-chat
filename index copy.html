@@ -1689,6 +1689,18 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    "still going": one hue, no box-shadow, no moving background behind the text.
    The pill is a flat tint rather than a gradient wash — the gradient version read as a
    button, and this row is not one. */
+/* ── while thinking, the whole card is ONE box (request, 18 Aug 2026) ──────────────────────
+   The loader row, the line it is currently narrating and Skip used to be three separate
+   blocks — a bordered pill with two loose paragraphs under it. `.bx` moves the border and
+   the tint onto `.aitk.run` itself so all three sit inside, and `.aitkh` goes back to being
+   a plain flex row within it.
+   ⚠️ `.bx` is a MODIFIER, not a change to `.aitk.run`. The thinking trail uses the same
+   `.aitk.run` and puts its task rows inside — boxing that too would restyle a surface
+   nobody asked about. */
+.aitk.run.bx{padding:7px 10px 9px 8px;margin-left:-8px;border-radius:10px;
+  background:var(--ai-soft);border:1px solid var(--ai-line)}
+.aitk.run.bx .aitkh{padding:0;margin-left:0;background:none;border:0;border-radius:0}
+.aitk.run.bx .aiagsay{margin:8px 1px 0;font-size:12.6px;line-height:1.55;color:var(--text-dim)}
 .aitk.run .aitkh{padding:5px 10px 5px 7px;margin-left:-7px;border-radius:9px;
   background:var(--ai-soft);border:1px solid var(--ai-line)}
 .aitk.run .aitkm{background:transparent}
@@ -9668,9 +9680,15 @@ function aiAgHTML(a, i){
     /* ⚠️ `run` while it works, `cl` once it is done — the same two states the thinking trail
        uses. It used to be `cl` throughout, so the running row wore the COLLAPSED styling
        (small muted text) and none of the running treatment applied to this flow at all. */
-    out.push('<div class="aitk ' + (running ? 'run' : 'cl') + (op ? ' op' : '') + '">' +
+    /* while running: loader row + Skip on one line, then the line it is narrating —
+       all three inside the one box (`.bx`). Skip sits where `.aitksk`'s `margin-left:auto`
+       was always designed to put it, which is also where the thinking trail keeps it. */
+    const liveSay = (running && says.length) ? says[says.length - 1][1].x : '';
+    out.push('<div class="aitk ' + (running ? 'run bx' : 'cl') + (op ? ' op' : '') + '">' +
       (running
-        ? '<div class="aitkh">' + head + '</div>'
+        ? '<div class="aitkh">' + head +
+            '<button class="aitksk" title="Show the result now" onclick="aiAgSkip(' + i + ')">Skip</button>' +
+          '</div>' + (liveSay ? '<p class="aiagsay">' + aiEsc(liveSay) + '</p>' : '')
         : '<button class="aitkh" onclick="aiAgTog(' + i + ',\'think\')" aria-expanded="' + op + '">' + head +
           '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></button>') +
       /* ⚠️ the narration line that FOLLOWS each tool group is rendered inside the group
@@ -9689,10 +9707,8 @@ function aiAgHTML(a, i){
      Reasoning disclosure (request, 18 Aug 2026). Printing them in both places left the same
      three sentences on screen twice. The feedback row went with them — the answer card
      below carries its own, and a lone thumbs-up under nothing has nothing to rate. */
-  if (says.length && a.state === 'run'){
-    const last = says[says.length - 1];
-    out.push('<div class="aiagblk"><p class="aiagsay">' + aiEsc(last[1].x) + '</p></div>');
-  }
+  /* nothing here any more: while running the current line is inside the box above, and
+     once done every line is under its own group in the disclosure. */
   for (let k = 0; k < N; k++){
     const b = a.bs[k];
     if (b.k === 'say') continue;
@@ -9819,7 +9835,9 @@ function aiAgHTML(a, i){
   /* ⚠️ ONE Skip for the whole flow, not one per tool row. These flows run 10–15s and a
      third of that is narration lines between the tool rows — a Skip that only exists while
      a tool row happens to be the newest beat is missing exactly when it is wanted. */
-  if (a.state === 'run' || a.state === 'adding')
+  /* ⚠️ only when there is no running box to hold it. While `run` has tool beats the Skip
+     is inside that box; `adding` has no box, so it still needs its own row. */
+  if (a.state === 'adding' || (a.state === 'run' && !pre.length))
     out.push('<div class="aiagsk"><button class="aitksk" title="Show the result now" ' +
       'onclick="aiAgSkip(' + i + ')">Skip</button></div>');
   return out.join('');

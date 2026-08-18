@@ -514,10 +514,21 @@ improvement**, which is also a fairer reading of "what changed".
   18 Aug 2026), rendered as `.aiagsl`. The beat order is tool → say → tool → say, so
   `aiAgPairSays()` attaches a say to the group it **follows**: what I did, then what I said
   I would do next.
-  ⚠️ **They no longer repeat below.** `.aiagblk` now renders **only while running**, and
-  only the *current* line — so you get live narration during the run and the full set in the
-  disclosure afterwards, instead of the same three sentences on screen twice. The narration
-  block's feedback row went with them; the answer card below carries its own.
+  ⚠️ **They no longer repeat below.** While running, the current line is **inside the
+  thinking box**; once done, every line is in the disclosure and nothing is printed loose.
+  `.aiagblk` renders nothing at all now, and the narration block's feedback row went with it
+  — the answer card below carries its own.
+- **While thinking, the whole card is ONE box** (`.aitk.run.bx`, request 18 Aug 2026: *"the
+  outside text will be show inside of box"*). The loader row, the line it is narrating and
+  **Skip** used to be three separate blocks — a bordered pill with two loose paragraphs
+  under it. The border and tint moved onto `.aitk.run.bx` itself so all three sit inside,
+  and `.aitkh` went back to being a plain flex row within it. Skip sits on the loader row,
+  where `.aitksk`'s `margin-left:auto` was always designed to put it.
+  ⚠️ **`.bx` is a MODIFIER, not a change to `.aitk.run`.** The thinking trail uses the same
+  `.aitk.run` and puts its task rows inside it — boxing that too would restyle a surface
+  nobody asked about. There is a probe assertion for exactly that.
+  ⚠️ The loose Skip row still renders for the **`adding`** state, and for a `run` with no
+  tool beats yet — those have no box to hold it.
 - ⚠️ **The panel-wide ambient "thinking" glow (`.aiamb`) was BUILT AND THEN REMOVED, both
   on 18 Aug 2026.** Built from a Gemini Live reference (three blurred orbs drifting behind
   the rim from send until the answer landed, then sped up and given an ignition), and
