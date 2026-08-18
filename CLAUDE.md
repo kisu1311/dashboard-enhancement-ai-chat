@@ -518,6 +518,13 @@ improvement**, which is also a fairer reading of "what changed".
   thinking box**; once done, every line is in the disclosure and nothing is printed loose.
   `.aiagblk` renders nothing at all now, and the narration block's feedback row went with it
   — the answer card below carries its own.
+- ⚠️ **The finished Reasoning trail OPENS ITSELF** — `open:{think:true}` at both agent
+  creation sites (request, 18 Aug 2026: the result *"doesn't show currently"*). It used to
+  land collapsed, so the groups, their ✓ rows and the narration under each were all behind a
+  click that nothing invited. Clicking the header still collapses it.
+  ⚠️ **`op && !running`** is what keeps the running box to just the loader and its line. A
+  tool beat reveals ALL of its sub-steps at once, so rendering the body live would tick
+  three rows in a single frame — they belong to the finished trail, not to the wait.
 - **While thinking, the whole card is ONE box** (`.aitk.run.bx`, request 18 Aug 2026: *"the
   outside text will be show inside of box"*). The loader row, the line it is narrating and
   **Skip** used to be three separate blocks — a bordered pill with two loose paragraphs
