@@ -381,16 +381,21 @@ lives with the input at the bottom, because it describes what happens next.
 
 - **The context bar** (`.aictxbar` / `aiCtxBar`) is the **first row INSIDE the composer
   pill** (annotation, 18 Aug 2026 — see *The composer is the chat area* below) and holds
-  two different things: the **Scope chip is a DROPDOWN and is not removable**; the
-  **context chips beside it are removable**. That asymmetry is the whole point —
+  the **pinned context only**: the open board, @-mentions, uploads, all removable.
+  ⚠️ **It used to lead with a non-removable `Context <module> ▾` chip, and that chip is
+  GONE** (annotation, 18 Aug 2026). Scope still exists and still gates every question —
   ⚠️ **clearing every context chip leaves the module scope standing, so the chat keeps
-  working module-wise** rather than falling back to global.
+  working module-wise** rather than falling back to global — but it is set from the entry
+  point, from the mismatch card, or by **picking a module in the @-mention list**, which is
+  what replaced the chip. See *Modules are in the @-mention list* below.
 - **Smart default from where the chat was opened** (`aiScopeFrom`), per the spec's table:
   inside a module → that module (Dashboards → `Dashboard`, with the open board pinned as a
   context chip) · global nav / command palette → `All modules` · an alert card → `Alerts`
   with that alert pinned. `aiOpen(where)` takes the origin; it only applies the default on a
   **fresh** chat so it never stomps a scope the user set.
 - **Dropdown** = `All modules (Global)` + the 9 modules, current one marked `●`.
+  ⚠️ `aiScopeMenu` / `aiScopeMenuHTML` / `aiScopePick` / `aiScopeChip` are **kept but
+  unreferenced** since the chip was removed — the dropdown can be restored in one edit.
 - **Product-only answers.** `aiInScope()` gates every question; anything outside ObserveOps
   gets the *Out of scope → friendly redirect* state from the Designer's Guide §5, and — per
   its golden rule that nothing may dead-end — the redirect names what it **can** answer and
