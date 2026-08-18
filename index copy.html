@@ -1801,6 +1801,9 @@ html[data-theme="light"] .aitk.run.bx{
   background:var(--card);overflow:visible}
 .aiagch{display:flex;align-items:center;gap:8px;padding:10px 8px 8px 12px}
 .aiagch b{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--white)}
+/* a header with no subtitle needs its title to take the free space, or the icon
+   buttons slide left and sit against the words */
+.aiagch b.gro{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aiagch .sub{flex:1;min-width:0;font-size:12px;color:var(--muted);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aiagch .ok{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:var(--green);stroke-width:2.6;
@@ -1872,6 +1875,9 @@ html[data-theme="light"] .aitk.run.bx{
 .aisumeta{display:flex;flex-wrap:wrap;gap:5px;margin:1px 0 9px}
 .aisumeta span{padding:2.5px 8px;border:1px solid var(--border-soft);border-radius:999px;
   background:var(--panel-2);font-size:11.5px;line-height:1.45;color:var(--muted)}
+/* the board this is a summary OF — it leads the row and reads as a name, not a stat */
+.aisumeta .bd{color:var(--white);font-weight:600;border-color:var(--ai-line);
+  background:var(--ai-soft)}
 /* composer */
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
@@ -7502,6 +7508,34 @@ function aiPickMetric(q){
   return ms.find(m => t.includes(m.n.split(' ')[0].toLowerCase())) || ms[0];
 }
 
+/* ── the board's OWN numbers, for the summary ────────────────────────────────────────────
+   (request, 18 Aug 2026: "improve the summary detail — some important points will be shown
+   in bullet points".) Everything here is read off the widgets on the canvas: the two donut
+   clusters and the largest "Top … by Alert Count" pie. A summary that invents figures is
+   worse than no summary, so a bullet is emitted only when the widget behind it exists.
+   ⚠️ `aiScope()` reports up/down/crit/major only, and its monitor total is `up + down` —
+   which silently drops Unreachable and Maintenance (384 rather than the real 400). Use
+   THIS for the summary; aiScope stays as it is because the other answers depend on it. */
+function aiSumFacts(){
+  const gi = (typeof curG === 'number' ? curG : 0);
+  const ws = (typeof WIDGETS !== 'undefined' && WIDGETS[gi]) ? WIDGETS[gi] : [];
+  const ring = t => { const w = ws.find(x => x.t === 'donuts' && x.title === t);
+                      return (w && w.items) ? w.items : []; };
+  const val  = (a, n) => { const it = a.find(i => i[1] === n); return it ? it[0] : 0; };
+  const tot  = a => a.reduce((t, i) => t + i[0], 0);
+  const av = ring('Monitor Availability'), al = ring('Alert Count');
+  /* the biggest slice of the biggest offender pie — "who is generating this" */
+  let top = null;
+  ws.filter(w => w.t === 'pie' && w.items && w.items.length).forEach(w => {
+    const best = w.items.slice().sort((a, b) => b[1] - a[1])[0];
+    if (best && (!top || best[1] > top.v)) top = { w: w.title, n: best[0], v: best[1] };
+  });
+  const pc = (v, t) => t ? Math.round(v / t * 100) : 0;
+  return { mon: tot(av), up: val(av, 'Up'), down: val(av, 'Down'),
+           unr: val(av, 'Unreachable'), mnt: val(av, 'Maintenance'),
+           alerts: tot(al), crit: val(al, 'Critical'), major: val(al, 'Major'),
+           warn: val(al, 'Warning'), pc: pc, top: top };
+}
 function aiBuildAnswer(type, q){
   const s = aiScope(), ms = aiMetrics();
   const inv = n => '<a class="aiinv" onclick="toast(\'Would open ' + n.replace(/'/g, "\\'") +
@@ -7509,21 +7543,35 @@ function aiBuildAnswer(type, q){
   if (type === 'summary'){
     const ws = (WIDGETS[curG] || []).filter(w => w.title);
     const names = ws.slice(0, 3).map(w => w.title).join(', ');
+    const f = aiSumFacts();
     /* ⚠️ Every fact appears ONCE (annotation, 18 Aug 2026 — "remove the repeated text").
-       The widget count, the monitor total and the time range used to be three prose
-       bullets that restated the card header's own subtitle, and the heading "What this
-       dashboard covers" restated the card title "Dashboard summary". The three facts are
-       one meta row now, the header subtitle is the board name alone, and what is left in
-       the body is the reading — which is the part a summary is actually for. */
+       The widget count and the time range used to be prose bullets that restated the card
+       header's own subtitle, and the heading "What this dashboard covers" restated the
+       card title "Dashboard summary". They are one meta chip row now — and the BOARD NAME
+       is the first chip, because the header subtitle that carried it only ever rendered as
+       "Application Performan…" in a 344–420px panel (annotation, 18 Aug 2026).
+       ⚠️ Each bullet is emitted only if the widget behind it is on the board, so this
+       cannot claim a number a different dashboard does not have. */
+    const li = [];
+    if (f.mon) li.push('<b>' + f.up + '</b> of <b>' + f.mon + '</b> monitors are up (' +
+      f.pc(f.up, f.mon) + '%) — <b>' + f.down + '</b> down' +
+      (f.unr ? ', ' + f.unr + ' unreachable' : '') +
+      (f.mnt ? ', ' + f.mnt + ' in maintenance' : ''));
+    if (f.alerts) li.push('<b>' + f.alerts + '</b> open alerts, <b>' + f.crit +
+      '</b> of them critical (' + f.pc(f.crit, f.alerts) + '%)' +
+      (f.warn ? ' and ' + f.warn + ' warning' : ''));
+    if (f.top) li.push('<b>' + f.top.n + '</b> is the single biggest source — <b>' +
+      f.top.v + '</b> alerts on its own');
+    li.push('Most of the pressure is on <b>availability</b>, not latency');
+    li.push('The rest of the board is inside its normal band');
     return { step: AI_T.summary.step(s), ic: 'spark', title: AI_T.summary.title(),
-      html: '<div class="aisumeta"><span>' + ws.length + ' widget' + (ws.length === 1 ? '' : 's') +
-          '</span><span>' + ((s.up || 0) + (s.down || 0)) + ' monitors</span>' +
+      html: '<div class="aisumeta"><span class="bd">' + aiEsc(s.dash) + '</span>' +
+          '<span>' + ws.length + ' widget' + (ws.length === 1 ? '' : 's') + '</span>' +
+          (f.mon ? '<span>' + f.mon + ' monitors</span>' : '') +
           '<span>' + s.time + '</span></div>' +
         '<p>Covers ' + names + (ws.length > 3 ? ' and <b>' + (ws.length - 3) + '</b> more' : '') + '.</p>' +
         '<h4>How it reads right now</h4><ul>' +
-        '<li><b>' + (s.down || 0) + '</b> monitors are down and <b>' + (s.crit || 0) + '</b> alerts are critical</li>' +
-        '<li>Most of the pressure is on <b>availability</b>, not latency</li>' +
-        '<li>The rest of the board is inside its normal band</li></ul>',
+        li.map(x => '<li>' + x + '</li>').join('') + '</ul>',
       fu: ['What should I work on first?', 'What changed since I last looked', 'Draft a status update'] };
   }
   if (type === 'rank'){
@@ -9973,8 +10021,11 @@ function aiAgHTML(a, i){
       out.push('<div class="aiagc">' +
         '<div class="aiagch">' +
           '<span class="aiagmk">' + AI_SPARK + '</span>' +
-          '<b>Dashboard summary</b>' +
-          '<span class="sub" title="' + aiEsc(a.board) + '">' + aiEsc(a.board) + '</span>' +
+          /* ⚠️ NO subtitle here (annotation, 18 Aug 2026). It carried the board name and
+             never had the room for it — it rendered as "Application Performan…" with a
+             tooltip over the card. The board is the first meta chip in the body instead,
+             where it fits whole. `.gro` is what takes the space the subtitle was holding. */
+          '<b class="gro">Dashboard summary</b>' +
           '<button class="aiagib" data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
             '<svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>' +
           '<button class="aiagib" data-tip="' + (shut ? 'Show' : 'Hide') + ' the summary" onclick="aiAgCard(' + i + ')">' +

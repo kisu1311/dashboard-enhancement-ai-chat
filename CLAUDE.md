@@ -819,11 +819,27 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   - ⚠️ **Every fact appears ONCE** (annotation, 18 Aug 2026: *"remove the repeated text"*).
     The widget count, the monitor total and the time range were three prose bullets that
     restated the card header's own subtitle, and the heading *"What this dashboard covers"*
-    restated the card title *"Dashboard summary"*. Now: the header subtitle is the **board
-    name alone**, the three facts are one `.aisumeta` chip row, a single `Covers …` line
-    names the widgets, and the only heading left is **How it reads right now** — which is
-    the part a summary is actually for. Don't put the tail back on the header subtitle; it
-    only ever rendered as an ellipsis in a 344–420px panel anyway.
+    restated the card title *"Dashboard summary"*. Now: the facts are one `.aisumeta` chip
+    row, a single `Covers …` line names the widgets, and the only heading left is **How it
+    reads right now** — which is the part a summary is actually for.
+  - ⚠️ **The header has NO subtitle** (annotation, 18 Aug 2026). It carried the board name
+    and never had the room for it — in a 344–420px panel it rendered as *"Application
+    Performan…"* with a tooltip floating over the card. The board is the **first meta chip**
+    (`.aisumeta .bd`, accent-tinted) instead, where it fits whole. `<b class="gro">` is what
+    takes the space the subtitle was holding, or the icon buttons slide up against the title.
+  - **The bullets are read off the board** (`aiSumFacts()`, request 18 Aug 2026: *"improve
+    the summary detail, some important points in bullet points"*) — the two donut clusters
+    and the largest *Top … by Alert Count* pie. Five lines: availability with its split
+    (`225 of 400 up (56%) — 159 down, 13 unreachable, 3 in maintenance`), the alert total
+    and critical share (`964 open alerts, 671 critical (70%) and 59 warning`), the single
+    biggest source (`fg-firewall.example.com — 117 alerts on its own`), then the two
+    qualitative lines.
+    ⚠️ **A bullet is emitted only when the widget behind it exists**, so the card cannot
+    claim a number a different dashboard does not have — there is a probe assertion that a
+    board of nothing but a note renders neither the monitor nor the alert line.
+    ⚠️ **`aiScope()`'s monitor total is `up + down`**, which silently drops Unreachable and
+    Maintenance — 384 where the board says 400. `aiSumFacts()` totals the whole ring;
+    `aiScope()` was left alone because the other five answer types depend on it.
 - **The create-dashboard PLAN card suggests widgets before you approve**
   (`AI_DASH_FU` / `aiDashFu(d)` / `aiDashFuPick`, request 18 Aug 2026). A dashboard is
   created empty and the old flow only offered *Add a widget* afterwards — by which point you
