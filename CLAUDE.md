@@ -1532,6 +1532,33 @@ dashboard you can edit** — that is why it was not on the first dashboard I loo
   a single `fill`. The art paints itself from tokens; nothing may set `fill` on it. This is
   the same descendant-selector trap the root CLAUDE.md records for `.agpfgt span`.
 
+### “Empty group” — the drawer’s Structure section (Option 1)
+
+Request, 18 Aug 2026. The Create Widget tab opens with a **Structure** section carrying one
+tile, **Empty group**, above the widget types. A group is not a widget, so it gets its own
+section rather than a card among the charts — but it belongs in this drawer, because
+*“what do I put on this board”* is the question the drawer answers.
+
+- **`W_GROUP_SVG` is DRAWN, not harvested.** The live 8.2.6 drawer has no group tile — a
+  group is made from the board there, not from this drawer. It matches the harvested set
+  deliberately: same `0 0 100 50` box, same `fill="none"` root, same tokens (`--chip`,
+  `--border`, `--text-dim`, `--text-dim2`), so it inverts with the theme like the rest.
+  ⚠️ It is emitted **directly**, not through `wArt()` — it carries no `<defs>` ids, so it
+  has nothing to namespace, and there is only ever one of it on screen.
+- **`awAddGroup()`** is the handler. On an already-grouped board it just calls `addGroup()`.
+- ⚠️ **On a FLAT board it converts the board**, and that is more than pushing a group. A
+  flat board is `TABS = ['']` — one unnamed band — so the widgets already there need a name
+  before a second band can mean anything. They take the **dashboard's own name**; inventing
+  “Overview” would put a heading on the board that nobody wrote.
+- ⚠️ **An empty flat board is renamed in place** instead of being split, or you would get an
+  empty group beside an empty group with nothing in either.
+- The conversion goes through `histDo()`, so ⌘Z reverses it — there is a probe assertion for
+  undo *and* redo, and another that it survives switching to another board and back (that
+  is what the `boardLoad()` change above is for).
+- The search box filters it: typing `group` leaves only this tile, typing `gauge` removes
+  it. ⚠️ The “nothing matched” empty state had to learn about it, or a search that matched
+  only the tile would print *“No widget types match …”* underneath it.
+
 ## Add New Widget drawer (original design notes)
 
 Option 2's drawer is now **in Option 1 too** (`#awDrawer`, `awTab`/`awRender`/
@@ -1701,7 +1728,13 @@ with the add-widget tile, **no group band, no ＋ New group, no Groups ▾**.
 
 - The model is unchanged: an ungrouped board is `TABS = ['']` with a single widget list, so
   add / drag / resize / undo all work without knowing the mode. `ungrouped` is the flag;
-  `UNGROUPED` is the set of boards created flat.
+  `UNGROUPED` is the set of boards that **keep their own store**.
+  ⚠️ **Those two are no longer the same test.** `boardLoad()` used to set
+  `ungrouped = UNGROUPED.has(n)`; it now derives it from the model —
+  `TABS.length === 1 && TABS[0] === ''` — which is what the sentence above actually
+  describes. With the old test, a flat board that gained a group was re-flattened the next
+  time you switched away and back: `TABS` held two entries while `ungrouped` said one, and
+  the canvas broke.
 - ⚠️ **Every pre-existing dashboard shares one demo dataset** in this prototype — the canvas
   never swapped per board, it just re-seeded from `wShift`. Creating a flat board empties
   `TABS`, so without a store the demo groups never came back. `DEMO` captures the shipped
@@ -1709,8 +1742,9 @@ with the add-widget tile, **no group band, no ＋ New group, no Groups ▾**.
   run either side of `pickDash`.
 - `renderOutline()` lists widgets instead of bands on a flat board; `addTile` and `awAdd`
   drop the "group" wording; `renderTabs()` says "Created just now" while `dashFresh`.
-- Consequence to know: **`addGroup()` is unreachable on a flat board** (its only entry point
-  is the `.gnew` button, which that mode hides), so a board created flat stays flat.
+- **A flat board can now be grouped, from the Add New Widget drawer** — see *Empty group*
+  below. Until 18 Aug 2026 `addGroup()`'s only entry point was the `.gnew` button, which
+  this mode hides, so a board created flat stayed flat forever.
 - **`Application Performance` ships flat, and is now a copy of the live Alert Summary
   board** (`/dashboard/10000000001004`, build 8.2.7) — 11 widgets in the live order and the
   live 3-column shape, seeded into `UNGROUPED` / `BOARDS` next to the `DEMO` capture. It is
