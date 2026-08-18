@@ -1732,8 +1732,8 @@ Anything that closes that popover in future has to call `trClose()`, not
 
 Option 2's drawer (`#ddrawer` / `#ddScrim`, `openCreateDrawer` / `ddCreate` / `ddUpdate` /
 `ddReset` / `ddPrev` / `ddVis` / `ddNewCat`, `DD_USERS` / `DD_PREV_W`) was **ported verbatim**
-into Option 1, so ＋ Create New Dashboard opens the real form: **Description** ·
-Dashboard Name* · Category* + Create New · Public/Private with the live note text ·
+into Option 1, so ＋ Create New Dashboard opens the real form: Dashboard Name* ·
+**Description** · Category* + Create New · Public/Private with the live note text ·
 Default landing switch · the four layout sliders with the live preview · Advanced
 Settings · docs link / Reset / Create.
 `openEditDash()` is the same drawer pre-filled — both were toast stubs here before.
@@ -1745,12 +1745,11 @@ neither ported:
   `<button>` — the caret (`.ddcar`), the `:hover` and the pointer cursor went with it,
   because a heading that cannot be clicked must not look clickable. `ddReset()` no longer
   strips the classes either. It still carries `optional` on the right.
-- **Description leads the form**, above Dashboard Name. It used to be the first field
-  *inside* Advanced Settings.
-  ⚠️ The consequence to know: the first thing in the drawer is now an **optional** field,
-  and `openCreateDrawer()` still focuses `#ddName` on open — so the caret lands on the
-  second field. That is deliberate (the required field is still what you type into first);
-  change `ddName` in that `setTimeout` if the focus should follow the order instead.
+- **Description moved out of Advanced Settings into the main form.** It sat *above*
+  Dashboard Name for one build (18 Aug 2026) and is **second** now, under the name
+  (19 Aug 2026: *"in top show dashboard name"*). So the order is Name → Description →
+  Category, the required field leads, and `openCreateDrawer()`'s focus on `#ddName` follows
+  reading order again. Don't move it back above the name without re-reading both requests.
 
 - `.ddhead` / `.ddx` already existed in Option 1 for the Add New Widget drawer, so those two
   rules were **not** re-copied. Nothing else collided (checked before porting).
