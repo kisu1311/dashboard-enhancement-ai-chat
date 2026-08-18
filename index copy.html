@@ -1615,7 +1615,14 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 @keyframes aitrpop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
 .aitrl{flex:1;min-width:0;font-size:12.6px;color:var(--text);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.aitra{flex:0 0 auto;font:400 11.5px/1 'JetBrains Mono',monospace;color:var(--muted);
+/* ⚠️ THE AMOUNT SHRINKS BEFORE THE LABEL. The row is badge + label + amount + pill +
+   chevron on one line, and the panel is only 348px at the narrowest step — the trail
+   rendered "Reading counters" as "Readi…" while "8 counters" sat beside it at full width.
+   The step name is what the row is for, so the amount takes the deficit (shrink 6) and
+   ellipsises instead. ⚠️ Measure this at 1280, not 1600: at 1600 the panel is 408px and
+   everything fits, which is why it read as working. */
+.aitra{flex:0 6 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font:400 11.5px/1 'JetBrains Mono',monospace;color:var(--muted);
   font-variant-numeric:tabular-nums}
 .aitrp{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;height:21px;padding:0 8px;
   border-radius:11px;font-size:11.5px;font-weight:500;animation:aitrfade .2s ease-out both}
@@ -1624,6 +1631,11 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitrp svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;
   stroke-linecap:round;stroke-linejoin:round}
 .aitrp .sp{display:flex;animation:aitrspin 1.2s linear infinite}
+/* at the narrowest panel step even that is not enough — the green "Completed" pill is the
+   one element saying nothing the green tick beside it has not already said, so it is the
+   first thing to go. ⚠️ The red `Conflict` pill STAYS: that one is the exception and it is
+   the only thing that reports a step went wrong. */
+@media (max-width:1300px){ .aitrp.ok{display:none} }
 @keyframes aitrfade{from{opacity:0}to{opacity:1}}
 .aitrc{flex:0 0 20px;width:20px;height:20px;margin-right:-2px;display:grid;place-items:center;
   color:var(--text-dim)}
@@ -1668,7 +1680,11 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   animation:aipix 650ms ease-in-out infinite}
 @keyframes aipix{0%,100%{opacity:.15}50%{opacity:1}}
 /* ⚠️ background-clip:text needs a TRANSPARENT colour or the fill paints over the gradient */
-.aildl{background-image:linear-gradient(90deg,var(--muted) 35%,var(--white) 50%,var(--muted) 65%);
+/* ⚠️ ONE LINE. The agentic flow feeds this short beat names, but the thinking trail feeds
+   it a per-request headline ("Working out what needs attention"), which wrapped to two
+   lines and pushed the clock and Skip down with it. */
+.aildl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  background-image:linear-gradient(90deg,var(--muted) 35%,var(--white) 50%,var(--muted) 65%);
   background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
   color:transparent;font-size:13px;font-weight:500;
   animation:aishim 1.4s linear infinite}
@@ -1736,6 +1752,10 @@ html[data-theme="light"] .aitk.run.bx{
 .aitk.bx .aiagsay{margin:9px 0 0;font-size:12.6px;line-height:1.55;color:var(--text-dim)}
 /* the trail is already inside the card's padding — it only needs the connector's own inset */
 .aitk.bx .aitkl{margin:9px 0 0;padding-left:14px}
+/* ⚠️ the TASK-ROW trail fills the box edge to edge — the 14px indent above belongs to
+   the agent's plain tick list, and applied to full-width rows it reads as a misaligned
+   card inside a card. `.tr` also has to beat `.aitk.run .aitkl{margin-left:16px}`. */
+.aitk.bx .aitkl.tr{padding-left:0;margin-left:0}
 .aitk.bx .aitkg:first-child{margin-top:0}
 .aitk.run .aitkh{padding:5px 10px 5px 7px;margin-left:-7px;border-radius:9px;
   background:var(--ai-soft);border:1px solid var(--ai-line)}
@@ -1757,7 +1777,11 @@ html[data-theme="light"] .aitk.run.bx{
 .aitk.cl .aitkm{flex:0 0 14px;width:14px;height:14px;border-radius:0;background:none}
 .aitk.cl .aitkm svg{width:13px;height:13px}
 .aitk.cl .aitkt{font-size:12px;font-weight:400;color:var(--muted)}
-.aitkn{font-size:11.5px;color:var(--muted);opacity:.8}
+.aitkn{font-size:11.5px;color:var(--muted);opacity:.8;flex:0 0 auto;white-space:nowrap}
+/* ⚠️ ONE LINE inside the box, the same rule the loader label follows. A collapsed
+   header is a single row with a count and a chevron after it — a headline that wraps
+   pushes the count onto a second line and the card stops reading as one row. */
+.aitk.bx .aitkt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aitkc{margin-left:auto;flex:0 0 9px;color:var(--muted);transition:transform .16s}
 .aitkc svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2.4;
   stroke-linecap:round;stroke-linejoin:round}
@@ -7478,7 +7502,9 @@ const AI_T = {
               title: m => m.n.charAt(0).toUpperCase() + m.n.slice(1) },
   diff:     { ic:'clock', step: () => 'Diffed every metric against your last visit',
               title: () => 'What changed since your last visit' },
-  attention:{ ic:'spark', step: () => 'Reasoned in 3 steps · ranked for your role',
+  /* ⚠️ NOT "Reasoned in 3 steps · …" — this string is the collapsed trail's header, which
+     already prints "3 steps" in its own count beside it. */
+  attention:{ ic:'spark', step: () => 'Ranked for your role, worst first',
               title: () => 'What needs attention' },
   build:    { ic:'wand',  step: () => 'Configured from your description',
               title: n => 'Here’s a preview — ' + n }
@@ -9045,8 +9071,13 @@ function aiRender(){
   /* ⚠️ the elapsed clock is started HERE, after the markup is in the DOM — the loader's
      `#aiLdClock` does not exist while the string is still being built. One running agent
      at a time, so one interval; aiLdStart() stops any previous one itself. */
+  /* ⚠️ TWO surfaces can own the loader now that the ordinary trail is boxed too — the
+     agentic flow while it runs, and a `tk` trail while it reveals. Only one runs at a
+     time, so one interval either way. */
   const runAg = aiThread.find(m => m.r === 'agent' && m.a && m.a.state === 'run');
-  if (runAg) aiLdStart(runAg.a.t0); else aiLdStop();
+  const runTk = aiThread.find(m => m.r === 'tk' && m.run);
+  const t0 = runAg ? runAg.a.t0 : (runTk ? runTk.t0 : 0);
+  if (t0) aiLdStart(t0); else aiLdStop();
 }
 function aiAnswerHTML(m, i){
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
@@ -9389,15 +9420,25 @@ function aiTkHTML(m, i){
   /* the trail is TASK ROWS now (18 Aug 2026) — see aiTrRows. The collapsed summary below
      is unchanged, because a finished trail wants one line, not a stack of cards. */
   const rows = '<div class="aitr">' + aiTrRows(m, i) + '</div>';
+  /* ⚠️ `.bx` — THE SAME BOX THE AGENTIC FLOW USES (annotation, 18 Aug 2026: the thinking
+     flow must be the same before any action). An ordinary answer used to think in a bare
+     pill with a spark and three dots, while a build or a summary thought inside a bordered
+     card with the pixel loader — two different treatments for the same moment. Both are
+     `.aitk.bx` now: same border, same tint while working, same collapsed
+     `✦ <label> · N steps ›` header, same expand-in-place.
+     ⚠️ The comment on `.aitk.run` in the stylesheet still says the trail is deliberately
+     unboxed. That was true until this request; the CSS is unchanged, only what asks for
+     `.bx` is. */
   if (m.run){
-    return '<div class="aitk run">' +
-      '<div class="aitkh"><span class="aitkm">' + AI_SPARK + '</span>' +
-        '<span class="aitkt">' + aiEsc(m.head) + '</span>' +
-        '<span class="aidots"><span></span><span></span><span></span></span>' +
+    return '<div class="aitk bx run">' +
+      /* the loader's label is the per-request HEADLINE, not the running step — the row
+         below is already showing the step with its own spinner, and saying it twice in
+         14px of each other is the repetition this panel keeps being asked to remove */
+      '<div class="aitkh">' + aiLdHTML(m.head) +
         '<button class="aitksk" title="Show the answer now" onclick="aiTkSkip()">Skip</button></div>' +
-      '<div class="aitkl">' + rows + '</div></div>';
+      '<div class="aitkl tr">' + rows + '</div></div>';
   }
-  return '<div class="aitk cl' + (m.open ? ' op' : '') + '">' +
+  return '<div class="aitk bx cl' + (m.open ? ' op' : '') + '">' +
     '<button class="aitkh" aria-expanded="' + (m.open ? 'true' : 'false') +
       '" title="' + (m.open ? 'Hide' : 'Show') + ' how this was worked out" onclick="aiTkTog(' + i + ')">' +
       '<span class="aitkm">' + AI_SPARK + '</span>' +
@@ -9405,7 +9446,7 @@ function aiTkHTML(m, i){
       '<span class="aitkn">' + m.st.length + ' steps' +
         (m.ms ? ' · ' + (m.ms / 1000).toFixed(1) + 's' : '') + '</span>' +
       '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>' +
-    '</button>' + (m.open ? '<div class="aitkl">' + rows + '</div>' : '') + '</div>';
+    '</button>' + (m.open ? '<div class="aitkl tr">' + rows + '</div>' : '') + '</div>';
 }
 
 /* ── agentic widget build ──────────────────────────────────────────────────────────────

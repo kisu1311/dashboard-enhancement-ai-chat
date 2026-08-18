@@ -620,9 +620,36 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   under it. The border and tint moved onto `.aitk.run.bx` itself so all three sit inside,
   and `.aitkh` went back to being a plain flex row within it. Skip sits on the loader row,
   where `.aitksk`'s `margin-left:auto` was always designed to put it.
-  ⚠️ **`.bx` is a MODIFIER, not a change to `.aitk.run`.** The thinking trail uses the same
-  `.aitk.run` and puts its task rows inside it — boxing that too would restyle a surface
-  nobody asked about. There is a probe assertion for exactly that.
+  ⚠️ **BOTH trails are boxed now** (annotation, 18 Aug 2026: *"the thinking flow will be
+  the same before any action"*). An ordinary answer used to think in a bare pill with a
+  spark and three dots while a build or a summary thought inside a bordered card with the
+  pixel loader — two treatments for the same moment. `aiTkHTML` now emits `.aitk.bx` in
+  both states and uses `aiLdHTML()`, so every prompt gets the same border, the same tint
+  while working, the same collapsed `✦ <label> · N steps ›` header and the same
+  expand-in-place. A probe asserts the two surfaces' border, radius and padding match.
+  ⚠️ `.bx` is still a MODIFIER — the earlier note here said the trail was deliberately
+  unboxed, which was true until this request. The CSS did not change; only what asks for
+  `.bx` did.
+  · The loader's label is the trail's **per-request headline** (`m.head`), not the running
+    step — the row below already shows the step with its own spinner, and saying it twice
+    14px apart is the repetition this panel keeps being asked to remove.
+  · ⚠️ **`aiRender()`'s clock hook has TWO possible owners now** — a running `agent` or a
+    running `tk`. It picks whichever is live; only one runs at a time.
+  · ⚠️ **`.aitkl.tr`** cancels the box's 14px indent. That indent is for the agent's plain
+    tick list; applied to full-width task rows it reads as a card inside a card. It also
+    has to beat `.aitk.run .aitkl{margin-left:16px}`, hence the extra class.
+  · ⚠️ **`.aildl` and `.aitk.bx .aitkt` are `nowrap` + ellipsis.** The agentic flow feeds
+    them short beat names; the trail feeds them a headline, which wrapped to two lines and
+    pushed the clock, Skip and the step count onto a second row.
+  · ⚠️ **Measure the task rows at 1280, not 1600.** At 1600 the panel is 408px and
+    everything fits; at 1280 it is 348px and the row rendered *"Reading counters"* as
+    **"Readi…"** while *"8 counters"* sat beside it at full width. `.aitra` is now
+    `flex:0 6 auto` + ellipsis so the **amount** takes the deficit, and below 1300px the
+    green `Completed` pill is dropped — it is the one element saying nothing the green tick
+    has not. The red `Conflict` pill stays; it is the only thing that reports a failure.
+  · ⚠️ `AI_T.attention.step` was *"Reasoned in 3 steps · ranked for your role"* — that
+    string **is** the collapsed header, which prints its own `3 steps` count beside it. It
+    is `"Ranked for your role, worst first"` now.
   ⚠️ The loose Skip row still renders for the **`adding`** state, and for a `run` with no
   tool beats yet — those have no box to hold it.
 - ⚠️ **The panel-wide ambient "thinking" glow (`.aiamb`) was BUILT AND THEN REMOVED, both
