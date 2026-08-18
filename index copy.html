@@ -5622,9 +5622,13 @@ function renderCanvas(){
         + addTile(gi, name, true) + `</div>`);
     return `<section class="dgroup" id="grp-${gi}">${head}${body}</section>`;
   }).join('') +
-  /* the single end-of-board add tile — skipped when the board is empty, because the empty
-     group above is already showing its own (bigger) one */
-  (WIDGETS.some(a => (a||[]).length)
+  /* The single end-of-board add tile. ⚠️ It is skipped whenever the LAST GROUP IS EMPTY,
+     not just when the whole board is (annotation, 18 Aug 2026 — adding an Empty group put
+     two of these one under the other). That group already renders its own bigger
+     empty-state tile directly above, and this one targets `TABS.length-1` — the very same
+     group — so the two were the same button twice.
+     A middle group being empty is fine: its tile is not adjacent to this one. */
+  ((WIDGETS[TABS.length - 1] || []).length
      ? `<div class="dgrid12" style="gap:${gap}px;margin:10px 0 2px"
           ondragover="wDragOverGroup(event,${TABS.length-1})" ondrop="wDrop(event,${TABS.length-1},-1)"
           ondragleave="wDragLeave(event)">${addTile(TABS.length-1, TABS[TABS.length-1], false)}</div>`

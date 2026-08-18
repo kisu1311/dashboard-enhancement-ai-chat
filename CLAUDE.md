@@ -1647,9 +1647,13 @@ the `.wadd` CSS block.
   four-group board — clutter, not affordance. Adding to one specific group is still the `＋`
   in that group's header.
 - An **empty group** keeps its own `span 4` `.big` tile — that is an empty state, not a
-  repeated button (it replaced the old `.gempty` text row; that class is gone). The
-  end-of-board tile is skipped when the whole board is empty, so a new board shows one tile,
-  not two.
+  repeated button (it replaced the old `.gempty` text row; that class is gone).
+  ⚠️ **The end-of-board tile is skipped whenever the LAST GROUP is empty**, not merely when
+  the whole board is (annotation, 18 Aug 2026). The test was `WIDGETS.some(a => a.length)`,
+  so adding an *Empty group* to a board that already had widgets drew **two add tiles one
+  under the other** — and both targeted `TABS.length-1`, the same group, so it was
+  literally the same button twice. It is `(WIDGETS[TABS.length-1] || []).length` now.
+  A *middle* group being empty still shows both: those two tiles are not adjacent.
 - Tile body → the three-tab Add New Widget drawer. Five **quick-add buttons**
   (`.waQb`) add the four most-used catalogue types plus the AI suggestion in one
   click, through the same `awAdd()` / `addWidgetFromLib('ai')` the drawer uses.
