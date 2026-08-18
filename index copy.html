@@ -1294,7 +1294,9 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    board, an attached file) are pinned items and are. Removing every pinned chip therefore
    leaves the module context standing, which is what keeps the chat working module-wise.
    (The label was "Scope" until 15 Aug 2026; the internal names are still aiScope*.) */
-.aictxbar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0 0 8px}
+.aictxbar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0}
+/* it lives inside the pill now, so an empty one would draw a 7px gap for nothing */
+.aictxbar:empty{display:none}
 .aiscp{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;
   border:1px solid var(--ai-line);background:var(--ai-soft);color:var(--ai-2);
   font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}
@@ -1866,6 +1868,10 @@ html[data-theme="light"] .aitk.run.bx{
 .aiagmk svg{width:15px;height:15px;fill:var(--ai-2)}
 .aiagsum{padding-top:2px}
 .aiagsum h4:first-child{margin-top:2px}
+/* the scope facts, stated ONCE — see the note in aiBuildAnswer's summary branch */
+.aisumeta{display:flex;flex-wrap:wrap;gap:5px;margin:1px 0 9px}
+.aisumeta span{padding:2.5px 8px;border:1px solid var(--border-soft);border-radius:999px;
+  background:var(--panel-2);font-size:11.5px;line-height:1.45;color:var(--muted)}
 /* composer */
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
@@ -1893,10 +1899,22 @@ html[data-theme="light"] .aitk.run.bx{
 /* ⚠️ NO isolation:isolate here. It makes .aiinbox a stacking context, which traps the
    ::after bloom ABOVE the pill's own background and washes the interior pink. Without it,
    z-index:-1 paints the bloom behind the background, so only its blurred edge shows. */
-.aiinbox{position:relative;display:flex;align-items:center;gap:8px;
-  min-height:46px;padding:6px 6px 6px 7px;
+/* ── the composer IS the chat area (annotation, 18 Aug 2026: "the auto-approve action
+   show in chat area and the context will be also show in chat area").
+   It was three stacked things — a loose row of context chips, the input pill, and a
+   toggle floating underneath it — so the one place you act read as three unrelated
+   strips. All three are inside the pill now: context on top (what the next question
+   looks at), the text, then the control row (attach · auto-approve … dictate · send).
+   ⚠️ It changed from a flex ROW to a flex COLUMN. `.aiinbox textarea` was `flex:1` for
+   the row layout and has to be `flex:0 0 auto` here, or it stretches to eat the column
+   and the control row is pushed out of the box. */
+.aiinbox{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:7px;
+  min-height:46px;padding:9px 9px 8px 10px;
   border:1px solid var(--border);border-radius:12px;background:var(--card) padding-box;
   transition:box-shadow .14s,border-color .14s}
+.aiinrow{display:flex;align-items:center;gap:8px}
+/* dictate and send sit hard right; everything before them stays left */
+.aiinrow .aimic{margin-left:auto}
 .aiinbox:focus-within{box-shadow:0 0 0 3px var(--ai-soft);border-color:var(--ai-line)}
 /* ⚠️ GENERATING ONLY (annotation, 15 Aug 2026): at rest the composer wears an ordinary
    border; the AI-accent one appears only while the AI is working, so the border itself is
@@ -1921,9 +1939,10 @@ html[data-theme="light"] .aitk.run.bx{
 .aimic.on:hover{background:var(--ai)}
 @keyframes aimicp{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.5)}50%{box-shadow:0 0 0 7px rgba(139,92,246,0)}}
 @media (prefers-reduced-motion:reduce){.aimic.on{animation:none}}
-.aiinbox textarea{flex:1;min-width:0;background:transparent;border:0;outline:0;resize:none;
+.aiinbox textarea{flex:0 0 auto;width:100%;min-width:0;background:transparent;border:0;
+  outline:0;resize:none;
   color:var(--text);font-family:inherit;font-size:13px;line-height:1.5;max-height:96px;
-  padding:5px 0;display:block}
+  padding:2px 1px 0;display:block}
 .aiinbox textarea::placeholder{color:var(--muted)}
 .aisend{flex:0 0 30px;width:30px;height:30px;border-radius:8px;
   display:inline-flex;align-items:center;justify-content:center;padding:0;
@@ -1971,12 +1990,17 @@ html[data-theme="light"] .aitk.run.bx{
 .aistop .ic svg{width:11px;height:11px;fill:var(--red)}
 .aistop .aiacts{flex:0 0 100%;margin-top:2px}
 .aisend svg{width:15px;height:15px;fill:currentColor}
-.aiauto{display:flex;align-items:center;gap:8px;margin:10px 2px 0;font-size:11.5px;
-  color:var(--text-dim);cursor:pointer;user-select:none}
-.aisw{width:30px;height:17px;border-radius:9px;background:var(--chip);position:relative;transition:background .15s;flex:0 0 30px}
-.aisw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--white);transition:transform .15s}
+/* inside the control row now — a hairline pill so it reads as a setting on the composer
+   rather than a stray line of body text below it */
+.aiauto{display:inline-flex;align-items:center;gap:7px;margin:0;padding:3px 9px 3px 4px;
+  border:1px solid var(--border);border-radius:999px;font-size:11.5px;
+  color:var(--text-dim);cursor:pointer;user-select:none;transition:border-color .14s,color .14s}
+.aiauto:hover{border-color:var(--ai-line);color:var(--text)}
+.aiauto.on{border-color:var(--ai-line);color:var(--text)}
+.aisw{width:26px;height:15px;border-radius:8px;background:var(--chip);position:relative;transition:background .15s;flex:0 0 26px}
+.aisw::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--white);transition:transform .15s}
 .aiauto.on .aisw{background:var(--ai)}
-.aiauto.on .aisw::after{transform:translateX(13px)}
+.aiauto.on .aisw::after{transform:translateX(11px)}
 
 /* widget Share drawer */
 .wsh-w{display:flex;gap:10px;align-items:center;padding:9px 10px;background:var(--panel-2);border:1px solid var(--border);border-radius:6px}
@@ -7485,11 +7509,17 @@ function aiBuildAnswer(type, q){
   if (type === 'summary'){
     const ws = (WIDGETS[curG] || []).filter(w => w.title);
     const names = ws.slice(0, 3).map(w => w.title).join(', ');
+    /* ⚠️ Every fact appears ONCE (annotation, 18 Aug 2026 — "remove the repeated text").
+       The widget count, the monitor total and the time range used to be three prose
+       bullets that restated the card header's own subtitle, and the heading "What this
+       dashboard covers" restated the card title "Dashboard summary". The three facts are
+       one meta row now, the header subtitle is the board name alone, and what is left in
+       the body is the reading — which is the part a summary is actually for. */
     return { step: AI_T.summary.step(s), ic: 'spark', title: AI_T.summary.title(),
-      html: '<h4>What this dashboard covers</h4><ul>' +
-        '<li><b>' + ws.length + '</b> widgets — ' + names + (ws.length > 3 ? ' and <b>' + (ws.length - 3) + '</b> more' : '') + '</li>' +
-        '<li>Availability and alerting for <b>' + ((s.up || 0) + (s.down || 0)) + '</b> monitors</li>' +
-        '<li>Time range <b>' + s.time + '</b></li></ul>' +
+      html: '<div class="aisumeta"><span>' + ws.length + ' widget' + (ws.length === 1 ? '' : 's') +
+          '</span><span>' + ((s.up || 0) + (s.down || 0)) + ' monitors</span>' +
+          '<span>' + s.time + '</span></div>' +
+        '<p>Covers ' + names + (ws.length > 3 ? ' and <b>' + (ws.length - 3) + '</b> more' : '') + '.</p>' +
         '<h4>How it reads right now</h4><ul>' +
         '<li><b>' + (s.down || 0) + '</b> monitors are down and <b>' + (s.crit || 0) + '</b> alerts are critical</li>' +
         '<li>Most of the pressure is on <b>availability</b>, not latency</li>' +
@@ -7658,6 +7688,50 @@ function aiDashState(){
   for (let i = aiThread.length - 1; i >= 0; i--) if (aiThread[i].r === 'dash') return aiThread[i].d;
   return null;
 }
+/* ── widget suggestions on the PLAN card (request, 18 Aug 2026) ────────────────────────────
+   A dashboard is created empty, and the old flow only offered "Add a widget" afterwards —
+   by which point you are staring at a blank board with no idea what belongs on it. These
+   sit on the plan, BEFORE approval, so you can see what this board is for while deciding.
+   ⚠️ They FILL THE COMPOSER, they do not send. The board does not exist yet, so firing
+   "Add X to Network health" here would ask for a widget on a board that is not there. You
+   approve first, then send. `aiDashFuPick` says so in its toast. */
+const AI_DASH_FU = [
+  [/network|switch|router|interface|bandwidth|wan/i, [
+    'Add an Interface Traffic Utilization chart',
+    'Add Top Network Monitors by Alert Count',
+    'Add a monitor availability donut' ]],
+  [/alert|incident|severity|policy/i, [
+    'Add an Alert Count donut by severity',
+    'Add Top Policy by Alert Count',
+    'Add an active alerts stream' ]],
+  [/server|host|cpu|memory|disk|infra/i, [
+    'Add a CPU utilization chart by host',
+    'Add a memory utilization Top N',
+    'Add an infrastructure heatmap' ]],
+  [/log|syslog|event/i, [
+    'Add Logs by Severity',
+    'Add Top Log Sources',
+    'Add an events-per-second KPI' ]],
+  [/slo|uptime|availab/i, [
+    'Add an SLO Achieved Summary',
+    'Add a monitor availability donut',
+    'Add an uptime trend chart' ]],
+];
+function aiDashFu(d){
+  const hit = AI_DASH_FU.find(([re]) => re.test(d.name || ''));
+  /* nothing in the name to go on — offer what every board starts with */
+  return hit ? hit[1] : [
+    'Add a monitor availability donut',
+    'Add an Alert Count donut by severity',
+    'Add Top Monitor by Alert Count' ];
+}
+/* ⚠️ fills the composer rather than sending — see the note above */
+function aiDashFuPick(btn){
+  const q = btn.textContent.replace(/^›\s*/, '').trim();
+  const el = document.getElementById('aiIn');
+  if (el){ el.value = q; el.focus(); aiMentIn(el); }
+  toast('Queued — approve the dashboard, then send it');
+}
 function aiDashHTML(d, i){
   if (d.state === 'done'){
     /* ⚠️ It does NOT say "opened it for you" any more, because it no longer does that
@@ -7717,6 +7791,11 @@ function aiDashHTML(d, i){
     '</ol></div>' +
     '<div class="aidform">' + params + '</div>' +
     '<div class="aidwarn">⚠ This creates a new dashboard. Existing dashboards are not touched.</div>' +
+    /* what to put on it, shown while you are still deciding — not after the board is blank */
+    (editing ? '' :
+      '<div class="aiful">Widgets for this board</div>' +
+      aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuPick(this)">' +
+        '<span class="cv">›</span>' + aiEsc(q) + '</button>').join('')) +
     '<div class="aiacts">' +
       (editing
         ? '<button class="aiapv" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
@@ -9860,25 +9939,31 @@ function aiAgHTML(a, i){
             '<button class="aiagdb" onclick="aiAgDest(event,' + i + ')">' +
               '<svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg>' +
               aiEsc(a.target || a.board) + '<span class="cv">▾</span></button></div>') +
-        /* ── three outcomes, because there are three (annotation, 15 Aug 2026: "add extra
-           button — add, don't remove other flow and other option"):
-             Reject       — nothing happens
-             Save widget  — the definition goes to User Define and NO board is touched
-             Accept       — it is saved AND placed on the dashboard named above
-           This is the live product's own split: its Create screen carries *Create Widget*
-           (save only) beside *Create & Add Widget*. Save is a ghost button, not a second
-           primary — one accent per card, or neither reads as the main path. */
+        /* ── the footer carries the two decisions you make ON the widget in front of you:
+           Edit it, or Accept it (annotation, 18 Aug 2026). The other two outcomes are still
+           here — Save the definition without placing it, and Reject — but as follow-up
+           suggestions under the card rather than a four-button footer. Four equal-looking
+           buttons made the card read as a form; this split says what the card is for.
+           ⚠️ Nothing was removed. Save is still the live product's *Create Widget*
+           (definition only, NO board touched) and Accept is still *Create & Add Widget*,
+           which places it on the dashboard named in the Add-to row above. */
         (made ? '' :
           '<div class="aiagf">' +
-            '<button class="aiagb" onclick="aiAgReject(' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Reject</button>' +
-            '<button class="aiagb" onclick="aiAgSave(' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5V4Zm3 0v6h7V4M8 20v-6h8v6"/></svg>' +
-              'Save widget</button>' +
+            '<button class="aiagb" onclick="aiAgEdit(' + i + ')">' +
+              '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Zm11-15 4 4"/></svg>Edit</button>' +
             '<button class="aiagb pri" onclick="aiAgAccept(' + i + ')">' +
               '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Accept</button>' +
           '</div>') +
-      '</div>');
+      '</div>' +
+      /* ⚠️ these are ACTIONS wearing the follow-up chip, so they call their own handler
+         directly. They must NOT go through aiFollow(), which sends the label as a new
+         question — "Reject it and build something else" is not a question. */
+      (made ? '' :
+        '<div class="aiagblk"><div class="aiful">Follow ups</div>' +
+          '<button class="aifu" onclick="aiAgSave(' + i + ')"><span class="cv">\u203a</span>' +
+            'Save it to the library without adding it</button>' +
+          '<button class="aifu" onclick="aiAgReject(' + i + ')"><span class="cv">\u203a</span>' +
+            'Reject it and build something else</button></div>'));
       continue;
     }
     if (b.k === 'scard'){
@@ -9889,8 +9974,7 @@ function aiAgHTML(a, i){
         '<div class="aiagch">' +
           '<span class="aiagmk">' + AI_SPARK + '</span>' +
           '<b>Dashboard summary</b>' +
-          '<span class="sub" title="' + aiEsc(a.board) + '">' + aiEsc(a.board) + ' · ' +
-            a.nw + ' widget' + (a.nw === 1 ? '' : 's') + ' · ' + aiEsc(a.time) + '</span>' +
+          '<span class="sub" title="' + aiEsc(a.board) + '">' + aiEsc(a.board) + '</span>' +
           '<button class="aiagib" data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
             '<svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>' +
           '<button class="aiagib" data-tip="' + (shut ? 'Show' : 'Hide') + ' the summary" onclick="aiAgCard(' + i + ')">' +
@@ -10461,24 +10545,30 @@ function aiKey(e){
     <!-- typed-prompt suggestions (annotation, 17 Aug 2026): offered BEFORE you send, in
          the same chip shape as the follow-ups that come after an answer -->
     <div class="aisugg" id="aiSugg"></div>
-    <div class="aictxbar" id="aiCtx"></div>
+    <!-- ⚠️ ONE box holds the whole chat area — context, text and controls (annotation,
+         18 Aug 2026). #aiCtx and #aiAuto used to sit outside it, above and below. -->
     <div class="aiinbox">
-      <!-- Upload file, in place of the old ＋ command menu (annotation, 15 Aug 2026).
-           ⚠️ one space before the type list — the tooltip engine turns text after TWO
-           spaces into a keycap chip. -->
-      <button class="aiplus" title="Upload file — images, logs, PDF, CSV or JSON"
-        onclick="aiUpPick()"><svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
-      <input type="file" id="aiUpIn" multiple hidden onchange="aiUpAdd(this)"
-        accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
+      <div class="aictxbar" id="aiCtx"></div>
       <textarea id="aiIn" rows="1" placeholder="Ask, build and act — type @ to add context" oninput="aiMentIn(this)" onkeydown="aiKey(event)"></textarea>
-      <!-- Dictation (annotation, 15 Aug 2026). Speaks into the composer; it never sends
-           for you, so what was heard can be read and corrected first. -->
-      <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3M8.5 21h7"/></svg></button>
-      <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg></button>
+      <div class="aiinrow">
+        <!-- Upload file, in place of the old ＋ command menu (annotation, 15 Aug 2026).
+             ⚠️ one space before the type list — the tooltip engine turns text after TWO
+             spaces into a keycap chip. -->
+        <button class="aiplus" title="Upload file — images, logs, PDF, CSV or JSON"
+          onclick="aiUpPick()"><svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <input type="file" id="aiUpIn" multiple hidden onchange="aiUpAdd(this)"
+          accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
+        <!-- Auto-approve belongs with the send button: it decides what happens when you
+             press it, so it reads next to the thing it changes. -->
+        <span class="aiauto" id="aiAuto" onclick="aiToggleAuto()" title="Run safe actions without asking each time"><span class="aisw"></span>Auto-approve</span>
+        <!-- Dictation (annotation, 15 Aug 2026). Speaks into the composer; it never sends
+             for you, so what was heard can be read and corrected first. -->
+        <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3M8.5 21h7"/></svg></button>
+        <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg></button>
+      </div>
       <!-- the travelling light along the top edge while the AI is generating -->
       <span class="aigenbar" aria-hidden="true"></span>
     </div>
-    <span class="aiauto" id="aiAuto" onclick="aiToggleAuto()" title="Run safe actions without asking each time"><span class="aisw"></span>Auto-approve</span>
   </div>
 </aside>
 

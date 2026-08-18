@@ -379,7 +379,8 @@ Built to **`ObserveOPS-AI-Chat-Mode-and-Scope.pdf`** (in this folder), which is 
 does and the AI picks it; *scope* is what data it looks at and the **user** picks it. Scope
 lives with the input at the bottom, because it describes what happens next.
 
-- **The context bar** (`.aictxbar` / `aiCtxBar`) sits directly above the composer and holds
+- **The context bar** (`.aictxbar` / `aiCtxBar`) is the **first row INSIDE the composer
+  pill** (annotation, 18 Aug 2026 — see *The composer is the chat area* below) and holds
   two different things: the **Scope chip is a DROPDOWN and is not removable**; the
   **context chips beside it are removable**. That asymmetry is the whole point —
   ⚠️ **clearing every context chip leaves the module scope standing, so the chat keeps
@@ -442,6 +443,30 @@ on this board is a rise. It now takes the three biggest movers **plus the bigges
 improvement**, which is also a fairer reading of "what changed".
 - **Composer** = a 46px pill with `＋` on the left, the input, and send on the right.
   Placeholder: *"Ask, build and act across your stack"*.
+
+#### The composer IS the chat area — context and Auto-approve moved inside it
+
+Annotation, 18 Aug 2026: *"the auto-approve action show in chat area and the context will be
+also show in chat area"*. It used to be **three stacked strips** — a loose row of context
+chips, the input pill, and the Auto-approve toggle floating underneath — so the one place
+you act read as three unrelated things. `.aiinbox` now holds all of it:
+
+| row | what |
+|---|---|
+| 1 | `#aiCtx` — the Scope dropdown + removable context chips |
+| 2 | the `<textarea>`, full width |
+| 3 | `.aiinrow` — 📎 attach · **Auto-approve** ⏻ … 🎤 dictate · ➤ send |
+
+- ⚠️ **`.aiinbox` changed from a flex ROW to a flex COLUMN.** `.aiinbox textarea` was
+  `flex:1` for the row layout and must be **`flex:0 0 auto`** here, or it stretches to eat
+  the column and the control row is pushed out of the box.
+- `.aictxbar:empty{display:none}` — inside the pill an empty context row would draw a 7px
+  gap for nothing.
+- Auto-approve is a hairline pill (`.aiauto`, `--ai-line` border when on) sitting **next to
+  send**, because it decides what pressing send does. Its switch shrank 30→26px, so
+  `.aiauto.on .aisw::after` moved 13→**11px** — change both together or the knob overshoots.
+- `.aicmd` menus (slash, @-mention) still anchor to `.aicomp`, which is unchanged, so the
+  typeahead was not affected.
 - **While generating, the send button becomes a filled ACCENT CIRCLE with a white rounded
   square** (request + reference image, 17 Aug 2026) — `.aisend` → `.aisend.stop`.
   ⚠️ **It went through two shapes in one session; do not restore either earlier one.**
@@ -765,7 +790,21 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   collapsible). ⚠️ The agentic flow used to render `cl` even while running, so none of the
   running treatment reached it.
 - **Widget card** = `Create Widget` + subtitle of the counters + a 3-series chart + legend
-  + an **Add to `<dashboard>`** row + `Reject · Save widget · Accept`.
+  + an **Add to `<dashboard>`** row + a footer of **`Edit · Accept`**.
+  - ⚠️ **Reject and Save widget moved OUT of the footer into the follow-up chips**
+    (annotation, 18 Aug 2026: *"show accept and edit, the other action button will be show
+    in follow-up suggestion"*). Four equal-looking buttons made the card read as a form;
+    the footer now carries the two decisions you make *on the widget in front of you*, and
+    the two ways out sit under it as `Save it to the library without adding it` /
+    `Reject it and build something else`. **Nothing was removed.**
+  - ⚠️ **Those chips are ACTIONS wearing `.aifu`, so they call `aiAgSave(i)` / `aiAgReject(i)`
+    directly.** They must **not** go through `aiFollow()`, which sends the chip's label as a
+    new question — *"Reject it and build something else"* is not a question.
+  - **Edit** calls the existing `aiAgEdit(i)`, which primes the composer with the request so
+    it can be changed and re-sent. It does not open the Create/Edit Widget modal.
+  - ⚠️ `aiAgSave(i)` early-returns unless `a.state === 'card'`. A probe that fakes a
+    pre-accept card with any other state silently does nothing and looks like a bug in the
+    button.
   - **Save widget** writes the definition into `W_USER` (the drawer's *User Define* tab)
     and **touches no board** — the live product's own *Create Widget* button. The summary
     then says it is not on a dashboard and offers **Add to a dashboard ▾**.
@@ -777,6 +816,23 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   - ⚠️ Accept is the only filled button here, unlike the dashboard plan card's deliberately
     equal-weight Approve/Edit. A widget is one ⌘Z away; a dashboard is a shared object.
 - **Summary card** is read-only — **no gate**, because a summary changes nothing.
+  - ⚠️ **Every fact appears ONCE** (annotation, 18 Aug 2026: *"remove the repeated text"*).
+    The widget count, the monitor total and the time range were three prose bullets that
+    restated the card header's own subtitle, and the heading *"What this dashboard covers"*
+    restated the card title *"Dashboard summary"*. Now: the header subtitle is the **board
+    name alone**, the three facts are one `.aisumeta` chip row, a single `Covers …` line
+    names the widgets, and the only heading left is **How it reads right now** — which is
+    the part a summary is actually for. Don't put the tail back on the header subtitle; it
+    only ever rendered as an ellipsis in a 344–420px panel anyway.
+- **The create-dashboard PLAN card suggests widgets before you approve**
+  (`AI_DASH_FU` / `aiDashFu(d)` / `aiDashFuPick`, request 18 Aug 2026). A dashboard is
+  created empty and the old flow only offered *Add a widget* afterwards — by which point you
+  are staring at a blank board. The pills sit between the `.aidwarn` line and the gate, are
+  chosen from the **dashboard's name** (network · alert · server · log · slo, with a
+  generic fallback), and are hidden while the form is in its `edit` state.
+  - ⚠️ **They FILL the composer, they do not send** — `aiDashFuPick`, not `aiFollow`. The
+    board does not exist yet, so firing *"Add an Interface Traffic chart"* here would ask
+    for a widget on a board that is not there.
 - Families live in `AI_AG_FAM` (CPU · Memory · Disk · **APM** · Traffic · Latency ·
   Availability · Alerts · Logs · Flow). ⚠️ APM sits **above** Traffic and Latency: first
   match wins and both own words APM uses, so "APM response time" was building a ping
