@@ -1070,18 +1070,17 @@ body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}
 .aihb:hover{background:var(--hover-side);color:var(--text)}
 /* a header button that holds a STATE (split view, and any open dropdown) reads as pressed */
 .aihb.on{background:var(--ai-soft);color:var(--ai-2)}
-/* a labelled header button: the glyph keeps its meaning, the word supplies it */
-/* ⚠️ named .aihbw, NOT .wl — `.wl` already exists (line ~1665, the old widget-library
-   tile: display:flex, flex-direction:column, and `.wl svg{width:100%}`). The first build
-   used .wl and the header buttons rendered with the glyph stacked ABOVE the word, because
-   the later, lower-specificity rule still supplied flex-direction. Grep before naming. */
-.aihb.aihbw{width:auto;padding:0 9px 0 8px;gap:5px;display:inline-flex;flex-direction:row;
-  align-items:center}
-.aihb .lb{order:2;font-size:11.5px;font-weight:500;letter-spacing:.01em}
-@media (max-width:1440px){
-  .aihb .lb{display:none}
-  .aihb.aihbw{width:28px;padding:0;justify-content:center}
-}
+/* ⚠️ `.aihbw` (the labelled-button modifier) and `.aihb .lb` are GONE with the "New" word
+   (request, 19 Aug 2026) — nothing carried a label any more, and a rule kept for a deleted
+   feature is how this file has been bitten before.
+   ⚠️ The reason the modifier existed is worth keeping: it was named `.aihbw` and NOT `.wl`,
+   because `.wl` is the old widget-library tile (`flex-direction:column`, `svg{width:100%}`)
+   and the first build rendered the header glyphs stacked above their words. Grep before
+   naming, every time. */
+/* New chat leads the header, so it sits before the name rather than after the buttons.
+   ⚠️ hidden until the chat has something in it — see `aiNewBtnPaint`. */
+.aihnew{margin-right:2px}
+.aihnew.hide{display:none}
 .aihb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .aihb.x svg{stroke-width:2.2}
 .aisp{flex:1}
@@ -1955,15 +1954,16 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    spark rather than the green tick — nothing was created, the board was read */
 .aiagmk{flex:0 0 15px;width:15px;height:15px;display:grid;place-items:center}
 .aiagmk svg{width:15px;height:15px;fill:var(--ai-2)}
+/* the product mark is a raster asset, so it gets its own sizing — it must not inherit the
+   `fill` the ✦ uses, and it is a shade larger because the glyph inside it is inset */
+.aiagmk.logo{flex:0 0 17px;width:17px;height:17px}
+.aiagmk.logo img{width:17px;height:17px;display:block;object-fit:contain}
 .aiagsum{padding-top:2px}
 .aiagsum h4:first-child{margin-top:2px}
-/* the scope facts, stated ONCE — see the note in aiBuildAnswer's summary branch */
-.aisumeta{display:flex;flex-wrap:wrap;gap:5px;margin:1px 0 9px}
-.aisumeta span{padding:2.5px 8px;border:1px solid var(--border-soft);border-radius:999px;
-  background:var(--panel-2);font-size:11.5px;line-height:1.45;color:var(--muted)}
-/* the board this is a summary OF — it leads the row and reads as a name, not a stat */
-.aisumeta .bd{color:var(--white);font-weight:600;border-color:var(--ai-line);
-  background:var(--ai-soft)}
+/* the scope facts, stated ONCE — see the note in aiBuildAnswer's summary branch.
+   ⚠️ PLAIN TEXT, not chips (annotation, 19 Aug 2026): four pills wrapped to two rows in a
+   344–420px panel and looked like clickable filters. One muted line, dot-separated. */
+.aisumeta{margin:1px 0 9px;font-size:12px;line-height:1.55;color:var(--muted)}
 /* composer */
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
@@ -7643,6 +7643,11 @@ fitCanvas();
 /* ================= ObserveOps AI — light chat panel =================
    One entry point (the toolbar button), one panel. Canned + deterministic: the point is
    that the states are reachable — empty, thinking, answer — not that it calls out. */
+/* the product's own mark — the same base64 the sidebar trigger uses, so there is no
+   second asset to keep in step. Used where the panel speaks AS the product (the
+   Dashboard-summary card), not where it speaks as the assistant (everything else,
+   which keeps AI_SPARK). */
+const AI_LOGO = '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAdVBMVEUAAADvcGD/cHD////3d2j////////////zc2T////////////0dmb////////zdWX////////zdGT////////0dmT////////0dWX////////zdWT////zdWT////zdWT////0dmX////zdWT////zdWT///++yfDhAAAAJXRSTlMAEBAQICAwP0BAT1BfX2Bvb3B/f4CPj5Cfn6Cvr7+/z8/f3+/vnUSo/gAAAdFJREFUSMe1l2tXwyAMhpkMu2utVqc4RFYb/v9PtG5uI1zDPOZbDzwn4SUXyljU+LqXZrDb48fT4o6RjT9re7ITDAAfmzkJXZ5JF55sv6hCMQxwyOMCoT4M8JYJ/nG0eRgOmxT7am0JBniJa2wsBYbPSOhisDQYDnMSG4fhMPNgY+kwfJa0ysFYtTYCjnrXiQQMm9yBR9VclyPw11U06bM77sYVgWF/yWcPHRosSAyGc557QSvOCPBH1LEM8gcyrhViNSPCR9cCn1dQYZgFd7xiZPhhWtL5A6fhKW6OHIsKeIp7WVArAy9YHxYCFX7AFyVYnbl6mUoW5aaqhVEx/QXu/xm+bx2rDXvntptawdybHVDPHcqwQfmI+hcvsah+Fevcz64Et1hfQmEk8tE2XkkuK6L+OaSucC39vR3ddRsMMl5sgImpJAIRrOGkOz5nVLHp/9o73tdE9J98C8qTRacGXaR5L/0p3CRHrPScCxXsuIY0Bu8Ctb0Ix1sdLLuXso49SIzqJ5Mm/ViJ1DjBdukiL5ohPB5TNnB2Mx3LYE6MPJG//Q1aOSU3lNAx06iEzLNaVP1lILQpduZG3owevYfJrHtOH3+86ZU+yjcY2a0S5Dc67Qu3xZ6tHwAAAABJRU5ErkJggg==" alt="" />';
 const AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M12 2l1.7 4.8c.3.9 1 1.6 1.9 1.9L20.4 10l-4.8 1.7c-.9.3-1.6 1-1.9 1.9L12 18.4l-1.7-4.8c-.3-.9-1-1.6-1.9-1.9L3.6 10l4.8-1.7c.9-.3 1.6-1 1.9-1.9L12 2Z"/></svg>';
 /* ⚠️ These were four identical full-width rows with a chevron — Datadog Bits' exact empty
    state — floating in a mostly blank panel, and their answers named things that were not on
@@ -7861,10 +7866,13 @@ function aiBuildAnswer(type, q){
     li.push('Most of the pressure is on <b>availability</b>, not latency');
     li.push('The rest of the board is inside its normal band');
     return { step: AI_T.summary.step(s), ic: 'spark', title: AI_T.summary.title(),
-      html: '<div class="aisumeta"><span class="bd">' + aiEsc(s.dash) + '</span>' +
-          '<span>' + ws.length + ' widget' + (ws.length === 1 ? '' : 's') + '</span>' +
-          (f.mon ? '<span>' + f.mon + ' monitors</span>' : '') +
-          '<span>' + s.time + '</span></div>' +
+      /* ⚠️ ONE LINE OF PLAIN TEXT, not chips (annotation, 19 Aug 2026). Four pills wrapped
+         onto two rows in a 344–420px panel and read as filters you could click.
+         ⚠️ The monitor TOTAL is dropped here — the first bullet already says
+         "225 of 400 monitors are up", so the chip was the extra detail. */
+      html: '<div class="aisumeta">' + aiEsc(s.dash) + ' \u00b7 ' +
+          ws.length + ' widget' + (ws.length === 1 ? '' : 's') + ' \u00b7 ' +
+          aiEsc(s.time) + '</div>' +
         '<p>Covers ' + names + (ws.length > 3 ? ' and <b>' + (ws.length - 3) + '</b> more' : '') + '.</p>' +
         '<h4>How it reads right now</h4><ul>' +
         li.map(x => '<li>' + x + '</li>').join('') + '</ul>',
@@ -8928,6 +8936,14 @@ function aiEsc(t){ return (t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','
    (annotations, 14 Aug 2026: "remove ObserveOps AI name", "chat name will be edit",
    "new chat option add" — one change, since all three are the same header slot.) */
 let aiChatName = 'New chat', aiNamed = false, aiRenaming = false;
+/* ⚠️ NEW CHAT is hidden while the thread is empty (request, 19 Aug 2026, with the
+   reference: no compose mark on a fresh "New Chat", one as soon as the chat has content).
+   Starting a new chat from an empty one does nothing, so the control would be a no-op the
+   first time anyone ever sees it. Called from `aiRender()`, which runs on every change. */
+function aiNewBtnPaint(){
+  const b = document.getElementById('aiNewBtn'); if (!b) return;
+  b.classList.toggle('hide', !aiThread.length);
+}
 function aiSetName(v){
   aiChatName = v;
   const el = document.getElementById('aiChatName');
@@ -9454,6 +9470,9 @@ const AI_IC = {
 function aiRender(){
   const b = document.getElementById('aiBody');
   aiScopeLine();
+  /* ⚠️ BEFORE the empty-state early return, not after it — the tail of this function never
+     runs on an empty thread, which is exactly the case the New-chat button has to hide in. */
+  aiNewBtnPaint();
   if(!aiThread.length){
     b.innerHTML = '<div class="aiempty">' +
       '<span class="aibig">' + AI_SPARK + '</span>' +
@@ -10571,7 +10590,11 @@ function aiAgHTML(a, i){
       const shut = a.open.card === false;
       out.push('<div class="aiagc">' +
         '<div class="aiagch">' +
-          '<span class="aiagmk">' + AI_SPARK + '</span>' +
+          /* ⚠️ the PRODUCT LOGO, not the ✦ spark (annotation, 19 Aug 2026) — this card is
+             the product summarising your board, so it signs itself with the product's mark.
+             `AI_LOGO` is the same base64 PNG the sidebar trigger uses; there is no separate
+             asset to keep in step. */
+          '<span class="aiagmk logo">' + AI_LOGO + '</span>' +
           /* ⚠️ NO subtitle here (annotation, 18 Aug 2026). It carried the board name and
              never had the room for it — it rendered as "Application Performan…" with a
              tooltip over the card. The board is the first meta chip in the body instead,
@@ -11133,6 +11156,12 @@ function aiKey(e){
     <!-- the name is now a DROPDOWN TRIGGER (request, 17 Aug 2026): Rename · Delete, then
          the recent Conversations and Show all. Click-to-rename moved INTO that menu, so
          the name has one behaviour instead of two. See aiChatMenu(). -->
+    <!-- ⚠️ NEW CHAT LEADS THE HEADER and is ICON-ONLY (request + reference images,
+         19 Aug 2026 — the reference puts the compose mark to the LEFT of the chat name).
+         ⚠️ It is HIDDEN on an empty chat: starting a new chat from a chat that has nothing
+         in it does nothing, so the control would be a no-op the first time you ever see it.
+         `aiNewBtnPaint()` shows it as soon as the thread has anything. -->
+    <button class="aihb aihnew" id="aiNewBtn" data-tip="Start a new chat" onclick="aiNewChat()"><svg viewBox="0 0 24 24"><path d="M4 4h9v2H6v12h12v-7h2v9H4V4Z" fill="currentColor" stroke="none"/><path d="M16.6 2.6l2.8 2.8-6.9 6.9-3.5.7.7-3.5 6.9-6.9Z" fill="currentColor" stroke="none"/></svg></button>
     <span class="aiht"><span class="aihttl" id="aiTitleBtn" role="button" tabindex="0"
         data-tip="Rename, delete or switch conversation" onclick="aiChatMenu(event)"
         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();aiChatMenu(event)}"
@@ -11142,7 +11171,9 @@ function aiKey(e){
          nobody can name from a glyph now carry their word; ⤢ and ✕ stay bare because those
          two are universal and the header has no room for four labels. The labels drop out
          below 1440px, where the panel itself narrows and the chat name needs the space. -->
-    <button class="aihb aihbw" title="Start a new chat" onclick="aiNewChat()"><span class="lb">New</span><svg viewBox="0 0 24 24"><path d="M4 4h9v2H6v12h12v-7h2v9H4V4Z" fill="currentColor" stroke="none"/><path d="M16.6 2.6l2.8 2.8-6.9 6.9-3.5.7.7-3.5 6.9-6.9Z" fill="currentColor" stroke="none"/></svg></button>
+    <!-- the labelled "⧉ New" button was HERE; it moved to the LEFT of the chat name and
+         lost its word (request, 19 Aug 2026). `.aihbw` — the label modifier added on
+         15 Aug so this button could carry one — has no user left and its CSS went with it. -->
     <!-- the History button was REMOVED (request, 17 Aug 2026) — the chat-name dropdown's
          CONVERSATIONS section is the history now: searchable, grouped by date, with per-row
          rename/delete and a hover preview. Two doors to one list is the duplicate-entry-
@@ -11154,7 +11185,10 @@ function aiKey(e){
     <!-- Help (request, 17 Aug 2026). TWO rows only — Documentation and Support. The
          reference's third row, Release Notes, was explicitly not wanted. Both open in a
          new tab and say so with ↗; both URLs were checked 200 before being written in. -->
-    <button class="aihb" id="aiHelpBtn" data-tip="Help" onclick="aiHelpMenu(event)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.5v.4M12 17h.01"/></svg></button>
+    <!-- ⚠️ a ⋯ MARK, not a ? (request, 19 Aug 2026). It stopped being a help button when
+         Rename chat and Delete chat moved into it — a question mark over two destructive-ish
+         actions promises the wrong thing. The menu itself is unchanged. -->
+    <button class="aihb" id="aiHelpBtn" data-tip="More" onclick="aiHelpMenu(event)"><svg viewBox="0 0 24 24"><circle cx="5.2" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.8" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></button>
     <!-- Layout: Sidebar · Floating · Full screen (reference, 17 Aug 2026). It replaced the
          two-state "Show as split view ⇄ Show as overlay" toggle — three modes on one axis
          belong in one menu with a ✓, not a toggle plus a second button that can disagree.

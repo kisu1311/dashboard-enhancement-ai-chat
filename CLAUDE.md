@@ -273,7 +273,22 @@ copied, all measured off that panel rather than eyeballed:
   row, the toolbar button and every answer already carry the ✦, and the 36px it was using
   is what the (ellipsised) chat name needed — *"Monitor availability to…"* now fits whole.
 
-#### The header is now: `name ⌄ · New · ? · ⧉ Layout · ✕`
+#### The header is now: `⧉ · name ⌄ · ⋯ · ⧉ Layout · ✕`
+
+⚠️ **Reshaped again on 19 Aug 2026**, against a supplied reference:
+- **New chat LEADS the header and is icon-only** — it moved to the **left of the chat name**
+  and lost its "New" label. ⚠️ It is **hidden while the thread is empty** (`aiNewBtnPaint`):
+  starting a new chat from an empty one does nothing, so the control would be a no-op the
+  first time anyone ever sees it. ⚠️ The paint call sits **above `aiRender()`'s empty-state
+  early return** — the tail of that function never runs on an empty thread, which is exactly
+  the case it has to hide in.
+- **`?` became a `⋯`.** It stopped being a help button when Rename chat and Delete chat moved
+  into it; a question mark over two chat actions promises the wrong thing. Its `data-tip` is
+  **More**, and the menu itself is unchanged.
+- ⚠️ **`.aihbw` and `.aihb .lb` were deleted with the label** — nothing carried one any more.
+  Why the modifier existed is worth keeping though: it was named `.aihbw` and **not `.wl`**,
+  because `.wl` is the old widget-library tile (`flex-direction:column`), and the first build
+  rendered the header glyphs stacked above their words.
 
 Three controls were added on 17 Aug 2026, each from a supplied reference image.
 
@@ -985,6 +1000,16 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   - ⚠️ Accept is the only filled button here, unlike the dashboard plan card's deliberately
     equal-weight Approve/Edit. A widget is one ⌘Z away; a dashboard is a shared object.
 - **Summary card** is read-only — **no gate**, because a summary changes nothing.
+  - ⚠️ **The meta row is PLAIN TEXT, not chips** (annotation, 19 Aug 2026). Four pills
+    wrapped onto two rows in a 344–420px panel and read as filters you could click. It is
+    one muted dot-separated line — `<board> · N widgets · <time range>` — and the **monitor
+    total was dropped from it**, because the first bullet already says *"225 of 400 monitors
+    are up"*. That was the extra detail.
+  - ⚠️ **The card's mark is the PRODUCT LOGO, not the ✦** (annotation, 19 Aug 2026).
+    `AI_LOGO` is the same base64 PNG the sidebar trigger uses, so there is no second asset to
+    keep in step. It is used where the panel speaks **as the product** (this card); every
+    other surface keeps `AI_SPARK`, which is the assistant. `.aiagmk.logo` sizes it — a
+    raster mark must not inherit the `fill` the ✦ uses.
   - ⚠️ **Every fact appears ONCE** (annotation, 18 Aug 2026: *"remove the repeated text"*).
     The widget count, the monitor total and the time range were three prose bullets that
     restated the card header's own subtitle, and the heading *"What this dashboard covers"*
