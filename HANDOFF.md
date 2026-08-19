@@ -1,3 +1,51 @@
+# Handoff — 2026-08-20 (early)
+
+## Read first
+
+This session built **one thing, in all three options**: the **Settings module** — the rail's
+Settings entry is a real screen now (left list of the 18 categories + **My Account › My
+Profile**), cloned from live build 8.2.7 at `/settings/my-account/my-profile` through the
+browser. Read **“Settings module (`st*`)”** in `CLAUDE.md` before touching it — it records
+what was copied, the three live quirks that were reproduced on purpose (required-empty shows
+no message; Reset leaves the switch; disabled looks enabled), and the deliberate differences.
+
+## What was done
+
+- Drove the live page in Chrome (chrome-devtools MCP): DOM + computed styles, the Vue
+  component’s template and vee-validate rules (`__vue__`), the password policy, the left
+  list’s 18 categories / 95 sub-pages with routes, the icons (SVG paths), search behaviour,
+  the head’s collapse, a failed submit, Reset. Nothing was submitted against the instance;
+  the live form was reset afterwards.
+- Built the `st*` block (CSS + `<section id="view-settings">` + script) with a generator and
+  injected it into **`index copy.html`, `index.html`, `dashboard-picker-advanced.html`** —
+  byte-identical across the three. Entry points: `selectModule()` (one line), every Settings
+  row in the flyout / docked panel / DevRev column (`act: stOpen('<cat>')`), the profile
+  popover’s **My Profile** row.
+- Flyout data corrected to 8.2.7: “Observability Pipeline” → **Log Settings**; Dependency
+  Mapper / SLO / APM / RUM now open the settings list instead of other modules.
+- Verified in a real tab: 39-assertion probe (switch, eyes, initials, every validation
+  message, reset, save + identity refresh, search, collapse, stub pages, flyout act,
+  geometry), dark + light, 1280×720; `lxbehave` 56/56 × 3, `behave` 63/63 × 3, `harness`
+  77/77 (Option 1). Committed.
+
+## Next steps
+
+1. **Push** — the previous session’s sixteen commits plus this one are local.
+2. UI Preference and License (and the other 17 categories) are placeholders naming the live
+   route; clone them the same way if wanted (`/settings/my-account/ui-preference`, `/license`).
+3. Still open from before: Log Pattern Action column vs live; the Designer’s Guide conflict
+   on the filled Approve; Options 2/3 have none of the Option-1 AI work; scrub the public
+   `172.16.x` / `.motadata.local` strings.
+
+## Gotchas
+
+- ⚠️ Harvest icons with the state that shows them on screen — `eye-slash` came back `null`
+  because the password rows were hidden when the misc icons were read.
+- ⚠️ Headless Chrome hung on this file again; the browser tools against `python3 -m
+  http.server 8765` (with a `?v=` cache-buster) were the reliable way to verify.
+
+---
+
 # Handoff — 2026-08-19 19:11
 
 ## Read first

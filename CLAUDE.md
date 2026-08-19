@@ -56,8 +56,9 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 ## Pages (variants)
 
 Three pages are in the switcher, labelled **Option 1 / 2 / 3**. All three now carry the
-shared **`ac*` chat panel** on top of their own AI, **and all three carry the `lx*` Log
-Explorer module**, and all three are verified responsive at the seven target resolutions —
+shared **`ac*` chat panel** on top of their own AI, **all three carry the `lx*` Log
+Explorer module and the `st*` Settings module** (My Account › My Profile, cloned from live
+8.2.7 — see below), and all three are verified responsive at the seven target resolutions —
 see those sections below.
 
 - **`index copy.html` — Option 1 · Sidebar & Header Actions.** The chrome study, and now
@@ -269,6 +270,76 @@ Pattern when the lab is reachable.
   `lx-range`, `lx-live`, `lx-light`, `lx-lightov`).
   ⚠️ **A light-theme scene must call `setTheme('light')`, not set `data-theme` directly** —
   the page's own init reads `localStorage` a moment later and paints back over a bare attribute.
+
+## Settings module (`st*`) — My Account › My Profile, cloned from live 8.2.7, in all three options
+
+Until 19 Aug 2026 the rail's **Settings** entry landed on the generic `#view-module`
+placeholder. It is **a real module screen now**, read off live build 8.2.7 at
+`/settings/my-account/my-profile` in the browser — the DOM, the computed styles, the Vue
+component's own render template and vee-validate rules (pulled out of `__vue__`), and every
+state driven by hand — then rebuilt, not invented. Like the `lx*` module it is **one CSS
+block + one `<section id="view-settings">` + one `<script>` block, byte-identical in all
+three files** (md5-checked), so a change is a three-file change. Namespace `st` — `.st*`,
+`st*()`, `ST_*`; it borrows only `toast()`, `showView()`, `selectModuleByName()`,
+`closePops()` from the host. The build is scripted — the generator that assembles the blocks
+from the harvested JSON (`_verify/_out/live-settings-nav.json`, `live-settings-subs.json`,
+gitignored) lived in the session scratch dir; re-harvest rather than hand-edit if the
+live list changes.
+
+**Entry points.** `selectModule()` gained one line — `if (m.name === 'Settings'){
+showView('settings'); stInit(); return; }`. **Every Settings row in the flyout / docked
+panel / DevRev column carries an `act`** — `stOpen('<category>')` — so each category lands
+on itself with its first page selected. The profile popover's **My Profile** row (a toast
+stub before) calls `stOpen('My Account','My Profile')`. `stOpen()` is the one public door:
+it sets the category/page, expands it, clears the search, then routes through
+`selectModuleByName('Settings')` so the rail highlight and the view switch stay the host's.
+
+**What is in it**
+
+| piece | what it has |
+|---|---|
+| head | `‹` collapse · `⚙` · **Settings**. The chevron hides the left list (width → 0, icon flips) — verified on live, where it collapses the splitpane to 0 |
+| left list | **Search**, then the product's **18 categories in the live order**, each with the product's **own icon** (harvested SVG paths in `ST_ICO`), collapsible, **BETA** on Service Level Objective, **every sub-page of every category** (`ST_TREE`, 95 pages, each carrying its live route). Search matches a **category name** (all its pages) or a **page name**, case-insensitive substring, and expands what it matched — verified with “prof”, “utility”, “ACCOUNT”, “PING” against the live list. Clearing it restores the collapse state |
+| My Profile | 120px avatar circle with the initials (`first[0]+last[0]`, **live off the two name fields**) · **Change** → file picker (JPEG/JPG/PNG/SVG; anything else refused with the live error text) → `Change | Remove` · First Name\* · Last Name\* · User Name\* (disabled, “Must be unique”) · Email Address\* · Mobile Number · **Change Password OFF/ON** → Current Password\* · Password\* (“Do not use simple password”) · Confirm Password\* (“Same as the password field”, `onpaste` blocked), each with an **eye** toggle (`eye` hidden ↔ `eye-slash` shown) · **Reset · Update My Profile** |
+| validation | the component's own rules: names required + `/^[a-zA-Z\s'\-]{1,50}$/`; email required + email; mobile numeric 8–12; current password required; password required + the instance's policy (min 6, special, number, lower, upper; max 64, `ST_PW`); confirm required + must match. Messages are the ones the live form printed |
+| every other page | UI Preference, License and the 17 other categories land on a `.modcard` placeholder that names the **live route** — not built, and it says so |
+
+- ⚠️ **A REQUIRED-EMPTY field shows NO message on live** — only the label and the
+  underline turn red (the explain node is rendered `display:none`). Reproduced: `stValidate`
+  returns `{req:true}` for those and `{msg}` for everything else. Don't “fix” it without
+  saying it diverges.
+- ⚠️ **Reset leaves the Change Password switch where it was** — live `onReset()` never
+  touches `isChangePassword`. It reloads the saved values, drops a picked picture, clears
+  the errors and empties the password fields. Reproduced.
+- ⚠️ **A disabled field looks identical to an enabled one on live** (User Name). Reproduced
+  with an explicit `-webkit-text-fill-color`, or Chrome greys it.
+- **Validation runs on submit, then live per field** (`ST.tried`) — fixing a field clears
+  its error as you type, and editing Password re-checks Confirm.
+- **Update** shows a spinner, then the draft becomes the saved state, the switch goes OFF,
+  the password fields empty, and **the signed-in identity refreshes** — `#sbUser .lbl`,
+  `.miniav`, the popover's `.upavatar` / `.nm` (live calls `refreshUser()`). A saved picture
+  paints the rail avatar; removing it brings the initials back.
+- **The seed profile is the page's own signed-in user** (`stSeed()` reads `#sbUser .lbl`),
+  split the way the live one was — “motadata admin” → First `motadata`, Last `admin`, User
+  Name `admin`; Option 1's “Kishan Patel” → `Kishan` / `Patel`. E-mail is on `example.com`
+  (scrub rule); live carried a real address. That is what lets the block stay identical
+  across the three files while each shows its own user.
+- ⚠️ **`ST_ICO['eye-slash']` was `null` in the first harvest** — the password rows were not
+  on screen when the misc icons were read, so `querySelector('svg[data-icon=eye-slash]')`
+  found nothing and the toggle painted `d="null"`. It is patched into the JSON now; a
+  harvest has to run with the switch ON.
+- **Deliberate differences**, recorded in the block's header comment: the primary button is
+  this prototype's teal (live paints white-on-ink); the success toast text is ours (the
+  form was never submitted against the instance); the picked picture is circle-cropped but
+  not pannable/zoomable (live runs vue-croppa); and live shows nothing at all for a search
+  with no match — ours prints one muted line.
+- **The flyout list was corrected to the 8.2.7 build**: “Observability Pipeline” is **Log
+  Settings** there, and Dependency Mapper / SLO / APM / RUM — which used to route to other
+  modules — are Settings categories on the instance, so they open the settings list now.
+- Verify in a real tab (`python3 -m http.server` + the browser tools) — the probe that
+  drove the 39 behaviours above (switch, eyes, initials, every message, reset, save,
+  identity, search, toggle, stub, panel, flyout act, geometry) lived in the session, not
+  the repo. `lxbehave` 56/56 · `behave` 63/63 · `harness` 77/77 still pass with it in.
 
 ## Four AI UIs across three options, deliberately different
 
