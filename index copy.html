@@ -1455,6 +1455,20 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    "ask this next", before one they say "did you mean this" — one shape, one meaning, so
    nothing new has to be learned. It only appears once you have typed something, because
    the empty state already carries the starters. */
+/* the docked pending decision — a card, because it is asking you for something and must
+   read as the thing to deal with; it sits directly on the composer it belongs to */
+.aipend{display:none;align-items:center;gap:10px;margin:0 0 8px;padding:9px 10px 9px 12px;
+  border:1px solid var(--ai-line);border-radius:12px;background:var(--card)}
+.aipend.on{display:flex}
+.aipendt{flex:1;min-width:0;font-size:12.4px;line-height:1.4;color:var(--text)}
+.aipendt b{color:var(--white);font-weight:600}
+.aipendt i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aipenda{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+/* ⚠️ `.aiagb` is `flex:1` for the card footer it was written for; inside this bar it must
+   size to its own label or the two buttons eat the sentence beside them. */
+.aipenda .aiagb{flex:0 0 auto;height:30px;padding:0 12px}
+
 .aisugg{display:none;flex-wrap:wrap;gap:0;margin:0 0 7px}
 .aisugg.on{display:flex}
 .aisugg .hd{flex:0 0 100%;font-size:11px;font-weight:600;color:var(--muted);margin:0 0 6px}
@@ -2052,7 +2066,9 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aimic{flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:0;background:transparent;
   color:var(--text-dim);cursor:pointer;display:grid;place-items:center}
 .aimic:hover{background:var(--hover-side);color:var(--ai-2)}
-.aimic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;
+/* ⚠️ 15px, the same as attach and send (annotation, 19 Aug 2026: "same size"). It was
+   16px, which is invisible on its own and obvious in a row of three. */
+.aimic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
 .aimic.on{background:var(--ai);color:#fff;animation:aimicp 1.4s ease-in-out infinite}
 .aimic.on:hover{background:var(--ai)}
@@ -2063,10 +2079,14 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   color:var(--text);font-family:inherit;font-size:13px;line-height:1.5;max-height:96px;
   padding:2px 1px 0;display:block}
 .aiinbox textarea::placeholder{color:var(--muted)}
-.aisend{flex:0 0 30px;width:30px;height:30px;border-radius:8px;
+/* ⚠️ a CIRCLE like its two neighbours (annotation, 19 Aug 2026: "same size"). It was a
+   30px rounded SQUARE between two 30px circles, which read as a different size even though
+   the box matched. `.aisend.stop` was already a circle, so the busy state is unchanged. */
+.aisend{flex:0 0 30px;width:30px;height:30px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;padding:0;
   background:var(--chip);color:var(--text-dim);border:0;cursor:pointer;
-  transition:background .14s,color .14s,border-radius .16s ease,box-shadow .14s}
+  /* border-radius is no longer part of the idle→stop change (both are circles now) */
+  transition:background .14s,color .14s,box-shadow .14s}
 .aisend:hover{background:var(--ai);color:#fff}
 .aisend:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
 /* generating: the SAME control becomes stop, so the thing under your cursor is the thing
@@ -8976,6 +8996,33 @@ let aiChatName = 'New chat', aiNamed = false, aiRenaming = false;
    reference: no compose mark on a fresh "New Chat", one as soon as the chat has content).
    Starting a new chat from an empty one does nothing, so the control would be a no-op the
    first time anyone ever sees it. Called from `aiRender()`, which runs on every change. */
+/* ⚠️ the ONE place a proposed widget is decided (annotation + reference, 19 Aug 2026).
+   It reads the thread for an agent sitting in `state === 'card'` — the un-decided state —
+   and shows Edit / Accept over the composer. `aiAgEdit` / `aiAgAccept` are unchanged; only
+   where you reach them moved.
+   ⚠️ It must be painted from `aiRender()` BEFORE the empty-state early return, like
+   `aiNewBtnPaint`, or a thread that empties (New chat, Undo) leaves the bar on screen. */
+function aiPendPaint(){
+  const el = document.getElementById('aiPend'); if (!el) return;
+  let ix = -1;
+  for (let i = aiThread.length - 1; i >= 0; i--){
+    const m = aiThread[i];
+    if (m.r === 'agent' && m.a && m.a.state === 'card'){ ix = i; break; }
+  }
+  if (ix < 0){ el.className = 'aipend'; el.innerHTML = ''; return; }
+  const a = aiThread[ix].a;
+  const sub = a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '';
+  el.className = 'aipend on';
+  el.innerHTML =
+    '<span class="aipendt"><b>' + aiEsc(a.chartName || 'Widget') + ' widget ready</b>' +
+      (sub ? '<i title="' + aiEsc(sub) + '">' + aiEsc(sub) + '</i>' : '') + '</span>' +
+    '<span class="aipenda">' +
+      '<button class="aiagb" onclick="aiAgEdit(' + ix + ')">' +
+        '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Zm11-15 4 4"/></svg>Edit</button>' +
+      '<button class="aiagb pri" onclick="aiAgAccept(' + ix + ')">' +
+        '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Accept</button>' +
+    '</span>';
+}
 function aiNewBtnPaint(){
   const b = document.getElementById('aiNewBtn'); if (!b) return;
   b.classList.toggle('hide', !aiThread.length);
@@ -9559,7 +9606,7 @@ function aiRender(){
   aiScopeLine();
   /* ⚠️ BEFORE the empty-state early return, not after it — the tail of this function never
      runs on an empty thread, which is exactly the case the New-chat button has to hide in. */
-  aiNewBtnPaint();
+  aiNewBtnPaint(); aiPendPaint();
   if(!aiThread.length){
     b.innerHTML = '<div class="aiempty">' +
       '<span class="aibig">' + AI_SPARK + '</span>' +
@@ -10683,13 +10730,12 @@ function aiAgHTML(a, i){
            ⚠️ Nothing was removed. Save is still the live product's *Create Widget*
            (definition only, NO board touched) and Accept is still *Create & Add Widget*,
            which places it on the dashboard named in the Add-to row above. */
-        (made ? '' :
-          '<div class="aiagf">' +
-            '<button class="aiagb" onclick="aiAgEdit(' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Zm11-15 4 4"/></svg>Edit</button>' +
-            '<button class="aiagb pri" onclick="aiAgAccept(' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Accept</button>' +
-          '</div>') +
+        /* ⚠️ Edit / Accept are NOT here any more (annotation + reference, 19 Aug 2026:
+           "this will be shown on the text area"). They are docked above the composer while
+           the decision is pending — see `.aipend` / `aiPendPaint`. The card keeps the thing
+           you are deciding ABOUT; the decision sits where you act. Two copies of the same
+           pair would be the duplicate-entry-point smell this panel has been trimmed for
+           twice already. */
       '</div>' +
       /* ⚠️ these are ACTIONS wearing the follow-up chip, so they call their own handler
          directly. They must NOT go through aiFollow(), which sends the label as a new
@@ -11334,6 +11380,11 @@ function aiKey(e){
          leaves the module context standing — the chat keeps working module-wise. -->
     <!-- typed-prompt suggestions (annotation, 17 Aug 2026): offered BEFORE you send, in
          the same chip shape as the follow-ups that come after an answer -->
+    <!-- ⚠️ the PENDING DECISION, docked over the composer (reference, 19 Aug 2026 — the
+         same place Notion puts a question that is waiting on you). It appears only while a
+         widget is proposed and un-decided; the card in the thread shows WHAT is proposed,
+         this shows what you can do about it, and it cannot scroll away. -->
+    <div class="aipend" id="aiPend"></div>
     <div class="aisugg" id="aiSugg"></div>
     <!-- ⚠️ ONE box holds the whole chat area — context, text and controls (annotation,
          18 Aug 2026). #aiCtx and #aiAuto used to sit outside it, above and below. -->

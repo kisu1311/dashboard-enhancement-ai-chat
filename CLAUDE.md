@@ -965,6 +965,18 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   running treatment reached it.
 - **Widget card** = `Create Widget` + subtitle of the counters + a 3-series chart + legend
   + an **Add to `<dashboard>`** row + a footer of **`Edit · Accept`**.
+  - ⚠️ **THE FOOTER IS GONE — Edit / Accept are DOCKED OVER THE COMPOSER** (annotation +
+    reference, 19 Aug 2026: *"this will be shown on the text area"*). `.aipend` /
+    `aiPendPaint()` reads the thread for an agent in `state === 'card'` — the un-decided
+    state — and shows `<chart> widget ready`, its counters, and **Edit · Accept** directly
+    on top of the input. The card in the thread keeps **what** is proposed; the decision
+    lives **where you act**, and it cannot scroll away in a long thread.
+    ⚠️ There is exactly ONE copy of that pair. Rendering it in both places would be the
+    duplicate-entry-point smell this panel has been trimmed for twice.
+    ⚠️ `aiPendPaint()` runs from `aiRender()` **before the empty-state early return**, like
+    `aiNewBtnPaint` — otherwise emptying the thread (New chat, Undo) leaves the bar behind.
+    ⚠️ `.aipenda .aiagb` re-sizes the buttons: `.aiagb` is `flex:1` for the footer it was
+    written for, and inside this bar that let two buttons eat the sentence beside them.
   - ⚠️ **Reject and Save widget moved OUT of the footer into the follow-up chips**
     (annotation, 18 Aug 2026: *"show accept and edit, the other action button will be show
     in follow-up suggestion"*). Four equal-looking buttons made the card read as a form;
