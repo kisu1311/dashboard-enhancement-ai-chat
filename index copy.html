@@ -1183,13 +1183,20 @@ html[data-theme="light"]{
   font:inherit;font-size:12.5px;outline:none}
 .aihm .grp{padding:9px 9px 4px;font-size:11px;font-weight:600;color:var(--muted)}
 .aihm .grp:first-child{padding-top:2px}
-.aihm button.conv{gap:9px}
+.aihm .conv{gap:9px}
 .aihm .when{margin-left:auto;flex:0 0 auto;font-size:11px;color:var(--muted);white-space:nowrap}
 /* ⚠️ the actions REPLACE the timestamp rather than sit beside it — the row is only ~230px
    wide, and showing both pushed long chat names into an ellipsis two words early */
 .aihm .acts{display:none;margin-left:auto;flex:0 0 auto;gap:2px}
-.aihm button.conv:hover .when{display:none}
-.aihm button.conv:hover .acts{display:flex}
+.aihm .conv:hover .when{display:none}
+.aihm .conv:hover .acts{display:flex}
+/* while a row is being renamed its actions and timestamp stay out of the way, and the
+   whole row must not look clickable — clicking it would navigate mid-edit */
+.aihm .conv.ren{cursor:default}
+.aihm .conv.ren .when,.aihm .conv.ren .acts{display:none}
+.aihm .conv .nmin,.aihfr .nmin{flex:1;min-width:0;padding:2px 6px;border-radius:4px;
+  border:1px solid var(--ai-line);background:var(--panel-2);color:var(--text);
+  font:inherit;font-size:12.5px;outline:none}
 .aihm .acts i{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;
   color:var(--text-dim);font-style:normal}
 .aihm .acts i:hover{background:var(--chip);color:var(--text)}
@@ -1861,6 +1868,16 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   stroke-linecap:round;stroke-linejoin:round}
 .aitki.now{color:var(--text)}
 .aitki.new{animation:aitkin .22s ease-out}
+.aitki .tx{flex:1;min-width:0}
+/* the amount the step worked on, right-aligned and quiet — it was a column in the card
+   version and is a trailing note here */
+.aitkam{flex:0 0 auto;font:400 11px/1.5 'JetBrains Mono',monospace;color:var(--muted)}
+/* a step's sub-work, inline rather than behind its own chevron */
+.aitksub{margin:0 0 3px 23px}
+.aitksub div{display:flex;align-items:baseline;gap:10px;padding:1.5px 0;font-size:11.8px;
+  line-height:1.45;color:var(--muted)}
+.aitksub .l{flex:1;min-width:0}
+.aitksub .m{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)}
 .aitksp{width:11px;height:11px;border-radius:50%;border:1.7px solid var(--ai-line);
   border-top-color:var(--ai);animation:aitkspin .7s linear infinite}
 @keyframes aitkspin{to{transform:rotate(360deg)}}
@@ -8173,10 +8190,18 @@ function aiDashHTML(d, i){
       '<p>You can view it here: <a class="ailink" onclick="aiDashGo(&quot;' + nq + '&quot;)">' +
         aiEsc(d.name) + '</a></p>' +
       '<p>It is currently empty — a flat board, so widgets go straight onto the canvas.</p></div>' +
+      /* ⚠️ UNDO IS AN ICON in the feedback row now, before ⧉ (annotation, 19 Aug 2026).
+         It was a full-width-ish button beside "Add a widget", which gave equal weight to
+         the thing you probably want next and the thing you probably do not. It still calls
+         the same `aiDashUndo()` — only its home changed. */
       '<div class="aiacts">' +
-        '<button class="aialt" onclick="aiDashUndo()">Undo</button>' +
         '<button class="aialt" onclick="aiDashAddW(&quot;' + nq + '&quot;)">Add a widget</button>' +
-      '</div>' + aiFbHTML(i, 0) +
+      '</div>' +
+      aiFbHTML(i, 0,
+        undefined,
+        '<button title="Undo — delete “' + aiEsc(d.name).replace(/"/g,'&quot;') + '”" ' +
+          'onclick="aiDashUndo()"><svg viewBox="0 0 24 24" class="ln">' +
+          '<path d="M4 9h11a5 5 0 0 1 0 10h-6"/><path d="M8 5L4 9l4 4"/></svg></button>') +
       /* what to put on the board that was just made (request, 18 Aug 2026). The board
          EXISTS now, so unlike the plan-card version these SEND — see aiDashFuGo.
          ⚠️ ONLY WHILE THIS CARD IS THE END OF THE THREAD (annotation, 18 Aug 2026: "show
@@ -8200,24 +8225,22 @@ function aiDashHTML(d, i){
   const editing = d.state === 'edit';
   const fld = (label, inner) => '<div class="aidf"><span class="k">' + label + '</span>' + inner + '</div>';
   const ro   = v => '<b>' + aiEsc(String(v)) + '</b>';
+  /* ⚠️ THE LAYOUT FIELDS ARE GONE (annotation, 19 Aug 2026: "remove Header Font Size,
+     Horizontal Gap, Vertical Gap, Row Height, Default landing … and remove extra details").
+     The card is Dashboard Name · Category · Security now, and the numbered plan lost its
+     third step, which described exactly those fields.
+     ⚠️ `d.font` / `d.hgap` / `d.vgap` / `d.row` / `d.land` are STILL on the object and are
+     still what `aiDashApprove()` creates the board with — the defaults just are not asked
+     about here any more. The full form is still in the Create Dashboard drawer, which is
+     where someone who wants to change a gap goes. Don't delete them from the state. */
   const params = editing
     ? fld('Dashboard Name', '<input value="' + aiEsc(d.name).replace(/"/g,'&quot;') +
           '" oninput="aiDashSet(\'name\',this.value)" />') +
       fld('Category', '<select onchange="aiDashSet(\'cat\',this.value)">' +
           AI_DASH_CATS().map(c => '<option' + (c===d.cat?' selected':'') + '>' + c + '</option>').join('') + '</select>') +
       fld('Security', '<span class="aiseg">' + ['Public','Private'].map(x =>
-          '<button class="' + (d.sec===x?'on':'') + '" onclick="aiDashSet(\'sec\',\'' + x + '\')">' + x + '</button>').join('') + '</span>') +
-      fld('Header Font Size', '<select onchange="aiDashSet(\'font\',this.value)">' +
-          AI_DASH_FONTS.map(c => '<option' + (c===d.font?' selected':'') + '>' + c + '</option>').join('') + '</select>') +
-      fld('Horizontal Gap', '<input type="number" value="' + d.hgap + '" onchange="aiDashSet(\'hgap\',+this.value)" /><i>px</i>') +
-      fld('Vertical Gap',   '<input type="number" value="' + d.vgap + '" onchange="aiDashSet(\'vgap\',+this.value)" /><i>px</i>') +
-      fld('Row Height',     '<input type="number" value="' + d.row  + '" onchange="aiDashSet(\'row\',+this.value)" /><i>px</i>') +
-      fld('Default landing', '<label class="aick"><input type="checkbox"' + (d.land?' checked':'') +
-          ' onchange="aiDashSet(\'land\',this.checked)" /> Set for myself</label>')
-    : fld('Dashboard Name', ro(d.name)) + fld('Category', ro(d.cat)) + fld('Security', ro(d.sec)) +
-      fld('Header Font Size', ro(d.font)) + fld('Horizontal Gap', ro(d.hgap + 'px')) +
-      fld('Vertical Gap', ro(d.vgap + 'px')) + fld('Row Height', ro(d.row + 'px')) +
-      fld('Default landing', ro(d.land ? 'Set for myself' : 'No'));
+          '<button class="' + (d.sec===x?'on':'') + '" onclick="aiDashSet(\'sec\',\'' + x + '\')">' + x + '</button>').join('') + '</span>')
+    : fld('Dashboard Name', ro(d.name)) + fld('Category', ro(d.cat)) + fld('Security', ro(d.sec));
 
   /* d.tk → the thinking trail above already reads "Planned a new dashboard". Created and
      Cancelled keep their own line, because they happen after the trail finished. */
@@ -8227,8 +8250,6 @@ function aiDashHTML(d, i){
     '<div class="aiab"><ol class="aidsteps">' +
       '<li>Create a dashboard named <b>' + aiEsc(d.name) + '</b> in category <b>' + aiEsc(d.cat) + '</b></li>' +
       '<li>Set visibility to <b>' + aiEsc(d.sec) + '</b></li>' +
-      '<li>Layout: header <b>' + aiEsc(d.font) + '</b> · gaps <b>' + d.hgap + '/' + d.vgap +
-        'px</b> · row height <b>' + d.row + 'px</b></li>' +
     '</ol></div>' +
     '<div class="aidform">' + params + '</div>' +
     '<div class="aidwarn">⚠ This creates a new dashboard. Existing dashboards are not touched.</div>' +
@@ -9083,16 +9104,23 @@ function aiChatListHTML(q){
     : 'Nothing yet. A chat is listed here once you have asked it something.') + '</div>';
   let out = '';
   list.forEach(c => {
-    out += '<button class="conv' + (c.id === aiChatId ? ' cur' : '') + '" ' +
+    /* ⚠️ a DIV, not a <button> — the ✎ swaps `.nm` for an `<input>` in place, and
+       interactive content inside a button is invalid and eats the clicks. Third time this
+       file has hit that; see the chat-name trigger and the group title. */
+    out += '<div class="conv' + (c.id === aiChatId ? ' cur' : '') + '" role="button" tabindex="0" ' +
       'onclick="aiHdMenuClose();aiHistGo(' + c.id + ')" ' +
+      'onkeydown="if(event.key===\'Enter\'){event.preventDefault();aiHdMenuClose();aiHistGo(' + c.id + ')}" ' +
       'onmouseenter="aiChatPeek(' + c.id + ',this)" onmouseleave="aiChatPeekOff()">' +
       '<span class="av">' + AI_SPARK_MI + '</span>' +
       '<span class="nm">' + aiEsc(c.n) + '</span>' +
       '<span class="when">' + aiEsc(aiChatWhen(c.t)) + '</span>' +
       '<span class="acts">' +
-        '<i data-tip="Rename" onclick="event.stopPropagation();aiHdMenuClose();aiHistGo(' + c.id + ');aiRename()">' + AI_MI.pen + '</i>' +
+        /* ⚠️ renames the row IN PLACE — it does NOT open the chat (annotation, 19 Aug 2026).
+           It used to `aiHistGo()` then `aiRename()`, so clicking ✎ on a chat you were not
+           in switched you into it before you had said what you wanted to call it. */
+        '<i data-tip="Rename" onclick="event.stopPropagation();aiChatRenRow(' + c.id + ',this)">' + AI_MI.pen + '</i>' +
         '<i data-tip="Delete" class="del" onclick="event.stopPropagation();aiChatDelRow(' + c.id + ')">' + AI_MI.bin + '</i>' +
-      '</span></button>';
+      '</span></div>';
   });
   return out;
 }
@@ -9123,6 +9151,48 @@ function aiChatWhen(t){
 }
 /* delete from a ROW — unlike aiChatDelCur() this may be any chat, including one that is
    not open, so it only resets the thread when the row you deleted is the one you are in */
+/* ── rename a chat FROM ITS ROW, in place (annotation, 19 Aug 2026) ─────────────────────
+   The ✎ used to `aiHistGo(id)` then `aiRename()` — so clicking it on a chat you were not in
+   switched you into that chat before you had said what you wanted to call it. It edits the
+   row now and touches nothing else.
+   ⚠️ The row had to become a DIV for this: it was a `<button>`, and an `<input>` inside a
+   button is invalid and eats the clicks. Third occurrence of that trap in this file.
+   ⚠️ Clear `onblur` BEFORE swapping the input away — removing a focused input fires blur
+   synchronously and re-enters the commit (the `acNameDone` gotcha, fourth occurrence). */
+function aiChatRenRow(id, el){
+  const c = AI_CHATS.find(x => x.id === id); if (!c || !el) return;
+  const row = el.closest('.conv') || el.closest('.aihfr'); if (!row) return;
+  /* the full-history row keeps its name in `.tt > b`; the menu row uses `.nm` */
+  const host = row.querySelector('.nm') || row.querySelector('.tt b');
+  if (!host || row.classList.contains('ren')) return;
+  const cur = c.n, keep = host.className;
+  row.classList.add('ren');
+  host.outerHTML = '<input class="nmin" maxlength="60" />';
+  const inp = row.querySelector('.nmin');
+  inp.value = cur; inp.focus(); inp.select();
+  const done = save => {
+    inp.onblur = null; inp.onkeydown = null; inp.onclick = null;
+    const v = inp.value.trim();
+    row.classList.remove('ren');
+    if (save && v && v !== cur){
+      c.n = v;
+      /* if it is the chat you are IN, the header has to follow — otherwise the list and the
+         title would disagree about the same conversation */
+      if (id === aiChatId){ aiChatName = v; aiNamed = true; aiSetName(v); }
+      toast('Chat renamed to \u201c' + v + '\u201d');
+    }
+    /* repaint whichever surface this row belongs to */
+    if (document.getElementById('aiChatList')) aiChatList();
+    if (aiHistShown) aiHistFilter();
+  };
+  inp.onclick = e => e.stopPropagation();        /* a click in the field must not navigate */
+  inp.onkeydown = e => {
+    e.stopPropagation();
+    if (e.key === 'Enter'){ e.preventDefault(); done(true); }
+    else if (e.key === 'Escape'){ e.preventDefault(); done(false); }
+  };
+  inp.onblur = () => done(true);
+}
 function aiChatDelRow(id){
   const i = AI_CHATS.findIndex(c => c.id === id); if (i < 0) return;
   const n = AI_CHATS[i].n;
@@ -9628,12 +9698,16 @@ function aiChange(){
 }
 /* `k` is passed when the row belongs to a BEAT of the agentic flow rather than to a thread
    message: same control, different owner, so only the handlers change — never the markup. */
-function aiFbHTML(i, fb, k){
+/* ⚠️ `extra` is markup injected BEFORE the copy button (annotation, 19 Aug 2026 — Undo
+   moved out of the created-dashboard card's action row and into this one, ahead of ⧉).
+   It is optional, so every existing caller is unaffected. */
+function aiFbHTML(i, fb, k, extra){
   const fn = (k === undefined) ? 'aiFeed(' + i + ',' : 'aiAgFb(' + i + ',' + k + ',';
   const cp = (k === undefined) ? 'aiCopy(this)' : 'aiAgCopy(this)';
   return '<div class="aifb">' +
     '<button class="' + (fb===1?'on':'') + '" title="Good answer" onclick="' + fn + '1)"><svg viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm2 0 4-7 .9.5c.7.4 1 1.2.8 1.9L14 9h5a1.6 1.6 0 0 1 1.6 1.9l-1.2 6.3A1.6 1.6 0 0 1 17.8 20H9V10Z"/></svg></button>' +
     '<button class="dn ' + (fb===-1?'on':'') + '" title="Bad answer" onclick="' + fn + '-1)"><svg viewBox="0 0 24 24"><path d="M17 14V4h3v10h-3Zm-2 0-4 7-.9-.5c-.7-.4-1-1.2-.8-1.9L10 15H5a1.6 1.6 0 0 1-1.6-1.9l1.2-6.3A1.6 1.6 0 0 1 6.2 4H15v10Z"/></svg></button>' +
+    (extra || '') +
     '<button title="Copy" onclick="' + cp + '"><svg viewBox="0 0 24 24" class="ln"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>';
 }
 function aiCopyMe(btn){
@@ -9823,6 +9897,29 @@ function aiTkStart(type, q, land){
      warn  the step found a problem — red mark and a Conflict pill instead of Completed
    ⚠️ Strings still work, so every plan that was not enriched keeps rendering. A step with
    no `dt` gets NO chevron and is not clickable, rather than opening onto nothing. */
+/* the finished / running trail as ordinary lines — the same shape the agentic disclosure
+   uses, so the two never look like two different features */
+function aiTkPlain(m, mi){
+  return m.st.slice(0, m.n).map((raw, k) => {
+    const st = aiTrStep(raw);
+    const running = !!m.run && k === m.n - 1;
+    const bad = !running && st.warn;
+    const ic = running ? '<span class="aitksp"></span>'
+             : bad ? AI_TR_X : AI_TK_TICK;
+    return '<div class="aitki' + (running ? ' now' : ' done') + '">' +
+        '<span class="ic">' + ic + '</span>' +
+        '<span class="tx">' + aiEsc(st.s) + '</span>' +
+        (st.am ? '<span class="aitkam">' + aiEsc(st.am) + '</span>' : '') +
+      '</div>' +
+      /* the sub-work is shown inline once the trail is open — the per-row chevron went
+         with the cards, and a disclosure inside a disclosure was never worth the click */
+      (st.dt && st.dt.length
+        ? '<div class="aitksub">' + st.dt.map(d =>
+            '<div><span class="l">' + aiEsc(d[0]) + '</span>' +
+            '<span class="m">' + aiEsc(d[1] || '') + '</span></div>').join('') + '</div>'
+        : '');
+  }).join('');
+}
 function aiTrStep(x){ return typeof x === 'string' ? { s:x } : x; }
 const AI_TR_X  = '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
 const AI_TR_OK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -9880,7 +9977,15 @@ const AI_TK_TICK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
 function aiTkHTML(m, i){
   /* the trail is TASK ROWS now (18 Aug 2026) — see aiTrRows. The collapsed summary below
      is unchanged, because a finished trail wants one line, not a stack of cards. */
-  const rows = '<div class="aitr">' + aiTrRows(m, i) + '</div>';
+  /* ⚠️ PLAIN LINES, not the task-row cards (annotation, 19 Aug 2026: "the completed step
+     will be shown as normal view — remove this type of UI"). The supplied component drew
+     each step as a card with a green ✓ badge, a "Completed" pill and its own chevron; a
+     finished trail of four of those was louder than the answer it belongs to, and it did
+     not match the agentic flow's own disclosure, which has always been plain ticks.
+     ⚠️ `aiTrRows` / `aiTrTog` and the whole `.aitr*` block are KEPT and unreferenced — the
+     component was supplied by the user and may come back. Don't delete them; don't call
+     them either. */
+  const rows = aiTkPlain(m, i);
   /* ⚠️ `.bx` — THE SAME BOX THE AGENTIC FLOW USES (annotation, 18 Aug 2026: the thinking
      flow must be the same before any action). An ordinary answer used to think in a bare
      pill with a spark and three dots, while a build or a summary thought inside a bordered
@@ -10875,7 +10980,8 @@ function aiHistFullHTML(q){
       '<span class="tt"><b>' + aiEsc(c.n) + '</b><span>' + aiEsc(aiChatSummary(c)) + '</span></span>' +
       '<span class="rt">' + aiEsc(aiChatWhen(c.t)) + '</span>' +
       '<span class="ac">' +
-        '<i data-tip="Rename" onclick="event.stopPropagation();aiHistGo(' + c.id + ');aiRename()">' + AI_MI.pen + '</i>' +
+        /* same as the menu's: rename here, do not switch chats first */
+        '<i data-tip="Rename" onclick="event.stopPropagation();aiChatRenRow(' + c.id + ',this)">' + AI_MI.pen + '</i>' +
         '<i data-tip="Delete" class="del" onclick="event.stopPropagation();aiHistDel(' + c.id + ')">' + AI_MI.bin + '</i>' +
       '</span></div>';
   });

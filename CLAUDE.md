@@ -619,8 +619,17 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   transitions `background`/`border-radius`, so `getComputedStyle` right after
   `aiSetBusy(true)` reports the *idle* colour. Three assertions failed on working code
   before the transitions were frozen (the folder's recorded gotcha).
-- **The thinking trail is TASK ROWS** (`.aitr*` / `aiTrRows` / `aiTrTog` / `aiTrStep`,
-  component supplied 18 Aug 2026). Each step of the trail is a **row**, not a line:
+- ⚠️ **THE TASK ROWS ARE NO LONGER RENDERED** (annotation, 19 Aug 2026: *"the completed
+  step will be shown as normal view — remove this type of UI"*). `aiTkHTML` calls
+  **`aiTkPlain`** instead: ordinary `.aitki` tick lines with the amount as a trailing note
+  and each step's sub-work inline, which is the shape the agentic disclosure has always
+  used. A finished trail of four bordered cards with green ✓ badges and *Completed* pills
+  was louder than the answer it belongs to, and made one feature look like two.
+  ⚠️ **`aiTrRows` / `aiTrTog` and the whole `.aitr*` block are KEPT and unreferenced** — the
+  component was supplied by the user and may come back. Don't delete them; don't call them.
+  The description below is of that component, and is history rather than current behaviour:
+- **The thinking trail WAS task rows** (`.aitr*` / `aiTrRows` / `aiTrTog` / `aiTrStep`,
+  component supplied 18 Aug 2026). Each step of the trail was a **row**, not a line:
   a numbered spinner ring that resolves to a green ✓, the step's label, the **amount** it
   worked on, a status **pill**, and — where the step has sub-work — a chevron into a
   dropdown with a connector line and its own rows.
