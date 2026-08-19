@@ -1761,7 +1761,8 @@ neither ported:
 ## Groups are optional — a created dashboard is a flat board (Option 1)
 
 `newFlatBoard()` resets the canvas and opens the new dashboard **ungrouped** — one flat grid
-with the add-widget tile, **no group band, no ＋ New group, no Groups ▾**.
+with the add-widget tile, **no group band and no Groups ▾**. (There is no `＋ New group`
+button on any board any more — see below.)
 
 - The model is unchanged: an ungrouped board is `TABS = ['']` with a single widget list, so
   add / drag / resize / undo all work without knowing the mode. `ungrouped` is the flag;
@@ -1779,9 +1780,10 @@ with the add-widget tile, **no group band, no ＋ New group, no Groups ▾**.
   run either side of `pickDash`.
 - `renderOutline()` lists widgets instead of bands on a flat board; `addTile` and `awAdd`
   drop the "group" wording; `renderTabs()` says "Created just now" while `dashFresh`.
-- **A flat board can now be grouped, from the Add New Widget drawer** — see *Empty group*
-  below. Until 18 Aug 2026 `addGroup()`'s only entry point was the `.gnew` button, which
-  this mode hides, so a board created flat stayed flat forever.
+- **A flat board is grouped from the Add New Widget drawer** — see *Empty group* below,
+  which is now the **only** entry point on any board. Until 18 Aug 2026 `addGroup()`'s only
+  entry point was the `.gnew` button, which this mode hid, so a board created flat stayed
+  flat forever; `.gnew` was then removed outright on 19 Aug.
 - **`Application Performance` ships flat, and is now a copy of the live Alert Summary
   board** (`/dashboard/10000000001004`, build 8.2.7) — 11 widgets in the live order and the
   live 3-column shape, seeded into `UNGROUPED` / `BOARDS` next to the `DEMO` capture. It is
