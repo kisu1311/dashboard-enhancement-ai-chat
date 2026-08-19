@@ -335,6 +335,20 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   cannot carry a summary per row, and scrolling a menu past the panel height reads as a bug.
   ⚠️ **Hovering a row swaps the timestamp for ✎ / 🗑**, it does not show both: the row is
   only ~230px wide and carrying both pushed long chat names into an ellipsis two words early.
+  ⚠️ **Every delete asks first** (`aiDelAsk` / `aiDelGo` / `aiDelCancel`, request 19 Aug
+  2026). All three doors — a row's 🗑, the full-history screen's 🗑, and the ⋯ menu's *Delete
+  chat* — open one confirmation card inside the panel that names the chat, counts its
+  questions, says it can't be undone, and waits. The real work lives in `aiChatDelRowDo` /
+  `aiHistDelDo` / `aiChatDelCurDo`.
+  ⚠️ Not a browser `confirm()` — nothing in this file uses native dialogs, and a system modal
+  over a dark panel reads as a crash. It is `.aidelsc` (a scrim inside the panel) + `.aidel`.
+  ⚠️ **Focus lands on Cancel**, not Delete: Enter on a freshly opened destructive dialog
+  should be the safe answer; the red button is one Tab away. **Esc cancels** — it is a new
+  first rung on the panel's Esc ladder, ahead of "leave full screen" and "close the chat".
+  ⚠️ Delete is **`--red`**. That is this system's critical colour, and deleting a chat is
+  the one destructive, irreversible act in the panel — unlike Stop, which is deliberately
+  not red. ⚠️ Focus is set **synchronously**, not in a `setTimeout(0)`: a probe reading
+  `activeElement` right after the click saw nothing focused, and so would a screen reader.
   ⚠️ **✎ renames the row IN PLACE and does not open the chat** (annotation, 19 Aug 2026).
   It used to `aiHistGo()` then `aiRename()`, which switched you into a chat you had only
   meant to retitle. If the renamed row IS the current chat, the header title follows.

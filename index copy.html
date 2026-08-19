@@ -1547,6 +1547,23 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .airank b{display:block;font-weight:600;color:var(--white)}
 .airank i{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
 /* diff — delta rows against the last visit */
+/* ── the delete confirmation (request, 19 Aug 2026) ─────────────────────────────────────
+   A scrim INSIDE the panel with a small card centred on it — not a browser confirm(). The
+   destructive button is red: --red is this system's critical colour, and deleting a chat
+   is the one destructive, irreversible act in the panel (unlike Stop, which is not). */
+.aidelsc{position:absolute;inset:0;z-index:12;display:none;align-items:center;justify-content:center;
+  padding:20px;background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.aidelsc.on{display:flex}
+.aidel{width:100%;max-width:320px;padding:16px 16px 14px;border-radius:12px;
+  border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow)}
+.aidelt{font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aidelb{font-size:12.6px;line-height:1.55;color:var(--text-dim)}
+.aidela{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.aidelgo{padding:8px 16px;border:0;border-radius:var(--ai-r);background:var(--red);color:#fff;
+  font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.aidelgo:hover{filter:brightness(1.08)}
+.aidelgo:focus-visible,.aidela .aialt:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
 .aidelta{display:flex;flex-direction:column;gap:2px}
 .aidr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-soft)}
 .aidr:last-child{border-bottom:0}
@@ -6807,8 +6824,10 @@ document.addEventListener('click', e=>{ if(!e.target.closest('.cmenu')) document
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openSearch(); return; }
   if(e.key!=='Escape') return;
-  /* the AI panel is two rungs: Esc leaves full screen, Esc again closes the chat */
+  /* the AI panel is three rungs: Esc dismisses a delete confirmation, Esc leaves full
+     screen, Esc again closes the chat */
   if(document.getElementById('aiPanel').classList.contains('on')){
+    if(typeof aiDelPending !== 'undefined' && aiDelPending) return aiDelCancel();
     if(document.getElementById('aiPanel').classList.contains('aifs')) return aiFsTog();
     return aiClose();
   }
@@ -9360,7 +9379,52 @@ function aiChatRenRow(id, el){
   };
   inp.onblur = () => done(true);
 }
-function aiChatDelRow(id){
+/* ── one confirmation for every delete (request, 19 Aug 2026) ────────────────────────────
+   Deleting a chat is the one irreversible thing in this panel — there is no history for
+   history — and all three doors to it (a row's 🗑, the full screen's 🗑, the ⋯ menu's
+   "Delete chat") used to act on the first click. They all go through `aiDelAsk` now,
+   which names the chat, says what goes with it, and waits.
+   ⚠️ NOT a browser `confirm()` — nothing in this file uses native dialogs, and a system
+   modal over a dark panel reads as a crash. It is a card inside the panel.
+   ⚠️ Focus lands on CANCEL, not Delete. Enter on a freshly opened destructive dialog should
+   be the safe answer; the red button is one Tab away. Esc cancels. */
+let aiDelPending = null;
+function aiDelAsk(id, how){
+  const c = AI_CHATS.find(x => x.id === id);
+  const name = c ? c.n : aiChatName;
+  const n = c ? (c.msgs || []).filter(m => m.r === 'me').length : aiThread.filter(m => m.r === 'me').length;
+  aiDelPending = { id: id, how: how || 'row' };
+  aiHdMenuClose(); aiChatPeekOff();
+  let el = document.getElementById('aiDel');
+  if (!el){
+    el = document.createElement('div'); el.id = 'aiDel'; el.className = 'aidelsc';
+    el.onclick = e => { if (e.target === el) aiDelCancel(); };
+    document.getElementById('aiPanel').appendChild(el);
+  }
+  el.innerHTML = '<div class="aidel" role="dialog" aria-modal="true" aria-labelledby="aiDelT">' +
+    '<div class="aidelt" id="aiDelT">Delete \u201c' + aiEsc(name) + '\u201d?</div>' +
+    '<div class="aidelb">This removes the conversation' +
+      (n ? ' and its ' + n + ' question' + (n === 1 ? '' : 's') : '') +
+      '. It can\u2019t be undone.</div>' +
+    '<div class="aidela">' +
+      '<button class="aialt" id="aiDelNo" onclick="aiDelCancel()">Cancel</button>' +
+      '<button class="aidelgo" onclick="aiDelGo()">Delete</button>' +
+    '</div></div>';
+  el.classList.add('on');
+  const b = document.getElementById('aiDelNo'); if (b) b.focus();
+}
+function aiDelCancel(){
+  aiDelPending = null;
+  const el = document.getElementById('aiDel'); if (el){ el.classList.remove('on'); el.innerHTML = ''; }
+}
+function aiDelGo(){
+  const p = aiDelPending; aiDelCancel(); if (!p) return;
+  if (p.how === 'cur') aiChatDelCurDo();
+  else if (p.how === 'hist') aiHistDelDo(p.id);
+  else aiChatDelRowDo(p.id);
+}
+function aiChatDelRow(id){ aiDelAsk(id, 'row'); }
+function aiChatDelRowDo(id){
   const i = AI_CHATS.findIndex(c => c.id === id); if (i < 0) return;
   const n = AI_CHATS[i].n;
   AI_CHATS.splice(i, 1);
@@ -9427,7 +9491,8 @@ function aiChatSummary(c){
 /* Delete from the menu acts on the CURRENT chat, so it needs no id and no confirm step —
    the thread it drops is still in aiThread until the next question, and History keeps
    every other chat. aiHistDel() re-opens the history sheet, which would be wrong here. */
-function aiChatDelCur(){
+function aiChatDelCur(){ aiDelAsk(aiChatId, 'cur'); }
+function aiChatDelCurDo(){
   const n = aiChatName;
   const i = AI_CHATS.findIndex(c => c.id === aiChatId);
   if (i >= 0) AI_CHATS.splice(i, 1);
@@ -11265,7 +11330,8 @@ function aiHistGo(id){
   aiHistShown = false;            /* opening a chat leaves the history screen */
   aiRender();
 }
-function aiHistDel(id){
+function aiHistDel(id){ aiDelAsk(id, 'hist'); }
+function aiHistDelDo(id){
   const i = AI_CHATS.findIndex(c => c.id === id); if (i < 0) return;
   const n = AI_CHATS[i].n;
   AI_CHATS.splice(i, 1);
