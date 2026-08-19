@@ -96,12 +96,15 @@ placeholder card. **Log Explorer is now a real module screen** — read off the 
 is **one CSS block + one `<section id="view-logexp">` + one `<script>` block**, so a change
 here is normally a three-file change like the `ac*` panel.
 
-> ⚠️ **It is NOT byte-identical any more (18 Aug 2026).** Option 1 diverged on request:
-> its **left log-sources panel was removed** (the Type | Group tabs, the search and the
-> log-type tree, plus the `lxPanelBtn` toggle and the `lxPanel` / `lxTreeTab` / `lxTree` /
-> `lxTreeToggle` functions), and it gained an **`✦ Ask AI`** button in the head. Options 2
-> and 3 still carry both the panel and no Ask AI. Re-sync deliberately or leave them
-> different, but don't assume `md5` over the block still matches.
+> ⚠️ **It is NOT byte-identical any more.** Option 1 diverged on request: it gained an
+> **`✦ Ask AI`** button in the head (17 Aug 2026) and an **`✦ AI Query`** control in the
+> search filter row (19 Aug 2026). Options 2 and 3 have neither. Re-sync deliberately or
+> leave them different, but don't assume `md5` over the block still matches.
+> ⚠️ **The left log-sources panel was removed from Option 1 on 17 Aug 2026 and RESTORED on
+> 19 Aug 2026** — verified against live build 10.0.0 first, where it is still there. All
+> three options carry it again (`lxPanelBtn`, `lxPanel` / `lxTreeTab` / `lxTree` /
+> `lxTreeToggle`, and `body.lxopen` set in `lxInit`). `lxbehave.py` runs its full **56**
+> checks in Option 1 again — the 5 skips are gone.
 
 Namespace is `lx` throughout — `.lx*` classes, `lx*()` functions, `LX_*` constants, plus
 `body.lxopen` / `body.lxdense`. It borrows nothing from the host page but `toast()`.
@@ -125,6 +128,48 @@ rows (Log inventory / parsing / forwarder) still fall through to the placeholder
 | Log Pattern | `COUNT \| SEVERITY \| PATTERN` + pager; the live timeout state is reachable via `lxPatFail()` |
 | Pre Filters | All/Any group matching · Include/Exclude · Counter / Operator / Value criteria · Add New Group · Reset · Clear · Apply |
 | Live Trail | Source (multi) · Search Terms All/Any + Keywords · **Highlight Keywords** (repaints in place) · play / auto-scroll / full screen over a console pane, plus the gear's Line Spacing + Text Size dialog |
+
+### `✦ AI Query` in the search filter row — Option 1
+
+Built 19 Aug 2026 from **live build 10.0.0**, driven in the browser rather than guessed
+(the docs describe the facet panel but say nothing about the filter bar's mechanics).
+
+**What the live product does**, observed end to end. Typing *“show me error logs from syslog
+in the last 30 minutes”* into `AI Query` and pressing **Run**:
+
+1. rewrote the filter to `INCLUDE event.severity Equals error OR message Contains error`
+2. moved the time range to **`30m` / Last 30 Mins** and restamped the absolutes
+3. **executed on its own** — the event count went 10,785 → 34
+4. toasted **“AI query applied to search.”**
+
+All four are reproduced. The control sits **between the filter text and Execute**, opens a
+**320px** popover titled **“Build a query with AI”** with a 2-row textarea placeholdered
+*“e.g. ERROR logs in the last 30 minutes”* and **Cancel · Run**, Run disabled until you type.
+
+- ⚠️ **The mapping is canned** (`LX_AIQ`), like everything else here. Each rule owns the
+  product's own filter triple — **operand / operator / value** — which is the shape the real
+  `filter` URL param carries: `[{"operand":"event.source","operator":"in","value":["…"]}]`,
+  base64'd twice into the query string. `LX_AIQ_T` maps time phrases onto `LX_RANGES`' own
+  keys so the two can't drift.
+- ⚠️ **The join is PER CLAUSE, not one for the whole string.** A single global join turned
+  “error logs from syslog” into `severity=error OR message~error OR category=syslog`, which
+  widens where the sentence narrows. Clauses within one rule use that rule's join; clauses
+  from different rules join with `AND`. **No parentheses** — the product renders a flat
+  string and its URL model is a flat array, so inventing precedence would be inventing
+  product behaviour.
+- ⚠️ **It never silently no-ops.** A sentence it cannot map leaves the search exactly as it
+  was and says so, rather than half-applying something.
+- ⚠️ The popover anchors to the **button** (`.lxaiqw`), not to `.lxbar`. Against the bar its
+  `right:0` put a 320px card past the viewport edge, because Execute / Pause / Abort / ⤢ all
+  sit to the button's right.
+- ⚠️ **Honest divergence:** the live one dropped “from syslog” from that sentence and
+  produced only the two error clauses. Ours keeps it as a third `AND` clause, which is a
+  better reading of the request but is *not* what the product returned.
+
+**Other things build 10.0.0 has that this prototype does not** (seen on the same screen,
+recorded so they don't have to be re-derived): `Save Query` and `Ask AI` above the filter
+row, `Save as Report` on the results header, and a third results tab **`✦ Anomaly`** beside
+Event Log and Log Pattern.
 
 - **`LX_GROUPS` is the live source tree verbatim** — 16 groups, 60 log types, with the
   counts the instance reported (Router 209.95 K → Cisco Device Configuration Update 77.71 K,
@@ -1180,20 +1225,24 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   `ALL \d+ PASS|\d+ of \d+ FAILED` — the first match is the template inside the inlined
   script source, not the rendered verdict.
 - **`lxbehave.py`** — the same idea for the **Log Explorer module**: drives every `lx*`
-  entry point in all three files and prints the verdict **as text on stdout**. **56 checks**;
-  Option 1 runs 51 of them and reports 5 skipped (see below). Run it after any `lx*` change.
-  ⚠️ **The three `lx` blocks are no longer byte-identical.** Option 1's **log-sources panel**
-  (the Type | Group tree, `lxPanel` / `lxTree` / `lxTreeTab` / `lxTreeToggle` and its markup)
-  was removed by annotation on 17 Aug 2026; Options 2 and 3 still have it. The suite skips
-  those checks where `#lxTree` is absent — asserting a panel that was deliberately deleted
-  is a false failure, not a regression. `lxPickType()` was deliberately kept: the Overview's
-  bubble chart calls it too, so filtering to one log type is still reachable in Option 1.
+  entry point in all three files and prints the verdict **as text on stdout**. **56 checks**,
+  and since 19 Aug 2026 **all three files run all 56** — Option 1 skipped 5 of them while its
+  log-sources panel was deleted, and the panel is back. Run it after any `lx*` change.
+  ⚠️ The suite still skips its panel checks wherever `#lxTree` is absent, which is the right
+  behaviour if the panel is ever removed again — asserting a deliberately deleted component
+  is a false failure. `lxPickType()` is called by the Overview's bubble chart as well as by
+  the tree, so filtering to one log type survives with or without the panel.
   ⚠️ It reads its result out of a `<pre id="__probe">` block, **not `<title>`** — the module
   emits `'<title>'` strings for its SVG tooltips, so a title-based read finds those instead.
 - All four strip the Agentation loader into a temp copy first (it hangs headless runs) and
   wrap Chrome in `perl -e 'alarm N'`, since macOS has no `timeout` and these runs can hang.
 - ⚠️ `harness.py` needs `--allow-file-access-from-files` to read across the `file://`
   iframes; it already passes it.
+- ⚠️ **`harness.py` needs a LONG virtual-time budget — give it ~20 s.** It loads the page in
+  seven iframes; at `--virtual-time-budget=15000` a run reported **“49 of 77 FAILED”** on
+  code that passes, because the verdict was read before the iframes had finished. Re-read
+  before believing a harness failure, and check how many verdict strings the DOM actually
+  contains — a healthy run has exactly one.
 
 **Option 3 — the full panel.** Ported from `_ai-source/` and then extended far past it.
 Its own `<script>` block, ~1,200 lines, all state on one `OA` object. Its header comment is

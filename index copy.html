@@ -3316,6 +3316,38 @@ body.lxopen .lxpanel{flex:0 0 250px;width:250px}
 .lxfun.on{color:var(--teal)}
 .lxsearch input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);
                 font:inherit;font-size:12px;outline:none}
+/* ── AI Query, read off live build 10.0.0 (19 Aug 2026) ───────────────────────────────
+   In the product this sits INSIDE the filter row, between the filter text and Execute:
+   `✦ AI Query` opens a 320px popover titled "Build a query with AI" with a 2-row textarea
+   (placeholder "e.g. ERROR logs in the last 30 minutes") and Cancel / Run, Run disabled
+   until you type. On Run it rewrites the filter, moves the time range if the sentence
+   named one, executes, and toasts "AI query applied to search."
+   ⚠️ Violet, not teal: this is the AI accent everywhere in this folder, and the product
+   tints its own AI controls the same way. */
+.lxaiq{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;
+  border:1px solid var(--ai-line);border-radius:4px;background:transparent;
+  color:var(--ai-2);font:inherit;font-size:12px;cursor:pointer;flex:0 0 auto}
+.lxaiq:hover{background:var(--ai-soft)}
+.lxaiq:disabled{opacity:.5;cursor:default}
+.lxaiq svg{width:13px;height:13px;fill:currentColor;flex:0 0 13px}
+/* ⚠️ anchored to the BUTTON, not to `.lxbar`. Against the bar it was `right:0`, which put
+   a 320px card past the viewport edge — Execute / Pause / Abort / ⤢ all sit to its right. */
+.lxaiqw{position:relative;display:inline-flex;flex:0 0 auto}
+.lxaip{position:absolute;top:calc(100% + 6px);right:0;z-index:20;width:320px;padding:12px;
+  border:1px solid var(--border);border-radius:8px;background:var(--pop);box-shadow:var(--shadow);
+  display:none}
+.lxaip.on{display:block}
+.lxaipt{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:8px}
+.lxaip textarea{width:100%;min-height:46px;resize:vertical;padding:7px 9px;border-radius:4px;
+  border:1px solid var(--border);background:var(--panel);color:var(--text);
+  font:inherit;font-size:12.4px;line-height:1.5;outline:none}
+.lxaip textarea:focus{border-color:var(--ai-line)}
+.lxaip textarea::placeholder{color:var(--text-dim)}
+.lxaipa{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:9px}
+/* Run is the primary here — the product's own Run is filled while Cancel is transparent */
+.lxbtn.pri{border-color:var(--ai);background:var(--ai);color:#fff}
+.lxbtn.pri:hover:not(:disabled){background:#9d78f8;border-color:#9d78f8}
+.lxbtn.pri:disabled{opacity:.45;cursor:default}
 .lxbtn{height:30px;padding:0 12px;border:1px solid var(--border);border-radius:4px;
        background:transparent;color:var(--text);font:inherit;font-size:12px;cursor:pointer;
        display:inline-flex;align-items:center;gap:6px}
@@ -3823,6 +3855,10 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
       <!-- ── Log Explorer proper (Overview + Log Search) ── -->
       <div class="lxmod" id="lxMod" style="flex:1;display:flex;flex-direction:column;min-height:0">
         <div class="lxhead">
+          <!-- ⚠️ RESTORED 19 Aug 2026. It was removed on 17 Aug with the panel it controls;
+               the panel is back (verified against live build 10.0.0), so its toggle is too. -->
+          <button class="lxpt" id="lxPanelBtn" data-tip="Show log sources" onclick="lxPanel()">
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
           <button class="lxtab on" id="lxTabOv" onclick="lxTab('ov')">Overview</button>
           <button class="lxtab" id="lxTabLs" onclick="lxTab('ls')">Log Search</button>
           <div class="lxsp"></div>
@@ -3845,17 +3881,25 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
         </div>
 
         <div class="lxwrap">
-          <!-- ⚠️ The left LOG SOURCES panel (Type | Group tabs, search, and the log-type
-               tree) was REMOVED (annotation, 17 Aug 2026). Its toggle in the head went with
-               it — a control with nothing to control is worse than no control.
-               The data behind it (LX_GROUPS) is NOT dead: the Overview's log-type chart is
-               built from the same array, and clicking a slice still runs lxPickType(), which
-               was the tree's third-level action. So the way into "just this log type" is
-               kept; only the duplicate navigation panel is gone.
-               ⚠️ Its CSS (.lxpanel/.lxptabs/.lxpt2/.lxtree/.lxtr …) is deliberately left in
-               the stylesheet: several of those classes are shared with the facets panel and
-               the live-trail list, and this repo has already been bitten by a block delete
-               that took a neighbouring rule with it. -->
+          <!-- ── left LOG SOURCES panel: Type | Group ──────────────────────────────────
+               ⚠️ REMOVED on 17 Aug 2026 and RESTORED on 19 Aug 2026 by request, after
+               checking it against live build 10.0.0 — it is still there in the product:
+               a `‹` collapse chevron in the breadcrumb row, Type | Group tabs, a Search
+               box, and a tree of `Syslog 7.07 K ▸ syslog event 7.07 K`. Its CSS was never
+               deleted (that was deliberate), so this is the markup and the four functions
+               coming back, nothing else.
+               ⚠️ Options 2 and 3 never lost it — do not "port" this to them. -->
+          <aside class="lxpanel">
+            <div class="lxptabs">
+              <button class="lxpt2 on" id="lxPtType" onclick="lxTreeTab('type')">Type</button>
+              <button class="lxpt2" id="lxPtGroup" onclick="lxTreeTab('group')">Group</button>
+            </div>
+            <div class="lxpsearch" id="lxTreeSearchWrap">
+              <div class="lxsbox"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
+                <input id="lxTreeQ" placeholder="Search" oninput="lxTree()"></div>
+            </div>
+            <div class="lxtree" id="lxTree"></div>
+          </aside>
           <div class="lxmain">
             <!-- OVERVIEW -->
             <div class="lxov" id="lxOv"></div>
@@ -3873,6 +3917,20 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
                   <svg class="lxfun" id="lxFun" viewBox="0 0 24 24" data-tip="Pre Filters" onclick="lxPre(1)"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/></svg>
                   <input id="lxQ" placeholder="Search" onkeydown="if(event.key==='Enter')lxExec()">
                 </div>
+                <!-- ✦ AI Query — the product puts it here, immediately before Execute -->
+                <span class="lxaiqw">
+                  <button class="lxaiq" id="lxAiqBtn" data-tip="Describe the logs you want, in plain English"
+                    onclick="lxAiq(event)"><svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg><span>AI Query</span></button>
+                  <div class="lxaip" id="lxAip" onclick="event.stopPropagation()">
+                    <div class="lxaipt">Build a query with AI</div>
+                    <textarea id="lxAiqIn" rows="2" placeholder="e.g. ERROR logs in the last 30 minutes"
+                      oninput="lxAiqIn()" onkeydown="lxAiqKey(event)"></textarea>
+                    <div class="lxaipa">
+                      <button class="lxbtn" onclick="lxAiqClose()">Cancel</button>
+                      <button class="lxbtn pri" id="lxAiqRun" onclick="lxAiqRun()" disabled>Run</button>
+                    </div>
+                  </div>
+                </span>
                 <button class="lxbtn" id="lxExecBtn" onclick="lxExec()" disabled>Execute</button>
                 <button class="lxbtn" id="lxPauseBtn" onclick="lxPauseToggle()">
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg><span id="lxPauseLbl">Pause</span></button>
@@ -13214,11 +13272,15 @@ function lxMenuClose(){
 function lxInit(){
   if (LX.ready){ lxLive(0); return; }
   LX.ready = 1;
+  /* ⚠️ `lxopen` and the `lxTree()` call were dropped when the panel was removed on 17 Aug
+     2026, and both come back with it (19 Aug). The live module opens with the panel
+     showing, which is what `lxopen` does. */
+  document.body.classList.add('lxopen');
   document.body.classList.add('lxdense');   /* live opens on the single-line density */
   LX.open[0] = LX.open[1] = LX.open[2] = LX.open[3] = 1;
   LX_FIELDS.slice(0,3).forEach((f,i)=>{ LX.facetOpen[i] = 1; });
   lxBuildRows();
-  lxOverview(); lxVizSeg(); lxTools(); lxHist(); lxBodyRender(); lxRangeStamp();
+  lxTree(); lxOverview(); lxVizSeg(); lxTools(); lxHist(); lxBodyRender(); lxRangeStamp();
 }
 function lxTab(t){
   if (!LX.ready){ lxInit(); }
@@ -13233,6 +13295,52 @@ function lxTab(t){
 /* lxPanel / lxTreeTab / lxTree / lxTreeToggle were REMOVED with the log-sources panel
    (annotation, 17 Aug 2026). lxPickType() below is kept: the Overview's log-type chart
    calls it too, so filtering to one log type is still reachable. */
+/* ── left source panel (Type | Group) ──────────────────────────────────────────────────
+   Restored 19 Aug 2026; identical to the copies in Options 2 and 3, which never lost it. */
+function lxPanel(){
+  const on = document.body.classList.toggle('lxopen');
+  const b = document.getElementById('lxPanelBtn');
+  if (b) b.dataset.tip = on ? 'Hide log sources' : 'Show log sources';
+}
+function lxTreeTab(t){
+  LX.treeTab = t;
+  document.getElementById('lxPtType').classList.toggle('on', t==='type');
+  document.getElementById('lxPtGroup').classList.toggle('on', t==='group');
+  /* live: the Group tab drops the search box with the tree — there are no groups */
+  document.getElementById('lxTreeSearchWrap').style.display = t==='type' ? 'block' : 'none';
+  lxTree();
+}
+function lxTree(){
+  const host = document.getElementById('lxTree'); if(!host) return;
+  if (LX.treeTab === 'group'){
+    host.innerHTML = '<div class="lxempty">No log groups defined.<br>Group logs under '+
+      '<b>Settings \u25b8 Log Settings</b> to see them here.</div>';
+    return;
+  }
+  const q = (document.getElementById('lxTreeQ')||{}).value || '';
+  const rx = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i') : null;
+  let h = '';
+  LX_GROUPS.forEach((g,i)=>{
+    const kids = rx ? g.kids.filter(k=>rx.test(k[0])) : g.kids;
+    if (rx && !rx.test(g.n) && !kids.length) return;
+    const opn = rx ? 1 : LX.open[i];
+    h += '<div class="lxtr'+(opn?' opn':'')+'" onclick="lxTreeToggle('+i+')" title="'+lxEsc(g.n)+'">'+
+         '<span class="cv">\u25b6</span><span class="lxdot" style="background:'+g.col+'">'+lxIco(g.ic)+'</span>'+
+         '<span class="nm">'+lxEsc(g.n)+'</span><span class="lxcnt">'+lxK(g.c)+'</span></div>';
+    if (!opn) return;
+    kids.forEach((k,j)=>{
+      const key = i+'.'+j, o2 = LX.open[key];
+      h += '<div class="lxtr k1'+(o2?' opn':'')+'" onclick="event.stopPropagation();lxTreeToggle(\''+key+'\')" title="'+lxEsc(k[0])+'">'+
+           '<span class="cv">\u25b6</span><span class="nm">'+lxEsc(k[0])+'</span><span class="lxcnt">'+lxK(k[1])+'</span></div>';
+      if (o2) h += '<div class="lxtr k2" onclick="event.stopPropagation();lxPickType('+
+                   JSON.stringify(k[0]).replace(/"/g,'&quot;')+')">'+
+                   '<span class="nm">'+LX_SRC[(i*3+j)%LX_SRC.length]+'</span>'+
+                   '<span class="lxcnt">'+lxK(k[1])+'</span></div>';
+    });
+  });
+  host.innerHTML = h || '<div class="lxempty">No log type matches \u201c'+lxEsc(q)+'\u201d.</div>';
+}
+function lxTreeToggle(k){ LX.open[k] = LX.open[k] ? 0 : 1; lxTree(); }
 function lxPickType(n){
   document.getElementById('lxQ').value = 'event.category = "'+n+'"';
   lxTab('ls'); lxExec();
@@ -13385,6 +13493,113 @@ function lxSaveWidget(){
 }
 
 /* ── run controls ──────────────────────────────────────────────────────────── */
+/* ── AI Query ──────────────────────────────────────────────────────────────────────────
+   Built from live build 10.0.0 (driven in the browser, 19 Aug 2026). Observed end to end:
+   typing "show me error logs from syslog in the last 30 minutes" and pressing Run
+     · replaced the filter with `INCLUDE event.severity Equals error OR message Contains error`
+     · moved the time range to `30m / Last 30 Mins` and restamped it
+     · executed on its own — the count went 10,785 → 34
+     · toasted "AI query applied to search."
+   All four are reproduced. ⚠️ The MAPPING is canned and deterministic, like everything else
+   in this prototype — nothing calls out. Each rule owns the product's own filter triple
+   (operand / operator / value), which is the shape the real `filter` URL param carries:
+   `[{"operand":"event.source","operator":"in","value":["…"]}]`.
+   ⚠️ The live one is NOT a perfect parser and this does not pretend to be either: on that
+   sentence it produced severity and message clauses and silently dropped "from syslog". */
+const LX_AIQ = [
+  [/\berror(s)?\b|\bfail(ed|ure)?\b/i, [['event.severity','Equals','error'],
+                                       ['message','Contains','error']], 'OR'],
+  [/\bcritical\b|\bfatal\b|\bsevere\b/i, [['event.severity','Equals','critical']], 'AND'],
+  [/\bwarn(ing)?\b/i,            [['event.severity','Equals','warning']], 'AND'],
+  [/\bsyslog\b/i,                [['event.category','In','syslog event']], 'AND'],
+  [/\bfirewall\b|\bsonicwall\b/i, [['event.source.type','In','Firewall']], 'AND'],
+  [/\bmysql\b/i,                 [['event.category','In','MySql']], 'AND'],
+  [/\bpostgres(ql)?\b/i,         [['event.category','In','PostgreSql']], 'AND'],
+  [/\boracle\b/i,                [['event.category','In','Oracle Database']], 'AND'],
+  [/\bwindows\b/i,               [['event.category','In','Windows Event Collector']], 'AND'],
+  [/\bcisco\b|\brouter\b|\bswitch\b/i, [['event.source.type','In','Router']], 'AND'],
+  [/\bssh\b|\blogin\b|\bauth\b/i, [['message','Contains','sshd']], 'AND'],
+];
+/* the phrase → time-range map, keyed on LX_RANGES' own keys so nothing can drift */
+const LX_AIQ_T = [
+  [/last\s*5\s*min/i,'5m'], [/last\s*15\s*min/i,'15m'], [/last\s*30\s*min/i,'30m'],
+  [/last\s*hour|last\s*1\s*h/i,'1h'], [/last\s*6\s*h/i,'6h'], [/last\s*12\s*h/i,'12h'],
+  [/last\s*24\s*h|last\s*day/i,'24h'], [/last\s*48\s*h/i,'48h'],
+  [/last\s*week|past\s*week/i,'1w'], [/last\s*month/i,'1mo'],
+  [/\btoday\b/i,'today'], [/this\s*week/i,'week'], [/this\s*month/i,'month'],
+];
+function lxAiq(ev){
+  if (ev) ev.stopPropagation();
+  const p = document.getElementById('lxAip'); if (!p) return;
+  if (p.classList.contains('on')){ lxAiqClose(); return; }
+  p.classList.add('on');
+  const t = document.getElementById('lxAiqIn');
+  t.value = ''; lxAiqIn(); t.focus();
+  setTimeout(()=>document.addEventListener('mousedown', lxAiqAway), 0);
+}
+function lxAiqAway(e){ if (!e.target.closest('#lxAip') && !e.target.closest('#lxAiqBtn')) lxAiqClose(); }
+function lxAiqClose(){
+  const p = document.getElementById('lxAip'); if (p) p.classList.remove('on');
+  document.removeEventListener('mousedown', lxAiqAway);
+}
+/* Run is disabled until there is something to build from — the product's is too */
+function lxAiqIn(){
+  const t = document.getElementById('lxAiqIn'), b = document.getElementById('lxAiqRun');
+  if (b) b.disabled = !(t && t.value.trim());
+}
+function lxAiqKey(e){
+  e.stopPropagation();
+  if (e.key === 'Escape'){ e.preventDefault(); lxAiqClose(); }
+  else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); lxAiqRun(); }
+}
+/* the product renders its filter as `INCLUDE a Op b AND c Op d`, so this builds that string */
+function lxAiqBuild(q){
+  /* ⚠️ THE JOIN IS PER CLAUSE, not one for the whole string. A single global join turned
+     "error logs from syslog" into `severity=error OR message~error OR category=syslog`,
+     which is not what was asked — the syslog clause narrows, it does not widen. Clauses
+     WITHIN one rule use that rule's own join (the two error clauses are alternatives);
+     clauses from DIFFERENT rules join with AND.
+     ⚠️ No parentheses: the product renders its filter as a flat `a Op b AND c Op d` string
+     and its own URL model is a flat array, so inventing precedence here would be inventing
+     product behaviour. */
+  const parts = [], seen = {};
+  LX_AIQ.forEach(([re, trips, j]) => {
+    if (!re.test(q)) return;
+    trips.forEach((t, k) => {
+      const key = t.join('|'); if (seen[key]) return; seen[key] = 1;
+      parts.push({ t: t, j: k === 0 ? 'AND' : j });     /* first of a rule joins with AND */
+    });
+  });
+  if (!parts.length) return null;
+  return 'INCLUDE ' + parts.map((p, i) =>
+    (i ? p.j + ' ' : '') +
+    p.t[0] + ' ' + p.t[1] + ' ' + (/\s/.test(p.t[2]) ? '"' + p.t[2] + '"' : p.t[2])).join(' ');
+}
+function lxAiqRun(){
+  const t = document.getElementById('lxAiqIn'); if (!t) return;
+  const q = t.value.trim(); if (!q) return;
+  const expr = lxAiqBuild(q);
+  const btn = document.getElementById('lxAiqBtn');
+  lxAiqClose();
+  if (!expr){
+    /* ⚠️ never a silent no-op — say what it could not turn into a filter, and leave the
+       search exactly as it was rather than half-applying something */
+    toast('Could not turn that into a filter \u2014 try naming a severity, a log type or a time range');
+    return;
+  }
+  if (btn) btn.disabled = true;                 /* the live button greys out while it works */
+  setTimeout(() => {
+    if (btn) btn.disabled = false;
+    /* a time phrase moves the picker, exactly as the live one did */
+    const hit = LX_AIQ_T.find(([re]) => re.test(q));
+    if (hit && typeof lxPickRange === 'function') lxPickRange(hit[1]);
+    const box = document.getElementById('lxQ');
+    if (box) box.value = expr;
+    lxTab('ls');
+    lxExec();                                    /* it runs itself — no second click */
+    toast('AI query applied to search.');
+  }, 900);
+}
 function lxExec(){
   LX.paused = 0; lxPauseLbl();
   LX.count = 3300 + Math.floor(lxRng((document.getElementById('lxQ').value||'x').length*977+13)()*8000);
