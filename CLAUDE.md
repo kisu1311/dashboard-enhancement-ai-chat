@@ -502,9 +502,25 @@ Two behaviours worth keeping, both observed on theirs:
 - ⚠️ **Unknown input never dead-ends.** "asdfgh zzz nonsense" fell back to the `metric`
   answer on the top metric rather than erroring, so `aiRoute` returns `metric` as its
   default and `aiPickMetric` defaults to the worst metric.
-- ⚠️ **An under-specified build asks ONE clarifying question first** — *"How should I group
-  “X”?"* with a `1 of 1` step counter and six numbered options — and only previews once
-  answered. `aiAskGroup` → `aiPickGroup` → `aiPreviewHTML`.
+- ⚠️ **An under-specified build asks a STEPPED set of questions first** (`AI_CLAR`,
+  `aiAskGroup` → `aiClarNext` → `aiPreviewHTML`), rebuilt 19 Aug 2026 from a supplied Notion
+  reference. It was one question with a `1 of 1` counter that could never be anything else;
+  it is a card now — **back arrow · question · `n / total` · radio rows with one already
+  lit · an “Or, describe your requirements…” free-text row · Skip · Next** (the last step
+  reads **Build it**).
+  - ⚠️ **Every step must be something the preview actually uses, or the card is theatre.**
+    The three are `group`, `range` and `chart`: two were already in `aiBuildState`, and
+    `range` was added to it **and printed in the preview's query rows**. Don't add a fourth
+    without wiring it through.
+  - ⚠️ **Going back RESTORES the answer you gave** (`aiClarRestore`). It used to reset `sel`
+    to 0, so stepping back and forward again silently replaced your choice with the default
+    — visible only by reading the query rows on the preview afterwards.
+  - ⚠️ **Typing in the free row selects it** (`sel = -1`) and clears the radio: a lit radio
+    with a caret in the text box is two answers at once.
+  - **Skip keeps the step's default** rather than leaving it unanswered, which is why one
+    row is always pre-lit and Next is never a dead button.
+  - ⚠️ The radio mark is **`.aicqr`, not a bare `.rd`** — the `ac*` panel already styles
+    `.acsmi .rd`, and a bare class here would reach into it.
 
 The preview's **Add to “<board>”** calls the host's `awAdd()`, so a widget built in the chat
 is a real widget — drag, resize and undo all work on it. The chart-type switcher

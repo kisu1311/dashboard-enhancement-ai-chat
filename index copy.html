@@ -1498,6 +1498,45 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   background:var(--chip);color:var(--text-dim);font-size:11px}
 /* clarify — the one question a build asks before it previews */
 .aiclar .aiat{font-size:14px;margin-bottom:4px}
+/* ── the stepped clarifier card (reference supplied 19 Aug 2026 — Notion's) ──────────────
+   A bordered card, because unlike the thinking trail this one is asking you for something
+   and must be the thing you look at. Back arrow · question · `n / total`, radio rows with
+   one already lit, a free-text row, then Skip · Next. */
+.aicq{margin:2px 0 16px;padding:12px 13px 11px;border:1px solid var(--border-soft);
+  border-radius:12px;background:var(--card)}
+.aicqh{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.aicqb{width:22px;height:22px;flex:0 0 22px;border:0;border-radius:6px;background:transparent;
+  color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.aicqb:hover:not(:disabled){background:var(--hover-side);color:var(--text)}
+.aicqb:disabled{opacity:.3;cursor:default}
+.aicqb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.aicqt{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--white)}
+.aicqn{flex:0 0 auto;font:400 11.5px/1 'JetBrains Mono',monospace;color:var(--muted)}
+.aicqs{margin:0 0 9px 31px;font-size:12px;color:var(--muted)}
+/* the rows — a real radio look, not a chip: this is a single choice, not a suggestion */
+.aicqo,.aicqf{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+  border:0;border-radius:8px;background:transparent;color:var(--text);
+  font:inherit;font-size:12.8px;text-align:left;cursor:pointer;margin-bottom:1px}
+.aicqo:hover,.aicqf:hover{background:var(--hover-side)}
+.aicqo.on,.aicqf.on{background:var(--sel)}
+/* ⚠️ `.aicqr`, NOT a bare `.rd` — the `ac*` panel already styles `.acsmi .rd`, and a bare
+   class here would reach into it. Grep before naming, every time. */
+.aicqr{flex:0 0 15px;width:15px;height:15px;border-radius:50%;border:1.6px solid var(--track);
+  display:grid;place-items:center;transition:border-color .12s}
+.aicqo.on .aicqr,.aicqf.on .aicqr{border-color:var(--ai)}
+.aicqo.on .aicqr::after,.aicqf.on .aicqr::after{content:'';width:7px;height:7px;
+  border-radius:50%;background:var(--ai)}
+.aicqf input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);
+  font:inherit;font-size:12.8px;outline:none}
+.aicqf input::placeholder{color:var(--muted)}
+.aicqa{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:9px}
+.aicqsk{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;
+  cursor:pointer;padding:6px 4px}
+.aicqsk:hover{color:var(--text)}
+.aicqx{height:30px;padding:0 16px;border:0;border-radius:999px;background:var(--ai);
+  color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.aicqx:hover{background:#9d78f8}
 .aicsub{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:11px}
 .aicsub .stp{margin-left:auto;padding:1px 7px;border-radius:9px;background:var(--chip);font-size:10.5px}
 .aifu.opt{width:100%;justify-content:flex-start;border-radius:10px;padding:10px 13px}
@@ -8282,17 +8321,90 @@ function aiDashUndo(){
 const AI_GROUPS = ['By severity', 'By monitor group', 'By type', 'By site', 'By vendor', 'By owner'];
 const AI_CHARTS = ['Column', 'Bar', 'Line', 'Doughnut', 'KPI', 'Table'];
 let aiBuildState = null;
+/* ── the clarifier, Notion-shaped (request + reference image, 19 Aug 2026) ──────────────
+   It was ONE question — "How should I group X?" — with a `1 of 1` counter that could never
+   be anything else. It is a stepped card now, the shape the reference uses: a back arrow, a
+   question, an `n / total` counter, radio options with one already chosen, an "Or, describe
+   your requirements…" free-text row, and **Skip · Next**.
+   ⚠️ Every step has to be a thing the preview ACTUALLY uses, or the card is theatre. These
+   three are: `group` and `chart` were already in `aiBuildState`, and `range` was added to
+   it and is printed in the preview's query rows. Don't add a fourth without wiring it. */
+const AI_CLAR = [
+  { k:'group', q:'How should I group it?',
+    sub:'That’s the one thing I can’t read from your description.', opts: AI_GROUPS },
+  { k:'range', q:'Over what time range?',
+    sub:'The widget inherits the dashboard’s range unless you pin one.',
+    opts:['Follow the dashboard','Last 1 hour','Last 24 hours','Last 7 days','Last 30 days'] },
+  { k:'chart', q:'How should it be drawn?',
+    sub:'You can still switch this on the preview.',
+    opts:['Column','Bar','Line','Doughnut','KPI','Table'] },
+];
 function aiAskGroup(name, chart){
-  aiThread.push({ r: 'clarify', name: name, chart: chart || 0 });
+  /* `sel` is the pre-chosen row — the reference always has one, so Next is never a dead
+     button, and Skip means "keep this default" rather than "leave it unanswered". */
+  aiThread.push({ r:'clarify', name:name, chart:chart || 0, step:0, ans:{}, sel:0, free:'' });
   aiRender();
 }
+function aiClarCur(){
+  for (let i = aiThread.length - 1; i >= 0; i--) if (aiThread[i].r === 'clarify') return aiThread[i];
+  return null;
+}
+function aiClarPick(i){
+  const c = aiClarCur(); if (!c) return;
+  c.sel = i; c.free = '';                      /* picking a row clears the free text */
+  aiRender();
+}
+/* ⚠️ typing in the free row SELECTS it (index -1). Leaving a radio lit while the caret is
+   in the text box would be two answers at once. */
+function aiClarFree(el){
+  const c = aiClarCur(); if (!c) return;
+  c.free = el.value; c.sel = el.value.trim() ? -1 : 0;
+  const card = document.querySelector('.aicq');
+  if (card) card.querySelectorAll('.aicqo').forEach((b, i) =>
+    b.classList.toggle('on', c.sel === i));
+  const fr = document.querySelector('.aicqf');
+  if (fr) fr.classList.toggle('on', c.sel === -1);
+}
+function aiClarKey(e){
+  e.stopPropagation();
+  if (e.key === 'Enter'){ e.preventDefault(); aiClarNext(); }
+}
+/* ⚠️ going back RESTORES the answer you gave, it does not reset to the first row. It used
+   to do `sel = 0`, so stepping back and forward again silently replaced your choice with
+   the default — and the only way to notice was reading the query rows on the preview. */
+function aiClarRestore(c){
+  const st = AI_CLAR[c.step], prev = c.ans[st.k];
+  const i = prev === undefined ? 0 : st.opts.indexOf(prev);
+  if (i > -1){ c.sel = i; c.free = ''; }
+  else { c.sel = -1; c.free = prev || ''; }     /* it was free text */
+}
+function aiClarBack(){
+  const c = aiClarCur(); if (!c || !c.step) return;
+  c.step--; aiClarRestore(c);
+  aiRender();
+}
+function aiClarSkip(){ aiClarNext(1); }
+function aiClarNext(skip){
+  const c = aiClarCur(); if (!c) return;
+  const st = AI_CLAR[c.step];
+  if (!skip) c.ans[st.k] = (c.sel === -1 && c.free.trim()) ? c.free.trim() : st.opts[c.sel];
+  else if (c.ans[st.k] === undefined) c.ans[st.k] = st.opts[0];
+  c.step++; c.sel = 0; c.free = '';
+  if (c.step < AI_CLAR.length){ aiClarRestore(c); aiRender(); return; }
+  /* answered → the preview, exactly as the one-question version did */
+  const ix = aiThread.indexOf(c);
+  aiThread.splice(ix, 1);
+  aiThread.push({ r:'me', t: AI_CLAR.map(x => c.ans[x.k]).filter(Boolean).join(' · ') });
+  const ci = AI_CLAR[2].opts.indexOf(c.ans.chart);
+  aiBuildState = { name: c.name, group: c.ans.group, range: c.ans.range,
+                   chart: ci > -1 ? ci : (c.chart || 0) };
+  aiThread.push({ r:'build', b: aiBuildState });
+  aiRender();
+}
+/* kept: the old one-shot entry point, in case a caller still hands an index straight in */
 function aiPickGroup(i){
-  const c = aiThread[aiThread.length - 1];
-  if (!c || c.r !== 'clarify') return;
-  aiThread.pop();
-  aiThread.push({ r: 'me', t: AI_GROUPS[i] });
-  aiBuildState = { name: c.name, group: AI_GROUPS[i], chart: c.chart || 0 };
-  aiThread.push({ r: 'build', b: aiBuildState });
+  const c = aiClarCur(); if (!c) return;
+  c.ans.group = AI_GROUPS[i]; c.step = 1; c.sel = 0; c.free = '';
   aiRender();
 }
 function aiBuildChart(i){
@@ -9407,13 +9519,29 @@ function aiAnswerHTML(m, i){
           aiEsc(q) + '</button>').join('') : '') +
     '</div>';
 }
-/* under-specified build → ask one thing, the way the reference does */
+/* under-specified build → walk the questions, the way the reference does */
 function aiClarifyHTML(m){
-  return '<div class="aians aiclar">' +
-    '<div class="aiat">How should I group “' + aiEsc(m.name) + '”?</div>' +
-    '<div class="aicsub">That’s the one thing I can’t read from your description.<span class="stp">1 of 1</span></div>' +
-    AI_GROUPS.map((g, i) => '<button class="aifu opt" onclick="aiPickGroup(' + i + ')">' +
-      '<span class="rn">' + (i + 1) + '</span>' + g + '<span class="cv">›</span></button>').join('') +
+  const st = AI_CLAR[m.step] || AI_CLAR[0];
+  const q = m.step === 0 ? 'How should I group “' + aiEsc(m.name) + '”?' : aiEsc(st.q);
+  return '<div class="aicq">' +
+    '<div class="aicqh">' +
+      '<button class="aicqb" ' + (m.step ? 'onclick="aiClarBack()"' : 'disabled') +
+        ' data-tip="Previous question"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+      '<span class="aicqt">' + q + '</span>' +
+      '<span class="aicqn">' + (m.step + 1) + ' / ' + AI_CLAR.length + '</span>' +
+    '</div>' +
+    '<div class="aicqs">' + aiEsc(st.sub) + '</div>' +
+    st.opts.map((o, i) => '<button class="aicqo' + (m.sel === i ? ' on' : '') +
+      '" onclick="aiClarPick(' + i + ')"><span class="aicqr"></span>' + aiEsc(o) + '</button>').join('') +
+    '<label class="aicqf' + (m.sel === -1 ? ' on' : '') + '"><span class="aicqr"></span>' +
+      '<input value="' + aiEsc(m.free).replace(/"/g,'&quot;') + '" ' +
+      'placeholder="Or, describe your requirements…" oninput="aiClarFree(this)" ' +
+      'onkeydown="aiClarKey(event)" /></label>' +
+    '<div class="aicqa">' +
+      '<button class="aicqsk" onclick="aiClarSkip()">Skip</button>' +
+      '<button class="aicqx" onclick="aiClarNext()">' +
+        (m.step === AI_CLAR.length - 1 ? 'Build it' : 'Next') + '</button>' +
+    '</div>' +
   '</div>';
 }
 /* preview → chart-type switcher → query rows → add */
@@ -9430,7 +9558,11 @@ function aiPreviewHTML(b, bi){
         '<span>Preview</span></div><div class="aipb">' + aiPrevArt(b.chart) + '</div></div>' +
       '<div class="aichips">' + AI_CHARTS.map((c, i) =>
         '<button class="aich' + (i === b.chart ? ' on' : '') + '" onclick="aiBuildChart(' + i + ')">' + c + '</button>').join('') + '</div>' +
-      '<div class="aiq"><span><b>Module</b> = Availability</span><span><b>Group</b> = ' + aiEsc(b.group) + '</span></div>' +
+      /* ⚠️ the RANGE the clarifier asked for is printed here — a question whose answer never
+         appears anywhere is a question that should not have been asked. */
+      '<div class="aiq"><span><b>Module</b> = Availability</span><span><b>Group</b> = ' + aiEsc(b.group) + '</span>' +
+        (b.range && b.range !== 'Follow the dashboard'
+          ? '<span><b>Range</b> = ' + aiEsc(b.range) + '</span>' : '') + '</div>' +
       '<div class="aiacts">' +
         '<button class="aiadd' + (b.confirmed ? ' confirm' : '') + '" onclick="aiBuildAdd()">' +
           (b.confirmed ? '✓ Confirm — add it' : '＋ Add to “' + aiEsc(s.dash) + '”') + '</button>' +
@@ -11890,10 +12022,10 @@ function acScopeMenu(e){
   let h = '<div class="acsm">';
   AC_SCOPES.forEach(s => {
     h += '<button class="acsmi'+(s.k===AC.scope?' on':'')+'" onclick="acScopePick(\''+s.k+'\')">' +
-         '<span class="rd"></span>'+s.l+(s.s?'<span class="sub">'+s.s+'</span>':'')+'</button>';
+         '<span class="aicqr"></span>'+s.l+(s.s?'<span class="sub">'+s.s+'</span>':'')+'</button>';
     if (s.k === 'all') h += '<hr>';
   });
-  h += '<hr><button class="acsmi" onclick="acScopeMulti()"><span class="rd"></span>Multiple…' +
+  h += '<hr><button class="acsmi" onclick="acScopeMulti()"><span class="aicqr"></span>Multiple…' +
        '<span class="sub">pick 2+</span></button></div>';
   acPopAt(e.currentTarget, h, 'up');
 }
