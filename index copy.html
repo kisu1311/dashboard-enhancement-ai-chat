@@ -1192,7 +1192,21 @@ html[data-theme="light"]{
   font:inherit;font-size:12.5px;outline:none}
 .aihm .grp{padding:9px 9px 4px;font-size:11px;font-weight:600;color:var(--muted)}
 .aihm .grp:first-child{padding-top:2px}
-.aihm .conv{gap:9px}
+/* ⚠️ the row is a DIV (it has to hold the rename input), so it gets the button rules
+   explicitly — without these it rendered as a block and its children wrapped onto four
+   lines (the regression the 19 Aug screenshot showed). */
+.aihm .conv{display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;
+  border-radius:6px;color:var(--text);font-size:12.5px;cursor:pointer;text-align:left}
+.aihm .conv:hover{background:var(--pop-item-hover)}
+.aihm .conv:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--ai-line)}
+.aihm .conv.cur{color:var(--text);font-weight:600}
+/* the bubble mark: outlined, filled on the current chat */
+.aihm .cb{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;color:var(--text-dim)}
+.aihm .cb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.aihm .conv.cur .cb{color:var(--text)}
+.aihm .conv.cur .cb svg path:first-child{fill:currentColor}
+.aihm .conv.cur .cb svg path:last-child{stroke:var(--pop)}
 .aihm .when{margin-left:auto;flex:0 0 auto;font-size:11px;color:var(--muted);white-space:nowrap}
 /* ⚠️ the actions REPLACE the timestamp rather than sit beside it — the row is only ~230px
    wide, and showing both pushed long chat names into an ellipsis two words early */
@@ -1203,9 +1217,18 @@ html[data-theme="light"]{
    whole row must not look clickable — clicking it would navigate mid-edit */
 .aihm .conv.ren{cursor:default}
 .aihm .conv.ren .when,.aihm .conv.ren .acts{display:none}
-.aihm .conv .nmin,.aihfr .nmin{flex:1;min-width:0;padding:2px 6px;border-radius:4px;
-  border:1px solid var(--ai-line);background:var(--panel-2);color:var(--text);
-  font:inherit;font-size:12.5px;outline:none}
+/* the in-row rename field, with the reference's ⊗ to clear it */
+.nmwrap{flex:1;min-width:0;display:flex;align-items:center;gap:4px;padding:0 4px 0 0;
+  border-radius:6px;border:1.5px solid var(--text);background:var(--pop)}
+.nmwrap .nmin{flex:1;min-width:0;padding:3px 7px;border:0;background:transparent;
+  color:var(--text);font:inherit;font-size:12.5px;outline:none}
+.nmwrap .clr{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;
+  color:var(--muted);font-style:normal;cursor:pointer;border-radius:50%}
+.nmwrap .clr:hover{color:var(--text)}
+.nmwrap .clr svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round}
+/* the search box sits flush with the menu's own padding */
+.aihm .srch{margin:2px 2px 4px}
 .aihm .acts i{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;
   color:var(--text-dim);font-style:normal}
 .aihm .acts i:hover{background:var(--chip);color:var(--text)}
@@ -9137,6 +9160,8 @@ const AI_MI = {
   life :'<svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2ZM20 15a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2Z"/><path d="M18 17v1a3 3 0 0 1-3 3h-2"/></svg>',
   ext  :'<svg class="ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
   mag  :'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>',
+  /* the conversation-row mark, a speech bubble with two lines — the reference's */
+  chat :'<svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4.2 3.4c-.3.3-.8 0-.8-.4V5.5Z"/><path d="M8 9h8M8 12h5"/></svg>',
   /* the clock the removed History button wore — Show all inherits it, so the thing that
      replaced that button still looks like the thing it replaced */
   clock:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg>',
@@ -9193,13 +9218,17 @@ function aiChatMenu(ev){
    through `aiHdMenu` would have closed the menu instead — its "already open → close" guard.
    ⚠️ The row is hidden entirely when everything already fits, or it would offer to show you
    what you are looking at. */
-const AI_CHAT_RECENT = 5;
+const AI_CHAT_RECENT = 8;   /* was 5; bands and a search box want a list, not a peek */
+/* ── the conversations dropdown, in the ClickUp shape (reference supplied 19 Aug 2026:
+   app.clickup.com → the AI chat's name menu). A "Search AI chats…" box on top, rows banded
+   by DATE (Today · Jul 31 · Jul 30), a chat-bubble mark on each row, the time on the right,
+   ✎ 🗑 on hover, and rename happening IN the row with a ⊗ to clear the field.
+   ⚠️ Rename and Delete for the CURRENT chat still live in the ⋯ menu (moved there earlier
+   the same day) — the per-row ones here act on the row's chat, which may be any chat. */
 function aiChatMenuHTML(){
-  /* ⚠️ Rename and Delete MOVED OUT of here into the ? menu (annotation, 19 Aug 2026).
-     This dropdown is the conversation list and nothing else now — which is also what the
-     caret beside the name promises. The two actions still act on the CURRENT chat; see
-     `aiHelpMenu`. */
-  return '<div class="hd">Conversations · recent</div>' +
+  return '<label class="srch" onclick="event.stopPropagation()">' + AI_MI.mag +
+      '<input id="aiChatQ" placeholder="Search AI chats\u2026" oninput="aiChatList()" ' +
+      'onkeydown="event.stopPropagation();if(event.key===\'Escape\'){aiHdMenuClose()}" /></label>' +
     '<div id="aiChatList">' + aiChatListHTML('') + '</div>' +
     /* the row is hidden when everything already fits, or it would offer to show you what
        you are looking at. It always appears when there IS more, count and all. */
@@ -9214,24 +9243,29 @@ function aiChatShowAll(){ aiHdMenuClose(); aiHistOpen(); }
    (request, 17 Aug 2026.) Searchable, grouped by DATE, each row carrying when it happened
    and, on hover, rename / delete plus a preview card. Modelled on the reference: Today ·
    Yesterday · then the day itself, with the year once it is not this one. */
+/* repaints the LIST only — the search box keeps its focus and caret */
 function aiChatList(){
   const host = document.getElementById('aiChatList'); if (!host) return;
-  host.innerHTML = aiChatListHTML('');
+  const q = (document.getElementById('aiChatQ') || {}).value || '';
+  host.innerHTML = aiChatListHTML(q);
 }
 function aiChatListHTML(q){
   const rx = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
   /* search matches the name AND the first question, the way the ac* panel's history does */
   let list = AI_CHATS.filter(c => !rx || rx.test(c.n) || rx.test(aiChatFirstQ(c)))
                      .slice().sort((a, b) => (b.t || 0) - (a.t || 0));
-  /* the MENU only ever shows the five most recent, and no date bands — bands over five rows
-     would be more heading than list, and the times already read Today from Yesterday. The
-     full history lives on its own screen (aiHistOpen), which is what Show all opens. */
+  /* ⚠️ DATE BANDS ARE BACK (reference, 19 Aug 2026) — an earlier note here argued that
+     bands over five rows were more heading than list; the reference bands its list and
+     the request is to match it. A search narrows the list rather than the cap, so a hit
+     further back than the cap is still reachable by typing. */
   list = list.slice(0, AI_CHAT_RECENT);
   if (!list.length) return '<div class="empty">' + (q
-    ? 'No chat matches “' + aiEsc(q) + '”.'
+    ? 'No chat matches \u201c' + aiEsc(q) + '\u201d.'
     : 'Nothing yet. A chat is listed here once you have asked it something.') + '</div>';
-  let out = '';
+  let out = '', band = null;
   list.forEach(c => {
+    const g = aiChatBand(c.t);
+    if (g !== band){ band = g; out += '<div class="grp">' + aiEsc(g) + '</div>'; }
     /* ⚠️ a DIV, not a <button> — the ✎ swaps `.nm` for an `<input>` in place, and
        interactive content inside a button is invalid and eats the clicks. Third time this
        file has hit that; see the chat-name trigger and the group title. */
@@ -9239,7 +9273,8 @@ function aiChatListHTML(q){
       'onclick="aiHdMenuClose();aiHistGo(' + c.id + ')" ' +
       'onkeydown="if(event.key===\'Enter\'){event.preventDefault();aiHdMenuClose();aiHistGo(' + c.id + ')}" ' +
       'onmouseenter="aiChatPeek(' + c.id + ',this)" onmouseleave="aiChatPeekOff()">' +
-      '<span class="av">' + AI_SPARK_MI + '</span>' +
+      /* the chat-bubble mark the reference uses; the current chat's is filled */
+      '<span class="cb">' + AI_MI.chat + '</span>' +
       '<span class="nm">' + aiEsc(c.n) + '</span>' +
       '<span class="when">' + aiEsc(aiChatWhen(c.t)) + '</span>' +
       '<span class="acts">' +
@@ -9295,7 +9330,11 @@ function aiChatRenRow(id, el){
   if (!host || row.classList.contains('ren')) return;
   const cur = c.n, keep = host.className;
   row.classList.add('ren');
-  host.outerHTML = '<input class="nmin" maxlength="60" />';
+  /* the reference's rename field carries a ⊗ on its right that empties it */
+  host.outerHTML = '<span class="nmwrap"><input class="nmin" maxlength="60" />' +
+    '<i class="clr" title="Clear" onmousedown="event.preventDefault()" ' +
+    'onclick="event.stopPropagation();var i=this.previousSibling;i.value=\'\';i.focus()">' +
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></i></span>';
   const inp = row.querySelector('.nmin');
   inp.value = cur; inp.focus(); inp.select();
   const done = save => {
@@ -9828,17 +9867,22 @@ function aiChange(){
 }
 /* `k` is passed when the row belongs to a BEAT of the agentic flow rather than to a thread
    message: same control, different owner, so only the handlers change — never the markup. */
-/* ⚠️ `extra` is markup injected BEFORE the copy button (annotation, 19 Aug 2026 — Undo
-   moved out of the created-dashboard card's action row and into this one, ahead of ⧉).
-   It is optional, so every existing caller is unaffected. */
+/* ⚠️ `extra` is markup injected AFTER the copy button (annotation, 19 Aug 2026 — Undo
+   moved out of the created-dashboard card's action row into this one; it sat before ⧉
+   for a few hours and was then swapped to the end). It is optional, so every existing
+   caller is unaffected. */
 function aiFbHTML(i, fb, k, extra){
   const fn = (k === undefined) ? 'aiFeed(' + i + ',' : 'aiAgFb(' + i + ',' + k + ',';
   const cp = (k === undefined) ? 'aiCopy(this)' : 'aiAgCopy(this)';
   return '<div class="aifb">' +
     '<button class="' + (fb===1?'on':'') + '" title="Good answer" onclick="' + fn + '1)"><svg viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm2 0 4-7 .9.5c.7.4 1 1.2.8 1.9L14 9h5a1.6 1.6 0 0 1 1.6 1.9l-1.2 6.3A1.6 1.6 0 0 1 17.8 20H9V10Z"/></svg></button>' +
     '<button class="dn ' + (fb===-1?'on':'') + '" title="Bad answer" onclick="' + fn + '-1)"><svg viewBox="0 0 24 24"><path d="M17 14V4h3v10h-3Zm-2 0-4 7-.9-.5c-.7-.4-1-1.2-.8-1.9L10 15H5a1.6 1.6 0 0 1-1.6-1.9l1.2-6.3A1.6 1.6 0 0 1 6.2 4H15v10Z"/></svg></button>' +
-    (extra || '') +
-    '<button title="Copy" onclick="' + cp + '"><svg viewBox="0 0 24 24" class="ln"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>';
+    '<button title="Copy" onclick="' + cp + '"><svg viewBox="0 0 24 24" class="ln"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>' +
+    /* ⚠️ `extra` (Undo) comes AFTER copy now (annotation, 19 Aug 2026: "swap the copy &
+       Undo icon"). It was injected before it earlier the same day; the labelled Undo is the
+       widest thing in the row, and it reads better as the trailing action than as a wedge
+       between two identical-weight icons. */
+    (extra || '') + '</div>';
 }
 function aiCopyMe(btn){
   const w = btn.closest('.aiuw'), b = w && w.querySelector('.aiu');

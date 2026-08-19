@@ -299,13 +299,22 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   17 Aug 2026: *"remove the History button because you already set on CONVERSATIONS"*).
   The dropdown absorbed the job — `aiHistOpen()` (the in-body sheet) is **kept but
   unreferenced**, so it can be pointed back in one edit, the way Option 2 keeps `iFocus`.
-- **The dropdown lists only the RECENT chats** (`aiChatMenuHTML` / `aiChatListHTML` /
-  `aiChatDelRow` / `aiChatPeek` / `aiChatSummary`): `Conversations · recent`, the **five**
-  most recent (`AI_CHAT_RECENT`), each with a ✦ avatar, its name and **when it happened**
-  (elapsed for today, clock time for any other day), then a **`Show all N ›`** row wearing
-  the clock glyph the removed History button used to.
-  ⚠️ No date bands here on purpose: over five rows they would be more heading than list, and
-  the times already read Today from Yesterday.
+- **The dropdown is the ClickUp shape** (reference supplied 19 Aug 2026 — the AI chat's
+  name menu at `app.clickup.com`): a **`Search AI chats…`** box on top, rows **banded by
+  date** (`Today · Yesterday · Aug 16 · Jul 9`), a **speech-bubble mark** on each row
+  (`AI_MI.chat`, filled on the current chat), the name, **when it happened** on the right,
+  ✎ 🗑 on hover, then **`Show all N ›`**. `AI_CHAT_RECENT` went 5 → **8**; a search narrows
+  the list rather than the cap, so an older hit is reachable by typing.
+  ⚠️ **The rows are `<div role="button">`, not `<button>`**, because ✎ swaps the name for an
+  `<input>` in place (`aiChatRenRow`) and interactive content inside a button is invalid.
+  ⚠️ **That is why `.aihm .conv` carries the button rules explicitly** (`display:flex`,
+  padding, radius, hover). When the row first became a div it inherited none of
+  `.aihm button{…}` and rendered as a block — avatar, name, time and actions each on their
+  own line. The 19 Aug screenshot of that is the regression this note exists to prevent.
+  ⚠️ `aiChatList()` repaints the **list only**, so the search box keeps its focus and caret.
+  ⚠️ The in-row rename field is `.nmwrap` — input plus the reference's **⊗ clear** button.
+  The earlier note that argued against date bands ("over five rows they would be more
+  heading than list") is superseded by the request to match the reference.
   ⚠️ The Show all row hides itself when everything already fits, and `aiChatDelRow()`
   repaints the **whole menu** rather than just the list, because deleting can take the count
   under the threshold and the row has to go with it.
@@ -326,6 +335,9 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   cannot carry a summary per row, and scrolling a menu past the panel height reads as a bug.
   ⚠️ **Hovering a row swaps the timestamp for ✎ / 🗑**, it does not show both: the row is
   only ~230px wide and carrying both pushed long chat names into an ellipsis two words early.
+  ⚠️ **✎ renames the row IN PLACE and does not open the chat** (annotation, 19 Aug 2026).
+  It used to `aiHistGo()` then `aiRename()`, which switched you into a chat you had only
+  meant to retitle. If the renamed row IS the current chat, the header title follows.
   ⚠️ `aiChatDelRow()` is not `aiChatDelCur()` — a row may be any chat, so it only resets the
   thread when the row you deleted is the one you are in.
 - **`AI_CHATS` is seeded with nine dashboard/widget chats** whose offsets are **relative to
