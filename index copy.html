@@ -1711,8 +1711,11 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* ⚠️ ONE LINE. The agentic flow feeds this short beat names, but the thinking trail feeds
    it a per-request headline ("Working out what needs attention"), which wrapped to two
    lines and pushed the clock and Skip down with it. */
+/* ⚠️ the shimmer tops out at `--text-dim`, NOT `--white` (annotation, 19 Aug 2026). The
+   answer below is `--text` / `--white`; a label that brightens past it makes the wait louder
+   than the result. Same reason the peak used to be white: it read as the main event. */
 .aildl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  background-image:linear-gradient(90deg,var(--muted) 35%,var(--white) 50%,var(--muted) 65%);
+  background-image:linear-gradient(90deg,var(--muted) 35%,var(--text-dim) 50%,var(--muted) 65%);
   background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
   color:transparent;font-size:13px;font-weight:500;
   animation:aishim 1.4s linear infinite}
@@ -1724,7 +1727,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 @media (prefers-reduced-motion:reduce){
   .aild i{animation:none}
   .aildl{animation:none;background:none;-webkit-background-clip:border-box;
-    background-clip:border-box;color:var(--ai-2)}
+    background-clip:border-box;color:var(--text-dim)}
 }
 /* ── the narration line, inside the Reasoning disclosure ───────────────────────────────────
    (request, 18 Aug 2026.) Each `say` beat now also closes its own group inside the panel,
@@ -1746,29 +1749,18 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ `.bx` is a MODIFIER, not a change to `.aitk.run`. The thinking trail uses the same
    `.aitk.run` and puts its task rows inside — boxing that too would restyle a surface
    nobody asked about. */
-/* ⚠️ ONE box across both states (request, 18 Aug 2026: "this result will be show in this
-   box and it will be expand and collapse"). The card does not disappear when the run ends —
-   it stays, quietens down, and the trail expands and collapses INSIDE it. */
-/* ⚠️ The card sits ON `--panel`, so its base is `--card` — one step of lift, not a tint.
-   `--panel-2` was a flat grey slab in light theme and read heavier than the answer below. */
-.aitk.bx{padding:9px 12px 11px;border-radius:10px;
-  border:1px solid var(--border-soft);background:var(--card)}
-/* while working it takes an accent WASH, not a fill: a gradient that fades from a hint of
-   `--ai` at the top to almost nothing at the bottom, over the same card base. A flat
-   `--ai-soft` was a solid lavender block on white — loud for a state that lasts seconds
-   (annotation, 18 Aug 2026: "improve the box background colour"). */
-.aitk.run.bx{
-  background:linear-gradient(180deg,
-    color-mix(in srgb,var(--ai) 13%,transparent) 0%,
-    color-mix(in srgb,var(--ai)  4%,transparent) 100%), var(--card);
-  border-color:color-mix(in srgb,var(--ai) 34%,transparent)}
-/* white takes a tint far more strongly than the dark canvas does, so light gets its own
-   (weaker) mix rather than sharing one value that has to work for both */
-html[data-theme="light"] .aitk.run.bx{
-  background:linear-gradient(180deg,
-    color-mix(in srgb,var(--ai) 8%,transparent) 0%,
-    color-mix(in srgb,var(--ai) 2%,transparent) 100%), var(--card);
-  border-color:color-mix(in srgb,var(--ai) 24%,transparent)}
+/* ⚠️ NO BOX (annotation, 19 Aug 2026: "remove the box — it was more highlighted than the
+   result, make it less highlighted than the result text"). The card had a border and, while
+   working, an accent wash; against a plain answer that made the THINKING the loudest thing
+   on screen, at exactly the moment there is something else to read.
+   ⚠️ This reverses the 18 Aug requests that put the box there ("this result will be shown
+   in this box", "the outside text will be shown inside of box"). What those asked for is
+   kept — the loader row, its narration line and Skip are still ONE block that survives the
+   run and expands in place — it just has no border or fill any more. Don't restore the
+   border without re-reading all three.
+   `.bx` therefore only carries LAYOUT now: the padding that keeps the group together. */
+.aitk.bx{padding:2px 0 3px;border-radius:0;border:0;background:none}
+.aitk.run.bx{background:none;border:0}
 /* ⚠️ FOUR classes, not three. `.aitk.run .aitkh` further down this stylesheet still draws
    the trail's own violet pill, and at equal specificity the LATER rule wins — so the header
    was painting a second bordered box inside this one (annotation, 18 Aug 2026: "remove

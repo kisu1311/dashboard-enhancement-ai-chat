@@ -667,11 +667,17 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   box"*). The overrides are `.aitk.bx.run .aitkh` / `.aitk.bx.cl .aitkh` (**four** classes),
   which outrank it without reordering the sheet and leave the unboxed trail's pill intact.
   There is a probe assertion that the header has no border and no background inside `.bx`.
-- **The box survives the run** (request, 18 Aug 2026: *"this result will be show in this box
-  and it will be expand and collapse"*). `.aitk.bx` is now on both states: it glows
-  (`--ai-soft` / `--ai-line`) while working and settles to a quiet `--panel-2` card when
-  done, with the whole trail expanding and collapsing **inside** it. The card no longer
-  disappears and hand over to a separate disclosure.
+- ⚠️ **THE BOX IS GONE** (annotation, 19 Aug 2026: *"remove the box — it was more
+  highlighted than the result, make it less highlighted than the result text"*). It had a
+  border and, while working, an accent wash; against a plain answer that made the
+  **thinking** the loudest thing on screen at exactly the moment there is something else to
+  read. `.aitk.bx` now carries **layout only** — the padding that keeps the loader row, its
+  narration line and Skip together as one block that survives the run and expands in place.
+  Everything the 18 Aug requests asked for is kept; only the border and fill went.
+  **Don't restore them without re-reading all three requests.**
+  ⚠️ The shimmer peak went `--white` → **`--text-dim`** for the same reason: the answer is
+  `--text`/`--white`, and a label that brightens past it makes the wait louder than the
+  result. Measured after the change — thinking luminance **111** vs answer **247**.
 - ⚠️ **The finished trail is COLLAPSED by default** — `open:{}` at all three agent creation
   sites. It briefly defaulted *open* (18 Aug 2026), because at that point the finished trail
   was hidden with nothing on screen to say it existed. Once the card started surviving the
