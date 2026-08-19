@@ -21,6 +21,11 @@
   --rail-w:64px; --rail-w-open:170px;   /* the flyout anchors off these, not off the animating box */
   --ai:#8b5cf6; --ai-2:#a78bfa; --ai-3:#c4b5fd;
   --ai-soft:rgba(139,92,246,.13); --ai-line:rgba(139,92,246,.34);
+  /* ⚠️ ONE radius for every button and chip in the AI panel (annotation, 19 Aug 2026:
+     "same border radius everywhere"). `.aifu` was a 999px pill while `.aialt` beside it
+     was 8px and `.aiagb` was 7px, so a card's footer and the follow-ups under it were
+     three different shapes. Change it HERE, not per rule. */
+  --ai-r:999px;
   /* the ported ac* chat panel names the AI accent --oa*, and needs --sel / --text-dim2 */
   --oa:#8b5cf6; --oa-2:#a78bfa; --oa-soft:rgba(139,92,246,.13); --oa-line:rgba(139,92,246,.34);
   --sel:#12233a; --text-dim2:#6a7fa0;
@@ -1286,6 +1291,10 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aifb button{width:26px;height:26px;border:0;border-radius:6px;background:transparent;cursor:pointer;
   display:grid;place-items:center;color:var(--muted)}
 .aifb button:hover{background:var(--chip);color:var(--text)}
+/* a labelled action in this row — it stops being a 26px square and becomes a small pill,
+   because the word is the point (see the Undo note in aiDashHTML) */
+.aifb button.wlbl{width:auto;gap:6px;padding:0 10px;border-radius:var(--ai-r);
+  display:inline-flex;align-items:center;font:inherit;font-size:11.8px}
 /* feedback holds its state instead of firing a toast and forgetting */
 .aifb button.on{background:var(--ai-soft);color:var(--ai-2)}
 .aifb button.dn.on{background:rgba(242,80,75,.14);color:var(--red)}
@@ -1456,8 +1465,9 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 /* the create-dashboard plan's widget suggestions, which carry no heading — the
    wrapper holds the spacing `.aiful` used to give them */
 .aidfu{margin:14px 0 1px}
+/* ⚠️ the pill radius is the token now — see `--ai-r` */
 .aifu{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:8px 14px;
-  margin:0 6px 7px 0;border:1px solid var(--border);border-radius:999px;background:transparent;
+  margin:0 6px 7px 0;border:1px solid var(--border);border-radius:var(--ai-r);background:transparent;
   color:var(--text-dim);font:inherit;font-size:12.7px;line-height:1.35;cursor:pointer;
   text-align:left;transition:border-color .14s,background .14s,color .14s}
 .aifu:hover{border-color:var(--ai-line);background:var(--ai-soft);color:var(--text)}
@@ -1540,7 +1550,7 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aicqsk{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;
   cursor:pointer;padding:6px 4px}
 .aicqsk:hover{color:var(--text)}
-.aicqx{height:30px;padding:0 16px;border:0;border-radius:999px;background:var(--ai);
+.aicqx{height:30px;padding:0 16px;border:0;border-radius:var(--ai-r);background:var(--ai);
   color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aicqx:hover{background:#9d78f8}
 .aicsub{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:11px}
@@ -1566,7 +1576,7 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aitbl div:last-child{border-bottom:0}
 .aitbl b{font-family:'JetBrains Mono',monospace;color:var(--white)}
 .aichips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.aich{padding:4px 11px;border-radius:999px;border:1px solid var(--border);background:transparent;
+.aich{padding:4px 11px;border-radius:var(--ai-r);border:1px solid var(--border);background:transparent;
   color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer}
 .aich:hover{border-color:var(--ai-line);color:var(--text)}
 .aich.on{background:var(--ai-soft);border-color:var(--ai-line);color:var(--ai-2);font-weight:600}
@@ -1582,17 +1592,17 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   font-size:11.5px;color:var(--text-dim)}
 .aiq b{color:var(--text);font-weight:600}
 .aiacts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.aiadd{padding:8px 14px;border:0;border-radius:8px;background:var(--ai);color:#fff;
+.aiadd{padding:8px 14px;border:0;border-radius:var(--ai-r);background:var(--ai);color:#fff;
   font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aiadd:hover{background:var(--ai-2)}
-.aialt{padding:8px 13px;border:1px solid var(--border);border-radius:8px;background:transparent;
+.aialt{padding:8px 13px;border:1px solid var(--border);border-radius:var(--ai-r);background:transparent;
   color:var(--text-dim);font:inherit;font-size:12.5px;cursor:pointer}
 .aialt:hover{border-color:var(--ai-line);color:var(--text)}
 /* ── create-dashboard plan card ─────────────────────────────────────────────────────
    ⚠️ .aiapv is used by BOTH "Approve & create" and "Edit" and must stay one rule. The
    AI Designer's Guide is explicit that an approval gate whose accept button is prettier
    than its edit button gets clicked without being read. Do not give Approve a fill. */
-.aiapv{padding:8px 14px;border:1px solid var(--ai-line);border-radius:8px;background:var(--ai-soft);
+.aiapv{padding:8px 14px;border:1px solid var(--ai-line);border-radius:var(--ai-r);background:var(--ai-soft);
   color:var(--text);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aiapv:hover{border-color:var(--ai);background:var(--ai-soft)}
 .aidsteps{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:5px}
@@ -1922,7 +1932,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiaglg i{width:7px;height:7px;border-radius:2px;flex:0 0 7px}
 .aiaglg b{font-weight:500;color:var(--muted)}
 .aiagf{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--border-soft)}
-.aiagb{flex:1;height:32px;border-radius:7px;border:1px solid var(--border);background:transparent;
+.aiagb{flex:1;height:32px;border-radius:var(--ai-r);border:1px solid var(--border);background:transparent;
   color:var(--text);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .aiagb:hover{border-color:var(--ai-line);color:var(--white)}
@@ -2101,15 +2111,16 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aisend svg{width:15px;height:15px;fill:currentColor}
 /* inside the control row now — a hairline pill so it reads as a setting on the composer
    rather than a stray line of body text below it */
-.aiauto{display:inline-flex;align-items:center;gap:7px;margin:0;padding:3px 9px 3px 4px;
-  border:1px solid var(--border);border-radius:999px;font-size:11.5px;
-  color:var(--text-dim);cursor:pointer;user-select:none;transition:border-color .14s,color .14s}
-.aiauto:hover{border-color:var(--ai-line);color:var(--text)}
-.aiauto.on{border-color:var(--ai-line);color:var(--text)}
-.aisw{width:26px;height:15px;border-radius:8px;background:var(--chip);position:relative;transition:background .15s;flex:0 0 26px}
-.aisw::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--white);transition:transform .15s}
-.aiauto.on .aisw{background:var(--ai)}
-.aiauto.on .aisw::after{transform:translateX(11px)}
+/* ⚠️ a WORD, not a switch (annotation + reference, 19 Aug 2026). Off it is quiet text;
+   on it takes the AI accent and a soft fill, which is the whole state — a knob sliding in a
+   track was the heaviest element in the control row for a setting that is off by default.
+   ⚠️ `.aisw` (the knob) is gone with it; nothing else used it. */
+.aiauto{display:inline-flex;align-items:center;margin:0;padding:4px 10px;
+  border:0;border-radius:var(--ai-r);background:transparent;
+  font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer;user-select:none;
+  transition:background .14s,color .14s}
+.aiauto:hover{background:var(--hover-side);color:var(--text-dim)}
+.aiauto.on{background:var(--ai-soft);color:var(--ai-2);font-weight:600}
 
 /* widget Share drawer */
 .wsh-w{display:flex;gap:10px;align-items:center;padding:9px 10px;background:var(--panel-2);border:1px solid var(--border);border-radius:6px}
@@ -8199,9 +8210,13 @@ function aiDashHTML(d, i){
       '</div>' +
       aiFbHTML(i, 0,
         undefined,
-        '<button title="Undo — delete “' + aiEsc(d.name).replace(/"/g,'&quot;') + '”" ' +
+        /* ⚠️ LABELLED (annotation + reference, 19 Aug 2026): the reference shows `↩ Undo`,
+           not a bare arrow. Undo is the one destructive thing in this row and the only one
+           a glyph cannot carry on its own — 👍 👎 ⧉ are universal, an arrow is not. */
+        '<button class="wlbl" title="Undo — delete “' + aiEsc(d.name).replace(/"/g,'&quot;') + '”" ' +
           'onclick="aiDashUndo()"><svg viewBox="0 0 24 24" class="ln">' +
-          '<path d="M4 9h11a5 5 0 0 1 0 10h-6"/><path d="M8 5L4 9l4 4"/></svg></button>') +
+          '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>' +
+          '<span>Undo</span></button>') +
       /* what to put on the board that was just made (request, 18 Aug 2026). The board
          EXISTS now, so unlike the plan-card version these SEND — see aiDashFuGo.
          ⚠️ ONLY WHILE THIS CARD IS THE END OF THE THREAD (annotation, 18 Aug 2026: "show
@@ -9519,8 +9534,10 @@ const AI_CTA = [
             'Give me a summary of this dashboard'],
   ['line',  'Build a line chart of memory usage for the last 24h',
             'Build a line chart of memory usage for the last 24h'],
-  ['wand',  'Make a dashboard with CPU, memory and disk widgets',
-            'Make a dashboard with CPU, memory and disk widgets'],
+  /* ⚠️ "Make a dashboard with CPU, memory and disk widgets" was HERE and was removed
+     (annotation, 19 Aug 2026). `aiRoute` still understands the phrase — it is the LIST form
+     that routes to `build` rather than `newdash`, which is why the router's comment still
+     names it — it simply is not offered as a starter any more. */
   ['board', 'Create a new dashboard',
             'Create a dashboard called Network health'],
   ['spark', 'Generate a widget',
@@ -11333,7 +11350,11 @@ function aiKey(e){
           accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
         <!-- Auto-approve belongs with the send button: it decides what happens when you
              press it, so it reads next to the thing it changes. -->
-        <span class="aiauto" id="aiAuto" onclick="aiToggleAuto()" title="Run safe actions without asking each time"><span class="aisw"></span>Auto-approve</span>
+        <!-- ⚠️ a BUTTON, not a switch (annotation + reference, 19 Aug 2026 — Notion shows
+             the mode as a plain word beside send). The toggle pill with its knob was the
+             heaviest thing in the control row for a setting that is off by default. -->
+        <button class="aiauto" id="aiAuto" onclick="aiToggleAuto()"
+          data-tip="Run safe actions without asking each time"><span class="lbl">Auto-approve</span></button>
         <!-- Dictation (annotation, 15 Aug 2026). Speaks into the composer; it never sends
              for you, so what was heard can be read and corrected first. -->
         <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3M8.5 21h7"/></svg></button>
