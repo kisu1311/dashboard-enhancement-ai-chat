@@ -93,8 +93,12 @@ body.fs .exitfs{display:inline-flex}
   display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease,transform .22s ease;border-right:1px solid var(--border-soft)}
 .sidebar.open{width:var(--rail-w-open);box-shadow:var(--shadow)}
 .strigger{height:53px;flex:0 0 53px;display:flex;align-items:center;gap:9px;padding:0 15px;cursor:pointer;white-space:nowrap}
-.strigger img{width:33px;height:33px;flex:0 0 33px}
-html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
+/* ⚠️ the supplied Light.svg / Dark.svg mark. `--white` already flips per theme, so one
+   SVG with `currentColor` covers both files — see AI_LOGO. */
+.brandmark{display:inline-grid;place-items:center;color:var(--white)}
+.brandmark svg{display:block;width:100%;height:100%}
+.strigger .brandmark{width:30px;height:30px;flex:0 0 30px}
+#npLogo{width:26px;height:26px;flex:0 0 26px}
 .strigger .brand{font-size:14px;font-weight:600;color:var(--text);opacity:0;transition:opacity .15s}
 .sidebar.open .strigger .brand{opacity:1}
 .smenu{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 0 8px;position:relative;z-index:1;scrollbar-width:thin}
@@ -1837,6 +1841,15 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitk.bx.run .aitkh,.aitk.bx.cl .aitkh{padding:0;margin:0;background:none;border:0;
   border-radius:0;min-height:24px}
 .aitk.bx.cl .aitkh{cursor:pointer;gap:7px}
+/* ⚠️ a PILL, not a full-width row (reference, 19 Aug 2026). Collapsed, the trail is one
+   chip that says what kinds of work happened; it hugs its text so the thread reads as the
+   answer with a small marker above it, rather than as two stacked bars. */
+.aitk.bx.cl .aitkh.pill{display:inline-flex;width:auto;align-items:center;gap:8px;
+  padding:5px 11px;border-radius:var(--ai-r);background:var(--panel-2);
+  border:1px solid var(--border-soft)}
+.aitk.bx.cl .aitkh.pill:hover{border-color:var(--border);color:var(--text)}
+.aitk.bx.cl .aitkh.pill .aitkt{flex:0 1 auto;font-size:12px;font-weight:500;color:var(--text-dim)}
+.aitk.bx.cl .aitkh.pill .aitkc{margin-left:0;flex:0 0 9px}
 .aitk.cl.bx:hover{border-color:var(--border)}
 .aitk.bx .aiagsay{margin:9px 0 0;font-size:12.6px;line-height:1.55;color:var(--text-dim)}
 /* the trail is already inside the card's padding — it only needs the connector's own inset */
@@ -1875,6 +1888,11 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitkc svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2.4;
   stroke-linecap:round;stroke-linejoin:round}
 .aitk.op .aitkc{transform:rotate(90deg)}
+/* ⚠️ the PILL's chevron points DOWN collapsed and UP expanded (reference, 19 Aug 2026) —
+   `›` reads as "go somewhere", `⌄` reads as "there is more below", which is what this is.
+   The unboxed trail keeps the 90° rotate above; only the pill re-bases it. */
+.aitk.bx.cl .aitkh.pill .aitkc{transform:rotate(90deg)}
+.aitk.bx.cl.op .aitkh.pill .aitkc{transform:rotate(-90deg)}
 .aitk.cl:hover .aitkt,.aitk.cl:hover .aitkc{color:var(--text-dim)}
 /* the steps */
 .aitkl{margin:8px 0 0 13px;padding:0 0 0 15px;border-left:1px solid var(--border-soft)}
@@ -3720,7 +3738,7 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 <!-- ============ Sidebar ============ -->
 <aside class="sidebar grouped" id="sidebar" onmouseenter="sbHover(1)" onmouseleave="sbHover(0);mfLater()">
   <div class="strigger" onclick="toggleSidebar()" title="Expand / collapse">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAdVBMVEUAAADvcGD/cHD////3d2j////////////zc2T////////////0dmb////////zdWX////////zdGT////////0dmT////////0dWX////////zdWT////zdWT////zdWT////0dmX////zdWT////zdWT///++yfDhAAAAJXRSTlMAEBAQICAwP0BAT1BfX2Bvb3B/f4CPj5Cfn6Cvr7+/z8/f3+/vnUSo/gAAAdFJREFUSMe1l2tXwyAMhpkMu2utVqc4RFYb/v9PtG5uI1zDPOZbDzwn4SUXyljU+LqXZrDb48fT4o6RjT9re7ITDAAfmzkJXZ5JF55sv6hCMQxwyOMCoT4M8JYJ/nG0eRgOmxT7am0JBniJa2wsBYbPSOhisDQYDnMSG4fhMPNgY+kwfJa0ysFYtTYCjnrXiQQMm9yBR9VclyPw11U06bM77sYVgWF/yWcPHRosSAyGc557QSvOCPBH1LEM8gcyrhViNSPCR9cCn1dQYZgFd7xiZPhhWtL5A6fhKW6OHIsKeIp7WVArAy9YHxYCFX7AFyVYnbl6mUoW5aaqhVEx/QXu/xm+bx2rDXvntptawdybHVDPHcqwQfmI+hcvsah+Fevcz64Et1hfQmEk8tE2XkkuK6L+OaSucC39vR3ddRsMMl5sgImpJAIRrOGkOz5nVLHp/9o73tdE9J98C8qTRacGXaR5L/0p3CRHrPScCxXsuIY0Bu8Ctb0Ix1sdLLuXso49SIzqJ5Mm/ViJ1DjBdukiL5ohPB5TNnB2Mx3LYE6MPJG//Q1aOSU3lNAx06iEzLNaVP1lILQpduZG3owevYfJrHtOH3+86ZU+yjcY2a0S5Dc67Qu3xZ6tHwAAAABJRU5ErkJggg==" alt="ObserveOps" />
+    <span class="brandmark" aria-label="ObserveOps"><!--LOGO--></span>
     <span class="brand">ObserveOps</span>
   </div>
   <div class="stop">
@@ -6802,7 +6820,7 @@ document.addEventListener('keydown', e=>{
 <div class="pop" id="managePop"></div>
 <div id="nocPlay">
   <div class="nphead">
-    <img id="npLogo" alt="" /><span style="font-weight:600">ObserveOps</span>
+    <span id="npLogo" class="brandmark"></span><span style="font-weight:600">ObserveOps</span>
     <div class="npcenter">
       <button class="nparrow" onclick="nocNav(-1)" title="Previous dashboard">‹</button>
       <span id="npName">—</span>
@@ -7360,7 +7378,8 @@ let nocState = null, nocTimer = null;
 function openNocPlay(name, count, interval){
   const members = Object.keys(DASH_INDEX).slice(0, Math.max(2, Math.min(count, 8)));
   nocState = { name:name, members:members, idx:0, remain:interval, interval:interval, paused:false };
-  document.getElementById('npLogo').src = document.querySelector('.strigger img').src;
+  /* ⚠️ the mark is INLINE SVG now, not an <img> — there is no `.src` to copy. Both spots
+     carry `.brandmark` and are filled by `aiLogoPaint()` at load. */
   document.getElementById('nocPlay').classList.add('on');
   nocRender();
   clearInterval(nocTimer);
@@ -7691,11 +7710,15 @@ fitCanvas();
 /* ================= ObserveOps AI — light chat panel =================
    One entry point (the toolbar button), one panel. Canned + deterministic: the point is
    that the states are reachable — empty, thinking, answer — not that it calls out. */
-/* the product's own mark — the same base64 the sidebar trigger uses, so there is no
-   second asset to keep in step. Used where the panel speaks AS the product (the
-   Dashboard-summary card), not where it speaks as the assistant (everything else,
-   which keeps AI_SPARK). */
-const AI_LOGO = '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAdVBMVEUAAADvcGD/cHD////3d2j////////////zc2T////////////0dmb////////zdWX////////zdGT////////0dmT////////0dWX////////zdWT////zdWT////zdWT////0dmX////zdWT////zdWT///++yfDhAAAAJXRSTlMAEBAQICAwP0BAT1BfX2Bvb3B/f4CPj5Cfn6Cvr7+/z8/f3+/vnUSo/gAAAdFJREFUSMe1l2tXwyAMhpkMu2utVqc4RFYb/v9PtG5uI1zDPOZbDzwn4SUXyljU+LqXZrDb48fT4o6RjT9re7ITDAAfmzkJXZ5JF55sv6hCMQxwyOMCoT4M8JYJ/nG0eRgOmxT7am0JBniJa2wsBYbPSOhisDQYDnMSG4fhMPNgY+kwfJa0ysFYtTYCjnrXiQQMm9yBR9VclyPw11U06bM77sYVgWF/yWcPHRosSAyGc557QSvOCPBH1LEM8gcyrhViNSPCR9cCn1dQYZgFd7xiZPhhWtL5A6fhKW6OHIsKeIp7WVArAy9YHxYCFX7AFyVYnbl6mUoW5aaqhVEx/QXu/xm+bx2rDXvntptawdybHVDPHcqwQfmI+hcvsah+Fevcz64Et1hfQmEk8tE2XkkuK6L+OaSucC39vR3ddRsMMl5sgImpJAIRrOGkOz5nVLHp/9o73tdE9J98C8qTRacGXaR5L/0p3CRHrPScCxXsuIY0Bu8Ctb0Ix1sdLLuXso49SIzqJ5Mm/ViJ1DjBdukiL5ohPB5TNnB2Mx3LYE6MPJG//Q1aOSU3lNAx06iEzLNaVP1lILQpduZG3owevYfJrHtOH3+86ZU+yjcY2a0S5Dc67Qu3xZ6tHwAAAABJRU5ErkJggg==" alt="" />';
+/* ── the product mark, supplied as Light.svg / Dark.svg (19 Aug 2026) ────────────────
+   ⚠️ ONE svg, not two. The two files differ only in the second path's fill — `#07101F`
+   for light, `white` for dark — so that path is `currentColor` here and `.mdlogo` gets
+   the colour from `--white`, which already flips per theme. Shipping both files would
+   have been two assets to keep in step for one shape.
+   ⚠️ The `<clipPath>` in the originals is DROPPED: it is a full-viewBox rect, so it clips
+   nothing, and its `id` would collide the moment the logo appeared twice on a page —
+   the same trap `wArt()` exists to avoid for the widget artwork. */
+const AI_LOGO = '<svg class="mdlogo" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.9922 9.99629V0.167969C19.0183 1.00752 22.981 4.97021 23.8205 9.99629H13.9922Z" fill="#F37564"/><path d="M23.9888 12.2574C23.8545 18.7612 18.5373 24 12 24C5.46269 24 0 18.6269 0 12C0 11.3172 0.0559702 10.6455 0.16791 9.99624C1.10821 4.41045 5.91045 0.123134 11.7426 0V4.95895C8.68656 5.0709 6.12314 7.15298 5.29478 9.98504C5.10448 10.6119 5.00373 11.2836 5.00373 11.9888C5.00373 15.8731 8.13808 19.0186 12 19.0186C12.694 19.0186 13.3657 18.9179 14.0038 18.7276C16.8134 17.8881 18.8843 15.3134 18.9962 12.2462H24L23.9888 12.2574Z" fill="currentColor"/></svg>';
 const AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M12 2l1.7 4.8c.3.9 1 1.6 1.9 1.9L20.4 10l-4.8 1.7c-.9.3-1.6 1-1.9 1.9L12 18.4l-1.7-4.8c-.3-.9-1-1.6-1.9-1.9L3.6 10l4.8-1.7c.9-.3 1.6-1 1.9-1.9L12 2Z"/></svg>';
 /* ⚠️ These were four identical full-width rows with a chevron — Datadog Bits' exact empty
    state — floating in a mostly blank panel, and their answers named things that were not on
@@ -9023,6 +9046,14 @@ function aiPendPaint(){
         '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Accept</button>' +
     '</span>';
 }
+/* every `.brandmark` gets the product SVG once, at load — one definition, no duplicated
+   markup, and nothing to keep in step when the artwork changes */
+/* ⚠️ run at the END of this script block, not from `init()` — `init()` lives in an earlier
+   block and `AI_LOGO` is defined here, so calling it from there would run before the
+   constant exists. */
+function aiLogoPaint(){
+  document.querySelectorAll('.brandmark').forEach(el => { if (!el.firstElementChild) el.innerHTML = AI_LOGO; });
+}
 function aiNewBtnPaint(){
   const b = document.getElementById('aiNewBtn'); if (!b) return;
   b.classList.toggle('hide', !aiThread.length);
@@ -10068,15 +10099,42 @@ function aiTkHTML(m, i){
         '<button class="aitksk" title="Show the answer now" onclick="aiTkSkip()">Skip</button></div>' +
       '<div class="aitkl tr">' + rows + '</div></div>';
   }
+  /* ⚠️ the collapsed header is a PILL carrying a SUMMARY OF THE KINDS of work, not the
+     answer's status line and a step count (reference supplied 19 Aug 2026:
+     "Thought 2x, Searched, Dashboards"). See `aiTkSummary`. */
   return '<div class="aitk bx cl' + (m.open ? ' op' : '') + '">' +
-    '<button class="aitkh" aria-expanded="' + (m.open ? 'true' : 'false') +
+    '<button class="aitkh pill" aria-expanded="' + (m.open ? 'true' : 'false') +
       '" title="' + (m.open ? 'Hide' : 'Show') + ' how this was worked out" onclick="aiTkTog(' + i + ')">' +
-      '<span class="aitkm">' + AI_SPARK + '</span>' +
-      '<span class="aitkt">' + aiEsc(m.done) + '</span>' +
-      '<span class="aitkn">' + m.st.length + ' steps' +
-        (m.ms ? ' · ' + (m.ms / 1000).toFixed(1) + 's' : '') + '</span>' +
+      '<span class="aitkt">' + aiEsc(aiTkSummary(m)) + '</span>' +
       '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>' +
     '</button>' + (m.open ? '<div class="aitkl tr">' + rows + '</div>' : '') + '</div>';
+}
+/* ── the collapsed summary: what KINDS of work happened, not how many steps ──────────────
+   (reference, 19 Aug 2026 — "Thought 2x, Searched, Dashboards".) A step's first word is
+   what it did, so the verbs are read off the steps themselves and de-duplicated; the count
+   leads as `Thought Nx`.
+   ⚠️ It cannot claim a kind the trail did not take — the verbs come from `m.st`, the same
+   array the expanded rows render, so the pill and the list can never disagree.
+   ⚠️ The reference also interleaves muted `thought` rows between the steps. Those are its
+   placeholder for hidden model reasoning, which this prototype does not have — inventing
+   them would be inventing work. The pill is the part that carries information. */
+const AI_TK_VERB = { reading:'Read', read:'Read', listing:'Listed', listed:'Listed',
+  checking:'Checked', checked:'Checked', totalling:'Totalled', fetched:'Fetched',
+  fetching:'Fetched', searching:'Searched', searched:'Searched', ranking:'Ranked',
+  ranked:'Ranked', composing:'Composed', composed:'Composed', comparing:'Compared',
+  diffing:'Diffed', grouped:'Grouped', grouping:'Grouped', noted:'Noted', looked:'Looked',
+  planning:'Planned', planned:'Planned', designing:'Designed', converted:'Converted' };
+function aiTkSummary(m){
+  const kinds = [];
+  (m.st || []).forEach(raw => {
+    const st = aiTrStep(raw);
+    const w = String(st.s || '').trim().split(/\s+/)[0].toLowerCase();
+    const k = AI_TK_VERB[w];
+    if (k && kinds.indexOf(k) < 0) kinds.push(k);
+  });
+  const n = (m.st || []).length;
+  /* two kinds is enough for a pill — a third pushes it past the panel on a narrow layout */
+  return 'Thought ' + n + 'x' + (kinds.length ? ', ' + kinds.slice(0, 2).join(', ') : '');
 }
 
 /* ── agentic widget build ──────────────────────────────────────────────────────────────
@@ -10496,6 +10554,36 @@ function aiAgTail(a){
     aiAgT.push(setTimeout(() => { a.n = k + 1; if (a.n >= a.bs.length) a.state = 'done'; aiRender(); }, t));
   }
 }
+/* ── Undo, wherever an action can be undone (annotation, 19 Aug 2026) ───────────────────
+   The created-dashboard card had one; a widget that was PLACED or SAVED did not, even
+   though both are reversible. It shows up in the same feedback row, before ⧉, and reverses
+   whichever of the two actually happened.
+   ⚠️ Placing goes through the host's `awAdd()`, which snapshots via `histDo()` — so undoing
+   a placement is `histUndo()`, the board's own undo, not a second implementation.
+   ⚠️ Saving is a `W_USER` push, which the canvas history knows nothing about, so that half
+   is reversed here by name.
+   ⚠️ It reports what it actually reversed. Undo on a widget that was saved AND placed
+   removes it from both, and says so — silently doing one of the two would be worse than
+   not offering it. */
+function aiAgUndoable(a){ return !!(a && (a.placed || a.saved)); }
+function aiAgUndo(i){
+  const m = aiThread[i]; if (!m || !m.a) return;
+  const a = m.a, did = [];
+  if (a.placed){
+    if (typeof histUndo === 'function') histUndo();
+    did.push('taken off “' + a.placed + '”');
+    a.placed = null;
+  }
+  if (a.saved && typeof W_USER !== 'undefined'){
+    const k = W_USER.findIndex(x => x[0] === a.saved);
+    if (k > -1) W_USER.splice(k, 1);
+    did.push('removed from your widget library');
+    a.saved = null;
+  }
+  if (!did.length){ toast('Nothing left to undo here'); return; }
+  aiRender();
+  toast('Undone — ' + did.join(' and '));
+}
 function aiAgSave(i){
   const m = aiThread[i]; if (!m || m.a.state !== 'card') return;
   const a = m.a;
@@ -10590,6 +10678,17 @@ function aiLdStart(t0){
 }
 function aiLdStop(){ if (aiLdT){ clearInterval(aiLdT); aiLdT = null; } }
 const AI_AG_SPIN = '<span class="aitksp"></span>';
+/* the agentic flow's own collapsed summary — same shape as the thinking trail's, built
+   from the tool beats it actually ran */
+function aiAgSummary(a, pre, steps){
+  const kinds = [];
+  (pre || []).forEach(b => {
+    const w = String(b.t || '').trim().split(/\s+/)[0].toLowerCase();
+    const k = AI_TK_VERB[w];
+    if (k && kinds.indexOf(k) < 0) kinds.push(k);
+  });
+  return 'Thought ' + steps + 'x' + (kinds.length ? ', ' + kinds.slice(0, 2).join(', ') : '');
+}
 function aiAgHTML(a, i){
   /* ⚠️ a summary agent has no counters — this must stay guarded, not hoisted */
   const sub = a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '';
@@ -10634,9 +10733,10 @@ function aiAgHTML(a, i){
       /* the finished header carries the same per-request headline, for the same reason:
          a thread of five answers that all say "Reasoning" tells you nothing about which
          is which. The step count stays beside it. */
-      : '<span class="aitkm">' + AI_SPARK + '</span>' +
-        '<span class="aitkt">' + aiEsc(a.label || 'Reasoning') + '</span>' +
-        '<span class="aitkn">' + steps + ' step' + (steps > 1 ? 's' : '') + '</span>';
+      /* ⚠️ the same PILL the thinking trail collapses to (19 Aug 2026) — the two are one
+         feature and had drifted into two headers. The kinds come from the tool beats' own
+         titles, so it cannot claim work the flow did not do. */
+      : '<span class="aitkt">' + aiEsc(aiAgSummary(a, pre, steps)) + '</span>';
     /* ⚠️ The trail DEFAULTS TO COLLAPSED (request, 18 Aug 2026). It briefly defaulted open,
        because before the card persisted the finished trail was hidden with nothing to say it
        was there. Now the box stays put with a labelled header, a step count and a chevron —
@@ -10656,7 +10756,9 @@ function aiAgHTML(a, i){
         ? '<div class="aitkh">' + head +
             '<button class="aitksk" title="Show the result now" onclick="aiAgSkip(' + i + ')">Skip</button>' +
           '</div>' + (liveSay ? '<p class="aiagsay">' + aiEsc(liveSay) + '</p>' : '')
-        : '<button class="aitkh" onclick="aiAgTog(' + i + ',\'think\')" aria-expanded="' + op + '">' + head +
+        /* ⚠️ `pill` — the same collapsed chip the thinking trail uses (19 Aug 2026). Without
+           it this header stayed a full-width row and the two surfaces looked unrelated. */
+        : '<button class="aitkh pill" onclick="aiAgTog(' + i + ',\'think\')" aria-expanded="' + op + '">' + head +
           '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></button>') +
       /* ⚠️ the narration line that FOLLOWS each tool group is rendered inside the group
          (request, 18 Aug 2026). The beat order is tool → say → tool → say, so a say closes
@@ -10802,7 +10904,13 @@ function aiAgHTML(a, i){
             JSON.stringify(nm).replace(/"/g, '&quot;') + ')">view the widget on the dashboard</a>. '
           : 'Find it under <b>Add New Widget → User Define</b>, or put it on a dashboard now. ') +
         '</p>' +
-        aiFbHTML(i, b.fb || 0, k) +
+        /* ⚠️ Undo sits in this row when there is something to reverse — see aiAgUndo */
+        aiFbHTML(i, b.fb || 0, k, aiAgUndoable(a)
+          ? '<button class="wlbl" title="Undo — reverse what was just done" ' +
+            'onclick="aiAgUndo(' + i + ')"><svg viewBox="0 0 24 24" class="ln">' +
+            '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>' +
+            '<span>Undo</span></button>'
+          : '') +
         /* ⚠️ the closing actions are FOLLOW-UP CHIPS, not a button row (annotation, 18 Aug
            2026) — the same shape the widget card's own Save / Reject use, so every "what
            next" in this flow reads as one thing. They are ACTIONS wearing `.aifu`, so they
@@ -11279,6 +11387,9 @@ function aiKey(e){
 }
 
 
+
+/* the product mark, into every `.brandmark` on the page */
+aiLogoPaint();
 </script>
 
 <!-- ObserveOps AI — light chat panel: product surfaces, ObserveOps context and copy -->
