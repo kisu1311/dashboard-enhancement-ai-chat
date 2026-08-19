@@ -158,8 +158,8 @@ commits.** Four states, one renderer (`lxAiqPaint`):
 |---|---|---|
 | `idle` | — | Cancel · **Run** (disabled until you type) |
 | `busy` | three pulsing dots · *“Reading your log fields…”* | Cancel · Run (disabled) |
-| `preview` | **THIS WILL SEARCH** + the expression + `Time range · <name>` | Cancel · **Apply** |
-| `error` | *“I could not turn that into a filter…”*, naming what it does understand | Cancel · **Run** |
+| `preview` | **THIS WILL SEARCH** + the expression + `Time range · <name>` — or, for an aggregate, **THIS WILL RUN** + the filter (or *All events*) + the builder rows `Counter · Aggregation · Result By · Visualization` | Cancel · **Apply** |
+| `error` | *“I could not turn that into a query…”*, naming what it does understand | Cancel · **Run** |
 
 - ⚠️ **Nothing touches the search until Apply.** There are probe assertions that the query
   box and the range are untouched while busy, while previewing, and after an error.
@@ -174,11 +174,53 @@ commits.** Four states, one renderer (`lxAiqPaint`):
   `oninput=` handler resolves its identifier through a different scope chain, so calling the
   function directly can pass while a user typing fails.
 
-- ⚠️ **The mapping is canned** (`LX_AIQ`), like everything else here. Each rule owns the
-  product's own filter triple — **operand / operator / value** — which is the shape the real
-  `filter` URL param carries: `[{"operand":"event.source","operator":"in","value":["…"]}]`,
-  base64'd twice into the query string. `LX_AIQ_T` maps time phrases onto `LX_RANGES`' own
-  keys so the two can't drift.
+#### One parser, one model, one gate — for the popover AND the chat (20 Aug 2026)
+
+Request, 20 Aug 2026: *“any query related prompt I write in the chat interface or AI Query
+will be converted to the query format before approve, show the query, I approve, then it
+will work”* — with *“Show me today's log events that mention 'error'”* and *“How many log
+events did each source send in the last 24 hours?”* as the examples. The first only worked
+by luck (the word *error* tripped the severity rule; the quoted term was never read), and
+the second could not be built at all — it is an **aggregation**, and the chat rejected it
+outright because it starts with “How”. Both surfaces now share three functions:
+
+- **`lxAiqParse(q)` → a query MODEL** `{ q, clauses:[{t:[operand, operator, value], j}],
+  range, agg:null | {counter, fn, by, viz} }`. Still canned and deterministic — regexes, no
+  call-out — but it reads a sentence rather than a keyword list: a **time phrase**
+  (`LX_AIQ_T`, plus `lxAiqRangeN` for *last N minutes/hours/days* → the nearest range at or
+  above it); a **quoted term** or one after *mention / contain / saying / about* →
+  `message Contains <term>`; a **severity** word; a **source type** via `LX_AIQ_ALIAS` (the
+  words people type → `LX_GROUPS` names) and a **log type** matched only as a whole
+  multi-word phrase that isn't also a group name; an **IP or host**; and an **aggregation**
+  — *how many / count / per / each / by / top / most* → `Counter message · Aggregation
+  Count · Result By <LX_AIQ_BY dimension>`, shown as **Grid**, **Top N** for *most / top /
+  which … most*, **Chart** for *over time / trend / hourly*, **Gauge** for a bare count.
+  ⚠️ A **quoted severity word means the text, not the level** — `'error'` produces
+  `message Contains error` only and drops the severity clause the keyword rule would add.
+  ⚠️ **`Other` has no alias on purpose** (an ordinary English word); `switch` is guarded
+  against *switch to / over / the / it / view*; `most` against *most recent*; `every` is
+  not an aggregation signal (*show me every error* is a search).
+- **`lxAiqExpr(m)` / `lxAiqRows(m)` / `lxAiqRangeName(k)`** render it — the flat
+  `INCLUDE a Op b AND …` string, the builder rows (`.lxaipvb`, one class used inside both
+  the popover and the chat card), the range label. `lxAiqBuild(q)` is kept as a wrapper.
+- **`lxAiqCommit(m)` is THE GATE** — the only function that changes Log Search, and both
+  Applies end in it: `lxRangeSet` (the range without re-running — `lxPickRange` now calls
+  it and runs once), the filter box, then either the builder (`LX.counter/agg/resultBy`,
+  `lxViz(viz)`) or back to `List` / Event Log, then **one** `lxExec()`.
+- **In the chat**, `aiLogQ` returns the model (it no longer refuses question words — only
+  *why*, the three canned starters' words, and a question carrying nothing but a time
+  range), `aiLogQHTML` renders *Log search query* / *Log query* with the same rows, and
+  `aiLogQApply` calls `lxAiqCommit`. `AI_DOMAIN` gained `event|source|query|search|pattern`
+  so a plain search sentence isn't answered as *outside what I can see*.
+- Verified by a 54-assertion probe (18-row parser table + both surfaces end to end, in the
+  session scratch dir); lxbehave still 56/56.
+
+- ⚠️ **The mapping is canned** (`LX_AIQ` for severities / ssh / login, `LX_AIQ_ALIAS` for
+  source types), like everything else here. Each rule owns the product's own filter triple
+  — **operand / operator / value** — which is the shape the real `filter` URL param
+  carries: `[{"operand":"event.source","operator":"in","value":["…"]}]`, base64'd twice
+  into the query string. `LX_AIQ_T` maps time phrases onto `LX_RANGES`' own keys so the
+  two can't drift.
 - ⚠️ **The join is PER CLAUSE, not one for the whole string.** A single global join turned
   “error logs from syslog” into `severity=error OR message~error OR category=syslog`, which
   widens where the sentence narrows. Clauses within one rule use that rule's join; clauses
@@ -191,8 +233,10 @@ commits.** Four states, one renderer (`lxAiqPaint`):
   `right:0` put a 320px card past the viewport edge, because Execute / Pause / Abort / ⤢ all
   sit to the button's right.
 - ⚠️ **Honest divergence:** the live one dropped “from syslog” from that sentence and
-  produced only the two error clauses. Ours keeps it as a third `AND` clause, which is a
-  better reading of the request but is *not* what the product returned.
+  produced only the two error clauses. Ours keeps it as a third `AND` clause — since 20 Aug
+  `event.source.type In Syslog`, the group, rather than the `event.category In "syslog
+  event"` it was before — which is a better reading of the request but is *not* what the
+  product returned.
 
 **Other things build 10.0.0 has that this prototype does not** (seen on the same screen,
 recorded so they don't have to be re-derived): `Save Query` and `Ask AI` above the filter
