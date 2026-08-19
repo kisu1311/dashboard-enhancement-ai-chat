@@ -1068,6 +1068,13 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   - ⚠️ Accept is the only filled button here, unlike the dashboard plan card's deliberately
     equal-weight Approve/Edit. A widget is one ⌘Z away; a dashboard is a shared object.
 - **Summary card** is read-only — **no gate**, because a summary changes nothing.
+  - ⚠️ **The bullet spacing was MEASURED, not eyeballed** (annotation, 19 Aug 2026: *"set
+    proper alignment — step margin, padding, space"*). `.aiab li` had `margin-bottom:5px`
+    while a wrapped bullet's own lines carry ~7px of leading — so the gap **inside** a point
+    was bigger than the gap **between** points, and a two-line bullet read as two bullets.
+    It is `12px` now (last child `2px`), `padding-left` 15 → 16px, `line-height` 1.6 → 1.55,
+    and `.aiagsum` gained 2px of top padding. ⚠️ `.aiab` is every answer's body, so this
+    fixed the same crammed wrap everywhere, not only in the summary.
   - ⚠️ **The meta row is PLAIN TEXT, not chips** (annotation, 19 Aug 2026). Four pills
     wrapped onto two rows in a 344–420px panel and read as filters you could click. It is
     one muted dot-separated line — `<board> · N widgets · <time range>` — and the **monitor
