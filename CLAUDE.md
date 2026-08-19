@@ -587,18 +587,24 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
 
 | row | what |
 |---|---|
-| 1 | `#aiCtx` — the Scope dropdown + removable context chips |
+| 1 | `#aiCtx` — the pinned context chips (the Scope dropdown was removed later the same day) |
 | 2 | the `<textarea>`, full width |
-| 3 | `.aiinrow` — 📎 attach · **Auto-approve** ⏻ … 🎤 dictate · ➤ send |
+| 3 | `.aiinrow` — 📎 attach · **Auto-approve** (a word, not a switch) … 🎤 dictate · ➤ send |
 
 - ⚠️ **`.aiinbox` changed from a flex ROW to a flex COLUMN.** `.aiinbox textarea` was
   `flex:1` for the row layout and must be **`flex:0 0 auto`** here, or it stretches to eat
   the column and the control row is pushed out of the box.
 - `.aictxbar:empty{display:none}` — inside the pill an empty context row would draw a 7px
   gap for nothing.
-- Auto-approve is a hairline pill (`.aiauto`, `--ai-line` border when on) sitting **next to
-  send**, because it decides what pressing send does. Its switch shrank 30→26px, so
-  `.aiauto.on .aisw::after` moved 13→**11px** — change both together or the knob overshoots.
+- **Auto-approve is a WORD, not a switch** (`.aiauto`, annotation + Notion reference,
+  19 Aug 2026): quiet text when off, the AI accent + a soft fill when on. It sits next to
+  send because it decides what pressing send does. The toggle pill and its `.aisw` knob are
+  gone — the heaviest element in the control row for a setting that is off by default.
+  ⚠️ `.aiauto` transitions `background`, so a probe reading it straight after the click
+  sees the pre-transition value in headless; assert `font-weight:600` instead.
+- **The three composer controls are one size and one shape** — 📎, 🎤 and ➤ are all 30px
+  circles with 15px glyphs (annotation, 19 Aug 2026). Send was a rounded square between two
+  circles and the mic glyph was 16px; both read as a different size though the boxes matched.
 - `.aicmd` menus (slash, @-mention) still anchor to `.aicomp`, which is unchanged, so the
   typeahead was not affected.
 - **Modules are in the @-mention list** (`AI_MOD_S` / `aiEntList`, annotation 18 Aug 2026:

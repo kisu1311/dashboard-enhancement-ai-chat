@@ -1,151 +1,144 @@
-# Handoff — 2026-08-19 11:28
+# Handoff — 2026-08-19 19:11
 
 ## Read first
 
-Everything this session touched is **Option 1 only** — `index copy.html`, the
-`ai*` / `AI_*` / `.ai*` namespace plus the dashboard canvas and its two drawers.
-Options 2 and 3 were not opened. In `CLAUDE.md`, read these before changing anything:
+Everything this session touched is **Option 1 only** — `index copy.html`: the `ai*`
+chat panel and the `lx*` Log Explorer. Options 2 and 3 were not opened. In `CLAUDE.md`,
+read these before changing anything:
 
-- **“Option 1’s `ai*` panel — the agentic build”** — the thinking trail, the widget
-  card, the summary card, the create-dashboard flow.
-- **“The composer IS the chat area”** and **“Scope — module-wise working”** — the
-  composer was restructured and the Context chip removed; scope still works but its
-  hand control moved into the `@` list.
-- **“Groups are optional”** and **“Empty group — the drawer’s Structure section”** —
-  groups changed a lot today: a new entry point, a new empty state, inline rename,
-  and the old `＋ New group` button is gone.
+- **“Option 1’s `ai*` panel — the agentic build”** — nearly every change below is
+  recorded there with the annotation that asked for it. The sub-notes on the thinking
+  trail, the widget card, the create-dashboard plan card and the clarifier were all
+  rewritten today.
+- **“The header is now: `⧉ · name ⌄ · ⋯ · ⧉ Layout · ✕`”** — the header, the
+  conversations dropdown and its in-row rename / delete-confirm.
+- **“Log Explorer module (`lx*`)”** → *“✦ AI Query in the search filter row”* — the one
+  feature that was built from the live product rather than from a screenshot.
 - **“Re-verifying it — `_verify/`”** — how to re-run the three suites.
+
+> The previous handoff (11:28 today) covered the Create Dashboard drawer, the Empty
+> group flow and the first Agentation drain. All of that is pushed and live; nothing
+> from it was reopened.
 
 ## What we worked on this session
 
-Two halves. First a screenshot-driven refinement pass on Option 1’s AI chat panel
-(answer cards, composer, and unifying the two “thinking” treatments into one). Then
-the dashboard canvas and its drawers: Create Dashboard field order, an **Empty
-group** flow in Add New Widget, what an empty group looks like, and inline group
-rename. Finished by draining the Agentation queue.
+A long, screenshot-driven pass on Option 1’s AI panel — around thirty small requests,
+each built, probed, screenshotted in both themes, documented and committed on its own —
+plus two features verified against the **live Log Explorer (build 10.0.0)** in the
+browser: the log-sources panel was restored and **✦ AI Query** was added to the filter
+row and to the chat.
 
 ## Completed
 
-**Nine commits, all local** (`8a91191` → `eb2bb42`). Every change probed, screenshotted
-in both themes, and documented in `CLAUDE.md` as it went.
+**Sixteen commits, all local and unpushed** (`a97aa2a` → `40d111c`). Every suite green at
+the end: behave 63/63 · lxbehave 56/56 (Option 1 runs all 56 again) · harness 77/77.
 
-**AI panel (`ai*`)**
-- Composer is one box: context chips → textarea → control row (📎 · Auto-approve ·
-  🎤 · ➤). The `Context <module> ▾` chip was **removed**; **modules joined the
-  `@`-mention list** instead, and picking one widens `aiScopeSel`.
-- **Summary card**: every fact stated once, header subtitle dropped, and
-  `aiSumFacts()` reads the board’s own donuts and offender pie. It also corrected a
-  number — `aiScope()`’s monitor total is `up + down`, which drops Unreachable and
-  Maintenance (384 for a fleet of 400).
-- **Widget card**: footer is `Edit · Accept`; Reject, Save widget and the
-  `Add to <dashboard>` row are follow-up chips below it. The flow’s last step closes
-  on chips too. The ⤴ menu lost `Copy` on a widget.
-- **Create-dashboard flow**: widget suggestions ended up on the **created** card
-  (not the plan), they **send** via `aiDashFuGo` (opening the new board first), and
-  they render only while the card is last in the thread. Fixed a real defect — every
-  chip was phrased `Add …`, matched none of `aiRoute`’s build alternatives, and
-  answered *“Nothing to report”* on the empty new board.
-- **One thinking treatment for every prompt**: `aiTkHTML` now uses the same
-  `.aitk.bx` card, pixel loader, clock and collapsed header as the agentic flow.
+**Log Explorer**
+- **Log-sources panel restored** (Type | Group, search, tree) after checking the product
+  still has it. `lxbehave` no longer skips 5 checks in Option 1.
+- **✦ AI Query** in the filter row, driven on the live instance first: Run **builds and
+  shows** the filter (`THIS WILL SEARCH …`), Apply commits. The live one applies straight
+  from Run with no preview — that is why it read as “not working”, and the preview is a
+  deliberate divergence. The mapping is canned (`LX_AIQ`, `LX_AIQ_T`); the join is
+  per-clause, not global.
+- The **chat** can build the same query in the Log Explorer (`aiLogQ` / `aiLogQHTML`),
+  reusing `lxAiqBuild` so the two surfaces cannot disagree. This also fixed “windows
+  error monitor” being answered with *That needs Monitor data*.
 
-**Canvas & drawers**
-- **Create Dashboard drawer**: Advanced Settings is always open (no disclosure,
-  `ddAdvToggle()` deleted); Description moved out of it into the main form. Final
-  order is **Dashboard Name → Description → Category**.
-- **Add New Widget drawer** gained a **Structure** section with an **Empty group**
-  tile (`W_GROUP_SVG`, drawn to match the harvested art). `awAddGroup()` appends a
-  group, or **converts a flat board** — the widgets already there take the
-  dashboard’s name.
-- **`boardLoad()` now derives `ungrouped` from the model** (`TABS` is one unnamed
-  band) rather than from the `UNGROUPED` set, which means “keeps its own store”.
-- **An empty group is a bare `.gdrop` drop area**, not an add tile — researched
-  against Datadog, where a group is a container you drag into and there is no
-  create-empty-group flow at all.
-- **Group titles rename in place** (`gNameEdit`): the caret collapses, the name
-  edits. The ⋮ menu’s Rename opens the same editor instead of `prompt()`.
-- **`＋ New group` (`.gnew`) removed** entirely; `G` now runs `awAddGroup()`.
-- **Time-range chip** no longer stays lit after its popover is dismissed — all four
-  close paths go through `trClose()`.
+**AI panel — structure**
+- **Thinking**: no box; trail renders as plain tick lines (`aiTkPlain`); the collapsed
+  header is a text-only *Thought 9x, Read, Fetched* summary (`aiTkSummary` /
+  `aiTkKinds`), chevron down/up; shimmer peak dropped to `--text-dim`. Measured: thinking
+  luminance 111 vs answer 247.
+- **Header**: New-chat is icon-only, left of the name, hidden while the thread is empty;
+  `?` became `⋯` and carries Rename / Delete; the name dropdown is the **ClickUp shape**
+  (search, date bands, bubble marks, in-row rename with ⊗, hover ✎ 🗑).
+- **Every delete asks first** — one confirmation card for all three doors, focus on
+  Cancel, Esc is a new first rung on the panel’s Esc ladder.
+- **Composer**: Auto-approve is a word; the three controls are 30px circles; one radius
+  token `--ai-r` for every button and chip.
+- **Widget flow**: Edit / Accept are **docked over the composer** (`aiPendPaint`), only
+  while a widget is actually pending; Reject / Save / Add-to are follow-up chips; Undo
+  appears wherever an action is reversible (`aiAgUndo`), labelled, after the copy icon.
+- **Summary card**: plain-text meta line, product mark, bullets read off the board
+  (`aiSumFacts`), bullet spacing measured and fixed.
+- **Create-dashboard**: plan card is Name · Category · Security only; the gate is
+  Cancel (text) · Edit · **Approve & create (filled)**; widget suggestions are on the
+  created card, send, and expire when the card stops being last.
+- **Clarifier** is a stepped Notion-style card (`AI_CLAR`): back · question · `n / 3` ·
+  radios · free-text · Skip / Next; back restores the answer.
+- **Product mark**: the supplied `Light.svg` / `Dark.svg`, as one `currentColor` SVG
+  (`AI_LOGO`, `aiLogoPaint`).
 
 ## In progress
 
-**One Agentation note is open and answered, waiting on you:** `msz2n3pp-gjm77h`,
-*“improve this button”* on **`#newDashBtn`** (Create new dashboard, the toolbar’s
-teal icon). It reads three ways and they lead to different designs, so I measured it
-and replied in the widget rather than guessing:
-
-- it is 28×28, the **only solid teal fill in the toolbar**, with a 13×13 glyph that
-  packs **five** shapes (2×2 grid + a separately-scaled plus) — roughly 4px a square,
-  while every neighbour at the same 13px is a simple 2-stroke mark;
-- the three readings are **legibility** (grow to 15px and/or make the fourth cell
-  *be* the plus), **weight** (drop the teal fill so the row has no false primary),
-  and **label** (tried and reverted — the full label ran ~180px).
-
-Recommended 1, and 2 if the row should have no filled primary. Nothing else is
-mid-flight; the working tree is clean and every suite passes.
+Nothing mid-flight. Tree is clean and every suite passes.
 
 ## Next steps
 
-1. **Push.** Nine commits are local; the live Pages site is behind by all of them.
+1. **Push.** Sixteen commits are local; the live Pages site is behind by all of them.
    Run `/publish` (or `git push`).
-2. **Answer the open annotation** above, then do it and resolve the note.
-3. **Restart the Agentation server when you next want to annotate** — I started it
-   during `/agentation` and it has since been killed, so port 4747 is down and the
-   widget cannot save notes:
+2. **Log Pattern — Action column / “AI Pattern Summary”.** Asked for this morning
+   (*“check Log Pattern has an action column, AI Pattern Summary will be added”*) with a
+   live URL; I began navigating to verify it and was interrupted, and it was never
+   picked up again. Start by opening the live Log Search → **Log Pattern** tab on
+   `172.16.12.186` and reading what the Action column actually offers.
+3. **Decide on the Designer’s Guide conflict.** The create-dashboard gate now has a
+   filled primary on the user’s instruction; the guide says an accept must not be
+   prettier than its alternative, and the `ac*` panel still enforces that. The note in
+   `CLAUDE.md` says how to reinstate it in one edit.
+4. **Options 2 and 3 have none of this** — neither the AI panel work nor AI Query. Decide
+   per change whether anything ports.
+5. **Agentation server is down** (killed after this morning’s drain). Restart before
+   annotating:
    `node /Users/kishanpatel/.npm/_npx/cef9b194a47a5767/node_modules/agentation-mcp/dist/cli.js server --port 4747`
-4. **Decide two things I flagged but did not act on:** whether the widget flow’s
-   closing chips should expire the way the created-dashboard ones do, and whether
-   scope needs a dedicated control again now the Context chip is gone.
-5. **Options 2 and 3 have none of this** — their `ac*` panel and their copy of the
-   Create Dashboard drawer are untouched. Decide per change whether to port.
-6. Still open from earlier sessions: the **Log Explorer divergence**, and **scrubbing
-   the pre-existing internal hostnames and `172.16.x` addresses**, which are public.
+   One note is still open there: `msz2n3pp-gjm77h`, *“improve this button”* on
+   `#newDashBtn` — replied with three readings, awaiting a pick.
+6. Still open from earlier sessions: the Log Explorer divergence between options, and
+   scrubbing the internal hostnames / `172.16.x` addresses that are public.
 
 ## Decisions made
 
-- **Follow-up chips are the standard “what next” shape** across the AI panel. Where a
-  chip is an **action** it calls its handler directly — never `aiFollow()`, which
-  sends the label as a new question.
-- **A chip sends only when the thing it acts on exists.** On the plan card they filled
-  the composer; on the created card they send.
-- **Groups have one entry point now** — the drawer’s Empty group tile — because it is
-  also the only path that knows how to convert a flat board.
-- **An empty group is a container, not a prompt to add.** Taken from Datadog directly;
-  the whole-board empty state keeps its add tile because it says something different.
-- **`aiScope()` was left alone** when its monitor total turned out wrong; the summary
-  got its own reader, because the other five answer types depend on `aiScope()`.
-- **Boxing the ordinary thinking trail overturned an earlier deliberate decision**
-  recorded in `CLAUDE.md`. The CSS did not change — only what asks for `.bx`.
-- **The `#newDashBtn` note was answered, not guessed.** Three readings, three designs.
+- **AI Query previews before it applies.** The product does not; “not working” was the
+  live behaviour. Recorded as a deliberate divergence.
+- **The clause join is per rule, not global** — one global join turned “error logs from
+  syslog” into three OR’d clauses, widening where the sentence narrows. No parentheses:
+  the product renders a flat string and its URL model is a flat array.
+- **The thinking trail is quieter than the answer**, by measurement. Three earlier
+  requests had built it up into a box; the note says what was kept.
+- **Task rows are unreferenced, not deleted** — the component was supplied by the user
+  and may come back.
+- **The gate got a filled primary against the guide’s rule**, on instruction, with the
+  conflict and the one-edit reversal written down.
+- **Undo appears wherever an action is reversible**, and reports what it reversed.
+- **Grafana’s `thought` rows were not imitated** — they stand for hidden model reasoning
+  this prototype does not have; inventing them would be inventing work.
+- **Delete confirms; Stop does not** — one is destructive and irreversible, the other is
+  an interruption. Delete is `--red`, Stop deliberately is not.
 
 ## Gotchas & notes
 
-- ⚠️ **Measure the AI panel at 1280, not 1600.** At 1600 it is 408px and everything
-  fits; at 1280 it is 348px. A task row rendered `Reading counters` as **“Readi…”**
-  and passed every 1600px probe.
-- ⚠️ **Several “failures” this session were probe bugs, not code bugs.** `aiAgSave`
-  early-returns unless `a.state === 'card'`; a user thread entry is `{r:'me', t}` not
-  `.q`; `textContent` concatenates adjacent elements so `\b11 widgets\b` never
-  matches; `aiOpen(where)` will not re-default the scope while `aiCtxItems` is
-  non-empty. Read the assertion before touching the code.
-- ⚠️ **`sips -c` crops from the CENTRE**, and `--cropOffset` is centre-relative, not
-  top-left. Several crops came back black or showed the wrong region before this was
-  spotted. For a top strip, screenshot with a short `--window-size` instead.
-- ⚠️ **Fonts and virtual time.** `shoot.py`’s default `--virtual-time-budget=2500`
-  can screenshot before a trail has run or before Inter has loaded. Raise it to ~7000
-  for anything animated.
-- ⚠️ **Backticks inside a double-quoted `git commit -m` are command substitution.**
-  One commit body lost a word to it; use `-F` with a heredoc file for anything
-  containing backticks.
-- ⚠️ **Inline-edit controls have two recurring traps**, now hit in three places: the
-  editable text must not live inside a `<button>`, and `onblur` must be cleared
-  before the input is swapped away or removing it re-enters the commit.
-- ⚠️ **Agentation’s MCP server is stdio; its HTTP companion is separate**, on port
-  4747. A `fetch failed` from the tools means that companion is down —
-  `agentation-mcp doctor` says so directly. Checking listening ports for “agentation”
-  finds nothing and is the wrong diagnostic.
-- Suites to re-run after any change, from inside `_verify/`: `behave.py` (63) ·
-  `harness.py` (77 per scene) · `lxbehave.py` (51 in Option 1, 5 skipped). All green
-  at the end of this session. `behave` and `harness` paint their verdict into the PNG
-  — re-run the generated `_out/*.html` under `--dump-dom` and take the **last** match
-  to read it as text.
+- ⚠️ **The disk filled mid-session** — ~40 probe copies of a 1.3 MB file plus ~40 Chrome
+  profile dirs. Every Bash call then failed with `ENOSPC` before running. Clear
+  `/tmp/cp-*` and the scratchpad between long runs; `/tmp/agv` is the lean replacement.
+- ⚠️ **Test inline `oninput=` handlers with a real `input` event**, not by calling the
+  function — the textarea’s id was the same as its handler’s name, and an element id is a
+  window global. It resolved correctly by luck; `#lxAiqTa` now.
+- ⚠️ **`state === 'card'` does not mean a decision is pending** — `aiAgRun` ends every
+  flow there, the summary included. Test for a `card` **beat**.
+- ⚠️ **Paint calls that hide chrome on an empty thread must run BEFORE `aiRender()`’s
+  empty-state early return.** Bit twice (New-chat button, pending bar).
+- ⚠️ **A `<button>` cannot hold an `<input>`** — third and fourth occurrences today
+  (dropdown rows, history rows). When a row becomes a `<div>`, it inherits none of the
+  `.aihm button` rules; `.aihm .conv` carries them explicitly and the note says why.
+- ⚠️ **Rebuild the probe copy after every edit.** One re-measurement showed identical
+  numbers because the copy pre-dated the change.
+- ⚠️ **`document.body.textContent` includes the inlined `<script>` source**, so an
+  assertion like “no `Widget widget` on screen” matches the template literal and fails on
+  working code. Scope to `#aiPanel`.
+- ⚠️ **Focus set in a `setTimeout(0)` is invisible to a probe — and to a screen reader.**
+  Set it synchronously.
+- ⚠️ `harness.py` needs ~20 s of virtual time; at 15 s it reported 49/77 failed on
+  passing code.
+- ⚠️ Google Fonts are not loaded under a short virtual-time budget; raise it to ~7000 for
+  any screenshot that judges text.
