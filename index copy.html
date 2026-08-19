@@ -1269,6 +1269,13 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aiab li::before{content:'';position:absolute;left:2px;top:8px;width:5px;height:5px;
   border-radius:50%;background:var(--ai-2)}
 .aiab p{margin:0 0 8px}
+/* the log filter the chat built — same violet-tinted mono block the filter row's preview
+   uses, so the two surfaces read as one feature */
+.ailq{margin:2px 0 0;padding:9px 10px;border-radius:5px;border:1px solid var(--ai-line);
+  background:var(--ai-soft);color:var(--text);
+  font:400 11.5px/1.6 'JetBrains Mono',monospace;word-break:break-word}
+.ailqm{margin:7px 0 2px;font-size:12px;color:var(--muted)}
+.ailqm b{color:var(--text);font-weight:600}
 .aifb{display:flex;gap:2px;margin-top:12px}
 .aifb button{width:26px;height:26px;border:0;border-radius:6px;background:transparent;cursor:pointer;
   display:grid;place-items:center;color:var(--muted)}
@@ -7916,6 +7923,58 @@ function aiBuildSpec(q){
 /* ⚠️ The dashboard router's types do not map onto log questions — "Which log type is
    noisiest?" contains no ranking word it knows, so it arrived as `metric` and was answered
    with the severity breakdown. On this module the QUESTION decides. */
+/* ── "Build a query with AI", in the chat ───────────────────────────────────────────────
+   (request, 19 Aug 2026.) The same thing the Log Search filter row's `AI Query` does, from
+   the chat instead — and it REUSES `lxAiqBuild` / `LX_AIQ` / `LX_AIQ_T`, so the two
+   surfaces can never disagree about what a sentence means.
+   ⚠️ It only fires in the Log Explorer (`aiInLogs()`), and only when the sentence actually
+   maps onto filter clauses. A question about the logs ("which log type is noisiest?") still
+   gets its ordinary answer — `aiLogQ` returns null for anything `lxAiqBuild` cannot build.
+   ⚠️ Same gate as the filter row: the query is SHOWN, and nothing touches Log Search until
+   *Apply*. */
+function aiLogQ(q){
+  const t = String(q || '');
+  /* a question, not a search — let the normal log answers have it */
+  if (/^(which|what|who|why|how|when)\b/i.test(t.trim())) return null;
+  if (/noisi|busiest|loudest|summar|overview|severity mix/i.test(t)) return null;
+  if (typeof lxAiqBuild !== 'function') return null;
+  const expr = lxAiqBuild(t);
+  if (!expr) return null;
+  const hit = (typeof LX_AIQ_T !== 'undefined') ? LX_AIQ_T.find(([re]) => re.test(t)) : null;
+  return { q: t, expr: expr, range: hit ? hit[1] : '' };
+}
+function aiLogQHTML(g){
+  const rn = g.range && typeof LX_RANGES !== 'undefined'
+    ? (LX_RANGES.find(x => x[0] === g.range) || ['',''])[1] : '';
+  const n = aiThread.length;
+  return { step: 'Converted your question into a log filter', ic: 'wand',
+    title: 'Log search query',
+    html: '<p>Here is the filter I would run on <b>Log Search</b>. Nothing is applied yet.</p>' +
+      '<div class="ailq">' + aiEsc(g.expr) + '</div>' +
+      '<div class="ailqm">Time range \u00b7 <b>' + aiEsc(rn || 'unchanged') + '</b></div>' +
+      '<div class="aiacts">' +
+        '<button class="aiapv" onclick="aiLogQApply(' + n + ')">Apply to Log Search</button>' +
+        '<button class="aialt" onclick="aiLogQEdit(' + n + ')">Edit the question</button>' +
+      '</div>',
+    lq: g,
+    fu: ['Which log type is noisiest?', 'Give me a summary of these logs'] };
+}
+/* ⚠️ the gate. This is the only thing that changes Log Search. */
+function aiLogQApply(i){
+  const m = aiThread[i]; const g = m && m.lq; if (!g) return;
+  if (typeof lxTab !== 'function') return;
+  if (g.range && typeof lxPickRange === 'function') lxPickRange(g.range);
+  const box = document.getElementById('lxQ');
+  if (box) box.value = g.expr;
+  lxTab('ls');
+  lxExec();
+  toast('AI query applied to Log Search.');
+}
+function aiLogQEdit(i){
+  const m = aiThread[i]; const g = m && m.lq; if (!g) return;
+  const el = document.getElementById('aiIn');
+  if (el){ el.value = g.q; aiGrow(el); el.focus(); }
+}
 function aiLogKind(q, type){
   const t = String(q || '').toLowerCase();
   if (/noisi|busiest|loudest|top |most |which log type|by volume|rank/.test(t)) return 'rank';
@@ -8867,9 +8926,11 @@ function aiChatMenu(ev){
    what you are looking at. */
 const AI_CHAT_RECENT = 5;
 function aiChatMenuHTML(){
-  return '<button onclick="aiHdMenuClose();aiRename()">' + AI_MI.pen + '<span class="nm">Rename</span></button>' +
-    '<button class="del" onclick="aiHdMenuClose();aiChatDelCur()">' + AI_MI.bin + '<span class="nm">Delete</span></button>' +
-    '<hr><div class="hd">Conversations · recent</div>' +
+  /* ⚠️ Rename and Delete MOVED OUT of here into the ? menu (annotation, 19 Aug 2026).
+     This dropdown is the conversation list and nothing else now — which is also what the
+     caret beside the name promises. The two actions still act on the CURRENT chat; see
+     `aiHelpMenu`. */
+  return '<div class="hd">Conversations · recent</div>' +
     '<div id="aiChatList">' + aiChatListHTML('') + '</div>' +
     /* the row is hidden when everything already fits, or it would offer to show you what
        you are looking at. It always appears when there IS more, count and all. */
@@ -9026,7 +9087,16 @@ function aiHelpMenu(ev){
   const row = (href, ic, label) =>
     '<button onclick="aiHdMenuClose();window.open(' + JSON.stringify(href).replace(/"/g,'&quot;') +
     ',\'_blank\',\'noopener\')">' + ic + '<span class="nm">' + label + '</span>' + AI_MI.ext + '</button>';
+  /* ⚠️ Rename / Delete live HERE now (annotation, 19 Aug 2026) — they came out of the
+     chat-name dropdown, which is the conversation list only. They act on the CURRENT chat,
+     so they lead, with a divider before the two documentation links.
+     ⚠️ Rename opens the INLINE editor in the header (`aiRename`), not a dialog — the menu
+     has to close first or the input opens behind it. */
   aiHdMenu('aiHelpM', 'aiHelpBtn',
+    '<button onclick="aiHdMenuClose();aiRename()">' + AI_MI.pen +
+      '<span class="nm">Rename chat</span></button>' +
+    '<button class="del" onclick="aiHdMenuClose();aiChatDelCur()">' + AI_MI.bin +
+      '<span class="nm">Delete chat</span></button><hr>' +
     row('https://docs.motadata.com/motadata-aiops-docs/', AI_MI.doc, 'Documentation') +
     row('https://support.motadata.com/', AI_MI.life, 'Support'),
     'right');
@@ -10486,11 +10556,20 @@ function aiPush(text){
     return;
   }
   const type = aiRoute(text);
+  /* ⚠️ In the Log Explorer, a sentence that describes a SEARCH is a log query, not one of
+     the six answer types (request, 19 Aug 2026: "I also need the query apply Build a query
+     with AI in chat interface"). It is checked before the router's own types so that
+     "windows error monitor" builds a filter instead of being answered as a metric. */
+  const logq = aiInLogs() && aiLogQ(text);
   /* ⚠️ The mismatch guard is for READ intents only. Building a widget or a dashboard is an
      action on the board in front of you — which data it will show is chosen inside the
      widget — so challenging "a grid of monitors" as a Monitor-scope mismatch is nonsense
-     here, and it made two of the five shipped starters unreachable. */
-  const need = (type === 'build' || type === 'newdash') ? null : aiScopeNeeds(text);
+     here, and it made two of the five shipped starters unreachable.
+     ⚠️ A LOG QUERY is exempt for the same reason, and it is the case that made this
+     visible: "windows error monitor" typed on the Log Explorer was answered with
+     "That needs Monitor data" — the word `monitor` tripped the guard on a sentence that
+     never left the Logs module. */
+  const need = (type === 'build' || type === 'newdash' || logq) ? null : aiScopeNeeds(text);
   if (need){
     aiThread.push({ r:'me', t:text }, { r:'wait', step:'Checking your scope' });
     aiRender(); aiSetBusy(true);
@@ -10507,6 +10586,16 @@ function aiPush(text){
   /* Summary and widget questions run the agentic flow, which narrates its own reasoning —
      so neither also gets a thinking trail on top. Everything else (rank, diff, attention,
      metric, create-dashboard) keeps the trail. */
+  /* a log SEARCH gets the query card — built, shown, and applied only on approval */
+  if (logq){
+    aiTkStart('logs', text, tk => {
+      const a = aiLogQHTML(logq);
+      a.tk = 1; tk.done = a.step;
+      aiThread.push(Object.assign({ r:'ai' }, a));
+      aiSetBusy(false); aiRender();
+    });
+    return;
+  }
   /* on the Log Explorer the same three intents are answered from the logs */
   if (aiInLogs() && (type === 'summary' || type === 'rank' || type === 'metric' ||
                      type === 'attention')){
