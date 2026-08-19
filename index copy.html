@@ -9046,17 +9046,26 @@ let aiChatName = 'New chat', aiNamed = false, aiRenaming = false;
    `aiNewBtnPaint`, or a thread that empties (New chat, Undo) leaves the bar on screen. */
 function aiPendPaint(){
   const el = document.getElementById('aiPend'); if (!el) return;
+  /* ⚠️ `state === 'card'` is NOT enough (annotation, 19 Aug 2026 — a dashboard SUMMARY was
+     offering "Widget widget ready · Edit · Accept"). `aiAgRun` ends EVERY flow with
+     `state = 'card'`, including the summary, whose card is read-only and has nothing to
+     decide. The test is whether the flow actually has a **`card` beat** — the widget
+     proposal — which the summary (`scard`) and the dashboard flow do not. */
   let ix = -1;
   for (let i = aiThread.length - 1; i >= 0; i--){
     const m = aiThread[i];
-    if (m.r === 'agent' && m.a && m.a.state === 'card'){ ix = i; break; }
+    if (m.r === 'agent' && m.a && m.a.state === 'card' &&
+        (m.a.bs || []).some(b => b.k === 'card')){ ix = i; break; }
   }
   if (ix < 0){ el.className = 'aipend'; el.innerHTML = ''; return; }
   const a = aiThread[ix].a;
   const sub = a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '';
   el.className = 'aipend on';
   el.innerHTML =
-    '<span class="aipendt"><b>' + aiEsc(a.chartName || 'Widget') + ' widget ready</b>' +
+    /* ⚠️ "<chart> widget ready", or just "Widget ready" — the old fallback was the word
+       `Widget` in front of the word `widget`, which read as "Widget widget ready". */
+    '<span class="aipendt"><b>' + (a.chartName ? aiEsc(a.chartName) + ' widget ready'
+                                               : 'Widget ready') + '</b>' +
       (sub ? '<i title="' + aiEsc(sub) + '">' + aiEsc(sub) + '</i>' : '') + '</span>' +
     '<span class="aipenda">' +
       '<button class="aiagb" onclick="aiAgEdit(' + ix + ')">' +

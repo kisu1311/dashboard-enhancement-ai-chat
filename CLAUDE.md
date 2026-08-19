@@ -1015,6 +1015,13 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     duplicate-entry-point smell this panel has been trimmed for twice.
     ⚠️ `aiPendPaint()` runs from `aiRender()` **before the empty-state early return**, like
     `aiNewBtnPaint` — otherwise emptying the thread (New chat, Undo) leaves the bar behind.
+    ⚠️ **`state === 'card'` is NOT the test for "a decision is pending"** — `aiAgRun` ends
+    EVERY flow with `state = 'card'`, the summary included. Keying on it put
+    *"Widget widget ready · Edit · Accept"* under a **dashboard summary**, which has nothing
+    to accept (annotation, 19 Aug 2026). The test is whether the flow has a **`card` beat**;
+    the summary's is `scard` and the dashboard flow has none.
+    ⚠️ The label is `"<chart> widget ready"`, or `"Widget ready"` when there is no chart
+    name — the old fallback put the word `Widget` in front of the word `widget`.
     ⚠️ `.aipenda .aiagb` re-sizes the buttons: `.aiagb` is `flex:1` for the footer it was
     written for, and inside this bar that let two buttons eat the sentence beside them.
   - ⚠️ **Reject and Save widget moved OUT of the footer into the follow-up chips**
