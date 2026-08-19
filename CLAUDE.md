@@ -655,8 +655,18 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
   - ⚠️ `aiScope()` returns `time`, not `range`, and has no `alerts`; widgets carry `t`, not
     `vis`. `aiLogScope()` has no `pct` — the share is derived from `top.c / total`. All four
     were wrong in the first draft and rendered `undefined` into the details.
-  - The **collapsed summary header is unchanged** — a finished trail wants one line, not a
-    stack of cards. The agentic build's own `.aitki` rows are untouched.
+  - ⚠️ **The collapsed header is a PILL carrying a SUMMARY OF KINDS** (reference, 19 Aug
+    2026: *"Thought 2x, Searched, Dashboards"*). `aiTkSummary` / `aiAgSummary` read the
+    **first word of each step** through `AI_TK_VERB` and de-duplicate, so it reads
+    `Thought 3x, Read, Checked` — and it cannot claim a kind the trail did not take, because
+    the verbs come from the same array the expanded rows render. **Both** the thinking trail
+    and the agentic flow use it, so they collapse identically.
+    ⚠️ **Two kinds maximum** — a third pushes the pill past a 344px panel.
+    ⚠️ The chevron points **down collapsed, up expanded** on the pill (`›` reads as "go
+    somewhere"; this is "there is more below"). The unboxed trail keeps the plain 90° rotate.
+    ⚠️ The reference also interleaves muted `thought` rows between the steps. Those are its
+    placeholder for hidden model reasoning, which this prototype does not have — **inventing
+    them would be inventing work**, so they are deliberately absent.
 - **The running Reasoning row is a PIXEL-GRID LOADER** (`.aild*` / `aiLdHTML` / `aiLdStart`,
   component supplied 18 Aug 2026). Three parts, all from the reference: a 3×3 grid of 4px
   cells lit by a chevron wavefront, a label whose gradient shimmers across it, and a **live
@@ -963,6 +973,21 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
 - Running rows use `.aitk run` (soft pill, spinner); finished rows `.aitk cl` (muted,
   collapsible). ⚠️ The agentic flow used to render `cl` even while running, so none of the
   running treatment reached it.
+- ⚠️ **Undo appears wherever an action can be undone** (`aiAgUndoable` / `aiAgUndo`,
+  annotation 19 Aug 2026). The created-dashboard card had one; a widget that was **placed**
+  or **saved** did not, though both are reversible. It sits in the same feedback row before
+  ⧉ and reverses whichever actually happened — placing via the host's own **`histUndo()`**
+  (because `awAdd()` snapshots through `histDo()`), saving by removing the name from
+  `W_USER`, which the canvas history knows nothing about. It **reports what it reversed**:
+  a widget that was saved *and* placed loses both, and the toast says so.
+- ⚠️ **The product mark is the supplied `Light.svg` / `Dark.svg`** (19 Aug 2026), replacing
+  the base64 PNG. **One** SVG, not two — the files differ only in the second path's fill
+  (`#07101F` vs `white`), so that path is `currentColor` and `.mdlogo` takes `--white`,
+  which already flips per theme. ⚠️ The originals' `<clipPath>` is **dropped**: it is a
+  full-viewBox rect that clips nothing, and its `id` would collide the moment the logo
+  appeared twice — the trap `wArt()` exists to avoid. `aiLogoPaint()` fills every
+  `.brandmark` at load (the sidebar trigger and the NOC kiosk header), so there is one
+  definition and nothing to keep in step.
 - **Widget card** = `Create Widget` + subtitle of the counters + a 3-series chart + legend
   + an **Add to `<dashboard>`** row + a footer of **`Edit · Accept`**.
   - ⚠️ **THE FOOTER IS GONE — Edit / Accept are DOCKED OVER THE COMPOSER** (annotation +
