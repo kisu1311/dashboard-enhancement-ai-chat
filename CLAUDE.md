@@ -142,9 +142,36 @@ in the last 30 minutes”* into `AI Query` and pressing **Run**:
 3. **executed on its own** — the event count went 10,785 → 34
 4. toasted **“AI query applied to search.”**
 
-All four are reproduced. The control sits **between the filter text and Execute**, opens a
-**320px** popover titled **“Build a query with AI”** with a 2-row textarea placeholdered
-*“e.g. ERROR logs in the last 30 minutes”* and **Cancel · Run**, Run disabled until you type.
+The control sits **between the filter text and Execute** and opens a **320px** popover
+titled **“Build a query with AI”** with a 2-row textarea placeholdered *“e.g. ERROR logs in
+the last 30 minutes”* — all measured off the live DOM (`.log-ai-panel`).
+
+⚠️ **THE QUERY IS SHOWN BEFORE IT IS APPLIED — a deliberate divergence** (request, 19 Aug
+2026: *“the AI will analyse and convert the query format and show the query before I
+approve”*). The live product applies straight from **Run** with nothing to review, which is
+why pressing it read as *“not working”*: the filter bar and the count change quietly and
+there is no moment where you see what it decided. Here **Run builds and shows; Apply
+commits.** Four states, one renderer (`lxAiqPaint`):
+
+| state | body | actions |
+|---|---|---|
+| `idle` | — | Cancel · **Run** (disabled until you type) |
+| `busy` | three pulsing dots · *“Reading your log fields…”* | Cancel · Run (disabled) |
+| `preview` | **THIS WILL SEARCH** + the expression + `Time range · <name>` | Cancel · **Apply** |
+| `error` | *“I could not turn that into a filter…”*, naming what it does understand | Cancel · **Run** |
+
+- ⚠️ **Nothing touches the search until Apply.** There are probe assertions that the query
+  box and the range are untouched while busy, while previewing, and after an error.
+- ⚠️ **Editing the sentence invalidates the preview** (`lxAiqIn` compares against
+  `LX_AIQ_S.q`) — a query card sitting under text it no longer describes is worse than none.
+- ⚠️ The failure is **inline in the popover, not a toast**: a toast vanishes, and the thing
+  it is talking about is the sentence still on screen.
+- ⚠️ **The textarea is `#lxAiqTa`, not `#lxAiqIn`** — `lxAiqIn()` is a function, and an
+  element id becomes a window global. It happened to resolve correctly, but a same-named
+  id and function in a file this flat is the collision trap the root CLAUDE.md opens with.
+- ⚠️ **Test it with a real `input` event**, not by calling `lxAiqIn()` — the inline
+  `oninput=` handler resolves its identifier through a different scope chain, so calling the
+  function directly can pass while a user typing fails.
 
 - ⚠️ **The mapping is canned** (`LX_AIQ`), like everything else here. Each rule owns the
   product's own filter triple — **operand / operator / value** — which is the shape the real

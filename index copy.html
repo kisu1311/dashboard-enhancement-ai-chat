@@ -3343,6 +3343,25 @@ body.lxopen .lxpanel{flex:0 0 250px;width:250px}
   font:inherit;font-size:12.4px;line-height:1.5;outline:none}
 .lxaip textarea:focus{border-color:var(--ai-line)}
 .lxaip textarea::placeholder{color:var(--text-dim)}
+/* the generated query, before you approve it */
+.lxaipv{display:none;margin-top:9px}
+.lxaipv.on{display:block}
+.lxaipvl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:5px}
+.lxaipvq{padding:8px 9px;border-radius:4px;border:1px solid var(--ai-line);
+  background:var(--ai-soft);color:var(--text);
+  font:400 11.5px/1.55 'JetBrains Mono',monospace;word-break:break-word}
+.lxaipvr{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;color:var(--text-dim)}
+.lxaipvr b{color:var(--text);font-weight:600}
+.lxaipve{padding:8px 9px;border-radius:4px;border:1px solid var(--border);
+  background:var(--panel-2);color:var(--text-dim);font-size:11.8px;line-height:1.5}
+.lxaipb{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11.8px;color:var(--ai-2)}
+.lxaipb .dot{width:5px;height:5px;border-radius:50%;background:var(--ai-2);
+  animation:lxaipd .9s ease-in-out infinite}
+.lxaipb .dot:nth-child(2){animation-delay:.15s}
+.lxaipb .dot:nth-child(3){animation-delay:.3s}
+@keyframes lxaipd{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.lxaipb .dot{animation:none;opacity:.7}}
 .lxaipa{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:9px}
 /* Run is the primary here — the product's own Run is filled while Cancel is transparent */
 .lxbtn.pri{border-color:var(--ai);background:var(--ai);color:#fff}
@@ -3923,12 +3942,11 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
                     onclick="lxAiq(event)"><svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg><span>AI Query</span></button>
                   <div class="lxaip" id="lxAip" onclick="event.stopPropagation()">
                     <div class="lxaipt">Build a query with AI</div>
-                    <textarea id="lxAiqIn" rows="2" placeholder="e.g. ERROR logs in the last 30 minutes"
+                    <textarea id="lxAiqTa" rows="2" placeholder="e.g. ERROR logs in the last 30 minutes"
                       oninput="lxAiqIn()" onkeydown="lxAiqKey(event)"></textarea>
-                    <div class="lxaipa">
-                      <button class="lxbtn" onclick="lxAiqClose()">Cancel</button>
-                      <button class="lxbtn pri" id="lxAiqRun" onclick="lxAiqRun()" disabled>Run</button>
-                    </div>
+                    <!-- the generated query, shown BEFORE it is applied (request, 19 Aug 2026) -->
+                    <div class="lxaipv" id="lxAiqPv"></div>
+                    <div class="lxaipa" id="lxAiqActs"></div>
                   </div>
                 </span>
                 <button class="lxbtn" id="lxExecBtn" onclick="lxExec()" disabled>Execute</button>
@@ -13528,29 +13546,81 @@ const LX_AIQ_T = [
   [/last\s*week|past\s*week/i,'1w'], [/last\s*month/i,'1mo'],
   [/\btoday\b/i,'today'], [/this\s*week/i,'week'], [/this\s*month/i,'month'],
 ];
+/* ── state: idle → busy → preview → applied. ⚠️ The query is SHOWN BEFORE IT IS APPLIED
+   (request, 19 Aug 2026: "the AI will analyse and convert the query format and show the
+   query before I approve"). The live product applies straight from Run with no preview —
+   this is a deliberate divergence, and it is the same plan → approve shape the AI panel
+   uses everywhere else in this folder. */
+let LX_AIQ_S = { state:'idle', q:'', expr:'', range:'' };
 function lxAiq(ev){
   if (ev) ev.stopPropagation();
   const p = document.getElementById('lxAip'); if (!p) return;
   if (p.classList.contains('on')){ lxAiqClose(); return; }
   p.classList.add('on');
-  const t = document.getElementById('lxAiqIn');
-  t.value = ''; lxAiqIn(); t.focus();
+  LX_AIQ_S = { state:'idle', q:'', expr:'', range:'' };
+  const t = document.getElementById('lxAiqTa');
+  t.value = ''; lxAiqPaint(); t.focus();
   setTimeout(()=>document.addEventListener('mousedown', lxAiqAway), 0);
 }
 function lxAiqAway(e){ if (!e.target.closest('#lxAip') && !e.target.closest('#lxAiqBtn')) lxAiqClose(); }
 function lxAiqClose(){
   const p = document.getElementById('lxAip'); if (p) p.classList.remove('on');
+  LX_AIQ_S.state = 'idle';
   document.removeEventListener('mousedown', lxAiqAway);
 }
-/* Run is disabled until there is something to build from — the product's is too */
+/* ⚠️ editing the sentence INVALIDATES the preview — a query card sitting under text it no
+   longer describes is worse than no card. */
 function lxAiqIn(){
-  const t = document.getElementById('lxAiqIn'), b = document.getElementById('lxAiqRun');
-  if (b) b.disabled = !(t && t.value.trim());
+  const t = document.getElementById('lxAiqTa');
+  if (LX_AIQ_S.state !== 'busy' && t && t.value.trim() !== LX_AIQ_S.q) LX_AIQ_S.state = 'idle';
+  lxAiqPaint();
 }
 function lxAiqKey(e){
   e.stopPropagation();
   if (e.key === 'Escape'){ e.preventDefault(); lxAiqClose(); }
-  else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); lxAiqRun(); }
+  else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)){
+    e.preventDefault();
+    if (LX_AIQ_S.state === 'preview') lxAiqApply(); else lxAiqRun();
+  }
+}
+/* one renderer for all four states, so the buttons can never disagree with the body */
+function lxAiqPaint(){
+  const pv = document.getElementById('lxAiqPv'), ac = document.getElementById('lxAiqActs');
+  const t  = document.getElementById('lxAiqTa');
+  if (!pv || !ac || !t) return;
+  const has = !!t.value.trim(), st = LX_AIQ_S.state;
+  const cancel = '<button class="lxbtn" onclick="lxAiqClose()">Cancel</button>';
+  if (st === 'busy'){
+    pv.className = 'lxaipv on';
+    pv.innerHTML = '<div class="lxaipb"><span class="dot"></span><span class="dot"></span>' +
+      '<span class="dot"></span>Reading your log fields\u2026</div>';
+    ac.innerHTML = cancel + '<button class="lxbtn pri" disabled>Run</button>';
+    return;
+  }
+  if (st === 'error'){
+    pv.className = 'lxaipv on';
+    pv.innerHTML = '<div class="lxaipve">I could not turn that into a filter. Try naming a ' +
+      '<b>severity</b> (error, critical, warning), a <b>log type</b> (syslog, firewall, ' +
+      'MySQL, Windows) or a <b>time range</b> (last 30 minutes, today).</div>';
+    ac.innerHTML = cancel + '<button class="lxbtn pri" onclick="lxAiqRun()"' +
+      (has ? '' : ' disabled') + '>Run</button>';
+    return;
+  }
+  if (st === 'preview'){
+    const r = LX_AIQ_S.range
+      ? (LX_RANGES.find(x => x[0] === LX_AIQ_S.range) || ['',''])[1] : '';
+    pv.className = 'lxaipv on';
+    pv.innerHTML = '<div class="lxaipvl">This will search</div>' +
+      '<div class="lxaipvq">' + lxEsc(LX_AIQ_S.expr) + '</div>' +
+      (r ? '<div class="lxaipvr">Time range \u00b7 <b>' + lxEsc(r) + '</b></div>'
+         : '<div class="lxaipvr">Time range \u00b7 <b>unchanged</b></div>');
+    /* ⚠️ Apply is the primary now, not Run — Run already happened. */
+    ac.innerHTML = cancel + '<button class="lxbtn pri" id="lxAiqApply" onclick="lxAiqApply()">Apply</button>';
+    return;
+  }
+  pv.className = 'lxaipv'; pv.innerHTML = '';
+  ac.innerHTML = cancel + '<button class="lxbtn pri" id="lxAiqRun" onclick="lxAiqRun()"' +
+    (has ? '' : ' disabled') + '>Run</button>';
 }
 /* the product renders its filter as `INCLUDE a Op b AND c Op d`, so this builds that string */
 function lxAiqBuild(q){
@@ -13575,30 +13645,32 @@ function lxAiqBuild(q){
     (i ? p.j + ' ' : '') +
     p.t[0] + ' ' + p.t[1] + ' ' + (/\s/.test(p.t[2]) ? '"' + p.t[2] + '"' : p.t[2])).join(' ');
 }
+/* Run BUILDS and shows — it does not touch the search */
 function lxAiqRun(){
-  const t = document.getElementById('lxAiqIn'); if (!t) return;
+  const t = document.getElementById('lxAiqTa'); if (!t) return;
   const q = t.value.trim(); if (!q) return;
-  const expr = lxAiqBuild(q);
-  const btn = document.getElementById('lxAiqBtn');
-  lxAiqClose();
-  if (!expr){
-    /* ⚠️ never a silent no-op — say what it could not turn into a filter, and leave the
-       search exactly as it was rather than half-applying something */
-    toast('Could not turn that into a filter \u2014 try naming a severity, a log type or a time range');
-    return;
-  }
-  if (btn) btn.disabled = true;                 /* the live button greys out while it works */
+  LX_AIQ_S.state = 'busy'; LX_AIQ_S.q = q; lxAiqPaint();
   setTimeout(() => {
-    if (btn) btn.disabled = false;
-    /* a time phrase moves the picker, exactly as the live one did */
+    const expr = lxAiqBuild(q);
+    if (!expr){ LX_AIQ_S.state = 'error'; lxAiqPaint(); return; }
     const hit = LX_AIQ_T.find(([re]) => re.test(q));
-    if (hit && typeof lxPickRange === 'function') lxPickRange(hit[1]);
-    const box = document.getElementById('lxQ');
-    if (box) box.value = expr;
-    lxTab('ls');
-    lxExec();                                    /* it runs itself — no second click */
-    toast('AI query applied to search.');
-  }, 900);
+    LX_AIQ_S.expr = expr;
+    LX_AIQ_S.range = hit ? hit[1] : '';
+    LX_AIQ_S.state = 'preview';
+    lxAiqPaint();
+  }, 850);
+}
+/* Apply is the gate — this is the only thing that changes the search */
+function lxAiqApply(){
+  if (LX_AIQ_S.state !== 'preview') return;
+  const expr = LX_AIQ_S.expr, range = LX_AIQ_S.range;
+  lxAiqClose();
+  if (range && typeof lxPickRange === 'function') lxPickRange(range);
+  const box = document.getElementById('lxQ');
+  if (box) box.value = expr;
+  lxTab('ls');
+  lxExec();
+  toast('AI query applied to search.');
 }
 function lxExec(){
   LX.paused = 0; lxPauseLbl();
