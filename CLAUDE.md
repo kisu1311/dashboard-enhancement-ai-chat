@@ -661,7 +661,14 @@ you act read as three unrelated things. `.aiinbox` now holds all of it:
     `Thought 3x, Read, Checked` — and it cannot claim a kind the trail did not take, because
     the verbs come from the same array the expanded rows render. **Both** the thinking trail
     and the agentic flow use it, so they collapse identically.
-    ⚠️ **Two kinds maximum** — a third pushes the pill past a 344px panel.
+    ⚠️ **Each kind carries its own count when it ran more than once** (`aiTkKinds`) — the
+    reference reads *"Thought 2x, Searched 2x"*. A bare verb hides that it ran twice, which
+    is the only thing the count was there to say.
+    ⚠️ **Two kinds maximum** — a third pushes the line past a 344px panel.
+    ⚠️ **TEXT ONLY — no box** (annotation, 19 Aug 2026: *"remove the box, show only text"*).
+    It was briefly a bordered, filled chip; against an answer that carries no chrome of its
+    own that made the trail look like a component and the answer like plain prose, which is
+    backwards. It still hugs its text rather than filling the width.
     ⚠️ The chevron points **down collapsed, up expanded** on the pill (`›` reads as "go
     somewhere"; this is "there is more below"). The unboxed trail keeps the plain 90° rotate.
     ⚠️ The reference also interleaves muted `thought` rows between the steps. Those are its
@@ -868,8 +875,16 @@ The parameter card is the **live product's own Create-Dashboard form** (Dashboar
 Category, Security, Header Font Size, Horizontal/Vertical Gap, Row Height, Default Landing);
 no field is invented. State lives on the thread entry, found by `aiDashState()`.
 
-- ⚠️ **Approve & create and Edit share one class, `.aiapv`, on purpose** — the guide's point
-  is that a prettier accept button gets clicked without being read. Don't give Approve a fill.
+- ⚠️ **THE GATE NOW HAS A FILLED PRIMARY** (annotation + Notion reference, 19 Aug 2026):
+  `Cancel` is plain text on the left (`.aiskip`, their *Skip*), `Edit` keeps the outlined
+  `.aiapv`, and **Approve & create is a filled pill on the right** (`.aigo`, their *Next*).
+  ⚠️ **This reverses a deliberate rule.** The Designer's Guide §4 says an accept button must
+  not be prettier than its alternative — a prettier accept gets clicked without being read,
+  and a dashboard is a shared object. `.aiapv` existed exactly so Approve and Edit carried
+  the same weight. **The `ac*` panel still enforces the guide** (`behave.py` asserts no
+  `acb pri` within 240 chars before its "Approve & create"); only this card follows the
+  supplied reference. To reinstate the rule: put both back on `.aiapv` and drop
+  `.aigo` / `.aiskip`.
 - ⚠️ **`histDo()` / ⌘Z cannot undo this.** `histState()` snapshots the *canvas* model only
   (`{TABS, WIDGETS, GRP_SHUT, curG}`) — it knows nothing about `DASH_INDEX`, `DASH_GROUPS`,
   `BOARDS` or which board is open, and `newFlatBoard()` clears the stack anyway. So

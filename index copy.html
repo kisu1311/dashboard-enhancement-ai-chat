@@ -1610,6 +1610,15 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   font-size:11.5px;color:var(--text-dim)}
 .aiq b{color:var(--text);font-weight:600}
 .aiacts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+/* the gate row: the way out on the left as plain text, the primary on the right as a
+   filled pill — the reference's Skip / Next shape */
+.aiacts.gate{align-items:center;justify-content:flex-end}
+.aiskip{margin-right:auto;padding:8px 4px;border:0;background:transparent;color:var(--muted);
+  font:inherit;font-size:12.5px;cursor:pointer}
+.aiskip:hover{color:var(--text)}
+.aigo{padding:8px 16px;border:0;border-radius:var(--ai-r);background:var(--ai);color:#fff;
+  font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.aigo:hover{background:#9d78f8}
 .aiadd{padding:8px 14px;border:0;border-radius:var(--ai-r);background:var(--ai);color:#fff;
   font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aiadd:hover{background:var(--ai-2)}
@@ -1841,13 +1850,13 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitk.bx.run .aitkh,.aitk.bx.cl .aitkh{padding:0;margin:0;background:none;border:0;
   border-radius:0;min-height:24px}
 .aitk.bx.cl .aitkh{cursor:pointer;gap:7px}
-/* ⚠️ a PILL, not a full-width row (reference, 19 Aug 2026). Collapsed, the trail is one
-   chip that says what kinds of work happened; it hugs its text so the thread reads as the
-   answer with a small marker above it, rather than as two stacked bars. */
-.aitk.bx.cl .aitkh.pill{display:inline-flex;width:auto;align-items:center;gap:8px;
-  padding:5px 11px;border-radius:var(--ai-r);background:var(--panel-2);
-  border:1px solid var(--border-soft)}
-.aitk.bx.cl .aitkh.pill:hover{border-color:var(--border);color:var(--text)}
+/* ⚠️ TEXT ONLY — no box (annotation, 19 Aug 2026: "remove the box, show only text").
+   It was a bordered, filled chip; against an answer that carries no chrome of its own that
+   made the trail a component and the answer plain prose, which is backwards. It still hugs
+   its text so the thread reads as the answer with a small line above it. */
+.aitk.bx.cl .aitkh.pill{display:inline-flex;width:auto;align-items:center;gap:7px;
+  padding:2px 0;border:0;background:none;border-radius:0}
+.aitk.bx.cl .aitkh.pill:hover .aitkt{color:var(--text)}
 .aitk.bx.cl .aitkh.pill .aitkt{flex:0 1 auto;font-size:12px;font-weight:500;color:var(--text-dim)}
 .aitk.bx.cl .aitkh.pill .aitkc{margin-left:0;flex:0 0 9px}
 .aitk.cl.bx:hover{border-color:var(--border)}
@@ -8316,12 +8325,22 @@ function aiDashHTML(d, i){
        The reason is better there: on the plan the board does not exist, so a chip could
        only prime the composer; once it is created the same chip can be sent and actually
        build the widget. See `aiDashFuGo`. */
-    '<div class="aiacts">' +
+    /* ── the gate, in the reference's shape (annotation + Notion reference, 19 Aug 2026) ──
+       Right-aligned, with the way out as PLAIN TEXT (their "Skip") and the thing that
+       happens next as a FILLED PILL (their "Next").
+       ⚠️ THIS REVERSES A DELIBERATE RULE. The Designer's Guide §4 says an accept button must
+       not be prettier than its alternative — "do not make Approve prettier" — because a
+       prettier accept gets clicked without being read, and creating a dashboard is a shared
+       object. `.aiapv` existed precisely so Approve and Edit carried the SAME weight, and
+       the `ac*` panel still enforces that (behave.py asserts no `acb pri` before its
+       "Approve & create"). This card now follows the supplied reference instead. If the
+       guide's rule is reinstated, put both back on `.aiapv` and drop `.aigo` / `.aiskip`. */
+    '<div class="aiacts gate">' +
+      '<button class="aiskip" onclick="aiDashSet(\'state\',\'cancelled\')">Cancel</button>' +
       (editing
-        ? '<button class="aiapv" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
-        : '<button class="aiapv" onclick="aiDashApprove()">Approve &amp; create</button>' +
-          '<button class="aiapv" onclick="aiDashSet(\'state\',\'edit\')">Edit</button>') +
-      '<button class="aialt" onclick="aiDashSet(\'state\',\'cancelled\')">Cancel</button>' +
+        ? '<button class="aigo" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
+        : '<button class="aiapv" onclick="aiDashSet(\'state\',\'edit\')">Edit</button>' +
+          '<button class="aigo" onclick="aiDashApprove()">Approve &amp; create</button>') +
     '</div>' + aiFbHTML(i, 0) + '</div>';
 }
 /* ⚠️ histDo()/⌘Z CANNOT undo this. histState() snapshots the CANVAS model only
@@ -10124,17 +10143,23 @@ const AI_TK_VERB = { reading:'Read', read:'Read', listing:'Listed', listed:'List
   ranked:'Ranked', composing:'Composed', composed:'Composed', comparing:'Compared',
   diffing:'Diffed', grouped:'Grouped', grouping:'Grouped', noted:'Noted', looked:'Looked',
   planning:'Planned', planned:'Planned', designing:'Designed', converted:'Converted' };
-function aiTkSummary(m){
-  const kinds = [];
-  (m.st || []).forEach(raw => {
-    const st = aiTrStep(raw);
-    const w = String(st.s || '').trim().split(/\s+/)[0].toLowerCase();
-    const k = AI_TK_VERB[w];
-    if (k && kinds.indexOf(k) < 0) kinds.push(k);
+/* ⚠️ each kind carries its OWN count when it happened more than once — the reference reads
+   "Thought 2x, Searched 2x", not "Thought 2x, Searched". A bare verb hides that it ran
+   twice, which is the only thing the count was there to say. */
+function aiTkKinds(labels){
+  const n = {}, order = [];
+  labels.forEach(l => {
+    const k = AI_TK_VERB[String(l || '').trim().split(/\s+/)[0].toLowerCase()];
+    if (!k) return;
+    if (n[k] === undefined){ n[k] = 0; order.push(k); }
+    n[k]++;
   });
-  const n = (m.st || []).length;
-  /* two kinds is enough for a pill — a third pushes it past the panel on a narrow layout */
-  return 'Thought ' + n + 'x' + (kinds.length ? ', ' + kinds.slice(0, 2).join(', ') : '');
+  /* two kinds is enough — a third pushes the line past the panel on a narrow layout */
+  return order.slice(0, 2).map(k => k + (n[k] > 1 ? ' ' + n[k] + 'x' : ''));
+}
+function aiTkSummary(m){
+  const kinds = aiTkKinds((m.st || []).map(raw => aiTrStep(raw).s));
+  return 'Thought ' + (m.st || []).length + 'x' + (kinds.length ? ', ' + kinds.join(', ') : '');
 }
 
 /* ── agentic widget build ──────────────────────────────────────────────────────────────
@@ -10681,13 +10706,8 @@ const AI_AG_SPIN = '<span class="aitksp"></span>';
 /* the agentic flow's own collapsed summary — same shape as the thinking trail's, built
    from the tool beats it actually ran */
 function aiAgSummary(a, pre, steps){
-  const kinds = [];
-  (pre || []).forEach(b => {
-    const w = String(b.t || '').trim().split(/\s+/)[0].toLowerCase();
-    const k = AI_TK_VERB[w];
-    if (k && kinds.indexOf(k) < 0) kinds.push(k);
-  });
-  return 'Thought ' + steps + 'x' + (kinds.length ? ', ' + kinds.slice(0, 2).join(', ') : '');
+  const kinds = aiTkKinds((pre || []).map(b => b.t));
+  return 'Thought ' + steps + 'x' + (kinds.length ? ', ' + kinds.join(', ') : '');
 }
 function aiAgHTML(a, i){
   /* ⚠️ a summary agent has no counters — this must stay guarded, not hoisted */
