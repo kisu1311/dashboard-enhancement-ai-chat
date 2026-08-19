@@ -78,11 +78,13 @@ Nothing mid-flight. Tree is clean and every suite passes.
 
 1. **Push.** Sixteen commits are local; the live Pages site is behind by all of them.
    Run `/publish` (or `git push`).
-2. **Log Pattern — Action column / “AI Pattern Summary”.** Asked for this morning
-   (*“check Log Pattern has an action column, AI Pattern Summary will be added”*) with a
-   live URL; I began navigating to verify it and was interrupted, and it was never
-   picked up again. Start by opening the live Log Search → **Log Pattern** tab on
-   `172.16.12.186` and reading what the Action column actually offers.
+2. **Log Pattern — Action column / “AI Pattern Summary” — BUILT 19 Aug (late), Option 1,
+   NOT yet checked against live.** The lab subnet was unreachable, so the column was built
+   from the request + the docs (which describe `Count · Severity · Pattern` only). When
+   `172.16.12.186` is reachable again, open Log Search → **Log Pattern** and compare: if
+   the live Action column carries other row actions, add them beside the ✦. See
+   *“✦ AI Pattern Summary”* in `CLAUDE.md` for what was built and the two bugs it surfaced
+   (`.aiab li::before` over-painting the token rows; `.aictx` wrapping long chip names).
 3. **Decide on the Designer’s Guide conflict.** The create-dashboard gate now has a
    filled primary on the user’s instruction; the guide says an accept must not be
    prettier than its alternative, and the `ac*` panel still enforces that. The note in

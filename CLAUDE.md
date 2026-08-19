@@ -198,6 +198,54 @@ recorded so they don't have to be re-derived): `Save Query` and `Ask AI` above t
 row, `Save as Report` on the results header, and a third results tab **`✦ Anomaly`** beside
 Event Log and Log Pattern.
 
+### `✦ AI Pattern Summary` — the Action column of Log Search → Log Pattern (Option 1)
+
+Request, 19 Aug 2026: *"check Log Pattern has an action column, AI Pattern Summary will be
+added"*. Built 19 Aug 2026 (late session). ⚠️ **Not verified against the live product** —
+the lab subnet (`172.16.x`) was unreachable from this machine when it was built, and the
+docs describe the tab as `Count · Severity · Pattern` only (plus a hover on a masked token
+that shows *Distribution of Values*: value, Count, Share %). So the **column is ours** and
+carries the one action that was asked for; if the live tab turns out to have other row
+actions, add them beside it rather than replacing it. Re-check at `/log/search` → Log
+Pattern when the lab is reachable.
+
+- **`ACTION`** is the fourth `<th>` (`.lxpat th.a`, 72px, centred). Each row carries one
+  `.lxpatai` — a 26px violet ✦ (`LX_AI_SPARK`, the same glyph as `.lxask`), tooltip **AI
+  Pattern Summary** — that calls `lxPatAi(i)` → **`aiPatSummary(i)`** in the `ai*` block.
+  The timed-out state (`lxPatFail`) renders no buttons; its fail row spans **4**.
+- ⚠️ **The pattern counts are now WEIGHTS scaled onto `LX.count`** (`LX_PAT_SUM` /
+  `lxPatN(p)`). The seven seeded numbers summed to 12,726 while the toolbar said *"7
+  patterns found from 5,483 logs"* — and `lxExec()` re-rolls `LX.count` on every search —
+  so a summary that prints *"N events — X% of the search"* could never be honest with fixed
+  counts. The rows now sum to the toolbar's count (±1). The seed numbers were kept in the
+  array so it still reads as data; only what is printed changed.
+- **`aiPatSummary(i)`** opens the panel scoped to Logs (`aiOpen('logs')`, and pushes `Logs`
+  into `aiScopeSel` if the panel was already open on a dashboard), pins **`Pattern · <lit>`**
+  as a context chip (kind `pattern`, `--orange` dot), pushes a user line *"Summarise the
+  “<lit>” pattern"*, and runs the thinking trail with a **`pattern` plan** (`aiTkPlan`:
+  Reading the pattern · Checking its share · Reading variable tokens · Composing) whose
+  detail rows are read off the same data. ⚠️ It does **not** go through `aiPush()` — there
+  is no sentence to route and the scope guard would have nothing to say. `aiPatCur` carries
+  the row index to the plan; a click while `aiBusy` is ignored, like `aiPush`.
+- **`aiPatAnswer(i)`** — title *Pattern summary*: the pattern quoted in `.ailq` (with the
+  table's own teal mask highlight, `.ailq em`), then `N events — X% of the <total> logs in
+  this search, severity <sev>`, **what** it is, **why** it carries that volume, a
+  **Variable parts** list (`.aipatv`: each token with its top values and share %, and a
+  `+N% long tail` when the shares do not reach 100), and **`Show these N logs in Log
+  Search →`** → `lxPatOpen(i)`, which fills `#lxQ` with `message Contains "<lit>"`,
+  lands on Event Log and runs `lxExec()` (and leaves full screen, so the rows are visible).
+  Prose and distributions live in **`LX_PAT_AI`**, index-aligned with `LX_PATTERNS`, all
+  RFC 5737. Follow-ups are the three log starters, so nothing routes somewhere odd.
+- ⚠️ **`.aipatv li` sits inside `.aiab`, whose `li::before` draws the bullet dot** — it
+  painted over the `<` of every token (the `.aidsteps` lesson). `.aipatv li::before
+  {content:none}`.
+- ⚠️ **`.aictx` had no ellipsis** — a long chip name wrapped to a second line inside the
+  24px chip behind the ✕. The name is now a `<span class="nm">` that ellipsises, and the
+  chip's `title` carries `kind: name` so the full text is still reachable. General fix; a
+  long @-mentioned monitor name wrapped the same way.
+- ⚠️ **A four-step trail takes 8–11s** (`aiStepMs` × `aiPace`), so a probe that reads the
+  answer at 7s sees a running trail. Wait 12s, with a 20s virtual-time budget.
+
 - **`LX_GROUPS` is the live source tree verbatim** — 16 groups, 60 log types, with the
   counts the instance reported (Router 209.95 K → Cisco Device Configuration Update 77.71 K,
   …, Nutanix 37.53 K → Cluster Health 2.27 K). `LX_FIELDS` is the 22 most-populated facet

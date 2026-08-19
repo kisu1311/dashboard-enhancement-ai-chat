@@ -1319,6 +1319,19 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .ailq{margin:2px 0 0;padding:9px 10px;border-radius:5px;border:1px solid var(--ai-line);
   background:var(--ai-soft);color:var(--text);
   font:400 11.5px/1.6 'JetBrains Mono',monospace;word-break:break-word}
+/* a Log Pattern quoted in the chat keeps the table's own mask highlight */
+.ailq em{font-style:normal;color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,transparent);
+  padding:1px 3px;border-radius:3px}
+.aipatv{margin:2px 0 4px;padding:0;list-style:none}
+.aipatv li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;padding:6px 0;margin:0;
+  border-bottom:1px solid var(--border-soft)}
+/* ⚠️ these are <li> inside .aiab, whose li::before draws the bullet dot — it painted over
+   the "<" of every token (the .aidsteps lesson, again) */
+.aipatv li::before{content:none}
+.aipatv li:last-child{border-bottom:0}
+.aipatv b{flex:0 0 auto;font:600 11.5px/1.4 'JetBrains Mono',monospace;color:var(--teal)}
+.aipatv span{font-size:12px;color:var(--text)}
+.aipatv span i{font-style:normal;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px}
 .ailqm{margin:7px 0 2px;font-size:12px;color:var(--muted)}
 .ailqm b{color:var(--text);font-weight:600}
 .aifb{display:flex;gap:2px;margin-top:12px}
@@ -1383,6 +1396,10 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aictx{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 4px 0 8px;
   border-radius:6px;border:1px solid var(--border);background:var(--card);
   color:var(--text-dim);font-size:11.5px;max-width:180px}
+/* a long name ellipsises inside the 24px chip instead of wrapping to a second line behind
+   the ✕ — the first pinned Log Pattern ("Pattern · Access denied for user") showed it; the
+   full name is in the chip's title */
+.aictx .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aictx i{width:5px;height:5px;border-radius:50%;background:var(--teal);flex:0 0 5px}
 /* an attached file wears the clip instead of the dot */
 .aictx .fic{width:11px;height:11px;flex:0 0 11px;fill:none;stroke:var(--ai-2);stroke-width:2;
@@ -3634,6 +3651,19 @@ body.lxdense .lxtable td.msg{max-width:0}
 .lxpat td.p{font:400 11.5px/1.55 'JetBrains Mono',monospace;color:var(--text-dim);white-space:normal}
 .lxpat td.p em{font-style:normal;color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,transparent);
                padding:1px 3px;border-radius:3px}
+/* Action column — ✦ AI Pattern Summary (request, 19 Aug 2026: "check Log Pattern has an
+   action column, AI Pattern Summary will be added"). ⚠️ The live Log Pattern table could
+   not be re-read for this — the lab subnet was unreachable — and the docs describe the tab
+   as Count · Severity · Pattern only, so the column is ours and carries the one action
+   that was asked for. It wears the panel's violet like .lxask / the AI Query control, so
+   it reads as the assistant and not as a row control. */
+.lxpat th.a,.lxpat td.a{width:72px;text-align:center;padding-left:4px;padding-right:4px}
+.lxpatai{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ai-2);
+  cursor:pointer;vertical-align:middle}
+.lxpatai svg{width:14px;height:14px;fill:currentColor}
+.lxpatai:hover{background:var(--ai-soft);border-color:var(--ai-line)}
+.lxpatai:focus-visible{outline:2px solid var(--ai-line);outline-offset:1px}
 .lxsev{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;
        background:var(--chip);color:var(--text-dim)}
 .lxsev.err{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red)}
@@ -8191,6 +8221,59 @@ function aiLogAnswer(type, q){
     fu: ['Which log type is noisiest?', 'What severities am I seeing?',
          'Build a widget of log events by type'] };
 }
+/* ── ✦ AI Pattern Summary — the Action column of Log Search → Log Pattern ─────────────
+   (request, 19 Aug 2026.) One pattern, one answer: what it is, how much of the search it
+   is, why it carries that volume, and its variable tokens with the Distribution of Values
+   the docs describe for a hover on a masked token. Numbers come off LX_PATTERNS / LX.count
+   through lxPatN(), the same arithmetic the table prints, and the prose off LX_PAT_AI.
+   ⚠️ It does not go through aiPush(): there is no sentence to route, and the scope guard
+   would have nothing to say — the pattern IS Logs data. The thread still gets a user line
+   so the answer reads as a turn, and the thinking trail runs like any other answer. */
+let aiPatCur = -1;
+function aiPatSummary(i){
+  if (typeof LX_PATTERNS === 'undefined' || !LX_PATTERNS[i]) return;
+  if (aiBusy){ toast('Still answering \u2014 one moment'); return; }
+  const p = LX_PATTERNS[i], d = LX_PAT_AI[i] || { lit: 'pattern', tok: [] };
+  aiOpen('logs');
+  /* the pattern is pinned like any other context; Logs joins the scope if it was not there
+     (the panel may already have been open on a dashboard) */
+  if (!aiScopeSel.includes('Logs')){ aiScopeSel.push('Logs'); aiScopeSync(); aiScopeLine(); }
+  aiCtxAdd('Pattern \u00b7 ' + d.lit, 'pattern');
+  const q = 'Summarise the \u201c' + d.lit + '\u201d pattern';
+  aiAutoName(q);
+  aiPatCur = i;
+  aiSetBusy(true);
+  aiThread.push({ r:'me', t:q });
+  aiRender();
+  aiTkStart('pattern', q, tk => {
+    const a = aiPatAnswer(i);
+    a.tk = 1; tk.done = a.step;
+    aiThread.push(Object.assign({ r:'ai' }, a));
+    aiSetBusy(false); aiRender();
+  });
+}
+function aiPatAnswer(i){
+  const p = LX_PATTERNS[i], d = LX_PAT_AI[i] || { what:'', why:'', lit:'', tok:[] };
+  const n = lxPatN(p), total = LX.count, share = Math.round(n / total * 100);
+  const toks = d.tok.map(t => {
+    const seen = t[1].reduce((a, v) => a + v[1], 0);
+    return '<li><b>' + t[0] + '</b><span>' +
+      t[1].map(v => aiEsc(v[0]) + ' <i>' + v[1] + '%</i>').join(' \u00b7 ') +
+      (seen < 100 ? ' \u00b7 <i>+' + (100 - seen) + '% long tail</i>' : '') + '</span></li>';
+  }).join('');
+  return { step: 'Summarised the pattern from ' + n.toLocaleString() + ' events', ic: 'spark',
+    title: 'Pattern summary',
+    html: '<div class="ailq">' + p[2] + '</div>' +
+      '<ul><li><b>' + n.toLocaleString() + '</b> events \u2014 <b>' + share + '%</b> of the ' +
+        total.toLocaleString() + ' logs in this search, severity <b>' + aiEsc(p[1]) + '</b></li>' +
+      '<li>' + d.what + '</li>' +
+      '<li>' + d.why + '</li></ul>' +
+      '<h4>Variable parts</h4>' +
+      '<ul class="aipatv">' + toks + '</ul>' +
+      '<a class="aiinv" onclick="lxPatOpen(' + i + ')">Show these ' + n.toLocaleString() +
+        ' logs in Log Search \u2192</a>',
+    fu: ['Which log type is noisiest?', 'What severities am I seeing?', 'Summarise these logs'] };
+}
 /* ── "create dashboard" — a WORKFLOW action, so it goes through the approval gate ───────
    Two specs meet here:
      · the PRODUCT DOCS give the real Create-Dashboard fields — Dashboard Name, Category
@@ -8722,9 +8805,10 @@ function aiCtxBar(){
   el.innerHTML =
     /* an uploaded file is context like anything else — it just wears a clip instead of the dot */
     aiCtxItems.map((c, i) =>
-      '<span class="aictx" title="' + aiEsc(c.k) + '">' +
+      '<span class="aictx" title="' + aiEsc(c.k) + ': ' + aiEsc(c.n) + '">' +
       (/^file/.test(c.k || '') ? AI_CLIP
-        : '<i style="background:' + (AI_ENT_C[c.k] || 'var(--teal)') + '"></i>') + aiEsc(c.n) +
+        : '<i style="background:' + (AI_ENT_C[c.k] || 'var(--teal)') + '"></i>') +
+      '<span class="nm">' + aiEsc(c.n) + '</span>' +
       '<button title="Remove from context" onclick="aiCtxRemove(' + i + ')">✕</button></span>').join('');
 }
 function aiScopeMenu(ev){
@@ -8785,7 +8869,7 @@ function aiScopePick(n, ev){
    not a word in the question, and leaving both would send the AI the name twice. */
 const AI_ENT_C = { dashboard:'var(--teal)', widget:'var(--blue)', monitor:'var(--green)',
                    metric:'var(--purple)', service:'var(--cyan)', incident:'var(--red)',
-                   alert:'var(--red)',
+                   alert:'var(--red)', pattern:'var(--orange)',
                    /* a module is the AI's own reach, so it wears the AI accent */
                    module:'var(--ai-2)' };
 const AI_ENT_FIXED = [
@@ -10027,6 +10111,19 @@ function aiTkPlan(type, q){
         ['Share of the window', L.total ? Math.round(L.top.c / L.total * 100) + '%' : '—'] ]},
       { s:'Checking the severity mix', am:'5 levels' },
       { s:'Composing the answer' } ] };
+  }
+  if (type === 'pattern'){
+    const p = (typeof LX_PATTERNS !== 'undefined' && LX_PATTERNS[aiPatCur]) || [0, '\u2014', ''];
+    const d = (typeof LX_PAT_AI !== 'undefined' && LX_PAT_AI[aiPatCur]) || { lit:'\u2014', tok:[] };
+    const n = p[0] ? lxPatN(p) : 0, total = (typeof LX !== 'undefined' && LX.count) || 0;
+    return { head: 'Analyzing this pattern', st: [
+      { s:'Reading the pattern', am:n.toLocaleString() + ' events', dt:[
+        ['Severity', p[1]], ['Literal', d.lit] ]},
+      { s:'Checking its share', am:(total ? Math.round(n / total * 100) : 0) + '%', dt:[
+        ['Logs in this search', total.toLocaleString()] ]},
+      { s:'Reading variable tokens', am:d.tok.length + ' tokens',
+        dt: d.tok.map(t => [t[0].replace(/&lt;|&gt;/g, ''), (t[1][0] || [''])[0] + ' leads']) },
+      { s:'Composing the summary' } ] };
   }
   if (type === 'summary'){
     const gi = (typeof curG === 'number' ? curG : 0);
@@ -13914,6 +14011,61 @@ const LX_PATTERNS = [
   [ 618,'Warning',      '%LINK-3-UPDOWN: Interface <em>&lt;if&gt;</em>, changed state to <em>&lt;state&gt;</em>'],
   [ 402,'Informational','%SYS-5-CONFIG_I: Configured from console by <em>&lt;user&gt;</em> on vty<em>&lt;num&gt;</em>'],
 ];
+/* ⚠️ The first column is a WEIGHT, not the count that is printed. The counts above add up
+   to 12,726 while the toolbar says "7 patterns found from 5,483 logs" — and lxExec()
+   re-rolls LX.count on every search — so a pattern's share of the search could never be
+   honest with fixed numbers. lxPatN() scales each weight onto the live count, so the
+   seven rows always sum to the count the toolbar prints (±1 from rounding). */
+const LX_PAT_SUM = LX_PATTERNS.reduce((n, p) => n + p[0], 0);
+function lxPatN(p){ return Math.max(1, Math.round(p[0] / LX_PAT_SUM * LX.count)); }
+/* ✦ AI Pattern Summary — one entry per row of LX_PATTERNS, by index.
+     what  what the pattern is, in a sentence      why   why it carries this volume
+     lit   the literal fragment a Log Search filter would match it on
+     tok   the variable tokens with their Distribution of Values — [value, share %] — the
+           thing the docs say a hover on a masked token shows (Count and Share %, where
+           Share = value count / pattern count × 100). All canned, all RFC 5737.
+   ⚠️ Shares within one token are ≤ 100 and deliberately do not always reach it — the
+   rest is the long tail, and the summary says so rather than inventing it. */
+const LX_PAT_AI = [
+  { lit:'Connection Opened',
+    what:'A firewall audit line written every time a session is opened — <b>m=98</b> is the "Connection Opened" message id, pri=6 is informational.',
+    why:'It is the loudest pattern because every session writes exactly one of these; the volume tracks traffic, not a fault.',
+    tok:[['&lt;serial&gt;', [['0017C5A1B2C3', 100]]],
+         ['&lt;ip&gt;',     [['192.0.2.1', 100]]],
+         ['&lt;num&gt;',    [['49177', 62], ['1', 21], ['6', 9]]]] },
+  { lit:'Accepted publickey',
+    what:'Successful SSH logins with a key — sshd\u2019s accept line, one per session.',
+    why:'Automation accounts on a schedule: <b>deploy</b> and <b>ansible</b> are 95% of the logins, from two hosts. The 5% that are <b>root</b> are the only ones worth a look.',
+    tok:[['&lt;user&gt;', [['deploy', 71], ['ansible', 24], ['root', 5]]],
+         ['&lt;ip&gt;',   [['198.51.100.12', 58], ['198.51.100.40', 33], ['198.51.100.7', 6]]],
+         ['&lt;num&gt;',  [['22', 100]]]] },
+  { lit:'DATABASE USER',
+    what:'A database audit-trail entry per statement — the statement text is the variable, the action code and the user are the shape.',
+    why:'Read-heavy reporting: action 3 (SELECT) is 84% of it and <b>APP_RO</b> runs four in five of them.',
+    tok:[['&lt;num&gt;',  [['3', 84], ['2', 11], ['6', 4]]],
+         ['&lt;user&gt;', [['APP_RO', 79], ['REPORTS', 18], ['SYS', 3]]],
+         ['&lt;sql&gt;',  [['SELECT COUNT(*) FROM sessions WHERE \u2026', 31], ['SELECT * FROM jobs WHERE \u2026', 22]]]] },
+  { lit:'duration:',
+    what:'PostgreSQL\u2019s slow-query log — every statement that ran past <b>log_min_duration_statement</b>, with how long it took.',
+    why:'Two statements account for two thirds of it; the sessions query alone is 41%.',
+    tok:[['&lt;ms&gt;',  [['312.4', 9], ['287.1', 7], ['1204.8', 4]]],
+         ['&lt;sql&gt;', [['SELECT * FROM sessions WHERE last_seen < \u2026', 41], ['UPDATE jobs SET state = \u2026', 27]]]] },
+  { lit:'Access denied for user',
+    what:'MySQL refusing a login — wrong password for a known user.',
+    why:'One user from one host is 88% of the failures, which is a stale credential after a rotation rather than a brute-force spread across users.',
+    tok:[['&lt;user&gt;', [['app', 88], ['root', 12]]],
+         ['&lt;host&gt;', [['203.0.113.7', 88], ['localhost', 12]]]] },
+  { lit:'%LINK-3-UPDOWN',
+    what:'A Cisco interface changing link state — the up and the down each write one line.',
+    why:'<b>GigabitEthernet0/1</b> is over half the flaps and the up/down split is even: one interface bouncing, which points at a cable or SFP rather than the device.',
+    tok:[['&lt;if&gt;',    [['GigabitEthernet0/1', 54], ['GigabitEthernet0/3', 29], ['GigabitEthernet0/8', 11]]],
+         ['&lt;state&gt;', [['down', 50], ['up', 50]]]] },
+  { lit:'%SYS-5-CONFIG_I',
+    what:'A Cisco configuration change made from a console session.',
+    why:'Config writes in this window are high for two users; worth cross-checking against the change approvals in NCCM.',
+    tok:[['&lt;user&gt;', [['netops', 67], ['admin', 33]]],
+         ['&lt;num&gt;',  [['0', 58], ['1', 30], ['2', 12]]]] },
+];
 
 /* ── state ─────────────────────────────────────────────────────────────────── */
 const LX = {
@@ -14558,13 +14710,16 @@ function lxRows(){
 function lxPatterns(){
   const host = document.getElementById('lxPat'); if(!host) return;
   const body = LX.patFail
-    ? '<tr><td colspan="3" class="lxfail">Failed to fetch data, reason : Request Timed out!</td></tr>'
-    : LX_PATTERNS.map(p=>'<tr><td class="n">'+p[0].toLocaleString()+'</td>'+
+    ? '<tr><td colspan="4" class="lxfail">Failed to fetch data, reason : Request Timed out!</td></tr>'
+    : LX_PATTERNS.map((p, i)=>'<tr><td class="n">'+lxPatN(p).toLocaleString()+'</td>'+
         '<td><span class="lxsev '+lxSevCls(p[1])+'">'+p[1]+'</span></td>'+
-        '<td class="p">'+p[2]+'</td></tr>').join('');
+        '<td class="p">'+p[2]+'</td>'+
+        /* Action — ✦ AI Pattern Summary: opens the chat on this pattern (Option 1 only) */
+        '<td class="a"><button class="lxpatai" data-tip="AI Pattern Summary" aria-label="AI Pattern Summary" '+
+          'onclick="lxPatAi('+i+')">'+LX_AI_SPARK+'</button></td></tr>').join('');
   const n = LX.patFail ? 0 : LX_PATTERNS.length;
   host.innerHTML = '<table><thead><tr><th style="width:100px">Count</th><th style="width:150px">Severity</th>'+
-    '<th>Pattern</th></tr></thead><tbody>'+body+'</tbody></table>'+
+    '<th>Pattern</th><th class="a">Action</th></tr></thead><tbody>'+body+'</tbody></table>'+
     '<div class="lxpager"><button data-tip="First">|◀</button><button data-tip="Previous">◀</button>'+
     '<button data-tip="Next">▶</button><button data-tip="Last">▶|</button>'+
     '<button class="lxmini" style="width:74px" onclick="lxPatSize(event)">20</button>'+
@@ -14572,6 +14727,27 @@ function lxPatterns(){
     '<span class="end">'+(n?1:0)+' - '+n+' of '+n+' items</span></div>';
 }
 function lxPatSize(ev){ lxMenu(ev, ['20','50','100','200'], '20', v=>toast('Page size '+v)); }
+/* the ✦ in the Action column. The summary is the chat's (aiPatSummary, in the ai* block):
+   it opens the panel scoped to Logs, pins the pattern, and answers off LX_PATTERNS /
+   LX_PAT_AI — so the table and the summary cannot disagree about a count or a share. */
+const LX_AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>';
+function lxPatAi(i){
+  if (typeof aiPatSummary === 'function') return aiPatSummary(i);
+  toast('AI Pattern Summary needs the chat panel');
+}
+/* "Show these logs" from the summary: filter Log Search to the pattern's literal and run it.
+   The filter is the product's own operand · operator · value triple, the shape the filter
+   URL param carries, and it lands on Event Log because that is where the rows are. */
+function lxPatOpen(i){
+  const d = LX_PAT_AI[i]; if (!d) return;
+  const box = document.getElementById('lxQ');
+  if (box) box.value = 'message Contains "' + d.lit + '"';
+  lxTab('ls'); LX.res = 'event';
+  lxExec();
+  /* a full-screen chat would hide the rows it just asked to see */
+  const pn = document.getElementById('aiPanel');
+  if (pn && pn.classList.contains('aifs') && typeof aiFsTog === 'function') aiFsTog();
+}
 
 /* ── analytics canvases ────────────────────────────────────────────────────── */
 function lxSeries(){
