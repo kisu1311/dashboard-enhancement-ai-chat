@@ -1454,9 +1454,49 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   widget. Availability and Alerts carry a `live` hook that reads the board's donuts.
 
 ### The composer
-- **Upload file** replaced the ＋ command menu (`aiUpPick` / `aiUpAdd`): a real picker,
-  and attachments land in the context bar as removable chips wearing a clip. It does not
-  read the file — pretending to parse a CSV is the one thing that would lie about capability.
+- **The composer's leading control is a ＋ with a two-row menu** (request + Notion
+  reference, 20 Aug 2026) — `aiPlusMenu` / `aiPlusPaint` / `aiPlusRun` / `aiPlusClose` /
+  `aiPlusCtx`, data in `AI_PLUS`, styled `.aiplusm`:
+  | row | goes to |
+  |---|---|
+  | **Add images, logs, PDFs or CSVs** | `aiUpPick()` — the real file picker, unchanged |
+  | **Mention dashboards, monitors or modules** | the @-mention list (`aiMentShow('')`) |
+  ⚠️ **It was a PAPERCLIP wired straight to the picker**, so the leading control reached
+  only one of the two things that fill the context bar — **@-mention was keyboard-only and
+  undiscoverable**. A ＋ promises "add something" and the menu says what.
+  ⚠️ **Not the 15 Aug ＋ command menu this replaced**: that listed five canned *questions*
+  and refilled the composer. These two rows add *context*.
+  ⚠️ **Shape copied from the supplied Notion reference**: ONE line per row (an outline
+  glyph then a sentence — it was briefly a two-line name over a description in a filled
+  violet tile, which said it twice); the label IS the description, not a noun; the menu
+  **hugs the ＋** (`left:27px`, `width:max-content`) instead of spanning the composer like
+  the @ typeahead, which is long and filterable where this is two rows belonging to the
+  button under it; and one row is always highlighted, with ↑↓ · ↵ · Esc handled at the top
+  of `aiKey` (ahead of the @ typeahead, since this menu sits on top of it).
+  ⚠️ `left:27px` = `.aicomp`'s 14px padding + `.aiinbox`'s 1px border + 12px padding. At
+  10px it sat 17px adrift and read as belonging to the composer, not the button. Both edges
+  of `.aicmd` must be cancelled (`right:auto`) or `width:max-content` does nothing.
+  ⚠️ **The reference's third row (Skills) was deliberately not copied** — this panel has no
+  such feature and inventing one would be inventing product.
+  ⚠️ **Add context opens the list directly; it does NOT type an "@"** — a seeded token
+  would be left in the box if the menu were dismissed instead of picked. `aiMentPick`
+  re-derives the token from the caret and no-ops when there is none, so this is safe.
+  ⚠️ `aiPlusAway` **guards a non-Element target**. The house pattern is a bare
+  `e.target.closest(...)`, which throws on `document` or a text node — and the throw leaves
+  the menu open *and* kills everything after it.
+  ⚠️ Attachments still land in the context bar as removable chips wearing a clip, and it
+  still does not read the file — pretending to parse a CSV is the one thing that would lie
+  about capability.
+- **The composer is 112px tall, not 46px** (request, 20 Aug 2026: *"make neat and clear …
+  and make more height"*). Three rows sat 7px apart in 9px of uneven padding, so a composer
+  holding a context chip had barely a line to type in. Now `min-height:112px`, **even 12px
+  padding**, 10px between rows, radius 14, text 13.5px/1.6.
+  ⚠️ The floor is a `min-height` on **the box**, not a height on the textarea — `aiGrow`
+  still sizes the textarea to its content, so a one-line question does not sit in a tall
+  empty field; the slack goes to the box and the three rows stay evenly spread.
+  ⚠️ **`aiGrow`'s cap must match `.aiinbox textarea`'s `max-height`** — both are 150px now.
+  Set the JS cap lower and the box stops growing before the CSS would, hiding the last line
+  under the control row.
 - **Dictation** (`aiDic*`): mic → listening state → words arrive one at a time. It never
   sends, and speaking again appends. ⚠️ The transcript is canned; a real recogniser would
   replace one timer loop (`webkitSpeechRecognition` needs https, these open over `file://`).

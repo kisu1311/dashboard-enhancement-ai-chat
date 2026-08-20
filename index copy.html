@@ -1361,6 +1361,25 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    colour alone, since the box itself fills in */
 .aicmd .k svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.1;
   stroke-linecap:round;stroke-linejoin:round}
+/* the ＋ menu — the Notion shape: one line per row, an outline glyph, and the menu HUGS
+   the button rather than spanning the composer.
+   ⚠️ `.aicmd` is `left:14px;right:14px`, which stretches it the full width — both edges
+   have to be cancelled (`right:auto`) or `width:max-content` does nothing. */
+/* ⚠️ left:27px lands it on the ＋ itself — `.aicomp` pads 14px, then `.aiinbox`'s 1px
+   border and 12px padding. The reference aligns the menu's left edge to the button, and
+   at left:10px it sat 17px adrift, which reads as "belongs to the composer" rather than
+   "belongs to this button". */
+.aiplusm{left:27px;right:auto;width:max-content;max-width:calc(100% - 37px);max-height:none;
+  padding:6px;border-radius:10px}
+.aiplusm button{align-items:center;gap:10px;padding:7px 9px;border-radius:7px;
+  font-size:12.5px;color:var(--text);white-space:nowrap}
+.aiplusm button svg{flex:0 0 16px;width:16px;height:16px;fill:none;stroke:currentColor;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
+/* the highlighted row — the reference rings it rather than filling it, so the label keeps
+   its own colour and the ring reads as "this is where ↵ goes" */
+.aiplusm button.sel{background:var(--ai-soft);box-shadow:inset 0 0 0 1px var(--ai-line)}
+.aiplusm button.sel svg{color:var(--ai-2)}
+.aiplusm button:hover{background:var(--ai-soft)}
 .aicmd button.on{color:var(--white);font-weight:600}
 .aicmd button.on .k{background:var(--ai-soft);color:var(--ai-2)}
 /* the @-mention typeahead reuses this popup: a type dot, the name, and what it is */
@@ -2132,10 +2151,20 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ It changed from a flex ROW to a flex COLUMN. `.aiinbox textarea` was `flex:1` for
    the row layout and has to be `flex:0 0 auto` here, or it stretches to eat the column
    and the control row is pushed out of the box. */
-.aiinbox{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:7px;
-  min-height:46px;padding:9px 9px 8px 10px;
-  border:1px solid var(--border);border-radius:12px;background:var(--card) padding-box;
+/* ⚠️ TALLER AND TIDIER (request, 20 Aug 2026: "make neat and clear … and make more
+   height"). It was a 46px pill whose three rows — context chips, one line of text, the
+   control row — sat 7px apart in 9px of padding, so a composer holding a chip had barely
+   a line of room to type in and everything crowded the edges. Now: a 112px floor so the
+   input is a writing area rather than a slot, 12px of padding, and 10px between the rows.
+   ⚠️ The floor is a MIN-height on the box, not a height on the textarea — `aiGrow` still
+   sizes the textarea to its content, so a one-line question does not sit in a tall empty
+   field; the space goes to the box, which keeps the three rows evenly spread. */
+.aiinbox{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  min-height:112px;padding:12px;
+  border:1px solid var(--border);border-radius:14px;background:var(--card) padding-box;
   transition:box-shadow .14s,border-color .14s}
+/* the text takes the new room; the chips and the controls keep their own height */
+.aiinbox textarea{flex:1 1 auto}
 .aiinrow{display:flex;align-items:center;gap:8px}
 /* dictate and send sit hard right; everything before them stays left */
 .aiinrow .aimic{margin-left:auto}
@@ -2167,8 +2196,8 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 @media (prefers-reduced-motion:reduce){.aimic.on{animation:none}}
 .aiinbox textarea{flex:0 0 auto;width:100%;min-width:0;background:transparent;border:0;
   outline:0;resize:none;
-  color:var(--text);font-family:inherit;font-size:13px;line-height:1.5;max-height:96px;
-  padding:2px 1px 0;display:block}
+  color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.6;max-height:150px;
+  padding:1px 1px 0;display:block}
 .aiinbox textarea::placeholder{color:var(--muted)}
 /* ⚠️ a CIRCLE like its two neighbours (annotation, 19 Aug 2026: "same size"). It was a
    30px rounded SQUARE between two 30px circles, which read as a different size even though
@@ -11771,7 +11800,10 @@ function aiSend(){
   aiPush(v);
 }
 
-function aiGrow(t){ t.style.height='auto'; t.style.height = Math.min(96, t.scrollHeight) + 'px'; }
+/* ⚠️ the cap MUST match `.aiinbox textarea`'s max-height (150px since 20 Aug 2026) — set
+   lower, the box stops growing before the CSS would have let it and the last line hides
+   under the control row. */
+function aiGrow(t){ t.style.height='auto'; t.style.height = Math.min(150, t.scrollHeight) + 'px'; }
 
 /* ── every action in this panel does something real ───────────────────────────────────
    (request, 14 Aug 2026: "all action will be on working mode"). These were toasts; each
@@ -11905,8 +11937,81 @@ function aiHistDelDo(id){
 const AI_UP_OK  = /\.(png|jpe?g|gif|webp|svg|log|txt|pdf|csv|json)$/i;
 const AI_UP_SAY = 'attach an image, log, PDF, CSV or JSON';
 function aiUpPick(){
+  aiPlusClose();
   const el = document.getElementById('aiUpIn');
   if (el){ el.value = ''; el.click(); }      /* clear first, or re-picking the same file is silent */
+}
+/* ── the ＋ menu — the NOTION shape (reference supplied 20 Aug 2026) ──────────────────
+   Two rows, because there are exactly two ways to fill the context bar and only one of
+   them had a control (@-mention was keyboard-only and undiscoverable):
+     Add images, logs, PDFs or CSVs   → aiUpPick(), the real picker
+     Mention dashboards, monitors or modules → the @-mention list
+   Copied from the reference, which is Notion's own ＋ menu above its composer:
+     · ONE LINE per row — an outline glyph then a sentence. It was a two-line name over a
+       description in a filled violet tile; the reference carries the whole meaning in the
+       label, so the second line was saying it twice.
+     · the row is the DESCRIPTION ("Add images, PDFs, or CSVs"), not a noun ("Upload file").
+     · the menu HUGS the ＋ — left-aligned to the button, width to content — instead of
+       stretching the composer's full width the way the @ typeahead does. That list is long
+       and filterable; this one is two rows and belongs to the button under it.
+     · one row is always HIGHLIGHTED, with ↑↓ · ↵ · Esc, like every other menu here.
+   ⚠️ Deliberately NOT copied: the reference's third row (Skills) — this panel has no such
+   feature and inventing one would be inventing product. */
+let aiPlusSel = 0;
+const AI_PLUS = [
+  { ic:'<path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+    l:'Add images, logs, PDFs or CSVs', fn:'aiUpPick()' },
+  { ic:'<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>',
+    l:'Mention dashboards, monitors or modules', fn:'aiPlusCtx()' }
+];
+function aiPlusMenu(ev){
+  if (ev) ev.stopPropagation();
+  if (document.getElementById('aiPlusM')){ aiPlusClose(); return; }
+  aiMentHide(); aiSuggHide();
+  aiPlusSel = 0;
+  const el = document.createElement('div');
+  el.className = 'aicmd up aiplusm'; el.id = 'aiPlusM'; el.setAttribute('role', 'menu');
+  document.querySelector('.aicomp').appendChild(el);
+  aiPlusPaint();
+  setTimeout(() => document.addEventListener('mousedown', aiPlusAway), 0);
+}
+/* one renderer, so the highlight can never disagree with aiPlusSel */
+function aiPlusPaint(){
+  const el = document.getElementById('aiPlusM'); if (!el) return;
+  el.innerHTML = AI_PLUS.map((r, i) =>
+    /* ⚠️ mousedown must be cancelled or the textarea blurs before the click lands — the
+       same guard the @ typeahead's rows carry. */
+    '<button role="menuitem" class="' + (i === aiPlusSel ? 'sel' : '') + '" ' +
+      'onmousedown="event.preventDefault()" onmouseenter="aiPlusHover(' + i + ')" ' +
+      'onclick="' + r.fn + '"><svg viewBox="0 0 24 24">' + r.ic + '</svg>' +
+      '<span>' + r.l + '</span></button>').join('');
+}
+function aiPlusHover(i){ aiPlusSel = i; aiPlusPaint(); }
+function aiPlusRun(i){
+  const r = AI_PLUS[i]; if (!r) return;
+  if (r.fn === 'aiUpPick()') aiUpPick(); else aiPlusCtx();
+}
+function aiPlusOpen(){ return !!document.getElementById('aiPlusM'); }
+function aiPlusClose(){
+  const m = document.getElementById('aiPlusM'); if (m) m.remove();
+  document.removeEventListener('mousedown', aiPlusAway);
+}
+/* ⚠️ guard the target. The house pattern here is a bare `e.target.closest(...)`, which
+   throws when the target is not an Element — `document`, or a text node — and the throw
+   leaves the menu open AND kills whatever ran after it. */
+function aiPlusAway(e){
+  const t = e.target;
+  if (t && t.closest && (t.closest('#aiPlusM') || t.closest('#aiPlusBtn'))) return;
+  aiPlusClose();
+}
+/* Add context opens the @-mention list directly rather than typing an "@" into the box.
+   ⚠️ Seeding a literal "@" would leave it behind if the menu is dismissed instead of
+   picked. `aiMentPick` re-derives the token from the caret and no-ops when there is none,
+   so opening the list with nothing typed is already safe. */
+function aiPlusCtx(){
+  aiPlusClose();
+  const t = document.getElementById('aiIn'); if (t) t.focus();
+  aiMentShow('');
 }
 function aiUpSize(b){
   if (b < 1024) return b + ' B';
@@ -12064,6 +12169,15 @@ function aiDicStop(manual){
                : 'Dictated — check it, then press ↵ to send');
 }
 function aiKey(e){
+  /* the ＋ menu owns the keys while it is open — it sits ON TOP of everything else here,
+     so it is tested before the @ typeahead (reference, 20 Aug 2026: the Notion menu is
+     arrow-driven with the caret still in the composer) */
+  if (aiPlusOpen()){
+    if (e.key === 'ArrowDown'){ e.preventDefault(); aiPlusSel = (aiPlusSel + 1) % AI_PLUS.length; aiPlusPaint(); return; }
+    if (e.key === 'ArrowUp'){   e.preventDefault(); aiPlusSel = (aiPlusSel - 1 + AI_PLUS.length) % AI_PLUS.length; aiPlusPaint(); return; }
+    if (e.key === 'Enter' || e.key === 'Tab'){ e.preventDefault(); aiPlusRun(aiPlusSel); return; }
+    if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); aiPlusClose(); return; }
+  }
   /* the @-typeahead owns these keys while it is open — checked FIRST, or Enter sends the
      half-typed question instead of pinning the entity under the cursor */
   if (aiMent.length){
@@ -12205,11 +12319,15 @@ aiLogoPaint();
       <div class="aictxbar" id="aiCtx"></div>
       <textarea id="aiIn" rows="1" placeholder="Ask, build and act — type @ to add context" oninput="aiMentIn(this)" onkeydown="aiKey(event)"></textarea>
       <div class="aiinrow">
-        <!-- Upload file, in place of the old ＋ command menu (annotation, 15 Aug 2026).
-             ⚠️ one space before the type list — the tooltip engine turns text after TWO
-             spaces into a keycap chip. -->
-        <button class="aiplus" title="Upload file — images, logs, PDF, CSV or JSON"
-          onclick="aiUpPick()"><svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <!-- ＋ opens a two-row menu: Upload file · Add context (request, 20 Aug 2026).
+             ⚠️ It was a PAPERCLIP wired straight to the file picker, so the composer's
+             leading control reached only ONE of the two things that fill the context bar —
+             @-mention was keyboard-only and undiscoverable. A ＋ promises "add something"
+             and the menu says what; a paperclip promises only a file.
+             ⚠️ NOT the 15 Aug ＋ command menu this replaced: that listed five canned
+             QUESTIONS and refilled the composer. These two rows add context. -->
+        <button class="aiplus" id="aiPlusBtn" data-tip="Add a file or context"
+          aria-haspopup="menu" onclick="aiPlusMenu(event)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
         <input type="file" id="aiUpIn" multiple hidden onchange="aiUpAdd(this)"
           accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
         <!-- Auto-approve belongs with the send button: it decides what happens when you
