@@ -334,13 +334,17 @@ put a colour in the file no token owns — the send-button rule):
     comparing the two numbers rather than trusting the eye.
     ⚠️ There is also an assertion that **every** pattern has ≥3 points — a row whose entry
     was missed would open an empty summary;
-  - **`lxPatOpen()` is wired back in** as *Show these logs* — it survived the rebuild
-    **unreferenced**.
+  - ⚠️ *Show these logs* (an `lxPatOpen()` button in the figures row) was added here and
+    then **REMOVED on request** the same day. **Don't re-add it** — the drawer is for
+    reading one pattern, and the row it came from is still on screen behind it.
+    `lxPatOpen()` is kept and unreferenced again, the way `aiScopeMenu` and `iFocus` are,
+    so it is one call site away if it is ever wanted back. There are probe assertions that
+    neither the button nor its label appears in the drawer.
   ⚠️ The bar FILL is sized `width:%` with the track as the flex child — a lone flex child
   takes the whole track and every bar would read 100% (the recorded `flex:50` lesson).
   ⚠️ The long-tail row is emitted **only when the shares do not reach 100**, or a zero-width
   row still draws its label and claims a tail that isn't there.
-- Verified by a 56-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
+- Verified by a 58-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
   chat thread; generating state; the figure agrees with the row's count; the 88% fill is
   partial and matches its share; no phantom tail row; 458px; label metrics; Esc /
   click-away / close-mid-generate), both themes screenshotted.

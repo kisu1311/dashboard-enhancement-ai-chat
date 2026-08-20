@@ -3784,12 +3784,6 @@ html[data-theme="light"] .lxpssc{background:rgba(17,28,44,.22)}
 .lxpsf .fig{display:flex;flex-direction:column;gap:1px}
 .lxpsf .fig b{font:600 15px/1.15 'JetBrains Mono',monospace;color:var(--text)}
 .lxpsf .fig i{font-style:normal;font-size:11px;color:var(--text-dim2,var(--muted))}
-.lxpsgo{margin-left:auto;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;
-  border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-dim);
-  font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
-.lxpsgo:hover{border-color:var(--ai-line);color:var(--ai-2);background:var(--ai-soft)}
-.lxpsgo svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
 /* Distribution of Values — what the docs say a hover on a masked token shows, drawn */
 .lxpsdh{margin:18px 0 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
   text-transform:uppercase;color:var(--text-dim2,var(--muted))}
@@ -15646,8 +15640,9 @@ function lxPsClose(){
      · **Distribution of Values** is drawn as bars — `LX_PAT_AI[i].tok` already holds
        [value, share %] per masked token, which is exactly what the docs say a hover on a
        mask shows, and it was not rendered anywhere after the drawer rebuild
-     · `lxPatOpen()` is wired back in as "Show these logs" — it survived the rebuild
-       unreferenced
+   ⚠️ A fourth change, **"Show these logs" — an `lxPatOpen()` button in the figures row —
+   was added here and then REMOVED on request (20 Aug 2026)**. Don't re-add it: the drawer
+   is for reading one pattern, and the row it came from is still on screen behind it.
    Everything is still read off LX_PATTERNS / LX.count, so nothing here can disagree with
    the row it came from. */
 function lxPsPaint(busy){
@@ -15678,8 +15673,6 @@ function lxPsPaint(busy){
       '<div class="lxpsf">' +
         '<span class="fig"><b>' + n.toLocaleString() + '</b><i>events matched</i></span>' +
         '<span class="fig"><b>' + share + '%</b><i>of this search</i></span>' +
-        '<button class="lxpsgo" onclick="lxPatOpen(' + i + ')">Show these logs' +
-          '<svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>' +
       '</div>' +
     '</div>' +
     '<div class="lxpst">' + LX_AI_SPARK + 'AI Summary</div>' +
@@ -15690,9 +15683,13 @@ function lxPsPaint(busy){
           (LX_PAT_POINTS[i] || []).map(pt => '<li>' + pt + '</li>').join('') + '</ul>' +
         (dist ? '<div class="lxpsdh">Distribution of values</div>' + dist : ''));
 }
-/* "Show these logs" from the summary: filter Log Search to the pattern's literal and run it.
-   The filter is the product's own operand · operator · value triple, the shape the filter
-   URL param carries, and it lands on Event Log because that is where the rows are. */
+/* ⚠️ KEPT AND UNREFERENCED (20 Aug 2026). It filtered Log Search to a pattern's literal
+   from a "Show these logs" button in the drawer's figures row; that button was removed on
+   request. The function is left intact — it is one call site away from coming back, the
+   way `aiScopeMenu` and `iFocus` are elsewhere in this folder — but nothing calls it now.
+   The filter it writes is the product's own operand · operator · value triple, the shape
+   the filter URL param carries, and it lands on Event Log because that is where the rows
+   are. */
 function lxPatOpen(i){
   const d = LX_PAT_AI[i]; if (!d) return;
   const box = document.getElementById('lxQ');
