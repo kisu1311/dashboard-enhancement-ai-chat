@@ -1392,6 +1392,19 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     (18 Aug 2026), lost their *"Widgets for this board"* heading, and then moved below
     *Undo · Add a widget* on the created card later the same day — all three by request.
     Don't move them back without re-reading all three.
+  - ⚠️ **`Add a widget` IS ONE OF THEM NOW** (request, 20 Aug 2026). It was a lone `.aialt`
+    button in its own `.aiacts` row directly **above** the Follow ups heading, so the card
+    showed two stacked lists of "what to do next" in two different shapes. It is the
+    **first chip** in the list — the general case, ahead of the three specific widgets the
+    board's name suggests — and `.aiacts` is gone from this card entirely.
+    ⚠️ It is an **ACTION wearing `.aifu`**, so it calls **`aiDashAddW(name)` directly** and
+    must never go through `aiDashFuGo`, which reads the chip's text and *sends* it as a
+    question. Same rule as the widget card's Save / Reject chips.
+    ⚠️ **Consequence:** it now inherits the block's `i === aiThread.length - 1` gate, so it
+    disappears once you ask something else — where the old button stayed forever. That is
+    the point of a follow-up, and the board is still reachable from the **link in the card
+    body**. If it ever has to stay, lift just that chip out of the gate — but then it needs
+    its own heading or it will float under a missing one.
   - ⚠️ **They SEND** (`aiDashFuGo`), because on the created card the board is real.
     `aiDashFuGo` **opens the new board first**: the widget builder places onto whatever
     canvas is open, and the created card deliberately does *not* redirect you, so without

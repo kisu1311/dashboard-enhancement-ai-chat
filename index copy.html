@@ -8783,9 +8783,12 @@ function aiDashHTML(d, i){
          It was a full-width-ish button beside "Add a widget", which gave equal weight to
          the thing you probably want next and the thing you probably do not. It still calls
          the same `aiDashUndo()` — only its home changed. */
-      '<div class="aiacts">' +
-        '<button class="aialt" onclick="aiDashAddW(&quot;' + nq + '&quot;)">Add a widget</button>' +
-      '</div>' +
+      /* ⚠️ "Add a widget" MOVED INTO THE FOLLOW-UPS (request, 20 Aug 2026) — it was a lone
+         `.aialt` button in its own `.aiacts` row directly above the Follow ups heading, so
+         the card carried two stacked lists of "what to do next" in two different shapes.
+         It is now the FIRST chip in that list; see the block below. Same lesson as the
+         widget card's Save / Reject on 18 Aug: an action that answers "what next" belongs
+         in the follow-ups, not in a button row of its own. */
       aiFbHTML(i, 0,
         undefined,
         /* ⚠️ LABELLED (annotation + reference, 19 Aug 2026): the reference shows `↩ Undo`,
@@ -8805,6 +8808,13 @@ function aiDashHTML(d, i){
          has been asked, it is not next any more. */
       (i === aiThread.length - 1
         ? '<div class="aiful">Follow ups</div>' +
+          /* ⚠️ An ACTION wearing `.aifu`, so it calls its handler DIRECTLY — it must not go
+             through `aiDashFuGo`, which reads the chip's text and SENDS it as a question
+             ("Add a widget" is not a question). Exactly how the widget card's Save / Reject
+             chips work. It leads the list because it is the general case; the three below
+             are specific widgets this board's name suggests. */
+          '<button class="aifu" onclick="aiDashAddW(&quot;' + nq + '&quot;)">' +
+            '<span class="cv">\u203a</span>Add a widget</button>' +
           aiDashFu(d).map(q => '<button class="aifu" onclick="aiDashFuGo(this)">' +
             '<span class="cv">\u203a</span>' + aiEsc(q) + '</button>').join('')
         : '') +
