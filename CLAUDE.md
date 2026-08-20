@@ -380,10 +380,67 @@ it sets the category/page, expands it, clears the search, then routes through
 - **The flyout list was corrected to the 8.2.7 build**: “Observability Pipeline” is **Log
   Settings** there, and Dependency Mapper / SLO / APM / RUM — which used to route to other
   modules — are Settings categories on the instance, so they open the settings list now.
+- **`ST_PAGES` is the page registry** (added 20 Aug 2026): a later script block can own a
+  settings page by writing `ST_PAGES['<category> › <page>'] = {html(), after?()}` —
+  `stMainPaint()` paints whatever is registered and falls back to the placeholder. The
+  Compliance Settings block (`stc*`, below) is the first user. **`stFullOpen({title, html,
+  info?, infoHTML?, onClose?})`** is the other door: a screen that replaces the whole
+  settings view the way live's Create Benchmark / Create Rule / benchmark view do — the
+  head becomes `‹ <title>` (+ the product's `(i)` help toggle when `info` is set), the left
+  list hides (`#view-settings.stfullpg`), and the head's ‹ / `stFullClose()` put the list
+  back. `stGo`/`stOpen` clear `ST.full`, so navigating away can't strand a full page.
 - Verify in a real tab (`python3 -m http.server` + the browser tools) — the probe that
   drove the 39 behaviours above (switch, eyes, initials, every message, reset, save,
   identity, search, toggle, stub, panel, flyout act, geometry) lived in the session, not
   the repo. `lxbehave` 56/56 · `behave` 63/63 · `harness` 77/77 still pass with it in.
+
+## Compliance Settings (`stc*`) — the category's three pages, cloned from live 8.2.7, in all three options
+
+Built 20 Aug 2026 from `/settings/compliance-settings/audit-policy` · `benchmark` · `rules`
+plus `benchmark/create`, `benchmark/<id>/view` and `rules/create`, read in the browser the
+same way as the `st*` module: Kendo grid DOM + computed styles, the Vue components' render
+templates and option lists (`AuditPolicyList` / `AuditPolicyForm` / `BenchmarkList` /
+`RulesList` / `RulesFom` out of `__vue__`), every drawer and picker driven by hand, and the
+two `(i)` help panes' full text. **One CSS block + one `<script>`, byte-identical in the
+three files** (md5-checked), registered into the `st*` module via `ST_PAGES` — there is no
+new markup section; `#stMain` hosts everything. Namespace `stc*` / `STC_*`; borrows
+`stEsc` / `stA` / `stFullOpen` / `stFullClose` / `stMainPaint` / `toast` and the `st`
+block's `.stin` / `.stbtn` / `.stspin` / `.stex` atoms. The generator + harvested JSON
+(`_verify/_out/cp-*.json`, `cis-tree.json`, `icons-rulecreate.json`, gitignored) live in
+the session scratch dir; re-harvest rather than hand-edit.
+
+| page | what it has (all measured) |
+|---|---|
+| Compliance Policy | search · eye **column chooser** (with the live's *Reset Column Preference*) · Export As PDF/CSV · **filter toggle** · Create; chips `Benchmark · Tags · ＋ Filter`, each with the live `=` / `!=` operator menu; grid `POLICY NAME↑ · DESCRIPTION · CREATED TIME · USED COUNT (pill) · TAG · SCHEDULE (icon when scheduled) · BENCHMARK · ACTIONS`; **run-now** shows only when `used > 0` and only on row hover, spins while it runs (all as live); ⋮ = Edit · Clone · Schedule · Assign Monitor · Remove Assigned Monitor · Delete |
+| its drawer | 684px over a **blurred scrim**: Policy Name* (“Must be unique”, uniqueness enforced) · Description · Tags · Config File Type* `Startup｜Running` · Benchmark Filter by Tags (narrows the Benchmark list, deselects an excluded pick) · **Benchmark\* — locked while editing, as live** · Device Filter* `Monitor｜Group｜Tag` · **Select Device\*** (Monitor → the live **855px grid-dropdown**: search + checkbox table `DEVICE·IP·TYPE·GROUPS·VENDOR·TAGS`) · Notify Team · docs link · `* fields are mandatory` · Reset · Create/Update/Clone. A policy **name** opens the read-only drawer titled **“View Audit Policy”** — that misnamed title is the live product's, kept on purpose |
+| Schedule / Assign | `“<name> Schedule”` (Once/Daily/Weekly/Monthly · Start Date* · Hours* · Notify*) and Assign/Unassign Monitor (checkbox monitor table, Cancel · Assign/Unassign) — assign/unassign really move `devs` and the used-count pill follows |
+| Benchmark | grid `BENCHMARK · DESCRIPTION · USED COUNT · TAG · ACTIONS`; the system benchmark wears the live **lock** and its ⋮ has **Clone only**; others Clone · Delete (delete refuses while a policy uses it); a name opens the **full-page view** (read-only fields + the tree); Create Benchmark is the **full-page rule-group builder**: numbered accordions, `Enter Name ✓`, ✎ Edit Name, ⊕ child group, 🗑, **Add Rule** (picker over the rule pool with search + severity filter), parallel groups via the bottom *Add Rule Group* |
+| Rules | search (with the live ×-clear) · Create Rule; grid `RULE (severity bar) · DESCRIPTION · TAG · RULE TYPE Custom/Default · ACTIONS ⋮ Edit·Clone·Delete`; Create/Edit is the **two-step wizard** — 1 *Audit & Remediation Properties* (Config File｜CLI · Basic｜Advanced · Block Criteria on Advanced · Command* on CLI · condition rows `[AND/OR] Condition* · Result Pattern* · Occurrence* Any/1–25 ⊗ ⊕` · Action to be taken + Create Runbook) → 2 *General Properties* (Rule Name* · Description · Severity* High default · Tags · Rationale/Impact/Default Value/References/Additional Information · Controls + IG-1/2/3 · Add New Controls) |
+
+- **The data is the instance's.** `STC_RULES0` is the live rule pool — the **85 CIS
+  rules** of `CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0` with their real numbering,
+  severities and (where the grid showed them) descriptions, plus the 10 Custom rules —
+  and `STC_BENCH0`'s CIS benchmarks all carry the **full live tree** (3 planes → groups →
+  rules), so the view page reads exactly like the product's. Numbering (`1.1.1`) is
+  **derived from position, never stored** — drag/re-order can't desync it.
+- ⚠️ **Groups default COLLAPSED everywhere** — the live view page opens fully folded; only
+  a group just added in the builder opens itself (`stcBfAddGroup` sets `open:true`).
+- ⚠️ **`stcPop` / `stcPick` / `stcDevGrid` are the one popover engine** — fixed-position,
+  clamped to the viewport, closed by outside-mousedown and by Esc **before** the drawer
+  (the Esc ladder is popover → confirm → drawer, all in one capture listener). Repainting
+  a searchable popover restores the caret, the `st` search-box lesson.
+- ⚠️ **Deletes confirm first** (`stcConfirm`), never `confirm()`; a benchmark a policy
+  still uses refuses with a toast naming the count instead.
+- **Deliberate differences**, in the block's header comment: RFC 5737 addresses and
+  neutralised people-names in the seed data; the live builder's **blank third button** (its
+  Delete/Add-Rule control renders empty in 8.2.7) is built here with real icons because the
+  `(i)` pane documents both; Export/Create Runbook toast; primary buttons are teal.
+- ⚠️ **Watch the ternary-in-template trap**: a `cond ? (nested ? a : b)` missing its outer
+  `:` inside a template literal parses hundreds of characters later with a useless error —
+  `node --check` the extracted block (the recorded `lx` lesson) before screenshotting.
+- Verified with browser probes over http (≈90 assertions across the three pages, both
+  themes, all three options); `lxbehave` 56/56 ×3 · `behave` 63/63 ×3 · `harness` 77/77
+  still green with the block in.
 
 ## Four AI UIs across three options, deliberately different
 

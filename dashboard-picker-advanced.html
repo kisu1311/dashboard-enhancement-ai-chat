@@ -2265,6 +2265,12 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 .stnav{width:246px;flex:0 0 246px;display:flex;flex-direction:column;min-height:0;
        padding:8px 0 0 8px;overflow:hidden;transition:width .18s,flex-basis .18s,padding .18s}
 #view-settings.stshut .stnav{width:0;flex-basis:0;padding:0}
+/* a full-page screen (Create Benchmark, Create Rule, a benchmark's view) replaces the list AND
+   the content, as live — the head becomes “‹ <title>” and the left list is gone */
+#view-settings.stfullpg .stnav{display:none}
+#view-settings.stfullpg #stHeadIc,#view-settings.stfullpg #stHeadSep{display:none}
+.stpt.stinfo{width:34px;height:34px;border:1px solid var(--border);border-radius:6px;flex:0 0 34px}
+.stpt.stinfo svg{width:18px;height:18px}
 .stsearch{position:relative;height:36px;flex:0 0 36px;margin:0 8px 8px 0}
 .stsearch svg{position:absolute;left:12px;top:9px;width:18px;height:18px;fill:currentColor;color:var(--text);pointer-events:none}
 .stsearch input{width:100%;height:36px;padding:0 10px 0 40px;border:1px solid var(--border);border-radius:4px;
@@ -2339,6 +2345,261 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
         animation:stspin .7s linear infinite}
 @keyframes stspin{to{transform:rotate(360deg)}}
 @media (max-width:1366px){ .stav{flex-basis:150px;width:150px;padding:0 8px} .stform{padding:0 8px} }
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPLIANCE SETTINGS  —  Compliance Policy · Benchmark · Rules, cloned from the
+   live product, build 8.2.7, 20 Aug 2026, read in the browser at
+   /settings/compliance-settings/{audit-policy,benchmark,rules} and their create /
+   view screens. Namespace `stc` — registered into the st* Settings module through
+   ST_PAGES (see the st* script). Same block in all three options.
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── list toolbar: search · (eye · PDF · CSV · filter) · Create ──────────────── */
+.stcbar{display:flex;align-items:center;gap:8px;margin:0 0 8px;flex:0 0 auto}
+.stcsearch{position:relative;width:335px;height:36px;flex:0 0 335px}
+.stcsearch svg{position:absolute;left:12px;top:9px;width:18px;height:18px;fill:currentColor;color:var(--text);pointer-events:none}
+.stcsearch input{width:100%;height:36px;padding:0 30px 0 40px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font:inherit;font-size:12.8px;outline:none}
+.stcsearch input:focus{border-color:var(--text-dim)}
+.stcsearch input::placeholder{color:var(--text-dim)}
+.stcsearch .clr{position:absolute;right:9px;top:10px;width:16px;height:16px;color:var(--text-dim);cursor:pointer;display:none}
+.stcsearch .clr svg{position:static;width:16px;height:16px;fill:currentColor;color:inherit}
+.stcsearch .clr:hover{color:var(--text)}
+.stcsearch.has .clr{display:block}
+.stcsp{flex:1}
+.stcsq{width:35px;height:35px;flex:0 0 35px;border:1px solid var(--chip);border-radius:4px;background:var(--chip);color:var(--text);
+       display:grid;place-items:center;cursor:pointer;padding:0}
+.stcsq svg{width:18px;height:18px;fill:currentColor}
+.stcsq:hover{border-color:var(--text-dim)}
+.stcsq.on{background:var(--white);border-color:var(--white);color:var(--bg)}
+/* ── filter chips row (Benchmark · Tags · ＋ Filter) ─────────────────────────── */
+.stcchips{display:flex;align-items:center;gap:8px;margin:0 0 8px;flex:0 0 auto;flex-wrap:wrap}
+.stcchips.hid{display:none}
+.stcchip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:4px;background:var(--chip);color:var(--text);
+         font-size:12.8px;cursor:pointer;gap:4px;user-select:none}
+.stcchip .f{color:var(--text-dim)}
+.stcchip .op{color:var(--teal);font-family:"JetBrains Mono",monospace;font-size:12px}
+.stcchip .v{color:var(--white);font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcchip .x{margin-left:4px;width:14px;height:14px;fill:currentColor;color:var(--text-dim)}
+.stcchip .x:hover{color:var(--red)}
+.stcchip:hover{background:var(--hover-side)}
+.stcaddf{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:1px solid var(--chip);border-radius:4px;background:var(--chip);
+         color:var(--text);font:inherit;font-size:12.8px;cursor:pointer}
+.stcaddf svg{width:15px;height:15px;fill:currentColor;color:var(--white)}
+.stcaddf:hover{border-color:var(--text-dim)}
+/* ── the grid: uppercase 28px header, 40px rows, name bold, tags mono-teal ────── */
+.stcgridw{flex:1;min-height:0;display:flex;flex-direction:column}
+.stcscroll{flex:1;min-height:0;overflow:auto}
+.stcgrid{width:100%;border-collapse:collapse;table-layout:fixed}
+.stcgrid th{height:28px;padding:4px 8px;text-align:left;font-size:12.8px;font-weight:600;letter-spacing:.25px;text-transform:uppercase;
+            color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1;user-select:none}
+.stcgrid th.s{cursor:pointer}
+.stcgrid th.s:hover{color:var(--white)}
+.stcgrid th .sa{font-size:11px;margin-left:3px;color:var(--text-dim)}
+.stcgrid th.r,.stcgrid td.r{text-align:right}
+.stcgrid th.c,.stcgrid td.c{text-align:center}
+.stcgrid td{height:40px;padding:4px 8px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-soft);vertical-align:middle;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:17px}
+.stcgrid tr:hover td{background:var(--hover)}
+.stcgrid td.nm{font-weight:500;color:var(--white)}
+.stcgrid td.nm .lk{cursor:pointer}
+.stcgrid td.nm .lk:hover{text-decoration:underline}
+.stcgrid td.nm .lock{width:14px;height:14px;fill:currentColor;color:var(--text-dim);display:inline-block;vertical-align:-2px;margin-right:6px}
+.stcgrid td.dim{color:var(--text-dim)}
+.stcgrid td.wrap{white-space:normal}
+.stcused{display:inline-block;min-width:22px;height:22px;line-height:22px;padding:0 7px;border-radius:11px;background:var(--chip);color:var(--white);
+         font-size:12px;font-weight:500;text-align:center}
+.stctag{display:inline-block;height:22px;line-height:22px;padding:0 7px;border-radius:4px;background:rgba(20,184,166,.16);color:var(--teal);
+        font:12px/22px "JetBrains Mono",monospace;margin-right:6px;max-width:220px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}
+.stctag.more{cursor:default}
+.stcempty{padding:40px 0;text-align:center;color:var(--text-dim);font-size:12.5px}
+/* the actions cell: run-now (when the policy has devices) and the ⋮, right-aligned */
+.stcact{display:flex;align-items:center;justify-content:flex-end;gap:2px}
+.stcib{width:28px;height:28px;border:0;background:transparent;color:var(--text-dim);border-radius:4px;display:grid;place-items:center;cursor:pointer;padding:0}
+.stcib svg{width:16px;height:16px;fill:currentColor}
+.stcib:hover{color:var(--text);background:var(--hover-side)}
+.stcib.spin svg{animation:stcspin 1s linear infinite;color:var(--yellow)}
+@keyframes stcspin{to{transform:rotate(360deg)}}
+/* row actions are hover-revealed on live (opacity), the ⋮ stays */
+.stcgrid tr .stcrun{opacity:0;transition:opacity .12s}
+.stcgrid tr:hover .stcrun,.stcgrid tr .stcrun.spin{opacity:1}
+/* severity bar on a rule (the product's severity-indicator) */
+.stcsev{display:inline-block;width:3px;height:18px;border-radius:2px;margin-right:9px;vertical-align:-4px;background:var(--text-dim)}
+.stcsev.CRITICAL{background:var(--red)} .stcsev.HIGH{background:var(--orange)} .stcsev.MEDIUM{background:var(--yellow)} .stcsev.LOW{background:var(--blue)} .stcsev.INFO{background:var(--text-dim)}
+/* ── pager: ⏮ ◀ 1 ▶ ⏭ · [50 ▾] items per page … 1 - 12 of 12 items ─────────── */
+.stcpager{display:flex;align-items:center;gap:4px;height:45px;flex:0 0 45px;padding:8px 0;border-top:1px solid var(--border);font-size:12.8px;color:var(--text)}
+.stcpg{width:28px;height:28px;border:0;background:transparent;color:var(--text);border-radius:2px;display:grid;place-items:center;cursor:pointer;font-size:12.8px;padding:0}
+.stcpg svg{width:14px;height:14px;fill:currentColor}
+.stcpg:hover{background:var(--hover-side)}
+.stcpg.on{background:var(--chip);color:var(--white)}
+.stcpg[disabled]{opacity:.35;cursor:default;background:transparent}
+.stcsize{display:inline-flex;align-items:center;gap:14px;height:28px;padding:0 8px 0 12px;margin:0 8px 0 12px;border:1px solid var(--border);border-radius:4px;
+         background:var(--bg);cursor:pointer;color:var(--white);font-size:12.8px}
+.stcsize svg{width:11px;height:11px;fill:currentColor;color:var(--text-dim)}
+.stcpinfo{margin-left:auto;color:var(--text)}
+/* ── popover menu (row ⋮, column chooser, pickers) ────────────────────────────── */
+.stcmenu{position:fixed;z-index:100005;min-width:190px;max-width:420px;background:var(--pop);border:1px solid var(--pop-line);border-radius:4px;
+         box-shadow:var(--pop-shadow);padding:4px 0;font-size:12.8px;color:var(--text)}
+.stcmi{display:flex;align-items:center;gap:8px;height:32px;padding:0 21px 0 14px;cursor:pointer;white-space:nowrap}
+.stcmi svg{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
+.stcmi:hover{background:var(--pop-item-hover);color:var(--white)}
+.stcmi.del:hover{color:var(--red)}
+.stcmi.on{color:var(--white);font-weight:500}
+.stcmi.ck{padding-left:12px}
+.stcmi .bx{width:14px;height:14px;border:1px solid var(--text-dim);border-radius:3px;flex:0 0 14px;display:grid;place-items:center}
+.stcmi.on .bx{background:var(--teal);border-color:var(--teal)}
+.stcmi .bx svg{width:10px;height:10px;color:#04211d}
+.stcmi.sep{height:1px;padding:0;margin:4px 0;background:var(--pop-line);cursor:default}
+.stcmi.hd{height:26px;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:default}
+.stcmi.hd:hover{background:transparent;color:var(--text-dim)}
+.stcmenu .stcms{padding:6px 8px}
+.stcmenu .stcms input{width:100%;height:30px;padding:0 8px 0 30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;outline:none}
+.stcmenu .stcms{position:relative}
+.stcmenu .stcms svg{position:absolute;left:16px;top:13px;width:15px;height:15px;fill:currentColor;color:var(--text-dim)}
+.stcmenu .stcml{max-height:300px;overflow:auto}
+.stcmenu .stcmo{display:flex;gap:4px;padding:4px 8px 6px}
+.stcmenu .stcmo b{font:600 12px/24px "JetBrains Mono",monospace;padding:0 10px;border-radius:4px;border:1px solid var(--border);cursor:pointer;color:var(--text-dim)}
+.stcmenu .stcmo b.on{background:var(--chip);color:var(--white);border-color:var(--chip)}
+.stcmenu .stcmf{display:flex;justify-content:flex-end;gap:6px;padding:6px 8px;border-top:1px solid var(--pop-line)}
+/* the device picker is a grid in a popover (search + checkbox table), 855px on live */
+.stcmenu.grid{width:855px;max-width:calc(100vw - 40px);padding:12px}
+.stcmenu.grid .stcgrid th{position:static;background:transparent}
+.stcmenu.grid .stcgrid td{height:38px}
+.stcck{width:16px;height:16px;border:1px solid var(--text-dim);border-radius:3px;display:inline-grid;place-items:center;vertical-align:-3px;cursor:pointer;background:var(--bg)}
+.stcck.on{background:var(--teal);border-color:var(--teal)}
+.stcck svg{width:11px;height:11px;fill:currentColor;color:#04211d;display:none}
+.stcck.on svg{display:block}
+.stcgtag{display:inline-block;height:20px;line-height:20px;padding:0 7px;border-radius:10px;background:var(--chip);color:var(--text);font-size:11.5px;margin-right:4px}
+/* ── drawer (40% / 684px, blurred backdrop) ──────────────────────────────────── */
+.stcscrim{position:fixed;inset:0;z-index:100003;background:rgba(4,10,20,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none}
+.stcscrim.on{display:block}
+.stcdr{position:fixed;top:0;right:0;bottom:0;width:684px;max-width:92vw;z-index:100004;background:var(--bg);border-left:1px solid var(--border);
+       box-shadow:var(--shadow);display:none;flex-direction:column;transform:translateX(24px);opacity:0;transition:transform .18s,opacity .18s}
+.stcdr.on{display:flex}
+.stcdr.in{transform:none;opacity:1}
+.stcdrh{height:62px;flex:0 0 62px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);font-size:17px;font-weight:600;color:var(--white)}
+.stcdrh .x{margin-left:auto;width:30px;height:30px;border:0;background:transparent;color:var(--text-dim);border-radius:4px;display:grid;place-items:center;cursor:pointer}
+.stcdrh .x svg{width:16px;height:16px;fill:currentColor}
+.stcdrh .x:hover{color:var(--text);background:var(--hover-side)}
+.stcdrb{flex:1;min-height:0;overflow:auto;padding:16px 20px}
+.stcdrf{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border)}
+.stcdrf .mand{font-size:12.8px;color:var(--text);margin-right:auto}
+.stcdrf .mand b{color:var(--red);font-weight:400}
+/* ── form atoms: label + underline input (st's .stin), bordered select, segmented ── */
+.stcrow{display:flex;gap:36px;margin-bottom:14px}
+.stccol{flex:1;min-width:0}
+.stclab{font-size:12.8px;color:var(--text-dim);line-height:19px;margin-bottom:4px;display:block}
+.stclab.req::after{content:"*";color:var(--red);margin-left:2px}
+.stcfi{margin-bottom:14px}
+.stcfi.err .stclab{color:var(--red)}
+.stcfi.err .stin,.stcfi.err .stcsel,.stcfi.err .stcta{border-color:var(--red)}
+.stcfi .stin{margin-top:0}
+.stcfi .stex{font-size:12px;color:var(--red);margin-top:4px}
+.stcfi .stex:empty{display:none}
+.stcsel{display:flex;align-items:center;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text);
+        font-size:12.8px;cursor:pointer;gap:8px;user-select:none;min-width:0}
+.stcsel .v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcsel .ph{color:var(--text-dim)}
+.stcsel .car{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
+.stcsel:hover{border-color:var(--text-dim)}
+.stcsel.dis{opacity:.55;cursor:not-allowed}
+.stcsel.line{border-width:0 0 1px;border-radius:0;padding:0 2px;height:32px;border-color:var(--pop-line)}
+.stcsel .stctag{height:20px;line-height:20px;font-size:11.5px;margin-right:4px}
+.stcsel .chipx{width:18px;height:18px;border-radius:10px;background:var(--chip);color:var(--text);display:inline-grid;place-items:center;font-size:11px;margin-right:4px}
+.stcseg{display:inline-flex;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:36px}
+.stcseg button{height:34px;padding:0 12px;border:0;border-right:1px solid var(--border);background:transparent;color:var(--text-dim);font:inherit;font-size:12.8px;cursor:pointer}
+.stcseg button:last-child{border-right:0}
+.stcseg button.on{background:var(--chip);color:var(--white)}
+.stcseg button:hover:not(.on){color:var(--text)}
+.stcseg button[disabled]{cursor:default}
+.stcta{width:100%;min-height:72px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:12.8px;outline:none;resize:vertical}
+.stcta::placeholder{color:var(--text-dim)}
+.stcta:focus{border-color:var(--text-dim)}
+.stcmore{font-size:12.8px;color:var(--text-dim);margin-top:6px}
+.stcmore a{color:var(--white);text-decoration:underline;cursor:pointer}
+.stcmore svg{width:12px;height:12px;fill:currentColor;color:var(--teal);vertical-align:-1px;margin-left:4px}
+.stcnote{font-size:12.8px;color:var(--text-dim)}
+/* ── confirm (delete) ─────────────────────────────────────────────────────────── */
+.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45)}
+.stccf.on{display:grid}
+.stccfb{width:420px;max-width:92vw;background:var(--pop);border:1px solid var(--pop-line);border-radius:8px;box-shadow:var(--shadow);padding:20px}
+.stccfb h5{margin:0 0 8px;font-size:15px;font-weight:600;color:var(--white)}
+.stccfb p{margin:0 0 18px;font-size:12.8px;color:var(--text);line-height:1.55}
+.stccfb .bt{display:flex;justify-content:flex-end;gap:8px}
+.stbtn.danger{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+/* ── full pages: Create Benchmark · a benchmark's view · Create Rule ───────────── */
+.stcfull{display:flex;flex-direction:column;flex:1;min-height:0}
+.stcfh{display:flex;gap:36px;padding:0 0 6px}
+.stcfh .stccol{flex:1}
+.stcfoot{display:flex;justify-content:flex-end;gap:8px;margin:16px 0 20px;flex:0 0 auto}
+.stcfoot .mand{margin-right:auto;font-size:12.8px;color:var(--text)}
+.stcfoot .mand b{color:var(--red);font-weight:400}
+/* benchmark tree — nested accordions, a group header row, rules with a severity bar */
+.stcbt{margin:6px 0 0 0}
+.stcbg{border:1px solid var(--border);border-radius:4px;margin-bottom:8px;position:relative}
+.stcbg .stcbg{border:0;border-left:1px solid var(--border-soft);border-radius:0;margin:0 0 0 24px}
+.stcbgh{display:flex;align-items:center;min-height:48px;padding:0 10px 0 30px;gap:8px;position:relative;cursor:pointer}
+.stcbgh .car{position:absolute;left:10px;top:50%;width:14px;height:14px;fill:currentColor;color:var(--text-dim);transform:translateY(-50%) rotate(0deg);transition:transform .15s}
+.stcbg.open > .stcbgh .car{transform:translateY(-50%) rotate(90deg)}
+.stcbgh .drag{width:16px;height:16px;fill:currentColor;color:var(--text-dim);cursor:move;flex:0 0 16px}
+.stcbgh .num{font-size:12.8px;color:var(--text);flex:0 0 auto}
+.stcbgh .nm{font-size:12.8px;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcbgh input.nm{background:transparent;border:0;border-bottom:1px solid var(--pop-line);color:var(--text);font:inherit;font-size:12.8px;outline:none;padding:2px 0;height:26px}
+.stcbgh .acts{display:flex;gap:2px;flex:0 0 auto;opacity:.85}
+.stcbgh .acts .stcib.ok{color:var(--green)}
+.stcbgh .acts .stcib.del:hover{color:var(--red)}
+.stcbgb{display:none;padding:4px 0 6px 0}
+.stcbg.open > .stcbgb{display:block}
+.stcbr{display:flex;align-items:center;min-height:40px;padding:0 10px 0 30px;margin-left:24px;gap:8px;border-top:1px solid var(--border-soft);font-size:12.8px;color:var(--text)}
+.stcbr .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcbr .stcib{opacity:0}
+.stcbr:hover .stcib{opacity:1}
+.stcbr .stcib:hover{color:var(--red)}
+.stcbradd{margin:4px 0 0 54px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px dashed var(--border);border-radius:4px;
+          color:var(--text-dim);font-size:12px;cursor:pointer;background:transparent;font-family:inherit}
+.stcbradd svg{width:13px;height:13px;fill:currentColor}
+.stcbradd:hover{color:var(--text);border-color:var(--text-dim)}
+.stcbtn-out{height:34px;padding:0 15px;border:1px solid var(--text);border-radius:4px;background:transparent;color:var(--text);font:inherit;font-size:12.8px;cursor:pointer}
+.stcbtn-out:hover{background:var(--hover)}
+/* the (i) help pane on the right of a full page */
+.stcinfo{display:none;width:34%;max-width:560px;flex:0 0 auto;border-left:1px solid var(--border);padding:0 0 0 20px;margin-left:20px;font-size:12.8px;color:var(--text);line-height:1.6;overflow:auto}
+.stcfull.info .stcinfo{display:block}
+.stcinfo h5{margin:12px 0 4px;font-size:13.5px;font-weight:600;color:var(--white)}
+.stcinfo h5:first-child{margin-top:0}
+.stcinfo p{margin:0 0 8px}
+.stcinfo li{margin:0 0 4px 16px}
+.stcinfo code{font-family:"JetBrains Mono",monospace;font-size:11.5px;background:var(--chip);padding:1px 5px;border-radius:3px}
+.stcsplit{display:flex;flex:1;min-height:0}
+.stcsplit > .stcfbody{flex:1;min-width:0;overflow:auto}
+/* the rule wizard: a 320px steps column and the form */
+.stcwz{display:flex;flex:1;min-height:0;margin:-16px -16px -20px}
+.stcsteps{width:320px;flex:0 0 320px;border-right:1px solid var(--border)}
+.stcstep{display:flex;align-items:center;gap:12px;height:47px;padding:0 20px;font-size:12.8px;color:var(--text-dim);cursor:pointer;border-bottom:1px solid var(--border-soft)}
+.stcstep .n{width:26px;height:26px;border-radius:50%;border:1px solid var(--text-dim);display:grid;place-items:center;font-size:12px;flex:0 0 26px}
+.stcstep.on{background:var(--hover);color:var(--white);font-weight:600}
+.stcstep.on .n{border-color:var(--white);color:var(--white)}
+.stcstep.done .n{background:var(--white);border-color:var(--white);color:var(--bg)}
+.stcstep.done .n svg{width:12px;height:12px;fill:currentColor}
+.stcwzf{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.stcwzb{flex:1;min-height:0;overflow:auto;padding:16px 20px 0 20px}
+.stcwzfoot{flex:0 0 auto;display:flex;justify-content:flex-end;gap:8px;padding:14px 20px}
+.stch4{font-size:17px;font-weight:600;color:var(--white);margin:22px 0 12px}
+.stcinl{display:flex;align-items:center;gap:24px;margin:10px 0}
+.stcinl .stclab{margin:0;min-width:128px}
+.stccond{display:flex;align-items:flex-end;gap:16px 24px;margin-bottom:10px;flex-wrap:wrap}
+.stccond .op{width:102px;flex:0 0 102px}
+.stccond .cd{width:222px;flex:0 0 222px}
+.stccond .rp{flex:1;min-width:120px;max-width:360px}
+.stccond .oc{width:114px;flex:0 0 114px}
+.stccond .ic{display:flex;gap:8px;padding-bottom:4px}
+.stccond .ic .stcib svg{width:18px;height:18px}
+.stccond .ic .stcib.rm{color:var(--red)}
+.stccond .stcsel.blank{opacity:1;border-color:var(--border);cursor:default}
+.stccond .stcsel.blank .car{display:none}
+.stcctl{border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin:14px 0;position:relative;background:var(--panel)}
+.stcctl .x{position:absolute;right:10px;top:10px}
+.stcwzrow{display:flex;align-items:flex-start;gap:24px;margin-bottom:16px;max-width:780px}
+.stcwzrow .stclab{flex:0 0 166px;margin:8px 0 0;min-width:0}
+.stcwzrow .f{flex:1;min-width:0}
+.stcwzrow .stin{margin-top:0}
+@media (max-width:1366px){ .stcsearch{width:260px;flex-basis:260px} .stcsteps{width:260px;flex-basis:260px} }
 </style>
 </head>
 <!-- Both side panels start COLLAPSED (annotation, 13 Aug 2026): `dvshut` flips --rail-w
@@ -2519,15 +2780,19 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
       </div></div>
     </section>
 
+
     <!-- ══════ SETTINGS MODULE — My Account › My Profile, cloned from live 8.2.7 (19 Aug 2026) ══════
          Chrome is authored here; the list and the page are rendered by the st* script
          block at the end of the file. See that block's header comment. -->
     <section class="view" id="view-settings">
       <div class="pagehead">
-        <button class="stpt" id="stPanelBtn" data-tip="Hide settings menu" onclick="stPanel()"></button>
-        <span class="stsep"></span>
+        <button class="stpt" id="stPanelBtn" data-tip="Hide settings menu" onclick="stHeadBtn()"></button>
+        <span class="stsep" id="stHeadSep"></span>
         <svg class="ic" viewBox="0 0 48 48" id="stHeadIc"></svg>
-        <span class="ttl">Settings</span>
+        <span class="ttl" id="stHeadTtl">Settings</span>
+        <span style="flex:1"></span>
+        <!-- full-page screens (Create Benchmark, Create Rule …) carry the product's (i) help toggle -->
+        <button class="stpt stinfo" id="stHeadInfo" data-tip="Help" hidden onclick="stFullInfo()"></button>
       </div>
       <div class="stwrap">
         <aside class="stnav" id="stNav">
@@ -8054,6 +8319,7 @@ function lxLtPaint(){
 }
 </script>
 
+
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════════
    SETTINGS MODULE  —  a clone of the live product's Settings › My Account › My
@@ -8134,6 +8400,7 @@ const ST_ICO = {
   "apm": "M42,5.1H6c-2.2,0-4,1.8-4,4V31.3c0,2.2,1.8,4,4,4h11v4.1h-3c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h20.1c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-3.2v-4.1h11.2c2.2,0,4-1.8,4-4V9.1c0-2.2-1.8-4-4-4Zm-14.7,34.2h-6.8v-4.1h6.8v4.1Zm15.1-8.1c0,.2-.2,.4-.4,.4H6c-.2,0-.4-.2-.4-.4V9.1c0-.2,.2-.4,.4-.4H42c.2,0,.4,.2,.4,.4V31.3ZM17.9,14.8c-.6-.8-1.7-1-2.5-.4l-5.1,3.8c-.5,.3-.7,.9-.7,1.4s.3,1.1,.7,1.4l5.1,3.8c.3,.2,.7,.3,1.1,.3,.5,0,1.1-.2,1.4-.7,.6-.8,.4-1.9-.4-2.5l-3.2-2.3,3.2-2.3c.8-.6,1-1.7,.4-2.5Zm20,3.4l-5.1-3.8c-.8-.6-1.9-.4-2.5,.4-.6,.8-.4,1.9,.4,2.5l3.2,2.3-3.2,2.3c-.8,.6-1,1.7-.4,2.5,.3,.5,.9,.7,1.4,.7s.7-.1,1.1-.3l5.1-3.8c.5-.3,.7-.9,.7-1.4s-.3-1.1-.7-1.4Zm-10.4-4.9c-.9-.5-1.9-.2-2.4,.7l-5.2,9.4c-.5,.9-.2,1.9,.7,2.4,.3,.2,.6,.2,.9,.2,.6,0,1.2-.3,1.5-.9l5.2-9.4c.5-.9,.2-1.9-.7-2.4Z",
   "monitor": "M4.6,16.6H43.4c1,0,1.8-.8,1.8-1.8V3.5c0-1-.8-1.8-1.8-1.8H4.6c-1,0-1.8,.8-1.8,1.8V14.9c0,1,.8,1.8,1.8,1.8ZM37.9,7.9h-1.2l-2.1-1.3c-.4-.3-1-.3-1.4,0l-2.4,1.3-2.7-2.4s0,0,0,0h13.6v7.9H23.2c.4,0,.7-.2,.9-.5l3.2-4.2,2.4,2.1c.4,.4,1.1,.5,1.6,.2l2.5-1.3,1.7,1.1c.2,.1,.5,.2,.8,.2h1.7c.8,0,1.4-.6,1.4-1.4s-.6-1.4-1.4-1.4ZM6.4,5.3H26.3c0,0-.2,.2-.3,.3l-3.3,4.2-3.1-2.6c-.5-.4-1.2-.4-1.7,0l-1.5,1h-5.8c-.8,0-1.4,.6-1.4,1.4s.6,1.4,1.4,1.4h6.2c.3,0,.6,0,.8-.2l.9-.6,3.4,2.9c.2,.2,.5,.3,.8,.3H6.4V5.3ZM44,42.7h-13.8v-4.3c0-1-.8-1.8-1.8-1.8h-2.7v-2.7h17.6c1,0,1.8-.8,1.8-1.8v-11.4c0-1-.8-1.8-1.8-1.8H4.6c-1,0-1.8,.8-1.8,1.8v11.4c0,1,.8,1.8,1.8,1.8H22.2v2.7h-2.7c-1,0-1.8,.8-1.8,1.8v4.3H4c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8H44c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8Zm-6.1-17.5h-1.2l-2.1-1.3c-.4-.3-1-.3-1.4,0l-2.4,1.3-2.7-2.4s0,0,0,0h13.6v7.9H23.2c.4,0,.7-.2,.9-.5l3.2-4.2,2.4,2.1c.4,.4,1.1,.5,1.6,.2l2.5-1.3,1.7,1.1c.2,.1,.5,.2,.8,.2h1.7c.8,0,1.4-.6,1.4-1.4s-.6-1.4-1.4-1.4ZM6.4,30.5v-7.9H26.3c0,0-.2,.2-.3,.3l-3.3,4.2-3.1-2.6c-.5-.4-1.2-.4-1.7,0l-1.5,1h-5.8c-.8,0-1.4,.6-1.4,1.4s.6,1.4,1.4,1.4h6.2c.3,0,.6,0,.8-.2l.9-.6,3.4,2.9c.2,.2,.5,.3,.8,.3H6.4Zm20.4,12.3h-5.5v-2.5h5.5v2.5Z",
   "integration": "M13.72,17.52c-.73-.73-2-.73-2.73,0-.75.75-.75,1.97,0,2.73l.16.16-2.45,2.45c-4.04,4.04-4.53,10.37-1.25,14.96l-4.08,4.08c-.36.36-.56.85-.56,1.36s.2,1,.56,1.36l.19.19h.03c.32.23.72.36,1.14.36h0c.52,0,1.01-.2,1.36-.55l4.08-4.08c4.59,3.28,10.92,2.79,14.96-1.25l2.44-2.45.16.16c.75.75,1.97.75,2.73,0,.36-.36.56-.85.56-1.36s-.2-1-.56-1.36L13.72,17.52ZM22.42,36.57c-1.47,1.47-3.42,2.28-5.49,2.28s-4.03-.81-5.49-2.28c-3.03-3.03-3.03-7.96,0-10.98h0l2.45-2.45,10.99,10.99-2.45,2.45ZM45.19,4.74c0-.52-.2-1-.57-1.36-.7-.7-2.03-.7-2.73,0l-4.08,4.08c-4.59-3.29-10.92-2.79-14.96,1.25l-2.45,2.45-.16-.16c-.73-.73-2-.73-2.73,0-.75.75-.75,1.97,0,2.73l3.21,3.21-1.33,1.33c-.71.71-.71,1.87,0,2.58.38.38.89.59,1.44.59h0c.54,0,1.05-.21,1.43-.59l1.19-1.19,4.89,4.89-1.29,1.29c-.36.36-.55.83-.55,1.33s.2.97.55,1.33c.77.77,2.02.77,2.79,0l1.22-1.23,3.21,3.21c.36.36.85.56,1.36.56s1-.2,1.36-.56c.36-.36.56-.85.56-1.36s-.2-1-.56-1.36l-.16-.16,2.45-2.45c4.04-4.04,4.53-10.37,1.25-14.96l4.08-4.08c.36-.36.56-.85.56-1.36ZM36.56,22.42l-2.45,2.45-10.99-10.98,2.45-2.45c1.47-1.47,3.42-2.28,5.49-2.28s4.03.81,5.49,2.28c3.03,3.03,3.03,7.96,0,10.99Z",
+  "info-circle": "M24,22c-.6,0-1.1,.2-1.4,.6s-.6,.9-.6,1.4v8c0,.6,.2,1.1,.6,1.4s.9,.6,1.4,.6,1.1-.2,1.4-.6,.6-.9,.6-1.4v-8c0-.6-.2-1.1-.6-1.4s-.9-.6-1.4-.6Zm.8-7.8c-.5-.2-1.1-.2-1.5,0-.3,0-.5,.2-.7,.4s-.3,.4-.4,.7c0,.2-.2,.5-.2,.8s0,.6,.2,.8c0,.3,.3,.5,.5,.7s.4,.3,.7,.4c.3,0,.7,.2,1,0,.3,0,.7-.2,1-.3,.3-.2,.5-.4,.7-.8,.2-.3,.2-.6,.3-1,0-.6-.2-1.1-.6-1.4-.2-.2-.4-.3-.7-.4h-.2Zm17.8,2.3c-1.1-2.4-2.5-4.7-4.4-6.5-1.9-1.9-4.1-3.3-6.5-4.4s-5.1-1.5-7.6-1.5c-4,0-7.8,1.1-11.2,3.3s-5.8,5.3-7.4,9-1.9,7.7-1.1,11.6c.8,3.9,2.7,7.4,5.4,10.3,2.8,2.8,6.4,4.7,10.3,5.4,3.9,.8,7.9,.4,11.6-1.1,3.6-1.5,6.8-4.1,9-7.4,2.2-3.3,3.3-7.2,3.3-11.2s-.5-5.3-1.5-7.6h0Zm-7.2,19.1c-3.1,3.1-7.1,4.7-11.4,4.7s-6.3-1-8.9-2.7c-2.7-1.7-4.7-4.3-5.9-7.2-1.2-3-1.5-6.1-1-9.3,.6-3.2,2.1-6,4.4-8.2s5.1-3.7,8.2-4.4c3.2-.6,6.3-.3,9.3,1,3,1.2,5.4,3.2,7.2,5.9s2.7,5.7,2.7,8.9-1.7,8.3-4.7,11.4h0Z",
   "chevron-left": "M31.4,10.6c.8,.8,.8,2,0,2.8l-10.6,10.6,10.6,10.6c.8,.8,.8,2,0,2.8-.8,.8-2,.8-2.8,0l-12-12c-.8-.8-.8-2,0-2.8l12-12c.8-.8,2-.8,2.8,0Z",
   "chevron-right": "M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z",
   "settings": "M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z",
@@ -8168,7 +8435,7 @@ const ST_TREE = [
 const ST_PW = { min:6, special:true, number:true, lower:true, upper:true, max:64 };
 const ST_NAME_RX = /^[a-zA-Z\s'\-]{1,50}$/;
 
-const ST = { inited:false, cat:'My Account', page:'My Profile', open:['My Account'], q:'', nav:true,
+const ST = { inited:false, cat:'My Account', page:'My Profile', open:['My Account'], q:'', nav:true, full:null,
              pw:false, show:{old:false,nw:false,cf:false}, data:null, saved:null,
              avatar:null, savedAvatar:null, err:{}, tried:false, busy:false };
 
@@ -8203,13 +8470,24 @@ function stOpen(cat, page){
   stBoot();
   const c = ST_TREE.find(x => x.n === cat) || ST_TREE[0];
   const p = (page && c.subs.find(s => s[0] === page)) ? page : c.subs[0][0];
-  ST.cat = c.n; ST.page = p; ST.q = '';
+  ST.cat = c.n; ST.page = p; ST.q = ''; ST.full = null;
   if (!ST.open.includes(c.n)) ST.open.push(c.n);
   if (typeof closePops === 'function') closePops();
   selectModuleByName('Settings');          /* → selectModule → showView('settings') + stInit() */
   stRender();
 }
-function stGo(cat, page){ ST.cat = cat; ST.page = page; if (!ST.open.includes(cat)) ST.open.push(cat); stRender(); }
+function stGo(cat, page){ ST.cat = cat; ST.page = page; ST.full = null; if (!ST.open.includes(cat)) ST.open.push(cat); stRender(); }
+/* full-page screens: {title, html(), after?(), info?()} — opened by a page (Create Benchmark …),
+   closed by the head's ‹, by stGo/stOpen, and by the screen's own Cancel/back */
+function stFullOpen(pg){ ST.full = pg; stMainPaint(); stNavPaint(); }
+function stFullClose(){ if (!ST.full) return; const back = ST.full.onClose; ST.full = null; stMainPaint(); stNavPaint(); if (back) back(); }
+function stFullInfo(){ if (ST.full && ST.full.info) ST.full.info(); }
+function stHeadBtn(){ if (ST.full) stFullClose(); else stPanel(); }
+function stHeadPaint(){
+  const t = document.getElementById('stHeadTtl'), i = document.getElementById('stHeadInfo');
+  if (t) t.textContent = ST.full ? ST.full.title : 'Settings';
+  if (i){ i.hidden = !(ST.full && ST.full.info); if (!i.innerHTML) i.innerHTML = stSvg('info-circle'); }
+}
 function stTog(cat){ const i = ST.open.indexOf(cat); if (i >= 0) ST.open.splice(i,1); else ST.open.push(cat); stNavPaint(); }
 function stSearch(v){ ST.q = v; stNavPaint(); }
 function stPanel(){ ST.nav = !ST.nav; stPanelPaint(); }
@@ -8217,8 +8495,10 @@ function stPanelPaint(){
   const v = document.getElementById('view-settings'), b = document.getElementById('stPanelBtn');
   if (!v || !b) return;
   v.classList.toggle('stshut', !ST.nav);
-  b.innerHTML = stSvg(ST.nav ? 'chevron-left' : 'chevron-right');
-  b.setAttribute('data-tip', ST.nav ? 'Hide settings menu' : 'Show settings menu');
+  v.classList.toggle('stfullpg', !!ST.full);
+  b.innerHTML = stSvg(ST.full ? 'chevron-left' : ST.nav ? 'chevron-left' : 'chevron-right');
+  b.setAttribute('data-tip', ST.full ? 'Back' : ST.nav ? 'Hide settings menu' : 'Show settings menu');
+  stHeadPaint();
 }
 function stRender(){ stNavPaint(); stMainPaint(); stPanelPaint(); }
 
@@ -8240,9 +8520,19 @@ function stNavPaint(){
   el.innerHTML = html || `<div class="stempty">No settings match “${stEsc(ST.q.trim())}”.</div>`;
 }
 
+/* Other settings pages register themselves here (a later script block owns them — the
+   Compliance Settings block does), keyed “<category> › <page>” → {html(), after?()}.
+   A page the registry does not know lands on the placeholder. */
 function stMainPaint(){
   const el = document.getElementById('stMain'); if (!el) return;
-  el.innerHTML = (ST.cat === 'My Account' && ST.page === 'My Profile') ? stProfileHTML() : stStubHTML();
+  const pages = (typeof ST_PAGES !== 'undefined') ? ST_PAGES : {};
+  const pg = ST.full || pages[ST.cat + ' › ' + ST.page];
+  if (!ST.full && ST.cat === 'My Account' && ST.page === 'My Profile') el.innerHTML = stProfileHTML();
+  else if (pg) el.innerHTML = pg.html();
+  else el.innerHTML = stStubHTML();
+  el.scrollTop = 0;
+  stPanelPaint();
+  if (pg && pg.after) pg.after();
   stBtnPaint();
 }
 function stStubHTML(){
@@ -8394,6 +8684,743 @@ function stIdentity(){
     else { el.style.backgroundImage = ''; el.textContent = ini; }
   });
 }
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPLIANCE SETTINGS  —  the three pages of the category, cloned from the live
+   product (build 8.2.7) on 20 Aug 2026 at /settings/compliance-settings/
+   audit-policy · benchmark · rules, plus benchmark/create, benchmark/<id>/view and
+   rules/create, read in the browser: the Kendo grids (columns, widths, row
+   actions, pager), the Vue components' render templates and option lists
+   (AuditPolicyList / AuditPolicyForm / BenchmarkList / RulesList / RulesFom,
+   pulled out of __vue__), every drawer and picker driven by hand, and the two
+   (i) help panes' text.
+
+   It plugs into the st* Settings module through ST_PAGES — the st block paints
+   whatever is registered for “Compliance Settings › <page>” — and uses the st
+   block's stFullOpen() for the screens that replace the whole settings view on
+   live (Create Benchmark, a benchmark's view, Create Rule). Namespace `stc`;
+   borrows stEsc / stA / stFullOpen / stFullClose / stMainPaint / toast.
+
+   WHAT WAS COPIED, measured rather than invented:
+     · Compliance Policy — search · eye (column chooser with Reset Column
+       Preference) · Export As PDF · Export As CSV · filter toggle · Create
+       Compliance Policy; filter chips Benchmark · Tags · ＋ Filter (operator
+       = / != then a value); grid POLICY NAME↑ · DESCRIPTION · CREATED TIME ·
+       USED COUNT (pill) · TAG (mono pills, first + “+N”) · SCHEDULE (icon when
+       scheduled) · BENCHMARK · ACTIONS (run-now when usedCounts > 0, spinning
+       while it runs, and ⋮ Edit · Clone · Schedule · Assign Monitor · Remove
+       Assigned Monitor · Delete); 50 per page pager; a policy name opens the
+       read-only “View Audit Policy” drawer (that is its live title).
+       Create/Edit/Clone is a 684px (40%) drawer over a blurred page: Policy
+       Name* (“Must be unique”) · Description (“Write Description here”) · Tags ·
+       Config File Type* Startup|Running · Benchmark Filter by Tags · Benchmark*
+       (locked while editing, as live) · Device Filter* Monitor|Group|Tag ·
+       Select Device* (the grid-dropdown: search + DEVICE/IP/TYPE/GROUPS/VENDOR/
+       TAGS with checkboxes) · Notify Team (“@User or Email or /Handle or #User
+       Profile”) · “For more information: Compliance Policy ↗” · “* fields are
+       mandatory” · Reset · Create/Update/Clone Compliance Policy.
+       Schedule → “<name> Schedule” drawer (Once/Daily/Weekly/Monthly, Start
+       Date, Hours, Notify*, Schedule · Reset). Assign / Remove Assigned Monitor
+       → a monitor table with checkboxes, Cancel · Assign/Unassign Monitor.
+     · Benchmark — search · PDF · CSV · filter · Create Benchmark; Tags chip;
+       grid BENCHMARK (link; 🔒 on the system benchmark) · DESCRIPTION · USED
+       COUNT · TAG · ACTIONS (⋮ Clone · Delete; the locked one has Clone only).
+       A name opens the full-page view (‹ name, (i), read-only fields, the nested
+       rule groups with numbered rules and their severity bars). Create Benchmark
+       is a full page: Benchmark Name* · Description · Tags · the rule-group
+       builder (Add Rule Group → numbered accordions: Enter Name ✓, ✎ Edit Name,
+       ⊕ Add Rule Group below, Delete, Add Rule), Reset · Create Benchmark.
+     · Rules — search (with ×) · Create Rule; grid RULE (severity bar) ·
+       DESCRIPTION · TAG · RULE TYPE (Custom/Default) · ACTIONS (⋮ Edit · Clone ·
+       Delete). Create Rule is the two-step wizard: 1 Audit & Remediation
+       Properties (Rule Check in* Config File|CLI · Rule Configuration* Basic|
+       Advanced · Block Criteria (Block Start* / Block End + Add Conditions) ·
+       Command* for CLI · Rule Condition rows [AND/OR] Condition* Should Contain/
+       Should Not contain · Result Pattern* · Occurrence* Any/1–25 ⊗ ⊕ ·
+       Remediation Action: Action to be taken + Create Runbook · Reset · Next),
+       2 General Properties (Rule Name* · Description · Rule Severity* Critical/
+       High/Medium/Low/Info (High default) · Tags · Rationale · Impact · Default
+       Value · References · Additional Information · Controls Name/Description/
+       Version/IG (IG-1/2/3) + Add New Controls · Reset · Create Rule), with the
+       (i) help pane text copied from the page.
+     · The CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0 tree is the live one — 3 planes,
+       every group and all 99 rules with their severities — and the rule list is
+       those 99 “Default” rules plus the 10 “Custom” ones the instance had.
+
+   DELIBERATE DIFFERENCES:
+     · Hosts and IPs are RFC 5737; people's names in policy/benchmark names were
+       neutralised (“Sagar_*” → “BFSI_*”/“Branch_*”); the live notify e-mail is not
+       carried. Tags, rule titles and CIS text are as live.
+     · The group accordion on live renders a BLANK third button (its Delete / Add
+       Rule icon is missing in 8.2.7) — the (i) pane documents Delete and Add Rule,
+       so both are built here with icons.
+     · Export As PDF/CSV and Create Runbook toast instead of producing a file /
+       leaving the module; the Device Filter → Group / Tag pickers are lists.
+     · Primary buttons are this prototype's teal (live: white on dark).
+   ═══════════════════════════════════════════════════════════════════════════ */
+const STC_ICO = {"restart": "M21.7,14.3c-.6-.4-1.4-.4-2.1,0-.7,.3-1.1,1-1.1,1.8v16c0,.7,.4,1.4,1.1,1.8,.3,.2,.6,.2,.9,.2s.8-.1,1.1-.3l12-8c.6-.4,.9-1,.9-1.7s-.3-1.3-.9-1.7l-12-8Zm.9,13.9v-8.5l6.4,4.3-6.4,4.3Zm20.8-5.6c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6-.6,.9-.6,1.4c0,3.7-1.3,7.4-3.6,10.3-2.4,2.9-5.7,4.9-9.4,5.6-3.7,.7-7.5,.1-10.8-1.6-3.3-1.8-5.9-4.7-7.3-8.1-1.4-3.5-1.5-7.3-.4-10.9,1.1-3.6,3.5-6.6,6.6-8.7,3.1-2,6.9-2.9,10.6-2.5,3.7,.4,7.2,2.2,9.8,4.9h-4.1c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h8.4c.5,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4V6.3c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v3.2c-3.3-3.2-7.7-5.1-12.3-5.5-4.6-.4-9.2,.9-13,3.5-3.8,2.6-6.6,6.5-7.8,10.9-1.3,4.4-1,9.2,.8,13.4,1.8,4.2,5,7.7,9.1,9.9,4.1,2.1,8.8,2.8,13.3,1.9,4.5-.9,8.6-3.4,11.5-6.9,2.9-3.6,4.5-8,4.5-12.6,0-.5-.2-1-.6-1.4Z", "schedule": "M33.4,32.5h-2.7v-2.5c0-.4-.2-.8-.5-1.1-.6-.6-1.7-.6-2.3,0-.3,.3-.5,.7-.5,1.1v4.1c0,.4,.2,.8,.5,1.1,.3,.3,.7,.5,1.1,.5h4.3c.4,0,.8-.2,1.1-.5,.3-.3,.5-.7,.5-1.1s-.2-.8-.5-1.1c-.3-.3-.7-.5-1.1-.5Zm-15.7,7.4h-7c-.3,0-.5-.2-.5-.5V15.3h27.5v5.5c.9,.6,1.8,1.3,2.6,2,.4,.4,.8,.8,1.1,1.3V12.4c0-2.1-1.7-3.8-3.8-3.8h-3.8V4.6c0-.5-.4-.9-.9-.9h-3.1c-.5,0-.9,.4-.9,.9v4.1h-10V4.6c0-.5-.4-.9-.9-.9h-3.1c-.5,0-.9,.4-.9,.9v4.1h-3.8c-2.1,0-3.8,1.7-3.8,3.8v27.5c0,2.1,1.7,3.8,3.8,3.8h10.5c-.2-.2-.4-.4-.6-.6-1-1-1.7-2-2.4-3.2Zm23-11.3c-.6-1.4-1.4-2.6-2.5-3.7-1.1-1.1-2.3-1.9-3.7-2.5-3.5-1.4-7.5-1-10.6,1-1.9,1.2-3.3,3-4.2,5.1-.9,2.1-1.1,4.3-.6,6.5,.4,2.2,1.5,4.2,3.1,5.8,1.6,1.6,3.6,2.7,5.8,3.1,.7,.1,1.5,.2,2.2,.2,1.5,0,2.9-.3,4.3-.9,2.1-.9,3.8-2.3,5.1-4.2,1.2-1.9,1.9-4,1.9-6.3s-.3-2.9-.9-4.3Zm-4.8,10c-1.5,1.5-3.5,2.3-5.6,2.3s-3.1-.5-4.4-1.3c-1.3-.9-2.3-2.1-2.9-3.6-.6-1.5-.8-3.1-.5-4.6,.3-1.6,1.1-3,2.2-4.1s2.5-1.9,4.1-2.2c.5-.1,1-.2,1.6-.2,1,0,2.1,.2,3,.6,1.5,.6,2.7,1.6,3.6,2.9,.9,1.3,1.3,2.8,1.3,4.4s-.8,4.1-2.3,5.6Z", "ellipsis-v": "M24,14c2.2,0,4-1.8,4-4s-1.8-4-4-4-4,1.8-4,4,1.8,4,4,4Zm0,20c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Zm0-14c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Z", "pencil": "M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z", "clone": "M4,8c0-2.2,1.8-4,4-4H28c2.2,0,4,1.8,4,4v8h8c2.2,0,4,1.8,4,4v20c0,2.2-1.8,4-4,4H20c-2.2,0-4-1.8-4-4v-8H8c-2.2,0-4-1.8-4-4V8Zm16,24v8h20V20h-8v8c0,2.2-1.8,4-4,4h-8Zm8-4V8H8V28H28Z", "trash-alt": "M28,36c.6,0,1-.2,1.4-.6s.6-.9,.6-1.4v-12c0-.6-.2-1-.6-1.4s-.9-.6-1.4-.6-1,.2-1.4,.6-.6,.9-.6,1.4v12c0,.6,.2,1,.6,1.4s.9,.6,1.4,.6Zm-8,0c.6,0,1-.2,1.4-.6s.6-.9,.6-1.4v-12c0-.6-.2-1-.6-1.4s-.9-.6-1.4-.6-1,.2-1.4,.6-.6,.9-.6,1.4v12c0,.6,.2,1,.6,1.4s.9,.6,1.4,.6ZM41.4,12.6c-.4-.4-.9-.6-1.4-.6h-8v-2c0-1.6-.7-3.1-1.7-4.3-1.1-1.1-2.7-1.7-4.3-1.7h-4c-1.6,0-3.1,.7-4.3,1.7-1.1,1.1-1.7,2.7-1.7,4.3v2H8c-.6,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4,.9,.6,1.4,.6h2v22c0,1.6,.7,3.1,1.7,4.3,1.1,1.1,2.7,1.7,4.3,1.7h16c1.6,0,3.1-.7,4.3-1.7,1.1-1.1,1.7-2.7,1.7-4.3V16h2c.6,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4Zm-21.4-2.6c0-.6,.2-1,.6-1.4s.9-.6,1.4-.6h4c.6,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v2h-8v-2Zm14,28c0,.6-.2,1-.6,1.4s-.9,.6-1.4,.6H16c-.6,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V16h20v22Z", "file-check": "M22.99,39.99H11c-.53,0-1.04-.21-1.41-.59-.37-.37-.59-.88-.59-1.41V10c0-.53,.21-1.04,.59-1.41,.37-.37,.88-.59,1.41-.59h10v6c0,1.59,.63,3.12,1.76,4.24,1.12,1.12,2.65,1.76,4.24,1.76h6v10c0,.53,.21,1.04,.59,1.41s.88,.59,1.41,.59,1.04-.21,1.41-.59,.59-.88,.59-1.41v-12.12c-.02-.18-.06-.36-.12-.54v-.18c-.1-.21-.22-.39-.38-.56h0L24.49,4.6c-.17-.16-.35-.28-.56-.38-.07-.01-.13-.01-.2,0-.19-.1-.4-.18-.62-.22H11c-1.59,0-3.12,.63-4.24,1.76s-1.76,2.65-1.76,4.24v27.99c0,1.59,.63,3.12,1.76,4.24,1.12,1.12,2.65,1.76,4.24,1.76h12c.53,0,1.04-.21,1.41-.59s.59-.88,.59-1.41-.21-1.04-.59-1.41-.88-.59-1.41-.59Zm2-29.17l5.18,5.18h-3.18c-.53,0-1.04-.21-1.41-.59-.37-.37-.59-.88-.59-1.41v-3.18ZM15,27.99h12c.53,0,1.04-.21,1.41-.59s.59-.88,.59-1.41-.21-1.04-.59-1.41-.88-.59-1.41-.59H15c-.53,0-1.04,.21-1.41,.59-.37,.37-.59,.88-.59,1.41s.21,1.04,.59,1.41c.37,.37,.88,.59,1.41,.59Zm8,4h-8c-.53,0-1.04,.21-1.41,.59-.37,.37-.59,.88-.59,1.41s.21,1.04,.59,1.41c.37,.37,.88,.59,1.41,.59h8c.53,0,1.04-.21,1.41-.59s.59-.88,.59-1.41-.21-1.04-.59-1.41-.88-.59-1.41-.59Zm-8-12h2c.53,0,1.04-.21,1.41-.59,.37-.37,.59-.88,.59-1.41s-.21-1.04-.59-1.41c-.37-.37-.88-.59-1.41-.59h-2c-.53,0-1.04,.21-1.41,.59-.37,.37-.59,.88-.59,1.41s.21,1.04,.59,1.41c.37,.37,.88,.59,1.41,.59Zm27.41,12.58c-.19-.19-.41-.34-.65-.44-.24-.1-.51-.15-.77-.15s-.53,.05-.77,.15c-.24,.1-.46,.25-.65,.44l-6.58,6.6-2.58-2.6c-.19-.19-.41-.33-.65-.44-.24-.1-.5-.15-.77-.15s-.52,.05-.77,.15c-.24,.1-.47,.25-.65,.44-.19,.19-.33,.41-.44,.65-.1,.24-.15,.5-.15,.77s.05,.52,.15,.77c.1,.24,.25,.47,.44,.65l4,4c.19,.19,.41,.34,.65,.44,.24,.1,.51,.15,.77,.15s.53-.05,.77-.15c.24-.1,.46-.25,.65-.44l8-8c.19-.19,.34-.41,.44-.65,.1-.24,.15-.51,.15-.77s-.05-.53-.15-.77c-.1-.24-.25-.46-.44-.65h0Z", "file-times": "M29.9,26.8c.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.3-.5-.4-.7-.2-.2-.4-.3-.7-.4-.2-.1-.5-.2-.8-.2s-.5,0-.8,.2c-.2,.1-.5,.3-.7,.4l-2.6,2.6-2.6-2.6c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6-.6,.9-.6,1.4,.2,1,.6,1.4l2.6,2.6-2.6,2.6c-.2,.2-.3,.4-.4,.7-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.3,.5,.4,.7,.2,.2,.4,.3,.7,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2c.2-.1,.5-.3,.7-.4l2.6-2.6,2.6,2.6c.2,.2,.4,.3,.7,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2c.2-.1,.5-.3,.7-.4,.2-.2,.3-.4,.4-.7,.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.3-.5-.4-.7l-2.6-2.6,2.6-2.6c.2-.2,.3-.4,.4-.7Zm10-9.4v-.2c0-.2-.2-.4-.4-.6L27.5,4.6c-.2-.2-.4-.3-.6-.4h-.2c-.2-.1-.4-.2-.6-.2H14c-1.6,0-3.1,.6-4.2,1.8s-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h20c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V18h0c0-.3,0-.5-.1-.7Zm-11.9-6.5l5.2,5.2h-3.2c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4v-3.2Zm8,27.2c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6H14c-.5,0-1-.2-1.4-.6s-.6-.9-.6-1.4V10c0-.5,.2-1,.6-1.4s.9-.6,1.4-.6h10v6c0,1.6,.6,3.1,1.8,4.2s2.7,1.8,4.2,1.8h6v18Z", "export-pdf": "M37.9,11.7l-6.6-6.6c-.7-.7-1.7-1.1-2.6-1.1H12.8c-2.1,0-3.7,1.7-3.7,3.8V40.3c0,2.1,1.7,3.7,3.7,3.7h22.5c2.1,0,3.7-1.7,3.7-3.7V14.3c0-1-.4-2-1.1-2.7Zm-3,2.4h-5.9v-5.9l5.9,5.9ZM12.8,40.3V7.8h12.5V15.9c0,1,.8,1.9,1.9,1.9h8.1v22.5H12.8Zm19.5-11.2c-1-.9-3.7-.7-5-.5-1.3-.8-2.2-2-2.9-3.6,.3-1.3,.8-3.2,.4-4.4-.3-2-3-1.8-3.3-.5-.3,1.3,0,3,.5,5.2-.8,1.9-1.9,4.4-2.8,5.8-1.6,.8-3.7,2-4,3.6-.3,1.2,2,4.3,5.9-2.4,1.7-.6,3.7-1.3,5.3-1.6,1.5,.8,3.2,1.3,4.4,1.3,2,0,2.2-2.2,1.4-3Zm-15.5,6.1c.4-1.1,1.9-2.3,2.4-2.7-1.5,2.4-2.4,2.8-2.4,2.7Zm6.4-14.9c.6,0,.5,2.5,.1,3.2-.3-1.1-.3-3.2-.1-3.2Zm-1.9,10.7c.8-1.3,1.4-2.9,1.9-4.3,.6,1.2,1.5,2.1,2.4,2.8-1.6,.3-3,1-4.3,1.5Zm10.3-.4s-.4,.5-2.9-.6c2.7-.2,3.2,.4,2.9,.6Z", "export-csv": "M37.9,11.7l-6.6-6.6c-.7-.7-1.7-1.1-2.6-1.1H12.7c-2.1,0-3.7,1.7-3.7,3.8V40.3c0,2.1,1.7,3.7,3.7,3.7h22.5c2.1,0,3.8-1.7,3.8-3.7V14.3c0-1-.4-2-1.1-2.7Zm-8.9-3.6l5.9,5.9h-5.9v-5.9h0Zm6.3,32.2H12.7V7.8h12.5V15.9c0,1,.8,1.9,1.9,1.9h8.1v22.5Zm-8.8-15.6v1.6c0,2.8,1,5.4,2.8,7.4,.2,.3,.6,.4,.9,.4s.7-.1,.9-.4c1.8-2,2.8-4.6,2.8-7.4v-1.6c0-.3-.3-.6-.6-.6h-1.2c-.3,0-.6,.3-.6,.6v1.6c0,1.6-.4,3.1-1.2,4.4-.8-1.3-1.2-2.9-1.2-4.4v-1.6c0-.3-.3-.6-.6-.6h-1.2c-.3,0-.6,.3-.6,.6Zm-8.1-.6h-.6c-2.1,0-3.8,1.7-3.8,3.8v2.5c0,2.1,1.7,3.8,3.8,3.8h.6c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6h-.6c-.7,0-1.2-.6-1.2-1.2v-2.5c0-.7,.6-1.2,1.2-1.2h.6c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6Zm4.6,3.3c-.1,0-.2-.2-.2-.3,0-.2,.3-.5,.8-.5h1c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6h-1c-1.8,0-3.3,1.4-3.3,3s.4,1.6,1,2.2l1.7,1.5c.1,0,.2,.2,.2,.3,0,.2-.3,.5-.8,.5h-1c-.3,0-.6,.3-.6,.6v1.2c0,.3,.3,.6,.6,.6h1c1.8,0,3.3-1.4,3.3-3s-.4-1.6-1-2.2l-1.7-1.5h0Z", "filter": "M28,44c-.3,0-.6,0-.9-.2l-8-4c-.7-.3-1.1-1-1.1-1.8v-12.3L2.5,7.3c-.5-.6-.6-1.4-.3-2.1,.3-.7,1-1.2,1.8-1.2H44c.8,0,1.5,.5,1.8,1.2s.2,1.5-.3,2.1l-15.5,18.4v16.3c0,.7-.4,1.3-.9,1.7-.3,.2-.7,.3-1.1,.3Zm-6-7.2l4,2v-13.8c0-.5,.2-.9,.5-1.3l13.2-15.6H8.3l13.2,15.6c.3,.4,.5,.8,.5,1.3v11.8Z", "plus": "M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z", "eye": "M43.8,23.2c-4-9.3-11.6-15.2-19.8-15.2S8.2,13.8,4.2,23.2c0,.3-.2,.6-.2,.8s0,.6,.2,.8c4,9.3,11.6,15.2,19.8,15.2s15.8-5.8,19.8-15.2c0-.3,.2-.6,.2-.8s0-.6-.2-.8Zm-19.8,12.8c-6.4,0-12.4-4.6-15.8-12,3.4-7.4,9.4-12,15.8-12s12.4,4.6,15.8,12c-3.4,7.4-9.4,12-15.8,12Zm0-20c-1.6,0-3.1,.5-4.5,1.3-1.3,.9-2.4,2.1-3,3.6-.6,1.4-.8,3-.5,4.7,.3,1.5,1,3,2.2,4.1s2.6,1.9,4.1,2.2,3.1,.2,4.7-.5c1.4-.6,2.7-1.6,3.6-3,.9-1.3,1.3-2.9,1.3-4.5s-.9-4.2-2.4-5.6c-1.5-1.5-3.5-2.4-5.6-2.4Zm2.9,10.9c-.8,.8-1.8,1.1-2.9,1.1s-1.5-.2-2.2-.7c-.7-.5-1.1-1-1.4-1.8s-.4-1.5-.2-2.3c.2-.8,.6-1.5,1-2s1.2-1,2-1c.8-.2,1.6,0,2.3,.2,.8,.3,1.3,.9,1.8,1.4,.5,.7,.7,1.4,.7,2.2s-.4,2.1-1.1,2.9Z", "search": "M43.4,40.6l-7.4-7.3c2.9-3.6,4.3-8.2,3.9-12.8-.4-4.6-2.5-8.9-5.9-11.9-3.4-3-7.9-4.7-12.5-4.6s-9,2-12.2,5.2c-3.2,3.2-5.2,7.7-5.3,12.3s1.5,9,4.6,12.5c3,3.4,7.3,5.5,11.9,5.9s9.1-1,12.8-3.9l7.3,7.3c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4h0Zm-11.5-8.6c-2.7,2.7-6.2,4.1-9.9,4.1s-5.4-.9-7.8-2.4c-2.3-1.5-4.1-3.7-5.1-6.3-1-2.6-1.3-5.3-.8-8.1,.6-2.7,1.9-5.2,3.8-7.1,2-2,4.5-3.3,7.1-3.8,2.7-.6,5.5-.3,8.1,.8s4.8,2.9,6.3,5.1c1.5,2.3,2.4,5,2.4,7.8s-1.4,7.2-4.1,9.9Z", "chevron-down": "M37.4,16.6c-.8-.8-2-.8-2.8,0l-10.6,10.6-10.6-10.6c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l12,12c.8,.8,2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z", "plus-circle": "M42.5,16.3c-1-2.4-2.5-4.6-4.3-6.5s-4.1-3.3-6.5-4.3c-2.4-1-5-1.5-7.7-1.5-4,0-7.8,1.2-11.1,3.4-3.3,2.2-5.9,5.3-7.4,9-1.5,3.7-1.9,7.7-1.1,11.6,.8,3.9,2.7,7.4,5.5,10.2,2.8,2.8,6.4,4.7,10.2,5.5,3.9,.8,7.9,.4,11.6-1.1,3.7-1.5,6.8-4.1,9-7.4,2.2-3.3,3.4-7.2,3.4-11.1s-.5-5.2-1.5-7.7Zm-7.2,19c-3,3-7.1,4.7-11.3,4.7s-6.3-.9-8.9-2.7c-2.6-1.8-4.7-4.3-5.9-7.2-1.2-2.9-1.5-6.1-.9-9.2,.6-3.1,2.1-6,4.4-8.2s5.1-3.8,8.2-4.4c3.1-.6,6.3-.3,9.2,.9,2.9,1.2,5.4,3.3,7.2,5.9,1.8,2.6,2.7,5.7,2.7,8.9s-1.7,8.3-4.7,11.3Zm-3.3-13.3h-6v-6c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v6h-6c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h6v6c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-6h6c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z", "info-circle": "M24,22c-.6,0-1.1,.2-1.4,.6s-.6,.9-.6,1.4v8c0,.6,.2,1.1,.6,1.4s.9,.6,1.4,.6,1.1-.2,1.4-.6,.6-.9,.6-1.4v-8c0-.6-.2-1.1-.6-1.4s-.9-.6-1.4-.6Zm.8-7.8c-.5-.2-1.1-.2-1.5,0-.3,0-.5,.2-.7,.4s-.3,.4-.4,.7c0,.2-.2,.5-.2,.8s0,.6,.2,.8c0,.3,.3,.5,.5,.7s.4,.3,.7,.4c.3,0,.7,.2,1,0,.3,0,.7-.2,1-.3,.3-.2,.5-.4,.7-.8,.2-.3,.2-.6,.3-1,0-.6-.2-1.1-.6-1.4-.2-.2-.4-.3-.7-.4h-.2Zm17.8,2.3c-1.1-2.4-2.5-4.7-4.4-6.5-1.9-1.9-4.1-3.3-6.5-4.4s-5.1-1.5-7.6-1.5c-4,0-7.8,1.1-11.2,3.3s-5.8,5.3-7.4,9-1.9,7.7-1.1,11.6c.8,3.9,2.7,7.4,5.4,10.3,2.8,2.8,6.4,4.7,10.3,5.4,3.9,.8,7.9,.4,11.6-1.1,3.6-1.5,6.8-4.1,9-7.4,2.2-3.3,3.3-7.2,3.3-11.2s-.5-5.3-1.5-7.6h0Zm-7.2,19.1c-3.1,3.1-7.1,4.7-11.4,4.7s-6.3-1-8.9-2.7c-2.7-1.7-4.7-4.3-5.9-7.2-1.2-3-1.5-6.1-1-9.3,.6-3.2,2.1-6,4.4-8.2s5.1-3.7,8.2-4.4c3.2-.6,6.3-.3,9.3,1,3,1.2,5.4,3.2,7.2,5.9s2.7,5.7,2.7,8.9-1.7,8.3-4.7,11.4h0Z", "chevron-left": "M31.4,10.6c.8,.8,.8,2,0,2.8l-10.6,10.6,10.6,10.6c.8,.8,.8,2,0,2.8-.8,.8-2,.8-2.8,0l-12-12c-.8-.8-.8-2,0-2.8l12-12c.8-.8,2-.8,2.8,0Z", "times-circle": "M31.8,18.8c.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6-.2-.2-.4-.3-.6-.4s-.5-.2-.8-.2-.5,0-.8,.2c-.2,.1-.5,.2-.6,.4l-4.5,4.5-4.5-4.5c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l4.5,4.5-4.5,4.5c-.2,.2-.3,.4-.4,.6-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.2,.5,.4,.6,.2,.2,.4,.3,.6,.4s.5,.2,.8,.2,.5,0,.8-.2c.2-.1,.5-.2,.6-.4l4.5-4.5,4.5,4.5c.2,.2,.4,.3,.6,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2,.5-.2,.6-.4c.2-.2,.3-.4,.4-.6,.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6l-4.5-4.5,4.5-4.5c.2-.2,.3-.4,.4-.6Zm10.6-2.4c-1-2.4-2.5-4.6-4.4-6.4-1.8-1.9-4-3.4-6.4-4.4-2.4-1-5-1.6-7.6-1.6s-5.2,.5-7.7,1.5-4.6,2.5-6.5,4.3-3.3,4.1-4.3,6.5-1.5,5-1.5,7.7,.6,5.2,1.6,7.6c1,2.4,2.5,4.6,4.4,6.4,1.8,1.9,4,3.4,6.4,4.4,2.4,1,5,1.6,7.6,1.6,2.6,0,5.2-.5,7.7-1.5,2.4-1,4.6-2.5,6.5-4.3,1.9-1.9,3.3-4.1,4.3-6.5,1-2.4,1.5-5,1.5-7.7,0-2.6-.6-5.2-1.6-7.6Zm-3.8,13.6c-.8,1.9-2,3.7-3.4,5.1-2.6,2.6-6,4.2-9.6,4.6-3.6,.4-7.3-.6-10.3-2.6s-5.3-5.1-6.3-8.5c-1.1-3.5-.9-7.3,.5-10.6,1.4-3.4,3.9-6.2,7.1-7.9,3.2-1.7,6.9-2.3,10.5-1.6,3.6,.7,6.8,2.6,9.1,5.5,2.3,2.8,3.6,6.4,3.6,10,0,2.1-.4,4.1-1.2,6.1Z", "lock-alt": "M38.3,19.7c-1.1-1.1-2.7-1.7-4.3-1.7v-4c0-2.7-1-5.2-3-7-1.9-1.9-4.4-3-7-3s-5.2,1-7,3c-1.9,1.9-3,4.4-3,7v4c-1.6,0-3.1,.7-4.3,1.7s-1.7,2.7-1.7,4.3v14c0,1.6,.7,3.1,1.7,4.3s2.7,1.7,4.3,1.7h20c1.6,0,3.1-.7,4.3-1.7s1.7-2.7,1.7-4.3v-14c0-1.6-.7-3.1-1.7-4.3Zm-20.3-5.7c0-1.6,.7-3.1,1.7-4.3s2.7-1.7,4.3-1.7,3.1,.7,4.3,1.7c1.1,1.1,1.7,2.7,1.7,4.3v4h-12v-4Zm18,24c0,.6-.2,1-.6,1.4-.4,.4-.9,.6-1.4,.6H14c-.6,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4v-14c0-.6,.2-1,.6-1.4s.9-.6,1.4-.6h20c.6,0,1,.2,1.4,.6s.6,.9,.6,1.4v14Zm-12-12c-.6,0-1,.2-1.4,.6s-.6,.9-.6,1.4v6c0,.6,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6c.4-.4,.6-.9,.6-1.4v-6c0-.6-.2-1-.6-1.4s-.9-.6-1.4-.6Z", "move-up": "M17.9922 36.5059C16.3356 36.5059 14.9922 37.8493 14.9922 39.5059C14.9922 41.1624 16.3356 42.5059 17.9922 42.5059C19.6488 42.5059 20.9922 41.1624 20.9922 39.5059C20.9922 37.8493 19.6488 36.5059 17.9922 36.5059ZM17.9922 21.5059C16.3356 21.5059 14.9922 22.8493 14.9922 24.5059C14.9922 26.1624 16.3356 27.5059 17.9922 27.5059C19.6488 27.5059 20.9922 26.1624 20.9922 24.5059C20.9922 22.8493 19.6488 21.5059 17.9922 21.5059ZM29.9922 12.5059C31.6488 12.5059 32.9922 11.1624 32.9922 9.50586C32.9922 7.8493 31.6488 6.50586 29.9922 6.50586C28.3356 6.50586 26.9922 7.8493 26.9922 9.50586C26.9922 11.1624 28.3356 12.5059 29.9922 12.5059ZM29.9922 21.5059C28.3356 21.5059 26.9922 22.8493 26.9922 24.5059C26.9922 26.1624 28.3356 27.5059 29.9922 27.5059C31.6488 27.5059 32.9922 26.1624 32.9922 24.5059C32.9922 22.8493 31.6488 21.5059 29.9922 21.5059ZM17.9922 6.50586C16.3356 6.50586 14.9922 7.8493 14.9922 9.50586C14.9922 11.1624 16.3356 12.5059 17.9922 12.5059C19.6488 12.5059 20.9922 11.1624 20.9922 9.50586C20.9922 7.8493 19.6488 6.50586 17.9922 6.50586ZM29.9922 36.5059C28.3356 36.5059 26.9922 37.8493 26.9922 39.5059C26.9922 41.1624 28.3356 42.5059 29.9922 42.5059C31.6488 42.5059 32.9922 41.1624 32.9922 39.5059C32.9922 37.8493 31.6488 36.5059 29.9922 36.5059Z", "check": "M40.6,12.6c-.8-.8-2-.8-2.8,0L18,32.4l-7.8-7.8c-.8-.8-2-.8-2.8,0s-.8,2,0,2.8l9.2,9.2c.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6l21.2-21.2c.8-.8,.8-2,0-2.8Z", "chevron-right": "M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z", "times": "M27.1,24l9.4-9.4c.8-.8,.8-2.1,0-2.9s-2.1-.8-2.9,0l-9.4,9.4-9.4-9.4c-.8-.8-2.1-.8-2.9,0s-.8,2.1,0,2.9l9.4,9.4-9.4,9.4c-.8,.8-.8,2.1,0,2.9,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6l9.4-9.4,9.4,9.4c.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.8-.8,.8-2.1,0-2.9l-9.4-9.4Z", "external-link": "M40,26c-1.1,0-2,.9-2,2v10c0,1.1-.9,2-2,2H10c-1.1,0-2-.9-2-2V12c0-1.1,.9-2,2-2h10c1.1,0,2-.9,2-2s-.9-2-2-2H10c-3.3,0-6,2.7-6,6v26c0,3.3,2.7,6,6,6h26c3.3,0,6-2.7,6-6v-10c0-1.1-.9-2-2-2ZM42,4h-12c-1.1,0-2,.9-2,2s.9,2,2,2h7.2l-15.6,15.6c-.8,.8-.8,2,0,2.8,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6l15.6-15.6v7.2c0,1.1,.9,2,2,2s2-.9,2-2V6c0-1.1-.9-2-2-2Z"};
+const STC_RULES0 = [{"id": 1, "n": "Ensure hfs kernel module is not available", "sev": "MEDIUM", "d": "The hfs filesystem type is a hierarchical filesystem that allows you to mount Mac OS filesystems.", "tags": ["compliance"], "type": "Custom"}, {"id": 2, "n": "NATEnabled", "sev": "MEDIUM", "d": "Verifies that NAT (Network Address Translation) is configured on the device to prevent direct exposure of internal IP addresses.", "tags": ["hipaa"], "type": "Custom"}, {"id": 3, "n": "EnableLoginFailureLogs", "sev": "CRITICAL", "d": "Checks that login failures are logged on the device. This ensures auditability of unsuccessful access attempts.", "tags": ["hipaa"], "type": "Custom"}, {"id": 4, "n": "Copy of Set 'snmp-server host' when using SNMP", "sev": "CRITICAL", "d": "SNMP notifications can be sent as traps to authorized management systems.", "tags": ["profile applicability:level 1", "vendor:cisco systems"], "type": "Custom"}, {"id": 5, "n": "SrPasswordEncryptionEnabled", "sev": "HIGH", "d": "Checks that the global configuration command 'service password-encryption' is enabled, ensuring all locally stored passwords are obscured.", "tags": ["hipaa"], "type": "Custom"}, {"id": 6, "n": "SrPasswordLengthEnabled", "sev": "HIGH", "d": "Checks that a minimum password length is enforced in the configuration, preventing the use of weak, short passwords.", "tags": ["hipaa"], "type": "Custom"}, {"id": 7, "n": "NoPublicCommunity", "sev": "CRITICAL", "d": "Checks that the SNMP community string 'public' is not configured on the device.", "tags": ["hipaa"], "type": "Custom"}, {"id": 8, "n": "NBAREnabled", "sev": "MEDIUM", "d": "Checks whether NBAR protocol discovery is enabled on the device. This supports HIPAA’s requirement to regularly review system activity.", "tags": ["hipaa"], "type": "Custom"}, {"id": 9, "n": "Unique User ID", "sev": "HIGH", "d": "Verifies that each administrator has a unique user ID in device configurations. Prevents use of shared admin logins.", "tags": ["hipaa"], "type": "Custom"}, {"id": 10, "n": "unique username should be there", "sev": "HIGH", "d": "unique username should be there", "tags": [], "type": "Custom"}, {"id": 101, "n": "Enable 'aaa new-model'", "sev": "CRITICAL", "d": "This command enables the AAA access control system.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.1"}, {"id": 102, "n": "Enable 'aaa authentication login'", "sev": "CRITICAL", "d": "Recommendation 1.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.2"}, {"id": 103, "n": "Enable 'aaa authentication enable default'", "sev": "CRITICAL", "d": "Recommendation 1.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.3"}, {"id": 104, "n": "Set 'login authentication for 'line vty'", "sev": "CRITICAL", "d": "Recommendation 1.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.4"}, {"id": 105, "n": "Set 'login authentication for 'ip http'", "sev": "CRITICAL", "d": "Recommendation 1.1.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.5"}, {"id": 106, "n": "Set 'aaa accounting' to log all privileged use commands using 'commands 15'", "sev": "HIGH", "d": "Recommendation 1.1.6 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.6"}, {"id": 107, "n": "Set 'aaa accounting connection'", "sev": "HIGH", "d": "Recommendation 1.1.7 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.7"}, {"id": 108, "n": "Set 'aaa accounting exec'", "sev": "HIGH", "d": "Recommendation 1.1.8 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.8"}, {"id": 109, "n": "Set 'aaa accounting network'", "sev": "HIGH", "d": "Recommendation 1.1.9 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.9"}, {"id": 110, "n": "Set 'aaa accounting system'", "sev": "HIGH", "d": "Recommendation 1.1.10 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.1.10"}, {"id": 111, "n": "Set 'privilege 1' for local users", "sev": "CRITICAL", "d": "Recommendation 1.2.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.1"}, {"id": 112, "n": "Set 'transport input ssh' for 'line vty' connections", "sev": "CRITICAL", "d": "Recommendation 1.2.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.2"}, {"id": 113, "n": "Set 'no exec' for 'line aux 0'", "sev": "CRITICAL", "d": "Recommendation 1.2.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.3"}, {"id": 114, "n": "Create 'access-list' for use with 'line vty'", "sev": "CRITICAL", "d": "Recommendation 1.2.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.4"}, {"id": 115, "n": "Set 'access-class' for 'line vty'", "sev": "CRITICAL", "d": "Recommendation 1.2.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.5"}, {"id": 116, "n": "Set 'exec-timeout' to less than or equal to 10 minutes for 'line aux 0'", "sev": "CRITICAL", "d": "If no input is detected during the interval, the EXEC facility resumes the current connection. If no connections exist, the EXEC facility returns the terminal to the idle state and disconnects the incoming session.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.6"}, {"id": 117, "n": "Set 'exec-timeout' to less than or equal to 10 minutes 'line console 0'", "sev": "CRITICAL", "d": "If no input is detected during the interval, the EXEC facility resumes the current connection. If no connections exist, the EXEC facility returns the terminal to the idle state and disconnects the incoming session.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.7"}, {"id": 118, "n": "Set 'exec-timeout' to less than or equal to 10 minutes 'line vty'", "sev": "CRITICAL", "d": "If no input is detected during the interval, the EXEC facility resumes the current connection. If no connections exist, the EXEC facility returns the terminal to the idle state and disconnects the incoming session.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.8"}, {"id": 119, "n": "Set 'transport input none' for 'line aux 0'", "sev": "CRITICAL", "d": "When you want to allow only an outgoing connection on a line, use the no exec command.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.9"}, {"id": 120, "n": "Set 'http Secure-server' limit", "sev": "CRITICAL", "d": "Device management includes the ability to control the number of administrators and management sessions that manage a device.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.10"}, {"id": 121, "n": "Set 'exec-timeout' to less than or equal to 10 min on 'ip http'", "sev": "CRITICAL", "d": "If no input is detected during the interval, the EXEC facility resumes the current connection. If no connections exist, the EXEC facility returns the terminal to the idle state and disconnects the incoming session.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.2.11"}, {"id": 122, "n": "Set the 'banner-text' for 'banner exec'", "sev": "MEDIUM", "d": "This command specifies a message to be displayed when an EXEC process is created (a line is activated, or an incoming connection is made to a vty).", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.3.1"}, {"id": 123, "n": "Set the 'banner-text' for 'banner login'", "sev": "MEDIUM", "d": "Follow the banner login command with one or more blank spaces and a delimiting character of your choice. Then enter one or more lines of text, terminating the message with the second occurrence of the delimiting character.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.3.2"}, {"id": 124, "n": "Set the 'banner-text' for 'banner motd'", "sev": "MEDIUM", "d": "Recommendation 1.3.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.3.3"}, {"id": 125, "n": "Set the 'banner-text' for 'webauth banner'", "sev": "MEDIUM", "d": "Recommendation 1.3.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.3.4"}, {"id": 126, "n": "Set 'password' for 'enable secret'", "sev": "CRITICAL", "d": "Recommendation 1.4.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.4.1"}, {"id": 127, "n": "Enable 'service password-encryption'", "sev": "CRITICAL", "d": "When password encryption is enabled, the encrypted form of the passwords is displayed when a 'more system:running-config' command is entered.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.4.2"}, {"id": 128, "n": "Set 'username secret' for all local users", "sev": "CRITICAL", "d": "Recommendation 1.4.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.4.3"}, {"id": 129, "n": "Set 'no snmp-server' to disable SNMP when unused", "sev": "CRITICAL", "d": "Recommendation 1.5.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.1"}, {"id": 130, "n": "Unset 'private' for 'snmp-server community'", "sev": "CRITICAL", "d": "An SNMP community string permits read-only access to all objects.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.2"}, {"id": 131, "n": "Unset 'public' for 'snmp-server community'", "sev": "CRITICAL", "d": "An SNMP community string permits read-only access to all objects.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.3"}, {"id": 132, "n": "Do not set 'RW' for any 'snmp-server community'", "sev": "CRITICAL", "d": "Recommendation 1.5.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.4"}, {"id": 133, "n": "Set the ACL for each 'snmp-server community'", "sev": "CRITICAL", "d": "Recommendation 1.5.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.5"}, {"id": 134, "n": "Create an 'access-list' for use with SNMP", "sev": "CRITICAL", "d": "Recommendation 1.5.6 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.6"}, {"id": 135, "n": "Set 'snmp-server host' when using SNMP", "sev": "CRITICAL", "d": "SNMP notifications can be sent as traps to authorized management systems.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.7"}, {"id": 136, "n": "Set 'snmp-server enable traps snmp'", "sev": "CRITICAL", "d": "Recommendation 1.5.8 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.8"}, {"id": 137, "n": "Set 'priv' for each 'snmp-server group' using SNMPv3", "sev": "CRITICAL", "d": "Recommendation 1.5.9 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.9"}, {"id": 138, "n": "Require 'aes 128' as minimum for 'snmp-server user' when using SNMPv3", "sev": "CRITICAL", "d": "Recommendation 1.5.10 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "1.5.10"}, {"id": 139, "n": "Set the 'hostname'", "sev": "HIGH", "d": "Recommendation 2.1.1.1.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.1.1.1"}, {"id": 140, "n": "Set the 'ip domain-name'", "sev": "HIGH", "d": "Recommendation 2.1.1.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.1.1.2"}, {"id": 141, "n": "Set 'seconds' for 'ip ssh timeout' for 60 seconds or less", "sev": "HIGH", "d": "Recommendation 2.1.1.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.1.1.3"}, {"id": 142, "n": "Set maximum value for 'ip ssh authentication-retries'", "sev": "HIGH", "d": "Recommendation 2.1.1.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.1.1.4"}, {"id": 143, "n": "Set version 2 for 'ip ssh version'", "sev": "CRITICAL", "d": "Recommendation 2.1.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.1.2"}, {"id": 144, "n": "Set 'no cdp run'", "sev": "HIGH", "d": "Recommendation 2.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.2"}, {"id": 145, "n": "Set 'no ip bootp server'", "sev": "HIGH", "d": "Recommendation 2.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.3"}, {"id": 146, "n": "Set 'no service dhcp'", "sev": "HIGH", "d": "Recommendation 2.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.4"}, {"id": 147, "n": "Set 'no ip identd'", "sev": "HIGH", "d": "Recommendation 2.1.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.5"}, {"id": 148, "n": "Set 'service tcp-keepalives-in'", "sev": "HIGH", "d": "Recommendation 2.1.6 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.6"}, {"id": 149, "n": "Set 'service tcp-keepalives-out'", "sev": "HIGH", "d": "Recommendation 2.1.7 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.7"}, {"id": 150, "n": "Set 'no service pad'", "sev": "HIGH", "d": "Recommendation 2.1.8 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.1.8"}, {"id": 151, "n": "Set 'logging enable'", "sev": "CRITICAL", "d": "Recommendation 2.2.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.1"}, {"id": 152, "n": "Set 'buffer size' for 'logging buffered'", "sev": "CRITICAL", "d": "Recommendation 2.2.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.2"}, {"id": 153, "n": "Set 'logging console critical'", "sev": "CRITICAL", "d": "Recommendation 2.2.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.3"}, {"id": 154, "n": "Set IP address for 'logging host'", "sev": "CRITICAL", "d": "Recommendation 2.2.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.4"}, {"id": 155, "n": "Set 'logging trap informational'", "sev": "CRITICAL", "d": "Recommendation 2.2.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.5"}, {"id": 156, "n": "Set 'service timestamps debug datetime'", "sev": "CRITICAL", "d": "Recommendation 2.2.6 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.6"}, {"id": 157, "n": "Set 'logging source interface'", "sev": "CRITICAL", "d": "Recommendation 2.2.7 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.7"}, {"id": 158, "n": "Set 'login success/failure logging'", "sev": "CRITICAL", "d": "Recommendation 2.2.8 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.2.8"}, {"id": 159, "n": "Set 'ntp authenticate'", "sev": "HIGH", "d": "Recommendation 2.3.1.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.3.1.1"}, {"id": 160, "n": "Set 'ntp authentication-key'", "sev": "HIGH", "d": "Recommendation 2.3.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.3.1.2"}, {"id": 161, "n": "Set the 'ntp trusted-key'", "sev": "HIGH", "d": "Recommendation 2.3.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.3.1.3"}, {"id": 162, "n": "Set 'key' for each 'ntp server'", "sev": "HIGH", "d": "Recommendation 2.3.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.3.1.4"}, {"id": 163, "n": "Set 'ip address' for 'ntp server'", "sev": "CRITICAL", "d": "Recommendation 2.3.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.3.2"}, {"id": 164, "n": "Create a single 'interface loopback'", "sev": "HIGH", "d": "Recommendation 2.4.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.4.1"}, {"id": 165, "n": "Set AAA 'source-interface'", "sev": "HIGH", "d": "Recommendation 2.4.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.4.2"}, {"id": 166, "n": "Set 'ntp source' to Loopback Interface", "sev": "HIGH", "d": "Recommendation 2.4.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.4.3"}, {"id": 167, "n": "Set 'ip tftp source-interface' to the Loopback Interface", "sev": "HIGH", "d": "Recommendation 2.4.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "2.4.4"}, {"id": 168, "n": "Set 'no ip source-route'", "sev": "HIGH", "d": "Recommendation 3.1.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.1.1"}, {"id": 169, "n": "Set 'no ip proxy-arp'", "sev": "HIGH", "d": "Recommendation 3.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.1.2"}, {"id": 170, "n": "Set 'no interface tunnel'", "sev": "HIGH", "d": "Recommendation 3.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.1.3"}, {"id": 171, "n": "Set 'ip verify unicast source reachable-via'", "sev": "HIGH", "d": "Recommendation 3.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.1.4"}, {"id": 172, "n": "Set 'ip access-list extended' to Forbid Private Source Addresses from External Networks", "sev": "MEDIUM", "d": "Recommendation 3.2.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.2.1"}, {"id": 173, "n": "Set inbound 'ip access-group' on the External Interface", "sev": "MEDIUM", "d": "Recommendation 3.2.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.2.2"}, {"id": 174, "n": "Set 'key chain'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.1"}, {"id": 175, "n": "Set 'key'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.2"}, {"id": 176, "n": "Set 'key-string'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.3 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.3"}, {"id": 177, "n": "Set 'address-family ipv4 autonomous-system'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.4 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.4"}, {"id": 178, "n": "Set 'af-interface default'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.5 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.5"}, {"id": 179, "n": "Set 'authentication key-chain'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.6 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.6"}, {"id": 180, "n": "Set 'authentication mode md5'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.7 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.7"}, {"id": 181, "n": "Set 'ip authentication key-chain eigrp'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.8 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.8"}, {"id": 182, "n": "Set 'ip authentication mode eigrp'", "sev": "MEDIUM", "d": "Recommendation 3.3.1.9 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.1.9"}, {"id": 183, "n": "Set 'authentication message-digest' for OSPF area", "sev": "MEDIUM", "d": "Recommendation 3.3.2.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.2.1"}, {"id": 184, "n": "Set 'ip ospf message-digest-key md5'", "sev": "MEDIUM", "d": "Recommendation 3.3.2.2 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.2.2"}, {"id": 185, "n": "Set 'neighbor password'", "sev": "MEDIUM", "d": "Recommendation 3.3.3.1 of the CIS Cisco IOS XE 16.x Benchmark v2.1.0.", "tags": ["Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "OS Version:16.x", "Technology:Cisco Router"], "type": "Default", "cis": "3.3.3.1"}];
+const STC_BENCH0 = [{"id": 1, "n": "CIS Debian Linux 11 Benchmark v2.0.0-Level 1 - Server", "d": "", "used": 1, "tags": ["compliance"], "tree": [{"g": "Filesystem configuration", "kids": [{"r": 1}]}, {"g": "Initial setup", "kids": [{"r": 9}, {"r": 10}]}]}, {"id": 2, "n": "NOC_CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 0, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}, {"id": 3, "n": "test 1", "d": "", "used": 1, "tags": [], "tree": [{"g": "General", "kids": [{"r": 2}, {"r": 3}, {"r": 7}]}]}, {"id": 4, "n": "HIPAA Test", "d": "", "used": 0, "tags": [], "tree": [{"g": "HIPAA controls", "kids": [{"r": 2}, {"r": 3}, {"r": 5}, {"r": 6}, {"r": 7}, {"r": 8}, {"r": 9}]}]}, {"id": 5, "n": "Copy of BFSI_Baseline", "d": "Top 10 rules which are essential for BFSI", "used": 1, "tags": [], "tree": [{"g": "BFSI essentials", "kids": [{"r": 101}, {"r": 102}, {"r": 126}, {"r": 127}, {"r": 112}, {"r": 131}, {"r": 130}, {"r": 151}, {"r": 143}, {"r": 144}]}]}, {"id": 6, "n": "BFSI_benchmark_2", "d": "", "used": 1, "tags": [], "tree": [{"g": "Access", "kids": [{"r": 101}, {"r": 102}, {"r": 126}, {"r": 127}, {"r": 112}]}, {"g": "Logging", "kids": [{"r": 151}]}]}, {"id": 7, "n": "BFSI_benchmark", "d": "", "used": 2, "tags": [], "tree": [{"g": "Access", "kids": [{"r": 101}, {"r": 102}, {"r": 126}, {"r": 127}, {"r": 112}]}, {"g": "SNMP", "kids": [{"r": 131}, {"r": 130}]}]}, {"id": 8, "n": "pmg test 1", "d": "this is for test", "used": 0, "tags": ["test", "cis", "ncm", "cisco", "compliance", "logging"], "tree": [{"g": "Test group", "kids": [{"r": 3}, {"r": 5}, {"r": 6}]}]}, {"id": 9, "n": "CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0 - rem", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 1, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}, {"id": 10, "n": "CIS_Cisco_IOS_XE_17.x_Benchmark_v2.1.0", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 0, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}, {"id": 11, "n": "BFSI_Baseline", "d": "Top 10 rules which are essential for BFSI", "used": 1, "tags": [], "tree": [{"g": "BFSI essentials", "kids": [{"r": 101}, {"r": 102}, {"r": 126}, {"r": 127}, {"r": 112}, {"r": 131}, {"r": 130}, {"r": 151}, {"r": 143}, {"r": 144}]}]}, {"id": 12, "n": "Fortigate 7.4", "d": "", "used": 0, "tags": [], "tree": [{"g": "Fortigate", "kids": []}]}, {"id": 13, "n": "test hipaa benchmark", "d": "", "used": 0, "tags": [], "tree": [{"g": "HIPAA", "kids": [{"r": 2}, {"r": 3}, {"r": 5}, {"r": 6}]}]}, {"id": 14, "n": "CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 1, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}], "sys": true}, {"id": 15, "n": "Copy of CIS_Cisco_IOS_XE_16.x_Benchmark_v2.1.0", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 0, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}, {"id": 16, "n": "CIS_Cisco_IOS_XE_16.x_Benchmark_v2.2.0", "d": "Please see the below link for CIS's current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 1, "tags": ["framework:cis", "benchmark version:2.1.0", "vendor:cisco systems"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}, {"id": 17, "n": "CIS Cisco IOS XE 16.x Benchmark ---- test", "d": "Please see the below link for our current terms of use: https://www.cisecurity.org/cis-securesuite/cis-securesuite-membership-terms-of-use/", "used": 2, "tags": ["cis", "ncm", "cisco", "framework:cis", "compliance"], "tree": [{"g": "Management Plane", "kids": [{"g": "Local Authentication, Authorization and Accounting (AAA) Rules", "kids": [{"r": 101}, {"r": 102}, {"r": 103}, {"r": 104}, {"r": 105}, {"r": 106}, {"r": 107}, {"r": 108}, {"r": 109}, {"r": 110}]}, {"g": "Access Rules", "kids": [{"r": 111}, {"r": 112}, {"r": 113}, {"r": 114}, {"r": 115}, {"r": 116}, {"r": 117}, {"r": 118}, {"r": 119}, {"r": 120}, {"r": 121}]}, {"g": "Banner Rules", "kids": [{"r": 122}, {"r": 123}, {"r": 124}, {"r": 125}]}, {"g": "Password Rules", "kids": [{"r": 126}, {"r": 127}, {"r": 128}]}, {"g": "SNMP Rules", "kids": [{"r": 129}, {"r": 130}, {"r": 131}, {"r": 132}, {"r": 133}, {"r": 134}, {"r": 135}, {"r": 136}, {"r": 137}, {"r": 138}]}]}, {"g": "Control Plane", "kids": [{"g": "Global Service Rules", "kids": [{"g": "Setup SSH", "kids": [{"g": "Configure Prerequisites for the SSH Service", "kids": [{"r": 139}, {"r": 140}, {"r": 141}, {"r": 142}]}, {"r": 143}]}, {"r": 144}, {"r": 145}, {"r": 146}, {"r": 147}, {"r": 148}, {"r": 149}, {"r": 150}]}, {"g": "Logging Rules", "kids": [{"r": 151}, {"r": 152}, {"r": 153}, {"r": 154}, {"r": 155}, {"r": 156}, {"r": 157}, {"r": 158}]}, {"g": "NTP Rules", "kids": [{"g": "Require Encryption Keys for NTP", "kids": [{"r": 159}, {"r": 160}, {"r": 161}, {"r": 162}]}, {"r": 163}]}, {"g": "Loopback Rules", "kids": [{"r": 164}, {"r": 165}, {"r": 166}, {"r": 167}]}]}, {"g": "Data Plane", "kids": [{"g": "Routing Rules", "kids": [{"r": 168}, {"r": 169}, {"r": 170}, {"r": 171}]}, {"g": "Border Router Filtering", "kids": [{"r": 172}, {"r": 173}]}, {"g": "Neighbor Authentication", "kids": [{"g": "Require EIGRP Authentication if Protocol is Used", "kids": [{"r": 174}, {"r": 175}, {"r": 176}, {"r": 177}, {"r": 178}, {"r": 179}, {"r": 180}, {"r": 181}, {"r": 182}]}, {"g": "Require OSPF Authentication if Protocol is Used", "kids": [{"r": 183}, {"r": 184}]}, {"g": "Require BGP Authentication if Protocol is Used", "kids": [{"r": 185}]}]}]}]}];
+const STC_POL0 = [{"id": 1, "n": "aaabcd", "d": "", "created": "Tue, Mar 03, 2026 01:00:07 PM", "used": 2, "tags": [], "sched": false, "bm": 3, "cfg": "startup", "devFilter": "Monitor", "devs": [1, 2], "notify": []}, {"id": 2, "n": "BFSI_Test", "d": "", "created": "Fri, May 01, 2026 12:09:27 PM", "used": 0, "tags": [], "sched": false, "bm": 11, "cfg": "startup", "devFilter": "Monitor", "devs": [], "notify": []}, {"id": 3, "n": "BFSI_TEST_2", "d": "", "created": "Fri, May 01, 2026 08:00:09 PM", "used": 0, "tags": [], "sched": false, "bm": 5, "cfg": "startup", "devFilter": "Monitor", "devs": [], "notify": []}, {"id": 4, "n": "CIS - PMG", "d": "", "created": "Wed, Feb 19, 2025 04:18:05 PM", "used": 3, "tags": [], "sched": true, "bm": 14, "cfg": "running", "devFilter": "Monitor", "devs": [1, 2, 6], "notify": []}, {"id": 5, "n": "CIS - PMG - rem", "d": "", "created": "Tue, Mar 17, 2026 06:47:53 PM", "used": 1, "tags": [], "sched": false, "bm": 9, "cfg": "running", "devFilter": "Monitor", "devs": [8], "notify": []}, {"id": 6, "n": "CIS Compliance Policy --- test", "d": "test pmg", "created": "Fri, Jan 10, 2025 07:08:36 PM", "used": 3, "tags": ["cis", "ncm", "cisco", "compliance"], "sched": true, "bm": 17, "cfg": "startup", "devFilter": "Monitor", "devs": [8, 9, 10], "notify": []}, {"id": 7, "n": "CIS_Assessment_Certificate_Cisco_ XE 16.x B v.2.2.0", "d": "", "created": "Fri, Oct 24, 2025 12:53:10 PM", "used": 1, "tags": [], "sched": false, "bm": 16, "cfg": "startup", "devFilter": "Monitor", "devs": [10], "notify": []}, {"id": 8, "n": "Clone of CIS Compliance Policy --- test", "d": "test pmg", "created": "Wed, Dec 31, 2025 03:39:00 PM", "used": 3, "tags": ["cis", "ncm", "cisco", "compliance"], "sched": false, "bm": 17, "cfg": "startup", "devFilter": "Monitor", "devs": [8, 9, 10], "notify": []}, {"id": 9, "n": "Branch_G1", "d": "", "created": "Fri, May 01, 2026 11:54:11 AM", "used": 0, "tags": [], "sched": false, "bm": 7, "cfg": "startup", "devFilter": "Monitor", "devs": [], "notify": []}, {"id": 10, "n": "Branch_policy", "d": "", "created": "Fri, May 01, 2026 06:32:31 AM", "used": 0, "tags": ["compliance"], "sched": false, "bm": 7, "cfg": "startup", "devFilter": "Monitor", "devs": [], "notify": []}, {"id": 11, "n": "Branch_policy_2", "d": "", "created": "Fri, May 01, 2026 06:33:09 AM", "used": 0, "tags": [], "sched": false, "bm": 6, "cfg": "startup", "devFilter": "Monitor", "devs": [], "notify": []}, {"id": 12, "n": "test policy", "d": "", "created": "Tue, Jan 20, 2026 02:39:44 PM", "used": 1, "tags": [], "sched": false, "bm": 1, "cfg": "running", "devFilter": "Monitor", "devs": [7], "notify": []}];
+const STC_DEVICES = [{"id": 1, "n": "core-rtr-01", "ip": "192.0.2.10", "type": "Router", "groups": ["Network", "Network > Router", "Core"], "vendor": "Cisco Systems", "tags": ["site:hq", "env:prod"], "sev": "UP"}, {"id": 2, "n": "edge-rtr-02", "ip": "192.0.2.11", "type": "Router", "groups": ["Network", "Network > Router", "Edge"], "vendor": "Cisco Systems", "tags": ["site:hq", "env:prod"], "sev": "UP"}, {"id": 3, "n": "dist-sw-01", "ip": "198.51.100.5", "type": "Switch", "groups": ["Network", "Network > Switch"], "vendor": "Juniper Networks", "tags": ["site:dc1"], "sev": "UP"}, {"id": 4, "n": "access-sw-07", "ip": "198.51.100.21", "type": "Switch", "groups": ["Network", "Network > Switch", "Floor 7"], "vendor": "Hewlett Packard Enterprise", "tags": ["site:dc1", "env:prod", "rack:7b"], "sev": "DOWN"}, {"id": 5, "n": "fw-branch-01", "ip": "203.0.113.2", "type": "Firewall", "groups": ["Network", "South Region"], "vendor": "Fortinet", "tags": ["site:branch"], "sev": "UP"}, {"id": 6, "n": "wan-rtr-03", "ip": "203.0.113.9", "type": "Router", "groups": ["Network", "Network > Router", "South Region"], "vendor": "Cisco Systems", "tags": ["site:branch", "env:prod"], "sev": "UNREACHABLE"}, {"id": 7, "n": "huawei-sw-01", "ip": "198.51.100.40", "type": "Switch", "groups": ["South Region", "Network > Switch", "Lab"], "vendor": "Huawei", "tags": ["site:lab", "env:test", "owner:netops"], "sev": "UP"}, {"id": 8, "n": "ospf-rtr-01", "ip": "192.0.2.8", "type": "Router", "groups": ["Network", "Network > Router", "Lab"], "vendor": "Cisco Systems", "tags": ["site:lab", "env:test", "proto:ospf", "owner:netops"], "sev": "UP"}, {"id": 9, "n": "bgp-rtr-01", "ip": "192.0.2.23", "type": "Router", "groups": ["Network", "Network > Router", "Lab"], "vendor": "Cisco Systems", "tags": ["site:lab", "proto:bgp"], "sev": "UP"}, {"id": 10, "n": "lab-rtr-xe", "ip": "192.0.2.44", "type": "Router", "groups": ["Network", "Network > Router", "Lab"], "vendor": "Cisco Systems", "tags": ["site:lab", "env:test"], "sev": "UP"}];
+const STC_GROUPS = ["Network", "Network > Router", "Network > Switch", "Core", "Edge", "South Region", "Floor 7", "Lab", "Default"];
+const STC_TAGS = ["cisco", "transmission security", "cis", "benchmark version:2.1.0", "nat", "audit control", "ncm", "hipaa", "network protection", "Profile Applicability:Level 2", "Profile Applicability:Level 1", "Vendor:Cisco Systems", "OS:IOS-XE", "authentication", "uniqueuserid", "access control", "test", "framework:cis", "ios:v16.x", "os version:16.x", "Technology:Cisco Router", "logging", "vendor:cisco systems", "compliance"];
+const STC_RUNBOOKS = ["interface description change", "Remediation runbook for - 1.3.1 Set the 'banner-text' for 'banner exec'", "show version", "Cisco Syslog", "Cisco Flow Enable", "bulk network config runbook"];
+
+var ST_PAGES = (typeof ST_PAGES !== 'undefined' && ST_PAGES) || {};
+
+const STC = {
+  pol: JSON.parse(JSON.stringify(STC_POL0)), bm: JSON.parse(JSON.stringify(STC_BENCH0)), rules: JSON.parse(JSON.stringify(STC_RULES0)),
+  pg: { pol:{ q:'', sort:1, filt:{bm:null, bmOp:'=', tag:null, tagOp:'='}, chips:true, page:1, size:50, cols:{desc:1,created:1,used:1,tag:1,sched:1,bm:1} },
+        bm:{ q:'', filt:{tag:null, tagOp:'='}, chips:true, page:1, size:50 },
+        ru:{ q:'', page:1, size:50 } },
+  run:{}, pf:null, bf:null, rf:null, sf:null, af:null
+};
+const stcEsc = s => stEsc(s), stcA = v => stA(v);
+const stcSvg = (n, cls) => `<svg${cls?` class="${cls}"`:''} viewBox="0 0 48 48"><path fill="currentColor" d="${STC_ICO[n]||''}"/></svg>`;
+const stcNewId = arr => arr.reduce((m, x) => Math.max(m, x.id), 0) + 1;
+function stcNow(){
+  const d = new Date(), D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p = n => String(n).padStart(2,'0'); let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  return `${D[d.getDay()]}, ${M[d.getMonth()]} ${p(d.getDate())}, ${d.getFullYear()} ${p(h)}:${p(d.getMinutes())}:${p(d.getSeconds())} ${ap}`;
+}
+/* tag pills: the first, then “+N” carrying the rest in its tooltip — the live grid shape */
+function stcTags(arr){
+  if (!arr || !arr.length) return '';
+  const rest = arr.slice(1);
+  return `<span class="stctag" title="${stcEsc(arr[0])}">${stcEsc(arr[0])}</span>` +
+         (rest.length ? `<span class="stctag more" title="${stcEsc(rest.join(', '))}">+${rest.length}</span>` : '');
+}
+const stcUsed = n => `<span class="stcused">${n}</span>`;
+const stcSevBar = s => `<span class="stcsev ${s}"></span>`;
+const stcBmName = id => (STC.bm.find(b => b.id === id) || {}).n || '';
+const stcRule = id => STC.rules.find(r => r.id === id);
+
+/* ── popover menus / pickers ──────────────────────────────────────────────────── */
+let stcPopEl = null, stcPopAnchor = null;
+function stcPopClose(){ if (stcPopEl){ stcPopEl.remove(); stcPopEl = null; stcPopAnchor = null; } }
+function stcPop(anchor, html, o){
+  o = o || {};
+  if (stcPopEl && stcPopAnchor === anchor && !o.keep){ stcPopClose(); return null; }
+  stcPopClose();
+  const el = document.createElement('div'); el.className = 'stcmenu' + (o.cls ? ' ' + o.cls : ''); el.innerHTML = html;
+  document.body.appendChild(el); stcPopEl = el; stcPopAnchor = anchor;
+  const r = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  let left = o.right ? r.right - w : r.left, top = r.bottom + 4;
+  if (o.matchWidth) el.style.minWidth = r.width + 'px';
+  if (left + w > innerWidth - 8) left = innerWidth - w - 8; if (left < 8) left = 8;
+  if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 4);
+  el.style.left = left + 'px'; el.style.top = top + 'px';
+  const inp = el.querySelector('input'); if (inp && o.focus !== false) setTimeout(() => inp.focus(), 0);
+  return el;
+}
+document.addEventListener('mousedown', e => {
+  if (stcPopEl && !stcPopEl.contains(e.target) && !(stcPopAnchor && stcPopAnchor.contains(e.target))) stcPopClose();
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (stcPopEl){ stcPopClose(); e.stopPropagation(); return; }
+  if (document.getElementById('stcCf') && document.getElementById('stcCf').classList.contains('on')){ stcCfClose(); e.stopPropagation(); return; }
+  if (document.getElementById('stcDr') && document.getElementById('stcDr').classList.contains('on')){ stcDrClose(); e.stopPropagation(); }
+}, true);
+/* a simple action menu: items [{t, ic, fn, del}] */
+function stcMenu(anchor, items, o){
+  const html = items.map((it, i) => it === '-' ? '<div class="stcmi sep"></div>' :
+    `<div class="stcmi${it.del?' del':''}${it.on?' on':''}" data-i="${i}">${it.ic ? stcSvg(it.ic) : ''}<span>${stcEsc(it.t)}</span></div>`).join('');
+  const el = stcPop(anchor, html, o); if (!el) return;
+  el.querySelectorAll('.stcmi[data-i]').forEach(m => m.onclick = () => { const it = items[+m.dataset.i]; stcPopClose(); it.fn && it.fn(); });
+}
+/* a list picker: {items:[{k,t,sub}], cur (k or [k]), multi, search, onPick(k|[k]), title, ops:{cur,onOp}} */
+function stcPick(anchor, o){
+  const st = { q:'', sel: o.multi ? [...(o.cur||[])] : o.cur };
+  const paint = () => {
+    const q = st.q.toLowerCase();
+    const items = o.items.filter(it => !q || it.t.toLowerCase().includes(q));
+    const ops = o.ops ? `<div class="stcmo">${['=','!='].map(x => `<b class="${o.ops.cur===x?'on':''}" data-op="${x}">${x}</b>`).join('')}</div>` : '';
+    const search = o.search === false ? '' : `<div class="stcms">${stcSvg('search')}<input placeholder="Search" value="${stcEsc(st.q)}"></div>`;
+    const list = items.length ? items.map(it => {
+      const on = o.multi ? st.sel.includes(it.k) : st.sel === it.k;
+      return `<div class="stcmi${o.multi?' ck':''}${on?' on':''}" data-k="${stcEsc(String(it.k))}">${o.multi ? `<span class="bx">${stcSvg('check')}</span>` : ''}<span style="overflow:hidden;text-overflow:ellipsis">${stcEsc(it.t)}</span>${it.sub?`<span style="margin-left:auto;color:var(--text-dim);font-size:11px">${stcEsc(it.sub)}</span>`:''}</div>`;
+    }).join('') : `<div class="stcmi hd">No match</div>`;
+    const foot = o.multi ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Apply</button></div>` : (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '');
+    el.innerHTML = (o.title ? `<div class="stcmi hd">${stcEsc(o.title)}</div>` : '') + ops + search + `<div class="stcml">${list}</div>` + foot;
+    el.querySelectorAll('.stcmi[data-k]').forEach(m => m.onclick = () => {
+      const k = o.items.find(it => String(it.k) === m.dataset.k).k;
+      if (o.multi){ const i = st.sel.indexOf(k); if (i >= 0) st.sel.splice(i, 1); else st.sel.push(k); const box = m; box.classList.toggle('on'); }
+      else { stcPopClose(); o.onPick(k); }
+    });
+    const inp = el.querySelector('.stcms input'); if (inp){ inp.oninput = () => { st.q = inp.value; const pos = inp.selectionStart; paint(); const i2 = el.querySelector('.stcms input'); i2.focus(); i2.setSelectionRange(pos, pos); }; }
+    el.querySelectorAll('.stcmo b').forEach(b => b.onclick = () => { o.ops.cur = b.dataset.op; o.ops.onOp && o.ops.onOp(b.dataset.op); paint(); });
+    const ap = el.querySelector('[data-act="apply"]'); if (ap) ap.onclick = () => { stcPopClose(); o.onPick(st.sel); };
+    const cl = el.querySelector('[data-act="clear"]'); if (cl) cl.onclick = () => { stcPopClose(); o.onPick(o.multi ? [] : null); };
+  };
+  const el = stcPop(anchor, '', {right:o.right, matchWidth:o.matchWidth, cls:o.cls, keep:o.keep}); if (!el) return;
+  el.style.minWidth = Math.max(parseInt(el.style.minWidth)||0, o.width || 230) + 'px';
+  paint();
+  /* re-place now that it has a size */
+  const r = anchor.getBoundingClientRect(); let left = o.right ? r.right - el.offsetWidth : r.left; if (left + el.offsetWidth > innerWidth - 8) left = innerWidth - el.offsetWidth - 8; el.style.left = Math.max(8, left) + 'px';
+  if (r.bottom + 4 + el.offsetHeight > innerHeight - 8) el.style.top = Math.max(8, r.top - el.offsetHeight - 4) + 'px';
+}
+
+/* ── drawer + confirm ─────────────────────────────────────────────────────────── */
+function stcDrEls(){
+  let d = document.getElementById('stcDr');
+  if (!d){
+    const s = document.createElement('div'); s.className = 'stcscrim'; s.id = 'stcScrim'; s.onclick = () => { if (!stcPopEl) stcDrClose(); }; document.body.appendChild(s);
+    d = document.createElement('div'); d.className = 'stcdr'; d.id = 'stcDr';
+    d.innerHTML = `<div class="stcdrh"><span id="stcDrT"></span><button class="x" data-tip="Close" onclick="stcDrClose()">${stcSvg('times')}</button></div><div class="stcdrb" id="stcDrB"></div><div class="stcdrf" id="stcDrF"></div>`;
+    document.body.appendChild(d);
+    const c = document.createElement('div'); c.className = 'stccf'; c.id = 'stcCf'; c.innerHTML = `<div class="stccfb" onclick="event.stopPropagation()"><h5 id="stcCfT"></h5><p id="stcCfP"></p><div class="bt"><button class="stbtn" onclick="stcCfClose()">Cancel</button><button class="stbtn danger" id="stcCfOk">Delete</button></div></div>`;
+    c.onclick = stcCfClose; document.body.appendChild(c);
+  }
+  return d;
+}
+function stcDrOpen(title, body, foot){
+  const d = stcDrEls();
+  document.getElementById('stcDrT').textContent = title;
+  document.getElementById('stcDrB').innerHTML = body;
+  const f = document.getElementById('stcDrF'); f.innerHTML = foot || ''; f.style.display = foot ? '' : 'none';
+  document.getElementById('stcScrim').classList.add('on'); d.classList.add('on');
+  requestAnimationFrame(() => d.classList.add('in'));
+  const first = d.querySelector('input:not([disabled]):not([readonly])'); if (first) setTimeout(() => first.focus(), 60);
+}
+function stcDrClose(){ stcPopClose(); const d = document.getElementById('stcDr'); if (!d) return; d.classList.remove('in','on'); document.getElementById('stcScrim').classList.remove('on'); STC.pf = STC.sf = STC.af = null; }
+let stcCfFn = null;
+function stcConfirm(title, text, okLabel, fn){ stcDrEls(); document.getElementById('stcCfT').textContent = title; document.getElementById('stcCfP').innerHTML = text; const ok = document.getElementById('stcCfOk'); ok.textContent = okLabel || 'Delete'; stcCfFn = fn; ok.onclick = () => { stcCfClose(); fn && fn(); }; document.getElementById('stcCf').classList.add('on'); setTimeout(() => ok.focus(), 0); }
+function stcCfClose(){ const c = document.getElementById('stcCf'); if (c) c.classList.remove('on'); }
+
+/* ── shared list chrome: search, squared buttons, chips, pager ────────────────── */
+function stcSearchHTML(key, ph){ const P = STC.pg[key]; return `<div class="stcsearch${P.q?' has':''}">${stcSvg('search')}<input placeholder="${ph||'Search'}" value="${stcEsc(P.q)}" oninput="stcQ('${key}',this.value)"><span class="clr" data-tip="Clear" onclick="stcQClear('${key}')">${stcSvg('times-circle')}</span></div>`; }
+function stcQ(key, v){ STC.pg[key].q = v; STC.pg[key].page = 1; stcRepaint(key, true); }
+function stcQClear(key){ STC.pg[key].q = ''; stcRepaint(key); }
+function stcRepaint(key, keepFocus){
+  stMainPaint();
+  if (keepFocus){ const i = document.querySelector('#stMain .stcsearch input'); if (i){ const v = i.value; i.focus(); i.setSelectionRange(v.length, v.length); } }
+}
+function stcPagerHTML(key, total){
+  const P = STC.pg[key], pages = Math.max(1, Math.ceil(total / P.size)); if (P.page > pages) P.page = pages;
+  const a = total ? (P.page - 1) * P.size + 1 : 0, b = Math.min(total, P.page * P.size);
+  const nums = []; for (let i = 1; i <= pages; i++) nums.push(`<button class="stcpg${i===P.page?' on':''}" onclick="stcPage('${key}',${i})">${i}</button>`);
+  return `<div class="stcpager">
+    <button class="stcpg" data-tip="Go to the first page" ${P.page===1?'disabled':''} onclick="stcPage('${key}',1)"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM18 6l-7 6 7 6z"/></svg></button>
+    <button class="stcpg" data-tip="Go to the previous page" ${P.page===1?'disabled':''} onclick="stcPage('${key}',${P.page-1})"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button>
+    ${nums.join('')}
+    <button class="stcpg" data-tip="Go to the next page" ${P.page===pages?'disabled':''} onclick="stcPage('${key}',${P.page+1})"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6z"/></svg></button>
+    <button class="stcpg" data-tip="Go to the last page" ${P.page===pages?'disabled':''} onclick="stcPage('${key}',${pages})"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM6 6l7 6-7 6z"/></svg></button>
+    <span class="stcsize" onclick="stcSizeMenu(event,'${key}')">${P.size}${stcSvg('chevron-down')}</span><span>items per page</span>
+    <span class="stcpinfo">${a} - ${b} of ${total} items</span></div>`;
+}
+function stcPage(key, p){ STC.pg[key].page = p; stMainPaint(); }
+function stcSizeMenu(ev, key){ stcMenu(ev.currentTarget, [10,20,50,100].map(n => ({t:String(n), on: STC.pg[key].size===n, fn:() => { STC.pg[key].size = n; STC.pg[key].page = 1; stMainPaint(); }}))); }
+const stcTh = (t, o) => `<th class="${o.cls||''}${o.sort?' s':''}"${o.w?` style="width:${o.w}"`:''}${o.onclick?` onclick="${o.onclick}"`:''}>${t}${o.sort ? `<span class="sa">${o.sort===1?'↑':'↓'}</span>` : ''}</th>`;
+function stcExport(kind, what){ toast(`Exporting the ${what} list as ${kind} — the live button downloads the grid; this prototype does not write files`); }
+
+/* ═══ Compliance Policy ═══════════════════════════════════════════════════════ */
+function stcPolRows(){
+  const P = STC.pg.pol, q = P.q.trim().toLowerCase(), F = P.filt;
+  let rows = STC.pol.filter(r => !q || r.n.toLowerCase().includes(q) || (r.d||'').toLowerCase().includes(q));
+  if (F.bm != null) rows = rows.filter(r => F.bmOp === '=' ? r.bm === F.bm : r.bm !== F.bm);
+  if (F.tag != null) rows = rows.filter(r => F.tagOp === '=' ? r.tags.includes(F.tag) : !r.tags.includes(F.tag));
+  rows.sort((a, b) => a.n.localeCompare(b.n, undefined, {sensitivity:'base'}) * P.sort);
+  return rows;
+}
+function stcPolHTML(){
+  const P = STC.pg.pol, C = P.cols, rows = stcPolRows(), total = rows.length;
+  const page = rows.slice((P.page - 1) * P.size, P.page * P.size);
+  const chip = (lab, key, opKey, val, txt) => `<span class="stcchip" onclick="stcPolChip(event,'${key}')"><span class="f">${lab}</span>${val != null ? `<span class="op">${STC.pg.pol.filt[opKey]}</span><span class="v" title="${stcEsc(txt)}">${stcEsc(txt)}</span><svg class="x" viewBox="0 0 48 48" onclick="event.stopPropagation();stcPolFilt('${key}',null)"><path fill="currentColor" d="${STC_ICO.times}"/></svg>` : ''}</span>`;
+  const tr = page.map(r => {
+    const running = !!STC.run['p'+r.id];
+    return `<tr>
+      <td class="nm"><span class="lk" onclick="stcPolView(${r.id})">${stcEsc(r.n)}</span></td>
+      ${C.desc ? `<td class="dim" title="${stcEsc(r.d)}">${stcEsc(r.d)}</td>` : ''}
+      ${C.created ? `<td>${stcEsc(r.created)}</td>` : ''}
+      ${C.used ? `<td class="c">${stcUsed(r.used)}</td>` : ''}
+      ${C.tag ? `<td>${stcTags(r.tags)}</td>` : ''}
+      ${C.sched ? `<td class="c">${r.sched ? `<button class="stcib" data-tip="Scheduled — open the schedule" onclick="stcSchedule(${r.id})">${stcSvg('schedule')}</button>` : ''}</td>` : ''}
+      ${C.bm ? `<td>${stcTags([stcBmName(r.bm)])}</td>` : ''}
+      <td><div class="stcact">${r.used > 0 ? `<button class="stcib stcrun${running?' spin':''}" data-tip="${running?'Running…':'Run now'}" onclick="stcRun(${r.id})">${stcSvg(running?'restart':'restart')}</button>` : ''}<button class="stcib" data-tip="Actions" onclick="stcPolMenu(event,${r.id})">${stcSvg('ellipsis-v')}</button></div></td>
+    </tr>`;
+  }).join('');
+  return `<div class="stcbar">${stcSearchHTML('pol')}<span class="stcsp"></span>
+      <button class="stcsq" data-tip="Show / hide columns" onclick="stcPolCols(event)">${stcSvg('eye')}</button>
+      <button class="stcsq" data-tip="Export As PDF" onclick="stcExport('PDF','Compliance Policy')">${stcSvg('export-pdf')}</button>
+      <button class="stcsq" data-tip="Export As CSV" onclick="stcExport('CSV','Compliance Policy')">${stcSvg('export-csv')}</button>
+      <button class="stcsq${P.chips?' on':''}" data-tip="${P.chips?'Hide filters':'Show filters'}" onclick="STC.pg.pol.chips=!STC.pg.pol.chips;stMainPaint()">${stcSvg('filter')}</button>
+      <button class="stbtn pri" onclick="stcPolForm('create')">Create Compliance Policy</button></div>
+    <div class="stcchips${P.chips?'':' hid'}">
+      ${chip('Benchmark','bm','bmOp',P.filt.bm,stcBmName(P.filt.bm))}
+      ${chip('Tags','tag','tagOp',P.filt.tag,P.filt.tag||'')}
+      <button class="stcaddf" onclick="stcPolAddFilter(event)">${stcSvg('plus')}<span>Filter</span></button></div>
+    <div class="stcgridw"><div class="stcscroll"><table class="stcgrid">
+      <colgroup><col style="width:26%">${C.desc?'<col style="width:13%">':''}${C.created?'<col style="width:15%">':''}${C.used?'<col style="width:110px">':''}${C.tag?'<col style="width:13%">':''}${C.sched?'<col style="width:96px">':''}${C.bm?'<col>':''}<col style="width:120px"></colgroup>
+      <thead><tr>${stcTh('Policy Name',{sort:P.sort,onclick:'stcPolSort()'})}${C.desc?stcTh('Description',{}):''}${C.created?stcTh('Created Time',{}):''}${C.used?stcTh('Used Count',{cls:'c'}):''}${C.tag?stcTh('Tag',{}):''}${C.sched?stcTh('Schedule',{cls:'c'}):''}${C.bm?stcTh('Benchmark',{}):''}${stcTh('Actions',{cls:'r'})}</tr></thead>
+      <tbody>${tr || `<tr><td colspan="9"><div class="stcempty">No compliance policies match.</div></td></tr>`}</tbody></table></div>
+    ${stcPagerHTML('pol', total)}</div>`;
+}
+function stcPolSort(){ STC.pg.pol.sort *= -1; stMainPaint(); }
+function stcPolFilt(key, val){ STC.pg.pol.filt[key] = val; STC.pg.pol.page = 1; stMainPaint(); }
+function stcPolChip(ev, key){
+  const F = STC.pg.pol.filt;
+  if (key === 'bm') stcPick(ev.currentTarget, {title:'Benchmark', items: STC.bm.map(b => ({k:b.id, t:b.n})), cur:F.bm, clear:true, ops:{cur:F.bmOp, onOp:op => { F.bmOp = op; if (F.bm != null) stMainPaint(); }}, onPick:k => stcPolFilt('bm', k), width:320});
+  else stcPick(ev.currentTarget, {title:'Tags', items: STC_TAGS.map(t => ({k:t, t})), cur:F.tag, clear:true, ops:{cur:F.tagOp, onOp:op => { F.tagOp = op; if (F.tag != null) stMainPaint(); }}, onPick:k => stcPolFilt('tag', k), width:260});
+}
+function stcPolAddFilter(ev){ stcMenu(ev.currentTarget, [{t:'Benchmark', fn:() => { STC.pg.pol.chips = true; stMainPaint(); setTimeout(() => { const c = document.querySelectorAll('#stMain .stcchip')[0]; c && c.click(); }, 30); }}, {t:'Tags', fn:() => { STC.pg.pol.chips = true; stMainPaint(); setTimeout(() => { const c = document.querySelectorAll('#stMain .stcchip')[1]; c && c.click(); }, 30); }}]); }
+function stcPolCols(ev){
+  const C = STC.pg.pol.cols, defs = [['desc','DESCRIPTION'],['created','CREATED TIME'],['used','Used Count'],['tag','Tag'],['sched','Schedule'],['bm','Benchmark']];
+  const html = `<div class="stcmi on ck" style="opacity:.6;cursor:default"><span class="bx">${stcSvg('check')}</span>Policy Name</div>` +
+    defs.map(([k, t]) => `<div class="stcmi ck${C[k]?' on':''}" data-c="${k}"><span class="bx">${stcSvg('check')}</span>${t}</div>`).join('') +
+    `<div class="stcmi sep"></div><div class="stcmi" data-c="reset">Reset Column Preference</div>`;
+  const el = stcPop(ev.currentTarget, html, {right:true}); if (!el) return;
+  el.querySelectorAll('[data-c]').forEach(m => m.onclick = () => { const k = m.dataset.c; if (k === 'reset') Object.keys(C).forEach(x => C[x] = 1); else C[k] = C[k] ? 0 : 1; stMainPaint(); stcPopClose(); });
+}
+function stcPolMenu(ev, id){
+  const r = STC.pol.find(p => p.id === id);
+  stcMenu(ev.currentTarget, [
+    {t:'Edit', ic:'pencil', fn:() => stcPolForm('edit', id)},
+    {t:'Clone', ic:'clone', fn:() => stcPolForm('clone', id)},
+    {t:'Schedule', ic:'schedule', fn:() => stcSchedule(id)},
+    {t:'Assign Monitor', ic:'file-check', fn:() => stcAssign(id, 'assign')},
+    {t:'Remove Assigned Monitor', ic:'file-times', fn:() => stcAssign(id, 'unassign')},
+    {t:'Delete', ic:'trash-alt', del:true, fn:() => stcConfirm('Delete Compliance Policy', `Are you sure you want to delete <b>${stcEsc(r.n)}</b>? Its ${r.used} assigned monitor${r.used===1?'':'s'} and schedule go with it. This cannot be undone.`, 'Delete', () => { STC.pol = STC.pol.filter(p => p.id !== id); stMainPaint(); toast(`Compliance Policy “${r.n}” deleted`); })},
+  ], {right:true});
+}
+function stcRun(id){
+  const r = STC.pol.find(p => p.id === id); if (!r || STC.run['p'+id]) return;
+  STC.run['p'+id] = true; stMainPaint();
+  setTimeout(() => { delete STC.run['p'+id]; stMainPaint(); toast(`Compliance check finished for “${r.n}” on ${r.used} device${r.used===1?'':'s'}`); }, 2600);
+}
+
+/* — the Create / Edit / Clone / View drawer ─────────────────────────────────── */
+function stcPolForm(mode, id){
+  const src = id != null ? STC.pol.find(p => p.id === id) : null;
+  const f = src ? {name: mode === 'clone' ? 'Clone of ' + src.n : src.n, desc: src.d, tags:[...src.tags], cfg: src.cfg, bmTags:[], bm: src.bm, devFilter: src.devFilter || 'Monitor', devs:[...src.devs], notify: (src.notify||[]).join(', ')}
+                : {name:'', desc:'', tags:[], cfg:'startup', bmTags:[], bm:null, devFilter:null, devs:[], notify:''};
+  STC.pf = {mode, id, init: JSON.parse(JSON.stringify(f)), ...f, err:{}, tried:false, busy:false};
+  stcPfPaint(true);
+}
+function stcPfPaint(open){
+  const F = STC.pf, view = F.mode === 'view', E = F.err;
+  const title = view ? 'View Audit Policy' : (F.mode === 'clone' ? 'Clone' : F.mode === 'edit' ? 'Update' : 'Create') + ' Compliance Policy';
+  const lab = (t, req, k) => `<span class="stclab${req?' req':''}">${t}</span>`;
+  const fi = (k, inner) => `<div class="stcfi${E[k]?' err':''}" id="stcpf-${k}">${inner}<div class="stex">${E[k] && E[k].msg ? stcEsc(E[k].msg) : ''}</div></div>`;
+  const sel = (k, txt, ph, on, dis) => `<div class="stcsel${dis?' dis':''}" ${dis?'':`onclick="${on}"`}><span class="v${txt?'':' ph'}">${txt ? stcEsc(txt) : ph}</span>${stcSvg('chevron-down','car')}</div>`;
+  const bmOpts = STC.bm.filter(b => !F.bmTags.length || F.bmTags.some(t => b.tags.includes(t)));
+  const devTxt = F.devFilter === 'Monitor' ? F.devs.map(d => (STC_DEVICES.find(x => x.id === d) || {}).n).filter(Boolean) : F.devs;
+  const body = `
+    <div class="stcrow">
+      <div class="stccol">${fi('name', lab('Policy Name', 1) + `<input class="stin" placeholder="Must be unique" value="${stcEsc(F.name)}" ${view?'disabled':''} oninput="stcPfIn('name',this.value)">`)}</div>
+      <div class="stccol">${fi('desc', lab('Description') + `<input class="stin" placeholder="Write Description here" value="${stcEsc(F.desc)}" ${view?'disabled':''} oninput="stcPfIn('desc',this.value)">`)}</div>
+    </div>
+    <div class="stcrow">
+      <div class="stccol">${fi('tags', lab('Tags') + `<div class="stcsel line${view?' dis':''}" ${view?'':'onclick="stcPfTags(event)"'}><span class="v">${F.tags.length ? F.tags.map(t => `<span class="stctag">${stcEsc(t)}</span>`).join('') : '<span class="ph" style="font-family:\'JetBrains Mono\',monospace;letter-spacing:.04em">Add Tags</span>'}</span>${stcSvg('chevron-down','car')}</div>`)}</div>
+      <div class="stccol">${fi('cfg', lab('Config File Type', 1) + `<div class="stcseg"><button type="button" class="${F.cfg==='startup'?'on':''}" ${view?'disabled':''} onclick="stcPfIn('cfg','startup');stcPfPaint()">Startup</button><button type="button" class="${F.cfg==='running'?'on':''}" ${view?'disabled':''} onclick="stcPfIn('cfg','running');stcPfPaint()">Running</button></div>`)}</div>
+    </div>
+    <div class="stcrow">
+      <div class="stccol">${fi('bmTags', lab('Benchmark Filter by Tags') + sel('bmTags', F.bmTags.join(', '), 'Select', 'stcPfBmTags(event)', view))}</div>
+      <div class="stccol">${fi('bm', lab('Benchmark', 1) + sel('bm', stcBmName(F.bm), 'Select', 'stcPfBm(event)', view || F.mode === 'edit'))}</div>
+    </div>
+    <div class="stcrow">
+      <div class="stccol">${fi('devFilter', lab('Device Filter', 1) + sel('devFilter', F.devFilter, 'Select', 'stcPfDevFilter(event)', view))}</div>
+      <div class="stccol">${fi('devs', lab('Select Device', 1) + sel('devs', devTxt.length > 2 ? devTxt.slice(0,2).join(', ') + ` +${devTxt.length-2}` : devTxt.join(', '), ' ', 'stcPfDevs(event)', view || !F.devFilter))}</div>
+    </div>
+    ${fi('notify', lab('Notify Team') + `<input class="stin" placeholder="@User or Email or /Handle or #User Profile" value="${stcEsc(F.notify)}" ${view?'disabled':''} oninput="stcPfIn('notify',this.value)">`)}
+    <div class="stcmore">For more information: <a href="https://docs.motadata.com/motadata-aiops-docs/network-configuration-and-compliance-management/compliance-management/compliance-policy" target="_blank" rel="noopener">Compliance Policy${stcSvg('external-link')}</a></div>`;
+  const foot = view ? '' : `<span class="mand"><b>*</b> fields are mandatory</span><button class="stbtn" onclick="stcPfReset()">Reset</button><button class="stbtn pri" id="stcPfSave" ${F.busy?'disabled':''} onclick="stcPfSubmit()">${F.busy?'<span class="stspin"></span>':''}${F.mode === 'clone' ? 'Clone' : F.mode === 'edit' ? 'Update' : 'Create'} Compliance Policy</button>`;
+  if (open) stcDrOpen(title, body, foot);
+  else { document.getElementById('stcDrT').textContent = title; document.getElementById('stcDrB').innerHTML = body; document.getElementById('stcDrF').innerHTML = foot; }
+}
+function stcPfIn(k, v){ STC.pf[k] = v; if (STC.pf.tried){ stcPfValidate(k); const fi = document.getElementById('stcpf-'+k); if (fi){ fi.classList.toggle('err', !!STC.pf.err[k]); fi.querySelector('.stex').textContent = STC.pf.err[k] && STC.pf.err[k].msg || ''; } } }
+function stcPfValidate(k){
+  const F = STC.pf, v = F[k]; let e = null;
+  if (k === 'name'){ if (!String(v).trim()) e = {req:1}; else if (STC.pol.some(p => p.n.toLowerCase() === v.trim().toLowerCase() && !(F.mode === 'edit' && p.id === F.id))) e = {msg:'The Policy Name field must be unique'}; }
+  if (k === 'bm' && v == null) e = {req:1};
+  if (k === 'devFilter' && !v) e = {req:1};
+  if (k === 'devs' && !(v && v.length)) e = {req:1};
+  if (k === 'cfg' && !v) e = {req:1};
+  if (e) F.err[k] = e; else delete F.err[k];
+  return !e;
+}
+function stcPfTags(ev){ stcPick(ev.currentTarget, {title:'Tag', items: STC_TAGS.map(t => ({k:t, t})), cur: STC.pf.tags, multi:true, onPick: sel => { STC.pf.tags = sel; stcPfPaint(); }, matchWidth:true, width:300}); }
+function stcPfBmTags(ev){ stcPick(ev.currentTarget, {items: STC_TAGS.map(t => ({k:t, t})), cur: STC.pf.bmTags, multi:true, onPick: sel => { STC.pf.bmTags = sel; const ok = STC.bm.filter(b => !sel.length || sel.some(t => b.tags.includes(t))); if (STC.pf.bm != null && !ok.some(b => b.id === STC.pf.bm)) STC.pf.bm = null; stcPfPaint(); }, matchWidth:true, width:300}); }
+function stcPfBm(ev){ const F = STC.pf; const opts = STC.bm.filter(b => !F.bmTags.length || F.bmTags.some(t => b.tags.includes(t))); stcPick(ev.currentTarget, {items: opts.map(b => ({k:b.id, t:b.n})), cur:F.bm, onPick:k => { F.bm = k; stcPfIn('bm', k); stcPfPaint(); }, matchWidth:true, width:310}); }
+function stcPfDevFilter(ev){ stcPick(ev.currentTarget, {items:['Monitor','Group','Tag'].map(t => ({k:t, t})), cur:STC.pf.devFilter, search:false, onPick:k => { if (STC.pf.devFilter !== k) STC.pf.devs = []; STC.pf.devFilter = k; stcPfIn('devFilter', k); stcPfPaint(); }, matchWidth:true, width:310}); }
+function stcPfDevs(ev){
+  const F = STC.pf;
+  if (F.devFilter === 'Monitor') return stcDevGrid(ev.currentTarget, F.devs, sel => { F.devs = sel; stcPfIn('devs', sel); stcPfPaint(); });
+  const items = F.devFilter === 'Group' ? STC_GROUPS : [...new Set(STC_DEVICES.flatMap(d => d.tags))];
+  stcPick(ev.currentTarget, {items: items.map(t => ({k:t, t})), cur:F.devs, multi:true, onPick: sel => { F.devs = sel; stcPfIn('devs', sel); stcPfPaint(); }, matchWidth:true, width:310});
+}
+/* the Select Device grid-dropdown: search + a checkbox table (DEVICE · IP · TYPE · GROUPS · VENDOR · TAGS), 855px on live */
+function stcDevGrid(anchor, cur, onPick, o){
+  o = o || {}; const st = {q:'', sel:[...cur]};
+  const paint = () => {
+    const q = st.q.toLowerCase();
+    const list = (o.items || STC_DEVICES).filter(d => !q || d.n.toLowerCase().includes(q) || d.ip.includes(q) || d.vendor.toLowerCase().includes(q));
+    const all = list.length && list.every(d => st.sel.includes(d.id));
+    el.innerHTML = `<div class="stcms" style="padding:0 0 10px">${stcSvg('search')}<input placeholder="Search" value="${stcEsc(st.q)}" style="padding-left:30px"></div>
+      <div style="max-height:380px;overflow:auto"><table class="stcgrid"><colgroup><col style="width:40px"><col style="width:18%"><col style="width:14%">${o.sev?'<col style="width:12%">':''}<col style="width:11%"><col style="width:17%"><col style="width:17%"><col></colgroup>
+      <thead><tr><th><span class="stcck${all?' on':''}" data-all="1">${stcSvg('check')}</span></th><th>Device</th><th>IP</th>${o.sev?'<th>Severity</th>':''}<th>Type</th><th>Groups</th><th>Vendor</th><th>Tags</th></tr></thead>
+      <tbody>${list.map(d => `<tr><td><span class="stcck${st.sel.includes(d.id)?' on':''}" data-id="${d.id}">${stcSvg('check')}</span></td><td class="nm">${stcEsc(d.n)}</td><td>${d.ip}</td>${o.sev?`<td><span class="stcgtag" style="color:${d.sev==='UP'?'var(--green)':d.sev==='DOWN'?'var(--red)':'var(--orange)'}">${d.sev}</span></td>`:''}<td>${d.type}</td><td><span class="stcgtag">${stcEsc(d.groups[0])}</span>${d.groups.length>1?`<span class="stcgtag">+${d.groups.length-1}</span>`:''}</td><td title="${stcEsc(d.vendor)}">${stcEsc(d.vendor)}</td><td>${stcTags(d.tags)}</td></tr>`).join('') || `<tr><td colspan="8"><div class="stcempty">No devices match.</div></td></tr>`}</tbody></table></div>
+      <div class="stcmf" style="border:0;padding:10px 0 0"><span style="margin-right:auto;color:var(--text-dim);font-size:12px;align-self:center">${st.sel.length} selected</span><button class="stbtn" style="height:30px" data-act="cancel">Cancel</button><button class="stbtn pri" style="height:30px" data-act="apply">${o.applyLabel || 'Apply'}</button></div>`;
+    el.querySelector('[data-all]').onclick = () => { if (all) st.sel = st.sel.filter(i => !list.some(d => d.id === i)); else list.forEach(d => { if (!st.sel.includes(d.id)) st.sel.push(d.id); }); paint(); };
+    el.querySelectorAll('.stcck[data-id]').forEach(c => c.onclick = () => { const id = +c.dataset.id; const i = st.sel.indexOf(id); if (i >= 0) st.sel.splice(i, 1); else st.sel.push(id); paint(); });
+    const inp = el.querySelector('input'); inp.oninput = () => { st.q = inp.value; const p = inp.selectionStart; paint(); const i2 = el.querySelector('input'); i2.focus(); i2.setSelectionRange(p, p); };
+    el.querySelector('[data-act="cancel"]').onclick = stcPopClose;
+    el.querySelector('[data-act="apply"]').onclick = () => { stcPopClose(); onPick(st.sel); };
+  };
+  const el = stcPop(anchor, '', {cls:'grid', right:true}); if (!el) return; paint();
+  const r = anchor.getBoundingClientRect(); let left = r.right - el.offsetWidth; if (left < 8) left = 8; el.style.left = left + 'px';
+  if (r.bottom + 4 + el.offsetHeight > innerHeight - 8) el.style.top = Math.max(8, innerHeight - el.offsetHeight - 8) + 'px';
+}
+function stcPfReset(){ const F = STC.pf; Object.assign(F, JSON.parse(JSON.stringify(F.init))); F.err = {}; F.tried = false; stcPfPaint(); }
+function stcPfSubmit(){
+  const F = STC.pf; if (F.busy) return; F.tried = true;
+  const ok = ['name','cfg','bm','devFilter','devs'].map(k => stcPfValidate(k)).every(Boolean);
+  if (!ok){ stcPfPaint(); return; }
+  F.busy = true; stcPfPaint();
+  setTimeout(() => {
+    const notify = F.notify.split(/[,\s]+/).filter(Boolean);
+    const rec = {n: F.name.trim(), d: F.desc.trim(), tags: F.tags, cfg: F.cfg, bm: F.bm, devFilter: F.devFilter, devs: F.devs, notify};
+    let msg;
+    if (F.mode === 'edit'){ const p = STC.pol.find(x => x.id === F.id); Object.assign(p, rec, {used: F.devFilter === 'Monitor' ? F.devs.length : p.used}); msg = `Compliance Policy “${p.n}” updated`; }
+    else { const p = {id: stcNewId(STC.pol), ...rec, created: stcNow(), used: F.devFilter === 'Monitor' ? F.devs.length : F.devs.length, sched:false}; STC.pol.push(p); msg = `Compliance Policy “${p.n}” ${F.mode === 'clone' ? 'cloned' : 'created'}`; }
+    stcDrClose(); stMainPaint(); toast(msg);
+  }, 700);
+}
+function stcPolView(id){ stcPolForm('view', id); }
+
+/* — Schedule drawer (“<name> Schedule”: Once / Daily / Weekly / Monthly · Start Date · Hours · Notify*) — */
+function stcSchedule(id){
+  const p = STC.pol.find(x => x.id === id);
+  STC.sf = {id, type:'Once', date:'', hour:'', days:[], dom:'', notify:'', err:{}, tried:false};
+  stcSfPaint(true);
+}
+function stcSfPaint(open){
+  const S = STC.sf, p = STC.pol.find(x => x.id === S.id), E = S.err;
+  const seg = (k, opts, cur) => `<div class="stcseg">${opts.map(o => `<button type="button" class="${cur===o?'on':''}" onclick="STC.sf.${k}='${o}';stcSfPaint()">${o}</button>`).join('')}</div>`;
+  const body = `
+    <div class="stcfi"><span class="stclab req">Scheduler Type</span>${seg('type', ['Once','Daily','Weekly','Monthly'], S.type)}</div>
+    <div class="stcrow">
+      <div class="stccol"><div class="stcfi${E.date?' err':''}"><span class="stclab req">Start Date</span><input class="stin" type="date" value="${S.date}" oninput="STC.sf.date=this.value"></div></div>
+      <div class="stccol"><div class="stcfi${E.hour?' err':''}"><span class="stclab req">Hours</span><input class="stin" type="time" value="${S.hour}" oninput="STC.sf.hour=this.value"></div></div>
+    </div>
+    ${S.type === 'Weekly' ? `<div class="stcfi"><span class="stclab req">Days</span><div class="stcseg">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<button type="button" class="${S.days.includes(d)?'on':''}" onclick="stcSfDay('${d}')">${d}</button>`).join('')}</div></div>` : ''}
+    ${S.type === 'Monthly' ? `<div class="stcfi"><span class="stclab req">Day of month</span><input class="stin" type="number" min="1" max="31" placeholder="1 – 31" value="${S.dom}" oninput="STC.sf.dom=this.value" style="width:120px"></div>` : ''}
+    <div class="stcfi${E.notify?' err':''}"><span class="stclab req">Notify</span><input class="stin" placeholder="@User or Email or /Handle or #User Profile" value="${stcEsc(S.notify)}" oninput="STC.sf.notify=this.value"></div>`;
+  const foot = `<span class="mand"><b>*</b> fields are mandatory</span><button class="stbtn pri" onclick="stcSfSubmit()">Schedule</button><button class="stbtn" onclick="stcSchedule(${S.id})">Reset</button>`;
+  if (open) stcDrOpen(`${p.n} Schedule`, body, foot); else { document.getElementById('stcDrB').innerHTML = body; }
+}
+function stcSfDay(d){ const a = STC.sf.days; const i = a.indexOf(d); if (i >= 0) a.splice(i, 1); else a.push(d); stcSfPaint(); }
+function stcSfSubmit(){
+  const S = STC.sf; S.err = {}; if (!S.date) S.err.date = 1; if (!S.hour) S.err.hour = 1; if (!S.notify.trim()) S.err.notify = 1;
+  if (Object.keys(S.err).length){ stcSfPaint(); return; }
+  const p = STC.pol.find(x => x.id === S.id); p.sched = true; stcDrClose(); stMainPaint(); toast(`“${p.n}” scheduled ${S.type.toLowerCase()} from ${S.date} at ${S.hour}`);
+}
+
+/* — Assign / Remove Assigned Monitor drawer — */
+function stcAssign(id, mode){
+  STC.af = {id, mode, sel:[], q:'', filt:false};
+  stcAfPaint(true);
+}
+function stcAfPaint(open){
+  const A = STC.af, p = STC.pol.find(x => x.id === A.id);
+  const pool = A.mode === 'assign' ? STC_DEVICES.filter(d => !p.devs.includes(d.id)) : STC_DEVICES.filter(d => p.devs.includes(d.id));
+  const q = A.q.toLowerCase(), list = pool.filter(d => !q || d.n.toLowerCase().includes(q) || d.ip.includes(q));
+  const all = list.length && list.every(d => A.sel.includes(d.id));
+  const body = `<div class="stcbar" style="margin-bottom:10px"><div class="stcsearch" style="width:260px;flex-basis:260px">${stcSvg('search')}<input placeholder="Search" value="${stcEsc(A.q)}" oninput="STC.af.q=this.value;stcAfPaint();const i=document.querySelector('#stcDrB .stcsearch input');i.focus();i.setSelectionRange(i.value.length,i.value.length)"></div><span class="stcsp"></span><button class="stcsq${A.filt?' on':''}" data-tip="Filter" onclick="STC.af.filt=!STC.af.filt;stcAfPaint()">${stcSvg('filter')}</button></div>
+    ${A.filt ? `<div class="stcnote" style="margin:0 0 10px">Filters — Type · Groups · Vendor · Tags (the live dialog's MonitorSelectionFilters; not wired here)</div>` : ''}
+    <div style="overflow:auto"><table class="stcgrid"><colgroup><col style="width:36px"><col style="width:22%"><col style="width:15%"><col style="width:18%"><col style="width:10%"><col style="width:20%"><col></colgroup>
+      <thead><tr><th><span class="stcck${all?' on':''}" onclick="stcAfAll()">${stcSvg('check')}</span></th><th>Device</th><th>Severity</th><th>IP</th><th>Type</th><th>Groups</th><th>Vendor</th></tr></thead>
+      <tbody>${list.map(d => `<tr><td><span class="stcck${A.sel.includes(d.id)?' on':''}" onclick="stcAfTog(${d.id})">${stcSvg('check')}</span></td><td class="nm">${stcEsc(d.n)}</td><td><span style="font:600 10.5px/1 'JetBrains Mono',monospace;color:${d.sev==='UP'?'var(--green)':d.sev==='DOWN'?'var(--red)':'var(--orange)'}">${d.sev}</span></td><td>${d.ip}</td><td>${d.type}</td><td><span class="stcgtag">${stcEsc(d.groups[0])}</span>${d.groups.length>1?`<span class="stcgtag">+${d.groups.length-1}</span>`:''}</td><td title="${stcEsc(d.vendor)}">${stcEsc(d.vendor)}</td></tr>`).join('') || `<tr><td colspan="7"><div class="stcempty">${A.mode === 'assign' ? 'Every device is already assigned to this policy.' : 'No monitors are assigned to this policy.'}</div></td></tr>`}</tbody></table></div>`;
+  const lbl = A.mode === 'assign' ? 'Assign Monitor' : 'Unassign Monitor';
+  const foot = `<span class="mand" style="color:var(--text-dim)">${A.sel.length} selected</span><button class="stbtn" onclick="stcDrClose()">Cancel</button><button class="stbtn pri" ${A.sel.length?'':'disabled'} onclick="stcAfSubmit()">${lbl}</button>`;
+  if (open) stcDrOpen(A.mode === 'assign' ? 'Assign Monitor' : 'Unassign Monitor', body, foot); else { document.getElementById('stcDrB').innerHTML = body; document.getElementById('stcDrF').innerHTML = foot; }
+}
+function stcAfTog(id){ const a = STC.af.sel, i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); stcAfPaint(); }
+function stcAfAll(){ const A = STC.af, p = STC.pol.find(x => x.id === A.id); const pool = (A.mode === 'assign' ? STC_DEVICES.filter(d => !p.devs.includes(d.id)) : STC_DEVICES.filter(d => p.devs.includes(d.id))).map(d => d.id); const all = pool.every(i => A.sel.includes(i)); A.sel = all ? [] : pool; stcAfPaint(); }
+function stcAfSubmit(){
+  const A = STC.af, p = STC.pol.find(x => x.id === A.id);
+  if (A.mode === 'assign') A.sel.forEach(i => { if (!p.devs.includes(i)) p.devs.push(i); }); else p.devs = p.devs.filter(i => !A.sel.includes(i));
+  p.devFilter = 'Monitor'; p.used = p.devs.length;
+  stcDrClose(); stMainPaint(); toast(`${A.sel.length} monitor${A.sel.length===1?'':'s'} ${A.mode === 'assign' ? 'assigned to' : 'removed from'} “${p.n}”`);
+}
+
+/* ═══ Benchmark ═══════════════════════════════════════════════════════════════ */
+function stcBmRows(){ const P = STC.pg.bm, q = P.q.trim().toLowerCase(), F = P.filt; let rows = STC.bm.filter(b => !q || b.n.toLowerCase().includes(q) || (b.d||'').toLowerCase().includes(q)); if (F.tag != null) rows = rows.filter(b => F.tagOp === '=' ? b.tags.includes(F.tag) : !b.tags.includes(F.tag)); return rows; }
+function stcBmHTML(){
+  const P = STC.pg.bm, rows = stcBmRows(), total = rows.length, page = rows.slice((P.page-1)*P.size, P.page*P.size);
+  return `<div class="stcbar">${stcSearchHTML('bm')}<span class="stcsp"></span>
+      <button class="stcsq" data-tip="Export As PDF" onclick="stcExport('PDF','Benchmark')">${stcSvg('export-pdf')}</button>
+      <button class="stcsq" data-tip="Export As CSV" onclick="stcExport('CSV','Benchmark')">${stcSvg('export-csv')}</button>
+      <button class="stcsq${P.chips?' on':''}" data-tip="${P.chips?'Hide filters':'Show filters'}" onclick="STC.pg.bm.chips=!STC.pg.bm.chips;stMainPaint()">${stcSvg('filter')}</button>
+      <button class="stbtn pri" onclick="stcBmForm()">Create Benchmark</button></div>
+    <div class="stcchips${P.chips?'':' hid'}">
+      <span class="stcchip" onclick="stcBmChip(event)"><span class="f">Tags</span>${P.filt.tag != null ? `<span class="op">${P.filt.tagOp}</span><span class="v">${stcEsc(P.filt.tag)}</span><svg class="x" viewBox="0 0 48 48" onclick="event.stopPropagation();STC.pg.bm.filt.tag=null;stMainPaint()"><path fill="currentColor" d="${STC_ICO.times}"/></svg>` : ''}</span>
+      <button class="stcaddf" onclick="stcMenu(event.currentTarget,[{t:'Tags',fn:()=>{STC.pg.bm.chips=true;stMainPaint();setTimeout(()=>{const c=document.querySelector('#stMain .stcchip');c&&c.click()},30)}}])">${stcSvg('plus')}<span>Filter</span></button></div>
+    <div class="stcgridw"><div class="stcscroll"><table class="stcgrid">
+      <colgroup><col style="width:24%"><col style="width:30%"><col style="width:14%"><col><col style="width:120px"></colgroup>
+      <thead><tr>${stcTh('Benchmark',{})}${stcTh('Description',{})}${stcTh('Used Count',{cls:'c'})}${stcTh('Tag',{})}${stcTh('Actions',{cls:'r'})}</tr></thead>
+      <tbody>${page.map(b => `<tr>
+        <td class="nm">${b.sys ? stcSvg('lock-alt','lock') : ''}<span class="lk" onclick="stcBmView(${b.id})">${stcEsc(b.n)}</span></td>
+        <td class="dim" title="${stcEsc(b.d)}">${stcEsc(b.d)}</td>
+        <td class="c">${stcUsed(b.used)}</td>
+        <td>${stcTags(b.tags)}</td>
+        <td><div class="stcact"><button class="stcib" data-tip="Actions" onclick="stcBmMenu(event,${b.id})">${stcSvg('ellipsis-v')}</button></div></td></tr>`).join('') || `<tr><td colspan="5"><div class="stcempty">No benchmarks match.</div></td></tr>`}</tbody></table></div>
+    ${stcPagerHTML('bm', total)}</div>`;
+}
+function stcBmChip(ev){ const F = STC.pg.bm.filt; stcPick(ev.currentTarget, {title:'Tags', items: STC_TAGS.map(t => ({k:t, t})), cur:F.tag, clear:true, ops:{cur:F.tagOp, onOp:op => { F.tagOp = op; if (F.tag != null) stMainPaint(); }}, onPick:k => { F.tag = k; STC.pg.bm.page = 1; stMainPaint(); }, width:260}); }
+function stcBmMenu(ev, id){
+  const b = STC.bm.find(x => x.id === id);
+  const items = [{t:'Clone', ic:'clone', fn:() => stcBmForm(id)}];
+  if (!b.sys) items.push({t:'Delete', ic:'trash-alt', del:true, fn:() => {
+    const used = STC.pol.filter(p => p.bm === id);
+    if (used.length) return toast(`“${b.n}” is used by ${used.length} compliance polic${used.length===1?'y':'ies'} — remove it from them first`);
+    stcConfirm('Delete Benchmark', `Are you sure you want to delete <b>${stcEsc(b.n)}</b>? This cannot be undone.`, 'Delete', () => { STC.bm = STC.bm.filter(x => x.id !== id); stMainPaint(); toast(`Benchmark “${b.n}” deleted`); });
+  }});
+  stcMenu(ev.currentTarget, items, {right:true});
+}
+/* tree helpers: numbering is derived, never stored */
+function stcTreeHTML(nodes, prefix, o){
+  return nodes.map((n, i) => {
+    const num = (prefix ? prefix + '.' : '') + (i + 1);
+    if (n.r != null){ const r = stcRule(n.r); return `<div class="stcbr">${stcSevBar(r ? r.sev : 'INFO')}<span class="nm">${num} ${stcEsc(r ? r.n : '(deleted rule)')}</span>${o.edit ? `<button class="stcib" data-tip="Remove rule" onclick="stcBfRmRule('${n._p}')">${stcSvg('times')}</button>` : ''}</div>`; }
+    /* live starts every group COLLAPSED (the view page had to be clicked open to read the
+       tree); only a group just added in the builder opens itself (stcBfAddGroup sets open) */
+    const open = n.open === true;
+    const head = o.edit && n.edit
+      ? `<span class="num">${num}</span><input class="nm" placeholder="Enter Name" value="${stcEsc(n.g)}" id="stcbg-${n._p}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){stcBfName('${n._p}')}" autofocus><span class="acts"><button class="stcib ok" data-tip="Update Name" onclick="event.stopPropagation();stcBfName('${n._p}')">${stcSvg('check')}</button><button class="stcib" data-tip="Add Rule Group" onclick="event.stopPropagation();stcBfAddGroup('${n._p}')">${stcSvg('plus-circle')}</button><button class="stcib del" data-tip="Delete" onclick="event.stopPropagation();stcBfDel('${n._p}')">${stcSvg('trash-alt')}</button></span>`
+      : `<span class="num">${num}</span><span class="nm">${stcEsc(n.g)}</span>${o.edit ? `<span class="acts"><button class="stcib" data-tip="Edit Name" onclick="event.stopPropagation();stcBfEdit('${n._p}')">${stcSvg('pencil')}</button><button class="stcib" data-tip="Add Rule Group" onclick="event.stopPropagation();stcBfAddGroup('${n._p}')">${stcSvg('plus-circle')}</button><button class="stcib del" data-tip="Delete" onclick="event.stopPropagation();stcBfDel('${n._p}')">${stcSvg('trash-alt')}</button></span>` : ''}`;
+    return `<div class="stcbg${open?' open':''}" data-p="${n._p||''}">
+      <div class="stcbgh" onclick="stcBgTog(this)">${stcSvg('chevron-right','car')}${o.edit ? stcSvg('move-up','drag') : ''}${head}</div>
+      <div class="stcbgb">${stcTreeHTML(n.kids || [], num, o)}${o.edit ? `<button class="stcbradd" onclick="stcBfAddRule(event,'${n._p}')">${stcSvg('plus')}Add Rule</button>` : ''}</div></div>`;
+  }).join('');
+}
+function stcBgTog(h){ const g = h.parentElement; g.classList.toggle('open'); const p = g.dataset.p; if (STC.bf && p){ const n = stcBfNode(p); if (n) n.open = g.classList.contains('open'); } }
+function stcCountRules(nodes){ return nodes.reduce((s, n) => s + (n.r != null ? 1 : stcCountRules(n.kids || [])), 0); }
+/* view page */
+function stcBmView(id){
+  const b = STC.bm.find(x => x.id === id);
+  stFullOpen({ title: b.n, info: stcBmInfo, infoHTML: stcBmInfoHTML, html: () => `<div class="stcfull${stcInfoOn()?' info':''}"><div class="stcsplit"><div class="stcfbody">
+      <div class="stcfh"><div class="stccol"><span class="stclab req">Benchmark Name</span><input class="stin" value="${stcEsc(b.n)}" disabled></div>
+        <div class="stccol"><span class="stclab">Description</span><input class="stin" value="${stcEsc(b.d)}" disabled></div>
+        <div class="stccol"><span class="stclab">Tags</span><div style="padding-top:6px">${stcTags(b.tags) || '<span class="stcnote">—</span>'}</div></div></div>
+      <div class="stcnote" style="margin:4px 0 10px">${stcCountRules(b.tree)} rules in ${b.tree.length} group${b.tree.length===1?'':'s'}${b.used ? ` · used by ${b.used} compliance polic${b.used===1?'y':'ies'}` : ''}</div>
+      <div class="stcbt">${stcTreeHTML(b.tree, '', {edit:false})}</div></div>${stcInfoPane()}</div></div>`,
+    onClose: () => {} });
+}
+/* create / clone page */
+function stcBmForm(cloneId){
+  const src = cloneId != null ? STC.bm.find(x => x.id === cloneId) : null;
+  const tree = src ? JSON.parse(JSON.stringify(src.tree)) : [{g:'', kids:[], edit:true, open:true}];
+  STC.bf = {mode: src ? 'clone' : 'create', name: src ? 'Copy of ' + src.n : '', desc: src ? src.d : '', tags: src ? [...src.tags] : [], tree, err:{}, tried:false, info:false};
+  stFullOpen({ title: (src ? 'Clone' : 'Create') + ' Benchmark', info: stcBmInfo, infoHTML: stcBmInfoHTML, html: stcBfHTML, after: () => { const i = document.querySelector('#stMain .stcbgh input'); if (i) i.focus(); }, onClose: () => { STC.bf = null; } });
+}
+function stcBfPaths(nodes, prefix){ nodes.forEach((n, i) => { n._p = (prefix ? prefix + '-' : '') + i; if (n.kids) stcBfPaths(n.kids, n._p); }); }
+function stcBfNode(p){ let arr = STC.bf.tree, n = null; for (const i of p.split('-').map(Number)){ n = arr[i]; if (!n) return null; arr = n.kids || []; } return n; }
+function stcBfParent(p){ const parts = p.split('-').map(Number); const idx = parts.pop(); let arr = STC.bf.tree; for (const i of parts){ arr = arr[i].kids; } return {arr, idx}; }
+function stcBfHTML(){
+  const B = STC.bf; stcBfPaths(B.tree, '');
+  const fi = (k, inner) => `<div class="stcfi${B.err[k]?' err':''}">${inner}</div>`;
+  return `<div class="stcfull${stcInfoOn()?' info':''}"><div class="stcsplit"><div class="stcfbody">
+    <div class="stcfh">
+      <div class="stccol">${fi('name', `<span class="stclab req">Benchmark Name</span><input class="stin" placeholder="Benchmark Name" value="${stcEsc(B.name)}" oninput="STC.bf.name=this.value;if(STC.bf.tried){this.closest('.stcfi').classList.toggle('err',!this.value.trim())}">`)}</div>
+      <div class="stccol">${fi('desc', `<span class="stclab">Description</span><input class="stin" placeholder="Description" value="${stcEsc(B.desc)}" oninput="STC.bf.desc=this.value">`)}</div>
+      <div class="stccol">${fi('tags', `<span class="stclab">Tags</span><div class="stcsel line" onclick="stcBfTags(event)"><span class="v">${B.tags.length ? B.tags.map(t => `<span class="stctag">${stcEsc(t)}</span>`).join('') : '<span class="ph" style="font-family:\'JetBrains Mono\',monospace;letter-spacing:.04em">Add Tags</span>'}</span>${stcSvg('chevron-down','car')}</div>`)}</div>
+    </div>
+    <div class="stcbt">${stcTreeHTML(B.tree, '', {edit:true})}</div>
+    <div><button class="stcbtn-out" onclick="stcBfAddGroup(null)">Add Rule Group</button></div>
+    <div class="stcfoot"><button class="stbtn" onclick="stcBfReset()">Reset</button><button class="stbtn pri" onclick="stcBfSubmit()">${B.mode === 'clone' ? 'Clone' : 'Create'} Benchmark</button></div>
+    </div>${stcInfoPane()}</div></div>`;
+}
+function stcBfRepaint(){ stMainPaint(); }
+function stcBfTags(ev){ stcPick(ev.currentTarget, {title:'Tag', items: STC_TAGS.map(t => ({k:t, t})), cur: STC.bf.tags, multi:true, onPick: sel => { STC.bf.tags = sel; stcBfRepaint(); }, matchWidth:true, width:300}); }
+function stcBfAddGroup(p){
+  const node = {g:'', kids:[], edit:true, open:true};
+  if (p == null) STC.bf.tree.push(node); else { const n = stcBfNode(p); n.kids.push(node); n.open = true; }
+  stcBfRepaint(); const ins = document.querySelectorAll('#stMain .stcbgh input'); const last = ins[ins.length - 1]; if (last) last.focus();
+}
+function stcBfName(p){ const n = stcBfNode(p), i = document.getElementById('stcbg-' + p); const v = i ? i.value.trim() : ''; if (!v){ i && i.focus(); toast('Enter a name for the rule group'); return; } n.g = v; n.edit = false; stcBfRepaint(); }
+function stcBfEdit(p){ const n = stcBfNode(p); n.edit = true; stcBfRepaint(); const i = document.getElementById('stcbg-' + p); if (i){ i.focus(); i.select(); } }
+function stcBfDel(p){ const n = stcBfNode(p), cnt = stcCountRules([n]); const go = () => { const {arr, idx} = stcBfParent(p); arr.splice(idx, 1); stcBfRepaint(); }; if (cnt || (n.kids && n.kids.length)) stcConfirm('Delete rule group', `Delete <b>${stcEsc(n.g || 'this group')}</b> and the ${cnt} rule${cnt===1?'':'s'} under it?`, 'Delete', go); else go(); }
+function stcBfRmRule(p){ const {arr, idx} = stcBfParent(p); arr.splice(idx, 1); stcBfRepaint(); }
+/* Add Rule: the product's picker lists existing rules, filtered by tag / severity */
+function stcBfAddRule(ev, p){
+  const n = stcBfNode(p), have = (n.kids || []).filter(k => k.r != null).map(k => k.r);
+  const st = {q:'', sev:'', sel:[]};
+  const paint = () => {
+    const q = st.q.toLowerCase();
+    const list = STC.rules.filter(r => !have.includes(r.id) && (!st.sev || r.sev === st.sev) && (!q || r.n.toLowerCase().includes(q) || r.tags.join(' ').toLowerCase().includes(q)));
+    el.innerHTML = `<div class="stcmi hd">Add Rule · ${list.length} available</div>
+      <div class="stcms">${stcSvg('search')}<input placeholder="Search rules or tags" value="${stcEsc(st.q)}"></div>
+      <div class="stcmo" style="gap:6px;flex-wrap:wrap">${['','CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(s => `<b class="${st.sev===s?'on':''}" data-sev="${s}" style="font-family:inherit;font-weight:500;text-transform:capitalize">${s ? s.toLowerCase() : 'All'}</b>`).join('')}</div>
+      <div class="stcml" style="max-height:340px">${list.slice(0, 80).map(r => `<div class="stcmi ck${st.sel.includes(r.id)?' on':''}" data-id="${r.id}" title="${stcEsc(r.d)}"><span class="bx">${stcSvg('check')}</span>${stcSevBar(r.sev)}<span style="overflow:hidden;text-overflow:ellipsis">${stcEsc(r.n)}</span><span style="margin-left:auto;color:var(--text-dim);font-size:11px">${r.type}</span></div>`).join('') || '<div class="stcmi hd">No rules match</div>'}${list.length > 80 ? `<div class="stcmi hd">${list.length - 80} more — narrow the search</div>` : ''}</div>
+      <div class="stcmf"><span style="margin-right:auto;color:var(--text-dim);font-size:12px;align-self:center">${st.sel.length} selected</span><button class="stbtn" style="height:28px;padding:0 10px" data-act="cancel">Cancel</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Add</button></div>`;
+    const inp = el.querySelector('input'); inp.oninput = () => { st.q = inp.value; const c = inp.selectionStart; paint(); const i2 = el.querySelector('input'); i2.focus(); i2.setSelectionRange(c, c); };
+    el.querySelectorAll('[data-sev]').forEach(b => b.onclick = () => { st.sev = b.dataset.sev; paint(); });
+    el.querySelectorAll('.stcmi[data-id]').forEach(m => m.onclick = () => { const id = +m.dataset.id; const i = st.sel.indexOf(id); if (i >= 0) st.sel.splice(i, 1); else st.sel.push(id); m.classList.toggle('on'); el.querySelector('.stcmf span').textContent = st.sel.length + ' selected'; });
+    el.querySelector('[data-act="cancel"]').onclick = stcPopClose;
+    el.querySelector('[data-act="apply"]').onclick = () => { stcPopClose(); st.sel.forEach(id => n.kids.push({r:id})); n.open = true; stcBfRepaint(); };
+  };
+  const el = stcPop(ev.currentTarget, '', {keep:true}); if (!el) return; el.style.width = '520px'; paint();
+  if (ev.currentTarget.getBoundingClientRect().bottom + 4 + el.offsetHeight > innerHeight - 8) el.style.top = Math.max(8, innerHeight - el.offsetHeight - 8) + 'px';
+}
+function stcBfReset(){ const B = STC.bf; B.name = ''; B.desc = ''; B.tags = []; B.tree = [{g:'', kids:[], edit:true, open:true}]; B.err = {}; B.tried = false; stcBfRepaint(); }
+function stcBfSubmit(){
+  const B = STC.bf; B.tried = true; B.err = {};
+  if (!B.name.trim()) B.err.name = 1;
+  if (STC.bm.some(b => b.n.toLowerCase() === B.name.trim().toLowerCase())){ B.err.name = 1; toast('A benchmark with this name already exists'); }
+  if (Object.keys(B.err).length){ stcBfRepaint(); return; }
+  const strip = nodes => nodes.map(n => n.r != null ? {r:n.r} : {g:n.g || 'Untitled group', kids: strip(n.kids || [])});
+  const b = {id: stcNewId(STC.bm), n: B.name.trim(), d: B.desc.trim(), tags: B.tags, used:0, tree: strip(B.tree)};
+  STC.bm.push(b); const name = b.n; STC.bf = null; stFullClose(); toast(`Benchmark “${name}” ${B.mode === 'clone' ? 'cloned' : 'created'}`);
+}
+/* the (i) pane: ST.full._info is the open/closed state, ST.full.infoHTML the text — both live
+   on the page object so a repaint (every keystroke in the builder) keeps the pane as it was */
+const stcInfoOn = () => !!(ST.full && ST.full._info);
+function stcInfoPane(){ return `<div class="stcinfo" id="stcInfo">${stcInfoOn() && ST.full.infoHTML ? ST.full.infoHTML() : ''}</div>`; }
+function stcInfoTog(){ const pg = ST.full; if (!pg) return; pg._info = !pg._info; const w = document.querySelector('#stMain .stcfull'); if (w) w.classList.toggle('info', pg._info); const p = document.getElementById('stcInfo'); if (p) p.innerHTML = pg._info && pg.infoHTML ? pg.infoHTML() : ''; }
+function stcBmInfo(){ stcInfoTog(); }
+function stcBmInfoHTML(){ return `<h5>Benchmark Properties:</h5><p>In this section, you will define and customize compliance benchmarks. Benchmarks are structured collections of compliance rules, grouped for easier management. Below are the fields and actions available:</p>
+<h5>Fields:</h5><li><b>Benchmark Name:</b> Enter a unique name for your benchmark to help identify its purpose.</li><li><b>Description:</b> Provide a detailed description of the benchmark, outlining its intent and the types of devices it covers.</li><li><b>Tags:</b> Use relevant tags to categorize and filter your benchmark later.</li><li><b>Add Rule Group:</b> Add a new group to organize specific rules under your benchmark.</li>
+<p>Once a rule group is added, it appears as a movable accordion, providing flexible management options:</p><li><b>Edit Name:</b> Change the title of the accordion to represent the group’s function or purpose.</li><li><b>Delete:</b> Remove the accordion (and its associated rules).</li><li><b>Add Rule Group Below:</b> Add a child accordion beneath the current group. This makes the parent-child relationship visible, where the newly added rule group is nested under the parent.</li><li><b>Add Rule:</b> Choose from existing compliance rules (already created in the product). Filter these rules based on tags or severity levels (Critical, Major, Warning) to select the most relevant rules.</li>
+<p>You can also add additional parent accordions parallel to the existing parent groups by clicking on "Add Rule Group."</p>
+<h5>Example:</h5><p>Benchmark Name: "CIS Cisco IOS 16 Benchmark"<br>Description: "A set of compliance rules tailored to Cisco IOS 16 security standards."<br>Tags: "Cisco, Security, CIS"</p><li>Add Rule Group: Add an accordion for "Management Plane."</li><li>Add Rule Group Below: Add a child group for "Local Authentication, Authorization and Accounting (AAA) Rules." Inside this accordion, filter and add rules like "Enable aaa new-model," "Set aaa accounting exec," "Set login authentication for ip http," etc.</li><li>Add Parallel Rule Group: Add another accordion to the above for "SNMP Rules."</li><li>Add Parallel Rule Group: Add another parent accordion for "Control Plane."</li>
+<p style="margin-top:8px">For more information: <a href="https://docs.motadata.com/motadata-aiops-docs/network-configuration-and-compliance-management/compliance-management/benchmark" target="_blank" rel="noopener" style="color:var(--white);text-decoration:underline">NCCM Compliance: Benchmark</a></p>`; }
+
+/* ═══ Rules ═══════════════════════════════════════════════════════════════════ */
+function stcRuRows(){ const P = STC.pg.ru, q = P.q.trim().toLowerCase(); return STC.rules.filter(r => !q || r.n.toLowerCase().includes(q) || r.d.toLowerCase().includes(q) || r.tags.join(' ').toLowerCase().includes(q)); }
+function stcRuHTML(){
+  const P = STC.pg.ru, rows = stcRuRows(), total = rows.length, page = rows.slice((P.page-1)*P.size, P.page*P.size);
+  return `<div class="stcbar">${stcSearchHTML('ru')}<span class="stcsp"></span><button class="stbtn pri" onclick="stcRuForm('create')">Create Rule</button></div>
+    <div class="stcgridw"><div class="stcscroll"><table class="stcgrid">
+      <colgroup><col style="width:23%"><col style="width:30%"><col style="width:24%"><col><col style="width:120px"></colgroup>
+      <thead><tr>${stcTh('Rule',{})}${stcTh('Description',{})}${stcTh('Tag',{})}${stcTh('Rule Type',{})}${stcTh('Actions',{cls:'r'})}</tr></thead>
+      <tbody>${page.map(r => `<tr>
+        <td class="nm" title="${stcEsc(r.n)}">${stcSevBar(r.sev)}${stcEsc(r.n)}</td>
+        <td class="dim" title="${stcEsc(r.d)}">${stcEsc(r.d)}</td>
+        <td>${stcTags(r.tags)}</td>
+        <td>${r.type}</td>
+        <td><div class="stcact"><button class="stcib" data-tip="Actions" onclick="stcRuMenu(event,${r.id})">${stcSvg('ellipsis-v')}</button></div></td></tr>`).join('') || `<tr><td colspan="5"><div class="stcempty">No rules match.</div></td></tr>`}</tbody></table></div>
+    ${stcPagerHTML('ru', total)}</div>`;
+}
+function stcRuMenu(ev, id){
+  const r = stcRule(id);
+  stcMenu(ev.currentTarget, [
+    {t:'Edit', ic:'pencil', fn:() => stcRuForm('edit', id)},
+    {t:'Clone', ic:'clone', fn:() => stcRuForm('clone', id)},
+    {t:'Delete', ic:'trash-alt', del:true, fn:() => {
+      const inB = STC.bm.filter(b => stcTreeHas(b.tree, id)).length;
+      stcConfirm('Delete Rule', `Are you sure you want to delete <b>${stcEsc(r.n)}</b>?${inB ? ` It is part of ${inB} benchmark${inB===1?'':'s'} and will be removed from them.` : ''} This cannot be undone.`, 'Delete', () => { STC.rules = STC.rules.filter(x => x.id !== id); STC.bm.forEach(b => stcTreeDrop(b.tree, id)); stMainPaint(); toast(`Rule “${r.n}” deleted`); });
+    }},
+  ], {right:true});
+}
+function stcTreeHas(nodes, id){ return nodes.some(n => n.r === id || (n.kids && stcTreeHas(n.kids, id))); }
+function stcTreeDrop(nodes, id){ for (let i = nodes.length - 1; i >= 0; i--){ if (nodes[i].r === id) nodes.splice(i, 1); else if (nodes[i].kids) stcTreeDrop(nodes[i].kids, id); } }
+/* the two-step wizard */
+const STC_COND = [['contain','Should Contain'],['not contain','Should Not contain']], STC_OPS = [['and','AND'],['or','OR']], STC_SEV = [['CRITICAL','Critical'],['HIGH','High'],['MEDIUM','Medium'],['LOW','Low'],['INFO','Info']];
+const STC_OCC = [[-1,'Any']].concat(Array.from({length:25}, (_, i) => [i+1, String(i+1)]));
+function stcRuForm(mode, id){
+  const src = id != null ? stcRule(id) : null;
+  STC.rf = { mode, id, step:1, info:false, checkIn:'Config File', cfg:'basic', blockStart:'', blockEnd:'', block:[], command:'',
+    cond:[{op:'', c:'', rp:'', oc:''}], runbooks:[],
+    name: src ? (mode === 'clone' ? 'Copy of ' + src.n : src.n) : '', desc: src ? src.d : '', sev: src ? src.sev : 'HIGH', tags: src ? [...src.tags] : [],
+    rationale:'', impact:'', defaultValue:'', references:'', additional:'', controls:[{name:'', desc:'', ver:'', ig:[]}], err:{}, tried:false };
+  if (src && src.cond){ Object.assign(STC.rf, JSON.parse(JSON.stringify(src.cond))); }
+  stFullOpen({ title: (mode === 'edit' ? 'Edit' : mode === 'clone' ? 'Clone' : 'Create') + ' Rule', info: stcRuInfo, infoHTML: stcRuInfoHTML, html: stcRfHTML, onClose: () => { STC.rf = null; } });
+}
+function stcRfHTML(){
+  const R = STC.rf, E = R.err;
+  const seg = (k, opts, cur, onpick) => `<div class="stcseg">${opts.map(([v, t]) => `<button type="button" class="${cur===v?'on':''}" onclick="${onpick||`STC.rf.${k}=${JSON.stringify(v).replace(/"/g,'&quot;')};stcRfRepaint()`}">${t}</button>`).join('')}</div>`;
+  const sel = (txt, ph, on, cls) => `<div class="stcsel${cls?' '+cls:''}" ${on?`onclick="${on}"`:''}><span class="v${txt?'':' ph'}">${txt ? stcEsc(txt) : ph}</span>${stcSvg('chevron-down','car')}</div>`;
+  const condRow = (arr, key, i, withOcc) => {
+    const c = arr[i], first = i === 0, last = i === arr.length - 1, e = (E[key] || {})[i] || {};
+    return `<div class="stccond">
+      <div class="op">${first ? '<div class="stcfi" style="margin:0"><span class="stclab">&nbsp;</span>' + sel('', ' ', null, 'blank') + '</div>' : `<div class="stcfi${e.op?' err':''}" style="margin:0"><span class="stclab">&nbsp;</span>${sel((STC_OPS.find(o => o[0]===c.op)||[])[1], 'Select', `stcRfPick(event,'${key}',${i},'op')`)}</div>`}</div>
+      <div class="cd"><div class="stcfi${e.c?' err':''}" style="margin:0"><span class="stclab${first?' req':''}">${first?'Condition':'&nbsp;'}</span>${sel((STC_COND.find(o => o[0]===c.c)||[])[1], 'Select', `stcRfPick(event,'${key}',${i},'c')`)}</div></div>
+      <div class="rp"><div class="stcfi${e.rp?' err':''}" style="margin:0"><span class="stclab${first?' req':''}">${first?'Result Pattern':'&nbsp;'}</span><input class="stin" value="${stcEsc(c.rp)}" oninput="STC.rf.${key}[${i}].rp=this.value"></div></div>
+      ${withOcc ? `<div class="oc"><div class="stcfi${e.oc?' err':''}" style="margin:0"><span class="stclab${first?' req':''}">${first?'Occurrence':'&nbsp;'}</span>${sel((STC_OCC.find(o => String(o[0])===String(c.oc))||[])[1], 'Select', `stcRfPick(event,'${key}',${i},'oc')`)}</div></div>` : ''}
+      <div class="ic">${arr.length > 1 || !withOcc ? `<button class="stcib rm" data-tip="Remove" onclick="stcRfRow('${key}','rm',${i})">${stcSvg('times-circle')}</button>` : ''}${last ? `<button class="stcib" data-tip="Add" onclick="stcRfRow('${key}','add')">${stcSvg('plus-circle')}</button>` : ''}</div></div>`;
+  };
+  const step1 = `
+    <div class="stcinl"><span class="stclab req">Rule Check in</span>${seg('checkIn', [['Config File','Config File'],['CLI','CLI']], R.checkIn)}</div>
+    ${R.checkIn === 'Config File' ? `<div class="stcinl"><span class="stclab req">Rule Configuration</span>${seg('cfg', [['basic','Basic'],['advanced','Advanced']], R.cfg)}</div>` : ''}
+    ${R.checkIn === 'Config File' && R.cfg === 'advanced' ? `<h4 class="stch4">Block Criteria</h4>
+      <div class="stcrow" style="max-width:800px"><div class="stccol"><div class="stcfi${E.blockStart?' err':''}"><span class="stclab req">Block Start</span><input class="stin" value="${stcEsc(R.blockStart)}" oninput="STC.rf.blockStart=this.value"></div></div><div class="stccol"><div class="stcfi"><span class="stclab">Block End</span><input class="stin" value="${stcEsc(R.blockEnd)}" oninput="STC.rf.blockEnd=this.value"></div></div></div>
+      ${R.block.map((_, i) => condRow(R.block, 'block', i, false)).join('')}
+      <div><button class="stcbtn-out" onclick="stcRfRow('block','add')">Add Conditions</button></div>` : ''}
+    <h4 class="stch4">Rule Condition</h4>
+    ${R.checkIn === 'CLI' ? `<div class="stcfi${E.command?' err':''}" style="max-width:800px"><span class="stclab req">Command</span><input class="stin" value="${stcEsc(R.command)}" oninput="STC.rf.command=this.value" placeholder="e.g. show running-config | include snmp-server community"></div>` : ''}
+    ${R.cond.map((_, i) => condRow(R.cond, 'cond', i, true)).join('')}
+    <h4 class="stch4">Remediation Action</h4>
+    <div class="stcinl"><span class="stclab">Action to be taken</span><div style="width:390px">${sel(R.runbooks.length ? R.runbooks.join(', ') : '', 'Select', 'stcRfRunbooks(event)')}</div><button class="stcbtn-out" onclick="toast('Create Runbook — opens Settings › Plugin Library › Runbook on the live product')">Create Runbook</button></div>`;
+  const ctl = (c, i) => `<div class="stcctl"><button class="stcib x" data-tip="Remove" onclick="STC.rf.controls.splice(${i},1);stcRfRepaint()">${stcSvg('times')}</button>
+      <div class="stcwzrow"><span class="stclab">Controls Name</span><div class="f"><input class="stin" placeholder="Select" value="${stcEsc(c.name)}" oninput="STC.rf.controls[${i}].name=this.value"></div></div>
+      <div class="stcwzrow"><span class="stclab">Controls Description</span><div class="f"><input class="stin" placeholder="Description" value="${stcEsc(c.desc)}" oninput="STC.rf.controls[${i}].desc=this.value"></div></div>
+      <div class="stcwzrow"><span class="stclab">Controls Version</span><div class="f"><input class="stin" placeholder="Version" value="${stcEsc(c.ver)}" oninput="STC.rf.controls[${i}].ver=this.value"></div></div>
+      <div class="stcwzrow" style="margin-bottom:0"><span class="stclab">Controls IG</span><div class="f">${sel(c.ig.join(', '), 'Version', `stcRfIg(event,${i})`)}</div></div></div>`;
+  const ta = (k, lab) => `<div class="stcwzrow"><span class="stclab">${lab}</span><div class="f"><textarea class="stcta" placeholder="Add text here" oninput="STC.rf.${k}=this.value">${stcEsc(R[k])}</textarea></div></div>`;
+  const step2 = `
+    <div class="stcwzrow"><span class="stclab req">Rule Name</span><div class="f"><div class="stcfi${E.name?' err':''}" style="margin:0"><input class="stin" value="${stcEsc(R.name)}" oninput="STC.rf.name=this.value;if(STC.rf.tried){this.closest('.stcfi').classList.toggle('err',!this.value.trim())}"><div class="stex">${E.name && E.name.msg ? stcEsc(E.name.msg) : ''}</div></div></div></div>
+    <div class="stcwzrow"><span class="stclab">Description</span><div class="f"><div class="stcfi${E.desc?' err':''}" style="margin:0"><input class="stin" value="${stcEsc(R.desc)}" oninput="STC.rf.desc=this.value;if(STC.rf.tried){this.closest('.stcfi').classList.toggle('err',!this.value.trim())}"></div></div></div>
+    <div class="stcwzrow"><span class="stclab req">Rule Severity</span><div class="f">${seg('sev', STC_SEV, R.sev)}</div></div>
+    <div class="stcwzrow"><span class="stclab">Tags</span><div class="f"><div class="stcsel line" onclick="stcRfTags(event)"><span class="v">${R.tags.length ? R.tags.map(t => `<span class="stctag">${stcEsc(t)}</span>`).join('') : '<span class="ph" style="font-family:\'JetBrains Mono\',monospace;letter-spacing:.04em">Add Tags</span>'}</span>${stcSvg('chevron-down','car')}</div></div></div>
+    ${ta('rationale','Rationale')}${ta('impact','Impact')}${ta('defaultValue','Default Value')}${ta('references','References')}${ta('additional','Additional Information')}
+    ${R.controls.map(ctl).join('')}
+    <div style="max-width:780px"><button class="stcbtn-out" onclick="STC.rf.controls.push({name:'',desc:'',ver:'',ig:[]});stcRfRepaint()">Add New Controls</button></div>`;
+  return `<div class="stcfull${stcInfoOn()?' info':''}"><div class="stcsplit"><div class="stcfbody" style="display:flex;min-height:0"><div class="stcwz">
+    <div class="stcsteps">
+      <div class="stcstep${R.step===1?' on':' done'}" onclick="STC.rf.step=1;stcRfRepaint()"><span class="n">${R.step===1?'1':stcSvg('check')}</span>Audit &amp; Remediation Properties</div>
+      <div class="stcstep${R.step===2?' on':''}" onclick="stcRfNext()"><span class="n">2</span>General Properties</div></div>
+    <div class="stcwzf"><div class="stcwzb">${R.step === 1 ? step1 : step2}</div>
+      <div class="stcwzfoot"><button class="stbtn" onclick="stcRfReset()">Reset</button>${R.step === 1 ? `<button class="stbtn pri" onclick="stcRfNext()">Next</button>` : `<button class="stbtn pri" onclick="stcRfSubmit()">${R.mode === 'edit' ? 'Update' : 'Create'} Rule</button>`}</div></div>
+    </div></div>${stcInfoPane()}</div></div>`;
+}
+function stcRfRepaint(){ stMainPaint(); }
+function stcRfRow(key, act, i){ const arr = STC.rf[key]; if (act === 'add') arr.push({op:'', c:'', rp:'', oc:''}); else arr.splice(i, 1); stcRfRepaint(); }
+function stcRfPick(ev, key, i, f){
+  const items = f === 'op' ? STC_OPS : f === 'c' ? STC_COND : STC_OCC;
+  stcPick(ev.currentTarget, {items: items.map(([k, t]) => ({k, t})), cur: STC.rf[key][i][f], search:false, onPick:k => { STC.rf[key][i][f] = k; if (STC.rf.tried && STC.rf.err[key] && STC.rf.err[key][i]) delete STC.rf.err[key][i][f]; stcRfRepaint(); }, matchWidth:true, width:120});
+}
+function stcRfRunbooks(ev){ stcPick(ev.currentTarget, {items: STC_RUNBOOKS.map(t => ({k:t, t})), cur: STC.rf.runbooks, multi:true, onPick: sel => { STC.rf.runbooks = sel; stcRfRepaint(); }, matchWidth:true, width:390}); }
+function stcRfTags(ev){ stcPick(ev.currentTarget, {title:'Tag', items: STC_TAGS.map(t => ({k:t, t})), cur: STC.rf.tags, multi:true, onPick: sel => { STC.rf.tags = sel; stcRfRepaint(); }, matchWidth:true, width:300}); }
+function stcRfIg(ev, i){ stcPick(ev.currentTarget, {items:[['ig1','IG-1'],['ig2','IG-2'],['ig3','IG-3']].map(([k,t]) => ({k:t, t})), cur: STC.rf.controls[i].ig, multi:true, search:false, onPick: sel => { STC.rf.controls[i].ig = sel; stcRfRepaint(); }, matchWidth:true, width:200}); }
+function stcRfValidate1(){
+  const R = STC.rf, E = {}; let bad = false;
+  const rows = (arr, key, withOcc) => { arr.forEach((c, i) => { const e = {}; if (i > 0 && !c.op) e.op = 1; if (!c.c) e.c = 1; if (!c.rp.trim()) e.rp = 1; if (withOcc && c.oc === '') e.oc = 1; if (Object.keys(e).length){ (E[key] = E[key] || {})[i] = e; bad = true; } }); };
+  if (R.checkIn === 'Config File' && R.cfg === 'advanced'){ if (!R.blockStart.trim()){ E.blockStart = 1; bad = true; } rows(R.block, 'block', false); }
+  if (R.checkIn === 'CLI' && !R.command.trim()){ E.command = 1; bad = true; }
+  rows(R.cond, 'cond', true);
+  R.err = E; return !bad;
+}
+function stcRfNext(){ const R = STC.rf; if (R.step === 2) return; R.tried = true; if (!stcRfValidate1()){ stcRfRepaint(); return; } R.step = 2; R.tried = false; stcRfRepaint(); }
+function stcRfReset(){ const R = STC.rf; if (R.step === 1){ Object.assign(R, {checkIn:'Config File', cfg:'basic', blockStart:'', blockEnd:'', block:[], command:'', cond:[{op:'',c:'',rp:'',oc:''}], runbooks:[], err:{}, tried:false}); } else { Object.assign(R, {name:'', desc:'', sev:'HIGH', tags:[], rationale:'', impact:'', defaultValue:'', references:'', additional:'', controls:[{name:'',desc:'',ver:'',ig:[]}], err:{}, tried:false}); } stcRfRepaint(); }
+function stcRfSubmit(){
+  const R = STC.rf; R.tried = true; R.err = {};
+  if (!R.name.trim()) R.err.name = {req:1};
+  else if (STC.rules.some(r => r.n.toLowerCase() === R.name.trim().toLowerCase() && !(R.mode === 'edit' && r.id === R.id))) R.err.name = {msg:'The Rule Name field must be unique'};
+  if (!R.desc.trim()) R.err.desc = 1;             /* required in the component (rules:"required"), though the live label carries no star */
+  if (Object.keys(R.err).length){ stcRfRepaint(); return; }
+  const cond = {checkIn:R.checkIn, cfg:R.cfg, blockStart:R.blockStart, blockEnd:R.blockEnd, block:R.block, command:R.command, cond:R.cond, runbooks:R.runbooks, rationale:R.rationale, impact:R.impact, defaultValue:R.defaultValue, references:R.references, additional:R.additional, controls:R.controls};
+  let msg;
+  if (R.mode === 'edit'){ const r = stcRule(R.id); Object.assign(r, {n:R.name.trim(), d:R.desc.trim(), sev:R.sev, tags:R.tags, cond}); msg = `Rule “${r.n}” updated`; }
+  else { const r = {id: stcNewId(STC.rules), n:R.name.trim(), d:R.desc.trim(), sev:R.sev, tags:R.tags, type:'Custom', cond}; STC.rules.unshift(r); msg = `Rule “${r.n}” ${R.mode === 'clone' ? 'cloned' : 'created'}`; }
+  STC.rf = null; stFullClose(); toast(msg);
+}
+function stcRuInfo(){ stcInfoTog(); }
+function stcRuInfoHTML(){ return `<h5>Audit/Remediation Properties</h5><p>Set up how this rule will be audited and what actions will be taken for remediation. This ensures the rule is enforceable and provides guidance for rectifying any violations.</p>
+<h5>Difference Between CLI and Config File Selection</h5><p><b>CLI:</b> This option allows you to define commands that will be executed on the device, and the result will be matched against the rule’s condition. It is suitable when the configuration is managed via specific commands.</p><p><b>Config File:</b> This option checks the conditions directly within the configuration file of the device like startup or running config files.</p>
+<h5>Basic vs Advanced Options in Config File</h5><p><b>Basic:</b> This is a straightforward rule where conditions are checked against specific patterns in the configuration file. It is useful when a simple condition needs to be verified in a specific section of the config file.</p><p><b>Advanced:</b> This allows more control by specifying a block of the configuration file to check (Block Start and Block End) and defining patterns and commands within that block. It’s suitable for complex rules requiring detailed inspection of specific parts of the configuration.</p>
+<h5>Remediation and Auto-Execution</h5><p><b>Remediation:</b> If a rule is violated, you can attach or create a remediation runbook to automatically fix the issue. You can also choose to manually execute the runbook if needed.</p><p><b>Auto-Execute Runbook:</b> A checkbox that allows automatic execution of the remediation runbook if the rule is violated. If enabled, an additional checkbox appears that allows you to back up the configuration file before and after the runbook is executed, ensuring no data loss occurs during the remediation process.</p>
+<h5>Example</h5><p><b>Creating a Rule to Ensure SNMP Community String is Not Set to the Default Value.</b> We will create a rule to ensure that the SNMP community string is not set to its default values.</p>
+<p><b>Scenario 1: Using "Config File" for Rule Check</b><br>Rule Condition: Select the condition "should not contain" to flag the rule as failed if the following patterns are found in the configuration file:<br><code>snmp-server community public</code> <code>snmp-server community private</code><br>Occurrence: Set to "Any" to match either of the patterns. Use the logical OR operator between the two conditions.</p>
+<p><b>Scenario 2: Using "CLI" for Rule Check</b><br>Command: <code>show running-config | include snmp-server community</code><br>Rule Condition: Again, select "should not contain" to flag a failure if either default SNMP community string is found. Occurrence: "Any"; OR between the two conditions.</p>`; }
+
+/* ── register the three pages with the Settings module ───────────────────────── */
+ST_PAGES['Compliance Settings › Compliance Policy'] = { html: stcPolHTML };
+ST_PAGES['Compliance Settings › Benchmark'] = { html: stcBmHTML };
+ST_PAGES['Compliance Settings › Rules'] = { html: stcRuHTML };
 </script>
 
 <script src="_variants.js"></script>

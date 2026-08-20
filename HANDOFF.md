@@ -1,3 +1,46 @@
+# Handoff — 2026-08-20 (later)
+
+## Read first
+
+This session added **Compliance Settings** to the Settings module — the whole category
+(Compliance Policy · Benchmark · Rules, with every drawer, picker, full-page builder and
+the two-step rule wizard), cloned from live 8.2.7 at `/settings/compliance-settings/*`
+through the browser. Read **“Compliance Settings (`stc*`)”** in `CLAUDE.md` before touching
+it. The `st*` module gained two doors the block plugs into — **`ST_PAGES`** (a page
+registry) and **`stFullOpen()`** (full-page screens with the `(i)` help toggle) — recorded
+in the st section.
+
+## What was done
+
+- Drove the three live list pages and their create/view screens: Kendo grids, the Vue
+  components’ templates + option lists out of `__vue__` (conditions, operators,
+  occurrences, severities, IG options, the password-free AuditPolicyForm fields), the
+  create drawer, the 855px device grid-dropdown, Schedule and Assign/Unassign drawers,
+  the benchmark tree (all 85 CIS rules with severities), the rule wizard, both (i) panes.
+- Built one `stc*` CSS + script block, byte-identical in the three options, registered via
+  `ST_PAGES`. Everything works: filters with `=`/`!=`, column chooser, run-now spinner,
+  create/edit/clone/delete (confirmed), schedule, assign/unassign, benchmark builder
+  (nested numbered groups + rule picker with severity filter), the wizard end to end.
+- Live quirks kept: “View Audit Policy” title, benchmark locked while editing, locked
+  system benchmark ⋮ = Clone only, groups collapsed by default, run-now only on hover.
+- Verified: ~90 probe assertions over http in all three options + light theme;
+  `lxbehave` 56/56 ×3 · `behave` 63/63 ×3 · `harness` 77/77. Committed.
+
+## Next steps
+
+1. **Push** — this plus yesterday’s Settings commit and the previous session’s sixteen.
+2. Other categories are still placeholders; the `ST_PAGES` registry is the pattern.
+3. Still open: UI Preference/License pages, Log Pattern vs live, the Designer’s-Guide
+   filled-Approve conflict, scrubbing the public `172.16.x` strings elsewhere.
+
+## Gotchas
+
+- ⚠️ A ternary missing its outer `:` inside a template literal errors hundreds of chars
+  later; `node --check` the extracted block before believing a screenshot.
+- ⚠️ Six seeded devices match “rtr” — two probe “failures” were bad expectations, not bugs.
+
+---
+
 # Handoff — 2026-08-20 (early)
 
 ## Read first
