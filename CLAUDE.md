@@ -2606,6 +2606,19 @@ more reliable than headless here — headless runs have hung repeatedly. ⚠️ 
 no cache headers, so **add a cache-buster query (`?v=2`) after editing** or you will verify
 the previous version of the file and chase a phantom bug.
 
+⚠️ **A GREEN PROBE IS NOT A WORKING FEATURE — assert the CONSEQUENCE, not the call.** The
+＋ menu's *Mention* row shipped with a passing suite: the probe clicked it and asserted the
+list appeared, which it did. It was still broken — the list could not be **filtered**,
+because the composer's `oninput` hides it unless an `@` precedes the caret, so the first
+character typed dismissed it. Nothing in the suite ever typed. The bug was found by driving
+the page by hand and only then written into a test.
+When a control opens something, the assertion that matters is what you can then **do** with
+it — type into it, pick from it, see the result land — not that it exists. Two smaller
+versions of the same trap the same day: a probe that dispatched `mousedown` synchronously
+after the opening click tested before the dismisser's `setTimeout(0)` had attached (two
+phantom failures on working code), and several assertions kept passing against selectors
+the markup no longer had, because they were only ever checking that *something* was there.
+
 Screenshot with headless Chrome (quote paths; strip the Agentation loader first —
 it can hang the run):
 
