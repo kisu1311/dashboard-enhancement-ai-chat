@@ -3814,6 +3814,19 @@ html[data-theme="light"] .lxpssc{background:rgba(17,28,44,.22)}
 .lxpst{display:flex;align-items:center;gap:6px;margin-bottom:12px;
   font-size:12.8px;font-weight:600;color:var(--ai-2)}
 .lxpst svg{width:13px;height:13px;fill:currentColor;flex:0 0 13px}
+/* ⚠️ THE GAP BETWEEN BULLETS MUST BEAT THE LEADING INSIDE ONE (the measured `.aiab li`
+   lesson): at 1.6 line-height a wrapped point carries ~8px between its own lines, so a
+   4-5px margin makes a two-line bullet read as two bullets. 12px between, 3px after the
+   last. */
+.lxpsul{margin:0;padding:0;list-style:none}
+.lxpsul li{position:relative;padding-left:15px;margin-bottom:12px;
+  font-size:12.8px;line-height:1.6;color:var(--text)}
+.lxpsul li:last-child{margin-bottom:3px}
+.lxpsul li::before{content:'';position:absolute;left:2px;top:8px;width:4px;height:4px;
+  border-radius:50%;background:var(--ai-2);opacity:.75}
+.lxpsul b{font-weight:600;color:var(--white)}
+.lxpsul code{font:400 11.5px/1.4 'JetBrains Mono',monospace;color:var(--text);
+  background:var(--chip);border-radius:3px;padding:1px 5px}
 .lxpsp{font-size:12.8px;line-height:1.7;color:var(--text);margin:0}
 .lxpsp code{font:400 11.5px/1.4 'JetBrains Mono',monospace;color:var(--text);
   background:var(--chip);border-radius:3px;padding:1px 5px}
@@ -14708,19 +14721,49 @@ const LX_PATTERNS = [
    seven rows always sum to the count the toolbar prints (±1 from rounding). */
 const LX_PAT_SUM = LX_PATTERNS.reduce((n, p) => n + p[0], 0);
 function lxPatN(p){ return Math.max(1, Math.round(p[0] / LX_PAT_SUM * LX.count)); }
-/* the drawer's AI Summary paragraph, one per pattern — written in the voice the live one
-   uses (it reads the placeholder distributions and says what they imply). Canned, like
-   everything else here, and derived from the same `tok` numbers the card shows so the
-   prose and the data cannot disagree. */
-const LX_PAT_PROSE = [
-  'The pattern is dominated by a single serial and a single firewall address, so the volume is one appliance rather than a fleet. The <code>num</code> placeholder is where the spread lives — 49177 accounts for 62% of it with a long tail beneath, which is the shape of ephemeral source ports rather than an application id. Nothing here suggests a fault: every opened session writes exactly one of these, so the count tracks traffic. Watch it as a baseline, and treat a sudden change in the ratio, not the absolute number, as the signal.',
-  'Two service accounts, <code>deploy</code> and <code>ansible</code>, are 95% of these logins and arrive from two hosts, which is the signature of scheduled automation rather than people. The remaining 5% authenticate as <code>root</code> — that is the part worth attention, because a shared privileged account logging in by key leaves no individual accountable. Confirm those are expected jobs, and if they are, move them to per-job identities so the trail names who did what.',
-  'Read activity dominates: action 3 is 84% of the audited statements and <code>APP_RO</code> issues four in five of them, which matches a reporting workload against a read-only role. The statement placeholder is spread thinly, so no single query is running away with the trail. The entry worth checking is <code>SYS</code> at 3% — a privileged account should be near-silent in an application audit, so verify those are maintenance windows and not an application falling back to an admin credential.',
-  'This is the slow-query log, so every line is already past the configured threshold. Two statements carry two thirds of it and the sessions scan alone is 41%, which makes this a query-shape problem rather than general database load. The duration placeholder has a heavy tail — the 1204.8 ms entries are the ones setting your latency ceiling. An index that serves the sessions predicate would move most of this volume, and the update behind it is worth a second look for lock contention.',
-  'The failures concentrate almost entirely on one identity from one address: <code>app</code> from 203.0.113.7 is 88% of them. That concentration is the finding — a brute-force attempt spreads across usernames, whereas a single account failing repeatedly from a known host is a stale credential still in use after a rotation. Check what is holding the old password on that host; the remaining 12% is <code>root</code> from localhost, which is routine tooling.',
-  'One interface is the story: <code>GigabitEthernet0/1</code> is over half these transitions, and the up and down counts are exactly balanced. A balanced pair means the link is recovering each time rather than staying down, which points at a physical fault — a marginal cable, optic, or a duplex mismatch — rather than a device or a configuration change. The two quieter interfaces beneath it are worth ruling out as the same batch of hardware.',
-  'These are configuration writes made from a console session, and two operators account for all of them. That is not a fault, but it is the log that most needs corroboration: every one of these should match an approved change. Cross-check the timestamps against the change records in NCCM, and treat any write with no corresponding request as the one to investigate — particularly the ones on <code>vty0</code>, which carries 58% of the sessions.',
+/* the drawer's AI Summary, one entry per pattern — BULLET POINTS, not a paragraph
+   (request, 20 Aug 2026). It was one 60-word block of prose: the findings were all in
+   there, but a wall of text under a heading called "Summary" is the thing you skip, and
+   the numbers inside it were doing no more work than the words around them.
+   Same facts, same figures, one point each, strongest first. Canned like everything else
+   here and derived from the same `tok` numbers the card shows, so the summary and the
+   distribution below it cannot disagree. */
+const LX_PAT_POINTS = [
+  ['Volume is <b>one appliance</b>, not a fleet — a single serial and a single firewall address account for all of it.',
+   '<code>num</code> carries the spread: <b>49177 is 62%</b> of it with a long tail beneath — the shape of ephemeral source ports, not an application id.',
+   '<b>Nothing here is a fault.</b> Every opened session writes exactly one of these, so the count tracks traffic.',
+   'Watch it as a baseline: a sudden change in the <b>ratio</b> is the signal, not the absolute number.'],
+
+  ['<b>95% is automation</b> — <code>deploy</code> and <code>ansible</code>, arriving from two hosts on a schedule.',
+   'The remaining <b>5% authenticates as <code>root</code></b> by key. A shared privileged account leaves no individual accountable.',
+   'Confirm those are expected jobs — and if they are, move them to per-job identities so the trail names who did what.'],
+
+  ['<b>Read-heavy</b>: action 3 (SELECT) is <b>84%</b> of the audited statements.',
+   '<code>APP_RO</code> issues four in five of them — a reporting workload against a read-only role.',
+   'No single query dominates; the statement placeholder is spread thinly.',
+   '<b><code>SYS</code> at 3% is the one to check</b> — a privileged account should be near-silent in an application audit. Verify those are maintenance windows, not a fallback to an admin credential.'],
+
+  ['Every line here is <b>already past</b> <code>log_min_duration_statement</code> — these are the slow ones by definition.',
+   '<b>Two statements carry two thirds</b> of it, and the sessions scan alone is <b>41%</b>. That makes it a query-shape problem, not general load.',
+   'The duration tail is heavy — the <b>1204.8 ms</b> entries are setting your latency ceiling.',
+   'An index serving the sessions predicate would move most of this volume; check the update behind it for lock contention.'],
+
+  ['<b>88% is one identity from one address</b> — <code>app</code> from 203.0.113.7.',
+   'That concentration <b>is</b> the finding: brute force spreads across usernames, whereas one account failing repeatedly from a known host is a <b>stale credential</b> still in use after a rotation.',
+   'Find what is still holding the old password on that host.',
+   'The remaining 12% is <code>root</code> from localhost — routine tooling.'],
+
+  ['<b>One interface is the story</b>: <code>GigabitEthernet0/1</code> is over half these transitions.',
+   'Up and down counts are <b>exactly balanced</b>, so the link recovers each time rather than staying down.',
+   'That points at a <b>physical fault</b> — a marginal cable, optic or duplex mismatch — not a device or a configuration change.',
+   'Worth ruling out the two quieter interfaces as the same batch of hardware.'],
+
+  ['Configuration writes made from a console session, with <b>two operators</b> accounting for all of them.',
+   'Not a fault — but the log that most needs corroboration: every one of these should match an approved change.',
+   'Cross-check the timestamps against the change records in <b>NCCM</b>.',
+   'Any write with no corresponding request is the one to investigate — <code>vty0</code> carries <b>58%</b> of the sessions.'],
 ];
+
 /* ✦ AI Pattern Summary — one entry per row of LX_PATTERNS, by index.
      what  what the pattern is, in a sentence      why   why it carries this volume
      lit   the literal fragment a Log Search filter would match it on
@@ -15567,7 +15610,7 @@ function lxPatterns(){
 }
 function lxPatSize(ev){ lxMenu(ev, ['20','50','100','200'], '20', v=>toast('Page size '+v)); }
 /* the ✦ in the Action column — it opens the lxps* drawer below, off LX_PATTERNS /
-   LX_PAT_AI / LX_PAT_PROSE, so the table and the summary cannot disagree about a count. */
+   LX_PAT_AI / LX_PAT_POINTS, so the table and the summary cannot disagree about a count. */
 const LX_AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>';
 /* ⚠️ THE ✦ OPENS ITS OWN DRAWER, NOT THE CHAT (rebuilt 20 Aug 2026 against the live
    product). The first build routed it into the `ai*` chat panel — pinned the pattern as a
@@ -15643,7 +15686,8 @@ function lxPsPaint(busy){
     (busy
       ? '<div class="lxpsl"><span class="dot"></span><span class="dot"></span><span class="dot"></span>' +
         'Analysing this pattern\u2026</div>'
-      : '<p class="lxpsp">' + (LX_PAT_PROSE[i] || '') + '</p>' +
+      : '<ul class="lxpsul">' +
+          (LX_PAT_POINTS[i] || []).map(pt => '<li>' + pt + '</li>').join('') + '</ul>' +
         (dist ? '<div class="lxpsdh">Distribution of values</div>' + dist : ''));
 }
 /* "Show these logs" from the summary: filter Log Search to the pattern's literal and run it.

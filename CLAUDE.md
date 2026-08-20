@@ -322,13 +322,25 @@ put a colour in the file no token owns — the send-button rule):
   - **Distribution of values** is drawn as **bars** from `LX_PAT_AI[i].tok`, which already
     held `[value, share %]` per masked token — exactly what the docs say a hover on a mask
     shows, and it was rendered nowhere after the drawer rebuild;
+  - the summary is **bullet points, not a paragraph** (`LX_PAT_POINTS`, request 20 Aug
+    2026). It was one 60-word block: the findings were all in there, but a wall of text
+    under a heading called *Summary* is the thing you skip, and the numbers inside it were
+    doing no more work than the words around them. Same facts, one point each, strongest
+    first, with the figure emphasised.
+    ⚠️ **The gap BETWEEN bullets must beat the leading INSIDE a wrapped one** — the measured
+    `.aiab li` lesson, in a second place. At 1.6 line-height a wrapped point carries ~7.7px
+    between its own lines, so `margin-bottom` is **12px** (3px after the last); a 4–5px
+    margin makes a two-line bullet read as two bullets. There is a probe assertion
+    comparing the two numbers rather than trusting the eye.
+    ⚠️ There is also an assertion that **every** pattern has ≥3 points — a row whose entry
+    was missed would open an empty summary;
   - **`lxPatOpen()` is wired back in** as *Show these logs* — it survived the rebuild
     **unreferenced**.
   ⚠️ The bar FILL is sized `width:%` with the track as the flex child — a lone flex child
   takes the whole track and every bar would read 100% (the recorded `flex:50` lesson).
   ⚠️ The long-tail row is emitted **only when the shares do not reach 100**, or a zero-width
   row still draws its label and claims a tail that isn't there.
-- Verified by a 51-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
+- Verified by a 56-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
   chat thread; generating state; the figure agrees with the row's count; the 88% fill is
   partial and matches its share; no phantom tail row; 458px; label metrics; Esc /
   click-away / close-mid-generate), both themes screenshotted.
