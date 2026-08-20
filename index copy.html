@@ -8542,26 +8542,25 @@ function aiLogQ(q){
 /* the query card — the same model, the same rows, the same gate as the filter row's popover */
 function aiLogQHTML(g){
   const rn = lxAiqRangeName(g.range), expr = lxAiqExpr(g);
-  const n = aiThread.length;
+  /* ⚠️ NO Apply/Edit on the card (request, 20 Aug 2026) — the decision is the docked
+     `.aipend` bar, one pattern with every other proposal. Accept there = aiLogQApply. */
   return { step: g.agg ? 'Converted your question into a log query'
                        : 'Converted your question into a log filter', ic: 'wand',
     title: g.agg ? 'Log query' : 'Log search query',
     html: '<p>Here is what I would run on <b>Log Search</b>. Nothing is applied yet.</p>' +
       '<div class="ailq' + (expr ? '' : ' all') + '">' + (expr ? aiEsc(expr) : 'All events') + '</div>' +
       lxAiqRows(g) +
-      '<div class="ailqm">Time range · <b>' + aiEsc(rn || 'unchanged') + '</b></div>' +
-      '<div class="aiacts">' +
-        '<button class="aiapv" onclick="aiLogQApply(' + n + ')">Apply to Log Search</button>' +
-        '<button class="aialt" onclick="aiLogQEdit(' + n + ')">Edit the question</button>' +
-      '</div>',
+      '<div class="ailqm">Time range · <b>' + aiEsc(rn || 'unchanged') + '</b></div>',
     lq: g,
     fu: ['Which log type is noisiest?', 'Give me a summary of these logs'] };
 }
 /* ⚠️ the gate. lxAiqCommit() is the only thing that changes Log Search. */
 function aiLogQApply(i){
-  const m = aiThread[i]; const g = m && m.lq; if (!g) return;
+  const m = aiThread[i]; const g = m && m.lq; if (!g || g.applied) return;
   if (typeof lxAiqCommit !== 'function') return;
+  g.applied = 1;                 /* decided — the pending bar reads this and stands down */
   lxAiqCommit(g);
+  aiRender();
 }
 function aiLogQEdit(i){
   const m = aiThread[i]; const g = m && m.lq; if (!g) return;
@@ -8852,23 +8851,22 @@ function aiDashHTML(d, i){
        The reason is better there: on the plan the board does not exist, so a chip could
        only prime the composer; once it is created the same chip can be sent and actually
        build the widget. See `aiDashFuGo`. */
-    /* ── the gate, in the reference's shape (annotation + Notion reference, 19 Aug 2026) ──
-       Right-aligned, with the way out as PLAIN TEXT (their "Skip") and the thing that
-       happens next as a FILLED PILL (their "Next").
-       ⚠️ THIS REVERSES A DELIBERATE RULE. The Designer's Guide §4 says an accept button must
-       not be prettier than its alternative — "do not make Approve prettier" — because a
-       prettier accept gets clicked without being read, and creating a dashboard is a shared
-       object. `.aiapv` existed precisely so Approve and Edit carried the SAME weight, and
-       the `ac*` panel still enforces that (behave.py asserts no `acb pri` before its
-       "Approve & create"). This card now follows the supplied reference instead. If the
-       guide's rule is reinstated, put both back on `.aiapv` and drop `.aigo` / `.aiskip`. */
-    '<div class="aiacts gate">' +
-      '<button class="aiskip" onclick="aiDashSet(\'state\',\'cancelled\')">Cancel</button>' +
-      (editing
-        ? '<button class="aigo" onclick="aiDashSet(\'state\',\'plan\')">Done editing</button>'
-        : '<button class="aiapv" onclick="aiDashSet(\'state\',\'edit\')">Edit</button>' +
-          '<button class="aigo" onclick="aiDashApprove()">Approve &amp; create</button>') +
-    '</div>' + aiFbHTML(i, 0) + '</div>';
+    /* ── THE GATE MOVED OFF THIS CARD (request, 20 Aug 2026: every action approval is the
+       widget flow's shape). The decision — Edit · Accept, or a single Done editing while
+       the form is open — is the docked `.aipend` bar over the composer (`aiPendPaint`),
+       exactly where a proposed widget is decided; the card keeps WHAT is planned and the
+       way out is a follow-up chip, like the widget flow's Reject. There is exactly ONE
+       copy of the decision pair.
+       ⚠️ This also RESOLVES the Designer's-Guide conflict the previous gate carried: the
+       19 Aug reference had made "Approve & create" a filled `.aigo` primary against §4's
+       equal-weight rule. In the bar, Accept is `.aiagb pri` — the same weight the widget
+       flow's Accept has always had, one pattern everywhere. `.aigo` / `.aiskip` are kept
+       in CSS, unreferenced. */
+    aiFbHTML(i, 0) +
+    '<div class="aiful">Follow ups</div>' +
+    '<button class="aifu" onclick="aiDashSet(\'state\',\'cancelled\')">' +
+      '<span class="cv">›</span>Cancel — don’t create it</button>' +
+    '</div>';
 }
 /* ⚠️ histDo()/⌘Z CANNOT undo this. histState() snapshots the CANVAS model only
    ({TABS, WIDGETS, GRP_SHUT, curG}) — it knows nothing about DASH_INDEX, DASH_GROUPS,
@@ -9033,6 +9031,7 @@ function aiClarNext(skip){
                    chart: ci > -1 ? ci : (c.chart || 0) };
   aiThread.push({ r:'build', b: aiBuildState });
   aiRender();
+  aiBuildAuto();
 }
 /* kept: the old one-shot entry point, in case a caller still hands an index straight in */
 function aiPickGroup(i){
@@ -9574,32 +9573,63 @@ let aiChatName = 'New chat', aiNamed = false, aiRenaming = false;
    `aiNewBtnPaint`, or a thread that empties (New chat, Undo) leaves the bar on screen. */
 function aiPendPaint(){
   const el = document.getElementById('aiPend'); if (!el) return;
-  /* ⚠️ `state === 'card'` is NOT enough (annotation, 19 Aug 2026 — a dashboard SUMMARY was
-     offering "Widget widget ready · Edit · Accept"). `aiAgRun` ends EVERY flow with
-     `state = 'card'`, including the summary, whose card is read-only and has nothing to
-     decide. The test is whether the flow actually has a **`card` beat** — the widget
-     proposal — which the summary (`scard`) and the dashboard flow do not. */
-  let ix = -1;
-  for (let i = aiThread.length - 1; i >= 0; i--){
+  /* ⚠️ EVERY pending decision docks here now (request, 20 Aug 2026: "when I create or any
+     action performed in chat interface … every action approval will be same" as the widget
+     build). The scan walks the thread from the END and shows the MOST RECENT undecided
+     proposal; the card in the thread keeps WHAT is proposed, the bar carries the decision,
+     and there is exactly ONE copy of that pair — the in-card gates were removed with this.
+     Four kinds:
+       · a widget from the agentic flow  — `agent` in state 'card' WITH a `card` beat
+         (⚠️ `state === 'card'` alone is not enough: aiAgRun ends EVERY flow there, the
+         read-only summary included — the beat test is what keeps this off a summary)
+       · the create-dashboard plan       — `dash` in state 'plan' (Edit · Accept) or
+         'edit' (a single **Done editing**); Cancel is a follow-up chip on the card
+       · the clarifier's widget preview  — `build` not yet added
+       · a log query                     — `lq` not yet applied
+     Each Accept calls the flow's OWN existing handler — nothing is re-implemented here. */
+  let p = null;
+  for (let i = aiThread.length - 1; i >= 0 && !p; i--){
     const m = aiThread[i];
     if (m.r === 'agent' && m.a && m.a.state === 'card' &&
-        (m.a.bs || []).some(b => b.k === 'card')){ ix = i; break; }
+        (m.a.bs || []).some(b => b.k === 'card')){
+      const a = m.a;
+      /* ⚠️ "<chart> widget ready", or just "Widget ready" — the old fallback was the word
+         `Widget` in front of the word `widget`, which read as "Widget widget ready". */
+      p = { t: a.chartName ? aiEsc(a.chartName) + ' widget ready' : 'Widget ready',
+            s: a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '',
+            edit: 'aiAgEdit(' + i + ')', ok: 'aiAgAccept(' + i + ')' };
+    } else if (m.r === 'dash' && m.d && (m.d.state === 'plan' || m.d.state === 'edit')){
+      const d = m.d, sub = 'Category ' + d.cat + ' · ' + d.sec;
+      p = d.state === 'edit'
+        ? { t: 'Editing “' + aiEsc(d.name) + '”', s: sub,
+            ok: "aiDashSet('state','plan')", okl: 'Done editing' }
+        : { t: 'Dashboard ready — “' + aiEsc(d.name) + '”', s: sub,
+            edit: "aiDashSet('state','edit')", ok: 'aiDashApprove()' };
+    } else if (m.r === 'build' && m.b && !m.b.added){
+      const b = m.b, dash = aiScope().dash;
+      p = b.dash
+        ? { t: b.items.length + ' widgets ready', s: b.items.join(', ') + ' · adding to “' + dash + '”',
+            edit: 'aiChange()', ok: 'aiBuildAdd()' }
+        : { t: aiEsc((AI_CHARTS[b.chart] || 'Widget').toLowerCase()) + ' widget ready',
+            s: b.name + ' ' + b.group.toLowerCase() + ' · adding to “' + dash + '”',
+            edit: 'aiChange()', ok: 'aiBuildAdd()' };
+    } else if (m.r === 'ai' && m.lq && !m.lq.applied){
+      p = { t: m.lq.agg ? 'Log query ready' : 'Log filter ready',
+            s: (lxAiqExpr(m.lq) || 'All events') +
+               (m.lq.range ? ' · ' + lxAiqRangeName(m.lq.range) : ''),
+            edit: 'aiLogQEdit(' + i + ')', ok: 'aiLogQApply(' + i + ')' };
+    }
   }
-  if (ix < 0){ el.className = 'aipend'; el.innerHTML = ''; return; }
-  const a = aiThread[ix].a;
-  const sub = a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '';
+  if (!p){ el.className = 'aipend'; el.innerHTML = ''; return; }
   el.className = 'aipend on';
   el.innerHTML =
-    /* ⚠️ "<chart> widget ready", or just "Widget ready" — the old fallback was the word
-       `Widget` in front of the word `widget`, which read as "Widget widget ready". */
-    '<span class="aipendt"><b>' + (a.chartName ? aiEsc(a.chartName) + ' widget ready'
-                                               : 'Widget ready') + '</b>' +
-      (sub ? '<i title="' + aiEsc(sub) + '">' + aiEsc(sub) + '</i>' : '') + '</span>' +
+    '<span class="aipendt"><b>' + p.t + '</b>' +
+      (p.s ? '<i title="' + aiEsc(p.s).replace(/"/g, '&quot;') + '">' + aiEsc(p.s) + '</i>' : '') + '</span>' +
     '<span class="aipenda">' +
-      '<button class="aiagb" onclick="aiAgEdit(' + ix + ')">' +
-        '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Zm11-15 4 4"/></svg>Edit</button>' +
-      '<button class="aiagb pri" onclick="aiAgAccept(' + ix + ')">' +
-        '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Accept</button>' +
+      (p.edit ? '<button class="aiagb" onclick="' + p.edit + '">' +
+        '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Zm11-15 4 4"/></svg>Edit</button>' : '') +
+      '<button class="aiagb pri" onclick="' + p.ok + '">' +
+        '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>' + (p.okl || 'Accept') + '</button>' +
     '</span>';
 }
 /* every `.brandmark` gets the product SVG once, at load — one definition, no duplicated
@@ -10365,9 +10395,9 @@ function aiPreviewHTML(b, bi){
       '<div class="aiq"><span><b>Module</b> = Availability</span><span><b>Group</b> = ' + aiEsc(b.group) + '</span>' +
         (b.range && b.range !== 'Follow the dashboard'
           ? '<span><b>Range</b> = ' + aiEsc(b.range) + '</span>' : '') + '</div>' +
+      /* ⚠️ the Add primary LEFT this card (request, 20 Aug 2026) — the decision is the
+         docked `.aipend` bar, same as every other proposal. The alternatives stay. */
       '<div class="aiacts">' +
-        '<button class="aiadd' + (b.confirmed ? ' confirm' : '') + '" onclick="aiBuildAdd()">' +
-          (b.confirmed ? '✓ Confirm — add it' : '＋ Add to “' + aiEsc(s.dash) + '”') + '</button>' +
         '<button class="aialt" onclick="aiAddTo()">Add to another</button>' +
         '<button class="aialt" onclick="aiChange()">Change something ›</button>' +
       '</div>' + aiFbHTML(bi, 0) +
@@ -10385,8 +10415,6 @@ function aiPreviewDashHTML(b, bi, s){
         '<div class="bd">' + aiPrevArt((b.chart + i) % 3) + '</div></div>').join('') + '</div>' +
       '<div class="aiq"><span><b>Module</b> = Metric</span><span><b>Widgets</b> = ' + b.items.length + '</span></div>' +
       '<div class="aiacts">' +
-        '<button class="aiadd' + (b.confirmed ? ' confirm' : '') + '" onclick="aiBuildAdd()">' +
-        (b.confirmed ? '✓ Confirm — add all ' + b.items.length : '＋ Add all to “' + aiEsc(s.dash) + '”') + '</button>' +
         '<button class="aialt" onclick="aiAddTo()">Add to another</button>' +
       '</div>' + aiFbHTML(bi, 0) +
     '</div>';
@@ -10406,7 +10434,10 @@ function aiPrevArt(kind){
 }
 function aiChange(){
   const b = aiBuildState; if (!b) return;
-  aiThread.pop();
+  /* ⚠️ splice the BUILD entry, not aiThread.pop() — the bar's Edit can fire while the
+     preview is no longer the last message, and a pop would eat whatever is */
+  for (let i = aiThread.length - 1; i >= 0; i--)
+    if (aiThread[i].r === 'build'){ aiThread.splice(i, 1); break; }
   aiAskGroup(b.name);
 }
 /* `k` is passed when the row belongs to a BEAT of the agentic flow rather than to a thread
@@ -11690,6 +11721,7 @@ function aiPush(text){
         tk.done = 'Planned ' + a.build.items.length + ' widgets from your description';
         aiThread.push({ r:'build', b: aiBuildState });
         aiRender();
+        aiBuildAuto();
       } else {
         aiBuildState = null;
         tk.done = 'Read your description';    /* the next thing is a question, not an answer */
@@ -11922,8 +11954,9 @@ function aiAddTo(){
 function aiAddToPick(name){
   const m = document.getElementById('aiCmdMenu'); if (m) m.remove();
   document.removeEventListener('mousedown', aiCmdAway);
-  const b = aiBuildState; if (!b) return;
+  const b = aiBuildState; if (!b || b.added) return;
   const VIS = ['hbars','hbars','line','donut','big','rows'];
+  b.added = 1;                     /* adding it somewhere IS the decision — the bar goes */
   aiClose();
   pickDash(name);                       /* switch to that board, then add there */
   curG = Math.max(0, TABS.length - 1);
@@ -11933,27 +11966,30 @@ function aiAddToPick(name){
 }
 
 /* 6 ─ Auto-approve finally has a job: it decides whether Add asks first */
+/* ⚠️ the amber two-click "✓ Confirm — add it" dance is GONE (request, 20 Aug 2026): the
+   docked bar's Accept IS the explicit approval, one click like every other proposal.
+   `b.added` is what hides the bar afterwards — without it an accepted preview would keep
+   offering itself forever, the way the log-query card once did. */
 function aiBuildAdd(){
-  const b = aiBuildState; if (!b) return;
-  if (!aiAuto && !b.confirmed){
-    b.confirmed = 1; aiRender();
-    toast('This adds a widget to the dashboard — confirm to go ahead, or turn on Auto-approve');
-    return;
-  }
+  const b = aiBuildState; if (!b || b.added) return;
   const VIS = ['hbars','hbars','line','donut','big','rows'];
+  b.added = 1;
   aiClose();
-  if (b.dash){
-    b.items.forEach((n, i) => awAdd(n, VIS[(b.chart + i) % VIS.length] || 'line'));
-    return;
-  }
-  const title = b.name.charAt(0).toUpperCase() + b.name.slice(1) + ' ' + b.group.toLowerCase();
-  awAdd(title, VIS[b.chart] || 'line');  /* the host's own add — undo / drag / resize work */
+  if (b.dash) b.items.forEach((n, i) => awAdd(n, VIS[(b.chart + i) % VIS.length] || 'line'));
+  else awAdd(b.name.charAt(0).toUpperCase() + b.name.slice(1) + ' ' + b.group.toLowerCase(),
+             VIS[b.chart] || 'line');   /* the host's own add — undo / drag / resize work */
+  aiRender();
 }
+/* Auto-approve kept its documented meaning across the move: ON, a WIDGET build applies the
+   moment the preview lands (aiBuildAuto at both landing sites) — "applies straight away";
+   OFF, the pending bar waits for Accept. The dashboard plan is still ALWAYS gated, with
+   Auto-approve on or off — that rule predates this and did not move. */
+function aiBuildAuto(){ if (aiAuto) aiBuildAdd(); }
 function aiToggleAuto(){
   aiAuto = !aiAuto;
   document.getElementById('aiAuto').classList.toggle('on', aiAuto);
-  toast(aiAuto ? 'Auto-approve ON — Add applies straight away'
-               : 'Auto-approve OFF — Add asks you to confirm first');
+  toast(aiAuto ? 'Auto-approve ON — a widget build applies straight away'
+               : 'Auto-approve OFF — a pending build waits for Accept');
 }
 
 /* ── dictation ──────────────────────────────────────────────────────────────────────────

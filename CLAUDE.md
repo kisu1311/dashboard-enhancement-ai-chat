@@ -697,7 +697,7 @@ now do real work:
 | **👍 / 👎** | hold their state on the message (`m.fb`) and render selected; clicking again clears |
 | **Investigate →** | finds the widget the number came from (`m.src`) on the board, **scrolls to it and flashes it** (`.aiflash`); says so plainly if it is not on this dashboard |
 | **Add to another** | lists the *other* dashboards from `DASH_GROUPS`, and picking one switches board and adds there |
-| **Auto-approve** | finally has a job — with it **off**, Add asks you to confirm first (the button turns amber, "✓ Confirm — add it"); **on**, it applies straight away |
+| **Auto-approve** | with it **off**, a widget build waits at the docked `.aipend` bar for Accept; **on**, it applies the moment the preview lands (`aiBuildAuto`). ⚠️ The amber two-click "✓ Confirm — add it" dance this described is GONE (20 Aug 2026) — the bar's Accept is the confirmation |
 
 - ⚠️ `aiNewChat()` must call `aiFile()` **and bump `aiChatId`** before clearing. Without
   the id bump the next chat reuses the old id and *overwrites* the previous one in history
@@ -1127,16 +1127,17 @@ The parameter card is the **live product's own Create-Dashboard form** (Dashboar
 Category, Security, Header Font Size, Horizontal/Vertical Gap, Row Height, Default Landing);
 no field is invented. State lives on the thread entry, found by `aiDashState()`.
 
-- ⚠️ **THE GATE NOW HAS A FILLED PRIMARY** (annotation + Notion reference, 19 Aug 2026):
-  `Cancel` is plain text on the left (`.aiskip`, their *Skip*), `Edit` keeps the outlined
-  `.aiapv`, and **Approve & create is a filled pill on the right** (`.aigo`, their *Next*).
-  ⚠️ **This reverses a deliberate rule.** The Designer's Guide §4 says an accept button must
-  not be prettier than its alternative — a prettier accept gets clicked without being read,
-  and a dashboard is a shared object. `.aiapv` existed exactly so Approve and Edit carried
-  the same weight. **The `ac*` panel still enforces the guide** (`behave.py` asserts no
-  `acb pri` within 240 chars before its "Approve & create"); only this card follows the
-  supplied reference. To reinstate the rule: put both back on `.aiapv` and drop
-  `.aigo` / `.aiskip`.
+- ⚠️ **THE GATE LEFT THE CARD** (request, 20 Aug 2026: *"when I create or any action
+  performed in chat interface … every action approval will be same"* as the widget build).
+  The decision is the docked **`.aipend` bar** over the composer — `Dashboard ready —
+  “<name>” · Category <cat> · <sec>` with **Edit · Accept**, and a single **Done editing**
+  while the form is open — and **Cancel is a follow-up chip on the card**, the widget
+  flow's Reject pattern. The card keeps the plan, the form, and the warning only.
+  ⚠️ This also RESOLVED the Designer's-Guide conflict the 19 Aug gate carried (a filled
+  `.aigo` primary against §4's equal-weight rule): in the bar, Accept is `.aiagb pri` —
+  the same weight the widget flow's Accept has always had, one pattern everywhere.
+  `.aigo` / `.aiskip` / `.aiacts.gate` are kept in CSS, unreferenced.
+  ⚠️ The plan is still ALWAYS gated, Auto-approve on or off — that rule did not move.
 - ⚠️ **`histDo()` / ⌘Z cannot undo this.** `histState()` snapshots the *canvas* model only
   (`{TABS, WIDGETS, GRP_SHUT, curG}`) — it knows nothing about `DASH_INDEX`, `DASH_GROUPS`,
   `BOARDS` or which board is open, and `newFlatBoard()` clears the stack anyway. So
@@ -1263,6 +1264,26 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
     state — and shows `<chart> widget ready`, its counters, and **Edit · Accept** directly
     on top of the input. The card in the thread keeps **what** is proposed; the decision
     lives **where you act**, and it cannot scroll away in a long thread.
+    ⚠️ **SINCE 20 Aug 2026 THE BAR IS THE GATE FOR EVERY PROPOSAL**, not only this one
+    (request: *"every action approval will be same"*). `aiPendPaint` scans the thread from
+    the END and docks the MOST RECENT undecided proposal of four kinds — this widget card;
+    the **create-dashboard plan** (`dash` in `plan`/`edit`; `edit` shows a single *Done
+    editing*); the **clarifier's widget preview** (`build` without `b.added`); and a **log
+    query** (`lq` without `applied`). Each Accept calls that flow's own existing handler
+    (`aiAgAccept` / `aiDashApprove` / `aiBuildAdd` / `aiLogQApply`) — nothing is
+    re-implemented in the bar. The in-card gates were all removed with this: the dash
+    card's Cancel·Edit·Approve row, the preview's amber `＋ Add to …` two-click confirm,
+    and the log card's Apply/Edit pair. `b.added` / `lq.applied` are what stand the bar
+    down afterwards — without them an accepted proposal offers itself forever.
+    ⚠️ **Auto-approve moved with the confirm dance**: ON, a widget **build** applies the
+    moment its preview lands (`aiBuildAuto()` at both `r:'build'` landing sites) — its
+    toast has always said "applies straight away"; OFF, the bar waits. The agent widget
+    flow and the dashboard plan are still decided by hand either way.
+    ⚠️ A read-only **summary still never summons the bar** — the `card`-beat test below
+    survived the generalisation, and the probe asserts it.
+    ⚠️ `aiChange()` (the bar's Edit for a preview) now **splices the `build` entry by
+    index** — it used `aiThread.pop()`, which eats whatever is last once the decision can
+    be taken from the bar while later messages exist.
     ⚠️ There is exactly ONE copy of that pair. Rendering it in both places would be the
     duplicate-entry-point smell this panel has been trimmed for twice.
     ⚠️ `aiPendPaint()` runs from `aiRender()` **before the empty-state early return**, like
