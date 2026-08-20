@@ -1501,9 +1501,24 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   of `.aicmd` must be cancelled (`right:auto`) or `width:max-content` does nothing.
   ⚠️ **The reference's third row (Skills) was deliberately not copied** — this panel has no
   such feature and inventing one would be inventing product.
-  ⚠️ **Add context opens the list directly; it does NOT type an "@"** — a seeded token
-  would be left in the box if the menu were dismissed instead of picked. `aiMentPick`
-  re-derives the token from the caret and no-ops when there is none, so this is safe.
+  ⚠️ **The Mention row SEEDS an "@" into the composer** — and this is the whole reason the
+  row works at all (fixed 20 Aug 2026, *"it will be working mode"*). It first opened the
+  list with nothing typed, which *looked* right: the list appeared. But `aiMentIn` — the
+  composer's own `oninput` — only keeps the list alive while there is an `@…` before the
+  caret, so **the first character you typed hid it again** and you were left scrolling 34
+  rows by hand. Seeding the token hands the interaction back to machinery that already
+  works: typing filters (34 → 9 on "mon"), ↑↓ choose, ↵ pins, and `aiMentPick` removes the
+  `@word` itself.
+  ⚠️ **`aiMentUnseed()` takes the token back on every dismissal**, called from
+  `aiMentHide()` so Esc, click-away and pick all pass through it. It removes the seeded
+  `@` **and the filter typed into it** — a first version kept the filter text on the
+  reasoning that deleting keystrokes is worse, and on screen that was plainly wrong:
+  dismissing twice left `why is cpu high@dash@mon` in the box, ready to send. The filter
+  word is the menu's own search, not prose.
+  ⚠️ **The span is bounded by the caret and must match `@` + word chars with NO SPACE.** A
+  space means the user carried on writing and the token is theirs; the `[\w.\- ]` class the
+  rest of this feature uses would have eaten the following words. A **hand-typed** `@token`
+  is never touched, because `aiMentSeed` is only set by the menu.
   ⚠️ `aiPlusAway` **guards a non-Element target**. The house pattern is a bare
   `e.target.closest(...)`, which throws on `document` or a text node — and the throw leaves
   the menu open *and* kills everything after it.
