@@ -313,9 +313,25 @@ put a colour in the file no token owns — the send-button rule):
   — it was **not** part of the flow fix.
 - ⚠️ The live pattern text is full of a real machine name and internal `10.20.x` addresses.
   **Nothing was copied**: the fixtures stay on RFC 5737 / neutral names, per the repo rule.
-- Verified by a 34-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
-  chat thread; generating state; card agrees with the row's count; 458px; label metrics;
-  Esc / click-away / close-mid-generate), both themes screenshotted.
+- ⚠️ **The drawer was then IMPROVED PAST THE LIVE ONE** (request, 20 Aug 2026: *"need to
+  improve this visualization"*). Live — and our first copy — is a label, a wall of mono, a
+  grey count and one long paragraph: everything the same weight, and the most concrete fact
+  the quietest thing on screen. Four changes, all from data already on the page:
+  - the severity is **the table's own `.lxsev` chip**, so it carries its colour here too;
+  - the count is a **figure with its share of the search** beside it, not a footnote;
+  - **Distribution of values** is drawn as **bars** from `LX_PAT_AI[i].tok`, which already
+    held `[value, share %]` per masked token — exactly what the docs say a hover on a mask
+    shows, and it was rendered nowhere after the drawer rebuild;
+  - **`lxPatOpen()` is wired back in** as *Show these logs* — it survived the rebuild
+    **unreferenced**.
+  ⚠️ The bar FILL is sized `width:%` with the track as the flex child — a lone flex child
+  takes the whole track and every bar would read 100% (the recorded `flex:50` lesson).
+  ⚠️ The long-tail row is emitted **only when the shares do not reach 100**, or a zero-width
+  row still draws its label and claims a tail that isn't there.
+- Verified by a 51-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
+  chat thread; generating state; the figure agrees with the row's count; the 88% fill is
+  partial and matches its share; no phantom tail row; 458px; label metrics; Esc /
+  click-away / close-mid-generate), both themes screenshotted.
 
 - **`LX_GROUPS` is the live source tree verbatim** — 16 groups, 60 log types, with the
   counts the instance reported (Router 209.95 K → Cisco Device Configuration Update 77.71 K,
@@ -1491,9 +1507,30 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   ⚠️ `aiPlusAway` **guards a non-Element target**. The house pattern is a bare
   `e.target.closest(...)`, which throws on `document` or a text node — and the throw leaves
   the menu open *and* kills everything after it.
-  ⚠️ Attachments still land in the context bar as removable chips wearing a clip, and it
-  still does not read the file — pretending to parse a CSV is the one thing that would lie
-  about capability.
+  ⚠️ Attachments still land in the context bar as removable chips, and it still does not
+  read the file — pretending to parse a CSV is the one thing that would lie about capability.
+- **The context chip leads with a TYPE ICON and hides its ✕ until hover** (reference,
+  20 Aug 2026). `AI_ENT_IC` / `aiEntIc(k)` give each kind an outline glyph in the sidebar's
+  convention, tinted with that kind's `AI_ENT_C` colour — the chip used to lead with a 5px
+  coloured dot, which said *there is a type* without saying which.
+  ⚠️ **The ✕ was always visible**, spending ~16px of a 180px chip on a control you need
+  once and pushing long names into an ellipsis two words early — the same lesson the
+  chat-history row records for its ✎/🗑.
+  ⚠️ **Its hover properties are MERGED INTO THE ONE `.aictx button` RULE.** Writing them as
+  a second block *earlier* in the sheet lost at equal specificity (`width:16px` beat
+  `width:0`) and the ✕ never hid — the collision the root `CLAUDE.md` opens with. There is a
+  probe assertion that exactly one such rule exists.
+  ⚠️ `width`/`margin` animate, not `display`, or the chip jumps on hover and the label
+  reflows under the cursor.
+- **The panel background is `--card` (`#ffffff` in light), not `--panel`** (request, 20 Aug
+  2026). `--panel` is `#f7f9fc` there, so the chat read as a tinted slab beside a white
+  board. ⚠️ Changing the **token** would have repainted the Log Explorer and every other
+  surface using it — the change is scoped to `.aipanel`, and `--card` is a valid surface in
+  dark too, so the dark theme is unaffected.
+- **The header has no bottom border** (request, 20 Aug 2026) — the panel is one surface, so
+  a hairline under the title cut it in two for nothing. ⚠️ `.aihd` keeps `z-index:3`: its
+  dropdowns hang into the body's area and `.aibody` is also positioned, so on a tie the
+  later element wins.
 - **The composer is 112px tall, not 46px** (request, 20 Aug 2026: *"make neat and clear …
   and make more height"*). Three rows sat 7px apart in 9px of uneven padding, so a composer
   holding a context chip had barely a line to type in. Now `min-height:112px`, **even 12px

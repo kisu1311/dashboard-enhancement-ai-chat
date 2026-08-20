@@ -969,7 +969,13 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
 @media (max-width:1366px){ :root{--ai-w:366px} }
 @media (max-width:1300px){ :root{--ai-w:348px} }
 .aipanel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:96vw;z-index:120;display:flex;flex-direction:column;
-  background:var(--panel);border-left:1px solid var(--border);box-shadow:var(--shadow);
+  /* ⚠️ `--card`, not `--panel` (request, 20 Aug 2026: "the background is #ffffff"). In
+     light theme `--panel` is #f7f9fc, a pale blue-grey, and the chat read as a tinted slab
+     beside a white board. `--card` IS #ffffff there, and a valid surface in dark, so this
+     is one token swap rather than a hardcoded white that would break the dark theme.
+     ⚠️ Changing the `--panel` TOKEN instead would have repainted the Log Explorer and
+     every other surface that uses it — scope the change to this panel. */
+  background:var(--card);border-left:1px solid var(--border);box-shadow:var(--shadow);
   transform:translateX(102%);transition:transform .22s ease}
 .aipanel.on{transform:translateX(0)}
 /* ── full screen, the Datadog Bits pattern (reference, 15 Aug 2026) ──────────────────────
@@ -1074,7 +1080,11 @@ body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}
 /* ⚠️ z-index 3, not 1. `.aibody` is also `position:relative;z-index:1` and comes LATER in
    the DOM, so on a tie it wins — and the header's dropdowns, which hang down into the
    body's area, painted underneath the thread. */
-.aihd{position:relative;z-index:3;display:flex;align-items:center;gap:4px;padding:11px 12px 9px;flex:0 0 auto;border-bottom:1px solid var(--border-soft)}
+/* ⚠️ NO BORDER UNDER THE HEADER (request, 20 Aug 2026). The panel is one surface now, so a
+   hairline under the title cut it in two for nothing — the header already reads as a header
+   from its own weight and spacing. z-index:3 stays: the header dropdowns hang down into the
+   body's area and `.aibody` is also positioned, so on a tie the later element would win. */
+.aihd{position:relative;z-index:3;display:flex;align-items:center;gap:4px;padding:11px 12px 9px;flex:0 0 auto}
 .aihb{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--text-dim)}
 .aihb:hover{background:var(--hover-side);color:var(--text)}
 /* a header button that holds a STATE (split view, and any open dropdown) reads as pressed */
@@ -1419,13 +1429,27 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    the ✕ — the first pinned Log Pattern ("Pattern · Access denied for user") showed it; the
    full name is in the chip's title */
 .aictx .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the type glyph — its colour is the type's, so the chip reads before the label does */
+.aictx .tic{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
 .aictx i{width:5px;height:5px;border-radius:50%;background:var(--teal);flex:0 0 5px}
 /* an attached file wears the clip instead of the dot */
 .aictx .fic{width:11px;height:11px;flex:0 0 11px;fill:none;stroke:var(--ai-2);stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-.aictx button{width:16px;height:16px;border:0;border-radius:4px;background:transparent;
-  color:var(--muted);cursor:pointer;font-size:10px;line-height:1;padding:0;flex:0 0 16px;
-  display:grid;place-items:center}
+/* ⚠️ THE ✕ ONLY APPEARS ON HOVER (reference, 20 Aug 2026). It used to sit there always,
+   spending ~16px of a 180px chip on a control you need once, which pushed long names into
+   an ellipsis two words early — the same lesson the chat-history row records for its ✎/🗑.
+   ⚠️ These properties are MERGED INTO THE ONE RULE, not added as a second `.aictx button`
+   block. A duplicate written earlier in the sheet loses to this one at equal specificity
+   (`width:16px` beat `width:0`) and the ✕ never hid — the exact collision the root
+   CLAUDE.md opens with, caught by grepping for the selector after writing it.
+   ⚠️ `width`/`margin` animate rather than `display`, or the chip JUMPS on hover and the
+   label reflows under the cursor. */
+.aictx button{width:0;height:16px;border:0;border-radius:4px;background:transparent;
+  color:var(--muted);cursor:pointer;font-size:10px;line-height:1;padding:0;flex:0 0 auto;
+  display:grid;place-items:center;opacity:0;overflow:hidden;margin-left:0;
+  transition:width .12s,margin-left .12s,opacity .12s}
+.aictx:hover button,.aictx:focus-within button{width:16px;margin-left:1px;opacity:1}
 .aictx button:hover{background:var(--chip);color:var(--text)}
 /* chat history sheet */
 /* ── the full history SCREEN (request, 17 Aug 2026: "when I click Show all, open a new
@@ -3742,14 +3766,49 @@ html[data-theme="light"] .lxpssc{background:rgba(17,28,44,.22)}
 .lxpscr{display:flex;align-items:baseline;gap:10px}
 .lxpscr .l{font-size:12px;font-weight:500;letter-spacing:.72px;text-transform:uppercase;
   color:var(--text-dim2,var(--muted))}
-.lxpscr .s{margin-left:auto;font-size:12px;color:var(--text)}
-.lxpspt{margin-top:3px;font:400 14px/1.35 'JetBrains Mono',monospace;color:var(--text);
-  word-break:break-word}
+/* the severity is the TABLE'S chip here, so it carries its colour into the drawer */
+.lxpscr .lxsev{margin-left:auto}
+/* ⚠️ 1.35 leading on 14px mono with inline mask chips packed the lines together and the
+   chips made it worse — 1.6 gives the chips room to sit in the line instead of fighting it.
+   `overflow-wrap` breaks only where it must, so `app=<num>` stops orphaning its token. */
+.lxpspt{margin-top:5px;font:400 13px/1.6 'JetBrains Mono',monospace;color:var(--text);
+  overflow-wrap:anywhere;word-break:normal}
 /* ⚠️ the masked tokens keep the TABLE's own highlight, so the row and the drawer read as
    the same pattern — the live drawer renders them plain, which is the one thing here that
    is deliberately ours (see CLAUDE.md). */
 .lxpspt em{font-style:normal;color:var(--teal);
   background:color-mix(in srgb,var(--teal) 14%,transparent);padding:1px 3px;border-radius:3px}
+/* the figures — the count and its share, the two things the eye should land on first */
+.lxpsf{display:flex;align-items:center;gap:18px;margin-top:9px;padding-top:9px;
+  border-top:1px solid var(--border-soft)}
+.lxpsf .fig{display:flex;flex-direction:column;gap:1px}
+.lxpsf .fig b{font:600 15px/1.15 'JetBrains Mono',monospace;color:var(--text)}
+.lxpsf .fig i{font-style:normal;font-size:11px;color:var(--text-dim2,var(--muted))}
+.lxpsgo{margin-left:auto;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;
+  border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-dim);
+  font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
+.lxpsgo:hover{border-color:var(--ai-line);color:var(--ai-2);background:var(--ai-soft)}
+.lxpsgo svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+/* Distribution of Values — what the docs say a hover on a masked token shows, drawn */
+.lxpsdh{margin:18px 0 9px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-dim2,var(--muted))}
+.lxpsdt{margin-bottom:13px}
+.lxpsdt:last-child{margin-bottom:2px}
+.lxpsdt .tk{display:inline-block;margin-bottom:5px;font:400 11.5px/1.4 'JetBrains Mono',monospace;
+  color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,transparent);
+  padding:1px 5px;border-radius:3px}
+.lxpsdr{display:flex;align-items:center;gap:9px;padding:3px 0}
+.lxpsdr .v{flex:0 0 34%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font:400 11.5px/1.4 'JetBrains Mono',monospace;color:var(--text)}
+/* ⚠️ the track is the flex child that grows; the FILL is sized by width:%, never by flex —
+   a lone flex child takes the whole track and every bar would read as 100% */
+.lxpsdr .bar{flex:1 1 auto;height:6px;border-radius:3px;background:var(--chip);overflow:hidden}
+.lxpsdr .bar i{display:block;height:100%;border-radius:3px;background:var(--teal)}
+.lxpsdr .pc{flex:0 0 34px;text-align:right;font:400 11px/1.4 'JetBrains Mono',monospace;
+  color:var(--text-dim)}
+.lxpsdr.tail .v,.lxpsdr.tail .pc{color:var(--text-dim2,var(--muted))}
+.lxpsdr.tail .bar i{background:var(--track,var(--text-dim2))}
 .lxpsm{margin-top:4px;font-size:12px;color:var(--text-dim2,var(--muted))}
 /* the summary */
 .lxpst{display:flex;align-items:center;gap:6px;margin-bottom:12px;
@@ -9270,8 +9329,8 @@ function aiCtxBar(){
     /* an uploaded file is context like anything else — it just wears a clip instead of the dot */
     aiCtxItems.map((c, i) =>
       '<span class="aictx" title="' + aiEsc(c.k) + ': ' + aiEsc(c.n) + '">' +
-      (/^file/.test(c.k || '') ? AI_CLIP
-        : '<i style="background:' + (AI_ENT_C[c.k] || 'var(--teal)') + '"></i>') +
+      '<svg class="tic" viewBox="0 0 24 24" style="color:' + (AI_ENT_C[c.k] || 'var(--teal)') + '">' +
+        aiEntIc(c.k) + '</svg>' +
       '<span class="nm">' + aiEsc(c.n) + '</span>' +
       '<button title="Remove from context" onclick="aiCtxRemove(' + i + ')">✕</button></span>').join('');
 }
@@ -9331,6 +9390,24 @@ function aiScopePick(n, ev){
    invent two different fleets. All addresses stay RFC 5737 per the repo scrub rule.
    ⚠️ Picking REMOVES the @token from the box and adds a chip instead: the entity is context,
    not a word in the question, and leaving both would send the AI the name twice. */
+/* ── the context chip's TYPE ICON (reference supplied 20 Aug 2026) ────────────────────
+   The chip used to lead with a 5px coloured dot, which said "there is a type" without
+   saying which. The reference carries a real glyph in a rounded outline, so the chip is
+   readable before the label is. Colour is kept — it is `AI_ENT_C` on the glyph now rather
+   than on a dot — so nothing that depended on the type's colour was lost.
+   ⚠️ Outline glyphs in the sidebar convention: 24×24 box, fill:none, stroke currentColor. */
+const AI_ENT_IC = {
+  dashboard:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  widget:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',
+  monitor:'<rect x="2.5" y="4" width="19" height="7" rx="1.5"/><rect x="2.5" y="13" width="19" height="7" rx="1.5"/><path d="M6 7.5h.01M6 16.5h.01"/>',
+  metric:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+  service:'<path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.3 9.4 4.5 4.5 0 0 0 7 19h10.5Z"/>',
+  incident:'<path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4M12 17h.01"/>',
+  alert:'<path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.5 20a2 2 0 0 0 3 0"/>',
+  module:'<path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7Z"/>',
+  file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'
+};
+function aiEntIc(k){ return AI_ENT_IC[/^file/.test(k || '') ? 'file' : k] || AI_ENT_IC.file; }
 const AI_ENT_C = { dashboard:'var(--teal)', widget:'var(--blue)', monitor:'var(--green)',
                    metric:'var(--purple)', service:'var(--cyan)', incident:'var(--red)',
                    alert:'var(--red)', pattern:'var(--orange)',
@@ -15480,22 +15557,58 @@ function lxPsClose(){
   LX_PS.i = -1;
 }
 /* one renderer, both states — so the card can never disagree with the summary under it */
+/* ⚠️ IMPROVED PAST THE LIVE DRAWER (request, 20 Aug 2026: "need to improve this
+   visualization"). The live one — and our first copy of it — is a label, a wall of mono,
+   a grey count and one long paragraph: everything the same weight, nothing scannable, and
+   the most concrete fact (how many events, what share) the quietest thing on screen.
+   Four changes, all from data already on the page:
+     · the severity is the TABLE'S OWN CHIP (`.lxsev`), so it carries its colour here too
+     · the count is a FIGURE with its share of the search beside it, not a grey footnote
+     · **Distribution of Values** is drawn as bars — `LX_PAT_AI[i].tok` already holds
+       [value, share %] per masked token, which is exactly what the docs say a hover on a
+       mask shows, and it was not rendered anywhere after the drawer rebuild
+     · `lxPatOpen()` is wired back in as "Show these logs" — it survived the rebuild
+       unreferenced
+   Everything is still read off LX_PATTERNS / LX.count, so nothing here can disagree with
+   the row it came from. */
 function lxPsPaint(busy){
   const i = LX_PS.i, p = LX_PATTERNS[i]; if (!p) return;
   const d = LX_PAT_AI[i] || {}, n = lxPatN(p);
+  const total = LX.count || 0, share = total ? Math.round(n / total * 100) : 0;
   const body = document.getElementById('lxPsBody'); if (!body) return;
+  /* the masked tokens and what was actually seen in them */
+  const dist = (d.tok || []).map(t => {
+    const seen = t[1].reduce((a, v) => a + v[1], 0);
+    return '<div class="lxpsdt"><span class="tk">' + t[0] + '</span>' +
+      t[1].map(v =>
+        '<div class="lxpsdr"><span class="v" title="' + lxEsc(v[0]) + '">' + lxEsc(v[0]) + '</span>' +
+        '<span class="bar"><i style="width:' + v[1] + '%"></i></span>' +
+        '<span class="pc">' + v[1] + '%</span></div>').join('') +
+      /* ⚠️ emitted only when the shares do not reach 100 — a zero-width tail row would
+         still draw its label and claim a long tail that isn't there */
+      (seen < 100 ? '<div class="lxpsdr tail"><span class="v">other values</span>' +
+        '<span class="bar"><i style="width:' + (100 - seen) + '%"></i></span>' +
+        '<span class="pc">' + (100 - seen) + '%</span></div>' : '') +
+    '</div>';
+  }).join('');
   body.innerHTML =
     '<div class="lxpsc">' +
       '<div class="lxpscr"><span class="l">Pattern</span>' +
-        '<span class="s">' + lxEsc(p[1]) + '</span></div>' +
+        '<span class="lxsev ' + lxSevCls(p[1]) + '">' + lxEsc(p[1]) + '</span></div>' +
       '<div class="lxpspt">' + p[2] + '</div>' +
-      '<div class="lxpsm">' + n.toLocaleString() + ' events matched</div>' +
+      '<div class="lxpsf">' +
+        '<span class="fig"><b>' + n.toLocaleString() + '</b><i>events matched</i></span>' +
+        '<span class="fig"><b>' + share + '%</b><i>of this search</i></span>' +
+        '<button class="lxpsgo" onclick="lxPatOpen(' + i + ')">Show these logs' +
+          '<svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>' +
+      '</div>' +
     '</div>' +
     '<div class="lxpst">' + LX_AI_SPARK + 'AI Summary</div>' +
     (busy
       ? '<div class="lxpsl"><span class="dot"></span><span class="dot"></span><span class="dot"></span>' +
         'Analysing this pattern\u2026</div>'
-      : '<p class="lxpsp">' + (LX_PAT_PROSE[i] || '') + '</p>');
+      : '<p class="lxpsp">' + (LX_PAT_PROSE[i] || '') + '</p>' +
+        (dist ? '<div class="lxpsdh">Distribution of values</div>' + dist : ''));
 }
 /* "Show these logs" from the summary: filter Log Search to the pattern's literal and run it.
    The filter is the product's own operand · operator · value triple, the shape the filter
