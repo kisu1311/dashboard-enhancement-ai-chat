@@ -1,238 +1,121 @@
-# Handoff — 2026-08-20 (later)
+# Handoff — 2026-08-20 15:49
 
 ## Read first
 
-This session added **Compliance Settings** to the Settings module — the whole category
-(Compliance Policy · Benchmark · Rules, with every drawer, picker, full-page builder and
-the two-step rule wizard), cloned from live 8.2.7 at `/settings/compliance-settings/*`
-through the browser. Read **“Compliance Settings (`stc*`)”** in `CLAUDE.md` before touching
-it. The `st*` module gained two doors the block plugs into — **`ST_PAGES`** (a page
-registry) and **`stFullOpen()`** (full-page screens with the `(i)` help toggle) — recorded
-in the st section.
+Everything below is **Option 1 only** (`index copy.html`) unless it says otherwise.
+A **second session was working in this same repo at the same time** and committed the
+Settings module (`0af398c`, `30bf0fe`) — including one commit that swept `index copy.html`
+in wholesale while my work was in the tree. Nothing was lost, but **re-read a file before
+editing it** and expect your notes to sit beside someone else's.
 
-## What was done
+In `CLAUDE.md`, read these before touching anything:
 
-- Drove the three live list pages and their create/view screens: Kendo grids, the Vue
-  components’ templates + option lists out of `__vue__` (conditions, operators,
-  occurrences, severities, IG options, the password-free AuditPolicyForm fields), the
-  create drawer, the 855px device grid-dropdown, Schedule and Assign/Unassign drawers,
-  the benchmark tree (all 85 CIS rules with severities), the rule wizard, both (i) panes.
-- Built one `stc*` CSS + script block, byte-identical in the three options, registered via
-  `ST_PAGES`. Everything works: filters with `=`/`!=`, column chooser, run-now spinner,
-  create/edit/clone/delete (confirmed), schedule, assign/unassign, benchmark builder
-  (nested numbered groups + rule picker with severity filter), the wizard end to end.
-- Live quirks kept: “View Audit Policy” title, benchmark locked while editing, locked
-  system benchmark ⋮ = Clone only, groups collapsed by default, run-now only on hover.
-- Verified: ~90 probe assertions over http in all three options + light theme;
-  `lxbehave` 56/56 ×3 · `behave` 63/63 ×3 · `harness` 77/77. Committed.
-
-## Next steps
-
-1. ~~Push~~ **DONE** — everything through `ecdf72f` is pushed and live at
-   <https://kisu1311.github.io/dashboard-enhancement-ai-chat/> (verified serving).
-2. Other categories are still placeholders; the `ST_PAGES` registry is the pattern.
-3. Still open: UI Preference/License pages, Log Pattern vs live, scrubbing the public `172.16.x` strings elsewhere.
-
-## Gotchas
-
-- ⚠️ A ternary missing its outer `:` inside a template literal errors hundreds of chars
-  later; `node --check` the extracted block before believing a screenshot.
-- ⚠️ Six seeded devices match “rtr” — two probe “failures” were bad expectations, not bugs.
-
----
-
-# Handoff — 2026-08-20 (early)
-
-## Read first
-
-This session built **one thing, in all three options**: the **Settings module** — the rail's
-Settings entry is a real screen now (left list of the 18 categories + **My Account › My
-Profile**), cloned from live build 8.2.7 at `/settings/my-account/my-profile` through the
-browser. Read **“Settings module (`st*`)”** in `CLAUDE.md` before touching it — it records
-what was copied, the three live quirks that were reproduced on purpose (required-empty shows
-no message; Reset leaves the switch; disabled looks enabled), and the deliberate differences.
-
-## What was done
-
-- Drove the live page in Chrome (chrome-devtools MCP): DOM + computed styles, the Vue
-  component’s template and vee-validate rules (`__vue__`), the password policy, the left
-  list’s 18 categories / 95 sub-pages with routes, the icons (SVG paths), search behaviour,
-  the head’s collapse, a failed submit, Reset. Nothing was submitted against the instance;
-  the live form was reset afterwards.
-- Built the `st*` block (CSS + `<section id="view-settings">` + script) with a generator and
-  injected it into **`index copy.html`, `index.html`, `dashboard-picker-advanced.html`** —
-  byte-identical across the three. Entry points: `selectModule()` (one line), every Settings
-  row in the flyout / docked panel / DevRev column (`act: stOpen('<cat>')`), the profile
-  popover’s **My Profile** row.
-- Flyout data corrected to 8.2.7: “Observability Pipeline” → **Log Settings**; Dependency
-  Mapper / SLO / APM / RUM now open the settings list instead of other modules.
-- Verified in a real tab: 39-assertion probe (switch, eyes, initials, every validation
-  message, reset, save + identity refresh, search, collapse, stub pages, flyout act,
-  geometry), dark + light, 1280×720; `lxbehave` 56/56 × 3, `behave` 63/63 × 3, `harness`
-  77/77 (Option 1). Committed.
-
-## Next steps
-
-1. ~~Push~~ **DONE** — pushed and live (20 Aug 2026).
-2. UI Preference and License (and the other 17 categories) are placeholders naming the live
-   route; clone them the same way if wanted (`/settings/my-account/ui-preference`, `/license`).
-3. Still open from before: Log Pattern Action column vs live (built, unverified — the lab
-   was unreachable); Options 2/3 have none of the Option-1 AI work; scrub the public
-   `172.16.x` / `.motadata.local` strings. *(The Designer’s Guide conflict is resolved —
-   see below.)*
-
-## Gotchas
-
-- ⚠️ Harvest icons with the state that shows them on screen — `eye-slash` came back `null`
-  because the password rows were hidden when the misc icons were read.
-- ⚠️ Headless Chrome hung on this file again; the browser tools against `python3 -m
-  http.server 8765` (with a `?v=` cache-buster) were the reliable way to verify.
-
----
-
-# Handoff — 2026-08-19 19:11
-
-## Read first
-
-Everything this session touched is **Option 1 only** — `index copy.html`: the `ai*`
-chat panel and the `lx*` Log Explorer. Options 2 and 3 were not opened. In `CLAUDE.md`,
-read these before changing anything:
-
-- **“Option 1’s `ai*` panel — the agentic build”** — nearly every change below is
-  recorded there with the annotation that asked for it. The sub-notes on the thinking
-  trail, the widget card, the create-dashboard plan card and the clarifier were all
-  rewritten today.
-- **“The header is now: `⧉ · name ⌄ · ⋯ · ⧉ Layout · ✕`”** — the header, the
-  conversations dropdown and its in-row rename / delete-confirm.
-- **“Log Explorer module (`lx*`)”** → *“✦ AI Query in the search filter row”* — the one
-  feature that was built from the live product rather than from a screenshot.
-- **“Re-verifying it — `_verify/`”** — how to re-run the three suites.
-
-> The previous handoff (11:28 today) covered the Create Dashboard drawer, the Empty
-> group flow and the first Agentation drain. All of that is pushed and live; nothing
-> from it was reopened.
+- **“`✦ AI Pattern Summary` — the Action column of Log Search → Log Pattern”** — rewritten
+  today after the first build got the *flow* wrong. It records what the live product
+  actually does and why the chat route was deleted.
+- **“One parser, one model, one gate — for the popover AND the chat”** (under *✦ AI Query*)
+  — `lxAiqParse` / `lxAiqCommit`, shared by both surfaces.
+- **“THE FOOTER IS GONE — Edit / Accept are DOCKED OVER THE COMPOSER”** — now the gate for
+  **every** proposal, not just a widget.
+- **“The composer’s leading control is a ＋ with a two-row menu”** — the Notion-shaped
+  menu and the taller composer.
 
 ## What we worked on this session
 
-A long, screenshot-driven pass on Option 1’s AI panel — around thirty small requests,
-each built, probed, screenshotted in both themes, documented and committed on its own —
-plus two features verified against the **live Log Explorer (build 10.0.0)** in the
-browser: the log-sources panel was restored and **✦ AI Query** was added to the filter
-row and to the chat.
+Finished the interrupted Log Pattern item, rebuilt **AI Query** into one shared query model
+for both surfaces, made **every approval in the chat use one pattern**, published, and then
+**corrected the AI Pattern Summary flow against the live product** once the lab came back —
+plus the composer’s ＋ menu and height.
 
 ## Completed
 
-**Sixteen commits, all local and unpushed** (`a97aa2a` → `40d111c`). Every suite green at
-the end: behave 63/63 · lxbehave 56/56 (Option 1 runs all 56 again) · harness 77/77.
+Seven commits of mine (`dcbdff4` → `c6719b8`), all pushed and live. Every suite green:
+`lxbehave` **56/56 × 3 files**; feature probes 34 / 54 / 43 / 15 / 34 / 38.
 
-**Log Explorer**
-- **Log-sources panel restored** (Type | Group, search, tree) after checking the product
-  still has it. `lxbehave` no longer skips 5 checks in Option 1.
-- **✦ AI Query** in the filter row, driven on the live instance first: Run **builds and
-  shows** the filter (`THIS WILL SEARCH …`), Apply commits. The live one applies straight
-  from Run with no preview — that is why it read as “not working”, and the preview is a
-  deliberate divergence. The mapping is canned (`LX_AIQ`, `LX_AIQ_T`); the join is
-  per-clause, not global.
-- The **chat** can build the same query in the Log Explorer (`aiLogQ` / `aiLogQHTML`),
-  reusing `lxAiqBuild` so the two surfaces cannot disagree. This also fixed “windows
-  error monitor” being answered with *That needs Monitor data*.
-
-**AI panel — structure**
-- **Thinking**: no box; trail renders as plain tick lines (`aiTkPlain`); the collapsed
-  header is a text-only *Thought 9x, Read, Fetched* summary (`aiTkSummary` /
-  `aiTkKinds`), chevron down/up; shimmer peak dropped to `--text-dim`. Measured: thinking
-  luminance 111 vs answer 247.
-- **Header**: New-chat is icon-only, left of the name, hidden while the thread is empty;
-  `?` became `⋯` and carries Rename / Delete; the name dropdown is the **ClickUp shape**
-  (search, date bands, bubble marks, in-row rename with ⊗, hover ✎ 🗑).
-- **Every delete asks first** — one confirmation card for all three doors, focus on
-  Cancel, Esc is a new first rung on the panel’s Esc ladder.
-- **Composer**: Auto-approve is a word; the three controls are 30px circles; one radius
-  token `--ai-r` for every button and chip.
-- **Widget flow**: Edit / Accept are **docked over the composer** (`aiPendPaint`), only
-  while a widget is actually pending; Reject / Save / Add-to are follow-up chips; Undo
-  appears wherever an action is reversible (`aiAgUndo`), labelled, after the copy icon.
-- **Summary card**: plain-text meta line, product mark, bullets read off the board
-  (`aiSumFacts`), bullet spacing measured and fixed.
-- **Create-dashboard**: plan card is Name · Category · Security only; the gate is
-  Cancel (text) · Edit · **Approve & create (filled)**; widget suggestions are on the
-  created card, send, and expire when the card stops being last.
-- **Clarifier** is a stepped Notion-style card (`AI_CLAR`): back · question · `n / 3` ·
-  radios · free-text · Skip / Next; back restores the answer.
-- **Product mark**: the supplied `Light.svg` / `Dark.svg`, as one `currentColor` SVG
-  (`AI_LOGO`, `aiLogoPaint`).
+- **Log Pattern gained an ACTION column** with a ✦ per row (`dcbdff4`). ⚠️ The pattern
+  counts are now **weights scaled onto `LX.count`** (`LX_PAT_SUM` / `lxPatN`) — the seeded
+  numbers summed to 12,726 while the toolbar said 5,483, so no printed share could be true.
+- **`✦ AI Pattern Summary` rebuilt as its own drawer** (`e96fd40`, `lxps*`) — see *Decisions*.
+- **AI Query is one parser, one model, one gate** — `lxAiqParse(q)` returns
+  `{clauses, range, agg}`; `lxAiqExpr` / `lxAiqRows` render it; **`lxAiqCommit` is the only
+  thing that touches Log Search**, and both the popover’s Apply and the chat’s Apply end
+  there. It now handles aggregations (*“How many log events did each source send in the
+  last 24 hours?”* → Counter `message` · Count · Result By `event.source` · Grid · Last 24
+  Hours) and quoted terms (*“…that mention ‘error’”* → `INCLUDE message Contains error`).
+- **Every proposal is decided at the docked bar** (`ecdf72f`) — widget card, create-dashboard
+  plan, clarifier preview and log query all show `Edit · Accept` over the composer. The
+  in-card gates are gone.
+- **`Add a widget` is a follow-up chip** on the created-dashboard card (`803c0b8`).
+- **The composer’s ＋ menu** (`c6719b8`) — *Add images, logs, PDFs or CSVs* ·
+  *Mention dashboards, monitors or modules* — and the composer is **46px → 112px**.
+- **Published** (`a84b050`) — 24 commits, verified serving.
 
 ## In progress
 
-Nothing mid-flight. Tree is clean and every suite passes.
+Nothing mid-flight. Tree clean, everything pushed.
 
 ## Next steps
 
-1. ~~Push~~ **DONE (20 Aug 2026)** — all of it, plus everything since, is live at
-   <https://kisu1311.github.io/dashboard-enhancement-ai-chat/>.
-2. **Log Pattern — Action column / “AI Pattern Summary” — BUILT 19 Aug (late), Option 1,
-   NOT yet checked against live.** The lab subnet was unreachable, so the column was built
-   from the request + the docs (which describe `Count · Severity · Pattern` only). When
-   `172.16.12.186` is reachable again, open Log Search → **Log Pattern** and compare: if
-   the live Action column carries other row actions, add them beside the ✦. See
-   *“✦ AI Pattern Summary”* in `CLAUDE.md` for what was built and the two bugs it surfaced
-   (`.aiab li::before` over-painting the token rows; `.aictx` wrapping long chip names).
-3. ~~Decide on the Designer’s Guide conflict~~ **RESOLVED 20 Aug 2026** — the
-   create-dashboard gate left the card entirely for the docked `.aipend` bar, where Accept
-   is the same `.aiagb pri` weight every proposal gets. `.aigo` / `.aiskip` are kept
-   unreferenced. See *“THE GATE LEFT THE CARD”* in `CLAUDE.md`.
-4. **Options 2 and 3 have none of this** — neither the AI panel work nor AI Query. Decide
-   per change whether anything ports.
-5. **Agentation server is down** (killed after this morning’s drain). Restart before
-   annotating:
-   `node /Users/kishanpatel/.npm/_npx/cef9b194a47a5767/node_modules/agentation-mcp/dist/cli.js server --port 4747`
-   One note is still open there: `msz2n3pp-gjm77h`, *“improve this button”* on
-   `#newDashBtn` — replied with three readings, awaiting a pick.
-6. Still open from earlier sessions: the Log Explorer divergence between options, and
-   scrubbing the internal hostnames / `172.16.x` addresses that are public.
+1. **Decide the mask convention.** Live masks with `*****` and `*NUM*`; this prototype uses
+   `<user>` / `<ip>` placeholders with a teal highlight, in the table *and* the new drawer.
+   The docs give the live categories (NUM · IP · EMAIL · URL · GUID · ID · SEQ · HEX · CMD,
+   everything else `*****`). Changing it ripples through the table, `LX_PAT_AI`,
+   `LX_PAT_PROSE` and the fixtures — it was deliberately **not** part of the flow fix.
+2. **Options 2 and 3 have none of the Option-1 AI work** — no AI Query, no pattern drawer,
+   no unified approval bar, no ＋ menu. Decide per change whether anything ports.
+3. **Scrub the public internal data.** `cisco_core.motadata.local` etc. and `172.16.14.71` /
+   `172.16.8.114` / `172.16.8.131` still ship in all three pages and are live. My additions
+   all used RFC 5737; the backlog is pre-existing.
+4. **`aiCmdAway` and `aiMentAway` carry the same unguarded `e.target.closest(...)`** that
+   bit `aiPlusAway` today — it throws on a non-Element target and kills the rest of the
+   handler. Harden them the same way if you touch that area.
+5. **The ROOT `CLAUDE.md`** (`/Users/kishanpatel/ObseverOps/CLAUDE.md`) still says the live
+   instance is `172.16.12.100`. Today it was **`172.16.12.186`**. Worth correcting there.
+6. Still open from before: the `Save Query` / `Ask AI` / `Save as Report` controls and the
+   third results tab **`✦ Anomaly`** that live has and this prototype does not.
 
 ## Decisions made
 
-- **AI Query previews before it applies.** The product does not; “not working” was the
-  live behaviour. Recorded as a deliberate divergence.
-- **The clause join is per rule, not global** — one global join turned “error logs from
-  syslog” into three OR’d clauses, widening where the sentence narrows. No parentheses:
-  the product renders a flat string and its URL model is a flat array.
-- **The thinking trail is quieter than the answer**, by measurement. Three earlier
-  requests had built it up into a box; the note says what was kept.
-- **Task rows are unreferenced, not deleted** — the component was supplied by the user
-  and may come back.
-- **The gate got a filled primary against the guide’s rule**, on instruction, with the
-  conflict and the one-edit reversal written down.
-- **Undo appears wherever an action is reversible**, and reports what it reversed.
-- **Grafana’s `thought` rows were not imitated** — they stand for hidden model reasoning
-  this prototype does not have; inventing them would be inventing work.
-- **Delete confirms; Stop does not** — one is destructive and irreversible, the other is
-  an interruption. Delete is `--red`, Stop deliberately is not.
+- **The Action column’s ✦ opens its OWN drawer, not the chat** — corrected against live
+  build 10.0.0. The first build (made while the lab was unreachable) routed it into the
+  `ai*` panel with a pinned chip, thinking trail, bullets and follow-ups. **The chat route
+  was DELETED, not kept-and-unreferenced**, because a wrong flow should not be one edit
+  away from returning. Geometry is measured off the live DOM; colours go through this
+  file’s tokens.
+- **A drawer that generates keeps the beat.** The live summary is fetched — a second row
+  had not opened after 3s — so ours shows a 1.1s *“Analysing this pattern…”* state.
+- **One approval pattern everywhere.** This also **resolved the Designer’s-Guide conflict**
+  left open yesterday: the filled `Approve & create` primary is unreferenced, and the bar’s
+  Accept is the same weight every proposal gets.
+- **Auto-approve kept its meaning where it acted** — ON, a widget *build* applies as the
+  preview lands; OFF, the bar waits. The dashboard plan is gated either way.
+- **The query join stays per-clause and parenthesis-free**, and a sentence that maps to
+  nothing leaves the search untouched and says so.
+- **The ＋ menu does not copy the reference’s third row (*Skills*)** — no such feature here,
+  and inventing one would be inventing product.
+- **The composer’s height floor is a `min-height` on the BOX**, not on the textarea, so
+  `aiGrow` still sizes to content and a one-line question isn’t marooned in a tall field.
 
 ## Gotchas & notes
 
-- ⚠️ **The disk filled mid-session** — ~40 probe copies of a 1.3 MB file plus ~40 Chrome
-  profile dirs. Every Bash call then failed with `ENOSPC` before running. Clear
-  `/tmp/cp-*` and the scratchpad between long runs; `/tmp/agv` is the lean replacement.
-- ⚠️ **Test inline `oninput=` handlers with a real `input` event**, not by calling the
-  function — the textarea’s id was the same as its handler’s name, and an element id is a
-  window global. It resolved correctly by luck; `#lxAiqTa` now.
-- ⚠️ **`state === 'card'` does not mean a decision is pending** — `aiAgRun` ends every
-  flow there, the summary included. Test for a `card` **beat**.
-- ⚠️ **Paint calls that hide chrome on an empty thread must run BEFORE `aiRender()`’s
-  empty-state early return.** Bit twice (New-chat button, pending bar).
-- ⚠️ **A `<button>` cannot hold an `<input>`** — third and fourth occurrences today
-  (dropdown rows, history rows). When a row becomes a `<div>`, it inherits none of the
-  `.aihm button` rules; `.aihm .conv` carries them explicitly and the note says why.
-- ⚠️ **Rebuild the probe copy after every edit.** One re-measurement showed identical
-  numbers because the copy pre-dated the change.
-- ⚠️ **`document.body.textContent` includes the inlined `<script>` source**, so an
-  assertion like “no `Widget widget` on screen” matches the template literal and fails on
-  working code. Scope to `#aiPanel`.
-- ⚠️ **Focus set in a `setTimeout(0)` is invisible to a probe — and to a screen reader.**
-  Set it synchronously.
-- ⚠️ `harness.py` needs ~20 s of virtual time; at 15 s it reported 49/77 failed on
-  passing code.
-- ⚠️ Google Fonts are not loaded under a short virtual-time budget; raise it to ~7000 for
-  any screenshot that judges text.
+- ⚠️ **The lab’s address moves.** `172.16.12.186` answered today and was unreachable
+  yesterday — which is exactly how the wrong build happened. **Ping before assuming it is
+  down**, and say which instance a finding came from.
+- ⚠️ **`\uXXXX` in MARKUP is literal text.** The drawer’s ✕ rendered as the string
+  `✕` in the header; it needs `&#10005;` or the real character. Caught by *reading the
+  probe’s own output*, not by looking at a screenshot.
+- ⚠️ **`e.target.closest(...)` throws when the target is not an Element** (`document`, a
+  text node) — and the throw leaves the menu open *and* kills everything after it.
+- ⚠️ **Dismissers are attached in a `setTimeout(0)`**, so a probe that dispatches
+  `mousedown` synchronously after the opening click tests before the listener exists. Phase
+  it; that was a probe bug reported as two product failures.
+- ⚠️ **`aiGrow`’s cap must match `.aiinbox textarea`’s `max-height`** (both 150px now), or
+  the box stops growing before the CSS would and the last line hides under the controls.
+- ⚠️ **A four-step thinking trail takes 8–11s** (`aiStepMs` × `aiPace`) — a probe reading
+  the answer at 7s sees a running trail. Wait 12s with a 20s virtual-time budget.
+- ⚠️ **`.aicmd` is `left:14px;right:14px`** — both edges must be cancelled (`right:auto`)
+  before `width:max-content` does anything.
+- ⚠️ **`state === 'card'` still does not mean “a decision is pending”** — `aiAgRun` ends
+  every flow there, the read-only summary included. The test is a **`card` beat**.
+- ⚠️ Live fixtures carry a real person’s machine name and internal `10.20.x` addresses.
+  **Nothing was copied** — the prototype stays on RFC 5737 and neutral names.

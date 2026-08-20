@@ -97,10 +97,17 @@ placeholder card. **Log Explorer is now a real module screen** — read off the 
 is **one CSS block + one `<section id="view-logexp">` + one `<script>` block**, so a change
 here is normally a three-file change like the `ac*` panel.
 
-> ⚠️ **It is NOT byte-identical any more.** Option 1 diverged on request: it gained an
-> **`✦ Ask AI`** button in the head (17 Aug 2026) and an **`✦ AI Query`** control in the
-> search filter row (19 Aug 2026). Options 2 and 3 have neither. Re-sync deliberately or
-> leave them different, but don't assume `md5` over the block still matches.
+> ⚠️ **It is NOT byte-identical any more.** Option 1 diverged on request and now carries
+> four things Options 2 and 3 do not: **`✦ Ask AI`** in the head (17 Aug 2026), the
+> **`✦ AI Query`** control in the search filter row (19 Aug 2026), the Log Pattern
+> **ACTION column** with its **`✦ AI Pattern Summary` drawer** (`lxps*`, 20 Aug 2026), and
+> the shared **`lxAiqParse` / `lxAiqCommit`** query model that AI Query and the chat both
+> use (20 Aug 2026). Re-sync deliberately or leave them different, but don't assume `md5`
+> over the block still matches.
+> ⚠️ **The live instance's ADDRESS MOVES between sessions.** Build 10.0.0 answered on
+> `172.16.12.186` on 20 Aug 2026 and was unreachable there the day before — which is how
+> the first AI-Pattern-Summary build came to be guessed, and wrong. **Ping before assuming
+> it is down**, and say which instance a finding came from.
 > ⚠️ **The left log-sources panel was removed from Option 1 on 17 Aug 2026 and RESTORED on
 > 19 Aug 2026** — verified against live build 10.0.0 first, where it is still there. All
 > three options carry it again (`lxPanelBtn`, `lxPanel` / `lxTreeTab` / `lxTree` /
