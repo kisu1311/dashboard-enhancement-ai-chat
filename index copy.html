@@ -21,6 +21,24 @@
   --rail-w:64px; --rail-w-open:170px;   /* the flyout anchors off these, not off the animating box */
   --ai:#8b5cf6; --ai-2:#a78bfa; --ai-3:#c4b5fd;
   --ai-soft:rgba(139,92,246,.13); --ai-line:rgba(139,92,246,.34);
+  /* the chat panel's surface wash — 5% black at the FOOT of the panel, over --card
+     (request, 20 Aug 2026). Declared once: it is a neutral shade, not a hue, so the
+     same 5% reads as a depth cue on the dark canvas as it does on white. */
+  --ai-wash:rgba(0,0,0,.05); --ai-wash-mid:rgba(0,0,0,.018);
+  /* the composer's edge — see .aiinbox. Dark theme: a real border, because a shadow on a
+     dark surface says nothing. Light theme overrides both below. */
+  /* ⚠️ Dark comes down too, but LESS FAR. On the dark canvas the shadow contributes
+     nothing — a dark lift on a dark surface is invisible — so this border IS the whole
+     edge here, where in light theme it only has to firm up the corners of a shadow that is
+     already drawing one. Taken to light theme's .045 the composer would have no edge. */
+  /* ⚠️ dark comes down with it but stops higher — the shadow contributes nothing on a dark
+     surface, so this border IS the edge here, where in light theme it only firms corners a
+     shadow is already drawing. */
+  --ai-in-line:color-mix(in srgb,var(--border) 42%,transparent);
+  --ai-in-shadow:0 1px 3px rgba(0,0,0,.34);
+  /* dark lifts too, just harder — a shadow on a dark surface has to work more to read */
+  --ai-in-shadow-h:0 4px 16px rgba(0,0,0,.5), 0 2px 6px -2px rgba(0,0,0,.4);
+  --ai-in-chip:rgba(255,255,255,.06);
   /* ⚠️ ONE radius for every button and chip in the AI panel (annotation, 19 Aug 2026:
      "same border radius everywhere"). `.aifu` was a 999px pill while `.aialt` beside it
      was 8px and `.aiagb` was 7px, so a card's footer and the follow-ups under it were
@@ -43,6 +61,33 @@ html[data-theme="light"]{
   --bg:#ffffff; --header:#ffffff; --sidebar:#ffffff; --sidebar-panel:#ffffff;
   --card:#ffffff; --card-head:#f4f6fa; --panel:#f7f9fc; --panel-2:#eef2f8;
   --border:#dfe5ee; --border-soft:#e3e8f2; --hover:#f0f4f9; --hover-side:#eef2f8;   /* --border-soft is the widget edge */
+  /* the composer's edge, measured off ClickUp's Brain² composer (20 Aug 2026): they carry
+     NO border and three shadow layers — a near-black hairline plus two soft lifts. The
+     border here is kept but pushed to 7% so it only firms the corners; the shadow does the
+     work. The chip's fill is their 2.4% black wash. See .aiinbox / .aictx. */
+  /* ⚠️ DIMMED (request, 20 Aug 2026: "text area border opacity will be down"). Two values
+     had to move, not one: the visible edge here is the border PLUS the shadow's first
+     layer, a near-black 1px hairline at .27 that was doing most of the drawing. Softening
+     only the border would have changed almost nothing on screen — the hairline came down
+     with it (.27 → .15) and the border .07 → .045. The two lift layers are untouched: they
+     are what makes the box read as raised, and they are not part of the "border". */
+  /* the edge, dimmed again (20 Aug 2026) — .07 → .045 → .03 across three requests, with
+     the shadow's hairline coming down with it each time because the two together are what
+     you actually see. At .03 the border only softens the corners; the lift does the rest. */
+  /* the edge, dimmed a fourth time (20 Aug 2026): .07 → .045 → .03 → .018, with the
+     shadow's hairline coming down each time because the two together are the visible edge.
+     ⚠️ At .018 the border is essentially gone and the LIFT is what defines the box — which
+     is where ClickUp's own composer already is (no border at all, three shadow layers).
+     Going further would mean deleting the border, and then the box has no edge at rest in
+     any browser that drops the shadow. This is the floor. */
+  --ai-in-line:rgba(0,0,0,.018);
+  --ai-in-shadow:0 0 1px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.07);
+  /* ⚠️ HOVER LIFTS IT (request, 20 Aug 2026). Now that the resting edge is nearly gone the
+     box needed something to say it is interactive before you click into it — a deeper,
+     wider shadow rather than a darker border, so the thing that changes is the elevation
+     and not the outline. Focus still adds its ring ON TOP of whichever of these is current. */
+  --ai-in-shadow-h:0 0 1px rgba(0,0,0,.12), 0 4px 14px rgba(23,35,54,.13), 0 2px 5px -2px rgba(23,35,54,.10);
+  --ai-in-chip:rgba(0,0,0,.024);
   --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4; --pop-line:#dfe5ee;
   --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
   --white:#16233a; --ink:#f4f7fb;
@@ -968,6 +1013,29 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
 @media (max-width:1440px){ :root{--ai-w:384px} }
 @media (max-width:1366px){ :root{--ai-w:366px} }
 @media (max-width:1300px){ :root{--ai-w:348px} }
+/* ══ ICON WEIGHT IN THIS PANEL — ONE NUMBER, DERIVED (request, 20 Aug 2026) ═════════════
+   Reported as "all icons are very bad quality and not proper size and alignment". Measured
+   before touching anything: 33 `stroke-width` declarations across the .ai* block ranging
+   1.6 → 3.4, on icons rendered anywhere from 9px to 30px. Because stroke-width is in the
+   viewBox's user units, the weight that actually REACHES THE SCREEN is
+       on-screen px = stroke-width x (rendered size / 24)
+   so those numbers produced 0.87px → 1.70px — a 95% spread. That is what read as "bad
+   quality": the ✕ and the trail's tick were nearly twice the weight of the context-chip
+   glyph sitting a few pixels away, and no two rows matched.
+
+   ⚠️ EVERY ICON RULE NOW TARGETS **1.25px ON SCREEN**, and its stroke-width is DERIVED
+   from its own rendered size:  stroke-width = 1.25 x 24 / <size in px>
+       9px -> 3.33   11px -> 2.73   12px -> 2.5    13px -> 2.31
+      14px -> 2.14   15px -> 2.0    16px -> 1.88   17px -> 1.76
+   1.25 is not arbitrary: it is Lucide's own weight (stroke-width 2 in a 24 box) at 15px,
+   which is this panel's dominant icon size. Change the size of an icon and you MUST
+   recompute its stroke-width from that table, or it drops back out of family.
+   ⚠️ `vector-effect:non-scaling-stroke` would express this in one line, and it was tried:
+   `vector-effect` is NOT an inherited CSS property, so setting it on the `<svg>` never
+   reaches the `<path>` children and nothing changes. It would need a `svg *` selector,
+   which in this panel would also catch the widget-preview artwork inside answer cards.
+   ⚠️ The spinner ring (`.aitrm svg.rg circle`) is deliberately EXEMPT — it is geometry
+   being animated, not a glyph, and its weight is part of the drawing. */
 .aipanel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:96vw;z-index:120;display:flex;flex-direction:column;
   /* ⚠️ `--card`, not `--panel` (request, 20 Aug 2026: "the background is #ffffff"). In
      light theme `--panel` is #f7f9fc, a pale blue-grey, and the chat read as a tinted slab
@@ -975,7 +1043,33 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
      is one token swap rather than a hardcoded white that would break the dark theme.
      ⚠️ Changing the `--panel` TOKEN instead would have repainted the Log Explorer and
      every other surface that uses it — scope the change to this panel. */
-  background:var(--card);border-left:1px solid var(--border);box-shadow:var(--shadow);
+  /* ⚠️ The surface is a GRADIENT, not a flat fill (request, 20 Aug 2026: "top colour
+     #ffffff, bottom colour #000000 at 5%"). It is written as a WASH LAYER over
+     `var(--card)` — `linear-gradient(180deg, transparent, rgba(0,0,0,.05))` — rather than
+     as `#ffffff → rgba(0,0,0,.05)`. Two reasons:
+       · a stop list running from OPAQUE white to 5% BLACK interpolates through
+         semi-transparent greys, so the middle of the panel would be see-through and the
+         board behind would ghost into the chat;
+       · hardcoding `#ffffff` would break dark theme, where the panel must stay `--card`.
+     Layered this way the top IS `--card` (#ffffff in light) and the bottom is exactly 5%
+     black over it, in both themes. Strength lives in `--ai-wash` so a theme can retune it
+     without touching this rule.
+     ⚠️ THE WASH IS PINNED TO THE FOOT, not ramped from y=0 (request, 20 Aug 2026:
+     "the bottom show gray … and top will be on white", with a Brain² reference). A linear
+     ramp over the FULL height puts grey into the greeting and the starter rows — the panel
+     never reads as white anywhere, which is the opposite of the reference. It holds at zero
+     for the top ~66% and eases in only over the last third, so the tone change sits behind
+     the composer where the reference has it.
+     ⚠️ `--ai-wash-mid` is what makes it EASE. Two stops (0 → 5%) draw a perceptible
+     straight-line start; the mid stop at 1.8% bends the curve so there is no visible edge.
+     ⚠️ The composer keeps its own `background:var(--card)`, which is what makes it read
+     as a white box ON the grey rather than dissolving into it. Don't make it transparent. */
+  background:linear-gradient(180deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0) 66%,
+      var(--ai-wash-mid) 85%,
+      var(--ai-wash) 100%),var(--card);
+  border-left:1px solid var(--border);box-shadow:var(--shadow);
   transform:translateX(102%);transition:transform .22s ease}
 .aipanel.on{transform:translateX(0)}
 /* ── full screen, the Datadog Bits pattern (reference, 15 Aug 2026) ──────────────────────
@@ -990,6 +1084,87 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
 /* the reference's full screen gives the thread real air above it — at 1900px the first
    bubble sitting 8px under the header reads as a mistake, not as a wide view */
 .aipanel.aifs .aibody{padding-top:18px}
+
+/* ── FULL SCREEN ONLY: the chat-history COLUMN (request + reference, 20 Aug 2026) ────────
+   Full screen centres the thread in an 840px column, so on a 1700px screen there is ~430px
+   of empty page either side. This is what goes in the left of it: the same AI_CHATS list
+   the name dropdown and the Show-all screen render, as a permanent column you can scan
+   while you read the thread.
+   ⚠️ FULL SCREEN ONLY, on purpose. Sidebar is already only ~408px wide — a 258px column
+   inside it would leave 150px for the conversation. `.aihsbtn` and `.aihs` are both
+   display:none until `.aifs`, so neither can appear in the other two layouts.
+   ⚠️ It is `position:absolute` inside the panel, NOT a flex sibling. `.aipanel` is a flex
+   COLUMN (header / body / composer); making it a row in full screen would have to re-parent
+   the header, and every rule keyed on `.aipanel.aifs .aihd` would move with it.
+   ⚠️ The thread is shifted by putting `padding-left` on the PANEL, not a margin on the
+   body. `.aibody`/`.aicomp` centre with `margin:auto` inside 840px, so padding on the
+   parent re-centres them in what is left — one property, and the header follows for free. */
+/* ⚠️ NO COMPOSER ON THE CHAT-HISTORY SCREEN (request, 20 Aug 2026). That screen is a
+   file drawer — you are picking a past conversation, not writing to the one behind it — and
+   an input box that would silently drop you back into the thread the moment you typed in it
+   is a trap. The 112px it frees goes to the list, which is what the screen is for.
+   ⚠️ `#aiPend` lives INSIDE `.aicomp`, so this hides the docked Accept bar too. That is
+   correct: a proposal you cannot see the card for is not a decision you can take.
+   ⚠️ The class is painted from `aiHistPaint()`, which `aiRender()` calls, so every route
+   out of the screen (Back, opening a chat, asking a question, New chat) puts it back. */
+.aipanel.aihist .aicomp{display:none}
+/* the header's history mode: the title block appears, and everything that acts on the
+   CURRENT chat goes — name dropdown, ⋯, New chat */
+/* ⚠️ `.aihfh` / `.aihfh b` / `.aihfh .n` / `.aihfb` were REMOVED with the in-body header
+   row they styled (20 Aug 2026) — nothing rendered them any more. The back arrow lives on
+   `.aihb` in the panel header now, so there is no second back-button treatment. */
+.aihdhist{display:none;flex:1;min-width:0;align-items:center;gap:7px}
+.aipanel.aihist .aihdhist{display:flex}
+.aipanel.aihist .aiht,
+.aipanel.aihist #aiHelpBtn,
+.aipanel.aihist #aiNewBtn{display:none}
+.aihdhist b{font-size:15px;font-weight:600;color:var(--white);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aihdhist .n{margin-left:auto;flex:0 0 auto;font-size:11.5px;color:var(--muted)}
+.aipanel.aifs{--aihs-w:258px}
+.aipanel.aifs.aihson{padding-left:var(--aihs-w)}
+/* ⚠️ TWO CLASSES, not one. `.aihb` (the header-button base) declares its own `display` and
+   sits ~80 lines LOWER in this stylesheet — at equal specificity the later rule wins, so a
+   bare `.aihsbtn{display:none}` lost and the History button rendered in Sidebar and
+   Floating too. Caught by a probe, invisible in a full-screen screenshot. Raise the weight;
+   do not reorder the sheet. */
+.aihb.aihsbtn{display:none}
+.aipanel.aifs .aihb.aihsbtn{display:inline-flex}
+.aihs{display:none}
+.aipanel.aifs.aihson .aihs{position:absolute;left:0;top:0;bottom:0;width:var(--aihs-w);
+  z-index:4;display:flex;flex-direction:column;
+  border-right:1px solid var(--border);background:var(--panel)}
+/* ⚠️ `--panel`, not `--card`. The panel body was deliberately moved to `--card` (#ffffff in
+   light) on 20 Aug; a column painted the same white as the thread beside it would have only
+   its 1px border to separate them. `--panel` is the file's own recessed surface — this is
+   the one place in the chat that wants to sit BEHIND the conversation. */
+.aihshd{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:11px 10px 9px}
+.aihshd b{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aihssr{flex:0 0 auto;position:relative;padding:0 10px 9px}
+.aihssr svg{position:absolute;left:19px;top:50%;transform:translateY(-50%);
+  width:13px;height:13px;fill:none;stroke:var(--muted);stroke-width:2.31;
+  stroke-linecap:round;pointer-events:none;margin-top:-4px}
+.aihssr input{width:100%;height:30px;padding:0 9px 0 28px;border-radius:8px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  font:inherit;font-size:12.5px;outline:none}
+.aihssr input:focus{border-color:var(--ai-line);box-shadow:0 0 0 3px var(--ai-soft)}
+.aihssr input::placeholder{color:var(--muted)}
+/* ⚠️ min-height:0 or the scrolling list refuses to shrink below its content and pushes the
+   search box out of the column — the `.dvlist` lesson, in a second place. */
+.aihsl{flex:1;min-height:0;overflow:auto;padding:0 6px 10px}
+.aihsb{padding:12px 6px 5px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+.aihsr{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;
+  border-radius:7px;cursor:pointer;text-align:left;background:none;color:var(--text-dim);
+  font:inherit;font-size:12.5px}
+.aihsr:hover{background:var(--chip);color:var(--text)}
+.aihsr.on{background:var(--ai-soft);color:var(--text)}
+.aihsr .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the age never shrinks — it is 2–3 characters and the NAME is what should ellipsise */
+.aihsr .ag{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.aihsr:hover .ag{color:var(--text-dim)}
+.aihsnone{padding:14px 8px;font-size:12px;color:var(--muted);line-height:1.5}
 
 /* ── FLOATING — a detached card, not the edge panel (reference: Notion AI, 17 Aug 2026) ───
    ⚠️ THIS IS THE MODE THAT WAS WRONG. Floating and Sidebar rendered *identically* — both
@@ -1085,7 +1260,7 @@ body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}
    from its own weight and spacing. z-index:3 stays: the header dropdowns hang down into the
    body's area and `.aibody` is also positioned, so on a tie the later element would win. */
 .aihd{position:relative;z-index:3;display:flex;align-items:center;gap:4px;padding:11px 12px 9px;flex:0 0 auto}
-.aihb{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--text-dim)}
+.aihb{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--text-dim)}
 .aihb:hover{background:var(--hover-side);color:var(--text)}
 /* a header button that holds a STATE (split view, and any open dropdown) reads as pressed */
 .aihb.on{background:var(--ai-soft);color:var(--ai-2)}
@@ -1101,12 +1276,41 @@ body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}
 .aihnew{margin-right:2px}
 .aihnew.hide{display:none}
 .aihb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.aihb.x svg{stroke-width:2.2}
+/* ⚠️ the ✕ used to carry `stroke-width:2.2` here — at 15px that is 1.38px on screen
+   against its neighbours' 1.25px, so the close button was the heaviest glyph in the header
+   for no reason. It inherits `.aihb svg` now. */
 .aisp{flex:1}
 .aidiv{width:1px;height:16px;background:var(--border);margin:0 4px}
 /* top-aligned, like the reference — this used to centre, which floated the greeting
    halfway down an otherwise empty column */
-.aibody{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:0 16px;display:block}
+/* ══ THE THREAD FADES AT WHICHEVER EDGE HAS MORE TO SCROLL (request, 20 Aug 2026) ══════
+   Content used to end in a hard cut against the header and the composer, so a half-cropped
+   line of an answer read as a rendering fault rather than as "there is more up there".
+   ⚠️ A MASK, NOT AN OVERLAY GRADIENT. The usual trick — a gradient strip pinned over each
+   edge, painted in the background colour — cannot work in this panel: `.aipanel`'s
+   background is itself a gradient (white to 5% black down the page), so a solid-colour
+   strip would match at the top and be visibly wrong against the wash at the bottom. A mask
+   fades the CONTENT, so it is correct over any backdrop and needs no colour at all.
+   ⚠️ DYNAMIC, not permanent. `--aifade-t` / `--aifade-b` are 0 until there is actually
+   something scrolled past that edge — a fixed top fade would dim the first message of a
+   short thread for no reason. `aiFade()` sets them; see it for the wiring.
+   ⚠️ Both stops collapse to the same position when the value is 0, which is what makes the
+   "off" state a genuinely untouched edge rather than a 0px-wide gradient.
+   ⚠️ `.aidelsc` mounts on `#aiPanel`, NOT here, so the delete confirmation is not masked.
+   Anything added inside `#aiBody` that must not fade has to move up to the panel too. */
+/* ⚠️ 16px of TOP padding (request, 20 Aug 2026: "make more space between the header and
+   the prompt"). The first message used to butt straight against the header — with the
+   header's bottom border removed on 20 Aug there was nothing at all between the chat name
+   and the first bubble, so the two read as one block.
+   ⚠️ `.aiempty` gives back the same 16px (its own top padding went 30 → 14), so the empty
+   state's greeting sits exactly where it did — this is meant to space the THREAD, not to
+   push the greeting down a second time. */
+.aibody{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:16px 16px 0;display:block;
+  --aifade-t:0px; --aifade-b:0px;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 var(--aifade-t),
+    #000 calc(100% - var(--aifade-b)),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 var(--aifade-t),
+    #000 calc(100% - var(--aifade-b)),transparent 100%)}
 /* ── ObserveOps AI, rebuilt to the ServiceOps Ask-AI design (see the panel markup) ────
    Brand gradient read off their Ask AI button. --sv-cta is the pale CTA fill; the dark
    theme gets a translucent equivalent because that panel is light-only. */
@@ -1137,9 +1341,20 @@ html[data-theme="light"]{
    design puts them — the top-right then only carries actions that aren't about *this* chat.
    ⚠️ It is a role="button" SPAN, not a <button>: aiRename() swaps the name for an <input>
    in place, and interactive content inside a <button> is invalid and eats the clicks. */
+/* ⚠️ THE CHAT NAME IS A RESTING PILL (request + reference, 20 Aug 2026). It was bare text
+   with a hover background, so nothing said it was a control until you happened to point at
+   it — and it is the door to rename, delete and the whole conversation list. The reference
+   gives it a soft fill at rest; hover and open just deepen it.
+   ⚠️ The fill is `--ai-in-chip`, the same 2.4% wash the composer's context chip uses, so
+   the two quiet surfaces in this panel are the same quiet. It is themed (a white wash in
+   dark), which a literal grey would not be.
+   ⚠️ 28px, matching `.aihb` — the name and the icon buttons either side of it now sit on
+   one line rather than the name being 2px shorter than everything around it.
+   ⚠️ `margin-left` stays NEGATIVE so the pill's padding does not push the name off the
+   header's own 12px alignment; the text still starts where it always did. */
 .aihttl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;
-  height:26px;padding:0 5px 0 6px;margin-left:-6px;border-radius:6px;cursor:pointer;
-  transition:background .13s}
+  height:28px;padding:0 7px 0 9px;margin-left:-9px;border-radius:8px;cursor:pointer;
+  background:var(--ai-in-chip);transition:background .13s}
 .aihttl:hover{background:var(--hover-side)}
 /* the OPEN state has to hold its highlight — otherwise moving the pointer down into the
    menu drops the hover and nothing on screen says which control opened it */
@@ -1151,7 +1366,7 @@ html[data-theme="light"]{
 .aihttl .cv{flex:0 0 12px;width:12px;height:12px;color:var(--text-dim);
   transition:transform .14s}
 .aihttl .cv svg{width:12px;height:12px;display:block;fill:none;stroke:currentColor;
-  stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .aihttl:hover .cv,.aihttl.open .cv{color:var(--text)}
 .aihttl.open .cv{transform:rotate(180deg)}
 /* while renaming it is an input, not a menu trigger */
@@ -1174,8 +1389,29 @@ html[data-theme="light"]{
   border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:12.5px;
   cursor:pointer;text-align:left}
 .aihm button:hover{background:var(--pop-item-hover)}
+/* ══ THE LAYOUT MENU IS THE TIGHT ONE (request, 20 Aug 2026: "this popup is very big,
+   improve minimalist") ═══════════════════════════════════════════════════════════════
+   It was 230x114 with 34px rows — the same box as the chat-name dropdown, which earns that
+   width with a search field, date bands and two-line conversation rows. This menu is three
+   one-word labels and a ✓. It gets its own size: 168px wide, 28px rows, 14px glyphs.
+   ⚠️ SCOPED BY ID, deliberately — `#aiLayM` and `#aiHelpM` (the ⋯ menu, same request a
+   few minutes later). `.aihm` is shared by all THREE header dropdowns, and the third is the
+   conversation list, which earns its 230px with a search field, date bands and two-line
+   rows. Slimming the base rule would squeeze the one menu that needs the room.
+   ⚠️ The ⋯ menu keeps a little more width (186px) than Layout: its longest label is
+   "Documentation" plus a trailing ↗, where Layout's is "Full screen" and a ✓. */
+#aiLayM{min-width:168px}
+#aiHelpM{min-width:186px}
+#aiLayM button,#aiHelpM button{padding:5px 8px;gap:9px;border-radius:5px}
+/* ⚠️ `flex` HAS TO BE OVERRIDDEN, not just `width`. `.aihm button svg` is
+   `flex:0 0 15px`, and a flex-basis pins the box whatever `width` says — the glyphs stayed
+   15px through an id-level `width:14px` and the probe caught it. */
+#aiLayM button svg,#aiHelpM button svg{flex:0 0 14px;width:14px;height:14px;stroke-width:2.14}
+#aiLayM .tick{width:12px;height:12px;flex:0 0 12px;stroke-width:2.5}
+#aiHelpM .ext{flex:0 0 11px;width:11px;height:11px;stroke-width:2.73}
+#aiHelpM hr{margin:4px 2px}
 .aihm button svg{flex:0 0 15px;width:15px;height:15px;fill:none;stroke:currentColor;
-  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
 .aihm hr{border:0;border-top:1px solid var(--pop-line);margin:5px 2px}
 .aihm .hd{padding:6px 9px 4px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
   color:var(--muted)}
@@ -1197,7 +1433,7 @@ html[data-theme="light"]{
 /* ⚠️ needs its own fill/stroke: `.aihm button svg` sets them, and this svg is NOT in a
    button — without this the magnifier renders as a solid filled dot */
 .aihm .srch svg{flex:0 0 13px;width:13px;height:13px;color:var(--muted);
-  fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  fill:none;stroke:currentColor;stroke-width:2.31;stroke-linecap:round}
 .aihm .srch input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);
   font:inherit;font-size:12.5px;outline:none}
 .aihm .grp{padding:9px 9px 4px;font-size:11px;font-weight:600;color:var(--muted)}
@@ -1212,7 +1448,7 @@ html[data-theme="light"]{
 .aihm .conv.cur{color:var(--text);font-weight:600}
 /* the bubble mark: outlined, filled on the current chat */
 .aihm .cb{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;color:var(--text-dim)}
-.aihm .cb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;
+.aihm .cb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .aihm .conv.cur .cb{color:var(--text)}
 .aihm .conv.cur .cb svg path:first-child{fill:currentColor}
@@ -1221,7 +1457,17 @@ html[data-theme="light"]{
 /* ⚠️ the actions REPLACE the timestamp rather than sit beside it — the row is only ~230px
    wide, and showing both pushed long chat names into an ellipsis two words early */
 .aihm .acts{display:none;margin-left:auto;flex:0 0 auto;gap:2px}
-.aihm .conv:hover .when{display:none}
+/* ⚠️ THE NAME MUST NOT MOVE WHEN THE ROW IS HOVERED (request, 20 Aug 2026: "when I hover
+   the text will jump"). The timestamp was `display:none`d and the ✎/🗑 put in its place —
+   two different widths (~70px of text vs ~46px of buttons), so the name's flex space
+   changed and the label shifted under the cursor.
+   The stamp now KEEPS ITS BOX and only loses its ink (`visibility`), and the actions are
+   lifted out of flow on top of it. Nothing in the row changes size, so nothing can jump.
+   ⚠️ `visibility:hidden`, not `opacity:0` — an invisible stamp must not still catch the
+   pointer where the ✎ now sits. */
+.aihm .conv{position:relative}
+.aihm .conv:hover .when{visibility:hidden}
+.aihm .acts{position:absolute;right:9px;top:50%;transform:translateY(-50%);margin-left:0}
 .aihm .conv:hover .acts{display:flex}
 /* while a row is being renamed its actions and timestamp stay out of the way, and the
    whole row must not look clickable — clicking it would navigate mid-edit */
@@ -1232,18 +1478,34 @@ html[data-theme="light"]{
   border-radius:6px;border:1.5px solid var(--text);background:var(--pop)}
 .nmwrap .nmin{flex:1;min-width:0;padding:3px 7px;border:0;background:transparent;
   color:var(--text);font:inherit;font-size:12.5px;outline:none}
-.nmwrap .clr{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;
+/* ⚠️ `.clr` (the old ⊗ clear) was REPLACED by `.act.ok` / `.act.cx` — Save and Cancel.
+   Same box, same 14px glyph, so the field's geometry is unchanged; only what the controls
+   DO is different. Save takes the accent on hover because it is the committing action;
+   Cancel stays neutral rather than red — abandoning a rename destroys nothing. */
+.nmwrap .act{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;
   color:var(--muted);font-style:normal;cursor:pointer;border-radius:50%}
-.nmwrap .clr:hover{color:var(--text)}
-.nmwrap .clr svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;
-  stroke-linecap:round}
+.nmwrap .act:hover{color:var(--text)}
+.nmwrap .act.ok:hover{color:var(--ai-2)}
+.nmwrap .act svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
+  stroke-linecap:round;stroke-linejoin:round}
 /* the search box sits flush with the menu's own padding */
 .aihm .srch{margin:2px 2px 4px}
 .aihm .acts i{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;
   color:var(--text-dim);font-style:normal}
 .aihm .acts i:hover{background:var(--chip);color:var(--text)}
 .aihm .acts i.del:hover{background:rgba(242,80,75,.16);color:var(--red)}
-.aihm .acts svg{flex:0 0 13px;width:13px;height:13px;color:inherit}
+/* ⚠️ THIS RULE SIZED THE ICONS AND NEVER SAID HOW TO PAINT THEM (fixed 20 Aug 2026).
+   With no `fill`/`stroke` declared, SVG's initial values apply — `fill:black`,
+   `stroke:none` — so the outline paths rendered as SOLID BLOBS: the pen read as a filled
+   diagonal wedge and the bin as a dark lump. It was survivable while these were hand-drawn
+   single strokes and became obvious the moment they became real Lucide outlines.
+   ⚠️ My own weight probe MISSED this: it skipped any svg whose computed `stroke` was
+   `none`, which is exactly this failure. It now flags a glyph that is filled instead.
+   ⚠️ 14px to match `.aihfr .ac svg` — the same two actions on the full history screen —
+   so one control does not change size between the dropdown and the screen. Weight is
+   1.25 x 24 / 14 = 2.14, per the derivation note above `.aipanel`. */
+.aihm .acts svg{flex:0 0 14px;width:14px;height:14px;color:inherit;
+  fill:none;stroke:currentColor;stroke-width:2.14;stroke-linecap:round;stroke-linejoin:round}
 /* ── the hover preview card ───────────────────────────────────────────────────────────────
    ⚠️ It lives in <body> at `position:fixed`, NOT inside the menu: the panel is
    `overflow:hidden` in Floating and only ~420px wide, so a card parented to the menu would
@@ -1256,9 +1518,9 @@ html[data-theme="light"]{
 .aihov .h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .aihov .h b{font-size:12.5px;font-weight:600;color:var(--white);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.aihov .av{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
-  background:var(--ai-soft)}
-.aihov .av svg{width:11px;height:11px;fill:var(--ai-2)}
+/* ⚠️ `.aihov .av` and `.aihov .av svg` were DELETED with the ✦ they styled (20 Aug 2026).
+   `.h` keeps its flex row — it is now name-only, and the name still needs its `min-width:0`
+   to ellipsise inside it, which is why the row was not collapsed to a plain block. */
 .aihov p{margin:0;font-size:12px;line-height:1.55;color:var(--text-dim)}
 .aihov .f{margin-top:9px;padding-top:8px;border-top:1px solid var(--pop-line);
   font-size:11px;color:var(--muted)}
@@ -1267,28 +1529,45 @@ html[data-theme="light"]{
    which pins every icon in the menu to 15px and to the dim colour — hence `.aihm .tick svg`
    (two classes) rather than a bare element selector. */
 .aihm .tick{margin-left:auto;flex:0 0 14px;display:grid;place-items:center}
-.aihm .tick svg{width:14px;height:14px;flex:0 0 14px;color:var(--ai-2);stroke-width:2.4}
+.aihm .tick svg{width:14px;height:14px;flex:0 0 14px;color:var(--ai-2);stroke-width:2.14}
 /* "Show all ›" and the external-link rows push their trailing glyph to the edge */
 .aihm .ch{margin-left:auto;color:var(--text-dim);font-size:13px;line-height:1}
 /* Show all carries the total, so the row says how much more there is rather than just
    promising more — the whole reason it is worth a click */
 .aihm button.all .ch{font-size:11.5px;letter-spacing:.02em}
 .aihm button.all:hover .ch{color:var(--text)}
-.aihm .ext{margin-left:auto;flex:0 0 12px;width:12px;height:12px;stroke-width:2;color:var(--muted)}
+.aihm .ext{margin-left:auto;flex:0 0 12px;width:12px;height:12px;stroke-width:2.5;color:var(--muted)}
 .aihm .empty{padding:10px 9px;font-size:12px;color:var(--muted);line-height:1.5}
 /* empty state: greeting + gradient CTAs */
-.aiempty{padding:30px 18px 12px;text-align:center}
+.aiempty{padding:14px 18px 12px;text-align:center}
 .aibig{display:grid;place-items:center;margin-bottom:14px}
 .aibig svg{width:30px;height:30px;fill:var(--ai-2)}
 .aiempty h3{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
 .aiempty p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
-.aicta{display:flex;align-items:center;gap:11px;width:100%;height:44px;padding:0 14px;
+/* ⚠️ THE STARTERS SIT ON THE PANEL'S OWN QUIET SURFACE (request, 20 Aug 2026: "change the
+   background colour"). They were `--sv-cta`, the ServiceOps brand gradient — a three-stop
+   blue→violet→pink wash — which by this point was the loudest thing left in the panel and
+   the only element in the empty state still speaking another product's brand. It is the
+   same `--ai-in-chip` wash the context chip and the chat-name pill already use, over
+   `--card`, so the empty state reads as one system.
+   ⚠️ Layered (`linear-gradient(chip,chip), card`) rather than flat, because `--ai-in-chip`
+   is TRANSLUCENT — on its own it would let the panel's own top-to-bottom wash show through
+   and the four rows would each be a slightly different shade depending on their height
+   down the page.
+   ⚠️ `--sv-cta` is NOT changed; `.aitkm` (the thinking trail's mark tile) still uses it,
+   and that is a deliberate accent on a 26px square rather than a full-width bar.
+   ⚠️ Hover is a real background now. It was `filter:brightness()`, which on a near-white
+   row moves almost nothing — the rows had no perceptible hover state in light theme. */
+.aicta{display:flex;align-items:center;width:100%;min-height:44px;padding:11px 14px;
   margin-bottom:8px;border:0;border-radius:10px;cursor:pointer;text-align:left;
-  background:var(--sv-cta);color:var(--text);font:inherit;font-size:13px;font-weight:500}
-.aicta:hover{filter:brightness(1.06)}
-html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
-.aicta svg{width:16px;height:16px;flex:0 0 16px;fill:none;stroke:var(--ai-2);stroke-width:1.7;
-  stroke-linecap:round;stroke-linejoin:round}
+  background:linear-gradient(var(--ai-in-chip),var(--ai-in-chip)),var(--card);
+  color:var(--text);font:inherit;font-size:13px;font-weight:500;
+  line-height:1.4;transition:background .14s}
+.aicta:hover{background:var(--hover-side)}
+/* ⚠️ `.aicta svg` and the row's `gap` went with the icon (request, 20 Aug 2026). The row
+   is `min-height`, not a fixed 44px, because a two-line starter ("Build a line chart of
+   memory usage for the last 24h") had been relying on the icon's flex box to hold its
+   height — without it a fixed 44px clipped the second line. */
 /* answer: status line → titled block → feedback → follow ups */
 .aiu{max-width:82%;margin:0 0 14px auto;padding:9px 13px;border-radius:12px 12px 3px 12px;
   background:var(--chip);color:var(--text);font-size:13px;line-height:1.5}
@@ -1300,10 +1579,16 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aiuact button{width:22px;height:22px;border:0;border-radius:5px;background:transparent;
   color:var(--muted);cursor:pointer;display:grid;place-items:center}
 .aiuact button:hover{background:var(--hover-side);color:var(--text)}
-.aiuact svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;
+.aiuact svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linejoin:round}
+/* ⚠️ NO LEADING DOT (request, 20 Aug 2026). `.aistep i` painted a 7px violet disc before
+   every status line — "Created", "Configured from your description", "Thinking…". It said
+   nothing the line did not, and it was the only bullet in the panel that was not part of a
+   list. Removed at all SEVEN call sites and the rule deleted, rather than hidden, so an
+   empty `<i>` is not left behind for the flex gap to space around.
+   ⚠️ The waiting state keeps `.aidots` — that one is animated and reports that work is
+   still happening, which is information rather than decoration. */
 .aistep{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:9px}
-.aistep i{width:7px;height:7px;border-radius:50%;background:var(--ai-2);flex:0 0 7px}
 .aians{margin-bottom:18px}
 .aiat{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--white);
   margin-bottom:10px}
@@ -1317,7 +1602,14 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aiab{font-size:13px;line-height:1.55;color:var(--text)}
 .aiab b{color:var(--white);font-weight:600}
 .aiab h4{margin:14px 0 6px;font-size:13px;font-weight:600;color:var(--white)}
-.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
+/* ⚠️ `ul.aiab` MATTERS AS WELL AS `.aiab ul` (fixed 20 Aug 2026: "remove double bullet
+   point"). The agent's widget summary renders `<ul class="aiab">` — the list IS the answer
+   body, not a list inside one — so the descendant rule below never matched it and the
+   native `list-style:disc` stayed on. `.aiab li::before` DID match, because the `li`s are
+   inside `.aiab`, so every row drew a black disc AND the violet dot next to it.
+   ⚠️ Keep both selectors. Answers render lists both ways: `<div class="aiab"><ul>` for
+   ordinary bodies, and `<ul class="aiab">` where the body is nothing but the list. */
+ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 /* 10px between items against ~20px inside one — the separation has to beat the line gap */
 .aiab li{position:relative;padding-left:16px;margin-bottom:12px}
 .aiab li:last-child{margin-bottom:2px}
@@ -1344,8 +1636,17 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aipatv span i{font-style:normal;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px}
 .ailqm{margin:7px 0 2px;font-size:12px;color:var(--muted)}
 .ailqm b{color:var(--text);font-weight:600}
-.aifb{display:flex;gap:2px;margin-top:12px}
-.aifb button{width:26px;height:26px;border:0;border-radius:6px;background:transparent;cursor:pointer;
+/* ⚠️ `position:relative` because the ⤴ share menu now anchors HERE (20 Aug 2026) —
+   `.aiagm` is `position:absolute`, so without a positioned host it would escape to the
+   panel and open in the wrong corner. */
+.aifb{position:relative;display:flex;gap:2px;margin-top:12px}
+/* the menu opens UPWARD from the action row: the row sits at the bottom of a card, and
+   `top:36px` would push a 4-row menu below the fold of the thread. */
+.aifb .aiagm{top:auto;bottom:calc(100% + 6px);right:auto;left:0}
+/* ⚠️ 24px box / 13px glyph (request, 20 Aug 2026: "icon size is very big"). These sit
+   under an answer as quiet chrome, and at 15px they were the same size as the header's
+   controls — which are the panel's primary chrome and should be the larger of the two. */
+.aifb button{width:24px;height:24px;border:0;border-radius:6px;background:transparent;cursor:pointer;
   display:grid;place-items:center;color:var(--muted)}
 .aifb button:hover{background:var(--chip);color:var(--text)}
 /* a labelled action in this row — it stops being a 26px square and becomes a small pill,
@@ -1369,7 +1670,7 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   color:var(--text-dim);font-size:11px;display:grid;place-items:center}
 /* the Context menu's checkboxes — a picked module reads as picked without relying on
    colour alone, since the box itself fills in */
-.aicmd .k svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.1;
+.aicmd .k svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
 /* the ＋ menu — the Notion shape: one line per row, an outline glyph, and the menu HUGS
    the button rather than spanning the composer.
@@ -1379,12 +1680,22 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    border and 12px padding. The reference aligns the menu's left edge to the button, and
    at left:10px it sat 17px adrift, which reads as "belongs to the composer" rather than
    "belongs to this button". */
+/* ⚠️ IT SITS ON THE ＋, NOT ON TOP OF THE WHOLE COMPOSER (request, 20 Aug 2026: "this
+   popup is open in near"). `.aicmd` anchors `bottom:calc(100% - 4px)`, i.e. to the TOP of
+   `.aicomp` — right for the @-mention typeahead, which belongs to the text you are typing.
+   The ＋ is at the composer's BOTTOM-left, so that same anchor left the menu floating a
+   whole composer-height (~90px) above the button that opened it, with the box in between.
+   ⚠️ The offset is the composer's own vertical stack, written out so it can be re-derived:
+   `.aicomp` padding-bottom 13 + `.aiinbox` padding 14 + the 30px control row = 57px puts
+   the menu's foot level with the top of the ＋; +6 is the gap. If any of those three
+   change, this changes with them — the same hand-derived arithmetic `left:27px` already
+   uses for the horizontal edge. */
 .aiplusm{left:27px;right:auto;width:max-content;max-width:calc(100% - 37px);max-height:none;
   padding:6px;border-radius:10px}
 .aiplusm button{align-items:center;gap:10px;padding:7px 9px;border-radius:7px;
   font-size:12.5px;color:var(--text);white-space:nowrap}
 .aiplusm button svg{flex:0 0 16px;width:16px;height:16px;fill:none;stroke:currentColor;
-  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
+  stroke-width:1.88;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
 /* the highlighted row — the reference rings it rather than filling it, so the label keeps
    its own colour and the ring reads as "this is where ↵ goes" */
 .aiplusm button.sel{background:var(--ai-soft);box-shadow:inset 0 0 0 1px var(--ai-line)}
@@ -1406,6 +1717,16 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   border-bottom:1px solid var(--pop-line);margin-bottom:4px}
 .aicmd .mnote b{color:var(--ai-2);font-weight:600}
 .aicmd.up{bottom:calc(100% - 4px)}
+/* ⚠️ THIS RULE MUST STAY BELOW `.aicmd.up`. The ＋ menu is `class="aicmd up aiplusm"`, so
+   both selectors are (0,2,0) and SOURCE ORDER decides — declared above it, this lost and
+   the menu stayed pinned to the top of the composer. Raising specificity instead would
+   have meant `.aicmd.up.aiplusm`, which then silently stops applying the day the menu
+   opens downward and drops the `up` class. Order is the honest fix; keep it here.
+   ⚠️ Caught by measuring the gap (85px where 6px was intended), twice — the first attempt
+   "looked right" in the CSS and changed nothing on screen.
+   The offset is the composer's own stack: `.aicomp` padding-bottom 13 + `.aiinbox`
+   padding 14 + the 30px control row = the top of the ＋; +6 is the gap above it. */
+.aicmd.aiplusm{bottom:calc(13px + 14px + 30px + 6px)}
 .aicmd hr{border:0;border-top:1px solid var(--pop-line);margin:4px 2px}
 /* ── the context bar: a CONTEXT dropdown (multi-select) + removable pinned chips ───────
    ⚠️ Two different things sit on this row and the difference is load-bearing: the Context
@@ -1413,28 +1734,78 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    board, an attached file) are pinned items and are. Removing every pinned chip therefore
    leaves the module context standing, which is what keeps the chat working module-wise.
    (The label was "Scope" until 15 Aug 2026; the internal names are still aiScope*.) */
-.aictxbar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0}
-/* it lives inside the pill now, so an empty one would draw a 7px gap for nothing */
-.aictxbar:empty{display:none}
+/* ⚠️ THE ROW HOLDS ITS HEIGHT WHEN EMPTY (request, 20 Aug 2026: "when I remove the context
+   chip the alignment inside the element must not change").
+   It used to be `:empty{display:none}`, so removing the last chip collapsed a 24px row and
+   its 15px gap — 39px — and everything under it jumped: the placeholder rose, and because
+   `.aiinbox` is a flex COLUMN packed from the top, the freed space fell to the bottom and
+   left the ＋/Auto/🎤 row floating above the padding it is supposed to sit on.
+   `min-height` equal to one chip means the box is the same height, and every row is in the
+   same place, with or without context.
+   ⚠️ The old rule's reasoning — "an empty row would draw a gap for nothing" — was written
+   when the gap was 7px and the box had no height floor. The gap is 15px now and the jump
+   is the bigger cost. */
+.aictxbar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0;min-height:24px}
 .aiscp{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;
   border:1px solid var(--ai-line);background:var(--ai-soft);color:var(--ai-2);
   font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}
 .aiscp:hover{background:rgba(139,92,246,.22)}
 .aiscp .lb{color:var(--muted);font-weight:400}
 .aiscp .cv{opacity:.7;font-size:9px}
-.aictx{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 4px 0 8px;
-  border-radius:6px;border:1px solid var(--border);background:var(--card);
-  color:var(--text-dim);font-size:11.5px;max-width:180px}
+/* ⚠️ A SOFT PILL, not an outlined box (reference measured 20 Aug 2026: 24px tall,
+   radius 999, background rgba(0,0,0,.024), NO border, padding 4px 8px, gap 3px, 13px/400).
+   Ours was a 6px-radius bordered rectangle, so the one chip inside the composer had a
+   harder edge than the composer around it and read as a form field rather than as a tag.
+   ⚠️ The fill is a 2.4% wash — light enough that the chip is a tint, not a button. In dark
+   theme a black wash is invisible, so `--ai-in-chip` flips to a white one. */
+/* ══ THE LABEL MUST NOT SHORTEN WHEN THE ✕ APPEARS (request, 20 Aug 2026) ══════════════
+   Hovering a chip ellipsised its own name — "Application Performance" became "Application
+   Performa…" the moment the cursor arrived. TWO separate causes, and both had to go:
+
+   1 · `.aictxbar` is `display:flex`, and a chip with the default `flex:0 1 auto` is
+       SHRINKABLE. When the ✕ asked for its 17px the row had none spare, so the browser
+       took it out of the chip — which is why even a short name like "Survey" could clip.
+       `flex:0 0 auto` makes it wrap to the next line instead, which is what the container's
+       `flex-wrap:wrap` is there for.
+   2 · a chip already at `max-width` has nowhere to put the ✕, so the label gave up the
+       space. The cap now GROWS on hover by exactly the ✕'s footprint, which means the
+       label's available width is identical in both states — the chip gets wider, the name
+       does not get shorter.
+
+   ⚠️ `--aictx-rm` is GONE with the growth it sized — the ✕ is out of flow now, so there is
+   no footprint to reserve or to widen the cap by. `--aictx-w` stays as the label's ceiling.
+   ⚠️ Cause 2's fix is superseded (see the `.aictx` rule below); cause 1's is NOT — the chip
+   still needs `flex:0 0 auto`, because a shrinkable chip in a flex row can still lose width
+   to its siblings and clip its own label. Both notes are kept because they are different
+   bugs that happened to show the same symptom. */
+/* ⚠️ THE ✕ IS OUT OF FLOW — NOTHING MOVES ON HOVER (measured off ClickUp's own context
+   pill, `.pill--clickable`, 20 Aug 2026, under a real pointer: chip 54→54, label 21→21,
+   the button `position:absolute; right:3px` going `opacity:0 → 1`).
+   This replaces the previous fix, which grew the chip's `max-width` by the ✕'s footprint.
+   That did hold the LABEL steady, but the CHIP still changed width (173→190) — and in a
+   `flex-wrap` row that can bump a sibling chip onto another line just by pointing at this
+   one. Taking the button out of flow removes the whole class of problem: there is no width
+   to change, so there is nothing to reflow.
+   ⚠️ `position:relative` on the chip is what the absolute ✕ anchors to. Without it the
+   button escapes to the composer and lands in the wrong corner.
+   ⚠️ `padding-right` is 8px (was 4) so the ✕ sits IN the padding rather than on the text
+   for any label that fits — the same trick their 8px padding plays. A label at the full
+   180px cap still has its trailing ellipsis under the ✕; that is the reference's own
+   behaviour and it is the stable trade, not a regression. */
+.aictx{--aictx-w:180px;
+  position:relative;display:inline-flex;align-items:center;gap:4px;height:24px;
+  padding:0 8px;border-radius:999px;border:0;background:var(--ai-in-chip);flex:0 0 auto;
+  color:var(--text-dim);font-size:12px;max-width:var(--aictx-w)}
 /* a long name ellipsises inside the 24px chip instead of wrapping to a second line behind
    the ✕ — the first pinned Log Pattern ("Pattern · Access denied for user") showed it; the
    full name is in the chip's title */
 .aictx .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* the type glyph — its colour is the type's, so the chip reads before the label does */
-.aictx .tic{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;
+.aictx .tic{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
 .aictx i{width:5px;height:5px;border-radius:50%;background:var(--teal);flex:0 0 5px}
 /* an attached file wears the clip instead of the dot */
-.aictx .fic{width:11px;height:11px;flex:0 0 11px;fill:none;stroke:var(--ai-2);stroke-width:2;
+.aictx .fic{width:11px;height:11px;flex:0 0 11px;fill:none;stroke:var(--ai-2);stroke-width:2.73;
   stroke-linecap:round;stroke-linejoin:round}
 /* ⚠️ THE ✕ ONLY APPEARS ON HOVER (reference, 20 Aug 2026). It used to sit there always,
    spending ~16px of a 180px chip on a control you need once, which pushed long names into
@@ -1445,11 +1816,26 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    CLAUDE.md opens with, caught by grepping for the selector after writing it.
    ⚠️ `width`/`margin` animate rather than `display`, or the chip JUMPS on hover and the
    label reflows under the cursor. */
-.aictx button{width:0;height:16px;border:0;border-radius:4px;background:transparent;
-  color:var(--muted);cursor:pointer;font-size:10px;line-height:1;padding:0;flex:0 0 auto;
-  display:grid;place-items:center;opacity:0;overflow:hidden;margin-left:0;
-  transition:width .12s,margin-left .12s,opacity .12s}
-.aictx:hover button,.aictx:focus-within button{width:16px;margin-left:1px;opacity:1}
+/* ⚠️ THE ✕ IS OPAQUE, SO IT MASKS WHAT IT COVERS (request, 20 Aug 2026: "the text is
+   hidden only behind the close icon — the full text is not hidden").
+   It was `background:transparent`, copied from ClickUp's own pill. That is fine for THEIR
+   chips, whose labels are short enough to end before the icon; on a long one like
+   "Application Performance" the tail ran underneath and showed THROUGH the glyph, so both
+   the ✕ and the last two characters were unreadable.
+   ⚠️ The fill is the chip's own colour COMPOSITED — a gradient layer of `--ai-in-chip`
+   over `--card`, which is exactly what the chip paints. A flat `--card` would read as a
+   lighter disc punched into the chip, and a flat `--ai-in-chip` is translucent and would
+   not mask anything. Same layering trick the panel's own wash uses.
+   ⚠️ A wider box than the glyph (20px) so the mask clears the character underneath rather
+   than clipping it mid-stroke. It still takes NO flow width — it is absolute — so the
+   no-jump guarantee from the hover fix is untouched. */
+.aictx button{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+  width:20px;height:18px;border:0;border-radius:4px;
+  background:linear-gradient(var(--ai-in-chip),var(--ai-in-chip)),var(--card);
+  color:var(--muted);cursor:pointer;font-size:10px;line-height:1;padding:0;
+  display:grid;place-items:center;opacity:0;transition:opacity .12s}
+.aictx:hover button,.aictx:focus-within button{opacity:1}
+.aictx button:hover{color:var(--text)}
 .aictx button:hover{background:var(--chip);color:var(--text)}
 /* chat history sheet */
 /* ── the full history SCREEN (request, 17 Aug 2026: "when I click Show all, open a new
@@ -1459,18 +1845,10 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    ⚠️ ONE renderer with the menu: `aiChatBand` / `aiChatWhen` / `aiChatSummary` are shared,
    so the screen and the dropdown can never disagree about a date band or a timestamp. */
 .aihf{padding:2px 0 14px}
-.aihfh{display:flex;align-items:center;gap:9px;padding:2px 2px 12px}
-.aihfb{width:26px;height:26px;flex:0 0 26px;border:0;border-radius:6px;background:transparent;
-  color:var(--text-dim);cursor:pointer;display:grid;place-items:center}
-.aihfb:hover{background:var(--hover-side);color:var(--text)}
-.aihfb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.aihfh b{font-size:15px;font-weight:600;color:var(--white)}
-.aihfh .n{margin-left:auto;font-size:11.5px;color:var(--muted)}
 .aihfs{display:flex;align-items:center;gap:8px;height:34px;margin:0 2px 6px;padding:0 11px;
   border:1px solid var(--border);border-radius:8px;background:var(--panel)}
 .aihfs svg{flex:0 0 14px;width:14px;height:14px;color:var(--muted);fill:none;
-  stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  stroke:currentColor;stroke-width:2.14;stroke-linecap:round}
 .aihfs input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);
   font:inherit;font-size:13px;outline:none}
 .aihfg{padding:14px 4px 5px;font-size:11.5px;font-weight:600;color:var(--muted)}
@@ -1480,27 +1858,40 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   cursor:pointer;position:relative}
 .aihfr:hover{background:var(--hover-side)}
 .aihfr.cur{background:var(--sel)}
-.aihfr .av{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;
-  place-items:center;background:var(--ai-soft);margin-top:1px}
-.aihfr .av svg{width:13px;height:13px;fill:var(--ai-2)}
-.aihfr.cur .av{background:var(--ai)}
-.aihfr.cur .av svg{fill:#fff}
+/* ⚠️ the round ✦ avatar that led every row was REMOVED (request, 20 Aug 2026) and its
+   four rules went with it. Nine identical violet marks down the left edge said only "these
+   are all AI chats", which the screen's own title already says; what tells the rows apart
+   is the name and the summary, and they get the 34px back. `.aihfr.cur` still marks the
+   current chat through its own row rule. */
 .aihfr .tt{flex:1;min-width:0}
 .aihfr .tt b{display:block;font-weight:500;font-size:13px;color:var(--text);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aihfr.cur .tt b{color:var(--ai-2);font-weight:600}
-.aihfr .tt span{display:block;margin-top:2px;font-size:11.5px;line-height:1.5;
+/* ⚠️ `.sm`, NOT a bare `span` (fixed 20 Aug 2026). This was `.aihfr .tt span`, a
+   descendant selector at (0,2,1) — and when the inline rename editor replaced the `<b>`
+   with `<span class="nmwrap">`, THAT span matched too. It beat `.nmwrap{display:flex}`
+   (0,1,0), so the field computed `-webkit-box` instead of flex: the input went
+   inline-block and the ✓/✕ stacked underneath it as block-level grid boxes.
+   The same descendant-selector trap the root CLAUDE.md records for `.agpfgt span` —
+   when a container gains a new kind of child, scope its text rules to an inner class. */
+.aihfr .tt .sm{display:block;margin-top:2px;font-size:11.5px;line-height:1.5;
   color:var(--muted);overflow:hidden;text-overflow:ellipsis;
   display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;white-space:normal}
 .aihfr .rt{flex:0 0 auto;font-size:11px;color:var(--muted);white-space:nowrap;margin-top:2px}
-.aihfr .ac{display:none;flex:0 0 auto;gap:2px;margin-top:-1px}
-.aihfr:hover .rt{display:none}
+/* the same fix on the full-history screen, which swaps the same two things */
+.aihfr{position:relative}
+.aihfr .ac{display:none;position:absolute;right:10px;top:11px;gap:2px}
+.aihfr:hover .rt{visibility:hidden}
 .aihfr:hover .ac{display:flex}
+/* ⚠️ and NOT while renaming — the row's ✎/🗑 would sit next to the field's own ✓/✕,
+   which is four controls for two decisions. The dropdown already did this via
+   `.conv.ren .acts`; the history screen had no equivalent and showed them on hover. */
+.aihfr.ren .ac,.aihfr.ren .rt{display:none}
 .aihfr .ac i{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;
   color:var(--text-dim);font-style:normal}
 .aihfr .ac i:hover{background:var(--chip);color:var(--text)}
 .aihfr .ac i.del:hover{background:rgba(242,80,75,.16);color:var(--red)}
-.aihfr .ac svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;
+.aihfr .ac svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
   stroke-linecap:round;stroke-linejoin:round}
 .aihfe{padding:34px 12px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6}
 .aihist{padding:2px 0 10px}
@@ -1533,7 +1924,10 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 /* Add waits for a confirm unless Auto-approve is on */
 .aiadd.confirm{background:var(--orange);color:#2a1405}
 .aiadd.confirm:hover{background:#ffa95c}
-.aifb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;
+/* ⚠️ 13px, so stroke-width is 1.25 x 24 / 13 = 2.31 — recomputed, not left at the 15px
+   value. Changing a glyph's size without recomputing its stroke is exactly how this panel
+   ended up with a 0.87–1.70px spread; see the derivation note above `.aipanel`. */
+.aifb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linejoin:round}
 /* ── follow-up chips (annotation, 15 Aug 2026: "improve this") ──────────────────────────
    They were solid grey pills with the chevron LEADING, which read as breadcrumbs or as
@@ -1551,6 +1945,14 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
    the empty state already carries the starters. */
 /* the docked pending decision — a card, because it is asking you for something and must
    read as the thing to deal with; it sits directly on the composer it belongs to */
+/* the docked clarifier — a card, not a bar, so it carries its own spacing and lets
+   `.aicq`'s existing styling do the work unchanged */
+.aiclardock{display:none;margin:0 0 9px}
+.aiclardock.on{display:block}
+/* while the question is up, the input goes and the card takes its place */
+.aipanel.aiclar .aiinbox{display:none}
+.aipanel.aiclar .aiclardock{margin-bottom:0}
+.aiclardock .aicq{margin:0}
 .aipend{display:none;align-items:center;gap:10px;margin:0 0 8px;padding:9px 10px 9px 12px;
   border:1px solid var(--ai-line);border-radius:12px;background:var(--card)}
 .aipend.on{display:flex}
@@ -1587,7 +1989,7 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aifu:hover .cv{color:var(--ai-2);transform:translateX(2px)}
 @media (prefers-reduced-motion:reduce){ .aifu,.aifu .cv{transition:none} .aifu:hover .cv{transform:none} }
 /* ── the answer TYPES, each with its own shape (copied from the reference's replies) ── */
-.aiat .sp .ln{fill:none;stroke:var(--ai-2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.aiat .sp .ln{fill:none;stroke:var(--ai-2);stroke-width:1.76;stroke-linecap:round;stroke-linejoin:round}
 /* .aiat is a flex row, so a block child still lands BESIDE the title — it needs a full
    basis to drop onto its own line */
 .aisub2{flex:0 0 100%;font-size:11.5px;font-weight:400;color:var(--muted);margin-top:1px}
@@ -1650,11 +2052,11 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
   color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
 .aicqb:hover:not(:disabled){background:var(--hover-side);color:var(--text)}
 .aicqb:disabled{opacity:.3;cursor:default}
-.aicqb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+.aicqb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
   stroke-linecap:round;stroke-linejoin:round}
 .aicqt{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--white)}
 .aicqn{flex:0 0 auto;font:400 11.5px/1 'JetBrains Mono',monospace;color:var(--muted)}
-.aicqs{margin:0 0 9px 31px;font-size:12px;color:var(--muted)}
+.aicqs{margin:0 0 9px 0;font-size:12px;color:var(--muted)}
 /* the rows — a real radio look, not a chip: this is a single choice, not a suggestion */
 .aicqo,.aicqf{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
   border:0;border-radius:8px;background:transparent;color:var(--text);
@@ -1663,6 +2065,28 @@ html[data-theme="light"] .aicta:hover{filter:brightness(.985)}
 .aicqo.on,.aicqf.on{background:var(--sel)}
 /* ⚠️ `.aicqr`, NOT a bare `.rd` — the `ac*` panel already styles `.acsmi .rd`, and a bare
    class here would reach into it. Grep before naming, every time. */
+/* ══ the reference's numbered rows (20 Aug 2026) ═══════════════════════════════════════
+   ⚠️ `.aicqr` (the radio mark) is KEPT below but is no longer emitted — the rows carry an
+   ordinal badge now. Left in place because the free row's `.on` state still reads well if
+   the radio version is ever restored. */
+.aicqi{flex:0 0 20px;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;
+  background:var(--chip);color:var(--text-dim);
+  font:500 11px/1 'JetBrains Mono',monospace}
+.aicqo:hover .aicqi{background:var(--ai-soft);color:var(--ai-2)}
+.aicqo.on .aicqi{background:var(--ai);color:#fff}
+/* the free row's pencil, and its inline Skip */
+.aicqp{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center;color:var(--muted)}
+.aicqp svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
+  stroke-linecap:round;stroke-linejoin:round}
+.aicqf .aicqsk{flex:0 0 auto;height:22px;padding:0 9px;border:0;border-radius:5px;
+  background:var(--chip);color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer}
+.aicqf .aicqsk:hover{background:var(--hover-side);color:var(--text)}
+/* ✕ — abandon the whole question set */
+.aicqc{width:22px;height:22px;flex:0 0 22px;border:0;border-radius:6px;background:transparent;
+  color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.aicqc:hover{background:var(--hover-side);color:var(--text)}
+.aicqc svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
+  stroke-linecap:round;stroke-linejoin:round}
 .aicqr{flex:0 0 15px;width:15px;height:15px;border-radius:50%;border:1.6px solid var(--track);
   display:grid;place-items:center;transition:border-color .12s}
 .aicqo.on .aicqr,.aicqf.on .aicqr{border-color:var(--ai)}
@@ -1827,7 +2251,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   color:#fff;animation:aitrpop .3s cubic-bezier(.23,1,.32,1) both}
 .aitrk.ok{background:var(--green)}
 .aitrk.no{background:var(--red)}
-.aitrk svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3.4;
+.aitrk svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;
   stroke-linecap:round;stroke-linejoin:round}
 @keyframes aitrpop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
 .aitrl{flex:1;min-width:0;font-size:12.6px;color:var(--text);overflow:hidden;
@@ -1845,7 +2269,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   border-radius:11px;font-size:11.5px;font-weight:500;animation:aitrfade .2s ease-out both}
 .aitrp.ok{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
 .aitrp.no{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
-.aitrp svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;
+.aitrp svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.73;
   stroke-linecap:round;stroke-linejoin:round}
 .aitrp .sp{display:flex;animation:aitrspin 1.2s linear infinite}
 /* at the narrowest panel step even that is not enough — the green "Completed" pill is the
@@ -1856,7 +2280,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 @keyframes aitrfade{from{opacity:0}to{opacity:1}}
 .aitrc{flex:0 0 20px;width:20px;height:20px;margin-right:-2px;display:grid;place-items:center;
   color:var(--text-dim)}
-.aitrc svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;
+.aitrc svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
   stroke-linecap:round;stroke-linejoin:round;transition:transform .3s cubic-bezier(.23,1,.32,1)}
 .aitrr.op .aitrc svg{transform:rotate(180deg)}
 /* the dropdown — same grammar as the chain of thought it replaced */
@@ -1921,7 +2345,10 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* ── the narration line, inside the Reasoning disclosure ───────────────────────────────────
    (request, 18 Aug 2026.) Each `say` beat now also closes its own group inside the panel,
    so expanding the trail reads as: what I did → what I said I would do next. */
-.aiagsl{margin:7px 0 2px;padding-left:23px;font-size:12.4px;line-height:1.5;
+/* ⚠️ tight to the group it closes (7px above, 0 below) — the next heading's own 18px is
+   what separates the two, so this line cannot drift into looking like the next group's
+   opener. It stays at 23px with the row text, because it belongs to the rows. */
+.aiagsl{margin:7px 0 0;padding-left:calc(14px + 9px);font-size:12.4px;line-height:1.5;
   color:var(--text-dim);font-style:italic}
 /* ── the running Reasoning row (annotation, 17 Aug 2026: "improve this") ─────────────────
    It was a bare mark + violet text on the panel background, so while it was working it
@@ -2001,7 +2428,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    pushes the count onto a second line and the card stops reading as one row. */
 .aitk.bx .aitkt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aitkc{margin-left:auto;flex:0 0 9px;color:var(--muted);transition:transform .16s}
-.aitkc svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2.4;
+.aitkc svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:3.33;
   stroke-linecap:round;stroke-linejoin:round}
 .aitk.op .aitkc{transform:rotate(90deg)}
 /* ⚠️ the PILL's chevron points DOWN collapsed and UP expanded (reference, 19 Aug 2026) —
@@ -2011,18 +2438,41 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aitk.bx.cl.op .aitkh.pill .aitkc{transform:rotate(-90deg)}
 .aitk.cl:hover .aitkt,.aitk.cl:hover .aitkc{color:var(--text-dim)}
 /* the steps */
-.aitkl{margin:8px 0 0 13px;padding:0 0 0 15px;border-left:1px solid var(--border-soft)}
+/* ⚠️ NO LEFT RULE (request, 20 Aug 2026). It was a `border-left` down the whole trail,
+   there to say "these rows belong together" — which the uppercase group headings and their
+   18px of separation now say properly, per phase rather than for the block as a whole. The
+   line was drawing one bracket around three groups, i.e. exactly the grouping the same
+   session's request said was unreadable.
+   ⚠️ The horizontal space it occupied is KEPT (13 + 15 = 28px of indent, now all margin).
+   Removing the padding with the border would have slid the whole trail left and broken its
+   alignment with the answer text beside it. */
+.aitkl{margin:8px 0 0 28px;padding:0}
 .aitk.cl .aitkl{margin-top:6px}
 /* the phase headings inside the combined block, so merging three rows into one loses
    nothing — you still see which step belonged to which phase */
 /* ⚠️ NOT uppercase: these are sentence-length phase names ("Searched counters, read the
    widget reference"), and caps turn them into shouting rather than a label. */
-.aitkg{font-size:11.5px;font-weight:600;color:var(--muted);margin:9px 0 1px}
-.aitkg:first-child{margin-top:1px}
+/* ══ GROUP HEADINGS — the trail's phases have to be TELLABLE APART ═══════════════════
+   (request, 20 Aug 2026: "I can't understand which step is for which research — make
+   proper space and proper alignment.")
+   ⚠️ AN EARLIER PASS THE SAME DAY INDENTED THIS TO 23px to line up with the row text. That
+   was wrong and is reversed here: the indent IS the grouping cue. With the heading at the
+   same left edge as its rows, nothing said where one phase ended and the next began — the
+   whole trail read as one undifferentiated list of ticks. The heading hangs at 0 and the
+   rows sit at 23px under it, so membership is legible from the shape alone.
+   ⚠️ It is a SECTION LABEL now, not a bold line: uppercase, letter-spaced, small. That is
+   the same treatment `Follow ups` (.aiful) and `Distribution of values` (.lxpsdh) already
+   carry in this panel, so it reads as chrome rather than as another step.
+   ⚠️ The space is asymmetric on purpose — 18px above, 7px below. A heading needs to be
+   clearly nearer the rows it introduces than the rows it follows, or it reads as a footer
+   for the group above it. */
+.aitkg{margin:18px 0 7px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+.aitkg:first-child{margin-top:2px}
 .aitki{display:flex;align-items:flex-start;gap:9px;padding:4px 0;font-size:12.6px;
   line-height:1.45;color:var(--text-dim)}
 .aitki .ic{flex:0 0 14px;width:14px;height:14px;margin-top:1px;display:grid;place-items:center}
-.aitki .ic svg{width:13px;height:13px;fill:none;stroke:var(--ai-2);stroke-width:2.3;
+.aitki .ic svg{width:13px;height:13px;fill:none;stroke:var(--ai-2);stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
 .aitki.now{color:var(--text)}
 .aitki.new{animation:aitkin .22s ease-out}
@@ -2031,7 +2481,10 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    version and is a trailing note here */
 .aitkam{flex:0 0 auto;font:400 11px/1.5 'JetBrains Mono',monospace;color:var(--muted)}
 /* a step's sub-work, inline rather than behind its own chevron */
-.aitksub{margin:0 0 3px 23px}
+/* ⚠️ 23px + 13px: the sub-work sits INSIDE its step's text column, not level with it, or
+   "Window · Today" reads as a peer of "Reading log types" instead of as its detail. The
+   base is written as the same `14 + 9` the row uses so the two cannot drift apart. */
+.aitksub{margin:2px 0 7px calc(14px + 9px + 13px)}
 .aitksub div{display:flex;align-items:baseline;gap:10px;padding:1.5px 0;font-size:11.8px;
   line-height:1.45;color:var(--muted)}
 .aitksub .l{flex:1;min-width:0}
@@ -2066,12 +2519,12 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiagch b.gro{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aiagch .sub{flex:1;min-width:0;font-size:12px;color:var(--muted);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.aiagch .ok{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:var(--green);stroke-width:2.6;
+.aiagch .ok{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:var(--green);stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .aiagib{width:24px;height:24px;flex:0 0 24px;border:0;border-radius:6px;background:transparent;
   color:var(--muted);cursor:pointer;display:grid;place-items:center}
 .aiagib:hover{background:var(--hover-side);color:var(--text)}
-.aiagib svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+.aiagib svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
   stroke-linecap:round;stroke-linejoin:round}
 .aiagcb{padding:0 12px 10px}
 .aiagcb svg{display:block;width:100%;height:auto}
@@ -2086,7 +2539,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiagb:hover{border-color:var(--ai-line);color:var(--white)}
 .aiagb.pri{background:var(--ai);border-color:var(--ai);color:#fff}
 .aiagb.pri:hover{filter:brightness(1.08)}
-.aiagb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;
+.aiagb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
 .aiagm{position:absolute;right:10px;top:36px;z-index:8;min-width:196px;padding:5px;
   background:var(--pop);border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadow)}
@@ -2114,7 +2567,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiagm .gp{padding:7px 9px 3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
   color:var(--muted)}
 .aiagm .k{flex:0 0 14px;width:14px;height:14px;display:grid;place-items:center}
-.aiagm .k svg{width:13px;height:13px;fill:none;stroke:var(--ai-2);stroke-width:2.3;
+.aiagm .k svg{width:13px;height:13px;fill:none;stroke:var(--ai-2);stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
 .aiagm button.on{color:var(--white);font-weight:600}
 /* ⚠️ the share menu's rows are space-between (label ⟷ ⌘C); a dashboard row is
@@ -2183,27 +2636,74 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ The floor is a MIN-height on the box, not a height on the textarea — `aiGrow` still
    sizes the textarea to its content, so a one-line question does not sit in a tall empty
    field; the space goes to the box, which keeps the three rows evenly spread. */
-.aiinbox{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:10px;
-  min-height:112px;padding:12px;
-  border:1px solid var(--border);border-radius:14px;background:var(--card) padding-box;
-  transition:box-shadow .14s,border-color .14s}
+.aiinbox{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:15px;
+  /* ⚠️ MORE ROOM, twice (requests, 20 Aug 2026: "add more space", then "make more
+     space"). It began at 12px padding / 10px gap, which had the chip almost touching the
+     edge and the control row sitting right under the text; then 14/12; now 16/15.
+     ⚠️ The GAP moved further than the padding on purpose. What reads as cramped in this
+     box is the distance between the three rows — chip, prompt, controls — not the distance
+     to the border; padding much past 16px starts to make the box look empty rather than
+     roomy, while the gap is what gives each row its own line to sit on.
+     ⚠️ `min-height` is a FLOOR, not the height. With a context chip the content already
+     measures past it, so it only bites on a chip-less composer — which is why it moves
+     with the padding rather than being left behind at 120. */
+  min-height:128px;padding:16px;
+  /* ⚠️ MEASURED OFF ClickUp's Brain² composer (app.clickup.com, 20 Aug 2026), not copied
+     by eye. Theirs: radius 20, NO border at all, and a three-layer shadow doing the edge —
+     a near-black hairline at 1px blur plus two soft lifts. That is what makes it read as a
+     raised surface rather than an outlined field, and it is the difference the reference
+     image is actually showing.
+     ⚠️ THEIRS IS LIGHT-ONLY; ours is not. A shadow-only edge disappears on the dark
+     canvas, so the edge is tokenised: light theme gets their hairline-plus-lift and an
+     almost invisible border, dark theme keeps a real border and a plain lift. Both are
+     declared on :root/[data-theme] below, never here. */
+  border:1px solid var(--ai-in-line);border-radius:20px;
+  background:var(--card) padding-box;box-shadow:var(--ai-in-shadow);
+  transition:box-shadow .16s,border-color .14s}
+/* ⚠️ `:hover` only — NOT `:hover,:focus-within`. Focus has its own rule below that adds the
+   accent ring, and letting both match would make the ring and the lift fight over one
+   `box-shadow` property depending on source order. */
+.aiinbox:hover{box-shadow:var(--ai-in-shadow-h)}
 /* the text takes the new room; the chips and the controls keep their own height */
 .aiinbox textarea{flex:1 1 auto}
 .aiinrow{display:flex;align-items:center;gap:8px}
 /* dictate and send sit hard right; everything before them stays left */
 .aiinrow .aimic{margin-left:auto}
-.aiinbox:focus-within{box-shadow:0 0 0 3px var(--ai-soft);border-color:var(--ai-line)}
+/* ⚠️ the focus ring is ADDED TO the resting shadow, not swapped for it. `box-shadow` is
+   one property: writing only the ring here discarded the composer's elevation the moment
+   you clicked into it, so the box flattened exactly when it became the thing you were
+   using. ClickUp's keeps its shadow identical at rest and focused (measured). */
+.aiinbox:focus-within,.aiinbox:hover:focus-within{
+  box-shadow:0 0 0 3px var(--ai-soft),var(--ai-in-shadow-h);
+  border-color:var(--ai-line)}
 /* ⚠️ GENERATING ONLY (annotation, 15 Aug 2026): at rest the composer wears an ordinary
    border; the AI-accent one appears only while the AI is working, so the border itself is
    the progress indicator. The colour is set with the rest of the generating cue above.
    ⚠️ This used to read `border-color:transparent`, so the masked gradient ring could show
    through. The ring is gone (17 Aug) — left in place, that rule quietly beat the new accent
    border and generating rendered with NO border at all. */
-.aiplus{flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+/* ⚠️ NO BORDER RING (request, 20 Aug 2026). ＋ was the only one of the three composer
+   controls wearing an outline — 🎤 and ➤ are borderless — so the row read as one bordered
+   button and two loose glyphs. It is `.aimic`'s treatment now: bare glyph at rest, a soft
+   fill on hover, which is also what makes the three read as one set. */
+.aiplus{flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:0;
   background:transparent;color:var(--text-dim);cursor:pointer;font-size:15px;line-height:1;
   display:grid;place-items:center}
-.aiplus:hover{border-color:var(--ai-line);color:var(--ai-2)}
-.aiplus svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;
+/* ══ THE CONTROL ROW IS QUIET AT REST (request, 20 Aug 2026: "this all icon is very
+   highlight … the opacity will be down") ══════════════════════════════════════════════
+   ＋, 🎤 and ➤ sat at full strength under the thing you are actually reading and writing.
+   They are chrome you reach for, not content, so they rest at .62 and come to full
+   strength on hover and on keyboard focus.
+   ⚠️ `opacity`, not a lighter colour, exactly as asked — and it also dims ＋'s BORDER
+   ring, which was half the ink in that corner and which a colour change would have left
+   at full strength.
+   ⚠️ `.aisend.stop` is EXCLUDED. While a generation is running that button is the only way
+   to interrupt it, and a control you need in a hurry must not be the faintest thing there. */
+.aiplus,.aimic,.aisend:not(.stop){opacity:.62;transition:opacity .14s}
+.aiplus:hover,.aimic:hover,.aisend:not(.stop):hover,
+.aiplus:focus-visible,.aimic:focus-visible,.aisend:focus-visible{opacity:1}
+.aiplus:hover{background:var(--hover-side);color:var(--ai-2)}
+.aiplus svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 /* dictation — idle it is quiet chrome; listening it is unmistakable, because a mic that
    is on without looking on is how people talk to a machine that is not listening */
@@ -2212,7 +2712,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aimic:hover{background:var(--hover-side);color:var(--ai-2)}
 /* ⚠️ 15px, the same as attach and send (annotation, 19 Aug 2026: "same size"). It was
    16px, which is invisible on its own and obvious in a row of three. */
-.aimic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;
+.aimic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .aimic.on{background:var(--ai);color:#fff;animation:aimicp 1.4s ease-in-out infinite}
 .aimic.on:hover{background:var(--ai)}
@@ -2220,9 +2720,18 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 @media (prefers-reduced-motion:reduce){.aimic.on{animation:none}}
 .aiinbox textarea{flex:0 0 auto;width:100%;min-width:0;background:transparent;border:0;
   outline:0;resize:none;
-  color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.6;max-height:150px;
+  /* 14px/1.5 — ClickUp's measured 14px/21px. It was 13.5/1.6, which is both smaller and
+     looser than the thing it sits in; 14px is also the size the answer body already uses. */
+  color:var(--text);font-family:inherit;font-size:14px;line-height:1.5;max-height:150px;
   padding:1px 1px 0;display:block}
-.aiinbox textarea::placeholder{color:var(--muted)}
+/* ⚠️ The placeholder rests quieter than the text you will replace it with (request,
+   20 Aug 2026). `opacity`, matching the .62 the ＋/🎤/➤ and Auto already rest at, so the
+   whole composer is quiet at ONE strength rather than each part being dimmed its own way.
+   ⚠️ NOT dimmer than that. It is the only thing telling you what this box accepts
+   ("type @ to add context"), and `--muted` in light theme is already #7a8aa5 — pushing
+   past .62 takes it under the panel's own surface contrast and it stops being readable
+   rather than just quiet. The measured result is #b0bbcc on white. */
+.aiinbox textarea::placeholder{color:var(--muted);opacity:.62}
 /* ⚠️ a CIRCLE like its two neighbours (annotation, 19 Aug 2026: "same size"). It was a
    30px rounded SQUARE between two 30px circles, which read as a different size even though
    the box matched. `.aisend.stop` was already a circle, so the busy state is unchanged. */
@@ -2231,6 +2740,23 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   background:var(--chip);color:var(--text-dim);border:0;cursor:pointer;
   /* border-radius is no longer part of the idle→stop change (both are circles now) */
   transition:background .14s,color .14s,box-shadow .14s}
+/* ══ SEND APPEARS WHEN THERE IS SOMETHING TO SEND (request + reference, 20 Aug 2026) ═══
+   The composer opened with a send button that could not do anything: an empty prompt has
+   nothing to submit, so the most prominent control in the row was inert every time you
+   first saw it. ClickUp's composer does the same thing — mic only until you type.
+   ⚠️ `body.aityping` is set from the composer's own `oninput`; see aiTypedPaint().
+   ⚠️ It is `display:none`, not `opacity:0` — an invisible but present button still takes
+   its 30px and still catches clicks, so the mic would sit 38px from the edge for no
+   visible reason and a click beside it would "send".
+   ⚠️ `.aisend.stop` OVERRIDES this. While a generation runs the button is Stop, the thread
+   is busy, and the composer is usually empty — hiding the only way to interrupt would be
+   the worst possible time to hide it. */
+.aisend{display:none}
+.aiinbox.typed .aisend,.aisend.stop{display:inline-flex}
+/* once it does appear it is the primary action, so it arrives already filled rather than
+   as another grey circle you have to find */
+.aiinbox.typed .aisend:not(.stop){background:var(--ai);color:#fff;opacity:1}
+.aiinbox.typed .aisend:not(.stop):hover{background:var(--ai-2)}
 .aisend:hover{background:var(--ai);color:#fff}
 .aisend:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
 /* generating: the SAME control becomes stop, so the thing under your cursor is the thing
@@ -2251,7 +2777,10 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aisend.stop:focus-visible{box-shadow:0 0 0 3px var(--ai-line)}
 /* the glyph is a ROUNDED square at ~36% of the diameter, the proportion the reference
    uses. It was a 15px block whose hard corners fought the button's own radius. */
-.aisend.stop svg{width:11px;height:11px;fill:currentColor}
+/* 12px x (22/24) = 11px of painted square in a 30px circle — the ~36% the reference uses.
+   ⚠️ Change this number and you change the glyph directly now; there is no second scale
+   hidden in the path. */
+.aisend.stop svg{width:12px;height:12px;fill:currentColor}
 /* a light travelling along the TOP border of the pill while it generates. It is its own
    element because ::before is the brand ring and ::after is the bloom — both taken. */
 .aigenbar{position:absolute;left:12px;right:12px;top:-1px;height:1.5px;border-radius:2px;
@@ -2279,11 +2808,33 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    on it takes the AI accent and a soft fill, which is the whole state — a knob sliding in a
    track was the heaviest element in the control row for a setting that is off by default.
    ⚠️ `.aisw` (the knob) is gone with it; nothing else used it. */
-.aiauto{display:inline-flex;align-items:center;margin:0;padding:4px 10px;
-  border:0;border-radius:var(--ai-r);background:transparent;
-  font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer;user-select:none;
-  transition:background .14s,color .14s}
-.aiauto:hover{background:var(--hover-side);color:var(--text-dim)}
+/* the row's text button, shaped like ClickUp's "Skills" — a radius-999 pill at the row's
+   own height with 500 weight — so it sits on one baseline with the circles beside it
+   instead of being a shorter, lighter scrap of text.
+   ⚠️ 30px, NOT the reference's 28: the composer's 📎/🎤/➤ are 30px circles by an explicit
+   request (19 Aug 2026, "same size"), and one row height matters more than copying a 2px
+   value off another product. If those ever go to 28, this comes with them. */
+.aiauto{display:inline-flex;align-items:center;margin:0;height:30px;padding:0 8px;
+  border:0;border-radius:999px;background:transparent;
+  font:inherit;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;
+  user-select:none;transition:background .14s,color .14s}
+/* ⚠️ 400, not 500, and the hover fill is barely there (request, 20 Aug 2026: "the
+   highlight text is very highlight"). At 500 weight beside a 400 placeholder, an OFF
+   setting was reading louder than the sentence you are writing; and `--hover-side` under
+   it painted a slab that arrived before the eye got to the word. It only has to be
+   legible at rest and obviously interactive on hover — the ON state is where the accent
+   and the weight belong, and that is unchanged. */
+/* ⚠️ "Auto", not "Auto-approve", and quieter still (request, 20 Aug 2026). The full phrase
+   was the longest thing in the control row for a setting that is off by default, and it
+   read as a caption for the composer rather than as a toggle. The full name and what it
+   does live in the tooltip, which is where an explanation belongs.
+   ⚠️ `opacity`, matching the ＋/🎤/➤ treatment 8px away, so the row rests at ONE strength
+   rather than the word being dimmed a different way from the glyphs beside it.
+   ⚠️ Hover AND `.on` clear it — an active setting has to be legible without pointing at
+   it, which is the whole reason the ON state carries the accent and the weight. */
+.aiauto{font-weight:400;opacity:.62}
+.aiauto:hover,.aiauto.on{opacity:1}
+.aiauto:hover{background:var(--ai-in-chip);color:var(--text-dim)}
 .aiauto.on{background:var(--ai-soft);color:var(--ai-2);font-weight:600}
 
 /* widget Share drawer */
@@ -3540,6 +4091,32 @@ body.lxopen .lxpanel{flex:0 0 250px;width:250px}
 .lxbar{display:flex;align-items:center;gap:8px;padding:10px 12px;flex:0 0 auto}
 .lxsearch{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;
           border:1px solid var(--border);border-radius:4px;background:var(--panel)}
+/* ══ THE SEARCH BAR BUILDS THE QUERY ITSELF (request, 20 Aug 2026) ═════════════════════
+   You type plain English straight into the search box; a ✦ button appears INSIDE the bar
+   the moment what you typed reads as a sentence rather than a filter; pressing it rewrites
+   the box into the product's own `INCLUDE a Op b` form; then Apply runs it.
+   ⚠️ This is a SECOND door onto the same machinery, not a second implementation — it uses
+   `lxAiqParse` → `lxAiqExpr` → `lxAiqCommit`, exactly like the ✦ AI Query popover beside
+   it, so the two can never disagree about what a sentence means or what Apply does.
+   ⚠️ The gate is unchanged and still the point: the query is SHOWN before it runs. Here it
+   is shown IN THE BOX, which is stronger than the popover's preview card — what you are
+   about to run is literally the text in the search field. */
+.lxqai{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto}
+.lxqai button{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;
+  border-radius:3px;border:1px solid transparent;background:transparent;
+  font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
+.lxqai .gen{border-color:var(--ai-line);color:var(--ai-2)}
+.lxqai .gen:hover{background:var(--ai-soft)}
+.lxqai .gen svg{width:12px;height:12px;flex:0 0 12px;fill:currentColor}
+.lxqai .app{background:var(--ai);color:#fff;font-weight:500}
+.lxqai .app:hover{background:var(--ai-2)}
+/* the range the query will also set — the one thing the rewritten text cannot show you,
+   because it is not part of the filter expression */
+.lxqai .rng{font-size:11px;color:var(--muted);padding-right:2px}
+.lxqai .rv{width:20px;padding:0;justify-content:center;color:var(--muted)}
+.lxqai .rv:hover{color:var(--text);background:var(--chip)}
+.lxqai .rv svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:currentColor;
+  stroke-width:2.5;stroke-linecap:round}
 .lxfun{width:15px;height:15px;flex:0 0 15px;cursor:pointer;color:var(--text-dim);
        fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .lxfun:hover{color:var(--teal)}
@@ -3718,11 +4295,28 @@ body.lxdense .lxtable td.msg{max-width:0}
    that was asked for. It wears the panel's violet like .lxask / the AI Query control, so
    it reads as the assistant and not as a row control. */
 .lxpat th.a,.lxpat td.a{width:72px;text-align:center;padding-left:4px;padding-right:4px}
+/* ⚠️ THE TILE IS TINTED AT REST (request + live screenshot, 20 Aug 2026). The box was
+   already the right size and radius, but `background:transparent` with a transparent
+   border meant it only became a button on hover — so the ACTION column read as a row of
+   loose ✦ glyphs floating in the table rather than as a control you can press. The live
+   product paints the tile from the start; this matches it.
+   ⚠️ Built from THIS file's tokens (`--ai-soft` / `--ai-line` / `--ai-2`), not sampled from
+   the screenshot. The live violet is the same hue our `--ai*` scale already carries, and
+   picking a literal hex here would put a colour in the file that no token owns — the rule
+   the send button and the pattern drawer were both built under.
+   ⚠️ Hover has to go somewhere STRONGER than the resting tint now, or the button would
+   have no hover state at all. `color-mix` on `--ai`, the same technique `.ailq em` uses. */
 .lxpatai{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
-  border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ai-2);
-  cursor:pointer;vertical-align:middle}
-.lxpatai svg{width:14px;height:14px;fill:currentColor}
-.lxpatai:hover{background:var(--ai-soft);border-color:var(--ai-line)}
+  border:1px solid var(--ai-line);border-radius:6px;background:var(--ai-soft);
+  color:var(--ai-2);cursor:pointer;vertical-align:middle;
+  transition:background .13s,border-color .13s}
+/* ⚠️ `flex:0 0 14px`, not just `width` — `.lxpatai` is `inline-flex`, so the glyph is a
+   flex item with the default `flex-shrink:1` and was being squeezed to 12x14, i.e. the ✦
+   rendered horizontally compressed. Measured, not visible at 14px. Same trap as the header
+   menus' icons, where a `flex-basis` overrode `width` in the other direction. */
+.lxpatai svg{flex:0 0 14px;width:14px;height:14px;fill:currentColor}
+.lxpatai:hover{background:color-mix(in srgb,var(--ai) 24%,transparent);
+  border-color:var(--ai-2)}
 .lxpatai:focus-visible{outline:2px solid var(--ai-line);outline-offset:1px}
 
 /* ── ✦ AI Pattern Summary drawer (lxps*) ────────────────────────────────────────────
@@ -3789,6 +4383,12 @@ html[data-theme="light"] .lxpssc{background:rgba(17,28,44,.22)}
   text-transform:uppercase;color:var(--text-dim2,var(--muted))}
 .lxpsdt{margin-bottom:13px}
 .lxpsdt:last-child{margin-bottom:2px}
+/* a token that never varies — the chip, then what it always is. Tighter than a bar row
+   because there is no bar to line anything up against. */
+.lxpsdt.one{display:flex;align-items:baseline;gap:8px;margin-bottom:9px}
+.lxpsdt.one .tk{margin-bottom:0}
+.lxpsone{font-size:12px;color:var(--text-dim)}
+.lxpsone b{font:400 12px/1.4 'JetBrains Mono',monospace;color:var(--text);font-weight:500}
 .lxpsdt .tk{display:inline-block;margin-bottom:5px;font:400 11.5px/1.4 'JetBrains Mono',monospace;
   color:var(--teal);background:color-mix(in srgb,var(--teal) 14%,transparent);
   padding:1px 5px;border-radius:3px}
@@ -4674,7 +5274,11 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
               <div class="lxbar" style="position:relative">
                 <div class="lxsearch">
                   <svg class="lxfun" id="lxFun" viewBox="0 0 24 24" data-tip="Pre Filters" onclick="lxPre(1)"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/></svg>
-                  <input id="lxQ" placeholder="Search" onkeydown="if(event.key==='Enter')lxExec()">
+                  <input id="lxQ" placeholder="Search" oninput="lxQIn()"
+                    onkeydown="if(event.key==='Enter'){if(LX_QAI.st==='ready'){lxQApply()}else if(LX_QAI.st==='prose'){lxQGen()}else{lxExec()}}">
+                  <!-- the in-bar AI control: offers to build a query from plain English,
+                       then offers to apply what it built. Painted by lxQPaint(). -->
+                  <span class="lxqai" id="lxQAi"></span>
                 </div>
                 <!-- ✦ AI Query — the product puts it here, immediately before Execute -->
                 <span class="lxaiqw">
@@ -7427,6 +8031,11 @@ document.addEventListener('keydown', e=>{
      screen, Esc again closes the chat */
   if(document.getElementById('aiPanel').classList.contains('on')){
     if(typeof aiDelPending !== 'undefined' && aiDelPending) return aiDelCancel();
+    /* ⚠️ the history column is a rung ABOVE full screen — closing the most local thing
+       first. Both classes are tested: `.aihson` can outlive a return to Sidebar (it is
+       remembered on purpose), and swallowing Esc for an invisible column would be a bug. */
+    if(document.getElementById('aiPanel').classList.contains('aifs') &&
+       document.getElementById('aiPanel').classList.contains('aihson')) return aiHsClose();
     if(document.getElementById('aiPanel').classList.contains('aifs')) return aiFsTog();
     return aiClose();
   }
@@ -8406,11 +9015,24 @@ function aiLogScope(){
   return { g: g, total: total, top: g[0], types: g.length, sev: sev,
            range: (document.getElementById('lxRl') || {}).textContent || 'Today' };
 }
+/* ⚠️ REWRITTEN to the live product's own Ask-AI suggestions (request + reference image,
+   20 Aug 2026). The four before these were ABOUT the logs — "Summarise these logs", "Which
+   log type is noisiest?" — i.e. questions you ask a report. The live panel's suggestions
+   are SEARCHES: a severity, a time window, a host. That is what someone standing in Log
+   Search actually wants, and all three now land on the query card (`lxAiqParse` reads the
+   severity, the range, the ssh/login pair and the host), so each one ends at a real
+   Apply rather than at prose.
+   ⚠️ THE IP IS SCRUBBED. The reference screenshot carried an internal `172.16.x` address
+   from the live instance — not repeated here, because comments ship with the page and this
+   folder is a public Pages site. It is `192.0.2.165` instead — which is not
+   an arbitrary RFC 5737 pick but the BUSIEST `event.source` in LX_FIELDS (3,970 events).
+   A prompt naming a host that is not in the data would parse and then find nothing.
+   ⚠️ The `ic` slot is kept for the array's shape only — starters have not rendered an icon
+   since the 20 Aug request that removed them. */
 const AI_CTA_LOGS = [
-  ['spark', 'Summarise these logs',            'Summarise these logs'],
-  ['flag',  'Which log type is noisiest?',     'Which log type is noisiest?'],
-  ['info',  'What severities am I seeing?',    'What severities am I seeing?'],
-  ['wand',  'Build a widget of log volume',    'Build a widget of log events by type']
+  ['flag',  'ERROR logs in the last 30 minutes',        'ERROR logs in the last 30 minutes'],
+  ['info',  'Failed SSH logins today',                  'Failed SSH logins today'],
+  ['wand',  'How many warnings from 192.0.2.165 today?','How many warnings from 192.0.2.165 today?']
 ];
 function aiScope(){
   const gi = (typeof curG === 'number' ? curG : 0);
@@ -8897,7 +9519,7 @@ function aiDashHTML(d, i){
        (annotation, 15 Aug 2026). The board is created and left alone; this card hands over
        a LINK, so the user finishes reading the conversation before the canvas changes. */
     const nq = aiEsc(d.name).replace(/"/g, '&quot;');
-    return '<div class="aistep"><i></i>Created</div>' +
+    return '<div class="aistep">Created</div>' +
       '<div class="aians"><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
         AI_IC.wand + '</svg></span>Dashboard created — “' + aiEsc(d.name) + '”</div>' +
       '<div class="aiab"><p>Your new dashboard <b>“' + aiEsc(d.name) + '”</b> has been created in <b>' +
@@ -8947,7 +9569,7 @@ function aiDashHTML(d, i){
       '</div>';
   }
   if (d.state === 'cancelled'){
-    return '<div class="aistep"><i></i>Cancelled</div>' +
+    return '<div class="aistep">Cancelled</div>' +
       '<div class="aians"><div class="aiab"><p>Nothing was created.</p></div>' +
       '<div class="aiacts"><button class="aialt" onclick="aiDashSet(\'state\',\'plan\')">Show the plan again</button></div></div>';
   }
@@ -8973,7 +9595,7 @@ function aiDashHTML(d, i){
 
   /* d.tk → the thinking trail above already reads "Planned a new dashboard". Created and
      Cancelled keep their own line, because they happen after the trail finished. */
-  return (d.tk ? '' : '<div class="aistep"><i></i>Planned a new dashboard</div>') +
+  return (d.tk ? '' : '<div class="aistep">Planned a new dashboard</div>') +
     '<div class="aians"><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
       AI_IC.wand + '</svg></span>Plan · Create dashboard</div>' +
     '<div class="aiab"><ol class="aidsteps">' +
@@ -9109,13 +9731,19 @@ const AI_CLAR = [
 function aiAskGroup(name, chart){
   /* `sel` is the pre-chosen row — the reference always has one, so Next is never a dead
      button, and Skip means "keep this default" rather than "leave it unanswered". */
-  aiThread.push({ r:'clarify', name:name, chart:chart || 0, step:0, ans:{}, sel:0, free:'' });
+  /* ⚠️ `sel:null` means NOTHING CHOSEN; `-1` means the FREE-TEXT row is chosen. They must
+     be different values — using -1 for both lit the "Something else…" row on a question
+     nobody had answered yet, which reads as a pre-filled answer. Row 0 used to be pre-lit
+     so `Next` was never a dead button; with rows committing on click there is no Next. */
+  aiThread.push({ r:'clarify', name:name, chart:chart || 0, step:0, ans:{}, sel:null, free:'' });
   aiRender();
 }
 function aiClarCur(){
   for (let i = aiThread.length - 1; i >= 0; i--) if (aiThread[i].r === 'clarify') return aiThread[i];
   return null;
 }
+/* ⚠️ KEPT AND UNREFERENCED — select-without-advancing, which is what the radio version
+   needed. `aiClarGo` replaced it at the only call site when the rows became numbered. */
 function aiClarPick(i){
   const c = aiClarCur(); if (!c) return;
   c.sel = i; c.free = '';                      /* picking a row clears the free text */
@@ -9125,7 +9753,7 @@ function aiClarPick(i){
    in the text box would be two answers at once. */
 function aiClarFree(el){
   const c = aiClarCur(); if (!c) return;
-  c.free = el.value; c.sel = el.value.trim() ? -1 : 0;
+  c.free = el.value; c.sel = el.value.trim() ? -1 : null;
   const card = document.querySelector('.aicq');
   if (card) card.querySelectorAll('.aicqo').forEach((b, i) =>
     b.classList.toggle('on', c.sel === i));
@@ -9141,9 +9769,13 @@ function aiClarKey(e){
    the default — and the only way to notice was reading the query rows on the preview. */
 function aiClarRestore(c){
   const st = AI_CLAR[c.step], prev = c.ans[st.k];
-  const i = prev === undefined ? 0 : st.opts.indexOf(prev);
+  /* ⚠️ three outcomes, not two: never answered (null), answered with a row (index), or
+     answered with free text (-1). Folding the first two together is what lit the free row
+     on an untouched question. */
+  if (prev === undefined){ c.sel = null; c.free = ''; return; }
+  const i = st.opts.indexOf(prev);
   if (i > -1){ c.sel = i; c.free = ''; }
-  else { c.sel = -1; c.free = prev || ''; }     /* it was free text */
+  else { c.sel = -1; c.free = prev; }           /* it was free text */
 }
 function aiClarBack(){
   const c = aiClarCur(); if (!c || !c.step) return;
@@ -9154,9 +9786,12 @@ function aiClarSkip(){ aiClarNext(1); }
 function aiClarNext(skip){
   const c = aiClarCur(); if (!c) return;
   const st = AI_CLAR[c.step];
+  /* ⚠️ guard `sel === null` — Enter on an untouched question would otherwise store
+     `st.opts[null]`, i.e. undefined, and the build would silently lose that answer. */
+  if (!skip && c.sel === null && !c.free.trim()) skip = 1;
   if (!skip) c.ans[st.k] = (c.sel === -1 && c.free.trim()) ? c.free.trim() : st.opts[c.sel];
   else if (c.ans[st.k] === undefined) c.ans[st.k] = st.opts[0];
-  c.step++; c.sel = 0; c.free = '';
+  c.step++; c.sel = null; c.free = '';
   if (c.step < AI_CLAR.length){ aiClarRestore(c); aiRender(); return; }
   /* answered → the preview, exactly as the one-question version did */
   const ix = aiThread.indexOf(c);
@@ -9207,8 +9842,14 @@ function aiSetBusy(v){
 const AI_SEND_SVG = '<svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg>';
 /* icon-only, per the reference: a white rounded square inside the accent circle. The word
    "Stop" lives in the tooltip (`data-tip`, set in aiSetBusy) rather than on the button. */
+/* ⚠️ THE RECT FILLS ITS VIEWBOX (fixed 20 Aug 2026). It used to be a 9.2-unit square
+   inside a 24-unit box — 38% — and the svg was then rendered at 11px, so the square that
+   actually reached the screen was 11 x .38 = 4.2px inside a 30px button: 14% of the
+   diameter, where the reference this was built from is ~36%. Two shrinks multiplied.
+   The square is the viewBox now and the SIZE is set once, in CSS, so what you read in the
+   rule is what appears on screen. */
 const AI_STOP_SVG =
-  '<svg viewBox="0 0 24 24"><rect x="7.4" y="7.4" width="9.2" height="9.2" rx="2.4"/></svg>';
+  '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6"/></svg>';
 function aiSendOrStop(){ aiBusy ? aiStop() : aiSend(); }
 /* Stop ABANDONS — it is not Skip. Skip says "show me the answer now"; Stop says "don't".
    The in-flight trail or flow is dropped and the thread says so, with the two ways on the
@@ -9403,16 +10044,17 @@ function aiScopePick(n, ev){
    readable before the label is. Colour is kept — it is `AI_ENT_C` on the glyph now rather
    than on a dot — so nothing that depended on the type's colour was lost.
    ⚠️ Outline glyphs in the sidebar convention: 24×24 box, fill:none, stroke currentColor. */
+/* ⚠️ Lucide, verbatim (20 Aug 2026) — path fragments, wrapped by the call site. */
 const AI_ENT_IC = {
-  dashboard:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
-  widget:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',
-  monitor:'<rect x="2.5" y="4" width="19" height="7" rx="1.5"/><rect x="2.5" y="13" width="19" height="7" rx="1.5"/><path d="M6 7.5h.01M6 16.5h.01"/>',
-  metric:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
-  service:'<path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.3 9.4 4.5 4.5 0 0 0 7 19h10.5Z"/>',
-  incident:'<path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4M12 17h.01"/>',
-  alert:'<path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.5 20a2 2 0 0 0 3 0"/>',
-  module:'<path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7Z"/>',
-  file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'
+  dashboard:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  widget:'<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  monitor:'<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/>',
+  metric:'<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+  service:'<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  incident:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  alert:'<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  module:'<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>',
+  file:'<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/>'
 };
 function aiEntIc(k){ return AI_ENT_IC[/^file/.test(k || '') ? 'file' : k] || AI_ENT_IC.file; }
 const AI_ENT_C = { dashboard:'var(--teal)', widget:'var(--blue)', monitor:'var(--green)',
@@ -9683,8 +10325,8 @@ function aiOpen(where){
    this only changes its geometry, and the CSS centres the thread in an 840px column so a
    1920px screen doesn't stretch the conversation across the whole width.
    The state survives close/reopen, the way Bits' does. */
-const AI_FS_OUT = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
-const AI_FS_IN  = '<svg viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>';
+const AI_FS_OUT = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg>';
+const AI_FS_IN  = '<svg viewBox="0 0 24 24"><path d="m14 10 7-7"/><path d="M20 10h-6V4"/><path d="m3 21 7-7"/><path d="M4 14h6v6"/></svg>';
 function aiFsTog(){
   const p = document.getElementById('aiPanel'); if (!p) return false;
   const on = p.classList.toggle('aifs');
@@ -9728,6 +10370,27 @@ let aiChatName = 'New chat', aiNamed = false, aiRenaming = false;
    where you reach them moved.
    ⚠️ It must be painted from `aiRender()` BEFORE the empty-state early return, like
    `aiNewBtnPaint`, or a thread that empties (New chat, Undo) leaves the bar on screen. */
+/* ⚠️ Paints the docked clarifier. Called from aiRender() ABOVE its empty-state early
+   return, like aiPendPaint and aiNewBtnPaint — otherwise New chat or an Undo that empties
+   the thread would leave a question card hanging over the composer with no thread behind
+   it. `aiClarCur()` already walks the thread from the end for the live one. */
+function aiClarPaint(){
+  const el = document.getElementById('aiClarDock'); if (!el) return;
+  const c = aiClarCur();
+  /* ⚠️ only while it is still the LAST thing that happened — once the build lands after
+     the final question, the entry stays in the thread but must stop being asked. */
+  const live = c && aiThread.indexOf(c) === aiThread.length - 1;
+  el.innerHTML = live ? aiClarifyHTML(c) : '';
+  el.classList.toggle('on', !!live);
+  /* ⚠️ THE COMPOSER IS HIDDEN WHILE A QUESTION IS ON SCREEN (request, 20 Aug 2026). The
+     card is a multiple choice with its own "Or, describe your requirements…" free-text
+     row — leaving the main input under it gives you two places to answer one question, and
+     typing in the wrong one sends a new prompt instead of answering.
+     ⚠️ Only `.aiinbox` goes, not `.aicomp` — the dock lives INSIDE `.aicomp`, so hiding the
+     wrapper (which is what the history screen does) would take the question with it. */
+  const p = document.getElementById('aiPanel');
+  if (p) p.classList.toggle('aiclar', !!live);
+}
 function aiPendPaint(){
   const el = document.getElementById('aiPend'); if (!el) return;
   /* ⚠️ EVERY pending decision docks here now (request, 20 Aug 2026: "when I create or any
@@ -9838,18 +10501,30 @@ function aiRenameDone(save){
    Rename · Delete, then the recent Conversations and Show all — the shape the reference
    supplied with the request uses. Everything here already existed as a function; this is
    a second, faster route to them, not a second implementation. */
+/* ══ ONE ICON FAMILY: LUCIDE (request, 20 Aug 2026) ═════════════════════════════════════
+   These were hand-drawn approximations and it showed — the bin's lid did not meet its body,
+   the pen was a filled wedge among outline glyphs, the magnifier's handle met the circle at
+   the wrong angle. They are now **Lucide** (lucide.dev, ISC licence), taken verbatim from
+   `lucide-static` rather than redrawn, which is the same convention the sidebar's `ICO`
+   map already uses: a 24x24 box, `fill:none`, 2px round-capped/round-joined strokes.
+   ⚠️ Copy paths in VERBATIM. The value of using a real set is that the curves, the optical
+   centring and the terminal angles are already resolved; "tidying" one by hand puts it back
+   out of family with the other 30.
+   ⚠️ The weight is NOT set here — it comes from each call site's CSS, derived from that
+   icon's rendered size. See the note above `.aipanel`. */
 const AI_MI = {
-  pen  :'<svg viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16v4Z"/><path d="M14 6l4 4"/></svg>',
-  bin  :'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>',
-  doc  :'<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>',
-  life :'<svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2ZM20 15a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2Z"/><path d="M18 17v1a3 3 0 0 1-3 3h-2"/></svg>',
-  ext  :'<svg class="ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
-  mag  :'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>',
-  /* the conversation-row mark, a speech bubble with two lines — the reference's */
-  chat :'<svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4.2 3.4c-.3.3-.8 0-.8-.4V5.5Z"/><path d="M8 9h8M8 12h5"/></svg>',
-  /* the clock the removed History button wore — Show all inherits it, so the thing that
-     replaced that button still looks like the thing it replaced */
-  clock:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg>',
+  pen  :'<svg viewBox="0 0 24 24"><path d="M13 21h8"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>',
+  bin  :'<svg viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  doc  :'<svg viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+  life :'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>',
+  ext  :'<svg class="ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  mag  :'<svg viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+  /* the conversation-row mark. ⚠️ ONE closed path on purpose — the row fills it on the
+     current chat, and a two-path bubble would fill only half of itself. */
+  chat :'<svg viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>',
+  /* the clock the removed History button wore — "Show all" and the full-screen history
+     column both reuse it, so the thing that replaced that button still looks like it */
+  clock:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
 };
 const AI_SPARK_MI = '<svg viewBox="0 0 24 24"><path d="M12 2l1.7 4.8c.3.9 1 1.6 1.9 1.9L20.4 10l-4.8 1.7c-.9.3-1.6 1-1.9 1.9L12 18.4l-1.7-4.8c-.3-.9-1-1.6-1.9-1.9L3.6 10l4.8-1.7c.9-.3 1.6-1 1.9-1.9L12 2Z"/></svg>';
 /* one opener for both header dropdowns, so they can never be open at the same time */
@@ -9903,7 +10578,14 @@ function aiChatMenu(ev){
    through `aiHdMenu` would have closed the menu instead — its "already open → close" guard.
    ⚠️ The row is hidden entirely when everything already fits, or it would offer to show you
    what you are looking at. */
-const AI_CHAT_RECENT = 8;   /* was 5; bands and a search box want a list, not a peek */
+/* ⚠️ 6 (request, 20 Aug 2026: "show only last 5 to 6, the rest are already in Show all").
+   It has been 5 → 8 → 6: 8 filled the menu to the point where "Show all" looked redundant,
+   which is the opposite of what it is for. At 6 the dropdown is the quick switch and the
+   screen is the archive, which is the split those two controls were built around.
+   ⚠️ This caps the LIST, not the search. `aiChatListHTML` filters the whole of AI_CHATS and
+   slices afterwards, so an older chat is still reachable by typing — dropping the cap must
+   never mean dropping chats out of reach. */
+const AI_CHAT_RECENT = 6;
 /* ── the conversations dropdown, in the ClickUp shape (reference supplied 19 Aug 2026:
    app.clickup.com → the AI chat's name menu). A "Search AI chats…" box on top, rows banded
    by DATE (Today · Jul 31 · Jul 30), a chat-bubble mark on each row, the time on the right,
@@ -9997,6 +10679,123 @@ function aiChatWhen(t){
   let h = d.getHours(); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
   return h + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
 }
+
+/* ══ THE FULL-SCREEN CHAT-HISTORY COLUMN (request + reference images, 20 Aug 2026) ═══════
+   The third history surface, and the only one that is a PLACE rather than an overlay: the
+   name dropdown is a quick switch, "Show all" is a screen that takes the body, and this is
+   a column that stays open beside the conversation while you read it. Full screen only —
+   see the .aihs CSS for why it cannot live in Sidebar or Floating.
+
+   ⚠️ IT SHARES `aiChatBand` WITH THE OTHER TWO. The reference groups by RECENT / PAST 30
+   DAYS / JULY 2026, which is a coarser scheme than this panel's Today · Yesterday · Aug 14.
+   Adopting it here would put the SAME chat under two differently-named headings depending
+   on which of the three surfaces you were looking at — the exact thing one shared band
+   renderer exists to prevent. If the coarser buckets are wanted, change `aiChatBand` and
+   all three move together.
+   ⚠️ `aiChatAge` is a new renderer, and that is NOT the same kind of divergence. A band is
+   a claim about which GROUP a chat is in; an age is one timestamp in a narrower column.
+   `aiChatWhen` prints "7 mins ago" / "3:53 pm", which does not fit beside an ellipsised
+   name in 258px — the reference's own column is 2–3 characters. Same fact, less room. */
+function aiChatAge(t){
+  if (!t) return '';
+  const m = Math.max(0, Math.floor((Date.now() - t) / 60000));
+  if (m < 1) return 'now';
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m / 60); if (h < 24) return h + 'h';
+  const d = Math.floor(h / 24); if (d < 7)  return d + 'd';
+  const w = Math.floor(d / 7);  if (w < 52) return w + 'w';
+  return Math.floor(d / 365) + 'y';
+}
+let aiHsQ = '';
+function aiHsToggle(){
+  const p = document.getElementById('aiPanel'); if (!p) return;
+  if (p.classList.contains('aihson')) aiHsClose(); else aiHsOpen();
+}
+function aiHsOpen(){
+  const p = document.getElementById('aiPanel'), h = document.getElementById('aiHs');
+  if (!p || !h) return;
+  aiHdMenuClose();                 /* a header dropdown must not hang over the new column */
+  p.classList.add('aihson');
+  /* the search starts empty every time it is opened, and the shell is rebuilt from
+     scratch — aiHsPaint() only rebuilds when it finds no list to repaint */
+  aiHsQ = ''; h.innerHTML = '';
+  aiHsPaint(); aiHsBtnPaint();
+  const q = document.getElementById('aiHsQ'); if (q) q.focus();
+}
+function aiHsClose(){
+  const p = document.getElementById('aiPanel'); if (!p) return;
+  p.classList.remove('aihson');
+  aiHsBtnPaint();
+}
+/* the trigger stays truthful, and it is where AI_MI.clock is painted in — see the markup */
+function aiHsBtnPaint(){
+  const p = document.getElementById('aiPanel'), b = document.getElementById('aiHsBtn');
+  if (!p || !b) return;
+  if (!b.firstChild) b.innerHTML = AI_MI.clock;
+  const on = p.classList.contains('aihson');
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  b.setAttribute('data-tip', on ? 'Hide history' : 'History');
+}
+/* ⚠️ REPAINTS THE LIST ONLY once the column exists, and rebuilds the shell only when it
+   does not. aiRender() calls this, and aiRender() fires many times while a thinking trail
+   is running — rebuilding the shell each time would blow away the search box, its text and
+   its caret under a cursor that is still typing. */
+function aiHsPaint(){
+  const p = document.getElementById('aiPanel'), h = document.getElementById('aiHs');
+  if (!p || !h || !p.classList.contains('aihson')) return;
+  aiFile();                        /* guards on an empty thread, so this cannot file a blank */
+  const l = document.getElementById('aiHsL');
+  if (l){ l.innerHTML = aiHsListHTML(aiHsQ); return; }
+  h.innerHTML =
+    '<div class="aihshd"><b>Chat history</b>' +
+      '<button class="aihb" data-tip="Hide history" onclick="aiHsClose()">' +
+        '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></div>' +
+    '<div class="aihssr">' + AI_MI.mag +
+      '<input id="aiHsQ" placeholder="Search…" value="' + aiEsc(aiHsQ) +
+      '" oninput="aiHsFilter()"></div>' +
+    '<div class="aihsl" id="aiHsL">' + aiHsListHTML(aiHsQ) + '</div>';
+}
+function aiHsListHTML(q){
+  const rx = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
+  const list = AI_CHATS.filter(c => !rx || rx.test(c.n) || rx.test(aiChatFirstQ(c)))
+                       .slice().sort((a, b) => (b.t || 0) - (a.t || 0));
+  if (!list.length) return '<div class="aihsnone">' + (q
+    ? 'No chat matches “' + aiEsc(q) + '”.'
+    : 'No chats yet. Ask something and it will be saved here.') + '</div>';
+  let out = '', band = null;
+  list.forEach(c => {
+    const g = aiChatBand(c.t);
+    if (g !== band){ band = g; out += '<div class="aihsb">' + aiEsc(g) + '</div>'; }
+    /* the name is ellipsised in 258px, so the row carries its summary as a tip — the same
+       sentence the dropdown's hover preview shows, from the same renderer */
+    out += '<button class="aihsr' + (c.id === aiChatId ? ' on' : '') +
+      '" data-tip="' + aiEsc(aiChatSummary(c)).replace(/"/g, '&quot;') +
+      '" onclick="aiHsGo(' + c.id + ')">' +
+      '<span class="nm">' + aiEsc(c.n) + '</span>' +
+      '<span class="ag">' + aiEsc(aiChatAge(c.t)) + '</span></button>';
+  });
+  return out;
+}
+/* only #aiHsL is replaced, so the input node itself survives and keeps its own focus and
+   caret natively — unlike aiHistFilter(), which repaints its whole screen and has to
+   restore them by hand */
+function aiHsFilter(){
+  const inp = document.getElementById('aiHsQ'); if (!inp) return;
+  aiHsQ = inp.value;
+  const l = document.getElementById('aiHsL');
+  if (l) l.innerHTML = aiHsListHTML(aiHsQ);
+}
+/* ⚠️ opening a chat LEAVES THE COLUMN OPEN — that is the difference between a column and
+   the "Show all" sheet, which closes because it was covering the thread. aiRender() paints
+   the list again, so the `.on` row follows you to the chat you just opened. */
+function aiHsGo(id){
+  aiFile();
+  const c = AI_CHATS.find(x => x.id === id); if (!c) return;
+  aiChatId = c.id; aiThread = c.msgs.slice(); aiNamed = true; aiSetName(c.n);
+  aiHistShown = false;
+  aiRender();
+}
 /* delete from a ROW — unlike aiChatDelCur() this may be any chat, including one that is
    not open, so it only resets the thread when the row you deleted is the one you are in */
 /* ── rename a chat FROM ITS ROW, in place (annotation, 19 Aug 2026) ─────────────────────
@@ -10015,11 +10814,16 @@ function aiChatRenRow(id, el){
   if (!host || row.classList.contains('ren')) return;
   const cur = c.n, keep = host.className;
   row.classList.add('ren');
-  /* the reference's rename field carries a ⊗ on its right that empties it */
+  /* ⚠️ ✓ CONFIRM and ✕ CANCEL, not a ⊗ clear (request, 20 Aug 2026: "when I click to edit
+     … only show close and check icon"). The row's own ✎/🗑 are already hidden while
+     renaming (`.conv.ren .acts`), so the field previously offered exactly one control and
+     it was the least useful of the three: emptying the box is a keystroke, whereas commit
+     and cancel are the two things you actually came to do and were keyboard-only.
+     ⚠️ They are wired in JS, NOT inline, because they have to call `done()` — a closure
+     local to this function that no inline `onclick` string can see. */
   host.outerHTML = '<span class="nmwrap"><input class="nmin" maxlength="60" />' +
-    '<i class="clr" title="Clear" onmousedown="event.preventDefault()" ' +
-    'onclick="event.stopPropagation();var i=this.previousSibling;i.value=\'\';i.focus()">' +
-    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></i></span>';
+    '<i class="act ok" title="Save"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></i>' +
+    '<i class="act cx" title="Cancel"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></i></span>';
   const inp = row.querySelector('.nmin');
   inp.value = cur; inp.focus(); inp.select();
   const done = save => {
@@ -10037,6 +10841,15 @@ function aiChatRenRow(id, el){
     if (document.getElementById('aiChatList')) aiChatList();
     if (aiHistShown) aiHistFilter();
   };
+  /* ⚠️ `onmousedown: preventDefault` on BOTH. `inp.onblur` commits, and mousedown fires
+     BEFORE click — without this, pressing ✕ would blur the field, save the edit, and then
+     the click would land on a button whose row had already been repainted. Cancel would
+     silently behave as Save. The old ⊗ carried the same guard for the same reason. */
+  ['ok','cx'].forEach(k => {
+    const b = row.querySelector('.nmwrap .' + k); if (!b) return;
+    b.onmousedown = e => e.preventDefault();
+    b.onclick = e => { e.stopPropagation(); done(k === 'ok'); };
+  });
   inp.onclick = e => e.stopPropagation();        /* a click in the field must not navigate */
   inp.onkeydown = e => {
     e.stopPropagation();
@@ -10131,7 +10944,10 @@ function aiChatPeek(id, row){
     aiChatPeekOff(1);
     const el = document.createElement('div');
     el.className = 'aihov'; el.id = 'aiPeek';
-    el.innerHTML = '<div class="h"><span class="av">' + AI_SPARK_MI + '</span>' +
+    /* ⚠️ NO ✦ MARK (request, 20 Aug 2026) — the same call already made for the history
+       rows' avatars. A card that only ever previews an AI chat does not need a badge
+       saying so; the name is what you are reading it for, and it gets the 28px back. */
+    el.innerHTML = '<div class="h">' +
       '<b>' + aiEsc(c.n) + '</b></div>' +
       '<p>' + aiEsc(aiChatSummary(c)) + '</p>' +
       '<div class="f">' + c.asked + ' message' + (c.asked === 1 ? '' : 's') +
@@ -10206,15 +11022,28 @@ function aiHelpMenu(ev){
    over the board. Opening beside the board instead is why `--ai-w` was narrowed to 420px:
    the width is now taken off the canvas every time the chat is opened. */
 let aiSplit = true;
+/* ⚠️ Rebuilt on Lucide geometry (20 Aug 2026): `panel-right`, `picture-in-picture-2` and
+   `square`, with one region filled to say WHICH part of the screen the chat takes. The
+   fill is not decoration here — it is the only thing that distinguishes three otherwise
+   identical rounded rectangles — so these three keep a fill where the rest of the panel's
+   glyphs are pure outline.
+   ⚠️ THE FILL IS A TINT AT .22, NOT A BLOCK (request, 20 Aug 2026). At .85 it read as a
+   solid blob rather than a highlighted region, and at 14-15px that is most of the glyph's
+   area — the three icons were the heaviest thing in a menu of one-word labels. .22 still
+   separates the region from the outline while leaving the icon reading as a line drawing
+   like every other glyph in the panel.
+   ⚠️ THE SIDEBAR ICON WAS WRONG WAY ROUND. It filled the LEFT region (x 3-9) while the
+   chat sidebar docks on the RIGHT, so the menu row for the default layout was drawing a
+   picture of the opposite of what it does. The highlight is on the right edge now. */
 const AI_LAY = [
   ['sidebar',  'Sidebar',
-   '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14"/><path d="M3 7a2 2 0 0 1 2-2h4v14H5a2 2 0 0 1-2-2z" fill="currentColor" stroke="none" opacity=".85"/></svg>'],
+   '<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
   ['floating', 'Floating',
-   '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="11" y="10" width="8" height="7" rx="1.5" fill="currentColor" stroke="none" opacity=".85"/></svg>'],
+   '<svg viewBox="0 0 24 24"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"/><rect width="10" height="7" x="12" y="13" rx="2"/><rect width="10" height="7" x="12" y="13" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
   ['full',     'Full screen',
-   '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="currentColor" stroke="none" opacity=".85"/></svg>'],
+   '<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
 ];
-const AI_TICK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const AI_TICK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
 function aiPanelOpen(){
   const p = document.getElementById('aiPanel');
   return !!p && p.classList.contains('on');
@@ -10424,25 +11253,39 @@ const AI_CTA = [
   ['board', 'Create a new dashboard',
             'Create a dashboard called Network health'],
   ['spark', 'Generate a widget',
-            'Build me a chart of monitors down']
+            'Build me a chart of monitors down'],
+  /* ⚠️ LAST, below the other four (request, 20 Aug 2026: "in this 4 suggestion text below
+     add this"). It sits after them, not among them.
+     ⚠️ It is deliberately a FRAGMENT — "…widget for" and then nothing — because that is
+     what makes `aiRoute` reach `build` with no family to work from and hand off to the
+     clarifier (`aiAskGroup` → the docked question card). It is the only starter that
+     demonstrates that path, which is otherwise reachable only by being vague on purpose.
+     Do not "finish" the sentence: naming a metric makes it a plain build and the clarifier
+     never appears. */
+  ['line',  'Build a time-series widget for',
+            'Build a time-series widget for']
 ];
+/* ⚠️ Lucide, verbatim (20 Aug 2026). These are PATH FRAGMENTS, not whole <svg>s — every
+   call site wraps them in its own `<svg viewBox="0 0 24 24">`, which is why they carry no
+   root element. Weight comes from the call site's CSS; see the note above `.aipanel`. */
 const AI_IC = {
-  bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6V16h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/>',
-  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/>',
-  spark:'<path d="M12 3l1.5 4.2c.25.7.85 1.3 1.55 1.55L19.2 10.3l-4.15 1.55c-.7.25-1.3.85-1.55 1.55L12 17.6l-1.5-4.2c-.25-.7-.85-1.3-1.55-1.55L4.8 10.3l4.15-1.55c.7-.25 1.3-.85 1.55-1.55L12 3Z"/>',
-  wand:'<path d="M4 20l9-9M14 5l1.2 2.6L18 9l-2.8 1.4L14 13l-1.2-2.6L10 9l2.8-1.4L14 5Z"/><path d="M19 15l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7L19 15Z"/>',
-  flag:'<path d="M5 21V4M5 5h11l-1.6 3.5L16 12H5"/>',
-  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
-  grid:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/>',
-  board:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',
-  line:'<path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 20V4"/>'
+  bulb :'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  spark:'<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>',
+  wand :'<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/>',
+  flag :'<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>',
+  info :'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  grid :'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>',
+  board:'<rect width="18" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/>',
+  line :'<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>'
 };
 function aiRender(){
   const b = document.getElementById('aiBody');
   aiScopeLine();
   /* ⚠️ BEFORE the empty-state early return, not after it — the tail of this function never
      runs on an empty thread, which is exactly the case the New-chat button has to hide in. */
-  aiNewBtnPaint(); aiPendPaint();
+  aiNewBtnPaint(); aiPendPaint(); aiClarPaint(); aiHsBtnPaint(); aiHsPaint(); aiHistPaint();
+  aiFadeBind(); aiTypedPaint();   /* sending empties the box, and that lands here */
   if(!aiThread.length){
     b.innerHTML = '<div class="aiempty">' +
       '<span class="aibig">' + AI_SPARK + '</span>' +
@@ -10450,13 +11293,23 @@ function aiRender(){
       /* the copy and the starters follow the screen — a dashboard greeting on the Log
          Explorer would be offering to explain something you are not looking at */
       (aiInLogs()
-        ? '<p>Ask about the logs on this screen — volume, noisy sources, severities — or ' +
-          'turn any of it into a widget.</p>'
+        /* ⚠️ this line follows the starters. It listed "volume, noisy sources, severities"
+           — the four summary starters that were replaced on 20 Aug — so it was advertising
+           three things nothing below it demonstrated, while the three searches now on
+           screen went unmentioned. Both still work (aiLogAnswer keeps the prose answers,
+           aiLogQ builds the query), so the line names both. */
+        ? '<p>Ask about the logs on this screen, or describe a search — a severity, a ' +
+          'time window, a host — and I\'ll build the query.</p>'
         : '<p>Ask ObserveOps AI anything about this dashboard, or get help with insights, ' +
           'changes and building widgets.</p>') +
-      (aiInLogs() ? AI_CTA_LOGS : AI_CTA).map(([ic, label], i) =>
-        '<button class="aicta" onclick="aiAsk(' + i + ')">' +
-        '<svg viewBox="0 0 24 24">' + AI_IC[ic] + '</svg>' + label + '</button>').join('') +
+      /* ⚠️ NO ICON on a starter (request, 20 Aug 2026). Four rows carried a tinted glyph
+         and two of them were the SAME ✦ the panel's own mark and every answer already
+         wear — so the column read as decoration rather than as four different things you
+         could ask. The label is the whole row now.
+         ⚠️ The `ic` slot stays in AI_CTA / AI_CTA_LOGS (elided here) — AI_IC is still used
+         by the answer cards and the dashboard plan, and the arrays are shared with them. */
+      (aiInLogs() ? AI_CTA_LOGS : AI_CTA).map(([, label], i) =>
+        '<button class="aicta" onclick="aiAsk(' + i + ')">' + label + '</button>').join('') +
     '</div>';
     return;
   }
@@ -10468,12 +11321,17 @@ function aiRender(){
         '<div class="aiuact"><button title="Copy prompt" onclick="aiCopyMe(this)">' +
         '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/>' +
         '<path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>';
-      if (m.r === 'wait') return '<div class="aistep"><i></i>' + aiEsc(m.step || 'Thinking…') + '</div>' +
+      if (m.r === 'wait') return '<div class="aistep">' + aiEsc(m.step || 'Thinking…') + '</div>' +
                                  '<div class="aidots"><span></span><span></span><span></span></div>';
       if (m.r === 'stopped') return aiStopHTML(m, i);
       if (m.r === 'tk')      return aiTkHTML(m, i);
       if (m.r === 'agent')   return aiAgHTML(m.a, i);
-      if (m.r === 'clarify') return aiClarifyHTML(m);
+      /* ⚠️ THE CLARIFIER IS DOCKED OVER THE COMPOSER, NOT IN THE THREAD (request,
+         20 Aug 2026). It is a question you must answer before anything else happens, and
+         in a long thread it could scroll out of sight while the composer sat there looking
+         ready — the same reasoning that moved every Accept into `.aipend`. `aiClarPaint()`
+         renders it; the thread renders nothing for this entry. */
+      if (m.r === 'clarify') return '';
       if (m.r === 'dash')    return aiDashHTML(m.d, i);
       if (m.r === 'build')   return aiPreviewHTML(m.b, i);
       return aiAnswerHTML(m, i);
@@ -10493,7 +11351,7 @@ function aiRender(){
 function aiAnswerHTML(m, i){
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
      carries this status text; printing it again would just say it twice */
-  return (m.tk ? '' : '<div class="aistep"><i></i>' + aiEsc(m.step) + '</div>') +
+  return (m.tk ? '' : '<div class="aistep">' + aiEsc(m.step) + '</div>') +
     '<div class="aians">' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + (AI_IC[m.ic] || AI_IC.info) + '</svg></span>' +
         aiEsc(m.title) + (m.sub || '') + '</div>' +
@@ -10509,36 +11367,69 @@ function aiAnswerHTML(m, i){
     '</div>';
 }
 /* under-specified build → walk the questions, the way the reference does */
+/* ══ THE QUESTION CARD (rebuilt to a supplied reference, 20 Aug 2026) ══════════════════
+   Reference: a title with a ✕, NUMBERED rows rather than radios, and a pencil-marked free
+   row carrying its own Skip. Two behavioural consequences, both deliberate:
+     · picking a row ANSWERS AND ADVANCES. Numbered rows read as a command palette, and a
+       palette that needs a second click on "Next" is a palette with a bug. `Next` is gone.
+     · with no Next, nothing needs to be pre-lit, so `sel` starts at -1 — the previous
+       design lit row 0 only so that Next was never a dead button.
+   ⚠️ Skip moved ONTO the free row, where the reference has it. It still means "keep this
+   step's default" (`aiClarNext(1)` → `st.opts[0]`), not "leave it unanswered".
+   ⚠️ The back arrow and the `n / total` counter are KEPT even though the reference has
+   neither: three questions with no way back and no sense of how many remain is worse than
+   the reference's single-question case, which is what it was drawn for. */
 function aiClarifyHTML(m){
   const st = AI_CLAR[m.step] || AI_CLAR[0];
-  const q = m.step === 0 ? 'How should I group “' + aiEsc(m.name) + '”?' : aiEsc(st.q);
+  const q = m.step === 0 ? 'How should I group \u201c' + aiEsc(m.name) + '\u201d?' : aiEsc(st.q);
   return '<div class="aicq">' +
     '<div class="aicqh">' +
-      '<button class="aicqb" ' + (m.step ? 'onclick="aiClarBack()"' : 'disabled') +
-        ' data-tip="Previous question"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+      (m.step ? '<button class="aicqb" onclick="aiClarBack()" data-tip="Previous question">' +
+        '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>' : '') +
       '<span class="aicqt">' + q + '</span>' +
       '<span class="aicqn">' + (m.step + 1) + ' / ' + AI_CLAR.length + '</span>' +
+      '<button class="aicqc" onclick="aiClarDismiss()" data-tip="Cancel">' +
+        '<svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
     '</div>' +
     '<div class="aicqs">' + aiEsc(st.sub) + '</div>' +
+    /* ⚠️ the number is the row's ORDINAL, not a shortcut — nothing binds 1..N, and a badge
+       that looks like a keycap you cannot press would be a lie. It is there to make the
+       list scannable, which is what the reference uses it for. */
     st.opts.map((o, i) => '<button class="aicqo' + (m.sel === i ? ' on' : '') +
-      '" onclick="aiClarPick(' + i + ')"><span class="aicqr"></span>' + aiEsc(o) + '</button>').join('') +
-    '<label class="aicqf' + (m.sel === -1 ? ' on' : '') + '"><span class="aicqr"></span>' +
+      '" onclick="aiClarGo(' + i + ')"><span class="aicqi">' + (i + 1) + '</span>' +
+      aiEsc(o) + '</button>').join('') +
+    '<label class="aicqf' + (m.sel === -1 ? ' on' : '') + '">' +
+      '<span class="aicqp"><svg viewBox="0 0 24 24"><path d="M13 21h8"/>' +
+      '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352' +
+      'a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></span>' +
       '<input value="' + aiEsc(m.free).replace(/"/g,'&quot;') + '" ' +
-      'placeholder="Or, describe your requirements…" oninput="aiClarFree(this)" ' +
-      'onkeydown="aiClarKey(event)" /></label>' +
-    '<div class="aicqa">' +
-      '<button class="aicqsk" onclick="aiClarSkip()">Skip</button>' +
-      '<button class="aicqx" onclick="aiClarNext()">' +
-        (m.step === AI_CLAR.length - 1 ? 'Build it' : 'Next') + '</button>' +
-    '</div>' +
+      'placeholder="Something else\u2026" oninput="aiClarFree(this)" ' +
+      'onkeydown="aiClarKey(event)" />' +
+      '<button class="aicqsk" onclick="event.preventDefault();aiClarSkip()">Skip</button>' +
+    '</label>' +
   '</div>';
+}
+/* ⚠️ picking a row now COMMITS it and moves on — see the note above aiClarifyHTML. */
+function aiClarGo(i){
+  const c = aiClarCur(); if (!c) return;
+  c.sel = i; c.free = '';
+  aiClarNext();
+}
+/* ✕ — abandon the whole question set. The build it was clarifying never happened, so the
+   entry is dropped rather than left in the thread as an unanswered card. */
+function aiClarDismiss(){
+  const c = aiClarCur(); if (!c) return;
+  const ix = aiThread.indexOf(c);
+  if (ix >= 0) aiThread.splice(ix, 1);
+  aiSetBusy(false); aiRender();
+  toast('Cancelled \u2014 nothing was built');
 }
 /* preview → chart-type switcher → query rows → add */
 function aiPreviewHTML(b, bi){
   const s = aiScope();
   if (b.dash) return aiPreviewDashHTML(b, bi, s);
   const name = b.name.charAt(0).toUpperCase() + b.name.slice(1);
-  return '<div class="aistep"><i></i>Configured from your description</div>' +
+  return '<div class="aistep">Configured from your description</div>' +
     '<div class="aians">' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + AI_IC.wand + '</svg></span>' +
         'Here’s a preview — ' + aiEsc(name) + ' ' + aiEsc(b.group.toLowerCase()) + '</div>' +
@@ -10562,7 +11453,7 @@ function aiPreviewHTML(b, bi){
 }
 /* a whole-dashboard request: one card per widget it will create, added in one go */
 function aiPreviewDashHTML(b, bi, s){
-  return (b.tk ? '' : '<div class="aistep"><i></i>Planned ' + b.items.length + ' widgets from your description</div>') +
+  return (b.tk ? '' : '<div class="aistep">Planned ' + b.items.length + ' widgets from your description</div>') +
     '<div class="aians">' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + AI_IC.wand + '</svg></span>' +
         'Here’s a preview — a dashboard with ' + b.items.length + ' widgets</div>' +
@@ -10607,9 +11498,15 @@ function aiFbHTML(i, fb, k, extra){
   const fn = (k === undefined) ? 'aiFeed(' + i + ',' : 'aiAgFb(' + i + ',' + k + ',';
   const cp = (k === undefined) ? 'aiCopy(this)' : 'aiAgCopy(this)';
   return '<div class="aifb">' +
-    '<button class="' + (fb===1?'on':'') + '" title="Good answer" onclick="' + fn + '1)"><svg viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm2 0 4-7 .9.5c.7.4 1 1.2.8 1.9L14 9h5a1.6 1.6 0 0 1 1.6 1.9l-1.2 6.3A1.6 1.6 0 0 1 17.8 20H9V10Z"/></svg></button>' +
-    '<button class="dn ' + (fb===-1?'on':'') + '" title="Bad answer" onclick="' + fn + '-1)"><svg viewBox="0 0 24 24"><path d="M17 14V4h3v10h-3Zm-2 0-4 7-.9-.5c-.7-.4-1-1.2-.8-1.9L10 15H5a1.6 1.6 0 0 1-1.6-1.9l1.2-6.3A1.6 1.6 0 0 1 6.2 4H15v10Z"/></svg></button>' +
-    '<button title="Copy" onclick="' + cp + '"><svg viewBox="0 0 24 24" class="ln"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>' +
+    /* ⚠️ LUCIDE (20 Aug 2026). These were the last hand-drawn glyphs in the panel, and
+       they were drawn as SOLID silhouettes — rendered through `.aifb svg`'s
+       `fill:none;stroke:currentColor` they came out as outlines of a filled thumb, which
+       is a different shape from an outline thumb and why they read as crude next to the
+       Lucide set everywhere else. Lucide's thumbs are DESIGNED as outlines: a body path
+       plus a separate bar for the cuff. */
+    '<button class="' + (fb===1?'on':'') + '" title="Good answer" onclick="' + fn + '1)"><svg viewBox="0 0 24 24"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/><path d="M7 10v12"/></svg></button>' +
+    '<button class="dn ' + (fb===-1?'on':'') + '" title="Bad answer" onclick="' + fn + '-1)"><svg viewBox="0 0 24 24"><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/><path d="M17 14V2"/></svg></button>' +
+    '<button title="Copy" onclick="' + cp + '"><svg viewBox="0 0 24 24" class="ln"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>' +
     /* ⚠️ `extra` (Undo) comes AFTER copy now (annotation, 19 Aug 2026: "swap the copy &
        Undo icon"). It was injected before it earlier the same day; the labelled Undo is the
        widest thing in the row, and it reads better as the trailing action than as a wedge
@@ -10902,13 +11799,19 @@ function aiTkHTML(m, i){
      unboxed. That was true until this request; the CSS is unchanged, only what asks for
      `.bx` is. */
   if (m.run){
+    /* ⚠️ COLLAPSED WHILE RUNNING TOO (request, 20 Aug 2026: "by default all thinking steps
+       will be collapsed"). This branch used to print the whole tick list live, so an
+       ordinary answer expanded itself while the agentic flow — which shows only its loader
+       until it lands — stayed shut. Two treatments for the same moment, and the noisier one
+       was on the more common path.
+       ⚠️ The loader still reports that work is happening: its label names the current beat,
+       the shimmer runs, and the clock ticks. What is gone is the list, which is what the
+       pill exists to reveal once there is an answer to read beside it.
+       ⚠️ `rows` is still built — the finished pill below renders it. */
     return '<div class="aitk bx run">' +
-      /* the loader's label is the per-request HEADLINE, not the running step — the row
-         below is already showing the step with its own spinner, and saying it twice in
-         14px of each other is the repetition this panel keeps being asked to remove */
       '<div class="aitkh">' + aiLdHTML(m.head) +
         '<button class="aitksk" title="Show the answer now" onclick="aiTkSkip()">Skip</button></div>' +
-      '<div class="aitkl tr">' + rows + '</div></div>';
+      '</div>';
   }
   /* ⚠️ the collapsed header is a PILL carrying a SUMMARY OF THE KINDS of work, not the
      answer's status line and a step count (reference supplied 19 Aug 2026:
@@ -11248,7 +12151,19 @@ function aiAgShare(ev, i){
       '<button onclick="aiAgShareDo(' + i + ',\'dash\')">Add to another dashboard</button>' +
       '<button onclick="aiAgShareDo(' + i + ',\'report\')">Add to a report</button>' +
       '<button onclick="aiAgShareDo(' + i + ',\'csv\')">Export as CSV</button>';
-  ev.target.closest('.aiagc').appendChild(el);
+  /* ⚠️ THE HOST IS THE ACTION ROW NOW, AND IT IS GUARDED (fixed 20 Aug 2026). This was a
+     bare `ev.target.closest('.aiagc')` — and once ⤴ moved out of the card header into the
+     `.aifb` row, that row is a SIBLING of `.aiagc`, not a descendant. `closest` returned
+     null and the line threw on `null.appendChild`, so the button did nothing at all: the
+     tooltip appeared and the menu never did. Exactly the failure `aiAgDest()` was fixed
+     for on 18 Aug, in a second place.
+     ⚠️ The fallbacks are ordered nearest-first, and it BAILS rather than throwing if none
+     match — a share button in some future third place should do nothing visible, not kill
+     the rest of the click handler. */
+  const host = ev.target.closest('.aifb') || ev.target.closest('.aiagc')
+            || ev.target.closest('.aiagblk');
+  if (!host) return;
+  host.appendChild(el);
   setTimeout(() => document.addEventListener('mousedown', aiAgShareAway), 0);
 }
 /* every dashboard you could put it on, grouped by category the way the list panel is */
@@ -11503,7 +12418,9 @@ function aiAgSummary(a, pre, steps){
 }
 function aiAgHTML(a, i){
   /* ⚠️ a summary agent has no counters — this must stay guarded, not hoisted */
-  const sub = a.ctrs ? 'avg of ' + a.ctrs.map(c => c.c).join(', ') : '';
+  /* ⚠️ the `sub` string that used to be built here is GONE with the subtitle it fed
+     (20 Aug 2026). `aiPendPaint` builds its own copy of the same sentence for the docked
+     Accept bar — see its `s:` field — so nothing depended on this one. */
   const out = [];
   const N = Math.min(a.n, a.bs.length);
   const cardIx = a.bs.findIndex(x => x.k === 'card' || x.k === 'scard');
@@ -11605,8 +12522,13 @@ function aiAgHTML(a, i){
           ? '<div class="aitkh">' + head + '</div>'
           : '<button class="aitkh" onclick="aiAgTog(' + i + ',' + k + ')" aria-expanded="' + op + '">' + head +
             '<span class="aitkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></button>') +
+        /* ⚠️ the label goes in `.tx`, like every other trail row (fixed 20 Aug 2026). It
+           was a bare text node here — an anonymous flex item with no `flex:1;min-width:0`,
+           so a long step could push past the panel instead of wrapping inside it, and the
+           two trails were structurally different for no reason. */
         (op ? '<div class="aitkl">' + b.st.map(s =>
-          '<div class="aitki done"><span class="ic">' + AI_TK_TICK + '</span>' + aiEsc(s) + '</div>').join('') +
+          '<div class="aitki done"><span class="ic">' + AI_TK_TICK + '</span>' +
+          '<span class="tx">' + aiEsc(s) + '</span></div>').join('') +
           '</div>' : '') + '</div>');
       continue;
     }
@@ -11623,16 +12545,42 @@ function aiAgHTML(a, i){
         '<div class="aiagch">' +
           (made ? '<svg class="ok" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>' : '') +
           '<b>' + (made ? (a.placed ? 'Created Widget' : 'Saved Widget') : 'Create Widget') + '</b>' +
-          '<span class="sub" title="' + aiEsc(sub) + '">' + aiEsc(sub) + '</span>' +
+          /* ⚠️ THE COUNTER SUBTITLE IS GONE (request, 20 Aug 2026). It read
+             "avg of interface.traffic.in.bytes, interface.tr…" — a string that never fits
+             a 344–420px panel, so it truncated on every widget and left a tooltip floating
+             over the card. The SUMMARY card's subtitle was removed for exactly this on
+             18 Aug; this is the same fix on the same shaped problem.
+             ⚠️ Nothing is lost: the counters are named in full by the chart's own legend
+             directly below, and the docked Accept bar prints the same "avg of …" sentence
+             as the proposal's description — it builds its own copy in `aiPendPaint`, which
+             is why the local `sub` could be deleted outright rather than left unused. */
+          /* ⚠️ THE HEADER CARRIES NOTHING BUT THE COLLAPSE CHEVRON NOW (request, 20 Aug
+             2026: "remove the close icon and the share icon will be set on this position").
+             · ✕ Dismiss is GONE and nothing was lost with it — it fired `aiAgReject`, and
+               the follow-up chip "Reject it and build something else" already calls exactly
+               that. Two controls for one action, and the ✕ was the one that read as
+               "close this card" rather than "reject this widget", which it never did.
+             · ⤴ Share MOVED DOWN into the action row under the card, where every other
+               per-answer action in this panel lives. In the header it sat against the
+               counter subtitle and read as chrome belonging to the title. */
           (made
             ? '<button class="aiagib" data-tip="' + (shut ? 'Show' : 'Hide') + ' the preview" onclick="aiAgCard(' + i + ')">' +
               '<svg viewBox="0 0 24 24"><path d="' + (shut ? 'M6 9l6 6 6-6' : 'M6 15l6-6 6 6') + '"/></svg></button>'
-            : '<button class="aiagib" data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>' +
-              '<button class="aiagib" data-tip="Dismiss" onclick="aiAgReject(' + i + ')">' +
-              '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>') +
+            : '') +
         '</div>' +
         (shut ? '' : '<div class="aiagcb">' + aiAgChart(a) + '</div>') +
+        /* ⚠️ THE FULL FEEDBACK ROW, WITH SHARE AFTER COPY (request, 20 Aug 2026).
+           This was a lone ⤴ in its own `.aifb` — one icon sitting by itself under the
+           chart, which read as a stray control rather than as the card's actions. It is
+           the same row the made card gets now: 👍 👎 ⧉ then ⤴, so share is one of the
+           actions instead of being the only one.
+           ⚠️ Share goes in `aiFbHTML`'s `extra` slot, which is what puts it AFTER copy —
+           the same slot Undo uses on the made card. Nothing new was invented to place it.
+           ⚠️ `b` and `k` are in scope here (this block is inside the beat loop, under
+           `if (b.k === 'card')`), so the 👍/👎 act on this beat exactly as they do on the
+           made card, through `aiAgFb(i, k, …)` rather than the thread-level `aiFeed`. */
+        /* ⚠️ the action row moved OUTSIDE `.aiagc` — see below the card's closing div.
+           It was here, inside the card's border. */
         /* ⚠️ The "Add to <dashboard>" row was HERE and is now a follow-up chip below the
            card (annotation, 18 Aug 2026). The destination still exists — `a.target`, which
            Accept reads — the chip just names it and opens the same picker. */
@@ -11651,6 +12599,17 @@ function aiAgHTML(a, i){
            pair would be the duplicate-entry-point smell this panel has been trimmed for
            twice already. */
       '</div>' +
+      /* ⚠️ THE ACTION ROW SITS OUTSIDE THE CARD (request, 20 Aug 2026: "it will be shown
+         outside of box"). It was inside `.aiagc`, i.e. within the card's border, while the
+         SUMMARY card's identical row has always sat outside its own — so the same four
+         controls were framed on one card and unframed on the other.
+         Outside is the right side of that inconsistency: the card is the thing being
+         proposed, and 👍/👎/⧉/⤴ are what you do ABOUT it, not part of it. */
+      (made ? '' :
+        aiFbHTML(i, b.fb || 0, k,
+          '<button data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
+          '<svg viewBox="0 0 24 24" class="ln"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/>' +
+          '<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>')) +
       /* ⚠️ these are ACTIONS wearing the follow-up chip, so they call their own handler
          directly. They must NOT go through aiFollow(), which sends the label as a new
          question — "Reject it and build something else" is not a question. */
@@ -11667,9 +12626,10 @@ function aiAgHTML(a, i){
       continue;
     }
     if (b.k === 'scard'){
-      /* ⚠️ same convention as the widget card — `open.card === false` is collapsed, so a
-         card is open until it is closed. Inverting it here made the chevron a no-op. */
-      const shut = a.open.card === false;
+      /* ⚠️ THIS CARD NO LONGER COLLAPSES (request, 20 Aug 2026). Its chevron went with the
+         ⤴ — see the header below — so `shut` had nothing left to toggle it and the body is
+         always rendered. `aiAgCard()` is untouched and still owns the WIDGET card's
+         chevron, which is the only caller now. */
       out.push('<div class="aiagc">' +
         '<div class="aiagch">' +
           /* ⚠️ the PRODUCT LOGO, not the ✦ spark (annotation, 19 Aug 2026) — this card is
@@ -11681,15 +12641,24 @@ function aiAgHTML(a, i){
              never had the room for it — it rendered as "Application Performan…" with a
              tooltip over the card. The board is the first meta chip in the body instead,
              where it fits whole. `.gro` is what takes the space the subtitle was holding. */
+          /* ⚠️ THE HEADER IS THE MARK AND THE TITLE, NOTHING ELSE (request, 20 Aug 2026:
+             "remove this 2 action from this side"). Both buttons that sat here are gone:
+             · ⤴ Share MOVED DOWN into the feedback row under the card, after copy — the
+               same move the widget card's share made, so one kind of control lives in one
+               kind of place across both cards.
+             · ⌃ Collapse was REMOVED outright, not relocated. A summary is the answer; a
+               control whose only job is to hide the answer you just asked for earns its
+               place on a widget preview, not here. */
           '<b class="gro">Dashboard summary</b>' +
-          '<button class="aiagib" data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
-            '<svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>' +
-          '<button class="aiagib" data-tip="' + (shut ? 'Show' : 'Hide') + ' the summary" onclick="aiAgCard(' + i + ')">' +
-            '<svg viewBox="0 0 24 24"><path d="' + (shut ? 'M6 9l6 6 6-6' : 'M6 15l6-6 6 6') + '"/></svg></button>' +
         '</div>' +
-        (shut ? '' : '<div class="aiagcb aiab aiagsum">' + a.ans.html + '</div>') +
+        '<div class="aiagcb aiab aiagsum">' + a.ans.html + '</div>' +
       '</div>' +
-      '<div class="aiagblk">' + aiFbHTML(i, b.fb || 0, k) +
+      /* ⤴ rides in `aiFbHTML`'s `extra` slot, which is what places it AFTER copy —
+         the same slot Undo and the widget card's share use. */
+      '<div class="aiagblk">' + aiFbHTML(i, b.fb || 0, k,
+          '<button data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
+          '<svg viewBox="0 0 24 24" class="ln"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/>' +
+          '<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>') +
         (a.ans.fu && a.ans.fu.length ? '<div class="aiful">Follow ups</div>' +
           a.ans.fu.map(q => '<button class="aifu" onclick="aiFollow(this)"><span class="cv">›</span>' +
             aiEsc(q) + '</button>').join('') : '') +
@@ -11890,7 +12859,22 @@ function aiSend(){
 /* ⚠️ the cap MUST match `.aiinbox textarea`'s max-height (150px since 20 Aug 2026) — set
    lower, the box stops growing before the CSS would have let it and the last line hides
    under the control row. */
-function aiGrow(t){ t.style.height='auto'; t.style.height = Math.min(150, t.scrollHeight) + 'px'; }
+/* ⚠️ `aiTypedPaint()` is called from HERE rather than only from the `oninput` handler.
+   aiGrow is the choke point every path already goes through — typing, the ＋ menu, a
+   follow-up chip, Edit prompt, dictation, the clarifier — because they all have to resize
+   the box after changing its value. Hooking the one function means a new path that fills
+   the composer gets the send button for free instead of silently missing it. */
+function aiGrow(t){ t.style.height='auto'; t.style.height = Math.min(150, t.scrollHeight) + 'px';
+  aiTypedPaint(); }
+/* ⚠️ The composer wears `.typed` while the box has anything in it — that is what reveals
+   the send button. Driven from `aiMentIn` (the textarea's own `oninput`) so there is one
+   place the state can change, and called after anything that fills or clears the box by
+   hand — the ＋ menu, a follow-up chip, Edit prompt, send itself. */
+function aiTypedPaint(){
+  const t = document.getElementById('aiIn'), box = document.querySelector('.aiinbox');
+  if (!t || !box) return;
+  box.classList.toggle('typed', !!t.value.trim());
+}
 
 /* ── every action in this panel does something real ───────────────────────────────────
    (request, 14 Aug 2026: "all action will be on working mode"). These were toasts; each
@@ -11946,9 +12930,44 @@ const AI_MIN = 60000, AI_HR = 60 * AI_MIN, AI_DAY = 24 * AI_HR;
    takes this screen down — which is exactly what Back, opening a chat, and asking a new
    question all want. `aiHistShown` is only for repainting in place after a delete. */
 let aiHistShown = false;
+/* the single source of truth for "is the history screen up" reaching the CSS */
+/* how tall the fade is at an edge that has something beyond it */
+const AI_FADE = 30;
+/* ⚠️ Called on scroll, from aiRender() (content changed, so the overflow changed) and on
+   resize. The 2px slack stops a sub-pixel scrollTop from flickering the top fade on and
+   off at rest. */
+function aiFade(){
+  const b = document.getElementById('aiBody'); if (!b) return;
+  const past = b.scrollHeight - b.scrollTop - b.clientHeight;
+  b.style.setProperty('--aifade-t', (b.scrollTop > 2 ? AI_FADE : 0) + 'px');
+  b.style.setProperty('--aifade-b', (past > 2 ? AI_FADE : 0) + 'px');
+}
+function aiFadeBind(){
+  const b = document.getElementById('aiBody'); if (!b) return;
+  if (!b._fade){                                /* one listener, however often this runs */
+    b._fade = 1;
+    b.addEventListener('scroll', aiFade, {passive:true});
+    window.addEventListener('resize', aiFade);
+  }
+  /* ⚠️ RECOMPUTE ON EVERY RENDER, outside the bind guard. The thread's height is what
+     decides whether either edge has anything beyond it, and that changes with every answer
+     — an early return here would leave the fade describing the previous thread.
+     ⚠️ Twice: once now, and once after layout. aiRender() is followed by a scroll-to-bottom
+     in some paths, and reading scrollTop in the same tick gives the pre-scroll value. */
+  aiFade();
+  requestAnimationFrame(aiFade);
+}
+function aiHistPaint(){
+  const p = document.getElementById('aiPanel');
+  if (p) p.classList.toggle('aihist', !!aiHistShown);
+  /* the count is painted here rather than in the screen's HTML, so a delete that repaints
+     the list in place cannot leave the header claiming a chat that is gone */
+  const n = document.getElementById('aiHdHistN');
+  if (n) n.textContent = AI_CHATS.length + ' chat' + (AI_CHATS.length === 1 ? '' : 's');
+}
 function aiHistOpen(){
   aiFile();
-  aiHistShown = true;
+  aiHistShown = true; aiHistPaint();
   const host = document.getElementById('aiBody'); if (!host) return;
   host.innerHTML = aiHistFullHTML('');
   host.scrollTop = 0;
@@ -11963,8 +12982,7 @@ function aiHistFullHTML(q){
     const g = aiChatBand(c.t);
     if (g !== band){ band = g; rows += '<div class="aihfg">' + aiEsc(g) + '</div>'; }
     rows += '<div class="aihfr' + (c.id === aiChatId ? ' cur' : '') + '" onclick="aiHistGo(' + c.id + ')">' +
-      '<span class="av">' + AI_SPARK_MI + '</span>' +
-      '<span class="tt"><b>' + aiEsc(c.n) + '</b><span>' + aiEsc(aiChatSummary(c)) + '</span></span>' +
+      '<span class="tt"><b>' + aiEsc(c.n) + '</b><span class="sm">' + aiEsc(aiChatSummary(c)) + '</span></span>' +
       '<span class="rt">' + aiEsc(aiChatWhen(c.t)) + '</span>' +
       '<span class="ac">' +
         /* same as the menu's: rename here, do not switch chats first */
@@ -11973,10 +12991,10 @@ function aiHistFullHTML(q){
       '</span></div>';
   });
   return '<div class="aihf">' +
-    '<div class="aihfh"><button class="aihfb" data-tip="Back to chat" onclick="aiHistClose()">' +
-      '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      '<b>Chat history</b><span class="n">' + AI_CHATS.length +
-      ' chat' + (AI_CHATS.length === 1 ? '' : 's') + '</span></div>' +
+    /* ⚠️ the `‹ Chat history · N chats` row USED TO BE HERE and now lives in the PANEL
+       HEADER (request, 20 Aug 2026). It was a second title bar sitting 40px under the real
+       one, so the screen had two headers and the top one belonged to a chat you had
+       navigated away from. `aiHistPaint()` fills the header version. */
     '<div class="aihfs">' + AI_MI.mag +
       '<input id="aiHistQ" placeholder="Search AI chats…" value="' + aiEsc(q) + '" oninput="aiHistFilter()"></div>' +
     (list.length ? rows : '<div class="aihfe">' + (q
@@ -11993,12 +13011,12 @@ function aiHistFilter(){
   const n = document.getElementById('aiHistQ');
   if (n){ n.focus(); n.setSelectionRange(pos, pos); }
 }
-function aiHistClose(){ aiHistShown = false; aiRender(); }
+function aiHistClose(){ aiHistShown = false; aiHistPaint(); aiRender(); }
 function aiHistGo(id){
   aiFile();
   const c = AI_CHATS.find(x => x.id === id); if (!c) return;
   aiChatId = c.id; aiThread = c.msgs.slice(); aiNamed = true; aiSetName(c.n);
-  aiHistShown = false;            /* opening a chat leaves the history screen */
+  aiHistShown = false; aiHistPaint();   /* opening a chat leaves the history screen */
   aiRender();
 }
 function aiHistDel(id){ aiDelAsk(id, 'hist'); }
@@ -12044,7 +13062,12 @@ function aiUpPick(){
      · one row is always HIGHLIGHTED, with ↑↓ · ↵ · Esc, like every other menu here.
    ⚠️ Deliberately NOT copied: the reference's third row (Skills) — this panel has no such
    feature and inventing one would be inventing product. */
-let aiPlusSel = 0;
+/* ⚠️ -1 = NOTHING HIGHLIGHTED (request, 20 Aug 2026: "don't show default hover effect").
+   The menu used to open with row 0 already wearing the `sel` treatment, so the first thing
+   you saw was a row that looked hovered without the pointer being anywhere near it — and
+   with only two rows, one of them permanently lit read as "this one is chosen" rather than
+   "you are here". It lights on real hover and on ↑/↓ now, and on nothing else. */
+let aiPlusSel = -1;
 const AI_PLUS = [
   { ic:'<path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
     l:'Add images, logs, PDFs or CSVs', fn:'aiUpPick()' },
@@ -12055,7 +13078,7 @@ function aiPlusMenu(ev){
   if (ev) ev.stopPropagation();
   if (document.getElementById('aiPlusM')){ aiPlusClose(); return; }
   aiMentHide(); aiSuggHide();
-  aiPlusSel = 0;
+  aiPlusSel = -1;
   const el = document.createElement('div');
   el.className = 'aicmd up aiplusm'; el.id = 'aiPlusM'; el.setAttribute('role', 'menu');
   document.querySelector('.aicomp').appendChild(el);
@@ -12293,9 +13316,19 @@ function aiKey(e){
      so it is tested before the @ typeahead (reference, 20 Aug 2026: the Notion menu is
      arrow-driven with the caret still in the composer) */
   if (aiPlusOpen()){
-    if (e.key === 'ArrowDown'){ e.preventDefault(); aiPlusSel = (aiPlusSel + 1) % AI_PLUS.length; aiPlusPaint(); return; }
-    if (e.key === 'ArrowUp'){   e.preventDefault(); aiPlusSel = (aiPlusSel - 1 + AI_PLUS.length) % AI_PLUS.length; aiPlusPaint(); return; }
-    if (e.key === 'Enter' || e.key === 'Tab'){ e.preventDefault(); aiPlusRun(aiPlusSel); return; }
+    /* ⚠️ the arrows have to cope with "nothing selected" (-1) now: down enters at the
+       top, up enters at the BOTTOM. The old modulo did the right thing for down by
+       accident and the wrong thing for up — `(-1 - 1 + 2) % 2` is 0, so ↑ from nothing
+       would have landed on the FIRST row instead of the last. */
+    if (e.key === 'ArrowDown'){ e.preventDefault();
+      aiPlusSel = aiPlusSel < 0 ? 0 : (aiPlusSel + 1) % AI_PLUS.length; aiPlusPaint(); return; }
+    if (e.key === 'ArrowUp'){   e.preventDefault();
+      aiPlusSel = aiPlusSel < 0 ? AI_PLUS.length - 1 : (aiPlusSel - 1 + AI_PLUS.length) % AI_PLUS.length;
+      aiPlusPaint(); return; }
+    /* Enter with no cursor runs the top row — the same convention `dashKey` uses, so the
+       key is never a dead press just because you have not arrowed yet. */
+    if (e.key === 'Enter' || e.key === 'Tab'){ e.preventDefault();
+      aiPlusRun(aiPlusSel < 0 ? 0 : aiPlusSel); return; }
     if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); aiPlusClose(); return; }
   }
   /* the @-typeahead owns these keys while it is open — checked FIRST, or Enter sends the
@@ -12359,6 +13392,18 @@ aiLogoPaint();
   <span class="aign" onmousedown="aiRzStart(event,'n')" ondblclick="aiRzReset()"></span>
   <span class="aignw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'nw')" ondblclick="aiRzReset()"></span>
   <header class="aihd" onmousedown="aiDragStart(event)">
+    <!-- ⚠️ HISTORY, and it exists ONLY IN FULL SCREEN (request + reference images,
+         20 Aug 2026). A History button was removed from this header on 17 Aug because the
+         chat-name dropdown's CONVERSATIONS section had absorbed it — two doors to one list.
+         This is not that button back: it does not open a menu or a sheet, it toggles the
+         full-screen LEFT COLUMN, which is a place the other layouts do not have. In
+         Sidebar and Floating it is `display:none` and the dropdown is still the only door.
+         ⚠️ The glyph is `AI_MI.clock` — the clock-with-counterclockwise-arrow the removed
+         History button wore, which the dropdown's "Show all" row already reuses. It is
+         PAINTED IN from `aiHsBtnPaint()` rather than inlined here, so there is one
+         definition of that mark and nothing to keep in step (the `aiLogoPaint()` rule). -->
+    <button class="aihb aihsbtn" id="aiHsBtn" data-tip="History" aria-pressed="false"
+      onclick="aiHsToggle()"></button>
     <!-- the tinted ✦ mark tile that used to sit here was REMOVED (request, 17 Aug 2026);
          the chat name now leads the header. See the .aiht block for why. -->
     <!-- The static product name is gone (annotation, 14 Aug 2026): this slot is now the
@@ -12377,7 +13422,15 @@ aiLogoPaint();
          ⚠️ It is HIDDEN on an empty chat: starting a new chat from a chat that has nothing
          in it does nothing, so the control would be a no-op the first time you ever see it.
          `aiNewBtnPaint()` shows it as soon as the thread has anything. -->
-    <button class="aihb aihnew" id="aiNewBtn" data-tip="Start a new chat" onclick="aiNewChat()"><svg viewBox="0 0 24 24"><path d="M4 4h9v2H6v12h12v-7h2v9H4V4Z" fill="currentColor" stroke="none"/><path d="M16.6 2.6l2.8 2.8-6.9 6.9-3.5.7.7-3.5 6.9-6.9Z" fill="currentColor" stroke="none"/></svg></button>
+    <button class="aihb aihnew" id="aiNewBtn" data-tip="Start a new chat" onclick="aiNewChat()"><svg viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg></button>
+    <!-- ⚠️ THE HEADER BECOMES THE HISTORY SCREEN'S OWN HEADER (request, 20 Aug 2026).
+         While `.aihist` is set this replaces the chat name, and the ⋯ and New-chat buttons
+         are hidden with it: on that screen there is no current chat to rename, delete or
+         start from, so three controls that all act on "this conversation" would be acting
+         on one you have navigated away from. ✕ and Layout stay — they act on the panel. -->
+    <span class="aihdhist" id="aiHdHist">
+      <button class="aihb" data-tip="Back to chat" onclick="aiHistClose()"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <b>Chat history</b><span class="n" id="aiHdHistN"></span></span>
     <span class="aiht"><span class="aihttl" id="aiTitleBtn" role="button" tabindex="0"
         data-tip="Rename, delete or switch conversation" onclick="aiChatMenu(event)"
         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();aiChatMenu(event)}"
@@ -12404,19 +13457,23 @@ aiLogoPaint();
     <!-- ⚠️ a ⋯ MARK, not a ? (request, 19 Aug 2026). It stopped being a help button when
          Rename chat and Delete chat moved into it — a question mark over two destructive-ish
          actions promises the wrong thing. The menu itself is unchanged. -->
-    <button class="aihb" id="aiHelpBtn" data-tip="More" onclick="aiHelpMenu(event)"><svg viewBox="0 0 24 24"><circle cx="5.2" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.8" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></button>
+    <button class="aihb" id="aiHelpBtn" data-tip="More" onclick="aiHelpMenu(event)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
     <!-- Layout: Sidebar · Floating · Full screen (reference, 17 Aug 2026). It replaced the
          two-state "Show as split view ⇄ Show as overlay" toggle — three modes on one axis
          belong in one menu with a ✓, not a toggle plus a second button that can disagree.
          The icon here is whichever layout is current; aiLayPaint() keeps it truthful. -->
-    <button class="aihb on" id="aiLayBtn" data-tip="Layout  Sidebar" onclick="aiLayMenu(event)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14"/><path d="M3 7a2 2 0 0 1 2-2h4v14H5a2 2 0 0 1-2-2z" fill="currentColor" stroke="none" opacity=".85"/></svg></button>
+    <button class="aihb on" id="aiLayBtn" data-tip="Layout  Sidebar" onclick="aiLayMenu(event)"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg></button>
     <!-- the ⤢ full-screen button (Datadog Bits' pattern, 15 Aug 2026) was FOLDED INTO the
          Layout menu above (request, 17 Aug 2026) — it was the third state of the same axis,
          and a separate button could show "Expand" while the menu already said Full screen.
          `aiFsTog()` is unchanged and still does the work; Esc still steps out of it, and
          `aiFsBtn` is simply absent (every touch of it is guarded with `if (b)`). -->
-    <button class="aihb x" title="Close" onclick="aiClose()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="aihb x" title="Close" onclick="aiClose()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
   </header>
+  <!-- the full-screen chat-history column. It is a sibling of the header, absolutely
+       positioned over the panel's left edge — see the .aihs CSS for why it is not a flex
+       column beside the thread. Painted by aiHsPaint(); empty until it is first opened. -->
+  <div class="aihs" id="aiHs" aria-label="Chat history"></div>
 
   <div class="aibody" id="aiBody"></div>
 
@@ -12431,6 +13488,11 @@ aiLogoPaint();
          same place Notion puts a question that is waiting on you). It appears only while a
          widget is proposed and un-decided; the card in the thread shows WHAT is proposed,
          this shows what you can do about it, and it cannot scroll away. -->
+    <!-- the clarifier's question card, docked above the composer. It sits ABOVE #aiPend
+         because the two are mutually exclusive in practice — the build preview that fills
+         #aiPend only exists once these questions are answered — and if both ever appeared,
+         the question is the one that has to be dealt with first. -->
+    <div class="aiclardock" id="aiClarDock"></div>
     <div class="aipend" id="aiPend"></div>
     <div class="aisugg" id="aiSugg"></div>
     <!-- ⚠️ ONE box holds the whole chat area — context, text and controls (annotation,
@@ -12447,7 +13509,7 @@ aiLogoPaint();
              ⚠️ NOT the 15 Aug ＋ command menu this replaced: that listed five canned
              QUESTIONS and refilled the composer. These two rows add context. -->
         <button class="aiplus" id="aiPlusBtn" data-tip="Add a file or context"
-          aria-haspopup="menu" onclick="aiPlusMenu(event)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          aria-haspopup="menu" onclick="aiPlusMenu(event)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
         <input type="file" id="aiUpIn" multiple hidden onchange="aiUpAdd(this)"
           accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
         <!-- Auto-approve belongs with the send button: it decides what happens when you
@@ -12456,10 +13518,10 @@ aiLogoPaint();
              the mode as a plain word beside send). The toggle pill with its knob was the
              heaviest thing in the control row for a setting that is off by default. -->
         <button class="aiauto" id="aiAuto" onclick="aiToggleAuto()"
-          data-tip="Run safe actions without asking each time"><span class="lbl">Auto-approve</span></button>
+          data-tip="Auto-approve  run safe actions without asking each time"><span class="lbl">Auto</span></button>
         <!-- Dictation (annotation, 15 Aug 2026). Speaks into the composer; it never sends
              for you, so what was heard can be read and corrected first. -->
-        <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3M8.5 21h7"/></svg></button>
+        <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/></svg></button>
         <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg></button>
       </div>
       <!-- the travelling light along the top edge while the AI is generating -->
@@ -14867,9 +15929,23 @@ function lxInit(){
   /* ⚠️ `lxopen` and the `lxTree()` call were dropped when the panel was removed on 17 Aug
      2026, and both come back with it (19 Aug). The live module opens with the panel
      showing, which is what `lxopen` does. */
-  document.body.classList.add('lxopen');
+  /* ⚠️ THE SOURCES PANEL STARTS COLLAPSED (request, 20 Aug 2026) — `lxopen` is no longer
+     added here. The chevron in the module head still opens it, and everything inside is
+     unchanged.
+     ⚠️ THIS DIVERGES FROM LIVE, and the divergence has history: the panel was deleted from
+     this file on 17 Aug, RESTORED on 19 Aug after build 10.0.0 was driven and found to
+     show it open, and is now merely collapsed by default rather than removed. So: live
+     opens with it showing; we open with it hidden and one click away. Recorded so the next
+     session does not "fix" it back by checking the product. */
   document.body.classList.add('lxdense');   /* live opens on the single-line density */
-  LX.open[0] = LX.open[1] = LX.open[2] = LX.open[3] = 1;
+  /* ⚠️ THE SOURCE TREE OPENS COLLAPSED (request, 20 Aug 2026). The first four groups
+     used to be expanded, which put ~30 log-type rows on screen before you had picked
+     anything — the 16 group names, which are what you actually scan first, were pushed
+     below the fold. Every group still expands on click, and a SEARCH still force-opens
+     whatever it matched (`lxTree`'s `rx ? 1 : LX.open[i]`), so nothing became unreachable.
+     ⚠️ The facet panel's first three fields are a separate default and are NOT changed —
+     that panel is on the results side and opens on what it found. */
+  LX.open = {};
   LX_FIELDS.slice(0,3).forEach((f,i)=>{ LX.facetOpen[i] = 1; });
   lxBuildRows();
   lxTree(); lxOverview(); lxVizSeg(); lxTools(); lxHist(); lxBodyRender(); lxRangeStamp();
@@ -15170,6 +16246,94 @@ const LX_AIQ_SEV = /^(error|errors|critical|warning|warnings|informational|info|
        Chart for "over time", Gauge for a bare count)
    ⚠️ It never half-applies: if nothing in the sentence maps, it returns null and the
    surface says so, naming what it does understand. */
+/* ══ THE SEARCH BAR ITSELF BUILDS THE QUERY (request, 20 Aug 2026) ═════════════════════
+   Type plain English into the search box → a ✦ button appears INSIDE the bar → it rewrites
+   the box into the product's `INCLUDE a Op b` form → Apply runs it.
+   ⚠️ Same machinery as the popover, not a second copy: `lxAiqParse` reads the sentence,
+   `lxAiqExpr` renders it, and `lxAiqCommit` is still the ONLY thing that changes the
+   search. Two doors, one engine.
+   ⚠️ The gate survives, and is arguably stronger here: what you are about to run is
+   literally the text sitting in the search field, not a preview card describing it. */
+let LX_QAI = { st:'idle', m:null, prose:'' };
+/* already a query? then there is nothing to build — do not offer.
+   ⚠️ CASE-SENSITIVE, and `In` is deliberately NOT in the loose operator list. The first
+   version tested `/\s(Equals|Contains|In|…)\s/i`, and "ERROR logs **in** the last 30
+   minutes" matched the product's `In` operator on the English preposition — so the one
+   sentence the feature exists for was classified as already-a-query and no button ever
+   appeared. The product's operators are capitalised, and `lxAiqExpr` always emits an
+   `INCLUDE` prefix, so the prefix test covers everything this actually generates. */
+function lxQIsQuery(v){
+  return /^\s*(INCLUDE|EXCLUDE)\b/i.test(v) ||
+         /\s(Equals|Contains|Not In|Greater Than|Less Than)\s/.test(v);
+}
+function lxQIn(){
+  const el = document.getElementById('lxQ'); if (!el) return;
+  const v = el.value.trim();
+  /* ⚠️ editing the generated text drops the pending Apply — an Apply button sitting over a
+     query the user has since changed would run something they are no longer looking at.
+     Same rule the popover's `lxAiqIn` enforces against its own preview. */
+  if (LX_QAI.st === 'ready' && v !== String(lxAiqExpr(LX_QAI.m) || '').trim())
+    LX_QAI = { st:'idle', m:null, prose:'' };
+  if (LX_QAI.st !== 'ready'){
+    let st = 'idle';
+    if (v && !lxQIsQuery(v)){
+      const m = lxAiqParse(v);
+      if (m && (m.clauses.length || m.agg)) st = 'prose';
+    }
+    LX_QAI.st = st;
+  }
+  lxQPaint();
+}
+function lxQGen(){
+  const el = document.getElementById('lxQ'); if (!el) return;
+  const prose = el.value.trim();
+  const m = lxAiqParse(prose);
+  if (!m || (!m.clauses.length && !m.agg)){
+    toast('I could not turn that into a query.'); return;
+  }
+  LX_QAI = { st:'ready', m:m, prose:prose };
+  /* ⚠️ an aggregation can legitimately have NO filter clauses — "how many events per
+     source" filters nothing. The box goes empty, which is the correct filter, and the
+     control says "All events" so the empty box is not read as a failure. */
+  el.value = lxAiqExpr(m) || '';
+  lxQPaint();
+}
+function lxQApply(){
+  if (LX_QAI.st !== 'ready' || !LX_QAI.m) return;
+  lxAiqCommit(LX_QAI.m);            /* the one gate — range, filter, builder, one lxExec */
+  LX_QAI = { st:'idle', m:null, prose:'' };
+  lxQPaint();
+}
+/* put the sentence back — the only way out of a generated query that does not require
+   retyping what you asked for */
+function lxQRevert(){
+  const el = document.getElementById('lxQ'); if (!el) return;
+  el.value = LX_QAI.prose;
+  LX_QAI.st = 'prose'; LX_QAI.m = null;
+  lxQPaint(); el.focus();
+}
+function lxQPaint(){
+  const host = document.getElementById('lxQAi'); if (!host) return;
+  if (LX_QAI.st === 'prose'){
+    host.innerHTML = '<button class="gen" data-tip="Turn this into a log query" ' +
+      'onclick="lxQGen()">' + LX_AI_SPARK + 'Generate query</button>';
+    return;
+  }
+  if (LX_QAI.st === 'ready'){
+    const m = LX_QAI.m;
+    const rn = lxAiqRangeName(m.range);
+    const bits = [];
+    if (!lxAiqExpr(m)) bits.push('All events');
+    if (rn) bits.push(rn);
+    host.innerHTML =
+      (bits.length ? '<span class="rng">' + lxEsc(bits.join(' · ')) + '</span>' : '') +
+      '<button class="rv" data-tip="Back to what I typed" onclick="lxQRevert()">' +
+        '<svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
+      '<button class="app" data-tip="Run this query" onclick="lxQApply()">Apply</button>';
+    return;
+  }
+  host.innerHTML = '';
+}
 function lxAiqParse(q){
   const t = String(q || '').trim(); if (!t) return null;
   const m = { q:t, clauses:[], range:'', agg:null }, seen = {};
@@ -15324,6 +16488,15 @@ function lxAiqKey(e){
   }
 }
 /* one renderer for all four states, so the buttons can never disagree with the body */
+/* ⚠️ Back, not Cancel, once the box has been rewritten — it puts the SENTENCE back so the
+   prompt can be edited and re-run. Closing outright would throw away what was typed. */
+function lxAiqUndo(){
+  const t = document.getElementById('lxAiqTa');
+  if (t) t.value = LX_AIQ_S.q || '';
+  LX_AIQ_S.state = 'idle'; LX_AIQ_S.m = null;
+  lxAiqPaint();
+  if (t) t.focus();
+}
 function lxAiqPaint(){
   const pv = document.getElementById('lxAiqPv'), ac = document.getElementById('lxAiqActs');
   const t  = document.getElementById('lxAiqTa');
@@ -15349,13 +16522,26 @@ function lxAiqPaint(){
   }
   if (st === 'preview'){
     const m = LX_AIQ_S.m, r = lxAiqRangeName(m.range), expr = lxAiqExpr(m);
+    /* ⚠️ THE QUERY REPLACES THE PROMPT IN THE TEXTAREA (request, 20 Aug 2026: "the prompt
+       will be replaced with the query format in the text area where I write the prompt,
+       then I apply"). It used to stay as prose with the query shown in a card underneath —
+       two versions of the same thing on screen, and the one you were looking at was not the
+       one that would run. Now the box holds exactly what Apply will do, which is the same
+       move the search bar's in-line flow makes.
+       ⚠️ `LX_AIQ_S.q` still holds the SENTENCE, so `lxAiqIn`'s "you edited it, the preview
+       is stale" check keeps working — and Cancel can put the sentence back. */
+    if (t.value.trim() !== String(expr || '').trim()) t.value = expr || '';
     pv.className = 'lxaipv on';
-    pv.innerHTML = '<div class="lxaipvl">' + (m.agg ? 'This will run' : 'This will search') + '</div>' +
-      '<div class="lxaipvq' + (expr ? '' : ' all') + '">' + (expr ? lxEsc(expr) : 'All events') + '</div>' +
+    /* the card keeps only what the rewritten box CANNOT show: the builder rows for an
+       aggregation, and the time range, which is not part of the filter expression */
+    pv.innerHTML = (expr ? '' :
+        '<div class="lxaipvq all">All events</div>') +
       lxAiqRows(m) +
       '<div class="lxaipvr">Time range · <b>' + (r ? lxEsc(r) : 'unchanged') + '</b></div>';
-    /* ⚠️ Apply is the primary now, not Run — Run already happened. */
-    ac.innerHTML = cancel + '<button class="lxbtn pri" id="lxAiqApply" onclick="lxAiqApply()">Apply</button>';
+    /* ⚠️ Apply is the primary now, not Run — Run already happened. Cancel restores the
+       sentence rather than just closing, or the prompt you typed is gone for good. */
+    ac.innerHTML = '<button class="lxbtn" onclick="lxAiqUndo()">Back</button>' +
+      '<button class="lxbtn pri" id="lxAiqApply" onclick="lxAiqApply()">Apply</button>';
     return;
   }
   pv.className = 'lxaipv'; pv.innerHTML = '';
@@ -15613,15 +16799,54 @@ const LX_AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7
    "AI Pattern Summary" drawer that says one thing about one pattern and closes.
    The chat is still reachable from the module's own ✦ Ask AI; these are different doors. */
 let LX_PS = { i:-1, t:null };
+/* ══ THE ✦ ANSWERS IN THE CHAT, NOT IN ITS OWN DRAWER (request, 20 Aug 2026) ═══════════
+   ⚠️ THIS IS A DELIBERATE DIVERGENCE FROM THE LIVE PRODUCT, and it is the second time this
+   flow has changed direction — read this before moving it again:
+     · 19 Aug 2026 — built as a CHAT route, guessed while the lab was unreachable.
+     · 20 Aug 2026 — the lab came back, live build 10.0.0 was driven, and it opens its OWN
+       right-hand drawer with no thread and no follow-ups. The chat route was deleted and
+       the drawer rebuilt to match, geometry measured off the live DOM.
+     · 20 Aug 2026 (later, this) — converted back to the chat ON REQUEST. So the drawer is
+       what the product does; this is what we have chosen to do instead.
+   ⚠️ `lxPsPaint` / `lxPsClose` / `#lxPs` are KEPT AND UNREFERENCED rather than deleted —
+   the drawer is measured against a real product screen and that work should not have to be
+   redone a third time. One call site brings it back.
+   ⚠️ The pattern is PINNED AS CONTEXT, not pasted into the question. The chat's own
+   context bar is how this panel says "here is the thing I am talking about", and it means
+   the follow-ups land with the pattern still in scope. */
 function lxPatAi(i){
   const p = LX_PATTERNS[i]; if (!p) return;
   LX_PS.i = i;
-  document.getElementById('lxPsScrim').classList.add('on');
-  document.getElementById('lxPs').classList.add('on');
-  lxPsPaint(1);                                   /* generating… */
-  clearTimeout(LX_PS.t);
-  LX_PS.t = setTimeout(() => lxPsPaint(0), 1100);
-  const x = document.getElementById('lxPsX'); if (x) x.focus();
+  if (typeof aiOpen !== 'function') return;
+  aiOpen('logs');
+  /* the pattern's own text is the chip label, trimmed — a masked pattern is long, and the
+     chip ellipsises rather than wrapping the composer to two lines */
+  const lbl = String(p[2] || '').replace(/<[^>]*>/g, '').trim();
+  if (typeof aiCtxAdd === 'function') aiCtxAdd('Pattern · ' + lbl.slice(0, 42), 'pattern');
+  aiThread.push({ r:'me', t:'Summarise this log pattern' });
+  aiRender(); aiSetBusy(true);
+  /* the same trail every other log answer runs, so this does not look like a second
+     kind of AI living in the same panel */
+  aiTkStart('logs', 'Summarise this log pattern', tk => {
+    const a = aiLogPatAnswer(i);
+    a.tk = 1; tk.done = a.step;
+    aiThread.push(Object.assign({ r:'ai' }, a));
+    aiSetBusy(false); aiRender();
+  });
+}
+/* the answer card — the SAME body the drawer painted, via `lxPatBodyHTML` */
+function aiLogPatAnswer(i){
+  const p = LX_PATTERNS[i] || [];
+  return {
+    step : 'Read the pattern and what varies inside it',
+    ic   : 'wand',
+    title: 'Pattern summary',
+    html : lxPatBodyHTML(i),
+    /* ⚠️ follow-ups are SENT verbatim to the router, so each has to be a question the log
+       side can actually answer — the AI_DASH_FU lesson. These three all route. */
+    fu   : ['Which log type is noisiest?', 'What severities am I seeing?',
+            'Summarise these logs']
+  };
 }
 function lxPsClose(){
   clearTimeout(LX_PS.t);                          /* a drawer that closes must not still be arriving */
@@ -15645,14 +16870,28 @@ function lxPsClose(){
    is for reading one pattern, and the row it came from is still on screen behind it.
    Everything is still read off LX_PATTERNS / LX.count, so nothing here can disagree with
    the row it came from. */
-function lxPsPaint(busy){
-  const i = LX_PS.i, p = LX_PATTERNS[i]; if (!p) return;
+/* ⚠️ ONE RENDERER for the pattern summary's body, used by the chat answer and by the
+   (now unreferenced) drawer. Split out of `lxPsPaint` on 20 Aug 2026 when the ✦ was
+   converted to the chat — two copies of this markup would drift the moment either
+   surface was touched, and they read the same `LX_PAT_AI` / `LX_PAT_POINTS` fixtures. */
+function lxPatBodyHTML(i){
+  const p = LX_PATTERNS[i]; if (!p) return '';
   const d = LX_PAT_AI[i] || {}, n = lxPatN(p);
   const total = LX.count || 0, share = total ? Math.round(n / total * 100) : 0;
-  const body = document.getElementById('lxPsBody'); if (!body) return;
   /* the masked tokens and what was actually seen in them */
   const dist = (d.tok || []).map(t => {
     const seen = t[1].reduce((a, v) => a + v[1], 0);
+    /* ⚠️ A TOKEN WITH ONE VALUE AT 100% GETS A SENTENCE, NOT A BAR (request, 20 Aug 2026:
+       "improve this result visualization"). `<serial>` and `<ip>` each had exactly one
+       observed value, so they drew a full-width bar labelled 100% — a bar that can only
+       ever be full says nothing, and two of them above the one token that DOES vary made
+       the section read as decoration. Stating it as a fact is both shorter and more
+       informative, and it leaves the bars to mean "these shares differ".
+       ⚠️ Tested on `=== 100`, not `>= 100`: a rounded 99 or 101 is a real distribution
+       that happens to have one dominant value, and it should still draw. */
+    if (t[1].length === 1 && t[1][0][1] === 100)
+      return '<div class="lxpsdt one"><span class="tk">' + t[0] + '</span>' +
+        '<div class="lxpsone">always <b>' + lxEsc(t[1][0][0]) + '</b></div></div>';
     return '<div class="lxpsdt"><span class="tk">' + t[0] + '</span>' +
       t[1].map(v =>
         '<div class="lxpsdr"><span class="v" title="' + lxEsc(v[0]) + '">' + lxEsc(v[0]) + '</span>' +
@@ -15665,8 +16904,7 @@ function lxPsPaint(busy){
         '<span class="pc">' + (100 - seen) + '%</span></div>' : '') +
     '</div>';
   }).join('');
-  body.innerHTML =
-    '<div class="lxpsc">' +
+  return '<div class="lxpsc">' +
       '<div class="lxpscr"><span class="l">Pattern</span>' +
         '<span class="lxsev ' + lxSevCls(p[1]) + '">' + lxEsc(p[1]) + '</span></div>' +
       '<div class="lxpspt">' + p[2] + '</div>' +
@@ -15676,12 +16914,21 @@ function lxPsPaint(busy){
       '</div>' +
     '</div>' +
     '<div class="lxpst">' + LX_AI_SPARK + 'AI Summary</div>' +
-    (busy
-      ? '<div class="lxpsl"><span class="dot"></span><span class="dot"></span><span class="dot"></span>' +
-        'Analysing this pattern\u2026</div>'
-      : '<ul class="lxpsul">' +
-          (LX_PAT_POINTS[i] || []).map(pt => '<li>' + pt + '</li>').join('') + '</ul>' +
-        (dist ? '<div class="lxpsdh">Distribution of values</div>' + dist : ''));
+    '<ul class="lxpsul">' +
+      (LX_PAT_POINTS[i] || []).map(pt => '<li>' + pt + '</li>').join('') + '</ul>' +
+    (dist ? '<div class="lxpsdh">Distribution of values</div>' + dist : '');
+}
+/* ⚠️ KEPT AND UNREFERENCED (20 Aug 2026) — the drawer this painted is no longer opened by
+   the ✦; see `lxPatAi`. Left intact, with its own busy state, so the drawer is one call
+   site away from coming back, the way `lxPatOpen` and `aiHistOpen` are. */
+function lxPsPaint(busy){
+  const i = LX_PS.i, p = LX_PATTERNS[i]; if (!p) return;
+  const body = document.getElementById('lxPsBody'); if (!body) return;
+  body.innerHTML = busy
+    ? lxPatBodyHTML(i).replace(/<ul class="lxpsul">[\s\S]*$/,
+        '<div class="lxpsl"><span class="dot"></span><span class="dot"></span>' +
+        '<span class="dot"></span>Analysing this pattern\u2026</div>')
+    : lxPatBodyHTML(i);
 }
 /* ⚠️ KEPT AND UNREFERENCED (20 Aug 2026). It filtered Log Search to a pattern's literal
    from a "Show these logs" button in the drawer's figures row; that button was removed on

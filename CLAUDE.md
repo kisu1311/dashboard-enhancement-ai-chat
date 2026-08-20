@@ -262,6 +262,11 @@ Pattern → the Action column's ✦, DOM measured):
 
 - The **ACTION column is real** — it exists on the live tab, one violet ✦ per row. (The
   docs describe only `Count · Severity · Pattern`, so the docs are incomplete here.)
+- ⚠️ **SUPERSEDED 20 Aug 2026 (late): the ✦ ROUTES INTO THE CHAT AGAIN, on request.** See
+  *“The pattern ✦ answers in the chat”* below. Everything in this subsection describes what
+  the LIVE PRODUCT does and what the drawer we built to match it does — the drawer
+  (`lxPsPaint` / `lxPsClose` / `#lxPs`) is kept and unreferenced, so it is one call site
+  away. Read this before “fixing” the chat route back by checking the product.
 - The ✦ opens its **own right-hand drawer**, not the chat: header **✦ AI Pattern Summary**
   + ✕, then a **pattern card**, then **✦ AI Summary** and **one prose paragraph**. It says
   one thing about one pattern and closes. There is no thread, no follow-up, no context chip.
@@ -581,7 +586,10 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   name menu at `app.clickup.com`): a **`Search AI chats…`** box on top, rows **banded by
   date** (`Today · Yesterday · Aug 16 · Jul 9`), a **speech-bubble mark** on each row
   (`AI_MI.chat`, filled on the current chat), the name, **when it happened** on the right,
-  ✎ 🗑 on hover, then **`Show all N ›`**. `AI_CHAT_RECENT` went 5 → **8**; a search narrows
+  ✎ 🗑 on hover, then **`Show all N ›`**. `AI_CHAT_RECENT` went 5 → 8 → **6** (request,
+  20 Aug 2026 — at 8 the menu filled to the point where *Show all* looked redundant, which
+  is the opposite of what it is for; the dropdown is the quick switch, the screen is the
+  archive). A search narrows
   the list rather than the cap, so an older hit is reachable by typing.
   ⚠️ **The rows are `<div role="button">`, not `<button>`**, because ✎ swaps the name for an
   `<input>` in place (`aiChatRenRow`) and interactive content inside a button is invalid.
@@ -853,7 +861,8 @@ time it is asked about.
 row was unreachable — and sorting by magnitude alone did not fix it, because every big mover
 on this board is a rise. It now takes the three biggest movers **plus the biggest
 improvement**, which is also a fairer reading of "what changed".
-- **Composer** = a 46px pill with `＋` on the left, the input, and send on the right.
+- **Composer** = a rounded box (radius 20, ~128px) with `＋` on the left, the input, and
+  send on the right. It began as a 46px pill; see *“The composer, measured off ClickUp”*.
   Placeholder: *"Ask, build and act across your stack"*.
 
 #### The composer IS the chat area — context and Auto-approve moved inside it
@@ -1171,7 +1180,9 @@ Two real bugs were fixed on the way:
 
 **Option 1 — light chat panel** (`aiOpen` / `aiClose` / `aiSend` / `aiRender` / `aiPush`,
 `AI_STARTERS`). Opened by the rail's ✦ row, the toolbar's **✦ Ask AI**, or the `A`
-shortcut. Empty → thinking → answer, five canned starters (`AI_CTA`), an **auto-approve** toggle
+shortcut. Empty → thinking → answer, five canned starters (`AI_CTA` — the fifth,
+*“Build a time-series widget for”*, is a deliberate fragment that reaches the clarifier),
+an **Auto** toggle
 (`aiToggleAuto`), and a "Reading" strip of droppable context chips (`aiCtxRender` /
 `aiCtxDrop` / `aiCtxReset`) built live from `#dashTitle`, the current group, the timeline
 range and the alert count — so you can narrow what the AI sees before asking. `#aiPanel.on`
@@ -1711,6 +1722,131 @@ the ServiceOps reference flow's empathy lines ("That must be frustrating") came 
 same section sets the side panel at 400px (360–560 resize) and ours is 344–452px, so a
 second column does not fit; the query block, plan card and diff stay inline in the
 thread. A width-triggered split (two columns past ~720px) is the open follow-up.
+
+## The 20–21 Aug 2026 visual pass — Option 1's `ai*` panel and `lx*` module
+
+A long single-session sweep, all in `index copy.html`, driven request by request against
+supplied screenshots and two live references (ClickUp's Brain² composer, and the live
+ObserveOps Log Search). Grouped by what it changed; each item's *why* is in the file's own
+comments at the rule or function.
+
+### One icon system, one weight
+- **Every glyph in the panel is Lucide** (lucide.dev, ISC), pasted verbatim from
+  `lucide-static` — `AI_MI`, `AI_IC`, `AI_ENT_IC`, `AI_LAY`, the header, the composer, the
+  feedback row. They were hand-drawn before and it showed.
+- ⚠️ **Icon weight is DERIVED, not typed.** Every icon rule targets **1.25px of stroke on
+  screen**, and its `stroke-width` is computed from its own rendered size:
+  `stroke-width = 1.25 × 24 / <size in px>`. Before this there were 33 declarations from
+  1.6 → 3.4 at sizes 9–30px, i.e. an on-screen spread of 0.87–1.70px. **Change an icon's
+  size and you must recompute its stroke.**
+- ⚠️ `vector-effect:non-scaling-stroke` would say this in one line and does NOT work — it
+  is not an inherited property, so it never reaches the `<path>` children.
+- ⚠️ Two flex traps, in both directions: `.aihm button svg` is `flex:0 0 15px`, so a
+  `width:14px` override did nothing (basis wins); and `.lxpatai svg` had no basis, so the
+  flex row squeezed the ✦ to 12×14. **Set `flex` and `width` together.**
+
+### The composer, measured off ClickUp
+Read off `app.clickup.com`'s Brain² composer in the browser (DOM + computed styles), not
+copied by eye: **radius 20, no border, a three-layer shadow, 14px/21px text, a
+radius-999 context chip on a 2.4% wash.**
+- Ours keeps a border because the panel is themed and a shadow-only edge vanishes in dark;
+  the edge is tokenised (`--ai-in-line` / `--ai-in-shadow` / `--ai-in-shadow-h`).
+- The border was dimmed four times on request: `.07 → .045 → .03 → .018`, the shadow's
+  hairline coming down each time. **`.018` is the floor** — below it the border may as well
+  be deleted, and then there is no edge if the shadow is ever dropped.
+- **Hover lifts it** (a deeper, wider shadow); **focus adds its ring ON TOP** of whichever
+  shadow is current. ⚠️ `box-shadow` is one property — writing only the ring in
+  `:focus-within` discarded the elevation the moment you clicked in.
+- Padding/gap grew twice: `12/10 → 14/12 → 16/15`, floor 128px. The **gap** moved further
+  than the padding on purpose.
+- ⚠️ **`.aictxbar` reserves 24px when empty.** It used to be `:empty{display:none}`, so
+  removing the last context chip collapsed 39px and every row under it jumped.
+
+### Send, Auto, and the ＋ menu
+- **Send is absent until you type** (`.aiinbox.typed`), then arrives accent-filled. Painted
+  from `aiGrow()`, the choke point every path already goes through. ⚠️ `.aisend.stop`
+  overrides it — hiding the only way to interrupt a run would be the worst possible moment.
+- **"Auto-approve" → "Auto"**, opacity `.62`, matching the ＋/🎤/➤ so the row rests at one
+  strength. The full name is in the tooltip.
+- The ＋ menu **hugs the button** (`.aicmd.aiplusm{bottom:…}`) and opens with **nothing
+  highlighted**. ⚠️ That `bottom` rule must stay **below `.aicmd.up`** — same specificity,
+  source order decides, and it silently lost twice before this was measured (85px vs 6px).
+
+### The thinking trail
+- **Collapsed by default, including while running.** The running box is the loader, its
+  label and Skip — no tick list. It used to print the list live while the agentic flow
+  showed only its loader: two treatments for one moment.
+- **Group headings hang at the left edge** as uppercase section labels, 18px above / 7px
+  below. ⚠️ An earlier pass the same day indented them to 23px to "align" them and that made
+  the grouping unreadable — the indent IS the cue. Don't re-align them.
+- **No left rule** on `.aitkl`; its 28px of indent is kept as margin.
+- Sub-detail rows sit **inside** their step's text column (+13px).
+
+### Cards, rows and marks — what was removed
+Each of these was decoration or a duplicate, and each is recorded at its call site:
+`.aistep`'s leading dot (7 call sites), the widget card's truncating counter subtitle, the
+summary card's ⤴ and ⌃, the widget card's ✕ (a duplicate of the Reject chip), the starter
+row icons, the ✦ avatars on history rows and the hover-preview card, and the `--sv-cta`
+brand gradient behind the starters.
+- **⤴ Share moved into the feedback row, after copy**, on both cards — `aiFbHTML`'s `extra`
+  slot, the same one Undo uses. The row itself sits **outside** the card.
+- ⚠️ **`aiAgShare` anchors to `.aifb` now, guarded.** It was a bare
+  `ev.target.closest('.aiagc')`, and once ⤴ left the card header that returned `null` and
+  threw — the button did nothing at all. Same failure `aiAgDest()` was fixed for on 18 Aug.
+
+### The clarifier
+- Rebuilt to a supplied reference: **numbered rows, no radios, a pencil-marked free row with
+  Skip inline, ✕ to abandon.** Picking a row **answers and advances** — `Next` is gone.
+- **Docked over the composer** (`#aiClarDock`), not in the thread, and the **composer is
+  hidden while a question is up** — the card has its own free-text row, and two places to
+  answer one question is a trap.
+- ⚠️ **`sel` has three states: `null` = nothing chosen, `-1` = free text, `0..n` = a row.**
+  Folding the first two together lit the "Something else…" row on an untouched question.
+
+### Chat history
+- A **full-screen-only left column** (`aiHs*`, 258px) — the third history surface, and the
+  only one that is a place rather than an overlay. It shares `aiChatBand` with the other two
+  so they cannot disagree about a band.
+- The **Show-all screen's header moved into the panel header**; the chat name, ⋯ and
+  New-chat hide there, and the composer is hidden on that screen.
+- The context chip's **✕ is `position:absolute`** — it takes no flow width, so nothing
+  reflows on hover — and it is **opaque**, compositing the chip's own colour so it masks the
+  text it covers instead of letting it show through.
+
+### The thread and the Log Explorer
+- **The thread fades at whichever edge has more to scroll** — a `mask-image`, not an overlay
+  gradient, because the panel's own background is a gradient. Dynamic: 0 until there is
+  something past that edge.
+- **The panel background is a gradient**: `--card` at the top, 5% black at the foot, held at
+  zero for the top 66% so only the area behind the composer greys.
+- **The search bar builds queries itself** — type plain English, a `✦ Generate query` button
+  appears IN the bar, it rewrites the box, then Apply. The **popover now rewrites its own
+  textarea** the same way. Both go through `lxAiqParse → lxAiqExpr → lxAiqCommit`; two
+  doors, one engine, and the gate still shows the query before it runs.
+  ⚠️ `lxQIsQuery` must stay **case-sensitive** and must not test `In` loosely — "ERROR logs
+  **in** the last 30 minutes" matched the product's `In` operator and killed the feature.
+- **The log source tree and the sources panel both open COLLAPSED.** ⚠️ The panel diverges
+  from live, which shows it open — it was deleted 17 Aug, restored 19 Aug after driving the
+  product, and is now collapsed by default. Don't "fix" it back by checking live.
+- **The Log Pattern ✦ answers in the chat**, pinning the pattern as context and landing a
+  *Pattern summary* card. ⚠️ Also a deliberate divergence — live opens a drawer. Third
+  direction change for this flow; `lxPatBodyHTML` is the one renderer both use.
+- The Log Explorer starters are now **searches, not summaries**, and the IP in them is
+  `192.0.2.165` — the busiest `event.source` in `LX_FIELDS`, not an arbitrary RFC 5737 pick.
+
+### Verification lessons from this pass
+- ⚠️ **Never assert against `document.body.textContent`** — it includes inline `<script>`
+  source, so a probe matched `aiAgShare`'s own code and passed on a completely broken
+  button. Assert on rendered nodes; capture `window.onerror` in every probe.
+- ⚠️ **Regenerate the probe copy after every edit.** A stale snapshot "failed" twice on
+  code that was already fixed.
+- ⚠️ **Chrome rounds alpha in serialisation** (`.045` → `0.043`, `.018` → `0.02`) and
+  **letter-to-digit is not a word boundary** (`\b9\b` never matches `"Show all9 ›"`).
+  Both produced phantom failures.
+- ⚠️ **A tab driven by automation is not focused, so transitions freeze** — the panel read
+  as still off-screen. Inject `transition:none` before measuring geometry.
+- ⚠️ Open the chat from the **right module** — `aiInLogs()` swaps the starters, and a probe
+  that opened it inside Log Explorer counted 3 instead of 5.
 
 ## Responsive — the seven target resolutions
 
