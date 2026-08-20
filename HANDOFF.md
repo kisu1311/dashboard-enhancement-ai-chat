@@ -28,10 +28,10 @@ in the st section.
 
 ## Next steps
 
-1. **Push** — this plus yesterday’s Settings commit and the previous session’s sixteen.
+1. ~~Push~~ **DONE** — everything through `ecdf72f` is pushed and live at
+   <https://kisu1311.github.io/dashboard-enhancement-ai-chat/> (verified serving).
 2. Other categories are still placeholders; the `ST_PAGES` registry is the pattern.
-3. Still open: UI Preference/License pages, Log Pattern vs live, the Designer’s-Guide
-   filled-Approve conflict, scrubbing the public `172.16.x` strings elsewhere.
+3. Still open: UI Preference/License pages, Log Pattern vs live, scrubbing the public `172.16.x` strings elsewhere.
 
 ## Gotchas
 
@@ -73,12 +73,13 @@ no message; Reset leaves the switch; disabled looks enabled), and the deliberate
 
 ## Next steps
 
-1. **Push** — the previous session’s sixteen commits plus this one are local.
+1. ~~Push~~ **DONE** — pushed and live (20 Aug 2026).
 2. UI Preference and License (and the other 17 categories) are placeholders naming the live
    route; clone them the same way if wanted (`/settings/my-account/ui-preference`, `/license`).
-3. Still open from before: Log Pattern Action column vs live; the Designer’s Guide conflict
-   on the filled Approve; Options 2/3 have none of the Option-1 AI work; scrub the public
-   `172.16.x` / `.motadata.local` strings.
+3. Still open from before: Log Pattern Action column vs live (built, unverified — the lab
+   was unreachable); Options 2/3 have none of the Option-1 AI work; scrub the public
+   `172.16.x` / `.motadata.local` strings. *(The Designer’s Guide conflict is resolved —
+   see below.)*
 
 ## Gotchas
 
@@ -167,8 +168,8 @@ Nothing mid-flight. Tree is clean and every suite passes.
 
 ## Next steps
 
-1. **Push.** Sixteen commits are local; the live Pages site is behind by all of them.
-   Run `/publish` (or `git push`).
+1. ~~Push~~ **DONE (20 Aug 2026)** — all of it, plus everything since, is live at
+   <https://kisu1311.github.io/dashboard-enhancement-ai-chat/>.
 2. **Log Pattern — Action column / “AI Pattern Summary” — BUILT 19 Aug (late), Option 1,
    NOT yet checked against live.** The lab subnet was unreachable, so the column was built
    from the request + the docs (which describe `Count · Severity · Pattern` only). When
@@ -176,10 +177,10 @@ Nothing mid-flight. Tree is clean and every suite passes.
    the live Action column carries other row actions, add them beside the ✦. See
    *“✦ AI Pattern Summary”* in `CLAUDE.md` for what was built and the two bugs it surfaced
    (`.aiab li::before` over-painting the token rows; `.aictx` wrapping long chip names).
-3. **Decide on the Designer’s Guide conflict.** The create-dashboard gate now has a
-   filled primary on the user’s instruction; the guide says an accept must not be
-   prettier than its alternative, and the `ac*` panel still enforces that. The note in
-   `CLAUDE.md` says how to reinstate it in one edit.
+3. ~~Decide on the Designer’s Guide conflict~~ **RESOLVED 20 Aug 2026** — the
+   create-dashboard gate left the card entirely for the docked `.aipend` bar, where Accept
+   is the same `.aiagb pri` weight every proposal gets. `.aigo` / `.aiskip` are kept
+   unreferenced. See *“THE GATE LEFT THE CARD”* in `CLAUDE.md`.
 4. **Options 2 and 3 have none of this** — neither the AI panel work nor AI Query. Decide
    per change whether anything ports.
 5. **Agentation server is down** (killed after this morning’s drain). Restart before
