@@ -245,51 +245,70 @@ Event Log and Log Pattern.
 
 ### `✦ AI Pattern Summary` — the Action column of Log Search → Log Pattern (Option 1)
 
-Request, 19 Aug 2026: *"check Log Pattern has an action column, AI Pattern Summary will be
-added"*. Built 19 Aug 2026 (late session). ⚠️ **Not verified against the live product** —
-the lab subnet (`172.16.x`) was unreachable from this machine when it was built, and the
-docs describe the tab as `Count · Severity · Pattern` only (plus a hover on a masked token
-that shows *Distribution of Values*: value, Count, Share %). So the **column is ours** and
-carries the one action that was asked for; if the live tab turns out to have other row
-actions, add them beside it rather than replacing it. Re-check at `/log/search` → Log
-Pattern when the lab is reachable.
+Request, 19 Aug 2026; **flow corrected against the live product 20 Aug 2026** after it was
+reported wrong. The lab was unreachable on the 19th, so the first build guessed and routed
+the ✦ into the **chat panel** (pinned chip → thinking trail → bullets → Variable parts →
+follow-ups). **That is not what the product does, and the chat route has been deleted.**
 
-- **`ACTION`** is the fourth `<th>` (`.lxpat th.a`, 72px, centred). Each row carries one
-  `.lxpatai` — a 26px violet ✦ (`LX_AI_SPARK`, the same glyph as `.lxask`), tooltip **AI
-  Pattern Summary** — that calls `lxPatAi(i)` → **`aiPatSummary(i)`** in the `ai*` block.
-  The timed-out state (`lxPatFail`) renders no buttons; its fail row spans **4**.
-- ⚠️ **The pattern counts are now WEIGHTS scaled onto `LX.count`** (`LX_PAT_SUM` /
-  `lxPatN(p)`). The seven seeded numbers summed to 12,726 while the toolbar said *"7
-  patterns found from 5,483 logs"* — and `lxExec()` re-rolls `LX.count` on every search —
-  so a summary that prints *"N events — X% of the search"* could never be honest with fixed
-  counts. The rows now sum to the toolbar's count (±1). The seed numbers were kept in the
-  array so it still reads as data; only what is printed changed.
-- **`aiPatSummary(i)`** opens the panel scoped to Logs (`aiOpen('logs')`, and pushes `Logs`
-  into `aiScopeSel` if the panel was already open on a dashboard), pins **`Pattern · <lit>`**
-  as a context chip (kind `pattern`, `--orange` dot), pushes a user line *"Summarise the
-  “<lit>” pattern"*, and runs the thinking trail with a **`pattern` plan** (`aiTkPlan`:
-  Reading the pattern · Checking its share · Reading variable tokens · Composing) whose
-  detail rows are read off the same data. ⚠️ It does **not** go through `aiPush()` — there
-  is no sentence to route and the scope guard would have nothing to say. `aiPatCur` carries
-  the row index to the plan; a click while `aiBusy` is ignored, like `aiPush`.
-- **`aiPatAnswer(i)`** — title *Pattern summary*: the pattern quoted in `.ailq` (with the
-  table's own teal mask highlight, `.ailq em`), then `N events — X% of the <total> logs in
-  this search, severity <sev>`, **what** it is, **why** it carries that volume, a
-  **Variable parts** list (`.aipatv`: each token with its top values and share %, and a
-  `+N% long tail` when the shares do not reach 100), and **`Show these N logs in Log
-  Search →`** → `lxPatOpen(i)`, which fills `#lxQ` with `message Contains "<lit>"`,
-  lands on Event Log and runs `lxExec()` (and leaves full screen, so the rows are visible).
-  Prose and distributions live in **`LX_PAT_AI`**, index-aligned with `LX_PATTERNS`, all
-  RFC 5737. Follow-ups are the three log starters, so nothing routes somewhere odd.
-- ⚠️ **`.aipatv li` sits inside `.aiab`, whose `li::before` draws the bullet dot** — it
-  painted over the `<` of every token (the `.aidsteps` lesson). `.aipatv li::before
-  {content:none}`.
-- ⚠️ **`.aictx` had no ellipsis** — a long chip name wrapped to a second line inside the
-  24px chip behind the ✕. The name is now a `<span class="nm">` that ellipsises, and the
-  chip's `title` carries `kind: name` so the full text is still reachable. General fix; a
-  long @-mentioned monitor name wrapped the same way.
-- ⚠️ **A four-step trail takes 8–11s** (`aiStepMs` × `aiPace`), so a probe that reads the
-  answer at 7s sees a running trail. Wait 12s, with a 20s virtual-time budget.
+**What live build 10.0.0 actually does** (driven in the browser at `/log/search` → Log
+Pattern → the Action column's ✦, DOM measured):
+
+- The **ACTION column is real** — it exists on the live tab, one violet ✦ per row. (The
+  docs describe only `Count · Severity · Pattern`, so the docs are incomplete here.)
+- The ✦ opens its **own right-hand drawer**, not the chat: header **✦ AI Pattern Summary**
+  + ✕, then a **pattern card**, then **✦ AI Summary** and **one prose paragraph**. It says
+  one thing about one pattern and closes. There is no thread, no follow-up, no context chip.
+- ⚠️ **The summary is fetched, not instant** — a second row's drawer had still not opened
+  after 3 s. Ours is canned but keeps the beat: a 1.1 s *"Analysing this pattern…"* state
+  with the three pulsing dots, then the paragraph.
+
+**The rebuild** — `lxps*`, in the `lx` block (it is a Log Explorer component, not a chat
+one): `lxPatAi(i)` → `LX_PS` → `lxPsPaint(busy)` → `lxPsClose()`, markup `#lxPsScrim` /
+`#lxPs` / `#lxPsBody`. Geometry copied from the live DOM, colours through **this file's
+tokens** (the live violet `#7C3AED` is our `--ai-2`; importing another product's hue would
+put a colour in the file no token owns — the send-button rule):
+
+| part | live | here |
+|---|---|---|
+| drawer | `.ant-drawer-wrapper-body` **458px**, full height, white | `.lxps` 458px, `--card`, own scrim |
+| header | title 16px/500, close `rgb(113,134,168)` | `.lxpsh`, 56px |
+| card | `.pattern-header` bg `rgb(236,241,249)`, 1px `rgb(227,232,242)`, radius 4, pad 8/12, mb 16 | `.lxpsc` on `--panel-2` / `--border-soft` |
+| label | `PATTERN` 12px/500 uppercase, letter-spacing **.72px**, `rgb(106,127,160)`, severity right | `.lxpscr .l` / `.s` |
+| pattern | `.pattern-template` 14px monospace | `.lxpspt` |
+| matched | `N events matched` 12px, mt 4 | `.lxpsm`, from `lxPatN()` |
+| heading | `.ai-summary-title` ✦ + *AI Summary*, 12.8px/600, `rgb(124,58,237)`, mb 12 | `.lxpst`, `--ai-2` |
+| body | one paragraph, 12.8px, line-height 1.7 | `.lxpsp`, `LX_PAT_PROSE[i]` |
+
+- **`LX_PAT_PROSE`** is one analytic paragraph per pattern, in the live one's voice (it
+  reads the placeholder distributions and says what they imply), derived from the same
+  `LX_PAT_AI[i].tok` numbers the card shows, so prose and data cannot disagree. Placeholder
+  names render as `<code>` chips, as they do live.
+- ⚠️ **The drawer is `position:fixed` but sits INSIDE `#view-logexp`** — a fixed element in
+  a `display:none` ancestor is hidden, so leaving the module cannot strand it. Same rule as
+  `#lxDet`.
+- ⚠️ **`lxPsClose()` clears the pending timer.** Closing mid-generate otherwise lets the
+  summary arrive into a closed drawer a second later — the `agClose()` lesson.
+- ⚠️ **Esc is a capture-phase ladder**: the pattern drawer first (topmost), then `#lxDet`.
+- ⚠️ **The ✕ is `&#10005;`, not `\u2715`** — that is MARKUP, not a JS string, so the escape
+  rendered as the literal text `\u2715` in the header. Caught by reading the probe's own
+  output, not by looking at a screenshot. (The repo's `\uXXXX`-vs-real-character gotcha, in
+  a new place.)
+- ⚠️ **Pattern counts are WEIGHTS scaled onto `LX.count`** (`LX_PAT_SUM` / `lxPatN`). The
+  seven seeded numbers summed to 12,726 while the toolbar said 5,483, and `lxExec()`
+  re-rolls the count on every search, so "N events matched" could never be honest with fixed
+  numbers. The rows now sum to the toolbar's count (±1).
+- ⚠️ **Two deliberate differences from live, both recorded so neither is mistaken for the
+  product:** our masked tokens keep the table's **teal highlight** (`<user>`, `<ip>`) where
+  the live drawer renders its `*****` / `*NUM*` plain; and the live masking convention is
+  `*****` / `*NUM*` (per the docs: NUM · IP · EMAIL · URL · GUID · ID · SEQ · HEX · CMD,
+  anything else `*****`) while this prototype uses `<name>` placeholders throughout the
+  table. Changing the convention would ripple through the table, the prose and the fixtures
+  — it was **not** part of the flow fix.
+- ⚠️ The live pattern text is full of a real machine name and internal `10.20.x` addresses.
+  **Nothing was copied**: the fixtures stay on RFC 5737 / neutral names, per the repo rule.
+- Verified by a 34-assertion probe (the ✦ opens the drawer and pushes **nothing** into the
+  chat thread; generating state; card agrees with the row's count; 458px; label metrics;
+  Esc / click-away / close-mid-generate), both themes screenshotted.
 
 - **`LX_GROUPS` is the live source tree verbatim** — 16 groups, 60 log types, with the
   counts the instance reported (Router 209.95 K → Cisco Device Configuration Update 77.71 K,
