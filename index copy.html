@@ -25,6 +25,9 @@
      (request, 20 Aug 2026). Declared once: it is a neutral shade, not a hue, so the
      same 5% reads as a depth cue on the dark canvas as it does on white. */
   --ai-wash:rgba(0,0,0,.05); --ai-wash-mid:rgba(0,0,0,.018);
+  /* the starter rows' fill — an AI-accent gradient, dark-theme strength */
+  --ai-cta:linear-gradient(90deg,rgba(76,177,254,.13) 0%,rgba(115,30,251,.13) 55%,rgba(249,17,227,.13) 100%);
+  --ai-cta-h:linear-gradient(90deg,rgba(76,177,254,.19) 0%,rgba(115,30,251,.19) 55%,rgba(249,17,227,.19) 100%);
   /* the composer's edge — see .aiinbox. Dark theme: a real border, because a shadow on a
      dark surface says nothing. Light theme overrides both below. */
   /* ⚠️ Dark comes down too, but LESS FAR. On the dark canvas the shadow contributes
@@ -80,6 +83,10 @@ html[data-theme="light"]{
      is where ClickUp's own composer already is (no border at all, three shadow layers).
      Going further would mean deleting the border, and then the box has no edge at rest in
      any browser that drops the shadow. This is the floor. */
+  /* ⚠️ light theme takes a tint far more strongly than the dark canvas does — the same
+     reason the panel's own wash is weaker here. These are ~half the dark values. */
+  --ai-cta:linear-gradient(90deg,rgba(76,177,254,.075) 0%,rgba(115,30,251,.075) 55%,rgba(249,17,227,.075) 100%);
+  --ai-cta-h:linear-gradient(90deg,rgba(76,177,254,.11) 0%,rgba(115,30,251,.11) 55%,rgba(249,17,227,.11) 100%);
   --ai-in-line:rgba(0,0,0,.018);
   --ai-in-shadow:0 0 1px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.07);
   /* ⚠️ HOVER LIFTS IT (request, 20 Aug 2026). Now that the resting edge is nearly gone the
@@ -1036,6 +1043,74 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
    which in this panel would also catch the widget-preview artwork inside answer cards.
    ⚠️ The spinner ring (`.aitrm svg.rg circle`) is deliberately EXEMPT — it is geometry
    being animated, not a glyph, and its weight is part of the drawing. */
+/* ══ THE PANEL IS PAINTED FROM THE PRODUCT'S OWN PALETTE ══════════════════════════════
+   Requests, 21 Aug 2026: first "the border colour will be replaced with #E3E8F2 — change
+   all border colours", then "use this library to replace new colour, because I need to set
+   this AI chat interface in the current UI visualization — text colour, icon colour, or
+   any you need". The library is `observeops-icons/color-palette.html`, the live product's
+   own tokens harvested per theme (319 light / 300 dark).
+
+   Done by REDEFINING TOKENS ON `.aipanel`, not by editing the hundreds of `color:` and
+   `border:` lines underneath. Custom properties inherit, and they resolve on the element
+   that declares them too, so this repaints the card's own edge as well as everything
+   inside it — and a rule added later gets the palette without anyone remembering this.
+
+   ⚠️ SCOPED TO THE PANEL, DELIBERATELY. Every token below also drives the dashboard, the
+   Log Explorer and the Settings module. The request was to align THE CHAT with the product,
+   not to repaint the prototype. These rules must never move to `:root`.
+   ⚠️ DARK IS `:root` HERE and light is the `html[data-theme="light"]` override, so the
+   dark values sit on `.aipanel` and the light ones on the more specific selector below.
+   Only what actually DIFFERS is declared; the panel already agreed with the product on
+   `--text`, `--text-dim2`, `--chip`, `--pop` and `--pop-item-hover` in dark.
+
+   The mapping, product token → ours:
+     --page-text-color            → --text        the answer text
+     --text-color-common-secondary→ --text-dim    secondary copy and most glyphs
+     --text-neutral-ligher        → --text-dim2   tertiary / the quietest icons
+     --neutral-regular            → --muted
+     --primary                    → --white       the strongest ink in the thread
+     --border-color               → --border      #e3e8f2 light · #1d2a3e dark
+     --tag-bg-color               → --chip        the context chips
+     --left-menu-hover-bg         → --hover
+     --dropdown-hover-background  → --pop-item-hover
+     --chart-indigo               → --ai          see the note on the accent below
+
+   ⚠️ THE AI ACCENT IS A PRODUCT TOKEN AFTER ALL. `--chart-indigo` is `#8b5cf6` in dark —
+   which is exactly the violet this panel already used — and `#7c3aed` in light. So dark
+   needs no change and light moves to the deeper indigo the product uses for the same slot.
+   That is also precisely what `--oa` (Option 3's panel) already declares in light, so the
+   two AI surfaces stop disagreeing about their own accent.
+   ⚠️ `--ai-soft` / `--ai-line` MUST move with it — they are hardcoded `rgba(139,92,246,…)`
+   at `:root`, so changing `--ai` alone would leave the washes and hairlines on the old hue.
+   The light pair matches `--oa-soft` / `--oa-line`'s existing alphas.
+   ⚠️ NOT REPOINTED, and none of it is chrome: `--ai-in-line` (the composer's edge, dimmed
+   on request four times to its `.018` floor), `--ai-cta` (the brand gradient, supplied
+   verbatim), and `--track` (the clarifier radio's ring, which has to stay visible).
+   ⚠️ CONTRAST, stated rather than silently "fixed": light `--text-dim` goes #5b6b85 →
+   #7186a8, which is the product's own secondary-text colour but lands near 4.0:1 on white
+   rather than above 4.5:1. It is what the product ships; say so if it needs to be darker.
+   ⚠️ `.aihov`, the chat-history hover preview, is appended to `<body>` and does NOT inherit
+   any of this. It is a popover over the board rather than part of the panel. */
+.aipanel{
+  --text-dim:#8e9fbc;              /* --text-color-common-secondary */
+  --muted:#6a7fa0;                 /* --neutral-regular */
+  --white:#e3e8f2;                 /* --primary */
+  --hover:#172336;                 /* --left-menu-hover-bg */
+}
+html[data-theme="light"] .aipanel{
+  --text:#1d2a3e;                  /* --page-text-color */
+  --text-dim:#7186a8;              /* --text-color-common-secondary */
+  --text-dim2:#6a7fa0;             /* --text-neutral-ligher */
+  --muted:#7186a8;                 /* --neutral-regular */
+  --white:#111c2c;                 /* --primary */
+  --border:#e3e8f2;                /* --border-color */
+  --pop-line:#e3e8f2;              /* --hieararchy-border-color */
+  --chip:#e3e8f2;                  /* --tag-bg-color */
+  --hover:#ecf1f9;                 /* --left-menu-hover-bg */
+  --pop-item-hover:#ecf1f9;        /* --dropdown-hover-background */
+  --ai:#7c3aed; --ai-2:#8b5cf6;    /* --chart-indigo, light */
+  --ai-soft:rgba(124,58,237,.09); --ai-line:rgba(124,58,237,.26);
+}
 .aipanel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:96vw;z-index:120;display:flex;flex-direction:column;
   /* ⚠️ `--card`, not `--panel` (request, 20 Aug 2026: "the background is #ffffff"). In
      light theme `--panel` is #f7f9fc, a pale blue-grey, and the chat read as a tinted slab
@@ -1175,10 +1250,27 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
    on every side, its own shadow, and the board fully visible around it. It rises into
    place rather than sliding in from the edge, because it never touches the edge. */
 .aipanel.aifloat{
+  /* ⚠️ MUST equal `AI_EDGE` in the script (20). This is where the card RESTS; `AI_EDGE` is
+     where a drag CLAMPS it. They were briefly 20 and 24, and the card visibly shifted 4px
+     when it came back from Sidebar. */
   top:auto;right:20px;bottom:20px;
+  /* ⚠️ THE CARD RESTS AT THE SIDEBAR'S SIZE (request, 21 Aug 2026) — `--ai-w` wide, which
+     it always was, and now FULL HEIGHT too, less the 20px it floats by at top and bottom.
+     It was `min(660px, 100vh - 108px)`, i.e. a short card in the bottom-right corner.
+     Sidebar was removed from the Layout menu in the same request, so this is what the chat
+     opens as; the geometry that mode used to provide had to come with it. */
   width:var(--ai-w);max-width:calc(100vw - 40px);
-  height:min(660px,calc(100vh - 108px));
-  border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  height:calc(100vh - 40px);
+  /* ⚠️ one token for the corner: the resize grips' highlight lines inset by it so they
+     stop where the straight edge does. Change the radius and they follow. */
+  --aifloat-r:14px;
+  /* ⚠️ `overflow:visible`, and it USED TO BE `hidden` — the top-edge grip line straddles
+     the card's own border (half above, half below, request 21 Aug 2026) and the clip ate
+     its outer half. Changed here rather than overridden below, so there is one declaration
+     to read. Nothing inside the card paints its own background, so the rounded corners
+     survive without the clip — checked in both themes. Only the floating card ever had
+     it; Sidebar and Full screen were never clipped. */
+  border:1px solid var(--border);border-radius:var(--aifloat-r);overflow:visible;
   box-shadow:0 26px 70px rgba(0,0,0,.55),0 3px 10px rgba(0,0,0,.34);
   transform:translateY(18px) scale(.985);
   transition:transform .2s ease,opacity .2s ease;opacity:0}
@@ -1203,24 +1295,165 @@ html[data-theme="light"] .aipanel.aifloat{
    ⚠️ The sidebar drag writes `--ai-w` INLINE ON <html>, which beats the responsive `:root`
    steps — the same mechanism the ac* panel's `.acgrip` uses, and the reason a dragged
    width survives a viewport change instead of being stomped by the next media query. */
-.aigw,.aign,.aignw{position:absolute;z-index:9;display:none}
+/* ⚠️ THREE GRIPS — W, N and the NW corner. An eight-handle version modelled on monday's
+   Sidekick was built and REVERTED on request (20 Aug 2026); don't rebuild it without
+   asking. The card grows up and to the left, which is the direction it has room in when it
+   is anchored bottom-right. */
+/* ⚠️ FOUR EDGES, not one (request, 21 Aug 2026: "this line is shown only on the top upper
+   side — set it on top, bottom, left and right"). West and north were the only grips the
+   card ever had, because it is anchored bottom-right and grew away from that corner. East
+   and south are real resize handles now, not just marks: a line that says "grab here" over
+   something ungrabbable is worse than no line. */
+.aigw,.aign,.aige,.aigs,.aignw,.aigne,.aigse,.aigsw{position:absolute;z-index:9;display:none}
 .aigw{left:0;top:0;bottom:0;width:6px;cursor:ew-resize}
+.aige{right:0;top:0;bottom:0;width:6px;cursor:ew-resize}
 .aign{left:0;right:0;top:0;height:6px;cursor:ns-resize}
-.aignw{left:0;top:0;width:15px;height:15px;cursor:nwse-resize;z-index:10}
+.aigs{left:0;right:0;bottom:0;height:6px;cursor:ns-resize}
+/* ⚠️ ALL FOUR CORNERS (request + monday reference, 21 Aug 2026). `nw` was the only one,
+   from when the card could only grow up and left. The resize maths needed nothing: since
+   `aiRzMove` tests modes by `M.includes(...)`, `ne` simply runs the `n` and `e` branches. */
+.aignw,.aigne,.aigse,.aigsw{width:15px;height:15px;z-index:10}
+.aignw{left:0;top:0;cursor:nwse-resize}
+.aigne{right:0;top:0;cursor:nesw-resize}
+.aigse{right:0;bottom:0;cursor:nwse-resize}
+.aigsw{left:0;bottom:0;cursor:nesw-resize}
 /* the left grip serves BOTH modes; the top and corner grips are the card's alone */
 body.aisplit .aipanel .aigw{display:block}
-.aipanel.aifloat .aigw,.aipanel.aifloat .aign,.aipanel.aifloat .aignw{display:block}
-.aigw::after{content:'';position:absolute;left:2px;top:0;bottom:0;width:2px;border-radius:2px;
-  background:var(--ai);opacity:0;transition:opacity .14s}
-.aigw:hover::after,body.aidragging .aigw::after{opacity:.75}
-.aign::after{content:'';position:absolute;left:0;right:0;top:2px;height:2px;border-radius:2px;
-  background:var(--ai);opacity:0;transition:opacity .14s}
-.aign:hover::after{opacity:.75}
-.aignw::after{content:'';position:absolute;left:4px;top:4px;width:7px;height:7px;
-  border-left:2px solid var(--ai);border-top:2px solid var(--ai);border-radius:2px 0 0 0;
-  opacity:0;transition:opacity .14s}
-.aignw:hover::after{opacity:.85}
+.aipanel.aifloat .aigw,.aipanel.aifloat .aign,.aipanel.aifloat .aige,
+.aipanel.aifloat .aigs,.aipanel.aifloat .aignw,.aipanel.aifloat .aigne,
+.aipanel.aifloat .aigse,.aipanel.aifloat .aigsw{display:block}
+/* ══ NO PAINTED GRIP MARKS ANYWHERE (request, 20 Aug 2026: "remove this line everywhere")
+   The three resize grips used to draw a violet highlight on hover — a 2px line down the
+   left edge, one across the top, and an L-bracket in the corner. They went one at a time
+   over this session (the top one was realigned, then the left one removed) and are now all
+   gone, in BOTH layouts.
+   ⚠️ NOTHING ABOUT RESIZING CHANGED. `.aigw` / `.aign` / `.aignw` keep their hit areas,
+   their `ew-resize` / `ns-resize` / `nwse-resize` cursors, their "Drag to resize" tooltips,
+   and their double-click-to-reset. The pointer changing shape over the edge is the
+   affordance now — which is how every OS window and every other resizable panel in this
+   prototype behaves.
+   ⚠️ The pseudo-elements are DELETED, not hidden. Leaving `opacity:0` rules behind would
+   mean the next person re-enables a mark by touching an unrelated hover rule, and
+   `body.aidragging .aigw::after` would have quietly resurrected the line mid-drag.
+   ⚠️ To bring one back: re-add a `::after` on the grip. The floating card's corner radius
+   is `--aifloat-r`, and any line along its top or left MUST be inset by it or the ends
+   overshoot the curve — that was the bug that started this. */
 /* the card's header is the drag handle — but only where it is not a control */
+/* ══ THE TOP EDGE SHOWS A GRIP LINE ON HOVER ═══════════════════════════════════════════
+   Floating only, north grip only — the one mark that came back after all of them were
+   removed (request, 21 Aug 2026; reference: monday's Sidekick panel, whose floating card
+   shows exactly this line at its top edge and nothing on its sides).
+   ⚠️ It is INSET BY THE CORNER RADIUS at both ends (`--aifloat-r`). A full-width line
+   overshoots the curve and reads as a misaligned rule — that is the bug that got every
+   grip mark deleted in the first place, recorded above.
+   ⚠️ Hover only, and that is enough: while you drag the north edge, the edge follows the
+   pointer, so the pointer stays on the grip and the line stays lit on its own. It does
+   NOT key off `body.aidragging`, which cannot say WHICH grip is being dragged and would
+   light the top edge while you resize from the left. */
+/* ⚠️ THE LINE STRADDLES THE EDGE — half above the card, half below (request, 21 Aug
+   2026). The grip's own `top:0` is the panel's PADDING box, i.e. 1px inside its border,
+   so the mark is pulled to `-1px` and then centred on itself: its middle lands exactly on
+   the card's outer top edge.
+   ⚠️ WHICH IS WHY `.aipanel.aifloat` IS `overflow:visible` — see the note on that rule.
+   The outer half of this line is a child painting outside its box, and the card's old
+   `overflow:hidden` ate it, leaving a 1.5px line flush on the edge. */
+/* ⚠️ TWO STATES (request, 21 Aug 2026): an OUTLINE while you are only pointing at the
+   edge, and the panel's ACTIVE COLOUR once you are actually dragging it. The outline says
+   "this is grabbable"; the fill says "you have got it" — a mark that looks identical
+   before and during a drag is telling you nothing at the only moment it matters.
+   ⚠️ It is 4px, not 3px. A 1px border needs a hollow core to read AS an outline, and at
+   3px the two borders meet and it renders as a solid bar again — which is the state it is
+   supposed to be distinguishable FROM.
+   ⚠️ THE CORE IS FILLED WITH `--card`, NOT TRANSPARENT (request, 21 Aug 2026: "add white
+   background"). It straddles the card's top edge, so its outer half sits over the BOARD —
+   a hollow core let widget text and legend dots show through the middle of the bar and it
+   read as a rendering fault rather than as an outline. `--card` is `#ffffff` in light and
+   the card's own surface in dark, so this is one token rather than a hardcoded white that
+   would punch a bright slot in the dark theme.
+   ⚠️ THE SOFTNESS IS IN THE BORDER COLOUR, NOT IN `opacity` — and this is what made the
+   fill look see-through twice. `opacity` applies to the WHOLE pseudo-element, background
+   included, so revealing it at `.5` left a half-transparent white and the board's widget
+   text read straight through the middle of the bar. The element is now revealed at FULL
+   opacity and the border alone carries the alpha, via `color-mix`.
+   ⚠️ NO `background-clip` — the default `border-box` is wanted here, so the opaque fill
+   paints UNDER the translucent border and the outline composites over white rather than
+   over whatever widget happens to be behind it. During a drag the border and the fill are
+   the same colour, so the clip makes no difference to that state. */
+/* ⚠️ EDGES GET A CAPSULE, CORNERS GET AN ARC — one mark per grip (request + four monday
+   Sidekick screenshots, 21 Aug 2026). A single ring clipped to a band was tried in between:
+   it ran the edge and turned BOTH corners as one continuous stroke, and that is NOT what the
+   reference does. Each grip owns its own short mark; nothing joins up.
+   ⚠️ Every mark is HOLLOW — a `--aigrip-c` outline with the card surface inside it, so the
+   bars and the arcs read as one family.
+   ⚠️ The card's own edge is 1px OUTSIDE the padding box these are positioned against, so
+   `-3px` centres a 4px stroke on it and `-2px` centres the 2px core. `-1px` looks like the
+   obvious number and puts the whole stroke INSIDE the border — measured, not guessed. */
+.aipanel.aifloat{--aigrip-c:color-mix(in srgb,var(--text-dim) 60%,transparent)}
+.aign::before,.aigs::before,.aigw::before,.aige::before{content:'';position:absolute;
+  border-radius:999px;border:1px solid var(--aigrip-c);background:var(--card);
+  opacity:0;transition:opacity .12s,background-color .12s,border-color .12s}
+/* ⚠️ HORIZONTAL edges inset left/right by the radius; VERTICAL edges inset top/bottom.
+   Same rule, different axis — inset the wrong pair and the bar runs into the corner arc. */
+.aign::before{left:var(--aifloat-r);right:var(--aifloat-r);top:-1px;height:4px;transform:translateY(-50%)}
+.aigs::before{left:var(--aifloat-r);right:var(--aifloat-r);bottom:-1px;height:4px;transform:translateY(50%)}
+.aigw::before{top:var(--aifloat-r);bottom:var(--aifloat-r);left:-1px;width:4px;transform:translateX(-50%)}
+.aige::before{top:var(--aifloat-r);bottom:var(--aifloat-r);right:-1px;width:4px;transform:translateX(50%)}
+/* ⚠️ THE CORNER ARC IS A STROKED SVG PATH, NOT TWO CSS BORDERS (request, 21 Aug 2026:
+   "make border will be corner radius", with the monday screenshots again). Two adjacent
+   borders DO draw the right curve, but a border always terminates square and mitred: the
+   hollow shape ended in two open, flat cut-offs and read as a length of pipe. A path takes
+   `stroke-linecap:round`, which closes each end with a cap — which is what the reference
+   shows and what the straight bars already had from `border-radius:999px`.
+   ⚠️ HOLLOW COMES FREE FROM THE TWO STROKE WIDTHS. Both paths are IDENTICAL; the 4px one
+   under the 2px one leaves 1px of outline showing along each side, and — because a round
+   cap extends by half the stroke width — 2px vs 1px leaves that same 1px at each END.
+   Nothing has to be shortened by hand.
+   ⚠️ ONE PATH, ROTATED. The geometry is authored for the top-left and the other three are
+   `rotate(90/180/270deg)`; a 90° turn about the box centre maps (x,y) → (26-y, x), which is
+   exactly the next corner. Four hand-written paths would be four chances to get one wrong.
+   ⚠️ THE VIEWBOX IS TIED TO `--aifloat-r` (14) — the box is `r + 12` square and the arc's
+   radius is `r`. Change the token and this path has to be re-cut; it is the one place in
+   the panel where a token is baked into geometry.
+   ⚠️ `overflow:visible` — the 4px stroke straddles the path, so it paints 2px outside the
+   viewBox on two sides and would otherwise be clipped in half. */
+.aignw>svg,.aigne>svg,.aigse>svg,.aigsw>svg{position:absolute;width:26px;height:26px;
+  overflow:visible;pointer-events:none;opacity:0;transition:opacity .12s}
+.aignw>svg{top:-1px;left:-1px}
+.aigne>svg{top:-1px;right:-1px;transform:rotate(90deg)}
+.aigse>svg{bottom:-1px;right:-1px;transform:rotate(180deg)}
+.aigsw>svg{bottom:-1px;left:-1px;transform:rotate(270deg)}
+.aignw>svg path,.aigne>svg path,.aigse>svg path,.aigsw>svg path{fill:none;
+  stroke-linecap:round;stroke-linejoin:round;transition:stroke .12s}
+.aignw>svg .o,.aigne>svg .o,.aigse>svg .o,.aigsw>svg .o{stroke:var(--aigrip-c);stroke-width:4}
+.aignw>svg .i,.aigne>svg .i,.aigse>svg .i,.aigsw>svg .i{stroke:var(--card);stroke-width:2}
+/* revealed on hover of that grip */
+.aign:hover::before,.aigs:hover::before,.aigw:hover::before,.aige:hover::before{opacity:1}
+.aignw:hover>svg,.aigne:hover>svg,.aigse:hover>svg,.aigsw:hover>svg{opacity:1}
+/* ⚠️ `body.aidragn` IS SET ONLY FOR THE NORTH GRIP (`aiRzStart`'s 'n' / 'nw'). The bare
+   `aidragging` class cannot say WHICH grip is being dragged, so keying off it would light
+   the top edge while you resize from the left — the reason this mark was hover-only until
+   the active state was asked for. It also holds the mark up when the pointer runs off the
+   6px band mid-drag, which plain `:hover` cannot. */
+/* ⚠️ THE ACTIVE COLOUR IS THE PRODUCT'S, NOT THE AI ACCENT (request, 21 Aug 2026). It was
+   `--ai`, which put a saturated violet bar across the top of the card — the AI accent means
+   "the assistant is doing something", and a resize grip is neutral chrome that has nothing
+   to do with the assistant. The product paints its own active/selected chrome with
+   `--primary` (`#111c2c` light, `#e3e8f2` dark) — `--radio-btn-box-selected-bg`,
+   `--calendar-selected-day-background-color` and `--nav-divider-bg` all resolve to it. In
+   this file that IS `--white`, which the panel already maps to `--primary`, so this is one
+   token and it is right in both themes with nothing further to keep in step. */
+/* ⚠️ DRAGGING: the mark stays up (the pointer leaves the 6px band) and goes SOLID in the
+   product's active colour — the `--card` inner stroke goes with it, so the hollow outline
+   fills in rather than staying a double line. A corner drag lights both of its edges and the
+   arc between them, because `aidrag<edge>` is set by membership. */
+body.aidragn .aign::before,body.aidrags .aigs::before,
+body.aidragw .aigw::before,body.aidrage .aige::before{
+  opacity:1;background:var(--white);border-color:var(--white)}
+body.aidragn.aidragw .aignw>svg,body.aidragn.aidrage .aigne>svg,
+body.aidrags.aidrage .aigse>svg,body.aidrags.aidragw .aigsw>svg{opacity:1}
+/* both strokes go solid, so the hollow outline fills in rather than staying a double line */
+body.aidragn.aidragw .aignw>svg path,body.aidragn.aidrage .aigne>svg path,
+body.aidrags.aidrage .aigse>svg path,body.aidrags.aidragw .aigsw>svg path{stroke:var(--white)}
 .aipanel.aifloat .aihd{cursor:move}
 .aipanel.aifloat .aihd button,.aipanel.aifloat .aihd .aihttl{cursor:pointer}
 /* ⚠️ kill transitions and text selection for the duration of a drag, or the panel lags a
@@ -1352,9 +1585,32 @@ html[data-theme="light"]{
    one line rather than the name being 2px shorter than everything around it.
    ⚠️ `margin-left` stays NEGATIVE so the pill's padding does not push the name off the
    header's own 12px alignment; the text still starts where it always did. */
-.aihttl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;
-  height:28px;padding:0 7px 0 9px;margin-left:-9px;border-radius:8px;cursor:pointer;
-  background:var(--ai-in-chip);transition:background .13s}
+/* ⚠️ NO BACKGROUND AT REST — the pill appears on hover only (request, 21 Aug 2026). It
+   carried `--ai-in-chip` permanently, which put a filled slab behind the chat name in a
+   header that has no other fill in it, and made the name read as a field rather than as
+   the title. Hover and `.open` still fill it, so the affordance is intact the moment you
+   go near it. This reverses the earlier "chat name as a resting pill" — don't restore that
+   without re-reading both requests.
+   ⚠️ THE `-9px` PULL WENT WITH IT (same request, "add margin"). That negative margin
+   existed to cancel the pill's own left padding so the TEXT lined up with the header edge;
+   with nothing painted at rest there is no pill to cancel, and all it did was jam the name
+   against the ＋ New chat button 4px to its left. `margin-left:2px` gives it the header's
+   own `gap:4px` plus a little, so the two read as separate controls. */
+/* ⚠️ THE TITLE IS CAPPED (request, 21 Aug 2026: "the chat title width will be made small").
+   It was `max-width:100%`, i.e. everything the three trailing buttons did not take — so a
+   long auto-named chat ("Give me a summary of this da…") ran right up to the caret with the
+   ⋯ hard against it and no breathing room in the row.
+   ⚠️ THE 50% RESOLVES AGAINST `.aiht`, ITS PARENT — NOT the header. `.aiht` is the flex
+   COLUMN wrapper around the title, so a percentage here is half of that, which measures
+   ~128px in a 408px panel and leaves ~130px before the ⋯. Read it as "half the space the
+   title had", not "half the header" — the two are not the same box.
+   ⚠️ A PERCENTAGE, not a px cap, so it follows `--ai-w` down its responsive ladder
+   (420 → 348) instead of eating the whole header at the narrow end.
+   ⚠️ `min-width:0` is still what lets it truncate at all — an inline-flex child will not
+   shrink below its content without it, and the ellipsis would never appear. */
+.aihttl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:50%;
+  height:28px;padding:0 7px 0 9px;margin-left:2px;border-radius:8px;cursor:pointer;
+  background:transparent;transition:background .13s}
 .aihttl:hover{background:var(--hover-side)}
 /* the OPEN state has to hold its highlight — otherwise moving the pointer down into the
    menu drops the hover and nothing on screen says which control opened it */
@@ -1544,6 +1800,39 @@ html[data-theme="light"]{
 .aibig svg{width:30px;height:30px;fill:var(--ai-2)}
 .aiempty h3{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
 .aiempty p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
+/* ⚠️ Documentation / Support, under the starters (request, 21 Aug 2026). They are the
+   quietest thing in the empty state on purpose: the five starters are what the panel is
+   for, and two help links that competed with them would invert that. Hence the muted
+   `--text-dim`, no `--ai-cta` wash, and a hairline above to separate them from the column
+   of prompts.
+   ⚠️ SIDE BY SIDE, AS LIGHT-GREY BUTTONS (request, 21 Aug 2026). They were a stacked pair
+   of transparent rows, which read as two more starters in a column of five — the same
+   shape as the thing they are meant to be secondary to. A row of two grey buttons is a
+   different object, and it takes one line of the panel instead of two.
+   ⚠️ `flex:1 1 0` on both, not `1 1 auto`, so they are EQUAL halves — sized by the box,
+   not by "Documentation" being twice the word "Support". */
+.aihelpl{margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border);
+  display:flex;gap:8px}
+.aihelpl button{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;
+  padding:9px 11px;border:0;border-radius:9px;background:var(--panel-2);cursor:pointer;
+  text-align:left;font:inherit;font-size:12.5px;color:var(--text-dim);
+  transition:background .12s,color .12s}
+.aihelpl button:hover{background:var(--hover-side);color:var(--text)}
+.aihelpl button span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.aihelpl button svg{flex:0 0 15px;width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* ⚠️ THE ↗ IS HIDDEN UNTIL HOVER (request, 21 Aug 2026). It repeats on both buttons and
+   says the same thing on each, so at rest it is pure noise; on hover it is the one useful
+   fact — this leaves the panel.
+   ⚠️ It keeps its BOX, only its paint goes. Taking it out of flow would let the label
+   reflow under the cursor on hover, which is the opposite of what the context chip's ✕
+   needs (there the chip is 180px and every pixel of label matters; here the button is half
+   a 408px panel and the labels are two short words). */
+.aihelpl button svg:last-child{flex:0 0 13px;width:13px;height:13px;stroke-width:2.31;
+  opacity:0;transition:opacity .12s}
+.aihelpl button:hover svg:last-child,
+.aihelpl button:focus-visible svg:last-child{opacity:.75}
 /* ⚠️ THE STARTERS SIT ON THE PANEL'S OWN QUIET SURFACE (request, 20 Aug 2026: "change the
    background colour"). They were `--sv-cta`, the ServiceOps brand gradient — a three-stop
    blue→violet→pink wash — which by this point was the loudest thing left in the panel and
@@ -1560,10 +1849,27 @@ html[data-theme="light"]{
    row moves almost nothing — the rows had no perceptible hover state in light theme. */
 .aicta{display:flex;align-items:center;width:100%;min-height:44px;padding:11px 14px;
   margin-bottom:8px;border:0;border-radius:10px;cursor:pointer;text-align:left;
-  background:linear-gradient(var(--ai-in-chip),var(--ai-in-chip)),var(--card);
+  /* ⚠️ THE BRAND GRADIENT, SUPPLIED VERBATIM (request, 21 Aug 2026):
+     `90deg, rgb(76,177,254) 0%, rgb(115,30,251) 55%, rgb(249,17,227) 100%` — blue → violet
+     → magenta. Fourth state for these rows in two days: `--sv-cta` → flat wash → a
+     single-hue `--ai` fade → this. An earlier note here argued against exactly this
+     gradient as "another product's colours"; **that objection was overruled by the
+     request** and this is now the panel's own. Don't revert it on the strength of the old
+     comment.
+     ⚠️ ONLY THE HUES AND STOPS ARE THE SPEC — the ALPHA is ours. The gradient was given
+     opaque, and painted opaque it puts saturated blue-to-magenta behind 13px body text.
+     A uniform alpha keeps all three hues at equal weight (which is what the three stops
+     are for) and is tuned so the row's overall strength matches the single-hue fade it
+     replaces, not so that it shouts: dark `.13` / hover `.19`, light `.075` / hover `.11`.
+     ⚠️ Light takes a tint far more strongly than the dark canvas does — hence its own,
+     lower pair, the same split the thinking card's wash uses.
+     ⚠️ LAYERED over `--card`, not painted alone. The gradient stops are translucent; on
+     their own the panel's top-to-bottom wash would show through and each of the five rows
+     would sit at a slightly different shade depending on how far down the page it is. */
+  background:var(--ai-cta),var(--card);
   color:var(--text);font:inherit;font-size:13px;font-weight:500;
   line-height:1.4;transition:background .14s}
-.aicta:hover{background:var(--hover-side)}
+.aicta:hover{background:var(--ai-cta-h),var(--card)}
 /* ⚠️ `.aicta svg` and the row's `gap` went with the icon (request, 20 Aug 2026). The row
    is `min-height`, not a fixed 44px, because a two-line starter ("Build a line chart of
    memory usage for the last 24h") had been relying on the icon's flex box to hold its
@@ -1856,7 +2162,14 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 /* the row has room here that the menu never had — so it carries the summary too */
 .aihfr{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:9px;
   cursor:pointer;position:relative}
-.aihfr:hover{background:var(--hover-side)}
+/* ⚠️ a LIGHTER hover (request, 20 Aug 2026). `--hover-side` is `#eef2f8` in light theme —
+   a solid grey slab behind a two-line row, which on a screen that is nothing but rows made
+   the pointer feel like it was selecting rather than passing over. `--ai-in-chip` is the
+   2.4% wash the context chip and the chat-name pill already rest on, so the whole panel
+   greys at one strength.
+   ⚠️ It must stay LIGHTER than `.aihfr.cur` below, which marks the chat you are actually
+   in — if hover were the heavier of the two, pointing at a row would look like opening it. */
+.aihfr:hover{background:var(--ai-in-chip)}
 .aihfr.cur{background:var(--sel)}
 /* ⚠️ the round ✦ avatar that led every row was REMOVED (request, 20 Aug 2026) and its
    four rules went with it. Nine identical violet marks down the left edge said only "these
@@ -2099,6 +2412,30 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aicqsk{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;
   cursor:pointer;padding:6px 4px}
 .aicqsk:hover{color:var(--text)}
+/* ══ MULTI-SELECT STEPS (request, 21 Aug 2026) ════════════════════════════════════════
+   ⚠️ `.aicqck`, and it is NOT `.aicqx` — that name was already taken by the clarifier's own
+   old primary button 30 lines below. Grep the modifier before naming one; two collisions
+   earlier the same day (`.stop`, `.aistop`) are what this note is paying for.
+   The checkbox occupies the ordinal's exact box, so a multi row and a single row are the
+   same shape and only the mark differs. */
+.aicqck{flex:0 0 20px;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;
+  background:var(--chip);color:transparent;box-shadow:inset 0 0 0 1px var(--border)}
+.aicqck svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.aicqo:hover .aicqck{background:var(--ai-soft);box-shadow:inset 0 0 0 1px var(--ai-line)}
+.aicqo.on .aicqck{background:var(--ai);color:#fff;box-shadow:none}
+/* Done sits on its own row under the free-text field, where Next used to be. It is the
+   only commit on a multi step, so it is the only filled control on the card. */
+.aicqd{display:flex;justify-content:flex-end;padding:10px 12px 2px}
+.aicqok{height:30px;padding:0 14px;border:0;border-radius:var(--ai-r);background:var(--ai);
+  color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px}
+.aicqok:hover{background:#9d78f8}
+.aicqok:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
+/* the count rides in a pill so "Done 2" reads as one control, not two words */
+.aicqok span{min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:rgba(255,255,255,.22);display:inline-grid;place-items:center;
+  font-size:11px;font-weight:600}
 .aicqx{height:30px;padding:0 16px;border:0;border-radius:var(--ai-r);background:var(--ai);
   color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aicqx:hover{background:#9d78f8}
@@ -2512,6 +2849,18 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiagblk{margin-bottom:13px}
 .aiagc{position:relative;margin:2px 0 13px;border:1px solid var(--border);border-radius:10px;
   background:var(--card);overflow:visible}
+/* ⚠️ THE SUMMARY HAS NO BOX (request, 20 Aug 2026). It is the answer — a border around it
+   framed prose as though it were an object you could act on, and put a second rectangle
+   inside a panel that is already a rectangle. The same call the thinking trail's box got on
+   19 Aug: the chrome was louder than the thing it contained.
+   ⚠️ SUMMARY ONLY, via `.sum`. The WIDGET card keeps its border — that one holds a chart
+   and a legend, i.e. a rendered object being proposed, and the frame is what says "this is
+   the thing Accept will place". Two cards, two jobs.
+   ⚠️ The padding goes with it, or the text would sit indented from the thread it now
+   belongs to; `.aiagch`/`.aiagcb` supply their own. */
+.aiagc.sum{border:0;background:none;border-radius:0;margin:2px 0 10px}
+.aiagc.sum .aiagch{padding:0 0 6px}
+.aiagc.sum .aiagcb{padding:0}
 .aiagch{display:flex;align-items:center;gap:8px;padding:10px 8px 8px 12px}
 .aiagch b{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--white)}
 /* a header with no subtitle needs its title to take the free space, or the icon
@@ -2596,6 +2945,37 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
 .aicomp{position:relative;z-index:1;flex:0 0 auto;padding:4px 14px 13px}
+/* ══ JUMP TO THE LATEST (request + reference, 20 Aug 2026) ══════════════════════════════
+   A round ↓ that floats just above the composer while you are scrolled up, the way the
+   reference (monday's Sidekick) does it.
+   ⚠️ It sits on `.aicomp`, which is `position:relative`, so it hangs ABOVE the composer
+   rather than over the thread's last line — the message you scrolled up to read stays
+   readable. `bottom:100%` puts it clear of the box whatever height the composer is, which
+   matters because that height changes with the context row and the typing area.
+   ⚠️ `display:none` when idle, not `opacity:0` — an invisible button over the thread would
+   still eat clicks meant for the message underneath it. */
+/* ══ DRAG THE CARD TO THE RIGHT EDGE TO DOCK IT AS THE SIDEBAR (request, 20 Aug 2026) ═══
+   A ghost column previews where it will land while the pointer is in the hot zone, and
+   releasing there switches the layout. This is the OS window-snap gesture, and it makes the
+   Floating→Sidebar move reachable by dragging as well as through the Layout menu.
+   ⚠️ `pointer-events:none` — the ghost must never eat the mouseup that completes the drag.
+   ⚠️ Width is `--ai-w`, the SAME token the docked sidebar uses, so the preview is the real
+   size rather than an approximation of it. */
+.aidockghost{display:none;position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);
+  z-index:119;pointer-events:none;background:var(--ai-soft);
+  border-left:2px solid var(--ai);box-shadow:-8px 0 28px rgba(0,0,0,.10)}
+body.aidockr .aidockghost{display:block}
+/* the card itself goes translucent while it is over the zone, so the ghost reads as the
+   destination rather than as a second panel */
+body.aidockr .aipanel.aifloat{opacity:.55}
+.aitobot{display:none;position:absolute;left:50%;bottom:calc(100% - 4px);
+  transform:translateX(-50%);width:30px;height:30px;border-radius:50%;
+  border:1px solid var(--ai-in-line);background:var(--card);color:var(--text-dim);
+  cursor:pointer;place-items:center;z-index:7;box-shadow:var(--ai-in-shadow)}
+.aitobot.on{display:grid}
+.aitobot:hover{color:var(--ai-2);box-shadow:var(--ai-in-shadow-h)}
+.aitobot svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 /* ── the generating cue, second pass ─────────────────────────────────────────────────────
    (annotation, 17 Aug 2026: "the background colour gradient animation is removed — add a
    new and very light animation".)
@@ -2667,8 +3047,16 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* the text takes the new room; the chips and the controls keep their own height */
 .aiinbox textarea{flex:1 1 auto}
 .aiinrow{display:flex;align-items:center;gap:8px}
-/* dictate and send sit hard right; everything before them stays left */
-.aiinrow .aimic{margin-left:auto}
+/* ⚠️ SEND SITS HARD RIGHT, AND THE PUSH LIVES ON SEND ITSELF (fixed 21 Aug 2026). It used
+   to be `.aiinrow .aimic{margin-left:auto}` — the MIC was the spacer, and send merely came
+   after it. Removing the mic in the same session took the spacer with it and the button
+   collapsed back against `Auto` in the middle of the row.
+   ⚠️ `.aisend` is `display:none` until there is text, so on an empty composer this margin
+   simply has nothing to apply to and `@ · Auto` sit left, which is right. `.aisend.aisndstop`
+   inherits it, so the stop button appears in the same place send was. */
+.aiinrow .aisend{margin-left:auto}
+/* the mic is gone; its spacer rule is kept here, unreferenced, with the button:
+   .aiinrow .aimic{margin-left:auto} */
 /* ⚠️ the focus ring is ADDED TO the resting shadow, not swapped for it. `box-shadow` is
    one property: writing only the ring here discarded the composer's elevation the moment
    you clicked into it, so the box flattened exactly when it became the thing you were
@@ -2697,7 +3085,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ `opacity`, not a lighter colour, exactly as asked — and it also dims ＋'s BORDER
    ring, which was half the ink in that corner and which a colour change would have left
    at full strength.
-   ⚠️ `.aisend.stop` is EXCLUDED. While a generation is running that button is the only way
+   ⚠️ `.aisend.aisndstop` is EXCLUDED. While a generation is running that button is the only way
    to interrupt it, and a control you need in a hurry must not be the faintest thing there. */
 .aiplus,.aimic,.aisend:not(.stop){opacity:.62;transition:opacity .14s}
 .aiplus:hover,.aimic:hover,.aisend:not(.stop):hover,
@@ -2734,7 +3122,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiinbox textarea::placeholder{color:var(--muted);opacity:.62}
 /* ⚠️ a CIRCLE like its two neighbours (annotation, 19 Aug 2026: "same size"). It was a
    30px rounded SQUARE between two 30px circles, which read as a different size even though
-   the box matched. `.aisend.stop` was already a circle, so the busy state is unchanged. */
+   the box matched. `.aisend.aisndstop` was already a circle, so the busy state is unchanged. */
 .aisend{flex:0 0 30px;width:30px;height:30px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;padding:0;
   background:var(--chip);color:var(--text-dim);border:0;cursor:pointer;
@@ -2748,11 +3136,26 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ It is `display:none`, not `opacity:0` — an invisible but present button still takes
    its 30px and still catches clicks, so the mic would sit 38px from the edge for no
    visible reason and a click beside it would "send".
-   ⚠️ `.aisend.stop` OVERRIDES this. While a generation runs the button is Stop, the thread
+   ⚠️ `.aisend.aisndstop` OVERRIDES this. While a generation runs the button is Stop, the thread
    is busy, and the composer is usually empty — hiding the only way to interrupt would be
    the worst possible time to hide it. */
 .aisend{display:none}
-.aiinbox.typed .aisend,.aisend.stop{display:inline-flex}
+/* ⚠️ THE MODIFIER IS `aisndstop`, AND IT TOOK TWO GOES — this is the collision trap the
+   repo's CLAUDE.md opens with, hit TWICE in one edit:
+     · it was a bare **`stop`**, which is the SIDEBAR's top section 12,000 lines away
+       (`.stop{margin:0 8px 4px;border-bottom:1px solid …;padding:0 0 6px}`). That was
+       landing on the send button for the whole of every generation — 8px off the
+       composer's right edge and 4px of extra row — and stayed invisible until the mic was
+       removed and send became the rightmost thing in the row;
+     · renaming it to **`aistop`** hit `.aistop`, the STOPPED-GENERATION notice in the
+       thread, whose `margin:0 0 16px` then grew the control row by exactly 16px.
+   ⚠️ Neither rule appears in a search for `.aisend`. Both were found by measuring
+   `getComputedStyle` and dumping the row's children — grep the whole stylesheet for the
+   bare modifier before naming one, which is what the repo rule actually asks for.
+   ⚠️ Option 3's `ac*` panel still toggles a bare `'stop'` on `.acsend`, so it carries the
+   first of these two latent collisions. Not touched here: that block is byte-identical in
+   all three files and fixing it is a three-file change. */
+.aiinbox.typed .aisend,.aisend.aisndstop{display:inline-flex}
 /* once it does appear it is the primary action, so it arrives already filled rather than
    as another grey circle you have to find */
 .aiinbox.typed .aisend:not(.stop){background:var(--ai);color:#fff;opacity:1}
@@ -2771,16 +3174,16 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ `--ai` (#8b5cf6) is this panel's own accent, NOT the indigo in the reference image —
    importing another product's brand hue would put a colour in the file that no token owns.
    Swap the two `--ai` values below if the literal reference colour is wanted. */
-.aisend.stop{border-radius:50%;background:var(--ai);color:#fff}
-.aisend.stop:hover{background:#9d78f8;box-shadow:0 0 0 3px var(--ai-soft)}
-.aisend.stop:active{background:#7c46e8;box-shadow:none}
-.aisend.stop:focus-visible{box-shadow:0 0 0 3px var(--ai-line)}
+.aisend.aisndstop{border-radius:50%;background:var(--ai);color:#fff}
+.aisend.aisndstop:hover{background:#9d78f8;box-shadow:0 0 0 3px var(--ai-soft)}
+.aisend.aisndstop:active{background:#7c46e8;box-shadow:none}
+.aisend.aisndstop:focus-visible{box-shadow:0 0 0 3px var(--ai-line)}
 /* the glyph is a ROUNDED square at ~36% of the diameter, the proportion the reference
    uses. It was a 15px block whose hard corners fought the button's own radius. */
 /* 12px x (22/24) = 11px of painted square in a 30px circle — the ~36% the reference uses.
    ⚠️ Change this number and you change the glyph directly now; there is no second scale
    hidden in the path. */
-.aisend.stop svg{width:12px;height:12px;fill:currentColor}
+.aisend.aisndstop svg{width:12px;height:12px;fill:currentColor}
 /* a light travelling along the TOP border of the pill while it generates. It is its own
    element because ::before is the brand ring and ::after is the bloom — both taken. */
 .aigenbar{position:absolute;left:12px;right:12px;top:-1px;height:1.5px;border-radius:2px;
@@ -9718,9 +10121,22 @@ let aiBuildState = null;
    ⚠️ Every step has to be a thing the preview ACTUALLY uses, or the card is theatre. These
    three are: `group` and `chart` were already in `aiBuildState`, and `range` was added to
    it and is printed in the preview's query rows. Don't add a fourth without wiring it. */
+/* ⚠️ A STEP MAY BE `multi` (request, 21 Aug 2026: "add new flow with multiple options with
+   multiple selection"). A multi step's rows TOGGLE instead of committing, it carries a
+   checkbox rather than an ordinal, and it gets its own `Done` button — clicking a row can
+   no longer be what advances, so something else has to be.
+   ⚠️ `def` is the index (or indices) the step falls back to when it is skipped, and a multi
+   step is PRE-LIT with it. That is the same rule the single steps follow — Skip keeps the
+   step's default rather than leaving it unanswered, and `Done` is never a dead button.
+   ⚠️ EVERY STEP MUST BE SOMETHING THE PREVIEW USES, or the card is theatre. `states` is
+   printed in the preview's query rows as real counters (`monitor.<state>.count`, the four
+   the research notes confirm), which is why it earns a place beside group / range / chart. */
 const AI_CLAR = [
   { k:'group', q:'How should I group it?',
     sub:'That’s the one thing I can’t read from your description.', opts: AI_GROUPS },
+  { k:'states', q:'Which states should it count?', multi:1, def:[1],
+    sub:'Pick as many as you need — each one becomes its own series.',
+    opts:['Up','Down','Unreachable','Maintenance'] },
   { k:'range', q:'Over what time range?',
     sub:'The widget inherits the dashboard’s range unless you pin one.',
     opts:['Follow the dashboard','Last 1 hour','Last 24 hours','Last 7 days','Last 30 days'] },
@@ -9735,7 +10151,9 @@ function aiAskGroup(name, chart){
      be different values — using -1 for both lit the "Something else…" row on a question
      nobody had answered yet, which reads as a pre-filled answer. Row 0 used to be pre-lit
      so `Next` was never a dead button; with rows committing on click there is no Next. */
-  aiThread.push({ r:'clarify', name:name, chart:chart || 0, step:0, ans:{}, sel:null, free:'' });
+  aiThread.push({ r:'clarify', name:name, chart:chart || 0, step:0, ans:{},
+                  sel:null, free:'', msel:[] });
+  aiClarRestore(aiThread[aiThread.length - 1]);   /* step 0 may be multi one day; seed it */
   aiRender();
 }
 function aiClarCur(){
@@ -9754,6 +10172,10 @@ function aiClarPick(i){
 function aiClarFree(el){
   const c = aiClarCur(); if (!c) return;
   c.free = el.value; c.sel = el.value.trim() ? -1 : null;
+  const stf = AI_CLAR[c.step];
+  /* ⚠️ on a multi step, typing REPLACES the ticks — otherwise Done would have to decide
+     between four checked boxes and a sentence, and there is no right answer to that. */
+  if (stf && stf.multi && el.value.trim() && c.msel.length){ c.msel = []; aiRender(); return; }
   const card = document.querySelector('.aicq');
   if (card) card.querySelectorAll('.aicqo').forEach((b, i) =>
     b.classList.toggle('on', c.sel === i));
@@ -9768,7 +10190,19 @@ function aiClarKey(e){
    to do `sel = 0`, so stepping back and forward again silently replaced your choice with
    the default — and the only way to notice was reading the query rows on the preview. */
 function aiClarRestore(c){
-  const st = AI_CLAR[c.step], prev = c.ans[st.k];
+  const st = AI_CLAR[c.step]; if (!st) return;
+  const prev = c.ans[st.k];
+  if (st.multi){
+    /* never answered → pre-lit with the step's own default, so Done is never dead */
+    if (prev === undefined){ c.msel = (st.def || [0]).slice(); c.sel = null; c.free = ''; return; }
+    const names = String(prev).split(' + ');
+    const idx = names.map(n => st.opts.indexOf(n)).filter(i => i > -1);
+    /* it was free text if none of the names are options */
+    if (!idx.length){ c.msel = []; c.sel = -1; c.free = prev; return; }
+    c.msel = idx; c.sel = null; c.free = '';
+    return;
+  }
+  c.msel = [];
   /* ⚠️ three outcomes, not two: never answered (null), answered with a row (index), or
      answered with free text (-1). Folding the first two together is what lit the free row
      on an untouched question. */
@@ -9788,18 +10222,38 @@ function aiClarNext(skip){
   const st = AI_CLAR[c.step];
   /* ⚠️ guard `sel === null` — Enter on an untouched question would otherwise store
      `st.opts[null]`, i.e. undefined, and the build would silently lose that answer. */
+  if (st.multi){
+    /* ⚠️ a multi answer is stored as a STRING, joined with " + ", because everything
+       downstream — the echoed prompt, `aiClarRestore`, the preview's query rows — reads
+       these answers as text. `aiClarRestore` splits it back. */
+    const picked = (c.sel === -1 && c.free.trim()) ? c.free.trim()
+                 : c.msel.map(i => st.opts[i]).join(' + ');
+    if (!skip && picked) c.ans[st.k] = picked;
+    else if (c.ans[st.k] === undefined) c.ans[st.k] = (st.def || [0]).map(i => st.opts[i]).join(' + ');
+    c.step++; c.sel = null; c.free = ''; c.msel = [];
+    if (c.step < AI_CLAR.length){ aiClarRestore(c); aiRender(); return; }
+    return aiClarLand(c);
+  }
   if (!skip && c.sel === null && !c.free.trim()) skip = 1;
   if (!skip) c.ans[st.k] = (c.sel === -1 && c.free.trim()) ? c.free.trim() : st.opts[c.sel];
-  else if (c.ans[st.k] === undefined) c.ans[st.k] = st.opts[0];
-  c.step++; c.sel = null; c.free = '';
+  else if (c.ans[st.k] === undefined) c.ans[st.k] = st.opts[st.def ? st.def[0] : 0];
+  c.step++; c.sel = null; c.free = ''; c.msel = [];
   if (c.step < AI_CLAR.length){ aiClarRestore(c); aiRender(); return; }
-  /* answered → the preview, exactly as the one-question version did */
+  return aiClarLand(c);
+}
+/* the one place a finished question set becomes a preview — both branches of aiClarNext
+   end here, so there is one definition of what the answers mean */
+function aiClarLand(c){
   const ix = aiThread.indexOf(c);
-  aiThread.splice(ix, 1);
+  if (ix >= 0) aiThread.splice(ix, 1);
   aiThread.push({ r:'me', t: AI_CLAR.map(x => c.ans[x.k]).filter(Boolean).join(' · ') });
-  const ci = AI_CLAR[2].opts.indexOf(c.ans.chart);
+  /* ⚠️ FOUND BY KEY, NOT BY INDEX. This was `AI_CLAR[2]`, which silently pointed at the
+     wrong step the moment a fourth question was inserted — the chart answer would have been
+     looked up in the states list and every build would have fallen back to the default. */
+  const cs = AI_CLAR.find(x => x.k === 'chart');
+  const ci = cs ? cs.opts.indexOf(c.ans.chart) : -1;
   aiBuildState = { name: c.name, group: c.ans.group, range: c.ans.range,
-                   chart: ci > -1 ? ci : (c.chart || 0) };
+                   states: c.ans.states, chart: ci > -1 ? ci : (c.chart || 0) };
   aiThread.push({ r:'build', b: aiBuildState });
   aiRender();
   aiBuildAuto();
@@ -9833,7 +10287,8 @@ function aiSetBusy(v){
   if (box) box.classList.toggle('gen', aiBusy);
   const b = document.getElementById('aiSendBtn');
   if (b){
-    b.classList.toggle('stop', aiBusy);
+    /* ⚠️ `aisndstop`, NOT `stop` and NOT `aistop` — see the note at `.aisend.aisndstop`. */
+    b.classList.toggle('aisndstop', aiBusy);
     b.innerHTML = aiBusy ? AI_STOP_SVG : AI_SEND_SVG;
     b.setAttribute('data-tip', aiBusy ? 'Stop generating' : 'Send  ↵');
     b.removeAttribute('title');
@@ -10464,6 +10919,14 @@ function aiNewBtnPaint(){
   const b = document.getElementById('aiNewBtn'); if (!b) return;
   b.classList.toggle('hide', !aiThread.length);
 }
+/* ⚠️ THE ⋯ HIDES ON AN EMPTY CHAT, for the same reason ＋ New chat does. Its only rows
+   there were Documentation and Support, and those are under the starters now; Rename and
+   Delete are already gated on `aiThread.length`. Left visible it would open an empty
+   card — a control whose first appearance does nothing teaches the wrong thing. */
+function aiHelpBtnPaint(){
+  const b = document.getElementById('aiHelpBtn'); if (!b) return;
+  b.classList.toggle('hide', !aiThread.length);
+}
 function aiSetName(v){
   aiChatName = v;
   const el = document.getElementById('aiChatName');
@@ -10542,8 +11005,10 @@ function aiHdMenu(id, trigger, html, side){
   setTimeout(() => document.addEventListener('mousedown', aiHdAway), 0);
 }
 function aiHdAway(e){
+  /* ⚠️ `#aiLayBtn` is NOT in this list any more — it is a toggle, not a menu trigger, so
+     clicking it while the ⋯ menu is open should close that menu rather than be ignored. */
   if (e.target.closest('.aihm') || e.target.closest('#aiTitleBtn') ||
-      e.target.closest('#aiHelpBtn') || e.target.closest('#aiLayBtn')) return;
+      e.target.closest('#aiHelpBtn')) return;
   aiHdMenuClose();
 }
 /* ⚠️ Close by CLASS, not by a hardcoded list of ids. This used to name only aiChatM and
@@ -10555,10 +11020,8 @@ function aiHdMenuClose(){
   aiChatPeekOff();                       /* the preview lives on <body>, so it outlives the menu */
   document.querySelectorAll('.aihd .aihm').forEach(m => m.remove());
   const t = document.getElementById('aiTitleBtn'); if (t) t.classList.remove('open');
-  ['aiHelpBtn','aiLayBtn'].forEach(id => {
-    const b = document.getElementById(id); if (b) b.classList.remove('on');
-  });
-  /* the Layout trigger's `.on` means "not floating", so give it straight back */
+  const hb = document.getElementById('aiHelpBtn'); if (hb) hb.classList.remove('on');
+  /* the Layout trigger's `.on` means "in full screen", so give it straight back */
   aiLayPaint();
   document.removeEventListener('mousedown', aiHdAway);
 }
@@ -10985,7 +11448,14 @@ function aiChatDelCurDo(){
   aiRender();
   toast('Deleted “' + n + '”');
 }
-/* Help — two rows, both external. Release Notes was deliberately left out (request). */
+/* ⚠️ ONE DEFINITION, TWO SURFACES. These two links render BOTH under the empty state's
+   starters (where they live now — request, 21 Aug 2026) and in the ⋯ menu once a chat has
+   content. Keeping the array here rather than inlining each surface's copy is what stops
+   the two disagreeing about a URL. Release Notes was deliberately left out (request). */
+const AI_HELP = [
+  { href:'https://docs.motadata.com/motadata-aiops-docs/', ic:AI_MI.doc,  l:'Documentation' },
+  { href:'https://support.motadata.com/',                  ic:AI_MI.life, l:'Support' }
+];
 function aiHelpMenu(ev){
   ev.stopPropagation();
   const row = (href, ic, label) =>
@@ -10995,14 +11465,22 @@ function aiHelpMenu(ev){
      chat-name dropdown, which is the conversation list only. They act on the CURRENT chat,
      so they lead, with a divider before the two documentation links.
      ⚠️ Rename opens the INLINE editor in the header (`aiRename`), not a dialog — the menu
-     has to close first or the input opens behind it. */
+     has to close first or the input opens behind it.
+     ⚠️ BOTH ARE HIDDEN WHILE THE THREAD IS EMPTY (request, 21 Aug 2026). There is nothing
+     to rename or delete before the first question: the chat is not in history yet, so
+     Delete has nothing to remove and Rename would title something that may never exist.
+     Same test and same reasoning as `aiNewBtnPaint`, which hides ＋ New chat on an empty
+     thread — a control whose first appearance is a no-op teaches the wrong thing.
+     ⚠️ THE `<hr>` GOES WITH THEM. Left behind it opens the menu on a divider, with the
+     two links pushed down by a rule separating them from nothing. */
+  const own = aiThread.length
+    ? '<button onclick="aiHdMenuClose();aiRename()">' + AI_MI.pen +
+        '<span class="nm">Rename chat</span></button>' +
+      '<button class="del" onclick="aiHdMenuClose();aiChatDelCur()">' + AI_MI.bin +
+        '<span class="nm">Delete chat</span></button><hr>'
+    : '';
   aiHdMenu('aiHelpM', 'aiHelpBtn',
-    '<button onclick="aiHdMenuClose();aiRename()">' + AI_MI.pen +
-      '<span class="nm">Rename chat</span></button>' +
-    '<button class="del" onclick="aiHdMenuClose();aiChatDelCur()">' + AI_MI.bin +
-      '<span class="nm">Delete chat</span></button><hr>' +
-    row('https://docs.motadata.com/motadata-aiops-docs/', AI_MI.doc, 'Documentation') +
-    row('https://support.motadata.com/', AI_MI.life, 'Support'),
+    own + AI_HELP.map(h => row(h.href, h.ic, h.l)).join(''),
     'right');
 }
 
@@ -11017,11 +11495,15 @@ function aiHelpMenu(ev){
      Sidebar    → body.aisplit, the shell yields --ai-w so the board keeps its own column
      Floating   → a detached card over the board
      Full screen→ .aifs, the panel takes the viewport and centres the thread at 840px
-   ⚠️ **Sidebar is the DEFAULT** (request, 17 Aug 2026 — "open in Sidebar with small
-   width"), which is also what the reference checks. It opened Floating until then, i.e.
-   over the board. Opening beside the board instead is why `--ai-w` was narrowed to 420px:
-   the width is now taken off the canvas every time the chat is opened. */
-let aiSplit = true;
+   ⚠️ **SIDEBAR IS GONE FROM THE MENU AND FLOATING IS THE DEFAULT** (request, 21 Aug 2026).
+   It had been the default since 17 Aug ("open in Sidebar with small width"); the card now
+   rests at that same size instead, so nothing was lost by dropping the mode — see the
+   `.aipanel.aifloat` height note. `--ai-w` stays narrow (420px) for the same reason it was
+   narrowed then: it is the width the chat opens at, every time.
+   ⚠️ `aiSplit` is now ALWAYS false — the flag, `body.aisplit`, its CSS and the `'side'`
+   branch of the resize are all kept and unreferenced, the way `aiScopeMenu` and `iFocus`
+   are, so the mode is one `AI_LAY` row away from coming back. */
+let aiSplit = false;
 /* ⚠️ Rebuilt on Lucide geometry (20 Aug 2026): `panel-right`, `picture-in-picture-2` and
    `square`, with one region filled to say WHICH part of the screen the chat takes. The
    fill is not decoration here — it is the only thing that distinguishes three otherwise
@@ -11035,9 +11517,12 @@ let aiSplit = true;
    ⚠️ THE SIDEBAR ICON WAS WRONG WAY ROUND. It filled the LEFT region (x 3-9) while the
    chat sidebar docks on the RIGHT, so the menu row for the default layout was drawing a
    picture of the opposite of what it does. The highlight is on the right edge now. */
+/* ⚠️ SIDEBAR'S ROW IS REMOVED, not hidden (request, 21 Aug 2026). Its icon is kept here in
+   a comment rather than in the array, because the glyph took two corrections to get right
+   (the fill was on the LEFT region while the chat docks on the RIGHT) and redrawing it
+   from scratch would repeat that:
+   ['sidebar','Sidebar','<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg>'] */
 const AI_LAY = [
-  ['sidebar',  'Sidebar',
-   '<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
   ['floating', 'Floating',
    '<svg viewBox="0 0 24 24"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"/><rect width="10" height="7" x="12" y="13" rx="2"/><rect width="10" height="7" x="12" y="13" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
   ['full',     'Full screen',
@@ -11052,6 +11537,9 @@ function aiPanelOpen(){
 function aiLayCur(){
   const p = document.getElementById('aiPanel');
   if (p && p.classList.contains('aifs')) return 'full';
+  /* ⚠️ `aiSplit` is never true now that Sidebar is off the menu, so this reads 'floating'
+     in practice. The test is left in rather than hardcoded — it is what re-adding the row
+     would need, and a `return 'floating'` here would have to be found again. */
   return aiSplit ? 'sidebar' : 'floating';
 }
 /* the one place the three layouts are applied. Each mode owns a different geometry:
@@ -11068,14 +11556,33 @@ function aiSplitPaint(){
   aiFloatApply();          /* writes the dragged geometry, or clears it outside floating */
   aiLayPaint();
 }
-/* the trigger wears the layout it is in, so the mode is readable without opening anything */
+/* ⚠️ THE TRIGGER SHOWS WHERE IT GOES, NOT WHERE IT IS (request, 21 Aug 2026 — the menu
+   became a toggle). While it opened a chooser, wearing the CURRENT layout was right: the
+   menu listed the alternatives. A toggle has no list, so the only thing the glyph can
+   usefully say is what the click will do — which is also what `AI_FS_OUT` / `AI_FS_IN`
+   already do for the full-screen button this control absorbed.
+   ⚠️ `.on` still means "in full screen", i.e. it describes the STATE while the glyph
+   describes the ACTION. They are deliberately about different things; don't fold them. */
+function aiLayOther(){ return aiLayCur() === 'full' ? 'floating' : 'full'; }
 function aiLayPaint(){
   const b = document.getElementById('aiLayBtn'); if (!b) return;
-  const cur = aiLayCur(), row = AI_LAY.find(r => r[0] === cur) || AI_LAY[1];
+  const to = aiLayOther(), row = AI_LAY.find(r => r[0] === to) || AI_LAY[0];
   b.innerHTML = row[2];
-  b.classList.toggle('on', cur !== 'floating');
-  b.setAttribute('data-tip', 'Layout  ' + row[1]);
+  b.classList.toggle('on', aiLayCur() !== 'floating');
+  b.setAttribute('data-tip', row[1]);
 }
+/* ⚠️ TWO LAYOUTS ARE A TOGGLE, NOT A MENU (request, 21 Aug 2026: "when i click layout to
+   remove the popup ... click to convert full screen and click to convert floating"). Once
+   Sidebar was removed the dropdown held one alternative and a tick against the mode you
+   were already in — two clicks and a popup to do what one click can. */
+function aiLayTog(ev){
+  ev.stopPropagation();
+  aiHdMenuClose();                       /* it is an action, so any open menu should go */
+  aiLaySet(aiLayOther());
+}
+/* ⚠️ KEPT AND UNREFERENCED, the way `aiScopeMenu` and `iFocus` are — the moment a third
+   layout is added back to `AI_LAY` this is what it needs, and `#aiLayM`'s CSS is still in
+   the sheet. Point the button's onclick back at it. */
 function aiLayMenu(ev){
   ev.stopPropagation();
   const cur = aiLayCur();
@@ -11088,7 +11595,56 @@ function aiLayMenu(ev){
    AIF is the floating card's explicit geometry in px. `x === null` means "still on the
    default bottom-right anchor" — nothing is written to the element until the first drag. */
 const AIF = { x:null, y:null, w:null, h:null };
-const AI_MIN_W = 320, AI_MIN_H = 320, AI_SIDE_MIN = 340, AI_SIDE_MAX = 760;
+/* ══ THE FLOATING CARD'S SIZE LIMITS (request, 20 Aug 2026) ════════════════════════════
+   It had a MIN but no MAX on the drag itself — you could pull it arbitrarily large and only
+   `aiClamp`'s viewport check pulled it back, so a "floating" card could end up covering the
+   whole board and stop being floating in any meaningful sense.
+   ⚠️ The MIN is set by what has to fit, not by taste: the composer alone is 128px, the
+   header 46px, and a thread with nothing to read in it is not a chat — 420px is the floor
+   where one exchange is still visible. Width matches `AI_SIDE_MIN` so the two modes agree.
+   ⚠️ The MAX is where Floating stops being the right answer: past ~640px wide you want
+   Sidebar (which gives the board its own column) or Full screen. The menu offers both.
+   ⚠️ Both are folded against the VIEWPORT by the helpers below — a hard 420px floor on a
+   short window would make the card taller than the screen it has to sit in. */
+const AI_MIN_W = 440, AI_MIN_H = 550,
+      AI_SIDE_MIN = 340, AI_SIDE_MAX = 760;
+/* ⚠️ THE CARD'S LEFT LIMIT IS THE MODULE RAIL (request, 20 Aug 2026: "max width is left
+   sidebar until"). There is no `AI_MAX_W` constant any more — the widest the card may get
+   is however much room there is between the rail and the right edge of the window, so on a
+   wide screen it can grow much further than the old fixed 640px, and on a narrow one it
+   stops earlier. The rail is chrome the chat should never cover.
+   ⚠️ Read from the `--rail-w` TOKEN, not from the sidebar's box. The rail expands on hover
+   and transitions its width over .18s — measuring the element mid-flight is the recorded
+   trap this file opens with, and it would let the card's own limit jump around as the
+   pointer crosses the rail. A custom property is never transitioned, so it reports the
+   settled value immediately. */
+function aiRailW(){
+  const v = parseFloat(getComputedStyle(document.body).getPropertyValue('--rail-w'));
+  return Number.isFinite(v) ? v : 64;          /* the authored default, if the token is gone */
+}
+/* the effective bounds, once the window has had its say. Used by the drag AND the clamp,
+   so a resize can never reach a size the clamp would immediately undo. */
+/* ⚠️ ALL FOUR DERIVE FROM `AI_EDGE`. `aiFMaxH` was left on a hardcoded `- 16` when the
+   margin went 8 → 24, so the height could reach `innerHeight - 16` while `y` was clamped to
+   24 — the card hung 8px BELOW the window. Caught by measuring the bottom gap, not by eye.
+   Any margin change must flow through all four or the same gap reopens. */
+/* ⚠️ ALSO FOLDED AGAINST THE CARD'S RESTING WIDTH. `AI_MIN_W` is 440 by request, but the
+   card rests at `--ai-w` — 420px, and 348px once the responsive steps bite. A floor above
+   the resting width means the card JUMPS wider on the first pixel of a drag, which reads as
+   the grip being broken. Take whichever is smaller. */
+function aiFMinW(){
+  const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ai-w'));
+  return Math.min(AI_MIN_W, Number.isFinite(w) ? w : AI_MIN_W, innerWidth - AI_EDGE * 2);
+}
+function aiFMinH(){ return Math.min(AI_MIN_H, innerHeight - AI_EDGE * 2); }
+function aiFMaxW(){
+  /* the rail on the left, the margin on both sides — see aiClamp's matching xMin */
+  return Math.max(aiFMinW(), innerWidth - aiRailW() - AI_EDGE * 2);
+}
+/* ⚠️ THE 900px `AI_MAX_H` IS GONE (21 Aug 2026). The card now RESTS at `100vh - 40`, so on
+   any window taller than 940 the cap sat below the card's own height — drag it shorter once
+   and there was no way to drag it back. The viewport is the only ceiling that can be right. */
+function aiFMaxH(){ return Math.max(aiFMinH(), innerHeight - AI_EDGE * 2); }
 let aiDrag = null;
 
 function aiFloatApply(){
@@ -11106,13 +11662,37 @@ function aiFloatSeed(){
   AIF.x = Math.round(r.left); AIF.y = Math.round(r.top);
   AIF.w = Math.round(r.width); AIF.h = Math.round(r.height);
 }
-/* ⚠️ a card dragged fully off-screen is unrecoverable — there is nothing left to grab.
-   Keep 160px of it horizontally and its whole header vertically, always. */
+/* ⚠️ THE CARD STAYS FULLY ON SCREEN (request, 20 Aug 2026: "it can move outside the
+   screen — I can't do this").
+   It used to keep only 160px of the card horizontally and its header vertically, so most of
+   it could be dragged off the edge. That rule existed to stop the card becoming
+   unrecoverable, and it did — but "not lost" is a lower bar than "not broken", and a chat
+   half off the right edge is unusable long before it is unreachable.
+   ⚠️ `AI_EDGE` is applied on all four sides, and the SIZE is clamped first so the position
+   bounds are derived from a width that is already legal. With `w <= innerWidth - 16` and an
+   8px margin each side, `innerWidth - w - AI_EDGE` can never fall below `AI_EDGE` — but the
+   `Math.max` guard is kept so a future change to either number cannot invert the range and
+   pin the card to a negative coordinate. */
+/* ⚠️ 24px, monday's own inset (their `right:24px; bottom:24px;
+   max-width:calc(100vw - 48px)`). It was 8px — the card sat almost flush to the window and
+   read as pinned rather than floating. */
+/* ⚠️ MUST equal `.aipanel.aifloat`'s `right`/`bottom` (20px) — that rule is where the card
+   RESTS, this is where a drag CLAMPS it, and a mismatch makes the card jump between the
+   two. There is no single source: one is a CSS anchor, the other is arithmetic. (A 24px
+   version copied from monday was reverted on request, 20 Aug 2026.) */
+const AI_EDGE = 20;
+/* how close to the right edge the POINTER has to get before the card offers to dock.
+   ⚠️ The POINTER, not the card's own right edge — the card is clamped 24px in, so its edge
+   can never reach the window's and the gesture would be impossible to complete. */
 function aiClamp(){
-  AIF.w = Math.max(AI_MIN_W, Math.min(AIF.w, innerWidth  - 16));
-  AIF.h = Math.max(AI_MIN_H, Math.min(AIF.h, innerHeight - 16));
-  AIF.x = Math.max(160 - AIF.w, Math.min(AIF.x, innerWidth - 160));
-  AIF.y = Math.max(0, Math.min(AIF.y, innerHeight - 44));
+  AIF.w = Math.max(aiFMinW(), Math.min(AIF.w, aiFMaxW()));
+  AIF.h = Math.max(aiFMinH(), Math.min(AIF.h, aiFMaxH()));
+  /* ⚠️ the LEFT bound is the rail's right edge, not the window's — the same limit the max
+     width is derived from, so a card at full width sits exactly against the rail rather
+     than being allowed to slide over it afterwards. */
+  const xMin = aiRailW() + AI_EDGE;
+  AIF.x = Math.max(xMin, Math.min(AIF.x, Math.max(xMin, innerWidth - AIF.w - AI_EDGE)));
+  AIF.y = Math.max(AI_EDGE, Math.min(AIF.y, Math.max(AI_EDGE, innerHeight - AIF.h - AI_EDGE)));
 }
 function aiDragStart(e){
   const p = document.getElementById('aiPanel');
@@ -11132,6 +11712,9 @@ function aiRzStart(e, m){
   }
   if (AIF.x === null) aiFloatSeed();
   aiDrag = { m:m, mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h };
+  /* ⚠️ ONE FLAG PER EDGE, by MEMBERSHIP — `nw` is both `n` and `w`, so a corner drag lights
+     the two edges it is actually made of. A single `aidragging` class cannot say which. */
+  ['n','s','e','w'].forEach(k => document.body.classList.toggle('aidrag' + k, m.includes(k)));
   aiRzBind(e);
 }
 function aiRzBind(e){
@@ -11148,25 +11731,67 @@ function aiRzMove(e){
     document.documentElement.style.setProperty('--ai-w', w + 'px');
     return;
   }
-  if (aiDrag.m === 'move'){ AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy; }
-  /* ⚠️ clamp the SIZE first and derive the position from it. Moving x by dx and clamping w
-     separately lets the card keep sliding left once it has hit its minimum width. */
-  if (aiDrag.m === 'w' || aiDrag.m === 'nw'){
-    const w = Math.max(AI_MIN_W, aiDrag.w - dx);
+  if (aiDrag.m === 'move'){
+    AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy;
+    /* ⚠️ A MOVE MAY NEVER CHANGE THE SIZE — reported twice (21 Aug 2026: "when I move the
+       chat interface down the height increases"). It could not be reproduced: a header drag
+       measured a 0px height delta at 1600×950 and 1512×1000, at rest and after shrinking.
+       This makes it structurally impossible rather than merely true today. `aiClamp()` runs
+       after this and DOES adjust `h` — it has to, for a window resize — so the size is
+       pinned back from the mousedown snapshot straight afterwards. Cheap, and it removes a
+       whole class of "the card resized itself" from ever being possible on a move.
+       ⚠️ Only a MOVE is pinned. The resize branches below own the size on purpose. */
+    aiClamp();
+    AIF.w = aiDrag.w; AIF.h = aiDrag.h;
+    aiFloatApply();
+    return;
+  }
+  /* ⚠️ EIGHT MODES, tested by MEMBERSHIP not equality (`nw` is both `n` and `w`). Written
+     as `includes` so a corner is simply the two edges it is made of — the previous
+     `m === 'w' || m === 'nw'` chain would have needed six more clauses for the new edges
+     and is exactly how one of them ends up forgotten.
+     ⚠️ Clamp the SIZE first and DERIVE the position from it. Moving `x` by `dx` and
+     clamping `w` separately lets the card keep sliding after the width has stopped
+     changing — at BOTH ends, min and max.
+     ⚠️ W/N move the far edge, so they adjust x/y; E/S grow away from the anchor and must
+     NOT touch x/y at all. Getting that backwards makes the card walk across the screen as
+     you resize it. */
+  const M = aiDrag.m;
+  if (M.includes('w')){
+    /* ⚠️ clamped to the max HERE, not only in aiClamp — deriving `x` from an unclamped `w`
+       lets the card keep sliding left after the width has stopped growing. */
+    const w = Math.max(aiFMinW(), Math.min(aiFMaxW(), aiDrag.w - dx));
     AIF.w = w; AIF.x = aiDrag.x + (aiDrag.w - w);
   }
-  if (aiDrag.m === 'n' || aiDrag.m === 'nw'){
-    const h = Math.max(AI_MIN_H, aiDrag.h - dy);
+  if (M.includes('n')){
+    const h = Math.max(aiFMinH(), Math.min(aiFMaxH(), aiDrag.h - dy));
     AIF.h = h; AIF.y = aiDrag.y + (aiDrag.h - h);
   }
+  /* ⚠️ E and S grow AWAY from the anchored corner, so they size only — they must not touch
+     x/y. Adjusting the position here too makes the card walk across the screen as you drag,
+     which is the mirror image of the W/N bug the note above records.
+     ⚠️ THEIR MAX IS THE ROOM TO THEIR OWN SIDE, not just `aiFMaxW/H`. The card rests flush
+     against the right margin, so `x` is already at its maximum; a width the general clamp
+     then had to absorb was taken out of `x` instead, and dragging the RIGHT edge rightwards
+     moved the LEFT edge left. Bounding by `innerWidth - AI_EDGE - x` makes the edge simply
+     stop at the margin, which is the only honest answer when there is nowhere to grow.
+     `aiDrag.x` / `aiDrag.y` are the position pinned at mousedown — E/S never change it. */
+  if (M.includes('e')) AIF.w = Math.max(aiFMinW(),
+    Math.min(aiFMaxW(), innerWidth  - AI_EDGE - aiDrag.x, aiDrag.w + dx));
+  if (M.includes('s')) AIF.h = Math.max(aiFMinH(),
+    Math.min(aiFMaxH(), innerHeight - AI_EDGE - aiDrag.y, aiDrag.h + dy));
   aiClamp(); aiFloatApply();
 }
 function aiRzEnd(){
   const d = aiDrag; aiDrag = null;
   document.body.classList.remove('aidragging');
+  ['n','s','e','w'].forEach(k => document.body.classList.remove('aidrag' + k));  /* never outlive the drag */
   removeEventListener('mousemove', aiRzMove);
   removeEventListener('mouseup', aiRzEnd);
   if (!d) return;
+  /* ⚠️ DRAGGING TO THE RIGHT EDGE USED TO DOCK THE CARD AS A SIDEBAR, and that went with
+     the mode (21 Aug 2026). `.aidockghost` and `body.aidockr` are kept in the stylesheet,
+     unreferenced, so the gesture is a few lines away if Sidebar ever comes back. */
   if (d.m === 'side') toast('Sidebar width ' + Math.round(parseFloat(
     getComputedStyle(document.documentElement).getPropertyValue('--ai-w'))) + 'px');
   else if (d.m !== 'move') toast('Chat ' + AIF.w + ' × ' + AIF.h + 'px');
@@ -11188,6 +11813,10 @@ addEventListener('resize', () => {
 });
 
 function aiLaySet(k){
+  /* ⚠️ Sidebar is no longer offered, so anything still asking for it gets the card — which
+     is now that size anyway. Without this a stale call site would strand the panel in a
+     mode with no row in the menu and no way back to it. */
+  if (k === 'sidebar') k = 'floating';
   if (k === aiLayCur()) return;
   const p = document.getElementById('aiPanel'), wasFs = p && p.classList.contains('aifs');
   if (k === 'full'){
@@ -11202,9 +11831,7 @@ function aiLaySet(k){
     aiSplit = (k === 'sidebar');
     aiSplitPaint();
   }
-  toast(k === 'sidebar' ? 'Sidebar — the board keeps its own column'
-      : k === 'floating' ? 'Floating — the chat floats over the board'
-      : 'Full screen');
+  toast(k === 'floating' ? 'Floating — the chat floats over the board' : 'Full screen');
 }
 /* a fresh chat, the way the ⊞ New chat control in the header reads */
 function aiNewChat(){
@@ -11284,7 +11911,7 @@ function aiRender(){
   aiScopeLine();
   /* ⚠️ BEFORE the empty-state early return, not after it — the tail of this function never
      runs on an empty thread, which is exactly the case the New-chat button has to hide in. */
-  aiNewBtnPaint(); aiPendPaint(); aiClarPaint(); aiHsBtnPaint(); aiHsPaint(); aiHistPaint();
+  aiNewBtnPaint(); aiHelpBtnPaint(); aiPendPaint(); aiClarPaint(); aiHsBtnPaint(); aiHsPaint(); aiHistPaint();
   aiFadeBind(); aiTypedPaint();   /* sending empties the box, and that lands here */
   if(!aiThread.length){
     b.innerHTML = '<div class="aiempty">' +
@@ -11310,6 +11937,18 @@ function aiRender(){
          by the answer cards and the dashboard plan, and the arrays are shared with them. */
       (aiInLogs() ? AI_CTA_LOGS : AI_CTA).map(([, label], i) =>
         '<button class="aicta" onclick="aiAsk(' + i + ')">' + label + '</button>').join('') +
+      /* ⚠️ DOCUMENTATION AND SUPPORT MOVED OUT OF THE ⋯ MENU AND UNDER THE STARTERS
+         (request, 21 Aug 2026: "this 2 link will be set below the suggestion text"). They
+         were the only two rows a brand-new chat's ⋯ menu had — Rename and Delete are
+         already hidden while the thread is empty — so the menu existed to hold two links
+         you could not otherwise find, and it opened straight over the ✦ mark.
+         ⚠️ `AI_HELP` is the one definition; `aiHelpMenu` renders the SAME array, so the
+         two surfaces can never disagree about a URL. Both were checked 200 before being
+         written in; `www.motadata.com/support/` is a 404, don't use it. */
+      '<div class="aihelpl">' + AI_HELP.map(h =>
+        '<button onclick="window.open(' + JSON.stringify(h.href).replace(/"/g,'&quot;') +
+        ',\'_blank\',\'noopener\')">' + h.ic + '<span>' + h.l + '</span>' + AI_MI.ext +
+        '</button>').join('') + '</div>' +
     '</div>';
     return;
   }
@@ -11381,6 +12020,8 @@ function aiAnswerHTML(m, i){
    the reference's single-question case, which is what it was drawn for. */
 function aiClarifyHTML(m){
   const st = AI_CLAR[m.step] || AI_CLAR[0];
+  const mul = !!st.multi, sel = m.msel || [];
+  const on = i => sel.indexOf(i) > -1;
   const q = m.step === 0 ? 'How should I group \u201c' + aiEsc(m.name) + '\u201d?' : aiEsc(st.q);
   return '<div class="aicq">' +
     '<div class="aicqh">' +
@@ -11395,8 +12036,17 @@ function aiClarifyHTML(m){
     /* ⚠️ the number is the row's ORDINAL, not a shortcut — nothing binds 1..N, and a badge
        that looks like a keycap you cannot press would be a lie. It is there to make the
        list scannable, which is what the reference uses it for. */
-    st.opts.map((o, i) => '<button class="aicqo' + (m.sel === i ? ' on' : '') +
-      '" onclick="aiClarGo(' + i + ')"><span class="aicqi">' + (i + 1) + '</span>' +
+    /* ⚠️ ON A MULTI STEP THE ORDINAL BECOMES A CHECKBOX. The number says "row 3 of 6",
+       which is exactly right when one click ends the question and exactly wrong when the
+       job is to tick several — the row has to say, before you click it, that it is a
+       toggle. Everything else about the row is unchanged, so the two kinds still read as
+       one component. */
+    st.opts.map((o, i) => '<button class="aicqo' + (mul ? (on(i) ? ' on' : '') :
+      (m.sel === i ? ' on' : '')) + '" role="' + (mul ? 'checkbox" aria-checked="' +
+      (on(i) ? 'true' : 'false') : 'button" aria-pressed="false') + '"' +
+      ' onclick="aiClarGo(' + i + ')">' +
+      (mul ? '<span class="aicqck">' + (on(i) ? AI_TICK : '') + '</span>'
+           : '<span class="aicqi">' + (i + 1) + '</span>') +
       aiEsc(o) + '</button>').join('') +
     '<label class="aicqf' + (m.sel === -1 ? ' on' : '') + '">' +
       '<span class="aicqp"><svg viewBox="0 0 24 24"><path d="M13 21h8"/>' +
@@ -11407,11 +12057,30 @@ function aiClarifyHTML(m){
       'onkeydown="aiClarKey(event)" />' +
       '<button class="aicqsk" onclick="event.preventDefault();aiClarSkip()">Skip</button>' +
     '</label>' +
+    /* ⚠️ DONE ONLY EXISTS ON A MULTI STEP. On a single step the row IS the commit, and a
+       second control that also commits would be two ways to do one thing. It names the
+       count so the button reports what it is about to keep — and it is never dead, because
+       a multi step opens pre-lit with its own default. */
+    (mul ? '<div class="aicqd"><button class="aicqok" onclick="aiClarNext()">Done' +
+      (sel.length ? ' <span>' + sel.length + '</span>' : '') + '</button></div>' : '') +
   '</div>';
 }
-/* ⚠️ picking a row now COMMITS it and moves on — see the note above aiClarifyHTML. */
+/* ⚠️ picking a row COMMITS it and moves on — see the note above aiClarifyHTML — EXCEPT on
+   a `multi` step, where it toggles and waits for Done. A multi step that advanced on the
+   first click could never be multi. */
 function aiClarGo(i){
   const c = aiClarCur(); if (!c) return;
+  const st = AI_CLAR[c.step];
+  if (st && st.multi){
+    const at = c.msel.indexOf(i);
+    if (at > -1) c.msel.splice(at, 1); else c.msel.push(i);
+    c.msel.sort((a, b) => a - b);
+    /* ⚠️ picking a row clears the free text, exactly as the single steps do — a lit row and
+       a caret in the box at the same time is two answers to one question. */
+    if (c.msel.length){ c.free = ''; c.sel = null; }
+    aiRender();
+    return;
+  }
   c.sel = i; c.free = '';
   aiClarNext();
 }
@@ -11425,6 +12094,14 @@ function aiClarDismiss(){
   toast('Cancelled \u2014 nothing was built');
 }
 /* preview → chart-type switcher → query rows → add */
+/* "Up + Down" → "monitor.up.count, monitor.down.count". Anything that is not one of the
+   four confirmed states is passed through as written — it came from the free-text row, and
+   inventing a counter id for it would be inventing product. */
+const AI_CTR = { up:'monitor.up.count', down:'monitor.down.count',
+                 unreachable:'monitor.unreachable.count', maintenance:'monitor.maintenance.count' };
+function aiCounters(v){
+  return String(v).split(' + ').map(n => AI_CTR[n.trim().toLowerCase()] || n.trim()).join(', ');
+}
 function aiPreviewHTML(b, bi){
   const s = aiScope();
   if (b.dash) return aiPreviewDashHTML(b, bi, s);
@@ -11440,7 +12117,12 @@ function aiPreviewHTML(b, bi){
         '<button class="aich' + (i === b.chart ? ' on' : '') + '" onclick="aiBuildChart(' + i + ')">' + c + '</button>').join('') + '</div>' +
       /* ⚠️ the RANGE the clarifier asked for is printed here — a question whose answer never
          appears anywhere is a question that should not have been asked. */
+      /* ⚠️ the STATES the multi step asked for are printed here as the product's own
+         counters (`monitor.<state>.count` — the four the research notes confirm), for the
+         same reason the range is: a question whose answer never appears anywhere is a
+         question that should not have been asked. */
       '<div class="aiq"><span><b>Module</b> = Availability</span><span><b>Group</b> = ' + aiEsc(b.group) + '</span>' +
+        (b.states ? '<span><b>Counters</b> = ' + aiEsc(aiCounters(b.states)) + '</span>' : '') +
         (b.range && b.range !== 'Follow the dashboard'
           ? '<span><b>Range</b> = ' + aiEsc(b.range) + '</span>' : '') + '</div>' +
       /* ⚠️ the Add primary LEFT this card (request, 20 Aug 2026) — the decision is the
@@ -12630,7 +13312,7 @@ function aiAgHTML(a, i){
          ⤴ — see the header below — so `shut` had nothing left to toggle it and the body is
          always rendered. `aiAgCard()` is untouched and still owns the WIDGET card's
          chevron, which is the only caller now. */
-      out.push('<div class="aiagc">' +
+      out.push('<div class="aiagc sum">' +
         '<div class="aiagch">' +
           /* ⚠️ the PRODUCT LOGO, not the ✦ spark (annotation, 19 Aug 2026) — this card is
              the product summarising your board, so it signs itself with the product's mark.
@@ -12941,6 +13623,17 @@ function aiFade(){
   const past = b.scrollHeight - b.scrollTop - b.clientHeight;
   b.style.setProperty('--aifade-t', (b.scrollTop > 2 ? AI_FADE : 0) + 'px');
   b.style.setProperty('--aifade-b', (past > 2 ? AI_FADE : 0) + 'px');
+  /* ⚠️ the BUTTON's threshold is far larger than the fade's 2px. The fade may as well be
+     exact; a jump button that appears when you are 3px off the bottom is a button that
+     flickers on every wheel tick. 64px ≈ one message. */
+  const j = document.getElementById('aiToBot');
+  if (j) j.classList.toggle('on', past > 64);
+}
+/* ⚠️ `behavior:'smooth'` on purpose — the point of the button is to show you WHERE the
+   newest message is, and a jump-cut leaves you unsure whether anything moved. */
+function aiToBottom(){
+  const b = document.getElementById('aiBody'); if (!b) return;
+  b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' });
 }
 function aiFadeBind(){
   const b = document.getElementById('aiBody'); if (!b) return;
@@ -13041,6 +13734,10 @@ function aiHistDelDo(id){
    uploaded CSV would be the one thing in this panel that lies about its own capability. */
 const AI_UP_OK  = /\.(png|jpe?g|gif|webp|svg|log|txt|pdf|csv|json)$/i;
 const AI_UP_SAY = 'attach an image, log, PDF, CSV or JSON';
+/* ⚠️ THE `#aiUpIn` INPUT AND EVERY CONTROL THAT REACHED IT WERE REMOVED (request, 21 Aug
+   2026). This function, `aiUpAdd`, `AI_UP_OK` / `AI_UP_SAY` and the attachment chips in the
+   context bar are all kept and unreferenced. The `if (el)` guard is what makes that safe —
+   it already existed and now carries the whole feature's absence. */
 function aiUpPick(){
   aiPlusClose();
   const el = document.getElementById('aiUpIn');
@@ -13068,9 +13765,16 @@ function aiUpPick(){
    with only two rows, one of them permanently lit read as "this one is chosen" rather than
    "you are here". It lights on real hover and on ↑/↓ now, and on nothing else. */
 let aiPlusSel = -1;
+/* ⚠️ ONE ROW LEFT, AND THE MENU IS NO LONGER REACHABLE (request, 21 Aug 2026). The file
+   row went with `aiUpPick`'s control, and the composer's @ now calls `aiPlusCtx()` direct.
+   `AI_PLUS` / `aiPlusMenu` / `aiPlusPaint` / `aiPlusRun` / `aiPlusAway` and `.aiplusm`'s CSS
+   are all KEPT AND UNREFERENCED — point a button's `onclick` back at `aiPlusMenu(event)` and
+   the menu returns. The file row is left here commented rather than deleted, because its
+   icon is the Lucide paperclip pasted verbatim and redrawing it by hand is the thing this
+   panel's icon rule exists to prevent:
+   { ic:'<path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+     l:'Add images, logs, PDFs or CSVs', fn:'aiUpPick()' }, */
 const AI_PLUS = [
-  { ic:'<path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
-    l:'Add images, logs, PDFs or CSVs', fn:'aiUpPick()' },
   { ic:'<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>',
     l:'Mention dashboards, monitors or modules', fn:'aiPlusCtx()' }
 ];
@@ -13099,7 +13803,7 @@ function aiPlusPaint(){
 function aiPlusHover(i){ aiPlusSel = i; aiPlusPaint(); }
 function aiPlusRun(i){
   const r = AI_PLUS[i]; if (!r) return;
-  if (r.fn === 'aiUpPick()') aiUpPick(); else aiPlusCtx();
+  if (r.fn === 'aiUpPick()') aiUpPick(); else aiPlusCtx();   /* both routes kept for the parked menu */
 }
 function aiPlusOpen(){ return !!document.getElementById('aiPlusM'); }
 function aiPlusClose(){
@@ -13382,6 +14086,9 @@ aiLogoPaint();
        90deg rgba(76,177,254,.8) → rgba(115,30,251,.8) 41.49% → rgba(249,17,227,.8)
      ⚠️ That panel is light-only; --sv-cta carries a dark-theme equivalent of its pale
      CTA fill so this works in both. -->
+<!-- the dock preview: a ghost of the sidebar column, shown while a floating card is
+     dragged into the right-hand hot zone. Outside .aipanel so the card's own opacity
+     while docking does not fade the preview with it. -->
 <aside class="aipanel" id="aiPanel" role="dialog" aria-label="ObserveOps AI">
   <!-- the ambient thinking glow — decorative only, so it is hidden from assistive tech.
        It runs from the moment the question is sent until the answer lands (.gen). -->
@@ -13390,7 +14097,12 @@ aiLogoPaint();
        back to the authored geometry. -->
   <span class="aigw" data-tip="Drag to resize  ⇔" onmousedown="aiRzStart(event,'w')" ondblclick="aiRzReset()"></span>
   <span class="aign" onmousedown="aiRzStart(event,'n')" ondblclick="aiRzReset()"></span>
-  <span class="aignw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'nw')" ondblclick="aiRzReset()"></span>
+  <span class="aige" data-tip="Drag to resize  ⇔" onmousedown="aiRzStart(event,'e')" ondblclick="aiRzReset()"></span>
+  <span class="aigs" onmousedown="aiRzStart(event,'s')" ondblclick="aiRzReset()"></span>
+  <span class="aignw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'nw')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
+  <span class="aigne" data-tip="Drag to resize" onmousedown="aiRzStart(event,'ne')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
+  <span class="aigse" data-tip="Drag to resize" onmousedown="aiRzStart(event,'se')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
+  <span class="aigsw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'sw')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
   <header class="aihd" onmousedown="aiDragStart(event)">
     <!-- ⚠️ HISTORY, and it exists ONLY IN FULL SCREEN (request + reference images,
          20 Aug 2026). A History button was removed from this header on 17 Aug because the
@@ -13457,12 +14169,19 @@ aiLogoPaint();
     <!-- ⚠️ a ⋯ MARK, not a ? (request, 19 Aug 2026). It stopped being a help button when
          Rename chat and Delete chat moved into it — a question mark over two destructive-ish
          actions promises the wrong thing. The menu itself is unchanged. -->
+    <!-- ⚠️ FLOATING ONLY, and revealed on HOVER of the header (reference: monday's board
+         collapse chevron, 20 Aug 2026). It rolls the card up to its title bar and back.
+         ⚠️ It lives IN the header rather than floating above the card as the reference
+         does — `.aipanel.aifloat` is `overflow:hidden`, so a control at a negative offset
+         would simply be clipped. Same job, a place it can actually be seen. -->
     <button class="aihb" id="aiHelpBtn" data-tip="More" onclick="aiHelpMenu(event)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
     <!-- Layout: Sidebar · Floating · Full screen (reference, 17 Aug 2026). It replaced the
-         two-state "Show as split view ⇄ Show as overlay" toggle — three modes on one axis
-         belong in one menu with a ✓, not a toggle plus a second button that can disagree.
-         The icon here is whichever layout is current; aiLayPaint() keeps it truthful. -->
-    <button class="aihb on" id="aiLayBtn" data-tip="Layout  Sidebar" onclick="aiLayMenu(event)"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg></button>
+         two-state "Show as split view ⇄ Show as overlay" toggle — with THREE modes on one
+         axis a menu with a ✓ was the only control that could describe all of them. Sidebar
+         was removed on 21 Aug 2026 and two modes are a toggle again, so it is one now.
+         ⚠️ The icon is the layout the click GOES TO, not the one you are in; aiLayPaint()
+         keeps it truthful. Authored as Full screen, because the panel opens Floating. -->
+    <button class="aihb" id="aiLayBtn" data-tip="Full screen" onclick="aiLayTog(event)"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg></button>
     <!-- the ⤢ full-screen button (Datadog Bits' pattern, 15 Aug 2026) was FOLDED INTO the
          Layout menu above (request, 17 Aug 2026) — it was the third state of the same axis,
          and a separate button could show "Expand" while the menu already said Full screen.
@@ -13478,6 +14197,11 @@ aiLogoPaint();
   <div class="aibody" id="aiBody"></div>
 
   <div class="aicomp">
+    <!-- ⚠️ Jump to the newest message. Shown only while the thread is scrolled away from
+         the bottom; `aiFade()` owns that decision, because it is already computing exactly
+         that distance for the edge fade. One signal, two things that use it. -->
+    <button class="aitobot" id="aiToBot" data-tip="Jump to the latest"
+      onclick="aiToBottom()"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></button>
     <!-- Context, directly above the input, because it describes what happens NEXT. The
          Context chip is a MULTI-SELECT dropdown and is not removable; the pinned chips
          beside it (open board, attached files) are. Removing every pinned chip therefore
@@ -13501,17 +14225,19 @@ aiLogoPaint();
       <div class="aictxbar" id="aiCtx"></div>
       <textarea id="aiIn" rows="1" placeholder="Ask, build and act — type @ to add context" oninput="aiMentIn(this)" onkeydown="aiKey(event)"></textarea>
       <div class="aiinrow">
-        <!-- ＋ opens a two-row menu: Upload file · Add context (request, 20 Aug 2026).
-             ⚠️ It was a PAPERCLIP wired straight to the file picker, so the composer's
-             leading control reached only ONE of the two things that fill the context bar —
-             @-mention was keyboard-only and undiscoverable. A ＋ promises "add something"
-             and the menu says what; a paperclip promises only a file.
-             ⚠️ NOT the 15 Aug ＋ command menu this replaced: that listed five canned
-             QUESTIONS and refilled the composer. These two rows add context. -->
-        <button class="aiplus" id="aiPlusBtn" data-tip="Add a file or context"
-          aria-haspopup="menu" onclick="aiPlusMenu(event)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <input type="file" id="aiUpIn" multiple hidden onchange="aiUpAdd(this)"
-          accept=".png,.jpg,.jpeg,.gif,.webp,.svg,.log,.txt,.pdf,.csv,.json,image/*,application/pdf,text/csv,application/json,text/plain" />
+        <!-- ⚠️ THE LEADING CONTROL IS AN @, AND IT HAS NO MENU (request, 21 Aug 2026:
+             "the context will show only as @ — remove the + icon"). It went paperclip →
+             ＋-with-a-two-row-menu → this. The ＋ existed because there were two things to
+             add, a file and a mention; with file upload removed in the same request there
+             is exactly one, so a menu that opens to a single row is a click in the way.
+             @ is also the literal character the feature runs on, so the button and the
+             keyboard route are now the same gesture — press it or type it.
+             ⚠️ It calls `aiPlusCtx()`, NOT `aiMentShow('')`. That function seeds an "@"
+             into the composer first, which is what keeps the list filterable — see its own
+             note. Opening the list with nothing typed looks right and dies on the first
+             keystroke. -->
+        <button class="aiplus" id="aiPlusBtn" data-tip="Mention dashboards, monitors or modules"
+          onclick="aiPlusCtx()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg></button>
         <!-- Auto-approve belongs with the send button: it decides what happens when you
              press it, so it reads next to the thing it changes. -->
         <!-- ⚠️ a BUTTON, not a switch (annotation + reference, 19 Aug 2026 — Notion shows
@@ -13519,9 +14245,11 @@ aiLogoPaint();
              heaviest thing in the control row for a setting that is off by default. -->
         <button class="aiauto" id="aiAuto" onclick="aiToggleAuto()"
           data-tip="Auto-approve  run safe actions without asking each time"><span class="lbl">Auto</span></button>
-        <!-- Dictation (annotation, 15 Aug 2026). Speaks into the composer; it never sends
-             for you, so what was heard can be read and corrected first. -->
-        <button class="aimic" id="aiMic" data-tip="Dictate" onclick="aiDicTog()"><svg viewBox="0 0 24 24"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/></svg></button>
+        <!-- ⚠️ DICTATION'S BUTTON WAS REMOVED (request, 21 Aug 2026). The whole `aiDic*`
+             engine is KEPT AND UNREFERENCED — `aiDicTog` / `aiDicStart` / `aiDicStop` and
+             their CSS — the way `aiScopeMenu` and `iFocus` are, so it is one button away.
+             `aiNewChat()` still calls `aiDicStop(1)`, which is harmless and correct: it
+             belongs to the old chat whether or not there is a control for it. -->
         <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg></button>
       </div>
       <!-- the travelling light along the top edge while the AI is generating -->

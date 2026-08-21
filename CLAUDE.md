@@ -111,7 +111,7 @@ here is normally a three-file change like the `ac*` panel.
 > ⚠️ **The left log-sources panel was removed from Option 1 on 17 Aug 2026 and RESTORED on
 > 19 Aug 2026** — verified against live build 10.0.0 first, where it is still there. All
 > three options carry it again (`lxPanelBtn`, `lxPanel` / `lxTreeTab` / `lxTree` /
-> `lxTreeToggle`, and `body.lxopen` set in `lxInit`). `lxbehave.py` runs its full **56**
+> `lxTreeToggle`, and `body.lxopen` set in `lxInit`). `lxbehave.py` runs its full **57**
 > checks in Option 1 again — the 5 skips are gone.
 
 Namespace is `lx` throughout — `.lx*` classes, `lx*()` functions, `LX_*` constants, plus
@@ -220,7 +220,7 @@ outright because it starts with “How”. Both surfaces now share three functio
   `aiLogQApply` calls `lxAiqCommit`. `AI_DOMAIN` gained `event|source|query|search|pattern`
   so a plain search sentence isn't answered as *outside what I can see*.
 - Verified by a 54-assertion probe (18-row parser table + both surfaces end to end, in the
-  session scratch dir); lxbehave still 56/56.
+  session scratch dir); lxbehave still 57/57.
 
 - ⚠️ **The mapping is canned** (`LX_AIQ` for severities / ssh / login, `LX_AIQ_ALIAS` for
   source types), like everything else here. Each rule owns the product's own filter triple
@@ -455,7 +455,7 @@ it sets the category/page, expands it, clears the search, then routes through
 - Verify in a real tab (`python3 -m http.server` + the browser tools) — the probe that
   drove the 39 behaviours above (switch, eyes, initials, every message, reset, save,
   identity, search, toggle, stub, panel, flyout act, geometry) lived in the session, not
-  the repo. `lxbehave` 56/56 · `behave` 63/63 · `harness` 77/77 still pass with it in.
+  the repo. `lxbehave` 57/57 · `behave` 63/63 · `harness` 77/77 still pass with it in.
 
 ## Compliance Settings (`stc*`) — the category's three pages, cloned from live 8.2.7, in all three options
 
@@ -502,7 +502,7 @@ the session scratch dir; re-harvest rather than hand-edit.
   `:` inside a template literal parses hundreds of characters later with a useless error —
   `node --check` the extracted block (the recorded `lx` lesson) before screenshotting.
 - Verified with browser probes over http (≈90 assertions across the three pages, both
-  themes, all three options); `lxbehave` 56/56 ×3 · `behave` 63/63 ×3 · `harness` 77/77
+  themes, all three options); `lxbehave` 57/57 ×3 · `behave` 63/63 ×3 · `harness` 77/77
   still green with the block in.
 
 ## Four AI UIs across three options, deliberately different
@@ -538,6 +538,18 @@ added to `kbBusy()` so its single-key shortcuts don't fire behind the open chat.
 ⚠️ Option 1 had none of `--oa*`, `--sel`, `--text-dim2`; they were added to **both** its
 theme blocks (its violet `--ai*` values, re-exported under the `--oa*` names the panel
 uses). Options 2 and 3 already had all of them.
+
+⚠️ **The empty state's starter rows carry the BRAND GRADIENT** (Option 1, request 21 Aug
+2026, supplied verbatim): `90deg, rgb(76,177,254) 0%, rgb(115,30,251) 55%, rgb(249,17,227)
+100%` — blue → violet → magenta, in `--ai-cta` / `--ai-cta-h`. Fourth state for those rows
+in two days (`--sv-cta` → flat wash → a single-hue `--ai` fade → this), and the comment at
+`.aicta` that argued against exactly this gradient as *"another product's colours"* is
+**overruled by the request** — don't revert it on the strength of the old note.
+⚠️ **Only the hues and stops are the spec; the alpha is ours.** Painted opaque it puts
+saturated blue-to-magenta behind 13px body text. A *uniform* alpha keeps all three hues at
+equal weight — which is what three stops are for — tuned so the row's overall strength
+matches the fade it replaces: dark `.13` / hover `.19`, light `.075` / hover `.11`. Light
+takes a tint far more strongly than the dark canvas, the same split the thinking card uses.
 
 Common to all three: violet is the AI accent (`--ai*` in Option 1, `--oa*` in Option 3);
 teal stays the product accent. Everything is **canned and deterministic** — nothing calls
@@ -675,17 +687,74 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   ⚠️ **Delete uses `aiChatDelCur()`, not `aiHistDel()`** — the latter re-opens the history
   sheet, which is wrong from a header menu. It bumps `aiChatId` for the same reason
   `aiNewChat()` does: without it the next chat overwrites the last one in history.
-- **Help** (`aiHelpMenu`) — **two rows only, Documentation ↗ and Support ↗**. The
-  reference's third row, *Release Notes*, was explicitly not wanted. Both URLs were checked
-  200 before being written in (`docs.motadata.com/motadata-aiops-docs/`,
-  `support.motadata.com`); `www.motadata.com/support/` is a 404, don't use it.
-- **Layout — `Sidebar · Floating · Full screen`** (`AI_LAY` / `aiLayMenu` / `aiLaySet` /
-  `aiLayCur` / `aiLayPaint`), a menu with a ✓ on the current row.
+- **Help** — **Documentation ↗ and Support ↗**, held in **`AI_HELP`**. The reference's
+  third row, *Release Notes*, was explicitly not wanted. Both URLs were checked 200 before
+  being written in (`docs.motadata.com/motadata-aiops-docs/`, `support.motadata.com`);
+  `www.motadata.com/support/` is a 404, don't use it.
+  ⚠️ **THEY LIVE UNDER THE STARTERS NOW** (request, 21 Aug 2026: *"this 2 link will be set
+  below the suggestion text"*), as `.aihelpl` at the tail of the empty state — deliberately
+  the quietest thing there (`--text-dim`, no `--ai-cta` wash, a hairline above), because the
+  five starters are what the panel is for.
+  ⚠️ **SIDE BY SIDE, AS LIGHT-GREY BUTTONS** (request, same day). They shipped for an hour
+  as a stacked pair of transparent rows, which read as two more starters in a column of
+  five — the same shape as the thing they are meant to be secondary to. A row of two grey
+  buttons (`--panel-2`) is a different object and takes one line of the panel instead of two.
+  `flex:1 1 0` on both, **not** `1 1 auto`, so they are equal halves rather than sized by
+  "Documentation" being twice the word "Support".
+  ⚠️ **The ↗ is hidden until hover** (request, same day) — it repeats on both buttons and
+  says the same thing on each, so at rest it is noise. It keeps its **box**, only its paint
+  goes: taking it out of flow would reflow the label under the cursor. That is the opposite
+  of the context chip's ✕, which *is* out of flow — there the chip is ~180px and every pixel
+  of label matters; here each button is half a 408px panel and the labels are two short
+  words.
+  ⚠️ **One array, two surfaces.** `aiHelpMenu` renders the same `AI_HELP`, so the empty
+  state and the ⋯ menu can never disagree about a URL.
+  ⚠️ **The ⋯ button hides on an empty chat** (`aiHelpBtnPaint`, same gate and same reasoning
+  as ＋ New chat). Those two links were its only rows there — Rename and Delete are already
+  gated on `aiThread.length` — so it would have opened an empty card, and it was opening it
+  straight over the ✦ mark.
+  ⚠️ **Rename chat / Delete chat are HIDDEN WHILE THE THREAD IS EMPTY** (request, 21 Aug
+  2026), so a brand-new chat's ⋯ menu is those two links and nothing else. There is nothing
+  to rename or delete before the first question — the chat is not in history yet, so Delete
+  has nothing to remove and Rename would title something that may never exist. Same test
+  (`aiThread.length`) and same reasoning as `aiNewBtnPaint`, which hides ＋ New chat on an
+  empty thread. ⚠️ **The `<hr>` is emitted with them**, not left behind — otherwise the menu
+  opens on a divider with the two links pushed down by a rule separating them from nothing.
+- **Layout — a TOGGLE between `Floating` and `Full screen`** (`AI_LAY` / `aiLayTog` /
+  `aiLayOther` / `aiLaySet` / `aiLayCur` / `aiLayPaint`).
+  ⚠️ **THE DROPDOWN IS GONE** (request, 21 Aug 2026: *"when i click layout to remove the
+  popup … click to convert full screen and click to convert floating"*). Once Sidebar was
+  removed the menu held one alternative and a ✓ against the mode you were already in — a
+  popup and two clicks to do what one click can. `aiLayMenu` is **kept and unreferenced**
+  (with `#aiLayM`'s CSS), so a third layout is one `onclick` away.
+  ⚠️ **The trigger now shows where it GOES, not where it is.** While it opened a chooser,
+  wearing the current layout was right — the menu listed the alternatives. A toggle has no
+  list, so the glyph and the tooltip both name the destination, which is what `AI_FS_OUT` /
+  `AI_FS_IN` already did for the full-screen button this control absorbed. `.on` still means
+  *in full screen*: the class describes the STATE, the glyph the ACTION. Don't fold them.
+  ⚠️ **`#aiLayBtn` was removed from `aiHdAway`'s exemption list** — it is no longer a menu
+  trigger, so clicking it while the ⋯ menu is open should close that menu, not be ignored.
   | row | geometry | can be dragged |
   |---|---|---|
-  | **Sidebar** | full-height right column; `body.aisplit` makes `.shell` yield exactly `--ai-w`, so the board keeps its own column | **width**, from the left edge |
-  | **Floating** | `.aifloat` — a detached rounded **card** anchored bottom-right with a margin on every side, its own shadow, board fully visible around it | **moved** by its header, **sized** from the left / top / top-left corner |
+  | **Floating** (default) | `.aifloat` — a detached rounded **card** floating 20px off the top, right and bottom, `--ai-w` wide and **full height**, board visible around it | **moved** by its header, **sized** from the left / top / top-left corner |
   | **Full screen** | `.aifs` — takes the viewport, thread centred at 840px | — |
+  ⚠️ **SIDEBAR WAS REMOVED AND FLOATING IS THE DEFAULT** (request, 21 Aug 2026). Sidebar
+  had been a full-height right column that made `.shell` yield `--ai-w` via `body.aisplit`,
+  and had been the default since 17 Aug. **The card now rests at exactly that size** —
+  `--ai-w` wide and full height — so the geometry survived the mode. Three things went with
+  it and are **kept unreferenced**, not deleted: `aiSplit` (now always `false`), the
+  `body.aisplit` CSS, and the **drag-to-the-right-edge dock gesture** (`.aidockghost` /
+  `body.aidockr`, whose `aiRzEnd` branch is gone). The Sidebar icon's SVG is parked in a
+  comment above `AI_LAY` — it took two corrections to get right (its fill was on the LEFT
+  region while the chat docks on the RIGHT), so redrawing it would repeat that.
+  ⚠️ **`aiLaySet('sidebar')` now maps to `'floating'`** rather than stranding the panel in
+  a mode with no row in the menu.
+  ⚠️ **Two size constants had to follow the new resting geometry**, and both were bugs the
+  moment the card grew: `AI_MAX_H` (900) sat *below* `100vh - 40` on any window taller than
+  940, so dragging the card shorter left no way back — it is gone, the viewport is the only
+  ceiling. And `aiFMinW()` now folds `AI_MIN_W` (440, by request) against the card's own
+  resting `--ai-w` (420px, 348px once the responsive steps bite) — a floor above the resting
+  width made the card jump wider on the first pixel of a drag.
   ⚠️ **Floating and Sidebar used to render identically** — both were the same full-height
   column at the right edge, and only `.shell`'s padding told them apart. Two of the three
   rows looked the same, which is what the follow-up request called out. Floating is now a
@@ -696,13 +765,11 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   while the menu already said Full screen. `aiFsTog()` is untouched and still does the work
   — the Esc ladder and `aiDashGo()` call it directly — it just has no button of its own now,
   and `aiLayPaint()` runs at the end of it so the trigger stays truthful either way.
-  ⚠️ **Sidebar is the DEFAULT** — `let aiSplit = true` (request, 17 Aug 2026: *"open in
-  Sidebar with small width"*), which is also what the reference checks. It opened Floating
-  until then, i.e. over the board.
-  ⚠️ **That is why `--ai-w` was narrowed 520px → 420px** (ladder 420/408/396/384/366/348).
-  The width is now subtracted from the canvas on *every* open, and 520px took a fifth of a
-  1600px screen before you had asked anything. Every step stays above `AI_SIDE_MIN` (340px),
-  or the ladder would land below the drag floor and the grip would appear to do nothing.
+  ⚠️ **Floating is the DEFAULT** — `let aiSplit = false`. Sidebar held that job from
+  17 Aug 2026 (*"open in Sidebar with small width"*) until it was removed on 21 Aug.
+  ⚠️ **That is why `--ai-w` was narrowed 520px → 420px** (ladder 420/408/396/384/366/348) —
+  it is the width the chat opens at, every time, and 520px took a fifth of a 1600px screen
+  before you had asked anything. The ladder still drives the floating card's resting width.
   ⚠️ **One token drives both sides** of Sidebar — `--ai-w` is the panel width *and* the
   padding the shell gives up (the `--dp-w` lesson in the root CLAUDE.md). `body.aisplit`
   also shifts the `.cwfab` Create Widget button, fixed bottom-right, out from under it.
@@ -711,6 +778,24 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   its column open behind a `100vw` panel. Toggle first, then clear and repaint.
   ⚠️ The *preference* lives in `aiSplit`; the body class is owned by `aiOpen`/`aiClose`, so
   closing the chat gives the column back and re-opening restores it.
+- ⚠️ **A MOVE MAY NEVER CHANGE THE SIZE.** `aiRzMove`'s `move` branch clamps, then **pins
+  `w`/`h` back from the mousedown snapshot** and returns. Reported twice (21 Aug 2026:
+  *"when I move the chat interface down the height increases"*) and **not reproducible** — a
+  header drag measured a **0px** height delta at 1600×950, 1512×1000 and 1366×768, at rest
+  and after shrinking, in all six directions. The pin makes it structurally impossible
+  rather than merely true today; `aiClamp()` legitimately adjusts `h` for window resizes, so
+  a move has to undo that for itself. Only the `move` branch is pinned — the resize branches
+  own the size on purpose.
+  ⚠️ **Vertical travel is near zero at the resting size, and that is the real complaint
+  behind it.** The card rests at `100vh − 40`, which IS `aiFMaxH()`, so `aiClamp` pins `y`
+  at 20 and it cannot be dragged up or down at all until it is made shorter. Measured room:
+  **217px** at 1600×950, **260px** at 1512×1000, **35px** at 1366×768 and **0px** at
+  1280×720. That is a direct consequence of *"the floating view is sidebar size"* — to get
+  travel back, either the resting height shrinks or the card is allowed past the bottom
+  edge. Neither has been done; the trade-off is the user's call.
+  ⚠️ A probe asserting "it still moves by >100px" fails at 1366×768 and 1280×720 **on
+  correct code** — expect the room that exists, not a fixed number.
+
 - **Move and resize** (`AIF` / `aiDragStart` / `aiRzStart` / `aiRzMove` / `aiRzEnd` /
   `aiRzReset` / `aiFloatApply` / `aiFloatSeed` / `aiClamp`, grips `.aigw` `.aign` `.aignw`).
   Floating: drag the header to move, drag the left edge / top edge / top-left corner to
@@ -1504,9 +1589,55 @@ a card. 10–15s end to end, with **one Skip for the whole flow** (`.aiagsk`).
   widget. Availability and Alerts carry a `live` hook that reads the board's donuts.
 
 ### The composer
-- **The composer's leading control is a ＋ with a two-row menu** (request + Notion
-  reference, 20 Aug 2026) — `aiPlusMenu` / `aiPlusPaint` / `aiPlusRun` / `aiPlusClose` /
-  `aiPlusCtx`, data in `AI_PLUS`, styled `.aiplusm`:
+- ⚠️ **THE LEADING CONTROL IS AN `@` NOW, WITH NO MENU AT ALL** (request, 21 Aug 2026:
+  *"the context will show only as @ — remove the + icon"*), and **file upload and dictation
+  went with it** (*"remove this"*, pointing at the mic and the *Add images, logs, PDFs or
+  CSVs* row). The composer's control row is **`@ · Auto … send`** — three buttons.
+  - The ＋ existed because there were **two** things to add, a file and a mention. With
+    upload gone there is exactly one, and a menu that opens onto a single row is a click in
+    the way. `@` is also the literal character the feature runs on, so the button and the
+    keyboard route are the same gesture — press it or type it.
+  - ⚠️ It calls **`aiPlusCtx()`, not `aiMentShow('')`** — that function seeds an `@` into the
+    composer first, which is the whole reason the list stays filterable. Opening the list
+    with nothing typed looks right and dies on the first keystroke (the 20 Aug bug below).
+  - **Kept and unreferenced**, the house pattern: `aiPlusMenu` / `aiPlusPaint` / `aiPlusRun` /
+    `aiPlusAway` and `.aiplusm`'s CSS; the whole `aiDic*` dictation engine and its CSS;
+    `aiUpPick` / `aiUpAdd` / `AI_UP_OK` / `AI_UP_SAY` and the context bar's attachment
+    chips. `AI_PLUS` keeps its one Mention row, and the file row sits **commented out inside
+    it** rather than deleted — its icon is the Lucide paperclip pasted verbatim, and
+    redrawing that by hand is what this panel's icon rule exists to prevent.
+  - ⚠️ `aiUpPick()`'s `if (el)` guard is what makes the missing `#aiUpIn` input safe; it
+    already existed and now carries the whole feature's absence.
+  - ⚠️ `aiNewChat()` still calls `aiDicStop(1)`. That is correct, not a leftover — it
+    belongs to the outgoing chat whether or not a control exists for it.
+  - ⚠️ **The probe trap bit again here.** `document.body.innerHTML` contains the inline
+    `<script>` source, so an assertion that "no markup still calls `aiPlusMenu`" matched the
+    parked function's own code and failed on working markup. Assert over
+    `querySelectorAll('[onclick]')`.
+  - ⚠️ **SEND IS PUSHED RIGHT BY `.aiinrow .aisend{margin-left:auto}`.** The spacer used to
+    be on the **mic** (`.aiinrow .aimic`), with send merely following it — so removing the
+    mic took the push with it and the button collapsed against `Auto` in the middle of the
+    row. `.aisend` is `display:none` until there is text, so on an empty composer the margin
+    has nothing to apply to and `@ · Auto` sit left, which is right.
+
+- ⚠️ **THE STOP MODIFIER IS `aisndstop`, AND IT TOOK TWO GOES.** This is the collision trap
+  the repo's `CLAUDE.md` opens with, hit **twice in one edit**:
+  - it was a bare **`stop`** — which is the **sidebar's top section** 12,000 lines away
+    (`.stop{margin:0 8px 4px;border-bottom:1px solid …;padding:0 0 6px}`). That had been
+    landing on the send button for the whole of every generation: 8px off the composer's
+    right edge and 4px of extra row height. It stayed invisible until the mic was removed
+    and send became the rightmost thing in the row.
+  - renaming it to **`aistop`** hit **`.aistop`, the stopped-generation notice** in the
+    thread, whose `margin:0 0 16px` then grew the control row by exactly 16px.
+  ⚠️ Neither rule appears in a search for `.aisend`. Both were found by measuring
+  `getComputedStyle` and dumping the row's children — **grep the whole stylesheet for the
+  bare modifier before naming one**, which is what the repo rule actually asks for.
+  ⚠️ **Option 3's `ac*` panel still toggles a bare `'stop'` on `.acsend`**, so it carries
+  the first of these two latent collisions. Not fixed here — that block is byte-identical in
+  all three files, so it is a three-file change.
+
+  The ＋ it replaced (kept, unreferenced) — `aiPlusMenu` / `aiPlusPaint` / `aiPlusRun` /
+  `aiPlusClose` / `aiPlusCtx`, data in `AI_PLUS`, styled `.aiplusm`:
   | row | goes to |
   |---|---|
   | **Add images, logs, PDFs or CSVs** | `aiUpPick()` — the real file picker, unchanged |
@@ -1797,6 +1928,36 @@ brand gradient behind the starters.
 ### The clarifier
 - Rebuilt to a supplied reference: **numbered rows, no radios, a pencil-marked free row with
   Skip inline, ✕ to abandon.** Picking a row **answers and advances** — `Next` is gone.
+- ⚠️ **A STEP MAY NOW BE `multi`** (request, 21 Aug 2026: *"add new flow with multiple
+  options with multiple selection"*). `AI_CLAR` gained a fourth question, **`states` —
+  *Which states should it count?*** (Up / Down / Unreachable / Maintenance), and the shape
+  changes with it:
+  - rows **toggle** instead of committing, and carry a **checkbox** (`.aicqck`) where a
+    single step carries its ordinal. The number means *"row 3 of 6"*, which is right when
+    one click ends the question and wrong when the job is to tick several — the row has to
+    say what it is before you click it. Everything else is unchanged, so the two kinds still
+    read as one component.
+  - a **Done** button appears (`.aicqd` / `.aicqok`) and names the count. It exists **only**
+    on a multi step: on a single step the row *is* the commit, and a second control that
+    also commits would be two ways to do one thing.
+  - the step opens **pre-lit with its own `def`**, so Done is never dead — the same rule
+    that made one radio pre-lit back when there was a Next.
+  - **typing in the free row clears the ticks** (and ticking clears the text). Otherwise
+    Done has to choose between four checked boxes and a sentence, and there is no right
+    answer to that.
+  - **Back restores the whole selection**, not the default — the answer is stored as
+    `"Down + Maintenance"` and `aiClarRestore` splits it back to indices.
+  - ⚠️ **It is printed in the preview as real counters** — `aiCounters()` maps the states
+    onto `monitor.<state>.count`, the four the research notes confirm; anything from the
+    free-text row passes through unmapped, because inventing a counter id would be
+    inventing product. A question whose answer never appears anywhere should not be asked.
+  - ⚠️ **`aiClarNext` looked the chart step up as `AI_CLAR[2]`** — a hardcoded index that
+    silently pointed at the new `states` step the moment a fourth question was inserted, so
+    every build would have fallen back to the default chart. It finds it **by key** now, and
+    both branches land through one `aiClarLand()`.
+  - ⚠️ **`.aicqx` was already taken** by the clarifier's own old primary button 30 lines
+    below, so the checkbox is `.aicqck`. Grepped before naming — which is what the two
+    `.stop` collisions earlier the same day cost.
 - **Docked over the composer** (`#aiClarDock`), not in the thread, and the **composer is
   hidden while a question is up** — the card has its own free-text row, and two places to
   answer one question is a trap.
@@ -1833,6 +1994,199 @@ brand gradient behind the starters.
   direction change for this flow; `lxPatBodyHTML` is the one renderer both use.
 - The Log Explorer starters are now **searches, not summaries**, and the IP in them is
   `192.0.2.165` — the busiest `event.source` in `LX_FIELDS`, not an arbitrary RFC 5737 pick.
+
+### The floating card's top edge (21 Aug 2026)
+
+Every resize grip's highlight line was **deleted** during this pass (*"remove this line on
+everwhere"*). One came back for the north grip, and was then put on **all four edges**
+(*"this line is shown only on the top upper side — set it on top, bottom, left and right"*):
+
+- **Edges get a capsule, corners get an arc — one mark per grip**, revealed on that grip's
+  hover and held up for the whole of its own drag. Four monday Sidekick screenshots were
+  supplied as the reference.
+  - `.aign / .aigs / .aigw / .aige ::before` — a 4px fully-rounded bar, **inset by
+    `--aifloat-r`** so it stops before the corner curve. ⚠️ Horizontal edges inset
+    left/right, vertical edges inset top/bottom — same rule, different axis; inset the
+    wrong pair and the bar runs into the arc.
+  - `.aignw / .aigne / .aigse / .aigsw > svg` — a **stroked path** with
+    `stroke-linecap:round`, running in along one edge, round the curve, and out along the
+    other.
+    ⚠️ **It was two adjacent CSS borders and that is why it had to change** (request: *"make
+    border will be corner radius"*). Borders draw the right curve but always terminate
+    **square and mitred**, so the hollow shape ended in two open flat cut-offs and read as a
+    length of pipe. Only a stroked path takes a round cap — which is what the straight bars
+    already had from `border-radius:999px`.
+    ⚠️ **Hollow comes free from the two stroke widths.** Both paths are byte-identical; the
+    4px under the 2px leaves 1px of outline along each side, and — because a round cap
+    extends by half the stroke width — the same 1px at each **end**. Nothing is shortened by
+    hand, and there is a probe assertion that the two `d` attributes match.
+    ⚠️ **One path, rotated 90/180/270°.** A quarter turn about the box centre maps
+    (x,y) → (26-y, x), which is exactly the next corner. Four hand-written paths would be
+    four chances to get one wrong.
+    ⚠️ **The viewBox bakes in `--aifloat-r`** (box `r + 12` square, arc radius `r`). It is
+    the one place in the panel where a token is fixed into geometry — change the token and
+    the path has to be re-cut.
+    ⚠️ **`overflow:visible` on the svg** — the 4px stroke straddles the path, so it paints
+    2px outside the viewBox on two sides and is otherwise clipped in half.
+  - Every mark is **hollow**: an outline in `--aigrip-c` over the card surface (the bars) or
+    a 2px `--card` stroke nested inside the 4px outline (the arcs), so the two read as one
+    family.
+- ⚠️ **A SINGLE RING CLIPPED TO A BAND WAS TRIED AND REJECTED.** `.aipanel::before/::after`
+  sized to the card, `clip-path:inset(...)` per edge — it ran the edge and turned **both**
+  corners as one continuous stroke. That is not what the reference does: there, each grip
+  owns a short mark and nothing joins up. Don't rebuild it from this note.
+- ⚠️ **ALL FOUR CORNERS ARE REAL GRIPS NOW.** `nw` was the only one, from when the card
+  could only grow up and left. The resize maths needed nothing — `aiRzMove` tests modes with
+  `M.includes(...)`, so `ne` simply runs the `n` and `e` branches.
+- ⚠️ **The insets are `-3px` / `-2px`, not `-1px` / `0`.** An absolutely positioned box lays
+  out against its ancestor's **padding** box, so the card's own edge is 1px outside it:
+  `-1px` looks like the obvious number and puts the whole stroke *inside* the border.
+  `-3px` centres a 4px stroke on the card's outer edge, `-2px` centres the 2px core.
+  Measured, not guessed — `getComputedStyle().width` on a pseudo returns the **content** box,
+  so add the border widths back before comparing it to the card.
+- ⚠️ **EAST AND SOUTH ARE REAL RESIZE HANDLES, not just marks.** The card is anchored
+  bottom-right and only ever had `w` / `n` / `nw`; a line saying *grab here* over something
+  ungrabbable is worse than no line. `aiRzMove`'s mode tests are `M.includes(...)` now
+  rather than an equality chain, so a corner is simply the two edges it is made of — the
+  comment there had described eight modes for a while without the code implementing them.
+  - ⚠️ **W/N move the far edge and so adjust `x`/`y`; E/S grow away from the anchor and must
+    NOT touch them.** Getting that backwards walks the card across the screen as you resize.
+  - ⚠️ **E and S must be bounded by the room on their OWN side**, not just by `aiFMaxW/H`.
+    The card rests flush against the right margin, so `x` is already maximal; a width the
+    general `aiClamp()` then had to absorb came out of `x` instead, and **dragging the right
+    edge rightwards moved the left edge left**. `Math.min(aiFMaxW(), innerWidth - AI_EDGE -
+    aiDrag.x, …)` makes the edge simply stop at the margin. There is a probe assertion for
+    the stop as well as for the widen.
+- ⚠️ **One drag flag PER EDGE** (`body.aidragn/s/e/w`), set by membership so `nw` lights both
+  the edges it is made of, and all four cleared in `aiRzEnd`. A single `aidragging` class
+  cannot say which grip is being dragged.
+- ⚠️ **IT HAS TWO STATES** (request, 21 Aug 2026): an **outline** while you are only
+  pointing at the edge — 1px `--text-dim` border on a `--card` fill — and a **solid fill**
+  once you are actually dragging it. A mark that looks identical before and during a drag
+  says nothing at the only moment it matters.
+- ⚠️ **THE ACTIVE FILL IS THE PRODUCT'S, NOT THE AI ACCENT** (request, same day: *"change
+  this colour"*). It shipped as `--ai` for a few minutes and that put a saturated violet bar
+  across the top of the card — the AI accent means *the assistant is doing something*, and a
+  resize grip is neutral chrome with nothing to do with the assistant. The product paints
+  its own active/selected chrome with **`--primary`** (`#111c2c` light, `#e3e8f2` dark);
+  `--radio-btn-box-selected-bg`, `--calendar-selected-day-background-color` and
+  `--nav-divider-bg` all resolve to it. In this file that IS **`--white`**, which the panel
+  already maps to `--primary`, so it is one token and correct in both themes with nothing
+  further to keep in step.
+  - ⚠️ **4px, not 3px.** A 1px border needs a hollow core to read *as* an outline; at 3px
+    the two borders meet and it renders as a solid bar again — the state it exists to be
+    distinguishable from.
+  - ⚠️ **The core is `--card`, not transparent** (request, same day: *"add white
+    background"*). The bar straddles the card's edge, so its outer half sits over the
+    **board** — a hollow core let widget text and legend dots show through the middle of it
+    and read as a rendering fault. `--card` is `#ffffff` in light and the card's own surface
+    in dark, so one token covers both; a hardcoded white would punch a bright slot in dark.
+  - ⚠️ **THE SOFTNESS IS IN THE BORDER COLOUR, NOT IN `opacity`** — and getting this wrong
+    made the fill look see-through **twice**. `opacity` applies to the whole pseudo-element,
+    background included, so revealing it at `.5` left a half-transparent white and the
+    board read straight through the bar even though the fill was `#ffffff`. It is revealed
+    at **`opacity:1`** and the border alone carries the alpha, via
+    `color-mix(in srgb, var(--text-dim) 60%, transparent)`.
+  - ⚠️ **No `background-clip`** — the default `border-box` is wanted, so the opaque fill
+    paints *under* the translucent border and the outline composites over white rather than
+    over whatever widget is behind it. `padding-box` was tried and is wrong here; during a
+    drag border and fill are the same colour, so it changes nothing in that state either.
+  - ⚠️ **`color-mix()` serialises as `color(srgb r g b / a)`, not `rgba(...)`.** A probe
+    testing the border for `/rgba/` failed twice on working CSS. Match a fractional alpha
+    in either shape.
+  - ⚠️ **`body.aidragn` is set ONLY for the north grip** (`aiRzStart`'s `'n'` / `'nw'`) and
+    cleared in `aiRzEnd`. The bare `aidragging` class cannot say *which* grip is being
+    dragged — keying off it would light the top edge while you resize from the left. It also
+    holds the mark up when the pointer runs off the 6px band mid-drag, which `:hover` cannot.
+  - ⚠️ **Testing the active state needs a hover stand-in at the SAME specificity as
+    `.aign:hover::after`.** A probe injected `.aipanel.aifloat .aign.__h::after` (four
+    classes), which outranked `body.aidragn .aign::after` and forced the resting opacity
+    during the drag — one phantom failure on working CSS.
+- ⚠️ **It STRADDLES the card's border — half above, half below** (second request the same
+  day). The grip's own `top:0` is the panel's *padding* box, i.e. 1px inside the border, so
+  the mark sits at `top:-1px` and is then centred on itself; its middle lands on the card's
+  outer top edge.
+- ⚠️ **That is why `.aipanel.aifloat` is `overflow:visible`, and it used to be `hidden`.**
+  The outer half is a child painting outside its box and the clip ate it, leaving a 1.5px
+  line flush on the edge. Nothing inside the card paints a background of its own, so the
+  rounded corners survive without the clip — checked in both themes. **Only the floating
+  card ever had that clip**; the base `.aipanel` has none, so Sidebar and Full screen are
+  unaffected (a probe asserting they "still clip" failed on working code for this reason).
+- ⚠️ **Hover only — it does NOT key off `body.aidragging`.** That class cannot say *which*
+  grip is being dragged, so it would light the top edge while you resize from the left.
+  It needs no drag state: the north edge follows the pointer, so the pointer stays on the
+  grip and the line stays lit by itself.
+- Reference: **monday's Sidekick panel**, whose floating card shows this line at its top
+  edge and nothing on its sides.
+
+⚠️ **A collapse-to-header control was built here and REMOVED the same day.** Hovering the
+floating card's header revealed a chevron that rolled the card up to its title bar
+(`.aimin`, `aiFloatMin` / `aiMinPaint` / `aiMinClear`). It was verified working and then
+cut outright — the request had been for the *grip line* above, not a control. Unlike
+`aiScopeMenu` / `iFocus`, **nothing was kept**: it is fully deleted, not parked. Don't
+rebuild it from this note.
+
+### The panel is painted from the product's own palette (21 Aug 2026)
+
+Request: *"use this library to replace new colour, because I need to set this AI chat
+interface in the current UI visualization — text colour, icon colour, or any you need"*,
+pointing at **`observeops-icons/color-palette.html`** — the live product's tokens harvested
+per theme (**319 light / 300 dark**, sectioned: General, Common Border Color, Common Text
+Color, buttons, Form Element, …). Preceded by *"the border colour will be replaced with
+#E3E8F2 — change all border colours"*, which turned out to be that file's `--border-color`.
+
+Applied by **redefining tokens on `.aipanel`**, not by editing the hundreds of `color:` and
+`border:` declarations. Custom properties inherit *and* resolve on the element that declares
+them, so one block repaints the card's own edge and everything inside it — and any rule
+added later inherits the palette for free.
+
+| product token | ours | light | dark |
+|---|---|---|---|
+| `--page-text-color` | `--text` | `#1d2a3e` | `#cad3e2` (already agreed) |
+| `--text-color-common-secondary` | `--text-dim` | `#7186a8` | `#8e9fbc` |
+| `--text-neutral-ligher` | `--text-dim2` | `#6a7fa0` | `#6a7fa0` (already) |
+| `--neutral-regular` | `--muted` | `#7186a8` | `#6a7fa0` |
+| `--primary` | `--white` | `#111c2c` | `#e3e8f2` |
+| `--border-color` | `--border` | `#e3e8f2` | `#1d2a3e` |
+| `--tag-bg-color` | `--chip` | `#e3e8f2` | `#2b394f` (already) |
+| `--left-menu-hover-bg` | `--hover` | `#ecf1f9` | `#172336` |
+| `--dropdown-hover-background` | `--pop-item-hover` | `#ecf1f9` | `#2b394f` (already) |
+| `--chart-indigo` | `--ai` | `#7c3aed` | `#8b5cf6` (already) |
+
+- ⚠️ **SCOPED TO THE PANEL.** Every one of these also drives the dashboard, Log Explorer and
+  Settings. The ask was to align *the chat* with the product, not to repaint the prototype —
+  these rules must never move to `:root`. There are probe assertions that the board keeps its
+  own `--text` (`#24344d`) and `--ai` (`#8b5cf6`).
+- ⚠️ **Dark is `:root` here** and light is the `html[data-theme="light"]` override, so the
+  dark values sit on `.aipanel` and the light ones on the more specific selector. Only what
+  actually differs is declared.
+- ⚠️ **THE AI ACCENT WAS A PRODUCT TOKEN ALL ALONG.** `--chart-indigo` is `#8b5cf6` in dark
+  — exactly the violet this panel already used — and `#7c3aed` in light, which is also what
+  `--oa` (Option 3's panel) has always declared in light. So the two AI surfaces stop
+  disagreeing about their own accent.
+  ⚠️ **`--ai-soft` / `--ai-line` must move with it.** They are hardcoded
+  `rgba(139,92,246,…)` at `:root`, so changing `--ai` alone leaves every wash and hairline
+  on the old hue.
+- ⚠️ **Deliberately NOT repointed**, because none of it is chrome: `--ai-in-line` (the
+  composer's edge, dimmed on request four times to its `.018` floor), `--ai-cta` (the brand
+  gradient, supplied verbatim), `--track` (the clarifier radio's ring, which must stay
+  visible), and `.aihov` (the history hover preview, appended to `<body>`, so it does not
+  inherit any of this — it is a popover over the board, not part of the panel).
+- ⚠️ **One contrast regression, stated rather than silently "fixed":** light `--text-dim`
+  goes `#5b6b85` → `#7186a8`, the product's own secondary-text colour, which lands near
+  **4.0:1** on white rather than above 4.5:1. It is what the product ships.
+
+### The chat name lost its resting pill (21 Aug 2026)
+
+- `.aihttl` carried `--ai-in-chip` permanently — a filled slab behind the name in a header
+  with no other fill, which made the title read as a field. **`background:transparent` at
+  rest; hover and `.open` still fill it**, so the affordance survives. This reverses the
+  earlier *"chat name as a resting pill"* — don't restore it without re-reading both.
+- ⚠️ **The `margin-left:-9px` went with it** (same request: *"add margin"*). That pull
+  existed to cancel the pill's own left padding so the *text* lined up with the header edge;
+  with nothing painted at rest there is no pill to cancel, and all it did was jam the name
+  against ＋ New chat 4px away. It is `2px` now — the header's own `gap:4px` plus a little,
+  measured at 8px of real space between the two controls.
 
 ### Verification lessons from this pass
 - ⚠️ **Never assert against `document.body.textContent`** — it includes inline `<script>`
@@ -1930,9 +2284,14 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   `ALL \d+ PASS|\d+ of \d+ FAILED` — the first match is the template inside the inlined
   script source, not the rendered verdict.
 - **`lxbehave.py`** — the same idea for the **Log Explorer module**: drives every `lx*`
-  entry point in all three files and prints the verdict **as text on stdout**. **56 checks**,
-  and since 19 Aug 2026 **all three files run all 56** — Option 1 skipped 5 of them while its
-  log-sources panel was deleted, and the panel is back. Run it after any `lx*` change.
+  entry point in all three files and prints the verdict **as text on stdout**. **57 checks**,
+  and all three files run all 57 — Option 1 skipped 5 of them while its log-sources panel was
+  deleted, and the panel is back. Run it after any `lx*` change.
+  ⚠️ **Two of its assertions were rewritten on 21 Aug 2026** because they encoded the OLD
+  defaults: the log tree and the sources panel now open **collapsed in Option 1 and expanded
+  in Options 2–3**, so `tree expand group` opens the group only `if (!LX.open['0'])` and the
+  panel check asserts the **toggle**, both ways, against whatever that file started with.
+  Hardcoding either default fails on the other two files.
   ⚠️ The suite still skips its panel checks wherever `#lxTree` is absent, which is the right
   behaviour if the panel is ever removed again — asserting a deliberately deleted component
   is a false failure. `lxPickType()` is called by the Overview's bubble chart as well as by

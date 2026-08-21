@@ -115,16 +115,26 @@ window.addEventListener('load', function(){ setTimeout(function(){
     T('tree group tab', function(){ lxTreeTab('group'); });
     ck('group tab empty state',  function(){ return /No log groups defined/.test(document.getElementById('lxTree').textContent); });
     T('tree type tab', function(){ lxTreeTab('type'); });
+    /* ⚠️ OPTION 1 OPENS THE TREE FULLY COLLAPSED (request, 20 Aug 2026) while Options 2
+       and 3 still expand group 0 on load, so this cannot assume either. Open the group
+       only if it is not already open, then the type under it. Hardcoding one default
+       fails on the other two files. */
+    T('tree expand group', function(){ if (!LX.open['0']) lxTreeToggle('0'); });
     T('tree expand leaf', function(){ lxTreeToggle('0.0'); });
     ck('source level shown',     function(){ return document.querySelectorAll('#lxTree .lxtr.k2').length===1; });
     T('tree search', function(){ document.getElementById('lxTreeQ').value='windows'; lxTree(); });
     ck('search filters tree',    function(){ return document.querySelectorAll('#lxTree .lxtr').length>0 &&
                                                     document.querySelectorAll('#lxTree .lxtr').length<14; });
     T('clear tree search', function(){ document.getElementById('lxTreeQ').value=''; lxTree(); });
+    /* ⚠️ THE SOURCES PANEL DEFAULT DIFFERS PER FILE TOO — Option 1 opens it collapsed
+       (20 Aug 2026), Options 2 and 3 open it showing. So assert the TOGGLE, both ways,
+       against whatever this file started with. */
+    var wasOpen = document.body.classList.contains('lxopen');
     T('panel toggle', function(){ lxPanel(); });
-    ck('panel closed',           function(){ return !document.body.classList.contains('lxopen'); });
+    ck('panel toggles',          function(){ return document.body.classList.contains('lxopen') !== wasOpen; });
     T('panel back', function(){ lxPanel(); });
-  } else { skipped += 4; }
+    ck('panel toggles back',     function(){ return document.body.classList.contains('lxopen') === wasOpen; });
+  } else { skipped += 6; }
 
   T('live trail', function(){ lxLive(1); });
   ck('live trail shown',       function(){ return document.getElementById('lxLt').classList.contains('on'); });
