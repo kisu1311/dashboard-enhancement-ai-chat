@@ -392,6 +392,11 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
 .mflyout.on{display:flex;flex-direction:column;gap:0}
 .mfcols{display:flex;gap:0}
 .mfcol{width:216px;padding:0 14px;flex:0 0 auto}
+/* ⚠️ A COLUMN HOLDING A TWO-UP LIST SIZES TO ITS CONTENT. `.mfcol` is a fixed 216px, which
+   is right for one list of labels and half of what a `.mflist.c2` grid needs — the grid
+   tracks simply ran outside the column and out of the menu's own box. `:has()` keeps this
+   to the one column that needs it rather than making every column elastic. */
+.mfcol:has(.mflist.c2){width:auto}
 .mfcol+.mfcol{border-left:1px solid var(--pop-line,var(--border))}
 .mfsec{font-size:13px;font-weight:700;color:var(--white);padding:7px 8px 5px}
 .mfsec.tight{padding-top:0}
@@ -402,11 +407,48 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
   border-top:1px solid var(--pop-line,var(--border));font-size:12.2px;color:var(--text-dim)}
 .mffoot:hover{color:var(--teal)}
 .mffoot .ext{margin-left:auto;font-size:11px;opacity:.8}
+/* ⚠️ THE RULE IS ON THE LIST, so it spans exactly the rows it owns. A menu where every row
+   sits to the right of one long line reads as one flat indent — which is what Explorer's
+   two-level tree looked like before the parent rows were pulled out of it. */
 .mflist{border-left:1px solid var(--pop-line,var(--border));margin:0 0 8px 12px}
+/* ⚠️ A SUB-MODULE THAT HAS CHILDREN sits OUTSIDE the rule and carries the weight of a
+   heading without being one — it is still a row you can click. Its children then hang off
+   their own short rule below it, so the line means "these belong to that". */
+.mfp{margin-left:12px;font-weight:600;color:var(--white);height:30px;border-radius:4px}
+.mfp:hover{background:var(--pop-item-hover);color:var(--white)}
+.mflist.kid{margin-top:1px}
+/* ⚠️ TWO-UP CHILDREN AS A GRID, NOT CSS `columns`. `columns:2` splits whatever width the
+   container already has, and `.mfi` is `white-space:nowrap` — so "Container Orchestration"
+   simply overflowed its half and printed on top of the next sub-column's last row. A grid
+   of `max-content` columns sizes ITSELF to the widest label instead, which needs no magic
+   width and cannot collide.
+   ⚠️ `grid-auto-flow:column` + an explicit row count is what keeps the reading order going
+   DOWN each sub-column (Inventory…HCI, then Cloud…). Plain grid flow would fill across and
+   read Inventory, Cloud, Network, Interface — the order of a table, not of a list.
+   ⚠️ `--mfrows` is set per list by `mfCol` from the item count, so a 19th child re-splits
+   the group instead of falling off the bottom of a hardcoded nine. */
+.mflist.c2{display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--mfrows,9),auto);
+  column-gap:22px;justify-content:start;padding-top:2px}
 .mfi{display:flex;align-items:center;gap:7px;height:28px;padding:0 9px;margin-left:-1px;border-left:1px solid transparent;
   font-size:12.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:0 4px 4px 0}
 .mfi:hover{background:var(--pop-item-hover);color:var(--text);border-left-color:var(--teal)}
 .mfi.on{color:var(--teal)}
+/* ⚠️ THE ICON IS THE THING THAT MAKES A 31-ROW MENU READABLE. Without it every row is the
+   same shape and the only cue is indentation, which does not survive being read down a
+   long list — that is what "I can't understand this" was about. An icon says "this is a
+   module you can open"; a plain indented label says "this is something inside one".
+   Deliberately at .72 opacity: it is an anchor for the eye, not a second thing to read. */
+.mfic{width:15px;height:15px;flex:0 0 15px;opacity:.72}
+.mfi:hover .mfic,.mfp:hover .mfic{opacity:1}
+/* ⚠️ A ROW THAT CARRIES A MODULE ICON IS HIGHLIGHTED (request, 23 Aug 2026: "sub module
+   will be highlighted") — heavier and brighter than the pages indented under it, so the
+   eleven read as the level they are.
+   ⚠️ THE SELECTOR IS `:has(.mfic)`, NOT `:not(.sub)`. Every row in every other flyout is a
+   `.mfi` that is not `.sub`, so `:not(.sub)` would have re-weighted the whole rail's menus
+   — Dashboards, Alerts, Settings and the rest. Keying off the icon says exactly what is
+   meant: a row with a module icon is a module. Nothing else in the file has one. */
+.mfi:has(.mfic){font-weight:600;color:var(--white)}
+.mfi:has(.mfic):hover{color:var(--white)}
 /* a tab's dropdown entries, indented under the tab they belong to */
 .mfi.sub{padding-left:24px;height:26px;font-size:12px;color:var(--muted)}
 .mfi.sub:hover{color:var(--text)}
@@ -1304,19 +1346,36 @@ html[data-theme="light"] .aipanel.aifloat{
    card ever had, because it is anchored bottom-right and grew away from that corner. East
    and south are real resize handles now, not just marks: a line that says "grab here" over
    something ungrabbable is worse than no line. */
+/* ⚠️ THE GRIPS STRADDLE THE CARD'S EDGE — 4px outside, 4px inside (request, 23 Aug 2026:
+   "my cursor is in the top header and I move down, the height minimises"). They used to sit
+   WHOLLY INSIDE: a 6px band and a 15px corner square, both carved out of the header. So
+   pressing near the top of the header — which is the drag handle, and the obvious place to
+   grab a card by — landed on the north grip and RESIZED instead of moving. The card rests
+   at full height, so dragging down from there shrinks it, which is exactly what was
+   reported.
+   ⚠️ Straddling is also how a real window behaves: the resize zone is centred on the
+   border, not buried in the content. The header now gives up 4px instead of 6, and the 4px
+   of dead board just outside the card became useful.
+   ⚠️ `--aigrip-o` is the OUTSIDE reach, and the marks below are offset by it — a mark is
+   positioned inside its grip, so moving the grip moves the mark unless the offset follows.
+   The card's own edge is 1px outside the padding box these are laid out against, hence
+   `-1px - 4px`. Changing one number here means changing the matching offset on the mark. */
+.aipanel.aifloat{--aigrip-o:4px}
 .aigw,.aign,.aige,.aigs,.aignw,.aigne,.aigse,.aigsw{position:absolute;z-index:9;display:none}
-.aigw{left:0;top:0;bottom:0;width:6px;cursor:ew-resize}
-.aige{right:0;top:0;bottom:0;width:6px;cursor:ew-resize}
-.aign{left:0;right:0;top:0;height:6px;cursor:ns-resize}
-.aigs{left:0;right:0;bottom:0;height:6px;cursor:ns-resize}
+.aigw{left:-5px;top:0;bottom:0;width:8px;cursor:ew-resize}
+.aige{right:-5px;top:0;bottom:0;width:8px;cursor:ew-resize}
+.aign{left:0;right:0;top:-5px;height:8px;cursor:ns-resize}
+.aigs{left:0;right:0;bottom:-5px;height:8px;cursor:ns-resize}
 /* ⚠️ ALL FOUR CORNERS (request + monday reference, 21 Aug 2026). `nw` was the only one,
    from when the card could only grow up and left. The resize maths needed nothing: since
    `aiRzMove` tests modes by `M.includes(...)`, `ne` simply runs the `n` and `e` branches. */
-.aignw,.aigne,.aigse,.aigsw{width:15px;height:15px;z-index:10}
-.aignw{left:0;top:0;cursor:nwse-resize}
-.aigne{right:0;top:0;cursor:nesw-resize}
-.aigse{right:0;bottom:0;cursor:nwse-resize}
-.aigsw{left:0;bottom:0;cursor:nesw-resize}
+/* the corners straddle too, and are 14px so they reach only 9px into the header rather
+   than 15 — enough to hit, small enough not to own the corner of the title bar */
+.aignw,.aigne,.aigse,.aigsw{width:14px;height:14px;z-index:10}
+.aignw{left:-5px;top:-5px;cursor:nwse-resize}
+.aigne{right:-5px;top:-5px;cursor:nesw-resize}
+.aigse{right:-5px;bottom:-5px;cursor:nwse-resize}
+.aigsw{left:-5px;bottom:-5px;cursor:nesw-resize}
 /* the left grip serves BOTH modes; the top and corner grips are the card's alone */
 body.aisplit .aipanel .aigw{display:block}
 .aipanel.aifloat .aigw,.aipanel.aifloat .aign,.aipanel.aifloat .aige,
@@ -1389,15 +1448,32 @@ body.aisplit .aipanel .aigw{display:block}
    `-3px` centres a 4px stroke on it and `-2px` centres the 2px core. `-1px` looks like the
    obvious number and puts the whole stroke INSIDE the border — measured, not guessed. */
 .aipanel.aifloat{--aigrip-c:color-mix(in srgb,var(--text-dim) 60%,transparent)}
+/* ⚠️ `box-sizing:border-box` EXPLICITLY, and this is why the capsules were fatter than the
+   corner arcs (request, 23 Aug 2026: "same size on this and this"). The global reset at the
+   top of this sheet is `*{box-sizing:border-box}` — and **`*` does not match pseudo-
+   elements**; it needs `*,*::before,*::after`. So these marks were `content-box`: 4px of
+   height PLUS 1px of border on each side = **6px on screen**, against the arcs' 4px stroke.
+   Same intended geometry, two different sizes, and nothing in either rule said so.
+   ⚠️ Fixed HERE rather than by widening the global reset — that reset governs every
+   pseudo-element in a 300KB stylesheet, and changing it would move things far outside this
+   panel. If another `::before` in this file measures wrong, this is the reason. */
 .aign::before,.aigs::before,.aigw::before,.aige::before{content:'';position:absolute;
+  box-sizing:border-box;
   border-radius:999px;border:1px solid var(--aigrip-c);background:var(--card);
   opacity:0;transition:opacity .12s,background-color .12s,border-color .12s}
-/* ⚠️ HORIZONTAL edges inset left/right by the radius; VERTICAL edges inset top/bottom.
+/* ⚠️ THE BAR RUNS THE WHOLE EDGE, corner arc to corner arc — inset by `--aifloat-r` at each
+   end so it stops where the card's straight edge does.
+   ⚠️ IT WAS BRIEFLY A SHORT 44px CENTRED HANDLE and that was a MISREAD of "show the line
+   width" (23 Aug 2026); the next message — "I need this line width" — put it back. The
+   full-length bar is what the monday reference shows and what was asked for originally.
+   Don't shorten it again: `--aigrip-l` is gone, deliberately, so there is no dial inviting
+   it.
+   ⚠️ HORIZONTAL edges inset left/right by the radius; VERTICAL edges inset top/bottom.
    Same rule, different axis — inset the wrong pair and the bar runs into the corner arc. */
-.aign::before{left:var(--aifloat-r);right:var(--aifloat-r);top:-1px;height:4px;transform:translateY(-50%)}
-.aigs::before{left:var(--aifloat-r);right:var(--aifloat-r);bottom:-1px;height:4px;transform:translateY(50%)}
-.aigw::before{top:var(--aifloat-r);bottom:var(--aifloat-r);left:-1px;width:4px;transform:translateX(-50%)}
-.aige::before{top:var(--aifloat-r);bottom:var(--aifloat-r);right:-1px;width:4px;transform:translateX(50%)}
+.aign::before{left:var(--aifloat-r);right:var(--aifloat-r);top:var(--aigrip-o);height:4px;transform:translateY(-50%)}
+.aigs::before{left:var(--aifloat-r);right:var(--aifloat-r);bottom:var(--aigrip-o);height:4px;transform:translateY(50%)}
+.aigw::before{top:var(--aifloat-r);bottom:var(--aifloat-r);left:var(--aigrip-o);width:4px;transform:translateX(-50%)}
+.aige::before{top:var(--aifloat-r);bottom:var(--aifloat-r);right:var(--aigrip-o);width:4px;transform:translateX(50%)}
 /* ⚠️ THE CORNER ARC IS A STROKED SVG PATH, NOT TWO CSS BORDERS (request, 21 Aug 2026:
    "make border will be corner radius", with the monday screenshots again). Two adjacent
    borders DO draw the right curve, but a border always terminates square and mitred: the
@@ -1409,19 +1485,26 @@ body.aisplit .aipanel .aigw{display:block}
    cap extends by half the stroke width — 2px vs 1px leaves that same 1px at each END.
    Nothing has to be shortened by hand.
    ⚠️ ONE PATH, ROTATED. The geometry is authored for the top-left and the other three are
-   `rotate(90/180/270deg)`; a 90° turn about the box centre maps (x,y) → (26-y, x), which is
+   `rotate(90/180/270deg)`; a 90° turn about the box centre maps (x,y) → (20-y, x), which is
    exactly the next corner. Four hand-written paths would be four chances to get one wrong.
-   ⚠️ THE VIEWBOX IS TIED TO `--aifloat-r` (14) — the box is `r + 12` square and the arc's
+   ⚠️ IT IS THE CURVE AND ALMOST NOTHING ELSE (request, 23 Aug 2026: "it was very big, make
+   it small"). The first cut ran a **10px straight tail** off each end of the arc in a 26px
+   box, which read as a big bracket around the corner rather than as a mark ON it — the
+   monday reference is a quarter-arc with barely any straight at all. The tails are **3px**
+   now in a 20px box. The ARC's own radius is unchanged at `r`: it hugs the card's corner,
+   and shrinking that instead would have made the mark stop following the curve it is
+   pointing at.
+   ⚠️ THE VIEWBOX IS TIED TO `--aifloat-r` (14) — the box is `r + 6` square and the arc's
    radius is `r`. Change the token and this path has to be re-cut; it is the one place in
    the panel where a token is baked into geometry.
    ⚠️ `overflow:visible` — the 4px stroke straddles the path, so it paints 2px outside the
    viewBox on two sides and would otherwise be clipped in half. */
-.aignw>svg,.aigne>svg,.aigse>svg,.aigsw>svg{position:absolute;width:26px;height:26px;
+.aignw>svg,.aigne>svg,.aigse>svg,.aigsw>svg{position:absolute;width:20px;height:20px;
   overflow:visible;pointer-events:none;opacity:0;transition:opacity .12s}
-.aignw>svg{top:-1px;left:-1px}
-.aigne>svg{top:-1px;right:-1px;transform:rotate(90deg)}
-.aigse>svg{bottom:-1px;right:-1px;transform:rotate(180deg)}
-.aigsw>svg{bottom:-1px;left:-1px;transform:rotate(270deg)}
+.aignw>svg{top:var(--aigrip-o);left:var(--aigrip-o)}
+.aigne>svg{top:var(--aigrip-o);right:var(--aigrip-o);transform:rotate(90deg)}
+.aigse>svg{bottom:var(--aigrip-o);right:var(--aigrip-o);transform:rotate(180deg)}
+.aigsw>svg{bottom:var(--aigrip-o);left:var(--aigrip-o);transform:rotate(270deg)}
 .aignw>svg path,.aigne>svg path,.aigse>svg path,.aigsw>svg path{fill:none;
   stroke-linecap:round;stroke-linejoin:round;transition:stroke .12s}
 .aignw>svg .o,.aigne>svg .o,.aigse>svg .o,.aigsw>svg .o{stroke:var(--aigrip-c);stroke-width:4}
@@ -1473,7 +1556,15 @@ body.aisplit .aipanel{box-shadow:none}
 /* the floating Create Widget FAB is fixed bottom-right and would sit under the column —
    and under the floating card too, which is anchored to the same corner */
 body.aisplit .cwfab{right:calc(var(--ai-w) + 20px)}
-body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}
+/* ⚠️ THE FAB MOVES ONLY WHILE THE CARD IS ACTUALLY OVER IT (request, 22 Aug 2026). This
+   was `body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}` — shifted for the whole of
+   Floating, which is every session now that Floating is the default. Drag the chat to the
+   middle of the board and Create Widget stayed parked out by the card's old anchor, in the
+   middle of the canvas, dodging something that was no longer there.
+   ⚠️ `--cwfab-r` is MEASURED from the card's live left edge (`aiFabPaint`), not derived
+   from `--ai-w`, so a resized card is cleared properly too. The fallback keeps the old
+   behaviour if the property is ever missing. */
+body.aifabshift .cwfab{right:var(--cwfab-r,calc(var(--ai-w) + 36px))}
 /* ⚠️ The panel's AMBIENT "THINKING" GLOW (.aiamb — three blurred orbs drifting behind the
    rim from send until the answer landed) was REMOVED (annotation, 18 Aug 2026: "remove
    thinking time background animation"). It was the largest moving thing on screen during
@@ -6341,14 +6432,27 @@ let activeModule = 0;
    ⚠ This is a deliberate divergence from the live 8.2.6 nav, which lists all 16
    modules flat (research notes §1).
    ========================================================================== */
+/* ⚠️ SIX ENTRIES, FROM `sidemenu.md` (request, 23 Aug 2026 — the file is the spec, and it
+   is a TREE, not the flat list it looks like: everything indented under `Explorer` is a
+   sub-menu row, and `Monitor` and `NCCM` have children of their own).
+   It was seven: Dashboards · Monitors · Alerts │ Explorers · Network · SLO │ Settings.
+   **Monitors and Network left the rail** — Monitor is a section inside Explorer's flyout
+   now, and Network's three groups (Topology / NCCM / NetRoute) became rows there — and
+   **Report joined it**.
+   ⚠️ LABELS ARE THE SPEC'S, CASE-CORRECTED. `sidemenu.md` is typed lowercase and mostly
+   singular ("dashboard", "alert", "report", "Setting"); the live product and the research
+   notes use plurals (Dashboards, Alerts, Reports, Settings). The spec's singular wins here
+   because it was given explicitly — recorded so it is not "corrected" back by someone
+   checking the notes.
+   ⚠️ The old `SUBNAV['Monitors'|'Explorers'|'Network']` entries are KEPT below, unreferenced,
+   because the rail no longer has those names. They are what a revert would need. */
 const RAIL = [
-  { name:'Dashboards', icon:'dashboard',       mod:'Dashboards', group:'work' },
-  { name:'Monitors',   icon:'navbar-monitor',  mod:'Monitors',   group:'work' },
-  { name:'Alerts',     icon:'alert',           mod:'Alerts',     group:'work' },
-  { name:'Explorers',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
-  { name:'Network',    icon:'topology',        mod:'Topology',   group:'analyse' },
-  { name:'SLO',        icon:'slo',             mod:'SLO',        group:'analyse', beta:true },
-  { name:'Settings',   icon:'settings',        mod:'Settings',   group:'admin' },
+  { name:'Dashboard', icon:'dashboard',       mod:'Dashboards',      group:'work' },
+  { name:'Alert',     icon:'alert',           mod:'Alerts',          group:'work' },
+  { name:'SLO',       icon:'slo',             mod:'SLO',             group:'work', beta:true },
+  { name:'Explorer',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
+  { name:'Report',    icon:'report',          mod:'Reports',         group:'analyse' },
+  { name:'Setting',   icon:'settings',        mod:'Settings',        group:'admin' },
 ];
 let activeRail = 0;
 
@@ -6440,14 +6544,92 @@ const SUBNAV2 = {
                     ['APM', 'Settings', "stOpen('APM')"], ['Real User Monitoring', 'Settings', "stOpen('Real User Monitoring')"],
                     ['Integration', 'Settings', "stOpen('Integration')"] ]},
   ],
-};
+}
+
+/* ══ THE SIX-ENTRY RAIL'S SUB-MENUS (request, 23 Aug 2026 — `sidemenu.md`) ═══════════════
+   Three of the six reuse what was already written, under the rail's new singular names.
+   ⚠️ ALIASES, NOT COPIES. `SUBNAV['Dashboards'|'Alerts'|'Settings']` are still the only
+   definitions; these point at the same arrays, so a page added to one is in the other. The
+   old keys are what a revert to the seven-entry rail would read.
+   ⚠️ `Report` has NO sub-menu, deliberately: the spec gives it no children. `mfOpen` already
+   handles that — `if(!secs){ fly.classList.remove('on'); return; }` — so hovering it just
+   expands the rail, which is the honest answer for a module with one screen. */
+SUBNAV['Dashboard'] = SUBNAV['Dashboards'];
+SUBNAV['Alert']     = SUBNAV['Alerts'];
+SUBNAV['Setting']   = SUBNAV['Settings'];
+SUBNAV2['Setting']  = SUBNAV2['Settings'];
+
+/* ⚠️ EXPLORER'S CHILDREN ARE ELEVEN SUB-MODULES, TWO OF WHICH HAVE CHILDREN OF THEIR OWN
+   (request + screenshot, 23 Aug 2026): Monitor · Topology · NCCM · NetRoute · Log · APM ·
+   RUM · Flow · Trap · Audit · Report.
+   ⚠️ ALL ELEVEN ARE THE SAME KIND OF ROW — an icon and a label — and the two that have
+   children simply have `'sub'` rows indented beneath them. That IS the model the request
+   describes, and uniformity is what makes it readable: a reader learns one shape, not three.
+   They shipped briefly as `{h:'Monitor'}` / `{h:'NCCM'}` section HEADINGS (labels you could
+   not click), and then briefly as `.mfp` parent rows — but only Monitor was one, because
+   NCCM sits mid-list, so the two halves of the same idea looked different. `.mfp` and
+   `mfCol`'s `parent` field are kept, unreferenced.
+   ⚠️ EVERY SUB-MODULE CARRIES ITS OWN PRODUCT ICON — the fifth slot of an item, and the
+   fourth of a `parent`. This is what the menu was missing (request, 23 Aug 2026: "it is not
+   better, I can't understand this"). At 31 rows, indentation alone is not a strong enough
+   cue once you are reading down a long list; an icon says "module you can open" and a plain
+   indented label says "something inside one". The keys are `MODULES`' own — `navbar-monitor`,
+   `topology`, `ncm`, `netroute`, `log`, `apm`, `rum`, `flow`, `trap-viewer`, `audit`,
+   `report` — so the menu cannot show an icon the module list does not.
+   ⚠️ THE CHILDREN DELIBERATELY HAVE NO ICONS. Giving all 31 rows one would flatten the
+   distinction again; the 18 monitor types and NCCM's two pages are not modules.
+   ⚠️ THE TWO-UP GRID IS GONE. `cols:2` balanced the columns (443px each) but made you read
+   nine rows down, then jump back to the top for the tenth, with nothing saying so. Balance
+   is not worth a reading order nobody can follow. `mfCol` still supports it, unreferenced.
+   ⚠️ The 18 under Monitor are Inventory + the 16 monitor types + `Metric explorer`, which
+   the spec files there — still reads like a slip in the source (Metric Explorer is a module,
+   not a monitor type), and still one line to move. */
+SUBNAV['Explorer'] = [
+  { h:'Explorer', items:[
+      ['Monitor', 'Monitors', null, null, 'navbar-monitor'],
+      ['Inventory', 'Monitors', null, 'sub'], ['Network', 'Monitors', null, 'sub'],
+      ['SDN', 'Monitors', null, 'sub'], ['Server & Apps', 'Monitors', null, 'sub'],
+      ['Storage', 'Monitors', null, 'sub'], ['Virtualization', 'Monitors', null, 'sub'],
+      ['HCI', 'Monitors', null, 'sub'], ['Database', 'Monitors', null, 'sub'],
+      ['Container Orchestration', 'Monitors', null, 'sub'], ['Cloud', 'Monitors', null, 'sub'],
+      ['Interface', 'Monitors', null, 'sub'], ['WAN Link', 'Monitors', null, 'sub'],
+      ['Process', 'Monitors', null, 'sub'], ['Container', 'Monitors', null, 'sub'],
+      ['Service', 'Monitors', null, 'sub'], ['Service Check', 'Monitors', null, 'sub'],
+      ['Other', 'Monitors', null, 'sub'], ['Metric explorer', 'Metric Explorer', null, 'sub'] ]},
+];
+/* ⚠️ ONE CONTINUOUS LIST, not three sections. It was Topology / gap / NCCM+children / gap /
+   the rest — and those gaps came from `h:''` continuation headings, so they were structural
+   accidents rather than groupings. Nothing in the spec separates Topology from NetRoute, so
+   nothing on screen should either. NCCM keeps its parent row because it genuinely has
+   children; every other row is a peer of it. */
+SUBNAV2['Explorer'] = [
+  { h:'', items:[
+      ['Topology', 'Topology', null, null, 'topology'],
+      ['NCCM', 'NCCM', null, null, 'ncm'],
+      ['Compliance', 'NCCM', null, 'sub'], ['Compare', 'NCCM', null, 'sub'],
+      ['NetRoute', 'NetRoute', null, null, 'netroute'],
+      ['Log', 'Log Explorer', null, null, 'log'],
+      ['APM', 'APM Explorer', null, null, 'apm'],
+      ['RUM', 'RUM Explorer', null, null, 'rum'],
+      ['Flow', 'Flow Explorer', null, null, 'flow'],
+      ['Trap', 'Trap Explorer', null, null, 'trap-viewer'],
+      ['Audit', 'Audits', null, null, 'audit'],
+      ['Report', 'Reports', null, null, 'report'] ]},
+];;
 
 /* every one of the live product's 16 modules maps back to the rail entry that owns it,
    so opening a module from a sub-menu still lights the right rail row */
+/* ⚠️ REMAPPED FOR THE SIX-ENTRY RAIL. Eleven of the sixteen module screens now light
+   **Explorer** (index 3), because that is where the spec files them: Monitors, Topology,
+   NCCM, NetRoute and Audits joined the five explorers. Reports has its own entry now
+   rather than sharing Dashboards', and Audits no longer shares Settings'.
+   ⚠️ Every one of the 16 modules must appear here or its screen leaves the rail with
+   nothing lit — that is the only thing this table is for. */
 const MOD_TO_RAIL = {};
-[['Dashboards',0],['Reports',0],['Monitors',1],['Alerts',2],
- ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],['Trap Explorer',3],
- ['Topology',4],['NCCM',4],['NetRoute',4],['SLO',5],['Settings',6],['Audits',6]
+[['Dashboards',0],['Alerts',1],['SLO',2],
+ ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
+ ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
+ ['Reports',4],['Settings',5]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 function renderMenu(){
   let html = '', last = null;
@@ -6478,15 +6660,34 @@ function railWidth(){
 }
 /* JSON.stringify emits double quotes, which would close the onclick attribute — escape them */
 const mfAttr = v => JSON.stringify(v||'').replace(/"/g,'&quot;');
+/* ⚠️ TWO OPTIONAL FIELDS ON A SECTION, added 23 Aug 2026 for Explorer's Monitor group:
+     `parent`  — an item rendered as a full-width row ABOVE the list, for a sub-module that
+                 has children. It is outside the list on purpose: a `columns:2` list would
+                 otherwise flow the parent into one of its own child columns.
+     `cols:2`  — flow the child list into two sub-columns. Explorer's Monitor has 18
+                 children; in one column it ran 19 rows against the other column's 12 and
+                 left a block of dead space bottom-right.
+   ⚠️ Both are OPT-IN and every existing section omits them, so this renders every other
+   menu byte-identically — which is what lets Options 2 and 3 keep their copy of `mfCol`
+   unchanged while this one gains a feature they do not use. */
 function mfCol(secs, width){
   return `<div class="mfcol"${width?` style="width:${width}px"`:''}>` + secs.map((s,si)=>
     /* h:'' is a continuation column — keep the heading's box so the two lists line up,
        but don't print a second heading for what is one list */
-    `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${s.h || '&nbsp;'}</div><div class="mflist">` +
-    s.items.map(([label, mod, act, kind])=>
+    `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${s.h || '&nbsp;'}</div>` +
+    (s.parent ? `<div class="mfi mfp" onclick="mfGo(${mfAttr(s.parent[1])},${mfAttr(s.parent[2])})">${
+       s.parent[3] ? ico(s.parent[3], 'mfic') : ''}${s.parent[0]}</div>` : '') +
+    /* ⚠️ the row count travels with the list, not the stylesheet — see `.mflist.c2` */
+    `<div class="mflist${s.cols===2?' c2':''}${s.parent?' kid':''}"${
+      s.cols===2 ? ` style="--mfrows:${Math.ceil(s.items.length/2)}"` : ''}>` +
+    s.items.map(([label, mod, act, kind, ic])=>
       /* 'sub' is a child of the row above it — the product shows these in a dropdown off
          the tab, so they are indented under their parent rather than listed as peers */
+      /* ⚠️ the ICON is the FIFTH slot, after label / module / action / kind. It is what
+         separates a sub-module you can open from a page or a type underneath one — see the
+         note on Explorer's tree. Optional: every other menu omits it and renders as before. */
       `<div class="mfi${kind==='sub'?' sub':''}" onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${
+        ic ? ico(ic, 'mfic') : ''}${
         kind==='plus' ? '<span class="plus">＋</span>'+label.replace('＋ ','')
       : kind==='beta' ? label+'<span class="mfbeta">BETA</span>'
       : label}</div>`).join('') +
@@ -11554,6 +11755,7 @@ function aiSplitPaint(){
      card rising into place rather than the edge panel sliding in from off-screen */
   if (p) p.classList.toggle('aifloat', cur === 'floating');
   aiFloatApply();          /* writes the dragged geometry, or clears it outside floating */
+  aiFabPaint();            /* ...and Create Widget only dodges the card while it is in the way */
   aiLayPaint();
 }
 /* ⚠️ THE TRIGGER SHOWS WHERE IT GOES, NOT WHERE IT IS (request, 21 Aug 2026 — the menu
@@ -11647,6 +11849,26 @@ function aiFMaxW(){
 function aiFMaxH(){ return Math.max(aiFMinH(), innerHeight - AI_EDGE * 2); }
 let aiDrag = null;
 
+/* ⚠️ THE TEST IS ALWAYS AGAINST THE FAB'S *DEFAULT* BOX, never its current one. Testing
+   the shifted position would oscillate: shift it clear, it no longer overlaps, unshift it,
+   it overlaps again. Anchoring the test to the resting position makes the state stable. */
+function aiFabPaint(){
+  const f = document.getElementById('cwFab'), p = document.getElementById('aiPanel');
+  if (!f) return;
+  const on = p && p.classList.contains('on') && p.classList.contains('aifloat');
+  if (!on){ document.body.classList.remove('aifabshift'); return; }
+  const r = f.getBoundingClientRect();
+  if (!r.width){ document.body.classList.remove('aifabshift'); return; }   /* not on a board */
+  /* where the button sits when nothing is in its way — right:20, bottom:72 in .cwfab */
+  const dl = innerWidth - 20 - r.width, dr = innerWidth - 20;
+  const dt = innerHeight - 72 - r.height, db = innerHeight - 72;
+  const c = p.getBoundingClientRect();
+  const hit = c.right > dl && c.left < dr && c.bottom > dt && c.top < db;
+  document.body.classList.toggle('aifabshift', hit);
+  /* clear the card by its MEASURED left edge, so a resized or moved card is handled */
+  if (hit) document.documentElement.style.setProperty('--cwfab-r',
+    Math.round(Math.max(20, innerWidth - c.left + 16)) + 'px');
+}
 function aiFloatApply(){
   const p = document.getElementById('aiPanel'); if (!p) return;
   /* always clear first: these inline values must never leak into sidebar or full screen,
@@ -11743,7 +11965,7 @@ function aiRzMove(e){
        ⚠️ Only a MOVE is pinned. The resize branches below own the size on purpose. */
     aiClamp();
     AIF.w = aiDrag.w; AIF.h = aiDrag.h;
-    aiFloatApply();
+    aiFloatApply(); aiFabPaint();
     return;
   }
   /* ⚠️ EIGHT MODES, tested by MEMBERSHIP not equality (`nw` is both `n` and `w`). Written
@@ -11780,7 +12002,7 @@ function aiRzMove(e){
     Math.min(aiFMaxW(), innerWidth  - AI_EDGE - aiDrag.x, aiDrag.w + dx));
   if (M.includes('s')) AIF.h = Math.max(aiFMinH(),
     Math.min(aiFMaxH(), innerHeight - AI_EDGE - aiDrag.y, aiDrag.h + dy));
-  aiClamp(); aiFloatApply();
+  aiClamp(); aiFloatApply(); aiFabPaint();
 }
 function aiRzEnd(){
   const d = aiDrag; aiDrag = null;
@@ -11808,6 +12030,9 @@ function aiRzReset(){
 }
 /* the card is positioned in px, so a window resize can strand it off-screen */
 addEventListener('resize', () => {
+  /* ⚠️ the FAB test depends on the viewport, so it repaints even when the card is still on
+     its CSS anchor and there is no pinned geometry to clamp. */
+  aiFabPaint();
   if (AIF.x === null) return;
   aiClamp(); aiFloatApply();
 });
@@ -14099,10 +14324,10 @@ aiLogoPaint();
   <span class="aign" onmousedown="aiRzStart(event,'n')" ondblclick="aiRzReset()"></span>
   <span class="aige" data-tip="Drag to resize  ⇔" onmousedown="aiRzStart(event,'e')" ondblclick="aiRzReset()"></span>
   <span class="aigs" onmousedown="aiRzStart(event,'s')" ondblclick="aiRzReset()"></span>
-  <span class="aignw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'nw')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
-  <span class="aigne" data-tip="Drag to resize" onmousedown="aiRzStart(event,'ne')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
-  <span class="aigse" data-tip="Drag to resize" onmousedown="aiRzStart(event,'se')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
-  <span class="aigsw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'sw')" ondblclick="aiRzReset()"><svg viewBox="0 0 26 26" aria-hidden="true"><path class="o" d="M0 24V14A14 14 0 0 1 14 0h10"/><path class="i" d="M0 24V14A14 14 0 0 1 14 0h10"/></svg></span>
+  <span class="aignw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'nw')" ondblclick="aiRzReset()"><svg viewBox="0 0 20 20" aria-hidden="true"><path class="o" d="M0 17V14A14 14 0 0 1 14 0h3"/><path class="i" d="M0 17V14A14 14 0 0 1 14 0h3"/></svg></span>
+  <span class="aigne" data-tip="Drag to resize" onmousedown="aiRzStart(event,'ne')" ondblclick="aiRzReset()"><svg viewBox="0 0 20 20" aria-hidden="true"><path class="o" d="M0 17V14A14 14 0 0 1 14 0h3"/><path class="i" d="M0 17V14A14 14 0 0 1 14 0h3"/></svg></span>
+  <span class="aigse" data-tip="Drag to resize" onmousedown="aiRzStart(event,'se')" ondblclick="aiRzReset()"><svg viewBox="0 0 20 20" aria-hidden="true"><path class="o" d="M0 17V14A14 14 0 0 1 14 0h3"/><path class="i" d="M0 17V14A14 14 0 0 1 14 0h3"/></svg></span>
+  <span class="aigsw" data-tip="Drag to resize" onmousedown="aiRzStart(event,'sw')" ondblclick="aiRzReset()"><svg viewBox="0 0 20 20" aria-hidden="true"><path class="o" d="M0 17V14A14 14 0 0 1 14 0h3"/><path class="i" d="M0 17V14A14 14 0 0 1 14 0h3"/></svg></span>
   <header class="aihd" onmousedown="aiDragStart(event)">
     <!-- ⚠️ HISTORY, and it exists ONLY IN FULL SCREEN (request + reference images,
          20 Aug 2026). A History button was removed from this header on 17 Aug because the

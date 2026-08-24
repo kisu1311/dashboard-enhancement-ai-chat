@@ -771,8 +771,23 @@ Three controls were added on 17 Aug 2026, each from a supplied reference image.
   it is the width the chat opens at, every time, and 520px took a fifth of a 1600px screen
   before you had asked anything. The ladder still drives the floating card's resting width.
   ⚠️ **One token drives both sides** of Sidebar — `--ai-w` is the panel width *and* the
-  padding the shell gives up (the `--dp-w` lesson in the root CLAUDE.md). `body.aisplit`
-  also shifts the `.cwfab` Create Widget button, fixed bottom-right, out from under it.
+  padding the shell gives up (the `--dp-w` lesson in the root CLAUDE.md).
+  ⚠️ **THE `.cwfab` CREATE WIDGET BUTTON DODGES ON OVERLAP, NOT ON MODE** (request, 22 Aug
+  2026). It was `body.aifloat .cwfab{right:calc(var(--ai-w) + 36px)}` — shifted for the
+  whole of Floating, which is *every* session now that Floating is the default. Drag the
+  chat to the middle of the board and Create Widget stayed parked out by the card's old
+  anchor, in the middle of the canvas, dodging something that was no longer there.
+  `aiFabPaint()` now measures the card against the FAB's box and toggles `body.aifabshift`.
+  - ⚠️ **The test is always against the FAB's *default* box, never its current one.**
+    Testing the shifted position oscillates: shift it clear → it no longer overlaps →
+    unshift → it overlaps again. Anchoring to the resting position is what makes the state
+    stable, and there is a probe assertion that repainting three times does not move it.
+  - ⚠️ **`--cwfab-r` is measured from the card's live left edge**, not derived from
+    `--ai-w`, so a *resized* card is cleared properly too.
+  - It is called from `aiSplitPaint`, `aiRzMove` (both the move and resize branches) and
+    the `resize` listener — the last one repaints **before** the `AIF.x === null` early
+    return, because the test depends on the viewport even when there is no pinned geometry
+    to clamp.
   ⚠️ **Order matters in `aiLaySet('full')`**: `aiFsTog()` only strips `body.aisplit` when it
   finds `aiSplit` still true, so clearing the flag *before* calling it left the shell holding
   its column open behind a `100vw` panel. Toggle first, then clear and repaint.
@@ -2004,10 +2019,15 @@ everwhere"*). One came back for the north grip, and was then put on **all four e
 - **Edges get a capsule, corners get an arc — one mark per grip**, revealed on that grip's
   hover and held up for the whole of its own drag. Four monday Sidekick screenshots were
   supplied as the reference.
-  - `.aign / .aigs / .aigw / .aige ::before` — a 4px fully-rounded bar, **inset by
-    `--aifloat-r`** so it stops before the corner curve. ⚠️ Horizontal edges inset
-    left/right, vertical edges inset top/bottom — same rule, different axis; inset the
-    wrong pair and the bar runs into the arc.
+  - `.aign / .aigs / .aigw / .aige ::before` — a 4px fully-rounded bar running the **whole
+    edge**, inset by `--aifloat-r` at each end so it stops where the card's straight edge
+    does. ⚠️ Horizontal edges inset left/right, vertical edges inset top/bottom — same rule,
+    different axis; inset the wrong pair and the bar runs into the arc.
+    ⚠️ **It was briefly shortened to a 44px centred handle on 23 Aug 2026 and that was a
+    MISREAD** of *"show the line width"*; the next message — *"I need this line width"* —
+    put it back. The full-length bar is what the monday reference shows and what was asked
+    for originally. **Don't shorten it again**; the `--aigrip-l` token was removed rather
+    than left at a new value, so there is no dial inviting it.
   - `.aignw / .aigne / .aigse / .aigsw > svg` — a **stroked path** with
     `stroke-linecap:round`, running in along one edge, round the curve, and out along the
     other.
@@ -2030,7 +2050,17 @@ everwhere"*). One came back for the north grip, and was then put on **all four e
     2px outside the viewBox on two sides and is otherwise clipped in half.
   - Every mark is **hollow**: an outline in `--aigrip-c` over the card surface (the bars) or
     a 2px `--card` stroke nested inside the 4px outline (the arcs), so the two read as one
-    family.
+    family. Both are **4px on screen with 1px of outline each side**, and there is a probe
+    assertion comparing the capsule's total to the arc's stroke-width.
+  - ⚠️ **`*{box-sizing:border-box}` DOES NOT MATCH PSEUDO-ELEMENTS** — it needs
+    `*,*::before,*::after`. The reset at the top of this stylesheet is the bare `*`, so the
+    edge capsules were silently `content-box`: 4px of height **plus** 1px of border each
+    side = **6px on screen**, against the arcs' 4px. Same intended geometry, two different
+    sizes, and nothing in either rule said so (reported 23 Aug 2026 as *"same size on this
+    and this"*). `box-sizing:border-box` is now declared on the marks themselves — **not**
+    by widening the global reset, which governs every pseudo-element in a 300KB sheet and
+    would move things far outside this panel. **If another `::before` in this file measures
+    wrong, this is the reason.**
 - ⚠️ **A SINGLE RING CLIPPED TO A BAND WAS TRIED AND REJECTED.** `.aipanel::before/::after`
   sized to the card, `clip-path:inset(...)` per edge — it ran the edge and turned **both**
   corners as one continuous stroke. That is not what the reference does: there, each grip
@@ -2060,6 +2090,23 @@ everwhere"*). One came back for the north grip, and was then put on **all four e
 - ⚠️ **One drag flag PER EDGE** (`body.aidragn/s/e/w`), set by membership so `nw` lights both
   the edges it is made of, and all four cleared in `aiRzEnd`. A single `aidragging` class
   cannot say which grip is being dragged.
+- ⚠️ **THE GRIPS STRADDLE THE CARD'S EDGE — 4px outside, 4px inside** (`--aigrip-o`,
+  request 23 Aug 2026: *"my cursor is in the top header and I move down, the height
+  minimises"*). They used to sit **wholly inside**: a 6px band and a 15px corner square,
+  both carved out of the header. So a press near the top of the header — which *is* the
+  drag handle, and the obvious place to grab a card — landed on the north grip and
+  **resized instead of moving**; the card rests at full height, so dragging down from
+  there shrinks it, which is exactly what was reported (twice, described first as the
+  height increasing and then as it minimising).
+  - Straddling is also how a real window behaves: the resize zone is centred on the
+    border, not buried in the content. The header gives up **4px** instead of 6, the
+    corners reach 9px in instead of 15, and the dead board just outside the card became
+    useful.
+  - ⚠️ **The marks are positioned inside their grips, so their offsets have to follow.**
+    Every mark's `-1px` became `var(--aigrip-o)`, and the corner SVGs with it — move a grip
+    without moving its mark and the line detaches from the edge it is pointing at. There
+    are probe assertions that the top bar is still centred on the card's edge and the
+    corner arc still starts at its outer corner.
 - ⚠️ **IT HAS TWO STATES** (request, 21 Aug 2026): an **outline** while you are only
   pointing at the edge — 1px `--text-dim` border on a `--card` fill — and a **solid fill**
   once you are actually dragging it. A mark that looks identical before and during a drag
@@ -2350,7 +2397,32 @@ one and only the presentation differs.
 |---|---|---|
 | 1 | icon rail + hover mega-menu flyout | Datadog |
 | 2 | icon rail + **always-docked panel** that swaps per module | ClickUp |
-| 3 | **one flat named column**, no icon rail | DevRev |
+| 3 | icon rail + hover mega-menu flyout — **Option 1's, since 23 Aug 2026** | Datadog |
+
+⚠️ **OPTION 3 NO LONGER DEMONSTRATES THE DEVREV COLUMN** (request, 23 Aug 2026: *"copy
+Option 1's sidebar and set it in Option 3"*). It runs Option 1's icon rail + flyout. The
+flat column is **not deleted** — its markup, its CSS and `renderDevRev()` are all still in
+the file, and the whole swap is four things:
+- `--rail-w:224px / --rail-w-open:224px` → **`64px / 170px`**;
+- `.sidebar.devrev`'s display rule **inverted** — it used to hide `.strigger/.stop/.sutil/
+  .sfoot/.smenu`, it now hides `.dvtop/.dvsw/.dvsearch/.dvlist/.dvfoot`;
+- the `dvshut` class off the `<body>`, and Option 1's `onmouseenter`/`onmouseleave` on the
+  `<aside>`;
+- the early `return` removed from **both `sbHover()` and `mfOpen()`** — the DevRev pattern
+  had suppressed them because the flat column was always open and printed every route.
+- ⚠️ **The `devrev` CLASS IS DELIBERATELY KEPT ON THE `<aside>`.** The shared responsive
+  block at the end of every file matches `body:has(.sidebar.devrev)` to give Option 3 its
+  own `--dp-w` steps, and **that block is byte-identical in all three files**, so it cannot
+  be edited to say something else. The class now means *"this is Option 3"*, not *"this is
+  the DevRev column"*.
+- ⚠️ **`mfOpenUtil` had never been ported** — Health's utility-rail sub-menu. It is written
+  in **this file's flyout shape**, without Option 1's `mfDocs()` footer, because this file's
+  `mfOpen` emits its columns raw and has never had that function. Match the host, not the
+  source.
+- Verified: `behave` 63/63 · `lxbehave` 57/57 · `harness` 77/77 on Option 3, plus a
+  16-assertion sidebar probe (rail renders, DevRev column hidden but still in the DOM,
+  64→170 hover expand, flyout anchored off the token, Health's menu built from
+  `HEALTH_TABS`).
 
 ### Option 2 — ClickUp
 `.mpanel` / `renderMPanel()`. Rail drops to **56px, icon-only and permanent** —
@@ -2444,9 +2516,87 @@ CSS block, the `#mflyout` element, and the whole rail engine (`RAIL`, `SUBNAV`,
 Per-page differences kept deliberately — the rail's ✦ AI row calls each page's **own** AI:
 `aiOpen()` in Option 1, `iFocus()` (the inline ask bar) in Option 2, `oaOpen()` in Option 3.
 
-- The rail shows **7 main entries**, not the live product's 16 — Dashboards,
-  Monitors, Alerts │ Explorers, Network, SLO │ Settings — split by hairlines with
-  **no captions, counts or chevrons** (Datadog shows grouping, it doesn't label it).
+- ⚠️ **OPTION 1'S RAIL IS SIX ENTRIES NOW** (request, 23 Aug 2026) — **Dashboard · Alert ·
+  SLO │ Explorer · Report │ Setting** — split by hairlines with **no captions, counts or
+  chevrons** (Datadog shows grouping, it doesn't label it). It was seven: Dashboards ·
+  Monitors · Alerts │ Explorers · Network · SLO │ Settings.
+  - The spec is **`sidemenu.md`** in this folder, and it is a **TREE, not the flat list it
+    looks like**: everything indented under `Explorer` is a sub-menu row, and `Monitor` and
+    `NCCM` have children of their own. Read the indentation before touching it.
+  - **Monitors and Network left the rail** and became rows inside Explorer's flyout.
+  - ⚠️ **EXPLORER HAS ELEVEN SUB-MODULES** (corrected against a screenshot the same day):
+    Monitor · Topology · NCCM · NetRoute · Log · APM · RUM · Flow · Trap · Audit · Report.
+    **Monitor and NCCM are ROWS that HAVE children, not headings.** They shipped for an hour
+    as `{h:'Monitor'}` / `{h:'NCCM'}` section headings, which made them labels you could not
+    click and made their children look like the only real entries. Their children carry
+    **`'sub'`** — the kind this flyout already had for exactly this shape (indented, smaller,
+    dimmer; it exists because the live Alerts tab bar has dropdowns off its tabs).
+    ⚠️ **`'sub'` is the FOURTH element of an item**, after label / module / action. Putting
+    it third passes an action string of `'sub'` to `mfGo`, which `eval`s it — silently, with
+    the row simply doing nothing. There is a probe assertion that no row's `onclick` carries
+    it.
+  - ⚠️ **AN ICON PER SUB-MODULE IS WHAT MADE THIS READABLE** (request, 23 Aug 2026: *"it is
+    not better, I can't understand this"*). It is the **fifth slot** of an item, after label
+    / module / action / kind, and it is optional — every other menu omits it and renders
+    byte-identically, which is what lets Options 2 and 3 keep their copy of `mfCol`.
+    - At 31 rows, **indentation alone is not a strong enough cue** once you are reading down
+      a long list. An icon says *"a module you can open"*; a plain indented label says
+      *"something inside one"*.
+    - The keys are `MODULES`' own (`navbar-monitor`, `topology`, `ncm`, `netroute`, `log`,
+      `apm`, `rum`, `flow`, `trap-viewer`, `audit`, `report`), so the menu cannot show an
+      icon the module list does not have.
+    - ⚠️ **The 20 children deliberately have none.** Giving all 31 rows an icon would flatten
+      the distinction again — the monitor types and NCCM's pages are not modules.
+  - ⚠️ **ALL ELEVEN ARE ONE SHAPE, AND THAT SHAPE IS HIGHLIGHTED** — heavier (600) and
+    brighter (`--white`) than the pages indented under them (request, 23 Aug 2026: *"sub
+    module will be highlighted"*). Uniformity is the readability: a reader learns one row,
+    not three. This went through **three** shapes before landing — section headings (labels
+    you could not click), then `.mfp` parent rows (but only Monitor could be one, since NCCM
+    sits mid-list, so the two halves of the same idea looked different), then this.
+  - ⚠️ **THE HIGHLIGHT SELECTOR IS `.mfi:has(.mfic)`, NOT `.mfi:not(.sub)`.** Every row in
+    every other flyout is a `.mfi` that is not `.sub`, so `:not(.sub)` would have re-weighted
+    the whole rail's menus — Dashboards, Alerts, Setting and the rest. Keying off the icon
+    says exactly what is meant: *a row with a module icon is a module*, and nothing else in
+    the file has one. There are probe assertions that Dashboards and Setting are unchanged.
+  - ⚠️ **A TWO-UP CHILD GRID WAS BUILT AND REVERTED.** `cols:2` balanced the columns (443px
+    each) but made you read nine rows down and then jump back to the top for the tenth, with
+    nothing saying so — **balance is not worth a reading order nobody can follow**. Column
+    one is simply longer than column two now, and that is fine. `mfCol`'s `parent` / `cols`
+    fields, `.mfp`, `.mflist.c2` and `.mfcol:has(.mflist.c2)` are all kept, unreferenced.
+    Two things learned there, worth keeping if it is ever wanted back: CSS `columns:2` splits
+    the width the container **already has**, and `.mfi` is `white-space:nowrap`, so
+    *"Container Orchestration"* overflowed its half and printed **on top of** the next
+    sub-column's last row — a grid of `max-content` columns sizes itself instead; and
+    `grid-auto-flow:column` plus an explicit row count is what keeps the order going **down**
+    each sub-column rather than across.
+  - ⚠️ **Column two is ONE continuous list.** It was Topology / gap / NCCM+children / gap /
+    the rest, and those gaps came from `h:''` continuation headings — structural accidents,
+    not groupings. Nothing in the spec separates Topology from NetRoute, so nothing on screen
+    does either. There are probe assertions that you read straight down each column with no
+    jumps and that no gap in column two exceeds 6px.
+  - ⚠️ **`Report` is in BOTH places and that is unresolved.** `sidemenu.md` lists it at the
+    top level (a rail entry) and the 23 Aug screenshot message lists it among Explorer's
+    sub-modules. It is currently on the rail *and* the last row of Explorer's flyout. Ask
+    before removing either — the two specs disagree, they do not clarify each other.
+  - ⚠️ **Labels are the spec's, case-corrected.** `sidemenu.md` is typed lowercase and mostly
+    singular; the live product and the research notes use plurals (Dashboards, Alerts,
+    Reports, Settings). The spec's singular wins because it was given explicitly — recorded
+    so it is not "corrected" back by someone checking the notes.
+  - ⚠️ **`MOD_TO_RAIL` had to be remapped, and it is the thing that silently breaks.**
+    Eleven of the sixteen module screens now light **Explorer**; a module missing from that
+    table leaves the rail with nothing lit. There is a probe assertion that all 16 map, and
+    that none points past the end of a now-shorter rail.
+  - ⚠️ **`Dashboard` / `Alert` / `Setting` are ALIASES**, not copies — `SUBNAV['Dashboards']`
+    etc. are still the only definitions, so a page added to one is in the other. The old
+    `SUBNAV['Monitors'|'Explorers'|'Network']` entries are kept unreferenced; they are what
+    a revert would read.
+  - ⚠️ **`Report` has no sub-menu on purpose** — the spec gives it no children, and `mfOpen`
+    already handles that by not opening the flyout at all.
+  - ⚠️ **`Metric explorer` is indented under `Monitor` in the spec.** That looks like a slip
+    (Metric Explorer is a module, not a monitor type) but the file is the spec, so it is
+    where the file puts it. One line to move if it was meant as a sibling.
+  - Nothing in the code keys off a rail *name* — `RAIL[i]` and `MOD_TO_RAIL[module]` are the
+    only lookups — which is why renaming five of the seven cost nothing else.
 - Everything else is a **sub-menu**: hovering a rail row opens a mega-menu flyout
   with the module's own navigation under bold headings, using the docs' page names.
   All 15 module screens stay one hover away and light the rail entry that owns them

@@ -24,7 +24,7 @@
   --red:#f2504b; --orange:#fb923c; --yellow:#eab308; --green:#22c55e; --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
   --ok-bg:rgba(34,197,94,.15); --ok-bd:rgba(34,197,94,.45);
   --pend-bg:rgba(251,146,60,.14); --pend-bd:rgba(251,146,60,.45);
-  --rail-w:224px; --rail-w-open:224px;   /* DevRev: one flat column, no icon rail */   /* the flyout anchors off these, not off the animating box */
+  --rail-w:64px; --rail-w-open:170px;   /* Option 1's icon rail + hover flyout (see the note at .sidebar.devrev) */   /* the flyout anchors off these, not off the animating box */
   --radius:8px; --radius-sm:4px;
   --shadow:0 12px 40px rgba(0,0,0,.55); --pop-shadow:0 2px 8px rgba(0,0,0,.35);
   --scrim:rgba(4,10,20,.45);
@@ -138,9 +138,19 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    chevrons, and a docked "Ask me anything" input pinned to the bottom.
    Measured there: rows ~27px, 13px labels, 16px outline icons, section labels
    ~11.5px muted sentence-case, selected row = filled rounded rect. ------- */
-.sidebar.devrev{width:var(--rail-w)!important;box-shadow:none;background:var(--sidebar-panel)}
-.sidebar.devrev .strigger,.sidebar.devrev .stop,.sidebar.devrev .sutil,
-.sidebar.devrev .sfoot,.sidebar.devrev .smenu{display:none}
+/* ⚠️ OPTION 3 USES OPTION 1'S SIDEBAR NOW (request, 23 Aug 2026: "copy Option 1's sidebar
+   and set it in Option 3"). The DevRev flat column is not deleted — its markup, its CSS and
+   `renderDevRev()` are all still here. What changed is which half is displayed.
+   ⚠️ THE `devrev` CLASS IS DELIBERATELY KEPT. It is what the shared responsive block at the
+   end of this file matches on (`body:has(.sidebar.devrev)`) to give Option 3 its own
+   `--dp-w` steps — and that block is BYTE-IDENTICAL in all three files, so it must not be
+   edited here. The class now means "this is Option 3", not "this is the DevRev column".
+   ⚠️ To put the flat column back: swap the two display rules below, restore the 224px rail
+   tokens, add the dvshut class to the body element, and restore sbHover's early return.
+   Nothing was removed. */
+.sidebar.devrev{box-shadow:var(--shadow);background:var(--sidebar)}
+.sidebar.devrev .dvtop,.sidebar.devrev .dvsw,.sidebar.devrev .dvsearch,
+.sidebar.devrev .dvlist,.sidebar.devrev .dvfoot{display:none}
 
 /* one stroke convention for every glyph in the column (Lucide / Tabler geometry) —
    the CSS must not force a fill, or the outline icons render as solid blobs */
@@ -2608,10 +2618,15 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
      + a 290px INLINE list), so collapsed-by-default is what gives the board its width.
      dvCollapse() reads the class itself rather than a JS flag, so the markup default needs
      no other bookkeeping — only #dvColBtn's tooltip, which is set to "Expand sidebar". -->
-<body class="dvshut">
+<!-- ⚠️ the collapsed-column class is gone: it flipped `--rail-w` to 58px for the flat
+     column. The icon rail is 64px and expands on hover, so there is no state to seed. -->
+<body>
 
 <!-- ============ Sidebar ============ -->
-<aside class="sidebar grouped devrev" id="sidebar">
+<!-- ⚠️ `devrev` is kept as Option 3's marker for the shared responsive block — see the
+     note at `.sidebar.devrev`. The hover handlers are Option 1's: the rail expands on
+     hover, and `mfLater()` defers the collapse so the pointer can travel into the flyout. -->
+<aside class="sidebar grouped devrev" id="sidebar" onmouseenter="sbHover(1)" onmouseleave="sbHover(0);mfLater()">
   <!-- Top row was five controls in 204px (avatar, gear, panel toggle, collapse, ＋) and
        two of them duplicated things elsewhere: the gear is the Settings module in the
        switcher, and the panel toggle is #dpanelBtn in the page header. What is left is
@@ -2659,9 +2674,12 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
   </div>
   <nav class="smenu" id="smenu"></nav>
   <div class="sutil">
-    <div class="sitem" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
-    <div class="sitem" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
-    <div class="sitem" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
+    <!-- ⚠️ Approval and Notifications call `mfHide()` on hover so a module's flyout does not
+         hang open over them; Health opens its OWN sub-menu, built from `HEALTH_TABS`, the
+         same array its page renders its tabs from. Both are Option 1's behaviour. -->
+    <div class="sitem" id="sbApproval" data-tip="Approval" onmouseenter="mfHide()" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
+    <div class="sitem" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfOpenUtil('Health',this)" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
+    <div class="sitem" id="sbBell" data-tip="Notification" onmouseenter="mfHide()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
   </div>
   <div class="sfoot">
     <div class="sbuild">BUILD : 8.2.6</div>
@@ -3614,7 +3632,9 @@ function mfCol(secs, width){
     `</div>`).join('') + `</div>`;
 }
 function mfOpen(i, el){
-  return;   /* DevRev pattern: every route is already on the column */
+  /* ⚠️ this used to `return` immediately — under the DevRev pattern every route was already
+     printed on the flat column, so there were no sub-menus. Option 3 runs the icon rail
+     now (23 Aug 2026) and the flyout is the only way to reach a module's pages. */
   clearTimeout(mfTimer);
   mfHoverIdx = i;
   const sb0 = document.getElementById('sidebar');
@@ -3640,6 +3660,25 @@ function mfOpen(i, el){
      what put the menu underneath the expanding rail. */
   fly.style.left = railWidth() + 'px';
   fly.classList.add('on');
+  fly.style.top = Math.max(8, Math.min(b.top - 12, innerHeight - fly.offsetHeight - 8)) + 'px';
+}
+/* ⚠️ Health opens its own sub-menu from the utility rail, exactly as in Option 1 — built
+   from `HEALTH_TABS`, the same array the Health page renders its tabs from, so the menu
+   cannot advertise a tab that page does not have.
+   ⚠️ NO `mfDocs()` FOOTER HERE. Option 1's flyout ends with a documentation link and this
+   file's `mfOpen` does not — it emits the columns raw. Porting Option 1's version verbatim
+   would have called a function this file has never had. Match the host, not the source. */
+function mfOpenUtil(key, el){
+  clearTimeout(mfTimer);
+  mfHoverIdx = -1;
+  if (!document.getElementById('sidebar').classList.contains('open')){ mfHide(); return; }
+  const fly = document.getElementById('mflyout');
+  const secs = [{ h:'Health Monitoring',
+                  items: HEALTH_TABS.map((t,i)=>[t, null, `showView('health');setHealthTab(${i})`]) }];
+  fly.innerHTML = mfCol(secs);
+  fly.style.left = railWidth() + 'px';
+  fly.classList.add('on');
+  const b = el.getBoundingClientRect();
   fly.style.top = Math.max(8, Math.min(b.top - 12, innerHeight - fly.offsetHeight - 8)) + 'px';
 }
 function mfHide(){ document.getElementById('mflyout').classList.remove('on'); }
@@ -3685,7 +3724,9 @@ function toggleSidebar(){
   renderMenu();
 }
 function sbHover(on){
-  return;   /* the column is always at full width */
+  /* ⚠️ this used to `return` immediately — the DevRev column was always at full width, so
+     there was nothing to expand. Option 3 runs the icon rail now, and hover-expand is how
+     you read the labels and reach a module's sub-menu. */
   if (sbPinned) return;
   const sb = document.getElementById('sidebar');
   clearTimeout(sbHoverT);
