@@ -2249,6 +2249,126 @@ added later inherits the palette for free.
 - ⚠️ Open the chat from the **right module** — `aiInLogs()` swaps the starters, and a probe
   that opened it inside Log Explorer counted 3 instead of 5.
 
+## The 24 Aug 2026 pass — Option 1's `ai*` panel, request by request
+
+A second long single-session sweep, all in `index copy.html`, driven against supplied
+screenshots and a Notion reference for the thinking disclosure. The *why* for each item is
+in the file's own comments at the rule or function; this is the map.
+
+### Icons and shapes
+- **Send is Lucide `arrow-up` in a 9px ROUNDED SQUARE.** It was a hand-drawn filled dart
+  (`M4 12l16-7…`) painted `fill:currentColor` while `.aiplus` / `.aimic` 8px away were
+  Lucide outlines — one solid glyph among outlines reads as a different family at any size.
+  It went dart → Lucide `send` (plane) → `arrow-up`: the plane is a diagonal form with its
+  mass in one corner and never centres in a circle, the arrow is axis-aligned (measured 0.00
+  offset on both axes). The plane's path is recorded in the comment, not deleted.
+  ⚠️ **The square REVERSES the 19 Aug circle**, whose note said "a 30px rounded square
+  between two 30px circles read as a different size". That row is gone — the mic and the ＋
+  menu were removed on 21 Aug, so send is the only thing at the right-hand end with nothing
+  to disagree with. **If the composer ever regains a control to send's right, re-check this.**
+  ⚠️ The Stop state's radius moved with it: the button must not morph shape when pressed.
+  ⚠️ `.aisend.aisndstop svg` needs `stroke:none` — `.aisend svg` now sets a stroke and it
+  would otherwise leak onto the filled square.
+- **The layout toggle is a matched pair**: Lucide `square` for Full screen, Lucide `copy`
+  (two overlapping squares) for Floating — the window-control pair every desktop uses. It
+  opened as a picture-in-picture mark whose board outline is an OPEN path against a CLOSED
+  filled rect; an open path and a closed rect are not siblings however close their subject.
+  ⚠️ `copy`'s back path is an open L **on purpose** — it never passes behind the front rect,
+  which is what makes the 22% translucent fill safe. Don't "complete" it into a rectangle.
+  ⚠️ **It no longer wears `.on`.** `aiLayPaint` used to set the violet pressed look whenever
+  the panel was full screen, so the same button was neutral in one of its two states and
+  violet in the other. `.aihb.on` STAYS in the sheet — every other header dropdown uses it.
+  It is `classList.remove('on')`, not "don't add": a stale `.on` has to be cleared actively.
+- **The summary card signs itself with the ✦, not the product logo** — this REVERSES the
+  19 Aug annotation. The product did not write that prose, the assistant did, and the mark is
+  the one place a reader learns it. `.aiagmk.logo` is kept unreferenced; `AI_LOGO` stays live
+  for `aiLogoPaint()`'s `.brandmark`s.
+- **The clarifier's back and close icons were different SIZES** (14/2.14 vs 13/2.31) — both
+  computed to the panel's 1.25px on-screen weight, so the stroke rule was being obeyed and
+  the defect hid behind it. Both are 16px / 1.875 now (still 1.25px on screen); against a
+  600-weight title, presence comes from SIZE, never from opting out of the weight rule.
+
+### Spacing, all of it measured against something
+- **Header:** `.aihnew`'s and `.aihttl`'s ad-hoc margins are gone — `.aihd`'s `gap:4px` is
+  the single place header spacing is set — and `.aihttl`'s left padding went 9 → 4px so the
+  chat name sits **8px** from ＋ New chat, which is `.aiagch`'s own mark→title gap. The icon
+  →title distance is the summary card's number, not a new one.
+  ⚠️ `.aihttl`'s `margin-left` has had FOUR settings (`-9px` → `2px` → `0`, plus the padding
+  cut). 0 is not a return to the -9px complaint: what was jammed then was the TEXT, because
+  the negative pull had eaten the pill's padding.
+- **`.aitobot` was flush on the composer, not merely close.** `bottom` is measured from
+  `.aicomp`'s bottom, so `100%` puts the button's edge on `.aicomp`'s TOP — and `.aicomp`
+  carries `padding-top:4px`, which is where the pill starts. `calc(100% - 4px)` cancelled
+  exactly that. It is `calc(100% + 6px)` = **10px** of real gap; read it against that padding.
+- **`.aichips` / `.aiq` / `.aiacts` have TWO gaps now** (`8px 6px`, `margin-top:14px`). A
+  single `gap` on a wrapping row governs both axes, so a wrapped line sat 5px under its own
+  first line while the blocks were 10px apart — the `.aiab li` lesson in a third place: the
+  gap BETWEEN groups must beat the gap INSIDE one. Row-gap is deliberately larger than
+  column-gap; side by side, chips are separated by their own borders, stacked they are not.
+- **Documentation / Support sit at the FOOT of the empty state.** `.aiempty` is a full-height
+  flex column and `.aihelpl` takes `margin-top:auto`, so the blank space is above them.
+  ⚠️ **`margin-top:auto` cannot also carry the minimum gap** — it resolves to 0 when there is
+  no free space and silently overrides a `margin-top:14px` written beside it. The floor lives
+  on `.aiempty > .aicta:last-of-type{margin-bottom:6px}`, verified by squeezing the panel to
+  260px. `:last-of-type` cannot match the help buttons — they are nested inside `.aihelpl`.
+
+### The clarifier card
+- **Skip left the "Something else…" field** for a footer row it shares with Done (Done after
+  Skip, escape-then-commit). Inline in the label it read as skipping the free text rather
+  than the question. ⚠️ Its chip styling had to move with it — as `.aicqf .aicqsk` it went
+  dead and the bare `.aicqsk` text-button rule would have taken over silently. ⚠️ `.aicqd` is
+  emitted on EVERY step now, not just multi ones, or single steps lose Skip entirely.
+  ⚠️ `event.preventDefault()` came off — it only existed because the button was in a `<label>`.
+- **The back arrow renders on every step, disabled on the first.** It is `flex:0 0 24px` in a
+  `gap:9px` row, so appearing at step 2 shoved the title 33px right while `.aicqs` stayed at
+  0 — the title stopped aligning with its own subtitle AND the header jumped between steps.
+  ⚠️ `.aicqb:disabled` was ALREADY in the sheet; the conditional render had orphaned it.
+  ⚠️ `.aicqs`'s indent is `24 + 9 = 33px` and **must move with the button's size** — it was
+  31 for one edit, then the icons grew.
+- **A 2px `--ai` progress track** sits under the header block, full-bleed. A fraction is a
+  fact you read; a bar is one you see. ⚠️ The fill is `width:%` on a block child, never
+  `flex` — the recorded `flex:50` bug would paint every step complete. Walked 25/50/75/100.
+- The step counter's current number is `--text`, the total `--muted`.
+
+### The thinking trail
+- **Expanded, it is capped at 220px, scrolls, and fades both edges** (Notion reference). It
+  used to unroll every phase and push the answer off screen. **It reuses the thread's own
+  fade engine** — `aiFadeEl(el)` was extracted from `aiFade()` and both call it; a mask fades
+  the CONTENT, so it is correct over the panel's gradient. Both fade values default to 0, so
+  a short trail is not dimmed for nothing.
+  ⚠️ **`aiTkFadeBind()` is called from the TAIL of `aiRender()`, not from `aiFadeBind()`** —
+  that function runs near the top, before `b.innerHTML`, so its query finds nothing and binds
+  nothing. A `requestAnimationFrame` fallback does not save it either: **rAF is starved under
+  headless virtual time**. Anything needing the painted DOM goes after the paint, beside the
+  loader's clock. This cost two probe rounds.
+- **The collapsed label is one constant, `AI_TK_NAME = 'Thought'`**, on both surfaces. This
+  REVERSES the 19 Aug kinds-summary ("Thought 2x, Searched, Dashboards"): the label differed
+  on every prompt and changed length as it changed text, so the calmest chrome in the thread
+  was the most variable. `AI_TK_VERB` / `aiTkKinds()` are kept unreferenced.
+
+### The context bar never empties
+- Dropping the last chip installs a non-removable **All modules** floor and really moves the
+  scope (`aiScopeHas('Logs')` flips true, the mismatch guard stops challenging). This
+  REVERSES the 18 Aug "clearing every chip leaves the module scope standing" note — empty
+  means GLOBAL now, and it says so.
+  ⚠️ **`aiOpen`'s guard had to learn about it**: `!aiCtxItems.length` was never true again
+  once the floor existed, so every chat opened globally and the entry-point default was
+  silently dead, board chip and all. It is `(!aiCtxItems.length || aiCtxIsFloor())`.
+  ⚠️ The floor gets its ✕ back as soon as anything else is pinned.
+
+### The floating card's header is a hand
+- `cursor:grab` at rest, `grabbing` for the whole drag, scoped to `.aifloat` (`aiDragStart`
+  bails otherwise, so a hand in Full screen would promise a drag that cannot happen). The
+  header's own controls keep `pointer`. ⚠️ `grabbing` needs a global `!important` under a new
+  `body.aidragmv`: the pointer leaves the header during a drag — that is the point — and
+  every element it crosses would reassert its own cursor. `body.aidragging`'s `cursor:inherit`
+  does not do this; it only targets `body`. ⚠️ The flag is set on the MOVE path only, never in
+  `aiRzBind`, or the edge grips lose their resize cursors.
+
+⚠️ **Driving the full-screen toggle wedges the renderer under browser automation.** Verified
+against the committed baseline — it predates this session's edits — but it is why the layout
+states were measured by setting `.aifs` directly.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·
@@ -3186,6 +3306,57 @@ as native.
 
 ⚠️ The old concept popover (`#managePop`, `mgAct`) is **kept and unreferenced**, the house
 pattern — `openManage()` leads here instead.
+
+### Its chrome was rebuilt from the product's own components (24 Aug 2026)
+
+Three requests, each replacing a ServiceOps-shaped control with one this file already owns.
+The **flow** is unchanged; only what it is assembled from moved.
+
+- **Tabs are `.lxtab` underline tabs in their own row** under `.pagehead`, not `.dtab`
+  segmented pills inside the toolbar. `.dtab` is the dashboard LIST PANEL's two-way switch
+  inside a 340px column; these four are the screen's top-level navigation, and the product
+  spells that as text tabs with a 2px underline on a hairline. `.lxtab` is this file's own
+  copy of that bar, cloned from the live Log Explorer.
+  ⚠️ They had to LEAVE `.mdbar` — an underline tab needs a baseline, and crammed to the
+  right of a filter field it read as one more toolbar control.
+- **The filter field became `.stcsearch` + a `.stcaddf` `＋ Filter`.** The combined
+  funnel-on-a-full-width-bar is the reference's control; in this product's chrome that reads
+  as a filter, not a search. `.stcsearch` is the product's search box, already cloned here
+  for the Compliance pages — so it inherits the live geometry *and* its `≤1366px → 260px`
+  step for free. **The faceted filter is not lost**: it needed its own door once clicking
+  the box types, and the popover still anchors to `#mdFb`, now the wrapper around ＋ Filter.
+  ⚠️ That wrapper is a `<span>` around the button, not the button — `.mdfpop` is absolutely
+  positioned with its own `<button>`s inside, and interactive content nested in a `<button>`
+  is invalid and eats the clicks.
+- **Bulk actions are `.stcsq` icon tiles at the END OF THE TOOLBAR ROW**, not a strip of
+  their own. `.stcsq` IS the product's square icon toolbar. As a separate strip it pushed
+  the grid down 46px the moment you ticked a box, moving the rows you were still choosing
+  from; on the toolbar's line nothing below it shifts.
+  ⚠️ `#mdBulk` owns `margin-left:auto`, **not** `.mdbulk` — the inner node is only as wide
+  as itself, so an auto margin there is 669px short of the row's edge and looks like the
+  rule not applying. `#mdBulk:empty{display:none}`, or a zero-width flex item still draws
+  the row's 8px gap on each side of nothing.
+  ⚠️ Each tile carries a `data-tip`; the label was the only thing saying what these do.
+  **Clear stays a word** — it is the way out of the selection, not an action on dashboards.
+  ⚠️ **The tile fill flipped twice and both times for contrast, measured not eyeballed.**
+  On the old `--sel`-tinted strip `--chip` was invisible (7 points apart) so it was
+  overridden to `--card`; on the page background `--card` is the invisible one — light
+  `--bg` IS `#ffffff` — so it is back to `.stcsq`'s own `--chip`. Dark was fine either way,
+  which is exactly how this gets missed.
+- ⚠️ **`mdMoveMenu` is viewport-clamped now.** It anchored its 200px menu to the trigger's
+  left edge and got away with it while that was a ~160px text button; with a 30px tile
+  sitting ~130px further right it ran off the screen (measured 9px over at 1710px wide).
+  The rect must be read AFTER the append or the menu has no width yet.
+- ⚠️ **`.mdfb*` is gone** and `.mdfw` / `.mdchips` / `.mdtabs` replaced it.
+
+⚠️ **The list panel's own `Manage dashboards` control changed with it.** It was a 34px
+icon-only square carrying the `custom-dashboard` grid-plus-pencil glyph at 14px, which
+renders as a blob and needed a tooltip to say what it was — the same lesson already recorded
+for the toolbar's bare ＋. `.dfoot` is a **column** now: the teal primary keeps its full
+width, and *Manage dashboards* is a quiet full-width labelled row beneath it (Lucide
+`sliders-horizontal`, a trailing chevron because it leaves for a full-page screen where ＋
+opens a drawer). ⚠️ `.dfoot`'s `min-height` moved 49 → 85px (9 + 31 + 6 + 30 + 9) and the
+arithmetic is in a comment — this is the panel where fixed rows compete with the footer.
 
 ## Dashboard list panel
 

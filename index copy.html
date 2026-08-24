@@ -880,18 +880,20 @@ html[data-theme="light"] .dtabs{background:var(--panel-2)}
    ⚠️ ONLY WHAT DID NOT EXIST IS NEW: the bulk bar, the inline row confirm, the faceted
    filter popover and the two drawers' bodies. Each is built from the tokens the rest of the
    file uses, so there is no imported colour anywhere in this block. */
+/* the tab bar — `.lxtab` is this file's own copy of the product's underline tabs; see the
+   note at `#mdTabs` in the markup for why these are not `.dtab` pills any more */
+.mdtabs{display:flex;align-items:center;gap:2px;padding:0 14px;flex:0 0 auto;
+  border-bottom:1px solid var(--border-soft)}
+/* ⚠️ `.mdtc`, NOT `.n` — `.mdbulk .n` is the selection count 40 lines below, and a bare
+   `.n` here would give one name two meanings in this one flat stylesheet. */
+.mdtabs .mdtc{margin-left:6px;color:var(--text-dim);font-weight:500}
 .mdwrap{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding:12px 14px 18px}
-/* the toolbar row: search on the left, tabs and the primary on the right — the shape
-   `.stcbar` already establishes for the Compliance pages */
+/* the toolbar row: the product's search box, then ＋ Filter and whatever it committed */
 .mdbar{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-bottom:10px;flex-wrap:wrap}
-.mdfb{position:relative;display:flex;align-items:center;gap:6px;min-height:30px;padding:0 9px;
-  flex:1 1 320px;min-width:240px;border:1px solid var(--border);border-radius:4px;
-  background:var(--panel-2);color:var(--text-dim);cursor:text;flex-wrap:wrap}
-.mdfb:focus-within{border-color:var(--muted)}
-.mdfb>svg{width:13px;height:13px;flex:0 0 13px;fill:currentColor}
-.mdfb>input{flex:1 1 90px;min-width:90px;height:28px;border:0;background:transparent;
-  color:var(--text);font:inherit;font-size:12px;outline:none}
-.mdfb>input::placeholder{color:var(--text-dim)}
+/* ⚠️ `.mdfpop` is `position:absolute`, so its anchor has to be positioned. It used to be
+   the full-width filter field; it is this wrapper now. */
+.mdfw{position:relative;flex:0 0 auto}
+.mdchips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* a committed filter, in the pill shape `.dchip` uses for the list panel's own filters */
 .mdfchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 4px 0 9px;
   border:1px solid var(--border);border-radius:999px;background:var(--chip);color:var(--text);
@@ -924,14 +926,49 @@ html[data-theme="light"] .mdfpop label input{color-scheme:light}
 .mdfpop .fdone{display:flex;justify-content:flex-end;padding:6px 3px 1px;
   border-top:1px solid var(--border-soft);margin-top:4px}
 
-/* ── the bulk bar ──────────────────────────────────────────────────────────────────────
-   ⚠️ It pushes the table down rather than overlaying it, as the reference does — an
-   overlay would cover the first row, which is the one you most likely just ticked.
-   ⚠️ Tinted with `--sel`, the selection colour this file already uses for a chosen row, so
-   the bar and the rows it is about read as the same state. */
-.mdbulk{display:flex;align-items:center;gap:7px;min-height:38px;padding:5px 10px;flex:0 0 auto;
-  margin-bottom:8px;border:1px solid var(--border);border-radius:4px;background:var(--sel)}
-.mdbulk .n{font-size:12px;font-weight:600;color:var(--text);margin-right:auto}
+/* ── the selection actions ─────────────────────────────────────────────────────────────
+   ⚠️ NOT A BAR ANY MORE — it is a group pinned to the END OF THE TOOLBAR ROW (request,
+   24 Aug 2026). It used to be a `--sel`-tinted strip of its own between the toolbar and the
+   grid, which is what the ServiceOps reference does; here that meant ticking a box shoved
+   the whole table down by 46px, moving the rows you were still choosing from. On the
+   toolbar's line it costs no height at all and nothing below it moves.
+   ⚠️ The tint went with the strip, and it is NOT missed: the selected ROWS still carry
+   `--sel`, so the state is still on screen — it is just said where it is true rather than
+   in a banner about it.
+   ⚠️ THE `margin-left:auto` BELONGS ON `#mdBulk`, NOT ON `.mdbulk`. `#mdBulk` is the flex
+   item in `.mdbar`; `.mdbulk` is its only child, so an auto margin there pushes it to the
+   end of a box that is already only as wide as itself — measured 669px short of the row's
+   right edge, which looked like the rule simply not applying.
+   ⚠️ `:empty` is what keeps it honest the rest of the time. `#mdBulk` is in the markup
+   whether or not anything is selected, and a zero-width flex item still draws `.mdbar`'s
+   8px gap on each side of nothing. */
+#mdBulk{margin-left:auto}
+#mdBulk:empty{display:none}
+.mdbulk{display:flex;align-items:center;gap:7px}
+.mdbulk .n{font-size:12px;font-weight:600;color:var(--text);margin-right:3px;white-space:nowrap}
+/* ⚠️ THE BULK ACTIONS ARE ICON BUTTONS (request, 24 Aug 2026, with the product's own
+   square icon toolbar supplied as the reference). `.stcsq` IS that toolbar — 4px radius on
+   a `--chip` tile, cloned from live 8.2.7 for the Compliance pages — so it is reused rather
+   than restyled. Scoped smaller here (30px, not 35px) so the bar keeps its 38px height.
+   ⚠️ EACH ONE CARRIES A `data-tip`. The label is the only thing that said what these do,
+   and an icon-only destructive action with nothing to hover is a trap.
+   ⚠️ `fill:none;stroke` — `MD_IC`'s paths are STROKED outlines and `.stcsq svg` sets
+   `fill:currentColor`, which would paint every one of them as a solid blob. Same
+   descendant-rule trap already recorded for `.dvic svg` and `.awrow svg`.
+   ⚠️ CLEAR STAYS A WORD. It is not an action on the dashboards — it is the way out of the
+   selection — and a fourth guessable glyph is exactly what the tooltip would be carrying. */
+/* ⚠️ THE TILES KEEP `.stcsq`'s OWN `--chip` FILL, and this flipped BACK when the strip was
+   dropped. On the `--sel`-tinted bar they had to be overridden to `--card`: light `--sel`
+   and `--chip` are 7 points apart (rgb 224,235,245 vs 231,236,244) and the tiles vanished.
+   On the page background `--card` is the invisible one — light `--bg` IS `#ffffff` — and
+   `--chip` is the contrast, which is how the Compliance toolbar these came from sits on
+   this same background. Measured both times; dark was fine either way, which is exactly
+   how this gets missed. */
+.mdbulk .stcsq{width:30px;height:30px;flex:0 0 30px}
+.mdbulk .stcsq svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.mdbulk .stcsq.dgr{color:var(--red);border-color:transparent;background:rgba(242,80,75,.12)}
+.mdbulk .stcsq.dgr:hover{background:rgba(242,80,75,.2);border-color:transparent}
 .mdbulk .btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
 /* ⚠️ the only coloured control here — `--red` is this system's critical colour, the same
@@ -1016,17 +1053,38 @@ html[data-theme="light"] .mdtblw input[type=checkbox]{color-scheme:light}
 html[data-theme="light"] .mdfield input{color-scheme:light}
 .mdsrch{width:100%;height:30px;padding:0 9px;margin-bottom:10px;border:1px solid var(--border);
   border-radius:4px;background:var(--panel-2);color:var(--text);font:inherit;font-size:12px}
-.dfoot{flex:0 0 auto;display:flex;gap:7px;align-items:center;padding:9px 10px;border-top:1px solid var(--border-soft)}
-.dnew{flex:1;height:31px;border-radius:5px;background:var(--teal);color:#04211d;font-weight:700;font-size:12.3px;
+/* ⚠️ THE FOOTER IS A COLUMN, NOT A ROW (request, 24 Aug 2026: "improve this manage
+   dashboard button"). Manage dashboards was a 34px icon-only square beside the teal
+   primary, carrying the `custom-dashboard` grid-plus-pencil glyph at 14px — which renders
+   as an unreadable blob and needs a tooltip to say what it is. That is the SAME lesson
+   already recorded for the toolbar's bare ＋: in a footer holding two other plus-shaped
+   affordances, words beat a guessable glyph. It is a full-width labelled row under the
+   primary now — quiet (no fill, no border at rest) so the hierarchy is unchanged, and
+   carrying a trailing chevron because it LEAVES for a full-page screen where ＋ opens a
+   drawer. */
+.dfoot{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:stretch;padding:9px 10px;border-top:1px solid var(--border-soft)}
+.dnew{flex:0 0 auto;height:31px;border-radius:5px;background:var(--teal);color:#04211d;font-weight:700;font-size:12.3px;
   display:flex;align-items:center;justify-content:center;gap:6px}
 .dnew{transition:filter .12s,box-shadow .12s}
 .dnew:hover{filter:brightness(1.09);box-shadow:0 2px 10px rgba(20,184,166,.35)}
 .dnew:active{filter:brightness(.96)}
-/* the footer holds the panel's primary action — never let the tree squeeze it */
-.dfoot{min-height:49px}
-.dmanage{width:34px;height:31px;border:1px solid var(--border);border-radius:5px;display:grid;place-items:center;background:var(--panel-2);color:var(--text-dim)}
-.dmanage:hover{border-color:var(--muted);color:var(--text)}
-.dmanage svg{width:14px;height:14px;fill:currentColor}
+/* the footer holds the panel's primary action — never let the tree squeeze it.
+   ⚠️ 85px = 9 + 31 + 6 + 30 + 9. Change either row and this has to move with it. */
+.dfoot{min-height:85px}
+.dmanage{flex:0 0 auto;width:100%;height:30px;padding:0 7px 0 9px;border:1px solid transparent;border-radius:5px;
+  display:flex;align-items:center;gap:8px;background:transparent;color:var(--text-dim);
+  font:inherit;font-size:12.2px;font-weight:500;text-align:left;
+  transition:background .12s,color .12s,border-color .12s}
+.dmanage:hover{background:var(--hover);border-color:var(--border);color:var(--text)}
+.dmanage:active{background:var(--panel-2)}
+.dmanage:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+/* ⚠️ Lucide, stroked — NOT the filled grid it replaced. `fill:none` has to be declared
+   here as well as inline, or a container rule that sets `fill` paints it as a solid blob
+   (the recorded `.dvic svg` trap). */
+.dmanage svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dmanage .dmch{width:13px;height:13px;flex:0 0 13px;margin-left:auto;opacity:.75}
+.dmanage:hover .dmch{opacity:1}
 /* NOC View tab */
 .dhint{margin:2px 10px 10px;padding:9px 11px;border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:4px;
   font-size:11.6px;color:var(--text-dim);line-height:1.5;background:var(--panel-2)}
@@ -1693,8 +1751,24 @@ body.aidrags.aidrage .aigse>svg,body.aidrags.aidragw .aigsw>svg{opacity:1}
 /* both strokes go solid, so the hollow outline fills in rather than staying a double line */
 body.aidragn.aidragw .aignw>svg path,body.aidragn.aidrage .aigne>svg path,
 body.aidrags.aidrage .aigse>svg path,body.aidrags.aidragw .aigsw>svg path{stroke:var(--white)}
-.aipanel.aifloat .aihd{cursor:move}
+/* ⚠️ A HAND, NOT THE FOUR-ARROW `move` (request, 24 Aug 2026: "when i hover the header
+   show Hand icon for move view"). `move` is the cursor for something you nudge in place —
+   a grid item, a shape on a canvas. This card is PICKED UP and put down, and `grab` /
+   `grabbing` is the pair browsers ship for exactly that; the open hand also reads as an
+   invitation at rest, where the cross reads as a state.
+   ⚠️ Still scoped to `.aifloat`. `aiDragStart` returns early unless the panel is the
+   floating card, so a grab cursor in Full screen would promise a drag that cannot happen.
+   ⚠️ The header's own controls keep `pointer` — `aiDragStart` bails on
+   `button,input,a,.aihttl,.aihm`, so a press there is a click and the cursor has to say so. */
+.aipanel.aifloat .aihd{cursor:grab}
 .aipanel.aifloat .aihd button,.aipanel.aifloat .aihd .aihttl{cursor:pointer}
+/* ⚠️ `grabbing` for the DURATION of the move, and it has to be global + `!important`:
+   once the drag starts the pointer routinely leaves the header — that is the whole point —
+   and every element it crosses would otherwise reassert its own cursor, so the hand would
+   flicker to a text caret over the thread and to `pointer` over the board's buttons.
+   `body.aidragging`'s `cursor:inherit` does not do this: it only targets `body`, so
+   descendants keep theirs. Transient — the class exists only while a move is in flight. */
+body.aidragmv,body.aidragmv *{cursor:grabbing!important}
 /* ⚠️ kill transitions and text selection for the duration of a drag, or the panel lags a
    frame behind the pointer and the whole thread highlights blue as you move */
 body.aidragging{user-select:none;cursor:inherit}
@@ -1753,7 +1827,12 @@ body.aifabshift .cwfab{right:var(--cwfab-r,calc(var(--ai-w) + 36px))}
    naming, every time. */
 /* New chat leads the header, so it sits before the name rather than after the buttons.
    ⚠️ hidden until the chat has something in it — see `aiNewBtnPaint`. */
-.aihnew{margin-right:2px}
+/* ⚠️ NO MARGIN (request, 24 Aug 2026: "remove padding in this 2 different icon and new
+   chat"). `.aihd` already declares `gap:4px` for every child; this button then added 2px
+   of its own and `.aihttl` another 2px, so the space between these two specific controls
+   was 8px while every other pair in the header was 4px. Ad-hoc margins on top of a flex
+   `gap` are exactly the kind of drift that makes one pair look padded — the gap is the
+   single place header spacing is set now, so `.aihnew` declares no spacing at all. */
 .aihnew.hide{display:none}
 .aihb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* ⚠️ the ✕ used to carry `stroke-width:2.2` here — at 15px that is 1.38px on screen
@@ -1841,8 +1920,10 @@ html[data-theme="light"]{
    ⚠️ THE `-9px` PULL WENT WITH IT (same request, "add margin"). That negative margin
    existed to cancel the pill's own left padding so the TEXT lined up with the header edge;
    with nothing painted at rest there is no pill to cancel, and all it did was jam the name
-   against the ＋ New chat button 4px to its left. `margin-left:2px` gives it the header's
-   own `gap:4px` plus a little, so the two read as separate controls. */
+   against the ＋ New chat button 4px to its left. It became `margin-left:2px` then — and is
+   0 as of 24 Aug 2026 ("remove padding"), with the pill's own left padding cut 9 → 4 in the
+   follow-up the same day so the text lands 8px from the button — the card's number. See the
+   note at the rule itself for why none of this is a return to the -9px problem. */
 /* ⚠️ THE TITLE IS CAPPED (request, 21 Aug 2026: "the chat title width will be made small").
    It was `max-width:100%`, i.e. everything the three trailing buttons did not take — so a
    long auto-named chat ("Give me a summary of this da…") ran right up to the caret with the
@@ -1855,8 +1936,29 @@ html[data-theme="light"]{
    (420 → 348) instead of eating the whole header at the narrow end.
    ⚠️ `min-width:0` is still what lets it truncate at all — an inline-flex child will not
    shrink below its content without it, and the ellipsis would never appear. */
+/* ⚠️ `margin-left` IS GONE, and this is the THIRD setting for it — read all three before
+   changing it again. It was `-9px` (to cancel the pill's own left padding so the TEXT
+   lined up with the header edge), then `2px` on 21 Aug 2026 ("add margin") because at -9px
+   the name was jammed against ＋ New chat, then 0 here ("remove padding").
+   ⚠️ 0 is NOT a return to the -9px complaint, and that is the distinction worth keeping:
+   what was jammed then was the TEXT, 4px from the button, because the negative pull had
+   eaten the pill's 9px of padding. At 0 the pill keeps that padding — the boxes sit 4px
+   apart (the header's own gap) and the text still starts 13px after the button. Tight
+   boxes, unjammed text. */
+/* ⚠️ `padding-left:4px`, AND THE NUMBER IS DERIVED, NOT EYEBALLED (request, 24 Aug 2026:
+   "remove the margin in this new icon & chat name", supplied with the summary card as the
+   reference for how tight it should read). `.aiagch` — that card's header — puts its mark
+   8px from its title (`gap:8px`), so 8px is this file's own icon→title distance and the
+   header should not invent a second one. `.aihd` contributes 4px of that as its flex gap,
+   so the pill owes the other 4. It was 9, i.e. 13px total, which is why the name sat
+   visibly further from ＋ New chat than the card's title does from its mark.
+   ⚠️ It is deliberately ASYMMETRIC (4 left / 7 right). The right side carries the chevron,
+   which needs air before the pill's edge; the left carries text that has to line up with a
+   neighbouring control. Padding here is doing two different jobs on the two sides.
+   ⚠️ 4px is also the floor: at 0 the hover/open fill would start exactly on the glyph of
+   the first letter and read as clipped. */
 .aihttl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:50%;
-  height:28px;padding:0 7px 0 9px;margin-left:2px;border-radius:8px;cursor:pointer;
+  height:28px;padding:0 7px 0 4px;border-radius:8px;cursor:pointer;
   background:transparent;transition:background .13s}
 .aihttl:hover{background:var(--hover-side)}
 /* the OPEN state has to hold its highlight — otherwise moving the pointer down into the
@@ -1873,7 +1975,7 @@ html[data-theme="light"]{
 .aihttl:hover .cv,.aihttl.open .cv{color:var(--text)}
 .aihttl.open .cv{transform:rotate(180deg)}
 /* while renaming it is an input, not a menu trigger */
-.aihttl.ren{background:transparent;cursor:text;padding:0;margin-left:0;width:100%}
+.aihttl.ren{background:transparent;cursor:text;padding:0;width:100%}
 .aihttl.ren .cv{display:none}
 /* the inline rename input takes the title's place */
 .ainin{width:100%;background:var(--panel-2);border:1px solid var(--ai-line);border-radius:5px;
@@ -2042,7 +2144,18 @@ html[data-theme="light"]{
 .aihm .ext{margin-left:auto;flex:0 0 12px;width:12px;height:12px;stroke-width:2.5;color:var(--muted)}
 .aihm .empty{padding:10px 9px;font-size:12px;color:var(--muted);line-height:1.5}
 /* empty state: greeting + gradient CTAs */
-.aiempty{padding:14px 18px 12px;text-align:center}
+/* ⚠️ A FULL-HEIGHT COLUMN, so the help links can sit at the FOOT (request, 24 Aug 2026:
+   "documentation and support button view is good but make it some visualization the
+   position for better way"). The look was right and is untouched; the POSITION was not —
+   they hung immediately under the fifth starter with the rest of the panel empty beneath
+   them, so they read as a sixth and seventh item attached to the list rather than as the
+   quiet footer they are, and the blank space landed in the wrong place.
+   ⚠️ `min-height:100%` resolves against `.aibody`'s content box, which has a definite
+   height (`flex:1` in the panel's column). Without it the column is only as tall as its
+   content and `margin-top:auto` on the links has nothing to push against — it would look
+   exactly as it did before, which is how this fails silently. */
+.aiempty{padding:14px 18px 12px;text-align:center;
+  display:flex;flex-direction:column;min-height:100%}
 .aibig{display:grid;place-items:center;margin-bottom:14px}
 .aibig svg{width:30px;height:30px;fill:var(--ai-2)}
 .aiempty h3{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
@@ -2058,8 +2171,20 @@ html[data-theme="light"]{
    different object, and it takes one line of the panel instead of two.
    ⚠️ `flex:1 1 0` on both, not `1 1 auto`, so they are EQUAL halves — sized by the box,
    not by "Documentation" being twice the word "Support". */
-.aihelpl{margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border);
+/* ⚠️ `margin-top:auto` is what moves them — it takes ALL the free space in the column, so
+   the pair settles on the panel's floor with the gap above it instead of below.
+   ⚠️ IT CANNOT ALSO CARRY THE MINIMUM GAP. `auto` resolves to 0 when there is no free space
+   (a short panel, or the Logs starters), and a `margin-top:14px` written alongside it is
+   simply overridden — the hairline would then sit hard against the last starter with
+   nothing in the rule admitting it. The floor lives on the last starter instead, below,
+   where it survives whatever `auto` resolves to. */
+.aihelpl{margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--border);
   display:flex;gap:8px}
+/* ⚠️ the guaranteed gap above the hairline — see `.aihelpl`. `:last-of-type` picks the last
+   `<button>` among `.aiempty`'s OWN children; the two help buttons are nested in `.aihelpl`,
+   so they are not siblings at this level and cannot be matched by accident. 6px on top of
+   the row's own 8px bottom margin = the 14px the pair used to carry itself. */
+.aiempty > .aicta:last-of-type{margin-bottom:6px}
 .aihelpl button{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;
   padding:9px 11px;border:0;border-radius:9px;background:var(--panel-2);cursor:pointer;
   text-align:left;font:inherit;font-size:12.5px;color:var(--text-dim);
@@ -2608,15 +2733,37 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aicq{margin:2px 0 16px;padding:12px 13px 11px;border:1px solid var(--border-soft);
   border-radius:12px;background:var(--card)}
 .aicqh{display:flex;align-items:center;gap:9px;margin-bottom:3px}
-.aicqb{width:22px;height:22px;flex:0 0 22px;border:0;border-radius:6px;background:transparent;
-  color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+/* ⚠️ 24px BOX / 16px GLYPH, up from 22 / 14 (request, 24 Aug 2026: "improve the header —
+   the text, back, close icon"). Against a 600-weight 13.5px title these two read as
+   smudges, and the fix is NOT to thicken them: the panel's rule is 1.25px of stroke on
+   screen everywhere, and a header that opts out of it would be the only place in the file
+   that does. Presence comes from SIZE at the same weight — 16 × 1.875 / 24 = 1.25, exactly
+   as before. Change the size again and recompute the stroke from that formula.
+   ⚠️ Disabled goes .3 → .38. At .3 the first step's back arrow read as a rendering
+   artifact rather than a control that is not available yet. */
+.aicqb{width:24px;height:24px;flex:0 0 24px;border:0;border-radius:6px;background:transparent;
+  color:var(--text-dim);cursor:pointer;display:grid;place-items:center;padding:0}
 .aicqb:hover:not(:disabled){background:var(--hover-side);color:var(--text)}
-.aicqb:disabled{opacity:.3;cursor:default}
-.aicqb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.14;
+.aicqb:disabled{opacity:.38;cursor:default}
+.aicqb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;
   stroke-linecap:round;stroke-linejoin:round}
-.aicqt{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--white)}
+/* the question wraps rather than truncating — it is a question, and half of one is
+   useless. 1.35 gives a two-line wrap room to breathe without opening a gap on one line. */
+.aicqt{flex:1;min-width:0;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--white)}
 .aicqn{flex:0 0 auto;font:400 11.5px/1 'JetBrains Mono',monospace;color:var(--muted)}
-.aicqs{margin:0 0 9px 0;font-size:12px;color:var(--muted)}
+.aicqn b{color:var(--text);font-weight:500}
+/* ⚠️ The track spans the card, so it is NOT inside `.aicqh` — putting it in that flex row
+   would make it a fourth item competing with the title for width. */
+.aicqpg{height:2px;border-radius:2px;background:var(--track);margin:0 0 10px;overflow:hidden}
+.aicqpg i{display:block;height:100%;border-radius:2px;background:var(--ai);
+  transition:width .22s ease}
+@media (prefers-reduced-motion:reduce){.aicqpg i{transition:none}}
+/* ⚠️ 33px = the back button's 24px slot + `.aicqh`'s own 9px gap, so the subtitle starts
+   exactly where the title does. It was 31 when the button was 22px and had to move WITH it
+   — this is the coupling that note warned about, cashed in one edit later. Both numbers are
+   on the rules directly above; change either and this follows. Aligning to the title (not
+   to the card edge) is the point — the subtitle is that title's second line. */
+.aicqs{margin:0 0 8px 33px;font-size:12px;line-height:1.45;color:var(--muted)}
 /* the rows — a real radio look, not a chip: this is a single choice, not a suggestion */
 .aicqo,.aicqf{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
   border:0;border-radius:8px;background:transparent;color:var(--text);
@@ -2634,18 +2781,27 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
   font:500 11px/1 'JetBrains Mono',monospace}
 .aicqo:hover .aicqi{background:var(--ai-soft);color:var(--ai-2)}
 .aicqo.on .aicqi{background:var(--ai);color:#fff}
-/* the free row's pencil, and its inline Skip */
+/* the free row's pencil. Skip used to live here too — it is in `.aicqd` now, see there. */
 .aicqp{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center;color:var(--muted)}
 .aicqp svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
-.aicqf .aicqsk{flex:0 0 auto;height:22px;padding:0 9px;border:0;border-radius:5px;
-  background:var(--chip);color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer}
-.aicqf .aicqsk:hover{background:var(--hover-side);color:var(--text)}
+/* ⚠️ SCOPED TO `.aicqd`, and it moved with the button. As `.aicqf .aicqsk` this was dead
+   the moment Skip left the label, and the bare `.aicqsk` rule further down — a plain
+   transparent text button — would have taken over silently. Only Skip's POSITION was meant
+   to change, so its chip look is carried across rather than left to fall back. */
+.aicqd .aicqsk{flex:0 0 auto;height:26px;padding:0 11px;border:0;border-radius:6px;
+  background:var(--chip);color:var(--text-dim);font:inherit;font-size:12px;cursor:pointer}
+.aicqd .aicqsk:hover{background:var(--hover-side);color:var(--text)}
 /* ✕ — abandon the whole question set */
-.aicqc{width:22px;height:22px;flex:0 0 22px;border:0;border-radius:6px;background:transparent;
-  color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.aicqc{width:24px;height:24px;flex:0 0 24px;border:0;border-radius:6px;background:transparent;
+  color:var(--text-dim);cursor:pointer;display:grid;place-items:center}
 .aicqc:hover{background:var(--hover-side);color:var(--text)}
-.aicqc svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
+/* ⚠️ IDENTICAL TO `.aicqb svg` — 16px / 1.875. It was 13px / 2.31 against the back arrow's
+   14px / 2.14: both computed to the panel's 1.25px on-screen weight (13 × 2.31 / 24 = 1.25,
+   14 × 2.14 / 24 = 1.25), so the STROKE rule was being obeyed and the defect hid behind it.
+   The two controls bookending one row were simply drawn at different SIZES. Deriving weight
+   per size does not make sizes agree — a pair has to be given the same size on purpose. */
+.aicqc svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;
   stroke-linecap:round;stroke-linejoin:round}
 .aicqr{flex:0 0 15px;width:15px;height:15px;border-radius:50%;border:1.6px solid var(--track);
   display:grid;place-items:center;transition:border-color .12s}
@@ -2671,9 +2827,12 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
   stroke-linecap:round;stroke-linejoin:round}
 .aicqo:hover .aicqck{background:var(--ai-soft);box-shadow:inset 0 0 0 1px var(--ai-line)}
 .aicqo.on .aicqck{background:var(--ai);color:#fff;box-shadow:none}
-/* Done sits on its own row under the free-text field, where Next used to be. It is the
-   only commit on a multi step, so it is the only filled control on the card. */
-.aicqd{display:flex;justify-content:flex-end;padding:10px 12px 2px}
+/* ⚠️ THE FOOTER ROW — Skip always, Done only on a multi step. It sits under the free-text
+   field, where Next used to be. Right-aligned, `gap:8px`, Skip first and Done last, so the
+   only filled control on the card is also the last thing you read.
+   ⚠️ It is emitted on EVERY step now, not just multi ones — Skip lives here. A `mul`-only
+   wrapper would leave single steps with no way past the question at all. */
+.aicqd{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 12px 2px}
 .aicqok{height:30px;padding:0 14px;border:0;border-radius:var(--ai-r);background:var(--ai);
   color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
   display:inline-flex;align-items:center;gap:7px}
@@ -2708,8 +2867,17 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aitbl div{display:flex;justify-content:space-between;padding:4px 2px;border-bottom:1px solid var(--border-soft)}
 .aitbl div:last-child{border-bottom:0}
 .aitbl b{font-family:'JetBrains Mono',monospace;color:var(--white)}
-.aichips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.aich{padding:4px 11px;border-radius:var(--ai-r);border:1px solid var(--border);background:transparent;
+/* ⚠️ TWO GAPS, NOT ONE (request, 24 Aug 2026: "make more space"). A single `gap` on a
+   wrapping flex row governs BOTH axes, so a chip set that wrapped put its second line 5px
+   under its first while the whole block sat only 10px under the preview — every bordered
+   pill on screen at roughly one spacing, reading as a single field rather than as a
+   switcher above a query. This is the measured `.aiab li` lesson in a third place: the gap
+   BETWEEN groups has to beat the gap INSIDE one, or the grouping is invisible.
+   ⚠️ Row-gap is deliberately LARGER than column-gap (8 vs 6). Side by side, two chips are
+   already separated by their own borders; stacked, they are not, so a wrapped line needs
+   more air than a neighbour does. Block separation is 14px, comfortably above the 8. */
+.aichips{display:flex;flex-wrap:wrap;gap:8px 6px;margin-top:14px}
+.aich{padding:5px 11px;border-radius:var(--ai-r);border:1px solid var(--border);background:transparent;
   color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer}
 .aich:hover{border-color:var(--ai-line);color:var(--text)}
 .aich.on{background:var(--ai-soft);border-color:var(--ai-line);color:var(--ai-2);font-weight:600}
@@ -2720,11 +2888,16 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
   font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aidpc .bd{padding:8px;min-height:54px;display:grid;place-items:center}
 .aidpc .bd svg{width:100%;height:auto;display:block}
-.aiq{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.aiq span{padding:3px 9px;border-radius:5px;background:var(--panel-2);border:1px solid var(--border);
+/* same two-axis gap and the same 14px block separation as `.aichips` above it — these two
+   rows sit directly on top of each other in the build preview, so they have to agree */
+.aiq{display:flex;flex-wrap:wrap;gap:8px 6px;margin-top:14px}
+.aiq span{padding:4px 9px;border-radius:5px;background:var(--panel-2);border:1px solid var(--border);
   font-size:11.5px;color:var(--text-dim)}
 .aiq b{color:var(--text);font-weight:600}
-.aiacts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+/* ⚠️ 14px to match, and the row-gap raised for the same reason — this follows `.aiq` in
+   the same card, and at 12px it would have been the one block spaced TIGHTER than the two
+   above it, which inverts the rhythm exactly where it should be opening up. */
+.aiacts{display:flex;flex-wrap:wrap;gap:8px 7px;margin-top:14px}
 /* the gate row: the way out on the left as plain text, the primary on the right as a
    filled pill — the reference's Skip / Next shape */
 .aiacts.gate{align-items:center;justify-content:flex-end}
@@ -3032,6 +3205,24 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    alignment with the answer text beside it. */
 .aitkl{margin:8px 0 0 28px;padding:0}
 .aitk.cl .aitkl{margin-top:6px}
+/* ⚠️ CAPPED AND SCROLLED WHEN OPEN (request + Notion reference, 24 Aug 2026). Expanded, the
+   trail ran the full height of every phase — three groups of ticks, which pushed the answer
+   the trail belongs to off the bottom of the panel. The reference keeps the reasoning in a
+   short window you scroll, so it stays available without taking the screen.
+   ⚠️ 220px ≈ one phase and the start of the next, which is what makes it read as "there is
+   more" rather than as a list that happens to end.
+   ⚠️ The SAME mask and the SAME `--aifade-t/b` contract as `.aibody` — a mask fades the
+   CONTENT, so it is correct over the panel's gradient backdrop and needs no colour. Both
+   default to 0, so a SHORT trail that does not overflow gets no fade at all and its first
+   heading is not dimmed for nothing. `aiTkFadeBind()` sets them.
+   ⚠️ `padding-right` + `scrollbar-width:thin`: the scrollbar sits inside the mask, and
+   without the gutter the tick rows run under it. */
+.aitk.op .aitkl{max-height:220px;overflow-y:auto;padding-right:8px;scrollbar-width:thin;
+  --aifade-t:0px; --aifade-b:0px;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 var(--aifade-t),
+    #000 calc(100% - var(--aifade-b)),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 var(--aifade-t),
+    #000 calc(100% - var(--aifade-b)),transparent 100%)}
 /* the phase headings inside the combined block, so merging three rows into one loses
    nothing — you still see which step belonged to which phase */
 /* ⚠️ NOT uppercase: these are sentence-length phase names ("Searched counters, read the
@@ -3180,6 +3371,9 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aiagmk svg{width:15px;height:15px;fill:var(--ai-2)}
 /* the product mark is a raster asset, so it gets its own sizing — it must not inherit the
    `fill` the ✦ uses, and it is a shade larger because the glyph inside it is inset */
+/* ⚠️ KEPT AND UNREFERENCED (24 Aug 2026). The summary card was the only caller and it
+   carries the ✦ now — see the note at its header. Left in place so the product mark is one
+   edit away, the way `aiScopeMenu` and `iFocus` are. */
 .aiagmk.logo{flex:0 0 17px;width:17px;height:17px}
 .aiagmk.logo img{width:17px;height:17px;display:block;object-fit:contain}
 .aiagsum{padding-top:4px}
@@ -3215,7 +3409,16 @@ body.aidockr .aidockghost{display:block}
 /* the card itself goes translucent while it is over the zone, so the ghost reads as the
    destination rather than as a second panel */
 body.aidockr .aipanel.aifloat{opacity:.55}
-.aitobot{display:none;position:absolute;left:50%;bottom:calc(100% - 4px);
+/* ⚠️ `+6px`, AND THE 4px IT REPLACES WAS A ZERO-GAP (request, 24 Aug 2026: "in text area &
+   Arrow icon between add more margin space"). `bottom` here is measured from `.aicomp`'s
+   BOTTOM, so `100%` puts the button's lower edge on `.aicomp`'s TOP edge — and `.aicomp`
+   carries `padding-top:4px`, which is where the composer pill actually starts. So the old
+   `calc(100% - 4px)` pulled the button down by exactly that padding and parked its edge
+   flush on the pill with nothing between them, which is what the screenshot shows.
+   ⚠️ Read this against `.aicomp`'s padding, not on its own: `+6px` clears the padding and
+   leaves **10px** of real space between the arrow and the pill. Change that padding and
+   this number has to move with it. */
+.aitobot{display:none;position:absolute;left:50%;bottom:calc(100% + 6px);
   transform:translateX(-50%);width:30px;height:30px;border-radius:50%;
   border:1px solid var(--ai-in-line);background:var(--card);color:var(--text-dim);
   cursor:pointer;place-items:center;z-index:7;box-shadow:var(--ai-in-shadow)}
@@ -3367,13 +3570,22 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    past .62 takes it under the panel's own surface contrast and it stops being readable
    rather than just quiet. The measured result is #b0bbcc on white. */
 .aiinbox textarea::placeholder{color:var(--muted);opacity:.62}
-/* ⚠️ a CIRCLE like its two neighbours (annotation, 19 Aug 2026: "same size"). It was a
-   30px rounded SQUARE between two 30px circles, which read as a different size even though
-   the box matched. `.aisend.aisndstop` was already a circle, so the busy state is unchanged. */
-.aisend{flex:0 0 30px;width:30px;height:30px;border-radius:50%;
+/* ⚠️ A ROUNDED SQUARE (request + reference, 24 Aug 2026), and this REVERSES the 19 Aug
+   2026 annotation that made it a circle. That note said: "a 30px rounded SQUARE between
+   two 30px circles read as a different size even though the box matched" — which was true
+   of the row it described, ＋ / send / 🎤, where send sat BETWEEN two circles. That row is
+   gone: the mic and the ＋ menu were both removed on 21 Aug, so the control row is now
+   `@ · Auto … send`, send is the only thing at the right-hand end, and there is nothing
+   for it to disagree with. A square there reads as the primary action rather than as a
+   third instance of the same button.
+   ⚠️ 9px on a 30px box is the reference's own proportion (~30%), and it is the radius
+   language this file already speaks — `.aihb` header buttons are 8px.
+   ⚠️ THE STOP STATE MOVES WITH IT. `border-radius` is deliberately NOT part of the
+   idle→stop change; the button must not morph shape the moment you press it, which is the
+   one time you are looking straight at it. Both are 9px. */
+.aisend{flex:0 0 30px;width:30px;height:30px;border-radius:9px;
   display:inline-flex;align-items:center;justify-content:center;padding:0;
   background:var(--chip);color:var(--text-dim);border:0;cursor:pointer;
-  /* border-radius is no longer part of the idle→stop change (both are circles now) */
   transition:background .14s,color .14s,box-shadow .14s}
 /* ══ SEND APPEARS WHEN THERE IS SOMETHING TO SEND (request + reference, 20 Aug 2026) ═══
    The composer opened with a send button that could not do anything: an empty prompt has
@@ -3417,11 +3629,15 @@ body.aidockr .aipanel.aifloat{opacity:.55}
        not a destructive act, so the alarm colour was overstating it;
      · the reference is icon-only, so the wording moved to the tooltip. What keeps it from
        being confused with the dictation mic 8px to its left is now WEIGHT, not a label:
-       stop is a solid accent circle, the mic is a transparent circle with a hairline glyph.
+       stop is a solid accent tile, the mic was a transparent circle with a hairline glyph.
+       (The mic is gone as of 21 Aug; the weight contrast now separates send from `@`.)
    ⚠️ `--ai` (#8b5cf6) is this panel's own accent, NOT the indigo in the reference image —
    importing another product's brand hue would put a colour in the file that no token owns.
    Swap the two `--ai` values below if the literal reference colour is wanted. */
-.aisend.aisndstop{border-radius:50%;background:var(--ai);color:#fff}
+/* ⚠️ 9px, matching idle — see the note at `.aisend`. It is restated rather than left to
+   inherit because this rule has carried an explicit radius since the two states had
+   different ones, and a bare inherit here would silently drift if `.aisend` ever changes. */
+.aisend.aisndstop{border-radius:9px;background:var(--ai);color:#fff}
 .aisend.aisndstop:hover{background:#9d78f8;box-shadow:0 0 0 3px var(--ai-soft)}
 .aisend.aisndstop:active{background:#7c46e8;box-shadow:none}
 .aisend.aisndstop:focus-visible{box-shadow:0 0 0 3px var(--ai-line)}
@@ -3430,7 +3646,11 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 /* 12px x (22/24) = 11px of painted square in a 30px circle — the ~36% the reference uses.
    ⚠️ Change this number and you change the glyph directly now; there is no second scale
    hidden in the path. */
-.aisend.aisndstop svg{width:12px;height:12px;fill:currentColor}
+/* ⚠️ `stroke:none` IS LOAD-BEARING. `.aisend svg` now sets `stroke:currentColor;
+   stroke-width:2`, and this rule only overrode `fill` — a 2px stroke would leak onto the
+   filled square and paint it ~2px bigger with softened corners, i.e. the exact 15px-block
+   look the note above says was fixed. The cascade trap this file keeps recording. */
+.aisend.aisndstop svg{width:12px;height:12px;fill:currentColor;stroke:none}
 /* a light travelling along the TOP border of the pill while it generates. It is its own
    element because ::before is the brand ring and ::after is the bloom — both taken. */
 .aigenbar{position:absolute;left:12px;right:12px;top:-1px;height:1.5px;border-radius:2px;
@@ -3451,7 +3671,27 @@ body.aidockr .aipanel.aifloat{opacity:.55}
   background:rgba(242,80,75,.14)}
 .aistop .ic svg{width:11px;height:11px;fill:var(--red)}
 .aistop .aiacts{flex:0 0 100%;margin-top:2px}
-.aisend svg{width:15px;height:15px;fill:currentColor}
+/* ⚠️ LUCIDE `arrow-up`, STROKED. Two changes on this glyph, 24 Aug 2026:
+     1. it was `M4 12l16-7-7 16-2-7-7-2Z` — a hand-drawn 5-point polygon painted
+        `fill:currentColor`, while `.aiplus svg` and `.aimic svg`, 8px and 38px away in the
+        same row, are Lucide outlines at 15px / `stroke-width:2`. One solid dart among
+        outline glyphs reads as a different weight AND a different family whatever size it
+        is given, and the crude path sat visibly off-centre in the circle. Replaced with
+        Lucide `send`, the paper plane.
+     2. "change this send icon make it new and different" — so the plane went too. It is
+        `arrow-up` now, which is what every current AI composer submits with, and it is the
+        better shape for THIS button specifically: the plane is a diagonal form with its
+        mass in one corner, and inside a 30px circle that always reads slightly off-axis
+        however it is nudged. An arrow is axis-aligned, so it centres exactly.
+   ⚠️ The plane is `M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19
+   6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z` + `m21.854 2.147-10.94 10.939`
+   if it is ever wanted back — recorded so it is not redrawn by hand.
+   ⚠️ Either way this is the folder's own icon rule (`memory: icon-sources`): never draw
+   one, paste it from Lucide.
+   ⚠️ Same three numbers as its neighbours: 15px at `stroke-width:2` IS the panel's derived
+   weight, 1.25 × 24 / 15 = 2.0. Change the size and the stroke has to be recomputed. */
+.aisend svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 /* inside the control row now — a hairline pill so it reads as a setting on the composer
    rather than a stray line of body text below it */
 /* ⚠️ a WORD, not a switch (annotation + reference, 19 Aug 2026). Off it is quiet text;
@@ -5750,7 +5990,7 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
           <div class="dfilt" id="dlegend"></div>
                     <div class="dfoot">
             <button class="dnew" id="dnewBtn" onclick="dashNew()">＋ New Dashboard</button>
-            <button class="dmanage" title="Manage dashboards" onclick="openManage()"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm8-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm15.1-1.9 1.8 1.8-6.1 6.1H14v-1.8l6.1-6.1Z"/></svg></button>
+            <button class="dmanage" data-tip="Rename, archive and organise every dashboard" onclick="openManage()"><svg viewBox="0 0 24 24" fill="none"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>Manage dashboards<svg class="dmch" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6"/></svg></button>
           </div>
         </aside>
         <!-- V1 keeps its own widget canvas here; V2's #dcanvas is not used -->
@@ -5877,16 +6117,44 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
         <span style="flex:1"></span>
         <button class="btn pri" onclick="mdClose();dashNew()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v14h-2z"/><path d="M5 11h14v2H5z"/></svg>New dashboard</button>
       </div>
+      <!-- ⚠️ UNDERLINE TABS IN THEIR OWN ROW — NOT THE SEGMENTED PILL, AND NOT IN THE
+           TOOLBAR (request, 24 Aug 2026, with the product's own module tab bar supplied as
+           the reference). `.dtabs`/`.dtab` is the dashboard LIST PANEL's segmented control:
+           a two-way switch inside a 340px column. These four are this screen's top-level
+           navigation, and the product spells that as text tabs with a 2px underline sitting
+           on a hairline, directly under the title. `.lxtab` is this file's OWN copy of that
+           bar (cloned from the live Log Explorer), so the height, the weight and the
+           underline cannot drift from the product. They also had to LEAVE `.mdbar` — an
+           underline tab has to sit on a baseline, and crammed to the right of a filter
+           field it read as one more control in the toolbar rather than as navigation. -->
+      <div class="mdtabs" id="mdTabs"></div>
       <div class="mdwrap">
+        <!-- ⚠️ A SEARCH BOX AND A FILTER BUTTON, NOT ONE FULL-WIDTH FILTER FIELD
+             (request, 24 Aug 2026: "this is search bar like <the product's> not a filter").
+             It was the ServiceOps reference's combined control — a funnel glyph on a bar
+             spanning the whole screen, placeholdered "Select field or enter a keyword to
+             search…" — which in THIS product's chrome reads as a filter, because that is
+             what a funnel on a full-width bar means here. The product's search is a compact
+             magnifier box, and this file already carries it as `.stcsearch` (cloned from
+             live 8.2.7 for the Compliance pages), so it is reused whole.
+             ⚠️ The faceted filter is NOT lost — it just needed a door of its own now that
+             clicking the search box types instead of opening a field menu. `.stcaddf` is
+             the same `＋ Filter` control the Compliance chip row uses, and the popover is
+             unchanged: it still anchors to `#mdFb`, which is the wrapper around it.
+             ⚠️ The wrapper is a SPAN around the button, not the button itself — `.mdfpop`
+             is absolutely positioned with its own `<button>`s inside, and interactive
+             content nested in a `<button>` is invalid and eats the clicks. -->
         <div class="mdbar">
-          <div class="mdfb" id="mdFb" onclick="mdFbClick(event)">
-            <svg viewBox="0 0 24 24"><path d="M3 5h18v2l-7 7v5l-4 2v-7L3 7V5Z"/></svg>
-            <span id="mdChips"></span>
-            <input id="mdQ" placeholder="Select field or enter a keyword to search…" oninput="mdPaint()" onkeydown="if(event.key==='Escape')mdFpClose()" />
-          </div>
-          <div class="dtabs" id="mdTabs" style="margin:0;flex:0 0 auto"></div>
+          <div class="stcsearch" id="mdSrch"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M43.4,40.6l-7.4-7.3c2.9-3.6,4.3-8.2,3.9-12.8-.4-4.6-2.5-8.9-5.9-11.9-3.4-3-7.9-4.7-12.5-4.6s-9,2-12.2,5.2c-3.2,3.2-5.2,7.7-5.3,12.3s1.5,9,4.6,12.5c3,3.4,7.3,5.5,11.9,5.9s9.1-1,12.8-3.9l7.3,7.3c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4h0Zm-11.5-8.6c-2.7,2.7-6.2,4.1-9.9,4.1s-5.4-.9-7.8-2.4c-2.3-1.5-4.1-3.7-5.1-6.3-1-2.6-1.3-5.3-.8-8.1,.6-2.7,1.9-5.2,3.8-7.1,2-2,4.5-3.3,7.1-3.8,2.7-.6,5.5-.3,8.1,.8s4.8,2.9,6.3,5.1c1.5,2.3,2.4,5,2.4,7.8s-1.4,7.2-4.1,9.9Z"/></svg><input id="mdQ" placeholder="Search" oninput="mdQIn(this.value)" onkeydown="if(event.key==='Escape')mdQClear()" /><span class="clr" data-tip="Clear search" onclick="mdQClear()"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M31.8,18.8c.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6-.2-.2-.4-.3-.6-.4s-.5-.2-.8-.2-.5,0-.8,.2c-.2,.1-.5,.2-.6,.4l-4.5,4.5-4.5-4.5c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l4.5,4.5-4.5,4.5c-.2,.2-.3,.4-.4,.6-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.2,.5,.4,.6,.2,.2,.4,.3,.6,.4s.5,.2,.8,.2,.5,0,.8-.2c.2-.1,.5-.2,.6-.4l4.5-4.5,4.5,4.5c.2,.2,.4,.3,.6,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2,.5-.2,.6-.4c.2-.2,.3-.4,.4-.6,.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6l-4.5-4.5,4.5-4.5c.2-.2,.3-.4,.4-.6Zm10.6-2.4c-1-2.4-2.5-4.6-4.4-6.4-1.8-1.9-4-3.4-6.4-4.4-2.4-1-5-1.6-7.6-1.6s-5.2,.5-7.7,1.5-4.6,2.5-6.5,4.3-3.3,4.1-4.3,6.5-1.5,5-1.5,7.7,.6,5.2,1.6,7.6c1,2.4,2.5,4.6,4.4,6.4,1.8,1.9,4,3.4,6.4,4.4,2.4,1,5,1.6,7.6,1.6,2.6,0,5.2-.5,7.7-1.5,2.4-1,4.6-2.5,6.5-4.3,1.9-1.9,3.3-4.1,4.3-6.5,1-2.4,1.5-5,1.5-7.7,0-2.6-.6-5.2-1.6-7.6Zm-3.8,13.6c-.8,1.9-2,3.7-3.4,5.1-2.6,2.6-6,4.2-9.6,4.6-3.6,.4-7.3-.6-10.3-2.6s-5.3-5.1-6.3-8.5c-1.1-3.5-.9-7.3,.5-10.6,1.4-3.4,3.9-6.2,7.1-7.9,3.2-1.7,6.9-2.3,10.5-1.6,3.6,.7,6.8,2.6,9.1,5.5,2.3,2.8,3.6,6.4,3.6,10,0,2.1-.4,4.1-1.2,6.1Z"/></svg></span></div>
+          <span class="mdfw" id="mdFb"><button class="stcaddf" data-tip="Filter by category, visibility, status or owner" onclick="mdFbClick(event)"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"/></svg><span>Filter</span></button></span>
+          <span class="mdchips" id="mdChips"></span>
+          <!-- ⚠️ THE SELECTION ACTIONS LIVE AT THE END OF THIS ROW (request, 24 Aug 2026:
+               "it will be set on search bar line end of line"). They were a strip of their
+               own between the toolbar and the table, which pushed the grid down by 46px
+               the moment you ticked a box — the rows you were choosing from moved out from
+               under the pointer. On the toolbar's own line nothing below it shifts. -->
+          <div id="mdBulk"></div>
         </div>
-        <div id="mdBulk"></div>
         <div class="mdtblw"><table class="stcgrid" id="mdTbl"></table></div>
         <div class="mdfoot" id="mdFoot"></div>
       </div>
@@ -9694,8 +9962,13 @@ function mdMoveMenu(ev){
   m.style.cssText = 'position:fixed;z-index:200002';
   m.innerHTML = cats.map(c => `<button class="f" onclick="mdMove('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
   document.body.appendChild(m);
-  const r = ev.currentTarget.getBoundingClientRect();
-  m.style.left = Math.round(r.left) + 'px';
+  /* ⚠️ CLAMPED TO THE VIEWPORT. This anchored `left` to the trigger and got away with it
+     while the trigger was a ~160px text button; once the bulk actions became 30px icon
+     tiles the button sits ~130px further right and a 200px menu ran off the screen edge
+     (measured 9px over at 1710px wide, far worse below that). The rect has to be read
+     AFTER the append or the menu has no width yet. */
+  const r = ev.currentTarget.getBoundingClientRect(), mw = m.getBoundingClientRect().width;
+  m.style.left = Math.round(Math.max(8, Math.min(r.left, innerWidth - mw - 8))) + 'px';
   m.style.top  = Math.round(r.bottom + 5) + 'px';
   setTimeout(() => document.addEventListener('mousedown', mdMoveAway), 0);
 }
@@ -9730,8 +10003,21 @@ function mdChipsPaint(){
       `<button data-tip="Remove" onclick="event.stopPropagation();mdFDel(${i})">✕</button></span>`;
   }).join('');
 }
+/* ⚠️ the search box is STATIC MARKUP, never repainted — `mdPaint()` only writes the tabs,
+   the chips, the bulk bar, the table and the foot — which is what keeps the caret and the
+   focus through a keystroke. `mdRows()` reads `#mdQ` live, so there is no state to sync. */
+function mdQIn(v){
+  const b = document.getElementById('mdSrch'); if (b) b.classList.toggle('has', !!v);
+  mdPaint();
+}
+function mdQClear(){
+  const i = document.getElementById('mdQ'); if (!i) return;
+  i.value = ''; mdQIn(''); i.focus();
+}
+/* ＋ Filter — the same toggle the whole bar used to be: open the field list, or close it
+   if it is already up */
 function mdFbClick(ev){
-  if (ev.target.closest('.mdfchip')) return;      /* the chip owns its own clicks */
+  ev.stopPropagation();
   if (document.getElementById('mdFp')) { mdFpClose(); return; }
   mdFieldMenu();
 }
@@ -9893,26 +10179,31 @@ function mdCount(tab){
 /* ── render ─────────────────────────────────────────────────────────────────────────── */
 function mdPaint(){
   const tabs = document.getElementById('mdTabs'); if (!tabs) return;
-  /* ⚠️ `.dtab` — the segmented tab this file already uses in the dashboard list panel. The
-     count rides as a muted trailing number rather than the reference's filled pill, because
-     that is how `.dfilt` states a count here. */
+  /* ⚠️ `.lxtab` — the file's own copy of the PRODUCT's underline tab bar, not `.dtab`, the
+     list panel's segmented pill. See the note at `#mdTabs` in the markup. The count rides
+     as a muted trailing number rather than the reference's filled pill, because that is how
+     `.dfilt` states a count here. */
   tabs.innerHTML = MD_TABS.map(([k,l]) =>
-    `<button class="dtab${MD.tab===k?' on':''}" style="flex:0 0 auto;padding:0 11px"` +
-    ` onclick="mdTab('${k}')">${l}` +
-    `<span style="margin-left:6px;color:var(--text-dim);font-weight:500">${mdCount(k)}</span></button>`).join('');
+    `<button class="lxtab${MD.tab===k?' on':''}" onclick="mdTab('${k}')">${l}` +
+    `<span class="mdtc">${mdCount(k)}</span></button>`).join('');
   mdChipsPaint();
   const rows = mdRows(), arch = MD.tab === 'arch';
   /* the bulk bar exists only while something is selected — see the note at `.mdbulk` */
   const bulk = document.getElementById('mdBulk');
   const sel = [...MD.sel].filter(n => rows.some(r => r.n === n));
+  /* one icon tile per bulk action — see the note at `.mdbulk .stcsq` for why they are
+     `.stcsq`, why each carries a tip, and why Clear is still a word */
+  const bib = (act, tip, ic, dgr) =>
+    `<button class="stcsq${dgr?' dgr':''}" data-tip="${tip}" aria-label="${tip}"` +
+    ` onclick="${act}"><svg viewBox="0 0 24 24">${ic}</svg></button>`;
   bulk.innerHTML = !sel.length ? '' :
     `<div class="mdbulk"><span class="n">${sel.length} selected</span>` +
     (arch
-      ? `<button class="btn" onclick="mdBulk('restore')"><svg viewBox="0 0 24 24">${MD_IC.rest}</svg>Restore</button>` +
-        `<button class="btn dgr" onclick="mdBulk('delete')"><svg viewBox="0 0 24 24">${MD_IC.del}</svg>Delete forever</button>`
-      : `<button class="btn" onclick="mdMoveMenu(event)"><svg viewBox="0 0 24 24">${MD_IC.fold}</svg>Move to category</button>` +
-        `<button class="btn" onclick="mdBulk('disable')"><svg viewBox="0 0 24 24">${MD_IC.off}</svg>Disable all</button>` +
-        `<button class="btn dgr" onclick="mdBulk('archive')"><svg viewBox="0 0 24 24">${MD_IC.arch}</svg>Archive</button>`) +
+      ? bib("mdBulk('restore')", 'Restore', MD_IC.rest) +
+        bib("mdBulk('delete')", 'Delete forever', MD_IC.del, 1)
+      : bib("mdMoveMenu(event)", 'Move to category', MD_IC.fold) +
+        bib("mdBulk('disable')", 'Disable all', MD_IC.off) +
+        bib("mdBulk('archive')", 'Archive', MD_IC.arch, 1)) +
     `<button class="btn" onclick="mdClear()">Clear</button></div>`;
   /* ⚠️ `.stcgrid th.s` + `.sa` is the grid's OWN sort affordance — reusing it means the
      header case, the sticky behaviour and the arrow all match the Compliance grid, which
@@ -11253,14 +11544,46 @@ function aiCtxBar(){
      What is gone is the only way to set it BY HAND. `aiScopeMenu` / `aiScopeMenuHTML` /
      `aiScopePick` / `aiScopeChip` are kept and unreferenced, the way `iFocus` is in Option
      2, so the chip can be pointed back in one edit. */
+  aiCtxFloor();
+  /* ⚠️ the floor chip carries NO ✕ — see aiCtxFloor() */
+  const floor = aiCtxIsFloor();
   el.innerHTML =
     /* an uploaded file is context like anything else — it just wears a clip instead of the dot */
     aiCtxItems.map((c, i) =>
-      '<span class="aictx" title="' + aiEsc(c.k) + ': ' + aiEsc(c.n) + '">' +
+      '<span class="aictx" title="' +
+        (floor ? 'Default context — the chat reads every module until you pin something'
+               : aiEsc(c.k) + ': ' + aiEsc(c.n)) + '">' +
       '<svg class="tic" viewBox="0 0 24 24" style="color:' + (AI_ENT_C[c.k] || 'var(--teal)') + '">' +
         aiEntIc(c.k) + '</svg>' +
       '<span class="nm">' + aiEsc(c.n) + '</span>' +
-      '<button title="Remove from context" onclick="aiCtxRemove(' + i + ')">✕</button></span>').join('');
+      (floor ? '' :
+        '<button title="Remove from context" onclick="aiCtxRemove(' + i + ')">✕</button>') +
+      '</span>').join('');
+}
+/* ══ THE CONTEXT BAR IS NEVER EMPTY ══════════════════════════════════════════════════
+   Request, 24 Aug 2026: "when i remove the Application Performance & it no context then
+   the filter will be set global context so add by default All modules context".
+   Dropping the last chip left the row blank while `aiScopeSel` quietly stayed on whatever
+   module the chat was opened in — so the one place that says what the AI can see said
+   NOTHING, at exactly the moment the answer's reach had just changed. Worse, the state on
+   screen (no context) and the state in the model (still Dashboard-scoped) disagreed.
+   ⚠️ THIS REVERSES a recorded behaviour — the 18 Aug note "clearing every context chip
+   leaves the module scope standing, so the chat keeps working module-wise". Empty now
+   means GLOBAL, and it says so. Don't restore the old fallback from that note.
+   ⚠️ It is a real scope change, not a label: `aiScopeSel` goes to `['All modules']`, which
+   is what `aiScopeHas` / `aiScopeNeeds` / `aiInScope` all read — so the chip cannot claim
+   a reach the router does not have.
+   ⚠️ The floor chip has NO REMOVE BUTTON. Removing it would empty the bar, which would
+   re-add it on the next paint — a control that visibly does nothing. It stops being the
+   floor the moment anything else is pinned, and gets its ✕ back then, because at that
+   point there IS something left to fall back to. */
+function aiCtxIsFloor(){
+  return aiCtxItems.length === 1 && aiCtxItems[0].k === 'module' && aiCtxItems[0].n === 'All modules';
+}
+function aiCtxFloor(){
+  if (aiCtxItems.length) return;
+  aiCtxItems = [{ n: 'All modules', k: 'module' }];
+  aiScopeSel = ['All modules']; aiScopeSync(); aiScopeLine();
 }
 function aiScopeMenu(ev){
   ev.stopPropagation();
@@ -11527,10 +11850,10 @@ function aiCtxRemove(i){
     aiScopeSel = aiScopeSel.filter(x => x !== gone.n);
     aiScopeSync(); aiScopeLine();
   }
-  aiCtxBar();
-  toast(aiCtxItems.length
-    ? 'Removed “' + gone.n + '” from context'
-    : 'Nothing pinned now — still reading ' + aiScopeCur);
+  aiCtxBar();   /* ⚠️ runs aiCtxFloor(), so aiScopeCur below is already the new scope */
+  toast(aiCtxIsFloor()
+    ? 'Removed “' + gone.n + '” — reading all modules now'
+    : 'Removed “' + gone.n + '” from context');
 }
 /* kept so aiOpen()'s old call sites stay valid */
 function aiCtxRender(){ aiCtxBar(); }
@@ -11594,8 +11917,13 @@ function aiScopeKeep(){
 function aiOpen(where){
   document.getElementById('aiScrim').classList.add('on');
   document.getElementById('aiPanel').classList.add('on');
-  /* smart default only on a fresh chat — never stomp a context the user has set */
-  if (!aiThread.length && !aiCtxItems.length) aiScopeFrom(where || 'module');
+  /* smart default only on a fresh chat — never stomp a context the user has set.
+     ⚠️ THE FLOOR CHIP DOES NOT COUNT AS "SET". `aiCtxBar()` runs at init and installs the
+     All-modules floor (see aiCtxFloor), so a bare `!aiCtxItems.length` test was never true
+     again — every chat opened globally and the entry-point default was silently dead, board
+     chip and all. The guard is about context the USER pinned; the floor is what we put
+     there when they pinned nothing. */
+  if (!aiThread.length && (!aiCtxItems.length || aiCtxIsFloor())) aiScopeFrom(where || 'module');
   aiCtxBar(); aiScopeLine(); aiSetName(aiChatName); aiRender(); aiSuggHide();
   aiSplitPaint();          /* the split column belongs to an OPEN panel — see aiSplit */
   setTimeout(()=>document.getElementById('aiIn').focus(), 120);
@@ -12347,11 +12675,33 @@ let aiSplit = false;
    (the fill was on the LEFT region while the chat docks on the RIGHT) and redrawing it
    from scratch would repeat that:
    ['sidebar','Sidebar','<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4z" fill="currentColor" stroke="none" opacity=".22"/></svg>'] */
+/* ══ THE TWO GLYPHS ARE A MATCHED PAIR ═══════════════════════════════════════════════
+   Third pass on this control in one day; the sequence matters, so all of it is here.
+     · it opened as a hand-composed picture-in-picture mark for Floating (an OPEN, broken
+       board outline plus a small card) against a CLOSED filled square for Full screen —
+       "both are different", because an open path and a closed rect are not siblings
+       however similar their subject is;
+     · both were then made the square, which fixed the family by deleting the distinction;
+     · request, 24 Aug 2026: "the full screen icon is good but the floating icon [is]
+       wrong — use proper icon, the both icon is not same". So: keep the square, give
+       Floating a PROPER icon, and make the two read as one set.
+   ⚠️ THEY ARE NOW THE WINDOW-CONTROL PAIR EVERY DESKTOP USES — maximize is one square,
+   restore-down is two overlapping squares. Both are stock Lucide (`square`, `copy`),
+   pasted verbatim per the folder's icon rule: same 24 box, same `rx:2` corners, same
+   stroke, and the same 22%-fill overlay on the front shape, so they are visibly built the
+   same way and differ only in arrangement — which is the whole job of a toggle's glyph.
+   ⚠️ `copy`'s back path is an OPEN L on purpose and that is what makes the 22% fill safe:
+   it runs (4,16)→(2,4)→(14,2)→(16,4) and stops, so it never passes behind the front rect
+   (x 8–22, y 8–22). A closed back rect would show through the translucent front one and
+   the glyph would read as a grid. Don't "complete" it.
+   ⚠️ Fill overlay AFTER the stroked rect, as in the square — the 22% is light enough that
+   the outline still reads through it, and swapping the order hides the stroke. */
+const AI_LAY_PIP = '<svg viewBox="0 0 24 24"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"/><rect width="10" height="7" x="12" y="13" rx="2"/><rect width="10" height="7" x="12" y="13" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>';
+const AI_LAY_SQ  = '<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>';
+const AI_LAY_WIN = '<svg viewBox="0 0 24 24"><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/><rect width="14" height="14" x="8" y="8" rx="2"/><rect width="14" height="14" x="8" y="8" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>';
 const AI_LAY = [
-  ['floating', 'Floating',
-   '<svg viewBox="0 0 24 24"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"/><rect width="10" height="7" x="12" y="13" rx="2"/><rect width="10" height="7" x="12" y="13" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
-  ['full',     'Full screen',
-   '<svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" stroke="none" opacity=".22"/></svg>'],
+  ['floating', 'Floating',    AI_LAY_WIN],
+  ['full',     'Full screen', AI_LAY_SQ],
 ];
 const AI_TICK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
 function aiPanelOpen(){
@@ -12387,14 +12737,29 @@ function aiSplitPaint(){
    menu listed the alternatives. A toggle has no list, so the only thing the glyph can
    usefully say is what the click will do — which is also what `AI_FS_OUT` / `AI_FS_IN`
    already do for the full-screen button this control absorbed.
-   ⚠️ `.on` still means "in full screen", i.e. it describes the STATE while the glyph
-   describes the ACTION. They are deliberately about different things; don't fold them. */
+   ⚠️ IT NO LONGER WEARS `.on` (request, 24 Aug 2026: "this icon active and normal or hover
+   effect will be same"). `.aihb.on` is the violet pressed look — `--ai-soft` behind an
+   `--ai-2` glyph — and `aiLayPaint` used to set it whenever the panel was full screen. So
+   the SAME BUTTON was neutral in one of its two states and violet in the other, i.e. it
+   read as two different controls depending on which mode you were in.
+   ⚠️ The earlier note here argued `.on` was the STATE and the glyph the ACTION, and that
+   they were deliberately about different things. That held while the glyphs differed; with
+   one glyph for both rows the pressed tint became the only thing that changed, and a
+   colour is the wrong carrier for it — the `data-tip` already names the destination, and
+   there is no third state for the tint to disambiguate. Normal / hover / active are now
+   the plain `.aihb` treatment in both modes.
+   ⚠️ `.aihb.on` STAYS IN THE SHEET — every other header button that opens a dropdown still
+   uses it, including `aiLayMenu` if a third layout ever points the button back at a menu.
+   Only this control stopped asking for it. */
 function aiLayOther(){ return aiLayCur() === 'full' ? 'floating' : 'full'; }
 function aiLayPaint(){
   const b = document.getElementById('aiLayBtn'); if (!b) return;
   const to = aiLayOther(), row = AI_LAY.find(r => r[0] === to) || AI_LAY[0];
   b.innerHTML = row[2];
-  b.classList.toggle('on', aiLayCur() !== 'floating');
+  /* ⚠️ REMOVE, not "don't add" — the class has to be cleared actively, or a button that
+     picked `.on` up from a dropdown (or from an older build's state) keeps the violet tint
+     for the rest of the session with nothing left to turn it off. */
+  b.classList.remove('on');
   b.setAttribute('data-tip', row[1]);
 }
 /* ⚠️ TWO LAYOUTS ARE A TOGGLE, NOT A MENU (request, 21 Aug 2026: "when i click layout to
@@ -12547,6 +12912,9 @@ function aiDragStart(e){
   if (e.target.closest('button,input,a,.aihttl,.aihm')) return;
   if (AIF.x === null) aiFloatSeed();
   aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h };
+  /* ⚠️ MOVE ONLY — the edge grips want their own resize cursors, so this cannot go in
+     `aiRzBind`, which every drag goes through. Cleared in `aiRzEnd` with the edge flags. */
+  document.body.classList.add('aidragmv');
   aiRzBind(e);
 }
 function aiRzStart(e, m){
@@ -12631,7 +12999,7 @@ function aiRzMove(e){
 function aiRzEnd(){
   const d = aiDrag; aiDrag = null;
   document.body.classList.remove('aidragging');
-  ['n','s','e','w'].forEach(k => document.body.classList.remove('aidrag' + k));  /* never outlive the drag */
+  ['n','s','e','w','mv'].forEach(k => document.body.classList.remove('aidrag' + k));  /* never outlive the drag */
   removeEventListener('mousemove', aiRzMove);
   removeEventListener('mouseup', aiRzEnd);
   if (!d) return;
@@ -12835,6 +13203,14 @@ function aiRender(){
   const runTk = aiThread.find(m => m.r === 'tk' && m.run);
   const t0 = runAg ? runAg.a.t0 : (runTk ? runTk.t0 : 0);
   if (t0) aiLdStart(t0); else aiLdStop();
+  /* ⚠️ HERE, NOT IN `aiFadeBind()`, and this cost two probe rounds. That function runs near
+     the TOP of aiRender, before `b.innerHTML` above — so its query found no `.aitk.op
+     .aitkl` and silently bound nothing. A `requestAnimationFrame` fallback did not save it
+     either: rAF is starved under headless virtual time, so it never fired there. Called
+     from the tail of the render the markup is guaranteed to exist, synchronously, with no
+     frame timing to depend on. Same lesson as the loader's clock ten lines up — anything
+     that needs the painted DOM belongs after the paint, not beside the early paints. */
+  aiTkFadeBind();
 }
 function aiAnswerHTML(m, i){
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
@@ -12874,14 +13250,37 @@ function aiClarifyHTML(m){
   const q = m.step === 0 ? 'How should I group \u201c' + aiEsc(m.name) + '\u201d?' : aiEsc(st.q);
   return '<div class="aicq">' +
     '<div class="aicqh">' +
-      (m.step ? '<button class="aicqb" onclick="aiClarBack()" data-tip="Previous question">' +
-        '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>' : '') +
+      /* ⚠️ RENDERED ON EVERY STEP, DISABLED ON THE FIRST (request, 24 Aug 2026: "in the
+         second step the back icon is not set proper because the 2nd step the icon added,
+         then the text alignment fix"). It used to be emitted only from step 2 on, and it is
+         `flex:0 0 22px` in a `gap:9px` row — so the moment it appeared it shoved the title
+         31px right while `.aicqs` below stayed at 0. Two bugs from one line: the title and
+         its own subtitle stopped lining up, and the whole header jumped sideways between
+         step 1 and step 2.
+         ⚠️ `.aicqb:disabled` was ALREADY in the stylesheet (`opacity:.3;cursor:default`) —
+         the slot was meant to be permanent and the conditional render had quietly orphaned
+         that rule. Dimmed-and-unavailable is also this file's own precedent for a control
+         with nothing to do: the canvas undo/redo buttons dim rather than vanish. */
+      '<button class="aicqb"' + (m.step ? '' : ' disabled') +
+        ' onclick="aiClarBack()" data-tip="Previous question">' +
+        '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>' +
       '<span class="aicqt">' + q + '</span>' +
-      '<span class="aicqn">' + (m.step + 1) + ' / ' + AI_CLAR.length + '</span>' +
+      /* ⚠️ THE STEP THAT CHANGES IS THE LOUD ONE. Both halves were `--muted` at one weight,
+         so the number that moves read no differently from the total that never does. */
+      '<span class="aicqn"><b>' + (m.step + 1) + '</b> / ' + AI_CLAR.length + '</span>' +
       '<button class="aicqc" onclick="aiClarDismiss()" data-tip="Cancel">' +
         '<svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
     '</div>' +
     '<div class="aicqs">' + aiEsc(st.sub) + '</div>' +
+    /* ⚠️ A PROGRESS TRACK, because "1 / 4" is a fact you have to read and a bar is one you
+       can see. This card is a four-question flow and the only cue it had was that fraction.
+       ⚠️ Full-bleed across the card, NOT indented to the title like `.aicqs` — it describes
+       the card's progress through the whole set, not this question.
+       ⚠️ The fill is sized `width:%` on a block child, never `flex`. A lone flex child grows
+       to fill its track whatever number it is given, which is the recorded `flex:50` bug —
+       every step would have painted as complete. */
+    '<div class="aicqpg"><i style="width:' +
+      Math.round((m.step + 1) / AI_CLAR.length * 100) + '%"></i></div>' +
     /* ⚠️ the number is the row's ORDINAL, not a shortcut — nothing binds 1..N, and a badge
        that looks like a keycap you cannot press would be a lie. It is there to make the
        list scannable, which is what the reference uses it for. */
@@ -12904,14 +13303,29 @@ function aiClarifyHTML(m){
       '<input value="' + aiEsc(m.free).replace(/"/g,'&quot;') + '" ' +
       'placeholder="Something else\u2026" oninput="aiClarFree(this)" ' +
       'onkeydown="aiClarKey(event)" />' +
-      '<button class="aicqsk" onclick="event.preventDefault();aiClarSkip()">Skip</button>' +
     '</label>' +
-    /* ⚠️ DONE ONLY EXISTS ON A MULTI STEP. On a single step the row IS the commit, and a
-       second control that also commits would be two ways to do one thing. It names the
-       count so the button reports what it is about to keep — and it is never dead, because
-       a multi step opens pre-lit with its own default. */
-    (mul ? '<div class="aicqd"><button class="aicqok" onclick="aiClarNext()">Done' +
-      (sel.length ? ' <span>' + sel.length + '</span>' : '') + '</button></div>' : '') +
+    /* ⚠️ SKIP IS ON ITS OWN ROW, NOT INSIDE THE FREE-TEXT FIELD (request, 24 Aug 2026:
+       "the skip button will be show in new line and next step the done button also in
+       behind the skip"). It used to sit inline at the right-hand end of the "Something
+       else…" label, which made it read as a control belonging to THAT field — as if it
+       skipped the free text rather than the whole question. On its own row it is what it
+       actually is: the way past this step.
+       ⚠️ It also lets Skip and Done share a footer, which is the second half of the
+       request — Done comes AFTER Skip, so the row reads escape-then-commit, left to right,
+       with the only filled control last.
+       ⚠️ `event.preventDefault()` went with the move. It was there because a `<button>`
+       inside a `<label>` activates the label's own control; outside the label there is
+       nothing to suppress, and a preventDefault with no reason is a trap for the next
+       reader.
+       ⚠️ DONE STILL ONLY EXISTS ON A MULTI STEP. On a single step the row IS the commit,
+       and a second control that also commits would be two ways to do one thing. It names
+       the count so the button reports what it is about to keep — and it is never dead,
+       because a multi step opens pre-lit with its own default. */
+    '<div class="aicqd">' +
+      '<button class="aicqsk" onclick="aiClarSkip()">Skip</button>' +
+      (mul ? '<button class="aicqok" onclick="aiClarNext()">Done' +
+        (sel.length ? ' <span>' + sel.length + '</span>' : '') + '</button>' : '') +
+    '</div>' +
   '</div>';
 }
 /* ⚠️ picking a row COMMITS it and moves on — see the note above aiClarifyHTML — EXCEPT on
@@ -13344,9 +13758,9 @@ function aiTkHTML(m, i){
         '<button class="aitksk" title="Show the answer now" onclick="aiTkSkip()">Skip</button></div>' +
       '</div>';
   }
-  /* ⚠️ the collapsed header is a PILL carrying a SUMMARY OF THE KINDS of work, not the
-     answer's status line and a step count (reference supplied 19 Aug 2026:
-     "Thought 2x, Searched, Dashboards"). See `aiTkSummary`. */
+  /* ⚠️ the collapsed header is a PILL carrying ONE CONSTANT NAME — see `aiTkSummary`. It
+     used to carry a summary of the kinds of work ("Thought 2x, Searched, Dashboards",
+     19 Aug 2026); that is reversed and the reasoning is recorded at the function. */
   return '<div class="aitk bx cl' + (m.open ? ' op' : '') + '">' +
     '<button class="aitkh pill" aria-expanded="' + (m.open ? 'true' : 'false') +
       '" title="' + (m.open ? 'Hide' : 'Show') + ' how this was worked out" onclick="aiTkTog(' + i + ')">' +
@@ -13363,6 +13777,11 @@ function aiTkHTML(m, i){
    ⚠️ The reference also interleaves muted `thought` rows between the steps. Those are its
    placeholder for hidden model reasoning, which this prototype does not have — inventing
    them would be inventing work. The pill is the part that carries information. */
+/* ⚠️ KEPT AND UNREFERENCED as of 24 Aug 2026 — `AI_TK_VERB` and `aiTkKinds()` below built
+   the old varying label ("Thought 9x, Read, Fetched"). Both summaries return `AI_TK_NAME`
+   now; see the note there. Left in place, the house pattern, so the kinds summary is one
+   edit away — and because rebuilding the verb table by hand would be re-deriving a mapping
+   that was tuned against a reference. */
 const AI_TK_VERB = { reading:'Read', read:'Read', listing:'Listed', listed:'Listed',
   checking:'Checked', checked:'Checked', totalling:'Totalled', fetched:'Fetched',
   fetching:'Fetched', searching:'Searched', searched:'Searched', ranking:'Ranked',
@@ -13383,10 +13802,24 @@ function aiTkKinds(labels){
   /* two kinds is enough — a third pushes the line past the panel on a narrow layout */
   return order.slice(0, 2).map(k => k + (n[k] > 1 ? ' ' + n[k] + 'x' : ''));
 }
-function aiTkSummary(m){
-  const kinds = aiTkKinds((m.st || []).map(raw => aiTrStep(raw).s));
-  return 'Thought ' + (m.st || []).length + 'x' + (kinds.length ? ', ' + kinds.join(', ') : '');
-}
+/* ══ ONE NAME, THE SAME EVERY TIME ══════════════════════════════════════════════════════
+   Request, 24 Aug 2026: "improve this thinking name and in the name will be same", against
+   the Notion reference whose collapsed disclosure reads simply `Thought ⌄`.
+   ⚠️ THIS REVERSES the 19 Aug 2026 kinds-summary ("Thought 2x, Searched, Dashboards") and
+   the count-per-kind refinement that followed it. Don't restore either from those notes
+   without re-reading this one — the machinery is still here, see below.
+   ⚠️ Why a constant is the improvement, not a loss: the label was different on every single
+   prompt — "Thought 9x, Read, Fetched" one time, "Thought 4x, Checked" the next — so the
+   one piece of chrome that should be the calmest thing in the thread was also the most
+   variable, and it changed length as it changed text, shifting the row under the cursor.
+   A disclosure's job is to say what is behind it, and what is behind it is always the same
+   thing: the thinking. The specifics are one click away, which is the whole point of a
+   disclosure.
+   ⚠️ BOTH SURFACES READ THIS CONSTANT — the `tk` trail and the agentic flow. They are one
+   feature and had already drifted into two headers once (19 Aug); a shared constant is what
+   stops that happening a second time. */
+const AI_TK_NAME = 'Thought';
+function aiTkSummary(m){ return AI_TK_NAME; }
 
 /* ── agentic widget build ──────────────────────────────────────────────────────────────
    (reference, 15 Aug 2026: "Create a time-series widget for CPU metrics through chat" in
@@ -13943,10 +14376,7 @@ function aiLdStop(){ if (aiLdT){ clearInterval(aiLdT); aiLdT = null; } }
 const AI_AG_SPIN = '<span class="aitksp"></span>';
 /* the agentic flow's own collapsed summary — same shape as the thinking trail's, built
    from the tool beats it actually ran */
-function aiAgSummary(a, pre, steps){
-  const kinds = aiTkKinds((pre || []).map(b => b.t));
-  return 'Thought ' + steps + 'x' + (kinds.length ? ', ' + kinds.join(', ') : '');
-}
+function aiAgSummary(a, pre, steps){ return AI_TK_NAME; }
 function aiAgHTML(a, i){
   /* ⚠️ a summary agent has no counters — this must stay guarded, not hoisted */
   /* ⚠️ the `sub` string that used to be built here is GONE with the subtitle it fed
@@ -13994,8 +14424,8 @@ function aiAgHTML(a, i){
          a thread of five answers that all say "Reasoning" tells you nothing about which
          is which. The step count stays beside it. */
       /* ⚠️ the same PILL the thinking trail collapses to (19 Aug 2026) — the two are one
-         feature and had drifted into two headers. The kinds come from the tool beats' own
-         titles, so it cannot claim work the flow did not do. */
+         feature and had drifted into two headers. Both now read the single `AI_TK_NAME`
+         constant, so they cannot drift again. */
       : '<span class="aitkt">' + aiEsc(aiAgSummary(a, pre, steps)) + '</span>';
     /* ⚠️ The trail DEFAULTS TO COLLAPSED (request, 18 Aug 2026). It briefly defaulted open,
        because before the card persisted the finished trail was hidden with nothing to say it
@@ -14163,11 +14593,24 @@ function aiAgHTML(a, i){
          chevron, which is the only caller now. */
       out.push('<div class="aiagc sum">' +
         '<div class="aiagch">' +
-          /* ⚠️ the PRODUCT LOGO, not the ✦ spark (annotation, 19 Aug 2026) — this card is
-             the product summarising your board, so it signs itself with the product's mark.
-             `AI_LOGO` is the same base64 PNG the sidebar trigger uses; there is no separate
-             asset to keep in step. */
-          '<span class="aiagmk logo">' + AI_LOGO + '</span>' +
+          /* ⚠️ THE ✦, NOT THE PRODUCT LOGO — and this REVERSES the 19 Aug 2026 annotation
+             that put the logo here (request, 24 Aug 2026: "in the summary of dashboard the
+             icon will be change because this summary is AI generated"). That note reasoned
+             the card is "the product summarising your board, so it signs itself with the
+             product's mark". The counter-argument, which wins: the product did not write
+             this — the assistant did, from the board's own widgets, and the mark is the one
+             place a reader learns that. A product logo on generated prose reads as an
+             official statement rather than as something a model inferred.
+             ⚠️ `AI_SPARK` is the SAME mark every other AI surface in this panel already
+             uses, so this is not a new asset — it is the card rejoining the convention it
+             was the only exception to.
+             ⚠️ The `.logo` modifier goes with it: `.aiagmk` (no modifier) sizes an svg at
+             15px and fills it `--ai-2`, which is what the spark needs; `.aiagmk.logo` sized
+             a 17px raster and must NOT be inherited, or the fill would not apply. That rule
+             is kept and unreferenced, the house pattern, so the logo is one edit away.
+             ⚠️ `AI_LOGO` itself stays live — `aiLogoPaint()` still fills every
+             `.brandmark`, so nothing was orphaned by this. */
+          '<span class="aiagmk">' + AI_SPARK + '</span>' +
           /* ⚠️ NO subtitle here (annotation, 18 Aug 2026). It carried the board name and
              never had the room for it — it rendered as "Application Performan…" with a
              tooltip over the card. The board is the first meta chip in the body instead,
@@ -14467,11 +14910,37 @@ const AI_FADE = 30;
 /* ⚠️ Called on scroll, from aiRender() (content changed, so the overflow changed) and on
    resize. The 2px slack stops a sub-pixel scrollTop from flickering the top fade on and
    off at rest. */
+/* ⚠️ THE FADE MATHS IS SHARED (24 Aug 2026). The expanded thinking trail wants exactly
+   what the thread already does — fade an edge only once something is past it — and writing
+   that twice is how the two drift apart. `aiFade()` keeps the jump-button logic, which is
+   the thread's alone; everything else lives here.
+   Returns the distance still below, so the caller can reuse it. */
+function aiFadeEl(el){
+  if (!el) return 0;
+  const past = el.scrollHeight - el.scrollTop - el.clientHeight;
+  el.style.setProperty('--aifade-t', (el.scrollTop > 2 ? AI_FADE : 0) + 'px');
+  el.style.setProperty('--aifade-b', (past > 2 ? AI_FADE : 0) + 'px');
+  return past;
+}
+/* ══ THE EXPANDED TRAIL SCROLLS INSIDE ITSELF (request + Notion reference, 24 Aug 2026) ══
+   Opening the disclosure used to unroll every phase at full height and shove the answer
+   off screen — the reference caps it, scrolls it, and fades both edges so the cut never
+   looks like the end of the content. Same mask, same thresholds, same `AI_FADE`.
+   ⚠️ Bound PER ELEMENT and re-measured on every render: `aiRender()` replaces this markup,
+   so the node carrying the listener is gone each time and `_fade` rides on the new one. */
+function aiTkFadeBind(){
+  document.querySelectorAll('#aiBody .aitk.op .aitkl').forEach(el => {
+    if (!el._fade){
+      el._fade = 1;
+      el.addEventListener('scroll', () => aiFadeEl(el), {passive:true});
+    }
+    aiFadeEl(el);
+    requestAnimationFrame(() => aiFadeEl(el));
+  });
+}
 function aiFade(){
   const b = document.getElementById('aiBody'); if (!b) return;
-  const past = b.scrollHeight - b.scrollTop - b.clientHeight;
-  b.style.setProperty('--aifade-t', (b.scrollTop > 2 ? AI_FADE : 0) + 'px');
-  b.style.setProperty('--aifade-b', (past > 2 ? AI_FADE : 0) + 'px');
+  const past = aiFadeEl(b);
   /* ⚠️ the BUTTON's threshold is far larger than the fade's 2px. The fade may as well be
      exact; a jump button that appears when you are 3px off the bottom is a button that
      flickers on every wheel tick. 64px ≈ one message. */
@@ -14498,6 +14967,8 @@ function aiFadeBind(){
      in some paths, and reading scrollTop in the same tick gives the pre-scroll value. */
   aiFade();
   requestAnimationFrame(aiFade);
+  /* ⚠️ the trail's fade is NOT bound here — see `aiTkFadeBind()`'s call site at the tail of
+     aiRender() for why this function is too early for it. */
 }
 function aiHistPaint(){
   const p = document.getElementById('aiPanel');
@@ -15099,7 +15570,7 @@ aiLogoPaint();
              their CSS — the way `aiScopeMenu` and `iFocus` are, so it is one button away.
              `aiNewChat()` still calls `aiDicStop(1)`, which is harmless and correct: it
              belongs to the old chat whether or not there is a control for it. -->
-        <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg></button>
+        <button class="aisend" id="aiSendBtn" data-tip="Send  ↵" onclick="aiSendOrStop()"><svg viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></button>
       </div>
       <!-- the travelling light along the top edge while the AI is generating -->
       <span class="aigenbar" aria-hidden="true"></span>

@@ -1,117 +1,125 @@
-# Handoff — 2026-08-24 13:30
+# Handoff — 2026-08-24 18:55
 
 ## Read first
 
-One file changed this session: **`index copy.html`** (Option 1). Options 2 and 3 untouched.
+Two sections of `CLAUDE.md`, both written this session:
 
-In `CLAUDE.md`, read **"Manage dashboards (`md*`) — Option 1, built from the ServiceOps
-revamp"** first. It is a new section and it carries the whole thing: what the reference
-screen does, which of this prototype's components each part reuses, the deliberate
-differences, and the four traps the build hit.
+- **`## The 24 Aug 2026 pass — Option 1's ai* panel, request by request`** — the map of
+  everything changed in the AI panel today, grouped by icons / spacing / clarifier /
+  thinking trail / context bar / cursor. Read this before touching `ai*`.
+- **`### Its chrome was rebuilt from the product's own components (24 Aug 2026)`**, inside
+  `## Manage dashboards (md*)` — the tabs, search box and bulk-action changes.
+
+Everything is **`index copy.html` (Option 1) only**. Options 2 and 3 were not touched, so
+the shared `ac*` / `lx*` / `st*` blocks are still byte-identical across the three files.
 
 ## What we worked on this session
 
-Drove the ServiceOps revamp prototype in the browser, read its **Manage all dashboards**
-flow off the live DOM, and built that flow into Option 1 as a full-page screen — then
-rebuilt its visuals on this prototype's own components after the first pass came out looking
-like the reference product instead.
+A long request-by-request visual pass, driven entirely from screenshots the teammate sent
+after each change. Two areas: the **Manage dashboards** screen's chrome, and then a deep
+sweep of **Option 1's `ai*` chat panel** — icons, spacing, the clarifier card, the thinking
+disclosure, and the context bar.
 
 ## Completed
 
-**The flow** (`md*` namespace, `#view-manage`, reached from *Manage dashboards* at the foot
-of the dashboard list panel):
+**Manage dashboards + the list panel**
+- Tabs are `.lxtab` underline tabs in their own row under the page head, not `.dtab` pills
+  in the toolbar.
+- The funnel filter field became the product's `.stcsearch` search box plus a `.stcaddf`
+  `＋ Filter`. The whole faceted filter still works (draft → Done → chip → filtered table,
+  verified end to end).
+- Bulk actions are `.stcsq` icon tiles pinned to the end of the toolbar row, so ticking a
+  box no longer shoves the grid down 46px. Clear stays a word.
+- `mdMoveMenu` is viewport-clamped (it ran 9px off-screen once the trigger shrank).
+- The list panel's *Manage dashboards* button is a labelled full-width row under the teal
+  primary, not a 34px icon square.
 
-- **Faceted filter bar** — the four fields Category · Visibility · Status · Owner; each
-  becomes a chip with its own **Is / Is not** operator and a checkbox list, committed with
-  Done. Plus a plain keyword search.
-- **Four tabs with live counts** — All · Created by me · Shared with me · Archive.
-- **Bulk bar on selection** — Move to category · Disable all · Archive · Clear.
-- **The table** — ☐ · Dashboard · Category · Technician access · Status · Updated · Actions,
-  five columns sortable.
-- **Row actions** — Duplicate · Edit · Schedule · History · Archive, with **Archive absent
-  on system dashboards** (the rule behind the reference's 4-action / 5-action row split).
-- **Inline row confirm** — *"Archive this dashboard? Yes No"*, not a modal.
-- **Archive tab** — swaps the actions for Restore / Delete forever.
-- **Two drawers** — History (date range + audit log) and Schedule.
+**AI panel — icons**
+- Send: Lucide `arrow-up` in a 9px rounded square, violet, white glyph. Stop matches.
+- Layout toggle: Lucide `square` / `copy` as a matched pair, and it no longer wears `.on`.
+- Summary card carries the ✦, not the product logo.
+- Clarifier back/close equalised at 16px / 1.875 (still 1.25px on screen).
 
-**The visual rebuild** — the screen is now assembled from components the file already has:
-`.pagehead` + `.ttl` for the head, **`.stcgrid`** for the table (the grid cloned from the
-live product for Compliance Settings), `.btn` / `.btn.pri`, `.stcib` for row actions,
-`.dtabs` / `.dtab`, and `.ddswitch` for the status toggle. Only the bulk bar, the inline
-confirm, the filter popover and the drawer bodies are new.
+**AI panel — spacing**
+- Header: ad-hoc margins removed, chat name now 8px from ＋ New chat (the summary card's
+  own mark→title gap).
+- Scroll-to-latest arrow lifted off the composer — it was flush, now 10px.
+- `.aichips` / `.aiq` / `.aiacts` split into row-gap vs column-gap with 14px between blocks.
+- Documentation / Support moved to the foot of the empty state.
+
+**AI panel — components**
+- Clarifier: Skip moved to its own footer row shared with Done; back arrow reserved on every
+  step so the title stops jumping and now aligns with its subtitle; a 2px progress track
+  (verified 25/50/75/100 across all four steps).
+- Thinking trail: expanded state capped at 220px, scrolls, both edges fade — reusing the
+  thread's own fade engine (`aiFadeEl` extracted from `aiFade`).
+- Collapsed label is one constant, `AI_TK_NAME = 'Thought'`, on both surfaces.
+- Context bar never empties: an **All modules** floor chip that really moves the scope.
+- The floating card's header shows `grab` / `grabbing`.
 
 ## In progress
 
-Nothing mid-flight — every step was verified before the next began.
+Nothing mid-flight. Every change was verified before being reported.
 
-**Two open questions, both needing your call:**
-
-1. **`Report` is in two places.** It is a rail entry *and* the last row of Explorer's
-   flyout, because `sidemenu.md` puts it at the top level and your later message listed it
-   among Explorer's sub-modules. Both are your specs; I did what each asked rather than pick.
-   This is unchanged from the previous handoff.
-2. **`DASH_GROUPS` grew from 2 dashboards to 8** so the manage table has something to
-   manage. The grouped/flat pair you rely on (Log Statistics, Application Performance) is
-   untouched and still first, and `MD_META` hangs the management-only fields off those names
-   rather than duplicating the list. Say if you want it trimmed back.
+**Uncommitted**: `index copy.html` (+605 / −134). Nothing has been committed or pushed this
+session — the working tree is that one file plus the pre-existing untracked `image.png`.
 
 ## Next steps
 
-1. **Answer the two questions above.**
-2. **Nothing is committed.** `index copy.html` and `CLAUDE.md` are the modified files; last
-   commit is `48ea49a`. Run `/publish` to put this live.
-3. **Options 2 and 3 are a long way behind Option 1** — none of the AI panel work, the rail
-   rebuild or this screen is in them. Decide whether Option 1 is now the reference.
-4. **The third `.stop` collision is still open.** Option 3's `ac*` panel toggles a bare
-   `'stop'` on `.acsend`, carrying the same sidebar-`.stop` bug fixed in Option 1. It is a
-   three-file change because that block is byte-identical across all three.
+1. **Look at the panel in a real browser.** Everything today was measured in headless, and
+   the teammate's own screenshots were repeatedly a version behind — see Gotchas.
+2. **Commit the work.** One file, one coherent pass; the CLAUDE.md sections above are
+   written and can carry the commit message.
+3. **Decide the send button's shape if the composer ever regains a control to its right.**
+   The 19 Aug objection (a square between two circles) was answered by that row no longer
+   existing; it comes back if the row does.
+4. **Consider whether `aiNewChat()` should reset pinned context.** It currently keeps the
+   previous chat's chips — pre-existing behaviour, unchanged today, but the All-modules floor
+   made it more visible.
+5. **The full-screen toggle wedging under automation** is worth a real look. It reproduces on
+   the committed baseline, so it is not from today's edits.
 
 ## Decisions made
 
-- **Read the reference in the browser, not from screenshots.** Every column, operator,
-  action and confirm was measured off the live DOM — which is how the 4-vs-5 action split
-  turned out to be "system dashboards cannot be archived" rather than an arbitrary
-  difference.
-- **Reuse the product-cloned grid rather than style a new table.** `.stcgrid` was cloned
-  from the live product for Compliance Settings, so borrowing it means this screen's header
-  case, row height, borders and hover *cannot drift from the product* later.
-- **One source of truth for which dashboards exist.** `DASH_GROUPS` owns the list; `MD_META`
-  only hangs the management columns off those names. Duplicating them would let the list
-  panel and the manage screen disagree about what exists — the one thing a management screen
-  must never do.
-- **Archive is reversible, Delete forever is not.** Archive is a `MD_ARCH` set; only
-  `mdDeleteGo` touches `DASH_GROUPS` / `DASH_INDEX`, which is what the list panel reads.
-- **Colours stay on this file's tokens.** ServiceOps is light-only; its primary, ink and
-  bulk-bar tints have no dark counterpart, so importing them would put four colours in the
-  file that no token owns.
+- **Reuse this file's own components rather than skinning the reference.** Manage dashboards'
+  tabs, search box and bulk tiles are all `.lxtab` / `.stcsearch` / `.stcsq` — controls
+  already cloned from the live product — so they inherit its geometry and cannot drift from
+  it. The flow stays the reference's; the look is this prototype's.
+- **Presence comes from size, never from breaking the icon-weight rule.** The panel targets
+  1.25px of stroke on screen everywhere. Where glyphs read as smudges (the clarifier's back
+  and close), they were enlarged and the stroke recomputed, not thickened.
+- **One constant for the thinking label.** A disclosure's job is to say what is behind it,
+  and that is always the same thing. This reverses the 19 Aug kinds-summary deliberately.
+- **Empty context now means global, and says so.** Reverses the 18 Aug note. The screen and
+  the model had disagreed — the bar was blank while the scope quietly stayed on Dashboard.
+- **The AI mark, not the product logo, on generated prose.** Reverses 19 Aug.
+- **Reversals are recorded at the rule, with both sides of the argument.** Four decisions
+  today undo earlier ones; each carries a note naming the old request so it is not restored
+  by someone reading only the older note.
 
 ## Gotchas & notes
 
-**Four traps, all already recorded elsewhere in `CLAUDE.md` and all hit again:**
-
-- **`.mdfb input` matched the checkboxes inside `.mdfpop`**, which is a child of the bar —
-  `min-width:120px` turned every filter checkbox into a 120px black slab and pushed its
-  label right. Scoped to `.mdfb>input`. The `.agpfgt span` / `.awrow svg` trap.
-- **The host sheet styles a bare `th`** (uppercase, 10.5px). My table inherited it. That one
-  resolved itself when the table became `.stcgrid` — the product *is* uppercase here, so my
-  earlier "fix" to sentence case had been matching the wrong product.
-- **`table-layout:fixed` takes its widths from the first row** — the drawer tables' column
-  widths had to go on the `<th>`s, or five columns split evenly.
-- **Row checkboxes need `accent-color` AND `color-scheme`** — `accent-color` only tints the
-  *checked* fill, so unchecked boxes painted bright white in dark theme.
-
-**Two process notes worth keeping:**
-
-- **A stale screenshot copy fooled me again.** I regenerated the probe but not the
-  screenshot HTML, so a picture kept showing a clipped confirm that was already fixed while
-  the verdict was green. Regenerate *both*, every time.
-- **A Python edit script that throws before its final `write()` loses every earlier edit in
-  that run.** Two `<th>` width edits silently didn't land because a later `one()` assertion
-  failed. Re-check the file, don't assume partial success.
-
-**Environment**
-
-- `image.png` in the repo root is still an untracked reference screenshot, not part of the
-  prototype. Left alone.
-- The reference is `zenichakalasiya.github.io/ServiceOps_Dashboard_v2/#/dashboards` — it is
-  a *different product's* prototype, so treat it as a flow reference only, never a visual one.
+- ⚠️ **Chrome could not reach any local port for most of this session** — `curl` returned 200
+  on the same URLs, two ports and a fresh server made no difference. Verification moved to
+  headless probes. **Check this first**; if it persists, headless with a stripped Agentation
+  loader is the working route.
+- ⚠️ **The teammate's screenshots were repeatedly a version behind.** A paper-plane send icon
+  was reported twice after it had already been replaced. These pages are ~1.6 MB and the
+  local server sends no cache headers — bump a `?v=` query or hard-reload.
+- ⚠️ **`aiFadeBind()` is too early for anything that queries the thread's markup.** It runs
+  near the top of `aiRender()`, before `b.innerHTML`. A `requestAnimationFrame` fallback does
+  **not** rescue it either — rAF is starved under headless virtual time. Put such calls at the
+  tail of `aiRender()`, beside the loader's clock.
+- ⚠️ **`margin-top:auto` cannot double as a minimum gap.** It resolves to 0 with no free space
+  and silently overrides a `margin-top` written beside it. Put the floor on the preceding
+  element.
+- ⚠️ **`aiAsk()` throws when called directly from a probe** (`reading '2'`). Drive flows
+  through their own entry points instead — `aiAskGroup()`, `aiAgSumStart()`.
+- ⚠️ **Probes that advance the clarifier by clicking a row stall on step 2** — that is the
+  multi-select step, where a row toggles and only Done commits. One probe reported a false
+  failure this way before I noticed.
+- ⚠️ **Driving the full-screen toggle wedges the renderer under automation.** Reproduced on
+  the committed baseline. Set `.aifs` directly to measure those states.
+- ⚠️ Several rules now depend on each other numerically and say so in comments: `.aicqs`'s
+  33px indent ← the back button's 24px box; `.aitobot`'s `+6px` ← `.aicomp`'s 4px padding;
+  `.dfoot`'s 85px min-height ← its two rows. Change one, move the other.
