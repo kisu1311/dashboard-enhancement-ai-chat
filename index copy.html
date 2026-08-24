@@ -860,6 +860,162 @@ html[data-theme="light"] .dtabs{background:var(--panel-2)}
 .dkebab:hover{background:var(--chip);color:var(--text)}
 .dempty{padding:26px 12px;text-align:center;color:var(--text-dim);font-size:12.3px}
 .dempty a{color:var(--teal);text-decoration:underline;cursor:pointer}
+
+/* ══ MANAGE DASHBOARDS — a full-page management screen ═══════════════════════════════════
+   The FLOW is the ServiceOps revamp's, driven in the browser 24 Aug 2026. The LOOK is this
+   prototype's, rebuilt 24 Aug 2026 (request: "the visualization is not set on the current
+   UI — set the components").
+   ⚠️ THE FIRST BUILD SKINNED ITSELF LIKE THE REFERENCE and that was the mistake: a 20px
+   `<h1>`, sentence-case table headers, 36px pill buttons and a 50px tinted bulk bar are
+   ServiceOps' component set, not this file's. Everything below now reuses what the
+   prototype already has — the rule the root CLAUDE.md states for the Settings form: build
+   new controls from what is there, and the addition reads as native.
+     · the head is `.pagehead` + `.ttl` (44px, 15px/600) — the same header every other
+       screen in this file uses, not a page title of its own invention;
+     · the table IS `.stcgrid`, the grid cloned from the live product for Compliance
+       Settings — so its header case, row height, borders and hover come free and cannot
+       drift from the product;
+     · buttons are `.btn` / `.btn.pri`, icon actions are `.stcib`, tabs are `.dtabs`/`.dtab`,
+       the search is `.dsearch`, the switch is `.ddswitch`.
+   ⚠️ ONLY WHAT DID NOT EXIST IS NEW: the bulk bar, the inline row confirm, the faceted
+   filter popover and the two drawers' bodies. Each is built from the tokens the rest of the
+   file uses, so there is no imported colour anywhere in this block. */
+.mdwrap{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding:12px 14px 18px}
+/* the toolbar row: search on the left, tabs and the primary on the right — the shape
+   `.stcbar` already establishes for the Compliance pages */
+.mdbar{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-bottom:10px;flex-wrap:wrap}
+.mdfb{position:relative;display:flex;align-items:center;gap:6px;min-height:30px;padding:0 9px;
+  flex:1 1 320px;min-width:240px;border:1px solid var(--border);border-radius:4px;
+  background:var(--panel-2);color:var(--text-dim);cursor:text;flex-wrap:wrap}
+.mdfb:focus-within{border-color:var(--muted)}
+.mdfb>svg{width:13px;height:13px;flex:0 0 13px;fill:currentColor}
+.mdfb>input{flex:1 1 90px;min-width:90px;height:28px;border:0;background:transparent;
+  color:var(--text);font:inherit;font-size:12px;outline:none}
+.mdfb>input::placeholder{color:var(--text-dim)}
+/* a committed filter, in the pill shape `.dchip` uses for the list panel's own filters */
+.mdfchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 4px 0 9px;
+  border:1px solid var(--border);border-radius:999px;background:var(--chip);color:var(--text);
+  font-size:11px;font-weight:500;white-space:nowrap}
+.mdfchip .op{color:var(--text-dim);font-weight:400}
+.mdfchip button{width:15px;height:15px;border:0;background:transparent;color:var(--text-dim);
+  cursor:pointer;display:grid;place-items:center;border-radius:50%;font-size:11px;line-height:1;padding:0}
+.mdfchip button:hover{background:var(--hover-side);color:var(--text)}
+/* the field list and the operator+values sheet — one popover, two contents */
+.mdfpop{position:absolute;top:calc(100% + 5px);left:0;z-index:40;min-width:200px;
+  background:var(--pop);border:1px solid var(--border);border-radius:6px;
+  box-shadow:var(--pop-shadow);padding:5px;max-height:300px;overflow:auto}
+.mdfpop .lab{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);padding:5px 7px 3px}
+.mdfpop button.f{display:flex;align-items:center;width:100%;height:28px;padding:0 8px;border:0;
+  background:transparent;border-radius:4px;color:var(--text);font:inherit;font-size:12px;
+  cursor:pointer;text-align:left}
+.mdfpop button.f:hover{background:var(--pop-item-hover)}
+.mdfpop label{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;border-radius:4px;
+  font-size:12px;color:var(--text);cursor:pointer}
+.mdfpop label:hover{background:var(--pop-item-hover)}
+/* ⚠️ `flex:0 0 13px` and an explicit size, or the native box grows to fill the row and
+   pushes its label right; `color-scheme` follows the THEME rather than being pinned dark,
+   or the unchecked box paints as a black square on the light popover. */
+.mdfpop label input{flex:0 0 13px;width:13px;height:13px;margin:0;accent-color:var(--teal);
+  color-scheme:dark}
+html[data-theme="light"] .mdfpop label input{color-scheme:light}
+.mdfpop label span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.mdfpop .sel{width:100%;height:28px;margin:2px 0 5px;padding:0 6px;border:1px solid var(--border);
+  border-radius:4px;background:var(--panel-2);color:var(--text);font:inherit;font-size:12px}
+.mdfpop .fdone{display:flex;justify-content:flex-end;padding:6px 3px 1px;
+  border-top:1px solid var(--border-soft);margin-top:4px}
+
+/* ── the bulk bar ──────────────────────────────────────────────────────────────────────
+   ⚠️ It pushes the table down rather than overlaying it, as the reference does — an
+   overlay would cover the first row, which is the one you most likely just ticked.
+   ⚠️ Tinted with `--sel`, the selection colour this file already uses for a chosen row, so
+   the bar and the rows it is about read as the same state. */
+.mdbulk{display:flex;align-items:center;gap:7px;min-height:38px;padding:5px 10px;flex:0 0 auto;
+  margin-bottom:8px;border:1px solid var(--border);border-radius:4px;background:var(--sel)}
+.mdbulk .n{font-size:12px;font-weight:600;color:var(--text);margin-right:auto}
+.mdbulk .btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+/* ⚠️ the only coloured control here — `--red` is this system's critical colour, the same
+   weight the AI panel's Delete chat carries. */
+.mdbulk .btn.dgr{color:var(--red);border-color:transparent;background:rgba(242,80,75,.12)}
+.mdbulk .btn.dgr:hover{background:rgba(242,80,75,.2)}
+
+/* ── the table is `.stcgrid`; only the column widths and cell contents are new ───────── */
+.mdtblw{flex:1 1 auto;min-height:0}
+/* ⚠️ THE ROW CHECKBOXES NEED BOTH `accent-color` AND `color-scheme` — the recorded
+   `.aick input` rule, hit again. `accent-color` only tints the CHECKED fill, so in dark
+   theme every UNCHECKED box still painted as a bright white square, which was the loudest
+   thing in the table. `color-scheme` follows the theme rather than being pinned. */
+.mdtblw input[type=checkbox]{width:13px;height:13px;margin:0;accent-color:var(--teal);
+  color-scheme:dark;cursor:pointer;vertical-align:middle}
+html[data-theme="light"] .mdtblw input[type=checkbox]{color-scheme:light}
+.mdc-chk{width:38px}
+.mdc-act{width:150px}
+.mdc-st{width:76px}
+.mdc-up{width:96px}
+.mdgrip{color:var(--faint);cursor:grab;font-size:11px;flex:0 0 10px}
+.mdnm{display:flex;align-items:center;gap:7px;min-width:0}
+.mdnm .t{font-weight:600;color:var(--text);cursor:pointer;overflow:hidden;text-overflow:ellipsis}
+.mdnm .t:hover{color:var(--teal)}
+.mdnm svg{width:13px;height:13px;flex:0 0 13px}
+.mdnm .fav{fill:var(--yellow)}
+.mdnm .home{fill:none;stroke:var(--teal);stroke-width:1.9}
+/* ⚠️ `.ddswitch` is authored as a FLEX CHILD (`flex:0 0 34px`) for the Create Dashboard
+   drawer's rows. In a table cell it is a plain span, and `width`/`height` do not apply to a
+   non-replaced inline element — so it needs an explicit `inline-block` here or it collapses
+   to nothing. Scoped to this screen, so the drawer's own switches are untouched. */
+.mdtblw .ddswitch,.mddrb .ddswitch{display:inline-block;vertical-align:middle}
+.mdchip{display:inline-block;padding:2px 8px;border-radius:4px;background:var(--chip);
+  color:var(--text-dim);font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  vertical-align:middle}
+.mdmore{margin-left:5px;color:var(--teal);font-size:11px;font-weight:600}
+.mddash{color:var(--faint)}
+.mdtblw .stcgrid tr.sel td{background:var(--sel)}
+.mdtblw .stcgrid td{cursor:default}
+/* row actions stay hidden until the row is hovered, as every other grid here does */
+.mdacts{display:flex;align-items:center;justify-content:flex-end;gap:1px;opacity:0;transition:opacity .12s}
+.mdtblw tr:hover .mdacts,.mdtblw tr:focus-within .mdacts{opacity:1}
+.mdtblw .stcib.del:hover{background:rgba(242,80,75,.14);color:var(--red)}
+/* ⚠️ the confirm is INLINE IN THE ROW (the reference's behaviour) and ABSOLUTELY POSITIONED
+   — the Actions column is 150px and `td` clips, so in flow the question rendered as
+   "…dashboard? Yes No" with its first words cut off. Out of flow it sizes to its own text
+   and overhangs the column. The row needs `position:relative` for that. */
+.mdtblw .stcgrid tbody tr{position:relative}
+.mdc-act:has(.mdconf){overflow:visible}
+.mdconf{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;
+  display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:12px;color:var(--text);
+  background:var(--pop);border:1px solid var(--border);border-radius:5px;padding:4px 5px 4px 11px;
+  box-shadow:var(--pop-shadow)}
+.mdconf .y{border:0;background:transparent;color:var(--red);font:inherit;font-size:12px;
+  font-weight:600;cursor:pointer;padding:3px 7px;border-radius:4px}
+.mdconf .y:hover{background:rgba(242,80,75,.14)}
+.mdempty{padding:40px 10px;text-align:center;color:var(--text-dim);font-size:12.5px}
+.mdfoot{flex:0 0 auto;padding:10px 2px 0;font-size:11.5px;color:var(--text-dim)}
+
+/* ── the two drawers ───────────────────────────────────────────────────────────────────
+   ⚠️ `position:fixed` but INSIDE `#view-manage` — a fixed element in a `display:none`
+   ancestor is hidden, so leaving the screen cannot strand one. The `#lxDet` rule. */
+.mdscrim{position:fixed;inset:0;background:rgba(3,8,16,.5);z-index:200000;display:none}
+.mdscrim.on{display:block}
+.mddr{position:fixed;top:0;right:0;bottom:0;width:720px;max-width:96vw;background:var(--card);
+  border-left:1px solid var(--border);z-index:200001;display:none;flex-direction:column}
+.mddr.on{display:flex}
+.mddr.sm{width:600px}
+.mddrh{display:flex;align-items:center;gap:9px;padding:0 14px;height:44px;flex:0 0 44px;
+  border-bottom:1px solid var(--border-soft)}
+.mddrh b{font-size:15px;font-weight:600;color:var(--text)}
+.mddrb{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 14px}
+.mddrf{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-top:1px solid var(--border-soft);font-size:11.5px;color:var(--text-dim)}
+.mddrf .btn{margin-left:auto}
+.mdrow1{display:flex;align-items:flex-end;gap:9px;margin-bottom:10px;flex-wrap:wrap}
+.mdfield{display:flex;flex-direction:column;gap:4px}
+.mdfield span{font-size:11px;color:var(--text-dim)}
+.mdfield span i{color:var(--red);font-style:normal}
+.mdfield input{height:30px;padding:0 8px;border:1px solid var(--border);border-radius:4px;
+  background:var(--panel-2);color:var(--text);font:inherit;font-size:12px;color-scheme:dark}
+html[data-theme="light"] .mdfield input{color-scheme:light}
+.mdsrch{width:100%;height:30px;padding:0 9px;margin-bottom:10px;border:1px solid var(--border);
+  border-radius:4px;background:var(--panel-2);color:var(--text);font:inherit;font-size:12px}
 .dfoot{flex:0 0 auto;display:flex;gap:7px;align-items:center;padding:9px 10px;border-top:1px solid var(--border-soft)}
 .dnew{flex:1;height:31px;border-radius:5px;background:var(--teal);color:#04211d;font-weight:700;font-size:12.3px;
   display:flex;align-items:center;justify-content:center;gap:6px}
@@ -5703,6 +5859,47 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
     <!-- ══════ LOG EXPLORER MODULE — cloned from live 8.2.6 /log/ (17 Aug 2026) ══════
          Chrome is authored here; everything with data in it is rendered by the lx*
          script block at the end of the file. See that block's header comment. -->
+    <!-- ══ MANAGE DASHBOARDS ══════════════════════════════════════════════════════════
+         A full-page screen, reached from "Manage dashboards" at the foot of the dashboard
+         list panel. Modelled on the ServiceOps revamp prototype (driven in the browser,
+         24 Aug 2026); everything inside is rendered by `mdPaint()`.
+         ⚠️ The two drawers live INSIDE this section on purpose — they are `position:fixed`,
+         and a fixed element inside a `display:none` ancestor is hidden, so leaving the
+         screen can never strand one on top of the board. -->
+    <section class="view" id="view-manage">
+      <!-- ⚠️ `.pagehead` — the SAME 44px header every other screen here uses. The first
+           build invented its own 20px page title, which is the reference's component, not
+           this file's; a screen that arrives with its own header shape reads as a different
+           product. Back is an `.icobtn`, the primary is `.btn.pri`. -->
+      <div class="pagehead">
+        <button class="icobtn" data-tip="Back to the dashboard" onclick="mdClose()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg></button>
+        <span class="ttl">Manage dashboards</span>
+        <span style="flex:1"></span>
+        <button class="btn pri" onclick="mdClose();dashNew()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v14h-2z"/><path d="M5 11h14v2H5z"/></svg>New dashboard</button>
+      </div>
+      <div class="mdwrap">
+        <div class="mdbar">
+          <div class="mdfb" id="mdFb" onclick="mdFbClick(event)">
+            <svg viewBox="0 0 24 24"><path d="M3 5h18v2l-7 7v5l-4 2v-7L3 7V5Z"/></svg>
+            <span id="mdChips"></span>
+            <input id="mdQ" placeholder="Select field or enter a keyword to search…" oninput="mdPaint()" onkeydown="if(event.key==='Escape')mdFpClose()" />
+          </div>
+          <div class="dtabs" id="mdTabs" style="margin:0;flex:0 0 auto"></div>
+        </div>
+        <div id="mdBulk"></div>
+        <div class="mdtblw"><table class="stcgrid" id="mdTbl"></table></div>
+        <div class="mdfoot" id="mdFoot"></div>
+      </div>
+      <div class="mdscrim" id="mdScrim" onclick="mdDrClose()"></div>
+      <aside class="mddr" id="mdDr" role="dialog" aria-label="Dashboard detail">
+        <div class="mddrh"><b id="mdDrT"></b><span style="flex:1"></span>
+          <button class="icobtn" data-tip="Close" onclick="mdDrClose()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4 6.3 6.3 6.3-6.3 1.4 1.4Z"/></svg></button>
+        </div>
+        <div class="mddrb" id="mdDrB"></div>
+        <div class="mddrf" id="mdDrF"></div>
+      </aside>
+    </section>
+
     <section class="view" id="view-logexp">
 
       <!-- ── Log Explorer proper (Overview + Log Search) ── -->
@@ -8719,9 +8916,23 @@ const MICON = {
 /* One category, two dashboards — the panel is a design surface here, not a data dump
    (annotation 12 Aug 2026). "Log Statistics" is the grouped board, "Application
    Performance" the flat one, so the two layouts stay one click apart. */
+/* ⚠️ THIS LIST GREW ON 24 Aug 2026, and the reason is worth keeping: Option 1's data was
+   deliberately tiny — one category, two dashboards — so the grouped and the flat canvas
+   layouts sat one click apart. That still holds (Log Statistics is grouped, Application
+   Performance is flat, both still first). But the **Manage dashboards** screen built the
+   same day is a management table, and a management table with two rows demonstrates
+   nothing, so six more were added across two categories.
+   ⚠️ Everything here shares the `DEMO` canvas capture, as it always has — these are list
+   entries, not new boards. `MD_META` hangs the management-only fields (owner, access,
+   status, archived) off these names rather than duplicating the list. */
 const DASH_GROUPS = [
   { name:'PMG', items:[
     ['Log Statistics','sys',0], ['Application Performance','mine',0] ]},
+  { name:'Network', items:[
+    ['Network NOC Wall','shared',0], ['WAN Link Health','mine',1] ]},
+  { name:'Infrastructure', items:[
+    ['Server Capacity','sys',0], ['Virtualization Overview','shared',0],
+    ['Storage Utilisation','mine',1], ['Container Fleet','mine',0] ]},
 ];
 /* NOC views (live: groups rotate their dashboards full-screen at an interval) */
 const NOC_VIEWS = [
@@ -8729,8 +8940,32 @@ const NOC_VIEWS = [
 ];
 const DASH_INDEX = {};
 DASH_GROUPS.forEach(g => g.items.forEach(it => DASH_INDEX[it[0]] = { n:it[0], t:it[1], p:it[2], g:g.name }));
-const DASH_FAVS = new Set(['Log Statistics']);
-const DASH_RECENT = ['Application Performance','Log Statistics'];
+const DASH_FAVS = new Set(['Log Statistics','Network NOC Wall']);
+const DASH_RECENT = ['Application Performance','Log Statistics','Server Capacity'];
+
+/* ══ MANAGE DASHBOARDS — the management-only fields ═════════════════════════════════════
+   ⚠️ ONE SOURCE OF TRUTH FOR WHICH DASHBOARDS EXIST. `DASH_GROUPS` owns the list; this map
+   only hangs the columns the manage TABLE needs off those names — owner, who can see it,
+   published state, when it changed, and whether it is archived. Duplicating the names here
+   would let the list panel and the manage screen disagree about what exists, which is the
+   one thing a management screen must never do.
+   ⚠️ `sys` dashboards carry `lock:1` — the reference's first three rows have no Archive
+   action at all, and that is the rule behind it: a system dashboard cannot be archived.
+   Everything else is a normal row.
+   ⚠️ `acc` is a LIST, and the table renders the first name plus a `+N` — the reference does
+   the same, because a technician list is unbounded and the column is not. */
+const MD_META = {
+  'Log Statistics':          { own:'motadata admin', acc:['All technicians'],       pub:1, upd:'2mo ago',  lock:1 },
+  'Application Performance': { own:'Kishan Patel',   acc:['Kishan Patel','Ops'],     pub:1, upd:'2mo ago',  lock:1 },
+  'Network NOC Wall':        { own:'Sneha Patil',    acc:['Sneha Patil','NOC','SRE'],pub:1, upd:'2mo ago' },
+  'WAN Link Health':         { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:0, upd:'6mo ago' },
+  'Server Capacity':         { own:'motadata admin', acc:['All technicians'],        pub:1, upd:'2y ago',   lock:1 },
+  'Virtualization Overview': { own:'Rakesh Rathod',  acc:['Rakesh Rathod','Infra'],  pub:1, upd:'2mo ago' },
+  'Storage Utilisation':     { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:0, upd:'11mo ago' },
+  'Container Fleet':         { own:'Sneha Patil',    acc:['Sneha Patil'],            pub:1, upd:'2mo ago' },
+};
+/* archived dashboards leave the other three tabs and appear only under Archive */
+const MD_ARCH = new Set();
 /* Application Performance is the board this option opens on — it is the flat layout,
    which is what this variant is demonstrating */
 const dashState = { tab:'dash', filter:'all', q:'', cur:'Application Performance' };
@@ -9324,25 +9559,414 @@ function nvCreate(){
 
 
 /* ================= Manage Dashboards (concept — live grid-pencil view was not captured) ====== */
-function openManage(){
-  closePops();
-  const p = document.getElementById('managePop');
-  p.innerHTML = `<div class="nhead">Manage Dashboards <span style="font-weight:400;color:var(--muted);font-size:10.5px">concept view — not captured from live</span></div>
-    <div class="mgbody">` +
-    Object.values(DASH_INDEX).map(it=>{
-      const k = it.n.replace(/'/g,"\\'");
-      return `<div class="mgrow">
-        <span class="rtic" title="${DTYPE[it.t]}">${MICON[it.t]}</span>
-        <span class="mgnm" title="${it.n}">${it.n}</span>
-        <span class="mgcat">${it.g}</span>
-        <button class="mgbtn" title="${it.p?'Private — make public':'Public — make private'}" onclick="mgAct('vis','${k}')">${it.p?DMI.locki:DMI.pub}</button>
-        <button class="mgbtn${DASH_FAVS.has(it.n)?' fv':''}" title="Favorite" onclick="mgAct('fav','${k}')">${DMI.star}</button>
-        <button class="mgbtn danger" title="Delete" onclick="mgAct('del','${k}')">${DMI.del}</button>
-      </div>`;
-    }).join('') + `</div>`;
-  p.classList.add('on');
-  document.getElementById('scrim').classList.add('on');
+/* ══ MANAGE DASHBOARDS ══════════════════════════════════════════════════════════════════
+   Built 24 Aug 2026 from the ServiceOps revamp prototype, driven in the browser at
+   `.../ServiceOps_Dashboard_v2/#/dashboards`. What that screen does, observed end to end:
+
+     · it is a FULL PAGE, not a modal — the dashboard list panel goes away entirely;
+     · a faceted filter bar ("Select field or enter a keyword…") whose fields are
+       Category · Visibility · Status · Owner; picking one drops a chip carrying its own
+       `Is / Is not` operator and a checkbox list of values, committed with Done;
+     · four tabs with counts — All · Created by me · Shared with me · Archive;
+     · selecting any row reveals a bulk bar: Move to category · Disable all · Archive · Clear;
+     · the table is ☐ · Dashboard · Category · Technician access · Status · Updated · Actions,
+       with five sortable headers;
+     · row actions are Duplicate · Edit · Schedule · History · Archive, and **Archive is
+       absent on system dashboards** — the reference's first three rows have four actions,
+       the rest five;
+     · Archive asks INLINE IN THE ROW ("Archive this dashboard? Yes No"), not in a modal;
+     · the Archive tab swaps the actions for **Restore** and **Delete forever**;
+     · History and Schedule each open their own right-hand drawer.
+
+   ⚠️ DELIBERATE DIFFERENCES from the reference, so nothing here is mistaken for it:
+     · a BACK ARROW in the head. The reference reaches this screen from a panel that stays
+       on screen; here it replaces the board, so there has to be a way out.
+     · colours are this file's tokens — see the note above `.mdwrap`.
+     · the reference's row drag-handle reorders the list; ours is decorative, because the
+       list panel's order is derived from `DASH_GROUPS` and there is nothing to persist to.
+       It is drawn (the affordance is part of the design being reviewed) and does nothing. */
+const MD = { tab:'all', sel:new Set(), sort:{ k:'nm', dir:1 }, filters:[], draft:null, conf:null };
+const MD_FIELDS = [
+  { k:'cat', l:'Category',  vals:()=>[...DASH_GROUPS.map(g=>g.name),'Uncategorized'] },
+  { k:'vis', l:'Visibility',vals:()=>['Public','Private'] },
+  { k:'st',  l:'Status',    vals:()=>['Published','Unpublished'] },
+  { k:'own', l:'Owner',     vals:()=>[...new Set(Object.values(MD_META).map(m=>m.own))].sort() },
+];
+const MD_TABS = [ ['all','All'], ['mine','Created by me'], ['shared','Shared with me'], ['arch','Archive'] ];
+const MD_IC = {
+  dup :'<path d="M8 8h11v11H8z"/><path d="M16 8V5H5v11h3"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  cal :'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
+  hist:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 8v4l3 2"/>',
+  arch:'<path d="M3 4h18v4H3z"/><path d="M5 8v12h14V8"/><path d="M10 12h4"/>',
+  rest:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  del :'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
+  fold:'<path d="M3 7h6l2 2h10v10H3z"/>',
+  off :'<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>',
+};
+/* the star / home marks the reference draws beside a dashboard's name */
+const MD_STAR = '<svg viewBox="0 0 24 24" class="fav"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>';
+const MD_HOME = '<svg viewBox="0 0 24 24" class="home"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>';
+
+function mdOpen(){
+  closePops(); MD.sel.clear(); MD.conf = null; mdFpClose();
+  showView('manage');
+  mdPaint();
 }
+/* ⚠️ `openManage()` is the door the list panel's footer already called — it now leads here
+   instead of to the old concept popover. The popover markup (`#managePop`) and `mgAct` are
+   left in the file, unreferenced, the way this panel keeps everything it replaces. */
+function openManage(){ mdOpen(); }
+
+/* ── tabs, sort, selection ──────────────────────────────────────────────────────────── */
+function mdTab(k){
+  /* ⚠️ clear the selection when the pool changes — a row ticked under All and then hidden
+     by switching to Archive would still be counted by the bulk bar and still be acted on. */
+  MD.tab = k; MD.sel.clear(); MD.conf = null; mdPaint();
+}
+function mdSort(k){
+  if (MD.sort.k === k) MD.sort.dir *= -1; else { MD.sort.k = k; MD.sort.dir = 1; }
+  mdPaint();
+}
+function mdSel(n, on){ on ? MD.sel.add(n) : MD.sel.delete(n); mdPaint(); }
+function mdSelAll(on){ mdRows().forEach(r => on ? MD.sel.add(r.n) : MD.sel.delete(r.n)); mdPaint(); }
+function mdClear(){ MD.sel.clear(); mdPaint(); }
+
+/* ── the single-row actions ─────────────────────────────────────────────────────────── */
+function mdGo(n){ mdClose(); pickDash(n); }
+function mdEdit(n){ mdClose(); openEditDash(n); }
+function mdPub(n){ const m = mdMeta(n); m.pub = m.pub ? 0 : 1; m.upd = 'just now'; mdPaint();
+  toast(`“${n}” ${m.pub ? 'published' : 'unpublished'}`); }
+/* Duplicate lands a real entry in the list, so the row it adds is a row you can then manage */
+function mdDup(n){
+  const src = DASH_INDEX[n]; let nm = 'Copy of ' + n, i = 2;
+  while (DASH_INDEX[nm]) nm = `Copy of ${n} (${i++})`;
+  const g = DASH_GROUPS.find(x => x.name === src.g) || DASH_GROUPS[0];
+  g.items.push([nm, 'mine', src.p]);
+  DASH_INDEX[nm] = { n:nm, t:'mine', p:src.p, g:g.name };
+  MD_META[nm] = { own:'Kishan Patel', acc:['Kishan Patel'], pub:0, upd:'just now' };
+  mdPaint(); renderDashPanel && renderDashPanel();
+  toast(`Duplicated as “${nm}” — unpublished`);
+}
+/* ⚠️ ONE confirm at a time (`MD.conf` is a single name, not a set) — two open questions in
+   one table is two things to answer and no way to tell which Yes belongs to which. */
+function mdAsk(n){ MD.conf = n; mdPaint(); }
+function mdConfNo(){ MD.conf = null; mdPaint(); }
+function mdConfYes(n){
+  MD.conf = null;
+  if (MD.tab === 'arch') mdDeleteGo(n); else { MD_ARCH.add(n); MD.sel.delete(n); mdPaint();
+    toast(`“${n}” archived — restore it from the Archive tab`); }
+}
+function mdRestore(n){ MD_ARCH.delete(n); MD.sel.delete(n); mdPaint(); toast(`“${n}” restored`); }
+/* ⚠️ the only irreversible action on this screen, and the only one that touches the real
+   model — it removes the dashboard from `DASH_GROUPS`, which is what the list panel reads. */
+function mdDeleteGo(n){
+  DASH_GROUPS.forEach(g => { const i = g.items.findIndex(x => x[0] === n); if (i >= 0) g.items.splice(i,1); });
+  delete DASH_INDEX[n]; delete MD_META[n];
+  MD_ARCH.delete(n); MD.sel.delete(n); DASH_FAVS.delete(n);
+  mdPaint(); renderDashPanel && renderDashPanel();
+  toast(`“${n}” deleted permanently`);
+}
+
+/* ── bulk ───────────────────────────────────────────────────────────────────────────── */
+function mdBulk(a){
+  const sel = [...MD.sel]; if (!sel.length) return;
+  if (a === 'archive'){ sel.forEach(n => { if (!mdMeta(n).lock) MD_ARCH.add(n); });
+    const n = sel.filter(x => !mdMeta(x).lock).length;
+    MD.sel.clear(); mdPaint();
+    /* ⚠️ report what was actually done, not what was asked — a system dashboard cannot be
+       archived, so a mixed selection archives fewer than it selected and has to say so. */
+    toast(n === sel.length ? `${n} archived` : `${n} of ${sel.length} archived — system dashboards cannot be`);
+  }
+  else if (a === 'disable'){ sel.forEach(n => { mdMeta(n).pub = 0; mdMeta(n).upd = 'just now'; });
+    MD.sel.clear(); mdPaint(); toast(`${sel.length} unpublished`); }
+  else if (a === 'restore'){ sel.forEach(n => MD_ARCH.delete(n)); MD.sel.clear(); mdPaint();
+    toast(`${sel.length} restored`); }
+  else if (a === 'delete'){ sel.forEach(mdDeleteGo); MD.sel.clear(); mdPaint(); }
+}
+function mdMoveMenu(ev){
+  ev.stopPropagation();
+  const cats = [...DASH_GROUPS.map(g => g.name), 'Uncategorized'];
+  aiHdMenuClose && aiHdMenuClose();
+  const old = document.getElementById('mdMoveM'); if (old){ old.remove(); return; }
+  const m = document.createElement('div');
+  m.className = 'mdfpop'; m.id = 'mdMoveM';
+  m.style.cssText = 'position:fixed;z-index:200002';
+  m.innerHTML = cats.map(c => `<button class="f" onclick="mdMove('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
+  document.body.appendChild(m);
+  const r = ev.currentTarget.getBoundingClientRect();
+  m.style.left = Math.round(r.left) + 'px';
+  m.style.top  = Math.round(r.bottom + 5) + 'px';
+  setTimeout(() => document.addEventListener('mousedown', mdMoveAway), 0);
+}
+function mdMoveAway(e){
+  if (e.target && e.target.closest && e.target.closest('#mdMoveM')) return;
+  const m = document.getElementById('mdMoveM'); if (m) m.remove();
+  document.removeEventListener('mousedown', mdMoveAway);
+}
+function mdMove(cat){
+  const sel = [...MD.sel];
+  sel.forEach(n => {
+    DASH_GROUPS.forEach(g => { const i = g.items.findIndex(x => x[0] === n); if (i >= 0) g.items.splice(i,1); });
+    const it = DASH_INDEX[n];
+    if (cat === 'Uncategorized'){ it.g = ''; }
+    else { let g = DASH_GROUPS.find(x => x.name === cat);
+      if (!g){ g = { name:cat, items:[] }; DASH_GROUPS.push(g); }
+      g.items.push([n, it.t, it.p]); it.g = cat; }
+    mdMeta(n).upd = 'just now';
+  });
+  const m = document.getElementById('mdMoveM'); if (m) m.remove();
+  MD.sel.clear(); mdPaint(); renderDashPanel && renderDashPanel();
+  toast(`${sel.length} moved to ${cat}`);
+}
+
+/* ── the faceted filter bar ─────────────────────────────────────────────────────────── */
+function mdChipsPaint(){
+  const el = document.getElementById('mdChips'); if (!el) return;
+  el.innerHTML = MD.filters.map((f,i) => {
+    const fd = MD_FIELDS.find(x => x.k === f.k);
+    const val = f.vals.length ? (f.vals.length > 1 ? `${f.vals.length} values` : f.vals[0]) : 'any';
+    return `<span class="mdfchip"><b>${fd.l}</b><span class="op">${f.op==='isnot'?'is not':'is'}</span>${aiEsc(val)}` +
+      `<button data-tip="Remove" onclick="event.stopPropagation();mdFDel(${i})">✕</button></span>`;
+  }).join('');
+}
+function mdFbClick(ev){
+  if (ev.target.closest('.mdfchip')) return;      /* the chip owns its own clicks */
+  if (document.getElementById('mdFp')) { mdFpClose(); return; }
+  mdFieldMenu();
+}
+function mdFpClose(){ const e = document.getElementById('mdFp'); if (e) e.remove(); MD.draft = null; }
+function mdFieldMenu(){
+  mdFpClose();
+  const el = document.createElement('div'); el.className = 'mdfpop'; el.id = 'mdFp';
+  el.innerHTML = MD_FIELDS.map(f =>
+    `<button class="f" onclick="event.stopPropagation();mdFPick('${f.k}')">${f.l}</button>`).join('');
+  document.getElementById('mdFb').appendChild(el);
+}
+/* ⚠️ a picked field opens as a DRAFT — it is not applied until Done, which is what the
+   reference does. Filtering on every checkbox tick would re-render the table under the
+   pointer while you are still choosing values. */
+function mdFPick(k){
+  MD.draft = { k:k, op:'is', vals:[] };
+  mdDraftPaint();
+}
+function mdDraftPaint(){
+  const f = MD.draft, fd = MD_FIELDS.find(x => x.k === f.k);
+  const el = document.getElementById('mdFp'); if (!el) return;
+  el.innerHTML = `<div class="lab">Operator</div>` +
+    `<select class="sel" onchange="MD.draft.op=this.value">` +
+      `<option value="is"${f.op==='is'?' selected':''}>Is</option>` +
+      `<option value="isnot"${f.op==='isnot'?' selected':''}>Is not</option></select>` +
+    fd.vals().map(v =>
+      `<label><input type="checkbox" ${f.vals.includes(v)?'checked':''} ` +
+      `onchange="mdDraftVal('${v.replace(/'/g,"\\'")}',this.checked)"><span>${aiEsc(v)}</span></label>`).join('') +
+    `<div class="fdone"><button class="btn pri" onclick="event.stopPropagation();mdFDone()">Done</button></div>`;
+}
+function mdDraftVal(v, on){
+  const a = MD.draft.vals, i = a.indexOf(v);
+  if (on && i < 0) a.push(v); else if (!on && i >= 0) a.splice(i,1);
+}
+function mdFDone(){
+  const f = MD.draft;
+  /* ⚠️ a field with nothing ticked filters nothing — dropping it is honest, where keeping
+     it would leave a chip on screen that has no effect on the rows below it. */
+  if (f && f.vals.length){ MD.filters.push(f); }
+  mdFpClose(); MD.sel.clear(); mdPaint();
+}
+function mdFDel(i){ MD.filters.splice(i,1); MD.sel.clear(); mdPaint(); }
+
+/* ── History and Schedule, each its own drawer ──────────────────────────────────────── */
+const MD_EVENTS = [
+  ['Update Access Level','29 Apr 2026 07:38 PM','Dashboard','Sneha Patil','Access level updated from Public to Restricted.'],
+  ['Update Restricted Group','29 Apr 2026 07:38 PM','Dashboard','Sneha Patil','For access level “Restricted” updated groups to Service Desk.'],
+  ['Add Widget','23 May 2025 10:14 AM','Widget','Rakesh Rathod','Added widget “Monitor Availability”.'],
+  ['Rename Dashboard','13 Nov 2024 11:31 AM','Dashboard','Kishan Patel','Renamed dashboard.'],
+  ['Update Access Level','13 Nov 2024 11:29 AM','Dashboard','Kishan Patel','Access level updated from Public to Restricted.'],
+  ['Create Dashboard','02 Dec 2022 03:21 PM','Dashboard','motadata admin','Dashboard created.'],
+];
+const MD_SCHED = [
+  ['Weekly SLA report','Weekly','This Week',1],
+  ['Daily digest','Daily','Today',0],
+];
+function mdDrOpen(title, body, foot, small){
+  const d = document.getElementById('mdDr');
+  document.getElementById('mdDrT').textContent = title;
+  document.getElementById('mdDrB').innerHTML = body;
+  document.getElementById('mdDrF').innerHTML = foot;
+  d.classList.toggle('sm', !!small);
+  d.classList.add('on');
+  document.getElementById('mdScrim').classList.add('on');
+}
+function mdDrClose(){
+  const d = document.getElementById('mdDr'); if (d) d.classList.remove('on');
+  const sc = document.getElementById('mdScrim'); if (sc) sc.classList.remove('on');
+}
+function mdHistory(n){
+  const rows = MD_EVENTS.map(e =>
+    `<tr><td style="font-weight:600;color:var(--text)">${aiEsc(e[0])}</td><td>${e[1]}</td><td>${e[2]}</td>` +
+    `<td style="color:var(--teal)">${aiEsc(e[3])}</td>` +
+    `<td style="white-space:normal;line-height:1.5;padding-top:8px;padding-bottom:8px">${aiEsc(e[4])}</td></tr>`).join('');
+  mdDrOpen('History: ' + n,
+    `<div class="mdrow1">` +
+      `<label class="mdfield"><span>From <i>*</i></span><input type="date" value="2021-06-07"></label>` +
+      `<label class="mdfield"><span>To <i>*</i></span><input type="date" value="2026-08-24"></label>` +
+      `<button class="btn pri" onclick="toast('Canned history — the range is not queried')">Search</button>` +
+    `</div>` +
+    `<input class="mdsrch" placeholder="Filter events…" oninput="mdLogFilter(this.value)">` +
+    /* ⚠️ `.stcgrid` is `table-layout:fixed`, which takes its widths from the FIRST row — so
+       they go on the `<th>`s, never the `td`s. Without them five columns split evenly and
+       "Update Restricted Group" truncated while Module sat in empty space. The repo gotcha,
+       in a third place. */
+    `<table class="stcgrid" id="mdLog"><thead><tr><th style="width:152px">Event</th>` +
+      `<th style="width:136px">Event time</th><th style="width:82px">Module</th>` +
+      `<th style="width:106px">User</th><th>Change summary</th></tr></thead>` +
+      `<tbody>${rows}</tbody></table>`,
+    `<span id="mdLogN">Showing ${MD_EVENTS.length} events</span>`);
+}
+/* filters the rendered rows in place — the log is canned, so there is nothing to re-query */
+function mdLogFilter(q){
+  q = q.trim().toLowerCase(); let n = 0;
+  document.querySelectorAll('#mdLog tbody tr').forEach(tr => {
+    const hit = !q || tr.textContent.toLowerCase().includes(q);
+    tr.style.display = hit ? '' : 'none'; if (hit) n++;
+  });
+  const el = document.getElementById('mdLogN'); if (el) el.textContent = `Showing ${n} events`;
+}
+function mdSchedule(n){
+  const rows = MD_SCHED.map((r,i) =>
+    `<tr><td style="font-weight:600;color:var(--text)">${aiEsc(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td>` +
+    `<td><span class="ddswitch${r[3]?' on':''}" role="switch" data-tip="${r[3]?'Enabled':'Disabled'}" onclick="mdSchTog(${i},this)"></span></td>` +
+    `<td style="text-align:right"><button class="mdia" data-tip="Edit" onclick="toast('Edit schedule — not built')"><svg viewBox="0 0 24 24">${MD_IC.edit}</svg></button>` +
+    `<button class="stcib del" data-tip="Delete" onclick="toast('Delete schedule — not built')"><svg viewBox="0 0 24 24">${MD_IC.del}</svg></button></td></tr>`).join('');
+  mdDrOpen('Schedule: ' + n,
+    `<div class="mdrow1"><input class="mdsrch" style="flex:1;margin:0" placeholder="Search…">` +
+      `<button class="btn pri" onclick="toast('Create Schedule — not built')">＋ Create Schedule</button></div>` +
+    `<table class="stcgrid"><thead><tr><th>Name</th><th style="width:118px">Schedule type</th>` +
+      `<th style="width:104px">Time filter</th><th style="width:78px">Enabled</th>` +
+      `<th style="width:86px;text-align:right">Actions</th></tr></thead>` +
+      `<tbody>${rows}</tbody></table>`,
+    `<span>Showing ${MD_SCHED.length} of ${MD_SCHED.length} items</span>` +
+    `<button class="btn" onclick="mdDrClose()">Close</button>`, 1);
+}
+function mdSchTog(i, el){ MD_SCHED[i][3] = MD_SCHED[i][3] ? 0 : 1; el.classList.toggle('on', !!MD_SCHED[i][3]); }
+
+function mdClose(){ mdDrClose(); showView('dashboard'); }
+
+/* ── the model behind a row ─────────────────────────────────────────────────────────── */
+function mdMeta(n){ return MD_META[n] || (MD_META[n] = { own:'Kishan Patel', acc:['Kishan Patel'], pub:1, upd:'just now' }); }
+function mdAll(){ return Object.values(DASH_INDEX); }
+function mdCat(it){ return it.g || 'Uncategorized'; }
+/* ⚠️ the tab decides the POOL, the filters and the keyword then narrow it — in that order,
+   or an Archive filter would be applied to a list Archive has already removed things from */
+function mdPool(){
+  const arch = MD.tab === 'arch';
+  return mdAll().filter(it => MD_ARCH.has(it.n) === arch && (
+    MD.tab === 'all' || arch ||
+    (MD.tab === 'mine'   && it.t === 'mine') ||
+    (MD.tab === 'shared' && it.t === 'shared')));
+}
+function mdMatchFilter(it, f){
+  const m = mdMeta(it.n);
+  const v = f.k === 'cat' ? [mdCat(it)]
+          : f.k === 'vis' ? [it.p ? 'Private' : 'Public']
+          : f.k === 'st'  ? [m.pub ? 'Published' : 'Unpublished']
+          : [m.own];
+  const hit = v.some(x => f.vals.includes(x));
+  return f.op === 'isnot' ? !hit : hit;
+}
+function mdRows(){
+  const q = (document.getElementById('mdQ')||{}).value || '';
+  let r = mdPool().filter(it => MD.filters.every(f => !f.vals.length || mdMatchFilter(it, f)));
+  if (q.trim()) r = r.filter(it => it.n.toLowerCase().includes(q.trim().toLowerCase()));
+  const k = MD.sort.k, d = MD.sort.dir;
+  const key = it => k === 'nm'  ? it.n.toLowerCase()
+                  : k === 'cat' ? mdCat(it).toLowerCase()
+                  : k === 'acc' ? mdMeta(it.n).acc[0].toLowerCase()
+                  : k === 'st'  ? (mdMeta(it.n).pub ? 1 : 0)
+                  : mdMeta(it.n).upd;
+  return r.sort((a,b) => { const x = key(a), y = key(b); return x < y ? -d : x > y ? d : 0; });
+}
+function mdCount(tab){
+  const t = MD.tab; MD.tab = tab; const n = mdPool().length; MD.tab = t; return n;
+}
+
+/* ── render ─────────────────────────────────────────────────────────────────────────── */
+function mdPaint(){
+  const tabs = document.getElementById('mdTabs'); if (!tabs) return;
+  /* ⚠️ `.dtab` — the segmented tab this file already uses in the dashboard list panel. The
+     count rides as a muted trailing number rather than the reference's filled pill, because
+     that is how `.dfilt` states a count here. */
+  tabs.innerHTML = MD_TABS.map(([k,l]) =>
+    `<button class="dtab${MD.tab===k?' on':''}" style="flex:0 0 auto;padding:0 11px"` +
+    ` onclick="mdTab('${k}')">${l}` +
+    `<span style="margin-left:6px;color:var(--text-dim);font-weight:500">${mdCount(k)}</span></button>`).join('');
+  mdChipsPaint();
+  const rows = mdRows(), arch = MD.tab === 'arch';
+  /* the bulk bar exists only while something is selected — see the note at `.mdbulk` */
+  const bulk = document.getElementById('mdBulk');
+  const sel = [...MD.sel].filter(n => rows.some(r => r.n === n));
+  bulk.innerHTML = !sel.length ? '' :
+    `<div class="mdbulk"><span class="n">${sel.length} selected</span>` +
+    (arch
+      ? `<button class="btn" onclick="mdBulk('restore')"><svg viewBox="0 0 24 24">${MD_IC.rest}</svg>Restore</button>` +
+        `<button class="btn dgr" onclick="mdBulk('delete')"><svg viewBox="0 0 24 24">${MD_IC.del}</svg>Delete forever</button>`
+      : `<button class="btn" onclick="mdMoveMenu(event)"><svg viewBox="0 0 24 24">${MD_IC.fold}</svg>Move to category</button>` +
+        `<button class="btn" onclick="mdBulk('disable')"><svg viewBox="0 0 24 24">${MD_IC.off}</svg>Disable all</button>` +
+        `<button class="btn dgr" onclick="mdBulk('archive')"><svg viewBox="0 0 24 24">${MD_IC.arch}</svg>Archive</button>`) +
+    `<button class="btn" onclick="mdClear()">Clear</button></div>`;
+  /* ⚠️ `.stcgrid th.s` + `.sa` is the grid's OWN sort affordance — reusing it means the
+     header case, the sticky behaviour and the arrow all match the Compliance grid, which
+     was cloned from the live product. The first build invented `.srt`/`.ar` for this. */
+  const th = (k,l,cls) => `<th class="${cls||''}${k?' s':''}"` +
+    (k?` onclick="mdSort('${k}')"`:'') + `>${l}` +
+    (k && MD.sort.k===k ? `<span class="sa">${MD.sort.dir>0?'▲':'▼'}</span>` : '') + `</th>`;
+  const allSel = rows.length && rows.every(r => MD.sel.has(r.n));
+  document.getElementById('mdTbl').innerHTML =
+    `<thead><tr>` +
+      `<th class="mdc-chk"><input type="checkbox" ${allSel?'checked':''} onclick="mdSelAll(this.checked)" aria-label="Select all"></th>` +
+      th('nm','Dashboard') + th('cat','Category') + th('acc','Technician access') +
+      th('st','Status','mdc-st') + th('upd','Updated','mdc-up') + th('','Actions','mdc-act') +
+    `</tr></thead><tbody>` +
+    (rows.length ? rows.map(it => mdRowHTML(it, arch)).join('')
+                 : `<tr><td colspan="7"><div class="mdempty">No dashboards match this view.</div></td></tr>`) +
+    `</tbody>`;
+  document.getElementById('mdFoot').textContent =
+    rows.length ? `Showing ${rows.length} of ${mdPool().length} dashboards` : '';
+}
+function mdRowHTML(it, arch){
+  const m = mdMeta(it.n), k = it.n.replace(/'/g,"\\'"), on = MD.sel.has(it.n);
+  const acc = `<span class="mdchip">${aiEsc(m.acc[0])}</span>` +
+              (m.acc.length>1 ? `<span class="mdmore">+${m.acc.length-1}</span>` : '');
+  /* `.stcib` is the grid's own 28px icon action — same size and hover as every other row
+     action in this file, so nothing about this table's actions is bespoke. */
+  const ia = (fn,t,ic,cls) => `<button class="stcib${cls||''}" data-tip="${t}" onclick="event.stopPropagation();${fn}">` +
+    `<svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round">${ic}</svg></button>`;
+  /* ⚠️ the inline confirm REPLACES the action row for that row only — the question sits
+     next to the dashboard it is about, which is the whole point of doing it inline. */
+  const acts = MD.conf === it.n
+    ? `<div class="mdconf">${arch?'Delete forever?':'Archive this dashboard?'}` +
+      `<button class="y" onclick="event.stopPropagation();mdConfYes('${k}')">Yes</button>` +
+      `<button class="n" onclick="event.stopPropagation();mdConfNo()">No</button></div>`
+    : `<div class="mdacts">` + (arch
+        ? ia(`mdRestore('${k}')`,'Restore',MD_IC.rest) + ia(`mdAsk('${k}')`,'Delete forever',MD_IC.del,' del')
+        : ia(`mdDup('${k}')`,'Duplicate',MD_IC.dup) + ia(`mdEdit('${k}')`,'Edit',MD_IC.edit) +
+          ia(`mdSchedule('${k}')`,'Schedule',MD_IC.cal) + ia(`mdHistory('${k}')`,'History',MD_IC.hist) +
+          /* ⚠️ a SYSTEM dashboard has no Archive — the reference's first three rows carry
+             four actions and the rest five, and this is the rule behind that. */
+          (m.lock ? '' : ia(`mdAsk('${k}')`,'Archive',MD_IC.arch,' del'))) + `</div>`;
+  return `<tr class="${on?'sel':''}">` +
+    `<td class="mdc-chk"><input type="checkbox" ${on?'checked':''} onclick="event.stopPropagation();mdSel('${k}',this.checked)" aria-label="Select ${aiEsc(it.n)}"></td>` +
+    `<td><div class="mdnm">${arch?'':'<span class="mdgrip" data-tip="Drag to reorder">⠿</span>'}` +
+      `<span class="t" onclick="mdGo('${k}')">${aiEsc(it.n)}</span>` +
+      (DASH_FAVS.has(it.n)?MD_STAR:'') + (DASH_DEFAULT===it.n?MD_HOME:'') + `</div></td>` +
+    `<td>${it.g ? `<span class="mdchip">${aiEsc(it.g)}</span>` : '<span class="mddash">—</span>'}</td>` +
+    `<td>${acc}</td>` +
+    /* ⚠️ `.ddswitch` — the switch the Create Dashboard drawer already uses. A second toggle
+       shape for the same idea is exactly what "set the components" is about. */
+    `<td class="mdc-st"><span class="ddswitch${m.pub?' on':''}" role="switch" aria-checked="${m.pub?'true':'false'}" data-tip="${m.pub?'Published':'Unpublished'}" onclick="event.stopPropagation();mdPub('${k}')"></span></td>` +
+    `<td class="mdc-up">${m.upd}</td><td class="mdc-act">${acts}</td></tr>`;
+}
+
 function mgAct(a, n){
   const it = DASH_INDEX[n]; if (!it) return;
   if (a==='vis'){

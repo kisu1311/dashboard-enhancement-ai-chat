@@ -3089,6 +3089,104 @@ its own totals and top share, `hbars` its leader and ratio, `stat` its value and
 no two widgets produce the same summary and the panel can't describe a widget that isn't
 there. Violet (`--ai*`) throughout, since that is the AI accent in this folder.
 
+## Manage dashboards (`md*`) — Option 1, built from the ServiceOps revamp
+
+A **full-page management screen**, reached from *Manage dashboards* at the foot of the
+dashboard list panel (`openManage()` → `mdOpen()`). Built 24 Aug 2026 from
+`zenichakalasiya.github.io/ServiceOps_Dashboard_v2/#/dashboards`, **driven in the browser** —
+every column, action, operator and confirm below was read off that DOM, not guessed.
+Namespace `md*` / `MD_*` / `.md*`, **grepped free first** (0 classes, 0 functions).
+
+**What the reference does, and what this reproduces**
+
+| piece | what it has |
+|---|---|
+| head | `Manage dashboards` + **＋ New dashboard** (primary) |
+| filter bar | *"Select field or enter a keyword to search…"* → the four fields **Category · Visibility · Status · Owner**; each becomes a chip with its own **Is / Is not** operator, a checkbox list of values, and **Done** |
+| tabs | **All · Created by me · Shared with me · Archive**, each with a live count |
+| bulk bar | appears on selection: `N selected` · Move to category · Disable all · **Archive** · Clear |
+| table | ☐ · Dashboard · Category · Technician access · Status · Updated · Actions, five columns sortable |
+| row actions | Duplicate · Edit · Schedule · History · Archive |
+| Archive tab | swaps the actions for **Restore** and **Delete forever** |
+| drawers | **History** (From/To + Search, `Event · Event time · Module · User · Change summary`, "Showing N events") and **Schedule** (Search + ＋ Create Schedule, `Name · Schedule type · Time filter · Enabled · Actions`) |
+
+- ⚠️ **A SYSTEM DASHBOARD HAS NO ARCHIVE.** The reference's first three rows carry four
+  actions and the rest five; `MD_META[...].lock` is the rule behind that, and `mdBulk`
+  reports what it actually archived rather than what was selected when the two differ.
+- ⚠️ **The confirm is INLINE IN THE ROW** — *"Archive this dashboard? Yes No"* — not a
+  modal, so the thing you are about to archive stays next to the question. `MD.conf` holds
+  **one** name: two open questions in one table is two things to answer with no way to tell
+  which Yes belongs to which.
+- ⚠️ **The confirm is `position:absolute`, and it has to be.** The Actions column is 180px
+  and `td` is `overflow:hidden`, so in flow it rendered as *"…dashboard? Yes No"* with the
+  first three words cut off. Out of flow it sizes to its own text and overhangs the column.
+- ⚠️ **A picked filter field is a DRAFT until Done.** Filtering on every checkbox tick would
+  re-render the table under the pointer while you are still choosing values. A field with
+  nothing ticked is dropped rather than left as a chip that filters nothing.
+- ⚠️ **`DASH_GROUPS` grew from 2 dashboards to 8** on the same day, and the reason is in a
+  comment at the constant: Option 1's data was deliberately tiny so the grouped and flat
+  canvas layouts sat one click apart — which still holds — but a management table with two
+  rows demonstrates nothing. `MD_META` hangs the management-only fields off those names
+  rather than duplicating the list, so the panel and the manage screen can never disagree
+  about what exists.
+- ⚠️ **`Delete forever` is the only action that touches the real model** — it splices the
+  entry out of `DASH_GROUPS` and `DASH_INDEX`, which is what the list panel reads. Archive
+  is a `MD_ARCH` set, so it is reversible.
+
+**⚠️ THE FLOW IS THE REFERENCE'S; THE LOOK IS THIS PROTOTYPE'S** (request, 24 Aug 2026:
+*"the visualization is not set on the current UI — set the components"*). The first build
+skinned itself like ServiceOps — a 20px `<h1>`, sentence-case headers, 36px pill buttons, a
+50px tinted bulk bar — which is that product's component set, not this file's. Everything is
+now assembled from what the prototype already has, which is the rule the root `CLAUDE.md`
+states for the Settings form: build new controls from what is there and the addition reads
+as native.
+
+| part | component reused |
+|---|---|
+| head | **`.pagehead` + `.ttl`** (44px, 15px/600) — the header every other screen here uses |
+| table | **`.stcgrid`**, the grid cloned from the live product for Compliance Settings — its header case, 40px rows, borders and hover come free and cannot drift from the product |
+| buttons | `.btn` / `.btn.pri` |
+| row actions | `.stcib` |
+| tabs | `.dtabs` / `.dtab` |
+| search | the `.dsearch` shape |
+| switch | **`.ddswitch`**, the Create Dashboard drawer's own |
+
+- ⚠️ **Only what did not already exist is new**: the bulk bar, the inline row confirm, the
+  faceted filter popover and the drawers' bodies — each built from the same tokens, so there
+  is no imported colour anywhere in the block.
+- ⚠️ Because the table is `.stcgrid`, its headers are **uppercase again**. The first build
+  cancelled the host `th` rule to get the reference's sentence case; that was matching the
+  wrong product, and the cancel is gone.
+- ⚠️ **`.ddswitch` is authored as a flex child** (`flex:0 0 34px`). In a table cell it is a
+  plain span, and `width`/`height` do not apply to a non-replaced inline element — it needs
+  an explicit `inline-block`, scoped here so the drawer's own switches are untouched.
+- ⚠️ **The row checkboxes need `accent-color` AND `color-scheme`** — the recorded
+  `.aick input` rule, hit again. `accent-color` only tints the *checked* fill, so in dark
+  theme every unchecked box painted as a bright white square.
+
+**Deliberate differences from the reference**, so nothing here is mistaken for it:
+- a **back arrow** in the head — the reference reaches this screen from a panel that stays
+  on screen, and here it replaces the board, so there has to be a way out;
+- colours are **this file's tokens**. ServiceOps is light-only; its `#3d8bd0` primary,
+  `#364658` ink and `#f0f8ff` bulk bar have no dark counterpart, so importing them would put
+  four colours in the file that no token owns — the send-button rule;
+- the row **drag handle is decorative**: the list panel's order comes from `DASH_GROUPS` and
+  there is nothing to persist a manual order to. It is drawn because the affordance is part
+  of the design being reviewed, and it does nothing.
+
+**Traps this build hit, all already recorded elsewhere in this file and all hit again:**
+- ⚠️ **`table-layout:fixed` takes its widths from the FIRST row**, so the two drawer tables'
+  column widths sit on the `<th>`s. Without them five columns split evenly and *"Update
+  Restricted Group"* truncated while Module sat in empty space.
+- ⚠️ **`.mdfb input` matched the checkboxes inside `.mdfpop`**, which is a child of the bar —
+  `min-width:120px` made every filter checkbox a 120px black slab and pushed its label to
+  the right of it. It is `.mdfb>input` now. Exactly the descendant-selector trap recorded
+  for `.agpfgt span` and `.awrow svg`: when a container gains new child types, scope its
+  rules to the child you meant.
+
+⚠️ The old concept popover (`#managePop`, `mgAct`) is **kept and unreferenced**, the house
+pattern — `openManage()` leads here instead.
+
 ## Dashboard list panel
 
 Grounded in research notes §2 (two radio-tabs, search, category tree with counts,
