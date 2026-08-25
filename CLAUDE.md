@@ -551,8 +551,12 @@ equal weight — which is what three stops are for — tuned so the row's overal
 matches the fade it replaces: dark `.13` / hover `.19`, light `.075` / hover `.11`. Light
 takes a tint far more strongly than the dark canvas, the same split the thinking card uses.
 
-Common to all three: violet is the AI accent (`--ai*` in Option 1, `--oa*` in Option 3);
-teal stays the product accent. Everything is **canned and deterministic** — nothing calls
+⚠️ **OUT OF DATE — see "The 25 Aug 2026 pass" below.** Option 1's `ai*` panel is no longer
+violet (`--ai*` is redefined on `.aipanel` to `#1D2A3E` / `#CAD3E2`), its two primary buttons
+are no longer teal (`--action`), and its entry points say **Ask Iris**, not Ask AI. Violet is
+still the accent for Option 3's `--oa*`, the Log Explorer's AI Query, the per-widget ✦ drawer
+and the toolbar pill. Historically: violet was the AI accent everywhere and teal the product
+accent. Everything is **canned and deterministic** — nothing calls
 out. The point is that every *state* is reachable so the interaction can be judged.
 
 ⚠️ **Option 1's `ai*` panel was REPLACED with the ServiceOps Ask-AI design** (14 Aug 2026),
@@ -2368,6 +2372,191 @@ in the file's own comments at the rule or function; this is the map.
 ⚠️ **Driving the full-screen toggle wedges the renderer under browser automation.** Verified
 against the committed baseline — it predates this session's edits — but it is why the layout
 states were measured by setting `.aifs` directly.
+
+## The 25 Aug 2026 pass — the assistant gets a name, a mark, and a neutral palette
+
+All Option 1 (`index copy.html`). Four threads, and each one **supersedes statements
+elsewhere in this file** — where they conflict, this section is current.
+
+### The assistant is called **Iris**, and its mark is `OPS AI.svg`
+
+`Ask AI` → **`Ask Iris`** on the toolbar pill, in the Log Explorer head, on the rail row and
+its tooltip, in the `A` shortcut's label, the panel's `aria-label`, and the empty-state copy.
+The greeting went *"how can **we** help?"* → *"how can **I** help?"* — naming the assistant
+made the plural wrong, and the Logs branch of that same block already spoke as *"I'll build
+the query"*.
+
+The name was chosen from **`_ai-identity.html`** (same folder, underscore-prefixed so
+`_sync_variants.js` ignores it) — six complete identities with rationale and trademark
+notes. Keep it; it is the record of why Iris and not Argus/Vega/Nova/Lyra.
+
+- ⚠️ **`AI_SPARK` IS NO LONGER THE ✦.** It holds the supplied `OPS AI.svg` — a speech
+  bubble with a four-point spark, `viewBox="0 0 48 48"`, pasted verbatim. Every ✦ reference
+  elsewhere in this file means this mark now.
+- ⚠️ **The viewBox is 48 while the rest of the panel is on a 24 grid.** Deliberate: it is the
+  box the artwork was drawn in, and rescaling a path by hand is the tidying that puts
+  artwork out of family. Nothing downstream cares — every consumer sizes the `<svg>` in CSS.
+- ⚠️ **`fill="black"` on the path and `fill="none"` on the root are stripped.** `fill` is an
+  inherited SVG property, so with neither present the CSS `fill:` reaches the path. Leave
+  `fill="black"` in and the mark paints black in both themes, which looks like the colour
+  rules are being ignored rather than like an attribute winning.
+- ⚠️ **`LX_AI_SPARK = AI_SPARK`** — one definition. It used to be a second literal and the
+  two drifted the moment either changed. The only constraint is block order: the `lx` block
+  is parsed after the `ai` one, so it can read that binding; move it earlier and it is a TDZ
+  error at load.
+- ⚠️ **A stroked mark and a filled mark need opposite CSS**, and there are **eight**
+  consumers (`.aibig`, `.aitkm`, `.aiagmk`, `.aibtn svg`, `.lxask svg`, `.lxpst svg`,
+  `.lxpatai svg`, `.lxqai .gen svg`). A brief Iris-prism build had them on
+  `fill:none;stroke:…` with a per-size `stroke-width`; the supplied mark is filled, so they
+  are all back to `fill:` and **the derived stroke-widths were removed, not left behind** —
+  a stroke-width on a solid mark reads as a real setting.
+- ⚠️ **`#sbAI .ic` has no override any more.** The stroked mark needed `fill:none` scoped
+  there; the filled one must NOT have it, or the rail row's icon renders as nothing.
+- **Still on the old ✦ deliberately** (different surfaces, not the assistant): Log
+  Explorer's `AI Query` button and popover, the per-widget `✦` summary drawer, and the
+  `ac*` panel. `AI_SPARK_MI` is genuinely dead.
+
+### The chat panel is off violet — `#1D2A3E` light / `#CAD3E2` dark
+
+Done by **redefining the tokens on `.aipanel`**, not by editing ~173 declarations — the same
+move the earlier palette alignment used. **This supersedes every "violet is the AI accent"
+statement above**, for the `ai*` panel only.
+
+    .aipanel          --ai/--ai-2 #cad3e2  --ai-3 #8e9fbc  --ai-fg #0b1627  --ai-h #e3e8f2
+    light .aipanel    --ai/--ai-2 #1d2a3e  --ai-3 #7186a8  --ai-fg #ffffff  --ai-h #111c2c
+
+- ⚠️ **The light block redeclared the violet LATER IN THE SAME RULE** (`--ai:#7c3aed`, from
+  the `--chart-indigo` alignment). Identical specificity, so source order alone would have
+  handed the whole light theme back to violet while dark went neutral — and nothing in a
+  search for the NEW values would have shown it. Deleted, not left.
+- ⚠️ **`--ai-soft` / `--ai-line` must be restated** — they are hardcoded `rgba(139,92,246,…)`
+  at `:root`. The two ALPHAS are unchanged (.13/.34 dark, .09/.26 light); only the hue moved.
+- ⚠️ **`--ai-fg` is new and load-bearing.** The fill now INVERTS between themes, so the ten
+  rules painting `color:#fff` on an `--ai` background are invisible in one theme — white on
+  `#CAD3E2`. It is the panel's own surface, so a filled control reads as a hole punched back
+  to the card.
+- ⚠️ `.aicqok span` (the `Done ①` count pill) was a `rgba(255,255,255,.22)` veil, correct
+  only on dark violet. It is mixed off `--ai-fg` now.
+- ⚠️ **Scoped to `.aipanel` and must stay there.** `--ai*` also drives the toolbar pill, the
+  Log Explorer's AI Query, the per-widget ✦ drawer and the canvas `.aiflash` outline — all
+  still violet, all deliberately.
+- **`--ai-cta` is NOT repointed** — the supplied brand gradient behind the starter rows
+  contains no `#8B5CF6`. It is now the only chromatic thing in the panel besides the
+  thinking title's band.
+
+### Primary buttons: a new `--action` token pair
+
+`Create New Dashboard` (`.btn.pri`) and the `Create Widget` FAB (`.cwfab`) were `--teal`,
+which is **theme-invariant here** — one `#14b8a6` for both themes. They now use
+`--action` / `--action-fg` / `--action-h`, declared per theme (`#cad3e2` dark, `#1d2a3e`
+light). `--action-fg` exists because the fill inverts; teal took `#04211d` in both themes and
+a fixed foreground over a flipping fill is unreadable in one of them.
+
+⚠️ **183 other `var(--teal)` uses remain** — links, focus rings, active tabs, switches, chart
+bars — plus two more primary CREATE buttons on their own classes: **`.ddcreate`** (Create
+Dashboard drawer) and **`.cwbtn.pri`** (widget editor footer). Those were left teal.
+
+### The thinking row, rebuilt
+
+The running Reasoning row is now **mark + animated title + shimmering narration + clock**.
+
+| part | what it does |
+|---|---|
+| `AI_LD_MARK` (`.aildm`, 16px) | the product mark, pulsing `aildpulse` 650ms ease-in-out `.4 → 1` |
+| `.aildl` — the title | writes itself in, then a chromatic band loops through it (below) |
+| `.aiagsay.live` — the narration | Text Shimmer (`aishim`), 2.6s linear |
+| `.aildt` | the elapsed clock, unchanged |
+
+**The title is a CSS port of beui.dev's "Dia Text Animation" (`chromatic-text-reveal.tsx`).**
+The reference is React + `motion`; this file has neither.
+
+- ⚠️ **`@property` is mandatory, not a nicety.** An unregistered custom property animates
+  DISCRETELY — the sweep would jump end to end and the effect would not appear at all. Both
+  `--chromatic-sweep` and `--aireveal` are registered as `<percentage>`.
+- ⚠️ **The palette is this file's own brand gradient**, `rgb(76,177,254) 0% / rgb(115,30,251)
+  55% / rgb(249,17,227) 100%` — the same three stops as `--ai-cta`. **The middle stop sits at
+  `+1.4%`, which looks wrong and is not**: the band spans `sweep ± 14%` (28% wide) and the
+  gradient puts its violet at **55%**, so `-14 + (0.55 × 28) = +1.4`. Placing it at 0 would
+  centre it and quietly restate the gradient as 50/50.
+- ⚠️ The source's own `offset(i) = -14 + (i/(n-1)) × 28` only applies to an EVENLY spaced
+  palette. This one is not, so the stops come from the supplied percentages.
+- ⚠️ **`background-size` is 100%, not 200%.** The old shimmer needed a double-width image to
+  SLIDE; this one never moves the image — the stops move inside it. At 200% every stop lands
+  at half its intended position.
+- ⚠️ **Three animations on `.aildl.fresh`, and the order is load-bearing**:
+  `aiwrite 1.2s ease-in-out 1 forwards` (drives band position AND mask edge together, which
+  is what puts the chromatic edge exactly where the text is being written), `aidiain .36s`
+  (blur/slide entrance), `aidia 2.4s linear **1.2s** infinite` (loops the band forever). The
+  loop is later in the list so it takes `--chromatic-sweep` over at the hand-off; before its
+  delay elapses it contributes nothing, so the two never fight.
+- ⚠️ **The hand-off is seamless only because the endpoints agree.** `aiwrite` ends at 114%
+  (band fully past, every glyph at the trough colour) which is exactly what `aidia` renders
+  at its own 0% (`-14%`). Change either endpoint and a colour jump appears at 1.2s.
+- ⚠️ **The write-in is a MASK (`--aireveal`), not the gradient's own `transparent` stops.**
+  Those two cannot coexist: the loop needs the text READABLE ahead of the band, the write-in
+  needs it ABSENT, one `background-image` cannot be both, and it does not interpolate. The
+  mask edge runs **8% ahead** of the band centre so the leading colours show at the point of
+  writing. `--aireveal` rests at **120%**, not 100% — at exactly 100% the last glyph's
+  antialiased edge clips.
+- ⚠️ **`.fresh` is emitted by `aiLdHTML()` only when the label TEXT changed.** `aiRender()`
+  rebuilds `#aiBody.innerHTML` on every render, so with the animation on `.aildl` it replayed
+  on renders that had not changed a word (measured at 3200ms into a run). The base rule
+  therefore rests at `--chromatic-sweep:114%` — sweep already past — because at `-14%` a
+  non-fresh label would be entirely invisible while its beat was still on screen. The
+  freshness test also treats "no loader on screen" as fresh, which is what makes the first
+  beat of a NEW run animate when its text repeats the previous run's.
+- ⚠️ **The narration shimmer needed `.aitk.bx .aiagsay.live` (0,4,0).** `.aitk.bx .aiagsay`
+  sets `color:var(--text-dim)` at (0,3,0) and beat a plain `.aiagsay.live` (0,2,0) — so
+  `color:transparent` never applied, the solid text painted OVER the gradient, and only ~9%
+  bled through. **`background-clip:text` still applied and the animation still ran**, so
+  probing `animationName` reported "working"; only reading `color` found it. Both selectors
+  are listed, and `prefers-reduced-motion` had to repeat them or it cannot undo its own rule.
+- ⚠️ Its trough is **`--text-dim`**, the colour the line already is in that box — not
+  `--muted`. They are both `#7186a8` in light so the difference reads as a no-op there and is
+  plainly wrong in dark (`#6a7fa0` vs `#8e9fbc`).
+- ⚠️ **On a `background-size:200%` shimmer the RANGE decides how much of the cycle you SEE;
+  the duration only decides how fast.** `100% → -100%` put half the travel past the end of
+  the text, so for ~1.3s of every 2.6s there was no highlight on the line and any screenshot
+  in that half showed flat text. It is `110% → -10%` now (~17% dead instead of 50%).
+- **Parked, not deleted:** the pixel-grid loader (`AI_LD_DELAY`, `.aild`, `@keyframes aipix`)
+  and its wavefront timing.
+
+### The floating card's resize grips
+
+- **Hover-only, and that is the second answer** — they were made visible at rest and reverted
+  the same day. The rule was **deleted rather than commented out**: a parked `opacity:1`
+  next to `opacity:0` invites switching the removed thing back on.
+- **`--aigrip-i` is the one dial for bar length** — `card size − 2 × (this + 1)`, so it tracks
+  a dragged card for free. It moved `14px` (the corner radius) → `11px` → `16px` → **`41px`**,
+  i.e. a deduction of 30 → 24 → 34 → **84**. ⚠️ **This overrides the standing
+  "don't shorten it again" note**, which came from a 23 Aug misread; four explicit length
+  requests in a row is a decision, not a mistake.
+- ⚠️ **A value here paints 1px further in than it reads** — an absolutely positioned box lays
+  out against its ancestor's PADDING box and the card's edge is 1px outside it.
+- The **thinking trail's scrollbar is hidden** (`scrollbar-width:none` + a scoped
+  `::-webkit-scrollbar{display:none}`) while `overflow-y:auto` stays. `overflow-y:hidden`
+  would remove the bar by removing the scrolling, and the 220px cap exists so the rest is
+  still reachable. `padding-right:8px` is kept though its gutter reason is gone — removing it
+  re-wraps every row.
+
+### Verification lessons from this pass
+
+- ⚠️ **CSS animations do not advance reliably under headless virtual time.** Sampling an
+  animated value returns its `from` value forever. Freeze the animation and set the property
+  explicitly, then screenshot — that tests the RENDERING, which is the part that can be wrong.
+- ⚠️ **`getComputedStyle` on a PSEUDO-element returns computed, not used, values.** Reading a
+  grip mark's `height` returned the declared 4px, and "adding the borders back" produced a
+  phantom 6px. Measure a pseudo from PAINTED PIXELS.
+- ⚠️ **`sips --cropOffset` is CENTRE-relative, not absolute.** Every early crop landed on the
+  wrong region. Use PIL.
+- ⚠️ **Colour-detection crops collide with the board behind the panel** — red matched the
+  heatmap, green the severity palette, magenta the Ask-AI pill. Force an unmistakable colour
+  onto the element under test, and match tolerantly (Chrome rounds `#ff0000` to `254,0,0`).
+- ⚠️ **The screenshot viewport is TALLER than the `--dump-dom` one** (no browser chrome), so
+  a rect measured in one run does not crop the other. Derive positions from the render's own
+  height.
+- ⚠️ **Regenerate the probe copy after every edit** — a stale copy reported `card-34` twice
+  on code that already said 84.
 
 ## Responsive — the seven target resolutions
 

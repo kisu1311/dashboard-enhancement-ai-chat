@@ -53,6 +53,13 @@
   --pill:#c9d4e4;            /* selected sidebar pill */
   --track:#485975;           /* timeline selection track (measured on live 8.2.6) */
   --teal:#14b8a6; --teal-dim:#0e8578;
+  /* PRIMARY ACTION (request, 25 Aug 2026: dark #CAD3E2, light #1D2A3E). Create New
+     Dashboard and the Create Widget FAB were `--teal`, which is theme-INVARIANT here —
+     one #14b8a6 for both themes — so a mint pill sat on white and on ink alike. These
+     two values flip with the theme instead: paper-on-ink in dark, ink-on-paper in light.
+     ⚠️ `--action-fg` exists because the FILL INVERTS. Teal took #04211d in both themes;
+     a fixed foreground over a fill that flips is unreadable in one of them. */
+  --action:#cad3e2; --action-fg:#0b1627; --action-h:#e3e8f2;
   --red:#f2504b; --orange:#fb923c; --yellow:#eab308; --green:#22c55e; --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
   --ok-bg:rgba(34,197,94,.15); --ok-bd:rgba(34,197,94,.45);
   --pend-bg:rgba(251,146,60,.14); --pend-bd:rgba(251,146,60,.45);
@@ -99,6 +106,7 @@ html[data-theme="light"]{
   --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
   --white:#16233a; --ink:#f4f7fb;
   --pill:#24344d; --track:#8fa3c2;
+  --action:#1d2a3e; --action-fg:#ffffff; --action-h:#111c2c;
   --oa:#7c3aed; --oa-2:#8b5cf6; --oa-soft:rgba(124,58,237,.09); --oa-line:rgba(124,58,237,.26);
   --sel:#e0ebf5; --text-dim2:#516381;
   --shadow:0 12px 40px rgba(23,35,54,.18); --pop-shadow:0 4px 16px rgba(23,35,54,.14);
@@ -379,6 +387,10 @@ html[data-theme="light"] .ddseg{background:var(--panel-2)}
 .sitem:hover{background:var(--hover-side)}
 .sitem.on{background:var(--pill);color:var(--ink)}
 .sitem .ic{flex:0 0 20px;margin-left:5px}
+/* ⚠️ NO #sbAI OVERRIDE. The stroked prism needed `fill:none;stroke:…` scoped here; the
+   supplied mark is FILLED, so the rail's shared `.ic{fill:currentColor}` is right again
+   and the override was removed rather than left setting `fill:none` on a solid path —
+   which would have rendered the row's icon as nothing at all. */
 .sitem .lbl{font-size:13px;font-weight:500;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:7px}
 .sidebar.open .sitem .lbl{opacity:1}
 .beta{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:3px;background:var(--chip);color:var(--text)}
@@ -605,8 +617,8 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .tstamp .arw{color:var(--faint)}
 .btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:5px;font-weight:600;font-size:12px;border:1px solid var(--border);color:var(--text)}
 .btn:hover{background:var(--hover-side)}
-.btn.pri{background:var(--teal);border-color:var(--teal);color:#04211d}
-.btn.pri:hover{background:#17ccb8}
+.btn.pri{background:var(--action);border-color:var(--action);color:var(--action-fg)}
+.btn.pri:hover{background:var(--action-h);border-color:var(--action-h)}
 .btn svg{width:13px;height:13px;fill:currentColor}
 .icobtn{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--text-dim);
   transition:background .12s,color .12s}
@@ -1246,7 +1258,9 @@ html[data-theme="light"] .mdfield input{color-scheme:light}
   font-size:12.5px;font-weight:600;white-space:nowrap;transition:filter .13s,box-shadow .13s}
 .aibtn:hover{filter:brightness(1.08);box-shadow:0 0 0 3px var(--ai-soft)}
 html[data-theme="light"] .aibtn{color:#6d28d9}
-.aibtn svg{width:14px;height:14px;fill:currentColor}
+/* ⚠️ ONE RULE. There were two `.aibtn svg` rules here, 14px then 15px, and the second
+   silently won — a dead declaration sitting directly above the live one. Folded while
+   converting to the stroked mark: 15px -> stroke-width 2 (= 1.25px on screen). */
 .aibtn svg{width:15px;height:15px;fill:currentColor}
 /* ⚠️ NO DIM, and nothing to click through (annotation, 15 Aug 2026: "this area don't down
    opacity"). The chat is a DOCKED SIDE PANEL, not a modal — it is talking about the board,
@@ -1352,8 +1366,40 @@ html[data-theme="light"] .aibtn{color:#6d28d9}
   --muted:#6a7fa0;                 /* --neutral-regular */
   --white:#e3e8f2;                 /* --primary */
   --hover:#172336;                 /* --left-menu-hover-bg */
+  /* ── THE AI ACCENT IS NO LONGER VIOLET (request, 25 Aug 2026: replace #8B5CF6 with
+     #1D2A3E light / #CAD3E2 dark, across the whole chat interface) ──────────────────
+     Done by REDEFINING THE TOKENS HERE rather than editing ~173 declarations, which is
+     the same move the palette alignment above used. Custom properties inherit AND resolve
+     on the element that declares them, so this one block repaints every wash, hairline,
+     fill, chip, spinner and heading in the panel — and any rule added later inherits it
+     for free.
+     ⚠️ SCOPED TO `.aipanel`, and it must stay that way. `--ai*` also drives the toolbar's
+     Ask-AI pill, the Log Explorer's AI Query, the per-widget ✦ drawer and the canvas
+     `.aiflash` outline. Those are OTHER AI surfaces, not this chat, and moving these to
+     :root would repaint all of them.
+     ⚠️ `--ai-soft` / `--ai-line` MUST be restated. They are hardcoded rgba() of the old
+     violet at :root, so changing `--ai` alone leaves every wash and hairline behind on the
+     old hue — the lesson already recorded when `--ai` moved to `--chart-indigo`. The two
+     ALPHAS are unchanged (.13 / .34 dark, .09 / .26 light) so only the hue moved.
+     ⚠️ `--ai-2` NO LONGER STEPS LIGHTER THAN `--ai`. In violet it was #a78bfa against
+     #8b5cf6 — a brighter tint for text on the dark card. One colour was given per theme,
+     so the two are the same value and the tonal step lives in `--ai-h` (hover) instead.
+     ⚠️ `--ai-fg` IS NEW AND IS LOAD-BEARING. The fill now INVERTS between themes, so the
+     ~9 rules that painted `color:#fff` on an `--ai` background are unreadable in one theme
+     or the other — white on #CAD3E2 is invisible. It is the panel's own surface, so a
+     filled control reads as a hole punched back to the card. Same fix as the Stop button.
+     ⚠️ `--ai-cta` is deliberately NOT here — it is the supplied brand gradient (blue →
+     violet → magenta) behind the starter rows, and it contains no #8B5CF6 to replace. */
+  --ai:#cad3e2; --ai-2:#cad3e2; --ai-3:#8e9fbc;
+  --ai-soft:rgba(202,211,226,.13); --ai-line:rgba(202,211,226,.34);
+  --ai-fg:#0b1627;                 /* contrast ON an --ai fill  */
+  --ai-h:#e3e8f2;                  /* hover: brighter in dark   */
 }
 html[data-theme="light"] .aipanel{
+  --ai:#1d2a3e; --ai-2:#1d2a3e; --ai-3:#7186a8;
+  --ai-soft:rgba(29,42,62,.09); --ai-line:rgba(29,42,62,.26);
+  --ai-fg:#ffffff;                 /* contrast ON an --ai fill  */
+  --ai-h:#111c2c;                  /* hover: darker in light    */
   --text:#1d2a3e;                  /* --page-text-color */
   --text-dim:#7186a8;              /* --text-color-common-secondary */
   --text-dim2:#6a7fa0;             /* --text-neutral-ligher */
@@ -1364,8 +1410,12 @@ html[data-theme="light"] .aipanel{
   --chip:#e3e8f2;                  /* --tag-bg-color */
   --hover:#ecf1f9;                 /* --left-menu-hover-bg */
   --pop-item-hover:#ecf1f9;        /* --dropdown-hover-background */
-  --ai:#7c3aed; --ai-2:#8b5cf6;    /* --chart-indigo, light */
-  --ai-soft:rgba(124,58,237,.09); --ai-line:rgba(124,58,237,.26);
+  /* ⚠️ `--ai` / `--ai-2` / `--ai-soft` / `--ai-line` USED TO BE REDECLARED HERE as
+     #7c3aed / #8b5cf6 (`--chart-indigo`, light). They are set at the TOP of this block
+     now, and these four had to be DELETED rather than left: they sat LATER in the same
+     rule at identical specificity, so source order alone would have handed the whole light
+     theme back to the violet while dark went neutral. Nothing in a search for the new
+     values would have shown it. */
 }
 .aipanel{position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);max-width:96vw;z-index:120;display:flex;flex-direction:column;
   /* ⚠️ `--card`, not `--panel` (request, 20 Aug 2026: "the background is #ffffff"). In
@@ -1574,7 +1624,37 @@ html[data-theme="light"] .aipanel.aifloat{
    positioned inside its grip, so moving the grip moves the mark unless the offset follows.
    The card's own edge is 1px outside the padding box these are laid out against, hence
    `-1px - 4px`. Changing one number here means changing the matching offset on the mark. */
-.aipanel.aifloat{--aigrip-o:4px}
+.aipanel.aifloat{--aigrip-o:4px;
+  /* ⚠️ THE MARK'S END INSET, and it is NOT `--aifloat-r` any more. This is the ONE dial
+     for how long every edge bar is; the rules below carry no length of their own, so the
+     line is always `card size - 2 x (this + 1)` and it tracks a dragged card for free.
+     History, because it moved twice in one day and the second move reversed part of the
+     first:
+       · it was `var(--aifloat-r)` (14px -> 15px painted, a 30px deduction), chosen so a
+         bar stopped exactly where the card's straight edge ends and the corner arc begins;
+       · 25 Aug 2026, "improve 30 px to 24" -> 11px (12px painted). That overshot the arc
+         by 3px at each end;
+       · 25 Aug 2026, "the line length will be less 10 px in every view point" -> 16px
+         (17px painted), a 34px deduction. 10px shorter than the 24px step, i.e. 5px more
+         at each end;
+       · 25 Aug 2026, "the line length will be less 50 px in every view point" -> 41px
+         (42px painted), an 84px deduction. 25px more at each end.
+     ⚠️ THIS OVERRIDES THE OLD "DON'T SHORTEN IT AGAIN" NOTE, which came from a 23 Aug 2026
+     MISREAD of "show the line width" that cut the bar to a 44px centred handle and was
+     reverted the next message. That note was right about that incident and is NOT right
+     here: this is the fourth deliberate length in a row (30 -> 24 -> 34 -> 84 deducted),
+     each one asked for explicitly. The bar is still ~79% of the card's width, not a
+     handle. If it is ever cut to something that no longer reads as an edge, re-read the
+     23 Aug history before assuming that was wanted too.
+     ⚠️ SO THIS IS 41px, NOT 42. An absolutely positioned box lays out against its
+     ancestor's PADDING box, and the card's own edge is 1px outside that, so every value
+     here paints 1px further in than it reads. The same +1 is why the original 14px
+     measured 15. Read a number here as "+1 on screen".
+     ⚠️ The ends now stop 3px SHORT of the straight edge rather than overlapping the arc,
+     so there is a visible gap between each bar and its corner mark. That is the opposite
+     error to the 11px one and it is deliberate — the request is a length, not an
+     alignment. `var(--aifloat-r)` is what restores the exact arc alignment. */
+  --aigrip-i:41px}
 .aigw,.aign,.aige,.aigs,.aignw,.aigne,.aigse,.aigsw{position:absolute;z-index:9;display:none}
 .aigw{left:-5px;top:0;bottom:0;width:8px;cursor:ew-resize}
 .aige{right:-5px;top:0;bottom:0;width:8px;cursor:ew-resize}
@@ -1675,8 +1755,21 @@ body.aisplit .aipanel .aigw{display:block}
   box-sizing:border-box;
   border-radius:999px;border:1px solid var(--aigrip-c);background:var(--card);
   opacity:0;transition:opacity .12s,background-color .12s,border-color .12s}
-/* ⚠️ THE BAR RUNS THE WHOLE EDGE, corner arc to corner arc — inset by `--aifloat-r` at each
-   end so it stops where the card's straight edge does.
+/* ⚠️ HOVER-ONLY, AND THAT IS THE SECOND ANSWER TO THIS QUESTION. On 25 Aug 2026 all
+   four bars were made visible at rest ("i need this line on top/bottom/left/right by
+   default floating view") via a `.aipanel.aifloat …::before{opacity:1}` rule here, and
+   later the same day that was reverted ("by default don't show this like in
+   top/bottom/left/right only show in hover"). The rule is DELETED rather than parked,
+   because a commented-out `opacity:1` sitting next to `opacity:0` is an invitation to
+   re-enable the thing that was just removed.
+   ⚠️ So the resting card shows NO edge marks; `:hover` on a grip reveals that grip's
+   own mark, and a drag fills it solid. Three states again, not two.
+   ⚠️ The LENGTH change from the same session STAYS — `--aigrip-i` is 41px, so the bar
+   is `card size - 84` whenever it is shown. Visibility and length were separate requests;
+   reverting one does not revert the other. */
+/* ⚠️ THE BAR RUNS THE EDGE, inset by `--aigrip-i` at each end — see that token for the
+   whole history. It is 41px (42px painted), so the line is `card size - 84`. No length is
+   written here or anywhere else; changing that one token is how this gets resized.
    ⚠️ IT WAS BRIEFLY A SHORT 44px CENTRED HANDLE and that was a MISREAD of "show the line
    width" (23 Aug 2026); the next message — "I need this line width" — put it back. The
    full-length bar is what the monday reference shows and what was asked for originally.
@@ -1684,10 +1777,10 @@ body.aisplit .aipanel .aigw{display:block}
    it.
    ⚠️ HORIZONTAL edges inset left/right by the radius; VERTICAL edges inset top/bottom.
    Same rule, different axis — inset the wrong pair and the bar runs into the corner arc. */
-.aign::before{left:var(--aifloat-r);right:var(--aifloat-r);top:var(--aigrip-o);height:4px;transform:translateY(-50%)}
-.aigs::before{left:var(--aifloat-r);right:var(--aifloat-r);bottom:var(--aigrip-o);height:4px;transform:translateY(50%)}
-.aigw::before{top:var(--aifloat-r);bottom:var(--aifloat-r);left:var(--aigrip-o);width:4px;transform:translateX(-50%)}
-.aige::before{top:var(--aifloat-r);bottom:var(--aifloat-r);right:var(--aigrip-o);width:4px;transform:translateX(50%)}
+.aign::before{left:var(--aigrip-i);right:var(--aigrip-i);top:var(--aigrip-o);height:4px;transform:translateY(-50%)}
+.aigs::before{left:var(--aigrip-i);right:var(--aigrip-i);bottom:var(--aigrip-o);height:4px;transform:translateY(50%)}
+.aigw::before{top:var(--aigrip-i);bottom:var(--aigrip-i);left:var(--aigrip-o);width:4px;transform:translateX(-50%)}
+.aige::before{top:var(--aigrip-i);bottom:var(--aigrip-i);right:var(--aigrip-o);width:4px;transform:translateX(50%)}
 /* ⚠️ THE CORNER ARC IS A STROKED SVG PATH, NOT TWO CSS BORDERS (request, 21 Aug 2026:
    "make border will be corner radius", with the monday screenshots again). Two adjacent
    borders DO draw the right curve, but a border always terminates square and mitred: the
@@ -2427,7 +2520,7 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aiscp{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;
   border:1px solid var(--ai-line);background:var(--ai-soft);color:var(--ai-2);
   font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}
-.aiscp:hover{background:rgba(139,92,246,.22)}
+.aiscp:hover{background:color-mix(in srgb,var(--ai) 22%,transparent)}
 .aiscp .lb{color:var(--muted);font-weight:400}
 .aiscp .cv{opacity:.7;font-size:9px}
 /* ⚠️ A SOFT PILL, not an outlined box (reference measured 20 Aug 2026: 24px tall,
@@ -2780,7 +2873,7 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
   background:var(--chip);color:var(--text-dim);
   font:500 11px/1 'JetBrains Mono',monospace}
 .aicqo:hover .aicqi{background:var(--ai-soft);color:var(--ai-2)}
-.aicqo.on .aicqi{background:var(--ai);color:#fff}
+.aicqo.on .aicqi{background:var(--ai);color:var(--ai-fg)}
 /* the free row's pencil. Skip used to live here too — it is in `.aicqd` now, see there. */
 .aicqp{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center;color:var(--muted)}
 .aicqp svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
@@ -2826,7 +2919,7 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aicqck svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;
   stroke-linecap:round;stroke-linejoin:round}
 .aicqo:hover .aicqck{background:var(--ai-soft);box-shadow:inset 0 0 0 1px var(--ai-line)}
-.aicqo.on .aicqck{background:var(--ai);color:#fff;box-shadow:none}
+.aicqo.on .aicqck{background:var(--ai);color:var(--ai-fg);box-shadow:none}
 /* ⚠️ THE FOOTER ROW — Skip always, Done only on a multi step. It sits under the free-text
    field, where Next used to be. Right-aligned, `gap:8px`, Skip first and Done last, so the
    only filled control on the card is also the last thing you read.
@@ -2834,17 +2927,20 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
    wrapper would leave single steps with no way past the question at all. */
 .aicqd{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 12px 2px}
 .aicqok{height:30px;padding:0 14px;border:0;border-radius:var(--ai-r);background:var(--ai);
-  color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+  color:var(--ai-fg);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
   display:inline-flex;align-items:center;gap:7px}
-.aicqok:hover{background:#9d78f8}
+.aicqok:hover{background:var(--ai-h)}
 .aicqok:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
 /* the count rides in a pill so "Done 2" reads as one control, not two words */
 .aicqok span{min-width:17px;height:17px;padding:0 5px;border-radius:9px;
-  background:rgba(255,255,255,.22);display:inline-grid;place-items:center;
+  /* ⚠️ was rgba(255,255,255,.22) — a WHITE veil, correct only while the pill sat on a
+     dark violet. The fill inverts now, so in dark it would be white-on-#CAD3E2 and vanish.
+     Mixed off `--ai-fg` it is the label's own colour at the same strength in both. */
+  background:color-mix(in srgb,var(--ai-fg) 22%,transparent);display:inline-grid;place-items:center;
   font-size:11px;font-weight:600}
 .aicqx{height:30px;padding:0 16px;border:0;border-radius:var(--ai-r);background:var(--ai);
-  color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
-.aicqx:hover{background:#9d78f8}
+  color:var(--ai-fg);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.aicqx:hover{background:var(--ai-h)}
 .aicsub{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:11px}
 .aicsub .stp{margin-left:auto;padding:1px 7px;border-radius:9px;background:var(--chip);font-size:10.5px}
 .aifu.opt{width:100%;justify-content:flex-start;border-radius:10px;padding:10px 13px}
@@ -2904,10 +3000,10 @@ ul.aiab,ol.aiab,.aiab ul{margin:2px 0 4px;padding:0;list-style:none}
 .aiskip{margin-right:auto;padding:8px 4px;border:0;background:transparent;color:var(--muted);
   font:inherit;font-size:12.5px;cursor:pointer}
 .aiskip:hover{color:var(--text)}
-.aigo{padding:8px 16px;border:0;border-radius:var(--ai-r);background:var(--ai);color:#fff;
+.aigo{padding:8px 16px;border:0;border-radius:var(--ai-r);background:var(--ai);color:var(--ai-fg);
   font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
-.aigo:hover{background:#9d78f8}
-.aiadd{padding:8px 14px;border:0;border-radius:var(--ai-r);background:var(--ai);color:#fff;
+.aigo:hover{background:var(--ai-h)}
+.aiadd{padding:8px 14px;border:0;border-radius:var(--ai-r);background:var(--ai);color:var(--ai-fg);
   font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .aiadd:hover{background:var(--ai-2)}
 .aialt{padding:8px 13px;border:1px solid var(--border);border-radius:var(--ai-r);background:transparent;
@@ -3073,6 +3169,9 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ The 650ms cycle is SHORTER than the sweep across the grid, so two wavefronts are
    always in flight — that is what makes it read as continuous work rather than a blink.
    Delays are the reference's own formula, (col + |row-1|) × 90ms. */
+/* ⚠️ `.aild` and its two rules below are PARKED — the pixel-grid loader the running row
+   used until 25 Aug 2026. Nothing renders them; kept because the component was supplied
+   and its wavefront timing is not something to re-derive. */
 .aild{display:inline-grid;grid-template-columns:repeat(3,4px);gap:1.5px;flex:0 0 auto}
 .aild i{width:4px;height:4px;background:var(--text);opacity:.15;border-radius:1px;
   animation:aipix 650ms ease-in-out infinite}
@@ -3081,15 +3180,211 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 /* ⚠️ ONE LINE. The agentic flow feeds this short beat names, but the thinking trail feeds
    it a per-request headline ("Working out what needs attention"), which wrapped to two
    lines and pushed the clock and Skip down with it. */
-/* ⚠️ the shimmer tops out at `--text-dim`, NOT `--white` (annotation, 19 Aug 2026). The
-   answer below is `--text` / `--white`; a label that brightens past it makes the wait louder
-   than the result. Same reason the peak used to be white: it read as the main event. */
+/* ⚠️ the shimmer must not brighten PAST the answer (annotation, 19 Aug 2026). The answer
+   below is `--text` / `--white`; a label that goes brighter makes the wait louder than the
+   result, which is why the peak stopped being `--white`.
+   ⚠️ IT PEAKS AT `--text` NOW, NOT `--text-dim` (request, 25 Aug 2026: "in thinking time
+   the icon was animation, need the text to be animated"). The text WAS already animated —
+   this same sweep — but it ran `--muted` -> `--text-dim`, and once the panel was repainted
+   onto the neutral palette those two are #6a7fa0 and #8e9fbc: an 18-point swing that reads
+   as flat grey. The animation was not missing, it was invisible.
+   ⚠️ `--text` is the ceiling and it is EQUAL to the answer, not past it — and only the
+   narrow moving band reaches it at any instant, so the label's average stays below. That
+   keeps the 19 Aug rule intact while making the motion legible.
+   ⚠️ THE BAND IS NARROWER TOO (42/50/58, was 35/50/65). Width is what decides whether this
+   reads as a travelling highlight or as the whole label pulsing together — a wide soft band
+   over `background-size:200%` lights most of the text at once, which looks like a fade, not
+   a sweep. The trough stays `--muted` so the label is READABLE at every point of the cycle;
+   it is saying what is happening, not decorating. */
+/* the mark that replaced it. 16px, because the grid it stands in for measured 15px wide
+   (3 x 4px columns + 2 x 1.5px gaps) and the row's spacing was tuned around that. */
+.aildm{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center}
+/* ⚠️ IT PULSES ON THE OLD LOADER'S OWN TIMING (request, 25 Aug 2026: "in this thinking
+   step the icon use old animation"). `aipix` — the parked pixel grid's keyframes — ran
+   650ms ease-in-out, and this is the same cycle and the same easing, so the row keeps the
+   cadence it had before the mark changed. The mark was static for one build and read as
+   frozen next to a moving label.
+   ⚠️ THE RANGE IS .4 -> 1, NOT the grid's .15 -> 1. Nine cells at 15% read as a WAVE
+   because they are staggered — each one is dim only while its neighbours are lit. A single
+   16px mark taken to 15% just disappears twice a second, which is flicker, not work.
+   ⚠️ It is `opacity` on the SVG, not on `.aildm`. The box also carries the row's flex
+   sizing, and animating a flex item's opacity is fine — but keeping the animation on the
+   art means the 16px slot never changes, so the label beside it cannot shift.
+   ⚠️ Own keyframes, not a second use of `aipix`. That one belongs to the parked grid; if
+   the grid is ever restored the two must be free to differ. */
+.aildm svg{width:16px;height:16px;fill:var(--ai-2);display:block;
+  animation:aildpulse 650ms ease-in-out infinite}
+@keyframes aildpulse{0%,100%{opacity:.4}50%{opacity:1}}
+/* the clock is information, so it keeps ticking; the mark and the sweep are decoration */
+@media (prefers-reduced-motion:reduce){ .aildm svg{animation:none;opacity:1} }
+/* ── the label: Dia / chromatic text reveal ────────────────────────────────────────────
+   Ported from beui.dev/components/motion/text-animation -> "Dia Text Animation"
+   (`chromatic-text-reveal.tsx`, source supplied 25 Aug 2026). That component is React +
+   `motion`; this file has neither, so it is rebuilt in plain CSS. What carries over EXACTLY
+   is the thing that defines the effect: a single `--chromatic-sweep` percentage driving a
+   `background-clip:text` gradient, where everything BEHIND the sweep is the foreground
+   colour, everything AHEAD of it is transparent, and the boundary is a 5-colour edge.
+   ⚠️ `@property` IS MANDATORY, not a nicety. A custom property is an unregistered token by
+   default and animates DISCRETELY — the sweep would jump from -14% to 114% with nothing in
+   between and the effect simply would not appear. Registering it as `<percentage>` is what
+   makes it interpolate.
+   ⚠️ THE PALETTE IS THIS FILE'S OWN BRAND GRADIENT (request, 25 Aug 2026), not the
+   reference's five: `rgb(76,177,254) 0%, rgb(115,30,251) 55%, rgb(249,17,227) 100%` — the
+   same three stops as `--ai-cta` and the Ask-AI pill's border. So the panel's one
+   chromatic moment is the product's own, and no colour enters the file that no token owns.
+   ⚠️ THE MIDDLE STOP IS AT +1.4%, WHICH LOOKS WRONG AND IS NOT. The band spans
+   `sweep - 14%` to `sweep + 14%`, i.e. 28% wide, and the brand gradient puts its violet at
+   **55%**, not at the centre: -14 + (0.55 x 28) = +1.4. Placing it at 0 would centre it and
+   quietly restate the gradient at 50/50, which is not the gradient that was given.
+   ⚠️ The source's own arithmetic is `offset(i) = -TRAIL_HALF_WIDTH + (i / (n-1)) * 28`,
+   which is what produced the reference's -14, -7, 0, +7, +14 for five evenly spaced
+   colours. It only applies to an EVENLY spaced palette — this one is not, so the stops come
+   from the supplied percentages instead. Change either the palette or its percentages and
+   these three numbers have to be recomputed or the band goes lopsided.
+   ⚠️ `background-size` went 200% -> 100% and gained `no-repeat`. The old shimmer needed a
+   double-width image to slide; this one does not move the image at all — the STOPS move
+   inside it. Leave it at 200% and every stop lands at half its intended position.
+   ⚠️ TWO ANIMATIONS, deliberately. The reference eases the sweep with EASE_IN_OUT and the
+   entrance (opacity / blur / translateY) with EASE_OUT — one `animation` cannot carry two
+   timing functions, and per-keyframe easing would apply to both properties in a segment.
+   ⚠️ IT RUNS ONCE PER LABEL, NOT ON A LOOP (request, 25 Aug 2026: "the animation repeat
+   on second text"). It looped every 2s on the SAME text, which re-revealed a line you had
+   already read. In the reference the sweep runs once per WORD and the next word triggers
+   the next sweep — here the "words" are the beat labels, so one run per label is the same
+   behaviour, and the beats are what pace it.
+   ⚠️ WHAT RESTARTS IT IS `aiRender()` REBUILDING `#aiBody.innerHTML`. Each beat replaces
+   `.aildl` with a NEW element, and a fresh element starts its animation from 0 — there is
+   no JS reflow-poke here and none is needed. If the loader row is ever updated in place
+   instead (the way the elapsed clock writes `textContent` directly, precisely to avoid a
+   re-render), the sweep will silently stop replaying and this is the reason.
+   ⚠️ `forwards` IS WHAT MAKES IT SAFE TO RUN ONCE. The final keyframe is 114%, i.e. the
+   sweep fully past the text, which paints EVERY character in the foreground colour. Drop
+   the fill-mode and the label snaps back to `--chromatic-sweep:-14%` when the animation
+   ends — completely invisible, with the text still on screen for as long as that beat
+   lasts. That is the failure mode to look for.
+   ⚠️ THE 0.8s PAUSE IS GONE with the loop. It existed to space consecutive words; the
+   beats do that now, so the sweep is its own 1.2s and the entrance its own 0.36s rather
+   than both being stretched over a shared 2s cycle with the sweep ending at 60%.
+   ⚠️ THE FOREGROUND IS `--muted`, the label's own resting colour — the reference defaults
+   to `var(--foreground)`. It is NOT `--text`: the standing rule here is that the wait must
+   never read louder than the answer, and only the moving edge is allowed to be bright.
+   ⚠️ THE BAND LOOPS AND THE TEXT NEVER DISAPPEARS (request, 25 Aug 2026: "repeat the text
+   color animation like gradient"). Two changes from the reference, and they belong
+   together:
+     · the two trailing stops were `transparent` — text the sweep had not reached yet was
+       INVISIBLE. They are `--muted` now, so the band travels THROUGH a label that is
+       readable at every instant. That also retires the readability caveat this note used
+       to carry.
+     · `infinite`, not one run. Once nothing is being hidden there is no reason to stop:
+       the colour simply keeps flowing through the text, which is what was asked for.
+   ⚠️ `linear`, NOT `ease-in-out`. On a single run the easing gave the sweep its Dia
+   character; on a loop it stalls at both ends and the band reads as a rhythmic pulse
+   rather than a flow. The reference eases because it runs ONCE per word.
+   ⚠️ 2.4s, up from 1.2s. The single run had a 0.8s pause after it; a loop has none, so the
+   same 1.2s back-to-back is twice as busy as what it replaced.
+   ⚠️ `.fresh` NOW GATES ONLY THE ENTRANCE. The blur/slide/fade still fires once per label
+   change — see `aiLdHTML` — but the colour band runs on `.aildl` itself so it never stops
+   between beats. Both rules must restate `aidia`: `animation` is a shorthand, so listing
+   only `aidiain` on `.fresh` would cancel the loop on exactly the labels that just
+   arrived. */
+@property --chromatic-sweep{syntax:'<percentage>';inherits:false;initial-value:-14%}
+/* ⚠️ THE WRITE-IN EDGE, and it is a MASK, not a second background (request + three
+   reference frames, 25 Aug 2026: "the first time enter in writing format like this").
+   The reference does not fade its word in — it does not RENDER what the sweep has not
+   reached yet, so the word appears letter by letter with the chromatic edge leading it.
+   ⚠️ WHY A MASK AND NOT THE GRADIENT'S OWN `transparent` STOPS. That is how this was first
+   ported, and it cannot coexist with the looping band: the loop needs the text READABLE
+   ahead of the band, the write-in needs it ABSENT. One `background-image` cannot be both,
+   and `background-image` does not interpolate. A mask is orthogonal — the background paints
+   the colour, the mask decides how much of it exists — so the two run independently and the
+   first pass gets both.
+   ⚠️ 120% AT REST, not 100%. It has to be past the end so a label that is NOT writing in is
+   completely unmasked; at exactly 100% the final glyph's antialiased edge clips. */
+@property --aireveal{syntax:'<percentage>';inherits:false;initial-value:120%}
 .aildl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  background-image:linear-gradient(90deg,var(--muted) 35%,var(--text-dim) 50%,var(--muted) 65%);
-  background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+  --chromatic-sweep:114%; --aireveal:120%;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 var(--aireveal),transparent var(--aireveal));
+  mask-image:linear-gradient(90deg,#000 0,#000 var(--aireveal),transparent var(--aireveal));
+  background-image:linear-gradient(90deg,
+    var(--muted) 0%,
+    var(--muted) calc(var(--chromatic-sweep) - 14%),
+    rgb(76,177,254) calc(var(--chromatic-sweep) - 14%),
+    rgb(115,30,251) calc(var(--chromatic-sweep) + 1.4%),
+    rgb(249,17,227) calc(var(--chromatic-sweep) + 14%),
+    var(--muted) calc(var(--chromatic-sweep) + 14%),
+    var(--muted) 100%);
+  background-size:100% 100%;background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;
   color:transparent;font-size:13px;font-weight:500;
-  animation:aishim 1.4s linear infinite}
-@keyframes aishim{from{background-position:200% 0}to{background-position:-200% 0}}
+  animation:aidia 2.4s linear infinite}
+/* ⚠️ THE ANIMATION IS ON `.fresh`, NOT ON `.aildl` — and the base rule therefore rests at
+   `--chromatic-sweep:114%`, fully revealed. `aiRender()` rebuilds `#aiBody.innerHTML` on
+   EVERY render, not only when the beat changes, so putting the animation on `.aildl` made
+   it replay on a re-render that had not changed a word — measured at 3200ms into a run,
+   re-revealing a line already read. `aiLdHTML()` sets `.fresh` only when the label text
+   actually differs from the last one it emitted (or when no loader was on screen at all,
+   which is what makes the first beat of a NEW run animate even if its text repeats).
+   ⚠️ 114% AT REST IS LOAD-BEARING. It means "the sweep has already passed", i.e. every
+   character painted in the foreground colour. At the old -14% a non-fresh label would be
+   entirely invisible while its beat was still on screen. */
+/* ⚠️ THREE ANIMATIONS, AND THE ORDER MATTERS. `aiwrite` drives BOTH the band position and
+   the mask edge for the first 1.2s — that is what puts the chromatic edge exactly at the
+   point the text is being written to. `aidia` is DELAYED by that same 1.2s and then loops
+   the band forever; because it is later in the list it takes `--chromatic-sweep` over at
+   the hand-off. Before its delay elapses it contributes nothing (fill-mode is `none`), so
+   the two never fight.
+   ⚠️ THE HAND-OFF IS SEAMLESS ONLY BECAUSE THE ENDPOINTS AGREE. `aiwrite` finishes at
+   114%, i.e. the band fully past the text, every glyph at the trough colour — which is
+   exactly what `aidia` renders at its own 0% (-14%, band not yet arrived). Change either
+   endpoint and a colour jump appears at 1.2s.
+   ⚠️ `--aireveal` is left at 122% by `forwards`, so the mask stays open for the rest of
+   that label's life and the loop is never clipped. */
+.aildl.fresh{animation:aiwrite 1.2s ease-in-out 1 forwards,
+                       aidiain .36s ease-out 1 forwards,
+                       aidia 2.4s linear 1.2s infinite}
+/* the edge runs 8% ahead of the band's centre, so the leading colours are visible at the
+   point of writing rather than being masked off with the text they belong to */
+@keyframes aiwrite{
+  from{--chromatic-sweep:-14%; --aireveal:-6%}
+  to{--chromatic-sweep:114%; --aireveal:122%}}
+@keyframes aidia{from{--chromatic-sweep:-14%}to{--chromatic-sweep:114%}}
+@keyframes aidiain{
+  from{opacity:.56;filter:blur(6px);transform:translateY(5px)}
+  to{opacity:1;filter:blur(0px);transform:translateY(0px)}}
+/* ⚠️ SLOWED, AND THE RANGE MATTERED MORE THAN THE DURATION (request, 25 Aug 2026: "the
+   thinking text animation is very fast, make it slow").
+   The maths, because it is not obvious and it is what made the old one whip: with
+   `background-size:200%` the gradient image is twice the label's width W, so a
+   `background-position` of X% offsets it by -W * X%. The highlight sits at the image's
+   midpoint, i.e. W from its left edge, so its position on screen is `offset + W`.
+     · the OLD range 200% -> -200% moved the highlight from -W to +3W — FOUR W of travel,
+       of which only the middle W is over the text. So the highlight was visible for a
+       QUARTER of the cycle: 0.35s of whip, then 1.05s of nothing. Doubling the duration
+       alone would have doubled the dead pause and still whipped.
+     · the NEW range 100% -> -100% moves it from 0 to 2W. It enters at the left edge with
+       no dead lead-in and crosses the text in HALF the cycle — 1.3s at 2.6s, against 0.35s
+       before. That is ~3.7x slower ACROSS THE TEXT, which is what "slower" means here.
+   ⚠️ Don't "simplify" the range back to a symmetrical 200% — it reads as a fast flick with
+   a long pause, which is the thing that was reported. */
+/* ⚠️ NO LONGER PARKED. This was the title line's shimmer until the Dia band replaced it;
+   it now drives `.aiagsay.live`, the narration line under it — and it is its ONLY user, so
+   these two numbers can be changed without checking anything else.
+   ⚠️ THE RANGE IS 110% -> -10%, NOT 100% -> -100% (reported 25 Aug 2026: "the last prompt
+   is not proper working", with a screenshot of the line sitting flat). The animation was
+   applied correctly the whole time — `<p class="aiagsay live"> anim=aishim` — but with
+   `background-size:200%` a position of X% offsets the image by -W * X%, and the highlight
+   sits W from the image's left edge, so its screen position is `W * (1 - X%)`:
+     · 100% -> -100% moved it from 0 to 2W. HALF that travel is past the right-hand end of
+       the text, so for ~1.3s of every 2.6s there was no highlight on the line at all. Any
+       screenshot taken in that half shows flat, unanimated text — which is exactly what
+       was reported, and why it looked like the change had not landed.
+     · 110% -> -10% moves it from -0.1W to 1.1W. It enters just off the left edge and exits
+       just off the right, so the dead fraction is ~17% instead of 50% and the line reads as
+       continuously sweeping.
+   ⚠️ This is the SAME arithmetic that made the title line whip before it was slowed; the
+   lesson is that on a `background-size:200%` shimmer the RANGE decides how much of the
+   cycle you actually see, and the duration only decides how fast. */
+@keyframes aishim{from{background-position:110% 0}to{background-position:-10% 0}}
 .aildt{font:400 12px/1 'JetBrains Mono',monospace;color:var(--muted);
   font-variant-numeric:tabular-nums}
 /* reduced motion freezes the grid to its dim state — the timer still ticks, because it is
@@ -3215,9 +3510,21 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    CONTENT, so it is correct over the panel's gradient backdrop and needs no colour. Both
    default to 0, so a SHORT trail that does not overflow gets no fade at all and its first
    heading is not dimmed for nothing. `aiTkFadeBind()` sets them.
-   ⚠️ `padding-right` + `scrollbar-width:thin`: the scrollbar sits inside the mask, and
-   without the gutter the tick rows run under it. */
-.aitk.op .aitkl{max-height:220px;overflow-y:auto;padding-right:8px;scrollbar-width:thin;
+   ⚠️ THE SCROLLBAR IS HIDDEN, NOT THE SCROLLING (request, 25 Aug 2026: "in this thinking
+   remove the scrollbar only"). `overflow-y:auto` stays, so the wheel, trackpad, keyboard
+   and the edge fades all behave exactly as before — the bar itself just does not paint.
+   It takes BOTH declarations: `scrollbar-width:none` is the standard property, and the
+   `::-webkit-scrollbar` rule below covers engines that do not honour it yet. Either one
+   alone leaves the bar drawn somewhere.
+   ⚠️ `overflow-y:hidden` would have been the wrong fix — it removes the bar by removing
+   the scrolling, and the whole point of the 220px cap is that the rest is still reachable.
+   ⚠️ `padding-right:8px` STAYS, though its original reason is gone. It was the gutter that
+   kept tick rows from running under the bar; with no bar it is now just 8px of trailing
+   space. Removing it would re-wrap every row in the trail, which "remove the scrollbar
+   only" does not ask for — but it IS reclaimable if the text should run wider. */
+.aitk.op .aitkl::-webkit-scrollbar{display:none}
+.aitk.op .aitkl{max-height:220px;overflow-y:auto;padding-right:8px;
+  scrollbar-width:none;-ms-overflow-style:none;
   --aifade-t:0px; --aifade-b:0px;
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 var(--aifade-t),
     #000 calc(100% - var(--aifade-b)),transparent 100%);
@@ -3282,6 +3589,57 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    shape: adding a widget to the board you are looking at is reversible in one ⌘Z, where
    creating a dashboard is a shared object. Do not "fix" one to match the other. */
 .aiagsay{font-size:13px;line-height:1.6;color:var(--text);margin:0 0 4px}
+/* ── the narration line, while it is still being worked on: Text Shimmer ───────────────
+   beui.dev/components/motion/text-animation -> "Text Shimmer" ("gradient sweep across text
+   for loading or emphasis"), requested 25 Aug 2026 for the sub-text under the loader row.
+   ⚠️ `.live` IS THE WHOLE POINT OF THE MODIFIER. `.aiagsay` is used three times: this
+   running line, and twice more for FINISHED narration in the answer block. Those are not
+   loading, so shimmering them would be saying "still working" about text that is done.
+   Only the branch at `liveSay` gets `.live`.
+   ⚠️ A PLAIN LIGHT SWEEP, NOT THE BRAND GRADIENT. The reference's Text Shimmer is grey on
+   grey — and the title line directly above this already carries the chromatic band, so
+   making both chromatic would flatten the hierarchy and put two coloured sweeps 7px apart.
+   ⚠️ It reuses `aishim`, which is no longer parked. Those numbers were tuned by hand across
+   three requests (peak colour, band width, then the 2.6s / 100%-range slowdown), so this is
+   the same sweep the title line used to have — moved down one row rather than reinvented.
+   ⚠️ The trough is `--muted` and the peak is `--text`, which is the colour this line was
+   ALREADY painted. So the shimmer only ever takes it dimmer, never brighter — the standing
+   rule that the wait must not read louder than the answer holds without a special case.
+   ⚠️ It wraps to two lines, and the sweep runs across the ELEMENT box, so both lines light
+   at the same x rather than the highlight travelling line by line. That is how every
+   background-clip shimmer behaves and it is what the reference does too.
+   ⚠️ `.aiagsay b` / `.aiagsay code` set their own `color`, which would defeat
+   `color:transparent` and paint solid through the clip. Safe here only because `liveSay`
+   goes through `aiEsc()` and is therefore plain text — if that line ever renders markup,
+   those children need `color:inherit`. */
+/* ⚠️ THE SELECTOR CARRIES `.aitk.bx`, AND THAT IS THE WHOLE FIX (reported 25 Aug 2026:
+   "the last prompt is not proper working"). `.aitk.bx .aiagsay` — 200 lines above — sets
+   `color:var(--text-dim)` at specificity (0,3,0), which BEAT the `color:transparent` in a
+   plain `.aiagsay.live` (0,2,0). Source order never came into it. The symptom was subtle
+   and misleading: `background-clip:text` still applied, so the gradient WAS painted and it
+   WAS animating — the solid text simply drew on top of it, and only ~9% of the sweep bled
+   through. Probing `animationName` said "working"; only reading `color` found it.
+   ⚠️ Both selectors are listed on purpose. `.aitk.bx .aiagsay.live` is (0,4,0) and wins
+   where the live line actually renders; the bare `.aiagsay.live` keeps it working if that
+   line is ever moved out of the box. A specificity tie would have been enough today and
+   would have broken the moment either rule moved.
+   ⚠️ THE TROUGH IS `--text-dim`, NOT `--muted` — it has to be the colour the line ALREADY
+   is, which in this box is `--text-dim`. They happen to be the same #7186a8 in light, so
+   this reads as a no-op there and is plainly wrong in dark, where `--muted` is #6a7fa0 and
+   `--text-dim` is #8e9fbc: the sweep would have started from a colour the line never had. */
+.aiagsay.live,
+.aitk.bx .aiagsay.live{
+  background-image:linear-gradient(90deg,var(--text-dim) 42%,var(--text) 50%,var(--text-dim) 58%);
+  background-size:200% 100%;background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+  animation:aishim 2.6s linear infinite}
+@media (prefers-reduced-motion:reduce){
+  /* must repeat the (0,4,0) selector, or `.aitk.bx .aiagsay.live` above outranks this and
+     reduced-motion users keep the sweep AND a transparent colour. */
+  .aiagsay.live,
+  .aitk.bx .aiagsay.live{animation:none;background:none;
+    -webkit-background-clip:border-box;background-clip:border-box;color:var(--text-dim)} }
 .aiagsay b{color:var(--white);font-weight:600}
 .aiagsay code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ai-2)}
 .aiagblk{margin-bottom:13px}
@@ -3324,7 +3682,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   color:var(--text);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .aiagb:hover{border-color:var(--ai-line);color:var(--white)}
-.aiagb.pri{background:var(--ai);border-color:var(--ai);color:#fff}
+.aiagb.pri{background:var(--ai);border-color:var(--ai);color:var(--ai-fg)}
 .aiagb.pri:hover{filter:brightness(1.08)}
 .aiagb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.31;
   stroke-linecap:round;stroke-linejoin:round}
@@ -3536,9 +3894,15 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    ring, which was half the ink in that corner and which a colour change would have left
    at full strength.
    ⚠️ `.aisend.aisndstop` is EXCLUDED. While a generation is running that button is the only way
-   to interrupt it, and a control you need in a hurry must not be the faintest thing there. */
-.aiplus,.aimic,.aisend:not(.stop){opacity:.62;transition:opacity .14s}
-.aiplus:hover,.aimic:hover,.aisend:not(.stop):hover,
+   to interrupt it, and a control you need in a hurry must not be the faintest thing there.
+   ⚠️ THAT EXCLUSION NAMED THE WRONG CLASS UNTIL 25 Aug 2026, so it never once fired. The
+   modifier was renamed `stop` → `aisndstop` (the two-collision note further down), and the
+   four `:not(.stop)` selectors were NOT renamed with it — `.aisend:not(.stop)` therefore
+   matched the stop button as well, and Stop had been painting at .62 the whole time, which
+   is precisely what the line above says must not happen. After renaming a modifier, grep
+   the sheet for the OLD name too; grepping only the new one finds nothing and looks clean. */
+.aiplus,.aimic,.aisend:not(.aisndstop){opacity:.62;transition:opacity .14s}
+.aiplus:hover,.aimic:hover,.aisend:not(.aisndstop):hover,
 .aiplus:focus-visible,.aimic:focus-visible,.aisend:focus-visible{opacity:1}
 .aiplus:hover{background:var(--hover-side);color:var(--ai-2)}
 .aiplus svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
@@ -3552,7 +3916,7 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    16px, which is invisible on its own and obvious in a row of three. */
 .aimic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-.aimic.on{background:var(--ai);color:#fff;animation:aimicp 1.4s ease-in-out infinite}
+.aimic.on{background:var(--ai);color:var(--ai-fg);animation:aimicp 1.4s ease-in-out infinite}
 .aimic.on:hover{background:var(--ai)}
 @keyframes aimicp{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.5)}50%{box-shadow:0 0 0 7px rgba(139,92,246,0)}}
 @media (prefers-reduced-motion:reduce){.aimic.on{animation:none}}
@@ -3616,10 +3980,17 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    all three files and fixing it is a three-file change. */
 .aiinbox.typed .aisend,.aisend.aisndstop{display:inline-flex}
 /* once it does appear it is the primary action, so it arrives already filled rather than
-   as another grey circle you have to find */
-.aiinbox.typed .aisend:not(.stop){background:var(--ai);color:#fff;opacity:1}
-.aiinbox.typed .aisend:not(.stop):hover{background:var(--ai-2)}
-.aisend:hover{background:var(--ai);color:#fff}
+   as another grey circle you have to find.
+   ⚠️ `:not(.aisndstop)`, renamed 25 Aug 2026 — see the note at the .62 dim. As
+   `:not(.stop)` this pair (0,4,0) ALSO matched the stop button and outranked
+   `.aisend.aisndstop` (0,2,0), so a generation running with text still in the composer
+   painted Stop `--ai` violet with a white glyph. Reachable simply by typing your next
+   question while the answer is streaming, and it silently defeated the recolour onto
+   `--text` — the computed style read correctly on an empty composer and wrongly on a
+   typed one, which is why measuring one state only is not proof. */
+.aiinbox.typed .aisend:not(.aisndstop){background:var(--ai);color:var(--ai-fg);opacity:1}
+.aiinbox.typed .aisend:not(.aisndstop):hover{background:var(--ai-2)}
+.aisend:hover{background:var(--ai);color:var(--ai-fg)}
 .aisend:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ai-soft)}
 /* generating: the SAME control becomes stop, so the thing under your cursor is the thing
    you now need — as a FILLED ACCENT CIRCLE with a white rounded square (reference supplied
@@ -3631,26 +4002,46 @@ body.aidockr .aipanel.aifloat{opacity:.55}
        being confused with the dictation mic 8px to its left is now WEIGHT, not a label:
        stop is a solid accent tile, the mic was a transparent circle with a hairline glyph.
        (The mic is gone as of 21 Aug; the weight contrast now separates send from `@`.)
-   ⚠️ `--ai` (#8b5cf6) is this panel's own accent, NOT the indigo in the reference image —
-   importing another product's brand hue would put a colour in the file that no token owns.
-   Swap the two `--ai` values below if the literal reference colour is wanted. */
+   ⚠️ IT IS NO LONGER THE AI ACCENT (request, 25 Aug 2026: #1D2A3E light, #CAD3E2 dark).
+   Those two values ARE `--text` in panel scope — `html[data-theme="light"] .aipanel`
+   declares #1d2a3e and dark inherits :root's #cad3e2 — so the button is painted
+   `var(--text)` and NO new colour enters the file. The reasoning is the one already
+   recorded for the floating card's resize grips: VIOLET MEANS THE ASSISTANT IS DOING
+   SOMETHING, and Stop is the one control in the panel that means the opposite. It was
+   `--ai` (#8b5cf6) until now, on the argument that the panel must not import the reference
+   image's indigo — that argument still holds, and is exactly why the replacement is a
+   token rather than the two literals as typed.
+   ⚠️ THE GLYPH HAD TO INVERT WITH IT. It was `color:#fff`, which is right on violet and
+   still right on light-theme #1d2a3e — but in DARK the button is now #cad3e2, and white on
+   #cad3e2 is invisible. `var(--card)` is the panel's own surface (#ffffff light, #0b1627
+   dark), so the square reads as a hole punched back to the panel in BOTH themes. Changing
+   the fill without this leaves the dark theme with a blank tile.
+   ⚠️ HOVER AND ACTIVE WERE HARDCODED VIOLETS (#9d78f8 / #7c46e8) and could not survive the
+   change. They are tokens now: hover is `--white` (the product's own `--primary`, which is
+   STRONGER in both directions — #111c2c light, #e3e8f2 dark) and active is `--text-dim`,
+   which steps back under the press. The two halo strengths are the panel's own .13 / .34,
+   mixed off `--text` instead of `--ai`, so only the hue moved.
+   ⚠️ `color-mix()` serialises as `color(srgb r g b / a)`, NOT `rgba(...)` — a probe testing
+   these shadows for /rgba/ fails on working CSS. The recorded grip lesson, second place. */
 /* ⚠️ 9px, matching idle — see the note at `.aisend`. It is restated rather than left to
    inherit because this rule has carried an explicit radius since the two states had
    different ones, and a bare inherit here would silently drift if `.aisend` ever changes. */
-.aisend.aisndstop{border-radius:9px;background:var(--ai);color:#fff}
-.aisend.aisndstop:hover{background:#9d78f8;box-shadow:0 0 0 3px var(--ai-soft)}
-.aisend.aisndstop:active{background:#7c46e8;box-shadow:none}
-.aisend.aisndstop:focus-visible{box-shadow:0 0 0 3px var(--ai-line)}
+.aisend.aisndstop{border-radius:9px;background:var(--text);color:var(--card)}
+.aisend.aisndstop:hover{background:var(--white);box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 13%,transparent)}
+.aisend.aisndstop:active{background:var(--text-dim);box-shadow:none}
+.aisend.aisndstop:focus-visible{box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 34%,transparent)}
 /* the glyph is a ROUNDED square at ~36% of the diameter, the proportion the reference
    uses. It was a 15px block whose hard corners fought the button's own radius. */
-/* 12px x (22/24) = 11px of painted square in a 30px circle — the ~36% the reference uses.
-   ⚠️ Change this number and you change the glyph directly now; there is no second scale
-   hidden in the path. */
+/* 11px of painted square in a 30px button — the ~36% the reference uses. The viewBox is
+   cropped to the rect, so this number IS the square; there is no second scale in the path.
+   ⚠️ It was 12px while the rect was 22/24 of its box (= 11px painted). Lucide's rect fills
+   its cropped box, so the CSS had to come DOWN to 11px to keep the same painted size — the
+   glyph is crisper, not smaller. */
 /* ⚠️ `stroke:none` IS LOAD-BEARING. `.aisend svg` now sets `stroke:currentColor;
    stroke-width:2`, and this rule only overrode `fill` — a 2px stroke would leak onto the
    filled square and paint it ~2px bigger with softened corners, i.e. the exact 15px-block
    look the note above says was fixed. The cascade trap this file keeps recording. */
-.aisend.aisndstop svg{width:12px;height:12px;fill:currentColor;stroke:none}
+.aisend.aisndstop svg{width:11px;height:11px;fill:currentColor;stroke:none}
 /* a light travelling along the TOP border of the pill while it generates. It is its own
    element because ::before is the brand ring and ::after is the bloom — both taken. */
 .aigenbar{position:absolute;left:12px;right:12px;top:-1px;height:1.5px;border-radius:2px;
@@ -4678,10 +5069,10 @@ textarea.acta::placeholder{color:var(--muted)}
 
 .cwfab{position:fixed;right:20px;bottom:72px;z-index:60;display:none;align-items:center;gap:8px;
   height:40px;padding:0 16px 0 13px;border:0;border-radius:20px;cursor:pointer;
-  background:var(--teal);color:#04211d;font:inherit;font-size:12.5px;font-weight:600;
+  background:var(--action);color:var(--action-fg);font:inherit;font-size:12.5px;font-weight:600;
   box-shadow:0 6px 20px rgba(0,0,0,.4)}
 html[data-theme="light"] .cwfab{box-shadow:0 6px 18px rgba(23,35,54,.22)}
-.cwfab:hover{filter:brightness(1.08)}
+.cwfab:hover{background:var(--action-h)}
 .cwfab:active{transform:translateY(1px)}
 .cwfab svg{width:16px;height:16px;fill:currentColor;flex:0 0 16px}
 /* only on the dashboard — the page also has Approvals / Health / module views */
@@ -5842,7 +6233,7 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
   </div>
   <div class="stop">
     <div class="sitem" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search<span class="kbd" id="sbKbd">⌘K</span></span></div>
-    <div class="sitem airail" id="sbAI" data-tip="ObserveOps AI" onclick="aiOpen()"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg><span class="lbl">ObserveOps AI</span></div>
+    <div class="sitem airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic" viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg><span class="lbl">Iris</span></div>
   </div>
   <nav class="smenu" id="smenu"></nav>
   <div class="sutil">
@@ -5941,7 +6332,7 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
           </div>
         </span>
         <button class="btn ico" id="shareBtn" data-tip="Share" onclick="openDrawer('drawer-share')"><svg viewBox="0 0 24 24"><path d="M18 8a3 3 0 1 0-2.8-4H15a3 3 0 0 0 .2 1.2L8.9 8.8a3 3 0 1 0 0 6.4l6.3 3.6A3 3 0 1 0 16 17l-6.3-3.6a3 3 0 0 0 0-.8L16 9a3 3 0 0 0 2 .9V8Z"/></svg></button>
-        <button class="aibtn" title="Ask ObserveOps AI about this dashboard" onclick="aiOpen()"><svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>Ask AI</button>
+        <button class="aibtn" title="Ask Iris about this dashboard" onclick="aiOpen()"><svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg>Ask Iris</button>
         <!-- ⚠️ The "✦ AI Chat" button was REMOVED (annotation, 15 Aug 2026). It opened the
              shared ac* chat and sat immediately beside "Ask AI", which opens this page's own
              panel — two violet sparkle pills side by side, indistinguishable at a glance.
@@ -6190,9 +6581,9 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
           <!-- the chat, in this module (annotation, 17 Aug 2026). It opens the same panel
                the Dashboard uses, but scoped to Logs and pinned to this screen, so the
                questions it offers are about logs rather than about a board. -->
-          <button class="lxask" data-tip="Ask ObserveOps AI about these logs  A" onclick="aiOpen('logs')">
-            <svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>
-            <span>Ask AI</span></button>
+          <button class="lxask" data-tip="Ask Iris about these logs  A" onclick="aiOpen('logs')">
+            <svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg>
+            <span>Iris</span></button>
           <button class="lxlive" data-tip="Tail incoming logs in real time" onclick="lxLive(1)">
             <svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 21h8M6 9h5M6 12.5h8"/></svg>
             <span>Start Live Trail</span></button>
@@ -7612,7 +8003,7 @@ const KB = [
   {k:'f', cap:'F',  grp:'View',       label:'Full screen',            sel:'#fsBtn',                run:()=>toggleFS()},
   {k:'/', cap:'/',  grp:'View',       label:'Search dashboards',      sel:'#dsearchBox',           run:()=>openDPanel()},
   {k:'s', cap:'S',  grp:'Share & AI', label:'Share dashboard',        sel:'#shareBtn',             run:()=>openDrawer('drawer-share')},
-  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask ObserveOps AI',      sel:'.aibtn',                run:()=>aiOpen()},
+  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask Iris',               sel:'.aibtn',                run:()=>aiOpen()},
   /* display-only rows: these keys are owned by handlers that already existed */
   {k:null, cap:KMOD+'K', grp:'General', label:'Global search',        sel:'',  run:null},
   {k:null, cap:'?',  grp:'General',   label:'This shortcut sheet',    sel:'',  run:null},
@@ -10504,7 +10895,25 @@ fitCanvas();
    nothing, and its `id` would collide the moment the logo appeared twice on a page —
    the same trap `wArt()` exists to avoid for the widget artwork. */
 const AI_LOGO = '<svg class="mdlogo" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.9922 9.99629V0.167969C19.0183 1.00752 22.981 4.97021 23.8205 9.99629H13.9922Z" fill="#F37564"/><path d="M23.9888 12.2574C23.8545 18.7612 18.5373 24 12 24C5.46269 24 0 18.6269 0 12C0 11.3172 0.0559702 10.6455 0.16791 9.99624C1.10821 4.41045 5.91045 0.123134 11.7426 0V4.95895C8.68656 5.0709 6.12314 7.15298 5.29478 9.98504C5.10448 10.6119 5.00373 11.2836 5.00373 11.9888C5.00373 15.8731 8.13808 19.0186 12 19.0186C12.694 19.0186 13.3657 18.9179 14.0038 18.7276C16.8134 17.8881 18.8843 15.3134 18.9962 12.2462H24L23.9888 12.2574Z" fill="currentColor"/></svg>';
-const AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M12 2l1.7 4.8c.3.9 1 1.6 1.9 1.9L20.4 10l-4.8 1.7c-.9.3-1.6 1-1.9 1.9L12 18.4l-1.7-4.8c-.3-.9-1-1.6-1.9-1.9L3.6 10l4.8-1.7c.9-.3 1.6-1 1.9-1.9L12 2Z"/></svg>';
+/* ── IRIS — the assistant's mark ───────────────────────────────────────────────────
+   SUPPLIED ARTWORK (`OPS AI.svg`, 25 Aug 2026), pasted verbatim — a speech bubble with a
+   four-point spark inside it. Not redrawn and not tidied: the repo rule is that a mark
+   comes from a real source and goes in as-is, because hand-adjusting one is how it drifts
+   out of family.
+   ⚠️ THE viewBox IS 48, NOT 24 — the whole rest of this panel is on a 24 grid. It is kept
+   at 48 because that is the box the artwork was drawn in; rescaling the path by hand is
+   exactly the tidying this rule forbids. Nothing downstream cares: every consumer sizes
+   the <svg> in CSS, so the viewBox is internal.
+   ⚠️ IT IS FILLED, NOT STROKED, which reverses the prism that briefly sat here. Every
+   consumer is back to `fill:` and the derived `stroke-width`s are GONE — a stroke-width on
+   a filled mark is dead weight that reads as a real setting. The 1.25px-on-screen rule
+   still governs the panel's OUTLINE icons; it simply does not apply to a solid mark.
+   ⚠️ `fill="black"` ON THE PATH AND `fill="none"` ON THE ROOT ARE BOTH STRIPPED. `fill` is
+   an inherited SVG property, so with neither present the CSS `fill:currentColor` /
+   `fill:var(--ai-2)` on the <svg> reaches the path. Leave `fill="black"` in and the mark
+   paints black in both themes — a presentation attribute on the element that owns the
+   paint beats inheritance, and it would look like the colour rules were being ignored. */
+const AI_SPARK = '<svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg>';
 /* ⚠️ These were four identical full-width rows with a chevron — Datadog Bits' exact empty
    state — floating in a mostly blank panel, and their answers named things that were not on
    the board (an internal `*.motadata.local` host, "ISP Link - 2", "14 interfaces"). Now:
@@ -11413,14 +11822,21 @@ function aiSetBusy(v){
 const AI_SEND_SVG = '<svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7-7-2Z"/></svg>';
 /* icon-only, per the reference: a white rounded square inside the accent circle. The word
    "Stop" lives in the tooltip (`data-tip`, set in aiSetBusy) rather than on the button. */
-/* ⚠️ THE RECT FILLS ITS VIEWBOX (fixed 20 Aug 2026). It used to be a 9.2-unit square
-   inside a 24-unit box — 38% — and the svg was then rendered at 11px, so the square that
-   actually reached the screen was 11 x .38 = 4.2px inside a 30px button: 14% of the
-   diameter, where the reference this was built from is ~36%. Two shrinks multiplied.
-   The square is the viewBox now and the SIZE is set once, in CSS, so what you read in the
-   rule is what appears on screen. */
+/* ⚠️ THE GEOMETRY IS LUCIDE'S OWN, VERBATIM — the inner rect of `circle-stop`
+   (lucide.dev, ISC): `<rect x="9" y="9" width="6" height="6" rx="1"/>`, pasted unchanged.
+   It was hand-drawn as `x=1 y=1 w=22 h=22 rx=6`, whose corner radius is 6/22 = 27% of the
+   side; Lucide's is 1/6 = 16.7%. That is the whole defect — at 27% the corners eat so far
+   into an 11px square that it reads as a rounded blob, and against a button that is itself
+   a 9px-radius rounded square the two curvatures fought. Nothing was redrawn: the viewBox
+   is CROPPED to the rect's own box, so the square still fills it exactly.
+   ⚠️ THE RECT FILLS ITS VIEWBOX, and that is load-bearing (fixed 20 Aug 2026). It was once
+   a 9.2-unit square inside a 24-unit box — 38% — rendered at 11px, so 4.2px of square
+   reached a 30px button: 14% of the diameter against the reference's ~36%. Two shrinks
+   multiplied. The SIZE is set once, in CSS, so what you read in that rule is what appears
+   on screen — which is why cropping the box meant taking the CSS from 12px down to 11px,
+   the size the old 22/24 rect was already painting. */
 const AI_STOP_SVG =
-  '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6"/></svg>';
+  '<svg viewBox="9 9 6 6"><rect x="9" y="9" width="6" height="6" rx="1"/></svg>';
 function aiSendOrStop(){ aiBusy ? aiStop() : aiSend(); }
 /* Stop ABANDONS — it is not Skip. Skip says "show me the answer now"; Stop says "don't".
    The in-flight trail or flow is dropped and the thread says so, with the two ways on the
@@ -13133,7 +13549,10 @@ function aiRender(){
   if(!aiThread.length){
     b.innerHTML = '<div class="aiempty">' +
       '<span class="aibig">' + AI_SPARK + '</span>' +
-      '<h3>Hello ' + aiEsc(AI_WHO) + ', how can we help?</h3>' +
+      /* ⚠️ "I", not "we" — giving the assistant a name made the plural wrong, and the
+         Logs branch of the copy below already spoke in the first person singular
+         ("...and I'll build the query"), so the greeting was the odd one out. */
+      '<h3>Hello ' + aiEsc(AI_WHO) + ', how can I help?</h3>' +
       /* the copy and the starters follow the screen — a dashboard greeting on the Log
          Explorer would be offering to explain something you are not looking at */
       (aiInLogs()
@@ -13144,7 +13563,7 @@ function aiRender(){
            aiLogQ builds the query), so the line names both. */
         ? '<p>Ask about the logs on this screen, or describe a search — a severity, a ' +
           'time window, a host — and I\'ll build the query.</p>'
-        : '<p>Ask ObserveOps AI anything about this dashboard, or get help with insights, ' +
+        : '<p>Ask Iris anything about this dashboard, or get help with insights, ' +
           'changes and building widgets.</p>') +
       /* ⚠️ NO ICON on a starter (request, 20 Aug 2026). Four rows carried a tinted glyph
          and two of them were the SAME ✦ the panel's own mark and every answer already
@@ -14341,17 +14760,35 @@ function aiAgChart(a){
       '<span><i style="background:' + c.col + '"></i>' + aiEsc(c.l) + ' <b>avg ' + c.avg + '</b></span>').join('') +
     '</div>';
 }
-/* ── pixel-grid loader + shimmer label + elapsed clock ─────────────────────────────────────
-   (component supplied 18 Aug 2026, replacing the spinner on the running Reasoning row.)
-   The chevron wavefront is the reference's own delay formula: (col + |row-1|) × 90ms. */
+/* ── the product mark + shimmer label + elapsed clock ──────────────────────────────────────
+   ⚠️ THE ROW LEADS WITH THE LOGO NOW (request, 25 Aug 2026: "use this logo in every
+   thinking"). It was a 3x3 PIXEL-GRID LOADER, a supplied component (18 Aug 2026) whose
+   chevron wavefront ran on the reference's own delay formula `(col + |row-1|) x 90ms`.
+   That component is PARKED, not deleted — `AI_LD_DELAY` below, plus `.aild` / `.aild i` /
+   `@keyframes aipix` in the stylesheet — so it is one call site away.
+   ⚠️ THE MARK IS STATIC, deliberately. It replaced the only moving thing in this row, so
+   the obvious instinct is to make it pulse — but the motion moved to the LABEL two requests
+   ago (the `aishim` sweep, slowed to 2.6s on request) and the clock beside it ticks. Three
+   moving things in one 300px row is what the panel keeps being trimmed for. Add a pulse
+   only if it is asked for.
+   ⚠️ It reuses `AI_SPARK`, so there is ONE definition of the mark for the whole panel — the
+   empty state, every answer card, the finished trail and now the running row cannot get out
+   of step with each other. */
 const AI_LD_DELAY = Array.from({ length: 9 }, (_, i) =>
-  ((i % 3) + Math.abs(Math.floor(i / 3) - 1)) * 90);
-const AI_LD_GRID = '<span class="aild" aria-hidden="true">' +
-  AI_LD_DELAY.map(d => '<i style="animation-delay:' + d + 'ms"></i>').join('') + '</span>';
+  ((i % 3) + Math.abs(Math.floor(i / 3) - 1)) * 90);   /* parked with `.aild` */
+const AI_LD_MARK = '<span class="aildm" aria-hidden="true">' + AI_SPARK + '</span>';
 /* the label shimmers and the clock ticks — one is the state, the other is how long it has
    been in it, which is the thing a long run actually needs to say */
+/* ⚠️ `.fresh` is what lets the sweep replay, and it is emitted ONLY when the beat's text
+   really changed — see the note at `.aildl.fresh`. `aiLdLast` remembers the last label
+   emitted; the `document.querySelector` runs BEFORE the new markup is inserted, so it is
+   asking "was a loader already on screen?", which is how the first beat of a new run
+   animates even when its text happens to repeat the previous run's. */
+let aiLdLast = '';
 function aiLdHTML(label){
-  return AI_LD_GRID + '<span class="aildl">' + aiEsc(label) + '</span>' +
+  const fresh = !document.querySelector('.aildl') || label !== aiLdLast;
+  aiLdLast = label;
+  return AI_LD_MARK + '<span class="aildl' + (fresh ? ' fresh' : '') + '">' + aiEsc(label) + '</span>' +
     '<span class="aildt" id="aiLdClock">0.0s</span>';
 }
 function aiLdFmt(ms){
@@ -14445,7 +14882,7 @@ function aiAgHTML(a, i){
       (running
         ? '<div class="aitkh">' + head +
             '<button class="aitksk" title="Show the result now" onclick="aiAgSkip(' + i + ')">Skip</button>' +
-          '</div>' + (liveSay ? '<p class="aiagsay">' + aiEsc(liveSay) + '</p>' : '')
+          '</div>' + (liveSay ? '<p class="aiagsay live">' + aiEsc(liveSay) + '</p>' : '')
         /* ⚠️ `pill` — the same collapsed chip the thinking trail uses (19 Aug 2026). Without
            it this header stayed a full-width row and the two surfaces looked unrelated. */
         : '<button class="aitkh pill" onclick="aiAgTog(' + i + ',\'think\')" aria-expanded="' + op + '">' + head +
@@ -15409,7 +15846,7 @@ aiLogoPaint();
 <!-- the dock preview: a ghost of the sidebar column, shown while a floating card is
      dragged into the right-hand hot zone. Outside .aipanel so the card's own opacity
      while docking does not fade the preview with it. -->
-<aside class="aipanel" id="aiPanel" role="dialog" aria-label="ObserveOps AI">
+<aside class="aipanel" id="aiPanel" role="dialog" aria-label="Iris — ObserveOps AI">
   <!-- the ambient thinking glow — decorative only, so it is hidden from assistive tech.
        It runs from the moment the question is sent until the answer lands (.gen). -->
   <!-- resize grips. The left one is shared: it widens the COLUMN in Sidebar and the CARD in
@@ -18839,7 +19276,12 @@ function lxPatterns(){
 function lxPatSize(ev){ lxMenu(ev, ['20','50','100','200'], '20', v=>toast('Page size '+v)); }
 /* the ✦ in the Action column — it opens the lxps* drawer below, off LX_PATTERNS /
    LX_PAT_AI / LX_PAT_POINTS, so the table and the summary cannot disagree about a count. */
-const LX_AI_SPARK = '<svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>';
+/* ⚠️ ONE DEFINITION, not a second copy. This used to be its own literal of the old ✦ and
+   the two drifted the moment either changed. A top-level `const` in a classic script lives
+   in the shared global lexical environment, so this block — which is parsed AFTER the one
+   declaring AI_SPARK — can simply read it. Move the `ai*` block below this one and it
+   becomes a TDZ error at load, which is the only ordering rule here. */
+const LX_AI_SPARK = AI_SPARK;
 /* ⚠️ THE ✦ OPENS ITS OWN DRAWER, NOT THE CHAT (rebuilt 20 Aug 2026 against the live
    product). The first build routed it into the `ai*` chat panel — pinned the pattern as a
    context chip, ran a thinking trail and answered with bullets, Variable parts and

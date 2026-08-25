@@ -1,125 +1,125 @@
-# Handoff — 2026-08-24 18:55
+# Handoff — 2026-08-25 18:14
 
 ## Read first
 
-Two sections of `CLAUDE.md`, both written this session:
+Two sections of `CLAUDE.md`, in this order:
 
-- **`## The 24 Aug 2026 pass — Option 1's ai* panel, request by request`** — the map of
-  everything changed in the AI panel today, grouped by icons / spacing / clarifier /
-  thinking trail / context bar / cursor. Read this before touching `ai*`.
-- **`### Its chrome was rebuilt from the product's own components (24 Aug 2026)`**, inside
-  `## Manage dashboards (md*)` — the tabs, search box and bulk-action changes.
+1. **"The 25 Aug 2026 pass — the assistant gets a name, a mark, and a neutral palette"**
+   — everything this session did, and it **supersedes** several older statements in that
+   file (violet is no longer the `ai*` panel's accent, `AI_SPARK` is no longer the ✦,
+   "Ask AI" is now "Ask Iris", the grip line's "don't shorten it again" note is overruled).
+   Where anything conflicts, that section is current.
+2. **"The 24 Aug 2026 pass"** directly above it — the immediately preceding state, which
+   this one builds on.
 
-Everything is **`index copy.html` (Option 1) only**. Options 2 and 3 were not touched, so
-the shared `ac*` / `lx*` / `st*` blocks are still byte-identical across the three files.
+All work is **Option 1 only** (`index copy.html`). Options 2 and 3 were not touched.
 
 ## What we worked on this session
 
-A long request-by-request visual pass, driven entirely from screenshots the teammate sent
-after each change. Two areas: the **Manage dashboards** screen's chrome, and then a deep
-sweep of **Option 1's `ai*` chat panel** — icons, spacing, the clarifier card, the thinking
-disclosure, and the context bar.
+Gave the AI assistant an identity — a name (**Iris**) and a supplied product mark — then
+repainted the whole chat panel off violet onto a neutral pair, and rebuilt the "thinking"
+row's motion from two beui.dev references (Dia Text Animation + Text Shimmer).
 
 ## Completed
 
-**Manage dashboards + the list panel**
-- Tabs are `.lxtab` underline tabs in their own row under the page head, not `.dtab` pills
-  in the toolbar.
-- The funnel filter field became the product's `.stcsearch` search box plus a `.stcaddf`
-  `＋ Filter`. The whole faceted filter still works (draft → Done → chip → filtered table,
-  verified end to end).
-- Bulk actions are `.stcsq` icon tiles pinned to the end of the toolbar row, so ticking a
-  box no longer shoves the grid down 46px. Clear stays a word.
-- `mdMoveMenu` is viewport-clamped (it ran 9px off-screen once the trigger shrank).
-- The list panel's *Manage dashboards* button is a labelled full-width row under the teal
-  primary, not a 34px icon square.
-
-**AI panel — icons**
-- Send: Lucide `arrow-up` in a 9px rounded square, violet, white glyph. Stop matches.
-- Layout toggle: Lucide `square` / `copy` as a matched pair, and it no longer wears `.on`.
-- Summary card carries the ✦, not the product logo.
-- Clarifier back/close equalised at 16px / 1.875 (still 1.25px on screen).
-
-**AI panel — spacing**
-- Header: ad-hoc margins removed, chat name now 8px from ＋ New chat (the summary card's
-  own mark→title gap).
-- Scroll-to-latest arrow lifted off the composer — it was flush, now 10px.
-- `.aichips` / `.aiq` / `.aiacts` split into row-gap vs column-gap with 14px between blocks.
-- Documentation / Support moved to the foot of the empty state.
-
-**AI panel — components**
-- Clarifier: Skip moved to its own footer row shared with Done; back arrow reserved on every
-  step so the title stops jumping and now aligns with its subtitle; a 2px progress track
-  (verified 25/50/75/100 across all four steps).
-- Thinking trail: expanded state capped at 220px, scrolls, both edges fade — reusing the
-  thread's own fade engine (`aiFadeEl` extracted from `aiFade`).
-- Collapsed label is one constant, `AI_TK_NAME = 'Thought'`, on both surfaces.
-- Context bar never empties: an **All modules** floor chip that really moves the scope.
-- The floating card's header shows `grab` / `grabbing`.
+- **`_ai-identity.html`** — a new options board: six complete AI identities (mark + name +
+  rationale + trademark notes), rendered at real size in the actual pill, both themes.
+  Underscore-prefixed so `_sync_variants.js` ignores it. Iris was chosen from it.
+- **Iris applied everywhere** — toolbar pill, Log Explorer head, rail row + tooltip, the `A`
+  shortcut label, the panel `aria-label`, empty-state copy. Greeting fixed "we" → "I".
+- **The mark is the supplied `OPS AI.svg`** (speech bubble + spark), path extracted
+  programmatically from the file. Eight CSS consumers moved back from `stroke` to `fill`;
+  `#sbAI .ic` override removed; `LX_AI_SPARK = AI_SPARK` so there is one definition.
+- **Stop button** — glyph is now Lucide `circle-stop`'s inner rect verbatim (corner radius
+  27% → 16.7%, which is what made it read as a blob); recoloured to `--text`
+  (`#1D2A3E` / `#CAD3E2`) with `--card` glyph, `--white` hover, `--text-dim` active.
+- **Bug fixed: four stale `:not(.stop)` selectors** left over from the documented
+  `stop` → `aisndstop` rename. Consequences, both live until now: Stop rendered at **62%
+  opacity** (contradicting its own comment saying it was excluded), and painted **violet
+  whenever the composer had text** — reachable by typing while an answer streams.
+- **Whole `ai*` panel off violet** — tokens redefined on `.aipanel` per theme, plus a new
+  `--ai-fg` (the fill inverts, so ten `color:#fff` rules were unreadable in one theme), and
+  a **stale later-in-the-same-rule light violet declaration deleted** that would otherwise
+  have kept light theme violet while dark went neutral.
+- **`--action` token pair** for primary buttons (`.btn.pri` + `.cwfab`), replacing a
+  theme-invariant `--teal`.
+- **Thinking row rebuilt** — product mark (pulsing on the old loader's 650ms cadence)
+  replaces the pixel grid; the title writes itself in then loops a brand-gradient band; the
+  narration line carries Text Shimmer.
+- **Bug fixed: the narration shimmer never worked** — `.aitk.bx .aiagsay` (0,3,0) beat
+  `.aiagsay.live` (0,2,0), so `color:transparent` never applied and the solid text painted
+  over the gradient. Now `.aitk.bx .aiagsay.live` (0,4,0), with `prefers-reduced-motion`
+  repeating the same selector.
+- **Thinking trail scrollbar hidden**, scrolling preserved.
+- Floating-card grip line: reverted to hover-only; length now `card − 84` via `--aigrip-i`.
 
 ## In progress
 
-Nothing mid-flight. Every change was verified before being reported.
+Nothing mid-flight — every change is applied and verified. Open **decisions**, not
+unfinished work:
 
-**Uncommitted**: `index copy.html` (+605 / −134). Nothing has been committed or pushed this
-session — the working tree is that one file plus the pre-existing untracked `image.png`.
+- **`_ai-identity.html`** is kept as the record of why Iris. Delete whenever you like.
+- The Iris **prism** mark (from the options board) was built and then replaced by the
+  supplied SVG. It is gone from `index copy.html`, but the board still shows it.
 
 ## Next steps
 
-1. **Look at the panel in a real browser.** Everything today was measured in headless, and
-   the teammate's own screenshots were repeatedly a version behind — see Gotchas.
-2. **Commit the work.** One file, one coherent pass; the CLAUDE.md sections above are
-   written and can carry the commit message.
-3. **Decide the send button's shape if the composer ever regains a control to its right.**
-   The 19 Aug objection (a square between two circles) was answered by that row no longer
-   existing; it comes back if the row does.
-4. **Consider whether `aiNewChat()` should reset pinned context.** It currently keeps the
-   previous chat's chips — pre-existing behaviour, unchanged today, but the All-modules floor
-   made it more visible.
-5. **The full-screen toggle wedging under automation** is worth a real look. It reproduces on
-   the committed baseline, so it is not from today's edits.
+1. **Decide the remaining violet surfaces.** Still violet on purpose, all flagged: the
+   toolbar `Ask Iris` pill (brand-gradient border + violet text), the Log Explorer's
+   `AI Query` / `Generate query` / Apply, the per-widget `✦` summary drawer, the canvas
+   `.aiflash` outline, and the whole `ac*` panel (⌘I, runs on `--oa*`, three-file change).
+2. **Decide the remaining teal.** 183 `var(--teal)` uses, including two more primary CREATE
+   buttons on their own classes — `.ddcreate` (Create Dashboard drawer) and `.cwbtn.pri`
+   (widget editor footer) — which now look inconsistent beside the neutral `.btn.pri`.
+3. **The Send glyph is still a hand-drawn dart** (`M4 12l16-7…`) even though CLAUDE.md
+   records it as Lucide `arrow-up`. It sits directly beside the Stop button that was just
+   fixed. Worth pulling the real geometry.
+4. **`--ai-cta` starter rows** are now the only other chromatic thing in the panel — in
+   light theme they read as a pink wash against an otherwise neutral card. Neutralise, or
+   keep as the brand moment?
+5. Consider whether the mark and the name should agree — the bubble+spark says "AI chat"
+   clearly but does not illustrate *Iris*.
 
 ## Decisions made
 
-- **Reuse this file's own components rather than skinning the reference.** Manage dashboards'
-  tabs, search box and bulk tiles are all `.lxtab` / `.stcsearch` / `.stcsq` — controls
-  already cloned from the live product — so they inherit its geometry and cannot drift from
-  it. The flow stays the reference's; the look is this prototype's.
-- **Presence comes from size, never from breaking the icon-weight rule.** The panel targets
-  1.25px of stroke on screen everywhere. Where glyphs read as smudges (the clarifier's back
-  and close), they were enlarged and the stroke recomputed, not thickened.
-- **One constant for the thinking label.** A disclosure's job is to say what is behind it,
-  and that is always the same thing. This reverses the 19 Aug kinds-summary deliberately.
-- **Empty context now means global, and says so.** Reverses the 18 Aug note. The screen and
-  the model had disagreed — the bar was blank while the scope quietly stayed on Dashboard.
-- **The AI mark, not the product logo, on generated prose.** Reverses 19 Aug.
-- **Reversals are recorded at the rule, with both sides of the argument.** Four decisions
-  today undo earlier ones; each carries a note naming the old request so it is not restored
-  by someone reading only the older note.
+- **Redefine tokens on `.aipanel`, never edit the ~173 declarations** — and never move those
+  rules to `:root`, because `--ai*` also drives four other AI surfaces.
+- **Keep the supplied SVG's 48 viewBox** rather than rescaling to the panel's 24 grid.
+  Rescaling a path by hand is how artwork drifts out of family; the viewBox is internal
+  because every consumer sizes the `<svg>` in CSS.
+- **Delete rather than park** the grips' resting-visibility rule — a commented-out
+  `opacity:1` beside `opacity:0` invites re-enabling the thing just removed. (Contrast: the
+  pixel-grid loader and `aishim` *were* parked, because their timings were hand-tuned.)
+- **Overrule the "don't shorten the grip line again" note.** It came from a 23 Aug misread;
+  four explicit length requests in a row is a decision. The note is rewritten to say so.
+- **Use the brand gradient's own 55% stop**, giving the band's middle colour an offset of
+  `+1.4%` rather than centring it at 0 — centring would quietly restate the gradient 50/50.
+- **A mask, not `transparent` gradient stops, for the write-in** — the loop needs the text
+  readable ahead of the band and the write-in needs it absent; one `background-image` cannot
+  be both and it does not interpolate.
 
 ## Gotchas & notes
 
-- ⚠️ **Chrome could not reach any local port for most of this session** — `curl` returned 200
-  on the same URLs, two ports and a fresh server made no difference. Verification moved to
-  headless probes. **Check this first**; if it persists, headless with a stripped Agentation
-  loader is the working route.
-- ⚠️ **The teammate's screenshots were repeatedly a version behind.** A paper-plane send icon
-  was reported twice after it had already been replaced. These pages are ~1.6 MB and the
-  local server sends no cache headers — bump a `?v=` query or hard-reload.
-- ⚠️ **`aiFadeBind()` is too early for anything that queries the thread's markup.** It runs
-  near the top of `aiRender()`, before `b.innerHTML`. A `requestAnimationFrame` fallback does
-  **not** rescue it either — rAF is starved under headless virtual time. Put such calls at the
-  tail of `aiRender()`, beside the loader's clock.
-- ⚠️ **`margin-top:auto` cannot double as a minimum gap.** It resolves to 0 with no free space
-  and silently overrides a `margin-top` written beside it. Put the floor on the preceding
-  element.
-- ⚠️ **`aiAsk()` throws when called directly from a probe** (`reading '2'`). Drive flows
-  through their own entry points instead — `aiAskGroup()`, `aiAgSumStart()`.
-- ⚠️ **Probes that advance the clarifier by clicking a row stall on step 2** — that is the
-  multi-select step, where a row toggles and only Done commits. One probe reported a false
-  failure this way before I noticed.
-- ⚠️ **Driving the full-screen toggle wedges the renderer under automation.** Reproduced on
-  the committed baseline. Set `.aifs` directly to measure those states.
-- ⚠️ Several rules now depend on each other numerically and say so in comments: `.aicqs`'s
-  33px indent ← the back button's 24px box; `.aitobot`'s `+6px` ← `.aicomp`'s 4px padding;
-  `.dfoot`'s 85px min-height ← its two rows. Change one, move the other.
+- ⚠️ **A green probe is not a working feature — assert the CONSEQUENCE.** The narration
+  shimmer probed as `animationName=aishim` + `background-clip:text` and was still completely
+  broken; only reading `color` revealed that a higher-specificity rule had killed it.
+- ⚠️ **After renaming a CSS modifier, grep for the OLD name too.** Grepping only the new one
+  finds nothing and looks clean — which is how four `:not(.stop)` selectors survived.
+- ⚠️ **Check for a later declaration in the SAME rule** before trusting a token override.
+  The light `.aipanel` block redeclared `--ai` further down; specificity was identical, so
+  source order alone would have reverted half the work invisibly.
+- ⚠️ **CSS animations do not advance under headless virtual time.** Sampling an animated
+  value returns its `from` value forever. Freeze the animation, set the property explicitly,
+  screenshot.
+- ⚠️ **`getComputedStyle` on a pseudo-element returns computed, not used, values** — and
+  `sips --cropOffset` is centre-relative, not absolute. Both produced phantom measurements.
+  Measure pseudo-elements from painted pixels, and crop with PIL.
+- ⚠️ **Colour-based pixel detection collides with the dashboard behind the panel** (red =
+  heatmap, green = severity, magenta = the Ask-AI pill). Force an unmistakable colour onto
+  the element under test and match tolerantly — Chrome rounds `#ff0000` to `(254,0,0)`.
+- ⚠️ **The `--screenshot` viewport is taller than the `--dump-dom` one** (no browser chrome),
+  so a rect measured in one run will not crop the other.
+- ⚠️ **Regenerate the probe copy after every edit.** A stale copy reported the old value
+  twice on code that was already correct.
+- Nothing is committed. `git status`: `index copy.html` modified, `_ai-identity.html` and
+  `image.png` untracked. Run `/publish` to go live.
