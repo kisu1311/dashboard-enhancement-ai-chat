@@ -351,6 +351,27 @@ html[data-theme="light"] .ddseg{background:var(--panel-2)}
 .ddprev{border:1px solid var(--border);border-radius:6px;background:var(--bg);padding:10px;margin-top:12px}
 .ddprev .pcap{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:700}
 .ddprev .pgrid{display:grid;grid-template-columns:1fr 1fr}
+/* ── Layout settings drawer (`lay*`) ───────────────────────────────────────────────────
+   Analysed on ServiceOps_Dashboard_v2 (#/dashboard/d-188 -> the dashboard's ⋮ Actions ->
+   "Layout settings"), 26 Aug 2026. Their panel is 620px; ours is 520 because `.sdrawer` is
+   400 and the four fields only need two columns.
+   ⚠️ EVERY PART IS AN EXISTING ATOM — `.sdrawer` / `.dr-h` / `.dr-b` / `.dr-f`, `.ddlbl`,
+   `.ddseg` (which already is their "Apply to" segmented control), `.ddnote` (their scope
+   sentence), `.ddsliders` / `.ddslide` (their 2x2 field grid) and `.ddprev` (their Live
+   Preview). Nothing imports their chrome or their colours; only the MODEL was copied.
+   ⚠️ `#drawer-layout.on` IS MANDATORY. `#drawer-layout{right:-540px}` is (1,0,0) and would
+   BEAT `.sdrawer.on{right:0}` at (0,2,0) — the drawer would open in state and never move
+   on screen. An id-scoped width on any `.sdrawer` needs its own `.on` rule. */
+#drawer-layout{width:520px;right:-540px}
+#drawer-layout.on{right:0}
+.layticks{display:flex;justify-content:space-between;margin-top:2px;
+  font-size:9.5px;color:var(--faint);font-family:"JetBrains Mono",monospace}
+.laypv{display:grid;grid-template-columns:1fr 1fr}
+.laypvt{background:var(--card);border:1px solid var(--border-soft);border-radius:6px;
+  display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.laypvt .t{font-weight:600;color:var(--text);line-height:1.2}
+.laypvt i{display:block;height:5px;border-radius:3px;background:var(--chip)}
+.laypvt i.s{width:58%}
 .pw{background:var(--card);border:1px solid var(--border-soft);border-radius:5px;overflow:hidden;display:flex;flex-direction:column}
 .pw .pt{padding:4px 7px;font-weight:600;border-bottom:1px solid var(--border-soft);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;color:var(--text);flex:0 0 auto}
@@ -560,7 +581,7 @@ tr:hover td{background:var(--hover)}
 .widget:hover{border-color:var(--border);box-shadow:0 3px 12px rgba(0,0,0,.24)}
 html[data-theme="light"] .widget:hover,
 html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
-.widget .whead{flex:0 0 auto;padding:8px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);
+.widget .whead{flex:0 0 auto;padding:8px 12px;font-weight:600;font-size:var(--lay-title,12.5px);background:var(--card-head);
   display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border-soft)}
 .widget .wbody{flex:1;min-height:0;padding:10px 12px;overflow:hidden;display:flex;flex-direction:column}
 .nodata{display:grid;place-items:center;min-height:150px;color:var(--text-dim);font-size:14px}
@@ -765,6 +786,42 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .kbRow{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12.5px;color:var(--text)}
 .kbRow .kbK{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600;
   color:var(--text);background:var(--chip);border-radius:4px;padding:2px 7px;min-width:26px;text-align:center}
+
+/* ── the toolbar's hover popover — the SAME `KB` registry, without leaving the page ──────
+   The sheet above is a modal you open; this is a glance. Both are built from `KB`, so a
+   shortcut added to that array appears in the sheet, in this popover AND as a keycap on its
+   own control, and the three can never disagree.
+   ⚠️ `visibility`, NOT `display:none`. `kbPopOpen` MEASURES the popover to place it, and a
+   `display:none` element has no box — `offsetWidth` would be 0, every popover would be
+   pinned to the left edge, and the flip-above test could never fire. Hidden-but-laid-out is
+   what makes "measure, position, then reveal" possible in one frame with no flash.
+   ⚠️ z-index 95 — above `.pop` (90) so it clears the toolbar's own menus, and far below the
+   drawers (100001+) and the sheet (200002), which own the screen when they are open. */
+.kbpop{position:fixed;z-index:95;width:462px;max-width:94vw;
+  background:var(--pop);border:1px solid var(--border);border-radius:8px;
+  box-shadow:var(--pop-shadow);padding:13px 15px 14px;
+  opacity:0;visibility:hidden;transform:translateY(-4px);
+  transition:opacity .12s,transform .12s,visibility .12s}
+.kbpop.on{opacity:1;visibility:visible;transform:none}
+.kbpoph{font-size:12.8px;font-weight:600;color:var(--white);margin-bottom:2px}
+.kbpops{font-size:11.5px;color:var(--text-dim);line-height:1.45;margin-bottom:11px}
+/* ⚠️ EACH GROUP IS ONE GRID ITEM, so the four tile 2x2 and a group is never split across
+   the fold. `columns:2` would flow the rows themselves and break a heading away from what
+   it heads — and the recorded `.mfi` lesson is that a two-up layout has to keep a readable
+   order, not just balanced columns. */
+.kbpopc{display:grid;grid-template-columns:1fr 1fr;gap:11px 20px}
+.kbpopg{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border-soft)}
+.kbpopr{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:12px;color:var(--text)}
+/* the label may be long ("Show / hide dashboard list") and the keycap must never be pushed
+   off — the label takes the deficit, the key keeps its box */
+.kbpopr b{font-weight:400;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kbpopr span{margin-left:auto;flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:10px;
+  font-weight:600;color:var(--text);background:var(--chip);border-radius:4px;padding:2px 6px;
+  min-width:22px;text-align:center}
+.kbpopf{margin-top:12px;padding-top:10px;border-top:1px solid var(--pop-line);
+  font-size:11.5px;color:var(--text-dim)}
+.kbpopf b{color:var(--text);font-family:"JetBrains Mono",monospace;font-weight:600}
 
 
 /* ---- drag a widget between groups ---- */
@@ -979,6 +1036,11 @@ html[data-theme="light"] .mdfpop label input{color-scheme:light}
 .mdbulk .stcsq{width:30px;height:30px;flex:0 0 30px}
 .mdbulk .stcsq svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
+/* ⚠️ A HAIRLINE BEFORE THE IRREVERSIBLE ACTION. With four tiles in a row, colour was the
+   only thing separating "file this away" from "destroy this", and colour alone is the one
+   cue that does not survive a colourblind reader or a greyscale print. The divider says it
+   structurally; `.dgr` still says it in colour. */
+.mdbulk .sep{width:1px;align-self:stretch;margin:3px 2px;background:var(--border);flex:0 0 1px}
 .mdbulk .stcsq.dgr{color:var(--red);border-color:transparent;background:rgba(242,80,75,.12)}
 .mdbulk .stcsq.dgr:hover{background:rgba(242,80,75,.2);border-color:transparent}
 .mdbulk .btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.9;
@@ -3198,7 +3260,146 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    it is saying what is happening, not decorating. */
 /* the mark that replaced it. 16px, because the grid it stands in for measured 15px wide
    (3 x 4px columns + 2 x 1.5px gaps) and the row's spacing was tuned around that. */
-.aildm{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center}
+/* ── "Prism Bloom" — the thinking row's loader ─────────────────────────────────────────
+   Ported from dotmatrix.zzzzshawn.cloud, loader `dotm-square-14` (request, 26 Aug 2026).
+   Taken from its SOURCE, not from the rendered page: a 5x5 dot grid, four masks where `x`
+   is peak, `o` mid and `.` base, played as the ping-pong sequence [0,1,2,3,2,1] over a
+   1700ms cycle with `opacity 180ms cubic-bezier(.4,0,.2,1)` between steps. The three
+   opacities are theirs verbatim — .08 / .52 / 1.
+   ⚠️ PURE CSS, NO TIMER. The reference drives it from JS; here the 25 cells collapse to
+   SEVEN distinct opacity timelines, because a symmetric kaleidoscope repeats itself — so it
+   is seven keyframe sets plus a class per cell. That matters beyond tidiness: a JS loader
+   would need clearing when the panel closes, which is the `agClose()` trap this file keeps
+   recording. There is nothing here to leak.
+   ⚠️ THE 180ms EASE IS BAKED INTO THE STOPS. Each step holds the previous value, then eases
+   to the new one over 10.588% of the cycle (= 180/1700). One keyframe per step with a
+   global ease would instead spread the change across the whole 283ms step, which reads as a
+   slow pulse rather than the reference's snap-and-hold.
+   ⚠️ The centre dot carries NO animation — its value is .52 in all four masks, so a
+   keyframe set for it would animate nothing. */
+/* ⚠️ `grid-auto-rows` AND `line-height:0` ARE BOTH REQUIRED. Without them the auto rows
+   measured 11.75px each instead of 2.6 — an `<i>` is inline by default, and although a grid
+   item is blockified (so `getComputedStyle().display` reports `block` and looks fine), the
+   ROW was still being sized by the inherited 13px line box rather than by the dot. The grid
+   then stood 86px tall inside an 18px slot: five neat columns and five rows flung apart.
+   ⚠️ That is why `display:block` in the computed style proves nothing here — blockification
+   happens whatever the rule says. Measure `gridTemplateRows`, not the item. */
+/* ⚠️ ONE SPEED DIAL FOR ALL THREE (request, 26 Aug 2026: "make it slow icon animation").
+   Every duration and every stagger below is `calc(<the library's own base> * this)`, so the
+   loaders keep the exact relative timings their source defines — 1700ms / 1500ms / 2000ms —
+   and slowing them is one number rather than an edit to ~55 generated rules.
+   ⚠️ This is the library's own mechanism, not an invention: it exposes `--dmx-speed` and
+   multiplies its `--dmx-cycle` by it in precisely this way.
+   ⚠️ RAISE IT AND EVERYTHING FOLLOWS, including Core Spiral's per-cell `animation-delay` —
+   which is what keeps its snake continuous. Slow only the duration and the stagger stays
+   put, so the head of the snake would run away from its tail. */
+.aidotm{--aidot-speed:1.8;
+  display:grid;grid-template-columns:repeat(5,2.6px);grid-auto-rows:2.6px;
+  gap:1.3px;line-height:0;flex:0 0 auto}
+.aidotm i{width:2.6px;height:2.6px;border-radius:999px;background:var(--ai-2);display:block}
+@keyframes aidpb0{0.000%{opacity:.08}16.667%{opacity:.08}33.333%{opacity:.08}43.922%{opacity:1}50.000%{opacity:1}60.588%{opacity:.08}66.667%{opacity:.08}77.255%{opacity:1}83.333%{opacity:1}93.922%{opacity:.08}100.000%{opacity:.08}}
+.aidpb i:nth-child(2),.aidpb i:nth-child(4),.aidpb i:nth-child(6),.aidpb i:nth-child(10),.aidpb i:nth-child(16),.aidpb i:nth-child(20),.aidpb i:nth-child(22),.aidpb i:nth-child(24){animation:aidpb0 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+@keyframes aidpb1{0.000%{opacity:.08}10.588%{opacity:1}16.667%{opacity:1}27.255%{opacity:.08}33.333%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:1}66.667%{opacity:1}77.255%{opacity:.08}83.333%{opacity:.08}100.000%{opacity:.08}}
+.aidpb i:nth-child(1),.aidpb i:nth-child(5),.aidpb i:nth-child(21),.aidpb i:nth-child(25){animation:aidpb1 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+@keyframes aidpb2{0.000%{opacity:1}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:1}33.333%{opacity:1}43.922%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:1}66.667%{opacity:1}77.255%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:1}100.000%{opacity:1}}
+.aidpb i:nth-child(3),.aidpb i:nth-child(11),.aidpb i:nth-child(15),.aidpb i:nth-child(23){animation:aidpb2 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+@keyframes aidpb3{0.000%{opacity:.52}10.588%{opacity:1}16.667%{opacity:1}27.255%{opacity:.52}33.333%{opacity:.52}43.922%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:.52}66.667%{opacity:.52}77.255%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:.52}100.000%{opacity:.52}}
+.aidpb i:nth-child(7),.aidpb i:nth-child(9),.aidpb i:nth-child(17),.aidpb i:nth-child(19){animation:aidpb3 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+@keyframes aidpb4{0.000%{opacity:1}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:1}33.333%{opacity:1}43.922%{opacity:.52}50.000%{opacity:.52}60.588%{opacity:.08}66.667%{opacity:.08}77.255%{opacity:.52}83.333%{opacity:.52}93.922%{opacity:1}100.000%{opacity:1}}
+.aidpb i:nth-child(8),.aidpb i:nth-child(18){animation:aidpb4 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+@keyframes aidpb5{0.000%{opacity:.52}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:.52}33.333%{opacity:.52}43.922%{opacity:.08}50.000%{opacity:.08}66.667%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:.52}100.000%{opacity:.52}}
+.aidpb i:nth-child(12),.aidpb i:nth-child(14){animation:aidpb5 calc(1700ms * var(--aidot-speed,1)) linear infinite}
+.aidpb i:nth-child(13){opacity:.52}
+@keyframes aidcs{0%{opacity:0.080}8%{opacity:1.000}16%{opacity:0.644}24%{opacity:0.442}32%{opacity:0.240}40%{opacity:0.120}100%{opacity:0.080}}
+.aidcs i{animation:aidcs calc(1500ms * var(--aidot-speed,1)) linear infinite}
+.aidcs i:nth-child(1){animation-delay:calc(0ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(2){animation-delay:calc(60ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(3){animation-delay:calc(120ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(4){animation-delay:calc(180ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(5){animation-delay:calc(240ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(6){animation-delay:calc(900ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(7){animation-delay:calc(960ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(8){animation-delay:calc(1020ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(9){animation-delay:calc(1080ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(10){animation-delay:calc(300ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(11){animation-delay:calc(840ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(12){animation-delay:calc(1380ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(13){animation-delay:calc(1440ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(14){animation-delay:calc(1140ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(15){animation-delay:calc(360ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(16){animation-delay:calc(780ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(17){animation-delay:calc(1320ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(18){animation-delay:calc(1260ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(19){animation-delay:calc(1200ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(20){animation-delay:calc(420ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(21){animation-delay:calc(720ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(22){animation-delay:calc(660ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(23){animation-delay:calc(600ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(24){animation-delay:calc(540ms * var(--aidot-speed,1))}
+.aidcs i:nth-child(25){animation-delay:calc(480ms * var(--aidot-speed,1))}
+@keyframes aidss0{0.000%{opacity:0.08}20.833%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}62.500%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(1){animation:aidss0 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss1{0.000%{opacity:0.08}25.000%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}66.667%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(2){animation:aidss1 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss2{0.000%{opacity:0.08}29.167%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}70.833%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(3){animation:aidss2 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss3{0.000%{opacity:0.08}33.333%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}75.000%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(4){animation:aidss3 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss4{0.000%{opacity:0.08}37.500%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}79.167%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(5){animation:aidss4 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss5{0.000%{opacity:0.08}16.667%{opacity:1}20.833%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}62.500%{opacity:1}66.667%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(6){animation:aidss5 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss6{0.000%{opacity:0.08}20.833%{opacity:1}25.000%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}66.667%{opacity:1}70.833%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(7){animation:aidss6 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss7{0.000%{opacity:0.08}25.000%{opacity:1}29.167%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}70.833%{opacity:1}75.000%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(8){animation:aidss7 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss8{0.000%{opacity:0.08}29.167%{opacity:1}33.333%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}75.000%{opacity:1}79.167%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(9){animation:aidss8 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss9{0.000%{opacity:0.08}33.333%{opacity:1}37.500%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}79.167%{opacity:1}83.333%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(10){animation:aidss9 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss10{0.000%{opacity:0.08}12.500%{opacity:1}16.667%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}66.667%{opacity:1}70.833%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(11){animation:aidss10 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss11{0.000%{opacity:0.08}16.667%{opacity:1}20.833%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}70.833%{opacity:1}75.000%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(12){animation:aidss11 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss12{0.000%{opacity:0.08}20.833%{opacity:1}25.000%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}75.000%{opacity:1}79.167%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(13){animation:aidss12 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss13{0.000%{opacity:0.08}25.000%{opacity:1}29.167%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}79.167%{opacity:1}83.333%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(14){animation:aidss13 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss14{0.000%{opacity:0.08}29.167%{opacity:1}33.333%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}83.333%{opacity:1}87.500%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(15){animation:aidss14 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss15{0.000%{opacity:0.08}8.333%{opacity:1}12.500%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}70.833%{opacity:1}75.000%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(16){animation:aidss15 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss16{0.000%{opacity:0.08}12.500%{opacity:1}16.667%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}75.000%{opacity:1}79.167%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(17){animation:aidss16 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss17{0.000%{opacity:0.08}16.667%{opacity:1}20.833%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}79.167%{opacity:1}83.333%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(18){animation:aidss17 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss18{0.000%{opacity:0.08}20.833%{opacity:1}25.000%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}83.333%{opacity:1}87.500%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(19){animation:aidss18 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss19{0.000%{opacity:0.08}25.000%{opacity:1}29.167%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}87.500%{opacity:1}91.667%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(20){animation:aidss19 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss20{0.000%{opacity:0.08}4.167%{opacity:1}8.333%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}75.000%{opacity:1}79.167%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(21){animation:aidss20 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss21{0.000%{opacity:0.08}8.333%{opacity:1}12.500%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}79.167%{opacity:1}83.333%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(22){animation:aidss21 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss22{0.000%{opacity:0.08}12.500%{opacity:1}16.667%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}83.333%{opacity:1}87.500%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(23){animation:aidss22 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss23{0.000%{opacity:0.08}16.667%{opacity:1}20.833%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}87.500%{opacity:1}91.667%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(24){animation:aidss23 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+@keyframes aidss24{0.000%{opacity:0.08}20.833%{opacity:1}25.000%{opacity:0.52}41.667%{opacity:0.38}45.833%{opacity:1}50.000%{opacity:0.38}54.167%{opacity:1}58.333%{opacity:0.52}91.667%{opacity:1}95.833%{opacity:0.08}100.000%{opacity:0.08}}
+.aidss i:nth-child(25){animation:aidss24 calc(2000ms * var(--aidot-speed,1)) steps(1,end) infinite}
+/* ⚠️ THE CONTAINER CLASSES ARE `aidpb` / `aidcs` / `aidss`, NOT `aipb` / `aics` / `aiss`.
+   The first build used `aipb` and collided head-on with `.aipb` — the AI PREVIEW BODY, 1500
+   lines up, which carries `padding:11px;min-height:86px`. The grid inherited both: an 18px
+   slot holding a 40x86 box, so the dots spilled down the card and the row stopped being one
+   line. Nothing errored and the dots still animated correctly, which is what made it look
+   like an alignment bug rather than a name clash.
+   ⚠️ The compound rules (`.aipb i:nth-child(n)`) were fine — it was the bare class ON THE
+   CONTAINER that picked the old rule up. Grepping for `.aipb{` would have found it in a
+   second; I grepped the JS names and not the CSS one. The repo rule is BOTH. */
+@media (prefers-reduced-motion:reduce){ .aidotm i{animation:none!important;opacity:.45} }
+/* the slot went 16 -> 18px with the grid: 5 x 2.6px dots + 4 x 1.3px gaps = 18.2px. 16px
+   was sized for the product mark that used to sit here. */
+.aildm{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}
 /* ⚠️ IT PULSES ON THE OLD LOADER'S OWN TIMING (request, 25 Aug 2026: "in this thinking
    step the icon use old animation"). `aipix` — the parked pixel grid's keyframes — ran
    650ms ease-in-out, and this is the same cycle and the same easing, so the row keeps the
@@ -3634,11 +3835,33 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
   -webkit-background-clip:text;background-clip:text;
   color:transparent;
   animation:aishim 2.6s linear infinite}
+/* ── the narration CROSS-FADES when the beat changes (request, 26 Aug 2026) ─────────────
+   The line used to swap instantly: one sentence was replaced by the next mid-shimmer, which
+   reads as a glitch rather than as a new thought. It now fades the OLD sentence out, swaps
+   the words at the trough, and fades the NEW one in — one node, one animation.
+   ⚠️ BOTH RULES RESTATE `aishim`. `animation` is a shorthand, so listing only the fade
+   would cancel the shimmer for the half-second it runs — the line would go flat exactly
+   when it is drawing attention to itself. Same trap as `.aildl.fresh` restating `aidia`.
+   ⚠️ AND BOTH CARRY `.aitk.bx`. `.aitk.bx .aiagsay.live` is (0,4,0); a bare
+   `.aiagsay.live.aisayswap` is (0,3,0) and would lose to it, so the fade would compute but
+   never paint — the exact failure that made the shimmer look broken two requests ago.
+   ⚠️ The swap is `opacity` on the element, which composites fine over `background-clip:
+   text` — animating the text COLOUR instead would fight the shimmer for the same property.
+   ⚠️ 38% is where the text is swapped, and `aiSayFade` uses the same number in ms. If the
+   duration changes, that timeout has to change with it or the words appear mid-fade. */
+@keyframes aisayin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes aisayswap{0%{opacity:1}38%{opacity:0}100%{opacity:1}}
+.aiagsay.live.aisayin,
+.aitk.bx .aiagsay.live.aisayin{animation:aishim 2.6s linear infinite, aisayin .34s ease-out 1}
+.aiagsay.live.aisayswap,
+.aitk.bx .aiagsay.live.aisayswap{animation:aishim 2.6s linear infinite, aisayswap .5s ease-in-out 1}
 @media (prefers-reduced-motion:reduce){
   /* must repeat the (0,4,0) selector, or `.aitk.bx .aiagsay.live` above outranks this and
      reduced-motion users keep the sweep AND a transparent colour. */
   .aiagsay.live,
-  .aitk.bx .aiagsay.live{animation:none;background:none;
+  .aitk.bx .aiagsay.live,
+  .aiagsay.live.aisayin,.aitk.bx .aiagsay.live.aisayin,
+  .aiagsay.live.aisayswap,.aitk.bx .aiagsay.live.aisayswap{animation:none;background:none;
     -webkit-background-clip:border-box;background-clip:border-box;color:var(--text-dim)} }
 .aiagsay b{color:var(--white);font-weight:600}
 .aiagsay code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ai-2)}
@@ -4152,7 +4375,12 @@ body.aidockr .aipanel.aifloat{opacity:.55}
   transform:translate(-50%,-50%);cursor:ew-resize;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 .thandle.r{left:100%}
 .tmarks{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px;font-family:"JetBrains Mono",monospace}
-.dgrid12{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+/* ⚠️ THE GAP IS A TOKEN so the Layout settings drawer can drive it. `gap` is
+   `<row> <column>`, i.e. VERTICAL first — swap them and the two sliders trade places.
+   The fallbacks are the values that were hardcoded here, so a board with no layout set
+   renders exactly as before. */
+.dgrid12{display:grid;grid-template-columns:repeat(12,1fr);
+  gap:var(--lay-vgap,10px) var(--lay-hgap,10px)}
 #dashGrid{display:block}   /* groups stack; each group holds its own 12-col grid */
 .widget .whead .wdots{color:var(--muted);opacity:0;transition:opacity .12s;cursor:pointer}
 .widget:hover .whead .wdots{opacity:1}
@@ -6356,6 +6584,13 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
              28px box, 13px glyph), not the naked .icobtn, so the right-hand action cluster
              reads as one set (annotation, 13 Aug 2026). -->
         <button class="btn ico" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
+        <!-- Keyboard shortcuts. Hover shows every key in a popover, click opens the full
+             sheet. It sits with Full Screen and More because it is chrome about the page
+             rather than an action on the dashboard, and it is LAST because it is the one
+             control here you use once and then never again. -->
+        <button class="btn ico" id="kbPopBtn" aria-label="Keyboard shortcuts"
+          onmouseenter="kbPopHover()" onmouseleave="kbPopLater()"
+          onclick="kbPopClose();kbOpen()"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5h18v14H3V5Zm2 2v10h14V7H5Zm1.5 1.5h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h1.5v2H17v-2ZM6.5 12h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h4v2h-4v-2ZM8 15.5h8v2H8v-2Z"/></svg></button>
         <button class="btn ico" title="More" onclick="openDashMenu(event, dashState.cur)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></svg></button>
       </div>
       <!-- Order: breadcrumb → timeline → sub-dashboard tabs → canvas. The timeline scopes
@@ -6771,6 +7006,34 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 </div>
 
 <!-- Per-widget AI summary — opens from the ✦ in any widget header -->
+<!-- Layout settings — ported from ServiceOps_Dashboard_v2's "Dashboard layout" panel -->
+<div class="sdrawer" id="drawer-layout">
+  <div class="dr-h">Dashboard layout <span class="x" data-tip="Close" onclick="closeOverlays()">&#10005;</span></div>
+  <div class="dr-b">
+    <div class="ddfield">
+      <div class="ddlbl">Apply to</div>
+      <div class="ddseg">
+        <button id="layScopeAll" class="on" onclick="layScope('all')">All dashboards</button>
+        <button id="layScopeOne" onclick="layScope('board')">This dashboard only</button>
+      </div>
+      <div class="ddnote" id="layNote"></div>
+    </div>
+    <div class="ddfield">
+      <div class="ddsliders" id="layFields"></div>
+    </div>
+    <div class="ddprev">
+      <div class="pcap">Live preview</div>
+      <div class="laypv" id="layPrev"></div>
+    </div>
+  </div>
+  <div class="dr-f">
+    <button class="btn" id="layReset" data-tip="Put every value back to its default"
+      onclick="layReset()">Reset</button>
+    <span style="flex:1"></span>
+    <button class="btn" onclick="closeOverlays()">Cancel</button>
+    <button class="btn pri" id="layApply" onclick="layApply()">Apply to all dashboards</button>
+  </div>
+</div>
 <div class="sdrawer waid" id="drawer-wai">
   <div class="dr-h"><span class="waih">✦</span>AI summary <span class="x" data-tip="Close" onclick="closeOverlays()">✕</span></div>
   <div class="waisub" id="waiSub"></div>
@@ -7836,6 +8099,9 @@ function togglePop(id, ev){
 function closePops(){
   document.querySelectorAll('.pop').forEach(p=>p.classList.remove('on'));
   document.getElementById('scrim').classList.remove('on');
+  /* the shortcuts popover is not a `.pop` (it is hover-driven and needs its own timers),
+     so it has to be closed by name — otherwise opening any menu leaves it hanging over it */
+  if (typeof kbPopClose === 'function') kbPopClose();
 }
 
 /* ================= Search spotlight ================= */
@@ -8041,6 +8307,66 @@ function kbSheet(){
 function kbOpen(){ closePops(); kbSheet().classList.add('on'); }
 function kbClose(){ const el = document.getElementById('kbHelp'); if (el) el.classList.remove('on'); }
 function kbToggle(){ const el = kbSheet(); el.classList.contains('on') ? kbClose() : kbOpen(); }
+/* ── the toolbar icon's hover popover (`kbPop*`) ────────────────────────────────────────
+   ⚠️ THE BUTTON CARRIES NO `data-tip` AND NO `title`, deliberately. The delegated tooltip
+   engine fires on either, and it would have opened a tooltip UNDER the popover on the same
+   hover — two floating things from one gesture. `aria-label` gives the accessible name
+   without arming `tipFor()`. That is also why this control cannot show its own keycap the
+   way every other button does; the popover lists `?` itself instead.
+   ⚠️ LEAVING THE BUTTON DOES NOT CLOSE IT IMMEDIATELY. The pointer has to cross a gap to
+   reach the popover, and a plain `mouseleave` would shut it mid-journey — the rail flyout's
+   recorded bug. The close is deferred 200ms and cancelled by `kbPopIn`, which the popover's
+   own `mouseenter` sets. Its `mouseleave` clears the flag and re-arms the close, so leaving
+   for real still shuts it.
+   ⚠️ Opening is delayed 140ms so sweeping the pointer along the toolbar does not flash a
+   462px panel. Both timers share `kbPopT` — one control, one pending action, and a hover
+   that arrives during a pending close simply cancels it. */
+let kbPopT = null, kbPopIn = false;
+function kbPopEl(){
+  let el = document.getElementById('kbPop');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'kbPop'; el.className = 'kbpop';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', 'Keyboard shortcuts');
+  el.addEventListener('mouseenter', () => { kbPopIn = true; clearTimeout(kbPopT); });
+  el.addEventListener('mouseleave', () => { kbPopIn = false; kbPopLater(); });
+  const grps = [...new Set(KB.map(s => s.grp))];
+  el.innerHTML =
+    '<div class="kbpoph">Keyboard shortcuts</div>' +
+    '<div class="kbpops">These work on the dashboard canvas — never while you are typing.</div>' +
+    '<div class="kbpopc">' + grps.map(g =>
+      '<div><div class="kbpopg">' + g + '</div>' +
+      KB.filter(s => s.grp === g).map(s =>
+        '<div class="kbpopr"><b>' + s.label + '</b><span>' + s.cap + '</span></div>').join('') +
+      '</div>').join('') + '</div>' +
+    '<div class="kbpopf">Click for the full sheet, or press <b>?</b> from anywhere.</div>';
+  document.body.appendChild(el);
+  return el;
+}
+/* ⚠️ MEASURE, POSITION, THEN REVEAL — in that order. Adding `.on` first would transition the
+   panel in at wherever it was left, which on a second hover is the PREVIOUS anchor. The
+   `visibility:hidden` rule is what lets it be measured before it is shown. */
+function kbPopOpen(){
+  const btn = document.getElementById('kbPopBtn'); if (!btn) return;
+  const el = kbPopEl(), r = btn.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  /* right-aligned to the button: it sits near the right edge, so hanging it leftwards is
+     the only side with room. Clamped anyway — the toolbar moves with the panel and the
+     responsive steps. */
+  let left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8));
+  let top = r.bottom + 8;
+  if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 8);   /* flip above */
+  el.style.left = left + 'px'; el.style.top = top + 'px';
+  el.classList.add('on');
+}
+function kbPopLater(){ clearTimeout(kbPopT);
+  kbPopT = setTimeout(() => { if (!kbPopIn) kbPopClose(); }, 200); }
+function kbPopHover(){ clearTimeout(kbPopT); kbPopT = setTimeout(kbPopOpen, 140); }
+function kbPopClose(){ clearTimeout(kbPopT); kbPopIn = false;
+  const el = document.getElementById('kbPop'); if (el) el.classList.remove('on'); }
+/* a fixed panel anchored to a button is stranded by a resize — the button moves, it does not */
+addEventListener('resize', kbPopClose);
 document.addEventListener('keydown', e => {
   const sheet = document.getElementById('kbHelp');
   if (e.key === 'Escape' && sheet && sheet.classList.contains('on')){ e.preventDefault(); kbClose(); return; }
@@ -8516,7 +8842,128 @@ function addTile(gi, name, big){
       <div class="waQ" role="group" aria-label="Quick add a widget">${q}</div>
     </div>`;
 }
+/* ── Layout settings (`lay*`) ──────────────────────────────────────────────────────────
+   Ported from ServiceOps_Dashboard_v2's "Dashboard layout" panel (⋮ Actions), 26 Aug 2026.
+   Their state is `{titleSize,cardPad,hGap,vGap,rowHeight,boardMargin}`; only FOUR of those
+   are editable in their panel — `cardPad` and `boardMargin` exist but are never exposed, so
+   they are not reproduced here. Their ranges are kept verbatim.
+   ⚠️ THE DEFAULTS ARE OURS, NOT THEIRS. Their gaps default to 14 and row height to 140;
+   this canvas has always drawn a 10px gap and a 12.5px widget title. Taking their defaults
+   would have silently restyled every board the first time the drawer was opened, so the
+   defaults are the values already on screen and the RANGES are theirs. Reset therefore puts
+   the board back to how it has always looked, which is what Reset has to mean.
+   ⚠️ ROW HEIGHT DRIVES `hMul`, which is the real dial this canvas already had. `fitCanvas`
+   auto-fits widget heights but clamps to `Math.max(hMul, …)`, so raising hMul raises the
+   floor and the widgets genuinely get taller. 140 maps to hMul 1 so the default is a no-op.
+   ⚠️ TWO SCOPES, and the per-board one WINS. `LAY_G` is the global layout, `LAY_B[board]`
+   an override for one board; `layEff()` is the only place that resolution happens. */
+const LAY_TITLE = { S:11.5, M:12.5, L:14 };                /* their S/M/L, on our type scale */
+const LAY_DEF   = { title:'M', hgap:10, vgap:10, row:140 };
+const LAY_FLD = [                                          /* their labels, hints and ranges */
+  { k:'hgap', label:'Horizontal spacing', hint:'Between widgets, side to side', min:4,  max:32,  step:2  },
+  { k:'vgap', label:'Vertical spacing',   hint:'Between rows of widgets',       min:4,  max:32,  step:2  },
+  { k:'row',  label:'Row height',         hint:'How tall one row of widgets is',min:110,max:260, step:10 },
+];
+let LAY_G = { ...LAY_DEF };
+const LAY_B = {};
+let LAY = { ...LAY_DEF }, LAY_SCOPE = 'all';
+/* ⚠️ `LAY_TGT` IS WHAT THE NON-GLOBAL SCOPE POINTS AT — `null` means "the open board", an
+   array means "these selected boards" (the Manage screen's bulk bar). Keeping it as ONE
+   scope with a variable target, rather than adding a third scope, is what stops the note,
+   the button label and the apply loop drifting apart: they all read `layTargets()`. */
+let LAY_TGT = null;
+function layTargets(){ return LAY_TGT || [dashState.cur]; }
+function layEff(){ return LAY_B[dashState.cur] || LAY_G; }
+/* ⚠️ SETS TOKENS ONLY — it must never call renderCanvas(), because renderCanvas() calls IT.
+   That is also why switching boards applies a per-board layout for free. */
+function layVars(){
+  const L = layEff(), r = document.documentElement.style;
+  r.setProperty('--lay-hgap', L.hgap + 'px');
+  r.setProperty('--lay-vgap', L.vgap + 'px');
+  r.setProperty('--lay-title', LAY_TITLE[L.title] + 'px');
+  hMul = L.row / 140;
+}
+function layOpen(){
+  /* open on the scope the current board is actually using, so the drawer opens telling the
+     truth rather than always claiming "All dashboards" */
+  LAY_TGT = null;
+  LAY_SCOPE = LAY_B[dashState.cur] ? 'board' : 'all';
+  LAY = { ...layEff() };
+  layPaint(); openDrawer('drawer-layout');
+}
+/* the bulk-bar door. It opens on the SELECTION scope, not on "All dashboards" — you got
+   here by choosing specific boards, so defaulting to every board would be the one thing
+   you demonstrably did not ask for. */
+function layOpenSel(names){
+  LAY_TGT = names.slice();
+  LAY_SCOPE = 'board';
+  LAY = { ...(LAY_B[names[0]] || LAY_G) };
+  layPaint(); openDrawer('drawer-layout');
+}
+function layScope(sc){ LAY_SCOPE = sc;
+  LAY = { ...(sc === 'board' ? (LAY_B[layTargets()[0]] || LAY_G) : LAY_G) }; layPaint(); }
+function laySet(k, v){ LAY[k] = v; layPaint(); }
+function layIsDef(){ return LAY_FLD.every(f => LAY[f.k] === LAY_DEF[f.k]) && LAY.title === LAY_DEF.title; }
+function layPaint(){
+  const q = id => document.getElementById(id);
+  q('layScopeAll').classList.toggle('on', LAY_SCOPE === 'all');
+  q('layScopeOne').classList.toggle('on', LAY_SCOPE === 'board');
+  const tg = layTargets(), many = tg.length > 1;
+  /* the second segment names its own target, so the control says what it will do rather
+     than making you remember how you opened the drawer */
+  q('layScopeOne').textContent = many ? 'The ' + tg.length + ' selected' : 'This dashboard only';
+  /* their two sentences, verbatim — the count and the board name are the only variables */
+  q('layNote').innerHTML = LAY_SCOPE === 'all'
+    ? 'Sets your global layout. Every board that follows it changes — <b>' +
+      (Object.keys(DASH_INDEX).length - Object.keys(LAY_B).length) + '</b> of them.'
+    : many
+      ? 'Only the <b>' + tg.length + '</b> selected dashboards change. Every other board keeps the global layout.'
+      : 'Only <b>&ldquo;' + tg[0] + '&rdquo;</b> changes. Every other board keeps the global layout.';
+  const T = Object.keys(LAY_TITLE), ti = T.indexOf(LAY.title);
+  q('layFields').innerHTML =
+    '<div class="ddslide"><label>Widget title size <b>' + LAY.title + '</b></label>' +
+      '<input type="range" min="0" max="2" step="1" value="' + ti +
+      '" oninput="laySet(\'title\',[\'S\',\'M\',\'L\'][+this.value])" ' +
+      'data-tip="The size of every widget&#39;s title on the board" />' +
+      '<div class="layticks">' + T.map(x => '<span>' + x + '</span>').join('') + '</div></div>' +
+    LAY_FLD.map(f =>
+      '<div class="ddslide"><label>' + f.label + ' <b>' + LAY[f.k] + ' px</b></label>' +
+      '<input type="range" min="' + f.min + '" max="' + f.max + '" step="' + f.step +
+      '" value="' + LAY[f.k] + '" oninput="laySet(\'' + f.k + '\',+this.value)" ' +
+      'data-tip="' + f.hint + '" /></div>').join('');
+  q('layApply').textContent = LAY_SCOPE === 'all' ? 'Apply to all dashboards'
+    : many ? 'Apply to ' + tg.length + ' dashboards' : 'Apply to this dashboard';
+  q('layReset').disabled = layIsDef();
+  layPrev();
+}
+/* their preview: a frame, a grid at the chosen gaps, four tiles at the chosen row height
+   with a title at the chosen size and two bars. The names come from `DD_PREV_W` so the two
+   previews in this file cannot disagree about what a board looks like. */
+function layPrev(){
+  const el = document.getElementById('layPrev');
+  el.style.gap = LAY.vgap + 'px ' + LAY.hgap + 'px';
+  el.innerHTML = DD_PREV_W.slice(0, 4).map(w =>
+    '<div class="laypvt" style="padding:' + Math.max(6, Math.round(LAY.hgap * .8)) +
+    'px;min-height:' + Math.round(LAY.row * .42) + 'px">' +
+    '<span class="t" style="font-size:' + LAY_TITLE[LAY.title] + 'px">' + w[0] + '</span>' +
+    '<i></i><i class="s"></i></div>').join('');
+}
+function layReset(){ LAY = { ...LAY_DEF }; layPaint(); }
+function layApply(){
+  const tg = layTargets();
+  /* ⚠️ "All dashboards" CLEARS the per-board overrides on whatever it was pointed at, or
+     those boards would keep their old layout and the global setting would look ignored on
+     exactly the boards you had just been looking at. */
+  if (LAY_SCOPE === 'all'){ LAY_G = { ...LAY }; tg.forEach(x => delete LAY_B[x]); }
+  else tg.forEach(x => LAY_B[x] = { ...LAY });
+  closeOverlays(); renderCanvas();
+  if (typeof mdPaint === 'function' && document.getElementById('view-manage')) mdPaint();
+  toast(LAY_SCOPE === 'all' ? 'Layout applied to all dashboards'
+    : tg.length > 1 ? 'Layout applied to ' + tg.length + ' dashboards'
+    : 'Layout applied to \u201c' + tg[0] + '\u201d');
+}
 function renderCanvas(){
+  layVars();                       /* tokens first — the grid below is measured after this */
   const g = document.getElementById('dashGrid');
   g.classList.toggle('editing', editMode);
   if(trashed){
@@ -10047,6 +10494,8 @@ function newFlatBoard(name, cat){
    default landing, visibility, PDF export, schedule) — kebab ⋮ on rows + page header ====== */
 let DASH_DEFAULT = null;
 const DMI = {
+  /* the grid glyph for Layout settings — filled, like every other icon in this menu */
+  layout:'<svg viewBox="0 0 24 24"><path d="M3 3h8v6H3V3Zm2 2v2h4V5H5Zm8-2h8v6h-8V3Zm2 2v2h4V5h-4ZM3 11h8v10H3V11Zm2 2v6h4v-6H5Zm8-2h8v10h-8V11Zm2 2v6h4v-6h-4Z"/></svg>',
   open:  '<svg viewBox="0 0 24 24"><path d="M5 5h6v2H7v10h10v-4h2v6H5V5Zm9 0h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14V5Z"/></svg>',
   star:  '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>',
   clone: '<svg viewBox="0 0 24 24"><path d="M8 8h12v12H8V8Zm2 2v8h8v-8h-8ZM4 4h12v2H6v10H4V4Z"/></svg>',
@@ -10071,6 +10520,7 @@ function openDashMenu(ev, n){
     <button class="dmi" onclick="dmAct('clone','${k}')">${DMI.clone}<span class="dmtx">Clone<i>Copies every widget and its configuration</i></span></button>
     <button class="dmi" onclick="dmAct('edit','${k}')">${DMI.edit}<span class="dmtx">Edit<i>Name, category, visibility, layout</i></span></button>
     <button class="dmi" onclick="dmAct('history','${k}')">${DMI.hist}<span class="dmtx">Version history<i>Every change, with who and when — restore any version</i></span></button>
+    <button class="dmi" onclick="dmAct('layout','${k}')">${DMI.layout}<span class="dmtx">Layout settings<i>Spacing, row height and title size — for this board or all of them</i></span></button>
     <div class="dmdiv"></div>
     <button class="dmi" onclick="dmAct('default','${k}')">${DMI.home}${DASH_DEFAULT===n?'Remove default landing':'Set as default landing'}${DASH_DEFAULT===n?'<span class="dmst on">Current</span>':''}</button>
     <button class="dmi" onclick="dmAct('vis','${k}')">${it.p?DMI.pub+'Make public':DMI.locki+'Make private'}<span class="dmst">${it.p?'Private now':'Public now'}</span></button>
@@ -10087,6 +10537,10 @@ function dmAct(a, n){
   closePops();
   const it = DASH_INDEX[n]; if (!it) return;
   if (a==='open'){ pickDash(n); }
+  /* ⚠️ opens the board first — the drawer's per-board scope and its note both name
+     `dashState.cur`, so acting on a row that is not the open board would edit one board
+     while describing another. */
+  else if (a==='layout'){ if (dashState.cur !== n) pickDash(n); layOpen(); }
   else if (a==='fav'){
     favDash({stopPropagation(){}}, n);
     toast(DASH_FAVS.has(n) ? `★ "${n}" added to favorites` : `"${n}" removed from favorites`);
@@ -10261,6 +10715,10 @@ const MD_IC = {
   rest:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
   del :'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>',
   fold:'<path d="M3 7h6l2 2h10v10H3z"/>',
+  /* the same four-pane grid the dashboard ⋮ menu uses for Layout settings — one glyph per
+     concept, so the two doors into that drawer are recognisably the same door */
+  lay :'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>' +
+       '<rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   off :'<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>',
 };
 /* the star / home marks the reference draws beside a dashboard's name */
@@ -10328,6 +10786,14 @@ function mdDeleteGo(n){
 }
 
 /* ── bulk ───────────────────────────────────────────────────────────────────────────── */
+/* ⚠️ Opens the SAME drawer as the ⋮ menu, pointed at the selection instead of one board.
+   It does not leave the manage screen — the drawer is `position:fixed`, so it lays over it,
+   and closing it puts you back where you were with the selection intact. */
+function mdBulkLayout(){
+  const sel = [...MD.sel].filter(n => mdRows().some(r => r.n === n));
+  if (!sel.length) return;
+  layOpenSel(sel);
+}
 function mdBulk(a){
   const sel = [...MD.sel]; if (!sel.length) return;
   if (a === 'archive'){ sel.forEach(n => { if (!mdMeta(n).lock) MD_ARCH.add(n); });
@@ -10587,14 +11053,26 @@ function mdPaint(){
   const bib = (act, tip, ic, dgr) =>
     `<button class="stcsq${dgr?' dgr':''}" data-tip="${tip}" aria-label="${tip}"` +
     ` onclick="${act}"><svg viewBox="0 0 24 24">${ic}</svg></button>`;
+  /* ⚠️ ARCHIVE IS NOT `dgr` ANY MORE, and that is a correctness fix rather than a restyle.
+     `--red` is this system's CRITICAL colour and it was painting Archive, which is fully
+     reversible here — `MD_ARCH` is a Set and `mdRestore()` takes a board straight back out
+     of it. The genuinely irreversible action is Delete forever, on the Archive tab, and it
+     keeps the red. Two actions that undo differently must not look the same.
+     ⚠️ THE DIVIDER CARRIES THE SEPARATION NOW. See the note at `.mdbulk .sep`: with four
+     tiles, colour was doing that job alone.
+     ⚠️ Layout settings is FIRST, before Move to category — the two non-destructive edits
+     lead, then the divider, then the one you cannot undo. */
   bulk.innerHTML = !sel.length ? '' :
     `<div class="mdbulk"><span class="n">${sel.length} selected</span>` +
     (arch
       ? bib("mdBulk('restore')", 'Restore', MD_IC.rest) +
+        '<span class="sep"></span>' +
         bib("mdBulk('delete')", 'Delete forever', MD_IC.del, 1)
-      : bib("mdMoveMenu(event)", 'Move to category', MD_IC.fold) +
+      : bib("mdBulkLayout()", 'Layout settings', MD_IC.lay) +
+        bib("mdMoveMenu(event)", 'Move to category', MD_IC.fold) +
         bib("mdBulk('disable')", 'Disable all', MD_IC.off) +
-        bib("mdBulk('archive')", 'Archive', MD_IC.arch, 1)) +
+        '<span class="sep"></span>' +
+        bib("mdBulk('archive')", 'Archive', MD_IC.arch)) +
     `<button class="btn" onclick="mdClear()">Clear</button></div>`;
   /* ⚠️ `.stcgrid th.s` + `.sa` is the grid's OWN sort affordance — reusing it means the
      header case, the sticky behaviour and the arrow all match the Compliance grid, which
@@ -13630,6 +14108,35 @@ function aiRender(){
      frame timing to depend on. Same lesson as the loader's clock ten lines up — anything
      that needs the painted DOM belongs after the paint, not beside the early paints. */
   aiTkFadeBind();
+  aiSayFade();
+}
+/* ── the narration line's cross-fade ───────────────────────────────────────────────────
+   ⚠️ IT RUNS FROM THE TAIL OF `aiRender()`, for the reason written above `aiTkFadeBind()`:
+   the node does not exist while the markup is still a string, and rAF is starved under
+   headless virtual time. After the paint, synchronously, is the only reliable place.
+   ⚠️ IT CANNOT BE PURE CSS. `aiRender()` rebuilds `#aiBody.innerHTML`, so the element
+   holding the OLD sentence is destroyed the instant the new one is rendered — there is
+   nothing left to fade out. The trick is to put the old text BACK into the new node, fade
+   that out, and swap the words at the trough. One node does both halves.
+   ⚠️ `aiSayPrev` is cleared whenever no live line is on screen, so the first line of a run
+   fades IN rather than cross-fading from a sentence that is no longer there. */
+let aiSayPrev = '', aiSayT = null;
+function aiSayFade(){
+  const el = document.querySelector('.aiagsay.live');
+  if (!el){ aiSayPrev = ''; clearTimeout(aiSayT); aiSayT = null; return; }
+  const now = el.textContent;
+  if (now === aiSayPrev) return;            /* same beat, re-render — leave it alone */
+  if (!aiSayPrev){ aiSayPrev = now; el.classList.add('aisayin'); return; }
+  const prev = aiSayPrev; aiSayPrev = now;
+  el.textContent = prev;                     /* put the old sentence back, then fade it out */
+  el.classList.add('aisayswap');
+  /* ⚠️ clear first — a beat that lands inside the previous swap would otherwise swap twice
+     and the words could arrive after the fade has already come back up. The agClose() rule. */
+  clearTimeout(aiSayT);
+  aiSayT = setTimeout(() => {
+    const e = document.querySelector('.aiagsay.live.aisayswap');
+    if (e) e.textContent = now;              /* 38% of .5s — the trough */
+  }, 190);
 }
 function aiAnswerHTML(m, i){
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
@@ -14776,7 +15283,24 @@ function aiAgChart(a){
    of step with each other. */
 const AI_LD_DELAY = Array.from({ length: 9 }, (_, i) =>
   ((i % 3) + Math.abs(Math.floor(i / 3) - 1)) * 90);   /* parked with `.aild` */
-const AI_LD_MARK = '<span class="aildm" aria-hidden="true">' + AI_SPARK + '</span>';
+/* ⚠️ THE THINKING ROW SHOWS "PRISM BLOOM", NOT THE PRODUCT MARK (request, 26 Aug 2026).
+   This REVERSES two earlier requests for this one slot — "use this logo in every thinking"
+   (25 Aug) put `AI_SPARK` here, and "the icon use old animation" then gave it a 650ms
+   pulse. The logo is untouched everywhere else it appears: the empty state, every answer
+   card, the finished trail, the rail row, the toolbar pill and all three Log Explorer
+   surfaces. `aildpulse` is unused now and parked beside the pixel grid it once replaced.
+   ⚠️ THE STRING BELOW IS THE CELL MAP: character i is the timeline class for dot i, derived
+   from the four masks. Change a mask and this and the keyframes must be regenerated
+   TOGETHER — they are two halves of one computation. */
+/* which dot-matrix loader plays, by what the assistant is doing (request, 26 Aug 2026):
+   thinking -> Prism Bloom · creating -> Core Spiral · building a query -> Strobe Stack.
+   ⚠️ "Converge" and "Stack", as named in the request, DO NOT EXIST in that library — its
+   source registry has 80 loaders and neither is among them. Core Spiral (its only inward
+   convergence) and Strobe Stack (its only "Stack") were confirmed as the substitutes. */
+const AI_LD_CLS = { think:'aidpb', create:'aidcs', query:'aidss' };
+let AI_LD_KIND = 'think';
+const AI_LD_MARK = () => '<span class="aildm" aria-hidden="true"><span class="aidotm ' +
+  (AI_LD_CLS[AI_LD_KIND] || 'aidpb') + '">' + '<i></i>'.repeat(25) + '</span></span>';
 /* the label shimmers and the clock ticks — one is the state, the other is how long it has
    been in it, which is the thing a long run actually needs to say */
 /* ⚠️ `.fresh` is what lets the sweep replay, and it is emitted ONLY when the beat's text
@@ -14788,7 +15312,7 @@ let aiLdLast = '';
 function aiLdHTML(label){
   const fresh = !document.querySelector('.aildl') || label !== aiLdLast;
   aiLdLast = label;
-  return AI_LD_MARK + '<span class="aildl' + (fresh ? ' fresh' : '') + '">' + aiEsc(label) + '</span>' +
+  return AI_LD_MARK() + '<span class="aildl' + (fresh ? ' fresh' : '') + '">' + aiEsc(label) + '</span>' +
     '<span class="aildt" id="aiLdClock">0.0s</span>';
 }
 function aiLdFmt(ms){
@@ -15184,6 +15708,11 @@ function aiPush(text){
      visible: "windows error monitor" typed on the Log Explorer was answered with
      "That needs Monitor data" — the word `monitor` tripped the guard on a sentence that
      never left the Logs module. */
+  /* ⚠️ SET HERE because this is the one place that knows all three at once — the router's
+     `type` and whether the sentence parsed as a log query. `aiLdHTML` runs much later, from
+     inside a render, where only a label is in scope. */
+  AI_LD_KIND = logq ? 'query'
+    : (type === 'newdash' || type === 'build') ? 'create' : 'think';
   const need = (type === 'build' || type === 'newdash' || logq) ? null : aiScopeNeeds(text);
   if (need){
     aiThread.push({ r:'me', t:text }, { r:'wait', step:'Checking your scope' });
