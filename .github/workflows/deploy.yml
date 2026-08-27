@@ -26,5 +26,17 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      # The deploy step began failing on 27 Aug 2026 — one second in, with the action's
+      # generic "Timeout reached, aborting!" — while checkout, the variant sync,
+      # configure-pages and upload-pages-artifact all kept succeeding and the artifact
+      # stayed a healthy 6.1 MB. Nothing in this file had changed since the 26 Aug run
+      # that worked. These are deploy-pages' own documented inputs: `timeout` is the
+      # polling budget in ms (default 600000) and `error_count` how many API errors it
+      # tolerates before giving up (default 10). Raising both is the targeted answer to
+      # that specific error; if it still fails, the cause is server-side and the step log
+      # is the only place that will say so.
       - uses: actions/deploy-pages@v4
         id: deployment
+        with:
+          timeout: 900000
+          error_count: 20
