@@ -1,104 +1,128 @@
-# Handoff — 2026-08-26 19:33
+# Handoff — 2026-08-27 22:44
 
 ## Read first
 
-Two sections of `CLAUDE.md`, in this order:
+Three sections of `CLAUDE.md`, in this order:
 
-1. **"The 26 Aug 2026 pass — shortcuts popover, Layout settings, dot-matrix loaders"** —
-   everything this session did, with the traps written at each feature.
-2. **"The 25 Aug 2026 pass"** directly above it — the Iris naming, the neutral palette and
-   the Dia/Text-Shimmer motion this session builds on. It also **supersedes** several older
-   statements in that file; where anything conflicts, the newer section is current.
+1. **"The 27 Aug 2026 pass — the Sidebar tab, and the design system as the authority"** —
+   everything this session did, with the traps written at each feature. It **supersedes**
+   several older statements in that file; where anything conflicts, it is current.
+2. **"Manage dashboards (`md*`)"** and **"The 26 Aug 2026 pass"** — the Layout drawer and
+   the Manage screen this session built on.
+3. The **`## Gotchas`** section — three of its entries bit again this session.
 
-All work is **Option 1 only** (`index copy.html`). Options 2 and 3 untouched.
+Most work is **Option 1** (`index copy.html`). ⚠️ **Options 2 and 3 also changed** — the
+shared `ac*` chat panel's dead controls (Open in Explorer, View it, Sources, the context
+chips, Export) were made real earlier in the session, and that block is **byte-identical in
+all three files**, so the edit landed in all three by design. Everything else is Option 1.
 
 ## What we worked on this session
 
-Four features: a hover popover for keyboard shortcuts, a **Layout settings** drawer ported
-from ServiceOps_Dashboard_v2, Layout added to the Manage screen's bulk bar, and three
-dot-matrix loaders in the thinking row chosen by what the assistant is doing.
+Rebuilt the **Dashboard layout** drawer on the ObserveOps **design system** (consulted
+through its MCP, not guessed) and on the **live product** at `172.16.12.100` (build 10.0.0),
+then turned its second tab into a **Sidebar** tab that governs everything in the rail —
+modules, Explorer's sub-modules and pinned dashboards — with a live clone of the sidebar
+beside it.
 
 ## Completed
 
-- **Keyboard shortcuts popover** (`kbPop*`) — a keyboard icon in the toolbar; hover shows all
-  16 shortcuts, click opens the existing `?` sheet. Built from the same `KB` registry, so the
-  three surfaces can't drift.
-- **Layout settings** (`lay*`) — a 520px drawer from the dashboard ⋮ menu. Title size,
-  horizontal/vertical spacing and row height, with a live preview, a two-way scope
-  (All dashboards / this board) and Reset · Cancel · Apply.
-- **Apply genuinely changes the canvas.** The grid gap and widget title size were hardcoded
-  and the Create drawer's sliders only drove their own preview; both are tokens now, and row
-  height drives `hMul`. Verified: gap 24/28px, title 14px, hMul 1.571 after applying.
-- **Bulk bar** — Layout settings added; opens the same drawer pointed at the selection
-  (verified applying to 3/3 selected boards with the global layout untouched).
-- **Archive is no longer painted red** — it is reversible; Delete forever keeps the red — and
-  a hairline now separates the irreversible action from the rest.
-- **Narration cross-fades** on a beat change (fade out old → swap → fade in new).
-- **Three dot-matrix loaders** — Prism Bloom (thinking), Core Spiral (creating), Strobe Stack
-  (log query), ported from the library's source. Pure CSS, no timers, one shared markup, one
-  speed dial (`--aidot-speed`, currently 1.8).
+- **The drawer is DS-conformant.** Tokens declared under their own DS names on
+  `#drawer-layout`; `Molecules/Tabs` variant `no-border`; `Atoms/Button` (one primary);
+  4px `@btn-radius`; `@primary-color` cyan on form controls. `validate_usage` /
+  `validate_render` return **0 real violations**. SF-001 (no focus ring) is **fixed**, not
+  reproduced — it is a documented DS bug, not a spec.
+- **Apply to is `Atoms/Radio` variant `list`.** The DS ruled out both previous builds — the
+  segmented control by `segmented.dontUse`, and the selection cards because a component may
+  not be invented. Descriptions moved under the titles, per the Mobbin corpus (Whop, Deel,
+  Jira, Squarespace, HubSpot, beehiiv all do this; none right-aligns).
+- **The Sidebar tab**, from the product's **Create Role → Navigation** screen: search +
+  Hide all / Show all, a filled-header table of `MENU · HOME · VISIBLE`, and a **Live
+  Preview that is a live clone of `#sidebar`** — so it cannot show a rail the rail will not
+  produce.
+- **Everything in the rail is manageable there**: the 6 rail entries, Explorer's 10
+  sub-modules and pinned dashboards, the last two indented as `.sub` under their parents.
+- **Show / hide, mark-as-default, and reorder** all work. The default **leads the rail** and
+  wears a home mark; a drag handle (the DS `drag` glyph) leads every row, with **Alt+↑/↓**
+  as the keyboard route.
+- **The catalogue grid** was rebuilt from the live Roles page — column headers, the product's
+  count pill, 40px rows, a softer row rule than the header rule.
+- **Three init-aborting `ReferenceError`s fixed** (`DASH_PINS`, `waiIcon`, and a pre-existing
+  `dashState` fault) — the cause of the `Invalid Date NaN:NaN` time chip.
+- **The time-range popover works again** — `.pagehead{overflow:hidden}` at 44px was clipping
+  it; `.trpop` is `position:fixed`, placed by `trPlace()`.
+- **The `ac*` panel's dead controls are real** (all three files). `Open in Explorer`,
+  `View it`, the Sources links, the user bubble's context chips and `Export` all toasted a
+  sentence in the conditional — "Would open…", "Would jump…" — or claimed a PDF they never
+  wrote. ⚠️ That block is byte-identical across the three files, so **every new function is
+  feature-detected**: `awAdd` is in Options 1–2 and not 3, `histUndo` is Option 1 only,
+  `DASH_WIDGETS` is Option 2's model and `WIDGETS` is Option 1's.
+- **Two Agentation notes resolved** (the Layout icon, the time picker).
+- Suites green throughout: **behave 63/63 · harness 77/77 · lxbehave 57/57 ×3**, console
+  clean on a fresh load, both themes screenshotted.
 
 ## In progress
 
-Nothing mid-flight — every change is applied and verified. What remains are **decisions**,
-listed under Next steps.
+Nothing mid-flight. Two things are **open decisions**, not unfinished work:
+
+- **`sliders-horizontal` is on two controls that can be on screen together** — the toolbar's
+  `#layBtn` (Layout settings) and the dashboard list panel's `.dmanage` row (Manage
+  dashboards). Sliders means "adjust these settings", so **Manage is the one that should
+  move**. One line either way.
+- **The four Layout sliders are the one non-DS building block.** The DS answers, if you want
+  full conformance: `obs-input type=number` for the three numeric fields and `Atoms/Radio`
+  variant `segmented` for Widget title size. Declared in the code as a divergence.
 
 ## Next steps
 
-1. **Decide the remaining teal.** 183 `var(--teal)` uses remain, including two more primary
-   CREATE buttons on their own classes — `.ddcreate` (Create Dashboard drawer) and
-   `.cwbtn.pri` (widget editor footer) — which now look inconsistent beside the neutral
-   `.btn.pri`.
-2. **Decide the remaining violet AI surfaces** (unchanged since yesterday): the toolbar
-   `Ask Iris` pill, Log Explorer's `AI Query` / `Generate query`, the per-widget `✦` drawer,
-   the canvas `.aiflash` outline, and the `ac*` panel (⌘I, `--oa*`, a three-file change).
-3. **The Send glyph is still a hand-drawn dart** (`M4 12l16-7…`) though CLAUDE.md records it
-   as Lucide `arrow-up`. It sits right beside the Stop button that was fixed yesterday.
-4. **Fix the duplicate `id="drawer-versions"`** — two elements, different bodies; the second
-   is dead markup.
-5. Open questions on the new work: the four bulk-bar tiles are icon-only (per an explicit
-   24 Aug request) — if they still read as ambiguous, labels are the next step. And
-   `--aidot-speed` is one number if the loaders want to be slower still.
+1. Decide the two open items above (the duplicate icon; the sliders).
+2. **Raise `harness.py`'s settle time** — it assumes ~20 s and now needs ~80 s for seven
+   copies of a 1.9 MB page. Under that it reports false failures that vary run to run.
+3. `.ddradio input` (Create Dashboard drawer) sets `accent-color` but **not `color-scheme`**
+   — its unchecked radios paint bright white in dark theme. Left alone as out of scope.
+4. Consider whether the **Explorer flyout's pin** should point at the Sidebar tab now that
+   one screen owns the rail.
+5. Nothing here has been committed or published this session.
 
 ## Decisions made
 
-- **Build from existing atoms, copy only the model.** The Layout drawer is `.sdrawer`,
-  `.ddseg`, `.ddnote`, `.ddsliders` and `.ddprev` — all already in the file. No chrome and no
-  colours were imported from the reference.
-- **Reference ranges, our defaults.** Their gaps default to 14 and row height to 140; ours
-  stay at the canvas's own 10px gap and 12.5px title so Reset means "how it has always
-  looked" rather than "restyle every board".
-- **One scope with a variable target** rather than a third scope, so the segment label, note,
-  button label and apply loop all read one function and cannot disagree.
-- **Substitutes for two loaders that do not exist.** "Converge" and "Stack" are not in the Dot
-  Matrix library (checked all 80 names in its source registry); Core Spiral and Strobe Stack
-  were confirmed as the replacements and that is recorded in the code.
-- **Pure CSS for the loaders**, because a JS timer would need clearing when the panel closes
-  — the `agClose()` trap. Prism Bloom's 25 cells collapse to 7 timelines, which made it cheap.
-- **Icon-only bulk tiles kept**, honouring the 24 Aug request, with the ambiguity addressed by
-  a divider and by de-reddening Archive rather than by adding labels.
+- **The DS is the authority when it and the prototype disagree**, and divergences are
+  *declared in the code* rather than silently taken — the contract's own rule. Four are
+  declared: the sliders, the Live Preview (a `widget-grid` gap), structural tokens as runtime
+  vars, and Inter instead of Poppins.
+- **DS tokens are declared under their own names and this file's are pointed at them**,
+  scoped to the drawer. One auditable table; ~60 rules repaint without being rewritten; the
+  rest of the prototype is untouched.
+- **The Live Preview clones `#sidebar` rather than redrawing it.** A preview that can drift
+  is worse than none — the whole reason the reference has one is that you trust what it shows.
+- **One answer to "what opens on sign-in".** `RAIL_HOME` and `DASH_DEFAULT` stay separate
+  records (each drives its own surface) but clear each other, since only one thing can load.
+- **Reordering is per sibling run**, and the affordance and the handler read the same
+  `sbmSibs` — they disagreed once and produced an enabled arrow that silently refused.
+- **The Sidebar tab lives inside Dashboard layout**, not as its own drawer — one surface,
+  two doors (the tab and the rail's Sidebar row).
 
 ## Gotchas & notes
 
-- ⚠️ **Grep the CSS class, not just the JS name.** `.aipb` was already taken — the *AI preview
-  body*, with `padding:11px;min-height:86px`. The new loader container inherited both, an 18px
-  slot held a 40×86 box, and the thinking row broke onto several lines. **Nothing errored and
-  the animation was correct**, so it read as an alignment bug rather than a name clash.
-- ⚠️ **`display:block` in a computed style proves nothing for a grid item** — blockification
-  happens whatever the rule says. Dot rows measured 11.75px because the ROW was sized by the
-  inherited line box. Fix is `grid-auto-rows` + `line-height:0`; measure `gridTemplateRows`.
-- ⚠️ **An id-scoped rule can beat a `.on` state rule.** `#drawer-layout{right:-540px}` is
-  (1,0,0) against `.sdrawer.on{right:0}` at (0,2,0) — the drawer opens in state and never
-  moves. It needs its own `#drawer-layout.on`.
-- ⚠️ **`curl` succeeds where the browser tool's content filter blocks.** Returning contiguous
-  source text from a page context was refused repeatedly; the same file via `curl` in Bash
-  worked every time. Use Bash for source, the browser for behaviour.
-- ⚠️ **A page with ~98 simultaneous CSS animations wedges the renderer** — the Dot Matrix
-  showcase froze the tab twice. Go to a single-item route, or to the source.
-- ⚠️ **A popover that closes on `resize` is invisible in headless captures**, because the
-  screenshot fires a resize. Detach that listener to shoot it.
-- ⚠️ **`layVars()` must never call `renderCanvas()`** — `renderCanvas()` calls it.
-- ⚠️ Pre-existing and untouched: **`id="drawer-versions"` appears twice** with different
-  bodies; the second is unreachable.
-- Nothing is committed. `git status`: `index copy.html` modified, `image.png` untracked (a
-  stray screenshot, deliberately left out of the last push). Run `/publish` to go live.
+- ⚠️ **`harness.py` needs ~80 s now.** A healthy run has **exactly one** verdict string in
+  the DOM; if you see several, you read it mid-flight. It reported 7, then 14, then 42 of 77
+  failed on three loads of the same file while the page was fine.
+- ⚠️ **Headless `--dump-dom` hangs on the 1.9 MB `behave` probe copy.** Load `_out/*.html` in
+  a real tab over `python3 -m http.server` instead. `harness.py` writes `file://` iframe
+  srcs, so rewrite those to relative paths first.
+- ⚠️ **The live instance (`172.16.12.100`) renders nothing under automation some of the
+  time** — SPA boots, no console errors, session valid, app root full height with **zero
+  `textContent`**. It worked earlier the same session. And it **fades in**, which automation
+  freezes: inject `*{animation:none!important}` and force `opacity:1` to see it at all.
+- ⚠️ **Only a fresh load exposes init-aborting `ReferenceError`s** — probes run after every
+  `<script>` block has parsed. Check the console on load, not just the assertions.
+- ⚠️ **A `let` in a later `<script>` block is not hoisted into the one `init()` runs in.**
+  All the new rail state is declared beside `RAIL_PINS` for this reason. Sixth and seventh
+  occurrences of this bug in the file.
+- ⚠️ **Three recorded gotchas bit again**: the drawer-body flex squash (an 832px table
+  clipped with no scrollbar inside `overflow:hidden`); `table-layout:fixed` taking widths
+  from the first row (avoided by using a CSS grid); and a duplicate `function` declaration
+  silently winning (`layBoardsPaint`, caught in the same edit).
+- ⚠️ **Two regex tidy-ups damaged CSS**: one left a dangling selector with no declaration
+  block (would have killed every rule after it), one left `.on.on`. Re-read the surrounding
+  rule after any scripted selector edit.
+- **Nothing was committed or pushed.** Run `/publish` when you want this live.

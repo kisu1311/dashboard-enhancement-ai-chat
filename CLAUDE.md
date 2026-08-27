@@ -2684,6 +2684,175 @@ Gained **Layout settings** (first, before Move to category), and two fixes:
 - ⚠️ **A pre-existing `id="drawer-versions"` DUPLICATE** sits in the markup — two elements,
   different bodies. `getElementById` returns the first, so the second is dead. Not fixed.
 
+## The 27 Aug 2026 pass — the Sidebar tab, and the design system as the authority
+
+All **Option 1** (`index copy.html`). Two threads: the drawer was rebuilt against the
+**ObserveOps design system** (via its MCP: `get_contract` / `get_theme` / `get_layout` /
+`get_component` / `resolve_token` / `resolve_icon` / `validate_usage` / `validate_render`)
+and against the **live product** at `172.16.12.100` (build 10.0.0); and the Dashboards tab
+became a **Sidebar tab** governing everything in the rail.
+
+⚠️ **Several statements elsewhere in this file are superseded here.** Where they conflict,
+this section is current.
+
+### The drawer is on the DS, scoped to itself
+
+⚠️ **THE DS TOKENS ARE DECLARED UNDER THEIR OWN NAMES ON `#drawer-layout`**, then this
+file's tokens are pointed at them — ~60 existing rules repaint without one being rewritten,
+and the mapping stays auditable in one table. The mechanism `.aipanel` already uses.
+**It must stay scoped**; every one of those names has a job elsewhere.
+
+| what | the DS said | was |
+|---|---|---|
+| surface | `get_layout(panels)` — drawer for create/edit, 146 files | already a drawer ✓ |
+| tabs | `Molecules/Tabs` variant **`no-border`** ("tabs on a panel that has its own edges", the 21× dominant); active `--primary` text + 4px underline, weight 500; inactive `--tabs-text-color` | `--teal` underline, 2px, weight 600, over a bar rule |
+| buttons | `Atoms/Button` — Apply = `primary` (the ONE main action), Reset/Cancel = `default`; `--primary-button-bg` / `--primary-button-text` | `--action`, one step off |
+| radius | `get_theme`: "no `@border-radius-base` — use `@btn-radius` for ALL general radius" = **4px** | 5, 6, 7px |
+| title | obs-page-header: `--primary-alt`, weight 500 | weight 700 on `--text` |
+| form controls | `@primary-color` **cyan #099dd9** — "Ant form controls only (radio dot, checkbox check)" | `--teal` |
+| grid header | `--grid-header-bg` | (nothing) |
+
+⚠️ **`--teal` IS NOT A DS COLOUR.** It has no counterpart in `variables.json`. Inside the
+drawer it painted the tab underline, the slider fills and every selected mark — all of which
+the DS calls `--primary`. Pointing the token converted them at once. The DS warns twice that
+the brand is **navy, not cyan, not blue**.
+⚠️ **SF-001 IS FIXED, NOT COPIED.** Both `Atoms/Button` and `Atoms/Radio` list "no visible
+focus indicator (WCAG 2.4.7)" as a KNOWN ISSUE — Button's at severity HIGH, with the fix
+spelled out. A documented bug is not a spec.
+
+**Declared divergences** (in the code, per the contract): the four **sliders** are not a
+catalogued component (`search_components` finds none, and `list_gaps` only declares
+charts/topology/widget-grid) — the DS answers would be `obs-input type=number` and
+`Atoms/Radio` variant `segmented`; the **Live Preview** touches the `widget-grid` gap;
+structural tokens are LESS `@vars` and this file has no LESS step, so `@btn-radius` is a
+runtime `--btn-radius`; and the DS `@font-family` is Poppins while this prototype is Inter.
+
+### Apply to — `Atoms/Radio`, variant `list`
+
+⚠️ **THE DS RULED OUT BOTH PREVIOUS BUILDS.** `segmented.dontUse` is explicit — "Don't use
+for long labels or vertical form fields (use list)" — which killed the original `.ddseg.lay3`
+segmented control; and the **selection cards** that briefly replaced it are not a catalogued
+component at all (hard rule 1: a component may not be invented). `usageRules.list`'s own
+example is "a mode chooser with per-option descriptions", which is exactly this.
+- Plain radio list, no card, no fill. Selection is the dot, as the product does it.
+- The dot is **`--primary-color` (#099dd9)**, declared unthemed as the DS records it —
+  `segmentedVariants.radio-list-dot` says "cyan … matches product", and `$tokensNote` is
+  explicit it is NOT `--primary`.
+- It lands on the shape **`.ddradio` already had** 40 lines up, so the drawer's two radio
+  lists match by construction.
+- ⚠️ `.ddradio input` sets `accent-color` but **not `color-scheme`** — its unchecked radios
+  paint bright white in dark theme. Not fixed (out of scope); the new group sets both.
+
+### The Sidebar tab — from the product's Create Role → Navigation
+
+⚠️ **THE DASHBOARDS TAB IS NOW A SIDEBAR TAB** (`Layout | Sidebar (n/m)`), governing
+everything in the rail. It briefly lived in its own `#drawer-sidebar`; that is gone —
+the rail's own **Sidebar** utility row opens this drawer on this tab, so one surface, two
+doors. Reference: build 10.0.0, Settings → User Settings → Role → **Create Role →
+Navigation(16/16)**, supplied as a screenshot 27 Aug 2026.
+
+⚠️ **THE MAPPING IS EXACT, WHICH IS WHY THE REFERENCE FITS.** Its checkbox is "does this
+appear in the navigation" — our **pin**. Its home mark is "what loads on sign-in" — our
+**default**. Nothing had to be invented to adopt the pattern.
+
+| piece | what it is |
+|---|---|
+| toolbar | search · **Hide all** / **Show all** |
+| table | filled header strip (`--grid-header-bg`) · `MENU` · `HOME` · `VISIBLE` |
+| rows | the **6 rail entries**, with **Explorer's 10 sub-modules** and **pinned dashboards** indented under their parents as `.sub` |
+| ordering | a **drag handle leads every row** — the DS `drag` glyph, verbatim from `observeops-icons/common/actions-edit/drag.svg` |
+| preview | a **live clone of `#sidebar`**, beside the table |
+
+- **State**: `RAIL_HIDDEN` (which rail entries are off), `RAIL_HOME` (which module opens on
+  sign-in), `RAIL_ORDER` / `MOD_ORDER` / `DASH_PIN_ORDER` (three order records).
+  ⚠️ **ALL DECLARED BESIDE `RAIL_PINS` / `DASH_PINS`, IN THAT SAME `<script>` BLOCK.** A
+  `let` in a block that has not been parsed yet is not hoisted into the one `init()` runs in
+  — that has aborted `init()` five times in this file.
+  ⚠️ **THE ORDER RECORDS ARE LISTS OF NAMES, NOT INDICES.** `activeRail` and `MOD_TO_RAIL`
+  store indices into `RAIL`, so reordering the array itself would point them at the wrong
+  module. `RAIL` and `EXPLORER_TREE` never move.
+- ⚠️ **THE PREVIEW IS A CLONE, NOT A DRAWING.** `sbmPreview()` clones `#sidebar`, **strips
+  every `id`** (the rail is full of them — `sbBell`, `nbadge`, the `svg id="…Ic"` targets
+  `setIco` writes into; a second copy would make `getElementById` return the wrong one), forces
+  `.open` and makes it inert. `renderMenu()` has already run when it is reached, so the clone
+  carries the pins, group gaps, active row, utility rows and identity row exactly.
+- ⚠️ **THE DEFAULT LEADS THE RAIL.** Whatever holds `RAIL_HOME` — or a pinned board holding
+  `DASH_DEFAULT` — is lifted to the top of `renderMenu`'s output **and skipped in its usual
+  place**, via `railPinsHTML(only)` / `railDashPinsHTML(only)`. It is not duplicated.
+- ⚠️ **ONE ANSWER TO "WHAT OPENS ON SIGN-IN".** `RAIL_HOME` (a module) and `DASH_DEFAULT` (a
+  board) are separate records because each drives its own surface, but only one thing can
+  load — so `sbmHomeTog` / `sbmDashHome` clear each other.
+- ⚠️ **THREE THINGS CANNOT STRAND THEMSELVES**: home implies visible (marking a hidden entry
+  switches it on; marking a sub-module pins it); hiding the home entry moves home; unpinning
+  the module or board holding home moves it. And **the last visible rail entry cannot be
+  switched off** — `Hide all` included — because the door to this screen is on the rail.
+- ⚠️ **A MOVE STAYS INSIDE ITS OWN SIBLING RUN.** Rail entries move within their `group`
+  (`renderMenu` bands the rail wherever `group` changes); modules among modules; boards among
+  boards. `sbmSibs` defines the run and **both** the drag and `sbmCanMove` read it, so the
+  affordance and the handler cannot disagree — they did once, and a board's arrow was enabled
+  while the move was silently refused.
+- ⚠️ **`DASH_PIN_ORDER` EXISTS BECAUSE OF THAT BUG.** `dashPinsOrdered` read `DASH_GROUPS`,
+  so two pinned boards in different categories could never swap. The catalogue order is
+  untouched — `layBoardMove` still owns it for the list panel and the Manage screen. A newly
+  pinned board joins in catalogue position, not at the end.
+- ⚠️ **KEYBOARD SURVIVES THE DRAG-ONLY LIST.** The handle is focusable and **Alt+↑ / Alt+↓**
+  call `sbmMove`, with focus restored after the repaint. Plain arrows are left alone.
+- ⚠️ **THE DRAWER IS 660px ON BOTH TABS.** It was 520/660 and resized under you when you
+  switched. The parked offset moves with the width (`right:-680px`), or 120px sits on the
+  board while closed.
+- ⚠️ **`#layPaneS` IS A GRID, AND ITS CHILDREN MUST NOT BE SQUASHED.** `.dr-b` is a flex
+  column and `.laypick` is `overflow:hidden`, so an 832px table was **clipped with no
+  scrollbar** and its last eight rows were unreachable. It looked like a deliberate cap; it
+  was the recorded drawer-body squash.
+
+### The catalogue grid, from the live Roles page
+
+Read off `/settings/users-settings/roles` (build 10.0.0) — the product's Kendo grid, measured:
+`th` 12.8px/600 uppercase, letter-spacing .25px, 28px, over 1px `--border-color`; `td` 12px/400,
+40px rows, on a **softer** `rgba(23,35,54,.7)`; `.used-count-pill` 22×22, radius 10, padding 0 7px.
+- ⚠️ **HEADER AND ROWS SHARE ONE `grid-template-columns`**, so a label cannot drift off the
+  column it names. A `<table>` is the wrong tool — `table-layout:fixed` takes widths from the
+  first row (already recorded twice) and the rows are `draggable`.
+- ⚠️ **THE HEADER'S PADDING IS `.laypl`'s PLUS `.laybr`'s.** Rows sit inside 4px of list
+  padding and carry their own; a header padded like a row is 8px wider than the rows it
+  labels. Found by comparing the two computed templates, not by eye.
+- ⚠️ **AN INDENT IS A WIDER FIRST COLUMN, NOT A MARGIN** — `margin-left` pushed the icon out
+  of its 22px cell into the name. Widening the column and taking it back off the name keeps
+  the control columns aligned on every row.
+- ⚠️ Honest divergence: the live ACTIONS column is **empty until hover**; ours shows
+  everything at rest, by request.
+
+### Other things this session changed
+
+- **The Layout drawer's icon is the product's `sliders-horizontal`**, read out of the
+  reference's DOM. ⚠️ It is **also** the `.dmanage` (Manage dashboards) row's glyph — the two
+  can be on screen together. Unresolved; `sliders` means "adjust these settings", so Manage is
+  the one that should move.
+- **`.laypick` has no fill** — `--neutral-lightest` is the DS's "subtle fill / skeleton / code
+  chip", and a list container is none of those.
+- ⚠️ **`.trpop` IS `position:fixed`, placed by `trPlace()`.** `.pagehead` is
+  `overflow:hidden` at 44px and was clipping the 330px time-range popover so it never painted.
+  Pre-existing in HEAD.
+- ⚠️ **THREE INIT-ABORTING `ReferenceError`s WERE FIXED** (`DASH_PINS`, `waiIcon`, and a
+  pre-existing `dashState` fault) — they were why the time chip read `Invalid Date NaN:NaN`.
+  **Only a fresh load shows this class of bug**; probes run after every block has parsed.
+
+### Verification notes from this pass
+
+- ⚠️ **`harness.py` NEEDS ~80 s TO SETTLE NOW, not the ~20 s it assumes.** Under that it
+  reports false failures (`panel present — FAIL missing`) that vary run to run — 7, then 14,
+  then 42 — while the page itself is fine. A healthy run has **exactly one** verdict string.
+- ⚠️ **Headless `--dump-dom` hangs on the 1.9 MB `behave` probe copy.** Read both verdicts by
+  loading `_out/*.html` in a real tab over the local server instead. `harness.py` writes
+  `file://` iframe srcs, so those need rewriting to relative paths first.
+- ⚠️ **The live instance renders NOTHING under browser automation some of the time** — the
+  SPA boots (banner logs, no console errors, session valid) and the app root mounts at full
+  height with **zero text content**. It worked earlier the same session. `innerText` is 0 for
+  unrendered nodes, so check `textContent` to tell "not painted" from "not there".
+- ⚠️ **The live product fades in and automation freezes CSS animations**, so the page reads
+  blank. Inject `*{animation:none!important;transition:none!important}` and force
+  `opacity:1` to see it.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·

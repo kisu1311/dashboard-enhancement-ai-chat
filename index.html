@@ -6219,7 +6219,13 @@ function acUserHTML(m){
   const q = m.q.replace(/[&<>]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]));
   const chips = (m.ctx||[]).length
     ? '<div class="acsrc" style="margin-top:6px;justify-content:flex-end">' + m.ctx.map(e =>
-        '<a onclick="event.preventDefault()"><i style="background:'+((AC_TYPES[e.t]||{}).c||'var(--muted)')+'"></i>'+e.n+'</a>').join('') + '</div>'
+        /* ⚠️ these were `<a onclick="event.preventDefault()">` — styled as links, hovering
+           like links, doing nothing. A context chip names a real dashboard / monitor /
+           widget, so it opens it, through the same `acSrcGo` the answer's Sources row uses.
+           ⚠️ `.acsrc` is shared by BOTH rows (the recorded gotcha), which is why a probe
+           looking for "the sources link" finds one of THESE first — scope to the answer. */
+        '<a onclick="event.preventDefault();acSrcGo(\''+String(e.n).replace(/'/g,"\\'")+'\')">' +
+        '<i style="background:'+((AC_TYPES[e.t]||{}).c||'var(--muted)')+'"></i>'+e.n+'</a>').join('') + '</div>'
     : '';
   return '<div class="acmsg u"><div><div class="acub">'+q+'</div>'+chips+'</div></div>';
 }
@@ -6257,8 +6263,10 @@ function acAnsHTML(m, i){
   if (m.state) b += acStateHTML(m.state, i, m);
   if (m.q && !m.state) b += acToolHTML(m, i);
   if (!m.stopped && (m.q || m.stats || m.srcs)) b += acReasonHTML(m, i);
+  /* ⚠️ the source links toasted "Would open: <source>" — another conditional-tense dead
+     end hiding inside a template literal rather than behind an `onclick="toast(`. */
   if (m.srcs) b += '<div class="acsrc"><span class="lb">Sources</span>' + m.srcs.map(s =>
-      '<a onclick="event.preventDefault();toast(\'Would open: '+s.replace(/'/g,"\\'")+'\')"><i></i>'+s+'</a>').join('') + '</div>';
+      '<a onclick="event.preventDefault();acSrcGo(\''+s.replace(/'/g,"\\'")+'\')"><i></i>'+s+'</a>').join('') + '</div>';
   if (m.q) b += acQHTML(m, i);
   if (m.plan) b += acPlanHTML(m, i);
   if (!m.stopped) b += acFootHTML(m, i);
@@ -6299,7 +6307,7 @@ function acQHTML(m, i){
       '<button class="acb" onclick="acQRun('+i+')"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8V4Z"/></svg>Run</button>' +
       '<button class="acb" onclick="acQCopy('+i+')"><svg viewBox="0 0 24 24">'+AC_MIC.copy+'</svg>Copy</button>' +
       '<span class="sp"></span>' +
-      '<button class="acb" onclick="toast(\'Would open the '+m.q.src+' Explorer with this query\')">Open in Explorer</button></div>';
+      '<button class="acb" onclick="acExplorer('+i+')">Open in Explorer</button></div>';
   return '<div class="acq'+(m.qopen?' open':'')+'">' +
     '<div class="acqh" onclick="acQToggle('+i+')"><span class="cv"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7V5Z"/></svg></span>' +
     (m.qopen?'Hide the query':'Show the query behind this answer') +
@@ -6369,7 +6377,18 @@ function acFeedWhy(i, r){ AC.chat.msgs[i].fbq = r; acRender(); }
 function acAct(i, key){
   const a = AC_QA[key];
   if (!a.plan){                                   /* read-only, nothing to approve */
-    toast(key==='export' ? 'Exported the answer as PDF' : 'Would open this answer in the Explorer');
+    /* ⚠️ BOTH OF THESE WERE FICTION — one claimed a PDF it never wrote, the other was a
+       "Would open…". Export prints (the browser's own PDF writer) and Explorer routes
+       through the same `acExplorer` the query block uses. */
+    const last = AC.chat.msgs.filter(x => x.r === 'a').pop();
+    if (key === 'export'){
+      toast('Printing this answer — choose “Save as PDF” in the print dialog');
+      setTimeout(() => window.print(), 260);
+      return;
+    }
+    if (last && last.q){ acExplorer(AC.chat.msgs.indexOf(last)); return; }
+    selectModuleByName('Log Explorer');
+    toast('Opened Log Explorer — this answer carries no query to hand over');
     return;
   }
   AC.chat.msgs.push({r:'a', txt:'Here is the plan for <b>'+a.l.toLowerCase()+'</b>. Nothing is created until you approve it.',
@@ -6414,7 +6433,7 @@ function acPlanHTML(m, i){
   } else if (st==='done'){
     foot = '<div class="acpf"><span class="sp"></span>' +
       '<button class="acb" onclick="acUndo('+i+')"><svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"/></svg>Undo</button>' +
-      '<button class="acb gd" onclick="toast(\'Would jump to the thing that was created\')">View it</button></div>';
+      '<button class="acb gd" onclick="acPlanView('+i+')">View it</button></div>';
   } else {
     foot = '<div class="acpf"><span class="sp"></span><button class="acb" onclick="acPlanRedo('+i+')">Restore plan</button></div>';
   }
@@ -6447,17 +6466,119 @@ function acPlanSave(i){
 }
 function acPlanCancel(i){ AC.chat.msgs[i].pst = 'cancelled'; acRender(); toast('Plan cancelled — nothing was changed'); }
 function acPlanRedo(i){ AC.chat.msgs[i].pst = 'pending'; acRender(); }
+/* ⚠️ OPEN IN EXPLORER AND VIEW IT ARE REAL NAVIGATION (request, 27 Aug 2026: "make it all
+   action will be working"). Both toasted a sentence in the conditional — "Would open…",
+   "Would jump…" — which is the one shape of dead control this panel is not allowed to have.
+   ⚠️ THIS BLOCK IS BYTE-IDENTICAL IN ALL THREE FILES, so nothing in here may assume a host
+   function exists. `awAdd` is in Options 1 and 2 and NOT in Option 3; `histUndo` is in
+   Option 1 only; `DASH_WIDGETS` is Option 2's model and `WIDGETS` is Option 1's. Every one
+   of them is feature-detected. (`acNowText()` is the precedent for this.) */
+const AC_SRC_MOD = { Metric:'Metric Explorer', Availability:'Monitors', Log:'Log Explorer',
+                     Flow:'Flow Explorer', Alert:'Alerts', APM:'APM Explorer',
+                     NetRoute:'NetRoute', RUM:'RUM Explorer' };
+/* a source is a dashboard, a monitor or a log stream — open what it names where that is
+   possible, and say so plainly where it is not */
+function acSrcGo(src){
+  if (typeof DASH_INDEX !== 'undefined' && DASH_INDEX[src]){
+    pickDash(src); showView('dashboard'); selectModuleByName('Dashboards');
+    toast('Opened “' + src + '”');
+    return;
+  }
+  if (/log/i.test(src)){
+    selectModuleByName('Log Explorer');
+    if (typeof lxInit === 'function') lxInit();
+    toast('Opened Log Explorer for “' + src + '”');
+    return;
+  }
+  selectModuleByName('Monitors');
+  toast('Opened Monitors — “' + src + '” is a monitor; that module is not built out here');
+}
+function acExplorer(i){
+  const m = AC.chat.msgs[i]; if (!m || !m.q) return;
+  const mod = AC_SRC_MOD[m.q.src] || 'Log Explorer';
+  selectModuleByName(mod);
+  /* ⚠️ Log is the only one of the eight sources whose explorer is actually built here, so
+     it is the only one that can be handed the query. The others open their module screen
+     and say what did not travel, rather than pretending the query went with them. */
+  if (m.q.src === 'Log' && typeof lxInit === 'function'){
+    lxInit();
+    if (typeof lxTab === 'function') lxTab('ls');
+    const box = document.getElementById('lxQ');
+    const term = (m.q.rows.find(r => /counter/i.test(r[0])) || [,''])[1];
+    if (box && term) box.value = 'INCLUDE message Contains ' + term;
+    if (typeof lxExec === 'function') lxExec();
+    toast('Opened Log Search with this query');
+    return;
+  }
+  toast('Opened ' + mod + ' — the query is shown in the chat; this module is not built out here');
+}
 function acPlanRun(i){
   const m = AC.chat.msgs[i];
   m.pst = 'running'; acRender();
   AC.timers.push(setTimeout(()=>{
-    m.pst = 'done'; acRender();
+    m.pst = 'done';
+    acPlanApply(m);          /* the two widget plans really place their widget */
+    acRender();
     toast(AC_PLANS[m.plan].h.replace('Plan · ','') + ' — done. You can undo this.');
   }, 1100));
 }
+/* how many widgets the open canvas holds — the two chromes keep them in different arrays */
+function acWCount(){
+  if (typeof DASH_WIDGETS !== 'undefined') return DASH_WIDGETS.length;
+  if (typeof WIDGETS !== 'undefined' && typeof curG !== 'undefined' && WIDGETS[curG]) return WIDGETS[curG].length;
+  return -1;
+}
+/* ⚠️ ONLY THE TWO WIDGET PLANS CAN BE EXECUTED FOR REAL. An alert policy and a notification
+   channel have no store anywhere in this prototype — inventing one so a button could claim
+   success would be worse than the toast it replaced. `m.made` records what actually
+   happened, and both Undo and View it read it rather than assuming. */
+function acPlanApply(m){
+  m.made = null;
+  if (m.plan !== 'widget' && m.plan !== 'dash') return;
+  if (typeof awAdd !== 'function') return;
+  const P = AC_PLANS[m.plan]; if (!P) return;
+  const add = (P.eff || []).find(e => e[0] === 'add');
+  const title = add ? String(add[2]).split(' — ')[0] : 'New widget';
+  const board = /Log Statistics/.test(P.t) ? 'Log Statistics' : 'Application Performance';
+  /* a stock board's store is a shared capture, so writing into a board you are not on
+     would leak the widget onto the others — open it first, the `aiAgAccept` rule */
+  if (typeof DASH_INDEX !== 'undefined' && DASH_INDEX[board] &&
+      typeof dashState !== 'undefined' && dashState.cur !== board) pickDash(board);
+  awAdd(title, 'line');
+  m.made = { title:title, board:(typeof dashState !== 'undefined' ? dashState.cur : board) };
+}
 function acUndo(i){
-  AC.chat.msgs[i].pst = 'cancelled'; acRender();
-  toast('Undone — the change was rolled back');
+  const m = AC.chat.msgs[i];
+  let said = 'Undone — the plan was cancelled, nothing was written';
+  if (m.made){
+    /* Option 1's `awAdd` snapshots through `histDo`, so the host's own undo reverses it;
+       Option 2 has no history stack, so the push is popped directly */
+    if (typeof histUndo === 'function') histUndo();
+    else if (typeof DASH_WIDGETS !== 'undefined'){
+      DASH_WIDGETS.pop();
+      if (typeof renderDashCanvas === 'function') renderDashCanvas();
+    }
+    said = 'Removed “' + m.made.title + '” from “' + m.made.board + '”';
+    m.made = null;
+  }
+  m.pst = 'cancelled'; acRender();
+  toast(said);
+}
+function acPlanView(i){
+  const m = AC.chat.msgs[i]; if (!m) return;
+  if (m.made){
+    if (typeof DASH_INDEX !== 'undefined' && DASH_INDEX[m.made.board] &&
+        typeof dashState !== 'undefined' && dashState.cur !== m.made.board) pickDash(m.made.board);
+    showView('dashboard'); selectModuleByName('Dashboards');
+    toast('“' + m.made.title + '” is at the end of “' + m.made.board + '”');
+    return;
+  }
+  /* ⚠️ it opens the module and SAYS nothing was written, rather than landing you on a
+     screen and leaving you to work out why the thing is not on it */
+  const mod = (m.plan === 'alert' || m.plan === 'errrate') ? 'Alerts' : 'Dashboards';
+  selectModuleByName(mod);
+  if (mod === 'Dashboards') showView('dashboard');
+  toast('Opened ' + mod + ' — the policy is not stored in this prototype, so there is nothing on the screen to point at');
 }
 
 /* ══ THE REFERENCE FLOW ════════════════════════════════════════════════════════
