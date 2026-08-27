@@ -125,4 +125,18 @@ Nothing mid-flight. Two things are **open decisions**, not unfinished work:
 - ⚠️ **Two regex tidy-ups damaged CSS**: one left a dangling selector with no declaration
   block (would have killed every rule after it), one left `.on.on`. Re-read the surrounding
   rule after any scripted selector edit.
-- **Nothing was committed or pushed.** Run `/publish` when you want this live.
+- ⚠️ **PUSHED, BUT PAGES IS NOT DEPLOYING.** Two commits are on `main`
+  (`22c3544` + an empty `ed51310` retrigger). Both workflow runs **failed at
+  `actions/deploy-pages@v4`** — checkout, the variant sync, `configure-pages` and
+  `upload-pages-artifact` all succeed, the artifact is a healthy 6.1 MB, and then the deploy
+  step fails **in one second** with the action's generic "Timeout reached, aborting!". The
+  GitHub deployment record goes `waiting → queued → in_progress → failure` in 9 s with no
+  description. The 24/25/26 Aug runs on the same workflow all succeeded and **nothing in
+  `.github/` changed**, so it is not the commit.
+  **The live site is therefore still the 26 Aug build** (`last-modified: Wed, 26 Aug 2026
+  14:06:29`, 1,688,121 bytes; the new file is 1,939,082).
+  Failed run: https://github.com/kisu1311/dashboard-enhancement-ai-chat/actions/runs/33098775879
+  To fix, in order: (1) Settings → Pages, confirm **Source = GitHub Actions**; (2) check the
+  **`github-pages` environment** for a protection rule (an instant failure fits a rejected /
+  approval-gated deployment); (3) re-run the job from the Actions tab. The step log will say
+  which — it needs a logged-in browser, `gh` is not installed on this machine.
