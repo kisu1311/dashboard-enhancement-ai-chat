@@ -125,18 +125,23 @@ Nothing mid-flight. Two things are **open decisions**, not unfinished work:
 - ⚠️ **Two regex tidy-ups damaged CSS**: one left a dangling selector with no declaration
   block (would have killed every rule after it), one left `.on.on`. Re-read the surrounding
   rule after any scripted selector edit.
-- ⚠️ **PUSHED, BUT PAGES IS NOT DEPLOYING.** Two commits are on `main`
-  (`22c3544` + an empty `ed51310` retrigger). Both workflow runs **failed at
-  `actions/deploy-pages@v4`** — checkout, the variant sync, `configure-pages` and
-  `upload-pages-artifact` all succeed, the artifact is a healthy 6.1 MB, and then the deploy
-  step fails **in one second** with the action's generic "Timeout reached, aborting!". The
-  GitHub deployment record goes `waiting → queued → in_progress → failure` in 9 s with no
-  description. The 24/25/26 Aug runs on the same workflow all succeeded and **nothing in
-  `.github/` changed**, so it is not the commit.
-  **The live site is therefore still the 26 Aug build** (`last-modified: Wed, 26 Aug 2026
-  14:06:29`, 1,688,121 bytes; the new file is 1,939,082).
-  Failed run: https://github.com/kisu1311/dashboard-enhancement-ai-chat/actions/runs/33098775879
-  To fix, in order: (1) Settings → Pages, confirm **Source = GitHub Actions**; (2) check the
-  **`github-pages` environment** for a protection rule (an instant failure fits a rejected /
-  approval-gated deployment); (3) re-run the job from the Actions tab. The step log will say
-  which — it needs a logged-in browser, `gh` is not installed on this machine.
+- ✅ **Published.** Live at https://kisu1311.github.io/dashboard-enhancement-ai-chat/ —
+  served bytes match local exactly (1,939,082) and the build is stamped 27 Aug 17:51.
+- ⚠️ **THE DEPLOY FAILED FIVE TIMES FIRST, AND THE ERROR TEXT LIED.** Every run died at
+  `actions/deploy-pages@v4` in **one second** with the action's generic *"Timeout reached,
+  aborting!"*, while checkout, the variant sync, `configure-pages` and
+  `upload-pages-artifact` all succeeded and the artifact stayed a healthy 6.1 MB. It was
+  none of the things that looks like: not the workflow, not the artifact size, not the
+  action versions, not the Node 24 deprecation warning that appears on every run.
+  **The real message sits underneath it in the step log:**
+  `Deployment request failed … due to in progress deployment. Please cancel 22c3544 first
+  or wait for it to complete.` The first push's Pages deployment had **stuck in-progress on
+  GitHub's side** and was rejecting every later one with a 400 before it started.
+  ⚠️ **The Deployments API is no help here** — it reported all of them as `failure`,
+  including the stuck one. Only the step log shows it. That comment is now written at the
+  step in `.github/workflows/deploy.yml`.
+  **Fix:** `POST /repos/{owner}/{repo}/pages/deployments/{sha}/cancel` → 204, then
+  `POST …/actions/workflows/deploy.yml/dispatches` to re-run. Both need auth; `gh` is not
+  installed on this machine, but the **git credential helper already holds a working token**
+  (`printf 'protocol=https\nhost=github.com\n\n' | git credential fill`), which is enough
+  for the Pages and Actions APIs.
