@@ -380,6 +380,9 @@ put a colour in the file no token owns — the send-button rule):
 
 ## Settings module (`st*`) — My Account › My Profile, cloned from live 8.2.7, in all three options
 
+> ⚠️ **19 categories now, not 18** — `Agentic AI` was added 31 Aug 2026 and is the one that is
+> NOT on the instance. See *The 31 Aug 2026 pass*.
+
 Until 19 Aug 2026 the rail's **Settings** entry landed on the generic `#view-module`
 placeholder. It is **a real module screen now**, read off live build 8.2.7 at
 `/settings/my-account/my-profile` in the browser — the DOM, the computed styles, the Vue
@@ -2853,6 +2856,135 @@ Read off `/settings/users-settings/roles` (build 10.0.0) — the product's Kendo
   blank. Inject `*{animation:none!important;transition:none!important}` and force
   `opacity:1` to see it.
 
+## The 31 Aug 2026 pass — Agentic AI, and the REAL design system
+
+All three option files. Two things arrived together: a **new Settings category** built from a
+supplied reference, and — for the first time in this repo — the **actual `obs-*` web components**
+instead of CSS reproductions of them.
+
+⚠️ **Several statements elsewhere in this file are superseded here.** Where they conflict, this
+section is current.
+
+### `_ds/` — the design system is vendored now
+
+| file | what |
+|---|---|
+| `_ds/observeops-elements.umd.js` | `@mtdt/observeops-ds-elements` **v0.1.166**, the UMD build, verbatim — registers the 47 `obs-*` custom elements |
+| `_ds/observeops-ds.css` | `@mtdt/observeops-ds-css` **v0.1.6** — **NOT linked by any page**; it is the source the scoped token block is generated from |
+| `_ds/README.md` | provenance, how to regenerate, the known gaps |
+
+Both are public on npm (`npm install @mtdt/observeops-ds-elements @mtdt/observeops-ds-css`). A
+plain `<script src>` works over `file://` **and** on Pages, so the prototypes still open with no
+build step. ⚠️ `_ds/` is **not** gitignored — it must ship for the live site.
+
+⚠️ **THE CSS PACKAGE IS DELIBERATELY NOT LINKED.** It declares its LIGHT values on `:root` and
+dark under `[data-theme='dark-theme']` — this prototype is the other way round. Linking it would
+put the whole page in the DS's light theme while the prototype sits in dark, and leak ~390 tokens
+onto the dashboard and Log Explorer. Each option re-emits the same values **scoped to
+`#agPage,#agWiz`**, against this file's convention. Custom properties inherit into shadow DOM, so
+scoping costs the components nothing.
+
+⚠️ **REGENERATING THAT TOKEN BLOCK NEEDS A QUOTE- AND PAREN-AWARE SPLITTER.** A naive
+`split(';')` corrupts the sheet: `--graph-bg` is a `url('data:image/svg+xml;…')` whose value
+carries its own `;`, which leaves an unterminated string and **silently drops every rule after
+the token block**. The symptom was a page with correct colours and no layout at all, and a brace
+scan said "balanced".
+
+### Settings › Agentic AI — the 19th category
+
+`ST_TREE` gained **`Agentic AI`** (icon `sparkling-star`), the one category **not** on the
+instance — everything above it is the harvested live list in live order, so it is appended rather
+than slotted in. Its one page is **Overview**, served by the `ag*` block through `ST_PAGES`.
+⚠️ A category cannot carry zero pages — `stOpen()` and `stStubHTML()` both dereference `subs[0]`.
+⚠️ `ST_ICO` gained a hand-added `sparkling-star`; a re-harvest of the live list drops it.
+
+Built from `~/Downloads/Motadata Agentic AI (1) (1).html` — a bundled React prototype whose real
+source is a `__bundler/template` blob (decode it; don't guess from screenshots). It ships **one**
+routed screen plus a 4-step wizard; its Data-&-privacy / Governance / Usage screens exist in its
+source but are not routed, so they are not built here either.
+
+**Overview** is the `list-view` recipe: `obs-page-header` (mark + title + status tag + an inline
+doc link, no rule under it) → `obs-toolbar` (label + the one primary) → `obs-table` (Provider ·
+Description · Status · action button, Documentation in the row ⋯). **The setup flow is an
+`obs-drawer`** at 62%, `scrolled-content="false"`, with an `obs-steps` rail.
+
+⚠️ **THE ONLY NON-DS PARTS ARE THE KPI TILES AND THE THREE TREND CHARTS**, and they are a
+declared `list_gaps` gap ("charts / stat tiles … standalone → STOP AND ASK"). Series colours are
+tokens, never `--primary`.
+
+### ⚠️ Six defects in `obs-*` v0.1.166, all worked around and all worth reporting
+
+1. **`obs-drawer` never emits its documented `close` event.** Its ✕ takes the inner `<dialog>` to
+   `open=false`, leaves the host prop at `true`, and dispatches nothing. The native `close` does
+   not fire either, because it drops the ATTRIBUTE rather than calling `dlg.close()`. Watched
+   with a MutationObserver on that attribute — the one signal every close path shares.
+2. **`<obs-drawer open>` in markup does nothing.** It calls `showModal()` from a *watcher*, so it
+   needs a real false→true change. Setting `el.open = true` synchronously in `after()` also fails
+   — the element has not upgraded. A `setTimeout(…, 0)` works; **rAF is starved** under headless.
+3. **`obs-input` ignores `prefix-icon` / `suffix-icon`** — documented, read by its source, and
+   its shadow root renders zero icons. Cost the password-reveal toggle.
+4. **`obs-radio` renders a label and nothing else** — no per-option `description` (its own
+   registry advertises one) and it ESCAPES the label.
+5. **`obs-radio` / `obs-checkbox` render `<label>`s, not native `<input>`s**, despite the radio
+   registry claiming "native input type=radio grouped by name".
+6. **`obs-steps` exposes no `::part()`**, so the reference's active-row band is unreachable.
+
+Plus one integration trap: **this file's tooltip engine ate the drawer's header.** `tipFor()`
+adopts any `title=` into `data-tip` **and deletes the attribute**, so the title vanished and
+reappeared as a floating tooltip. Use the `title` **slot**.
+
+⚠️ **CUSTOM EVENTS NEED `addEventListener`.** An inline `on<name>=` content attribute only works
+for events the HTML spec lists as handlers. `oncellaction` / `onrowaction` / `onclose` are inert
+markup. This shipped green because the probe called the handler directly.
+
+### ⚠️ A REPAINT MUST NOT ADD OR REMOVE A NODE THE DRAWER HAS SLOTTED
+
+Three versions, each less wrong:
+
+1. `stMainPaint()` — rewrote `#stMain.innerHTML`, **destroying** the `<obs-drawer>`; the new one
+   replayed its open animation. The panel visibly closed and reopened on every Continue.
+2. replacing `#agWiz` with `outerHTML` — kept the drawer, but `#agWiz` is a **slotted child**, so
+   the swap fired `slotchange` (measured: 1 per repaint) and re-rendered the component. **The
+   dialog's `open` never changed, which is exactly why the probes passed while it still flashed.**
+3. **inner content only** — `.agbody`'s markup, the stepper's `active` **attribute**, the
+   footer's contents. Measured `slotChanges=0`.
+
+Related, same session: the MutationObserver guard **`if (!dlg.isConnected) return;`** is
+load-bearing. Without it a teardown looked like a user close and cleared `AG.wz`, so **Continue
+closed the wizard instead of advancing** — and only a REAL CLICK showed it.
+
+### Two changes outside the Agentic AI block
+
+- **`.stnav` has a right border** — the Settings category list and the page sat edge to edge on
+  one white surface, so the list's boundary was only implied by where its rows stopped. Dropped
+  when `stshut` collapses it.
+- **Pinned modules anchor to `Setting`, not to a group boundary** (Option 1 only — Options 2/3
+  have no `RAIL_PINS`). It keyed off `PIN_AFTER='analyse'`; in the shipped order that lands in
+  the same place, but the Sidebar tab lets you reorder and hide rail entries, and then the group
+  change fires elsewhere or never and the pins fall below Setting. Now `PIN_BEFORE='admin'` and
+  the anchor is the first visible admin row.
+
+### ⚠️ Verifying this — a green probe is not a working feature, three times over
+
+This session shipped three bugs behind passing probes. All three were only visible to a **real
+click**. The suite that catches them is `walk-*.html` in the session scratch dir: **39 assertions,
+every one a hit-tested pointer click on the element a user would hit, found by piercing shadow
+roots.** Nothing calls a handler directly.
+
+Things it needs to work at all:
+- ⚠️ **The drawer's slide transition never completes under virtual time**, so nothing inside it
+  is hit-testable until you park it (`dlg.style.transform='none'`). Without that the whole
+  interior had never been tested.
+- ⚠️ **`elementFromPoint` retargets to the host** — pierce `shadowRoot.elementFromPoint` in a
+  loop to find the node a pointer would really hit.
+- ⚠️ **Do not inject `animation:none`** on a page with `obs-drawer` — the panel parks off-screen
+  and reads as "the drawer did not render".
+- ⚠️ **Regenerate the probe copy after every edit.** Patching the test script inside a stale
+  snapshot reported a fixed bug as still broken.
+
+Suites at the end of the session: click walk **39/39 ×3** · state probe **42/42 ×3** ·
+pin placement **9/9** · `lxbehave` 57/57 ×3 · `behave` 63/63 · `harness` 77/77.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·
@@ -4075,6 +4207,19 @@ Agentation, not the app** — pause it (⏸) to use the UI.
 
 ## Gotchas
 
+- **An inline `on<name>=` attribute only works for events the HTML spec lists as handlers.**
+  `onclick`/`onchange`/`oninput` are fine; a CUSTOM event name (`oncellaction`, `onrowaction`,
+  a component's `onclose`) is inert markup that silently does nothing. Bind those with
+  `addEventListener`. ⚠️ This shipped GREEN because the probe called the handler directly —
+  see the note on click-driven probes in *The 31 Aug 2026 pass*.
+- **A rule that was deleted looks exactly like a rule that is applying.** `.agemt` / `.agemp`
+  lost their CSS when a neighbouring block was removed, and the Done step rendered at browser
+  defaults for days. Grep every class a component names against the stylesheet; you cannot see
+  the difference.
+- **Replacing a SLOTTED child re-renders the whole web component.** It fires `slotchange`, and
+  a component that animates on render will replay that animation — with no attribute changing,
+  so every state-based assertion still passes. Patch the *inner* content of a slotted node, never
+  the node itself.
 - **Grep before naming a CSS modifier, not just a function.** A header-button modifier
   called `.wl` collided with the widget-library tile `.wl` (`flex-direction:column`,
   `svg{width:100%}`) 700 lines away — same specificity for the properties it declared, so
@@ -4184,6 +4329,11 @@ sync). `gh` CLI is NOT installed — plain `git push` works via keychain, and no
 `agentation-embed.js` is **gitignored** — it is a 540 KB dev-only widget and the
 loader no-ops off localhost, so the live site never fetches it. Keep your local
 copy; if a teammate clones the repo they will need their own.
+
+⚠️ **`_ds/` IS NOT GITIGNORED, AND MUST NOT BE.** It holds the vendored ObserveOps
+design-system bundle (1.27 MB) that the Agentic AI screen's `obs-*` components need.
+Unlike Agentation, the live site DOES fetch it — gitignore it and that screen renders
+as bare unstyled markup on Pages. See `_ds/README.md`.
 
 ⚠️ **This folder is a PUBLIC Pages site, and its demo data is not scrubbed.** The repo
 rule (root `CLAUDE.md`) is that anything harvested from the live instance goes to RFC 5737

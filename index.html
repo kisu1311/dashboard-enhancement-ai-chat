@@ -1946,9 +1946,18 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 .stpt svg{width:14px;height:14px;fill:currentColor}
 .stsep{width:1px;height:18px;background:var(--border);flex:0 0 1px;margin:0 2px}
 /* ── left list: search + the 18 collapsible categories (246px incl. 8px pad, as live) ── */
+/* ⚠️ A DIVIDER BETWEEN THE LIST AND THE CONTENT (request, 31 Aug 2026: "add line to show
+   difference"). The category list and the page sat edge to edge on the same white surface with
+   nothing between them, so the list's right edge was only implied by where its rows stopped —
+   and its scrollbar then read as the boundary. The product draws this rule: the DS describes
+   `side-menu` as "flush white + right border", and the Create SLO Profile screen has the same
+   line between its rail and its form.
+   ⚠️ IT MUST GO WHEN THE LIST COLLAPSES. `stshut` takes the width to 0; a border left on would
+   draw a 1px line down an otherwise empty column. */
 .stnav{width:246px;flex:0 0 246px;display:flex;flex-direction:column;min-height:0;
-       padding:8px 0 0 8px;overflow:hidden;transition:width .18s,flex-basis .18s,padding .18s}
-#view-settings.stshut .stnav{width:0;flex-basis:0;padding:0}
+       padding:8px 0 0 8px;overflow:hidden;border-right:1px solid var(--border);
+       transition:width .18s,flex-basis .18s,padding .18s}
+#view-settings.stshut .stnav{width:0;flex-basis:0;padding:0;border-right:0}
 /* a full-page screen (Create Benchmark, Create Rule, a benchmark's view) replaces the list AND
    the content, as live — the head becomes “‹ <title>” and the left list is gone */
 #view-settings.stfullpg .stnav{display:none}
@@ -2284,6 +2293,959 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 .stcwzrow .f{flex:1;min-width:0}
 .stcwzrow .stin{margin-top:0}
 @media (max-width:1366px){ .stcsearch{width:260px;flex-basis:260px} .stcsteps{width:260px;flex-basis:260px} }
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview + the setup wizard ═════════════
+   Request, 31 Aug 2026: analyse `Motadata Agentic AI (1) (1).html` and rebuild it ON THE
+   OBSERVEOPS DESIGN SYSTEM. The reference is a React prototype drawn in a DIFFERENT token
+   set — its own "Motadata Next-Gen ITOM" system (Inter, ink-on-white ramp, coral brand,
+   blue interactive, PURPLE for AI, radius 4/6/8/12/48). What came across is its INFORMATION
+   ARCHITECTURE and FLOW; every colour, radius, control and variant below is the ObserveOps
+   DS's, read out of its MCP (get_contract / get_component / get_recipe / resolve_token /
+   list_gaps). Sources are cited per block, per the contract's "cite your sources" rule.
+
+   ── SURFACE (authoring-playbook §3) ────────────────────────────────────────────────────
+   Overview is a PAGE (the `module-screen` recipe's content region) — it is the deep-linkable
+   record of the org's AI configuration, not an edit-beside-a-list.
+   ⚠️ THE SETUP FLOW IS A FULL PAGE, NOT THE REFERENCE'S RIGHT DRAWER. `get_recipe`'s
+   `wizard-flow` is "stepper (top or left) -> current step content -> Back/Next footer", and
+   this Settings module ALREADY renders exactly that as a full page for its other multi-step
+   wizard (Compliance › Create Rule, via `stFullOpen`). Two wizards in one module arriving on
+   two different surfaces would read as two features. Declared divergence.
+
+   ── TOKENS ─────────────────────────────────────────────────────────────────────────────
+   Same mechanism as `#drawer-layout`: the DS tokens are declared UNDER THEIR OWN NAMES on
+   `#agPage`, then this file's tokens are pointed at them — so every rule below inherits the
+   DS palette without one hardcoded hex, and the mapping stays auditable in one place.
+   ⚠️ IT MUST STAY SCOPED. Every one of these names has a job elsewhere in this file.
+   ─────────────────────────────────────────────────────────────────────────────────────── */
+/* ══ THE DESIGN SYSTEM'S OWN TOKENS, SCOPED ══════════════════════════════════════════════
+   Generated verbatim from `@mtdt/observeops-ds-css` (the DS's `observeops-ds.css`) — 392
+   tokens, both themes. NOT hand-picked and NOT hand-typed: this is the shipped token file.
+
+   ⚠️ THE PACKAGE'S CSS IS NOT LOADED GLOBALLY, AND MUST NOT BE. It declares its LIGHT values
+   on `:root` and its dark ones under `[data-theme='dark-theme']`; this prototype is the other
+   way round — dark is the default and light is `html[data-theme="light"]`. Importing it would
+   put the whole page in the DS's light theme while the prototype sits in dark. Re-emitting the
+   same values against THIS file's theme convention is what makes the two systems agree.
+   ⚠️ SCOPED ON PURPOSE. `--primary`, `--border-color`, `--page-text-color` and ~380 more would
+   otherwise repaint the dashboard, the Log Explorer and Settings. The `obs-*` components read
+   them through the cascade — custom properties inherit into shadow DOM — so declaring them on
+   the two roots is all the components need.
+   ⚠️ ONE COLLISION WITH THIS FILE'S OWN `:root`, and it agrees: `--primary-color` (#099dd9),
+   the Ant form-control accent. Nothing else in 387 names overlaps.
+   ⚠️ `--font-family` IS OVERRIDDEN BELOW. The DS ships Poppins; this prototype is Inter
+   everywhere, and one screen in a different typeface reads as a rendering fault. Declared. */
+#agPage,#agWiz{
+  --action-dropdown-divider:rgba(255, 255, 255, 0.2);
+  --action-dropdown-hover-bg:#172336;
+  --action-dropdown-text:#cad3e2;
+  --active-text-color:#fff;
+  --alert-message-color:#e3e8f2;
+  --alert-notification-popup-background-color:#282828;
+  --alert-notification-popup-border-color:rgb(22, 22, 22);
+  --ant-primary:#099dd9;
+  --apm-heatmap-border-color:rgba(23, 35, 54, 0.7);
+  --apm-heatmap-hover-color:#1d2a3e;
+  --availability-icon-background-color:#2b394f;
+  --availability-icon-text-color:#cad3e2;
+  --bar-chart-color:#14b8a6;
+  --border-color:#1d2a3e;
+  --border-color-opacity:rgba(60, 60, 60, 0.5);
+  --bottom-line-color:rgba(23, 35, 54, 1);
+  --btn-height:2.1rem;
+  --btn-radius:4px;
+  --btn-raidus-full:150px;
+  --button-disabled-bg:rgba(43, 57, 79, 0.7);
+  --button-disabled-border:rgba(72, 89, 117, 0.7);
+  --button-disabled-text:rgba(255, 255, 255, 0.5);
+  --button-transparent-hover-text:#cad3e2;
+  --button-transparent-text:#cad3e2;
+  --calendar-border-color:#2b394f;
+  --calendar-selected-day-background-color:#e3e8f2;
+  --chart-amber:#fbbf24;
+  --chart-aqua:#06b6d4;
+  --chart-border-color:rgba(255, 255, 255, 0.5);
+  --chart-bright-violet:#c026d3;
+  --chart-chartreuse:#a3e635;
+  --chart-electric-coral:#ff6b6b;
+  --chart-emerald-green:#10b981;
+  --chart-font-family:'JetBrains Mono', monospace;
+  --chart-fuchsia:#d946ef;
+  --chart-golden-yellow:#eab308;
+  --chart-grid-line-color:rgba(23, 35, 54, 0.8);
+  --chart-hot-pink:#ec4899;
+  --chart-indigo:#8b5cf6;
+  --chart-legend-color:rgba(255, 255, 255, 0.8);
+  --chart-lime-green:#84cc16;
+  --chart-line-type-icon:#8e9fbc;
+  --chart-mint-green:#2dd4bf;
+  --chart-neon-purple:#a855f7;
+  --chart-null-color:#000;
+  --chart-rose-red:#f43f5e;
+  --chart-sunset-orange:#f97316;
+  --chart-tangerine:#fb923c;
+  --chart-tooltip-background:rgba(43, 57, 79, 0.9);
+  --chart-type-icon:#fff;
+  --chart-vibrant-magenta:#e83e8c;
+  --chart-vivid-teal:#14b8a6;
+  --chart-vivid-teal-faded:rgba(20, 184, 166, 0.35);
+  --chat-height:400px;
+  --chat-width:50vw;
+  --checkbox-bg:#2b394f;
+  --checkbox-checked-border-color:#485975;
+  --checkbox-checked-color:#cad3e2;
+  --code-tag-background-color:#172336;
+  --code-tag-text-color:#cad3e2;
+  --collapse-content-padding:10px 6px;
+  --common-main-bg:#172336;
+  --common-padd-space:15px;
+  --common-widget-bg:#172336;
+  --control-btn-bg:rgba(52, 152, 219, 0.2);
+  --control-padding-horizontal:12px;
+  --control-padding-horizontal-sm:8px;
+  --dashboard-background:#0b1627;
+  --default-button-bg:#07101f;
+  --default-button-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-bg:#1d2a3e;
+  --default-button-hover-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-text:#cad3e2;
+  --default-button-text:#cad3e2;
+  --default-tag-bg:rgba(9, 157, 217, 0.3);
+  --default-tag-color:rgba(255, 255, 255, 0.2);
+  --default-tag-text-color:rgba(202, 211, 226, 0.8);
+  --disabled-checkbox-opacity:0.5;
+  --disk-space-full-background:#ecf1f9;
+  --drawer-background-color:#07101f;
+  --drawer-mask-color:rgba(255, 255, 255, 0.45);
+  --drawer-sidebar-background:#07101f;
+  --dropdown-background:#1d2a3e;
+  --dropdown-btn-background:'transparent';
+  --dropdown-hover-background:#2b394f;
+  --dropdown-text:#cad3e2;
+  --error-button-bg:#ec5b5b;
+  --error-button-hover-bg:#c84235;
+  --error-button-hover-text:#cad3e2;
+  --error-button-text:#cad3e2;
+  --error-outline-button-bg:transparent;
+  --error-outline-button-hover-bg:rgba(200, 66, 53, 0.2);
+  --error-outline-button-hover-text:#c84235;
+  --error-outline-button-text:#c84235;
+  --faded-page-background-color:rgba(30, 30, 30, 0.4);
+  --faded-text-color:rgba(30, 30, 30, 0.4);
+  --field-border-color:#2b394f;
+  --filter-background:#172336;
+  --filter-viewer-bg-color:rgb(80, 80, 80);
+  --focus-color:#204ca2;
+  --font-family:'Poppins', sans-serif;
+  --font-size-10:10px;
+  --font-size-base:0.8rem;
+  --font-size-lg:1rem;
+  --font-size-sm:0.8rem;
+  --gauge-base-color:#404244;
+  --gauge-text-color:rgba(255, 255, 255, 0.8);
+  --graph-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Crect x='4' y='4' width='2' height='2' fill='%232B394F'/%3E%3C/svg%3E");
+  --grid-header-bg:rgba(72, 89, 117, 0.4);
+  --grid-header-hover-bg:rgba(23, 35, 54, 0.4);
+  --grid-header-solid-bg:rgba(70, 70, 70, 1);
+  --grid-row-border-color:rgba(23, 35, 54, 0.7);
+  --group-header-upper:#172336;
+  --group-icon-color:#cad3e2;
+  --group-list-bg:#172336;
+  --group-list-hover-bg:#172336;
+  --group-text-color:#cad3e2;
+  --hardware-port-bolt-view-bg:#8fadc7;
+  --hc-primary:#0d9488;
+  --hc-range-background:#14b8a6;
+  --header-drop-width:320px;
+  --header-height:55px;
+  --header-title-text-color:#e3e8f2;
+  --help-card-bg-color:rgba(43, 57, 79, 0.3);
+  --hieararchy-border-color:#6a7fa0;
+  --info-border:#2c4a6b;
+  --info-surface:#16283c;
+  --info-text:#9cc4ec;
+  --input-addon-color:#cad3e2;
+  --input-height-base:32px;
+  --input-padding-horizontal:11px;
+  --input-padding-horizontal-base:11px;
+  --input-padding-vertical-base:4px;
+  --input-placeholder-color:rgba(202, 211, 226, 0.5);
+  --input-suffix-bg:rgb(45, 45, 45);
+  --input-suffix-text:#7186a8;
+  --input-text-color:#cad3e2;
+  --layout-header-height:55px;
+  --layout-header-padding:0 12px;
+  --left-menu-arrow-color:rgba(255, 255, 255, 0.65);
+  --left-menu-arrow-opacity:0.7;
+  --left-menu-hover-bg:#172336;
+  --left-menu-text-color:rgba(255, 255, 255, 0.65);
+  --left-menu-text-color-hover:rgba(255, 255, 255, 0.8);
+  --left-menu-text-hover-color:white;
+  --license-background:#07101f;
+  --list-menu-hover:#e7f5fb;
+  --main-tags-bg-color:#183a42;
+  --main-tags-text-color:#2ec4b6;
+  --map-line-color:#1d2a3e;
+  --menu-collapsed-width:70px;
+  --menu-item-active-border-width:3px;
+  --mesasge-error:#fcdbd8;
+  --mesasge-success:#e7f4d9;
+  --modal-background-color:#07101f;
+  --modal-text-color:#cad3e2;
+  --nav-beta-text:#cad3e2;
+  --nav-divider-bg:#e3e8f2;
+  --nav-hover-bg:#1d2a3e;
+  --nav-icon-height:40px;
+  --nav-icon-line-height:40px;
+  --nav-icon-size:1.1rem;
+  --nav-icon-width:50px;
+  --nav-menu-height:30px;
+  --nav-panel-bg:#172336;
+  --nav-selected-text-color:#172336;
+  --nav-text-color:#cad3e2;
+  --navbar-height:50px;
+  --neutral-button-bg:#2b394f;
+  --neutral-button-hover-bg:rgb(70, 70, 70);
+  --neutral-button-hover-text:#cad3e2;
+  --neutral-button-text:#cad3e2;
+  --neutral-dark:#172336;
+  --neutral-darker:#172336;
+  --neutral-darkest:#000;
+  --neutral-light:#8e9fbc;
+  --neutral-lighter:#1d2a3e;
+  --neutral-lightest:#172336;
+  --neutral-regular:#6a7fa0;
+  --neutral-regular-lighter:#ebeef2;
+  --neutral-shadow-light:rgba(70, 70, 70, 0.15);
+  --neutral-theme-color:#8e9fbc;
+  --notification-dropdown-background:#172336;
+  --notification-dropdown-background-hover:#1d2a3e;
+  --notification-dropdown-border-color:#2b394f;
+  --notification-dropdown-datetime-color:#8e9fbc;
+  --notification-dropdown-footer:#323232;
+  --notification-dropdown-header:rgb(70, 70, 70);
+  --notification-dropdown-header-footer:#2b394f;
+  --notification-subtitle-color:#cad3e2;
+  --numeric-font-family:'JetBrains Mono', monospace;
+  --outline-button-bg:transparent;
+  --outline-button-hover-bg:#1d2a3e;
+  --outline-button-hover-border:rgba(227, 232, 242, 0.5);
+  --outline-button-hover-text:#cad3e2;
+  --outline-button-text:#cad3e2;
+  --overlay-bg:rgba(255, 255, 255, 0.25);
+  --overlay-border-width:4px;
+  --padding-md:16px;
+  --padding-sm:12px;
+  --padding-xs:8px;
+  --page-background-color:#07101f;
+  --page-text-color:#cad3e2;
+  --pagination-active-bg:#172336;
+  --pagination-active-text:#cad3e2;
+  --pagination-select-bg:#172336;
+  --pagination-select-text:#cad3e2;
+  --pan-btn-bg:#2b394f;
+  --pan-btn-border:#485975;
+  --panel-side-box-shadow:-1px 6px 6px 0 rgba;
+  --partition-icon-background-color:#2b394f;
+  --partition-icon-text-color:#cad3e2;
+  --picker-popover-max-height:35vh;
+  --picker-popover-max-width:80vw;
+  --policy-border-color:none;
+  --pop-footer-height:75px;
+  --popover-arrow-width:6px;
+  --primary:#e3e8f2;
+  --primary-alt:#cad3e2;
+  --primary-alt-lighter:#e0ebf5;
+  --primary-button-bg:#fff;
+  --primary-button-hover-bg:rgba(255, 255, 255, 0.7);
+  --primary-button-hover-text:#07101f;
+  --primary-button-text:#07101f;
+  --progress-bar-bg:#2b394f;
+  --progress-bg:#2b394f;
+  --radio-btn-box-bg:#07101f;
+  --radio-btn-box-border-color:#204ca2;
+  --radio-btn-box-selected-bg:#e3e8f2;
+  --radio-btn-box-selected-text-color:#07101f;
+  --screenshot-share-form-bg:#07101f;
+  --screenshot-share-overlay-bg:rgba(255, 255, 255, 0.4);
+  --search-height:36px;
+  --search-icon:#e7f5fb;
+  --search-width:18rem;
+  --secondary-green:#36d576;
+  --secondary-green-lighter:#edf7e2;
+  --secondary-orange:#fa9950;
+  --secondary-red:#ec5b5b;
+  --secondary-red-dark:#c84235;
+  --secondary-red-light:#f17a73;
+  --secondary-yellow:#fad100;
+  --secondery-focus-bg:#172336;
+  --severity-clear:#36d576;
+  --severity-clear-darker:#0d3a1f;
+  --severity-clear-dot-box:#0d3a1f;
+  --severity-clear-lighter:#0d3a1f;
+  --severity-clear-lightest:#0d3a1f;
+  --severity-critical:#ec5b5b;
+  --severity-critical-darker:#310c0c;
+  --severity-critical-dot-box:#310c0c;
+  --severity-critical-lighter:#310c0c;
+  --severity-critical-lightest:#310c0c;
+  --severity-disable:#99aab7;
+  --severity-disable-darker:#0d151a;
+  --severity-disable-lighter:#0d151a;
+  --severity-disable-lightest:#0d151a;
+  --severity-down:#ad1111;
+  --severity-down-darker:#1e0202;
+  --severity-down-lighter:#1e0202;
+  --severity-down-lightest:#1e0202;
+  --severity-maintenance:#008cff;
+  --severity-maintenance-darker:#001489;
+  --severity-maintenance-dot-box:#001489;
+  --severity-maintenance-lighter:#001489;
+  --severity-maintenance-lightest:#001489;
+  --severity-major:#fa9950;
+  --severity-major-darker:#541914;
+  --severity-major-dot-box:#541914;
+  --severity-major-lighter:#541914;
+  --severity-major-lightest:#541914;
+  --severity-none:#8ac1d3;
+  --severity-none-darker:#04232c;
+  --severity-none-dot-box:#245463;
+  --severity-none-lighter:#04232c;
+  --severity-none-lightest:#04232c;
+  --severity-stop:#ff91a0;
+  --severity-stop-darker:#3e0614;
+  --severity-stop-dot-box:#82283b;
+  --severity-stop-lighter:#3e0614;
+  --severity-stop-lightest:#3e0614;
+  --severity-suspended:#d6b084;
+  --severity-suspended-darker:#2d1b04;
+  --severity-suspended-dot-box:#644621;
+  --severity-suspended-lighter:#2d1b04;
+  --severity-suspended-lightest:#2d1b04;
+  --severity-unknown:#b1b1b1;
+  --severity-unknown-darker:#2e2e2e;
+  --severity-unknown-dot-box:#5d5d5d;
+  --severity-unknown-lighter:#2e2e2e;
+  --severity-unknown-lightest:#2e2e2e;
+  --severity-unreachable:#8c5bd8;
+  --severity-unreachable-darker:#22094a;
+  --severity-unreachable-dot-box:#380e78;
+  --severity-unreachable-lighter:#22094a;
+  --severity-unreachable-lightest:#22094a;
+  --severity-up:#36d576;
+  --severity-up-darker:#0d3a1f;
+  --severity-up-lighter:#0d3a1f;
+  --severity-up-lightest:#0d3a1f;
+  --severity-warning:#fad100;
+  --severity-warning-darker:#543308;
+  --severity-warning-dot-box:#543308;
+  --severity-warning-lighter:#543308;
+  --severity-warning-lightest:#543308;
+  --side-menu-bg:#07101f;
+  --slider-tracker:#485975;
+  --sparkline-color-response-time:#14b8a6;
+  --sparkline-color-throughput:#fb923c;
+  --status-down:rgb(192, 62, 50);
+  --status-progress-color:#485564ad;
+  --status-up:rgb(110, 158, 51);
+  --success-button-bg:#36d576;
+  --success-button-hover-bg:#36d576;
+  --success-button-hover-text:#cad3e2;
+  --success-button-text:#cad3e2;
+  --success-outline-button-bg:transparent;
+  --success-outline-button-hover-bg:#0d3a1f;
+  --success-outline-button-hover-text:#14b053;
+  --success-outline-button-text:#14b053;
+  --switch-bg:#172336;
+  --switch-border:#1d2a3e;
+  --switch-port-view-bg:#485975;
+  --table-details-bg:#2b394f;
+  --table-group-header-highlight:#172336;
+  --tabs-card-height:32px;
+  --tabs-text-color:#8e9fbc;
+  --tag-bg:#1d2a3e;
+  --tag-bg-color:#2b394f;
+  --tag-border:#204ca2;
+  --tag-color:#cad3e2;
+  --tag-height:24px;
+  --text-color-common-link:#e3e8f2;
+  --text-color-common-primery:rgba(255, 255, 255, 0.8);
+  --text-color-common-secondary:#8e9fbc;
+  --text-input-bg:#fff;
+  --text-lg:1.5rem;
+  --text-neutral-ligher:#8e9fbc;
+  --text-regular:1rem;
+  --text-sm:0.8rem;
+  --text-xs:0.6rem;
+  --timeline-indicator-color:#1d2a3e;
+  --timeline-scrollbar-background-color:#1d2a3e;
+  --timerange-background-color:#2b394f;
+  --timerange-text-color:#e3e8f2;
+  --toast-background-color:#172336;
+  --toast-text-color:rgba(255, 255, 255, 0.8);
+  --tooltip-background-color:rgba(43, 57, 79, 0.9);
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.5);
+  --tooltip-text-color:#cad3e2;
+  --topology-background:#172336;
+  --topology-graph-tooltip-bg:#07101f;
+  --topology-graph-tooltip-text-color:#fff;
+  --topology-overlay-btn-bg:#cad3e2;
+  --topology-overlay-btn-hover-bg:#cad3e2;
+  --topology-overlay-btn-text:#07101f;
+  --topology-tooltip-devider:#2b394f;
+  --tour-flow-bg-color:#376842;
+  --tour-log-bg-color:#236777;
+  --tour-metric-bg-color:#142c40;
+  --transparent-border-color:'transparent';
+  --upgrade-accent-primary:#22d3ee;
+  --upgrade-accent-secondary:#fb7185;
+  --upgrade-accent-tertiary:#fbbf24;
+  --upgrade-node-fill:rgba(255, 255, 255, 0.1);
+  --upgrade-orb-primary:rgba(34, 211, 238, 0.3);
+  --upgrade-orb-secondary:rgba(251, 113, 133, 0.2);
+  --upgrade-progress-fill:linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%);
+  --upgrade-progress-shimmer:rgba(255, 255, 255, 0.3);
+  --upgrade-progress-track:rgba(255, 255, 255, 0.1);
+  --upgrade-ring-color:rgba(34, 211, 238, 0.22);
+  --upgrade-text-primary:#fff;
+  --upgrade-text-secondary:rgba(255, 255, 255, 0.6);
+  --user-count-height:23px;
+  --user-dropdown-button-bg:rgb(40, 40, 40);
+  --user-dropdown-button-hover-bg:#172336;
+  --user-dropdown-button-hover-text:#cad3e2;
+  --user-dropdown-button-text:#cad3e2;
+  --user-dropdown-theme-icon-color:#2b394f;
+  --utility-result-bg:#0b1627;
+  --utility-result-border:#172336;
+  --utility-scrollbar-thumb:rgba(160, 160, 160, 0.5);
+  --white-regular:rgba(255, 255, 255, 0.8);
+  --widget-background:#0b1627;
+  --widget-background-color:#172336;
+  --widget-border-color:#172336;
+  --widget-border-radius:7px;
+  --widget-box-shadow:#000;
+  --widget-type-selector-border-color:'transparent';
+}
+html[data-theme="light"] #agPage,html[data-theme="light"] #agWiz{
+  --action-dropdown-divider:#e3e8f2;
+  --action-dropdown-hover-bg:#e3e8f2;
+  --action-dropdown-text:#7186a8;
+  --alert-notification-popup-background-color:#fff;
+  --alert-notification-popup-border-color:#eff2f6;
+  --apm-heatmap-border-color:rgba(236, 241, 249, 1);
+  --apm-heatmap-hover-color:#f6f9fc;
+  --availability-icon-background-color:#e3e8f2;
+  --availability-icon-text-color:#1d2a3e;
+  --bar-chart-color:#0d9488;
+  --border-color:#e3e8f2;
+  --border-color-opacity:rgba(222, 229, 237, 0.5);
+  --bottom-line-color:rgba(236, 241, 249, 1);
+  --button-disabled-bg:#ecf1f9;
+  --button-disabled-border:#e3e8f2;
+  --button-disabled-text:rgba(0, 0, 0, 0.5);
+  --button-transparent-hover-text:#7186a8;
+  --button-transparent-text:#7186a8;
+  --calendar-border-color:#e3e8f2;
+  --calendar-selected-day-background-color:#111c2c;
+  --chart-amber:#f59e0b;
+  --chart-aqua:#0891b2;
+  --chart-border-color:rgba(0, 0, 0, 0.1);
+  --chart-bright-violet:#a21caf;
+  --chart-chartreuse:#84cc16;
+  --chart-electric-coral:#ef4444;
+  --chart-emerald-green:#059669;
+  --chart-fuchsia:#c026d3;
+  --chart-golden-yellow:#ca8a04;
+  --chart-grid-line-color:rgba(236, 241, 249, 0.8);
+  --chart-hot-pink:#db2777;
+  --chart-indigo:#7c3aed;
+  --chart-legend-color:rgba(54, 70, 88, 0.9);
+  --chart-lime-green:#65a30d;
+  --chart-mint-green:#14b8a6;
+  --chart-neon-purple:#9333ea;
+  --chart-null-color:#e3e8f2;
+  --chart-rose-red:#e11d48;
+  --chart-sunset-orange:#ea580c;
+  --chart-tangerine:#f97316;
+  --chart-tooltip-background:rgba(255, 255, 255, 0.9);
+  --chart-type-icon:#6a7fa0;
+  --chart-vibrant-magenta:#db2777;
+  --chart-vivid-teal:#0d9488;
+  --chart-vivid-teal-faded:rgba(13, 148, 136, 0.35);
+  --checkbox-bg:#fff;
+  --checkbox-checked-border-color:#6a7fa0;
+  --checkbox-checked-color:#111c2c;
+  --code-tag-background-color:#ecf1f9;
+  --code-tag-text-color:#1d2a3e;
+  --common-main-bg:#ecf1f9;
+  --common-widget-bg:#fff;
+  --control-btn-bg:rgb(214 217 221);
+  --dashboard-background:#f9fafb;
+  --default-button-bg:#fff;
+  --default-button-border:#e3e8f2;
+  --default-button-hover-bg:#ecf1f9;
+  --default-button-hover-border:#e3e8f2;
+  --default-button-hover-text:#1d2a3e;
+  --default-button-text:#1d2a3e;
+  --default-tag-color:#e3e8f2;
+  --default-tag-text-color:#516381;
+  --disabled-checkbox-opacity:0.8;
+  --drawer-background-color:#fff;
+  --drawer-mask-color:rgba(0, 0, 0, 0.45);
+  --drawer-sidebar-background:#fff;
+  --dropdown-background:#fff;
+  --dropdown-btn-background:#fff;
+  --dropdown-hover-background:#ecf1f9;
+  --dropdown-text:#7186a8;
+  --error-button-hover-text:#fff;
+  --error-button-text:#fff;
+  --error-outline-button-hover-bg:rgba(240, 78, 62, 0.2);
+  --error-outline-button-hover-text:#ec5b5b;
+  --error-outline-button-text:#ec5b5b;
+  --faded-page-background-color:rgba(255, 255, 255, 0.4);
+  --field-border-color:#e3e8f2;
+  --filter-background:#fff;
+  --filter-viewer-bg-color:#fff;
+  --gauge-base-color:#dee5ed;
+  --gauge-text-color:#1d2a3e;
+  --graph-bg:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNEg2VjZINFY0WiIgZmlsbD0iI0RGRTVFQyIvPgo8L3N2Zz4K');
+  --grid-header-bg:#ecf1f9;
+  --grid-header-hover-bg:#f6f9fc;
+  --grid-header-solid-bg:#ecf1f9;
+  --grid-row-border-color:rgba(236, 241, 249, 1);
+  --group-header-upper:#f6f6f6;
+  --group-icon-color:#6a7fa0;
+  --group-list-bg:#ecf1f9;
+  --group-list-hover-bg:#ecf1f9;
+  --group-text-color:#2b394f;
+  --hc-range-background:#0d9488;
+  --header-title-text-color:#1d2a3e;
+  --help-card-bg-color:rgba(227, 232, 242, 0.4);
+  --hieararchy-border-color:#e3e8f2;
+  --info-border:#cadff5;
+  --info-surface:#eef5fc;
+  --info-text:#2f6099;
+  --input-addon-color:#6a7fa0;
+  --input-placeholder-color:rgba(43, 57, 79, 0.5);
+  --input-suffix-bg:#ecf1f9;
+  --input-text-color:#1d2a3e;
+  --left-menu-arrow-color:#6a7fa0;
+  --left-menu-arrow-opacity:1;
+  --left-menu-hover-bg:#ecf1f9;
+  --left-menu-text-color:#2b394f;
+  --left-menu-text-color-hover:#111c2c;
+  --left-menu-text-hover-color:#111c2c;
+  --license-background:#ecf1f9;
+  --list-menu-hover:#ecf1f9;
+  --main-tags-bg-color:#cdf1ed;
+  --main-tags-text-color:#218b81;
+  --map-line-color:#bbc8d6;
+  --modal-background-color:#fff;
+  --modal-text-color:#000;
+  --nav-beta-text:#f6f9fc;
+  --nav-divider-bg:#111c2c;
+  --nav-hover-bg:#ecf1f9;
+  --nav-panel-bg:#f6f9fc;
+  --nav-selected-text-color:#f6f9fc;
+  --nav-text-color:#1d2a3e;
+  --neutral-button-bg:#e3e8f2;
+  --neutral-button-hover-bg:#ecf1f9;
+  --neutral-button-hover-text:#7186a8;
+  --neutral-button-text:#7186a8;
+  --neutral-dark:#2b394f;
+  --neutral-light:#6a7fa0;
+  --neutral-lighter:#e3e8f2;
+  --neutral-lightest:#ecf1f9;
+  --neutral-regular:#7186a8;
+  --neutral-theme-color:#6a7fa0;
+  --notification-dropdown-background:white;
+  --notification-dropdown-background-hover:#ecf1f9;
+  --notification-dropdown-border-color:#e3e8f2;
+  --notification-dropdown-datetime-color:#516381;
+  --notification-dropdown-header-footer:#e3e8f2;
+  --notification-subtitle-color:#1d2a3e;
+  --outline-button-hover-bg:#ecf1f9;
+  --outline-button-hover-border:rgba(17, 28, 44, 0.5);
+  --outline-button-hover-text:#111c2c;
+  --outline-button-text:#111c2c;
+  --overlay-bg:rgba(0, 0, 0, 0.25);
+  --page-background-color:#fff;
+  --page-text-color:#1d2a3e;
+  --pagination-active-bg:#e3e8f2;
+  --pagination-active-text:#7186a8;
+  --pagination-select-bg:#e3e8f2;
+  --pagination-select-text:#7186a8;
+  --pan-btn-bg:#fff;
+  --pan-btn-border:#dee5ed;
+  --partition-icon-background-color:#e3e8f2;
+  --partition-icon-text-color:#1d2a3e;
+  --policy-border-color:#e3e8f2;
+  --primary:#111c2c;
+  --primary-alt:#1d2a3e;
+  --primary-button-bg:#07101f;
+  --primary-button-hover-bg:rgba(7, 16, 31, 0.7);
+  --primary-button-hover-text:#fff;
+  --primary-button-text:#fff;
+  --progress-bar-bg:#e3e8f2;
+  --progress-bg:#e3e8f2;
+  --radio-btn-box-bg:#fff;
+  --radio-btn-box-border-color:#e3e8f2;
+  --radio-btn-box-selected-bg:#111c2c;
+  --radio-btn-box-selected-text-color:#fff;
+  --screenshot-share-form-bg:#fff;
+  --screenshot-share-overlay-bg:rgba(0, 0, 0, 0.4);
+  --search-icon:#2b394f;
+  --secondary-green:#14b053;
+  --secondary-orange:#f47c22;
+  --secondary-yellow:#e8b407;
+  --severity-clear:#14b053;
+  --severity-clear-darker:#d1fae0;
+  --severity-clear-dot-box:#a2f6c3;
+  --severity-clear-lighter:#d1fae0;
+  --severity-clear-lightest:#d1fae0;
+  --severity-critical-darker:#fef5f5;
+  --severity-critical-dot-box:#fef5f5;
+  --severity-critical-lighter:#fef5f5;
+  --severity-critical-lightest:#fef5f5;
+  --severity-disable:#81929f;
+  --severity-disable-darker:#d9e3ea;
+  --severity-disable-lighter:#d9e3ea;
+  --severity-disable-lightest:#d9e3ea;
+  --severity-down-darker:#f3c9c4;
+  --severity-down-lighter:#f3c9c4;
+  --severity-down-lightest:#f3c9c4;
+  --severity-maintenance:#006dfa;
+  --severity-maintenance-darker:#cce4ff;
+  --severity-maintenance-dot-box:#99cdff;
+  --severity-maintenance-lighter:#cce4ff;
+  --severity-maintenance-lightest:#cce4ff;
+  --severity-major:#f47c22;
+  --severity-major-darker:#fddcc4;
+  --severity-major-dot-box:#fac2a0;
+  --severity-major-lighter:#fddcc4;
+  --severity-major-lightest:#fddcc4;
+  --severity-none:#6fa8bb;
+  --severity-none-darker:#dbf8ff;
+  --severity-none-dot-box:#c5ecfa;
+  --severity-none-lighter:#dbf8ff;
+  --severity-none-lightest:#dbf8ff;
+  --severity-stop:#e87587;
+  --severity-stop-darker:#ffdfe5;
+  --severity-stop-dot-box:#ffcad3;
+  --severity-stop-lighter:#ffdfe5;
+  --severity-stop-lightest:#ffdfe5;
+  --severity-suspended:#be9669;
+  --severity-suspended-darker:#ffeed7;
+  --severity-suspended-dot-box:#fcdfbf;
+  --severity-suspended-lighter:#ffeed7;
+  --severity-suspended-lightest:#ffeed7;
+  --severity-unknown-darker:#fcfcfc;
+  --severity-unknown-dot-box:#f8f8f8;
+  --severity-unknown-lighter:#fcfcfc;
+  --severity-unknown-lightest:#fcfcfc;
+  --severity-unreachable:#6d2ed1;
+  --severity-unreachable-darker:#e7dcfa;
+  --severity-unreachable-dot-box:#c8aff0;
+  --severity-unreachable-lighter:#e7dcfa;
+  --severity-unreachable-lightest:#e7dcfa;
+  --severity-up:#14b053;
+  --severity-up-darker:#d1fae0;
+  --severity-up-lighter:#d1fae0;
+  --severity-up-lightest:#d1fae0;
+  --severity-warning:#e8b407;
+  --severity-warning-darker:#fff1b3;
+  --severity-warning-dot-box:#ffe980;
+  --severity-warning-lighter:#fff1b3;
+  --severity-warning-lightest:#fff1b3;
+  --side-menu-bg:#fff;
+  --sparkline-color-response-time:#0d9488;
+  --sparkline-color-throughput:#f97316;
+  --status-progress-color:transparent;
+  --success-button-bg:#14b053;
+  --success-button-hover-bg:#14b053;
+  --success-button-hover-text:#fff;
+  --success-button-text:#fff;
+  --success-outline-button-hover-bg:#d1fae0;
+  --switch-bg:#fff;
+  --switch-border:#e3e8f2;
+  --switch-port-view-bg:#cad3e2;
+  --table-details-bg:#e3e8f2;
+  --table-group-header-highlight:#d6edf8;
+  --tabs-text-color:#516381;
+  --tag-bg:#ecf1f9;
+  --tag-bg-color:#e3e8f2;
+  --tag-border:#e3e8f2;
+  --tag-color:#7186a8;
+  --text-color-common-link:#111c2c;
+  --text-color-common-primery:#2b394f;
+  --text-color-common-secondary:#7186a8;
+  --text-neutral-ligher:#6a7fa0;
+  --timeline-indicator-color:#172336;
+  --timeline-scrollbar-background-color:#e3e8f2;
+  --timerange-background-color:#e3e8f2;
+  --timerange-text-color:#7186a8;
+  --toast-background-color:#fff;
+  --toast-text-color:#000;
+  --tooltip-background-color:#172336;
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.15);
+  --tooltip-text-color:#fff;
+  --topology-background:#fff;
+  --topology-graph-tooltip-bg:#172336;
+  --topology-overlay-btn-bg:#ecf1f9;
+  --topology-overlay-btn-hover-bg:#e3e8f2;
+  --topology-overlay-btn-text:#7186a8;
+  --tour-flow-bg-color:#def1e2;
+  --tour-log-bg-color:#d6f1f7;
+  --tour-metric-bg-color:#cfdce6;
+  --transparent-border-color:#e3e8f2;
+  --user-dropdown-button-bg:#ecf1f9;
+  --user-dropdown-button-hover-bg:#e3e8f2;
+  --user-dropdown-button-hover-text:#1d2a3e;
+  --user-dropdown-button-text:#1d2a3e;
+  --user-dropdown-theme-icon-color:#e3e8f2;
+  --utility-result-bg:#ecf1f9;
+  --utility-result-border:#e3e8f2;
+  --utility-scrollbar-thumb:rgba(136, 136, 136, 0.4);
+  --white-regular:#fff;
+  --widget-background:#fff;
+  --widget-background-color:#fff;
+  --widget-border-color:#e3e8f2;
+  --widget-box-shadow:none;
+  --widget-type-selector-border-color:#e3e8f2;
+}
+
+/* ── this file's own tokens, re-pointed at the DS ones ────────────────────────────────────
+   The `.ag*` rules below (and the `st`/`stc` atoms this page still borrows for layout) are
+   written against this prototype's token names; pointing them at the DS names above converts
+   every one of them at once, and keeps the mapping auditable in one table. */
+#agPage,#agWiz{
+  /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
+  --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
+  --text:var(--page-text-color);       --text-dim:var(--text-color-common-secondary);
+  --text-dim2:var(--neutral-light);    --muted:var(--neutral-regular);
+  --border:var(--border-color);        --border-soft:var(--border-color);
+  --chip:var(--field-border-color);    --hover:var(--nav-hover-bg);
+  --sel:var(--neutral-lighter);        --white:var(--primary);
+  /* Atoms/Button → one `primary` per view = `--primary-button-bg` / `--primary-button-text` */
+  --action:var(--primary-button-bg);   --action-fg:var(--primary-button-text);
+  --action-h:var(--primary-alt);
+  --teal:var(--primary);               --teal-dim:var(--primary-alt);
+  /* ⚠️ THE AI ACCENT IS `--chart-indigo`, AND IT IS THE ONLY CHROMATIC THING HERE.
+     The DS has NO "AI accent" token — `resolve_token("AI accent purple")` returns nothing —
+     and the contract forbids inventing one. `--chart-indigo` is the DS's own violet and is
+     already what this prototype paints every AI surface with (Log Explorer's AI Query, the
+     per-widget ✦ drawer, the toolbar pill). Declaring it here also FIXES LIGHT THEME: `:root`
+     declares `--ai:#8b5cf6` once and never overrides it, so light was wearing the dark value.
+     ⚠️ It paints the MARK, never a button. The reference makes every CTA purple; the DS is
+     explicit that the primary action is `--primary` (navy) and warns twice that the brand is
+     "navy, NOT cyan, NOT blue". So violet marks *what this is*; navy marks *what to press*. */
+  --ai:var(--chart-indigo);
+  --ai-soft:color-mix(in srgb, var(--chart-indigo) 13%, transparent);
+  --ai-line:color-mix(in srgb, var(--chart-indigo) 34%, transparent);
+}
+
+/* ── what the DS does NOT ship, and is therefore composed ─────────────────────────────────
+   Everything below is LAYOUT for the four compositions named in the script block's header —
+   the empty state, the provider cards, the usage tiles/trends, and the connection-test panel
+   — plus the wizard's two-column shell. There is no control styling here: every button,
+   input, radio, select, switch, checkbox, tag, banner, stepper and key-value list is a real
+   `obs-*` element and is left entirely alone.
+   ⚠️ THE `obs-*` ELEMENTS ARE LIGHT-DOM, so a stray descendant selector WOULD reach inside
+   them — the `.agpfgt span` / `.awrow svg` trap this repo records twice. Nothing here selects
+   past a composed container. */
+.agpage{flex:0 0 auto;min-width:0}
+/* the integration header — mark, title (+ status), then the description carrying the doc link.
+   ⚠️ NO RULE UNDER IT (request, 31 Aug 2026: "remove this line"). It had one on the wrapper —
+   `obs-page-header` keeps `no-divider` so the component could not draw it between the title
+   and the description that belongs to it — and that wrapper rule is now gone too. What
+   separates the header from the list below is the space, plus the toolbar's own uppercase
+   label; a hairline on top of both was a third separator doing the same job.
+   ⚠️ `no-divider` STAYS ON THE COMPONENT. Dropping it would put the line back, in the worse
+   place: between the heading and its own subtitle. */
+.aghead{padding:0;margin:0 0 22px}
+.aghead obs-page-header{display:block}
+.aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
+/* ⚠️ THE INDENT ALIGNS THE DESCRIPTION WITH THE TITLE, NOT WITH THE MARK — 30px of mark plus
+   the header's own 12px gap. In the reference the sentence starts under the product name. */
+.aghsub{margin:2px 0 0 42px;font-size:12.8px;line-height:1.55;
+  color:var(--text-color-common-secondary);max-width:940px}
+.aghsub obs-link{margin-left:2px}
+/* ⚠️ `obs-link`'s `external` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
+   The reference puts the glyph after the text, so it is added as an `obs-icon` in the link's
+   own slot (a DS icon, not a hand-drawn one). Measured before assuming. */
+.aghsub obs-link obs-icon{margin-left:5px;vertical-align:-1px}
+.agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular);margin:22px 0 10px}
+.agpage obs-banner{display:block;margin-bottom:16px}
+
+/* ⚠️ THE EMPTY-STATE CARD AND THE PROVIDER-CARD GRID ARE GONE — they were the last two
+   hand-built compositions on this page, and `list-view` (obs-banner + obs-toolbar + obs-table)
+   replaced both. Nothing styles those three: the toolbar's own label is the only rule left. */
+.agpage obs-toolbar{display:block;margin-bottom:2px}
+.agtbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular)}
+.agpage obs-table{display:block;margin-bottom:4px}
+
+/* ── usage & health ───────────────────────────────────────────────────────────────────────
+   ⚠️ DECLARED DS GAP. `list_gaps` → "Charts / stat tiles: no obs-* … render with the product
+   Chart component (Highcharts). Standalone -> STOP AND ASK." This prototype is standalone, so
+   the tiles and trends are a REPRODUCTION drawn as inline SVG, no library imported. What the
+   DS does govern is honoured: `registry/data-viz.json`'s decisionFlow picks the type (a daily
+   count -> bar, a latency trend -> line) and the series colour is a token, never `--primary`. */
+.agkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:14px}
+.agkpi{padding:12px 14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
+  border:1px solid var(--border-color)}
+.agkl{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;
+  color:var(--text-color-common-secondary);margin-bottom:9px}
+.agkl obs-icon{color:var(--neutral-regular)}
+.agkl.ok obs-icon{color:var(--secondary-green)}
+.agkv{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--primary-alt);line-height:1}
+.agchts{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px}
+.agcht{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
+  border:1px solid var(--border-color)}
+.agchh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.agchh .t{font-size:12.5px;font-weight:600;color:var(--primary-alt)}
+.agchh .s{font-size:11px;color:var(--text-color-common-secondary);margin-top:4px}
+.agcht > svg{display:block;width:100%;height:56px}
+
+/* ── the wizard shell ─────────────────────────────────────────────────────────────────────
+   `wizard-flow`: the stepper rail, the step body, the Back/Next footer. ⚠️ `#stMain` is a
+   flex COLUMN that already scrolls, so this stretches to it and the body does not scroll on
+   its own — a second scroller inside a scroller is the `.laypick` trap this repo records. */
+/* ⚠️ THE RAIL IS THE PRODUCT'S OWN, MEASURED OFF `Create SLO Profile` (reference supplied
+   31 Aug 2026): a ~205px column in its own panel with a right border, the form beside it.
+   It was a 236px bare column floating in whitespace with a 28px gap and no edge.
+   ⚠️ WHAT IS **NOT** COPIED FROM THAT SCREEN: its rail is a SECTION MENU (Availability /
+   Performance are peers, `obs-side-menu`). Ours is an ordered wizard, and `steps.decisionFlow`
+   is explicit — "Don't use steps to switch between independent sections" and, the other way,
+   don't fake a sequence with a menu. So the chrome is the SLO page's and the control stays
+   `obs-steps`. */
+/* ⚠️ INSIDE A DRAWER NOW, so the two panes take the drawer's own height and each scrolls —
+   `scrolled-content="false"` hands that job here. It was a full-page row.
+   ⚠️ THE LEFT INSET IS THE CONSUMER'S JOB IN THIS MODE, AND BOTH HALVES ARE NEEDED.
+   `use-padding` on the drawer is documented as widening "the shared inset to 24px for the
+   WHOLE panel (header+body+footer stay aligned)" — but with `scrolled-content="false"` the
+   body is multi-pane and the component pads only the header and the footer. Measured: the
+   title and the footer note moved to +26px from the panel edge while the step markers stayed
+   at +2px, so the drawer title sat between a step's circle and its label, aligned to neither.
+   The 24px here is the same number `use-padding` applies, so the three insets agree — change
+   one and you must change the other. */
+.agwrap{display:flex;height:100%;min-height:0;margin:0;padding-left:24px}
+/* ⚠️ THE RAIL IS THE PRODUCT'S OWN WIZARD RAIL — `Create Custom Report`, supplied 31 Aug
+   2026: outline circles, NO connector lines, one line per step, on the plain surface with a
+   full-height right border. It was briefly a tinted panel that hugged its steps; the product
+   accepts the empty column below and the reference is the instruction.
+   ⚠️ `fill="outline"` AND `connector="none"` DO THE WORK, not CSS — both are documented
+   `obs-steps` props, so the marker and the missing lines come from the component.
+   ⚠️ WHAT CANNOT BE MATCHED: the reference paints a full-width tinted BAND behind the active
+   row. `obs-steps` renders its rows in a SHADOW ROOT and exposes no `::part()`, so there is no
+   handle for it — and the two ways to force it are both off-limits: styling into another
+   component's shadow root, or absolutely positioning a band against its internal row height.
+   The current step is still unmistakable (ringed `--primary` marker + a bold dark label
+   against muted ones), which is how the component itself says "you are here". Reported. */
+.agrail{flex:0 0 250px;width:250px;margin-right:24px;padding:8px 14px 8px 0;overflow:auto;
+  border-right:1px solid var(--border-color)}
+.agmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:auto}
+/* ⚠️ CAPPED. Unbounded, a two-field form stretched across ~1200px of empty page — which is
+   what the supplied screenshot is showing. The SLO form runs to about this width. */
+.agbody{flex:1;min-width:0;padding-right:4px}
+.agwt{margin:0 0 6px;font-size:16px;font-weight:600;color:var(--primary-alt)}
+.agwp{margin:0 0 18px;font-size:12.8px;line-height:1.5;color:var(--text-color-common-secondary);max-width:640px}
+.agwp b,.agpage obs-banner b{color:var(--primary)}
+.agwrap obs-radio{display:block}
+/* Atoms/Input, `material` — the underlined field. It is what the SLO form uses on every one
+   of its fields, and the boxed default read as a different product beside it. */
+.agwrap obs-input{--x:0}
+/* the drawer draws its own footer rule and inset, so this is just the row */
+.agfootw{width:100%}
+.agfoot{display:flex;align-items:center;gap:8px;width:100%}
+/* the reference's security line, kept: it is the one sentence saying where the key actually
+   goes, and it belongs beside the button that sends it. */
+.agfnote{display:flex;align-items:center;gap:7px;margin-right:auto;font-size:11.5px;
+  color:var(--neutral-regular)}
+
+/* credentials */
+/* the SLO form is a THREE-column grid; so is this. `.agfields` is 3-up and a field spans
+   what it needs. ⚠️ 24px of gutter is the reference's. */
+/* ⚠️ A ROW GAP, NOT JUST A COLUMN GAP. `obs-input` carries no bottom margin of its own, so
+   with `gap:0 24px` a second row's LABEL sat on the first row's underline — the two rows read
+   as one block of overlapping text. The SLO reference spaces its rows about this far apart. */
+.agfields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px}
+.agfields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.agadvb{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;padding:8px 0;
+  color:var(--text-color-common-secondary);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+/* ⚠️ NO TINTED SLAB. Underlined (`material`) fields are drawn as a rule on the page surface;
+   sitting them on `--neutral-lightest` left the rule and the tint a few points apart and the
+   whole block read as disabled. The SLO reference puts every field on the plain form surface,
+   so this is a hairline and some space, not a panel. */
+.agadv{margin-top:6px;padding:10px 0 2px;border-top:1px solid var(--border-color)}
+.agadv3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px;margin-top:20px}
+.agtest{margin-top:18px;padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
+  border:1px solid var(--border-color)}
+.agtest.ok{border-color:var(--secondary-green)}
+.agth{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.agth .l{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agth .l obs-icon{color:var(--neutral-regular)}
+.agstgs{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.agstg{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;color:var(--neutral-regular)}
+.agstg.done{color:var(--secondary-green)}
+.agstg.cur{color:var(--page-text-color)}
+.agstg .dot{width:6px;height:6px;border-radius:50%;background:var(--neutral-light);margin:0 4px}
+.agspin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;
+  border-radius:50%;display:inline-block;animation:agspin .7s linear infinite}
+@keyframes agspin{to{transform:rotate(360deg)}}
+.aghint{margin-top:10px;display:flex;align-items:center;gap:7px;font-size:12px;
+  color:var(--text-color-common-secondary)}
+
+/* routing */
+.agroute{margin-top:20px;padding:14px;border-radius:var(--btn-radius);background:var(--neutral-lightest);
+  border:1px solid var(--border-color)}
+.agrh{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.agon{font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agod{font-size:12px;line-height:1.45;color:var(--text-color-common-secondary);margin-top:4px}
+.agrts{margin-top:12px;border-top:1px solid var(--border-color);padding-top:2px}
+.agrt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0;
+  border-bottom:1px solid var(--border-color)}
+.agrt:last-child{border-bottom:0}
+.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--page-text-color)}
+.agrt .n obs-icon{color:var(--neutral-light)}
+
+/* consent */
+.agtwo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.agbox{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);border:1px solid var(--border-color)}
+.agbox .h{font-size:12px;font-weight:600;color:var(--primary-alt);margin-bottom:10px}
+.agchips{display:flex;flex-wrap:wrap;gap:6px}
+.agcons{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
+  border:1px solid var(--border-color);display:flex;flex-direction:column;gap:12px}
+
+/* done */
+.agdone{display:flex;flex-direction:column;align-items:center;text-align:center;padding:34px 0 10px}
+.agdmk{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;
+  background:var(--severity-up-lightest);color:var(--secondary-green);border:1px solid var(--secondary-green)}
+/* ⚠️ `variant="plain"`, NOT `card` (reference supplied 31 Aug 2026: the product's Monitor Info
+   / System Info detail view). `card` paints a tinted label COLUMN and boxes the whole list,
+   which made a five-row summary read as a data table. The product writes a detail record as a
+   section heading over label-left / value-right rows on the plain surface — which is exactly
+   what the `plain` variant renders, so this is a prop change, not CSS.
+   ⚠️ The block is LEFT-ALIGNED inside a centred step. The tick, the heading and the sentence
+   are a success moment and stay centred; a five-row record is read, not celebrated, and
+   centring its labels would break the column the values line up in. */
+/* ⚠️ `.agemt` AND `.agemp` HAD NO RULES LEFT. They were the empty state's heading and copy,
+   and their CSS went with that block when the hero card became a banner — but the Done step
+   still uses both, so its heading and sentence had been rendering at browser defaults. Found
+   by grepping every class this step names against the stylesheet, not by looking at it. */
+.agemt{margin:0 0 8px;font-size:16px;font-weight:600;color:var(--primary-alt)}
+.agemp{margin:0 0 22px;font-size:12.8px;line-height:1.6;
+  color:var(--text-color-common-secondary);max-width:470px}
+/* ⚠️ THE SUMMARY SHARES THE PARAGRAPH'S WIDTH so the two line up. They were 520 and 470, so
+   the block's left edge landed 25px inside the sentence above it and the step read as two
+   things that had drifted apart rather than one record under one heading. */
+.agsum{width:min(470px,100%);text-align:left}
+.agsumh{font-size:13px;font-weight:600;color:var(--primary-alt);margin:0 0 8px;
+  padding-bottom:8px;border-bottom:1px solid var(--border-color)}
+
+@media (max-width:1366px){ .agfields,.agtwo,.agadv3{grid-template-columns:1fr} .agrail{flex-basis:210px;width:210px} }
+
 </style>
 </head>
 <body class="mpshut">
@@ -3167,7 +4129,14 @@ const SUBNAV2 = {
                     ['Plugin Library', 'Settings', "stOpen('Plugin Library')"], ['Dependency Mapper', 'Settings', "stOpen('Dependency Mapper')"],
                     ['Service Level Objective', 'Settings', "stOpen('Service Level Objective')", 'beta'], ['Utility', 'Settings', "stOpen('Utility')"],
                     ['APM', 'Settings', "stOpen('APM')"], ['Real User Monitoring', 'Settings', "stOpen('Real User Monitoring')"],
-                    ['Integration', 'Settings', "stOpen('Integration')"] ]},
+                    ['Integration', 'Settings', "stOpen('Integration')"],
+                    /* ⚠️ NOT ON THE INSTANCE — the note at `ST_TREE`'s tail is the authority.
+                       Option 1's Settings flyout renders from `ST_TREE` (`mfTreeFor('Setting')`)
+                       and picks the category up on its own; Options 2 and 3 render from these
+                       two arrays, so the row has to be listed here as well or their nav offers
+                       18 categories while their Settings module lists 19. It is in all three
+                       files either way, because these arrays are identical across them. */
+                    ['Agentic AI', 'Settings', "stOpen('Agentic AI')"] ]},
   ],
 };
 
@@ -7799,8 +8768,10 @@ function lxLtPaint(){
    WHAT WAS COPIED, all measured rather than invented:
      · the head       — ‹ collapse · ⚙ · Settings. The chevron hides the left
        list (width → 0, icon flips), exactly what the live one does.
-     · the left list  — Search, then the product's 18 categories in its order,
-       each with the product's own icon (harvested SVG paths), collapsible,
+     · the left list  — Search, then the product's 18 categories in its order
+       (plus `Agentic AI`, the one category that is NOT on the instance — see the
+       note at ST_TREE's tail), each with the product's own icon (harvested SVG
+       paths), collapsible,
        BETA tag on Service Level Objective; every sub-page under every
        category (ST_TREE carries the live route of each). Search matches a
        category name (shows all its pages) or a page name, case-insensitive
@@ -7866,7 +8837,15 @@ const ST_ICO = {
   "settings": "M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z",
   "search": "M43.4,40.6l-7.4-7.3c2.9-3.6,4.3-8.2,3.9-12.8-.4-4.6-2.5-8.9-5.9-11.9-3.4-3-7.9-4.7-12.5-4.6s-9,2-12.2,5.2c-3.2,3.2-5.2,7.7-5.3,12.3s1.5,9,4.6,12.5c3,3.4,7.3,5.5,11.9,5.9s9.1-1,12.8-3.9l7.3,7.3c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4h0Zm-11.5-8.6c-2.7,2.7-6.2,4.1-9.9,4.1s-5.4-.9-7.8-2.4c-2.3-1.5-4.1-3.7-5.1-6.3-1-2.6-1.3-5.3-.8-8.1,.6-2.7,1.9-5.2,3.8-7.1,2-2,4.5-3.3,7.1-3.8,2.7-.6,5.5-.3,8.1,.8s4.8,2.9,6.3,5.1c1.5,2.3,2.4,5,2.4,7.8s-1.4,7.2-4.1,9.9Z",
   "eye": "M43.8,23.2c-4-9.3-11.6-15.2-19.8-15.2S8.2,13.8,4.2,23.2c0,.3-.2,.6-.2,.8s0,.6,.2,.8c4,9.3,11.6,15.2,19.8,15.2s15.8-5.8,19.8-15.2c0-.3,.2-.6,.2-.8s0-.6-.2-.8Zm-19.8,12.8c-6.4,0-12.4-4.6-15.8-12,3.4-7.4,9.4-12,15.8-12s12.4,4.6,15.8,12c-3.4,7.4-9.4,12-15.8,12Zm0-20c-1.6,0-3.1,.5-4.5,1.3-1.3,.9-2.4,2.1-3,3.6-.6,1.4-.8,3-.5,4.7,.3,1.5,1,3,2.2,4.1s2.6,1.9,4.1,2.2,3.1,.2,4.7-.5c1.4-.6,2.7-1.6,3.6-3,.9-1.3,1.3-2.9,1.3-4.5s-.9-4.2-2.4-5.6c-1.5-1.5-3.5-2.4-5.6-2.4Zm2.9,10.9c-.8,.8-1.8,1.1-2.9,1.1s-1.5-.2-2.2-.7c-.7-.5-1.1-1-1.4-1.8s-.4-1.5-.2-2.3c.2-.8,.6-1.5,1-2s1.2-1,2-1c.8-.2,1.6,0,2.3,.2,.8,.3,1.3,.9,1.8,1.4,.5,.7,.7,1.4,.7,2.2s-.4,2.1-1.1,2.9Z",
-  "eye-slash": "M19.8,11.4c0,.2,.3,.4,.6,.6,.2,.2,.5,.3,.8,.3h.8c.7-.2,1.4-.3,2.1-.3,6.4,0,12.4,4.6,15.8,12-.6,1.1-1.1,2.2-1.8,3.2-.2,.3-.3,.7-.3,1.1s.2,.9,.4,1.2c.3,.4,.7,.6,1,.7,.4,0,.9,0,1.2,0,.4-.2,.8-.5,1-.9,1-1.4,1.7-3,2.4-4.6,0-.3,.2-.5,.2-.8s0-.6-.2-.8c-4-9.3-11.6-15.2-19.8-15.2s-1.9,0-2.8,.3c-.3,0-.5,0-.8,.3-.2,0-.4,.3-.6,.6-.2,.2-.3,.5-.3,.8v.8c0,.2,0,.5,.3,.8h0Zm23.9,29.7c0-.3-.3-.5-.5-.7L7.5,4.6c-.2-.2-.4-.4-.7-.5-.3,0-.5-.2-.8-.2s-.6,0-.8,.2c-.3,0-.5,.3-.7,.5-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l6.2,6.2c-2.9,2.8-5,6-6.6,9.6,0,.3-.2,.6-.2,.8s0,.6,.2,.8c4,9.3,11.6,15.2,19.8,15.2s7.1-1,10.1-3l6.5,6.5c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5s.4-.4,.5-.7,.2-.5,.2-.8,0-.6-.2-.8h0ZM20.1,23l4.8,4.8c-.4,0-.7,.2-1,0-1,0-2.1-.4-2.9-1.1-.8-.8-1.1-1.8-1.1-2.9s0-.7,0-1h0Zm3.9,13.1c-6.4,0-12.4-4.6-15.8-12,1.3-2.9,3.1-5.4,5.4-7.6l3.5,3.6c-.9,1.5-1.1,3.2-.9,4.9,.3,1.7,1,3.3,2.3,4.5,1.2,1.2,2.9,2,4.5,2.3,1.7,.3,3.4,0,4.9-.9l3.1,3.1c-2.2,1.2-4.7,2-7.1,2Z"
+  "eye-slash": "M19.8,11.4c0,.2,.3,.4,.6,.6,.2,.2,.5,.3,.8,.3h.8c.7-.2,1.4-.3,2.1-.3,6.4,0,12.4,4.6,15.8,12-.6,1.1-1.1,2.2-1.8,3.2-.2,.3-.3,.7-.3,1.1s.2,.9,.4,1.2c.3,.4,.7,.6,1,.7,.4,0,.9,0,1.2,0,.4-.2,.8-.5,1-.9,1-1.4,1.7-3,2.4-4.6,0-.3,.2-.5,.2-.8s0-.6-.2-.8c-4-9.3-11.6-15.2-19.8-15.2s-1.9,0-2.8,.3c-.3,0-.5,0-.8,.3-.2,0-.4,.3-.6,.6-.2,.2-.3,.5-.3,.8v.8c0,.2,0,.5,.3,.8h0Zm23.9,29.7c0-.3-.3-.5-.5-.7L7.5,4.6c-.2-.2-.4-.4-.7-.5-.3,0-.5-.2-.8-.2s-.6,0-.8,.2c-.3,0-.5,.3-.7,.5-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l6.2,6.2c-2.9,2.8-5,6-6.6,9.6,0,.3-.2,.6-.2,.8s0,.6,.2,.8c4,9.3,11.6,15.2,19.8,15.2s7.1-1,10.1-3l6.5,6.5c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5s.4-.4,.5-.7,.2-.5,.2-.8,0-.6-.2-.8h0ZM20.1,23l4.8,4.8c-.4,0-.7,.2-1,0-1,0-2.1-.4-2.9-1.1-.8-.8-1.1-1.8-1.1-2.9s0-.7,0-1h0Zm3.9,13.1c-6.4,0-12.4-4.6-15.8-12,1.3-2.9,3.1-5.4,5.4-7.6l3.5,3.6c-.9,1.5-1.1,3.2-.9,4.9,.3,1.7,1,3.3,2.3,4.5,1.2,1.2,2.9,2,4.5,2.3,1.7,.3,3.4,0,4.9-.9l3.1,3.1c-2.2,1.2-4.7,2-7.1,2Z",
+  /* ⚠️ HAND-ADDED, AND THE ONLY KEY HERE THAT IS NOT FROM THE HARVEST. `Agentic AI` is not a
+     category on the instance, so re-running the generator over the live Settings list cannot
+     produce this icon — a re-harvest drops it and it has to be put back.
+     It is the DS's own `sparkling-star` (`observeops-icons/common/shapes-symbols/`, verbatim,
+     the name `list_icons` gives it) and nothing else in this list uses it: `brain` is
+     Dependency Mapper's, and `agent` means a MONITORING agent in this product (Agent Based
+     Discovery, Agent Monitor Settings), so it would name the wrong thing entirely. */
+  "sparkling-star": "M37.7,26.1c-7.5-2.78-13.42-8.69-16.2-16.2-.17-.47-.85-.47-1.03,0-2.78,7.5-8.69,13.42-16.2,16.2-.47.17-.47.85,0,1.02,7.5,2.78,13.42,8.69,16.2,16.2.17.48.85.48,1.03,0,2.78-7.5,8.69-13.42,16.2-16.2.48-.17.48-.85,0-1.02ZM43.8,9.88c-2.82-1.04-5.04-3.26-6.08-6.08-.06-.17-.32-.17-.38,0-1.04,2.82-3.26,5.04-6.08,6.08-.18.06-.18.32,0,.38,2.82,1.04,5.04,3.26,6.08,6.08.06.17.32.17.38,0,1.04-2.82,3.26-5.04,6.08-6.08.18-.06.18-.32,0-.38Z"
 };
 
 /* the live list, in the live order; each page carries the route it links to on the instance */
@@ -7888,7 +8867,22 @@ const ST_TREE = [
   {n:"Utility", ic:"utility", subs:[["Ping","/settings/utility/ping"], ["SNMP Ping","/settings/utility/snmp-ping"], ["Traceroute","/settings/utility/traceroute"], ["SNMP Walk","/settings/utility/snmp-walk"], ["SNMP Community Check","/settings/utility/snmp-community-check"], ["MAC Address Resolver","/settings/utility/mac-address-resolver"], ["CLI Command","/settings/utility/cli-command"], ["Power Shell Command","/settings/utility/power-shell-command"], ["DNS Resolver","/settings/utility/dns-resolver"], ["Telnet","/settings/utility/telnet"]]},
   {n:"APM", ic:"apm", subs:[["Application Registration","/settings/apm-settings/application-registration"]]},
   {n:"Real User Monitoring", ic:"monitor", subs:[["Application Registration","/settings/digital-experience-monitoring/rum-applications"]]},
-  {n:"Integration", ic:"integration", subs:[["Integration Profile","/settings/integration/integration-profile"], ["Motadata ServiceOps","/settings/integration/motadata-serviceops"], ["ServiceNow","/settings/integration/service-now"], ["Atlassian Jira","/settings/integration/atlassian-jira"], ["Microsoft Teams","/settings/integration/microsoft-teams"], ["Slack","/settings/integration/slack"], ["LAMA","/settings/integration/lama"]]}
+  {n:"Integration", ic:"integration", subs:[["Integration Profile","/settings/integration/integration-profile"], ["Motadata ServiceOps","/settings/integration/motadata-serviceops"], ["ServiceNow","/settings/integration/service-now"], ["Atlassian Jira","/settings/integration/atlassian-jira"], ["Microsoft Teams","/settings/integration/microsoft-teams"], ["Slack","/settings/integration/slack"], ["LAMA","/settings/integration/lama"]]},
+  /* ⚠️ THE ONE CATEGORY THAT IS NOT ON THE INSTANCE (request, 31 Aug 2026: "in setting module
+     create new sub module name is Agentic AI"). Everything above it is the harvested live list
+     in the live order, so this is APPENDED rather than slotted in beside Dependency Mapper —
+     the other `/settings/ai/` area — which would have shifted the harvest's own positions.
+     ⚠️ ITS ONE PAGE IS `Overview`, which is the name the supplied Agentic AI reference gives
+     its own single routed screen (that prototype's nav shows Overview and nothing else; its
+     Data-&-privacy / Governance / Usage screens exist in its source but are not routed, so
+     they are not built here either). It is served by the `ag*` block through `ST_PAGES`.
+     ⚠️ A CATEGORY CANNOT CARRY ZERO PAGES — `stOpen()` and `stStubHTML()` both dereference
+     `subs[0]` — so adding a second page here is one array entry plus one `ST_PAGES` key.
+     ⚠️ THE ROUTE IS THE SHAPE ONE WOULD TAKE, not a harvested one. `/settings/ai/` is the
+     namespace Dependency Mapper already sits in on the instance.
+     ⚠️ The flyout picks this up for free — `mfTree('Setting')` maps `ST_TREE`, it does not
+     hold its own copy. */
+  {n:"Agentic AI", ic:"sparkling-star", subs:[["Overview","/settings/ai/agentic-ai"]]}
 ];
 
 /* the instance's password policy, read off the component (passwordPolicyContext.policies) */
@@ -8881,6 +9875,693 @@ function stcRuInfoHTML(){ return `<h5>Audit/Remediation Properties</h5><p>Set up
 ST_PAGES['Compliance Settings › Compliance Policy'] = { html: stcPolHTML };
 ST_PAGES['Compliance Settings › Benchmark'] = { html: stcBmHTML };
 ST_PAGES['Compliance Settings › Rules'] = { html: stcRuHTML };
+</script>
+
+<!-- ⚠️ THE REAL DESIGN SYSTEM. `@mtdt/observeops-ds-elements` (v0.1.166), the public npm
+     package, vendored into `_ds/` so the prototype still opens over file:// and still works
+     on GitHub Pages with no build step. It registers the `obs-*` custom elements used by the
+     Agentic AI screen. ⚠️ ITS CSS PACKAGE IS DELIBERATELY NOT LINKED — see the token block in
+     the stylesheet for why (its light values sit on `:root`, which is the opposite of this
+     prototype's theme convention). Only the elements bundle is loaded. -->
+<script src="_ds/observeops-elements.umd.js"></script>
+
+<script>
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview + the setup wizard ═════════════
+   Request, 31 Aug 2026: analyse `Motadata Agentic AI (1) (1).html` and build it on the
+   ObserveOps design system — then: "Using the ObserveOps design system replace all
+   components." This block now renders with the REAL `obs-*` web components.
+
+   ── WHAT CHANGED ON THE SECOND PASS ─────────────────────────────────────────────────────
+   The first build COMPOSED the screen from this file's own atoms (`.stbtn`, `.stin`,
+   `.stcck`, `.ddswitch`, `.stcsel`, `.stcsteps`) with DS tokens re-pointed at them. The
+   contract calls that a fallback: "Build with the REAL components — the framework-agnostic
+   Web Components `@mtdt/observeops-ds-elements`; reconstructing from CSS classes is a
+   fallback only." So the package is installed and vendored (`_ds/`), and every control that
+   the DS ships is now the shipped element:
+
+     obs-page-header · obs-banner · obs-button · obs-tag · obs-icon · obs-radio · obs-input
+     obs-select · obs-switch · obs-checkbox · obs-steps · obs-key-value · obs-link
+
+   `elements-api.json` (in the package) is the authority for every attribute below; nothing
+   here invents a prop name.
+
+   ⚠️ EVENTS DELIVER THE VALUE IN `event.detail`, SOMETIMES WRAPPED IN AN ARRAY (the Vue
+   custom-element bridge). `agDet()` unwraps it — the package's own setup note says to.
+   ⚠️ INLINE `onchange=` WORKS ON THESE ELEMENTS and is used throughout, which is what lets
+   the screen stay a string-built render like every other page in this file. Verified for
+   switch / checkbox / radio / select / input / steps / button before it was relied on.
+   ⚠️ THEY ARE LIGHT-DOM elements, so this file's CSS reaches inside them. Nothing here does
+   that on purpose — the only rules kept are layout for the parts the DS does NOT ship.
+
+   ── WHAT THE DS DOES NOT SHIP, AND IS THEREFORE STILL COMPOSED ──────────────────────────
+   Per "Compose by default", combining catalogued parts into an undocumented screen is
+   allowed and needs no permission. These four are compositions, not new components:
+     · the EMPTY STATE (`search_components("empty state…")` returns nothing catalogued);
+     · the PROVIDER CARDS (a card grid of one object each — no catalogued archetype);
+     · the KPI TILES and the TREND CHARTS — a DECLARED GAP, see `agBars`;
+     · the CONNECTION-TEST panel (a staged progress list; not a catalogued component).
+
+   ── DECLARED DIVERGENCES ────────────────────────────────────────────────────────────────
+     · the setup flow is a FULL PAGE, not the reference's 840px right drawer — `wizard-flow`
+       puts the stepper beside the step body, and this module's other wizard (Compliance ›
+       Create Rule) is already a full page;
+     · primary actions are `--primary` (navy/white), not the reference's purple — violet
+       marks WHAT THIS IS, navy marks WHAT TO PRESS;
+     · provider tiles are neutral lettermarks, not the vendors' brand hexes;
+     · ⚠️ `obs-radio` RENDERS A LABEL AND NOTHING ELSE. Its own registry describes the `list`
+       variant as "a mode chooser with per-option descriptions", and the Vue component has an
+       `option` slot for exactly that — but the shipped web component exposes only
+       `{value,label,disabled}` and ESCAPES the label, so the reference's two-line rows with a
+       trailing context chip collapse to one line. The description is folded into the label
+       rather than dropped. Worth reporting upstream: the element is behind its own registry.
+     · the DS ships Poppins; this prototype is Inter (see the token block).
+
+   Namespace `ag*` / `AG_*` / `.ag*` — grepped free before use. Borrows `stEsc` / `stA` /
+   `stFullOpen` / `stFullClose` / `stMainPaint` / `stGo` / `toast`.
+   ⚠️ REGISTERED THROUGH `ST_PAGES`, so there is no new markup section — `#stMain` hosts it. */
+
+/* the package's own unwrapping rule, from `get_setup`: "Events deliver the value in
+   event.detail as an array — unwrap: Array.isArray(e.detail) ? e.detail[0] : e.detail" */
+const agDet = e => { const d = e && e.detail; return Array.isArray(d) ? d[0] : d; };
+/* ⚠️ NO HAND-INLINED SVG ANYWHERE IN THIS BLOCK. The contract is explicit — "~553 obs-icon
+   glyphs ALL ship in the elements package … never hand-draw/inline an SVG icon" — so the
+   `AG_ICO` table the first pass harvested is gone and every glyph is an `obs-icon` name
+   checked against `list_icons`. */
+const agIc = (n, sz) => `<obs-icon name="${n}" size="${sz || 15}"></obs-icon>`;
+const agA = v => JSON.stringify(String(v)).replace(/"/g, '&quot;');
+const agJ = v => stEsc(JSON.stringify(v));
+
+/* ── the model ────────────────────────────────────────────────────────────────────────────
+   The reference's `AI_DATA`, carried over as-is except where the repo's scrub rule bites:
+   its advanced-settings placeholders (`gateway.internal`, `proxy.corp:8080`) and its people
+   names are replaced with `example.com` / neutral ones. Provider names, taglines, model names
+   and doc URLs are the real public products and are kept. */
+const AG_DATA = {
+  providers: [
+    { id:'openai', name:'OpenAI', mark:'AI', docs:'https://platform.openai.com/docs',
+      privacy:'OpenAI privacy policy',
+      tagline:'GPT-4o family — broad reasoning, fast summaries, vision.',
+      models:[ {id:'gpt-4o', name:'GPT-4o', note:'Flagship · multimodal', ctx:'128K', tier:'balanced'},
+               {id:'gpt-4-1', name:'GPT-4.1', note:'Deep reasoning', ctx:'200K', tier:'power'},
+               {id:'gpt-4-1-mini', name:'GPT-4.1 Mini', note:'Low-latency · cheap', ctx:'128K', tier:'fast'} ] },
+    { id:'anthropic', name:'Anthropic', mark:'AN', docs:'https://docs.anthropic.com',
+      privacy:'Anthropic privacy policy',
+      tagline:'Claude family — long-context analysis and careful reasoning.',
+      models:[ {id:'claude-sonnet', name:'Claude Sonnet', note:'Balanced · everyday', ctx:'200K', tier:'balanced'},
+               {id:'claude-opus', name:'Claude Opus', note:'Highest reasoning', ctx:'200K', tier:'power'} ] },
+    { id:'deepseek', name:'DeepSeek', mark:'DS', docs:'https://api-docs.deepseek.com',
+      privacy:'DeepSeek privacy policy',
+      tagline:'Open-weight efficiency — strong reasoning at low cost.',
+      models:[ {id:'deepseek-chat', name:'DeepSeek Chat', note:'General purpose', ctx:'64K', tier:'balanced'},
+               {id:'deepseek-reasoner', name:'DeepSeek Reasoner', note:'Chain-of-thought', ctx:'64K', tier:'power'} ] },
+  ],
+  tasks: [
+    { id:'alert-summary', label:'Alert summarization',      ic:'bell' },
+    { id:'incident',      label:'Incident analysis',        ic:'exclamation-triangle' },
+    { id:'rca',           label:'Root cause analysis',      ic:'sitemap' },
+    { id:'log-invest',    label:'Log investigation',        ic:'search' },
+    { id:'runbook',       label:'Runbook recommendations',  ic:'layer-group' },
+    { id:'knowledge',     label:'Knowledge search',         ic:'globe' },
+    { id:'nlq',           label:'Natural language queries', ic:'cpu' },
+  ],
+  consent: [
+    'I understand that selected observability data may be sent to the configured AI provider.',
+    "I have reviewed my organization's data governance requirements.",
+    "I accept the provider's privacy and data processing terms.",
+    'I am authorized to enable AI processing for my organization.',
+  ],
+  shared: ['Alerts','Logs','Metrics','Traces','Incident info','User prompts','Generated responses'],
+  /* the connection test's four stages, and the wording of each, are the reference's */
+  stages: ['Resolving provider endpoint','Authenticating API key','Negotiating TLS 1.3 session','Listing available models'],
+  health: { requestsToday:4820, avgLatency:1.24, errorRate:0.4, availability:99.96 },
+  volume:  [180,240,210,300,280,360,420,390,460,520,480,540,610,580],
+  latency: [1.4,1.3,1.5,1.2,1.3,1.1,1.25,1.2,1.3,1.15,1.2,1.1,1.24,1.2],
+  errors:  [3,2,5,1,0,2,1,4,1,0,1,2,1,0],
+};
+
+/* ⚠️ ONE ACTIVE PROVIDER AT A TIME — the reference's rule, and it is load-bearing: connecting
+   another disconnects the first and resets per-task routing to the new provider's models.
+   `conns` is therefore a single id or null, not a map of three. */
+const AG = { conn:null, routing:{}, wz:null };
+const agProv = id => AG_DATA.providers.find(p => p.id === id) || null;
+const agActive = () => (AG.conn ? agProv(AG.conn.pid) : null);
+const agModelName = (pid, mid) => { const p = agProv(pid); const m = p && p.models.find(x => x.id === mid); return m ? m.name : mid; };
+
+/* ── the trend charts ─────────────────────────────────────────────────────────────────────
+   ⚠️ DECLARED DS GAP. `list_gaps` → "Charts / stat tiles (line/bar/…): no obs-* … render with
+   the product Chart component (Highcharts). Standalone -> STOP AND ASK." This prototype IS
+   standalone, so these two are a REPRODUCTION, drawn as inline SVG the way every other chart
+   in this file is drawn — no library is imported. What the DS DOES govern is honoured:
+   `registry/data-viz.json`'s decisionFlow picks the type (a daily count -> bar, a latency
+   trend -> line) and the series colour comes from a token, never `--primary`.
+   ⚠️ The bar FILL is sized with `height`/`y`, never `flex` — the recorded `flex:50` bug.
+   ⚠️ A flat series must still draw: `max` floors at 1 so a row of zeroes is a baseline, not a
+   division by zero. */
+function agBars(d, tok){
+  const max = Math.max(1, ...d), w = 100 / d.length;
+  return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
+    const h = Math.max(0.8, (v / max) * 26);
+    return `<rect x="${(i * w + w * 0.18).toFixed(2)}" y="${(30 - h).toFixed(2)}" width="${(w * 0.64).toFixed(2)}" height="${h.toFixed(2)}" rx="0.6" fill="var(${tok})" opacity=".85"/>`;
+  }).join('')}</svg>`;
+}
+function agLine(d, tok){
+  const max = Math.max(...d), min = Math.min(...d), sp = (max - min) || 1;
+  const pt = d.map((v, i) => `${(i / (d.length - 1) * 100).toFixed(2)},${(28 - ((v - min) / sp) * 24).toFixed(2)}`);
+  return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="${pt.join(' ')}" fill="none" stroke="var(${tok})" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+
+/* ── Overview ─────────────────────────────────────────────────────────────────────────────
+   `module-screen` recipe, content region. Two states: NOT CONFIGURED (empty state + the three
+   provider cards) and ACTIVE (an obs-banner notice, the cards with the live one marked, then
+   usage & health). */
+function agOvHTML(){
+  const act = agActive(), h = AG_DATA.health;
+
+  /* Organisms/PageHeader, reshaped to the product's own INTEGRATION HEADER (reference supplied
+     31 Aug 2026 — the "Motadata ServiceOps" header). Three changes from the first build, all
+     from that reference:
+       · a MARK leads the row (`before` slot). It was the status tag sitting there, which read
+         as a label in front of the name rather than as the thing's own identity;
+       · the status tag moved to the `title` slot, so it trails the heading at heading size —
+         ⚠️ `heading` AND the `title` slot COEXIST (measured); the slot appends, it does not
+         replace, which is the only reason the tag can sit after the title at full size;
+       · the DOCS BUTTON IS GONE and the documentation link is INLINE IN THE DESCRIPTION, which
+         is what the reference does. A button parked at the far right made a sentence's
+         "for more information" into a piece of toolbar chrome.
+     ⚠️ `subtitle` IS NOT USED, and cannot be: the prop ESCAPES markup (measured — an `<a>`
+     renders as literal text), so an inline link is impossible through it. The description is
+     rendered here instead, and `no-divider` hands the hairline to `.aghead` so the rule still
+     sits under the WHOLE block rather than between the title and its own description. */
+  const head = `<div class="aghead">
+    <obs-page-header heading="Agentic AI" no-divider>
+      <span slot="before" class="aghmk">${agIc('sparkling-star', 30)}</span>
+      ${act ? '<obs-tag slot="title" variant="tag-green">Active</obs-tag>'
+            : '<obs-tag slot="title" variant="tag-primary">Not configured</obs-tag>'}
+    </obs-page-header>
+    <p class="aghsub">AI-powered observability runs on your own LLM provider keys. ObserveOps sends prompts and selected telemetry context to the provider you connect — nothing is stored in plain text. For more information:
+      <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Agentic AI documentation${agIc('external-link', 12)}</obs-link></p>
+  </div>`;
+
+  /* ── THE PROVIDER LIST IS `list-view`, NOT A CARD GRID (request, 31 Aug 2026: "replace
+     this component and using the ObserveOps design system, build") ──────────────────────────
+     What was here was the reference's own idiom: a hero "Set up Agentic AI" card over a
+     three-up grid of provider cards. Both were HAND-BUILT compositions — the last two on this
+     page — and neither is how ObserveOps lists things. `get_recipe('list-view')` is the
+     product's answer for "a list of records with create/edit and row actions (… most Settings
+     lists)", and it is what every other Settings screen in this prototype already is
+     (Compliance Policy, Benchmark, Rules). So: a lead-in BANNER, a grid TOOLBAR carrying the
+     one primary action, and Organisms/Table.
+     ⚠️ THE HERO CARD IS GONE ON PURPOSE. Its job — offer the one way in — is the toolbar's
+     primary button, which is the recipe's own `page-header → add` region.
+     ⚠️ AND SO IS ITS "Set up Agentic AI" NOTE BANNER (request, 31 Aug 2026). It was the hero's
+     copy carried over as a `note` callout, and against the header it had become a repeat: the
+     header already says the feature runs on your own provider keys and stores nothing in plain
+     text. An unconfigured page now goes header → toolbar → table with nothing in between, and
+     the "Not configured" tag beside the title is what states the state.
+     ⚠️ THE `info` BANNER STAYS. It is not a description — it is the one place that says
+     configuring a second provider DISCONNECTS the first, which nothing else on the page says,
+     and it only exists once something is connected. `info` is the registry's default neutral
+     notice, which is what a standing rule like that should be. */
+  const lead = act
+    ? `<obs-banner variant="info">Your active provider is <b>${stEsc(act.name)}</b>. Configuring another disconnects it — only one provider is active at a time.</obs-banner>`
+    : '';
+
+  /* Organisms/Toolbar, the grid variant (`variant=''`): the section label in its `start` slot,
+     the page's ONE primary action on the right — `list-view`'s "Add <Noun>" region.
+     ⚠️ THE PRIMARY IS ONLY THERE WHILE NOTHING IS CONNECTED. Configured, the encouraged action
+     is not "replace what is working", so the row buttons carry it at `default` weight and the
+     page has no primary at all. One primary per view, or none. */
+  const toolbar = `<obs-toolbar>
+      <span slot="start" class="agtbl">Choose a provider</span>
+      ${act ? '' : `<obs-button variant="primary" onclick="agWizOpen()">${agIc('plus', 14)}Configure AI provider</obs-button>`}
+    </obs-toolbar>`;
+
+  /* ⚠️ THE STATUS COLUMN IS `tags`, NOT `status`. `type:"status"` renders `<obs-tag status=…>`
+     and maps the RAW STRING through the kit's status map — where "Active" is green but
+     "Available" is unmapped and falls through to green as well, so both states read as ON.
+     `type:"tags"` takes `[{variant,label}]`, which is the only way to say Available in neutral.
+     ⚠️ `type:"button"` gives the row its visible action and emits `cellaction {id,key,…}`; the
+     ⋯ menu (`row-actions`) keeps Documentation, which is a read-only side trip and does not
+     deserve a button of its own. */
+  const cols = [
+    { key:'name',   title:'Provider',    width:'180px' },
+    { key:'desc',   title:'Description' },
+    { key:'status', title:'Status',      type:'tags',   width:'140px' },
+    { key:'act',    title:'',            type:'button', width:'150px', align:'right' },
+  ];
+  const rows = AG_DATA.providers.map(p => {
+    const on = act && act.id === p.id;
+    return { id:p.id, name:p.name, desc:p.tagline,
+             status: on ? [{ variant:'tag-green', label:'Active' }]
+                        : [{ variant:'tag-primary', label:'Available' }],
+             act: on ? 'Manage' : act ? 'Switch' : 'Configure' };
+  });
+  /* ⚠️ NO INLINE HANDLERS HERE — see `agBind`. `cellaction` / `rowaction` are custom event
+     names and an `on<name>=` content attribute does nothing for them. */
+  const table = `<obs-table id="agTbl" row-key="id" sortable="false"
+      columns="${agJ(cols)}" rows="${agJ(rows)}"
+      row-actions="${agJ([{ key:'docs', label:'Documentation', icon:'external-link' }])}"></obs-table>`;
+
+  const kpi = (lab, val, ic, ok) => `<div class="agkpi"><div class="agkl${ok ? ' ok' : ''}">${agIc(ic, 14)}${lab}</div><div class="agkv">${val}</div></div>`;
+  const usage = !act ? '' : `<div class="agsec">Usage &amp; health</div>
+    <div class="agkpis">
+      ${kpi('Requests today', h.requestsToday.toLocaleString(), 'network')}
+      ${kpi('Avg latency', h.avgLatency + 's', 'cpu')}
+      ${kpi('Error rate', h.errorRate + '%', 'check-circle', 1)}
+      ${kpi('Availability', h.availability + '%', 'shield-check', 1)}
+    </div>
+    <div class="agchts">
+      ${[['Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%'],
+         ['Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-indigo'), '1.2s avg'],
+         ['Error trend','Failures / day',  agBars(AG_DATA.errors, '--severity-warning'), '-40%']]
+        .map(([t, s, node, foot]) => `<div class="agcht">
+          <div class="agchh"><div><div class="t">${t}</div><div class="s">${s}</div></div><obs-tag variant="tag-primary">${foot}</obs-tag></div>
+          ${node}</div>`).join('')}
+    </div>`;
+
+  /* ⚠️ THE DRAWER IS PART OF THIS PAGE'S MARKUP — see `agWizOpen`. */
+  return `<div class="agpage" id="agPage">${head}${lead}${toolbar}${table}${usage}
+    ${AG.wz ? agWizHTML() : ''}</div>`;
+}
+
+/* the table's two events. `cellaction` fires from the action-button column, `rowaction` from
+   the ⋯ menu; both carry the row id, which is the provider id because `row-key="id"`. */
+function agCell(d){ if (d && d.key === 'act') agWizOpen(d.id); }
+function agRowAct(d){
+  if (!d) return;
+  const p = agProv(d.id);
+  if (d.action === 'docs') toast('Opens ' + (p ? p.name : '') + ' documentation');
+}
+
+/* ── the setup wizard ─────────────────────────────────────────────────────────────────────
+   `get_recipe('wizard-flow')` → "stepper (top or left) -> current step content -> Back/Next
+   footer". The rail is the REAL `obs-steps`: direction=vertical, size=small, clickable — its
+   registry's own answer for "a form wizard with a side rail … where the user can jump back".
+   ⚠️ THE HAND-BUILT `.stcsteps` RAIL IS GONE. It was this file's copy of the product's Create
+   Rule stepper and it looked right, but `steps.insteadOf` names "a hand-built row of numbered
+   circles + connector divs" as exactly the thing the component replaces.
+   ⚠️ `completed` IS LEFT AT ITS DEFAULT (`primary`), NOT set to `green`. The registry is
+   explicit: a completed step is `--primary` + ✓, and green was removed from the stepper in a
+   2026-07-20 overhaul. Passing completed="green" would undo that on this one screen. */
+/* ⚠️ SINGLE-LINE LABELS, TO MATCH THE PRODUCT'S OWN WIZARD RAIL (reference supplied 31 Aug
+   2026: `Create Custom Report` — `① Report Type · ② Report Criteria · ③ Report Properties`).
+   They carried a per-step `description` for one build, which `usageRules.vertical` does
+   sanction — but the product's rail is one line per step, and the supplied screen is the
+   instruction. The descriptions are dropped, not moved: each step's own heading and lead
+   paragraph already say the same thing at the point you reach it. */
+const AG_STEPS = ['Select provider','Credentials','Model selection','Data consent','Done'];
+
+function agWizOpen(pid){
+  const p = agProv(pid) || (AG.conn && agProv(AG.conn.pid)) || AG_DATA.providers[0];
+  AG.wz = { step:0, pid:p.id, name:'', key:'', show:false, adv:false, endpoint:'', proxy:'',
+            test:'idle', stage:-1, def:p.models[0].id, perTask:false, routing:{},
+            consent:[false,false,false,false], run:0, t:[] };
+  AG_DATA.tasks.forEach(t => { AG.wz.routing[t.id] = p.models[0].id; });
+  agWizRepaint();
+}
+/* ⚠️ THE WIZARD IS A DRAWER, NOT A FULL PAGE (request, 31 Aug 2026: "show as side popup").
+   `get_layout(panels)` calls the drawer "the product's MOST-used overlay … right overlay for
+   create/edit/detail; ~40% forms", and `obs-drawer` ships it. What this buys over the full
+   page the first build used: the Overview stays on screen behind it, so you can see the
+   provider list you are configuring against, and the Settings head stops being hijacked.
+   ⚠️ IT IS RENDERED BY `agOvHTML`, INSIDE `#stMain`. A drawer parked anywhere else survives a
+   navigation and strands itself over the next page — the `#lxDet` rule in this repo. Being
+   part of the page's own markup means `stMainPaint()` is the only thing that can draw it, and
+   `AG.wz` is the only thing that decides. Repaints happen on step/provider/toggle changes,
+   never on a keystroke (`agWizIn` repaints panels by id), so re-rendering costs nothing.
+   ⚠️ `mask-closable` IS LEFT AT ITS PRODUCT DEFAULT (false). A stray backdrop click must not
+   discard a half-typed API key. Esc still closes, which is the registry's default. */
+function agWizClose(){ agWizCleanup(); agWizRepaint(); }
+/* ⚠️ THE TIMERS MUST DIE WITH THE SCREEN — the recorded `agClose()` lesson. Two belts:
+   `onClose` clears them, and every callback checks its own run token, so a test started,
+   abandoned and restarted cannot have its old stages tick into the new one. */
+function agWizCleanup(){ if (AG.wz){ AG.wz.t.forEach(clearTimeout); AG.wz.t = []; } AG.wz = null; }
+/* ⚠️ A STEP CHANGE PATCHES THE DRAWER'S CONTENTS — IT MUST NOT REBUILD THE DRAWER.
+   The drawer is part of the page's markup, so `stMainPaint()` rewrites `#stMain.innerHTML`
+   and DESTROYS the `<obs-drawer>`, then builds a fresh one that plays its open animation from
+   scratch. On screen that is a blink: the panel closes and reopens on every Continue.
+   Replacing only `#agWiz` and the footer leaves the element — and with it the dialog's open
+   state, its close observer and the backdrop — completely untouched, so nothing animates.
+   ⚠️ IT STILL FALLS THROUGH TO `stMainPaint()` when there is no drawer, which is what OPENS
+   one (`AG.wz` set) and what REMOVES one (`AG.wz` cleared). Both need the full paint. */
+/* ⚠️ A REPAINT MUST NOT ADD OR REMOVE A NODE THE DRAWER HAS SLOTTED.
+   Three versions of this, each less wrong than the last:
+     1. `stMainPaint()` — rewrote `#stMain.innerHTML`, DESTROYING the `<obs-drawer>` and
+        building a new one that replayed its open animation. The panel visibly closed and
+        reopened on every Continue.
+     2. replacing `#agWiz` with `outerHTML` — kept the drawer, but `#agWiz` is a SLOTTED child,
+        so swapping it fired `slotchange` (measured: 1 per repaint) and made the Vue component
+        re-render. The dialog's `open` never changed — which is exactly why the probes passed
+        while the panel still flashed.
+     3. this — only the INNER content of nodes that stay put. `.agbody`'s markup, the stepper's
+        `active` attribute, the footer's contents. Measured `slotChanges=0`.
+   ⚠️ `active` IS SET AS AN ATTRIBUTE, not by re-rendering the stepper. Rebuilding `obs-steps`
+   would restart its own transitions for nothing — the component already animates the marker.
+   ⚠️ IT STILL FALLS THROUGH TO `stMainPaint()` when there is no drawer: that is what OPENS one
+   (`AG.wz` set) and what REMOVES one (`AG.wz` cleared). Both need the full paint. */
+function agWizRepaint(){
+  const d = document.getElementById('agDrw');
+  if (d && AG.wz){
+    const body = d.querySelector('#agBody'),
+          steps = d.querySelector('#agSteps'),
+          f = d.querySelector('.agfootw');
+    if (body && steps && f){
+      body.innerHTML = agStepHTML();
+      steps.setAttribute('active', AG.wz.step);
+      f.innerHTML = agFootHTML();
+      return;
+    }
+  }
+  stMainPaint();
+}
+/* obs-steps `clickable` emits `change` with the index; future steps are inert in the
+   component, and this guards the same rule again rather than trusting it. */
+function agWizGo(n){ const W = AG.wz; if (!W || n > W.step) return; W.step = n; agWizRepaint(); }
+function agWizBack(){ const W = AG.wz; if (W && W.step > 0){ W.step--; agWizRepaint(); } }
+function agWizNext(){ const W = AG.wz; if (!W) return; W.step = Math.min(4, W.step + 1); agWizRepaint(); }
+
+/* picking a provider resets the models AND the routing to that provider's own — routing that
+   still named the previous provider's models would be a broken configuration, not a default */
+function agWizPick(pid){
+  const W = AG.wz, p = agProv(pid);
+  if (!p || pid === W.pid) return;
+  W.pid = pid; W.def = p.models[0].id; W.test = 'idle'; W.stage = -1;
+  AG_DATA.tasks.forEach(t => { W.routing[t.id] = p.models[0].id; });
+  agWizRepaint();
+}
+/* ⚠️ TEXT FIELDS DO NOT REPAINT THE PAGE. `stMainPaint()` replaces `#stMain`, which would
+   destroy the focused input on every keystroke — the caret-loss trap this file records twice.
+   The value is stored, and only the panel that actually changed is repainted by id. */
+function agWizIn(k, v){
+  const W = AG.wz; if (!W) return;
+  W[k] = v;
+  if (k === 'key' && W.test !== 'idle'){ W.test = 'idle'; W.stage = -1; W.t.forEach(clearTimeout); W.t = []; agTestPaint(); agFootPaint(); }
+}
+function agWizAdv(){ AG.wz.adv = !AG.wz.adv; agWizRepaint(); }
+function agWizShow(){ AG.wz.show = !AG.wz.show; agWizRepaint(); }
+
+function agWizTest(){
+  const W = AG.wz; if (!W) return;
+  if (!W.key.trim()){ W.test = 'needkey'; agTestPaint(); return; }
+  W.t.forEach(clearTimeout); W.t = [];
+  const run = ++W.run;
+  W.test = 'testing'; W.stage = 0; agTestPaint(); agFootPaint();
+  AG_DATA.stages.forEach((_, i) => W.t.push(setTimeout(() => {
+    if (!AG.wz || AG.wz.run !== run) return;
+    AG.wz.stage = i + 1; agTestPaint();
+  }, (i + 1) * 460)));
+  W.t.push(setTimeout(() => {
+    if (!AG.wz || AG.wz.run !== run) return;
+    AG.wz.test = 'success'; AG.wz.stage = 4; agTestPaint(); agFootPaint();
+  }, (AG_DATA.stages.length + 1) * 460));
+}
+function agTestPaint(){ const el = document.getElementById('agTest'); if (el) el.outerHTML = agTestHTML(); }
+function agFootPaint(){ const el = document.getElementById('agWizFoot'); if (el) el.outerHTML = agFootHTML(); }
+
+function agWizModel(mid){ AG.wz.def = mid; agWizRepaint(); }
+function agWizRouteTog(v){ AG.wz.perTask = !!v; agWizRepaint(); }
+function agWizRoute(tid, mid){ AG.wz.routing[tid] = mid; }
+function agWizConsent(i, v){ AG.wz.consent[i] = !!v; agFootPaint(); }
+
+/* ⚠️ THE GATE IS THE ONLY THING THAT WRITES `AG.conn`. Everything before it is draft state on
+   `AG.wz`, so abandoning the wizard at any step leaves the page exactly as it was. */
+function agWizFinish(){
+  const W = AG.wz, p = agProv(W.pid), prev = agActive();
+  AG.conn = { pid:W.pid, name:W.name.trim() || (p.name + ' connection'), def:W.def,
+              key:'••••' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+              perTask:W.perTask };
+  AG.routing = {};
+  AG_DATA.tasks.forEach(t => { AG.routing[t.id] = W.perTask ? W.routing[t.id] : W.def; });
+  agWizCleanup();
+  stGo('Agentic AI', 'Overview');
+  toast(prev && prev.id !== p.id ? 'Switched to ' + p.name + ' — AI features are live'
+                                 : p.name + ' connected — AI features are live');
+}
+
+function agTestHTML(){
+  const W = AG.wz, p = agProv(W.pid);
+  const cls = W.test === 'success' ? ' ok' : W.test === 'error' ? ' err' : '';
+  const stages = (W.test === 'testing' || W.test === 'success')
+    ? `<div class="agstgs">${AG_DATA.stages.map((lab, i) => {
+        const done = W.stage > i, cur = W.test === 'testing' && W.stage === i;
+        return `<div class="agstg${done ? ' done' : cur ? ' cur' : ''}">${
+          done ? agIc('check-circle', 14) : cur ? '<span class="agspin"></span>' : '<span class="dot"></span>'}${lab}</div>`;
+      }).join('')}</div>` : '';
+  const note = W.test === 'idle'
+    ? `<div class="aghint">${agIc('info-circle', 14)}Enter your API key, then run a test to verify the connection before continuing.</div>`
+    : W.test === 'needkey'
+    ? `<obs-banner variant="warning" style="margin-top:12px">Enter your API key above to test the connection.</obs-banner>` : '';
+  const ok = W.test === 'success'
+    ? `<obs-banner variant="success" title="Connection healthy" style="margin-top:12px">Authenticated in <b>412&nbsp;ms</b> · region <b>us-east-1</b> · discovered <b>${p.models.length} models</b>. You're ready to choose a default model.</obs-banner>` : '';
+  return `<div class="agtest${cls}" id="agTest">
+    <div class="agth"><span class="l">${agIc('plug', 15)}Test connection</span>
+      <obs-button variant="default" size="small"${W.test === 'testing' ? ' loading disabled' : ''} onclick="agWizTest()">${
+        W.test === 'testing' ? 'Testing…' : agIc('restart', 13) + (W.test === 'success' ? 'Test again' : 'Test connection')}</obs-button></div>
+    ${stages}${note}${ok}</div>`;
+}
+
+function agFootHTML(){
+  const W = AG.wz;
+  const back = W.step > 0 && W.step < 4 ? `<obs-button variant="default" onclick="agWizBack()">${agIc('chevron-left', 13)}Back</obs-button>` : '';
+  const ok = W.consent.every(Boolean);
+  const dis = a => a ? '' : ' disabled';
+  const next =
+    W.step === 0 ? `<obs-button variant="primary" onclick="agWizNext()">Continue</obs-button>` :
+    W.step === 1 ? `<obs-button variant="primary"${dis(W.test === 'success')} onclick="agWizNext()">Continue</obs-button>` :
+    W.step === 2 ? `<obs-button variant="primary" onclick="agWizNext()">Continue</obs-button>` :
+    W.step === 3 ? `<obs-button variant="primary"${dis(ok)} onclick="agWizNext()">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>` :
+                   `<obs-button variant="primary" onclick="agWizFinish()">Start using AI features</obs-button>`;
+  return `<div class="agfoot" id="agWizFoot">
+    <span class="agfnote">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>
+    ${back}${next}</div>`;
+}
+
+/* the step bodies. Copy is the reference's, verbatim where it is doing real work. */
+/* the CURRENT STEP's markup only — the thing that actually changes between steps. Kept
+   separate from the wrapper so a repaint can swap it INSIDE `.agbody` without touching any
+   node the drawer has slotted. See `agWizRepaint`. */
+function agStepHTML(){
+  const W = AG.wz, p = agProv(W.pid), cur = agActive();
+
+  /* ── 0 · provider ──────────────────────────────────────────────────────────────────────
+     Atoms/Radio, the DEFAULT list style (not `as-button`): its `decisionFlow` sends "longer
+     labels / vertical form field" to the list, and `segmented.dontUse` rules itself out for
+     exactly that. ⚠️ The tagline is folded into the label because the element renders a label
+     and nothing else — see the divergence note at the top of this block. */
+  const provOpts = AG_DATA.providers.map(x => ({
+    value: x.id,
+    label: x.name + ' — ' + x.tagline + (cur && cur.id === x.id ? '  (current)' : '')
+  }));
+  const step0 = `<h3 class="agwt">Select a provider</h3>
+    <p class="agwp">Choose the LLM provider whose API key you'll connect. Only one provider can be active at a time.</p>
+    ${cur && cur.id !== W.pid ? `<obs-banner variant="warning" title="This replaces your current ${stEsc(cur.name)} connection" style="margin-bottom:16px">
+      Connecting ${stEsc(p.name)} disconnects ${stEsc(cur.name)}. Per-task routing resets to ${stEsc(p.name)} models.</obs-banner>` : ''}
+    <obs-radio vertical value="${W.pid}" options="${agJ(provOpts)}"
+      onchange="agWizPick(agDet(event))"></obs-radio>`;
+
+  /* ── 1 · credentials ───────────────────────────────────────────────────────────────────
+     Atoms/Input carries its OWN label + required marker (`label`/`required` — "form-item
+     label above the field, the product FlotoFormItem pattern"), so the hand-built
+     `.stcfi`/`.stclab` wrapper the first pass used is gone. */
+  const step1 = `<h3 class="agwt">Enter credentials</h3>
+    <p class="agwp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
+    <div class="agfields two">
+      <obs-input block material label="Connection name" placeholder="${stEsc(p.name)} production" value="${stEsc(W.name)}"
+        oninput="agWizIn('name', agDet(event))"></obs-input>
+      <obs-input block material required label="API key" type="password" placeholder="sk-••••••••••••••••"
+        value="${stEsc(W.key)}" oninput="agWizIn('key', agDet(event))"></obs-input>
+    </div>
+    <button class="agadvb" onclick="agWizAdv()">${agIc(W.adv ? 'chevron-down' : 'chevron-right', 13)}Advanced settings</button>
+    ${W.adv ? `<div class="agadv">
+      <div class="agfields two">
+        <obs-input block material label="Custom endpoint URL" placeholder="https://gateway.example.com/v1"
+          value="${stEsc(W.endpoint)}" oninput="agWizIn('endpoint', agDet(event))"></obs-input>
+        <obs-input block material label="Proxy" placeholder="http://proxy.example.com:8080"
+          value="${stEsc(W.proxy)}" oninput="agWizIn('proxy', agDet(event))"></obs-input>
+      </div>
+      <div class="agadv3">
+        <obs-input block material label="Request timeout (s)" value="30"></obs-input>
+        <obs-input block material label="Retry attempts" value="2"></obs-input>
+        <obs-input block material label="Rate limit (req/min)" value="120"></obs-input>
+      </div></div>` : ''}
+    ${agTestHTML()}`;
+
+  /* ── 2 · models ────────────────────────────────────────────────────────────────────────
+     Same control as step 0, for the same reason. The context window rides in the label for
+     the same reason the tagline does. */
+  const modelOpts = p.models.map(m => ({ value:m.id, label: m.name + ' — ' + m.note + ' · ' + m.ctx + ' ctx' }));
+  const routeRows = AG_DATA.tasks.map(t => `<div class="agrt">
+      <span class="n">${agIc(t.ic, 14)}${stEsc(t.label)}</span>
+      <obs-select value="${W.routing[t.id]}" options="${agJ(p.models.map(m => ({ key:m.id, label:m.name })))}"
+        onchange="agWizRoute('${t.id}', agDet(event))"></obs-select>
+    </div>`).join('');
+  const step2 = `<h3 class="agwt">Model selection</h3>
+    <p class="agwp">Pick a default model for <b>${stEsc(p.name)}</b>. Optionally route individual workflows to different models.</p>
+    <div class="agsec" style="margin-top:0">Default model</div>
+    <obs-radio vertical value="${W.def}" options="${agJ(modelOpts)}" onchange="agWizModel(agDet(event))"></obs-radio>
+    <div class="agroute">
+      <div class="agrh">
+        <div><div class="agon">Use different models for different AI tasks</div>
+          <div class="agod">Route high-stakes work to a stronger model and routine summaries to a faster one.</div></div>
+        <obs-switch${W.perTask ? ' checked' : ''} onchange="agWizRouteTog(agDet(event))"></obs-switch>
+      </div>
+      ${W.perTask ? `<div class="agrts">${routeRows}</div>` : ''}
+    </div>`;
+
+  /* ── 3 · consent ───────────────────────────────────────────────────────────────────────
+     ⚠️ `agFootPaint()` ONLY, NOT A FULL REPAINT, when a box is ticked. Replacing `#stMain`
+     would rebuild every `obs-checkbox` and throw away the focus ring mid-keyboard-pass; the
+     only thing that has to react is the footer's gate. */
+  const step3 = `<h3 class="agwt">Review data sharing &amp; processing terms</h3>
+    <obs-banner variant="warning" title="AI features transmit observability data to a third party" style="margin-bottom:16px">
+      When AI features are used, selected observability data may be transmitted to <b>${stEsc(p.name)}</b> for processing. ObserveOps does not control how third-party providers process data after it is transmitted.</obs-banner>
+    <div class="agtwo">
+      <div class="agbox"><div class="h">Data that may be transmitted</div>
+        <div class="agchips">${AG_DATA.shared.map(d => `<obs-tag variant="tag-primary">${d}</obs-tag>`).join('')}</div></div>
+      <div class="agbox"><div class="h">${stEsc(p.name)} privacy policy</div>
+        <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}</obs-link></div>
+    </div>
+    <div class="agcons">${AG_DATA.consent.map((c, i) => `
+      <obs-checkbox${W.consent[i] ? ' checked' : ''} onchange="agWizConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')}</div>`;
+
+  /* ── 4 · done ──────────────────────────────────────────────────────────────────────────
+     Molecules/KeyValue — the DS's own summary list. ⚠️ ITS ITEM SHAPE IS `{label,value}`,
+     NOT `{key,value}`: passing `key` renders an empty label column, which is how the first
+     attempt looked broken. */
+  /* ⚠️ THE TWO STATE ROWS ARE TAGS, THROUGH THE COMPONENT'S OWN `status` FIELD.
+     `obs-key-value` ESCAPES `value` (measured — a `<b>` renders as literal text), so markup is
+     not a route. But an item carrying `status` renders an `<obs-tag status="…">` in the value
+     cell, which is the DS's own way to say a state in a detail row. Healthy and Accepted are
+     states, not readings; as plain words they sat at exactly the weight of "OpenAI".
+     ⚠️ The other three stay plain ON PURPOSE — a provider name, a model id and a routing mode
+     are values you read, and tagging all five would make the tag mean nothing. */
+  const summary = [
+    { label:'Provider',          value:p.name },
+    { label:'Default model',     value:agModelName(W.pid, W.def) },
+    { label:'Connection status', status:'Healthy' },
+    { label:'Per-task routing',  value:W.perTask ? 'Enabled' : 'Default only' },
+    { label:'Consent',           status:'Accepted' },
+  ];
+  const step4 = `<div class="agdone">
+    <span class="agdmk">${agIc('check-circle', 30)}</span>
+    <h3 class="agemt">Setup completed successfully</h3>
+    <p class="agemp">${stEsc(p.name)} is connected and ready. AI-powered workflows can now use your configured models.</p>
+    <div class="agsum">
+      <div class="agsumh">Connection summary</div>
+      <obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value>
+    </div></div>`;
+
+  return [step0, step1, step2, step3, step4][W.step];
+}
+
+function agWizInner(){
+  return `<div class="agwrap" id="agWiz">
+      <div class="agrail"><obs-steps id="agSteps" direction="vertical" size="small" clickable
+        fill="outline" connector="none"
+        active="${AG.wz.step}" items="${agJ(AG_STEPS)}" onchange="agWizGo(agDet(event))"></obs-steps></div>
+      <div class="agmain"><div class="agbody" id="agBody">${agStepHTML()}</div></div>
+    </div>`;
+}
+
+/* Organisms/Drawer. `width` is inside the product's own 50–70% band for a complex form
+   (`obs-drawer` registry: "Product: 360→40%→50-70%→85-96%") — a stepper rail plus a form needs
+   the upper half of it. `scrolled-content="false"` is the registry's multi-pane mode: the rail
+   and the body scroll as their own columns instead of one shared region, which is the only way
+   a fixed rail beside a scrolling form works.
+   ⚠️ THIS IS ONLY EVER CALLED TO **OPEN** THE DRAWER. Step changes go through `agWizRepaint`,
+   which patches the contents and leaves this element alone — see the note there. */
+function agWizHTML(){
+  return `<obs-drawer id="agDrw" width="62%" scrolled-content="false" use-padding>
+    <span slot="title">Set up Agentic AI</span>
+    ${agWizInner()}
+    <div slot="actions" class="agfootw">${agFootHTML()}</div>
+  </obs-drawer>`;
+}
+
+/* ⚠️ THERE IS NO PASSWORD-REVEAL TOGGLE, AND THAT IS A SHIPPED-ELEMENT LIMIT, NOT A CHOICE.
+   `obs-input` documents `prefix-icon` / `suffix-icon` in `elements-api.json` and its source
+   reads them — but this build (0.1.166) renders NEITHER: the element uses shadow DOM and its
+   shadow root comes back with zero icons for `prefix-icon="key" suffix-icon="eye"`. Measured,
+   not assumed. The reference has an eye toggle; hanging one on this field would mean either
+   reaching into another component's shadow DOM or hand-drawing an icon, and the contract
+   forbids both. So the key field is `type="password"` and nothing else. Reported upstream.
+   ⚠️ `agWizShow()` and `W.show` are KEPT AND UNREFERENCED, the house pattern — the toggle is
+   one attribute away the day the element renders its suffix. */
+
+/* ⚠️ `ST_PAGES` IS THE ONLY WIRING. `stMainPaint()` paints whatever is registered under
+   "<category> › <page>" and falls back to the placeholder, so nothing in the `st` block had
+   to change to host this. */
+/* ⚠️ THE DRAWER IS RENDERED CLOSED AND OPENED ONE TASK LATER, AND BOTH HALVES MATTER.
+   `obs-drawer` wraps a native `<dialog>`, and it calls `showModal()` from a WATCHER on `open`
+   — so it needs a real false→true CHANGE. Two ways to get this wrong, both measured:
+     · `<obs-drawer open>` in the markup. The prop is true from parse, nothing ever changes,
+       the watcher never fires, and the dialog sits at `position:fixed; left:1600` on a 1600px
+       viewport — fully slid out, which reads as "the drawer did not render at all".
+     · setting `el.open = true` synchronously in `after()`. `stMainPaint()` has only just
+       written `innerHTML`; the custom element has not upgraded yet, so the assignment lands on
+       a plain property that the component overwrites when it finally mounts. Same symptom.
+   A `setTimeout(…, 0)` is late enough for the upgrade and early enough to be the same frame
+   the user sees. ⚠️ NOT `requestAnimationFrame` — rAF is starved under headless virtual time,
+   the recorded trap that cost two probe rounds on the thinking trail.
+   Verified: after a genuine flip the dialog measures `left=0`; before it, `left=1600`. */
+/* ⚠️ THE CUSTOM EVENTS MUST BE BOUND WITH `addEventListener`, NOT WITH `on<name>=`.
+   An inline handler CONTENT ATTRIBUTE only works for events the HTML spec lists as event
+   handlers — `onclick`, `onchange`, `oninput` and friends. `cellaction`, `rowaction` and the
+   drawer's `close` are CUSTOM event names, so `oncellaction="…"` is inert markup: the table's
+   Configure button fired its event into nothing and the row menu did the same, while the
+   drawer's ✕ closed the panel visually and left `AG.wz` set behind it.
+   ⚠️ THIS SHIPPED GREEN, AND THAT IS THE LESSON. The probe called `agCell({…})` DIRECTLY and
+   passed — "a green probe is not a working feature", which this repo records in exactly these
+   words. It now clicks the real button inside `obs-table`'s shadow root.
+   ⚠️ REBOUND ON EVERY PAINT. `stMainPaint()` writes fresh elements, so the flag lives ON THE
+   ELEMENT — a new one has no flag and gets bound; the old one is gone with its listeners. */
+function agBind(el, ev, fn){
+  if (!el || el['_ag' + ev]) return;
+  el['_ag' + ev] = 1;
+  el.addEventListener(ev, e => fn(agDet(e)));
+}
+function agOvAfter(){
+  agBind(document.getElementById('agTbl'), 'cellaction', agCell);
+  agBind(document.getElementById('agTbl'), 'rowaction', agRowAct);
+  if (!AG.wz) return;
+  /* ⚠️ THE DRAWER IS RENDERED CLOSED AND OPENED ONE TASK LATER — see the note below. */
+  setTimeout(() => {
+    const d = document.getElementById('agDrw');
+    if (!d) return;
+    /* ⚠️ CLOSING IS WATCHED, NOT LISTENED FOR, AND THAT TOOK THREE GOES.
+       `obs-drawer` documents a `close` event in `elements-api.json` and NEVER EMITS ONE. Its
+       ✕ takes the inner `<dialog>` to `open=false`, leaves the HOST's own prop at `true`, and
+       dispatches nothing — measured: the panel vanished while `AG.wz` stayed set, so the page
+       still believed the wizard was open. Nor does the native `close` event fire, because the
+       component drops the ATTRIBUTE rather than calling `dlg.close()`.
+       What is left is the attribute itself. A MutationObserver on it is not a workaround for
+       one control — it is the one signal every close path shares, so ✕, Esc and anything the
+       component adds later all land here.
+       ⚠️ It must ignore the OPENING mutation: `d.open = true` below flips the same attribute,
+       so the guard is on `!dlg.open`.
+       ⚠️ Reaching into another component's shadow root is not something to do lightly. This is
+       a read-only observer, not a style override, and it is the only handle the element gives.
+       Worth reporting upstream alongside the other defects this build turned up. */
+    const dlg = d.shadowRoot && d.shadowRoot.querySelector('dialog');
+    if (dlg && !dlg._agObs){
+      dlg._agObs = new MutationObserver(() => {
+        /* ⚠️ `isConnected` IS LOAD-BEARING, NOT A BELT-AND-BRACES CHECK. Every step change
+           repaints, which DESTROYS this drawer and builds the next one; the teardown drops the
+           dialog's `open` attribute, and without this guard the observer read that as "the
+           user closed it" and cleared `AG.wz`. Symptom: pressing Continue shut the wizard
+           instead of advancing — and only a REAL CLICK showed it, because the probes that set
+           `AG.wz.step` by hand never went through this path. */
+        if (!dlg.isConnected) return;
+        if (!dlg.open && AG.wz){ d.open = false; agWizClose(); }
+      });
+      dlg._agObs.observe(dlg, { attributes:true, attributeFilter:['open'] });
+    }
+    if (AG.wz && !d.open) d.open = true;
+  }, 0);
+}
+ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML, after: agOvAfter };
 </script>
 
 <script src="_variants.js"></script>
