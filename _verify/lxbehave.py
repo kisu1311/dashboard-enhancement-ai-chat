@@ -15,7 +15,8 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_out")
 os.makedirs(OUT, exist_ok=True)
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-FILES = ["index copy.html", "index.html", "dashboard-picker-advanced.html"]
+FILES = ["index copy.html", "index.html", "dashboard-picker-advanced.html",
+         "dashboard-labelled-rail.html"]
 
 PROBE = r"""
 <script>
@@ -164,8 +165,18 @@ window.addEventListener('load', function(){ setTimeout(function(){
 </script>
 """
 
+# ⚠️ THE PROBE COPY LIVES IN `_out/`, SO EVERY RELATIVE ASSET IN THE PAGE WOULD 404 THERE.
+# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 1 Sep 2026) `_settings-module.js`
+# / `_settings-module.css` are all `src="…"` relative to the PROJECT folder. Without this the
+# suite silently tests a page with no design system and no Settings module — and still reports
+# green, because none of its own assertions touch them. One `<base>` fixes all of them at once;
+# it has to sit immediately after `<head>`, before anything it is meant to resolve.
+def _rebase(src, root):
+    return src.replace('<head>', '<head>\n<base href="file://%s/">' % root.replace(' ', '%20'), 1)
+
 for f in FILES:
     src = open(os.path.join(BASE, f), encoding="utf-8").read()
+    src = _rebase(src, BASE)
     # strip the dev-only Agentation loader (it hangs headless runs)
     src = re.sub(r"<script>[^<]*?agentation-embed\.js.*?</script>", "", src, flags=re.S)
     src = re.sub(r"<script[^>]*agentation-embed\.js[^>]*></script>", "", src)

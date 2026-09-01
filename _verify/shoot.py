@@ -51,8 +51,20 @@ SCENES = {
                "setTimeout(function(){setTheme('light')},300);",
 }
 
+# ⚠️ THE PROBE COPY LIVES IN `_out/`, SO EVERY RELATIVE ASSET IN THE PAGE WOULD 404 THERE.
+# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 1 Sep 2026) `_settings-module.js`
+# / `_settings-module.css` are all relative to the PROJECT folder. Without this, every scene
+# here — and `harness.py`, which imports this builder — silently renders a page with no design
+# system and no Settings module, and still reports green because no assertion touches them.
+# One `<base>` fixes all of them; it has to sit immediately after `<head>`, ahead of anything
+# it is meant to resolve.
+def _rebase(src, root):
+    return src.replace('<head>', '<head>\n<base href="file://%s/">' % root.replace(' ', '%20'), 1)
+
+
 def build(fname, scene, tag):
     s = open(os.path.join(ROOT, fname)).read()
+    s = _rebase(s, ROOT)
     i = s.rindex('<scr' + 'ipt>'); j = s.index('</scr' + 'ipt>', i)
     s = s[:i] + s[j + 9:]                      # drop the Agentation loader
     code = SCENES[scene]

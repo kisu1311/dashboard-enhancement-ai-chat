@@ -1,0 +1,1409 @@
+/* ══════════════════════════════════════════════════════════════════════════════════════════
+   _settings-module.css — the Settings module's stylesheet
+   ──────────────────────────────────────────────────────────────────────────────────────────
+   Lifted OUT of `index copy.html` on 1 Sep 2026, byte for byte. It is the `st*` block
+   (Settings › My Account › My Profile), the `stc*` block (Compliance Settings) and the `ag*`
+   block (Agentic AI, on the real ObserveOps design system) — three regions that were 1,369
+   lines of that file's single 8,296-line `<style>`.
+
+   ⚠️ LOADED BY A `<link>` PLACED IMMEDIATELY AFTER THAT `<style>`, and it has to stay there.
+   These files are one flat stylesheet where source order decides every tie at equal
+   specificity; putting the link before the inline block would hand every shared-specificity
+   contest to rules that used to lose them.
+   ⚠️ ONE CASCADE CHANGE WAS ACCEPTED, KNOWINGLY. The `st*`/`stc*` half used to sit BEFORE the
+   "ObserveOps DESIGN SYSTEM LAYER" block (the Dashboard-layout drawer) and now sits after it.
+   Checked before moving: that block is scoped entirely to `#drawer-layout` (id specificity)
+   and this file's only non-`.st*`/`.stc*` selector is `#view-settings`, so the two cannot
+   collide.
+   ⚠️ WHY THIS IS A `.css` FILE AND NOT A STRING INSIDE `_settings-module.js`: the comments
+   below contain 218 backticks (`--primary`, `ST_TREE`, …). In a JS template literal every one
+   of them needs escaping, and the next person to add a comment gets a syntax error from a
+   character they had no reason to think was special. The comments in this repo are the
+   documentation — they stay verbatim.
+   ══════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SETTINGS MODULE  —  My Account › My Profile, cloned from the live product,
+   build 8.2.7, 19 Aug 2026, read in the browser at /settings/my-account/my-profile
+   (DOM, computed styles, the Vue component's own template + validation rules).
+   Namespace is `st` everywhere — `.st*` classes, `st*()` functions, `ST_*`
+   constants — these files are one flat stylesheet and one flat script and a
+   duplicate name silently wins. Borrows only toast() / showView() /
+   selectModuleByName() from the host. Same block in all three options.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#view-settings{overflow:hidden}
+.stwrap{flex:1;display:flex;min-height:0}
+/* the head's chevron collapses the left list, as live (the panel goes to 0 and the
+   content takes the full width) — same control the Log Explorer head has */
+.stpt{width:24px;height:24px;border:0;background:transparent;color:var(--text-dim);
+      border-radius:4px;cursor:pointer;display:grid;place-items:center;flex:0 0 24px}
+.stpt:hover{background:var(--hover);color:var(--text)}
+.stpt svg{width:14px;height:14px;fill:currentColor}
+.stsep{width:1px;height:18px;background:var(--border);flex:0 0 1px;margin:0 2px}
+/* ── left list: search + the 18 collapsible categories (246px incl. 8px pad, as live) ── */
+/* ⚠️ A DIVIDER BETWEEN THE LIST AND THE CONTENT (request, 31 Aug 2026: "add line to show
+   difference"). The category list and the page sat edge to edge on the same white surface with
+   nothing between them, so the list's right edge was only implied by where its rows stopped —
+   and its scrollbar then read as the boundary. The product draws this rule: the DS describes
+   `side-menu` as "flush white + right border", and the Create SLO Profile screen has the same
+   line between its rail and its form.
+   ⚠️ IT MUST GO WHEN THE LIST COLLAPSES. `stshut` takes the width to 0; a border left on would
+   draw a 1px line down an otherwise empty column. */
+.stnav{width:246px;flex:0 0 246px;display:flex;flex-direction:column;min-height:0;
+       padding:8px 0 0 8px;overflow:hidden;border-right:1px solid var(--border);
+       transition:width .18s,flex-basis .18s,padding .18s}
+#view-settings.stshut .stnav{width:0;flex-basis:0;padding:0;border-right:0}
+/* a full-page screen (Create Benchmark, Create Rule, a benchmark's view) replaces the list AND
+   the content, as live — the head becomes “‹ <title>” and the left list is gone */
+#view-settings.stfullpg .stnav{display:none}
+#view-settings.stfullpg #stHeadIc,#view-settings.stfullpg #stHeadSep{display:none}
+.stpt.stinfo{width:34px;height:34px;border:1px solid var(--border);border-radius:6px;flex:0 0 34px}
+.stpt.stinfo svg{width:18px;height:18px}
+.stsearch{position:relative;height:36px;flex:0 0 36px;margin:0 8px 8px 0}
+.stsearch svg{position:absolute;left:12px;top:9px;width:18px;height:18px;fill:currentColor;color:var(--text);pointer-events:none}
+.stsearch input{width:100%;height:36px;padding:0 10px 0 40px;border:1px solid var(--border);border-radius:4px;
+                background:var(--bg);color:var(--text);font:inherit;font-size:12.8px;outline:none}
+.stsearch input:focus{border-color:var(--text-dim)}
+.stsearch input::placeholder{color:var(--text-dim)}
+.stlist{flex:1;overflow:auto;padding:0 12px 12px 0;min-width:230px}
+.stcat{border-bottom:1px solid var(--border)}
+.stch{display:flex;align-items:center;min-height:42px;padding:8px 18px 8px 0;cursor:pointer;
+      color:var(--text);font-size:12.8px;position:relative;user-select:none;line-height:1.35}
+.stch:hover{color:var(--white)}
+.stch .ic{width:21px;height:21px;margin-right:5px;flex:0 0 21px;fill:currentColor}
+.stch .nm{flex:1;min-width:0}
+.stch .beta{flex:0 0 auto;margin:0 8px;padding:2px 5px;border-radius:4px;background:var(--blue);color:#fff;
+            font-size:10px;font-weight:500;line-height:1.2;letter-spacing:.02em}
+.stch .car{position:absolute;right:0;top:50%;width:13px;height:13px;fill:currentColor;color:var(--text-dim);
+           transform:translateY(-50%);transition:transform .15s}
+.stcat.open .stch .car{transform:translateY(-50%) rotate(90deg)}
+.stsub{display:none;padding:0 0 3px 25px}
+.stcat.open .stsub{display:block}
+.stsi{display:block;height:30px;line-height:30px;padding:0 10px;margin-bottom:1px;border-radius:4px;
+      color:var(--text-dim);font-size:12.8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stsi:hover{color:var(--text);background:var(--hover)}
+.stsi.on{background:var(--chip);color:var(--white);font-weight:500}
+.stempty{padding:18px 4px;color:var(--text-dim);font-size:12px}
+/* ── content ── */
+.stmain{flex:1;min-width:0;min-height:0;overflow:auto;padding:16px 16px 20px;display:flex;flex-direction:column}
+/* ── My Profile form: avatar column + a 710px label/field column, as measured ── */
+.stprof{display:flex;align-items:flex-start;flex:0 0 auto}
+.stav{flex:0 0 166px;width:166px;padding:0 16px;display:flex;flex-direction:column;align-items:center}
+.stavc{position:relative;width:120px;height:120px;border-radius:50%;background:var(--chip);color:var(--white);
+       display:grid;place-items:center;font-size:35.2px;font-weight:600;overflow:hidden;line-height:1}
+.stavc img{width:100%;height:100%;object-fit:cover;display:block}
+.stavl{margin:8px 0;display:flex;align-items:center;justify-content:center;font-size:12.8px;white-space:nowrap}
+.stavl a{color:var(--white);text-decoration:underline dotted;cursor:pointer;margin:0 8px}
+.stavl a.rm{color:var(--red)}
+.stavl .sep{color:var(--text-dim);margin:0 4px}
+.stform{flex:0 1 710px;max-width:710px;padding:0 16px;min-width:0}
+.stfi{display:flex;align-items:flex-start;margin-bottom:12px;min-height:40px}
+.stfl{flex:0 0 166px;padding-top:10px;font-size:12.8px;color:var(--text-dim);line-height:19px}
+.stfl.req::after{content:"*";color:var(--red);margin-left:2px}
+.stfc{flex:1;min-width:0;position:relative}
+.stin{width:100%;height:32px;margin-top:4px;padding:4px 11px 4px 0;border:0;border-bottom:1px solid var(--pop-line);
+      border-radius:0;background:transparent;color:var(--text);font:inherit;font-size:12.8px;outline:none}
+.stin::placeholder{color:var(--text);opacity:.5}
+/* live: a disabled field looks exactly like an enabled one (User Name) — reproduced */
+.stin[disabled]{cursor:auto;color:var(--text);opacity:1;-webkit-text-fill-color:var(--text)}
+.stfi.err .stfl{color:var(--red)}
+.stfi.err .stin{border-bottom-color:var(--red)}
+.stex{font-size:12px;line-height:18px;color:var(--red);margin-top:4px;min-height:0}
+.stex:empty{display:none}
+.stpw .stin{padding-right:30px}
+.steye{position:absolute;right:12px;top:11px;width:18px;height:18px;cursor:pointer;color:var(--text-dim);fill:currentColor}
+.steye:hover{color:var(--text)}
+/* the Change Password switch — 22px pill, label inside, knob grey OFF / green ON, as live */
+.stsw{position:relative;display:inline-flex;align-items:center;height:22px;min-width:44px;margin-top:9px;padding:0;
+      border:0;border-radius:100px;background:var(--chip);color:var(--text-dim);font:inherit;font-size:10px;
+      line-height:22px;cursor:pointer;user-select:none;vertical-align:middle}
+.stsw .lb{margin:0 6px 0 24px}
+.stsw.on .lb{margin:0 24px 0 6px}
+.stsw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:17px;height:17px;border-radius:50%;
+             background:var(--text-dim);transition:left .15s,background .15s}
+.stsw.on::after{left:calc(100% - 19.5px);background:var(--green)}
+.stact{display:flex;justify-content:flex-end;gap:8px;margin:16px 0 20px;padding-right:16px;flex:0 0 auto}
+.stbtn{height:34px;padding:0 15px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);
+       font:inherit;font-size:12.8px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.stbtn:hover{border-color:var(--text-dim)}
+.stbtn.pri{background:var(--teal);border-color:var(--teal);color:#04211d;font-weight:600}
+.stbtn.pri:hover{background:#19cbb7}
+.stbtn[disabled]{opacity:.65;cursor:default}
+.stspin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;
+        animation:stspin .7s linear infinite}
+@keyframes stspin{to{transform:rotate(360deg)}}
+@media (max-width:1366px){ .stav{flex-basis:150px;width:150px;padding:0 8px} .stform{padding:0 8px} }
+/* ═══════════════════════════════════════════════════════════════════════════════
+   COMPLIANCE SETTINGS  —  Compliance Policy · Benchmark · Rules, cloned from the
+   live product, build 8.2.7, 20 Aug 2026, read in the browser at
+   /settings/compliance-settings/{audit-policy,benchmark,rules} and their create /
+   view screens. Namespace `stc` — registered into the st* Settings module through
+   ST_PAGES (see the st* script). Same block in all three options.
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── list toolbar: search · (eye · PDF · CSV · filter) · Create ──────────────── */
+.stcbar{display:flex;align-items:center;gap:8px;margin:0 0 8px;flex:0 0 auto}
+.stcsearch{position:relative;width:335px;height:36px;flex:0 0 335px}
+.stcsearch svg{position:absolute;left:12px;top:9px;width:18px;height:18px;fill:currentColor;color:var(--text);pointer-events:none}
+.stcsearch input{width:100%;height:36px;padding:0 30px 0 40px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font:inherit;font-size:12.8px;outline:none}
+.stcsearch input:focus{border-color:var(--text-dim)}
+.stcsearch input::placeholder{color:var(--text-dim)}
+.stcsearch .clr{position:absolute;right:9px;top:10px;width:16px;height:16px;color:var(--text-dim);cursor:pointer;display:none}
+.stcsearch .clr svg{position:static;width:16px;height:16px;fill:currentColor;color:inherit}
+.stcsearch .clr:hover{color:var(--text)}
+.stcsearch.has .clr{display:block}
+.stcsp{flex:1}
+.stcsq{width:35px;height:35px;flex:0 0 35px;border:1px solid var(--chip);border-radius:4px;background:var(--chip);color:var(--text);
+       display:grid;place-items:center;cursor:pointer;padding:0}
+.stcsq svg{width:18px;height:18px;fill:currentColor}
+.stcsq:hover{border-color:var(--text-dim)}
+.stcsq.on{background:var(--white);border-color:var(--white);color:var(--bg)}
+/* ── filter chips row (Benchmark · Tags · ＋ Filter) ─────────────────────────── */
+.stcchips{display:flex;align-items:center;gap:8px;margin:0 0 8px;flex:0 0 auto;flex-wrap:wrap}
+.stcchips.hid{display:none}
+.stcchip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:4px;background:var(--chip);color:var(--text);
+         font-size:12.8px;cursor:pointer;gap:4px;user-select:none}
+.stcchip .f{color:var(--text-dim)}
+.stcchip .op{color:var(--teal);font-family:"JetBrains Mono",monospace;font-size:12px}
+.stcchip .v{color:var(--white);font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcchip .x{margin-left:4px;width:14px;height:14px;fill:currentColor;color:var(--text-dim)}
+.stcchip .x:hover{color:var(--red)}
+.stcchip:hover{background:var(--hover-side)}
+.stcaddf{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:1px solid var(--chip);border-radius:4px;background:var(--chip);
+         color:var(--text);font:inherit;font-size:12.8px;cursor:pointer}
+.stcaddf svg{width:15px;height:15px;fill:currentColor;color:var(--white)}
+.stcaddf:hover{border-color:var(--text-dim)}
+/* ── the grid: uppercase 28px header, 40px rows, name bold, tags mono-teal ────── */
+.stcgridw{flex:1;min-height:0;display:flex;flex-direction:column}
+.stcscroll{flex:1;min-height:0;overflow:auto}
+.stcgrid{width:100%;border-collapse:collapse;table-layout:fixed}
+.stcgrid th{height:28px;padding:4px 8px;text-align:left;font-size:12.8px;font-weight:600;letter-spacing:.25px;text-transform:uppercase;
+            color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1;user-select:none}
+.stcgrid th.s{cursor:pointer}
+.stcgrid th.s:hover{color:var(--white)}
+.stcgrid th .sa{font-size:11px;margin-left:3px;color:var(--text-dim)}
+.stcgrid th.r,.stcgrid td.r{text-align:right}
+.stcgrid th.c,.stcgrid td.c{text-align:center}
+.stcgrid td{height:40px;padding:4px 8px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-soft);vertical-align:middle;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:17px}
+.stcgrid tr:hover td{background:var(--hover)}
+.stcgrid td.nm{font-weight:500;color:var(--white)}
+.stcgrid td.nm .lk{cursor:pointer}
+.stcgrid td.nm .lk:hover{text-decoration:underline}
+.stcgrid td.nm .lock{width:14px;height:14px;fill:currentColor;color:var(--text-dim);display:inline-block;vertical-align:-2px;margin-right:6px}
+.stcgrid td.dim{color:var(--text-dim)}
+.stcgrid td.wrap{white-space:normal}
+.stcused{display:inline-block;min-width:22px;height:22px;line-height:22px;padding:0 7px;border-radius:11px;background:var(--chip);color:var(--white);
+         font-size:12px;font-weight:500;text-align:center}
+.stctag{display:inline-block;height:22px;line-height:22px;padding:0 7px;border-radius:4px;background:rgba(20,184,166,.16);color:var(--teal);
+        font:12px/22px "JetBrains Mono",monospace;margin-right:6px;max-width:220px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}
+.stctag.more{cursor:default}
+.stcempty{padding:40px 0;text-align:center;color:var(--text-dim);font-size:12.5px}
+/* the actions cell: run-now (when the policy has devices) and the ⋮, right-aligned */
+.stcact{display:flex;align-items:center;justify-content:flex-end;gap:2px}
+.stcib{width:28px;height:28px;border:0;background:transparent;color:var(--text-dim);border-radius:4px;display:grid;place-items:center;cursor:pointer;padding:0}
+.stcib svg{width:16px;height:16px;fill:currentColor}
+.stcib:hover{color:var(--text);background:var(--hover-side)}
+.stcib.spin svg{animation:stcspin 1s linear infinite;color:var(--yellow)}
+@keyframes stcspin{to{transform:rotate(360deg)}}
+/* row actions are hover-revealed on live (opacity), the ⋮ stays */
+.stcgrid tr .stcrun{opacity:0;transition:opacity .12s}
+.stcgrid tr:hover .stcrun,.stcgrid tr .stcrun.spin{opacity:1}
+/* severity bar on a rule (the product's severity-indicator) */
+.stcsev{display:inline-block;width:3px;height:18px;border-radius:2px;margin-right:9px;vertical-align:-4px;background:var(--text-dim)}
+.stcsev.CRITICAL{background:var(--red)} .stcsev.HIGH{background:var(--orange)} .stcsev.MEDIUM{background:var(--yellow)} .stcsev.LOW{background:var(--blue)} .stcsev.INFO{background:var(--text-dim)}
+/* ── pager: ⏮ ◀ 1 ▶ ⏭ · [50 ▾] items per page … 1 - 12 of 12 items ─────────── */
+.stcpager{display:flex;align-items:center;gap:4px;height:45px;flex:0 0 45px;padding:8px 0;border-top:1px solid var(--border);font-size:12.8px;color:var(--text)}
+.stcpg{width:28px;height:28px;border:0;background:transparent;color:var(--text);border-radius:2px;display:grid;place-items:center;cursor:pointer;font-size:12.8px;padding:0}
+.stcpg svg{width:14px;height:14px;fill:currentColor}
+.stcpg:hover{background:var(--hover-side)}
+.stcpg.on{background:var(--chip);color:var(--white)}
+.stcpg[disabled]{opacity:.35;cursor:default;background:transparent}
+.stcsize{display:inline-flex;align-items:center;gap:14px;height:28px;padding:0 8px 0 12px;margin:0 8px 0 12px;border:1px solid var(--border);border-radius:4px;
+         background:var(--bg);cursor:pointer;color:var(--white);font-size:12.8px}
+.stcsize svg{width:11px;height:11px;fill:currentColor;color:var(--text-dim)}
+.stcpinfo{margin-left:auto;color:var(--text)}
+/* ── popover menu (row ⋮, column chooser, pickers) ────────────────────────────── */
+.stcmenu{position:fixed;z-index:100005;min-width:190px;max-width:420px;background:var(--pop);border:1px solid var(--pop-line);border-radius:4px;
+         box-shadow:var(--pop-shadow);padding:4px 0;font-size:12.8px;color:var(--text)}
+.stcmi{display:flex;align-items:center;gap:8px;height:32px;padding:0 21px 0 14px;cursor:pointer;white-space:nowrap}
+.stcmi svg{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
+.stcmi:hover{background:var(--pop-item-hover);color:var(--white)}
+.stcmi.del:hover{color:var(--red)}
+.stcmi.on{color:var(--white);font-weight:500}
+.stcmi.ck{padding-left:12px}
+.stcmi .bx{width:14px;height:14px;border:1px solid var(--text-dim);border-radius:3px;flex:0 0 14px;display:grid;place-items:center}
+.stcmi.on .bx{background:var(--teal);border-color:var(--teal)}
+.stcmi .bx svg{width:10px;height:10px;color:#04211d}
+.stcmi.sep{height:1px;padding:0;margin:4px 0;background:var(--pop-line);cursor:default}
+.stcmi.hd{height:26px;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:default}
+.stcmi.hd:hover{background:transparent;color:var(--text-dim)}
+.stcmenu .stcms{padding:6px 8px}
+.stcmenu .stcms input{width:100%;height:30px;padding:0 8px 0 30px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;outline:none}
+.stcmenu .stcms{position:relative}
+.stcmenu .stcms svg{position:absolute;left:16px;top:13px;width:15px;height:15px;fill:currentColor;color:var(--text-dim)}
+.stcmenu .stcml{max-height:300px;overflow:auto}
+.stcmenu .stcmo{display:flex;gap:4px;padding:4px 8px 6px}
+.stcmenu .stcmo b{font:600 12px/24px "JetBrains Mono",monospace;padding:0 10px;border-radius:4px;border:1px solid var(--border);cursor:pointer;color:var(--text-dim)}
+.stcmenu .stcmo b.on{background:var(--chip);color:var(--white);border-color:var(--chip)}
+.stcmenu .stcmf{display:flex;justify-content:flex-end;gap:6px;padding:6px 8px;border-top:1px solid var(--pop-line)}
+/* the device picker is a grid in a popover (search + checkbox table), 855px on live */
+.stcmenu.grid{width:855px;max-width:calc(100vw - 40px);padding:12px}
+.stcmenu.grid .stcgrid th{position:static;background:transparent}
+.stcmenu.grid .stcgrid td{height:38px}
+.stcck{width:16px;height:16px;border:1px solid var(--text-dim);border-radius:3px;display:inline-grid;place-items:center;vertical-align:-3px;cursor:pointer;background:var(--bg)}
+.stcck.on{background:var(--teal);border-color:var(--teal)}
+.stcck svg{width:11px;height:11px;fill:currentColor;color:#04211d;display:none}
+.stcck.on svg{display:block}
+.stcgtag{display:inline-block;height:20px;line-height:20px;padding:0 7px;border-radius:10px;background:var(--chip);color:var(--text);font-size:11.5px;margin-right:4px}
+/* ── drawer (40% / 684px, blurred backdrop) ──────────────────────────────────── */
+.stcscrim{position:fixed;inset:0;z-index:100003;background:rgba(4,10,20,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none}
+.stcscrim.on{display:block}
+.stcdr{position:fixed;top:0;right:0;bottom:0;width:684px;max-width:92vw;z-index:100004;background:var(--bg);border-left:1px solid var(--border);
+       box-shadow:var(--shadow);display:none;flex-direction:column;transform:translateX(24px);opacity:0;transition:transform .18s,opacity .18s}
+.stcdr.on{display:flex}
+.stcdr.in{transform:none;opacity:1}
+.stcdrh{height:62px;flex:0 0 62px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);font-size:17px;font-weight:600;color:var(--white)}
+.stcdrh .x{margin-left:auto;width:30px;height:30px;border:0;background:transparent;color:var(--text-dim);border-radius:4px;display:grid;place-items:center;cursor:pointer}
+.stcdrh .x svg{width:16px;height:16px;fill:currentColor}
+.stcdrh .x:hover{color:var(--text);background:var(--hover-side)}
+.stcdrb{flex:1;min-height:0;overflow:auto;padding:16px 20px}
+.stcdrf{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border)}
+.stcdrf .mand{font-size:12.8px;color:var(--text);margin-right:auto}
+.stcdrf .mand b{color:var(--red);font-weight:400}
+/* ── form atoms: label + underline input (st's .stin), bordered select, segmented ── */
+.stcrow{display:flex;gap:36px;margin-bottom:14px}
+.stccol{flex:1;min-width:0}
+.stclab{font-size:12.8px;color:var(--text-dim);line-height:19px;margin-bottom:4px;display:block}
+.stclab.req::after{content:"*";color:var(--red);margin-left:2px}
+.stcfi{margin-bottom:14px}
+.stcfi.err .stclab{color:var(--red)}
+.stcfi.err .stin,.stcfi.err .stcsel,.stcfi.err .stcta{border-color:var(--red)}
+.stcfi .stin{margin-top:0}
+.stcfi .stex{font-size:12px;color:var(--red);margin-top:4px}
+.stcfi .stex:empty{display:none}
+.stcsel{display:flex;align-items:center;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text);
+        font-size:12.8px;cursor:pointer;gap:8px;user-select:none;min-width:0}
+.stcsel .v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcsel .ph{color:var(--text-dim)}
+.stcsel .car{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
+.stcsel:hover{border-color:var(--text-dim)}
+.stcsel.dis{opacity:.55;cursor:not-allowed}
+.stcsel.line{border-width:0 0 1px;border-radius:0;padding:0 2px;height:32px;border-color:var(--pop-line)}
+.stcsel .stctag{height:20px;line-height:20px;font-size:11.5px;margin-right:4px}
+.stcsel .chipx{width:18px;height:18px;border-radius:10px;background:var(--chip);color:var(--text);display:inline-grid;place-items:center;font-size:11px;margin-right:4px}
+.stcseg{display:inline-flex;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:36px}
+.stcseg button{height:34px;padding:0 12px;border:0;border-right:1px solid var(--border);background:transparent;color:var(--text-dim);font:inherit;font-size:12.8px;cursor:pointer}
+.stcseg button:last-child{border-right:0}
+.stcseg button.on{background:var(--chip);color:var(--white)}
+.stcseg button:hover:not(.on){color:var(--text)}
+.stcseg button[disabled]{cursor:default}
+.stcta{width:100%;min-height:72px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:12.8px;outline:none;resize:vertical}
+.stcta::placeholder{color:var(--text-dim)}
+.stcta:focus{border-color:var(--text-dim)}
+.stcmore{font-size:12.8px;color:var(--text-dim);margin-top:6px}
+.stcmore a{color:var(--white);text-decoration:underline;cursor:pointer}
+.stcmore svg{width:12px;height:12px;fill:currentColor;color:var(--teal);vertical-align:-1px;margin-left:4px}
+.stcnote{font-size:12.8px;color:var(--text-dim)}
+/* ── confirm (delete) ─────────────────────────────────────────────────────────── */
+.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45)}
+.stccf.on{display:grid}
+.stccfb{width:420px;max-width:92vw;background:var(--pop);border:1px solid var(--pop-line);border-radius:8px;box-shadow:var(--shadow);padding:20px}
+.stccfb h5{margin:0 0 8px;font-size:15px;font-weight:600;color:var(--white)}
+.stccfb p{margin:0 0 18px;font-size:12.8px;color:var(--text);line-height:1.55}
+.stccfb .bt{display:flex;justify-content:flex-end;gap:8px}
+.stbtn.danger{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+/* ── full pages: Create Benchmark · a benchmark's view · Create Rule ───────────── */
+.stcfull{display:flex;flex-direction:column;flex:1;min-height:0}
+.stcfh{display:flex;gap:36px;padding:0 0 6px}
+.stcfh .stccol{flex:1}
+.stcfoot{display:flex;justify-content:flex-end;gap:8px;margin:16px 0 20px;flex:0 0 auto}
+.stcfoot .mand{margin-right:auto;font-size:12.8px;color:var(--text)}
+.stcfoot .mand b{color:var(--red);font-weight:400}
+/* benchmark tree — nested accordions, a group header row, rules with a severity bar */
+.stcbt{margin:6px 0 0 0}
+.stcbg{border:1px solid var(--border);border-radius:4px;margin-bottom:8px;position:relative}
+.stcbg .stcbg{border:0;border-left:1px solid var(--border-soft);border-radius:0;margin:0 0 0 24px}
+.stcbgh{display:flex;align-items:center;min-height:48px;padding:0 10px 0 30px;gap:8px;position:relative;cursor:pointer}
+.stcbgh .car{position:absolute;left:10px;top:50%;width:14px;height:14px;fill:currentColor;color:var(--text-dim);transform:translateY(-50%) rotate(0deg);transition:transform .15s}
+.stcbg.open > .stcbgh .car{transform:translateY(-50%) rotate(90deg)}
+.stcbgh .drag{width:16px;height:16px;fill:currentColor;color:var(--text-dim);cursor:move;flex:0 0 16px}
+.stcbgh .num{font-size:12.8px;color:var(--text);flex:0 0 auto}
+.stcbgh .nm{font-size:12.8px;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcbgh input.nm{background:transparent;border:0;border-bottom:1px solid var(--pop-line);color:var(--text);font:inherit;font-size:12.8px;outline:none;padding:2px 0;height:26px}
+.stcbgh .acts{display:flex;gap:2px;flex:0 0 auto;opacity:.85}
+.stcbgh .acts .stcib.ok{color:var(--green)}
+.stcbgh .acts .stcib.del:hover{color:var(--red)}
+.stcbgb{display:none;padding:4px 0 6px 0}
+.stcbg.open > .stcbgb{display:block}
+.stcbr{display:flex;align-items:center;min-height:40px;padding:0 10px 0 30px;margin-left:24px;gap:8px;border-top:1px solid var(--border-soft);font-size:12.8px;color:var(--text)}
+.stcbr .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stcbr .stcib{opacity:0}
+.stcbr:hover .stcib{opacity:1}
+.stcbr .stcib:hover{color:var(--red)}
+.stcbradd{margin:4px 0 0 54px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px dashed var(--border);border-radius:4px;
+          color:var(--text-dim);font-size:12px;cursor:pointer;background:transparent;font-family:inherit}
+.stcbradd svg{width:13px;height:13px;fill:currentColor}
+.stcbradd:hover{color:var(--text);border-color:var(--text-dim)}
+.stcbtn-out{height:34px;padding:0 15px;border:1px solid var(--text);border-radius:4px;background:transparent;color:var(--text);font:inherit;font-size:12.8px;cursor:pointer}
+.stcbtn-out:hover{background:var(--hover)}
+/* the (i) help pane on the right of a full page */
+.stcinfo{display:none;width:34%;max-width:560px;flex:0 0 auto;border-left:1px solid var(--border);padding:0 0 0 20px;margin-left:20px;font-size:12.8px;color:var(--text);line-height:1.6;overflow:auto}
+.stcfull.info .stcinfo{display:block}
+.stcinfo h5{margin:12px 0 4px;font-size:13.5px;font-weight:600;color:var(--white)}
+.stcinfo h5:first-child{margin-top:0}
+.stcinfo p{margin:0 0 8px}
+.stcinfo li{margin:0 0 4px 16px}
+.stcinfo code{font-family:"JetBrains Mono",monospace;font-size:11.5px;background:var(--chip);padding:1px 5px;border-radius:3px}
+.stcsplit{display:flex;flex:1;min-height:0}
+.stcsplit > .stcfbody{flex:1;min-width:0;overflow:auto}
+/* the rule wizard: a 320px steps column and the form */
+.stcwz{display:flex;flex:1;min-height:0;margin:-16px -16px -20px}
+.stcsteps{width:320px;flex:0 0 320px;border-right:1px solid var(--border)}
+.stcstep{display:flex;align-items:center;gap:12px;height:47px;padding:0 20px;font-size:12.8px;color:var(--text-dim);cursor:pointer;border-bottom:1px solid var(--border-soft)}
+.stcstep .n{width:26px;height:26px;border-radius:50%;border:1px solid var(--text-dim);display:grid;place-items:center;font-size:12px;flex:0 0 26px}
+.stcstep.on{background:var(--hover);color:var(--white);font-weight:600}
+.stcstep.on .n{border-color:var(--white);color:var(--white)}
+.stcstep.done .n{background:var(--white);border-color:var(--white);color:var(--bg)}
+.stcstep.done .n svg{width:12px;height:12px;fill:currentColor}
+.stcwzf{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.stcwzb{flex:1;min-height:0;overflow:auto;padding:16px 20px 0 20px}
+.stcwzfoot{flex:0 0 auto;display:flex;justify-content:flex-end;gap:8px;padding:14px 20px}
+.stch4{font-size:17px;font-weight:600;color:var(--white);margin:22px 0 12px}
+.stcinl{display:flex;align-items:center;gap:24px;margin:10px 0}
+.stcinl .stclab{margin:0;min-width:128px}
+.stccond{display:flex;align-items:flex-end;gap:16px 24px;margin-bottom:10px;flex-wrap:wrap}
+.stccond .op{width:102px;flex:0 0 102px}
+.stccond .cd{width:222px;flex:0 0 222px}
+.stccond .rp{flex:1;min-width:120px;max-width:360px}
+.stccond .oc{width:114px;flex:0 0 114px}
+.stccond .ic{display:flex;gap:8px;padding-bottom:4px}
+.stccond .ic .stcib svg{width:18px;height:18px}
+.stccond .ic .stcib.rm{color:var(--red)}
+.stccond .stcsel.blank{opacity:1;border-color:var(--border);cursor:default}
+.stccond .stcsel.blank .car{display:none}
+.stcctl{border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin:14px 0;position:relative;background:var(--panel)}
+.stcctl .x{position:absolute;right:10px;top:10px}
+.stcwzrow{display:flex;align-items:flex-start;gap:24px;margin-bottom:16px;max-width:780px}
+.stcwzrow .stclab{flex:0 0 166px;margin:8px 0 0;min-width:0}
+.stcwzrow .f{flex:1;min-width:0}
+.stcwzrow .stin{margin-top:0}
+@media (max-width:1366px){ .stcsearch{width:260px;flex-basis:260px} .stcsteps{width:260px;flex-basis:260px} }
+
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview ════════════════════════════════
+   Rebuilt 1 Sep 2026. The previous build was cleared on request; this is the new screen,
+   growing from a supplied reference one piece at a time. FIRST PIECE: the page header.
+
+   ⚠️ IT IS ONE COMPONENT, NOT A COMPOSITION. `obs-page-header` carries every part of the
+   reference itself — `heading` for the title, the `title` SLOT for the status tag, `subtitle`
+   for the description, the DEFAULT slot for the right-hand Docs button, and its own
+   edge-to-edge bottom rule. There is no wrapper markup and no header CSS at all.
+   ⚠️ `no-divider` IS DELIBERATELY *NOT* SET — the reference shows the rule under the whole
+   block, which is the component's default. The previous build had to pass it because the
+   description lived OUTSIDE the component (it carried an inline doc link, and `subtitle`
+   escapes markup), so the divider would have landed between the title and its own text.
+   With the link now a button, the description is the real `subtitle` and the default is right.
+
+   ── the token blocks ────────────────────────────────────────────────────────────────────
+   `@mtdt/observeops-ds-css` v0.1.6, re-emitted SCOPED so the DS palette reaches the `obs-*`
+   elements without leaking onto the dashboard, the Log Explorer or the rest of Settings.
+   ⚠️ THE PACKAGE IS NOT LINKED, AND MUST NOT BE: it declares its LIGHT values on `:root` and
+   dark under `[data-theme='dark-theme']` — this prototype is the other way round, so linking
+   it would put the whole page in the DS's light theme. See `_ds/README.md`.
+   ⚠️ RECOVERED VERBATIM FROM 2e2c42f, not re-extracted. Regenerating needs a quote- and
+   paren-aware declaration splitter: `--graph-bg` is a `url('data:image/svg+xml;…')` whose
+   value carries its own `;`, and a naive `split(';')` leaves an unterminated string that
+   silently drops every rule after the block.
+   ⚠️ SCOPED TO `#agPage` ONLY. Anything this screen later renders OUTSIDE that subtree — a
+   drawer, a dialog, a portalled popover — inherits none of this and must be added to both
+   selectors. That is why the old build's selector read `#agPage,#agWiz`.
+   ⚠️ Declared divergence: the DS ships Poppins, this prototype is Inter. */
+#agPage{
+
+  --action-dropdown-divider:rgba(255, 255, 255, 0.2);
+  --action-dropdown-hover-bg:#172336;
+  --action-dropdown-text:#cad3e2;
+  --active-text-color:#fff;
+  --alert-message-color:#e3e8f2;
+  --alert-notification-popup-background-color:#282828;
+  --alert-notification-popup-border-color:rgb(22, 22, 22);
+  --ant-primary:#099dd9;
+  --apm-heatmap-border-color:rgba(23, 35, 54, 0.7);
+  --apm-heatmap-hover-color:#1d2a3e;
+  --availability-icon-background-color:#2b394f;
+  --availability-icon-text-color:#cad3e2;
+  --bar-chart-color:#14b8a6;
+  --border-color:#1d2a3e;
+  --border-color-opacity:rgba(60, 60, 60, 0.5);
+  --bottom-line-color:rgba(23, 35, 54, 1);
+  --btn-height:2.1rem;
+  --btn-radius:4px;
+  --btn-raidus-full:150px;
+  --button-disabled-bg:rgba(43, 57, 79, 0.7);
+  --button-disabled-border:rgba(72, 89, 117, 0.7);
+  --button-disabled-text:rgba(255, 255, 255, 0.5);
+  --button-transparent-hover-text:#cad3e2;
+  --button-transparent-text:#cad3e2;
+  --calendar-border-color:#2b394f;
+  --calendar-selected-day-background-color:#e3e8f2;
+  --chart-amber:#fbbf24;
+  --chart-aqua:#06b6d4;
+  --chart-border-color:rgba(255, 255, 255, 0.5);
+  --chart-bright-violet:#c026d3;
+  --chart-chartreuse:#a3e635;
+  --chart-electric-coral:#ff6b6b;
+  --chart-emerald-green:#10b981;
+  --chart-font-family:'JetBrains Mono', monospace;
+  --chart-fuchsia:#d946ef;
+  --chart-golden-yellow:#eab308;
+  --chart-grid-line-color:rgba(23, 35, 54, 0.8);
+  --chart-hot-pink:#ec4899;
+  --chart-indigo:#8b5cf6;
+  --chart-legend-color:rgba(255, 255, 255, 0.8);
+  --chart-lime-green:#84cc16;
+  --chart-line-type-icon:#8e9fbc;
+  --chart-mint-green:#2dd4bf;
+  --chart-neon-purple:#a855f7;
+  --chart-null-color:#000;
+  --chart-rose-red:#f43f5e;
+  --chart-sunset-orange:#f97316;
+  --chart-tangerine:#fb923c;
+  --chart-tooltip-background:rgba(43, 57, 79, 0.9);
+  --chart-type-icon:#fff;
+  --chart-vibrant-magenta:#e83e8c;
+  --chart-vivid-teal:#14b8a6;
+  --chart-vivid-teal-faded:rgba(20, 184, 166, 0.35);
+  --chat-height:400px;
+  --chat-width:50vw;
+  --checkbox-bg:#2b394f;
+  --checkbox-checked-border-color:#485975;
+  --checkbox-checked-color:#cad3e2;
+  --code-tag-background-color:#172336;
+  --code-tag-text-color:#cad3e2;
+  --collapse-content-padding:10px 6px;
+  --common-main-bg:#172336;
+  --common-padd-space:15px;
+  --common-widget-bg:#172336;
+  --control-btn-bg:rgba(52, 152, 219, 0.2);
+  --control-padding-horizontal:12px;
+  --control-padding-horizontal-sm:8px;
+  --dashboard-background:#0b1627;
+  --default-button-bg:#07101f;
+  --default-button-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-bg:#1d2a3e;
+  --default-button-hover-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-text:#cad3e2;
+  --default-button-text:#cad3e2;
+  --default-tag-bg:rgba(9, 157, 217, 0.3);
+  --default-tag-color:rgba(255, 255, 255, 0.2);
+  --default-tag-text-color:rgba(202, 211, 226, 0.8);
+  --disabled-checkbox-opacity:0.5;
+  --disk-space-full-background:#ecf1f9;
+  --drawer-background-color:#07101f;
+  --drawer-mask-color:rgba(255, 255, 255, 0.45);
+  --drawer-sidebar-background:#07101f;
+  --dropdown-background:#1d2a3e;
+  --dropdown-btn-background:'transparent';
+  --dropdown-hover-background:#2b394f;
+  --dropdown-text:#cad3e2;
+  --error-button-bg:#ec5b5b;
+  --error-button-hover-bg:#c84235;
+  --error-button-hover-text:#cad3e2;
+  --error-button-text:#cad3e2;
+  --error-outline-button-bg:transparent;
+  --error-outline-button-hover-bg:rgba(200, 66, 53, 0.2);
+  --error-outline-button-hover-text:#c84235;
+  --error-outline-button-text:#c84235;
+  --faded-page-background-color:rgba(30, 30, 30, 0.4);
+  --faded-text-color:rgba(30, 30, 30, 0.4);
+  --field-border-color:#2b394f;
+  --filter-background:#172336;
+  --filter-viewer-bg-color:rgb(80, 80, 80);
+  --focus-color:#204ca2;
+  --font-family:'Poppins', sans-serif;
+  --font-size-10:10px;
+  --font-size-base:0.8rem;
+  --font-size-lg:1rem;
+  --font-size-sm:0.8rem;
+  --gauge-base-color:#404244;
+  --gauge-text-color:rgba(255, 255, 255, 0.8);
+  --graph-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Crect x='4' y='4' width='2' height='2' fill='%232B394F'/%3E%3C/svg%3E");
+  --grid-header-bg:rgba(72, 89, 117, 0.4);
+  --grid-header-hover-bg:rgba(23, 35, 54, 0.4);
+  --grid-header-solid-bg:rgba(70, 70, 70, 1);
+  --grid-row-border-color:rgba(23, 35, 54, 0.7);
+  --group-header-upper:#172336;
+  --group-icon-color:#cad3e2;
+  --group-list-bg:#172336;
+  --group-list-hover-bg:#172336;
+  --group-text-color:#cad3e2;
+  --hardware-port-bolt-view-bg:#8fadc7;
+  --hc-primary:#0d9488;
+  --hc-range-background:#14b8a6;
+  --header-drop-width:320px;
+  --header-height:55px;
+  --header-title-text-color:#e3e8f2;
+  --help-card-bg-color:rgba(43, 57, 79, 0.3);
+  --hieararchy-border-color:#6a7fa0;
+  --info-border:#2c4a6b;
+  --info-surface:#16283c;
+  --info-text:#9cc4ec;
+  --input-addon-color:#cad3e2;
+  --input-height-base:32px;
+  --input-padding-horizontal:11px;
+  --input-padding-horizontal-base:11px;
+  --input-padding-vertical-base:4px;
+  --input-placeholder-color:rgba(202, 211, 226, 0.5);
+  --input-suffix-bg:rgb(45, 45, 45);
+  --input-suffix-text:#7186a8;
+  --input-text-color:#cad3e2;
+  --layout-header-height:55px;
+  --layout-header-padding:0 12px;
+  --left-menu-arrow-color:rgba(255, 255, 255, 0.65);
+  --left-menu-arrow-opacity:0.7;
+  --left-menu-hover-bg:#172336;
+  --left-menu-text-color:rgba(255, 255, 255, 0.65);
+  --left-menu-text-color-hover:rgba(255, 255, 255, 0.8);
+  --left-menu-text-hover-color:white;
+  --license-background:#07101f;
+  --list-menu-hover:#e7f5fb;
+  --main-tags-bg-color:#183a42;
+  --main-tags-text-color:#2ec4b6;
+  --map-line-color:#1d2a3e;
+  --menu-collapsed-width:70px;
+  --menu-item-active-border-width:3px;
+  --mesasge-error:#fcdbd8;
+  --mesasge-success:#e7f4d9;
+  --modal-background-color:#07101f;
+  --modal-text-color:#cad3e2;
+  --nav-beta-text:#cad3e2;
+  --nav-divider-bg:#e3e8f2;
+  --nav-hover-bg:#1d2a3e;
+  --nav-icon-height:40px;
+  --nav-icon-line-height:40px;
+  --nav-icon-size:1.1rem;
+  --nav-icon-width:50px;
+  --nav-menu-height:30px;
+  --nav-panel-bg:#172336;
+  --nav-selected-text-color:#172336;
+  --nav-text-color:#cad3e2;
+  --navbar-height:50px;
+  --neutral-button-bg:#2b394f;
+  --neutral-button-hover-bg:rgb(70, 70, 70);
+  --neutral-button-hover-text:#cad3e2;
+  --neutral-button-text:#cad3e2;
+  --neutral-dark:#172336;
+  --neutral-darker:#172336;
+  --neutral-darkest:#000;
+  --neutral-light:#8e9fbc;
+  --neutral-lighter:#1d2a3e;
+  --neutral-lightest:#172336;
+  --neutral-regular:#6a7fa0;
+  --neutral-regular-lighter:#ebeef2;
+  --neutral-shadow-light:rgba(70, 70, 70, 0.15);
+  --neutral-theme-color:#8e9fbc;
+  --notification-dropdown-background:#172336;
+  --notification-dropdown-background-hover:#1d2a3e;
+  --notification-dropdown-border-color:#2b394f;
+  --notification-dropdown-datetime-color:#8e9fbc;
+  --notification-dropdown-footer:#323232;
+  --notification-dropdown-header:rgb(70, 70, 70);
+  --notification-dropdown-header-footer:#2b394f;
+  --notification-subtitle-color:#cad3e2;
+  --numeric-font-family:'JetBrains Mono', monospace;
+  --outline-button-bg:transparent;
+  --outline-button-hover-bg:#1d2a3e;
+  --outline-button-hover-border:rgba(227, 232, 242, 0.5);
+  --outline-button-hover-text:#cad3e2;
+  --outline-button-text:#cad3e2;
+  --overlay-bg:rgba(255, 255, 255, 0.25);
+  --overlay-border-width:4px;
+  --padding-md:16px;
+  --padding-sm:12px;
+  --padding-xs:8px;
+  --page-background-color:#07101f;
+  --page-text-color:#cad3e2;
+  --pagination-active-bg:#172336;
+  --pagination-active-text:#cad3e2;
+  --pagination-select-bg:#172336;
+  --pagination-select-text:#cad3e2;
+  --pan-btn-bg:#2b394f;
+  --pan-btn-border:#485975;
+  --panel-side-box-shadow:-1px 6px 6px 0 rgba;
+  --partition-icon-background-color:#2b394f;
+  --partition-icon-text-color:#cad3e2;
+  --picker-popover-max-height:35vh;
+  --picker-popover-max-width:80vw;
+  --policy-border-color:none;
+  --pop-footer-height:75px;
+  --popover-arrow-width:6px;
+  --primary:#e3e8f2;
+  --primary-alt:#cad3e2;
+  --primary-alt-lighter:#e0ebf5;
+  --primary-button-bg:#fff;
+  --primary-button-hover-bg:rgba(255, 255, 255, 0.7);
+  --primary-button-hover-text:#07101f;
+  --primary-button-text:#07101f;
+  --progress-bar-bg:#2b394f;
+  --progress-bg:#2b394f;
+  --radio-btn-box-bg:#07101f;
+  --radio-btn-box-border-color:#204ca2;
+  --radio-btn-box-selected-bg:#e3e8f2;
+  --radio-btn-box-selected-text-color:#07101f;
+  --screenshot-share-form-bg:#07101f;
+  --screenshot-share-overlay-bg:rgba(255, 255, 255, 0.4);
+  --search-height:36px;
+  --search-icon:#e7f5fb;
+  --search-width:18rem;
+  --secondary-green:#36d576;
+  --secondary-green-lighter:#edf7e2;
+  --secondary-orange:#fa9950;
+  --secondary-red:#ec5b5b;
+  --secondary-red-dark:#c84235;
+  --secondary-red-light:#f17a73;
+  --secondary-yellow:#fad100;
+  --secondery-focus-bg:#172336;
+  --severity-clear:#36d576;
+  --severity-clear-darker:#0d3a1f;
+  --severity-clear-dot-box:#0d3a1f;
+  --severity-clear-lighter:#0d3a1f;
+  --severity-clear-lightest:#0d3a1f;
+  --severity-critical:#ec5b5b;
+  --severity-critical-darker:#310c0c;
+  --severity-critical-dot-box:#310c0c;
+  --severity-critical-lighter:#310c0c;
+  --severity-critical-lightest:#310c0c;
+  --severity-disable:#99aab7;
+  --severity-disable-darker:#0d151a;
+  --severity-disable-lighter:#0d151a;
+  --severity-disable-lightest:#0d151a;
+  --severity-down:#ad1111;
+  --severity-down-darker:#1e0202;
+  --severity-down-lighter:#1e0202;
+  --severity-down-lightest:#1e0202;
+  --severity-maintenance:#008cff;
+  --severity-maintenance-darker:#001489;
+  --severity-maintenance-dot-box:#001489;
+  --severity-maintenance-lighter:#001489;
+  --severity-maintenance-lightest:#001489;
+  --severity-major:#fa9950;
+  --severity-major-darker:#541914;
+  --severity-major-dot-box:#541914;
+  --severity-major-lighter:#541914;
+  --severity-major-lightest:#541914;
+  --severity-none:#8ac1d3;
+  --severity-none-darker:#04232c;
+  --severity-none-dot-box:#245463;
+  --severity-none-lighter:#04232c;
+  --severity-none-lightest:#04232c;
+  --severity-stop:#ff91a0;
+  --severity-stop-darker:#3e0614;
+  --severity-stop-dot-box:#82283b;
+  --severity-stop-lighter:#3e0614;
+  --severity-stop-lightest:#3e0614;
+  --severity-suspended:#d6b084;
+  --severity-suspended-darker:#2d1b04;
+  --severity-suspended-dot-box:#644621;
+  --severity-suspended-lighter:#2d1b04;
+  --severity-suspended-lightest:#2d1b04;
+  --severity-unknown:#b1b1b1;
+  --severity-unknown-darker:#2e2e2e;
+  --severity-unknown-dot-box:#5d5d5d;
+  --severity-unknown-lighter:#2e2e2e;
+  --severity-unknown-lightest:#2e2e2e;
+  --severity-unreachable:#8c5bd8;
+  --severity-unreachable-darker:#22094a;
+  --severity-unreachable-dot-box:#380e78;
+  --severity-unreachable-lighter:#22094a;
+  --severity-unreachable-lightest:#22094a;
+  --severity-up:#36d576;
+  --severity-up-darker:#0d3a1f;
+  --severity-up-lighter:#0d3a1f;
+  --severity-up-lightest:#0d3a1f;
+  --severity-warning:#fad100;
+  --severity-warning-darker:#543308;
+  --severity-warning-dot-box:#543308;
+  --severity-warning-lighter:#543308;
+  --severity-warning-lightest:#543308;
+  --side-menu-bg:#07101f;
+  --slider-tracker:#485975;
+  --sparkline-color-response-time:#14b8a6;
+  --sparkline-color-throughput:#fb923c;
+  --status-down:rgb(192, 62, 50);
+  --status-progress-color:#485564ad;
+  --status-up:rgb(110, 158, 51);
+  --success-button-bg:#36d576;
+  --success-button-hover-bg:#36d576;
+  --success-button-hover-text:#cad3e2;
+  --success-button-text:#cad3e2;
+  --success-outline-button-bg:transparent;
+  --success-outline-button-hover-bg:#0d3a1f;
+  --success-outline-button-hover-text:#14b053;
+  --success-outline-button-text:#14b053;
+  --switch-bg:#172336;
+  --switch-border:#1d2a3e;
+  --switch-port-view-bg:#485975;
+  --table-details-bg:#2b394f;
+  --table-group-header-highlight:#172336;
+  --tabs-card-height:32px;
+  --tabs-text-color:#8e9fbc;
+  --tag-bg:#1d2a3e;
+  --tag-bg-color:#2b394f;
+  --tag-border:#204ca2;
+  --tag-color:#cad3e2;
+  --tag-height:24px;
+  --text-color-common-link:#e3e8f2;
+  --text-color-common-primery:rgba(255, 255, 255, 0.8);
+  --text-color-common-secondary:#8e9fbc;
+  --text-input-bg:#fff;
+  --text-lg:1.5rem;
+  --text-neutral-ligher:#8e9fbc;
+  --text-regular:1rem;
+  --text-sm:0.8rem;
+  --text-xs:0.6rem;
+  --timeline-indicator-color:#1d2a3e;
+  --timeline-scrollbar-background-color:#1d2a3e;
+  --timerange-background-color:#2b394f;
+  --timerange-text-color:#e3e8f2;
+  --toast-background-color:#172336;
+  --toast-text-color:rgba(255, 255, 255, 0.8);
+  --tooltip-background-color:rgba(43, 57, 79, 0.9);
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.5);
+  --tooltip-text-color:#cad3e2;
+  --topology-background:#172336;
+  --topology-graph-tooltip-bg:#07101f;
+  --topology-graph-tooltip-text-color:#fff;
+  --topology-overlay-btn-bg:#cad3e2;
+  --topology-overlay-btn-hover-bg:#cad3e2;
+  --topology-overlay-btn-text:#07101f;
+  --topology-tooltip-devider:#2b394f;
+  --tour-flow-bg-color:#376842;
+  --tour-log-bg-color:#236777;
+  --tour-metric-bg-color:#142c40;
+  --transparent-border-color:'transparent';
+  --upgrade-accent-primary:#22d3ee;
+  --upgrade-accent-secondary:#fb7185;
+  --upgrade-accent-tertiary:#fbbf24;
+  --upgrade-node-fill:rgba(255, 255, 255, 0.1);
+  --upgrade-orb-primary:rgba(34, 211, 238, 0.3);
+  --upgrade-orb-secondary:rgba(251, 113, 133, 0.2);
+  --upgrade-progress-fill:linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%);
+  --upgrade-progress-shimmer:rgba(255, 255, 255, 0.3);
+  --upgrade-progress-track:rgba(255, 255, 255, 0.1);
+  --upgrade-ring-color:rgba(34, 211, 238, 0.22);
+  --upgrade-text-primary:#fff;
+  --upgrade-text-secondary:rgba(255, 255, 255, 0.6);
+  --user-count-height:23px;
+  --user-dropdown-button-bg:rgb(40, 40, 40);
+  --user-dropdown-button-hover-bg:#172336;
+  --user-dropdown-button-hover-text:#cad3e2;
+  --user-dropdown-button-text:#cad3e2;
+  --user-dropdown-theme-icon-color:#2b394f;
+  --utility-result-bg:#0b1627;
+  --utility-result-border:#172336;
+  --utility-scrollbar-thumb:rgba(160, 160, 160, 0.5);
+  --white-regular:rgba(255, 255, 255, 0.8);
+  --widget-background:#0b1627;
+  --widget-background-color:#172336;
+  --widget-border-color:#172336;
+  --widget-border-radius:7px;
+  --widget-box-shadow:#000;
+  --widget-type-selector-border-color:'transparent';
+}
+
+html[data-theme="light"] #agPage{
+  /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
+     collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
+     with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
+     `--code-tag-background-color` and `.row:not(.active):hover` with `--nav-hover-bg`, and in
+     LIGHT both resolve to #ecf1f9. `sections` mode gets away with it because it adds
+     `box-shadow: inset 2px 0 0 var(--primary)` — that left rule is the only thing separating
+     the two states — and `categories`, which the reference's row shape required, has no rule.
+     Selected is now one step stronger than hover: `--neutral-lighter` (#e3e8f2) over #ecf1f9.
+     ⚠️ LIGHT ONLY, ON PURPOSE. In DARK the DS values already differ (active #172336 over hover
+     #1d2a3e), and `--neutral-lighter` is #1d2a3e there — re-pointing it for both themes would
+     FIX light by creating the identical collision in dark. Measured both before choosing.
+     ⚠️ Scoped to `#agPage`, like every token here: `--code-tag-background-color` also drives
+     code chips elsewhere in the product's vocabulary. */
+
+  --action-dropdown-divider:#e3e8f2;
+  --action-dropdown-hover-bg:#e3e8f2;
+  --action-dropdown-text:#7186a8;
+  --alert-notification-popup-background-color:#fff;
+  --alert-notification-popup-border-color:#eff2f6;
+  --apm-heatmap-border-color:rgba(236, 241, 249, 1);
+  --apm-heatmap-hover-color:#f6f9fc;
+  --availability-icon-background-color:#e3e8f2;
+  --availability-icon-text-color:#1d2a3e;
+  --bar-chart-color:#0d9488;
+  --border-color:#e3e8f2;
+  --border-color-opacity:rgba(222, 229, 237, 0.5);
+  --bottom-line-color:rgba(236, 241, 249, 1);
+  --button-disabled-bg:#ecf1f9;
+  --button-disabled-border:#e3e8f2;
+  --button-disabled-text:rgba(0, 0, 0, 0.5);
+  --button-transparent-hover-text:#7186a8;
+  --button-transparent-text:#7186a8;
+  --calendar-border-color:#e3e8f2;
+  --calendar-selected-day-background-color:#111c2c;
+  --chart-amber:#f59e0b;
+  --chart-aqua:#0891b2;
+  --chart-border-color:rgba(0, 0, 0, 0.1);
+  --chart-bright-violet:#a21caf;
+  --chart-chartreuse:#84cc16;
+  --chart-electric-coral:#ef4444;
+  --chart-emerald-green:#059669;
+  --chart-fuchsia:#c026d3;
+  --chart-golden-yellow:#ca8a04;
+  --chart-grid-line-color:rgba(236, 241, 249, 0.8);
+  --chart-hot-pink:#db2777;
+  --chart-indigo:#7c3aed;
+  --chart-legend-color:rgba(54, 70, 88, 0.9);
+  --chart-lime-green:#65a30d;
+  --chart-mint-green:#14b8a6;
+  --chart-neon-purple:#9333ea;
+  --chart-null-color:#e3e8f2;
+  --chart-rose-red:#e11d48;
+  --chart-sunset-orange:#ea580c;
+  --chart-tangerine:#f97316;
+  --chart-tooltip-background:rgba(255, 255, 255, 0.9);
+  --chart-type-icon:#6a7fa0;
+  --chart-vibrant-magenta:#db2777;
+  --chart-vivid-teal:#0d9488;
+  --chart-vivid-teal-faded:rgba(13, 148, 136, 0.35);
+  --checkbox-bg:#fff;
+  --checkbox-checked-border-color:#6a7fa0;
+  --checkbox-checked-color:#111c2c;
+  --code-tag-background-color:var(--neutral-lighter);/*#ecf1f9 — see the note above*/
+  --code-tag-text-color:#1d2a3e;
+  --common-main-bg:#ecf1f9;
+  --common-widget-bg:#fff;
+  --control-btn-bg:rgb(214 217 221);
+  --dashboard-background:#f9fafb;
+  --default-button-bg:#fff;
+  --default-button-border:#e3e8f2;
+  --default-button-hover-bg:#ecf1f9;
+  --default-button-hover-border:#e3e8f2;
+  --default-button-hover-text:#1d2a3e;
+  --default-button-text:#1d2a3e;
+  --default-tag-color:#e3e8f2;
+  --default-tag-text-color:#516381;
+  --disabled-checkbox-opacity:0.8;
+  --drawer-background-color:#fff;
+  --drawer-mask-color:rgba(0, 0, 0, 0.45);
+  --drawer-sidebar-background:#fff;
+  --dropdown-background:#fff;
+  --dropdown-btn-background:#fff;
+  --dropdown-hover-background:#ecf1f9;
+  --dropdown-text:#7186a8;
+  --error-button-hover-text:#fff;
+  --error-button-text:#fff;
+  --error-outline-button-hover-bg:rgba(240, 78, 62, 0.2);
+  --error-outline-button-hover-text:#ec5b5b;
+  --error-outline-button-text:#ec5b5b;
+  --faded-page-background-color:rgba(255, 255, 255, 0.4);
+  --field-border-color:#e3e8f2;
+  --filter-background:#fff;
+  --filter-viewer-bg-color:#fff;
+  --gauge-base-color:#dee5ed;
+  --gauge-text-color:#1d2a3e;
+  --graph-bg:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNEg2VjZINFY0WiIgZmlsbD0iI0RGRTVFQyIvPgo8L3N2Zz4K');
+  --grid-header-bg:#ecf1f9;
+  --grid-header-hover-bg:#f6f9fc;
+  --grid-header-solid-bg:#ecf1f9;
+  --grid-row-border-color:rgba(236, 241, 249, 1);
+  --group-header-upper:#f6f6f6;
+  --group-icon-color:#6a7fa0;
+  --group-list-bg:#ecf1f9;
+  --group-list-hover-bg:#ecf1f9;
+  --group-text-color:#2b394f;
+  --hc-range-background:#0d9488;
+  --header-title-text-color:#1d2a3e;
+  --help-card-bg-color:rgba(227, 232, 242, 0.4);
+  --hieararchy-border-color:#e3e8f2;
+  --info-border:#cadff5;
+  --info-surface:#eef5fc;
+  --info-text:#2f6099;
+  --input-addon-color:#6a7fa0;
+  --input-placeholder-color:rgba(43, 57, 79, 0.5);
+  --input-suffix-bg:#ecf1f9;
+  --input-text-color:#1d2a3e;
+  --left-menu-arrow-color:#6a7fa0;
+  --left-menu-arrow-opacity:1;
+  --left-menu-hover-bg:#ecf1f9;
+  --left-menu-text-color:#2b394f;
+  --left-menu-text-color-hover:#111c2c;
+  --left-menu-text-hover-color:#111c2c;
+  --license-background:#ecf1f9;
+  --list-menu-hover:#ecf1f9;
+  --main-tags-bg-color:#cdf1ed;
+  --main-tags-text-color:#218b81;
+  --map-line-color:#bbc8d6;
+  --modal-background-color:#fff;
+  --modal-text-color:#000;
+  --nav-beta-text:#f6f9fc;
+  --nav-divider-bg:#111c2c;
+  --nav-hover-bg:#ecf1f9;
+  --nav-panel-bg:#f6f9fc;
+  --nav-selected-text-color:#f6f9fc;
+  --nav-text-color:#1d2a3e;
+  --neutral-button-bg:#e3e8f2;
+  --neutral-button-hover-bg:#ecf1f9;
+  --neutral-button-hover-text:#7186a8;
+  --neutral-button-text:#7186a8;
+  --neutral-dark:#2b394f;
+  --neutral-light:#6a7fa0;
+  --neutral-lighter:#e3e8f2;
+  --neutral-lightest:#ecf1f9;
+  --neutral-regular:#7186a8;
+  --neutral-theme-color:#6a7fa0;
+  --notification-dropdown-background:white;
+  --notification-dropdown-background-hover:#ecf1f9;
+  --notification-dropdown-border-color:#e3e8f2;
+  --notification-dropdown-datetime-color:#516381;
+  --notification-dropdown-header-footer:#e3e8f2;
+  --notification-subtitle-color:#1d2a3e;
+  --outline-button-hover-bg:#ecf1f9;
+  --outline-button-hover-border:rgba(17, 28, 44, 0.5);
+  --outline-button-hover-text:#111c2c;
+  --outline-button-text:#111c2c;
+  --overlay-bg:rgba(0, 0, 0, 0.25);
+  --page-background-color:#fff;
+  --page-text-color:#1d2a3e;
+  --pagination-active-bg:#e3e8f2;
+  --pagination-active-text:#7186a8;
+  --pagination-select-bg:#e3e8f2;
+  --pagination-select-text:#7186a8;
+  --pan-btn-bg:#fff;
+  --pan-btn-border:#dee5ed;
+  --partition-icon-background-color:#e3e8f2;
+  --partition-icon-text-color:#1d2a3e;
+  --policy-border-color:#e3e8f2;
+  --primary:#111c2c;
+  --primary-alt:#1d2a3e;
+  --primary-button-bg:#07101f;
+  --primary-button-hover-bg:rgba(7, 16, 31, 0.7);
+  --primary-button-hover-text:#fff;
+  --primary-button-text:#fff;
+  --progress-bar-bg:#e3e8f2;
+  --progress-bg:#e3e8f2;
+  --radio-btn-box-bg:#fff;
+  --radio-btn-box-border-color:#e3e8f2;
+  --radio-btn-box-selected-bg:#111c2c;
+  --radio-btn-box-selected-text-color:#fff;
+  --screenshot-share-form-bg:#fff;
+  --screenshot-share-overlay-bg:rgba(0, 0, 0, 0.4);
+  --search-icon:#2b394f;
+  --secondary-green:#14b053;
+  --secondary-orange:#f47c22;
+  --secondary-yellow:#e8b407;
+  --severity-clear:#14b053;
+  --severity-clear-darker:#d1fae0;
+  --severity-clear-dot-box:#a2f6c3;
+  --severity-clear-lighter:#d1fae0;
+  --severity-clear-lightest:#d1fae0;
+  --severity-critical-darker:#fef5f5;
+  --severity-critical-dot-box:#fef5f5;
+  --severity-critical-lighter:#fef5f5;
+  --severity-critical-lightest:#fef5f5;
+  --severity-disable:#81929f;
+  --severity-disable-darker:#d9e3ea;
+  --severity-disable-lighter:#d9e3ea;
+  --severity-disable-lightest:#d9e3ea;
+  --severity-down-darker:#f3c9c4;
+  --severity-down-lighter:#f3c9c4;
+  --severity-down-lightest:#f3c9c4;
+  --severity-maintenance:#006dfa;
+  --severity-maintenance-darker:#cce4ff;
+  --severity-maintenance-dot-box:#99cdff;
+  --severity-maintenance-lighter:#cce4ff;
+  --severity-maintenance-lightest:#cce4ff;
+  --severity-major:#f47c22;
+  --severity-major-darker:#fddcc4;
+  --severity-major-dot-box:#fac2a0;
+  --severity-major-lighter:#fddcc4;
+  --severity-major-lightest:#fddcc4;
+  --severity-none:#6fa8bb;
+  --severity-none-darker:#dbf8ff;
+  --severity-none-dot-box:#c5ecfa;
+  --severity-none-lighter:#dbf8ff;
+  --severity-none-lightest:#dbf8ff;
+  --severity-stop:#e87587;
+  --severity-stop-darker:#ffdfe5;
+  --severity-stop-dot-box:#ffcad3;
+  --severity-stop-lighter:#ffdfe5;
+  --severity-stop-lightest:#ffdfe5;
+  --severity-suspended:#be9669;
+  --severity-suspended-darker:#ffeed7;
+  --severity-suspended-dot-box:#fcdfbf;
+  --severity-suspended-lighter:#ffeed7;
+  --severity-suspended-lightest:#ffeed7;
+  --severity-unknown-darker:#fcfcfc;
+  --severity-unknown-dot-box:#f8f8f8;
+  --severity-unknown-lighter:#fcfcfc;
+  --severity-unknown-lightest:#fcfcfc;
+  --severity-unreachable:#6d2ed1;
+  --severity-unreachable-darker:#e7dcfa;
+  --severity-unreachable-dot-box:#c8aff0;
+  --severity-unreachable-lighter:#e7dcfa;
+  --severity-unreachable-lightest:#e7dcfa;
+  --severity-up:#14b053;
+  --severity-up-darker:#d1fae0;
+  --severity-up-lighter:#d1fae0;
+  --severity-up-lightest:#d1fae0;
+  --severity-warning:#e8b407;
+  --severity-warning-darker:#fff1b3;
+  --severity-warning-dot-box:#ffe980;
+  --severity-warning-lighter:#fff1b3;
+  --severity-warning-lightest:#fff1b3;
+  --side-menu-bg:#fff;
+  --sparkline-color-response-time:#0d9488;
+  --sparkline-color-throughput:#f97316;
+  --status-progress-color:transparent;
+  --success-button-bg:#14b053;
+  --success-button-hover-bg:#14b053;
+  --success-button-hover-text:#fff;
+  --success-button-text:#fff;
+  --success-outline-button-hover-bg:#d1fae0;
+  --switch-bg:#fff;
+  --switch-border:#e3e8f2;
+  --switch-port-view-bg:#cad3e2;
+  --table-details-bg:#e3e8f2;
+  --table-group-header-highlight:#d6edf8;
+  --tabs-text-color:#516381;
+  --tag-bg:#ecf1f9;
+  --tag-bg-color:#e3e8f2;
+  --tag-border:#e3e8f2;
+  --tag-color:#7186a8;
+  --text-color-common-link:#111c2c;
+  --text-color-common-primery:#2b394f;
+  --text-color-common-secondary:#7186a8;
+  --text-neutral-ligher:#6a7fa0;
+  --timeline-indicator-color:#172336;
+  --timeline-scrollbar-background-color:#e3e8f2;
+  --timerange-background-color:#e3e8f2;
+  --timerange-text-color:#7186a8;
+  --toast-background-color:#fff;
+  --toast-text-color:#000;
+  --tooltip-background-color:#172336;
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.15);
+  --tooltip-text-color:#fff;
+  --topology-background:#fff;
+  --topology-graph-tooltip-bg:#172336;
+  --topology-overlay-btn-bg:#ecf1f9;
+  --topology-overlay-btn-hover-bg:#e3e8f2;
+  --topology-overlay-btn-text:#7186a8;
+  --tour-flow-bg-color:#def1e2;
+  --tour-log-bg-color:#d6f1f7;
+  --tour-metric-bg-color:#cfdce6;
+  --transparent-border-color:#e3e8f2;
+  --user-dropdown-button-bg:#ecf1f9;
+  --user-dropdown-button-hover-bg:#e3e8f2;
+  --user-dropdown-button-hover-text:#1d2a3e;
+  --user-dropdown-button-text:#1d2a3e;
+  --user-dropdown-theme-icon-color:#e3e8f2;
+  --utility-result-bg:#ecf1f9;
+  --utility-result-border:#e3e8f2;
+  --utility-scrollbar-thumb:rgba(136, 136, 136, 0.4);
+  --white-regular:#fff;
+  --widget-background:#fff;
+  --widget-background-color:#fff;
+  --widget-border-color:#e3e8f2;
+  --widget-box-shadow:none;
+  --widget-type-selector-border-color:#e3e8f2;
+}
+
+/* ── this file's own tokens, re-pointed at the DS ones ────────────────────────────────────
+   The `.ag*` rules below (and the `st`/`stc` atoms this page still borrows for layout) are
+   written against this prototype's token names; pointing them at the DS names above converts
+   every one of them at once, and keeps the mapping auditable in one table. */
+#agPage{
+  /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
+  --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
+  --text:var(--page-text-color);       --text-dim:var(--text-color-common-secondary);
+  --text-dim2:var(--neutral-light);    --muted:var(--neutral-regular);
+  --border:var(--border-color);        --border-soft:var(--border-color);
+  --chip:var(--field-border-color);    --hover:var(--nav-hover-bg);
+  --sel:var(--neutral-lighter);        --white:var(--primary);
+  /* Atoms/Button → one `primary` per view = `--primary-button-bg` / `--primary-button-text` */
+  --action:var(--primary-button-bg);   --action-fg:var(--primary-button-text);
+  --action-h:var(--primary-alt);
+  --teal:var(--primary);               --teal-dim:var(--primary-alt);
+  /* ⚠️ THE AI ACCENT IS `--chart-indigo`, AND IT IS THE ONLY CHROMATIC THING HERE.
+     The DS has NO "AI accent" token — `resolve_token("AI accent purple")` returns nothing —
+     and the contract forbids inventing one. `--chart-indigo` is the DS's own violet and is
+     already what this prototype paints every AI surface with (Log Explorer's AI Query, the
+     per-widget ✦ drawer, the toolbar pill). Declaring it here also FIXES LIGHT THEME: `:root`
+     declares `--ai:#8b5cf6` once and never overrides it, so light was wearing the dark value.
+     ⚠️ It paints the MARK, never a button. The reference makes every CTA purple; the DS is
+     explicit that the primary action is `--primary` (navy) and warns twice that the brand is
+     "navy, NOT cyan, NOT blue". So violet marks *what this is*; navy marks *what to press*. */
+  --ai:var(--chart-indigo);
+  --ai-soft:color-mix(in srgb, var(--chart-indigo) 13%, transparent);
+  --ai-line:color-mix(in srgb, var(--chart-indigo) 34%, transparent);
+}
+
+.agpage{flex:0 0 auto;min-width:0}
+
+/* ── the integration header ───────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: the product's own "Motadata ServiceOps" INTEGRATION header —
+   a mark leading the row, the title, and the description beneath it carrying the doc link
+   inline as "For more information: <link> ↗".
+   ⚠️ THE DESCRIPTION CANNOT BE `subtitle`. The prop ESCAPES markup (measured — an `<a>`
+   renders as literal text), so an inline link is impossible through it. It is rendered here,
+   outside the component, which is why the component takes `no-divider`: its own rule would
+   otherwise land BETWEEN the title and the description that belongs to it. The rule moves to
+   this wrapper so it sits under the whole block, which is what the reference shows.
+   ⚠️ THE INDENT ALIGNS THE DESCRIPTION WITH THE TITLE, NOT WITH THE MARK — 30px of mark plus
+   the header's own 12px gap. In the reference the sentence starts under the product name. */
+/* ⚠️ NO RULE UNDER THE HEADER (request, 1 Sep 2026: "remove this line"). It had one because
+   the description was moved OUT of `obs-page-header`'s `subtitle` — the prop escapes markup, so
+   the inline documentation link forced a separate `<p>` — and the component's own divider would
+   then have landed BETWEEN the title and the text that belongs to it. `no-divider` stays on the
+   component for that reason; the wrapper's border is simply gone.
+   ⚠️ THE MARGIN GOES UP 14 → 16px (@padding-md). With the rule there, the line did the
+   separating; without it the space has to, and 14px was the gap to a rule, not to the toolbar. */
+.aghead{padding:0;margin:0 0 16px}
+/* ⚠️ LESS MARGIN BETWEEN THE TITLE AND ITS DESCRIPTION (request, 1 Sep 2026: "use less
+   margin"). The description is a separate `<p>` — `subtitle` escapes markup and the doc link is
+   inline — so the gap was the COMPONENT's 8px bottom inset plus the `<p>`'s 2px, measuring 17px
+   from the heading's own baseline.
+   ⚠️ ONLY THE BOTTOM INSET IS DROPPED: `8px 8px 0`, not `0`. `--page-header-padding` sets all
+   four sides, and zeroing it would pull the title 8px LEFT — out of line with the description
+   below it, which is indented from `.aghead` and does not move. */
+.aghead obs-page-header{display:block;--page-header-padding:8px 8px 0}
+.aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
+/* ⚠️ 48px, NOT 42 — MEASURED, NOT ESTIMATED. The indent is meant to put the description under
+   the TITLE rather than under the mark, and 42px was a guess at "30px mark + 12px gap". The
+   real offset is the component's own 8px left inset + the 30px mark + its 10px gap = 48px; at
+   42 the description sat 6px left of the title it belongs to. Caught by comparing the two
+   rects, not by eye. */
+.aghsub{margin:2px 0 12px 48px;font-size:12.8px;line-height:1.55;
+  color:var(--text-color-common-secondary);max-width:940px}
+.aghsub obs-link{margin-left:2px}
+/* ⚠️ `obs-link`'s `external` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
+   The reference puts the glyph after the text, so it is added as an `obs-icon` in the link's
+   own slot (a DS icon, not a hand-drawn one). Measured before assuming. */
+.aghsub obs-link obs-icon{margin-left:5px;vertical-align:-1px}
+
+/* ── the toolbar ──────────────────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: a search field left, one primary action right. That is
+   Organisms/Toolbar's grid variant exactly — `start` slot for the search, the default slot
+   for the action — and it is `list-view`'s own "Add <Noun>" region.
+   ⚠️ NO WIDTH ON THE BUTTON AND NO CUSTOM CONTROL HERE. Both children are real `obs-*`. */
+.agpage obs-toolbar{display:block}
+.agsrch{width:290px;max-width:100%}
+
+/* ── the provider configuration screen ────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: the product's "Application Registration" screen — a narrow
+   left rail of the things you can configure, and the selected one's form on the right.
+   ⚠️ IT IS A FULL PAGE, NOT A DRAWER (`stFullOpen`), which is what the reference shows: its
+   own title bar, the settings category list hidden, the body given over to the two columns.
+   The cleared build put this in a 62% `obs-drawer`; the reference does not.
+   ⚠️ THE RAIL IS `obs-side-menu` mode="categories", AND THAT IS A LOOKS-FIRST CHOICE —
+   recorded because it bends the component's own semantics. All four modes were rendered side
+   by side against the reference: `sections` puts a `--primary` LEFT RULE on the active row and
+   packs the rows to 31px; `list` adds a divider between every row; `tree` adds chevrons.
+   The reference has none of those — a roomy row, an icon, and a plain fill — and only
+   `categories` renders that. Its registry describes it as a counted category picker at ~30vw,
+   so BOTH the purpose and the width are departures; with three uncounted rows in a 230px rail
+   neither costs anything, and the alternative was hand-building a nav the DS already ships.
+   ⚠️ THE ROUNDED, INSET highlight of the reference is NOT reachable. Every mode paints the
+   active row full-bleed in `--code-tag-background-color`, and that rule lives in the
+   component's shadow root — there is no part, and no radius token. Declared, not faked.
+   ⚠️ NO BORDER HERE. `obs-side-menu` has carried its own `border-right` since 2026-08-06 and
+   the DS is explicit it must stay a flush white panel — wrapping it in a bordered/tinted card
+   is called out in its `dont` list. */
+/* ⚠️ IT MUST FILL `#stMain`, OR THE DIVIDERS STOP MID-PAGE (request, 1 Sep 2026: "the line
+   will be show full", with both rules boxed in red). `#stMain` is a flex COLUMN, so this was
+   `flex:0 0 auto` and took its content height — 520px against 679px of available column, and
+   the rail's right rule and the help card's left rule both ended in mid-air. `flex:1 1 auto`
+   makes it take the remaining height and `align-items:stretch` passes that to both columns,
+   so the two rules run the full panel height as the reference shows.
+   ⚠️ The min-height stays as a floor for a very short viewport. */
+.agcfg{display:flex;align-items:stretch;flex:1 1 auto;min-height:520px;gap:0}
+/* ⚠️ THE NARROW RAIL IS A DS DISTINCTION, NOT A GUESS (request, 1 Sep 2026: "make small
+   sidebar"). `obs-side-menu`'s own sizing contract puts mode `list` at ~15–25% of the
+   viewport (~340px, an explorer rail) and mode `sections` at ~15% (~215–290px, the SETTINGS
+   rail) — and the reference is a settings form. Switching mode is what makes it small; the
+   element is `width:100%`, so this container is the only place the width is set. */
+.agcfgn{flex:0 0 230px;width:230px;min-width:0}
+/* ⚠️ A COLUMN, SO THE FOOTER CAN SIT AT THE BOTTOM (request, 1 Sep 2026: "it will be show in
+   bottom"). The step body used to end wherever its content ended and the footer followed it, so
+   on a short step — Credentials with Advanced closed — the KMS note and Continue floated in the
+   middle of a tall panel. */
+.agcfgm{flex:1;min-width:0;padding:0 0 24px 24px;display:flex;flex-direction:column}
+.agcfgh{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--primary-alt)}
+.agcfgp{margin:0 0 4px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:720px}
+/* a form section — the reference separates each with a hairline and gives it a label,
+   a line of help, then the control.
+   ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (`tokens/structural.json`:
+   @padding-lg 24 · @padding-md 16 · @padding-sm 12 · @padding-xs 8). It opened at 18/22/28px
+   — eyeballed, and off-scale on all three — which the conformance checker scored `layout 38`
+   while every other dimension was 100. Don't nudge these to a round-looking number. */
+/* ⚠️ THE SECTION-PER-FIELD RULES (`.agfs` / `.agfl` / `.agfd` / `.agfc`) WERE DELETED WITH
+   THE FORM THEY STYLED. The reference labels each field on the control itself (obs-input's own
+   `label`/`required`), not with a bold heading + a line of help above it, so nothing carried
+   those classes any more — and a rule that outlives what it supported is the trap this file
+   records at `.agemt`. Grep before restoring them.
+   ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (@padding-lg 24 · @padding-md 16 ·
+   @padding-sm 12 · @padding-xs 8). Eyeballed values scored `layout 38` once already. */
+.agform{max-width:720px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+/* ⚠️ THE BODY FLEXES AND THE FOOTER KEEPS ITS OWN MARGIN — deliberately NOT `margin-top:auto`
+   on the footer. `margin-top:auto` resolves to 0 when there is no free space, so it cannot also
+   carry the minimum gap, and a tall step would end up with the footer jammed against the last
+   control. That is the recorded `.aihelpl` trap. Letting the BODY take the slack keeps the
+   24px in `.agff` a real floor in both cases. */
+.agfbody{flex:1 1 auto;min-height:0}
+.agrow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
+.agrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin-top:16px}
+.agcfgm obs-input{display:block}
+/* the Advanced settings disclosure — a real obs-button, so the one control here stays a DS
+   element; only the chevron's rotation is ours */
+.agadvb{margin-top:16px}
+.agadvb obs-icon{transition:transform .15s ease}
+.agadvb.on obs-icon{transform:rotate(180deg)}
+.agadv{margin-top:12px;padding:16px;border:1px solid var(--border-color);
+  border-radius:var(--btn-radius);background:var(--neutral-lightest)}
+/* the test panel — a bordered block, not a DS component: `search_components` returns no card
+   or accordion, and `list_gaps` declares only charts/topology/widget-grid, so this is LAYOUT
+   around real `obs-*` controls rather than an undeclared fabricated component */
+.agtest{margin-top:24px;padding:16px;border:1px solid var(--border-color);
+  border-radius:var(--btn-radius);background:var(--common-widget-bg)}
+.agth{display:flex;align-items:center;gap:8px}
+.agth .t{font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agth obs-icon{color:var(--neutral-light)}
+.agth obs-button{margin-left:auto}
+.agtn{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:12.5px;
+  line-height:1.5;color:var(--text-color-common-secondary)}
+.agtn obs-icon{flex:0 0 auto;margin-top:1px;color:var(--neutral-light)}
+.agtn.ok{color:var(--secondary-green)}
+.agtn.ok obs-icon{color:var(--secondary-green)}
+
+/* ── the flow's remaining steps ───────────────────────────────────────────────────────────
+   Model selection · Data consent · Done, from the reference prototype's own wizard. All
+   spacing on the DS structural scale (@padding-lg 24 · @padding-md 16 · @padding-sm 12 ·
+   @padding-xs 8) — eyeballed values have scored `layout 38` here once already. */
+.agflow{margin-bottom:24px}
+.agsub{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular);margin:0 0 12px}
+.agpanel{padding:16px;border:1px solid var(--border-color);border-radius:var(--btn-radius);
+  background:var(--common-widget-bg)}
+.agpanel + .agpanel{margin-top:16px}
+.agph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.agpt{font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agpd{font-size:12px;line-height:1.4;color:var(--text-color-common-secondary);margin-top:4px}
+.agphl{display:flex;align-items:flex-start;gap:12px}
+.agphl obs-icon{flex:0 0 auto;margin-top:1px;color:var(--chart-indigo)}
+/* per-task routing rows */
+.agrt{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;
+  border-bottom:1px solid var(--border-color)}
+.agrt:last-child{border-bottom:0}
+.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--page-text-color)}
+.agrt .n obs-icon{color:var(--neutral-light)}
+.agrt obs-select{width:200px;flex:0 0 200px}
+.agrtw{margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px}
+/* consent */
+.agchips{display:flex;flex-wrap:wrap;gap:8px}
+.agcons{display:flex;flex-direction:column;gap:12px}
+/* the live connection test's stage list */
+.agstg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;
+  color:var(--text-color-common-secondary)}
+.agstg.done{color:var(--page-text-color)}
+.agstg obs-icon{flex:0 0 auto;color:var(--secondary-green)}
+.agstg .p{flex:0 0 14px;width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--border-color)}
+/* done */
+.agdone{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 0}
+.agdmk{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px;
+  color:var(--secondary-green);background:var(--severity-clear-lighter)}
+.agdt{margin:0 0 8px;font-size:19px;font-weight:600;color:var(--primary-alt)}
+.agdp{margin:0 0 24px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:420px}
+.agsum{width:min(440px,100%);text-align:left}
+
+/* ── usage & health, on a configured provider ─────────────────────────────────────────────
+   Reference re-supplied 1 Sep 2026: four figure tiles over three trend cards, both as grids
+   that reflow. ⚠️ IT WAS BRIEFLY AN `obs-table` AND THAT WAS A MISREAD OF "grid" — "grid view"
+   here means THIS: a grid of cards. The table version is gone; don't rebuild it.
+   ⚠️ THIS IS THE SCREEN'S ONE DECLARED `list_gaps` GAP. `list_gaps` names charts and stat tiles
+   as things the DS does not ship, and `search_components` returns no card component — so the
+   tiles and chart frames are LAYOUT, and the three SVGs are the archetype gap itself. They
+   carry `class="agchart"` so the conformance checker resolves them as `chart` and
+   `--declare chart` (`_verify/ds-gaps.json`) covers them; unclassed they fall back to a generic
+   `graphic` that no declaration matches, and the run fails on a gap that WAS declared.
+   ⚠️ SERIES COLOURS ARE TOKENS, never `--primary`. A chart in the brand navy would say
+   "primary action" in a shape you cannot press.
+   ⚠️ Spacing on the DS structural scale (@padding-lg 24 · @padding-md 16 · @padding-sm 12). */
+/* ── usage & health: a GRID that expands to the widget ────────────────────────────────────
+   Annotation, 1 Sep 2026: "convert in grid with expand and collapes" — and earlier, "my idea
+   is to show the grid view and i expand and collapse to show widget". So the grid is the
+   resting state and the chart is what a row opens.
+   ⚠️ IT IS `obs-table expandable` — A DS CAPABILITY, NOT A HAND-BUILT ACCORDION. Neither the
+   component registry nor `search_components` mentions it; it was read out of the shipped
+   element (v0.1.166): `expandable` renders an `exp-col` chevron per row, and an opened row
+   becomes `<tr class="row-detail">` whose cell is filled from
+   `innerHTML: row.detail || "No detail"`, spanning every column. The element also carries an
+   undocumented `sparkline` cell type (an 80×18 polyline). Both are worth reporting upstream.
+   ⚠️ THE DETAIL RENDERS INSIDE THE COMPONENT'S SHADOW ROOT, so this stylesheet CANNOT reach
+   it — the old `.agcht` / `.agchh` rules would not have applied in there. The detail markup is
+   styled INLINE with `var(--token)` values, which DO inherit across the boundary. That is the
+   one place on this screen where inline styles are correct; do not "tidy" them into classes.
+   ⚠️ THE SEVEN-CELL RULED FRAME IS GONE, and its rules with it — `.aggrid`, `.agkpi`, `.agkl`,
+   `.agkv`, `.agcht`, `.agchh` no longer have anything carrying them. A rule outliving what it
+   supported is the trap this file records at `.agemt`. */
+.agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular);margin:24px 0 12px}
+.agpage obs-table{display:block;margin-top:4px}
+
+
+
+.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:16px;
+  border-top:1px solid var(--border-color)}
+.agff .sp{margin-right:auto}
+
+/* ── the help card ────────────────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026 (the product's "RUM Instrumentation Help Card"): a right-hand
+   column with an accent-barred title and collapsible sections, the first open.
+   ⚠️ IT IS A COMPOSITION, NOT A DS COMPONENT. `search_components` returns no accordion, card
+   or collapse, and no recipe covers it — so this is layout plus a raw `<button>` per section
+   header. The conformance checker treats a raw control as an ADVISORY, not a breach, for
+   exactly this reason ("raw is expected when composing an unshipped organism"); it is not a
+   fabricated look-alike of something the DS ships.
+   ⚠️ THE COLUMN HIDES BELOW 1400px rather than squeezing the form. Rail 230 + form 720 + help
+   380 + gaps needs the room; under that the form is what matters.
+   ⚠️ Spacing on the DS structural scale (@padding-lg 24 · @padding-md 16 · @padding-sm 12). */
+/* ⚠️ A FULL-HEIGHT RULE ON ITS LEFT EDGE (request, 1 Sep 2026: "add line like…", with the
+   product's "Supported Framework" panel as the reference). The column floated against the form
+   with nothing dividing them; the product separates that panel with a vertical rule running the
+   whole height, which is the same job `obs-side-menu` does for the rail on the other side.
+   ⚠️ `.agcfg` is already `align-items:stretch`, so the column takes the row's height — but the
+   ROW is only as tall as its tallest child, so on a short step the rule stopped early. The
+   container carries a min-height and the columns stretch into it, which is what makes the line
+   run the full panel height as the reference shows. */
+.aghelp{flex:0 0 380px;width:380px;min-width:0;padding:0 0 24px 24px;
+  border-left:1px solid var(--border-color)}
+@media (max-width:1400px){ .aghelp{display:none} }
+.agcfg.nohelp .aghelp{display:none}
+.aghct{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+/* the reference leads the title with a short accent bar */
+.aghct .bar{flex:0 0 3px;width:3px;height:18px;border-radius:2px;background:var(--primary)}
+.aghct .t{font-size:14px;font-weight:600;color:var(--primary-alt)}
+.aghs{border:1px solid var(--border-color);border-radius:var(--btn-radius);
+  background:var(--common-widget-bg);margin-bottom:12px;overflow:hidden}
+.aghch{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+  padding:12px 16px;background:transparent;border:0;cursor:pointer;text-align:left;
+  font-family:inherit;font-size:12.5px;font-weight:600;line-height:1.3;color:var(--primary-alt)}
+.aghch:hover{background:var(--nav-hover-bg)}
+.aghch obs-icon{flex:0 0 auto;color:var(--neutral-light);transition:transform .15s ease}
+.aghs.on .aghch obs-icon{transform:rotate(180deg)}
+.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.6;
+  color:var(--text-color-common-secondary)}
+/* ⚠️ 16px, NOT the 18px this opened at — @padding-md on the DS structural scale. The
+   conformance checker caught it as the screen's one off-scale value (layout 98). */
+.aghcb ul{margin:0;padding-left:16px}
+.aghcb li{margin-bottom:8px}
+.aghcb li:last-child{margin-bottom:0}
+.aghcb b{color:var(--primary-alt);font-weight:600}
+
+
+

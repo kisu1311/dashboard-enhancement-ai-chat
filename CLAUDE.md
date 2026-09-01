@@ -55,11 +55,16 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-Three pages are in the switcher, labelled **Option 1 / 2 / 3**. All three now carry the
-shared **`ac*` chat panel** on top of their own AI, **all three carry the `lx*` Log
-Explorer module and the `st*` Settings module** (My Account › My Profile, cloned from live
-8.2.7 — see below), and all three are verified responsive at the seven target resolutions —
-see those sections below.
+Four pages are in the switcher, labelled **Option 1 / 2 / 3 / 4**. All of them carry the
+shared **`ac*` chat panel** on top of their own AI, **the `lx*` Log Explorer module and the
+`st*` Settings module** (My Account › My Profile, cloned from live 8.2.7 — see below), and
+all are verified responsive at the seven target resolutions — see those sections below.
+
+⚠️ **Option 4 is a COPY of Option 1 with a different sidebar** (1 Sep 2026), so almost every
+section below that says "Option 1" is true of it as well — the `ai*` Iris panel, the Log
+Explorer's AI Query and Pattern Summary, the Manage-dashboards screen, the Layout drawer,
+the Create/Edit Widget editor, the keyboard registry. **A change meant for both has to be
+made twice**, and that is the same cost the other options already carry.
 
 - **`index copy.html` — Option 1 · Sidebar & Header Actions.** The chrome study, and now
   the most heavily iterated page. Datadog-style module rail (see below), the full
@@ -82,6 +87,10 @@ see those sections below.
   shared **`ac*` chat panel**. ⚠️ This is the layout most squeezed by its own chrome: a
   224px named column *and* a **290px inline** dashboard list, so it is the page to check
   first after any width change.
+- **`dashboard-labelled-rail.html` — Option 4 · Labelled Rail & Detail Panel.** Option 1's
+  whole page with monday.com's side navigation in place of its rail: every entry carries its
+  label under its icon, the rail never changes width and never flies out, and one `»/«` above
+  the list opens a **docked** detail panel. See *"Option 4 — the labelled rail"* below.
 - `_ai-source/` — `ai-chat-option2.html` and `dashboard-ai-insights.html`, the two
   original AI prototypes the panel was ported from. **The only copies that exist**
   (their old `AI_Chat_Interface/` folder is gone). Kept out of the folder root so
@@ -383,13 +392,21 @@ put a colour in the file no token owns — the send-button rule):
 > ⚠️ **19 categories now, not 18** — `Agentic AI` was added 31 Aug 2026 and is the one that is
 > NOT on the instance. See *The 31 Aug 2026 pass*.
 
+⚠️ **IN OPTION 1 THIS BLOCK NO LONGER LIVES IN THE PAGE** (1 Sep 2026) — its CSS is
+`_settings-module.css` and its markup + all three script blocks are `_settings-module.js`.
+Everything below still describes it exactly; only its address changed. See *"The Settings
+module lives in its own files now"* above for the load-order contract. Options 2, 3 and 4
+still carry it inline, so **the block is no longer byte-identical across the four files**.
+
 Until 19 Aug 2026 the rail's **Settings** entry landed on the generic `#view-module`
 placeholder. It is **a real module screen now**, read off live build 8.2.7 at
 `/settings/my-account/my-profile` in the browser — the DOM, the computed styles, the Vue
 component's own render template and vee-validate rules (pulled out of `__vue__`), and every
 state driven by hand — then rebuilt, not invented. Like the `lx*` module it is **one CSS
 block + one `<section id="view-settings">` + one `<script>` block, byte-identical in all
-three files** (md5-checked), so a change is a three-file change. Namespace `st` — `.st*`,
+three files** (md5-checked), so a change is a three-file change. ⚠️ **NOT ANY MORE IN
+OPTION 1** — since 1 Sep 2026 those three pieces are `_settings-module.css` and
+`_settings-module.js`; the other three options still hold them inline. Namespace `st` — `.st*`,
 `st*()`, `ST_*`; it borrows only `toast()`, `showView()`, `selectModuleByName()`,
 `closePops()` from the host. The build is scripted — the generator that assembles the blocks
 from the harvested JSON (`_verify/_out/live-settings-nav.json`, `live-settings-subs.json`,
@@ -460,6 +477,124 @@ it sets the category/page, expands it, clears the search, then routes through
   identity, search, toggle, stub, panel, flyout act, geometry) lived in the session, not
   the repo. `lxbehave` 57/57 · `behave` 63/63 · `harness` 77/77 still pass with it in.
 
+## The Settings module lives in its own files now (`_settings-module.*`, 1 Sep 2026)
+
+Request: *"inside the setting module related all code will be copy and create setting module
+file and all setting code move in new file"*. **Option 1 only** — `index copy.html` went
+**2,024,257 → 1,700,157 bytes** (26,925 → 23,814 lines) and the module moved out whole:
+
+| file | what left `index copy.html` |
+|---|---|
+| **`_settings-module.css`** | the `st*` + `stc*` CSS (was lines 6784–7150) and the `ag*` CSS with its scoped DS token block (was 7294–8295) — 1,369 lines of that file's single `<style>` |
+| **`_settings-module.js`** | the `<section id="view-settings">` chrome (was 8576–8598) and the three `<script>` blocks — `st*` (My Profile), `stc*` (Compliance Settings), `ag*` (Agentic AI) — 1,744 lines |
+
+The page loads them with `<link rel="stylesheet" href="_settings-module.css">` immediately
+after its inline stylesheet, and `<script src="_settings-module.js"></script>` immediately
+after the design-system bundle. **Nothing about the module's behaviour changed** — see
+*"Proving it did not change"* below.
+
+### The load-order contract, and why each half of it exists
+
+- ⚠️ **A PLAIN, PARSER-BLOCKING `<script src>` — no `defer`, no `async`, NOT `type=module`.**
+  All three blocks were classic inline scripts; their top-level `const` / `let` / `function`
+  declarations land in the same global scope from an external classic script, which is the
+  only reason the host page's four runtime references still resolve. A module script would
+  put every one of them in module scope and the rail's Settings entry would throw on the
+  first click.
+- ⚠️ **IT MUST LOAD AFTER `_ds/observeops-elements.umd.js`.** The `ag*` screen is built out of
+  real `obs-*` custom elements. That tag already sat between the `stc*` and `ag*` blocks; it
+  stays in the page, directly above the new one.
+- ⚠️ **THE FOUR RUNTIME REFERENCES FROM OUTSIDE ARE THE WHOLE CONTRACT**, and all four are
+  lazy — which is what makes the move safe. They were enumerated before touching anything:
+  `stInit()` (from `selectModule`), `stOpen()` (markup `onclick`s in the flyout, the docked
+  panel and the profile popover), **`ST_TREE`** (the two-pane flyout, derived on first hover
+  and cached) and **`ST_ICO`** (read through the `layPIc` function). Every other `st*` /
+  `stc*` / `ag*` mention anywhere else in that file is prose inside a comment — checked with
+  a scan that excluded the six moved regions.
+- ⚠️ **THE `<link>` GOES AFTER THE INLINE `<style>`, NOT BEFORE IT.** This file is one flat
+  stylesheet where source order decides every tie at equal specificity.
+- ⚠️ **ONE CASCADE CHANGE WAS ACCEPTED KNOWINGLY.** The `st*`/`stc*` half used to sit *before*
+  the "ObserveOps DESIGN SYSTEM LAYER" block (the Dashboard-layout drawer) and now sits after
+  it. Checked first: that block is scoped entirely to `#drawer-layout` (id specificity) and
+  the moved CSS's only non-`.st*`/`.stc*` selector is `#view-settings`, so they cannot collide.
+
+### The markup is injected, not authored
+
+`_settings-module.js` inserts the section **before `#view-manage`**, which is exactly where it
+was authored, rather than appending it to `.main`. Nothing keys off sibling order today, but
+`.view` sections are toggled by a class and a stack of them in the wrong order is the kind of
+thing that surfaces later, on a z-index question. The injection runs at parse time of the
+file, long before any click can reach it, and is guarded on `.main` existing.
+
+### ⚠️ A `</style>` INSIDE A CSS COMMENT ENDS THE STYLESHEET
+
+The pointer comment left behind in the page said *"loaded by a `<link>` immediately after
+`</style>`"* — and the HTML parser leaves "in style" mode on those literal characters **even
+inside a `/* */` CSS comment**. The stylesheet ended there, and the remaining ~1,500 lines of
+CSS rendered as text down the page. It looked like a catastrophic extraction bug and was one
+character class. The comment now says "this block's closing tag" and explains why it must
+never spell it out. Same shape as the `</scr`+`ipt>` trap the root `CLAUDE.md` records for
+scripted `sed` inserts — and the tell was there before the screenshot: a substring count of
+`</style>` returned **2** while the line-start count returned 1.
+
+### ⚠️ Why the CSS is a `.css` file and not a string inside the `.js`
+
+The moved CSS carries **218 backticks** in its comments (`` `--primary` ``, `` `ST_TREE` ``, …).
+In a JS template literal every one needs escaping, and the next person to write a comment gets
+a syntax error from a character they had no reason to think was special. In this repo the
+comments *are* the documentation, so they stay verbatim and the CSS stays a stylesheet. (This
+is the one place the build differs from what was agreed up front, which was a single file.)
+
+### Proving it did not change
+
+- **Byte-identity**: each of the five extracted regions was asserted to appear *verbatim* in
+  the pre-move file, *verbatim* in its new home, and **not at all** in the page afterwards.
+- **A side-by-side fingerprint**: a probe that reads `ST_PAGES`' keys, `ST_TREE`'s 19
+  categories, `ST_ICO`'s 26 icons, `STC_RULES0`'s 95 rules, `STC_BENCH0`'s 17 benchmarks, then
+  opens My Profile · Compliance Policy · Benchmark · Rules · Agentic AI · a stub page and runs
+  the list search — run against the untouched backup and against the extracted page. **Every
+  field matched.**
+- ⚠️ **One suspected regression was NOT one, and only the side-by-side proved it**: the Agentic
+  AI wizard drawer does not open under a synthetic click. The untouched backup behaves
+  identically, so it is the page's existing behaviour, not the move. Absolute assertions would
+  have reported a bug that was not there.
+- `lxbehave` **57/57 ×4** · `behave` **63/63** · `harness … query` **77/77** · the Playwright
+  Agentation spec passes on all four option pages.
+
+### ⚠️ `_verify/` was silently testing a page with no design system — fixed with it
+
+`behave.py`, `shoot.py` (and therefore `harness.py`) and `lxbehave.py` all write their probe
+copy into **`_verify/_out/`**, so every relative asset in the page resolved against that
+folder and 404'd. That was **already true of `_ds/observeops-elements.umd.js` and
+`_variants.js`** before this change — those suites had never loaded the design system — and
+the Settings module would have joined them. None of their own assertions touch any of it, so
+they reported green either way: the "a green probe is not a working feature" trap, in the test
+harness itself.
+
+All four scripts now inject **`<base href="file://<project>/">` immediately after `<head>`**,
+which fixes every relative asset at once. Verified: the probe copy's DOM now contains
+`#view-settings`, `#stNav`, `#stMain` and the `obs-*` elements, where before it contained none
+of them. ⚠️ The `<base>` must sit ahead of anything it is meant to resolve, and a probe copy
+opened over **http** rather than `file://` will now fail to load its assets — that is the tag
+doing its job, not a fault.
+
+### ⚠️ The other three options still carry their own copy
+
+`index.html`, `dashboard-picker-advanced.html` and `dashboard-labelled-rail.html` keep the
+Settings module inline, so the block is **no longer byte-identical across the four files** —
+the property CLAUDE.md has asserted since 19 Aug 2026. Pointing them at these two files is one
+`<link>` and one `<script src>` each, plus deleting their copies, and it would make that
+property true by construction instead of by discipline. It was **not** done here: the request
+named `index copy.html`.
+
+### ⚠️ A concurrent session began editing `_settings-module.js` minutes after it appeared
+
+Its `ag*` block was changed under this session — one icon per provider instead of a shared
+`sparkling-star`, carried on the provider record as `ic` (annotation, 1 Sep 2026: *"it is all
+icon is same make to use different icon"*). That edit was **kept, not reverted**, and the final
+verification above ran against it. Two things follow: the extraction is already being used, and
+`git status` mtimes on these two files are not a reliable signal of who wrote what.
+
 ## Compliance Settings (`stc*`) — the category's three pages, cloned from live 8.2.7, in all three options
 
 Built 20 Aug 2026 from `/settings/compliance-settings/audit-policy` · `benchmark` · `rules`
@@ -468,7 +603,8 @@ same way as the `st*` module: Kendo grid DOM + computed styles, the Vue componen
 templates and option lists (`AuditPolicyList` / `AuditPolicyForm` / `BenchmarkList` /
 `RulesList` / `RulesFom` out of `__vue__`), every drawer and picker driven by hand, and the
 two `(i)` help panes' full text. **One CSS block + one `<script>`, byte-identical in the
-three files** (md5-checked), registered into the `st*` module via `ST_PAGES` — there is no
+three files** (md5-checked) — ⚠️ **in Option 1 both are in `_settings-module.*` now** —
+registered into the `st*` module via `ST_PAGES` — there is no
 new markup section; `#stMain` hosts everything. Namespace `stc*` / `STC_*`; borrows
 `stEsc` / `stA` / `stFullOpen` / `stFullClose` / `stMainPaint` / `toast` and the `st`
 block's `.stin` / `.stbtn` / `.stspin` / `.stex` atoms. The generator + harvested JSON
@@ -2985,6 +3121,117 @@ Things it needs to work at all:
 Suites at the end of the session: click walk **39/39 ×3** · state probe **42/42 ×3** ·
 pin placement **9/9** · `lxbehave` 57/57 ×3 · `behave` 63/63 · `harness` 77/77.
 
+## The 1 Sep 2026 pass — Agentic AI cleared and rebuilt from the reference
+
+The Agentic AI screen was **deleted on request** ("clear all screen, today i want to create
+new") and rebuilt from scratch, one supplied reference at a time, on the real `obs-*`
+elements. ⚠️ Where this section conflicts with *"The 31 Aug 2026 pass"*, this one is current.
+
+⚠️ **IT IS IN FOUR PLACES NOW, IN TWO SHAPES.** Option 1 reads it from `_settings-module.js`
+/ `.css`; Options 2, 3 and 4 still carry it inline. Every change below had to be made two or
+three times. **Option 4 was copied mid-session and is BEHIND** — it has `.aggrid` and the
+wizard but not the help card, the per-provider icons, the usage `obs-table`, `agSeed` or the
+three-provider rows.
+
+### What the screen is
+
+| part | built from |
+|---|---|
+| header | `obs-page-header` — `heading`, the `title` slot for the status tag, the `before` slot for the mark, and the description as a sibling `<p>` carrying an inline doc link |
+| toolbar | `obs-toolbar` — search in `start`, one primary **Configure AI provider** |
+| Usage & health | `obs-table` listing **all three providers**; the connected one carries the figures, the others an em dash. **`expandable`** opens the row: three trend widgets in one 3-track grid for the connected one, an explanation for the others |
+| Configure | `stFullOpen` full page — `obs-side-menu mode="categories"` rail of the three providers, the flow in the middle, a **Help Card** column on the right |
+| the flow | `obs-steps` (Credentials · Model selection · Data consent) → the reference's four staged connection tests → model radio + per-task routing over the seven AI tasks → four consent terms → a summary |
+
+### Undocumented `obs-*` capabilities found by reading the bundle
+
+Neither is in the component registry or `search_components`; both are worth reporting upstream.
+
+- ⚠️ **`obs-table` has `expandable`** — it renders an `exp-col` chevron per row, and an opened
+  row becomes `<tr class="row-detail">` whose cell is filled from
+  `innerHTML: row.detail || "No detail"`, spanning every column. **This is what the usage grid
+  is built on.** A row with no `detail` opens onto that literal fallback, so every row needs one.
+- ⚠️ **`obs-table` has a `sparkline` cell type** (an 80×18 polyline from a row array). Unused
+  so far, but it is the way to put a mini-trend in a row.
+
+### ⚠️ `obs-button` fires a consumer's `onclick` TWICE — the session's worst defect
+
+A pointer click targets the component's inner `<button>` in its shadow root; that event is
+`composed`, so it crosses the boundary and runs the host's `onclick` — and the component
+**also** re-emits on the host. Measured: `inner.click()` → 2, `host.click()` → 1.
+
+It is invisible while every handler is idempotent, which is how it survived several green
+probe runs. The first non-idempotent handler exposed it instantly: **Advanced settings is a
+toggle, so it flipped twice and the panel never opened — a dead control every automated check
+called working.** Every `obs-button` `onclick` in the `ag*` block goes through **`agTap`**, a
+same-handler/60ms guard. `onchange` is unaffected (checkbox / switch / radio / select each
+fire once — measured).
+
+⚠️ **Any automated check of an `obs-button` must click `el.shadowRoot.querySelector('button')`,
+not the host**, or it tests something a user never does.
+
+### Other shipped-element limits hit here
+
+- **`obs-input` cannot show an icon in the field at all** — neither `prefix-icon`/`suffix-icon`
+  nor the `prefix`/`suffix` slots (its shadow root contains **no `<slot>` of any name**). So the
+  toolbar search has no magnifier and the API key has no eye toggle. Recorded in `_ds/README.md`.
+- **`obs-radio` takes only `{value,label}` and escapes the label**, so the model cards fold
+  their note and context window into the label text.
+- **`obs-page-header` exposes no `::part`** and no size hook — its title is fixed at 16px/500.
+  `--page-header-padding` is the only lever, and it sets all four sides.
+- **`obs-steps` exposes no `::part`** either.
+- **`no-divider` makes the header's rule TRANSPARENT, not zero-width** — assert on the painted
+  colour, not `borderBottomWidth`.
+
+### Token collisions — check a token against the surface it lands on
+
+Two of these bit in one session, both invisible in one theme only:
+
+- ⚠️ **`--code-tag-background-color` (a selected side-menu row) and `--nav-hover-bg` are the
+  SAME `#ecf1f9` in LIGHT.** `sections` mode hides it with a `--primary` left rule; `categories`
+  mode has none, so a hovered row was indistinguishable from the selected one. Fixed by pointing
+  the active token at `--neutral-lighter` **in the light block only** — in dark the two already
+  differ, and `--neutral-lighter` would create the identical collision there.
+- ⚠️ **`--common-widget-bg` and `--neutral-lightest` are the SAME `#172336` in DARK.** A widget
+  card on the table's detail band had no surface at all. `--page-background-color` differs from
+  the band in both themes.
+
+### The detail row is inside the shadow root
+
+Anything `obs-table` inner-HTMLs into `tr.row-detail` is in **its** shadow tree, so the page
+stylesheet cannot reach it. That markup is styled **inline** with `var(--token)` values, which
+*do* inherit across the boundary — the one place inline styles are correct on this screen. The
+charts carry their height inline for the same reason; without it they stretched unbounded.
+
+### `_verify/dsconf.py` — and the scores it invalidated
+
+A new harness that isolates `#agPage` and runs the DS conformance checker
+(`@mtdt/observeops-ds-spec`) over it, with `_verify/ds-gaps.json` declaring the chart gap.
+
+⚠️ **Every score it printed before it was fixed was measuring a page where no `obs-*` element
+had loaded.** It wrote its copy into `_verify/_out/`, so `_ds/observeops-elements.umd.js` (and
+later `_settings-module.*`) 404'd — `obs-table defined: false`. It still reported **100/100**,
+because the checker counts `obs-*` *tags* as DS components and finds few off-token colours on
+a page that barely paints. **The same bug was in `behave.py`, `shoot.py`, `harness.py` and
+`lxbehave.py`**, found independently the same day. They inject a `<base>`; `dsconf.py` instead
+builds beside the source as `_dsconf-*.html` and deletes it afterwards — two fixes, one cause.
+
+Current real scores: **Overview 100/100 · Configure 89/100** (component 42–63, from the Help
+Card's raw disclosure buttons — the DS ships no accordion; 52 registered elements, checked).
+
+### Conventions this screen now follows
+
+- The DS ships **no provider logo** — `resolve_logo('openai')` answers *"Do NOT hand-draw a
+  brand mark"*. The rail's per-provider icons (`eye` / `book-open` / `thunder-bolt`) are read
+  from each provider's own tagline and live on the record as `ic`.
+- **Charts are the one declared `list_gaps` gap** and carry `class="agchart"`, which is
+  load-bearing: the checker derives the archetype from the class, and unclassed they fall back
+  to a generic `graphic` that `--declare chart` does not cover.
+- **Series colours are tokens, never `--primary`** — a chart in the brand navy would say
+  "primary action" in a shape you cannot press.
+- Spacing is on the DS structural scale (`@padding-lg` 24 · `@padding-md` 16 · `@padding-sm` 12
+  · `@padding-xs` 8). Eyeballed values scored `layout 38` once.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·
@@ -3000,6 +3247,7 @@ Each option pays a different fixed cost before the canvas gets any width:
 | Option 1 | **64px** | its `.dpanel` list is `position:absolute`, so it costs nothing |
 | Option 2 | 56px, or **278px** with the module panel open | the page ships `<body class="mpshut">`, so `.mpanel` starts collapsed; opening it adds 222px |
 | Option 3 | 58px by default, **514px** fully expanded | ships `<body class="dvshut">` *and* `#dpanel.hid` (annotation, 13 Aug 2026) — it paid the most chrome of the three, so both side panels start collapsed. Expanded it is a 224px named column + a **290px INLINE** `.dpanel` |
+| Option 4 | **72px**, or **412px** with the detail panel open | the rail is a fixed 72px that never expands; `.dpanel` is DOCKED here rather than absolute, so opening it costs a real 340px. Verified at 1280×720 with the rail, the docked list AND the `ac*` chat all open: 524px of canvas, above the harness's own 430px floor, so it needs no `body.acopen` rule of its own |
 
 ⚠️ Option 3's collapsed defaults interact with the rules below, and both had to be fixed:
 - `body.dvshut{--rail-w:58px}` sits at the top of the file and the responsive
@@ -3067,7 +3315,10 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   `ALL \d+ PASS|\d+ of \d+ FAILED` — the first match is the template inside the inlined
   script source, not the rendered verdict.
 - **`lxbehave.py`** — the same idea for the **Log Explorer module**: drives every `lx*`
-  entry point in all three files and prints the verdict **as text on stdout**. **57 checks**,
+  entry point and prints the verdict **as text on stdout**. ⚠️ It is the one script with a
+  **hardcoded `FILES` list** (line 18) rather than a `sys.argv` file — a new page has to be
+  added to it or the script silently tests the old set and reports green. Option 4 was added
+  on 1 Sep 2026, so it now runs **four** files. **57 checks**,
   and all three files run all 57 — Option 1 skipped 5 of them while its log-sources panel was
   deleted, and the panel is back. Run it after any `lx*` change.
   ⚠️ **Two of its assertions were rewritten on 21 Aug 2026** because they encoded the OLD
@@ -3124,8 +3375,8 @@ and a scope bar (`OA_SCOPES` / `oaScopeBar`). `OA_ENTRY` maps *where it was open
 
 ## Each option now demonstrates a DIFFERENT sidebar pattern
 
-The three options are deliberately no longer the same sidebar. Each is modelled on
-a real product, studied live in the browser, but all three read the **same
+The options are deliberately no longer the same sidebar. Each is modelled on
+a real product, studied live in the browser, but all of them read the **same
 `RAIL` / `SUBNAV` data**, so the information architecture stays the docs-grounded
 one and only the presentation differs.
 
@@ -3134,6 +3385,7 @@ one and only the presentation differs.
 | 1 | icon rail + hover mega-menu flyout | Datadog |
 | 2 | icon rail + **always-docked panel** that swaps per module | ClickUp |
 | 3 | icon rail + hover mega-menu flyout — **Option 1's, since 23 Aug 2026** | Datadog |
+| 4 | **labelled** icon rail + a detail panel **you open** | monday.com |
 
 ⚠️ **OPTION 3 NO LONGER DEMONSTRATES THE DEVREV COLUMN** (request, 23 Aug 2026: *"copy
 Option 1's sidebar and set it in Option 3"*). It runs Option 1's icon rail + flyout. The
@@ -3159,6 +3411,171 @@ the file, and the whole swap is four things:
   16-assertion sidebar probe (rail renders, DevRev column hidden but still in the DOM,
   64→170 hover expand, flyout anchored off the token, Health's menu built from
   `HEALTH_TABS`).
+
+## Option 4 — the labelled rail (`dashboard-labelled-rail.html`, 1 Sep 2026)
+
+Built from **monday.com's side navigation**, driven in the browser at
+`blue-falcon-cast.monday.com/boards/5030774530` and measured off its DOM — not copied from a
+screenshot. The page is **Option 1 (`index copy.html`) verbatim** apart from the sidebar and
+the panel it drives; "the side details is option 1 reference" was the request, so the
+dashboard list panel, the AI panel, Log Explorer, Settings and the rest are unchanged.
+
+Everything lives in three places, all clearly marked:
+- one **CSS block at the very end of the sheet** (`OPTION 4 — THE LABELLED ICON RAIL`);
+- the **`<aside class="sidebar grouped mrail">`** markup plus `#mrMoreM` and `#mrNav`;
+- one **`<script>` block** (`mr*` / `MR_*` / `.mr*`, grepped free before it was named).
+
+### What was measured off the live rail
+
+rail **72px** · item **58×64**, padding `6px 0`, gap `4px` · icon tile **32×32 radius 8** ·
+glyph **18px** · label **11px/16px weight 400** · resting ink `#676879` · hover tile
+`rgba(103,104,121,.1)` · active tile `#CCE5FF` with `#323338` ink · divider **40×1**
+`#D0D4E4`, margin `12px 0 4px` · badge pill at the tile's top-right · panel **279px**, 1px
+`#E7E9EF`, top-left radius 16px · `»/«` a **32×32** button, 1px `#C3C6D4`, radius 8, in its
+own slot above the list.
+
+⚠️ **NONE OF THOSE HEXES IS IN THE FILE.** What is copied is the geometry and the *roles*;
+the paint comes from this prototype's own tokens (`--sidebar`, `--hover-side`, `--pill`,
+`--text-dim`, `--border`), so Option 4 themes with everything else. Same rule the AI panel's
+send button records.
+
+### The three things that make it a different answer, not a reskin
+
+- **The rail is self-describing.** Every entry carries its label under its icon, so nothing
+  has to be hovered to be read, and the rail never changes width.
+- **The active mark is on the ICON TILE** — a 32px rounded square — not on the row and not
+  as a left accent bar.
+- **One control opens the detail panel.** Option 2's panel is always there; Option 1 has no
+  panel at all, only a flyout.
+
+### The model: one preference, two surfaces
+
+⚠️ **IT STARTS OPEN** (request, 1 Sep 2026: *"the sidebar is not show sub module — the
+reference is option 1 but the ui is same as monday.com"*). It shipped `want:false`, copied
+from `.dpanel hid` — Option 1's own default — and that was the wrong thing to copy. Option 1
+does not NEED a panel to show a module's sub-navigation: it hangs a mega-menu flyout off every
+rail row, so Explorer's eleven sub-modules are one hover away. **This option stood that flyout
+down** (it is not monday's UI), which makes the docked panel the ONLY place sub-modules exist —
+and starting it closed meant a cold load showed six rail icons and no way to learn anything sat
+under them.
+⚠️ **The two halves of that request pull in opposite directions and both are honoured**: the
+CONTENT is Option 1's (`SUBNAV` + `SUBNAV2`, the same arrays its flyout renders), the
+PRESENTATION is monday's (a docked panel, not a hover mega-menu). Restoring the flyout would
+have satisfied *"reference is option 1"* and broken *"the ui is same as monday.com"*.
+⚠️ Defaulting open only fixes the COLD START — it is still a preference, not a lock: `»/«`
+closes it and the choice then survives moving between modules.
+⚠️ **This is what the responsive numbers are now measured against.** `harness.py … query` runs
+all seven resolutions with the rail, the docked panel AND the `ac*` chat open, and still passes
+**77/77** — at 1280×720 that is 72 + 340 + 344 of chrome. Verified after the change, not before.
+
+`MR.want` is "do I want the detail panel", and it **survives moving between modules** — which
+is what monday's `»/«` actually does. What it drives depends on where you are:
+
+| where | what opens | width |
+|---|---|---|
+| Dashboards | **`.dpanel`**, Option 1's own list panel, docked | `--mr-pan` |
+| anywhere else | **`#mrNav`**, that module's `SUBNAV` (+ `SUBNAV2`) | `--mr-pan` |
+
+- ⚠️ **`mrApply()` IS THE ONLY THING THAT MOVES EITHER PANEL**, so the two can never disagree
+  about the preference. It is idempotent and everything that changes where you are calls it:
+  `selectModule`, `showView` and `toggleDPanel` are **wrapped, not re-implemented** (all three
+  are `function` declarations, so wrapping the binding catches every caller — the rail, the
+  flyout's `mfGo`, the AI panel and the Settings module included).
+- ⚠️ It goes through **`toggleDPanel()`** rather than the class, because that also flips
+  `#dpanelBtn`'s chevron and rewrites its tooltip. A list panel whose own control lies about
+  its state is worse than one with no control.
+- ⚠️ **`#mrNav` is where the flyout's navigation went.** With the hover mega-menu stood down
+  a module's sub-pages would otherwise be unreachable — that is the trap in copying a rail
+  without copying the panel beside it. It renders the same `SUBNAV` data the flyout did, with
+  the same `mfGo` handler and the same `mfDocs()` footer, so it cannot invent a route.
+- ⚠️ **`.mrr:has(.mfic)` weights a sub-module above its children** — the same rule, keyed the
+  same way, as `.mfi:has(.mfic)` in the flyout. Keying off the ICON rather than off
+  `:not(.sub)` is deliberate: every row in every other module's panel is a `.mrr` that is not
+  `.sub`, so `:not(.sub)` would re-weight Dashboard's, Alert's and Setting's lists too. That
+  is the 23 Aug 2026 Explorer lesson, in a second place.
+
+### Four functions are stood down, not deleted
+
+`mfOpen`, `mfOpenUtil`, `mfLater` and `sbHover` are reassigned to a no-op in the `mr` block.
+All four are `function` declarations in an earlier block, so reassigning the binding is
+enough — and it leaves every call site working untouched: `railRowHTML` still writes
+`onmouseenter="mfOpen(i,this)"` on every row it builds, and there are **three** such builders
+plus the pinned bands. Picking those attributes out would fork three render functions to say
+what one line says here. `toggleSidebar()` is unreferenced for the same reason — the rail no
+longer expands, so the brand mark is a mark and not a control.
+⚠️ **`mfHide` is deliberately NOT in the list** — `mfGo()` calls it on every navigation and
+`#mflyout` is still in the document.
+
+### The tail: Favorites · Notification · More
+
+monday's rail ends in an overflow, and that is the point of it: the rail is a fixed list of
+what you reach constantly and everything else lives one click behind `···`.
+
+- **Favorites** is a real destination, not a copied label — `DASH_FAVS` already exists and
+  the list panel already had a Favorites filter nothing outside the panel could reach.
+  `mrFav()` opens the panel and calls `setDashFilter('fav')`.
+- **More** carries Approval · Health Monitoring · ⎯ · **Customize menu**. That last row is
+  the reference's own final row, and this prototype already has that screen: the Sidebar tab
+  of the Layout drawer governs what is in this rail.
+  ⚠️ **`showView()` does `getElementById('sbApproval'/'sbHealth').classList`** — those ids
+  moved into the menu WITH the rows, or `showView` throws and every navigation dies.
+  ⚠️ `#mrMoreM` is a **`.pop`**, so `closePops()` and the scrim already close it; `closePops`
+  is **wrapped** to put out the More tile's light, because that is the one exit every path
+  goes through.
+- ⚠️ **Notification is deliberately NOT in the overflow** — it carries a live count, and a
+  number nobody can see is not a number. That is one more trailing item than the live rail
+  has, and the only place this build knowingly departs from its shape.
+
+### Stated divergences from the reference
+
+| what | reference | here | why |
+|---|---|---|---|
+| active tile | soft `#CCE5FF` tint | `--pill` fill | the nearest token, `--sel`, is 3 points from `--sidebar` in DARK theme, so the selected tile would vanish. `--pill` is this system's "rail item selected" colour, it inverts, and at 32px it is a *smaller* mark than Option 1's full-width row pill |
+| panel width | 279px | **340px** (`--mr-pan`) | at 279 the inherited list panel squeezed: its filter row is `nowrap` + `overflow-x:auto` on purpose, so the lit chip scrolled out of sight and the panel stopped saying which filter was on. What the reference contributes is that the panel is DOCKED and that ONE control opens it — not a width that squeezes a panel designed around 340 |
+| panel corner | 16px top-left | square | its panel is the top-left-most surface, under a global top bar; ours starts BELOW `.pagehead`, mid-page, where a curve is a notch out of the header. Built, measured in both themes, removed |
+| identity row | none — the avatar is in the top bar | avatar, **unlabelled** | a person's name is the one rail label whose length nobody controls ("Kishan Patel" is 64px against a 62px box). ⚠️ The `.lbl` is HIDDEN, not removed — `stSeed()` reads it to seed the Settings profile form and `refreshUser()` writes back into it |
+| tail | Favorites · More | Favorites · **Notification** · More | see above |
+
+### Things that bit, and would bite again
+
+- ⚠️ **THE LABEL BOX IS WIDER THAN THE ITEM** — 62px against the item's 58, pulled back 2px
+  each side. The item's 58px is the reference's and sets the tile's hit area; the label only
+  has to stay inside the 72px rail. Measured, not guessed: at Inter 11px "Dashboard" is
+  **56.7px** and "Notification" **59.8px**, so at 58px the two longest names in the rail —
+  the ones a reader most needs whole — were the two that ellipsised. "Notifications" is
+  65.6px and is why that row uses the product's own singular.
+- ⚠️ **THE TILE IS PAINTED ON THE GLYPH ITSELF** (`padding:7px` + `box-sizing:content-box`),
+  not on a wrapper. Rail rows are built by three different functions plus four hand-written
+  blocks of markup; doing the tile in CSS is what let every one of them stay untouched.
+  `.iwrap` (the bell) is itself the tile, so the glyph inside it must not be padded twice.
+- ⚠️ **`.shell`'s padding was the literal `64px`, not `var(--rail-w)`.** Repointing the token
+  alone leaves the canvas 8px under the rail.
+- ⚠️ **`--rail-w-open` is pinned to `--rail-w`.** `.sidebar.open` still gets set by stray
+  callers and must be a no-op rather than a 170px jump.
+- ⚠️ **`.dpanel.hid` needs `flex-basis:0` AS WELL AS `width:0`.** `flex:0 0 340px` sets the
+  basis, so animating `width` alone collapses nothing.
+- ⚠️ **`const MR` IS NOT `window.MR`.** A `const` at the top level of a classic script binds
+  in the global *lexical* environment, not on `window` — so a probe driving the page from an
+  iframe must call `w.mrPanelTog()` (a `function` declaration, which *is* a window property)
+  rather than setting `w.MR.want`. This cost one phantom failure.
+- ⚠️ **`ok(name, cond, detail)` EVALUATES ALL ITS ARGUMENTS.** Writing
+  `ok('clickable', !hit(el), hit(el))` clicks the button **twice** and toggles it back —
+  six assertions failed on working code before this was spotted. Call the driver once.
+- ⚠️ **The first click after a navigation is swallowed** on this page under browser
+  automation; it lands once the dashboard has settled (~1.5s). Two "failures" were this.
+- ⚠️ **An automation-driven tab is not focused, so CSS transitions never advance** — a width
+  read after a 340ms wait reported **1px**. Inject `transition:none` before measuring. The
+  recorded gotcha, hit again.
+
+### Verifying it
+
+`lxbehave.py` gained the file to its `FILES` list (**57/57**, and still 57/57 on the other
+three). `behave.py` **63/63**. `harness.py … query` **77/77** across all seven resolutions.
+Plus a browser walk in a real tab — ~40 assertions, every interaction hit-tested with
+`elementFromPoint` and driven with a real bubbling `click`, covering the rail's geometry
+against the measured reference, the panel on both surfaces, the preference surviving a module
+change, the More overflow, Favorites really filtering, and the Sidebar tab's live preview
+(which clones `#sidebar`) surviving the new rail.
 
 ### Option 2 — ClickUp
 `.mpanel` / `renderMPanel()`. Rail drops to **56px, icon-only and permanent** —
@@ -4207,6 +4624,19 @@ Agentation, not the app** — pause it (⏸) to use the UI.
 
 ## Gotchas
 
+- **A `</style>` written inside a CSS COMMENT ends the stylesheet.** The HTML parser leaves
+  "in style" mode on those literal characters even inside `/* */`, so a comment that mentions
+  the closing tag terminates the sheet and every rule after it renders as text down the page.
+  It looks like a catastrophic edit and is one character class. Same shape as the
+  `</scr`+`ipt>` trap the root CLAUDE.md records for scripted `sed` inserts — write "this
+  block's closing tag" instead. ⚠️ **The tell is countable**: a substring count of `</style>`
+  returning 2 while the line-start count returns 1.
+- **Before picking a component's size/variant, read the DS registry's `usageRules.<opt>.dontUse`
+  — not just its `enum`.** `obs-steps` shipped here as `size="small"` on a spacious top-of-form
+  wizard, which its own registry rules out in as many words ("don't use small on a spacious
+  horizontal wizard — the markers look cramped"); `small` is the VERTICAL compliance rail's
+  number. The enum said it was legal, the usage card said it was wrong. `get_component`
+  carries a card for every option — the answer to "which value?" is usually already written.
 - **An inline `on<name>=` attribute only works for events the HTML spec lists as handlers.**
   `onclick`/`onchange`/`oninput` are fine; a CUSTOM event name (`oncellaction`, `onrowaction`,
   a component's `onclose`) is inert markup that silently does nothing. Bind those with

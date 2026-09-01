@@ -175,8 +175,18 @@ d.innerHTML='<b style="font-size:15px;color:'+(bad.length?'#c00':'#070')+'">'+FI
 document.body.appendChild(d);
 """
 
+# ⚠️ THE PROBE COPY LIVES IN `_out/`, SO EVERY RELATIVE ASSET IN THE PAGE WOULD 404 THERE.
+# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 1 Sep 2026) `_settings-module.js`
+# / `_settings-module.css` are all `src="…"` relative to the PROJECT folder. Without this the
+# suite silently tests a page with no design system and no Settings module — and still reports
+# green, because none of its own assertions touch them. One `<base>` fixes all of them at once;
+# it has to sit immediately after `<head>`, before anything it is meant to resolve.
+def _rebase(src, root):
+    return src.replace('<head>', '<head>\n<base href="file://%s/">' % root.replace(' ', '%20'), 1)
+
 def run(fname, out):
     s = open(os.path.join(ROOT, fname)).read()
+    s = _rebase(s, ROOT)
     i = s.rindex('<scr' + 'ipt>'); j = s.index('</scr' + 'ipt>', i)
     s = s[:i] + s[j + 9:]
     probe = ('<scr' + 'ipt>var FILE=' + repr(fname) + ';'

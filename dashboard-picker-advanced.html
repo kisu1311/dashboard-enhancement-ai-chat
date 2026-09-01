@@ -2619,48 +2619,36 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 .stcwzrow .f{flex:1;min-width:0}
 .stcwzrow .stin{margin-top:0}
 @media (max-width:1366px){ .stcsearch{width:260px;flex-basis:260px} .stcsteps{width:260px;flex-basis:260px} }
-/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview + the setup wizard ═════════════
-   Request, 31 Aug 2026: analyse `Motadata Agentic AI (1) (1).html` and rebuild it ON THE
-   OBSERVEOPS DESIGN SYSTEM. The reference is a React prototype drawn in a DIFFERENT token
-   set — its own "Motadata Next-Gen ITOM" system (Inter, ink-on-white ramp, coral brand,
-   blue interactive, PURPLE for AI, radius 4/6/8/12/48). What came across is its INFORMATION
-   ARCHITECTURE and FLOW; every colour, radius, control and variant below is the ObserveOps
-   DS's, read out of its MCP (get_contract / get_component / get_recipe / resolve_token /
-   list_gaps). Sources are cited per block, per the contract's "cite your sources" rule.
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview ════════════════════════════════
+   Rebuilt 1 Sep 2026. The previous build was cleared on request; this is the new screen,
+   growing from a supplied reference one piece at a time. FIRST PIECE: the page header.
 
-   ── SURFACE (authoring-playbook §3) ────────────────────────────────────────────────────
-   Overview is a PAGE (the `module-screen` recipe's content region) — it is the deep-linkable
-   record of the org's AI configuration, not an edit-beside-a-list.
-   ⚠️ THE SETUP FLOW IS A FULL PAGE, NOT THE REFERENCE'S RIGHT DRAWER. `get_recipe`'s
-   `wizard-flow` is "stepper (top or left) -> current step content -> Back/Next footer", and
-   this Settings module ALREADY renders exactly that as a full page for its other multi-step
-   wizard (Compliance › Create Rule, via `stFullOpen`). Two wizards in one module arriving on
-   two different surfaces would read as two features. Declared divergence.
+   ⚠️ IT IS ONE COMPONENT, NOT A COMPOSITION. `obs-page-header` carries every part of the
+   reference itself — `heading` for the title, the `title` SLOT for the status tag, `subtitle`
+   for the description, the DEFAULT slot for the right-hand Docs button, and its own
+   edge-to-edge bottom rule. There is no wrapper markup and no header CSS at all.
+   ⚠️ `no-divider` IS DELIBERATELY *NOT* SET — the reference shows the rule under the whole
+   block, which is the component's default. The previous build had to pass it because the
+   description lived OUTSIDE the component (it carried an inline doc link, and `subtitle`
+   escapes markup), so the divider would have landed between the title and its own text.
+   With the link now a button, the description is the real `subtitle` and the default is right.
 
-   ── TOKENS ─────────────────────────────────────────────────────────────────────────────
-   Same mechanism as `#drawer-layout`: the DS tokens are declared UNDER THEIR OWN NAMES on
-   `#agPage`, then this file's tokens are pointed at them — so every rule below inherits the
-   DS palette without one hardcoded hex, and the mapping stays auditable in one place.
-   ⚠️ IT MUST STAY SCOPED. Every one of these names has a job elsewhere in this file.
-   ─────────────────────────────────────────────────────────────────────────────────────── */
-/* ══ THE DESIGN SYSTEM'S OWN TOKENS, SCOPED ══════════════════════════════════════════════
-   Generated verbatim from `@mtdt/observeops-ds-css` (the DS's `observeops-ds.css`) — 392
-   tokens, both themes. NOT hand-picked and NOT hand-typed: this is the shipped token file.
+   ── the token blocks ────────────────────────────────────────────────────────────────────
+   `@mtdt/observeops-ds-css` v0.1.6, re-emitted SCOPED so the DS palette reaches the `obs-*`
+   elements without leaking onto the dashboard, the Log Explorer or the rest of Settings.
+   ⚠️ THE PACKAGE IS NOT LINKED, AND MUST NOT BE: it declares its LIGHT values on `:root` and
+   dark under `[data-theme='dark-theme']` — this prototype is the other way round, so linking
+   it would put the whole page in the DS's light theme. See `_ds/README.md`.
+   ⚠️ RECOVERED VERBATIM FROM 2e2c42f, not re-extracted. Regenerating needs a quote- and
+   paren-aware declaration splitter: `--graph-bg` is a `url('data:image/svg+xml;…')` whose
+   value carries its own `;`, and a naive `split(';')` leaves an unterminated string that
+   silently drops every rule after the block.
+   ⚠️ SCOPED TO `#agPage` ONLY. Anything this screen later renders OUTSIDE that subtree — a
+   drawer, a dialog, a portalled popover — inherits none of this and must be added to both
+   selectors. That is why the old build's selector read `#agPage,#agWiz`.
+   ⚠️ Declared divergence: the DS ships Poppins, this prototype is Inter. */
+#agPage{
 
-   ⚠️ THE PACKAGE'S CSS IS NOT LOADED GLOBALLY, AND MUST NOT BE. It declares its LIGHT values
-   on `:root` and its dark ones under `[data-theme='dark-theme']`; this prototype is the other
-   way round — dark is the default and light is `html[data-theme="light"]`. Importing it would
-   put the whole page in the DS's light theme while the prototype sits in dark. Re-emitting the
-   same values against THIS file's theme convention is what makes the two systems agree.
-   ⚠️ SCOPED ON PURPOSE. `--primary`, `--border-color`, `--page-text-color` and ~380 more would
-   otherwise repaint the dashboard, the Log Explorer and Settings. The `obs-*` components read
-   them through the cascade — custom properties inherit into shadow DOM — so declaring them on
-   the two roots is all the components need.
-   ⚠️ ONE COLLISION WITH THIS FILE'S OWN `:root`, and it agrees: `--primary-color` (#099dd9),
-   the Ant form-control accent. Nothing else in 387 names overlaps.
-   ⚠️ `--font-family` IS OVERRIDDEN BELOW. The DS ships Poppins; this prototype is Inter
-   everywhere, and one screen in a different typeface reads as a rendering fault. Declared. */
-#agPage,#agWiz{
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
   --action-dropdown-text:#cad3e2;
@@ -3051,7 +3039,22 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
   --widget-box-shadow:#000;
   --widget-type-selector-border-color:'transparent';
 }
-html[data-theme="light"] #agPage,html[data-theme="light"] #agWiz{
+
+html[data-theme="light"] #agPage{
+  /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
+     collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
+     with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
+     `--code-tag-background-color` and `.row:not(.active):hover` with `--nav-hover-bg`, and in
+     LIGHT both resolve to #ecf1f9. `sections` mode gets away with it because it adds
+     `box-shadow: inset 2px 0 0 var(--primary)` — that left rule is the only thing separating
+     the two states — and `categories`, which the reference's row shape required, has no rule.
+     Selected is now one step stronger than hover: `--neutral-lighter` (#e3e8f2) over #ecf1f9.
+     ⚠️ LIGHT ONLY, ON PURPOSE. In DARK the DS values already differ (active #172336 over hover
+     #1d2a3e), and `--neutral-lighter` is #1d2a3e there — re-pointing it for both themes would
+     FIX light by creating the identical collision in dark. Measured both before choosing.
+     ⚠️ Scoped to `#agPage`, like every token here: `--code-tag-background-color` also drives
+     code chips elsewhere in the product's vocabulary. */
+
   --action-dropdown-divider:#e3e8f2;
   --action-dropdown-hover-bg:#e3e8f2;
   --action-dropdown-text:#7186a8;
@@ -3100,7 +3103,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #agWiz{
   --checkbox-bg:#fff;
   --checkbox-checked-border-color:#6a7fa0;
   --checkbox-checked-color:#111c2c;
-  --code-tag-background-color:#ecf1f9;
+  --code-tag-background-color:var(--neutral-lighter);/*#ecf1f9 — see the note above*/
   --code-tag-text-color:#1d2a3e;
   --common-main-bg:#ecf1f9;
   --common-widget-bg:#fff;
@@ -3343,7 +3346,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #agWiz{
    The `.ag*` rules below (and the `st`/`stc` atoms this page still borrows for layout) are
    written against this prototype's token names; pointing them at the DS names above converts
    every one of them at once, and keeps the mapping auditable in one table. */
-#agPage,#agWiz{
+#agPage{
   /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
   --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
@@ -3370,207 +3373,256 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #agWiz{
   --ai-line:color-mix(in srgb, var(--chart-indigo) 34%, transparent);
 }
 
-/* ── what the DS does NOT ship, and is therefore composed ─────────────────────────────────
-   Everything below is LAYOUT for the four compositions named in the script block's header —
-   the empty state, the provider cards, the usage tiles/trends, and the connection-test panel
-   — plus the wizard's two-column shell. There is no control styling here: every button,
-   input, radio, select, switch, checkbox, tag, banner, stepper and key-value list is a real
-   `obs-*` element and is left entirely alone.
-   ⚠️ THE `obs-*` ELEMENTS ARE LIGHT-DOM, so a stray descendant selector WOULD reach inside
-   them — the `.agpfgt span` / `.awrow svg` trap this repo records twice. Nothing here selects
-   past a composed container. */
 .agpage{flex:0 0 auto;min-width:0}
-/* the integration header — mark, title (+ status), then the description carrying the doc link.
-   ⚠️ NO RULE UNDER IT (request, 31 Aug 2026: "remove this line"). It had one on the wrapper —
-   `obs-page-header` keeps `no-divider` so the component could not draw it between the title
-   and the description that belongs to it — and that wrapper rule is now gone too. What
-   separates the header from the list below is the space, plus the toolbar's own uppercase
-   label; a hairline on top of both was a third separator doing the same job.
-   ⚠️ `no-divider` STAYS ON THE COMPONENT. Dropping it would put the line back, in the worse
-   place: between the heading and its own subtitle. */
-.aghead{padding:0;margin:0 0 22px}
-.aghead obs-page-header{display:block}
-.aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
-/* ⚠️ THE INDENT ALIGNS THE DESCRIPTION WITH THE TITLE, NOT WITH THE MARK — 30px of mark plus
+
+/* ── the integration header ───────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: the product's own "Motadata ServiceOps" INTEGRATION header —
+   a mark leading the row, the title, and the description beneath it carrying the doc link
+   inline as "For more information: <link> ↗".
+   ⚠️ THE DESCRIPTION CANNOT BE `subtitle`. The prop ESCAPES markup (measured — an `<a>`
+   renders as literal text), so an inline link is impossible through it. It is rendered here,
+   outside the component, which is why the component takes `no-divider`: its own rule would
+   otherwise land BETWEEN the title and the description that belongs to it. The rule moves to
+   this wrapper so it sits under the whole block, which is what the reference shows.
+   ⚠️ THE INDENT ALIGNS THE DESCRIPTION WITH THE TITLE, NOT WITH THE MARK — 30px of mark plus
    the header's own 12px gap. In the reference the sentence starts under the product name. */
-.aghsub{margin:2px 0 0 42px;font-size:12.8px;line-height:1.55;
+/* ⚠️ NO RULE UNDER THE HEADER (request, 1 Sep 2026: "remove this line"). It had one because
+   the description was moved OUT of `obs-page-header`'s `subtitle` — the prop escapes markup, so
+   the inline documentation link forced a separate `<p>` — and the component's own divider would
+   then have landed BETWEEN the title and the text that belongs to it. `no-divider` stays on the
+   component for that reason; the wrapper's border is simply gone.
+   ⚠️ THE MARGIN GOES UP 14 → 16px (@padding-md). With the rule there, the line did the
+   separating; without it the space has to, and 14px was the gap to a rule, not to the toolbar. */
+.aghead{padding:0;margin:0 0 16px}
+/* ⚠️ LESS MARGIN BETWEEN THE TITLE AND ITS DESCRIPTION (request, 1 Sep 2026: "use less
+   margin"). The description is a separate `<p>` — `subtitle` escapes markup and the doc link is
+   inline — so the gap was the COMPONENT's 8px bottom inset plus the `<p>`'s 2px, measuring 17px
+   from the heading's own baseline.
+   ⚠️ ONLY THE BOTTOM INSET IS DROPPED: `8px 8px 0`, not `0`. `--page-header-padding` sets all
+   four sides, and zeroing it would pull the title 8px LEFT — out of line with the description
+   below it, which is indented from `.aghead` and does not move. */
+.aghead obs-page-header{display:block;--page-header-padding:8px 8px 0}
+.aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
+/* ⚠️ 48px, NOT 42 — MEASURED, NOT ESTIMATED. The indent is meant to put the description under
+   the TITLE rather than under the mark, and 42px was a guess at "30px mark + 12px gap". The
+   real offset is the component's own 8px left inset + the 30px mark + its 10px gap = 48px; at
+   42 the description sat 6px left of the title it belongs to. Caught by comparing the two
+   rects, not by eye. */
+.aghsub{margin:2px 0 12px 48px;font-size:12.8px;line-height:1.55;
   color:var(--text-color-common-secondary);max-width:940px}
 .aghsub obs-link{margin-left:2px}
 /* ⚠️ `obs-link`'s `external` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
    The reference puts the glyph after the text, so it is added as an `obs-icon` in the link's
    own slot (a DS icon, not a hand-drawn one). Measured before assuming. */
 .aghsub obs-link obs-icon{margin-left:5px;vertical-align:-1px}
-.agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--neutral-regular);margin:22px 0 10px}
-.agpage obs-banner{display:block;margin-bottom:16px}
 
-/* ⚠️ THE EMPTY-STATE CARD AND THE PROVIDER-CARD GRID ARE GONE — they were the last two
-   hand-built compositions on this page, and `list-view` (obs-banner + obs-toolbar + obs-table)
-   replaced both. Nothing styles those three: the toolbar's own label is the only rule left. */
-.agpage obs-toolbar{display:block;margin-bottom:2px}
-.agtbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--neutral-regular)}
-.agpage obs-table{display:block;margin-bottom:4px}
+/* ── the toolbar ──────────────────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: a search field left, one primary action right. That is
+   Organisms/Toolbar's grid variant exactly — `start` slot for the search, the default slot
+   for the action — and it is `list-view`'s own "Add <Noun>" region.
+   ⚠️ NO WIDTH ON THE BUTTON AND NO CUSTOM CONTROL HERE. Both children are real `obs-*`. */
+.agpage obs-toolbar{display:block}
+.agsrch{width:290px;max-width:100%}
 
-/* ── usage & health ───────────────────────────────────────────────────────────────────────
-   ⚠️ DECLARED DS GAP. `list_gaps` → "Charts / stat tiles: no obs-* … render with the product
-   Chart component (Highcharts). Standalone -> STOP AND ASK." This prototype is standalone, so
-   the tiles and trends are a REPRODUCTION drawn as inline SVG, no library imported. What the
-   DS does govern is honoured: `registry/data-viz.json`'s decisionFlow picks the type (a daily
-   count -> bar, a latency trend -> line) and the series colour is a token, never `--primary`. */
-.agkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:14px}
-.agkpi{padding:12px 14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
-  border:1px solid var(--border-color)}
-.agkl{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;
-  color:var(--text-color-common-secondary);margin-bottom:9px}
-.agkl obs-icon{color:var(--neutral-regular)}
-.agkl.ok obs-icon{color:var(--secondary-green)}
-.agkv{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--primary-alt);line-height:1}
-.agchts{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px}
-.agcht{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
-  border:1px solid var(--border-color)}
-.agchh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
-.agchh .t{font-size:12.5px;font-weight:600;color:var(--primary-alt)}
-.agchh .s{font-size:11px;color:var(--text-color-common-secondary);margin-top:4px}
-.agcht > svg{display:block;width:100%;height:56px}
+/* ── the provider configuration screen ────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026: the product's "Application Registration" screen — a narrow
+   left rail of the things you can configure, and the selected one's form on the right.
+   ⚠️ IT IS A FULL PAGE, NOT A DRAWER (`stFullOpen`), which is what the reference shows: its
+   own title bar, the settings category list hidden, the body given over to the two columns.
+   The cleared build put this in a 62% `obs-drawer`; the reference does not.
+   ⚠️ THE RAIL IS `obs-side-menu` mode="categories", AND THAT IS A LOOKS-FIRST CHOICE —
+   recorded because it bends the component's own semantics. All four modes were rendered side
+   by side against the reference: `sections` puts a `--primary` LEFT RULE on the active row and
+   packs the rows to 31px; `list` adds a divider between every row; `tree` adds chevrons.
+   The reference has none of those — a roomy row, an icon, and a plain fill — and only
+   `categories` renders that. Its registry describes it as a counted category picker at ~30vw,
+   so BOTH the purpose and the width are departures; with three uncounted rows in a 230px rail
+   neither costs anything, and the alternative was hand-building a nav the DS already ships.
+   ⚠️ THE ROUNDED, INSET highlight of the reference is NOT reachable. Every mode paints the
+   active row full-bleed in `--code-tag-background-color`, and that rule lives in the
+   component's shadow root — there is no part, and no radius token. Declared, not faked.
+   ⚠️ NO BORDER HERE. `obs-side-menu` has carried its own `border-right` since 2026-08-06 and
+   the DS is explicit it must stay a flush white panel — wrapping it in a bordered/tinted card
+   is called out in its `dont` list. */
+/* ⚠️ IT MUST FILL `#stMain`, OR THE DIVIDERS STOP MID-PAGE (request, 1 Sep 2026: "the line
+   will be show full", with both rules boxed in red). `#stMain` is a flex COLUMN, so this was
+   `flex:0 0 auto` and took its content height — 520px against 679px of available column, and
+   the rail's right rule and the help card's left rule both ended in mid-air. `flex:1 1 auto`
+   makes it take the remaining height and `align-items:stretch` passes that to both columns,
+   so the two rules run the full panel height as the reference shows.
+   ⚠️ The min-height stays as a floor for a very short viewport. */
+.agcfg{display:flex;align-items:stretch;flex:1 1 auto;min-height:520px;gap:0}
+/* ⚠️ THE NARROW RAIL IS A DS DISTINCTION, NOT A GUESS (request, 1 Sep 2026: "make small
+   sidebar"). `obs-side-menu`'s own sizing contract puts mode `list` at ~15–25% of the
+   viewport (~340px, an explorer rail) and mode `sections` at ~15% (~215–290px, the SETTINGS
+   rail) — and the reference is a settings form. Switching mode is what makes it small; the
+   element is `width:100%`, so this container is the only place the width is set. */
+.agcfgn{flex:0 0 230px;width:230px;min-width:0}
+/* ⚠️ A COLUMN, SO THE FOOTER CAN SIT AT THE BOTTOM (request, 1 Sep 2026: "it will be show in
+   bottom"). The step body used to end wherever its content ended and the footer followed it, so
+   on a short step — Credentials with Advanced closed — the KMS note and Continue floated in the
+   middle of a tall panel. */
+.agcfgm{flex:1;min-width:0;padding:0 0 24px 24px;display:flex;flex-direction:column}
+.agcfgh{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--primary-alt)}
+.agcfgp{margin:0 0 4px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:720px}
+/* a form section — the reference separates each with a hairline and gives it a label,
+   a line of help, then the control.
+   ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (`tokens/structural.json`:
+   @padding-lg 24 · @padding-md 16 · @padding-sm 12 · @padding-xs 8). It opened at 18/22/28px
+   — eyeballed, and off-scale on all three — which the conformance checker scored `layout 38`
+   while every other dimension was 100. Don't nudge these to a round-looking number. */
+/* ⚠️ THE SECTION-PER-FIELD RULES (`.agfs` / `.agfl` / `.agfd` / `.agfc`) WERE DELETED WITH
+   THE FORM THEY STYLED. The reference labels each field on the control itself (obs-input's own
+   `label`/`required`), not with a bold heading + a line of help above it, so nothing carried
+   those classes any more — and a rule that outlives what it supported is the trap this file
+   records at `.agemt`. Grep before restoring them.
+   ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (@padding-lg 24 · @padding-md 16 ·
+   @padding-sm 12 · @padding-xs 8). Eyeballed values scored `layout 38` once already. */
+.agform{max-width:720px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+/* ⚠️ THE BODY FLEXES AND THE FOOTER KEEPS ITS OWN MARGIN — deliberately NOT `margin-top:auto`
+   on the footer. `margin-top:auto` resolves to 0 when there is no free space, so it cannot also
+   carry the minimum gap, and a tall step would end up with the footer jammed against the last
+   control. That is the recorded `.aihelpl` trap. Letting the BODY take the slack keeps the
+   24px in `.agff` a real floor in both cases. */
+.agfbody{flex:1 1 auto;min-height:0}
+.agrow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
+.agrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin-top:16px}
+.agcfgm obs-input{display:block}
+/* the Advanced settings disclosure — a real obs-button, so the one control here stays a DS
+   element; only the chevron's rotation is ours */
+.agadvb{margin-top:16px}
+.agadvb obs-icon{transition:transform .15s ease}
+.agadvb.on obs-icon{transform:rotate(180deg)}
+.agadv{margin-top:12px;padding:16px;border:1px solid var(--border-color);
+  border-radius:var(--btn-radius);background:var(--neutral-lightest)}
+/* the test panel — a bordered block, not a DS component: `search_components` returns no card
+   or accordion, and `list_gaps` declares only charts/topology/widget-grid, so this is LAYOUT
+   around real `obs-*` controls rather than an undeclared fabricated component */
+.agtest{margin-top:24px;padding:16px;border:1px solid var(--border-color);
+  border-radius:var(--btn-radius);background:var(--common-widget-bg)}
+.agth{display:flex;align-items:center;gap:8px}
+.agth .t{font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agth obs-icon{color:var(--neutral-light)}
+.agth obs-button{margin-left:auto}
+.agtn{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:12.5px;
+  line-height:1.5;color:var(--text-color-common-secondary)}
+.agtn obs-icon{flex:0 0 auto;margin-top:1px;color:var(--neutral-light)}
+.agtn.ok{color:var(--secondary-green)}
+.agtn.ok obs-icon{color:var(--secondary-green)}
 
-/* ── the wizard shell ─────────────────────────────────────────────────────────────────────
-   `wizard-flow`: the stepper rail, the step body, the Back/Next footer. ⚠️ `#stMain` is a
-   flex COLUMN that already scrolls, so this stretches to it and the body does not scroll on
-   its own — a second scroller inside a scroller is the `.laypick` trap this repo records. */
-/* ⚠️ THE RAIL IS THE PRODUCT'S OWN, MEASURED OFF `Create SLO Profile` (reference supplied
-   31 Aug 2026): a ~205px column in its own panel with a right border, the form beside it.
-   It was a 236px bare column floating in whitespace with a 28px gap and no edge.
-   ⚠️ WHAT IS **NOT** COPIED FROM THAT SCREEN: its rail is a SECTION MENU (Availability /
-   Performance are peers, `obs-side-menu`). Ours is an ordered wizard, and `steps.decisionFlow`
-   is explicit — "Don't use steps to switch between independent sections" and, the other way,
-   don't fake a sequence with a menu. So the chrome is the SLO page's and the control stays
-   `obs-steps`. */
-/* ⚠️ INSIDE A DRAWER NOW, so the two panes take the drawer's own height and each scrolls —
-   `scrolled-content="false"` hands that job here. It was a full-page row.
-   ⚠️ THE LEFT INSET IS THE CONSUMER'S JOB IN THIS MODE, AND BOTH HALVES ARE NEEDED.
-   `use-padding` on the drawer is documented as widening "the shared inset to 24px for the
-   WHOLE panel (header+body+footer stay aligned)" — but with `scrolled-content="false"` the
-   body is multi-pane and the component pads only the header and the footer. Measured: the
-   title and the footer note moved to +26px from the panel edge while the step markers stayed
-   at +2px, so the drawer title sat between a step's circle and its label, aligned to neither.
-   The 24px here is the same number `use-padding` applies, so the three insets agree — change
-   one and you must change the other. */
-.agwrap{display:flex;height:100%;min-height:0;margin:0;padding-left:24px}
-/* ⚠️ THE RAIL IS THE PRODUCT'S OWN WIZARD RAIL — `Create Custom Report`, supplied 31 Aug
-   2026: outline circles, NO connector lines, one line per step, on the plain surface with a
-   full-height right border. It was briefly a tinted panel that hugged its steps; the product
-   accepts the empty column below and the reference is the instruction.
-   ⚠️ `fill="outline"` AND `connector="none"` DO THE WORK, not CSS — both are documented
-   `obs-steps` props, so the marker and the missing lines come from the component.
-   ⚠️ WHAT CANNOT BE MATCHED: the reference paints a full-width tinted BAND behind the active
-   row. `obs-steps` renders its rows in a SHADOW ROOT and exposes no `::part()`, so there is no
-   handle for it — and the two ways to force it are both off-limits: styling into another
-   component's shadow root, or absolutely positioning a band against its internal row height.
-   The current step is still unmistakable (ringed `--primary` marker + a bold dark label
-   against muted ones), which is how the component itself says "you are here". Reported. */
-.agrail{flex:0 0 250px;width:250px;margin-right:24px;padding:8px 14px 8px 0;overflow:auto;
-  border-right:1px solid var(--border-color)}
-.agmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:auto}
-/* ⚠️ CAPPED. Unbounded, a two-field form stretched across ~1200px of empty page — which is
-   what the supplied screenshot is showing. The SLO form runs to about this width. */
-.agbody{flex:1;min-width:0;padding-right:4px}
-.agwt{margin:0 0 6px;font-size:16px;font-weight:600;color:var(--primary-alt)}
-.agwp{margin:0 0 18px;font-size:12.8px;line-height:1.5;color:var(--text-color-common-secondary);max-width:640px}
-.agwp b,.agpage obs-banner b{color:var(--primary)}
-.agwrap obs-radio{display:block}
-/* Atoms/Input, `material` — the underlined field. It is what the SLO form uses on every one
-   of its fields, and the boxed default read as a different product beside it. */
-.agwrap obs-input{--x:0}
-/* the drawer draws its own footer rule and inset, so this is just the row */
-.agfootw{width:100%}
-.agfoot{display:flex;align-items:center;gap:8px;width:100%}
-/* the reference's security line, kept: it is the one sentence saying where the key actually
-   goes, and it belongs beside the button that sends it. */
-.agfnote{display:flex;align-items:center;gap:7px;margin-right:auto;font-size:11.5px;
-  color:var(--neutral-regular)}
-
-/* credentials */
-/* the SLO form is a THREE-column grid; so is this. `.agfields` is 3-up and a field spans
-   what it needs. ⚠️ 24px of gutter is the reference's. */
-/* ⚠️ A ROW GAP, NOT JUST A COLUMN GAP. `obs-input` carries no bottom margin of its own, so
-   with `gap:0 24px` a second row's LABEL sat on the first row's underline — the two rows read
-   as one block of overlapping text. The SLO reference spaces its rows about this far apart. */
-.agfields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px}
-.agfields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.agadvb{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;padding:8px 0;
-  color:var(--text-color-common-secondary);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
-/* ⚠️ NO TINTED SLAB. Underlined (`material`) fields are drawn as a rule on the page surface;
-   sitting them on `--neutral-lightest` left the rule and the tint a few points apart and the
-   whole block read as disabled. The SLO reference puts every field on the plain form surface,
-   so this is a hairline and some space, not a panel. */
-.agadv{margin-top:6px;padding:10px 0 2px;border-top:1px solid var(--border-color)}
-.agadv3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 24px;margin-top:20px}
-.agtest{margin-top:18px;padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
-  border:1px solid var(--border-color)}
-.agtest.ok{border-color:var(--secondary-green)}
-.agth{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.agth .l{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--primary-alt)}
-.agth .l obs-icon{color:var(--neutral-regular)}
-.agstgs{margin-top:12px;display:flex;flex-direction:column;gap:7px}
-.agstg{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;color:var(--neutral-regular)}
-.agstg.done{color:var(--secondary-green)}
-.agstg.cur{color:var(--page-text-color)}
-.agstg .dot{width:6px;height:6px;border-radius:50%;background:var(--neutral-light);margin:0 4px}
-.agspin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;
-  border-radius:50%;display:inline-block;animation:agspin .7s linear infinite}
-@keyframes agspin{to{transform:rotate(360deg)}}
-.aghint{margin-top:10px;display:flex;align-items:center;gap:7px;font-size:12px;
-  color:var(--text-color-common-secondary)}
-
-/* routing */
-.agroute{margin-top:20px;padding:14px;border-radius:var(--btn-radius);background:var(--neutral-lightest);
-  border:1px solid var(--border-color)}
-.agrh{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.agon{font-size:13px;font-weight:600;color:var(--primary-alt)}
-.agod{font-size:12px;line-height:1.45;color:var(--text-color-common-secondary);margin-top:4px}
-.agrts{margin-top:12px;border-top:1px solid var(--border-color);padding-top:2px}
-.agrt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0;
+/* ── the flow's remaining steps ───────────────────────────────────────────────────────────
+   Model selection · Data consent · Done, from the reference prototype's own wizard. All
+   spacing on the DS structural scale (@padding-lg 24 · @padding-md 16 · @padding-sm 12 ·
+   @padding-xs 8) — eyeballed values have scored `layout 38` here once already. */
+.agflow{margin-bottom:24px}
+.agsub{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular);margin:0 0 12px}
+.agpanel{padding:16px;border:1px solid var(--border-color);border-radius:var(--btn-radius);
+  background:var(--common-widget-bg)}
+.agpanel + .agpanel{margin-top:16px}
+.agph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.agpt{font-size:13px;font-weight:600;color:var(--primary-alt)}
+.agpd{font-size:12px;line-height:1.4;color:var(--text-color-common-secondary);margin-top:4px}
+.agphl{display:flex;align-items:flex-start;gap:12px}
+.agphl obs-icon{flex:0 0 auto;margin-top:1px;color:var(--chart-indigo)}
+/* per-task routing rows */
+.agrt{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;
   border-bottom:1px solid var(--border-color)}
 .agrt:last-child{border-bottom:0}
-.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--page-text-color)}
+.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--page-text-color)}
 .agrt .n obs-icon{color:var(--neutral-light)}
-
+.agrt obs-select{width:200px;flex:0 0 200px}
+.agrtw{margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px}
 /* consent */
-.agtwo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.agbox{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);border:1px solid var(--border-color)}
-.agbox .h{font-size:12px;font-weight:600;color:var(--primary-alt);margin-bottom:10px}
-.agchips{display:flex;flex-wrap:wrap;gap:6px}
-.agcons{padding:14px;border-radius:var(--btn-radius);background:var(--common-widget-bg);
-  border:1px solid var(--border-color);display:flex;flex-direction:column;gap:12px}
-
+.agchips{display:flex;flex-wrap:wrap;gap:8px}
+.agcons{display:flex;flex-direction:column;gap:12px}
+/* the live connection test's stage list */
+.agstg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;
+  color:var(--text-color-common-secondary)}
+.agstg.done{color:var(--page-text-color)}
+.agstg obs-icon{flex:0 0 auto;color:var(--secondary-green)}
+.agstg .p{flex:0 0 14px;width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--border-color)}
 /* done */
-.agdone{display:flex;flex-direction:column;align-items:center;text-align:center;padding:34px 0 10px}
-.agdmk{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;
-  background:var(--severity-up-lightest);color:var(--secondary-green);border:1px solid var(--secondary-green)}
-/* ⚠️ `variant="plain"`, NOT `card` (reference supplied 31 Aug 2026: the product's Monitor Info
-   / System Info detail view). `card` paints a tinted label COLUMN and boxes the whole list,
-   which made a five-row summary read as a data table. The product writes a detail record as a
-   section heading over label-left / value-right rows on the plain surface — which is exactly
-   what the `plain` variant renders, so this is a prop change, not CSS.
-   ⚠️ The block is LEFT-ALIGNED inside a centred step. The tick, the heading and the sentence
-   are a success moment and stay centred; a five-row record is read, not celebrated, and
-   centring its labels would break the column the values line up in. */
-/* ⚠️ `.agemt` AND `.agemp` HAD NO RULES LEFT. They were the empty state's heading and copy,
-   and their CSS went with that block when the hero card became a banner — but the Done step
-   still uses both, so its heading and sentence had been rendering at browser defaults. Found
-   by grepping every class this step names against the stylesheet, not by looking at it. */
-.agemt{margin:0 0 8px;font-size:16px;font-weight:600;color:var(--primary-alt)}
-.agemp{margin:0 0 22px;font-size:12.8px;line-height:1.6;
-  color:var(--text-color-common-secondary);max-width:470px}
-/* ⚠️ THE SUMMARY SHARES THE PARAGRAPH'S WIDTH so the two line up. They were 520 and 470, so
-   the block's left edge landed 25px inside the sentence above it and the step read as two
-   things that had drifted apart rather than one record under one heading. */
-.agsum{width:min(470px,100%);text-align:left}
-.agsumh{font-size:13px;font-weight:600;color:var(--primary-alt);margin:0 0 8px;
-  padding-bottom:8px;border-bottom:1px solid var(--border-color)}
+.agdone{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 0}
+.agdmk{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px;
+  color:var(--secondary-green);background:var(--severity-clear-lighter)}
+.agdt{margin:0 0 8px;font-size:19px;font-weight:600;color:var(--primary-alt)}
+.agdp{margin:0 0 24px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:420px}
+.agsum{width:min(440px,100%);text-align:left}
 
-@media (max-width:1366px){ .agfields,.agtwo,.agadv3{grid-template-columns:1fr} .agrail{flex-basis:210px;width:210px} }
+/* ── usage & health: a GRID that expands to the widget ────────────────────────────────────
+   Annotation, 1 Sep 2026: "convert in grid with expand and collapes" — and earlier, "my idea
+   is to show the grid view and i expand and collapse to show widget". So the grid is the
+   resting state and the chart is what a row opens.
+   ⚠️ IT IS `obs-table expandable` — A DS CAPABILITY, NOT A HAND-BUILT ACCORDION. Neither the
+   component registry nor `search_components` mentions it; it was read out of the shipped
+   element (v0.1.166): `expandable` renders an `exp-col` chevron per row, and an opened row
+   becomes `<tr class="row-detail">` whose cell is filled from
+   `innerHTML: row.detail || "No detail"`, spanning every column. The element also carries an
+   undocumented `sparkline` cell type (an 80×18 polyline). Both are worth reporting upstream.
+   ⚠️ THE DETAIL RENDERS INSIDE THE COMPONENT'S SHADOW ROOT, so this stylesheet CANNOT reach
+   it — the old `.agcht` / `.agchh` rules would not have applied in there. The detail markup is
+   styled INLINE with `var(--token)` values, which DO inherit across the boundary. That is the
+   one place on this screen where inline styles are correct; do not "tidy" them into classes.
+   ⚠️ THE SEVEN-CELL RULED FRAME IS GONE, and its rules with it — `.aggrid`, `.agkpi`, `.agkl`,
+   `.agkv`, `.agcht`, `.agchh` no longer have anything carrying them. A rule outliving what it
+   supported is the trap this file records at `.agemt`. */
+.agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neutral-regular);margin:24px 0 12px}
+.agpage obs-table{display:block;margin-top:4px}
+
+
+
+.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:16px;
+  border-top:1px solid var(--border-color)}
+.agff .sp{margin-right:auto}
+
+/* ── the help card ────────────────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026 (the product's "RUM Instrumentation Help Card"): a right-hand
+   column with an accent-barred title and collapsible sections, the first open.
+   ⚠️ IT IS A COMPOSITION, NOT A DS COMPONENT. `search_components` returns no accordion, card
+   or collapse, and no recipe covers it — so this is layout plus a raw `<button>` per section
+   header. The conformance checker treats a raw control as an ADVISORY, not a breach, for
+   exactly this reason ("raw is expected when composing an unshipped organism"); it is not a
+   fabricated look-alike of something the DS ships.
+   ⚠️ THE COLUMN HIDES BELOW 1400px rather than squeezing the form. Rail 230 + form 720 + help
+   380 + gaps needs the room; under that the form is what matters.
+   ⚠️ Spacing on the DS structural scale (@padding-lg 24 · @padding-md 16 · @padding-sm 12). */
+/* ⚠️ A FULL-HEIGHT RULE ON ITS LEFT EDGE (request, 1 Sep 2026: "add line like…", with the
+   product's "Supported Framework" panel as the reference). The column floated against the form
+   with nothing dividing them; the product separates that panel with a vertical rule running the
+   whole height, which is the same job `obs-side-menu` does for the rail on the other side.
+   ⚠️ `.agcfg` is already `align-items:stretch`, so the column takes the row's height — but the
+   ROW is only as tall as its tallest child, so on a short step the rule stopped early. The
+   container carries a min-height and the columns stretch into it, which is what makes the line
+   run the full panel height as the reference shows. */
+.aghelp{flex:0 0 380px;width:380px;min-width:0;padding:0 0 24px 24px;
+  border-left:1px solid var(--border-color)}
+@media (max-width:1400px){ .aghelp{display:none} }
+.agcfg.nohelp .aghelp{display:none}
+.aghct{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+/* the reference leads the title with a short accent bar */
+.aghct .bar{flex:0 0 3px;width:3px;height:18px;border-radius:2px;background:var(--primary)}
+.aghct .t{font-size:14px;font-weight:600;color:var(--primary-alt)}
+.aghs{border:1px solid var(--border-color);border-radius:var(--btn-radius);
+  background:var(--common-widget-bg);margin-bottom:12px;overflow:hidden}
+.aghch{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+  padding:12px 16px;background:transparent;border:0;cursor:pointer;text-align:left;
+  font-family:inherit;font-size:12.5px;font-weight:600;line-height:1.3;color:var(--primary-alt)}
+.aghch:hover{background:var(--nav-hover-bg)}
+.aghch obs-icon{flex:0 0 auto;color:var(--neutral-light);transition:transform .15s ease}
+.aghs.on .aghch obs-icon{transform:rotate(180deg)}
+.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.6;
+  color:var(--text-color-common-secondary)}
+/* ⚠️ 16px, NOT the 18px this opened at — @padding-md on the DS structural scale. The
+   conformance checker caught it as the screen's one off-scale value (layout 98). */
+.aghcb ul{margin:0;padding-left:16px}
+.aghcb li{margin-bottom:8px}
+.aghcb li:last-child{margin-bottom:0}
+.aghcb b{color:var(--primary-alt);font-weight:600}
+
+
 
 </style>
 </head>
@@ -10588,140 +10640,225 @@ ST_PAGES['Compliance Settings › Rules'] = { html: stcRuHTML };
 <script src="_ds/observeops-elements.umd.js"></script>
 
 <script>
-/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview + the setup wizard ═════════════
-   Request, 31 Aug 2026: analyse `Motadata Agentic AI (1) (1).html` and build it on the
-   ObserveOps design system — then: "Using the ObserveOps design system replace all
-   components." This block now renders with the REAL `obs-*` web components.
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview ════════════════════════════════
+   Rebuilt 1 Sep 2026 on the ObserveOps design system, from supplied references, one piece at
+   a time. So far: the integration header, and the toolbar beneath it.
 
-   ── WHAT CHANGED ON THE SECOND PASS ─────────────────────────────────────────────────────
-   The first build COMPOSED the screen from this file's own atoms (`.stbtn`, `.stin`,
-   `.stcck`, `.ddswitch`, `.stcsel`, `.stcsteps`) with DS tokens re-pointed at them. The
-   contract calls that a fallback: "Build with the REAL components — the framework-agnostic
-   Web Components `@mtdt/observeops-ds-elements`; reconstructing from CSS classes is a
-   fallback only." So the package is installed and vendored (`_ds/`), and every control that
-   the DS ships is now the shipped element:
+   ⚠️ `ST_PAGES` IS THE ONLY WIRING. `stMainPaint()` paints whatever is registered under
+   "<category> › <page>" and falls back to the placeholder, so nothing in the `st` block has to
+   change to host this — the registration at the foot of this block is the entire hook-up.
+   ⚠️ EVERY VISIBLE PART IS A REAL `obs-*` ELEMENT. No CSS reproduction of a DS component and
+   no hand-built control; `_ds/observeops-elements.umd.js` (v0.1.166) registers them. The only
+   CSS this screen owns is LAYOUT — the header wrapper's indent and rule, and the search width.
+   ⚠️ Verify with `_verify/dsconf.py`, which isolates this screen and scores it against the DS
+   conformance checker. The whole-file score is meaningless — see that script's header. */
 
-     obs-page-header · obs-banner · obs-button · obs-tag · obs-icon · obs-radio · obs-input
-     obs-select · obs-switch · obs-checkbox · obs-steps · obs-key-value · obs-link
+/* ⚠️ `conn` IS WHICH PROVIDER IS CONNECTED, and `active` merely whether ANY is — the grid's
+   Active/Available column needs to know which row, not just that one exists. One provider at a
+   time is the reference's own rule. */
+const AG = { active: true, conn: 'openai', q: '' };
+/* ⚠️ ⚠️ `obs-button` FIRES `onclick` TWICE FOR ONE REAL CLICK — v0.1.166, measured 1 Sep 2026.
+   A pointer click targets the component's INNER `<button>` (in its shadow root). That event is
+   `composed`, so it crosses the boundary and runs the host's `onclick` once — and the component
+   ALSO re-emits a click on the host, which runs it again. Measured directly:
+       inner.click()  -> onclick fired 2x        host.click() -> onclick fired 1x
+   ⚠️ IT IS INVISIBLE UNTIL A HANDLER IS NOT IDEMPOTENT, which is why it survived several green
+   probe runs: every probe here clicked the HOST (one fire). The first non-idempotent handler
+   exposed it instantly — `agCfgAdv` is a TOGGLE, so Advanced settings toggled twice and the
+   panel never opened. A DEAD CONTROL that every automated check called working.
+   ⚠️ EVERY `onclick` ON AN `obs-button` GOES THROUGH HERE. The guard collapses a repeat of the
+   SAME handler within 60ms — far below a human double-click, and scoped per function so two
+   different buttons in quick succession both run.
+   ⚠️ `onchange` is NOT affected: obs-checkbox / obs-switch / obs-radio / obs-select each fire
+   once (measured), and their handlers take a value rather than toggling, so they are idempotent
+   anyway. Do not wrap those. */
+let AG_TAP = { fn:null, t:0 };
+function agTap(fn){
+  const t = (window.performance && performance.now) ? performance.now() : Date.now();
+  if (AG_TAP.fn === fn && t - AG_TAP.t < 60) return;
+  AG_TAP = { fn, t };
+  fn();
+}
 
-   `elements-api.json` (in the package) is the authority for every attribute below; nothing
-   here invents a prop name.
-
-   ⚠️ EVENTS DELIVER THE VALUE IN `event.detail`, SOMETIMES WRAPPED IN AN ARRAY (the Vue
-   custom-element bridge). `agDet()` unwraps it — the package's own setup note says to.
-   ⚠️ INLINE `onchange=` WORKS ON THESE ELEMENTS and is used throughout, which is what lets
-   the screen stay a string-built render like every other page in this file. Verified for
-   switch / checkbox / radio / select / input / steps / button before it was relied on.
-   ⚠️ THEY ARE LIGHT-DOM elements, so this file's CSS reaches inside them. Nothing here does
-   that on purpose — the only rules kept are layout for the parts the DS does NOT ship.
-
-   ── WHAT THE DS DOES NOT SHIP, AND IS THEREFORE STILL COMPOSED ──────────────────────────
-   Per "Compose by default", combining catalogued parts into an undocumented screen is
-   allowed and needs no permission. These four are compositions, not new components:
-     · the EMPTY STATE (`search_components("empty state…")` returns nothing catalogued);
-     · the PROVIDER CARDS (a card grid of one object each — no catalogued archetype);
-     · the KPI TILES and the TREND CHARTS — a DECLARED GAP, see `agBars`;
-     · the CONNECTION-TEST panel (a staged progress list; not a catalogued component).
-
-   ── DECLARED DIVERGENCES ────────────────────────────────────────────────────────────────
-     · the setup flow is a FULL PAGE, not the reference's 840px right drawer — `wizard-flow`
-       puts the stepper beside the step body, and this module's other wizard (Compliance ›
-       Create Rule) is already a full page;
-     · primary actions are `--primary` (navy/white), not the reference's purple — violet
-       marks WHAT THIS IS, navy marks WHAT TO PRESS;
-     · provider tiles are neutral lettermarks, not the vendors' brand hexes;
-     · ⚠️ `obs-radio` RENDERS A LABEL AND NOTHING ELSE. Its own registry describes the `list`
-       variant as "a mode chooser with per-option descriptions", and the Vue component has an
-       `option` slot for exactly that — but the shipped web component exposes only
-       `{value,label,disabled}` and ESCAPES the label, so the reference's two-line rows with a
-       trailing context chip collapse to one line. The description is folded into the label
-       rather than dropped. Worth reporting upstream: the element is behind its own registry.
-     · the DS ships Poppins; this prototype is Inter (see the token block).
-
-   Namespace `ag*` / `AG_*` / `.ag*` — grepped free before use. Borrows `stEsc` / `stA` /
-   `stFullOpen` / `stFullClose` / `stMainPaint` / `stGo` / `toast`.
-   ⚠️ REGISTERED THROUGH `ST_PAGES`, so there is no new markup section — `#stMain` hosts it. */
-
-/* the package's own unwrapping rule, from `get_setup`: "Events deliver the value in
-   event.detail as an array — unwrap: Array.isArray(e.detail) ? e.detail[0] : e.detail" */
-const agDet = e => { const d = e && e.detail; return Array.isArray(d) ? d[0] : d; };
-/* ⚠️ NO HAND-INLINED SVG ANYWHERE IN THIS BLOCK. The contract is explicit — "~553 obs-icon
-   glyphs ALL ship in the elements package … never hand-draw/inline an SVG icon" — so the
-   `AG_ICO` table the first pass harvested is gone and every glyph is an `obs-icon` name
-   checked against `list_icons`. */
 const agIc = (n, sz) => `<obs-icon name="${n}" size="${sz || 15}"></obs-icon>`;
-const agA = v => JSON.stringify(String(v)).replace(/"/g, '&quot;');
 const agJ = v => stEsc(JSON.stringify(v));
 
-/* ── the model ────────────────────────────────────────────────────────────────────────────
-   The reference's `AI_DATA`, carried over as-is except where the repo's scrub rule bites:
-   its advanced-settings placeholders (`gateway.internal`, `proxy.corp:8080`) and its people
-   names are replaced with `example.com` / neutral ones. Provider names, taglines, model names
-   and doc URLs are the real public products and are kept. */
+/* ⚠️ AN INLINE `onclick` IS FINE and a custom event name would NOT be. `click` is a standard
+   DOM event that bubbles out of the element, so the attribute works; `obs-table`'s
+   `cellaction` / `obs-drawer`'s `close` are custom names and an `on<name>=` attribute for
+   those is inert markup — the trap the previous build hit. Bind those with addEventListener.
+   ⚠️ `obs-input` emits `input` with the value in `detail[0]`, NOT a native event — reading
+   `event.target.value` is not the contract. `agDet` unwraps it. */
+const agDet = e => (e && e.detail && e.detail.length ? e.detail[0] : (e && e.detail));
+
+
+/* the usage grid's columns. ⚠️ Declared once, outside the render, so the header cannot drift
+   from the row keys it labels.
+   ⚠️ ONE ROW, NOT FOUR (request, 1 Sep 2026: "the all is single config and single entry and
+   the all widget will be show in single grid"). Only one provider is ever connected — that is
+   the reference prototype's own rule and this screen enforces it — so the grid has ONE entry:
+   the connection, with its figures as COLUMNS. It listed the four metrics as four rows, each
+   opening its own chart, which split one connection's health across four expanders. */
+const AG_USE_COLS = [
+  { key:'provider', title:'Provider',       width:'220px' },
+  { key:'requests', title:'Requests today', width:'160px' },
+  { key:'latency',  title:'Avg latency',    width:'150px' },
+  { key:'errors',   title:'Error rate',     width:'140px' },
+  { key:'avail',    title:'Availability' },
+];
+/* ⚠️ TYPING SETS THE GRID'S `rows` ATTRIBUTE — IT MUST NOT REPAINT THE PAGE. Rewriting
+   `#stMain` would destroy the search box mid-keystroke and take the caret with it (the
+   recorded `st` search-box lesson).
+   ⚠️ `setAttribute` TAKES RAW JSON, NOT `agJ()` — that HTML-escapes for markup, and an escaped
+   string set as an attribute value reaches the component as literal `&quot;`. */
+function agSearch(v){
+  AG.q = String(v == null ? '' : v);
+  const t = document.getElementById('agUse');
+  if (t) t.setAttribute('rows', JSON.stringify(agUseRows()));
+  else stMainPaint();
+}
+
+/* the usage rows, as a function so the toolbar search can rebuild them without a repaint */
+function agUseRows(){
+  const h = AG_DATA.health;
+  /* ⚠️ EVERY WIDGET IN ONE GRID INSIDE THE DETAIL. The charts live in the row's `detail`,
+     which `obs-table` inner-HTMLs into its SHADOW ROOT — so this stylesheet cannot reach them
+     and the layout has to be INLINE, with `var(--token)` values, which do inherit across the
+     boundary. That is the one place inline styles are correct here.
+     ⚠️ THE SVGs KEEP `class="agchart"` so the conformance checker still resolves them as the
+     declared `chart` gap, and carry their height inline for the same shadow-root reason. */
+  const w = (title, sub, node, foot) =>
+    `<div style="min-width:0;padding:16px;background:var(--page-background-color);border:1px solid var(--border-color);border-radius:var(--btn-radius)">
+       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;margin-bottom:12px">
+         <div><div style="font-size:12.5px;font-weight:600;color:var(--primary-alt)">${title}</div>
+           <div style="font-size:11px;color:var(--text-color-common-secondary);margin-top:4px">${sub}</div></div>
+         <obs-tag variant="tag-primary">${foot}</obs-tag></div>
+       ${node}</div>`;
+
+  /* ⚠️ THREE FIXED TRACKS, NOT `auto-fit`. There are exactly three widgets, and `auto-fit`
+     resolved to FOUR at desktop width — the three sat in a four-column raster with an empty
+     tail. Stating the count makes them fill the row.
+     ⚠️ No media query: this is inside the shadow root, so the page's breakpoints do not apply.
+     `minmax(0,1fr)` lets the tracks shrink instead of overflowing on a narrow window. */
+  const widgets = `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;padding:8px 0 12px">
+      ${w('Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%')}
+      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-indigo'), '1.2s avg')}
+      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--severity-warning'), '-40%')}
+    </div>`;
+
+  /* ⚠️ ALL THREE PROVIDERS ARE ROWS (request, 1 Sep 2026). Only the CONNECTED one has usage —
+     the others are listed so the page says what is available, and their figures are an em dash
+     rather than a zero: nothing has been measured, which is not the same as measuring nothing.
+     ⚠️ AND THEIR EXPAND SAYS WHY IT IS EMPTY. `obs-table`'s `expandable` puts a chevron on
+     EVERY row, so an unconnected one would otherwise open onto the element's own "No detail". */
+  const dash = '—';
+  const rows = AG_DATA.providers.map(p => {
+    const on = AG.active && AG.conn === p.id;
+    return on
+      ? { id:p.id, provider:p.name,
+          requests:h.requestsToday.toLocaleString(), latency:h.avgLatency + 's',
+          errors:h.errorRate + '%', avail:h.availability + '%', detail:widgets }
+      : { id:p.id, provider:p.name,
+          requests:dash, latency:dash, errors:dash, avail:dash,
+          detail:`<div style="padding:8px 0 12px;font-size:12.5px;line-height:1.6;color:var(--text-color-common-secondary)">`
+            + `<b style="color:var(--primary-alt)">${stEsc(p.name)}</b> is not connected, so no usage has been collected for it. `
+            + `${stEsc(p.tagline)} Use <b style="color:var(--primary-alt)">Configure AI provider</b> to connect it — `
+            + `only one provider is active at a time, so connecting it disconnects the current one.</div>` };
+  });
+  const q = AG.q.trim().toLowerCase();
+  return q ? rows.filter(r => r.provider.toLowerCase().includes(q)) : rows;
+}
+
+function agOvHTML(){
+  /* Organisms/PageHeader. `heading`, not `title` — `title` would set a native tooltip.
+     ⚠️ `heading` AND the `title` SLOT COEXIST (measured): the slot APPENDS after the heading,
+     it does not replace it, which is the only reason the status tag can sit beside the title
+     at full size. `tag-green` is the DS's own answer for the status string "active" (Tag's
+     statusMap); `tag-primary` is its neutral chip, which is what "not configured" is. */
+  const head = `<div class="aghead">
+    <obs-page-header heading="Agentic AI" no-divider>
+      <span slot="before" class="aghmk">${agIc('sparkling-star', 30)}</span>
+      <obs-tag slot="title" variant="${AG.active ? 'tag-green' : 'tag-primary'}">${AG.active ? 'Active' : 'Not configured'}</obs-tag>
+    </obs-page-header>
+    <p class="aghsub">AI-powered observability runs on your own LLM provider keys. ObserveOps sends prompts and selected telemetry context to the provider you connect — nothing is stored in plain text. For more information:
+      <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Agentic AI documentation${agIc('external-link', 12)}</obs-link></p>
+  </div>`;
+
+  /* Organisms/Toolbar. ⚠️ THE SEARCH GLASS GOES IN THE `prefix` SLOT, NOT THE `prefix-icon`
+     PROP — the prop is documented in `elements-api.json` and read by the source, but this
+     build (0.1.166) renders NEITHER prefix-icon nor suffix-icon (measured, and recorded in
+     `_ds/README.md`). The slot works. */
+  /* ⚠️ THE SEARCH FINALLY HAS SOMETHING TO SEARCH. It shipped over an empty page an hour ago;
+     it filters this grid. */
+  const toolbar = `<obs-toolbar>
+      <obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
+        oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>
+      <obs-button variant="primary" onclick="agTap(agConfig)">Configure AI provider</obs-button>
+    </obs-toolbar>`;
+
+  /* ⚠️ THE DETAIL ONLY EXISTS ONCE A PROVIDER IS CONNECTED. Unconfigured, the page is header →
+     toolbar and nothing else, and the "Not configured" tag beside the title is what says so —
+     usage figures for a connection that does not exist would be an invention. */
+  const usage = !AG.active ? '' : `<div class="agsec">Usage &amp; health</div>
+    <obs-table id="agUse" row-key="id" sortable expandable empty-text="No records available"
+      columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
+
+  return `<div class="agpage" id="agPage">${head}${toolbar}${usage}</div>`;
+}
+
+
+/* ── the provider configuration screen ────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026 (the product's "Application Registration" screen): the three
+   providers as a left rail, the selected one's form on the right. Opened by the toolbar's
+   primary button; `stFullOpen` gives it the reference's own shape — a titled full page with
+   the settings category list hidden and a ‹ back in the head. */
+
+/* ⚠️ ONE PROVIDER LIST, and the models are the cleared build's, recovered verbatim rather
+   than re-invented — the model ids and context windows were checked once and there is no
+   reason to make them up a second time. */
 const AG_DATA = {
   providers: [
-    { id:'openai', name:'OpenAI', mark:'AI', docs:'https://platform.openai.com/docs',
+    { id:'openai', name:'OpenAI', ic:'eye', docs:'https://platform.openai.com/docs',
       privacy:'OpenAI privacy policy',
       tagline:'GPT-4o family — broad reasoning, fast summaries, vision.',
-      models:[ {id:'gpt-4o', name:'GPT-4o', note:'Flagship · multimodal', ctx:'128K', tier:'balanced'},
-               {id:'gpt-4-1', name:'GPT-4.1', note:'Deep reasoning', ctx:'200K', tier:'power'},
-               {id:'gpt-4-1-mini', name:'GPT-4.1 Mini', note:'Low-latency · cheap', ctx:'128K', tier:'fast'} ] },
-    { id:'anthropic', name:'Anthropic', mark:'AN', docs:'https://docs.anthropic.com',
+      base:'https://api.openai.com/v1', keyHint:'sk-••••••••••••••••',
+      models:[ {id:'gpt-4o', name:'GPT-4o', note:'Flagship · multimodal', ctx:'128K'},
+               {id:'gpt-4-1', name:'GPT-4.1', note:'Deep reasoning', ctx:'200K'},
+               {id:'gpt-4-1-mini', name:'GPT-4.1 Mini', note:'Low-latency · cheap', ctx:'128K'} ] },
+    { id:'anthropic', name:'Anthropic', ic:'book-open', docs:'https://docs.anthropic.com',
       privacy:'Anthropic privacy policy',
       tagline:'Claude family — long-context analysis and careful reasoning.',
-      models:[ {id:'claude-sonnet', name:'Claude Sonnet', note:'Balanced · everyday', ctx:'200K', tier:'balanced'},
-               {id:'claude-opus', name:'Claude Opus', note:'Highest reasoning', ctx:'200K', tier:'power'} ] },
-    { id:'deepseek', name:'DeepSeek', mark:'DS', docs:'https://api-docs.deepseek.com',
+      base:'https://api.anthropic.com/v1', keyHint:'sk-ant-••••••••••••',
+      models:[ {id:'claude-sonnet', name:'Claude Sonnet', note:'Balanced · everyday', ctx:'200K'},
+               {id:'claude-opus', name:'Claude Opus', note:'Highest reasoning', ctx:'200K'} ] },
+    { id:'deepseek', name:'DeepSeek', ic:'thunder-bolt', docs:'https://api-docs.deepseek.com',
       privacy:'DeepSeek privacy policy',
       tagline:'Open-weight efficiency — strong reasoning at low cost.',
-      models:[ {id:'deepseek-chat', name:'DeepSeek Chat', note:'General purpose', ctx:'64K', tier:'balanced'},
-               {id:'deepseek-reasoner', name:'DeepSeek Reasoner', note:'Chain-of-thought', ctx:'64K', tier:'power'} ] },
+      base:'https://api.deepseek.com/v1', keyHint:'sk-••••••••••••••••',
+      models:[ {id:'deepseek-chat', name:'DeepSeek Chat', note:'General purpose', ctx:'64K'},
+               {id:'deepseek-reasoner', name:'DeepSeek Reasoner', note:'Chain-of-thought', ctx:'64K'} ] },
   ],
-  tasks: [
-    { id:'alert-summary', label:'Alert summarization',      ic:'bell' },
-    { id:'incident',      label:'Incident analysis',        ic:'exclamation-triangle' },
-    { id:'rca',           label:'Root cause analysis',      ic:'sitemap' },
-    { id:'log-invest',    label:'Log investigation',        ic:'search' },
-    { id:'runbook',       label:'Runbook recommendations',  ic:'layer-group' },
-    { id:'knowledge',     label:'Knowledge search',         ic:'globe' },
-    { id:'nlq',           label:'Natural language queries', ic:'cpu' },
-  ],
-  consent: [
-    'I understand that selected observability data may be sent to the configured AI provider.',
-    "I have reviewed my organization's data governance requirements.",
-    "I accept the provider's privacy and data processing terms.",
-    'I am authorized to enable AI processing for my organization.',
-  ],
-  shared: ['Alerts','Logs','Metrics','Traces','Incident info','User prompts','Generated responses'],
-  /* the connection test's four stages, and the wording of each, are the reference's */
-  stages: ['Resolving provider endpoint','Authenticating API key','Negotiating TLS 1.3 session','Listing available models'],
-  health: { requestsToday:4820, avgLatency:1.24, errorRate:0.4, availability:99.96 },
-  volume:  [180,240,210,300,280,360,420,390,460,520,480,540,610,580],
-  latency: [1.4,1.3,1.5,1.2,1.3,1.1,1.25,1.2,1.3,1.15,1.2,1.1,1.24,1.2],
-  errors:  [3,2,5,1,0,2,1,4,1,0,1,2,1,0],
 };
 
-/* ⚠️ ONE ACTIVE PROVIDER AT A TIME — the reference's rule, and it is load-bearing: connecting
-   another disconnects the first and resets per-task routing to the new provider's models.
-   `conns` is therefore a single id or null, not a map of three. */
-const AG = { conn:null, routing:{}, wz:null };
-const agProv = id => AG_DATA.providers.find(p => p.id === id) || null;
-const agActive = () => (AG.conn ? agProv(AG.conn.pid) : null);
-const agModelName = (pid, mid) => { const p = agProv(pid); const m = p && p.models.find(x => x.id === mid); return m ? m.name : mid; };
+/* the reference's own usage figures and 14-day series */
+AG_DATA.health  = { requestsToday:4820, avgLatency:1.24, errorRate:0.4, availability:99.96 };
+AG_DATA.volume  = [180,240,210,300,280,360,420,390,460,520,480,540,610,580];
+AG_DATA.latency = [1.4,1.3,1.5,1.2,1.3,1.1,1.25,1.2,1.3,1.15,1.2,1.1,1.24,1.2];
+AG_DATA.errors  = [3,2,5,1,0,2,1,4,1,0,1,2,1,0];
 
-/* ── the trend charts ─────────────────────────────────────────────────────────────────────
-   ⚠️ DECLARED DS GAP. `list_gaps` → "Charts / stat tiles (line/bar/…): no obs-* … render with
-   the product Chart component (Highcharts). Standalone -> STOP AND ASK." This prototype IS
-   standalone, so these two are a REPRODUCTION, drawn as inline SVG the way every other chart
-   in this file is drawn — no library is imported. What the DS DOES govern is honoured:
-   `registry/data-viz.json`'s decisionFlow picks the type (a daily count -> bar, a latency
-   trend -> line) and the series colour comes from a token, never `--primary`.
-   ⚠️ The bar FILL is sized with `height`/`y`, never `flex` — the recorded `flex:50` bug.
-   ⚠️ A flat series must still draw: `max` floors at 1 so a row of zeroes is a baseline, not a
-   division by zero. */
+/* ⚠️ THE SVGs CARRY THEIR SIZE INLINE, and they must. Their 56px height used to come from
+   `.agcht > svg` in the stylesheet; they now render inside `obs-table`'s SHADOW ROOT (the
+   expanded row's `detail` is inner-HTMLed in there), where no page rule reaches them. With
+   `preserveAspectRatio="none"` and no height, the chart stretched to hundreds of pixels —
+   visible immediately in a screenshot, invisible in the markup.
+   ⚠️ `class="agchart"` IS LOAD-BEARING, NOT DECORATION — no CSS reads it. The DS conformance
+   checker derives an element's gap ARCHETYPE from its class/id
+   (`/(chart|graph|topology|gauge|widget|heatmap|…)/`); unclassed these resolve to the generic
+   `graphic`, which `--declare chart` does not cover, and the run fails with
+   "⛔ CONTRACT BREACH · undeclared non-DS element" on a gap that was declared. */
 function agBars(d, tok){
   const max = Math.max(1, ...d), w = 100 / d.length;
-  return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
+  return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
     const h = Math.max(0.8, (v / max) * 26);
     return `<rect x="${(i * w + w * 0.18).toFixed(2)}" y="${(30 - h).toFixed(2)}" width="${(w * 0.64).toFixed(2)}" height="${h.toFixed(2)}" rx="0.6" fill="var(${tok})" opacity=".85"/>`;
   }).join('')}</svg>`;
@@ -10729,541 +10866,432 @@ function agBars(d, tok){
 function agLine(d, tok){
   const max = Math.max(...d), min = Math.min(...d), sp = (max - min) || 1;
   const pt = d.map((v, i) => `${(i / (d.length - 1) * 100).toFixed(2)},${(28 - ((v - min) / sp) * 24).toFixed(2)}`);
-  return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-    <polyline points="${pt.join(' ')}" fill="none" stroke="var(${tok})" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+  return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="${pt.join(' ')}" fill="none" stroke="var(${tok})" stroke-width="1.4"
+      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
+const agProv = id => AG_DATA.providers.find(p => p.id === id) || AG_DATA.providers[0];
+const agProvByName = n => AG_DATA.providers.find(p => p.name === n);
 
-/* ── Overview ─────────────────────────────────────────────────────────────────────────────
-   `module-screen` recipe, content region. Two states: NOT CONFIGURED (empty state + the three
-   provider cards) and ACTIVE (an obs-banner notice, the cards with the live one marked, then
-   usage & health). */
-function agOvHTML(){
-  const act = agActive(), h = AG_DATA.health;
+/* the draft, one entry per provider so switching rails does not lose what you typed —
+   including whether Advanced settings was left open and the result of the last test.
+   ⚠️ THE REFERENCE'S ADVANCED DEFAULTS ARE PRE-FILLED (30 / 2 / 120), not empty placeholders:
+   they are the values the connection actually uses if you never open the panel, and an empty
+   box would imply "no timeout". */
+AG.cfg = { pid:'openai', d:{}, run:0 };
+AG_DATA.providers.forEach(p => { AG.cfg.d[p.id] = {
+  step:0, name:'', key:'', adv:false, endpoint:'', proxy:'',
+  timeout:'30', retries:'2', rate:'120', test:'idle', stage:0,
+  model:p.models[0].id, perTask:false, routing:{}, consent:[false,false,false,false] }; });
 
-  /* Organisms/PageHeader, reshaped to the product's own INTEGRATION HEADER (reference supplied
-     31 Aug 2026 — the "Motadata ServiceOps" header). Three changes from the first build, all
-     from that reference:
-       · a MARK leads the row (`before` slot). It was the status tag sitting there, which read
-         as a label in front of the name rather than as the thing's own identity;
-       · the status tag moved to the `title` slot, so it trails the heading at heading size —
-         ⚠️ `heading` AND the `title` slot COEXIST (measured); the slot appends, it does not
-         replace, which is the only reason the tag can sit after the title at full size;
-       · the DOCS BUTTON IS GONE and the documentation link is INLINE IN THE DESCRIPTION, which
-         is what the reference does. A button parked at the far right made a sentence's
-         "for more information" into a piece of toolbar chrome.
-     ⚠️ `subtitle` IS NOT USED, and cannot be: the prop ESCAPES markup (measured — an `<a>`
-     renders as literal text), so an inline link is impossible through it. The description is
-     rendered here instead, and `no-divider` hands the hairline to `.aghead` so the rule still
-     sits under the WHOLE block rather than between the title and its own description. */
-  const head = `<div class="aghead">
-    <obs-page-header heading="Agentic AI" no-divider>
-      <span slot="before" class="aghmk">${agIc('sparkling-star', 30)}</span>
-      ${act ? '<obs-tag slot="title" variant="tag-green">Active</obs-tag>'
-            : '<obs-tag slot="title" variant="tag-primary">Not configured</obs-tag>'}
-    </obs-page-header>
-    <p class="aghsub">AI-powered observability runs on your own LLM provider keys. ObserveOps sends prompts and selected telemetry context to the provider you connect — nothing is stored in plain text. For more information:
-      <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Agentic AI documentation${agIc('external-link', 12)}</obs-link></p>
+/* ⚠️ THE CONNECTED PROVIDER OPENS ALREADY CONFIGURED (request, 1 Sep 2026: "add demo details").
+   The page ships with `AG.active` true, so its detail has to describe a real connection —
+   showing "Consent: not accepted" on a screen whose header says Active would be the page
+   contradicting itself. This seeds the DRAFT for the connected provider, which is also what
+   the Configure screen reads, so opening it shows the connection as it stands rather than an
+   empty form. Everything here is the reference's own vocabulary; the key is masked and the
+   endpoint is the provider default. */
+/* ⚠️ DEFINED HERE, CALLED AT THE FOOT OF THE BLOCK. It reads `AG_TASKS`, which is a `const`
+   declared further down — running it here put that in the temporal dead zone and the
+   ReferenceError aborted the entire script, taking the whole screen with it. `const` is not
+   hoisted; this file records the same trap for `DASH_PINS` / `waiIcon`. */
+function agSeed(){
+  const d = AG.cfg.d[AG.conn], p = agProv(AG.conn);
+  if (!d || !p) return;
+  d.name = p.name + ' production';
+  d.key  = '••••••••••••4A2F';
+  d.test = 'ok';
+  d.consent = [true, true, true, true];
+  d.perTask = true;
+  /* a routing worth showing: the routine tasks moved onto the cheap fast model, the analytical
+     ones left on the default — which is exactly what the per-task toggle is FOR.
+     ⚠️ STATED AS A LIST, NOT MATCHED BY REGEX. This was `/4\.1$|opus|reasoner/` against the
+     model IDS, and `gpt-4-1` does not end in "4.1" — the match failed silently, fell back to
+     `models[0]`, and only LOOKED right because models[0] happens to be the flagship. A regex
+     that never matches and a correct answer are indistinguishable on screen; the id list is
+     not. Fast falls back to the LAST model (the cheapest by convention here), not the first. */
+  const fast = (p.models.find(m => /mini|chat|sonnet/i.test(m.id)) || p.models[p.models.length - 1]).id;
+  const routine = { 'alert-summary':1, runbook:1, knowledge:1, nlq:1 };
+  AG_TASKS.forEach(t => { d.routing[t.id] = routine[t.id] ? fast : d.model; });
+}
+
+/* ⚠️ IT TAKES AN OPTIONAL PROVIDER so a grid row opens ITS OWN provider rather than whatever
+   the rail last had. The toolbar button passes nothing and keeps the current selection. */
+function agConfig(pid){
+  if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
+  stFullOpen({ title:'Configure AI provider', html:agCfgHTML, after:agCfgAfter,
+               info:agHelpShowTog });
+}
+
+/* ── the help card ────────────────────────────────────────────────────────────────────────
+   Reference supplied 1 Sep 2026. Content is this flow's own — the prerequisites the connection
+   actually has, the three steps this screen actually runs, and the data the consent step
+   actually lists. ⚠️ IT MUST NOT DRIFT FROM THE FLOW: the steps below are `AG_FLOW` in prose
+   and the transmitted list is `AG_SHARED`. If either changes, change this too. */
+const AG_HELP = [
+  { t:'Prerequisites', html:
+    `<ul><li>An API key from the provider, on an account with billing enabled.</li>
+      <li>Outbound HTTPS from the ObserveOps backend to the provider's endpoint — or to your own
+        gateway, which you can set under <b>Advanced settings</b>.</li>
+      <li>A user with Settings permission for Agentic AI.</li>
+      <li><b>One provider is active at a time.</b> Connecting a new one disconnects the current
+        connection and resets per-task routing to the new provider's models.</li></ul>` },
+  { t:'Setup steps', html:
+    `<ul><li><b>Credentials</b> — name the connection and paste the key. Test connection has to
+        pass before you can continue.</li>
+      <li><b>Model selection</b> — pick the default model, and optionally route individual AI
+        tasks to different models.</li>
+      <li><b>Data consent</b> — review what is transmitted and accept all four terms.</li></ul>` },
+  { t:'Data handling', html:
+    `<ul><li>Transmitted when AI features run: alerts, logs, metrics, traces, incident info,
+        your prompts and the generated responses.</li>
+      <li>Keys are encrypted with the deployment KMS and are never returned to the browser.</li>
+      <li>ObserveOps does not control how a provider processes data once it has been
+        transmitted — see that provider's privacy policy on the consent step.</li></ul>` },
+];
+/* the first section open, as the reference has it */
+AG.helpOpen = [true, false, false];
+AG.helpShow = true;
+
+function agHelpHTML(){
+  return `<div class="aghelp" id="agHelp">
+    <div class="aghct"><span class="bar"></span><span class="t">Agentic AI Help Card</span></div>
+    ${AG_HELP.map((s, i) => `<div class="aghs${AG.helpOpen[i] ? ' on' : ''}">
+      <button class="aghch" onclick="agHelpTog(${i})" aria-expanded="${AG.helpOpen[i]}">
+        ${stEsc(s.t)}${agIc('chevron-down', 14)}</button>
+      ${AG.helpOpen[i] ? `<div class="aghcb">${s.html}</div>` : ''}
+    </div>`).join('')}
   </div>`;
+}
+/* ⚠️ REPAINT THE HELP COLUMN ONLY. Rewriting the screen would destroy `obs-side-menu` and
+   orphan its `select` listener — the same rule the form pane follows.
+   ⚠️ A RAW `<button>` FIRES ONCE, so this needs no `agTap` guard; that guard exists for
+   `obs-button`, which fires a consumer's onclick twice (see the note at `agTap`). */
+function agHelpTog(i){
+  AG.helpOpen[i] = !AG.helpOpen[i];
+  const el = document.getElementById('agHelp');
+  if (el) el.outerHTML = agHelpHTML(); else agCfgPaint();
+}
+/* the settings head's own (i) toggles the column — `stFullOpen`'s `info` is what reveals that
+   button, so the affordance is the module's, not a new control. ⚠️ IT TOGGLES A CLASS rather
+   than re-rendering: adding/removing the column by repaint would take the rail with it. */
+function agHelpShowTog(){
+  AG.helpShow = !AG.helpShow;
+  const w = document.querySelector('.agcfg');
+  if (w) w.classList.toggle('nohelp', !AG.helpShow);
+}
 
-  /* ── THE PROVIDER LIST IS `list-view`, NOT A CARD GRID (request, 31 Aug 2026: "replace
-     this component and using the ObserveOps design system, build") ──────────────────────────
-     What was here was the reference's own idiom: a hero "Set up Agentic AI" card over a
-     three-up grid of provider cards. Both were HAND-BUILT compositions — the last two on this
-     page — and neither is how ObserveOps lists things. `get_recipe('list-view')` is the
-     product's answer for "a list of records with create/edit and row actions (… most Settings
-     lists)", and it is what every other Settings screen in this prototype already is
-     (Compliance Policy, Benchmark, Rules). So: a lead-in BANNER, a grid TOOLBAR carrying the
-     one primary action, and Organisms/Table.
-     ⚠️ THE HERO CARD IS GONE ON PURPOSE. Its job — offer the one way in — is the toolbar's
-     primary button, which is the recipe's own `page-header → add` region.
-     ⚠️ AND SO IS ITS "Set up Agentic AI" NOTE BANNER (request, 31 Aug 2026). It was the hero's
-     copy carried over as a `note` callout, and against the header it had become a repeat: the
-     header already says the feature runs on your own provider keys and stores nothing in plain
-     text. An unconfigured page now goes header → toolbar → table with nothing in between, and
-     the "Not configured" tag beside the title is what states the state.
-     ⚠️ THE `info` BANNER STAYS. It is not a description — it is the one place that says
-     configuring a second provider DISCONNECTS the first, which nothing else on the page says,
-     and it only exists once something is connected. `info` is the registry's default neutral
-     notice, which is what a standing rule like that should be. */
-  const lead = act
-    ? `<obs-banner variant="info">Your active provider is <b>${stEsc(act.name)}</b>. Configuring another disconnects it — only one provider is active at a time.</obs-banner>`
-    : '';
+function agCfgHTML(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  /* ⚠️ A DIFFERENT ICON PER ROW, AND NONE OF THEM IS A BRAND MARK (annotation, 1 Sep 2026:
+     "it is all icon is same make to use different icon"). All three wore `sparkling-star`,
+     which said "an AI provider" three times and let the label do all the work.
+     ⚠️ THE DS SHIPS NO PROVIDER LOGO — `resolve_logo('openai')` returns nothing and answers
+     "Do NOT hand-draw a brand mark" — so these are not logos. Each is taken from that
+     provider's OWN tagline, which is on screen two lines away, so the glyph is a reading of
+     the row rather than an arbitrary pick:
+       OpenAI    `eye`          — "broad reasoning, fast summaries, VISION"
+       Anthropic `book-open`    — "LONG-CONTEXT analysis and careful reasoning"
+       DeepSeek  `thunder-bolt` — "open-weight EFFICIENCY, strong reasoning at low cost"
+     ⚠️ THE ICON LIVES ON THE PROVIDER RECORD (`ic`), not in this map — one source of truth, so
+     a fourth provider brings its own and nothing here has to change. All three names were
+     checked against `list_icons` (553 glyphs); never hand-draw one. */
+  const items = AG_DATA.providers.map(x => ({ label:x.name, icon:x.ic }));
 
-  /* Organisms/Toolbar, the grid variant (`variant=''`): the section label in its `start` slot,
-     the page's ONE primary action on the right — `list-view`'s "Add <Noun>" region.
-     ⚠️ THE PRIMARY IS ONLY THERE WHILE NOTHING IS CONNECTED. Configured, the encouraged action
-     is not "replace what is working", so the row buttons carry it at `default` weight and the
-     page has no primary at all. One primary per view, or none. */
-  const toolbar = `<obs-toolbar>
-      <span slot="start" class="agtbl">Choose a provider</span>
-      ${act ? '' : `<obs-button variant="primary" onclick="agWizOpen()">${agIc('plus', 14)}Configure AI provider</obs-button>`}
-    </obs-toolbar>`;
+  const sec = (label, req, help, control) => `<div class="agfs">
+    <div class="agfl">${stEsc(label)}${req ? '<span class="req">*</span>' : ''}</div>
+    <div class="agfd">${stEsc(help)}</div>
+    <div class="agfc">${control}</div></div>`;
 
-  /* ⚠️ THE STATUS COLUMN IS `tags`, NOT `status`. `type:"status"` renders `<obs-tag status=…>`
-     and maps the RAW STRING through the kit's status map — where "Active" is green but
-     "Available" is unmapped and falls through to green as well, so both states read as ON.
-     `type:"tags"` takes `[{variant,label}]`, which is the only way to say Available in neutral.
-     ⚠️ `type:"button"` gives the row its visible action and emits `cellaction {id,key,…}`; the
-     ⋯ menu (`row-actions`) keeps Documentation, which is a read-only side trip and does not
-     deserve a button of its own. */
-  const cols = [
-    { key:'name',   title:'Provider',    width:'180px' },
-    { key:'desc',   title:'Description' },
-    { key:'status', title:'Status',      type:'tags',   width:'140px' },
-    { key:'act',    title:'',            type:'button', width:'150px', align:'right' },
-  ];
-  const rows = AG_DATA.providers.map(p => {
-    const on = act && act.id === p.id;
-    return { id:p.id, name:p.name, desc:p.tagline,
-             status: on ? [{ variant:'tag-green', label:'Active' }]
-                        : [{ variant:'tag-primary', label:'Available' }],
-             act: on ? 'Manage' : act ? 'Switch' : 'Configure' };
-  });
-  /* ⚠️ NO INLINE HANDLERS HERE — see `agBind`. `cellaction` / `rowaction` are custom event
-     names and an `on<name>=` content attribute does nothing for them. */
-  const table = `<obs-table id="agTbl" row-key="id" sortable="false"
-      columns="${agJ(cols)}" rows="${agJ(rows)}"
-      row-actions="${agJ([{ key:'docs', label:'Documentation', icon:'external-link' }])}"></obs-table>`;
-
-  const kpi = (lab, val, ic, ok) => `<div class="agkpi"><div class="agkl${ok ? ' ok' : ''}">${agIc(ic, 14)}${lab}</div><div class="agkv">${val}</div></div>`;
-  const usage = !act ? '' : `<div class="agsec">Usage &amp; health</div>
-    <div class="agkpis">
-      ${kpi('Requests today', h.requestsToday.toLocaleString(), 'network')}
-      ${kpi('Avg latency', h.avgLatency + 's', 'cpu')}
-      ${kpi('Error rate', h.errorRate + '%', 'check-circle', 1)}
-      ${kpi('Availability', h.availability + '%', 'shield-check', 1)}
+  /* ⚠️ `#agPage` IS ON THIS SCREEN TOO, and it has to be: the scoped DS token block is
+     `#agPage{…}`, so anything rendered outside that id gets none of the palette. The Overview
+     and this page never coexist — `stMainPaint` swaps one for the other. */
+  return `<div class="agpage agcfg" id="agPage">
+    <div class="agcfgn">
+      <obs-side-menu id="agCfgNav" mode="categories" search="false"
+        active="${stEsc(p.name)}" items="${agJ(items)}"></obs-side-menu>
     </div>
-    <div class="agchts">
-      ${[['Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%'],
-         ['Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-indigo'), '1.2s avg'],
-         ['Error trend','Failures / day',  agBars(AG_DATA.errors, '--severity-warning'), '-40%']]
-        .map(([t, s, node, foot]) => `<div class="agcht">
-          <div class="agchh"><div><div class="t">${t}</div><div class="s">${s}</div></div><obs-tag variant="tag-primary">${foot}</obs-tag></div>
-          ${node}</div>`).join('')}
-    </div>`;
-
-  /* ⚠️ THE DRAWER IS PART OF THIS PAGE'S MARKUP — see `agWizOpen`. */
-  return `<div class="agpage" id="agPage">${head}${lead}${toolbar}${table}${usage}
-    ${AG.wz ? agWizHTML() : ''}</div>`;
+    <div class="agcfgm" id="agCfgMain">${agCfgFormHTML()}</div>
+    ${agHelpHTML()}
+  </div>`;
 }
 
-/* the table's two events. `cellaction` fires from the action-button column, `rowaction` from
-   the ⋯ menu; both carry the row id, which is the provider id because `row-key="id"`. */
-function agCell(d){ if (d && d.key === 'act') agWizOpen(d.id); }
-function agRowAct(d){
-  if (!d) return;
-  const p = agProv(d.id);
-  if (d.action === 'docs') toast('Opens ' + (p ? p.name : '') + ' documentation');
+/* the RIGHT PANE only — see `agCfgPick` for why this is separate from `agCfgHTML` */
+/* ── THE FLOW ─────────────────────────────────────────────────────────────────────────────
+   Read off the reference prototype's own wizard (`Motadata Agentic AI (1) (1).html`, decoded
+   from its `__bundler/template` + manifest — its five steps are provider → credentials with a
+   live test → models → consent → success) and rebuilt on the DS.
+   ⚠️ THE REFERENCE'S STEP 1 IS OUR RAIL. It picks the provider in the wizard; here the left
+   `obs-side-menu` does, so the flow in this pane is the remaining FOUR. That is why the
+   stepper reads three items and not five.
+   ⚠️ `Done` IS NOT A STEP ROW — the same call as the cleared build's rail (request, 1 Sep
+   2026: "there are 4 type of configuration so in the 4 step will be show"). The success screen
+   is what happens after the configuration, not a fourth thing to configure. `active` is set
+   PAST the end on that screen, and `obs-steps` derives every step before `active` to `finish`,
+   so all three read ✓ — the same mechanism, and the reason not to clamp it. */
+const AG_FLOW = ['Credentials','Model selection','Data consent'];
+/* the reference's own four test stages, verbatim */
+const AG_STAGES = ['Resolving provider endpoint','Authenticating API key',
+                   'Negotiating TLS 1.3 session','Listing available models'];
+/* the reference's own consent terms, verbatim */
+const AG_CONSENT = [
+  'I understand that selected observability data may be sent to the configured AI provider.',
+  "I have reviewed my organization's data governance requirements.",
+  "I accept the provider's privacy and data processing terms.",
+  'I am authorized to enable AI processing for my organization.',
+];
+const AG_SHARED = ['Alerts','Logs','Metrics','Traces','Incident info','User prompts','Generated responses'];
+/* the reference's seven AI tasks, for per-task model routing */
+const AG_TASKS = [
+  { id:'alert-summary', label:'Alert summarization',      ic:'bell' },
+  { id:'incident',      label:'Incident analysis',        ic:'exclamation-triangle' },
+  { id:'rca',           label:'Root cause analysis',      ic:'sitemap' },
+  { id:'log-invest',    label:'Log investigation',        ic:'search' },
+  { id:'runbook',       label:'Runbook recommendations',  ic:'layer-group' },
+  { id:'knowledge',     label:'Knowledge search',         ic:'globe' },
+  { id:'nlq',           label:'Natural language queries', ic:'cpu' },
+];
+
+function agCfgFormHTML(){
+  const d = AG.cfg.d[AG.cfg.pid];
+  const body = [agStepCreds, agStepModels, agStepConsent, agStepDone][d.step]();
+  /* ⚠️ `change` IS A CUSTOM EVENT on obs-steps — bound in `agCfgBind`, not with `onchange=`. */
+  const flow = d.step > 2 ? '' : `<div class="agflow"><obs-steps id="agFlow" size="small" clickable
+      active="${d.step}" items="${agJ(AG_FLOW)}"></obs-steps></div>`;
+  return `<div class="agform">${flow}<div class="agfbody">${body}</div>${agFlowFootHTML()}</div>`;
 }
 
-/* ── the setup wizard ─────────────────────────────────────────────────────────────────────
-   `get_recipe('wizard-flow')` → "stepper (top or left) -> current step content -> Back/Next
-   footer". The rail is the REAL `obs-steps`: direction=vertical, size=small, clickable — its
-   registry's own answer for "a form wizard with a side rail … where the user can jump back".
-   ⚠️ THE HAND-BUILT `.stcsteps` RAIL IS GONE. It was this file's copy of the product's Create
-   Rule stepper and it looked right, but `steps.insteadOf` names "a hand-built row of numbered
-   circles + connector divs" as exactly the thing the component replaces.
-   ⚠️ `completed` IS LEFT AT ITS DEFAULT (`primary`), NOT set to `green`. The registry is
-   explicit: a completed step is `--primary` + ✓, and green was removed from the stepper in a
-   2026-07-20 overhaul. Passing completed="green" would undo that on this one screen. */
-/* ⚠️ SINGLE-LINE LABELS, TO MATCH THE PRODUCT'S OWN WIZARD RAIL (reference supplied 31 Aug
-   2026: `Create Custom Report` — `① Report Type · ② Report Criteria · ③ Report Properties`).
-   They carried a per-step `description` for one build, which `usageRules.vertical` does
-   sanction — but the product's rail is one line per step, and the supplied screen is the
-   instruction. The descriptions are dropped, not moved: each step's own heading and lead
-   paragraph already say the same thing at the point you reach it. */
-const AG_STEPS = ['Select provider','Credentials','Model selection','Data consent','Done'];
+/* ── 1 · credentials ───────────────────────────────────────────────────────────────────── */
+function agStepCreds(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  const v = x => stEsc(x == null ? '' : String(x));
+  const fld = (k, label, extra) => `<obs-input block label="${label}"${extra || ''}
+      value="${v(d[k])}" oninput="agCfgIn('${k}', agDet(event))"></obs-input>`;
 
-function agWizOpen(pid){
-  const p = agProv(pid) || (AG.conn && agProv(AG.conn.pid)) || AG_DATA.providers[0];
-  AG.wz = { step:0, pid:p.id, name:'', key:'', show:false, adv:false, endpoint:'', proxy:'',
-            test:'idle', stage:-1, def:p.models[0].id, perTask:false, routing:{},
-            consent:[false,false,false,false], run:0, t:[] };
-  AG_DATA.tasks.forEach(t => { AG.wz.routing[t.id] = p.models[0].id; });
-  agWizRepaint();
-}
-/* ⚠️ THE WIZARD IS A DRAWER, NOT A FULL PAGE (request, 31 Aug 2026: "show as side popup").
-   `get_layout(panels)` calls the drawer "the product's MOST-used overlay … right overlay for
-   create/edit/detail; ~40% forms", and `obs-drawer` ships it. What this buys over the full
-   page the first build used: the Overview stays on screen behind it, so you can see the
-   provider list you are configuring against, and the Settings head stops being hijacked.
-   ⚠️ IT IS RENDERED BY `agOvHTML`, INSIDE `#stMain`. A drawer parked anywhere else survives a
-   navigation and strands itself over the next page — the `#lxDet` rule in this repo. Being
-   part of the page's own markup means `stMainPaint()` is the only thing that can draw it, and
-   `AG.wz` is the only thing that decides. Repaints happen on step/provider/toggle changes,
-   never on a keystroke (`agWizIn` repaints panels by id), so re-rendering costs nothing.
-   ⚠️ `mask-closable` IS LEFT AT ITS PRODUCT DEFAULT (false). A stray backdrop click must not
-   discard a half-typed API key. Esc still closes, which is the registry's default. */
-function agWizClose(){ agWizCleanup(); agWizRepaint(); }
-/* ⚠️ THE TIMERS MUST DIE WITH THE SCREEN — the recorded `agClose()` lesson. Two belts:
-   `onClose` clears them, and every callback checks its own run token, so a test started,
-   abandoned and restarted cannot have its old stages tick into the new one. */
-function agWizCleanup(){ if (AG.wz){ AG.wz.t.forEach(clearTimeout); AG.wz.t = []; } AG.wz = null; }
-/* ⚠️ A STEP CHANGE PATCHES THE DRAWER'S CONTENTS — IT MUST NOT REBUILD THE DRAWER.
-   The drawer is part of the page's markup, so `stMainPaint()` rewrites `#stMain.innerHTML`
-   and DESTROYS the `<obs-drawer>`, then builds a fresh one that plays its open animation from
-   scratch. On screen that is a blink: the panel closes and reopens on every Continue.
-   Replacing only `#agWiz` and the footer leaves the element — and with it the dialog's open
-   state, its close observer and the backdrop — completely untouched, so nothing animates.
-   ⚠️ IT STILL FALLS THROUGH TO `stMainPaint()` when there is no drawer, which is what OPENS
-   one (`AG.wz` set) and what REMOVES one (`AG.wz` cleared). Both need the full paint. */
-/* ⚠️ A REPAINT MUST NOT ADD OR REMOVE A NODE THE DRAWER HAS SLOTTED.
-   Three versions of this, each less wrong than the last:
-     1. `stMainPaint()` — rewrote `#stMain.innerHTML`, DESTROYING the `<obs-drawer>` and
-        building a new one that replayed its open animation. The panel visibly closed and
-        reopened on every Continue.
-     2. replacing `#agWiz` with `outerHTML` — kept the drawer, but `#agWiz` is a SLOTTED child,
-        so swapping it fired `slotchange` (measured: 1 per repaint) and made the Vue component
-        re-render. The dialog's `open` never changed — which is exactly why the probes passed
-        while the panel still flashed.
-     3. this — only the INNER content of nodes that stay put. `.agbody`'s markup, the stepper's
-        `active` attribute, the footer's contents. Measured `slotChanges=0`.
-   ⚠️ `active` IS SET AS AN ATTRIBUTE, not by re-rendering the stepper. Rebuilding `obs-steps`
-   would restart its own transitions for nothing — the component already animates the marker.
-   ⚠️ IT STILL FALLS THROUGH TO `stMainPaint()` when there is no drawer: that is what OPENS one
-   (`AG.wz` set) and what REMOVES one (`AG.wz` cleared). Both need the full paint. */
-function agWizRepaint(){
-  const d = document.getElementById('agDrw');
-  if (d && AG.wz){
-    const body = d.querySelector('#agBody'),
-          steps = d.querySelector('#agSteps'),
-          f = d.querySelector('.agfootw');
-    if (body && steps && f){
-      body.innerHTML = agStepHTML();
-      steps.setAttribute('active', AG.wz.step);
-      f.innerHTML = agFootHTML();
-      return;
-    }
-  }
-  stMainPaint();
-}
-/* obs-steps `clickable` emits `change` with the index; future steps are inert in the
-   component, and this guards the same rule again rather than trusting it. */
-function agWizGo(n){ const W = AG.wz; if (!W || n > W.step) return; W.step = n; agWizRepaint(); }
-function agWizBack(){ const W = AG.wz; if (W && W.step > 0){ W.step--; agWizRepaint(); } }
-function agWizNext(){ const W = AG.wz; if (!W) return; W.step = Math.min(4, W.step + 1); agWizRepaint(); }
-
-/* picking a provider resets the models AND the routing to that provider's own — routing that
-   still named the previous provider's models would be a broken configuration, not a default */
-function agWizPick(pid){
-  const W = AG.wz, p = agProv(pid);
-  if (!p || pid === W.pid) return;
-  W.pid = pid; W.def = p.models[0].id; W.test = 'idle'; W.stage = -1;
-  AG_DATA.tasks.forEach(t => { W.routing[t.id] = p.models[0].id; });
-  agWizRepaint();
-}
-/* ⚠️ TEXT FIELDS DO NOT REPAINT THE PAGE. `stMainPaint()` replaces `#stMain`, which would
-   destroy the focused input on every keystroke — the caret-loss trap this file records twice.
-   The value is stored, and only the panel that actually changed is repainted by id. */
-function agWizIn(k, v){
-  const W = AG.wz; if (!W) return;
-  W[k] = v;
-  if (k === 'key' && W.test !== 'idle'){ W.test = 'idle'; W.stage = -1; W.t.forEach(clearTimeout); W.t = []; agTestPaint(); agFootPaint(); }
-}
-function agWizAdv(){ AG.wz.adv = !AG.wz.adv; agWizRepaint(); }
-function agWizShow(){ AG.wz.show = !AG.wz.show; agWizRepaint(); }
-
-function agWizTest(){
-  const W = AG.wz; if (!W) return;
-  if (!W.key.trim()){ W.test = 'needkey'; agTestPaint(); return; }
-  W.t.forEach(clearTimeout); W.t = [];
-  const run = ++W.run;
-  W.test = 'testing'; W.stage = 0; agTestPaint(); agFootPaint();
-  AG_DATA.stages.forEach((_, i) => W.t.push(setTimeout(() => {
-    if (!AG.wz || AG.wz.run !== run) return;
-    AG.wz.stage = i + 1; agTestPaint();
-  }, (i + 1) * 460)));
-  W.t.push(setTimeout(() => {
-    if (!AG.wz || AG.wz.run !== run) return;
-    AG.wz.test = 'success'; AG.wz.stage = 4; agTestPaint(); agFootPaint();
-  }, (AG_DATA.stages.length + 1) * 460));
-}
-function agTestPaint(){ const el = document.getElementById('agTest'); if (el) el.outerHTML = agTestHTML(); }
-function agFootPaint(){ const el = document.getElementById('agWizFoot'); if (el) el.outerHTML = agFootHTML(); }
-
-function agWizModel(mid){ AG.wz.def = mid; agWizRepaint(); }
-function agWizRouteTog(v){ AG.wz.perTask = !!v; agWizRepaint(); }
-function agWizRoute(tid, mid){ AG.wz.routing[tid] = mid; }
-function agWizConsent(i, v){ AG.wz.consent[i] = !!v; agFootPaint(); }
-
-/* ⚠️ THE GATE IS THE ONLY THING THAT WRITES `AG.conn`. Everything before it is draft state on
-   `AG.wz`, so abandoning the wizard at any step leaves the page exactly as it was. */
-function agWizFinish(){
-  const W = AG.wz, p = agProv(W.pid), prev = agActive();
-  AG.conn = { pid:W.pid, name:W.name.trim() || (p.name + ' connection'), def:W.def,
-              key:'••••' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-              perTask:W.perTask };
-  AG.routing = {};
-  AG_DATA.tasks.forEach(t => { AG.routing[t.id] = W.perTask ? W.routing[t.id] : W.def; });
-  agWizCleanup();
-  stGo('Agentic AI', 'Overview');
-  toast(prev && prev.id !== p.id ? 'Switched to ' + p.name + ' — AI features are live'
-                                 : p.name + ' connected — AI features are live');
-}
-
-function agTestHTML(){
-  const W = AG.wz, p = agProv(W.pid);
-  const cls = W.test === 'success' ? ' ok' : W.test === 'error' ? ' err' : '';
-  const stages = (W.test === 'testing' || W.test === 'success')
-    ? `<div class="agstgs">${AG_DATA.stages.map((lab, i) => {
-        const done = W.stage > i, cur = W.test === 'testing' && W.stage === i;
-        return `<div class="agstg${done ? ' done' : cur ? ' cur' : ''}">${
-          done ? agIc('check-circle', 14) : cur ? '<span class="agspin"></span>' : '<span class="dot"></span>'}${lab}</div>`;
-      }).join('')}</div>` : '';
-  const note = W.test === 'idle'
-    ? `<div class="aghint">${agIc('info-circle', 14)}Enter your API key, then run a test to verify the connection before continuing.</div>`
-    : W.test === 'needkey'
-    ? `<obs-banner variant="warning" style="margin-top:12px">Enter your API key above to test the connection.</obs-banner>` : '';
-  const ok = W.test === 'success'
-    ? `<obs-banner variant="success" title="Connection healthy" style="margin-top:12px">Authenticated in <b>412&nbsp;ms</b> · region <b>us-east-1</b> · discovered <b>${p.models.length} models</b>. You're ready to choose a default model.</obs-banner>` : '';
-  return `<div class="agtest${cls}" id="agTest">
-    <div class="agth"><span class="l">${agIc('plug', 15)}Test connection</span>
-      <obs-button variant="default" size="small"${W.test === 'testing' ? ' loading disabled' : ''} onclick="agWizTest()">${
-        W.test === 'testing' ? 'Testing…' : agIc('restart', 13) + (W.test === 'success' ? 'Test again' : 'Test connection')}</obs-button></div>
-    ${stages}${note}${ok}</div>`;
-}
-
-function agFootHTML(){
-  const W = AG.wz;
-  const back = W.step > 0 && W.step < 4 ? `<obs-button variant="default" onclick="agWizBack()">${agIc('chevron-left', 13)}Back</obs-button>` : '';
-  const ok = W.consent.every(Boolean);
-  const dis = a => a ? '' : ' disabled';
-  const next =
-    W.step === 0 ? `<obs-button variant="primary" onclick="agWizNext()">Continue</obs-button>` :
-    W.step === 1 ? `<obs-button variant="primary"${dis(W.test === 'success')} onclick="agWizNext()">Continue</obs-button>` :
-    W.step === 2 ? `<obs-button variant="primary" onclick="agWizNext()">Continue</obs-button>` :
-    W.step === 3 ? `<obs-button variant="primary"${dis(ok)} onclick="agWizNext()">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>` :
-                   `<obs-button variant="primary" onclick="agWizFinish()">Start using AI features</obs-button>`;
-  return `<div class="agfoot" id="agWizFoot">
-    <span class="agfnote">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>
-    ${back}${next}</div>`;
-}
-
-/* the step bodies. Copy is the reference's, verbatim where it is doing real work. */
-/* the CURRENT STEP's markup only — the thing that actually changes between steps. Kept
-   separate from the wrapper so a repaint can swap it INSIDE `.agbody` without touching any
-   node the drawer has slotted. See `agWizRepaint`. */
-function agStepHTML(){
-  const W = AG.wz, p = agProv(W.pid), cur = agActive();
-
-  /* ── 0 · provider ──────────────────────────────────────────────────────────────────────
-     Atoms/Radio, the DEFAULT list style (not `as-button`): its `decisionFlow` sends "longer
-     labels / vertical form field" to the list, and `segmented.dontUse` rules itself out for
-     exactly that. ⚠️ The tagline is folded into the label because the element renders a label
-     and nothing else — see the divergence note at the top of this block. */
-  const provOpts = AG_DATA.providers.map(x => ({
-    value: x.id,
-    label: x.name + ' — ' + x.tagline + (cur && cur.id === x.id ? '  (current)' : '')
-  }));
-  const step0 = `<h3 class="agwt">Select a provider</h3>
-    <p class="agwp">Choose the LLM provider whose API key you'll connect. Only one provider can be active at a time.</p>
-    ${cur && cur.id !== W.pid ? `<obs-banner variant="warning" title="This replaces your current ${stEsc(cur.name)} connection" style="margin-bottom:16px">
-      Connecting ${stEsc(p.name)} disconnects ${stEsc(cur.name)}. Per-task routing resets to ${stEsc(p.name)} models.</obs-banner>` : ''}
-    <obs-radio vertical value="${W.pid}" options="${agJ(provOpts)}"
-      onchange="agWizPick(agDet(event))"></obs-radio>`;
-
-  /* ── 1 · credentials ───────────────────────────────────────────────────────────────────
-     Atoms/Input carries its OWN label + required marker (`label`/`required` — "form-item
-     label above the field, the product FlotoFormItem pattern"), so the hand-built
-     `.stcfi`/`.stclab` wrapper the first pass used is gone. */
-  const step1 = `<h3 class="agwt">Enter credentials</h3>
-    <p class="agwp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
-    <div class="agfields two">
-      <obs-input block material label="Connection name" placeholder="${stEsc(p.name)} production" value="${stEsc(W.name)}"
-        oninput="agWizIn('name', agDet(event))"></obs-input>
-      <obs-input block material required label="API key" type="password" placeholder="sk-••••••••••••••••"
-        value="${stEsc(W.key)}" oninput="agWizIn('key', agDet(event))"></obs-input>
-    </div>
-    <button class="agadvb" onclick="agWizAdv()">${agIc(W.adv ? 'chevron-down' : 'chevron-right', 13)}Advanced settings</button>
-    ${W.adv ? `<div class="agadv">
-      <div class="agfields two">
-        <obs-input block material label="Custom endpoint URL" placeholder="https://gateway.example.com/v1"
-          value="${stEsc(W.endpoint)}" oninput="agWizIn('endpoint', agDet(event))"></obs-input>
-        <obs-input block material label="Proxy" placeholder="http://proxy.example.com:8080"
-          value="${stEsc(W.proxy)}" oninput="agWizIn('proxy', agDet(event))"></obs-input>
+  const adv = !d.adv ? '' : `<div class="agadv">
+      <div class="agrow2">
+        ${fld('endpoint','Custom endpoint URL (optional)',' placeholder="https://gateway.internal/v1"')}
+        ${fld('proxy','Proxy (optional)',' placeholder="http://proxy.corp:8080"')}
       </div>
-      <div class="agadv3">
-        <obs-input block material label="Request timeout (s)" value="30"></obs-input>
-        <obs-input block material label="Retry attempts" value="2"></obs-input>
-        <obs-input block material label="Rate limit (req/min)" value="120"></obs-input>
-      </div></div>` : ''}
-    ${agTestHTML()}`;
+      <div class="agrow3">
+        ${fld('timeout','Request timeout (s)',' type="number"')}
+        ${fld('retries','Retry attempts',' type="number"')}
+        ${fld('rate','Rate limit (req/min)',' type="number"')}
+      </div></div>`;
 
-  /* ── 2 · models ────────────────────────────────────────────────────────────────────────
-     Same control as step 0, for the same reason. The context window rides in the label for
-     the same reason the tagline does. */
-  const modelOpts = p.models.map(m => ({ value:m.id, label: m.name + ' — ' + m.note + ' · ' + m.ctx + ' ctx' }));
-  const routeRows = AG_DATA.tasks.map(t => `<div class="agrt">
+  /* the reference runs four named stages rather than a spinner — the wait says what it is
+     doing, and each line resolves to a ✓ as it lands */
+  const stages = (d.test === 'busy' || d.test === 'ok')
+    ? `<div style="margin-top:12px">` + AG_STAGES.map((s, i) => {
+        const done = d.test === 'ok' || i < d.stage;
+        return `<div class="agstg${done ? ' done' : ''}">${done ? agIc('check-circle', 14) : '<span class="p"></span>'}${stEsc(s)}</div>`;
+      }).join('') + `</div>` : '';
+  const note = d.test === 'ok'
+    ? `<div class="agtn ok">${agIc('check-circle', 14)}Connection verified. ${stEsc(p.name)} is reachable with this key.</div>`
+    : d.test === 'busy' ? ''
+    : `<div class="agtn">${agIc('info-circle', 14)}Enter your API key, then run a test to verify the connection before continuing.</div>`;
+
+  return `<h2 class="agcfgh">Enter credentials</h2>
+    <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
+    <div class="agrow2" style="margin-top:16px">
+      ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
+      ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
+    </div>
+    <obs-button class="agadvb${d.adv ? ' on' : ''}" variant="default" onclick="agTap(agCfgAdv)">
+      ${agIc('chevron-down', 13)}Advanced settings</obs-button>
+    ${adv}
+    <div class="agtest">
+      <div class="agth">${agIc('plug', 15)}<span class="t">Test connection</span>
+        <obs-button variant="primary"${d.test === 'busy' ? ' disabled' : ''} onclick="agTap(agCfgTest)">Test connection</obs-button></div>
+      ${stages}${note}
+    </div>`;
+}
+
+/* ── 2 · model selection ───────────────────────────────────────────────────────────────── */
+function agStepModels(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  /* ⚠️ THE MODEL'S NOTE AND CONTEXT WINDOW ARE FOLDED INTO THE LABEL. The reference draws each
+     model as a card with a title, a description and a `128K ctx` chip; `obs-radio` accepts only
+     {value,label,disabled} and ESCAPES the label (a known 0.1.166 defect, in `_ds/README.md`),
+     so a rich card is not reachable. Folding keeps every fact rather than dropping two. */
+  const opts = p.models.map(m => ({ value:m.id, label:`${m.name} — ${m.note} — ${m.ctx} context` }));
+  const rows = !d.perTask ? '' : `<div class="agrtw">` + AG_TASKS.map(t => `<div class="agrt">
       <span class="n">${agIc(t.ic, 14)}${stEsc(t.label)}</span>
-      <obs-select value="${W.routing[t.id]}" options="${agJ(p.models.map(m => ({ key:m.id, label:m.name })))}"
-        onchange="agWizRoute('${t.id}', agDet(event))"></obs-select>
-    </div>`).join('');
-  const step2 = `<h3 class="agwt">Model selection</h3>
-    <p class="agwp">Pick a default model for <b>${stEsc(p.name)}</b>. Optionally route individual workflows to different models.</p>
-    <div class="agsec" style="margin-top:0">Default model</div>
-    <obs-radio vertical value="${W.def}" options="${agJ(modelOpts)}" onchange="agWizModel(agDet(event))"></obs-radio>
-    <div class="agroute">
-      <div class="agrh">
-        <div><div class="agon">Use different models for different AI tasks</div>
-          <div class="agod">Route high-stakes work to a stronger model and routine summaries to a faster one.</div></div>
-        <obs-switch${W.perTask ? ' checked' : ''} onchange="agWizRouteTog(agDet(event))"></obs-switch>
-      </div>
-      ${W.perTask ? `<div class="agrts">${routeRows}</div>` : ''}
-    </div>`;
+      <obs-select value="${stEsc(d.routing[t.id] || d.model)}"
+        options="${agJ(p.models.map(m => ({ key:m.id, label:m.name })))}"
+        onchange="agCfgRoute('${t.id}', agDet(event))"></obs-select></div>`).join('') + `</div>`;
 
-  /* ── 3 · consent ───────────────────────────────────────────────────────────────────────
-     ⚠️ `agFootPaint()` ONLY, NOT A FULL REPAINT, when a box is ticked. Replacing `#stMain`
-     would rebuild every `obs-checkbox` and throw away the focus ring mid-keyboard-pass; the
-     only thing that has to react is the footer's gate. */
-  const step3 = `<h3 class="agwt">Review data sharing &amp; processing terms</h3>
-    <obs-banner variant="warning" title="AI features transmit observability data to a third party" style="margin-bottom:16px">
-      When AI features are used, selected observability data may be transmitted to <b>${stEsc(p.name)}</b> for processing. ObserveOps does not control how third-party providers process data after it is transmitted.</obs-banner>
-    <div class="agtwo">
-      <div class="agbox"><div class="h">Data that may be transmitted</div>
-        <div class="agchips">${AG_DATA.shared.map(d => `<obs-tag variant="tag-primary">${d}</obs-tag>`).join('')}</div></div>
-      <div class="agbox"><div class="h">${stEsc(p.name)} privacy policy</div>
-        <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}</obs-link></div>
+  return `<h2 class="agcfgh">Model selection</h2>
+    <p class="agcfgp">Pick a default model for <b>${stEsc(p.name)}</b>. Optionally route individual workflows to different models.</p>
+    <div class="agsub" style="margin-top:16px">Default model</div>
+    <obs-radio vertical value="${stEsc(d.model)}" options="${agJ(opts)}"
+      onchange="agCfgIn('model', agDet(event))"></obs-radio>
+    <div class="agpanel" style="margin-top:24px">
+      <div class="agph">
+        <div class="agphl">${agIc('sitemap', 17)}
+          <div><div class="agpt">Use different models for different AI tasks</div>
+            <div class="agpd">Route high-stakes work to a stronger model and routine summaries to a faster one.</div></div></div>
+        <obs-switch${d.perTask ? ' checked' : ''} onchange="agCfgPerTask(agDet(event))"></obs-switch>
+      </div>${rows}</div>`;
+}
+
+/* ── 3 · data consent ──────────────────────────────────────────────────────────────────── */
+function agStepConsent(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  return `<h2 class="agcfgh">Review data sharing &amp; processing terms</h2>
+    <obs-banner variant="warning" title="AI features transmit observability data to a third party"
+      style="margin:12px 0 16px;display:block">When AI features are used, selected observability data may be
+      transmitted to <b>${stEsc(p.name)}</b> for processing. ObserveOps does not control how third-party
+      providers process data after it is transmitted.</obs-banner>
+    <div class="agrow2">
+      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">Data that may be transmitted</div>
+        <div class="agchips">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div></div>
+      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">${stEsc(p.name)} privacy policy</div>
+        <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
     </div>
-    <div class="agcons">${AG_DATA.consent.map((c, i) => `
-      <obs-checkbox${W.consent[i] ? ' checked' : ''} onchange="agWizConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')}</div>`;
+    <div class="agpanel" style="margin-top:16px"><div class="agcons">${
+      AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
+        onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
+    }</div></div>`;
+}
 
-  /* ── 4 · done ──────────────────────────────────────────────────────────────────────────
-     Molecules/KeyValue — the DS's own summary list. ⚠️ ITS ITEM SHAPE IS `{label,value}`,
-     NOT `{key,value}`: passing `key` renders an empty label column, which is how the first
-     attempt looked broken. */
-  /* ⚠️ THE TWO STATE ROWS ARE TAGS, THROUGH THE COMPONENT'S OWN `status` FIELD.
-     `obs-key-value` ESCAPES `value` (measured — a `<b>` renders as literal text), so markup is
-     not a route. But an item carrying `status` renders an `<obs-tag status="…">` in the value
-     cell, which is the DS's own way to say a state in a detail row. Healthy and Accepted are
-     states, not readings; as plain words they sat at exactly the weight of "OpenAI".
-     ⚠️ The other three stay plain ON PURPOSE — a provider name, a model id and a routing mode
-     are values you read, and tagging all five would make the tag mean nothing. */
+/* ── 4 · done ──────────────────────────────────────────────────────────────────────────── */
+function agStepDone(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  const model = (p.models.find(m => m.id === d.model) || p.models[0]).name;
+  /* ⚠️ `status` ON A ROW RENDERS AN `obs-tag`, which is what a STATE deserves; a provider name
+     and a model id are values you read, so they stay plain. Tagging all five would make the
+     tag mean nothing. */
   const summary = [
     { label:'Provider',          value:p.name },
-    { label:'Default model',     value:agModelName(W.pid, W.def) },
+    { label:'Default model',     value:model },
     { label:'Connection status', status:'Healthy' },
-    { label:'Per-task routing',  value:W.perTask ? 'Enabled' : 'Default only' },
+    { label:'Per-task routing',  value:d.perTask ? 'Enabled' : 'Default only' },
     { label:'Consent',           status:'Accepted' },
   ];
-  const step4 = `<div class="agdone">
+  return `<div class="agdone">
     <span class="agdmk">${agIc('check-circle', 30)}</span>
-    <h3 class="agemt">Setup completed successfully</h3>
-    <p class="agemp">${stEsc(p.name)} is connected and ready. AI-powered workflows can now use your configured models.</p>
-    <div class="agsum">
-      <div class="agsumh">Connection summary</div>
-      <obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value>
-    </div></div>`;
-
-  return [step0, step1, step2, step3, step4][W.step];
+    <h2 class="agdt">Setup completed successfully</h2>
+    <p class="agdp">${stEsc(p.name)} is connected and ready. AI-powered workflows can now use your configured models.</p>
+    <div class="agsum"><obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value></div>
+  </div>`;
 }
 
-function agWizInner(){
-  return `<div class="agwrap" id="agWiz">
-      <div class="agrail"><obs-steps id="agSteps" direction="vertical" size="small" clickable
-        fill="outline" connector="none"
-        active="${AG.wz.step}" items="${agJ(AG_STEPS)}" onchange="agWizGo(agDet(event))"></obs-steps></div>
-      <div class="agmain"><div class="agbody" id="agBody">${agStepHTML()}</div></div>
-    </div>`;
+/* ── the flow footer ───────────────────────────────────────────────────────────────────── */
+/* ⚠️ EACH GATE IS THE REFERENCE'S OWN: Continue off the credentials step needs a SUCCESSFUL
+   test (`canCredsNext = test.status === "success"`), and the consent step needs all four boxes
+   (`allConsent = consent.every(Boolean)`). Neither is invented, and neither silently passes. */
+function agFlowFootHTML(){
+  const d = AG.cfg.d[AG.cfg.pid];
+  const back = d.step > 0 && d.step < 3
+    ? `<obs-button variant="default" onclick="agTap(agCfgBack)">${agIc('chevron-left', 13)}Back</obs-button>` : '';
+  const dis = ok => ok ? '' : ' disabled';
+  const next =
+    d.step === 0 ? `<obs-button variant="primary"${dis(d.test === 'ok')} onclick="agTap(agCfgNext)">Continue</obs-button>` :
+    d.step === 1 ? `<obs-button variant="primary" onclick="agTap(agCfgNext)">Continue</obs-button>` :
+    d.step === 2 ? `<obs-button variant="primary"${dis(d.consent.every(Boolean))} onclick="agTap(agCfgNext)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>` :
+                   `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`;
+  return `<div class="agff" id="agFlowFoot">
+    <span class="sp agtn" style="margin:0">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>
+    ${back}${next}</div>`;
+}
+/* ⚠️ TICKING A CONSENT BOX REPAINTS THE FOOTER, NOT THE PANE. The only thing a tick changes is
+   whether Accept is gated — and a full `agCfgPaint()` destroys and rebuilds all four
+   checkboxes, throwing away the focus of the one you just clicked and (because the DS elements
+   render on their own tick) leaving a moment where the next one is not yet interactive. The
+   same discipline as repainting the pane instead of the whole screen, one level finer. */
+function agCfgFootPaint(){
+  const f = document.getElementById('agFlowFoot');
+  if (f) f.outerHTML = agFlowFootHTML(); else agCfgPaint();
 }
 
-/* Organisms/Drawer. `width` is inside the product's own 50–70% band for a complex form
-   (`obs-drawer` registry: "Product: 360→40%→50-70%→85-96%") — a stepper rail plus a form needs
-   the upper half of it. `scrolled-content="false"` is the registry's multi-pane mode: the rail
-   and the body scroll as their own columns instead of one shared region, which is the only way
-   a fixed rail beside a scrolling form works.
-   ⚠️ THIS IS ONLY EVER CALLED TO **OPEN** THE DRAWER. Step changes go through `agWizRepaint`,
-   which patches the contents and leaves this element alone — see the note there. */
-function agWizHTML(){
-  return `<obs-drawer id="agDrw" width="62%" scrolled-content="false" use-padding>
-    <span slot="title">Set up Agentic AI</span>
-    ${agWizInner()}
-    <div slot="actions" class="agfootw">${agFootHTML()}</div>
-  </obs-drawer>`;
+function agCfgNext(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.min(3, d.step + 1); agCfgPaint(); }
+function agCfgBack(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.max(0, d.step - 1); agCfgPaint(); }
+/* obs-steps `clickable` leaves future steps inert; this guards the same rule again */
+function agCfgGo(n){ const d = AG.cfg.d[AG.cfg.pid]; if (n > d.step) return; d.step = n; agCfgPaint(); }
+function agCfgPerTask(v){ const d = AG.cfg.d[AG.cfg.pid]; d.perTask = !!v;
+  AG_TASKS.forEach(t => { if (!d.routing[t.id]) d.routing[t.id] = d.model; }); agCfgPaint(); }
+function agCfgRoute(id, v){ AG.cfg.d[AG.cfg.pid].routing[id] = v; }
+function agCfgConsent(i, v){ AG.cfg.d[AG.cfg.pid].consent[i] = !!v; agCfgFootPaint(); }
+
+function agCfgAdv(){ AG.cfg.d[AG.cfg.pid].adv = !AG.cfg.d[AG.cfg.pid].adv; agCfgPaint(); }
+
+/* ⚠️ `select` IS A CUSTOM EVENT — an inline `onselect=` attribute is inert markup, the trap
+   that shipped green in the cleared build because the probe called the handler directly. It
+   has to be `addEventListener`, and `after()` is the only place the node exists. */
+function agCfgAfter(){
+  const nav = document.getElementById('agCfgNav');
+  if (nav && !nav._agBound){
+    nav._agBound = 1;
+    nav.addEventListener('select', e => { const v = agDet(e); agCfgPick(v && v.label ? v.label : v); });
+  }
+  agCfgBind();
 }
 
-/* ⚠️ THERE IS NO PASSWORD-REVEAL TOGGLE, AND THAT IS A SHIPPED-ELEMENT LIMIT, NOT A CHOICE.
-   `obs-input` documents `prefix-icon` / `suffix-icon` in `elements-api.json` and its source
-   reads them — but this build (0.1.166) renders NEITHER: the element uses shadow DOM and its
-   shadow root comes back with zero icons for `prefix-icon="key" suffix-icon="eye"`. Measured,
-   not assumed. The reference has an eye toggle; hanging one on this field would mean either
-   reaching into another component's shadow DOM or hand-drawing an icon, and the contract
-   forbids both. So the key field is `type="password"` and nothing else. Reported upstream.
-   ⚠️ `agWizShow()` and `W.show` are KEPT AND UNREFERENCED, the house pattern — the toggle is
-   one attribute away the day the element renders its suffix. */
-
-/* ⚠️ `ST_PAGES` IS THE ONLY WIRING. `stMainPaint()` paints whatever is registered under
-   "<category> › <page>" and falls back to the placeholder, so nothing in the `st` block had
-   to change to host this. */
-/* ⚠️ THE DRAWER IS RENDERED CLOSED AND OPENED ONE TASK LATER, AND BOTH HALVES MATTER.
-   `obs-drawer` wraps a native `<dialog>`, and it calls `showModal()` from a WATCHER on `open`
-   — so it needs a real false→true CHANGE. Two ways to get this wrong, both measured:
-     · `<obs-drawer open>` in the markup. The prop is true from parse, nothing ever changes,
-       the watcher never fires, and the dialog sits at `position:fixed; left:1600` on a 1600px
-       viewport — fully slid out, which reads as "the drawer did not render at all".
-     · setting `el.open = true` synchronously in `after()`. `stMainPaint()` has only just
-       written `innerHTML`; the custom element has not upgraded yet, so the assignment lands on
-       a plain property that the component overwrites when it finally mounts. Same symptom.
-   A `setTimeout(…, 0)` is late enough for the upgrade and early enough to be the same frame
-   the user sees. ⚠️ NOT `requestAnimationFrame` — rAF is starved under headless virtual time,
-   the recorded trap that cost two probe rounds on the thinking trail.
-   Verified: after a genuine flip the dialog measures `left=0`; before it, `left=1600`. */
-/* ⚠️ THE CUSTOM EVENTS MUST BE BOUND WITH `addEventListener`, NOT WITH `on<name>=`.
-   An inline handler CONTENT ATTRIBUTE only works for events the HTML spec lists as event
-   handlers — `onclick`, `onchange`, `oninput` and friends. `cellaction`, `rowaction` and the
-   drawer's `close` are CUSTOM event names, so `oncellaction="…"` is inert markup: the table's
-   Configure button fired its event into nothing and the row menu did the same, while the
-   drawer's ✕ closed the panel visually and left `AG.wz` set behind it.
-   ⚠️ THIS SHIPPED GREEN, AND THAT IS THE LESSON. The probe called `agCell({…})` DIRECTLY and
-   passed — "a green probe is not a working feature", which this repo records in exactly these
-   words. It now clicks the real button inside `obs-table`'s shadow root.
-   ⚠️ REBOUND ON EVERY PAINT. `stMainPaint()` writes fresh elements, so the flag lives ON THE
-   ELEMENT — a new one has no flag and gets bound; the old one is gone with its listeners. */
-function agBind(el, ev, fn){
-  if (!el || el['_ag' + ev]) return;
-  el['_ag' + ev] = 1;
-  el.addEventListener(ev, e => fn(agDet(e)));
+/* ⚠️ REPAINT THE RIGHT PANE ONLY — never the whole screen. `stMainPaint()` would rewrite
+   `#stMain.innerHTML` and destroy `obs-side-menu`, so the rail would re-render (replaying its
+   own transitions) and the listener above would need rebinding on every click. The component
+   already moves its own highlight internally; `active` is set so a later full paint agrees. */
+function agCfgPick(name){
+  const p = agProvByName(name); if (!p || p.id === AG.cfg.pid) return;
+  AG.cfg.run++;                       /* abandon a test still running for the old provider */
+  AG.cfg.pid = p.id;
+  agCfgPaint();
+  const nav = document.getElementById('agCfgNav');
+  if (nav) nav.setAttribute('active', p.name);
 }
-function agOvAfter(){
-  agBind(document.getElementById('agTbl'), 'cellaction', agCell);
-  agBind(document.getElementById('agTbl'), 'rowaction', agRowAct);
-  if (!AG.wz) return;
-  /* ⚠️ THE DRAWER IS RENDERED CLOSED AND OPENED ONE TASK LATER — see the note below. */
+/* ⚠️ THE RIGHT PANE ONLY — every repaint on this screen goes through here. Rewriting
+   `#stMain` would destroy `obs-side-menu` and orphan its `select` listener. */
+function agCfgPaint(){
+  const main = document.getElementById('agCfgMain');
+  if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); } else stMainPaint();
+}
+/* ⚠️ THE STEPPER IS REBOUND ON EVERY PAINT, and the rail is NOT. `obs-steps` lives inside the
+   pane this function replaces, so its node is destroyed each time and a listener bound once
+   would be lost; `obs-side-menu` lives outside it and is bound once in `agCfgAfter`. Both are
+   CUSTOM events (`change` / `select`) — an `on<name>=` attribute for either is inert markup. */
+function agCfgBind(){
+  const st = document.getElementById('agFlow');
+  if (st && !st._agBound){ st._agBound = 1; st.addEventListener('change', e => agCfgGo(agDet(e))); }
+}
+
+function agCfgIn(field, v){ AG.cfg.d[AG.cfg.pid][field] = String(v == null ? '' : v); }
+
+/* ⚠️ THE RUN TOKEN IS THE `agClose()` LESSON. A test left running when you switch provider —
+   or leave the screen — would otherwise land its result in a pane that is now showing
+   something else. `agCfgPick` and `stFullClose` both bump it, and the callback checks it. */
+function agCfgTest(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  if (!d.key.trim()) return toast('Enter an API key for ' + p.name + ' first');
+  const run = ++AG.cfg.run, pid = p.id;
+  d.test = 'busy'; d.stage = 0; agCfgPaint();
+  /* the reference walks its four stages at 520ms each; each tick checks the run token, so a
+     test abandoned by switching provider or leaving cannot tick into someone else's pane */
+  AG_STAGES.forEach((_, i) => setTimeout(() => {
+    if (AG.cfg.run !== run || AG.cfg.pid !== pid) return;
+    AG.cfg.d[pid].stage = i + 1; agCfgPaint();
+  }, (i + 1) * 520));
   setTimeout(() => {
-    const d = document.getElementById('agDrw');
-    if (!d) return;
-    /* ⚠️ CLOSING IS WATCHED, NOT LISTENED FOR, AND THAT TOOK THREE GOES.
-       `obs-drawer` documents a `close` event in `elements-api.json` and NEVER EMITS ONE. Its
-       ✕ takes the inner `<dialog>` to `open=false`, leaves the HOST's own prop at `true`, and
-       dispatches nothing — measured: the panel vanished while `AG.wz` stayed set, so the page
-       still believed the wizard was open. Nor does the native `close` event fire, because the
-       component drops the ATTRIBUTE rather than calling `dlg.close()`.
-       What is left is the attribute itself. A MutationObserver on it is not a workaround for
-       one control — it is the one signal every close path shares, so ✕, Esc and anything the
-       component adds later all land here.
-       ⚠️ It must ignore the OPENING mutation: `d.open = true` below flips the same attribute,
-       so the guard is on `!dlg.open`.
-       ⚠️ Reaching into another component's shadow root is not something to do lightly. This is
-       a read-only observer, not a style override, and it is the only handle the element gives.
-       Worth reporting upstream alongside the other defects this build turned up. */
-    const dlg = d.shadowRoot && d.shadowRoot.querySelector('dialog');
-    if (dlg && !dlg._agObs){
-      dlg._agObs = new MutationObserver(() => {
-        /* ⚠️ `isConnected` IS LOAD-BEARING, NOT A BELT-AND-BRACES CHECK. Every step change
-           repaints, which DESTROYS this drawer and builds the next one; the teardown drops the
-           dialog's `open` attribute, and without this guard the observer read that as "the
-           user closed it" and cleared `AG.wz`. Symptom: pressing Continue shut the wizard
-           instead of advancing — and only a REAL CLICK showed it, because the probes that set
-           `AG.wz.step` by hand never went through this path. */
-        if (!dlg.isConnected) return;
-        if (!dlg.open && AG.wz){ d.open = false; agWizClose(); }
-      });
-      dlg._agObs.observe(dlg, { attributes:true, attributeFilter:['open'] });
-    }
-    if (AG.wz && !d.open) d.open = true;
-  }, 0);
+    if (AG.cfg.run !== run || AG.cfg.pid !== pid) return;
+    AG.cfg.d[pid].test = 'ok'; agCfgPaint();
+  }, AG_STAGES.length * 520 + 160);
 }
-ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML, after: agOvAfter };
+function agCfgSave(){
+  const p = agProv(AG.cfg.pid);
+  if (!AG.cfg.d[p.id].key.trim()) return toast('Enter an API key for ' + p.name + ' first');
+  AG.active = true; AG.conn = p.id; AG.cfg.run++;
+  stFullClose();
+  toast(p.name + ' connected — AI features are live');
+}
+
+/* ⚠️ NO `after` HOOK ANY MORE. It existed to `addEventListener` the provider grid's custom
+   `cellaction` / `rowaction`; the usage grid is read-only and emits neither, so the hook went
+   with it. Naming a function that no longer exists here is not a silent no-op — `stMainPaint`
+   guards `pg.after`, but the object literal evaluates the identifier and throws a
+   ReferenceError that aborts the whole block. Re-add both together or neither. */
+agSeed();   /* see the note at `agSeed` — it must run after AG_TASKS is initialised */
+ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
 </script>
 
 <script src="_variants.js"></script>
