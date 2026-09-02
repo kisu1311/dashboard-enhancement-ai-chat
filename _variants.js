@@ -17,7 +17,8 @@
     {"file":"index copy.html","label":"Option 1"},
     {"file":"index.html","label":"Option 2"},
     {"file":"dashboard-picker-advanced.html","label":"Option 3"},
-    {"file":"dashboard-labelled-rail.html","label":"Option 4"}
+    {"file":"dashboard-labelled-rail.html","label":"Option 4"},
+    {"file":"dashboard-nav-column.html","label":"Option 5"}
   ];
   /* VARIANTS:END */
 

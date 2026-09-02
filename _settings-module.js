@@ -207,7 +207,13 @@ const stSlug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,
 /* The seed profile is the page's own signed-in user, split the way the live one was
    (“motadata admin” → First “motadata”, Last “admin”, User Name “admin”). */
 function stSeed(){
-  const lbl = document.querySelector('#sbUser .lbl');
+  /* ⚠️ `.nm` FIRST, `.lbl` ONLY AS A FALLBACK. Option 1's rail footer gained a second line
+     (the e-mail) INSIDE `.lbl` on 2 Sep 2026, so `.lbl.textContent` there is the name and the
+     address run together — "Kishan Patelkishan.patel@example.com" — and this would have seeded
+     the profile form with that as the first name. The other options still have a bare `.lbl`,
+     and this file is shared with none of them, but the fallback keeps the two shapes readable
+     by one function. */
+  const lbl = document.querySelector('#sbUser .nm') || document.querySelector('#sbUser .lbl');
   const nm = ((lbl && lbl.textContent) || 'motadata admin').trim().split(/\s+/);
   const first = nm[0] || 'motadata', last = nm.slice(1).join(' ') || 'admin';
   return { first, last, user:'admin',
@@ -436,7 +442,14 @@ function stReset(){
    (live calls refreshUser() after the update) */
 function stIdentity(){
   const d = ST.saved, name = (d.first+' '+d.last).trim(), ini = stInitials();
-  document.querySelectorAll('#sbUser .lbl, #userPop .uhead .nm, #userPop .upname').forEach(el => el.textContent = name);
+  /* ⚠️ WRITE THE NAME INTO `.nm` WHERE ONE EXISTS, NOT INTO `.lbl` — on Option 1's rail `.lbl`
+     now wraps the name AND the e-mail sub-line, so setting its textContent would delete the
+     sub-line on the first profile save. */
+  const nmEl = document.querySelector('#sbUser .nm');
+  document.querySelectorAll((nmEl ? '#sbUser .nm' : '#sbUser .lbl') + ', #userPop .uhead .nm, #userPop .upname')
+    .forEach(el => el.textContent = name);
+  /* the sub-line follows the saved e-mail, so the rail and the profile form cannot disagree */
+  const subEl = document.getElementById('sbUserSub'); if (subEl) subEl.textContent = d.email || '';
   const sb = document.getElementById('sbUser'); if (sb) sb.setAttribute('data-tip', name);
   document.querySelectorAll('#sbUser .miniav, #userPop .upavatar').forEach(el => {
     if (ST.savedAvatar){ el.textContent = ''; el.style.backgroundImage = `url("${ST.savedAvatar}")`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
@@ -1320,6 +1333,21 @@ const AG_USE_COLS = [
    recorded `st` search-box lesson).
    ⚠️ `setAttribute` TAKES RAW JSON, NOT `agJ()` — that HTML-escapes for markup, and an escaped
    string set as an attribute value reaches the component as literal `&quot;`. */
+/* ⚠️ EXPORT SITS BEFORE THE PRIMARY (request, 2 Sep 2026). `obs-toolbar`'s default slot lays
+   its actions out in source order, so "before Configure AI provider" is simply being emitted
+   first — the primary stays the last thing in the row, which is where the DS's Button rule wants
+   the one main action.
+   ⚠️ THE GLYPH IS THE DS's OWN `export-pdf`, confirmed with `resolve_icon` before it was used
+   ("found": true, canonical `export-pdf`) rather than assumed — an `obs-icon` given a name the
+   set does not have renders NOTHING, silently, which is indistinguishable from a styling bug.
+   ⚠️ It is icon-only with a `data-tip`, matching the Compliance Policy toolbar's own square
+   actions; the export itself is a toast, as every other export in this prototype is — there is
+   no PDF pipeline here and pretending otherwise would be the one thing that lies about
+   capability. */
+function agExportPdf(){
+  const p = agProv(AG.conn);
+  toast('Exporting Agentic AI usage as PDF' + (AG.active && p ? ' — ' + p.name + ' included' : ''));
+}
 function agSearch(v){
   AG.q = String(v == null ? '' : v);
   const t = document.getElementById('agUse');
@@ -1351,8 +1379,8 @@ function agUseRows(){
      `minmax(0,1fr)` lets the tracks shrink instead of overflowing on a narrow window. */
   const widgets = `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;padding:8px 0 12px">
       ${w('Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%')}
-      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-indigo'), '1.2s avg')}
-      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--severity-warning'), '-40%')}
+      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-aqua'), '1.2s avg')}
+      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--chart-amber'), '-40%')}
     </div>`;
 
   /* ⚠️ ALL THREE PROVIDERS ARE ROWS (request, 1 Sep 2026). Only the CONNECTED one has usage —
@@ -1402,14 +1430,21 @@ function agOvHTML(){
   const toolbar = `<obs-toolbar>
       <obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
         oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>
+      <obs-button variant="default" class="agexp" data-tip="Export as PDF"
+        onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>
       <obs-button variant="primary" onclick="agTap(agConfig)">Configure AI provider</obs-button>
     </obs-toolbar>`;
 
   /* ⚠️ THE DETAIL ONLY EXISTS ONCE A PROVIDER IS CONNECTED. Unconfigured, the page is header →
      toolbar and nothing else, and the "Not configured" tag beside the title is what says so —
      usage figures for a connection that does not exist would be an invention. */
-  const usage = !AG.active ? '' : `<div class="agsec">Usage &amp; health</div>
-    <obs-table id="agUse" row-key="id" sortable expandable empty-text="No records available"
+  /* ⚠️ NO "USAGE & HEALTH" HEADING — removed on request (2 Sep 2026). The page holds ONE table,
+     directly under its own toolbar, which is the DS `list-view` recipe's own shape
+     (page-header → toolbar → table); a section label over a single table names something there
+     is no second thing to distinguish it from. The heading also carried `margin:24px 0 12px`,
+     so the toolbar↔table gap had to move onto the table itself — see `.agpage obs-table`. */
+  const usage = !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
+      header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
   return `<div class="agpage" id="agPage">${head}${toolbar}${usage}</div>`;
@@ -1465,6 +1500,18 @@ AG_DATA.errors  = [3,2,5,1,0,2,1,4,1,0,1,2,1,0];
    (`/(chart|graph|topology|gauge|widget|heatmap|…)/`); unclassed these resolve to the generic
    `graphic`, which `--declare chart` does not cover, and the run fails with
    "⛔ CONTRACT BREACH · undeclared non-DS element" on a gap that was declared. */
+/* ⚠️ SERIES COLOURS COME FROM THE CHART PALETTE, NEVER FROM A SEVERITY TOKEN. `Error trend` was
+   drawn in `--severity-warning`, which is the token for a monitor or alert's severity LEVEL —
+   on a data series it claims a state the chart is not reporting, and that metric was reading
+   amber-for-alarm while trending DOWN 40%, i.e. improving. It is `--chart-amber` now: the
+   palette's own amber, same visual character, none of the meaning.
+   ⚠️ The first two charts BOTH used `--chart-indigo`, so a row of three unrelated metrics read
+   as two-that-belong-together plus one. Each has its own hue now — indigo, aqua, amber.
+   ⚠️ The DS ships 15 named series colours, each themed per mode, so none of this needs a
+   literal. `--chart-vivid-teal` is deliberately avoided: it resolves to #14b8a6, this
+   prototype's own accent, and a series painted in the product accent reads as chrome.
+   ⚠️ These charts are the one declared `list_gaps` gap on this screen and carry `class="agchart"`,
+   which is load-bearing — the conformance checker derives the archetype from that class. */
 function agBars(d, tok){
   const max = Math.max(1, ...d), w = 100 / d.length;
   return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
@@ -1510,7 +1557,20 @@ function agSeed(){
   if (!d || !p) return;
   d.name = p.name + ' production';
   d.key  = '••••••••••••4A2F';
-  d.test = 'ok';
+  /* ⚠️ THE SEED DOES NOT MARK THE CONNECTION TESTED (request, 2 Sep 2026: "by default it is not
+     shown — it will show [after] I click Run again"). It used to set `d.test = 'ok'`, so the
+     credentials step OPENED already Verified, with the green success banner up and the button
+     reading "Run again" — the whole test sequence had already happened before you arrived, and
+     pressing the button replayed something the screen was already claiming. Now it opens
+     untested: "Not tested" / "Run test" / no banner, and the loader → stages → success run is
+     something you actually see happen.
+     ⚠️ This is why a bug report of "clicking Run again shows the success message" could not be
+     reproduced by tracing the click — the click was always correct; the SCREEN ARRIVED in the
+     end state. When a flow cannot be reproduced, check what the state was before it started.
+     ⚠️ `d.test` is read ONLY by the wizard (the credentials pane, the footer's Continue gate and
+     its button label) — nothing on the Overview reads it, so the provider still shows as
+     connected there and the usage table is unaffected. Checked before removing it.
+     ⚠️ Option 4 has no `agSeed` at all, so it already behaved this way. */
   d.consent = [true, true, true, true];
   d.perTask = true;
   /* a routing worth showing: the routine tasks moved onto the cheap fast model, the analytical
@@ -1527,10 +1587,35 @@ function agSeed(){
 
 /* ⚠️ IT TAKES AN OPTIONAL PROVIDER so a grid row opens ITS OWN provider rather than whatever
    the rail last had. The toolbar button passes nothing and keeps the current selection. */
+/* ⚠️ IT IS A SIDE DRAWER NOW, NOT A FULL PAGE (request, 2 Sep 2026: "when I click Configure AI
+   provider the screen will show as a side popup like this", pointing at the Dashboard layout
+   drawer). That is also what the DS prescribes — `get_layout(panels)` answers "drawer for
+   create/edit", the single most-used overlay in the product (146 files).
+   ⚠️ IT REUSES `.sdrawer`, THE PROTOTYPE'S OWN DRAWER, not `obs-drawer`. The DS element was
+   tried for this very screen on 31 Aug and carries six recorded defects — it never emits its
+   documented `close` event, an `open` attribute in markup does nothing, and replacing a slotted
+   child re-runs its open animation. `.sdrawer` is what the reference screenshot actually shows,
+   it was rebuilt against the DS in the 27 Aug pass, and it has none of those problems.
+   ⚠️ `stFullOpen` IS NO LONGER USED HERE, so the Settings category list stays visible behind the
+   drawer — which is the point of a drawer: the Overview you came from is still on screen.
+   `agHelpShowTog` and `.agcfg.nohelp` remain unreferenced, as before. */
 function agConfig(pid){
   if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
-  stFullOpen({ title:'Configure AI provider', html:agCfgHTML, after:agCfgAfter,
-               info:agHelpShowTog });
+  const d = document.getElementById('drawer-agcfg');
+  if (!d) return;
+  agCfgPaint();
+  document.body.classList.add('agdrawer');
+  const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.add('on');
+  d.classList.add('on');
+  agCfgAfter();
+}
+function agCfgClose(){
+  const d = document.getElementById('drawer-agcfg');
+  if (d) d.classList.remove('on');
+  const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.remove('on');
+  document.body.classList.remove('agdrawer');
+  /* the Overview behind it shows the connection state, so it has to catch up */
+  if (typeof stMainPaint === 'function') stMainPaint();
 }
 
 /* ── the help card ────────────────────────────────────────────────────────────────────────
@@ -1560,7 +1645,13 @@ const AG_HELP = [
         transmitted — see that provider's privacy policy on the consent step.</li></ul>` },
 ];
 /* the first section open, as the reference has it */
-AG.helpOpen = [true, false, false];
+/* ⚠️ ALL THREE OPEN (request, 2 Sep 2026). It was `[true,false,false]` — the reference's own
+   default — but that reference is a TALL narrow rail where three open sections would overflow.
+   Here the column is ~900px and the three together measure ~520px, so collapsing two of them
+   bought nothing and left two-thirds of the card empty while hiding content behind a click.
+   ⚠️ `agHelpTog` still works, so they can each be folded away; this only changes what you
+   arrive to. */
+AG.helpOpen = [true, true, true];
 AG.helpShow = true;
 
 function agHelpHTML(){
@@ -1664,8 +1755,20 @@ const AG_TASKS = [
 
 function agCfgFormHTML(){
   const d = AG.cfg.d[AG.cfg.pid];
-  const body = [agStepCreds, agStepModels, agStepConsent, agStepDone][d.step]();
-  /* ⚠️ `change` IS A CUSTOM EVENT on obs-steps — bound in `agCfgBind`, not with `onchange=`. */
+  /* ⚠️ ONE FORM, NO STEPPER (request, 2 Sep 2026: "remove the number of step and all fields
+     will be shown by default"). The three stages are stacked and everything is on screen at
+     once; each keeps its own `<h2 class="agcfgh">` heading, so what were step titles are now
+     section headings — Enter credentials · Model selection · Review data sharing.
+     ⚠️ THE GATES ARE UNCHANGED, only the navigation is gone. `agFlowFootHTML` still requires a
+     PASSING test and all four consent boxes before the one primary is enabled — the wizard was
+     never what enforced that, it only spread it over three screens.
+     ⚠️ `d.step` SURVIVES AS THE DONE FLAG, not as a position: `> 2` renders the completion
+     screen. Keeping it is what lets `agCfgSave` and the done state work untouched.
+     ⚠️ `agCfgGo` / `agCfgBack` / `agCfgNext` and `AG_FLOW` are KEPT AND UNREFERENCED (the house
+     pattern) — the wizard is one `flow` line away if it is ever wanted back. `agCfgBind` still
+     guards on `#agFlow` existing, so it is inert rather than broken. */
+  const body = d.step > 2 ? agStepDone()
+             : agStepCreds() + agStepModels() + agStepConsent() + agTestHTML();
   /* ⚠️ `size` IS THE DEFAULT 32px, NOT `small` (annotation ×3, 1 Sep 2026: "improve this" on
      each of the three steps). It shipped as `size="small"`, and the registry's own `size`
      rule rules that out in as many words — useWhen: "small (24px) for a dense side rail (the
@@ -1679,54 +1782,155 @@ function agCfgFormHTML(){
      `status` were each checked against the registry's usage cards and all are the prescribed
      choice for a top-of-form wizard whose completed steps are safe to revisit. Size was the
      one documented `dontUse` being violated, so it is the one thing changed. */
-  const flow = d.step > 2 ? '' : `<div class="agflow"><obs-steps id="agFlow" clickable
-      active="${d.step}" items="${agJ(AG_FLOW)}"></obs-steps></div>`;
-  return `<div class="agform">${flow}<div class="agfbody">${body}</div>${agFlowFootHTML()}</div>`;
+  const flow = '';
+  /* ⚠️ THE FOOTER SITS OUTSIDE `.agform` ON PURPOSE (request, 2 Sep 2026: "the line is full and
+     the button will be show on helpcard devider line"). `.agform` is capped at 720px because
+     that is a readable measure for FIELDS; the footer is the screen's ACTION BAR, so it spans
+     the whole pane and its rule runs all the way to the help card's own divider. `.agcfgm` is
+     the flex column, `.agform` takes the slack (`flex:1 1 auto`) and `.agff` sits at the
+     bottom — which is what keeps the footer clear of the variant pill. */
+  return `<div class="agform">${flow}<div class="agfbody">${body}</div></div>${agFlowFootHTML()}`;
 }
 
 /* ── 1 · credentials ───────────────────────────────────────────────────────────────────── */
 function agStepCreds(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
   const v = x => stEsc(x == null ? '' : String(x));
-  const fld = (k, label, extra) => `<obs-input block label="${label}"${extra || ''}
+  /* ⚠️ A FIELD WITH A TOOLTIP RENDERS ITS OWN LABEL. `obs-input`'s `label` prop draws the label
+     INSIDE the component's shadow root, and the shipped 0.1.166 element exposes no slot and no
+     ::part — so there is no way to put anything after that text. The reference (supplied 2 Sep
+     2026) puts the ⓘ immediately after the label, next to the required *, so for those fields the
+     label moves OUT and `.agflb` reproduces the component's own `.lbl` rule verbatim
+     (`font-size:var(--text-sm,.8rem); line-height:1.5; color:var(--text-color-common-secondary)`,
+     read from its shadow CSS). Fields with no tooltip keep the component's own label, and the two
+     are asserted to render at the same size, colour and offset.
+     ⚠️ Every field in the Advanced panel takes a tooltip, so the two label mechanisms never mix
+     inside one visual group. */
+  const fld = (k, label, extra, tip) => {
+    const inp = `<obs-input block${tip ? '' : ` label="${label}"`}${extra || ''}
       value="${v(d[k])}" oninput="agCfgIn('${k}', agDet(event))"></obs-input>`;
+    return !tip ? inp : `<div class="agfld"><span class="agflb">${label}<obs-tooltip
+      class="agtip" placement="top-start">${stEsc(tip)}</obs-tooltip></span>${inp}</div>`;
+  };
 
-  const adv = !d.adv ? '' : `<div class="agadv">
+  /* ⚠️ "(optional)" IS GONE FROM THE LABELS — the DS marks the opposite. `obs-input`'s own
+     `label` note is "a red required * is appended when `required`", and this form already uses
+     that on API key, so an unmarked label ALREADY means optional. Saying it twice, in two
+     conventions, made the two longest labels here longer still.
+     ⚠️ THE UNITS STAY IN THE LABEL, AND THAT IS A WORKAROUND, NOT A CHOICE. The registry's
+     `addonBefore/addonAfter` rule is explicit that an attached fixed segment is where a unit
+     belongs ("protocol/unit"), and `prefix/suffix` covers a unit inside the field — but the
+     shipped 0.1.166 element renders NO `<slot>` of any name (recorded in `_ds/README.md`), so
+     neither is reachable from outside. `(s)` and `(req/min)` therefore remain parenthetical.
+     ⚠️ `help` IS the DS's supporting-text slot and it DOES work (added in elements@0.1.10) —
+     it carries what "(optional)" was weakly implying, which is what each field is actually for.
+     ⚠️ `allow-clear` on the two text fields, per its usage rule: "an optional field/search where
+     clearing to empty is valid". The three numeric ones are not cleared to empty — they have
+     working defaults — so they do not get it. */
+  /* ⚠️ THE BOX IS ALWAYS RENDERED; ONLY ITS BODY IS CONDITIONAL. The toggle is the section's
+     header now, so the section has to exist for it to sit in — `!d.adv` used to return '' and
+     take the box away with the fields. */
+  const adv = `<div class="agadv${d.adv ? ' on' : ''}">
+      <obs-button class="agadvb" variant="default" onclick="agTap(agCfgAdv)">
+        ${agIc('chevron-down', 13)}Advanced settings</obs-button>
+      ${!d.adv ? '' : `<div class="agadvbd">
       <div class="agrow2">
-        ${fld('endpoint','Custom endpoint URL (optional)',' placeholder="https://gateway.internal/v1"')}
-        ${fld('proxy','Proxy (optional)',' placeholder="http://proxy.corp:8080"')}
+        ${fld('endpoint','Custom endpoint URL',' allow-clear placeholder="https://gateway.internal/v1"',
+              'Send requests to your own gateway instead of the provider\'s endpoint. Leave empty to use the provider directly.')}
+        ${fld('proxy','Proxy',' allow-clear placeholder="http://proxy.corp:8080"',
+              'Route outbound traffic through a corporate proxy. Leave empty for a direct connection.')}
       </div>
       <div class="agrow3">
-        ${fld('timeout','Request timeout (s)',' type="number"')}
-        ${fld('retries','Retry attempts',' type="number"')}
-        ${fld('rate','Rate limit (req/min)',' type="number"')}
-      </div></div>`;
+        ${fld('timeout','Request timeout (s)',' type="number"',
+              'How long to wait for a reply before the request is abandoned, in seconds.')}
+        ${fld('retries','Retry attempts',' type="number"',
+              'How many times a failed request is retried before the connection is reported as failed.')}
+        ${fld('rate','Rate limit (req/min)',' type="number"',
+              'The most requests ObserveOps will send in a minute. Keep it under your provider plan\'s limit.')}
+      </div></div>`}</div>`;
 
   /* the reference runs four named stages rather than a spinner — the wait says what it is
-     doing, and each line resolves to a ✓ as it lands */
-  const stages = (d.test === 'busy' || d.test === 'ok')
-    ? `<div style="margin-top:12px">` + AG_STAGES.map((s, i) => {
-        const done = d.test === 'ok' || i < d.stage;
-        return `<div class="agstg${done ? ' done' : ''}">${done ? agIc('check-circle', 14) : '<span class="p"></span>'}${stEsc(s)}</div>`;
-      }).join('') + `</div>` : '';
-  const note = d.test === 'ok'
-    ? `<div class="agtn ok">${agIc('check-circle', 14)}Connection verified. ${stEsc(p.name)} is reachable with this key.</div>`
-    : d.test === 'busy' ? ''
-    : `<div class="agtn">${agIc('info-circle', 14)}Enter your API key, then run a test to verify the connection before continuing.</div>`;
+     doing, and each line resolves to a ✓ as it lands.
+     ⚠️ THE RUNNING STAGE IS MARKED (`.now`). Every not-yet-done stage drew the same empty ring,
+     so while the test ran you could not tell which one was in flight from the two that had not
+     started — the four lines said "something is happening" and nothing more. */
+  /* ⚠️ THE WHOLE TEST PANEL IS ABSENT AT REST (request, 2 Sep 2026: "remove this — show only
+     when I click Run test"). The credentials step is now just the two fields and Advanced
+     settings; the panel materialises on the first run and then stays, carrying the progress line
+     and the result. THE FOOTER'S "Run test" IS WHAT STARTS IT — that button, added an hour
+     earlier, is the reason this can be removed at all: without it the only way to run a test
+     would have gone with the panel.
+     ⚠️ This is the end of three successive removals from the same block — the "Not tested" tag,
+     then the hint line, then the panel itself. Each was the same observation: at rest it reported
+     that nothing had happened yet. The tag and the button label therefore no longer need an
+     `idle` case at all, and the maps here are `busy`/`ok` only.
+     ⚠️ `st` IS STILL COMPUTED FOR IDLE, and must be — the footer's own button label and the
+     Continue gate both read it. */
+  const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
+  const stages = st !== 'busy' ? ''
+    : `<div class="agstgl"><span class="stspin"></span><span class="t">${
+        stEsc(AG_STAGES[Math.min(d.stage, AG_STAGES.length - 1)])}\u2026</span></div>`;
+  /* ⚠️ THE OUTCOME IS AN `obs-banner`, THE HINT IS NOT. The result used to be a fifth row in
+     exactly the shape of the four stages above it — same tick, same size, differing only in
+     text colour — so the one line that reports the ANSWER read as one more step. `obs-banner`
+     variant=success is the catalogued component for "a positive inline confirmation that should
+     persist on the surface" (its registry's own words), and it is a different object from a
+     stage row. The idle line stays plain muted text on purpose: it is a form HINT, not a state,
+     and a tinted block before you have done anything is heavier than what it says. */
+  /* ⚠️ NO `title` ON THE SUCCESS BANNER (request, 2 Sep 2026: "the icon and success message will
+     be shown in a single line"). `.bn` is `display:flex` with the icon and the body as siblings,
+     so a title occupies the body's first line and the message falls to a second one, leaving the
+     ✓ aligned to the title and nothing beside it. With no title the body is just the message and
+     the two share one line — and nothing is lost, because the green ✓ and the success colour
+     already say "verified", which is all the title said.
+     ⚠️ THE TITLE WAS ALSO BEING EATEN BY THIS PAGE'S TOOLTIP ENGINE. `tipFor()` adopts any
+     `title=` into `data-tip` and DELETES the attribute on first hover — the trap already recorded
+     for `obs-drawer` — so the heading vanished the moment the pointer crossed it, leaving an
+     EMPTY title element still holding that first line. That is why the ✓ sat alone above the
+     text. The engine is now guarded against `obs-*` elements (see `tipFor` in the page), so the
+     consent step's warning banner keeps its own title. */
+  const note = st === 'ok'
+    ? `<obs-banner variant="success" class="agbanok">${
+        stEsc(p.name)} is reachable with this key. Continue to pick the models it should use.</obs-banner>`
+    : '';
+  /* ⚠️ NOTHING AT REST (request, 2 Sep 2026: "remove this"). The idle body was a hint —
+     "Enter your API key, then run a test to verify the connection before continuing" — and it
+     went with the "Not tested" tag removed the same hour, for the same reason: it narrated a
+     state the panel already showed. The two fields are directly above it, the button says
+     "Run test", and the footer's Continue is visibly gated until one passes, so the sentence
+     was restating three things already on screen. At rest the panel is now its title and the
+     button; the body appears only when there is something to report — the running line, then
+     the result banner.
+     ⚠️ `.agtn` is NOT dead: the footer's KMS caption still uses it (as `.sp agtn`). */
 
   return `<h2 class="agcfgh">Enter credentials</h2>
     <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
-    <div class="agrow2" style="margin-top:16px">
+    <div class="agrow2">
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
     </div>
-    <obs-button class="agadvb${d.adv ? ' on' : ''}" variant="default" onclick="agTap(agCfgAdv)">
-      ${agIc('chevron-down', 13)}Advanced settings</obs-button>
-    ${adv}
-    <div class="agtest">
+    ${adv}`;
+}
+/* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
+   2 Sep 2026). It used to close `agStepCreds`, which was right while that was step 1 of a wizard
+   and the Run test button sat directly beneath it. Two changes since moved the button away: the
+   wizard was flattened into one long form, and Run test moved into the pinned footer. So the
+   control was at the bottom of the screen and its result appeared ~950px above it — off screen
+   entirely once you had scrolled to reach the button. The output now sits immediately above the
+   footer that triggers it.
+   ⚠️ IT IS ITS OWN FUNCTION so that only ONE place decides what the test shows. `agStepCreds`
+   still owns the fields; this owns the result; `agCfgFormHTML` puts them in order. */
+function agTestHTML(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
+  if (st === 'idle') return '';
+  if (st === 'ok') return `<obs-banner variant="success" class="agbanok">${
+    stEsc(p.name)} is reachable with this key. Continue to pick the models it should use.</obs-banner>`;
+  return `<div class="agtest">
       <div class="agth">${agIc('plug', 15)}<span class="t">Test connection</span>
-        <obs-button variant="primary"${d.test === 'busy' ? ' disabled' : ''} onclick="agTap(agCfgTest)">Test connection</obs-button></div>
-      ${stages}${note}
+        <obs-tag variant="tag-yellow">Testing</obs-tag></div>
+      <div class="agstgl"><span class="stspin"></span><span class="t">${
+        stEsc(AG_STAGES[Math.min(d.stage, AG_STAGES.length - 1)])}\u2026</span></div>
     </div>`;
 }
 
@@ -1739,17 +1943,17 @@ function agStepModels(){
      so a rich card is not reachable. Folding keeps every fact rather than dropping two. */
   const opts = p.models.map(m => ({ value:m.id, label:`${m.name} — ${m.note} — ${m.ctx} context` }));
   const rows = !d.perTask ? '' : `<div class="agrtw">` + AG_TASKS.map(t => `<div class="agrt">
-      <span class="n">${agIc(t.ic, 14)}${stEsc(t.label)}</span>
+      <span class="n">${agIc(t.ic, 14)}<span class="t">${stEsc(t.label)}</span></span>
       <obs-select value="${stEsc(d.routing[t.id] || d.model)}"
         options="${agJ(p.models.map(m => ({ key:m.id, label:m.name })))}"
         onchange="agCfgRoute('${t.id}', agDet(event))"></obs-select></div>`).join('') + `</div>`;
 
   return `<h2 class="agcfgh">Model selection</h2>
     <p class="agcfgp">Pick a default model for <b>${stEsc(p.name)}</b>. Optionally route individual workflows to different models.</p>
-    <div class="agsub" style="margin-top:16px">Default model</div>
+    <div class="agsub">Default model</div>
     <obs-radio vertical value="${stEsc(d.model)}" options="${agJ(opts)}"
       onchange="agCfgIn('model', agDet(event))"></obs-radio>
-    <div class="agpanel" style="margin-top:24px">
+    <div class="agpanel">
       <div class="agph">
         <div class="agphl">${agIc('sitemap', 17)}
           <div><div class="agpt">Use different models for different AI tasks</div>
@@ -1761,21 +1965,47 @@ function agStepModels(){
 /* ── 3 · data consent ──────────────────────────────────────────────────────────────────── */
 function agStepConsent(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  /* ⚠️ THE BANNER'S TITLE IS THE LEAD-IN AND ITS BODY IS THE DETAIL — the component's own `do`
+     rule ("keep the message short; put a lead-in in `title` and the detail in the slot"). It said
+     the same thing twice: the title read "AI features transmit observability data to a third
+     party" and the body opened "When AI features are used, selected observability data may be
+     transmitted to <provider> for processing". That restatement cost a third line on the biggest,
+     loudest block of a screen whose whole point is the four checkboxes under it. The body now
+     carries only the part the title cannot say.
+     ⚠️ THE COUNT LINE EXISTS BECAUSE THE GATE WAS SILENT. `agFlowFootHTML` disables "Accept &
+     enable AI" until `consent.every(Boolean)` and nothing on screen said so — a disabled primary
+     with no reason beside it is the dead end the Designer's Guide forbids. It reports live, so
+     three of four tells you what is left.
+     ⚠️ NEITHER NOTE MAY BE WRITTEN AS AN HTML COMMENT INSIDE THE TEMPLATE BELOW. Both carry
+     backticks around code names, and a backtick inside a template literal ENDS it — `node --check`
+     reported "Unexpected token 'do'" hundreds of characters away. Prose about this file's code
+     belongs in a JS comment, outside the string. */
+  /* ⚠️ ONE PANEL, NOT TWO (request, 2 Sep 2026: "improve this section"). The section rendered a
+     banner and then TWO `.agpanel` boxes — what is transmitted, and what you must accept — so it
+     carried three stacked blocks where Credentials and Model selection each carry one, and read
+     as the heaviest of the three sections purely by container count. They are one panel now, cut
+     by a hairline: the evidence above it, the decision below it. That is the same `.agpf`
+     hairline the privacy link already used, doing the job it was written for.
+     ⚠️ THE PRIVACY LINK LOST ITS OWN RULE (`.agpll`, not `.agpf`). It belongs to "what is
+     transmitted" — it is where you go to read how the provider handles it — so a rule above it
+     was separating it from the thing it explains, and left two hairlines in one short panel. */
   return `<h2 class="agcfgh">Review data sharing &amp; processing terms</h2>
-    <obs-banner variant="warning" title="AI features transmit observability data to a third party"
-      style="margin:12px 0 16px;display:block">When AI features are used, selected observability data may be
-      transmitted to <b>${stEsc(p.name)}</b> for processing. ObserveOps does not control how third-party
-      providers process data after it is transmitted.</obs-banner>
-    <div class="agrow2">
-      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">Data that may be transmitted</div>
-        <div class="agchips">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div></div>
-      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">${stEsc(p.name)} privacy policy</div>
-        <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
-    </div>
-    <div class="agpanel" style="margin-top:16px"><div class="agcons">${
-      AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
-        onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
-    }</div></div>`;
+    <obs-banner variant="warning" class="agbanwarn"
+      title="Enabling AI sends observability data to ${stEsc(p.name)}">ObserveOps cannot control how a
+      third-party provider stores or processes that data once it has been transmitted.</obs-banner>
+    <div class="agpanel">
+      <div class="agpt">Data that may be transmitted</div>
+      <div class="agchips" style="margin-top:12px">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div>
+      <div class="agpll"><obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
+      <div class="agpf">
+        <div class="agpt">Confirm to continue</div>
+        <div class="agpd" id="agConsN">${agConsText()}</div>
+        <div class="agcons" style="margin-top:12px">${
+        AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
+          onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
+      }</div>
+      </div>
+    </div>`;
 }
 
 /* ── 4 · done ──────────────────────────────────────────────────────────────────────────── */
@@ -1796,7 +2026,7 @@ function agStepDone(){
     <span class="agdmk">${agIc('check-circle', 30)}</span>
     <h2 class="agdt">Setup completed successfully</h2>
     <p class="agdp">${stEsc(p.name)} is connected and ready. AI-powered workflows can now use your configured models.</p>
-    <div class="agsum"><obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value></div>
+    <div class="agsum agpanel"><obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value></div>
   </div>`;
 }
 
@@ -1806,17 +2036,46 @@ function agStepDone(){
    (`allConsent = consent.every(Boolean)`). Neither is invented, and neither silently passes. */
 function agFlowFootHTML(){
   const d = AG.cfg.d[AG.cfg.pid];
-  const back = d.step > 0 && d.step < 3
-    ? `<obs-button variant="default" onclick="agTap(agCfgBack)">${agIc('chevron-left', 13)}Back</obs-button>` : '';
+  /* ⚠️ ONE PRIMARY, BOTH GATES ON IT. With the wizard flattened there is no Back and no
+     Continue; `Accept & enable AI` is enabled only when the connection test has PASSED and all
+     four consent boxes are ticked — exactly the two conditions the three-step footer enforced
+     one at a time. The consent panel's own live count says how many remain, so a disabled
+     primary is never unexplained. */
+  const back = '';
   const dis = ok => ok ? '' : ' disabled';
-  const next =
-    d.step === 0 ? `<obs-button variant="primary"${dis(d.test === 'ok')} onclick="agTap(agCfgNext)">Continue</obs-button>` :
-    d.step === 1 ? `<obs-button variant="primary" onclick="agTap(agCfgNext)">Continue</obs-button>` :
-    d.step === 2 ? `<obs-button variant="primary"${dis(d.consent.every(Boolean))} onclick="agTap(agCfgNext)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>` :
-                   `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`;
+  const next = d.step > 2
+    ? `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`
+    : `<obs-button variant="primary"${dis(d.test === 'ok' && d.consent.every(Boolean))}
+         onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>`;
+  /* ⚠️ THE KMS CAPTION IS THE CREDENTIALS STEP'S, NOT THE FLOW'S. It rendered on all four
+     steps, so "Keys are encrypted with the deployment KMS · never sent to the browser" sat under
+     "Setup completed successfully" — a sentence about a field two steps back, on a screen with no
+     field on it. The empty `.sp` stays because `.agff .sp{margin-right:auto}` is what pushes
+     Back/Continue to the right edge; drop the span and the buttons slide to the left. */
+  const note = d.step === 0
+    ? `<span class="sp agtn">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>`
+    : `<span class="sp"></span>`;
+  /* ⚠️ THE TEST BUTTON IS IN THE FOOTER TOO (request, 2 Sep 2026: "add test button after
+     Continue"), AND ONLY ON THE CREDENTIALS STEP. It earns its place: `next` above disables
+     Continue until `d.test === 'ok'`, so on this step the footer shows a blocked primary and,
+     without this, nothing beside it to unblock with — the one control that clears the gate was
+     up in the panel, out of reach of where you are trying to act.
+     ⚠️ `variant="default"`, NOT primary — Continue is the step's one main action and the DS's
+     Button rule allows a single primary per group; two filled buttons side by side would make
+     the row say there are two ways forward.
+     ⚠️ Its LABEL TRACKS THE SAME THREE STATES as the panel's (Run test / Testing… / Run again),
+     read from the same `d.test`, so the two can never disagree about whether a test has run.
+     ⚠️ IT SITS BEFORE CONTINUE (request, 2 Sep 2026: "swap"). It was added after Continue the
+     hour before, in those words, which put the secondary to the RIGHT of the primary — the
+     reverse of this footer's own Back-then-Continue order. Swapping restores that: the row now
+     reads secondary, then the one main action last, which is also where Back-then-Continue puts
+     it on every other step. Don't move it back without re-reading both requests. */
+  const tst = d.step !== 0 ? '' :
+    `<obs-button variant="default"${d.test === 'busy' ? ' disabled' : ''} onclick="agTap(agCfgTest)">${
+      d.test === 'ok' ? 'Run again' : d.test === 'busy' ? 'Testing\u2026' : 'Run test'}</obs-button>`;
   return `<div class="agff" id="agFlowFoot">
-    <span class="sp agtn" style="margin:0">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>
-    ${back}${next}</div>`;
+    ${note}
+    ${back}${tst}${next}</div>`;
 }
 /* ⚠️ TICKING A CONSENT BOX REPAINTS THE FOOTER, NOT THE PANE. The only thing a tick changes is
    whether Accept is gated — and a full `agCfgPaint()` destroys and rebuilds all four
@@ -1828,6 +2087,8 @@ function agCfgFootPaint(){
   if (f) f.outerHTML = agFlowFootHTML(); else agCfgPaint();
 }
 
+/* the one place the flattened form advances: to the completion screen */
+function agCfgDone(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = 3; agCfgPaint(); }
 function agCfgNext(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.min(3, d.step + 1); agCfgPaint(); }
 function agCfgBack(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.max(0, d.step - 1); agCfgPaint(); }
 /* obs-steps `clickable` leaves future steps inert; this guards the same rule again */
@@ -1835,7 +2096,17 @@ function agCfgGo(n){ const d = AG.cfg.d[AG.cfg.pid]; if (n > d.step) return; d.s
 function agCfgPerTask(v){ const d = AG.cfg.d[AG.cfg.pid]; d.perTask = !!v;
   AG_TASKS.forEach(t => { if (!d.routing[t.id]) d.routing[t.id] = d.model; }); agCfgPaint(); }
 function agCfgRoute(id, v){ AG.cfg.d[AG.cfg.pid].routing[id] = v; }
-function agCfgConsent(i, v){ AG.cfg.d[AG.cfg.pid].consent[i] = !!v; agCfgFootPaint(); }
+function agConsText(){
+  const d = AG.cfg.d[AG.cfg.pid], n = d.consent.filter(Boolean).length;
+  return n === AG_CONSENT.length
+    ? `All ${AG_CONSENT.length} accepted \u2014 you can enable AI features.`
+    : `${n} of ${AG_CONSENT.length} accepted \u2014 all are required before AI features can be enabled.`;
+}
+/* ⚠️ WRITES ONE NODE'S TEXT, NEVER REPAINTS THE PANE — the same discipline as `agCfgFootPaint`
+   below, and for the same reason: rebuilding the pane destroys all four `obs-checkbox`es and
+   throws away the focus of the one just clicked. */
+function agConsPaint(){ const el = document.getElementById('agConsN'); if (el) el.textContent = agConsText(); }
+function agCfgConsent(i, v){ AG.cfg.d[AG.cfg.pid].consent[i] = !!v; agConsPaint(); agCfgFootPaint(); }
 
 function agCfgAdv(){ AG.cfg.d[AG.cfg.pid].adv = !AG.cfg.d[AG.cfg.pid].adv; agCfgPaint(); }
 
@@ -1865,9 +2136,16 @@ function agCfgPick(name){
 }
 /* ⚠️ THE RIGHT PANE ONLY — every repaint on this screen goes through here. Rewriting
    `#stMain` would destroy `obs-side-menu` and orphan its `select` listener. */
+/* ⚠️ THE DRAWER'S BODY IS THE PAINT TARGET NOW. `#agCfgMain` is still the inner node that gets
+   rewritten on every state change — the same discipline as before, so the provider rail and the
+   drawer chrome are never destroyed mid-interaction. The first paint has to build the whole
+   body, which is what the `#agCfgBody` branch does. */
 function agCfgPaint(){
   const main = document.getElementById('agCfgMain');
-  if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); } else stMainPaint();
+  if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); return; }
+  const body = document.getElementById('agCfgBody');
+  if (body){ body.innerHTML = agCfgHTML(); agCfgAfter(); return; }
+  stMainPaint();
 }
 /* ⚠️ THE STEPPER IS REBOUND ON EVERY PAINT, and the rail is NOT. `obs-steps` lives inside the
    pane this function replaces, so its node is destroyed each time and a listener bound once

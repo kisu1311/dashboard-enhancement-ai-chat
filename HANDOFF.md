@@ -1,120 +1,84 @@
-# Handoff — 2026-09-01 22:09
-
-> ⚠️ **TWO SESSIONS RAN IN THIS FOLDER TODAY, IN PARALLEL.** This handoff covers both.
-> Stream A (Option 4 + the Settings extraction) and Stream B (the Agentic AI rebuild) were
-> written by different sessions and edited the same files minutes apart. Neither clobbered the
-> other, but **mtimes are not a reliable signal of who wrote what — re-read before editing.**
+# Handoff — 2026-09-02 21:35
 
 ## Read first
 
-1. **CLAUDE.md → "The 1 Sep 2026 pass — Agentic AI cleared and rebuilt from the reference"** —
-   the screen as it now stands, the two undocumented `obs-table` capabilities it is built on,
-   and the `obs-button` double-fire defect that made a control silently dead.
-2. **CLAUDE.md → "Option 4 — the labelled rail"** — the new page and its divergences.
-3. **CLAUDE.md → "The Settings module lives in its own files now"** — the extraction and its
-   load-order contract.
-4. **CLAUDE.md → "Each option now demonstrates a DIFFERENT sidebar pattern"** — four rows now.
-5. The **`## Gotchas`** section.
+`CLAUDE.md` → **“The 2 Sep 2026 pass (later) — Agentic AI moves into a drawer, and six framework
+traps”**. It is the last section before *Responsive* and covers everything below in detail. Read
+its **“Four cases where a GREEN PROBE measured the wrong thing”** before writing any verification
+for this folder — that was the recurring failure of the session.
+
+Also still current: *“The 1 Sep 2026 pass”* (how the Agentic AI screen is built) and
+`_ds/README.md` (now **seven** recorded `obs-*` v0.1.166 defects).
 
 ## What we worked on this session
 
-**Stream A — Option 4 and the Settings extraction.** Built `dashboard-labelled-rail.html`
-(Option 1 with monday.com's labelled side navigation and a docked detail panel), and lifted
-the `st*` / `stc*` / `ag*` blocks out of `index copy.html` into `_settings-module.css` +
-`_settings-module.js`. The page went 2,024,257 → ~1,700,000 bytes and behaves identically.
-
-**Stream B — Agentic AI, cleared and rebuilt.** The whole screen was deleted on request and
-rebuilt reference by reference on the real `obs-*` elements: integration header → toolbar →
-a provider grid whose rows expand to their usage widgets, and a full-page Configure flow
-(provider rail → credentials with a staged connection test → model selection → data consent →
-done) with a Help Card column.
+Reshaping **Settings → Agentic AI** in all four option pages, request by request from
+screenshots: the wizard was flattened into one form, the Configure screen became a side drawer
+with a blurred scrim, and a long tail of alignment / visual fixes followed across the rail
+footer, the module flyout and the dashboard canvas.
 
 ## Completed
 
-**Stream A**
-- `dashboard-labelled-rail.html` — labelled rail, docked detail panel, hover flyout stood down
-  (not deleted). Added to `_variants.js`; the sync reports no change.
-- `_settings-module.css` / `_settings-module.js` — the blocks lifted byte for byte.
-- `_verify/behave.py`, `shoot.py`, `harness.py`, `lxbehave.py` — all four wrote their probe
-  copy into `_out/`, so every relative asset 404'd and they had **never** loaded the DS bundle
-  while still reporting green. All now inject a `<base>`.
-- Verified: `lxbehave` 57/57 ×4 · `behave` 63/63 · `harness` 77/77 · Playwright Agentation on
-  all four pages · a ~40-assertion walk for Option 4.
-
-**Stream B**
-- The Agentic AI screen rebuilt end to end in Options 1, 2 and 3 (see CLAUDE.md for the parts).
-- `agTap` — a same-handler/60ms guard on every `obs-button` `onclick`, because the element
-  fires a consumer's handler **twice** for one real click. This had shipped a **dead Advanced
-  settings toggle** that every probe called working.
-- `_verify/dsconf.py` + `_verify/ds-gaps.json` — a DS-conformance harness for this screen.
-- Per-provider rail icons (`eye` / `book-open` / `thunder-bolt`) on the provider record as `ic`.
-- Verified with hit-tested pointer clicks throughout (30/30 on the full flow, 12/12 on the
-  provider grid, 17/17 on the Help Card, and more). Current conformance: **Overview 100/100 ·
-  Configure 89/100**, all scenes pass in all three files.
+- **Configure AI provider is a `.sdrawer`** (`#drawer-agcfg`), 1440px, rail + form + help card,
+  blurred scrim, click-away and ✕ to close. The Overview stays behind it. **15/15** verified.
+- **Wizard flattened** — no stepper, three sections in one form, one primary gated on *both* a
+  passing test and all four consent boxes. **20/20**.
+- **Test flow**: no panel at rest, single-line loader while running, success = one-line banner,
+  output now renders at the END of the form beside the footer button that triggers it.
+- **Rail footer** rebuilt from Datadog: two-line identity + Approval · Health · Notifications as a
+  3-up row (one column when collapsed). **22/22**.
+- **Module flyout**: trailing controls aligned into a column, chevron bump removed, left border
+  gone, per-category documentation links (**all 17 paths verified real**).
+- **Canvas**: group border instead of a header rule; empty group is just its dashed outline.
+- **Every popup blurs its background** — verified generically across all overlays.
+- Six framework traps found and fixed (Vue `style` forwarding, `obs-select`'s 240px floor,
+  `text-overflow` on anonymous flex items, `[hidden]` losing to an author rule, `tipFor` eating
+  `obs-*` titles, backticks ending template literals).
 
 ## In progress
 
-**Nothing half-written, but one file is behind.** ⚠️ **`dashboard-labelled-rail.html`
-(Option 4) has the `ag*` block at a MID-SESSION state.** It was copied from Option 1 partway
-through Stream B, so it has `.aggrid` and the wizard but **not**: the Help Card, the
-per-provider icons, the usage `obs-table` with `expandable`, `agSeed`, or the three-provider
-rows. Verified by grep — `aghelp` 0, `thunder-bolt` 0, `agUse` 0, `agSeed` 0.
+**Nothing mid-flight in code** — the last fix (`#drawer-agcfg .dr-b > .agcfg{flex:0 0 auto}`,
+which makes the drawer actually scroll) is verified 3/3.
+
+**Uncommitted.** Everything is on disk only: `index copy.html`, `index.html`,
+`dashboard-picker-advanced.html`, `dashboard-labelled-rail.html`, `_settings-module.css`,
+`_settings-module.js`, `_ds/README.md`, `CLAUDE.md`.
 
 ## Next steps
 
-1. **Bring Option 4's `ag*` block up to date** — it is the only file showing an older Agentic
-   AI screen. Easiest path is to take the block from `_settings-module.js` / `.css` rather than
-   replay the edits.
-2. **Point Options 2, 3 and 4 at `_settings-module.*`.** They still hold inline copies, so the
-   block is no longer byte-identical across the four files — the property CLAUDE.md has
-   asserted since 19 Aug 2026. One `<link>` + one `<script src>` each, then delete their copies.
-   This is what makes today's "every change three times, in two shapes" go away.
-3. ⚠️ **`_settings-module.css` and `_settings-module.js` are UNTRACKED and NOT gitignored, and
-   they MUST ship** — Option 1 renders unstyled without them, exactly like `_ds/`. Commit them
-   with everything else. Nothing from today is committed.
-4. **Answer the open Agentation note on the wizard stepper** — three "improve this" notes are
-   open with a reply listing five specific options (size, spacing, completed-state colour,
-   horizontal→vertical, or something else).
-5. **Report the `obs-*` findings upstream** — the `obs-button` double-fire, `obs-table`'s
-   undocumented `expandable` + `sparkline`, and `obs-input`'s missing icon slots.
-6. Publish (`/publish`) once the above is settled.
+1. **`/publish`** — nothing from today is live.
+2. **Option 4 (`dashboard-labelled-rail.html`) is behind and cost a bespoke edit almost every
+   time.** It has no Help Card, no usage `obs-table`, no `agSeed`, no per-provider icons. Either
+   port the Help Card alone (`AG_HELP` + `agHelpHTML`/`agHelpTog` + `.aghelp` CSS) or bring it
+   level in one pass.
+3. **Point Options 2/3/4 at `_settings-module.*`** the way Option 1 is — one `<link>` + one
+   `<script src>` each, then delete their inline copies. It would end the four-way duplication
+   that made today slow.
+4. Re-run the standing suites (`lxbehave` 57/57 ×4 · `behave` 63/63 · `harness … query` 77/77) —
+   they were not re-run after the drawer change.
+5. Report the seven `obs-*` defects upstream.
 
 ## Decisions made
 
-- **The provider grid lists all three providers**, the connected one with figures and the other
-  two with an em dash — *nothing measured* is not the same as *measured zero*. This reversed an
-  earlier "single config, single entry" call made the same day.
-- **The usage widgets live in the row's expand**, not as sections down the page — built on
-  `obs-table`'s own `expandable`, not a hand-built accordion.
-- **The Help Card's section headers are raw `<button>`s.** The DS ships no accordion (52
-  registered elements, checked), the checker treats raw controls as an advisory for an
-  unshipped organism, and a `<div role=button>` would trade real keyboard support for a better
-  score. This is why Configure scores 89 and not 100.
-- **Primary buttons are navy, not the reference's violet** — the DS states twice that the brand
-  is `--primary`.
-- **No provider logos** — the DS has none and says never to hand-draw a brand mark; the rail
-  icons are read from each provider's own tagline instead.
-- (Stream A) Option 4's panel is docked at 340px; its active tile is a `--pill` fill; the
-  Settings CSS is a real `.css` file because its comments carry 218 backticks.
+- **`.sdrawer`, not `obs-drawer`** — the DS element has six recorded defects for this exact
+  screen; `.sdrawer` is what the reference shows and was already DS-aligned.
+- **The help card stays in the drawer, which got wider** — I had asserted three columns could not
+  fit a side panel; the supplied product reference disproved it.
+- **Chart series use the chart palette, never `--severity-*`** — a severity token on a data series
+  claims a state the chart is not reporting (the error trend was amber-for-alarm while improving).
+- **Documentation paths are looked up, never composed** — the doc slugs do not track the product's
+  module names, so a guess produces a confident 404.
+- **Blur was applied to every overlay generically**, not to a hand-list, so nothing was missed.
 
 ## Gotchas & notes
 
-- ⚠️ **`obs-button` runs a consumer's `onclick` twice for one real click** (inner 2 / host 1).
-  Invisible until a handler is not idempotent. Guard with `agTap`, and **click the inner
-  shadow `<button>` in any probe** or you are testing something a user never does.
-- ⚠️ **A green probe is not a working feature, and this session proved it three times**: the
-  dead toggle above; the conformance harness scoring pages where no `obs-*` had loaded; and two
-  *false failures* of my own making (clicks landing outside an 800×600 `--dump-dom` viewport,
-  and asserting `borderBottomWidth` on a divider that `no-divider` makes transparent).
-- ⚠️ **Check a token against the surface it lands on, not by its name.** Two same-colour
-  collisions bit today, each in one theme only — see CLAUDE.md's "Token collisions".
-- ⚠️ **A `const` read before its declaration aborts the whole block.** `agSeed()` reads
-  `AG_TASKS`; running it inline threw a `ReferenceError` that took the entire screen down. It is
-  a function now, called at the foot of the block.
-- ⚠️ **Regenerate the probe copy after every edit** — a stale copy reported a fixed bug as still
-  broken, twice.
-- ⚠️ **The Agentation queue was flooded**: ~35 copies of one stuck `#agTbl` rearrange from a
-  browser tab that was never reloaded, which **buried two real notes**. The delta was identical
-  every time — that is a stuck pending rearrange being re-saved, not new feedback, and only a
-  reload clears it. Ask for a reload before reading the queue.
-- `dashboard-labelled-rail.html` and `image.png` are untracked alongside the two module files.
+- ⚠️ **A green probe is not a working feature — four times this session.** See CLAUDE.md. The most
+  expensive were an index-based button assertion that reported 8 failures on correct code after a
+  requested swap, and a chart probe that never measured the colour it claimed to.
+- ⚠️ **Headless runs here are slow**: four files × ~20s virtual time exceeds a 400s foreground
+  timeout. Run verification with `run_in_background: true`.
+- ⚠️ **`node --check` on an extracted `<script>` block often fails on a boundary**, not on real
+  code — these files contain `<script` inside template literals. Verify by LOADING the page.
+- ⚠️ Editing a file mid-verification invalidates the run; several suites were killed and re-run
+  for this reason. Finish the edit, then verify.
+- ⚠️ `image.png` at the repo root is still untracked and unreferenced — delete or gitignore.

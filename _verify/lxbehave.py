@@ -16,7 +16,7 @@ OUT  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_out")
 os.makedirs(OUT, exist_ok=True)
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 FILES = ["index copy.html", "index.html", "dashboard-picker-advanced.html",
-         "dashboard-labelled-rail.html"]
+         "dashboard-labelled-rail.html", "dashboard-nav-column.html"]
 
 PROBE = r"""
 <script>

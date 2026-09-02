@@ -60,6 +60,25 @@ colours and no layout at all.
   once (measured). The Agentic AI screen routes every `obs-button` `onclick` through a small
   same-handler/60ms guard (`agTap`).
 
+- **⚠️ `obs-select` IGNORES A HOST NARROWER THAN 240px AND PAINTS OUTSIDE ITS OWN BOX.** Its
+  shadow root's `.sel` div (and the `.trig` button inside it) is hardcoded to **240px**. Give
+  the host `width:200px` and the host's border box really is 200px — while the control renders
+  240px, spilling 40px past its own edge and over whatever is beside it. Measured 2 Sep 2026 on
+  the per-task routing rows:
+
+      host  x 837..1037  w=200   (getBoundingClientRect on the host)
+      .sel  x 837..1077  w=240   (the shadow div it actually paints)
+
+  ⚠️ **This is invisible to every DOM measurement.** `getBoundingClientRect()` on the host
+  returns the honest 200px, so an assertion that "the select is inside its panel" passes while
+  the control is visibly hanging out of it. It was found by counting PAINTED PIXELS in a
+  screenshot — seven 30px-tall runs of border colour at x=1076, one per row, past the panel's
+  1054 border. The same trap as the grip-mark measurement recorded in `CLAUDE.md`: a computed
+  style is not what is on screen.
+  ⚠️ The fix is to give the host **240px or more**; at 240 the box and the paint agree exactly.
+  Do not try to shrink it with `overflow:hidden` on the host — that would clip the chevron
+  rather than lay the control out correctly.
+
 - **`obs-radio` renders a label and nothing else.** Its registry describes the `list` variant
   as "a mode chooser with per-option descriptions" and the Vue component has an `option` slot
   for it, but the web component accepts only `{value,label,disabled}` and escapes the label.
@@ -75,4 +94,4 @@ colours and no layout at all.
   "obs-toolbar `start` slot + obs-input"), so a toolbar search box in this build is a plain
   field. The Agentic AI toolbar leaves it plain rather than hand-drawing a magnifier.
 
-Both are worked around in the `ag*` block and noted at the call site.
+All of these are worked around in the `ag*` block and noted at the call site.

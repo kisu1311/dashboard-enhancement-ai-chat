@@ -595,6 +595,106 @@ icon is same make to use different icon"*). That edit was **kept, not reverted**
 verification above ran against it. Two things follow: the extraction is already being used, and
 `git status` mtimes on these two files are not a reliable signal of who wrote what.
 
+### Collapse moved beside the logo, and the rail grew to fit it (2 Sep 2026)
+
+Request + a Magnific reference: the collapse control sits next to the wordmark, not in the
+footer. It had been a full labelled `Collapse` ROW at the foot of a stack whose every other
+line is a destination — for a control that acts on the rail itself.
+
+- **`#collapseBtn` is now in `.strigger`**, icon-only, `margin-left:auto`; the word moved to
+  `data-tip`, which is how every other icon control in this rail works.
+- ⚠️ **THE BRAND ROW STILL TOGGLES, and that is not redundant.** Collapsed, the rail is 64px —
+  a 30px mark in 15px of padding, with no room for a 26px button — so the button is hidden AND
+  `pointer-events:none`, and the LOGO is the way back out. `stopPropagation` on the button
+  stops one click toggling twice.
+- ⚠️ **`toggleSidebar()` WROTE INTO THE `.lbl` THAT WENT WITH THE LABEL** — `b.querySelector(
+  '.lbl').textContent = …` would have thrown `Cannot set properties of null` on the first
+  press, i.e. the control would have shipped broken. Both lookups are guarded now.
+- ⚠️ **`--rail-w-open` WENT 170 → 190px.** With the button added the row needs
+  `15 + 30 + 9 + 85("ObserveOps" at 14px/600) + 9 + 26 + 15 = 189` — measured, and the wordmark
+  was ellipsising to "ObserveO…". Shrinking the product's own name to fit a chrome control is
+  the wrong way round. `.brand` also gained `flex:0 1 auto; min-width:0; ellipsis` — the same
+  "a text element that cannot shrink shoves what follows it off the end" fault as the flyout's
+  ragged chevrons, in a second place on the same day.
+- ⚠️ **`body.pinned .shell` HAD A HARDCODED `170px`** beside a `--rail-w-open` that also said
+  170 — two copies of one number. Widening the token alone moved the rail and left the canvas
+  padded for the old width; it reads the token now.
+- Verified: rail 190 open / 64 collapsed, wordmark unclipped, button inside the rail, shell
+  padding matches, `railWidth()` returns 190, `behave` 63/63, `harness … query` 77/77.
+
+### Four small fixes to Option 1's chrome (2 Sep 2026)
+
+- **The Settings flyout's chevrons sit in ONE column.** They were at **six** different x
+  positions. Two causes, both real: long labels ("Network Config Settings" — 229px of content
+  in a 209px row, "Service Level Objective" — 222px) OVERFLOWED the row and shoved their
+  chevron past the column edge; and `.mfkc`, `.mfpin` AND `.mfdocs` each carried
+  `margin-left:auto`, and **flexbox splits free space between multiple auto margins**, so even
+  the rows that did not overflow landed at 370 / 376 / 377 / 378.
+  ⚠️ **The fix is one flexible label, not more auto margins.** `mfTree` now wraps the label in
+  `<span class="mfl">` (`flex:1 1 auto; min-width:0; ellipsis`) and all three autos are dropped:
+  the label takes the slack, so every control after it sits at the row's right edge by
+  construction, and a long name ellipsises instead of pushing anything.
+- **The provider-config scrollbar is hidden, the scrolling is not.** `overflow-y:auto` stays —
+  `overflow:hidden` would remove the bar by removing the ability to reach the rest of the form.
+  ⚠️ The trade-off is real: the bar was the only thing announcing the area scrolls. Acceptable
+  only because the footer is pinned in view, which is what says the form continues.
+- **That footer now matches the form's column.** Measured: every element in the step shared a
+  left edge of 334 and a right edge of 1054 — heading, subtitle, fields, panels, body — EXCEPT
+  `.agff`, which ended at **1524**. It is a sibling of `.agform` and inherited none of its
+  `max-width:720px`, so the commit bar ran 470px past the form it commits. `padding-right` went
+  to 0 with it, or the buttons would sit 24px inside the form's edge instead of on it.
+- **`BUILD : 8.2.6` left the rail for the profile menu.** A version string is reference
+  information you look up once; it did not earn a permanent row in a rail whose every other
+  line is somewhere you can go. It is `.upbuild` at the foot of `#userPop` — no hover, no
+  pointer, no icon column, so it cannot be mistaken for a control. `.sbuild` is kept and
+  unreferenced.
+
+### Only an EMPTY group draws a boundary (2 Sep 2026)
+
+Asked for as "show the border" on a group whose only boundary was its widgets, then narrowed
+the same day to **"remove this border, show only empty group"**. Both are in the final shape:
+
+- **A group WITH widgets has no border, no padding, no radius** — `.dgroup{margin-bottom:16px}`,
+  as it always was. Once a group holds cards, the cards say where it starts and ends; a
+  container edge round them draws the same thing twice.
+- **An empty group's boundary is `.gdrop`'s own dashed box** — not a border on `.dgroup`.
+  Putting one there as well rings an outline around an outline.
+- ⚠️ **`.gdrop` moved from `--border` to `--track`, and the reason is measured.** Against the
+  canvas, `--border` is **1.32** contrast in dark and **1.27** in light — invisible, which is
+  what prompted the original report. `--track` is **2.68 / 2.57**: findable, still a hairline,
+  and it is the only token that lands in that band in BOTH themes (`--chip` is 1.63 dark but
+  **1.19** light, so it would have fixed one theme and left the other untouched).
+- ⚠️ **The thing worth remembering: a widget reads as a box because it has a FILL (`--card`),
+  not because of its border** — whose own contrast is 1.15. Any container given a hairline and
+  no fill has to carry the whole boundary on that hairline, so it needs a stronger token than
+  the cards inside it, not the same one.
+
+### The provider-config screen pins its footer (2 Sep 2026)
+
+The wizard's action bar — the KMS caption, Run test, Accept & enable AI — scrolled away with
+the form, so on the Model-selection step (three radios, a seven-row routing table and a consent
+panel) the only way to reach the primary button was to scroll to the very bottom. The bar is
+the step's commit; it has to stay on screen.
+
+- ⚠️ **THE SCROLLER WAS `#stMain`, TWO ANCESTORS UP.** Pinning the footer is not a footer
+  change — nothing inside `.agcfgm` can pin while an ancestor is what scrolls. `#stMain` stops
+  scrolling **for this screen only** (`:has(.agcfg)`), and the height flows down to a bounded
+  `.agfbody`.
+- ⚠️ **EVERY LINK IN THE CHAIN NEEDS `min-height:0`.** A flex child defaults to
+  `min-height:auto` — its content — so leaving any one of `.agcfg` / `.agcfgm` / `.agform` at
+  `auto` re-grows the column past the viewport and the footer leaves again; the scrollbar just
+  moves.
+- ⚠️ **`.agcfg`'s `min-height:520px` had to go with it** — a floor taller than the viewport is
+  the same bug on a short screen, except the overflow is now `hidden` and the content
+  unreachable.
+- ⚠️ The **stepper stays pinned too** (it is in `.agform`, above `.agfbody`) — it is the step
+  indicator, i.e. navigation, not content. The side columns get their own scrollers so a long
+  provider list or help card is not clipped once the row is bounded.
+- ⚠️ `.agcfgm`'s 56px bottom padding is **kept** and still load-bearing: it holds the pinned
+  footer clear of the fixed variant-switcher pill.
+- Verified: `#stMain` no longer scrolls, `.agfbody` does, the footer does not move when the
+  body is scrolled to its end, and ordinary Settings pages still scroll normally.
+
 ## Compliance Settings (`stc*`) — the category's three pages, cloned from live 8.2.7, in all three options
 
 Built 20 Aug 2026 from `/settings/compliance-settings/audit-policy` · `benchmark` · `rules`
@@ -3099,6 +3199,111 @@ closed the wizard instead of advancing** — and only a REAL CLICK showed it.
   the same place, but the Sidebar tab lets you reorder and hide rail entries, and then the group
   change fires elsewhere or never and the pins fall below Setting. Now `PIN_BEFORE='admin'` and
   the anchor is the first visible admin row.
+  ⚠️ **SUPERSEDED 1 Sep 2026 — the anchor is now `PIN_UNDER = 'Explorer'`** (request: *"when i
+  pin in the explorer sub module it will be show in explorer between report"*). Both earlier
+  anchors put the band AFTER `Report`, because Explorer and Report share the `analyse` group —
+  so Monitor and Topology rendered under Report and read as if they belonged to it. The band is
+  now emitted **immediately after the Explorer row**, which is exact rather than conventional:
+  `railPinRow()` resolves every pin against `EXPLORER_TREE`, so `RAIL_PINS` is Explorer's
+  children by construction. The dash-pins comment had claimed "module pins get theirs further
+  down, UNDER EXPLORER" the whole time; the anchor never did it.
+  ⚠️ **PINNED DASHBOARDS HAD THE SAME BUG AND WERE FIXED WITH THEM** (request, 1 Sep 2026:
+  *"when i pin the dashboard it is explorer sub module so it will be show properly"*). They
+  were anchored to `DASH_AFTER='work'` — the GROUP — and Dashboard, Alert and SLO all live in
+  `work`, so a pinned board rendered after **SLO**, two rows below the Dashboard it belonged
+  to. The comment above them had asserted they "sit under the Dashboard row they belong to";
+  they did not.
+  ⚠️ **BOTH BANDS NOW GO THROUGH ONE `pinsFor(name)` HELPER** — "a pin sits directly under the
+  rail row it belongs to", stated once and called from the two places a row is emitted (the
+  home lift and the loop), so the two kinds cannot drift apart again. It is idempotent via
+  `pinsOut` / `dashOut`, which is what lets the same call sit on both paths.
+  ⚠️ **`pinsFor` MUST BE DECLARED ABOVE THE HOME-LIFT BLOCK.** It is a `const` arrow, so using
+  it from the lift block while it is declared below is a TDZ `ReferenceError` that aborts
+  `init()` — the trap this file's own notes say has bitten five times. Caught before it
+  shipped, but only because the declaration was moved on purpose.
+  ⚠️ **`DASH_AFTER` was deleted, not left behind** — the group boundary it named is no longer
+  an anchor, and a live const naming a dead rule is how the last two anchors stayed wrong.
+- **The flyout's documentation footer is MODULE-WISE** (request, 2 Sep 2026: *"the
+  documentation link will be show as module wise"*). Hovering `Monitor` in Explorer's menu
+  filled the detail pane with monitor types under a footer that still read *"Explorer
+  documentation"* — the only link on screen, pointing at the wrong section. Each of
+  Explorer's ten sub-modules now carries a `doc:` on its `EXPLORER_TREE` row, and
+  `mfDocsPaint()` retitles the footer as the pane changes.
+  ⚠️ **EVERY PATH CAME OUT OF `_product-docs/urls.txt`** — the product's own harvested sitemap
+  — **and was `curl`-verified 200**. The slugs do not match the module names
+  (`log-management`, `audit-trail`, `flow-analysis`, `trap-management`,
+  `network-configuration-and-compliance-management`), which is exactly why a guessed one is a
+  404 nobody notices. Look them up; never hand-write one.
+  ⚠️ **`mfSubIdx` WAS THE WRONG STATE TO KEY OFF, and it half-worked — which is how it nearly
+  shipped.** It means "which row's DETAIL PANE is open" and is deliberately `-1` for a row
+  with no children. Only `Monitor` and `NCCM` have children, so those two retitled correctly
+  and the other eight silently fell back to "Explorer documentation". The footer needs "which
+  row is the pointer ON", so `mfRowIdx` was added beside it and set on every hover.
+  ⚠️ Not named `mfHoverIdx` — that already exists 90 lines up and is the RAIL's hovered entry.
+  ⚠️ **It falls back, it never vanishes**: a row with no `doc`, a closed pane, or a menu with
+  no master column at all gets the module's own `MOD_DOCS` entry. `mfDocs`'s `if (!p) return ''`
+  would otherwise delete the menu's only documentation link on hover.
+  ⚠️ **The footer is patched in place, not re-rendered** — it is a sibling of `.mfcols`, so
+  repainting the flyout on hover would destroy the master column the pointer is inside.
+- **A pinned BOARD and a pinned SUB-MODULE are ONE ROW SHAPE, told apart by their icon**
+  (two requests, 2 Sep 2026). They had rendered identically — same row, same weight, same teal
+  pin, and, worse, the SAME `ico('dashboard')` glyph as the Dashboard row above them, so the
+  band read as three identical grids stacked and a board was indistinguishable from a
+  sub-module.
+  ⚠️ **THE FIRST ANSWER DEMOTED BOARDS AND WAS REVERSED THE SAME DAY.** It added a
+  `.sidebar.open` indent, a 12.4px label and `--text-dim`, on the rule "the rail lists MODULES,
+  so a board is content and reads one level down". That made them distinguishable but made a
+  user's own pinned board look like a *lesser* row than a module they pinned — which is not the
+  relationship; both are things the user chose to put on the rail. The follow-up ("the pinned …
+  sub / dashboard module will be shown like [this]", with a screenshot of the module-pin band)
+  asked for one shape. **Do not re-add the indent/dim without re-reading both requests.**
+  ⚠️ **What survived is the part that was doing the work** — the per-board type icon. It is also
+  the only half that works in the COLLAPSED rail, where labels are hidden and an indent cannot
+  be shown at all.
+  ⚠️ **The board's icon is now `MICON[t]` — its own System / Mine / Shared mark from the list
+  panel** — not a second `ico('dashboard')`. Every pinned board wore the SAME glyph as the
+  Dashboard row above it, so the band rendered as three identical grids stacked; that repeated
+  icon was the main reason the two bands blurred. `MICON` entries are raw `<svg viewBox=…>`
+  with no class, so `class="ic"` has to be injected or the glyph renders at natural size and
+  blows the row height apart.
+  ⚠️ **The pin mark is NOT changed on either.** Both are pinned, and that is the one thing they
+  genuinely share. This reverses the older "the two bands read as the same idea" note only in
+  part: they are still one FEATURE, which the shared pin says — that was never a reason to make
+  a document look like a module.
+  ⚠️ **`DASH_INDEX`, `MICON` and `DTYPE` LIVE IN THE NEXT `<script>` BLOCK** while `init()` runs
+  at the end of the current one, so all three are in TDZ at that moment. It is safe only
+  because `DASH_PINS` is `[]` then, so the function is never reached — seed it with a default
+  and `init()` would abort, the failure this file's notes record five times. A `try/catch` now
+  makes that structural. ⚠️ **`typeof X !== 'undefined'` is NOT a usable guard**: on a
+  `let`/`const` in TDZ, `typeof` itself throws. `railPinRow` gets away with it only because
+  `EXPLORER_TREE` is in the same block.
+- **The pinned row's mark is a PIN, not a dot** (request, 2 Sep 2026: *"it will be improve to
+  show pin icon and it will be show batter view"*). It was a 5px teal disc, which says "this
+  row is special" without saying why — while the flyout two centimetres away was already
+  drawing a real pin for the same fact. The rail now renders **`MF_PIN`**, read from the const
+  rather than pasted; `LAY_BIC.pin` already derived from it for the Sidebar tab, so all three
+  surfaces are one definition and cannot drift.
+  ⚠️ **FILLED**, per the flyout's own `filled = pinned` rule. On the rail every row in the band
+  IS pinned, so there is no hollow state to contrast with — a hollow pin here would read as the
+  *unpinned* half of the flyout's pair.
+  ⚠️ **RIGHT-ALIGNED, which is the "better view" half** — the marks form a column at the rail's
+  edge instead of trailing variable-length labels at a ragged edge. That needs **`flex:1` on
+  `.sitem.pin .lbl`**: without it the label shrinks to its text and `margin-left:auto` has no
+  free space to push into. A long board name still ellipsises rather than shoving the pin out.
+  ⚠️ **`.sitem.pin.dash .lbl .pd{background:…}` was removed.** It forced the dot teal so the two
+  bands read as one idea; that is free now they share a glyph — and `background` was the wrong
+  property for an icon anyway (it would paint a teal square behind the pin).
+  ⚠️ **The mark is invisible on the COLLAPSED 64px rail**, because `.lbl` is `opacity:0` there.
+  Unchanged from the dot, and there is no room for it beside a 20px icon — noted so it is not
+  mistaken for a regression.
+  ⚠️ **The band lost its own hairlines with the move.** They existed because it sat between two
+  groups and belonged to neither; under its parent that inverts — a rule between Explorer and
+  its own pins would deny the relationship the placement exists to show.
+  ⚠️ **Two guards, both tested**: if Explorer is the row lifted to the top as `RAIL_HOME` the
+  loop skips it, so the lift block emits the band itself (otherwise the pins land at the BOTTOM
+  exactly when their parent is at the top); if Explorer is hidden there is no row to sit under
+  and the tail fallback takes it. Verified with a probe covering the shipped order, Explorer as
+  home, Explorer hidden and a reordered rail.
 
 ### ⚠️ Verifying this — a green probe is not a working feature, three times over
 
@@ -3231,6 +3436,529 @@ Card's raw disclosure buttons — the DS ships no accordion; 52 registered eleme
   "primary action" in a shape you cannot press.
 - Spacing is on the DS structural scale (`@padding-lg` 24 · `@padding-md` 16 · `@padding-sm` 12
   · `@padding-xs` 8). Eyeballed values scored `layout 38` once.
+
+### The configure screen's alignment — the footer and the per-task rows
+
+Two reports (images, 1 Sep 2026: *"make proper alignment"*, *"it will be show in proper
+alignment"*). Both were **layout defects that only appear at certain heights**, which is why
+they read as "sometimes fine".
+
+- ⚠️ **THE FOOTER WAS UNDER THE VARIANT SWITCHER.** `.vs-switch` is `position:fixed;
+  left:50%; bottom:18px` and 33px tall, so it owns the bottom ~51px of the viewport **at
+  screen centre** — exactly where `Continue` sits. Measured before the fix: `footer
+  334..1054 y 712..763` against `pill 749..851 y 756..789`, i.e. **103×7px of overlap with
+  Continue covered**. The pill is not dev-only chrome — `_variants.js` ships and loads on
+  every page, Pages included — so this is a real collision, not a test artefact.
+  The fix is 56px of `padding-bottom` on `.agcfgm`, which clears the pill's 51px.
+- ⚠️ **`padding-bottom` ONLY WORKS IF THE FOOTER IS PINNED TO THE CONTAINER.** Space *below*
+  a content-positioned footer cannot move it up. Option 1 was already a flex column whose
+  body took the slack, so the padding moved it; **Option 4 was not**, and the same edit
+  changed nothing there. It needed the structure as well:
+  `.agcfgm` a flex column, `.agform{flex:1 1 auto;min-height:0}` also a column, and the step
+  body wrapped in a new **`.agfbody{flex:1 1 auto;min-height:0}`**.
+  ⚠️ **The body flexes; the footer keeps its own `margin-top`.** Deliberately NOT
+  `margin-top:auto` on `.agff` — that resolves to 0 when there is no free space and so cannot
+  also carry the minimum gap (the recorded `.aihelpl` trap). Letting the body absorb the
+  slack keeps the 24px in `.agff` a real floor.
+- ⚠️ **`.agcfg{flex:0 0 auto}` WAS THE ACTUAL CAUSE IN OPTION 4**, and it survived two
+  earlier fixes. At `0 0 auto` the screen took its natural **806px** inside a **763px**
+  `.stmain` scroller, so the footer landed at `y759..810` — past the 807px viewport bottom
+  *and* under the pill. Option 1 had `flex:1 1 auto;min-height:520px` all along. Both are on
+  that now, and the footers agree to the pixel (`y680..731` in both).
+- ⚠️ **THE SELECT OVERFLOW WAS NOT REPRODUCIBLE, AND WAS STILL FIXED.** The report showed the
+  per-task model dropdown past the panel edge; measured, it sat at **-1px** (inside) at both
+  1440px and 1800px, in Options 1 and 4. The rule was nevertheless wrong: `.agrt .n` is a
+  flex item, so its default **`min-width:auto`** means the label cannot shrink below its
+  text and pushes the `flex:0 0 200px` select out — it just needs a longer model name or a
+  narrower panel to show. `min-width:0;flex:0 1 auto;overflow:hidden;white-space:nowrap`
+  makes the **label** take the deficit, which is the half that can be truncated.
+  Fixing an unreproducible report is right *when the mechanism is real* — say which it was.
+- Verified across **all four steps × four options × 1600×950 and 1366×768**: the footer
+  clears the pill, stays inside the viewport, and nothing overflows the screen's right edge.
+
+### The 2 Sep 2026 pass — two bugs that DOM measurement could not see
+
+Both were reported as "alignment", both were verified "fixed" by a passing probe first, and
+both were only found by looking at **what is painted**. They are the same lesson twice: a
+`getBoundingClientRect()` / property read is not evidence about the screen.
+
+- ⚠️ **`obs-select` IGNORES A HOST NARROWER THAN 240px AND PAINTS OUTSIDE ITS OWN BOX.** Its
+  shadow root's `.sel` div is hardcoded to 240px. `.agrt obs-select` asked for 200px, so:
+
+      host  x 837..1037  w=200   ← what getBoundingClientRect() reports
+      .sel  x 837..1077  w=240   ← what is actually drawn
+
+  The control hung 23px past the panel's own border, on all seven routing rows. **Every DOM
+  assertion passed** — the host box really is 200px and really is inside the panel. It was
+  found by counting pixels in the screenshot: seven 30px runs of border colour at x=1076, one
+  per row, beyond the panel's 1054 edge. The host is 240px now and box and paint agree exactly
+  (probe prints `host 1037 · shadow .sel 1037 · panel content edge 1037`). A **seventh**
+  v0.1.166 defect — recorded in `_ds/README.md`.
+  ⚠️ To test a web component's geometry, measure **its shadow root's own box**, not the host.
+- ⚠️ **`[hidden]` LOSES TO ANY AUTHOR `display` RULE, so `stHeadPaint` HAD NEVER HIDDEN
+  ANYTHING.** `.stpt{display:grid}` is (0,1,0) and beats the UA stylesheet's
+  `[hidden]{display:none}`, so `i.hidden = true` set the attribute and changed no paint: the
+  head's **(i)** kept its 34px box and stayed hit-testable on every settings page with no help
+  pane. Latent since the module was built. `.stpt[hidden]{display:none}` fixes it.
+  ⚠️ A probe asserting `el.hidden` **passed on a button that was plainly still on screen.**
+  The property was true; that was never the question. The check that works is a hit test —
+  `document.elementFromPoint(centre)` and walk up to see whether you land on the element.
+
+### The `(i)` help toggle was removed from Configure AI provider (2 Sep 2026)
+
+Request: *"remove"*, pointing at the head's circular (i). It came from `stFullOpen`'s **`info`
+key**, and `stHeadPaint` hides `#stHeadInfo` whenever that key is absent — so dropping the key
+is the entire change and there is no markup to delete. (It only actually hid once the
+`[hidden]` bug above was fixed; the two are one change.)
+
+- ⚠️ **CONSEQUENCE, stated rather than acted on:** that button was the Help Card's only
+  control, so the card is now permanently shown with nothing to hide it. `agHelpShowTog` and
+  the `.agcfg.nohelp` CSS are **kept and unreferenced** (the house pattern), so the toggle is
+  one key away.
+- ⚠️ **Option 4 needed no edit** — it never had the Help Card, so its `stFullOpen` call already
+  carried no `info`. That is the same "Option 4 is behind" divergence recorded above.
+
+### The consent and done steps, rebuilt on the DS (2 Sep 2026)
+
+Requests: *"improve Using the ObserveOps design system"* on the Data-consent step, and the same
+on the Done step.
+
+- **Consent was two equal halves and one of them was empty.** `.agrow2` put *Data that may be
+  transmitted* (seven chips, wrapping to two rows) beside *<provider> privacy policy* (a title
+  and a single link) — equal widths, equal heights, so the right card was mostly dead space
+  while the left one was cramped. It is **one full-width panel** now: the chips fit on a single
+  row, and the privacy link is demoted to a hairline footer row (**`.agpf`**, grepped free
+  before naming). The four checkboxes get a titled panel of their own — *Confirm to continue* —
+  rather than sitting in an unlabelled box. Nothing was invented: every fact that was on the
+  screen is still on it. ⚠️ `.agrow2` is still used **twice** by the credentials step; it was
+  not deleted.
+- **The done step's summary sits in `.agpanel`**, so it reads as a summary card instead of five
+  loose rows floating under a centred heading.
+- ⚠️ **The footer's KMS caption was rendering on ALL FOUR STEPS**, so *"Keys are encrypted with
+  the deployment KMS · never sent to the browser"* sat under **Setup completed successfully** —
+  a sentence about a field two steps back, on a screen with no field on it. It is the
+  credentials step's only now. The empty `<span class="sp">` stays: `.agff .sp{margin-right:auto}`
+  is what pushes Back/Continue to the right edge, and dropping the span slides them left.
+### The footer spans the pane, not the form (2 Sep 2026)
+
+Request: *"the line is full and the button will be show on helpcard devider line after"*. The
+footer's rule stopped at **720px** — `.agform`'s `max-width` — while the pane runs on to the
+help card, so the action bar looked like it belonged to the fields rather than to the screen.
+
+- **`agFlowFootHTML()` moved OUT of `.agform`** and is now a sibling of it inside `.agcfgm`.
+  720px is a readable measure for FIELDS; the footer is the screen's action bar. `.agcfgm` is
+  the flex column, `.agform` keeps `flex:1 1 auto` and takes the slack, `.agff` sits at the
+  bottom — so the "footer clears the variant pill" fix above is preserved by construction.
+- ⚠️ **The 24px gap is `padding-right`, NOT `margin-right`, and that is the whole trick.** The
+  rule IS `.agff`'s `border-top`, which spans the padding box — so the line runs the full width
+  to the help card's own divider while the button stops 24px short of it and keeps the breathing
+  room every other control has. A right margin would shorten the line by that same 24px, which
+  is the thing the request asked to fix.
+
+### The footer's buttons were NEVER right-aligned (2 Sep 2026)
+
+Found while verifying the change above, and it is the other half of the same request. The rule
+now reached the help-card divider but the button stopped **323px short of it**.
+
+- ⚠️ **AN INLINE `style="margin:0"` WAS CANCELLING `.agff .sp{margin-right:auto}`.** The KMS
+  caption IS the `.sp` spacer, and an inline declaration beats a stylesheet rule — so the auto
+  margin never applied and the buttons sat immediately after the caption text, wherever that
+  happened to end. The inline style existed only to cancel `.agtn`'s own `margin-top:12px`.
+  Doing that in the sheet instead (`.agff .agtn{margin-top:0}`) cancels the top margin and
+  leaves the auto margin alive.
+- ⚠️ **It had been wrong for the whole life of this footer** and was invisible while the footer
+  was only 720px wide — the button looked roughly right-ish because there was little room to be
+  wrong in. Widening the footer to the pane is what exposed it.
+- ⚠️ **The steps that show no caption were never affected**: they emit `<span class="sp"></span>`
+  with no inline style, so those buttons had always been pushed right. Only step 0 was broken,
+  which is why it read as a one-screen quirk rather than a rule that did nothing.
+
+### The consent step's banner and its silent gate (2 Sep 2026)
+
+Request: *"Using the ObserveOps design system"* on the Data-consent step.
+
+- ⚠️ **THE BANNER SAID THE SAME THING TWICE.** `obs-banner`'s own `do` rule is "keep the message
+  short; put a lead-in in `title` and the detail in the slot" — but the title read *"AI features
+  transmit observability data to a third party"* and the body opened *"When AI features are used,
+  selected observability data may be transmitted to `<provider>` for processing"*. The body now
+  carries only the part the title cannot say. Variant stays **warning**: the registry defines it
+  as "a non-blocking caution the user should read before acting", which is what this is.
+- ⚠️ **THE GATE WAS SILENT.** `agFlowFootHTML` disables *Accept & enable AI* until
+  `consent.every(Boolean)` and nothing on screen said so — a disabled primary with no reason
+  beside it is the dead end the Designer's Guide forbids. `agConsText()` / `agConsPaint()` report
+  it live: *"2 of 4 accepted — all are required…"* → *"All 4 accepted — you can enable AI features."*
+  ⚠️ `agConsPaint` writes ONE NODE'S `textContent` and never repaints the pane — the same
+  discipline as `agCfgFootPaint`, and for the same reason: a repaint destroys all four
+  `obs-checkbox`es and throws away the focus of the one just clicked. There is a probe assertion
+  that four checkboxes still exist after two ticks.
+- ⚠️ **NEITHER NOTE MAY BE WRITTEN AS AN HTML COMMENT INSIDE THE TEMPLATE.** Both carry backticks
+  around code names, and **a backtick inside a template literal ENDS it** — `node --check`
+  reported `Unexpected token 'do'` hundreds of characters from the real cause. Prose about this
+  file's code goes in a JS comment, outside the string. Same hazard as the 218 backticks that
+  keep the extracted CSS a `.css` file rather than a JS string.
+
+### The Test-connection block, rebuilt on the DS (2 Sep 2026)
+
+Request: *"improve this on Using the ObserveOps design system"*.
+
+- ⚠️ **THE OUTCOME IS AN `obs-banner`, THE HINT IS NOT.** The result was a fifth row in exactly
+  the shape of the four stage rows above it — same tick, same size, differing only in text
+  colour — so the one line carrying the ANSWER read as one more step. It is
+  `obs-banner variant="success"` now, which the registry defines as "a positive inline
+  confirmation that should persist on the surface". The **idle** line stays plain muted text
+  deliberately: it is a form HINT, not a state, and its own `usageRules.info` covers a hint
+  while a tinted block before you have done anything is heavier than what it says.
+- ⚠️ **THE PANEL TITLE AND THE BUTTON BOTH SAID "Test connection".** The button now names what
+  pressing it does *now* — **Run test → Testing… → Run again** — and the header carries an
+  `obs-tag` of the state: **Not tested / Testing / Verified**. So the repetition is gone and the
+  header gained the one thing it was missing, which is whether the test has been run at all.
+  ⚠️ The tag uses `variant="tag-green"` etc. — the **class names**, which is what this web
+  component's `variant` enum takes. The registry's F2 warns the colour *prop* (`variant="success"`)
+  is broken and illegible; `tag-*` is the working mechanism.
+- ⚠️ **THE RUNNING STAGE IS MARKED (`.agstg.now`).** Every not-yet-done stage drew the same
+  empty ring, so while the test ran you could not tell which one was in flight from the two that
+  had not started — four lines that said "something is happening" and nothing more.
+  ⚠️ Its mark is **neutral chrome on purpose**: green already means done here, and
+  `--primary-color` is the DS's Ant-form-control cyan (its own token note says "Ant form
+  controls only"), which would be off-purpose on a progress indicator. It is `--neutral-light`
+  with an opacity pulse, and `prefers-reduced-motion` stops it.
+
+- ⚠️ **The per-task panel had a 7px LEFT STAGGER.** The header icon is 17px on `.agphl`'s 12px
+  gap (title at +29); the row icons were 14px on an 8px gap (labels at +22) — repeated down
+  seven rows, which is what reads as "not aligned". Both icons now sit in a fixed 17px slot on
+  the same 12px gap, so each glyph keeps its own size and only the TEXT is brought into line.
+  Measured after: icons share a left edge at 351, header title and all seven labels at 380.
+
+## The 2 Sep 2026 (later) pass — the flyout rebuilt, and the sidebar measured end to end
+
+All **Option 1** (`index copy.html` + `_settings-module.*`), driven request by request against
+supplied screenshots. ⚠️ Where this conflicts with the 2 Sep entries above, this is current.
+
+**The method mattered more than usual here: two of the reported "bugs" were not bugs, and only
+measuring found that out.** The routing labels reported as clipped were not (`scrollWidth ==
+clientWidth` on all seven — the ragged last letters were JPEG artifacts), and the config form's
+horizontal alignment was already perfect (every block at x=334, right 1054). Both reports were
+real, but the *cause* was somewhere else.
+
+### The Configure-AI-provider form has ONE vertical rhythm
+
+Measured before touching it — five different values doing one job, and two of them zero:
+
+    4 heading->helper · 16 helper->fields · 16 fields->Advanced · **0** ->"Model selection"
+    17 label->radios  · **79** radios->panel · **0** ->"Review data sharing" · 12 ->banner
+
+- ⚠️ **THE TWO ZEROS WERE THE WHOLE COMPLAINT.** `.agcfgh` is `margin:0 0 4px` — no top margin —
+  so once the wizard was flattened into one page each section heading opened flush against the
+  previous section's last panel, and three sections read as one run.
+- Spacing is declared **once**, at the end of `_settings-module.css`: `.agfbody > *` 16px
+  (`@padding-md`), `.agfbody > .agcfgp` 4px, `.agfbody > .agcfgh ~ .agcfgh` **32px**. The four
+  inline `style="margin-top:…"` at the call sites are gone from `_settings-module.js`.
+- ⚠️ **32 = 2 x @padding-md, not an eyeballed number.** The scale tops out at `@padding-lg` 24,
+  and 24 against 16 inside barely reads — the recorded `.aiab li` / `.aichips` lesson: the gap
+  BETWEEN groups must beat the gap INSIDE one.
+- ⚠️ **`.agfbody > *` is (0,1,0) and TIES with `.agsub` / `.agadv` / `.agrow2` / `.agtn`** — it
+  wins only by SOURCE ORDER, so that block must stay at the end of the file.
+- ⚠️ **The phantom 79px gap was `obs-radio` being `display:inline`** (an unknown element's
+  default): it measured 341px wide in a 720px form and its rect stopped 55px short of its own
+  painted rows. `.agcfgm obs-input` already carried the same fix; the radio group never got one.
+
+### The flyout: no rail, one left edge, a section label, the rail's own pitch, and icons
+
+Five requests in a row, each one exposing the next. **The order matters — each fix caused the
+next report**, which is worth knowing before "fixing" any of them back:
+
+1. **"remove this line"** — `.mflist`'s 1px left rail went, and its 12px indent with it (that
+   indent only existed to clear the rail). ⚠️ The flyouts had DISAGREED: `.mfcol.mfmaster
+   .mflist` already set `border-left:0`, so Explorer — the one menu deep enough to want a spine
+   — drew none while the flat lists did.
+2. **"Explorer and the list of sub module will be line align"** — with the indent gone, a 2px
+   stagger showed: heading text at **212**, row icons at **214**. `.mfi` carries `border-left:1px
+   solid transparent` (the hover accent) PLUS `padding:0 9px`, so a row's content starts 10px in
+   while the heading's started 8px in. `.mfsec` padding-left is **10px** now — DERIVED from that
+   row, not picked. All six menus measure 214/214.
+3. **"title and list of submodule is same, make to difference"** — a direct consequence of (2):
+   the 12px outdent had been the ONLY thing separating them. Measured, heading vs row was 13px/700
+   against 12.5px/600 in the *same* colour — 1.00:1. `.mfsec` is now the file's own section-label
+   idiom (`.agsub` / `.agsec` / `.dvnh`): **11px/600/.06em/uppercase/`--text-dim`**.
+   ⚠️ **THE ROWS WERE NOT TOUCHED** — the heading moved DOWN in weight instead, because the rows
+   are what you click.
+   ⚠️ **`--text-dim` is the floor.** It is the only token clearing 4.5:1 on the menu in BOTH
+   themes (5.04 dark / 5.40 light); `--text-dim2` drops to 3.55 dark and `--muted` to 2.94.
+   Stated trade-off: in the three menus whose rows are also `--text-dim`, heading and rows share
+   a colour and are told apart by size + case + weight alone.
+4. **"add between more space"** — `.mfi` is 32px + 2px = **a 34px pitch, which is `.sitem`'s own
+   height**. The rail row and the flyout row are the same kind of thing, so they share one pitch.
+   ⚠️ The space is a `margin-bottom`, NOT more height — height grows the hover fill with it and a
+   19-row menu paints one continuous slab. Verified the tallest menu (Setting, 19 rows) still
+   fits at 1280x720.
+5. **"both are different make proper" / "list will be show like"** — **Report and Alert now carry
+   a module icon per row**, like Explorer. ⚠️ The rule is *a row that NAMES A MODULE gets that
+   module's icon*; `Dashboard` and `SLO` stay iconless because their rows are ACTIONS ("＋ New
+   dashboard", "Manage dashboards", "Error budget"), and giving an action a module's glyph would
+   say something untrue about where it goes.
+   ⚠️ **Nothing was drawn.** All 18 keys already existed — but two are not the obvious ones:
+   `Metric` is **`metric-explorer`** (there is no bare `metric`) and `Network Config`/`NCCM` are
+   **`ncm`**. `ico()` returns `''` for an unknown key rather than throwing, so a guessed key
+   renders one blank row among ten and nothing reports it. All were resolve-checked first.
+   ⚠️ **`mfCol` ALREADY SUPPORTED THE FIFTH SLOT** — `[label, mod, act, kind, ic]` — so Report
+   needed data only. Alert goes through `mfTree`, whose derivation destructured `[l, mod, act,
+   kind]` and DROPPED `ic`; it had to be carried through, and `mfTree` gates the whole icon
+   column on `tree.every(r => r.ic && ico(r.ic))`, so one missing key turns icons off for the
+   entire menu.
+6. **"it will be show icon", with the live Settings page as the reference** — **Setting now draws
+   all 19 of the product's own category icons**. ⚠️ **NO DATA WAS ADDED: every `ST_TREE` category
+   ALREADY carried a resolvable `ic`** (`my-account`, `network-discovery`, `brain`,
+   `sparkling-star` …) and `ST_ICO` is precisely the set the live Settings rail draws — i.e. the
+   reference itself. The flyout simply could not see them, because the gate asked `ico()`, whose
+   registry holds the 16 MODULES, and got `''` for all 19.
+   ⚠️ **`mfIco(n, cls)` is the fix — ONE resolver, two registries**: `ICONS` first, then `ST_ICO`.
+   The gate and the render must both use it; gating on one resolver while rendering with another
+   is what produced the silent all-or-nothing failure in the first place.
+   ⚠️ **`ST_ICO` values are a bare path `d`**, not `ICONS`' `{viewBox, paths}` record, all on the
+   same 48x48 grid — hence a hand-built `<svg>` rather than a second call into `ico()`.
+   ⚠️ **`ST_ICO` lives in a LATER `<script>`** (`_settings-module.js`). Safe only because the
+   flyout builds lazily on first hover — the same timing `mfTreeFor` already relies on for
+   `ST_TREE` — and it is wrapped in try/catch to make that structural. A bare `typeof` guard is
+   NOT enough on a `const` genuinely in TDZ, the trap this file has recorded five times.
+
+### The flyout is TWO CARDS when it has a pane — the empty column is gone
+
+Request, 2 Sep 2026: *"is it possible to remove the white space and show only [the pane]"*, with the
+empty regions above and below the pane boxed in red.
+
+The flyout was **one card** and the detail column a flex child of it, so the column stretched to the
+master list's height — 675px for Settings' 19 rows — and painted the menu's surface down its whole
+length whether or not there was a pane in it. Hovering `Log Settings` (4 pages) drew a 160px pane
+inside a 675px column: ~200px of dead surface above and ~300px below.
+
+- **The fix is to stop the column stretching, not to hide anything.** `align-items:flex-start` makes
+  each column shrink-wrap, and the surface moves off the flyout onto the columns themselves — so the
+  empty area is simply never painted and the board shows through it. Measured: Setting's pane
+  **196px against a 701px master**, with **0px of slack** under its last row.
+- ⚠️ **SCOPED BY `#mflyout:has(.mfdetail)`** — true for Explorer / Alert / Setting, false for
+  Dashboard / SLO / Report, which are one column **plus a docs footer that is a sibling of
+  `.mfcols`**. Card-ifying the columns there would strand that footer outside the card, so those
+  menus are not touched at all. There are probe assertions that Report is still one card and still
+  has its `.mffoot`.
+- ⚠️ **`:empty` IS WHAT HIDES THE PANE** on a row with no children. `mfSub` sets `innerHTML = ''`,
+  which is genuinely empty (no whitespace node), so the selector holds. Without it an empty bordered
+  box floats beside the list.
+- ⚠️ **THE TWO CARDS ARE DELIBERATELY DIFFERENT SHAPES.** The master still hangs off the rail, so it
+  keeps `border-left:0` and `border-radius:0 8px 8px 0`; the pane is free-floating and gets a full
+  border and radius.
+- ⚠️ **THE FLYOUT KEEPS `overflow:auto`** — a 19-row master must still scroll at 720px tall — and
+  that clips at its PADDING box, so its padding is what gives the cards' shadows room to fall. The
+  right/bottom padding went to 44px for that reason, not for looks.
+- ⚠️ **`mfDetailAlign` switched from `padding-top` to `margin-top`.** While the pane was a stretched
+  column its offset had to be padding — there was no card to move. Now that it shrink-wraps, padding
+  would put the gap INSIDE the border and bring back exactly the empty space this change removes.
+
+### The detail pane opens BESIDE the row you are pointing at (`mfDetailAlign`)
+
+Request, 2 Sep 2026: *"i hover the sub module it will show child sub module but it is show in top —
+improve wise the show behind it"*. The pane always rendered flush with the top of its column. On
+`My Account` — the first row — that looked deliberate; on `Utility`, the 15th of 19, the lit row is
+near the bottom while its answer appears **~500px away at the top**. Settings is 19 rows deep, so
+this is the menu where it actually hurts.
+
+- `mfDetailAlign(k)` sets a **`padding-top`** on `#mfDetail` equal to the hovered row's offset,
+  clamped to the room that exists. Measured: **15 of Settings' 19 panes now sit exactly level with
+  their row (Δ=0)**, the other 4 clamp; nothing overflows the flyout in any menu.
+- ⚠️ **`padding-top`, NOT `transform`.** The pane is a flex item that must keep participating in
+  layout — `mfClamp()` sizes the flyout from it and `mfFade()` measures its list — so a transform
+  would move the paint and leave the box behind, and the clamp would then let content hang off.
+- ⚠️ **`scrollHeight` LIES ON A STRETCHED FLEX ITEM, and it failed silently.** This column stretches
+  to the master list's height (675px for Settings), and `scrollHeight` returns
+  `max(contentHeight, clientHeight)` — so it reported **675 for a 160px pane**, `avail - content`
+  was 0 for every row, and the padding computed *correctly* and always came out **zero**. Nothing
+  errored; the feature just did nothing. Measure the content's own span instead: first child's top
+  to last child's bottom.
+- ⚠️ **Zero `paddingTop` BEFORE measuring**, or the previous row's offset is still in the number and
+  the pane walks further down on every hover. There is a probe assertion that re-hovering the same
+  row is idempotent.
+- ⚠️ A pane taller than the list (Monitor's 18 children) gets an offset of 0 and stays at the top —
+  that falls out of the clamp rather than needing a special case.
+
+### The DETAIL PANE had the same two-registry bug, and it hid behind which category you opened
+
+Reported straight after (2 Sep 2026: *"some title will be show icon and some is not show"*).
+Fixing the master rows left `mfSub`'s tile call site on the old resolver, so the pane's title drew
+a glyph for **Compliance Settings** (`metric-explorer`), **SNMP Trap** (`trap-viewer`) and **APM**
+(`apm`) — whose keys happen to exist in the rail's `ICONS` set — and nothing for **Utility**
+(`utility`) or **Real User Monitoring** (`monitor`), whose keys live only in `ST_ICO`.
+
+- ⚠️ **THE SPLIT IS INVISIBLE UNLESS YOU OPEN THE RIGHT CATEGORIES.** Six of the nineteen resolve
+  in both registries, so a spot check lands on a working one more often than not.
+- ⚠️ **EVERY ICON IN THIS FLYOUT NOW GOES THROUGH `mfIco`** — the master list, the `mfCol` menus,
+  the `mfTree` gate, and this tile. A second resolver is exactly how the two halves drifted apart.
+- ⚠️ **A probe asserting "every category shows a tile" FAILS ON CORRECT CODE.** `mfSubIdx` is
+  deliberately `-1` for a row with no children, so those rows open no pane at all — in Explorer
+  only `Monitor` and `NCCM` have children, and in Alert only `NetRoute`, `APM` and `Real User
+  Monitoring`. Assert over the panes that actually open: Setting **19/19**, Explorer **2/2**,
+  Alert **3/3**.
+
+### The icon column had to be paid for — `.mfcol.mfmaster` 236 -> 288px
+
+⚠️ **An icon per row costs 22px of label** (a 15px glyph on `.mfi`'s 7px gap), and this column was
+already sized to the pixel — it went **212 -> 236** when the `DOCS ↗` chip arrived, for exactly the
+same reason. With icons on, `Setting` truncated **7 of 19** rows and `Alert` 1 of 8.
+⚠️ **Measured, not rounded up by eye**: the worst deficit was **51px** (`Service Level Objective`),
+so 236 + 51 = 287, taken to **288**. Explorer needed none of it, but one rule sizes the master pane
+for every menu, so the widest label wins.
+⚠️ Verified at **1280x720** — the binding case, not 1600: **0 truncated labels in all six menus**,
+every flyout inside the viewport.
+
+### `.mfmaster .mfi.par` had quietly undone a documented decision
+
+Reported as "this and this make to same", holding Alert against Report. Measured: Alert's rows
+were **12.5px/600 white**, Report's **12.5px/400 dim** — the same content, a flat list of module
+names, in two weights. The only cause was structural: Alert is a master/detail tree because three
+of its eight rows have children.
+
+- ⚠️ The highlight had been deliberately keyed to **`.mfi:has(.mfic)`** with its own note —
+  *"`:not(.sub)` would have re-weighted the whole rail's menus … there are probe assertions that
+  Dashboards and Setting are unchanged"*. A later bare `.mfmaster .mfi.par` rule re-weighted
+  exactly those menus anyway. It is `.mfmaster .mfi.par:has(.mfic)` now.
+- Result: five of six flyouts render rows identically; **Explorer keeps its highlight because it
+  has icons**, which is what the 23 Aug "sub module will be highlighted" request actually asked.
+
+### The sidebar, audited end to end
+
+Every row measured rather than eyeballed. **The rail was already consistent** — all six module
+rows plus Search and Iris at box 8 / icon 20 / label 51 / height 34, group gaps 7px. One defect:
+
+- ⚠️ **The wordmark sat at x=54 against every label at x=51.** `.strigger`'s `gap` is **6px**, not
+  9, so `15 + 30 + 6 = 51`.
+- ⚠️ **The brand mark's own x=15 is CORRECT and was not touched.** It is 30px wide, so it CENTRES
+  on 30 — exactly the centre of the 20px icon column at x=20. Moving it to 20 would push its
+  centre to 35 and break the one thing that was already right.
+
+### The config footer spans its COLUMN — not the form, not the pane
+
+Request: "show proper full width". ⚠️ **This rule has now been wrong in both directions**, and the
+history is kept because each time the obvious fix was the other extreme: **1524** (uncapped, ran
+past the help card) -> **720** (capped to `.agform`, stopped 150px short of the divider) ->
+**1204**, the middle column's own content edge, measured against the help card at 1204..1584.
+
+- ⚠️ **There is no `max-width` on `.agff` at all now.** It is a child of `.agcfgm`, so it fills
+  that column and the width is DERIVED rather than being a third hardcoded number.
+- ⚠️ **`padding-right:24px`, not `margin-right`.** The rule IS the `border-top`, which spans the
+  padding box, so the line meets the divider at 1204 while the buttons stop at 1180. A margin
+  would shorten the LINE by that 24px — the thing the request asked to fix.
+
+### Option 5 gained expand/collapse, and lost its route subtitle
+
+`PL.col` / `plColSet()` / `body.plshut`. ⚠️ The column is `display:none` when collapsed, not a
+width transition — its rows are `nowrap`, so animating the width reflows every label. The rail
+stays 44px and keeps every module, and `.shell`'s padding follows. The `/slo/` route line was
+removed from the column header (same reasoning as the flyout detail pane on 27 Aug: it told you
+where you already are rather than what you could do next).
+
+### Verification notes
+
+- ⚠️ **THE STALE-COPY TRAP BIT AGAIN, and it reported a real fix as broken.** These probes live in
+  the scratchpad, so their relative `<link href="_settings-module.css">` resolves to the COPY
+  beside them. Four assertions failed on correct CSS until the file was re-copied. **Re-copy every
+  external asset after every edit**, not just the page.
+- ⚠️ **A `<base href>` is NOT a safe substitute here** — it aborted the load at 10KB of a 2MB page.
+  Copy the assets instead.
+- ⚠️ **`getComputedStyle` on a node a later render replaced returns EMPTY strings**, which reads as
+  a failed assertion. Three "FAILs" in the flyout suite were a sample captured before five more
+  `mfOpen` calls had rebuilt it.
+- ⚠️ **A SIGALRM-killed headless run leaves `/private/tmp/<profile>/SingletonLock` behind**, and
+  every later run in that profile dies with "Failed to create a ProcessSingleton". `lxbehave`
+  reported NO PROBE OUTPUT on four files for this reason and nothing was wrong with the pages.
+- `harness.py … query` **77/77** on `index copy.html` after all of the above.
+
+## The 2 Sep 2026 pass (later) — Agentic AI moves into a drawer, and six framework traps
+
+All four option files. Driven request-by-request against supplied screenshots and two live
+references (Datadog's rail footer, and the product's own **Application Registeration** drawer).
+Where this conflicts with anything above, this is current.
+
+### The Configure screen is a `.sdrawer` now, not a full page
+
+`agConfig()` no longer calls `stFullOpen` — it opens **`#drawer-agcfg`**, so the Overview you
+launched it from stays on screen behind a blurred scrim. `agCfgClose()` is the way out and
+repaints the Overview so the connection state catches up.
+
+- ⚠️ **IT REUSES `.sdrawer`, NOT `obs-drawer`.** The DS element was tried for this exact screen on
+  31 Aug and carries six recorded defects (no `close` event, an inert `open` attribute, a slotted
+  repaint replaying its open animation). `.sdrawer` is what the reference shows, was rebuilt
+  against the DS on 27 Aug, and has none of them. A drawer is also what `get_layout(panels)`
+  prescribes for create/edit — the product's most-used overlay, 146 files.
+- ⚠️ **OPTIONS 2 AND 3 HAD NO `.sdrawer` AT ALL.** Pointing their `agConfig` at the drawer made
+  Configure open *nothing*, silently. The chrome was ported verbatim to both. Check that a shared
+  function's target EXISTS in every option before repointing it.
+- ⚠️ **1440px, because the help card belongs in it.** I first hid `.aghelp` and asserted three
+  columns could not fit a side panel; the supplied reference is the product doing exactly that, so
+  the drawer widened instead. Rail 220 + form 720 + help 420. Below a ~1400px viewport the card
+  removes itself through the `@media (max-width:1400px)` rule it already had.
+- ⚠️ **AN ID-SCOPED WIDTH NEEDS ITS OWN PARKED `right`** — the recorded `#drawer-layout` lesson:
+  without it the panel sits partly on screen while closed.
+- ⚠️ **`#drawer-agcfg .dr-b > .agcfg{flex:0 0 auto}` IS WHAT MAKES IT SCROLL.** `.dr-b` is a flex
+  COLUMN, so its child defaulted to `flex-shrink:1`, `.agcfg` was squashed to the body height, and
+  the tall form spilled out with NO scrollbar while the footer sat stranded mid-panel (measured:
+  `scrollHeight 756 === clientHeight 756` with content at y=1466 and the footer at y=700).
+  ⚠️ Removing `min-height:100%` was the first guess and did **not** fix it — the shrink is the
+  cause. After: `scrollHeight 1546 / clientHeight 756`, footer at 1490.
+- ⚠️ **A DRAWER MUST PAY FOR ITS OWN GUTTERS.** On the full page the screen sat inside `.stmain`'s
+  padding; `.dr-b` is `padding:0` here so `#agPage` owns its spacing, and `.aghelp` only ever had
+  `padding-left` — so the help text ran flush to the drawer's edge.
+
+### Six framework traps, each of which cost real time
+
+- ⚠️ **VUE FORWARDS A HOST'S `style` ATTRIBUTE INTO THE SHADOW ROOT.** `style="display:block"` on
+  `<obs-banner>` landed on `.bn` and overrode its `display:flex`, stacking the ✓ above the message.
+  Measured: `inline style on .bn = "margin-top:16px; display:block"`. **A CLASS IS SAFE WHERE A
+  STYLE ATTRIBUTE IS NOT** — the class is copied inward too, but page CSS cannot match inside a
+  shadow tree, so only the rule targeting the host applies.
+- ⚠️ **`obs-select` IGNORES A HOST NARROWER THAN 240px AND PAINTS OUTSIDE ITS OWN BOX.** Its shadow
+  `.sel` is hardcoded to 240px: host 837..1037 (200px) while it *drew* 837..1077. Every DOM
+  assertion passed. Found by counting painted pixels. Recorded in `_ds/README.md` as a seventh
+  0.1.166 defect. **Measure a web component's SHADOW box, not the host.**
+- ⚠️ **`text-overflow` CANNOT ACT ON AN ANONYMOUS FLEX ITEM.** `overflow:hidden` on `.agrt .n`
+  (an `inline-flex` whose label was a bare text node) computed to `clip`, cutting labels
+  mid-glyph. The label needs its own span.
+- ⚠️ **`[hidden]` LOSES TO ANY AUTHOR `display` RULE.** `.stpt{display:grid}` beat the UA's
+  `[hidden]{display:none}`, so `stHeadPaint`'s `i.hidden = true` had never hidden anything —
+  latent since the Settings module was built.
+- ⚠️ **`tipFor()` EATS AN `obs-*` TITLE.** It adopts any `title=` into `data-tip` and deletes the
+  attribute; on a DS component `title` is a rendered PROP. The engine now skips `OBS-*`, which
+  fixes the whole class rather than one call site.
+- ⚠️ **A BACKTICK INSIDE A TEMPLATE LITERAL ENDS IT.** Prose about this file's code — which is full
+  of `` `names` `` — must live in a JS comment OUTSIDE the string. `node --check` reports the error
+  hundreds of characters from the cause.
+
+### Four cases where a GREEN PROBE measured the wrong thing
+
+The recurring failure of this session, worth more than any individual fix:
+
+- `CLIPPED=false` at 1600px on a genuinely broken rule — the row had 400px of slack. **Test a
+  truncation rule at the width where it bites.**
+- A chart probe read `fill` before `stroke`; a polyline's `fill` is `"none"`, which resolved to a
+  third distinct colour and satisfied "all different" — so the aqua it claimed to verify was never
+  measured.
+- A button-order suite asserted `b[0]`/`b[1]` by index and reported **8 failures on working code**
+  after a requested swap. Locate by label.
+- An `el.hidden` assertion passed on a button plainly still on screen. **Hit-test the pixel** with
+  `elementFromPoint` and walk up.
+
+Add to that the standing one: a probe that drives `.sidebar.open` measures 11.7px grid columns
+because **an automation-driven tab never advances a width transition** — inject
+`transition:none` before measuring.
+
+### Everything else this pass changed
+
+| screen | change |
+|---|---|
+| rail footer | Approval · Health · Notifications MOVED into a 3-up icon-above-label row, from Datadog's own footer (measured in the browser). One column when collapsed — they are utility controls and must stay reachable at 64px. `.on` had to move with them or `showView` marks nothing. |
+| rail | the `Sidebar` utility row removed; its tab is still reached from the Layout drawer |
+| flyout | `DOCS`/pin/chevron wrapped in one `.mfend` so they form a column (they landed at 294/302/316 on consecutive rows); chevron box always reserved; column 212 → 236px; the hover `translateX(2px)` "bump" removed; no left border where it meets the rail |
+| Settings flyout | the footer doc link follows the CATEGORY — `MF_ST_DOCS`, **all 17 paths verified against `_product-docs/urls.txt`**, never composed |
+| Agentic AI | wizard flattened to one form (gates unchanged); Test panel absent until Run test; single-line loader; success = banner only; export-PDF before the primary; charts on the chart palette, never `--severity-*`; consent merged to one panel |
+| canvas | the group header rule replaced by a border on `.dgroup:has(.ghead)`; an empty group is its dashed border and nothing else |
+| everywhere | **every translucent full-screen overlay now blurs** — verified generically, not by list |
 
 ## Responsive — the seven target resolutions
 
@@ -3386,6 +4114,7 @@ one and only the presentation differs.
 | 2 | icon rail + **always-docked panel** that swaps per module | ClickUp |
 | 3 | icon rail + hover mega-menu flyout — **Option 1's, since 23 Aug 2026** | Datadog |
 | 4 | **labelled** icon rail + a detail panel **you open** | monday.com |
+| 5 | **ultra-narrow** icon rail + an always-on **nav column** | Plain |
 
 ⚠️ **OPTION 3 NO LONGER DEMONSTRATES THE DEVREV COLUMN** (request, 23 Aug 2026: *"copy
 Option 1's sidebar and set it in Option 3"*). It runs Option 1's icon rail + flyout. The
@@ -3576,6 +4305,68 @@ Plus a browser walk in a real tab — ~40 assertions, every interaction hit-test
 against the measured reference, the panel on both surfaces, the preference surviving a module
 change, the More overflow, Favorites really filtering, and the Sidebar tab's live preview
 (which clones `#sidebar`) surviving the new rail.
+
+## Option 5 — the narrow rail + nav column (`dashboard-nav-column.html`, 2 Sep 2026)
+
+Built from **Plain** (plain.com), supplied via Mobbin (screen `8e4cfdce…`). The page is
+Option 1 with a different sidebar — "the module details is option 1", the same brief Option 4
+had — so the AI panel, Log Explorer, Settings and the rest are untouched.
+
+⚠️ **THE REFERENCE IS A STILL, NOT A LIVE DOM.** Every other option here was measured in the
+browser; this one could not be, so the numbers are PROPORTIONS read off the capture and then
+set to this product's own type scale. Said plainly so nobody later treats them as measured.
+
+### Why it is a fifth answer
+
+| | rail | how a module's navigation is reached |
+|---|---|---|
+| 1 · 3 | 64px | hover a mega-menu flyout |
+| 2 | 56px | an always-docked panel that swaps per module |
+| 4 | 72px, labelled | a docked panel **you open** with `»` |
+| **5** | **44px, icon-only** | **an always-on nav column — nested, counted, collapsible** |
+
+It is the only one where the navigation is permanently open AND nested: children sit indented
+under the row they belong to, each row can carry a count, and sections below the primary rows
+collapse. That nesting is the whole point of the pattern — it is Plain's "All threads → its
+statuses" shape.
+
+### How it is built
+
+- **`.plrail` (44px)** — logo, Search, Iris, the `RAIL` modules, then Approval / Health /
+  Notifications / avatar. **Icon-only, no labels, no hover-expand, no flyout.** 28px tile,
+  18px glyph; active tile is `--pill`.
+- **`.plnav` (216px)** — a header (module name over its route, plus Search and Sidebar
+  settings), then the rows.
+- ⚠️ **EXPLORER RENDERS FROM `EXPLORER_TREE`, EVERYTHING ELSE FROM `SUBNAV`/`SUBNAV2`.** The
+  tree is the only source with real nesting and real counts, and nesting is what the pattern
+  exists for. Flat modules render their first section as primary rows and the rest as Plain's
+  collapsible groups — which is what a `SUBNAV` heading already is.
+- ⚠️ **A COUNT IS ONLY DRAWN WHEN IT IS REAL** (`plCount`) — a parent's own `kids.length`.
+  Plain puts a number on every row; inventing one here would be inventing product data, so a
+  row with nothing true to show gets no number rather than a zero.
+
+### Things that would bite
+
+- ⚠️ **`#smenu` IS KEPT IN THE DOM, EMPTY AND HIDDEN.** `renderMenu()` writes into it and is
+  called from `selectModule`, `showView`, `pickDash` and the Layout drawer — it would throw on
+  a missing node. Cheaper to keep the node than to fork four call sites. `renderMenu` is
+  wrapped so the RAIL still repaints on every navigation.
+- ⚠️ **`#sbUser` NEEDS BOTH `.miniav` AND `.lbl`.** `refreshUser()` writes the saved name and
+  picture into the first; `stSeed()` reads the signed-in name out of the second to seed the
+  Settings profile form. The label is hidden, not removed — `textContent` does not care.
+- ⚠️ **`--sel` IS SAFE ON THE COLUMN AND WOULD NOT BE ON THE RAIL.** The column sits on
+  `--panel`, which it reads against in both themes; against `--sidebar` in dark, `--sel`
+  (#12233a) and the rail (#172336) are three points apart and the active row would vanish.
+  That is why the rail's active mark is `--pill` and the column's is `--sel`.
+- ⚠️ `mfOpen` / `mfOpenUtil` / `mfLater` / `sbHover` are **stood down, not deleted**, as in
+  Option 4. `mfHide` is not — `mfGo()` calls it on every navigation.
+
+Verified: `harness … query` **77/77** across all seven resolutions (the 260px sidebar is the
+widest chrome of any option and still clears the 430px canvas floor), `behave` **63/63**,
+`lxbehave` **57/57 ×5**, plus a 13-assertion walk (rail is icon-only, Explorer's 10
+sub-modules, counts only on the two rows with children and equal to 18/2, Monitor expanding to
+18 indented types, sections collapsing).
+
 
 ### Option 2 — ClickUp
 `.mpanel` / `renderMPanel()`. Rail drops to **56px, icon-only and permanent** —

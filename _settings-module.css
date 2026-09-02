@@ -37,6 +37,14 @@
    content takes the full width) — same control the Log Explorer head has */
 .stpt{width:24px;height:24px;border:0;background:transparent;color:var(--text-dim);
       border-radius:4px;cursor:pointer;display:grid;place-items:center;flex:0 0 24px}
+/* ⚠️ `[hidden]` LOSES TO ANY AUTHOR `display` RULE, AND THAT MADE `stHeadPaint` A NO-OP.
+   `.stpt{display:grid}` is (0,1,0) and beats the UA stylesheet's `[hidden]{display:none}`, so
+   `i.hidden = true` set the attribute and hid nothing — the head's (i) kept its full 34px box
+   and stayed clickable on every settings page that has no help pane. Found 2 Sep 2026 by
+   hit-testing the pixel: a probe asserting `el.hidden` PASSED on a button that was plainly
+   still on screen, because the property was true and the paint was unchanged. Assert what is
+   painted, not what the property says. */
+.stpt[hidden]{display:none}
 .stpt:hover{background:var(--hover);color:var(--text)}
 .stpt svg{width:14px;height:14px;fill:currentColor}
 .stsep{width:1px;height:18px;background:var(--border);flex:0 0 1px;margin:0 2px}
@@ -305,7 +313,7 @@
 .stcmore svg{width:12px;height:12px;fill:currentColor;color:var(--teal);vertical-align:-1px;margin-left:4px}
 .stcnote{font-size:12.8px;color:var(--text-dim)}
 /* ── confirm (delete) ─────────────────────────────────────────────────────────── */
-.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45)}
+.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 .stccf.on{display:grid}
 .stccfb{width:420px;max-width:92vw;background:var(--pop);border:1px solid var(--pop-line);border-radius:8px;box-shadow:var(--shadow);padding:20px}
 .stccfb h5{margin:0 0 8px;font-size:15px;font-weight:600;color:var(--white)}
@@ -1178,8 +1186,15 @@ html[data-theme="light"] #agPage{
    real offset is the component's own 8px left inset + the 30px mark + its 10px gap = 48px; at
    42 the description sat 6px left of the title it belongs to. Caught by comparing the two
    rects, not by eye. */
+/* ⚠️ NO `max-width` (request, 2 Sep 2026: "text will be shown full"). It was capped at 940px,
+   so on a wide screen the description wrapped to two lines with the rest of the row empty beside
+   it — and the wrap fell mid-sentence, breaking "…to the provider you connect —" from "nothing
+   is stored in plain text". A measure cap is right for a paragraph you READ; this is one line of
+   page description that should simply use the width it has.
+   ⚠️ It keeps its 48px left indent, which is what aligns it under the page title rather than
+   under the mark beside it. */
 .aghsub{margin:2px 0 12px 48px;font-size:12.8px;line-height:1.55;
-  color:var(--text-color-common-secondary);max-width:940px}
+  color:var(--text-color-common-secondary)}
 .aghsub obs-link{margin-left:2px}
 /* ⚠️ `obs-link`'s `external` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
    The reference puts the glyph after the text, so it is added as an `obs-icon` in the link's
@@ -1232,7 +1247,13 @@ html[data-theme="light"] #agPage{
    bottom"). The step body used to end wherever its content ended and the footer followed it, so
    on a short step — Credentials with Advanced closed — the KMS note and Continue floated in the
    middle of a tall panel. */
-.agcfgm{flex:1;min-width:0;padding:0 0 24px 24px;display:flex;flex-direction:column}
+.agcfgm{flex:1;min-width:0;padding:0 0 56px 24px;display:flex;flex-direction:column}
+/* ⚠️ 56px OF BOTTOM PADDING, AND IT IS NOT DECORATION — it keeps the footer out from under the
+   variant switcher. `.vs-switch` is `position:fixed; left:50%; bottom:18px` and 33px tall, so
+   it owns the bottom ~51px of the viewport at screen centre. Once the footer was pinned to the
+   bottom of this column the pill sat ON TOP of Continue — measured 103×7px of overlap, with
+   Continue at 794..881 under the pill at 749..851. The pill ships (it is in `_variants.js`,
+   loaded by every page), so this is not a dev-only collision. */
 .agcfgh{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--primary-alt)}
 .agcfgp{margin:0 0 4px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:720px}
 /* a form section — the reference separates each with a hairline and gives it a label,
@@ -1248,31 +1269,119 @@ html[data-theme="light"] #agPage{
    records at `.agemt`. Grep before restoring them.
    ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (@padding-lg 24 · @padding-md 16 ·
    @padding-sm 12 · @padding-xs 8). Eyeballed values scored `layout 38` once already. */
-.agform{max-width:720px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+/* ⚠️ `flex:1 0 auto` — GROW, NEVER SHRINK. These two were `1 1 auto; min-height:0`, which was
+   right while the screen was a three-step wizard whose every step fitted: the body stretched so
+   the footer sat at the bottom. Flattening the wizard (2 Sep 2026) made the content taller than
+   the viewport, and a shrinkable body with `overflow:visible` collapsed BELOW its own content —
+   so the form painted straight over the footer. `shrink:0` keeps the natural height once the
+   content exceeds the space, `grow:1` still pushes the footer down when it does not, and
+   `.stmain` (already `overflow:auto`) does the scrolling.
+   ⚠️ `min-height:0` HAD TO GO WITH IT — it is the licence to shrink below content, so leaving it
+   in would have kept the overlap whatever the flex shorthand said.
+   ⚠️ TWENTY PASSING ASSERTIONS DID NOT CATCH THIS. Every one of them read the DOM — buttons,
+   gating, section count — and the defect was purely where things PAINTED. The screenshot found
+   it. */
+.agform{max-width:720px;flex:1 0 auto;display:flex;flex-direction:column}
 /* ⚠️ THE BODY FLEXES AND THE FOOTER KEEPS ITS OWN MARGIN — deliberately NOT `margin-top:auto`
    on the footer. `margin-top:auto` resolves to 0 when there is no free space, so it cannot also
    carry the minimum gap, and a tall step would end up with the footer jammed against the last
    control. That is the recorded `.aihelpl` trap. Letting the BODY take the slack keeps the
    24px in `.agff` a real floor in both cases. */
-.agfbody{flex:1 1 auto;min-height:0}
+.agfbody{flex:1 0 auto}
 .agrow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
 .agrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin-top:16px}
 .agcfgm obs-input{display:block}
 /* the Advanced settings disclosure — a real obs-button, so the one control here stays a DS
    element; only the chevron's rotation is ours */
-.agadvb{margin-top:16px}
-.agadvb obs-icon{transition:transform .15s ease}
-.agadvb.on obs-icon{transform:rotate(180deg)}
-.agadv{margin-top:12px;padding:16px;border:1px solid var(--border-color);
-  border-radius:var(--btn-radius);background:var(--neutral-lightest)}
-/* the test panel — a bordered block, not a DS component: `search_components` returns no card
-   or accordion, and `list_gaps` declares only charts/topology/widget-grid, so this is LAYOUT
-   around real `obs-*` controls rather than an undeclared fabricated component */
-.agtest{margin-top:24px;padding:16px;border:1px solid var(--border-color);
+/* ⚠️ THE TOGGLE LIVES INSIDE THE BOX (request, 2 Sep 2026: "the Advanced settings button will
+   be shown inside box"). It used to sit above it, so open and closed were two different objects —
+   a loose button, then a loose button with a panel under it. It is now one collapsible section:
+   the box is always there, the button is its header, the fields are its body.
+   ⚠️ THE DS SHIPS NO ACCORDION. Checked against the bundle 2 Sep 2026: 52 registered `obs-*`
+   elements and not one collapse / disclosure / details among them — the same declared gap the
+   Help Card sits in. So the SECTION is built here, but the one interactive part of it stays a
+   real `obs-button`; only the chevron's rotation and the box are ours.
+   ⚠️ `--common-widget-bg`, NOT `--neutral-lightest`. The DS's own description of
+   `--neutral-lightest` is "subtle fill / skeleton / code chip" — a panel of form fields is none
+   of those, and it painted this section as a tinted slab unlike every other panel on the screen.
+   `--common-widget-bg` is what `.agpanel` and `.agtest` use. Same argument as `.laypick`,
+   27 Aug 2026. */
+.agadv{margin-top:16px;padding:12px 16px;border:1px solid var(--border-color);
   border-radius:var(--btn-radius);background:var(--common-widget-bg)}
+.agadv.on{padding-bottom:16px}
+/* ⚠️ THE BUTTON'S BORDER AND FILL ARE REMOVED BY REPOINTING THE COMPONENT'S OWN TOKENS, scoped
+   to this one button (request, 2 Sep 2026: "remove button border"). `.btn.v-default` inside the
+   shadow root reads `--default-button-bg` / `--default-button-border`, and custom properties
+   inherit ACROSS the shadow boundary — so nothing here has to reach inside the component, which
+   exposes no `::part`. It stays a real `obs-button` with the DS's own type, height and focus
+   ring; only these two paints are cleared.
+   ⚠️ THE HOVER/FOCUS FILL IS CLEARED TOO, AND THAT IS THE SECOND PASS. It was left in as the
+   control's only feedback — but `.v-default` paints that same fill on `:hover`, `:active` AND
+   `:focus`, so after you clicked to expand the section the button KEPT a filled slab for as long
+   as it held focus. Removing the border and leaving that in meant the button looked bordered
+   again the moment it was used. Hover now strengthens the LABEL instead
+   (`--default-button-hover-text: --primary`, which inverts correctly per theme), and real
+   keyboard focus still gets the DS's own `:focus-visible` 2px outline, untouched.
+   ⚠️ `margin-left:-15px` PULLS THE CHEVRON FLUSH WITH THE PANEL'S CONTENT EDGE. `.btn` carries a
+   hardcoded `padding:0 15px` with no token behind it, so with the border gone the header's glyph
+   sat 15px right of the field labels underneath it — an indent that was invisible while a button
+   box explained it. Cancelling it in the margin lines the disclosure up with its own content, as
+   a disclosure header should. Measured against the first field label, not eyeballed. */
+.agadvb{margin:0 0 0 -15px;
+  --default-button-bg:transparent;--default-button-border:transparent;
+  --default-button-hover-bg:transparent;--outline-button-hover-border:transparent;
+  --default-button-hover-text:var(--primary)}
+.agadv .agadvb obs-icon{transition:transform .15s ease}
+.agadv.on .agadvb obs-icon{transform:rotate(180deg)}
+/* ⚠️ NO RULE BETWEEN HEADER AND BODY (request, same). The box's own border already says where
+   the section starts and ends; a second hairline 40px inside it cut one panel into two. The
+   16px is the DS `@padding-md` step, doing the separating on its own. */
+.agadvbd{margin-top:16px}
+/* ⚠️ `.agflb` REPRODUCES `obs-input`'s OWN SHADOW `.lbl` RULE, VERBATIM — the component draws
+   its label inside its shadow root with no slot and no ::part, so a field that needs an ⓘ after
+   its label has to render the label itself. Values read from the shipped 0.1.166 stylesheet:
+   `font-size:var(--text-sm,.8rem); line-height:1.5; color:var(--text-color-common-secondary)`.
+   ⚠️ IF THE COMPONENT'S LABEL STYLING EVER CHANGES, THIS DRIFTS SILENTLY — the two would simply
+   stop matching, with nothing to error. There is a probe assertion comparing a `.agflb` label to
+   a field that still uses the component's own `label` prop, on size, colour and offset. */
+.agflb{display:flex;align-items:center;gap:6px;margin-bottom:4px;
+  font-size:var(--text-sm,.8rem);line-height:1.5;color:var(--text-color-common-secondary)}
+/* the ⓘ is `obs-tooltip`'s OWN default trigger — given no `trigger` slot and no `trigger-label`
+   it renders `obs-icon name="infoCircle" size="15" label="More info" tabindex="0"`, so the mark,
+   its size and its keyboard focusability are the DS's, not drawn here. */
+.agflb obs-tooltip{display:inline-flex;line-height:0}
+/* ⚠️ NO BORDER, AND THEREFORE NO PADDING AND NO FILL (request, 2 Sep 2026: "remove border").
+   This block is only on screen while the test RUNS — about two seconds — and it is now plain
+   content in the form's own flow rather than a panel.
+   ⚠️ The padding and the fill had to go WITH the border, not be kept beside it. `padding:16px`
+   with no box indents the content 16px from everything above it with nothing on screen to
+   explain the indent; and `--common-widget-bg` is `#fff` in light, i.e. invisible against the
+   page — so in light it bought nothing and in dark it would have left a tinted band hugging two
+   lines of text. One `margin-top` is all the separation a transient status line needs.
+   ⚠️ It is still LAYOUT around real `obs-*` controls, not a fabricated component: the DS has no
+   card or accordion (`search_components`), and `list_gaps` declares only charts / topology /
+   widget-grid — which is why this was a hand-built block in the first place. Now it is less of
+   one, not more. */
+.agtest{margin-top:24px}
+/* ⚠️ NEVER PUT `style=` ON AN `obs-*` ELEMENT — Vue FORWARDS IT INTO THE SHADOW ROOT. A custom
+   element built with `defineCustomElement` applies the host's fallthrough attributes, `style`
+   included, to the COMPONENT'S OWN ROOT NODE. So `style="display:block"` on `<obs-banner>` did
+   not merely set the host (which `:host{display:block}` already does) — it landed on `.bn`
+   inside the shadow root and overrode its `display:flex`, stacking the icon above the message.
+   Measured 2 Sep 2026: `inline style on .bn = "margin-top:16px; display:block"`, computed
+   `display:block`, and forcing flex back put them on one line.
+   ⚠️ A CLASS IS SAFE where a style attribute is not: the class is copied inward too, but page
+   CSS cannot match inside a shadow tree, so only the rule targeting the HOST applies — which is
+   what these two do. Margins are all they need; the component already declares its own display.
+   ⚠️ Both banners on this screen carried that inline style, so BOTH were stacking. */
+/* the toolbar's icon-only export — square, like the Compliance grid's own square actions */
+.agexp{--default-button-bg:transparent}
+.agbanok{margin-top:16px}
+.agbanwarn{margin:12px 0 16px}
 .agth{display:flex;align-items:center;gap:8px}
 .agth .t{font-size:13px;font-weight:600;color:var(--primary-alt)}
 .agth obs-icon{color:var(--neutral-light)}
+.agth obs-tag{margin-left:2px}
 .agth obs-button{margin-left:auto}
 .agtn{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:12.5px;
   line-height:1.5;color:var(--text-color-common-secondary)}
@@ -1299,17 +1408,82 @@ html[data-theme="light"] #agPage{
 .agrt{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;
   border-bottom:1px solid var(--border-color)}
 .agrt:last-child{border-bottom:0}
-.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--page-text-color)}
+/* ⚠️ `min-width:0` — WITHOUT IT THIS ROW OVERFLOWS. A flex item defaults to
+   `min-width:auto`, so the label refuses to shrink below its own text; the select is
+   `flex:0 0 200px` and cannot shrink either, so on a narrow panel the pair is wider than the
+   row and the select pushes out past the panel's edge. The longest labels here are "Runbook
+   recommendations" and "Natural language queries". Reported 1 Sep 2026 as an alignment
+   problem; I could not reproduce it at 1440 or 1800 in any option, but the defect is in the
+   rule regardless — `min-width:0` + `overflow:hidden` is the fix either way. */
+.agrt .n{display:inline-flex;align-items:center;gap:12px;font-size:12.5px;color:var(--page-text-color);
+  min-width:0;flex:0 1 auto;white-space:nowrap}
+/* ⚠️ THE LABEL NEEDS ITS OWN SPAN TO ELLIPSIS. `overflow:hidden` used to sit on `.n`, which is
+   an `inline-flex` box whose label was a bare TEXT NODE — and `text-overflow` cannot act on an
+   anonymous flex item, so it computed to `clip` and the label was cut MID-GLYPH wherever the row
+   was tight ("Alert summarizatior", "Knowledge searct"). Reported 2 Sep 2026.
+   ⚠️ It only bites at narrow widths — at 1600px the row is 686px and nothing truncates, which is
+   why a measurement there reported `CLIPPED=false` on a genuinely broken rule. Test this one at
+   1280, where the rail and help card have taken their share.
+   ⚠️ `min-width:0` on BOTH: the span cannot shrink below its text without it, and neither can
+   `.n` — a flex item's default `min-width:auto` is what stops either from yielding. */
+.agrt .n>.t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .agrt .n obs-icon{color:var(--neutral-light)}
-.agrt obs-select{width:200px;flex:0 0 200px}
+/* ⚠️ ONE LEFT RHYTHM FOR THE PANEL. The header's title and the rows' labels have to start at
+   the same x or the block reads as two unrelated lists. The header icon is 17px on `.agphl`'s
+   12px gap (text at +29); the rows were 14px icons on an 8px gap (text at +22) — a 7px stagger,
+   repeated down seven rows, which is what reads as "not aligned". Both icons now sit in a fixed
+   17px slot on the same 12px gap, so each glyph KEEPS ITS OWN SIZE (the header's is deliberately
+   the louder mark) and only the TEXT is brought into line. The icons share a left edge.
+   ⚠️ Size the slot with `flex`, not `width` — `obs-icon` is a flex item here and its own
+   `size` attribute sets its width, which a plain `width` would fight. */
+.agrt .n>obs-icon,.agphl>obs-icon{flex:0 0 17px}
+/* ⚠️ 240px IS `obs-select`'s OWN INTRINSIC WIDTH — DO NOT NARROW IT. Its shadow root's `.sel`
+   div is hardcoded to 240px and ignores a narrower host, so at `width:200px` the HOST box
+   measured 837..1037 while the control PAINTED 837..1077 — 40px outside its own box, straight
+   over the panel's right border. `getBoundingClientRect()` on the host reports the honest 200px
+   and every geometry assertion passed; only counting painted pixels in the screenshot found it
+   (seven 30px runs at x=1076, one per row). This is a shipped v0.1.166 defect — see
+   `_ds/README.md`. Matching the host to 240px makes box and paint agree exactly. */
+.agrt obs-select{width:240px;flex:0 0 240px}
 .agrtw{margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px}
 /* consent */
 .agchips{display:flex;flex-wrap:wrap;gap:8px}
+/* a hairline-separated section INSIDE a panel */
+.agpf{margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color)}
+/* the provider's privacy link — part of "what is transmitted", so it sits with the chips rather
+   than behind a rule of its own */
+.agpll{margin-top:12px}
 .agcons{display:flex;flex-direction:column;gap:12px}
 /* the live connection test's stage list */
 .agstg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;
   color:var(--text-color-common-secondary)}
+/* ⚠️ ONE LINE, NOT FOUR (request, 2 Sep 2026: "show only single line and the text will be shown
+   and replaced, a loader will load"). Each of the four named stages had its own row, and after a
+   ~2s test all four stayed on screen ticked — a permanent four-line list restating work that is
+   over, directly above a banner that already reports the outcome. The stage NAME is kept, because
+   that is what makes the wait informative rather than a bare spinner; only the ACCUMULATION is
+   gone. One row: a spinner and the current stage, swapped in place as each lands.
+   ⚠️ The spinner is `.stspin`, the settings module's own — the DS ships NO loader/spinner
+   component (`search_components` for "spinner loading indicator progress" returns Severity and
+   Steps and nothing else), so this is built from what the file already has rather than drawn. It
+   colours from `currentColor`, which is why the colour is set on the element and not a border. */
+.agstgl{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;
+  color:var(--page-text-color)}
+.agstgl .stspin{flex:0 0 13px;color:var(--neutral-light)}
+/* ⚠️ KEPT AND UNREFERENCED from here down — the four-row stage list the single line replaced.
+   It was the reference's own shape, so it is parked rather than deleted (house pattern). Note
+   `.agstg.now` was added earlier the SAME DAY to mark the running stage; the single line makes
+   the distinction moot, since the only stage shown is the running one. */
+.agstgs{margin-top:12px}
 .agstg.done{color:var(--page-text-color)}
+/* the stage currently in flight — brought up to full text colour with a breathing ring, so it
+   is distinguishable from the stages that have not started. Deliberately NEUTRAL chrome: green
+   already means done, and `--primary-color` is the DS's Ant-form-control cyan, which would be
+   off-purpose on a progress mark. */
+.agstg.now{color:var(--page-text-color)}
+.agstg.now .p{border-color:var(--neutral-light);animation:agpulse 1.1s ease-in-out infinite}
+@keyframes agpulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){ .agstg.now .p{animation:none} }
 .agstg obs-icon{flex:0 0 auto;color:var(--secondary-green)}
 .agstg .p{flex:0 0 14px;width:14px;height:14px;border-radius:50%;
   border:1.5px solid var(--border-color)}
@@ -1351,15 +1525,34 @@ html[data-theme="light"] #agPage{
    ⚠️ THE SEVEN-CELL RULED FRAME IS GONE, and its rules with it — `.aggrid`, `.agkpi`, `.agkl`,
    `.agkv`, `.agcht`, `.agchh` no longer have anything carrying them. A rule outliving what it
    supported is the trap this file records at `.agemt`. */
+/* ⚠️ KEPT AND UNREFERENCED — the "Usage & health" heading it styled was removed on request
+   (2 Sep 2026) and this is the only thing that ever used it. Parked rather than deleted, the
+   house pattern, so a second section on this page has a label to reuse. */
 .agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--neutral-regular);margin:24px 0 12px}
-.agpage obs-table{display:block;margin-top:4px}
+/* ⚠️ 16px, NOT 4px. The 4 was the remainder of a gap the heading's own `margin-bottom:12px`
+   was paying for; with the heading gone the table sat almost flush under the toolbar. 16px is
+   `@padding-md` on the DS structural scale — the toolbar and its table are one unit in the
+   `list-view` recipe, so this is a gap, not the 24px section break the heading used to draw. */
+.agpage obs-table{display:block;margin-top:16px}
 
 
 
-.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:16px;
+/* ⚠️ `padding-right` PUTS THE GAP INSIDE THE BORDER BOX, WHICH IS THE WHOLE POINT. The rule is
+   this element's `border-top`, so it spans the padding too — the line runs the full width of the
+   pane, right up to the help card's divider, while the button stops 24px short of it and keeps
+   the breathing room every other control has. Setting a right MARGIN instead would shorten the
+   line by the same 24px, which is the thing the request asked to fix. */
+.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding:16px 24px 0 0;
   border-top:1px solid var(--border-color)}
 .agff .sp{margin-right:auto}
+/* ⚠️ THIS REPLACES AN INLINE `style="margin:0"` THAT WAS SILENTLY CANCELLING THE RULE ABOVE.
+   The caption is the `.sp` spacer, and an inline `margin:0` beats a stylesheet `margin-right:auto`
+   — so the footer's buttons were never pushed to the right edge; they sat immediately after the
+   caption text, wherever that happened to end (measured 323px short of the pane edge). The inline
+   style existed only to cancel `.agtn`'s own `margin-top:12px`; doing that here, scoped to the
+   footer, cancels the top margin and leaves the auto margin alive. */
+.agff .agtn{margin-top:0}
 
 /* ── the help card ────────────────────────────────────────────────────────────────────────
    Reference supplied 1 Sep 2026 (the product's "RUM Instrumentation Help Card"): a right-hand
@@ -1380,7 +1573,63 @@ html[data-theme="light"] #agPage{
    ROW is only as tall as its tallest child, so on a short step the rule stopped early. The
    container carries a min-height and the columns stretch into it, which is what makes the line
    run the full panel height as the reference shows. */
-.aghelp{flex:0 0 380px;width:380px;min-width:0;padding:0 0 24px 24px;
+/* ⚠️ THE CONFIGURE DRAWER IS WIDE, AND ITS PARKED OFFSET MUST MOVE WITH THE WIDTH — the recorded
+   `#drawer-layout` lesson: an id-scoped width on a `.sdrawer` needs its own `right` too, or the
+   panel sits partly on screen while closed. It holds a provider rail beside a 720px form, so
+   `min(1040px, 92vw)`.
+   ⚠️ `#drawer-agcfg .dr-b` drops `.dr-b`'s own padding and gap — `#agPage` inside it brings the
+   screen's own spacing, and two paddings put the content 30px from the drawer's edge.
+   ⚠️ THE HELP CARD IS IN THE DRAWER (request + reference, 2 Sep 2026 — the product's own
+   "Application Registeration" panel, which is a wide drawer holding a rail, a form AND a help
+   card). I had hidden it here and said three columns would not fit a side panel; the reference
+   shows the product doing exactly that, so the drawer got wider instead of the card getting cut.
+   ⚠️ 1440px FITS ALL THREE: rail 220 + form 720 + help 380 = 1320. Below ~1400px viewport the
+   card takes itself out through the `@media (max-width:1400px)` rule it already had, and rail +
+   form (940) fit what is left — so the two rules hand over cleanly with nothing new to keep in
+   step. */
+#agCfgScrim{position:fixed;inset:0;z-index:89;background:var(--scrim);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .18s}
+#agCfgScrim.on{opacity:1;pointer-events:auto}
+#drawer-agcfg{width:min(1440px,96vw);right:calc(-1 * min(1440px,96vw) - 20px)}
+#drawer-agcfg.on{right:0}
+#drawer-agcfg .dr-b{padding:0;gap:0}
+/* ⚠️ `flex:0 0 auto` IS WHAT MAKES THE DRAWER SCROLL. `.dr-b` is a flex COLUMN, so its child
+   defaults to `flex-shrink:1` and `.agcfg` was squashed to the body's height — the content then
+   spilled out with no scrollbar (measured: scrollHeight 756 === clientHeight 756 while content
+   ran to y=1466) and the footer sat stranded at y=700 with form behind it. Refusing to shrink is
+   what lets the body's own `overflow:auto` see something to scroll.
+   ⚠️ Removing `min-height:100%` alone did NOT fix it — that was the second guess and it was
+   wrong; the shrink is the cause. */
+#drawer-agcfg .dr-b > .agcfg{flex:0 0 auto}
+/* ⚠️ THE DRAWER HAS TO PAY FOR ITS OWN GUTTERS. On the full page this screen sat inside
+   `.stmain`'s 16px padding, so the columns never touched an edge. In the drawer `.dr-b` is
+   `padding:0` — deliberately, so `#agPage` owns its spacing — and `.aghelp` only ever had
+   `padding-left:24px`, so the help card's text ran flush to the drawer's right edge with no
+   gutter at all (2 Sep 2026: "it is not aligned"). 24px on the right mirrors its left.
+   ⚠️ `box-sizing:border-box` means the padding comes OUT of the 420px, not on top of it — the
+   column stays 420 and its text measure becomes 372. */
+#drawer-agcfg .aghelp{padding-right:24px}
+/* the rail and the form get the same treatment on their own outer edges */
+#drawer-agcfg .agcfgn{padding-left:8px}
+/* ⚠️ NO `min-height:100%` HERE — it stranded the footer. With it, `.agcfg` was pinned to the
+   drawer body's height, so the tall flattened form overflowed WITHOUT the body scrolling
+   (measured: `.dr-b` scrollHeight 756 === clientHeight 756 while content ran to y=1466) and
+   `.agff` sat at y=700, halfway up the panel with content behind it. Letting the content size
+   itself is what lets `.dr-b`'s own `overflow:auto` do its job.
+   ⚠️ `align-items:stretch` on `.agcfg` still gives the three columns equal height, so the help
+   card's left border still runs the full length of the content. */
+#drawer-agcfg .agcfg{align-items:stretch}
+/* ⚠️ 420px, AND EVERY SECTION OPEN BY DEFAULT (request, 2 Sep 2026: "the help card is not
+   proper visualization — use more space, better view"). Two things were wrong at once: the
+   column was 380px so every bullet wrapped to two or three lines, and only the first section
+   was expanded — so the card filled the top third of a 900px column and left the rest empty.
+   Widening it and opening all three uses the space that was already there, and nothing is a
+   click away any more.
+   ⚠️ THE FORM DOES NOT LOSE ANYTHING. `.agcfgm` takes the remaining width but `.agform` is
+   capped at `max-width:720px`, so the 40px comes out of that column's slack, not out of the
+   fields — measured: form 829 → 789, `.agform` still 720. */
+.aghelp{flex:0 0 420px;width:420px;min-width:0;padding:0 0 24px 24px;
   border-left:1px solid var(--border-color)}
 @media (max-width:1400px){ .aghelp{display:none} }
 .agcfg.nohelp .aghelp{display:none}
@@ -1396,14 +1645,133 @@ html[data-theme="light"] #agPage{
 .aghch:hover{background:var(--nav-hover-bg)}
 .aghch obs-icon{flex:0 0 auto;color:var(--neutral-light);transition:transform .15s ease}
 .aghs.on .aghch obs-icon{transform:rotate(180deg)}
-.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.6;
+/* ⚠️ 1.65 LINE-HEIGHT AND 10px BETWEEN BULLETS — the recorded `.aiab li` rule, in a third
+   place: the gap BETWEEN points must beat the leading INSIDE a wrapped one, or a two-line bullet
+   reads as two bullets. At 12.5px/1.65 a wrapped line carries ~8px, so the margin is 10. */
+.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.65;
   color:var(--text-color-common-secondary)}
 /* ⚠️ 16px, NOT the 18px this opened at — @padding-md on the DS structural scale. The
    conformance checker caught it as the screen's one off-scale value (layout 98). */
-.aghcb ul{margin:0;padding-left:16px}
-.aghcb li{margin-bottom:8px}
+.aghcb ul{margin:0;padding-left:18px}
+.aghcb li{margin-bottom:10px}
 .aghcb li:last-child{margin-bottom:0}
 .aghcb b{color:var(--primary-alt);font-weight:600}
 
 
 
+
+/* ══ THE PROVIDER-CONFIG SCREEN SCROLLS ITS BODY, NOT ITSELF (request, 2 Sep 2026: "it will be
+   fix this in bottom and the scroll only <body>") ═══════════════════════════════════════════
+   The wizard's action bar — the KMS caption, Run test, Accept & enable AI — scrolled away with
+   the form, so on the Model-selection step (three radios, a routing table of seven rows and a
+   consent panel) the only way to reach the primary button was to scroll to the very bottom.
+   The bar is the step's commit; it has to be on screen the whole time.
+
+   ⚠️ THE SCROLLER WAS `#stMain`, TWO ANCESTORS UP. Pinning the footer is not a footer change —
+   nothing inside `.agcfgm` can pin while an ancestor is the thing that scrolls. So `#stMain`
+   stops scrolling FOR THIS SCREEN ONLY (`:has(.agcfg)`, the same mechanism `body:has(...)`
+   already uses in this repo) and the height flows down to a bounded `.agfbody`.
+   ⚠️ EVERY LINK IN THE CHAIN NEEDS `min-height:0`. A flex child's default `min-height:auto` is
+   its content, so any one of `.agcfg` / `.agcfgm` / `.agform` left at `auto` re-grows the
+   column past the viewport and the footer leaves the screen again — the scrollbar just moves.
+   ⚠️ `.agcfg`'s `min-height:520px` HAD TO GO with it: a floor taller than the viewport is the
+   same bug on a short screen, except the overflow is now `hidden` and the content unreachable.
+   ⚠️ THE STEPPER STAYS PINNED TOO. It sits in `.agform` above `.agfbody`, so only the body
+   moves — which is what "the scroll only" asks for, and the rail is the step indicator: it is
+   navigation, not content.
+   ⚠️ `.agcfgm`'s 56px of bottom padding is KEPT and is still load-bearing — it is what holds
+   the now-pinned footer clear of the fixed variant-switcher pill. See its own note above.
+   ⚠️ The two side columns get their own scrollers for the same reason: once the row is bounded,
+   a long provider list or a long help card would otherwise be clipped with no way to reach it. */
+#stMain:has(.agcfg){overflow:hidden}
+.agcfg{min-height:0}
+.agcfgn,.aghelp{min-height:0;overflow-y:auto;scrollbar-width:thin}
+.agcfgm{min-height:0}
+.agform{flex:1 1 auto;min-height:0}
+.agfbody{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin}
+.agff{flex:0 0 auto}
+
+/* ══ THE CONFIG SCREEN'S SCROLLBAR AND ITS FOOTER WIDTH (request, 2 Sep 2026) ═══════════════
+   Both are fallout from pinning the footer earlier the same day.
+
+   ⚠️ THE SCROLLBAR IS HIDDEN, NOT THE SCROLLING. `overflow-y:auto` stays — `overflow:hidden`
+   would remove the bar by removing the ability to reach the rest of the form. This is the same
+   pair the AI panel's thinking trail uses. The trade-off is real and worth stating: the bar was
+   the only thing announcing that the area scrolls, so the affordance is now the content being
+   visibly cut off at the fold. Acceptable here because the footer is pinned in view, which is
+   what tells you the form continues above it.
+   ⚠️ `scrollbar-width` AND the `::-webkit-scrollbar` rule are both needed — the first is the
+   standard property, the second is what Chrome actually honours today.
+
+   ⚠️ THE FOOTER SPANS ITS OWN COLUMN — NOT THE FORM (720), AND NOT THE WHOLE PANE (1524).
+   Request, 2 Sep 2026: "show proper full width". This rule has now been wrong in BOTH directions
+   and the history is worth keeping, because the obvious fix each time was the other extreme:
+
+     1524  it started as a sibling of `.agform` with no cap, so the commit bar ran 470px past
+           the form it commits and its buttons sat in empty space beside the help card.
+      720  capping it to `.agform`'s `max-width` fixed that, and overshot: 720 is a readable
+           measure for FIELDS, but the footer is the SCREEN's action bar, so its rule stopped
+           150px short of the help card's divider and read as belonging to the inputs.
+     1204  the middle column's own content edge — measured `.agcfgm` 310..1204 against the help
+           card at 1204..1584. The rule now meets that divider exactly.
+
+   ⚠️ SO THERE IS NO `max-width` HERE AT ALL. `.agff` is a child of `.agcfgm`, so with the cap
+   removed it simply fills that column — the width is DERIVED from the layout rather than being
+   a third hardcoded number that has to be re-guessed the next time the pane changes.
+   ⚠️ `padding-right:24px` COMES BACK. The rule IS `.agff`'s `border-top` and a border spans the
+   PADDING box, so the line reaches the divider at 1204 while the buttons stop 24px short of it,
+   at 1180 — the same inset every other control on this screen has. A `margin-right` would shorten
+   the LINE by that 24px, which is the thing the request asked to fix. */
+.agfbody{scrollbar-width:none}
+.agfbody::-webkit-scrollbar{display:none}
+.agff{padding-right:24px}
+
+/* ── ONE VERTICAL RHYTHM FOR THE CONFIG FORM ───────────────────────────────────────────────
+   Request, 2 Sep 2026: "make to proper alignment in 3 section and same spacing for all field".
+   MEASURED FIRST, because the horizontal reading was wrong: every block already shared an x of
+   334 and a right edge of 1054, and the routing labels are NOT clipped (scrollWidth ==
+   clientWidth on all seven — the ragged last letters in the screenshot are JPEG artifacts).
+   The fault was entirely VERTICAL, and it was five different values doing one job:
+
+     4  heading -> helper           16 helper -> fields          16 fields -> Advanced
+     0  Advanced -> "Model selection"          <-- a SECTION HEADING with nothing above it
+     17 label -> radios             79 radios -> routing panel
+     0  routing panel -> "Review data sharing" <-- the other one
+     12 heading -> banner           16 panel -> panel
+
+   ⚠️ THE TWO ZEROS ARE THE WHOLE COMPLAINT. `.agcfgh` is `margin:0 0 4px` — no top margin — so
+   it depended on whatever sat above it, and since the wizard was flattened into one page
+   (2 Sep 2026) what sits above it is the previous section's last panel. Sections 2 and 3 opened
+   flush against it, so three sections read as one continuous run. Every other number here was
+   an inline `style="margin-top:…"` written at the call site: four of them, one of which said 24
+   where its neighbours said 16.
+
+   So spacing is declared ONCE, here, and the inline styles are gone from `_settings-module.js`:
+
+     .agfbody > *                  16px  @padding-md — every field, panel, banner and control
+     .agfbody > .agcfgp             4px  the helper line belongs to the heading above it
+     .agfbody > .agcfgh ~ .agcfgh  32px  a NEW SECTION
+
+   ⚠️ 32 = 2 x @padding-md, not an eyeballed number. The scale tops out at @padding-lg 24, and
+   24 against 16 inside is a 1.5x ratio that barely reads — this file has already recorded that
+   lesson twice (`.aiab li`, `.aichips`): THE GAP BETWEEN GROUPS MUST BEAT THE GAP INSIDE ONE.
+   A multiple of the scale keeps the conformance checker happy, where 18/22/28 scored layout 38.
+   ⚠️ `.agfbody > *` is (0,1,0) and TIES with `.agsub` / `.agadv` / `.agrow2` / `.agtn`, so this
+   block only wins by SOURCE ORDER. It has to stay at the end of this file.
+   ⚠️ `.agfbody > .agcfgh ~ .agcfgh` reads "an .agcfgh with another .agcfgh somewhere before it",
+   which is exactly every section heading except the first — no wrapper markup, no :not(), and
+   the done screen (`.agdone`, no `.agcfgh`) is untouched.
+   ⚠️ Section 3 goes heading -> banner at 16 where 1 and 2 go heading -> helper at 4. That is the
+   rule being consistent, not breaking: a banner is content, a `<p class="agcfgp">` is the
+   heading's own subtitle. Giving section 3 a helper line purely for symmetry would be inventing
+   copy. */
+.agfbody > *{margin-top:16px}
+.agfbody > :first-child{margin-top:0}
+.agfbody > .agcfgp{margin-top:4px}
+.agfbody > .agcfgh ~ .agcfgh{margin-top:32px}
+/* ⚠️ `obs-radio` IS AN UNKNOWN ELEMENT, SO IT DEFAULTS TO `display:inline` — it measured 341px
+   wide inside a 720px form and its rect stopped 55px short of its own painted rows, which is
+   where the phantom "79px gap" above the routing panel came from. `.agcfgm obs-input` already
+   carries the same fix for the same reason; the radio group never got one. Nothing moves
+   visually except that the gap below it is now the 16px it always claimed to be. */
+.agfbody obs-radio{display:block}

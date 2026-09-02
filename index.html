@@ -95,7 +95,12 @@ html[data-theme="light"] .strigger img{background:#16233a;border-radius:50%}
 /* ---------- module flyout (Datadog mega-menu): hovering a rail entry opens that module's
    own navigation, grouped under bold headings in columns. Measured on Datadog: flush to the
    rail, ~220px columns, 28px rows, 13px type. ---------- */
-.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);border:1px solid var(--border);
+/* ⚠️ NO LEFT BORDER (request, 2 Sep 2026). The flyout butts against the rail — which is why its
+   left corners are square (`border-radius:0 8px 8px 0`) — so a border on that edge drew a rule
+   down the seam between the two, reading as a divider inside one surface rather than as the
+   menu's own edge. The other three sides keep it; the shadow already separates this edge. */
+.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);
+  border:1px solid var(--border);border-left:0;
   border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:86vh;overflow:auto}
 html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
 .mflyout.on{display:flex;gap:0}
@@ -684,7 +689,13 @@ html[data-theme="light"] .dtabs{background:var(--panel-2)}
 #widgetMenu,#exportMenu{width:230px;padding:5px}
 #widgetMenu::before,#exportMenu::before,#insightPop::before{display:none}
 /* add-widget drawer (§7: 3 tabs + search + grouped 17-type catalog) */
-#awScrim,#drillScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
+/* ⚠️ EVERY SCRIM BLURS (request, 2 Sep 2026: "when I open every popup the background will be
+   blur"). Two already did — `.wfull` and `#searchLayer` — and five did not, so a dimmed-but-sharp
+   backdrop on one overlay sat beside a blurred one on another. All are 4px; `#searchLayer` keeps
+   its 7px, which is the spotlight deliberately going further.
+   ⚠️ `-webkit-backdrop-filter` is repeated on each because Safari still needs the prefix, and the
+   failure mode is silent: the wash still paints, only the blur goes missing. */
+#awScrim,#drillScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
 #awScrim.on,#drillScrim.on{opacity:1;pointer-events:auto}
 #awDrawer{position:fixed;top:0;right:0;bottom:0;width:480px;max-width:94vw;z-index:100001;background:var(--panel);
   border-left:1px solid var(--border);box-shadow:var(--shadow);display:flex;flex-direction:column;
@@ -798,7 +809,7 @@ html[data-theme="light"] .dtabs{background:var(--panel-2)}
 
 /* ---------- Create Dashboard drawer (form mirrors the live 8.2.6 drawer) ---------- */
 /* z-index above the floating variant-switcher pill (99999) so nothing overlaps the form */
-#ddScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
+#ddScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
 #ddScrim.on{opacity:1;pointer-events:auto}
 #ddrawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:94vw;z-index:100001;background:var(--panel);
   border-left:1px solid var(--border);box-shadow:var(--shadow);display:flex;flex-direction:column;
@@ -1257,7 +1268,7 @@ textarea.acta::placeholder{color:var(--muted)}
 .acpop hr{border:0;border-top:1px solid var(--pop-line);margin:4px 2px}
 
 /* rename dialog */
-.acdlgw{position:fixed;inset:0;z-index:100004;background:var(--scrim);display:none;place-items:center}
+.acdlgw{position:fixed;inset:0;z-index:100004;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;place-items:center}
 .acdlgw.on{display:grid}
 .acdlg{width:340px;max-width:90vw;background:var(--pop);border:1px solid var(--border);border-radius:10px;
   box-shadow:var(--shadow);padding:16px}
@@ -1942,6 +1953,14 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
    content takes the full width) — same control the Log Explorer head has */
 .stpt{width:24px;height:24px;border:0;background:transparent;color:var(--text-dim);
       border-radius:4px;cursor:pointer;display:grid;place-items:center;flex:0 0 24px}
+/* ⚠️ `[hidden]` LOSES TO ANY AUTHOR `display` RULE, AND THAT MADE `stHeadPaint` A NO-OP.
+   `.stpt{display:grid}` is (0,1,0) and beats the UA stylesheet's `[hidden]{display:none}`, so
+   `i.hidden = true` set the attribute and hid nothing — the head's (i) kept its full 34px box
+   and stayed clickable on every settings page that has no help pane. Found 2 Sep 2026 by
+   hit-testing the pixel: a probe asserting `el.hidden` PASSED on a button that was plainly
+   still on screen, because the property was true and the paint was unchanged. Assert what is
+   painted, not what the property says. */
+.stpt[hidden]{display:none}
 .stpt:hover{background:var(--hover);color:var(--text)}
 .stpt svg{width:14px;height:14px;fill:currentColor}
 .stsep{width:1px;height:18px;background:var(--border);flex:0 0 1px;margin:0 2px}
@@ -2210,7 +2229,7 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 .stcmore svg{width:12px;height:12px;fill:currentColor;color:var(--teal);vertical-align:-1px;margin-left:4px}
 .stcnote{font-size:12.8px;color:var(--text-dim)}
 /* ── confirm (delete) ─────────────────────────────────────────────────────────── */
-.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45)}
+.stccf{position:fixed;inset:0;z-index:100006;display:none;place-items:center;background:rgba(4,10,20,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 .stccf.on{display:grid}
 .stccfb{width:420px;max-width:92vw;background:var(--pop);border:1px solid var(--pop-line);border-radius:8px;box-shadow:var(--shadow);padding:20px}
 .stccfb h5{margin:0 0 8px;font-size:15px;font-weight:600;color:var(--white)}
@@ -3082,8 +3101,15 @@ html[data-theme="light"] #agPage{
    real offset is the component's own 8px left inset + the 30px mark + its 10px gap = 48px; at
    42 the description sat 6px left of the title it belongs to. Caught by comparing the two
    rects, not by eye. */
+/* ⚠️ NO `max-width` (request, 2 Sep 2026: "text will be shown full"). It was capped at 940px,
+   so on a wide screen the description wrapped to two lines with the rest of the row empty beside
+   it — and the wrap fell mid-sentence, breaking "…to the provider you connect —" from "nothing
+   is stored in plain text". A measure cap is right for a paragraph you READ; this is one line of
+   page description that should simply use the width it has.
+   ⚠️ It keeps its 48px left indent, which is what aligns it under the page title rather than
+   under the mark beside it. */
 .aghsub{margin:2px 0 12px 48px;font-size:12.8px;line-height:1.55;
-  color:var(--text-color-common-secondary);max-width:940px}
+  color:var(--text-color-common-secondary)}
 .aghsub obs-link{margin-left:2px}
 /* ⚠️ `obs-link`'s `external` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
    The reference puts the glyph after the text, so it is added as an `obs-icon` in the link's
@@ -3136,7 +3162,13 @@ html[data-theme="light"] #agPage{
    bottom"). The step body used to end wherever its content ended and the footer followed it, so
    on a short step — Credentials with Advanced closed — the KMS note and Continue floated in the
    middle of a tall panel. */
-.agcfgm{flex:1;min-width:0;padding:0 0 24px 24px;display:flex;flex-direction:column}
+.agcfgm{flex:1;min-width:0;padding:0 0 56px 24px;display:flex;flex-direction:column}
+/* ⚠️ 56px OF BOTTOM PADDING, AND IT IS NOT DECORATION — it keeps the footer out from under the
+   variant switcher. `.vs-switch` is `position:fixed; left:50%; bottom:18px` and 33px tall, so
+   it owns the bottom ~51px of the viewport at screen centre. Once the footer was pinned to the
+   bottom of this column the pill sat ON TOP of Continue — measured 103×7px of overlap, with
+   Continue at 794..881 under the pill at 749..851. The pill ships (it is in `_variants.js`,
+   loaded by every page), so this is not a dev-only collision. */
 .agcfgh{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--primary-alt)}
 .agcfgp{margin:0 0 4px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary);max-width:720px}
 /* a form section — the reference separates each with a hairline and gives it a label,
@@ -3152,31 +3184,119 @@ html[data-theme="light"] #agPage{
    records at `.agemt`. Grep before restoring them.
    ⚠️ EVERY SPACING HERE IS ON THE DS STRUCTURAL SCALE (@padding-lg 24 · @padding-md 16 ·
    @padding-sm 12 · @padding-xs 8). Eyeballed values scored `layout 38` once already. */
-.agform{max-width:720px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+/* ⚠️ `flex:1 0 auto` — GROW, NEVER SHRINK. These two were `1 1 auto; min-height:0`, which was
+   right while the screen was a three-step wizard whose every step fitted: the body stretched so
+   the footer sat at the bottom. Flattening the wizard (2 Sep 2026) made the content taller than
+   the viewport, and a shrinkable body with `overflow:visible` collapsed BELOW its own content —
+   so the form painted straight over the footer. `shrink:0` keeps the natural height once the
+   content exceeds the space, `grow:1` still pushes the footer down when it does not, and
+   `.stmain` (already `overflow:auto`) does the scrolling.
+   ⚠️ `min-height:0` HAD TO GO WITH IT — it is the licence to shrink below content, so leaving it
+   in would have kept the overlap whatever the flex shorthand said.
+   ⚠️ TWENTY PASSING ASSERTIONS DID NOT CATCH THIS. Every one of them read the DOM — buttons,
+   gating, section count — and the defect was purely where things PAINTED. The screenshot found
+   it. */
+.agform{max-width:720px;flex:1 0 auto;display:flex;flex-direction:column}
 /* ⚠️ THE BODY FLEXES AND THE FOOTER KEEPS ITS OWN MARGIN — deliberately NOT `margin-top:auto`
    on the footer. `margin-top:auto` resolves to 0 when there is no free space, so it cannot also
    carry the minimum gap, and a tall step would end up with the footer jammed against the last
    control. That is the recorded `.aihelpl` trap. Letting the BODY take the slack keeps the
    24px in `.agff` a real floor in both cases. */
-.agfbody{flex:1 1 auto;min-height:0}
+.agfbody{flex:1 0 auto}
 .agrow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
 .agrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin-top:16px}
 .agcfgm obs-input{display:block}
 /* the Advanced settings disclosure — a real obs-button, so the one control here stays a DS
    element; only the chevron's rotation is ours */
-.agadvb{margin-top:16px}
-.agadvb obs-icon{transition:transform .15s ease}
-.agadvb.on obs-icon{transform:rotate(180deg)}
-.agadv{margin-top:12px;padding:16px;border:1px solid var(--border-color);
-  border-radius:var(--btn-radius);background:var(--neutral-lightest)}
-/* the test panel — a bordered block, not a DS component: `search_components` returns no card
-   or accordion, and `list_gaps` declares only charts/topology/widget-grid, so this is LAYOUT
-   around real `obs-*` controls rather than an undeclared fabricated component */
-.agtest{margin-top:24px;padding:16px;border:1px solid var(--border-color);
+/* ⚠️ THE TOGGLE LIVES INSIDE THE BOX (request, 2 Sep 2026: "the Advanced settings button will
+   be shown inside box"). It used to sit above it, so open and closed were two different objects —
+   a loose button, then a loose button with a panel under it. It is now one collapsible section:
+   the box is always there, the button is its header, the fields are its body.
+   ⚠️ THE DS SHIPS NO ACCORDION. Checked against the bundle 2 Sep 2026: 52 registered `obs-*`
+   elements and not one collapse / disclosure / details among them — the same declared gap the
+   Help Card sits in. So the SECTION is built here, but the one interactive part of it stays a
+   real `obs-button`; only the chevron's rotation and the box are ours.
+   ⚠️ `--common-widget-bg`, NOT `--neutral-lightest`. The DS's own description of
+   `--neutral-lightest` is "subtle fill / skeleton / code chip" — a panel of form fields is none
+   of those, and it painted this section as a tinted slab unlike every other panel on the screen.
+   `--common-widget-bg` is what `.agpanel` and `.agtest` use. Same argument as `.laypick`,
+   27 Aug 2026. */
+.agadv{margin-top:16px;padding:12px 16px;border:1px solid var(--border-color);
   border-radius:var(--btn-radius);background:var(--common-widget-bg)}
+.agadv.on{padding-bottom:16px}
+/* ⚠️ THE BUTTON'S BORDER AND FILL ARE REMOVED BY REPOINTING THE COMPONENT'S OWN TOKENS, scoped
+   to this one button (request, 2 Sep 2026: "remove button border"). `.btn.v-default` inside the
+   shadow root reads `--default-button-bg` / `--default-button-border`, and custom properties
+   inherit ACROSS the shadow boundary — so nothing here has to reach inside the component, which
+   exposes no `::part`. It stays a real `obs-button` with the DS's own type, height and focus
+   ring; only these two paints are cleared.
+   ⚠️ THE HOVER/FOCUS FILL IS CLEARED TOO, AND THAT IS THE SECOND PASS. It was left in as the
+   control's only feedback — but `.v-default` paints that same fill on `:hover`, `:active` AND
+   `:focus`, so after you clicked to expand the section the button KEPT a filled slab for as long
+   as it held focus. Removing the border and leaving that in meant the button looked bordered
+   again the moment it was used. Hover now strengthens the LABEL instead
+   (`--default-button-hover-text: --primary`, which inverts correctly per theme), and real
+   keyboard focus still gets the DS's own `:focus-visible` 2px outline, untouched.
+   ⚠️ `margin-left:-15px` PULLS THE CHEVRON FLUSH WITH THE PANEL'S CONTENT EDGE. `.btn` carries a
+   hardcoded `padding:0 15px` with no token behind it, so with the border gone the header's glyph
+   sat 15px right of the field labels underneath it — an indent that was invisible while a button
+   box explained it. Cancelling it in the margin lines the disclosure up with its own content, as
+   a disclosure header should. Measured against the first field label, not eyeballed. */
+.agadvb{margin:0 0 0 -15px;
+  --default-button-bg:transparent;--default-button-border:transparent;
+  --default-button-hover-bg:transparent;--outline-button-hover-border:transparent;
+  --default-button-hover-text:var(--primary)}
+.agadv .agadvb obs-icon{transition:transform .15s ease}
+.agadv.on .agadvb obs-icon{transform:rotate(180deg)}
+/* ⚠️ NO RULE BETWEEN HEADER AND BODY (request, same). The box's own border already says where
+   the section starts and ends; a second hairline 40px inside it cut one panel into two. The
+   16px is the DS `@padding-md` step, doing the separating on its own. */
+.agadvbd{margin-top:16px}
+/* ⚠️ `.agflb` REPRODUCES `obs-input`'s OWN SHADOW `.lbl` RULE, VERBATIM — the component draws
+   its label inside its shadow root with no slot and no ::part, so a field that needs an ⓘ after
+   its label has to render the label itself. Values read from the shipped 0.1.166 stylesheet:
+   `font-size:var(--text-sm,.8rem); line-height:1.5; color:var(--text-color-common-secondary)`.
+   ⚠️ IF THE COMPONENT'S LABEL STYLING EVER CHANGES, THIS DRIFTS SILENTLY — the two would simply
+   stop matching, with nothing to error. There is a probe assertion comparing a `.agflb` label to
+   a field that still uses the component's own `label` prop, on size, colour and offset. */
+.agflb{display:flex;align-items:center;gap:6px;margin-bottom:4px;
+  font-size:var(--text-sm,.8rem);line-height:1.5;color:var(--text-color-common-secondary)}
+/* the ⓘ is `obs-tooltip`'s OWN default trigger — given no `trigger` slot and no `trigger-label`
+   it renders `obs-icon name="infoCircle" size="15" label="More info" tabindex="0"`, so the mark,
+   its size and its keyboard focusability are the DS's, not drawn here. */
+.agflb obs-tooltip{display:inline-flex;line-height:0}
+/* ⚠️ NO BORDER, AND THEREFORE NO PADDING AND NO FILL (request, 2 Sep 2026: "remove border").
+   This block is only on screen while the test RUNS — about two seconds — and it is now plain
+   content in the form's own flow rather than a panel.
+   ⚠️ The padding and the fill had to go WITH the border, not be kept beside it. `padding:16px`
+   with no box indents the content 16px from everything above it with nothing on screen to
+   explain the indent; and `--common-widget-bg` is `#fff` in light, i.e. invisible against the
+   page — so in light it bought nothing and in dark it would have left a tinted band hugging two
+   lines of text. One `margin-top` is all the separation a transient status line needs.
+   ⚠️ It is still LAYOUT around real `obs-*` controls, not a fabricated component: the DS has no
+   card or accordion (`search_components`), and `list_gaps` declares only charts / topology /
+   widget-grid — which is why this was a hand-built block in the first place. Now it is less of
+   one, not more. */
+.agtest{margin-top:24px}
+/* ⚠️ NEVER PUT `style=` ON AN `obs-*` ELEMENT — Vue FORWARDS IT INTO THE SHADOW ROOT. A custom
+   element built with `defineCustomElement` applies the host's fallthrough attributes, `style`
+   included, to the COMPONENT'S OWN ROOT NODE. So `style="display:block"` on `<obs-banner>` did
+   not merely set the host (which `:host{display:block}` already does) — it landed on `.bn`
+   inside the shadow root and overrode its `display:flex`, stacking the icon above the message.
+   Measured 2 Sep 2026: `inline style on .bn = "margin-top:16px; display:block"`, computed
+   `display:block`, and forcing flex back put them on one line.
+   ⚠️ A CLASS IS SAFE where a style attribute is not: the class is copied inward too, but page
+   CSS cannot match inside a shadow tree, so only the rule targeting the HOST applies — which is
+   what these two do. Margins are all they need; the component already declares its own display.
+   ⚠️ Both banners on this screen carried that inline style, so BOTH were stacking. */
+/* the toolbar's icon-only export — square, like the Compliance grid's own square actions */
+.agexp{--default-button-bg:transparent}
+.agbanok{margin-top:16px}
+.agbanwarn{margin:12px 0 16px}
 .agth{display:flex;align-items:center;gap:8px}
 .agth .t{font-size:13px;font-weight:600;color:var(--primary-alt)}
 .agth obs-icon{color:var(--neutral-light)}
+.agth obs-tag{margin-left:2px}
 .agth obs-button{margin-left:auto}
 .agtn{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:12.5px;
   line-height:1.5;color:var(--text-color-common-secondary)}
@@ -3203,17 +3323,82 @@ html[data-theme="light"] #agPage{
 .agrt{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;
   border-bottom:1px solid var(--border-color)}
 .agrt:last-child{border-bottom:0}
-.agrt .n{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--page-text-color)}
+/* ⚠️ `min-width:0` — WITHOUT IT THIS ROW OVERFLOWS. A flex item defaults to
+   `min-width:auto`, so the label refuses to shrink below its own text; the select is
+   `flex:0 0 200px` and cannot shrink either, so on a narrow panel the pair is wider than the
+   row and the select pushes out past the panel's edge. The longest labels here are "Runbook
+   recommendations" and "Natural language queries". Reported 1 Sep 2026 as an alignment
+   problem; I could not reproduce it at 1440 or 1800 in any option, but the defect is in the
+   rule regardless — `min-width:0` + `overflow:hidden` is the fix either way. */
+.agrt .n{display:inline-flex;align-items:center;gap:12px;font-size:12.5px;color:var(--page-text-color);
+  min-width:0;flex:0 1 auto;white-space:nowrap}
+/* ⚠️ THE LABEL NEEDS ITS OWN SPAN TO ELLIPSIS. `overflow:hidden` used to sit on `.n`, which is
+   an `inline-flex` box whose label was a bare TEXT NODE — and `text-overflow` cannot act on an
+   anonymous flex item, so it computed to `clip` and the label was cut MID-GLYPH wherever the row
+   was tight ("Alert summarizatior", "Knowledge searct"). Reported 2 Sep 2026.
+   ⚠️ It only bites at narrow widths — at 1600px the row is 686px and nothing truncates, which is
+   why a measurement there reported `CLIPPED=false` on a genuinely broken rule. Test this one at
+   1280, where the rail and help card have taken their share.
+   ⚠️ `min-width:0` on BOTH: the span cannot shrink below its text without it, and neither can
+   `.n` — a flex item's default `min-width:auto` is what stops either from yielding. */
+.agrt .n>.t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .agrt .n obs-icon{color:var(--neutral-light)}
-.agrt obs-select{width:200px;flex:0 0 200px}
+/* ⚠️ ONE LEFT RHYTHM FOR THE PANEL. The header's title and the rows' labels have to start at
+   the same x or the block reads as two unrelated lists. The header icon is 17px on `.agphl`'s
+   12px gap (text at +29); the rows were 14px icons on an 8px gap (text at +22) — a 7px stagger,
+   repeated down seven rows, which is what reads as "not aligned". Both icons now sit in a fixed
+   17px slot on the same 12px gap, so each glyph KEEPS ITS OWN SIZE (the header's is deliberately
+   the louder mark) and only the TEXT is brought into line. The icons share a left edge.
+   ⚠️ Size the slot with `flex`, not `width` — `obs-icon` is a flex item here and its own
+   `size` attribute sets its width, which a plain `width` would fight. */
+.agrt .n>obs-icon,.agphl>obs-icon{flex:0 0 17px}
+/* ⚠️ 240px IS `obs-select`'s OWN INTRINSIC WIDTH — DO NOT NARROW IT. Its shadow root's `.sel`
+   div is hardcoded to 240px and ignores a narrower host, so at `width:200px` the HOST box
+   measured 837..1037 while the control PAINTED 837..1077 — 40px outside its own box, straight
+   over the panel's right border. `getBoundingClientRect()` on the host reports the honest 200px
+   and every geometry assertion passed; only counting painted pixels in the screenshot found it
+   (seven 30px runs at x=1076, one per row). This is a shipped v0.1.166 defect — see
+   `_ds/README.md`. Matching the host to 240px makes box and paint agree exactly. */
+.agrt obs-select{width:240px;flex:0 0 240px}
 .agrtw{margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px}
 /* consent */
 .agchips{display:flex;flex-wrap:wrap;gap:8px}
+/* a hairline-separated section INSIDE a panel */
+.agpf{margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color)}
+/* the provider's privacy link — part of "what is transmitted", so it sits with the chips rather
+   than behind a rule of its own */
+.agpll{margin-top:12px}
 .agcons{display:flex;flex-direction:column;gap:12px}
 /* the live connection test's stage list */
 .agstg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;
   color:var(--text-color-common-secondary)}
+/* ⚠️ ONE LINE, NOT FOUR (request, 2 Sep 2026: "show only single line and the text will be shown
+   and replaced, a loader will load"). Each of the four named stages had its own row, and after a
+   ~2s test all four stayed on screen ticked — a permanent four-line list restating work that is
+   over, directly above a banner that already reports the outcome. The stage NAME is kept, because
+   that is what makes the wait informative rather than a bare spinner; only the ACCUMULATION is
+   gone. One row: a spinner and the current stage, swapped in place as each lands.
+   ⚠️ The spinner is `.stspin`, the settings module's own — the DS ships NO loader/spinner
+   component (`search_components` for "spinner loading indicator progress" returns Severity and
+   Steps and nothing else), so this is built from what the file already has rather than drawn. It
+   colours from `currentColor`, which is why the colour is set on the element and not a border. */
+.agstgl{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;
+  color:var(--page-text-color)}
+.agstgl .stspin{flex:0 0 13px;color:var(--neutral-light)}
+/* ⚠️ KEPT AND UNREFERENCED from here down — the four-row stage list the single line replaced.
+   It was the reference's own shape, so it is parked rather than deleted (house pattern). Note
+   `.agstg.now` was added earlier the SAME DAY to mark the running stage; the single line makes
+   the distinction moot, since the only stage shown is the running one. */
+.agstgs{margin-top:12px}
 .agstg.done{color:var(--page-text-color)}
+/* the stage currently in flight — brought up to full text colour with a breathing ring, so it
+   is distinguishable from the stages that have not started. Deliberately NEUTRAL chrome: green
+   already means done, and `--primary-color` is the DS's Ant-form-control cyan, which would be
+   off-purpose on a progress mark. */
+.agstg.now{color:var(--page-text-color)}
+.agstg.now .p{border-color:var(--neutral-light);animation:agpulse 1.1s ease-in-out infinite}
+@keyframes agpulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){ .agstg.now .p{animation:none} }
 .agstg obs-icon{flex:0 0 auto;color:var(--secondary-green)}
 .agstg .p{flex:0 0 14px;width:14px;height:14px;border-radius:50%;
   border:1.5px solid var(--border-color)}
@@ -3242,16 +3427,101 @@ html[data-theme="light"] #agPage{
    ⚠️ THE SEVEN-CELL RULED FRAME IS GONE, and its rules with it — `.aggrid`, `.agkpi`, `.agkl`,
    `.agkv`, `.agcht`, `.agchh` no longer have anything carrying them. A rule outliving what it
    supported is the trap this file records at `.agemt`. */
+/* ⚠️ KEPT AND UNREFERENCED — the "Usage & health" heading it styled was removed on request
+   (2 Sep 2026) and this is the only thing that ever used it. Parked rather than deleted, the
+   house pattern, so a second section on this page has a label to reuse. */
 .agsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--neutral-regular);margin:24px 0 12px}
-.agpage obs-table{display:block;margin-top:4px}
+/* ⚠️ 16px, NOT 4px. The 4 was the remainder of a gap the heading's own `margin-bottom:12px`
+   was paying for; with the heading gone the table sat almost flush under the toolbar. 16px is
+   `@padding-md` on the DS structural scale — the toolbar and its table are one unit in the
+   `list-view` recipe, so this is a gap, not the 24px section break the heading used to draw. */
+.agpage obs-table{display:block;margin-top:16px}
 
 
 
-.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding-top:16px;
+/* ⚠️ `padding-right` PUTS THE GAP INSIDE THE BORDER BOX, WHICH IS THE WHOLE POINT. The rule is
+   this element's `border-top`, so it spans the padding too — the line runs the full width of the
+   pane, right up to the help card's divider, while the button stops 24px short of it and keeps
+   the breathing room every other control has. Setting a right MARGIN instead would shorten the
+   line by the same 24px, which is the thing the request asked to fix. */
+.agff{display:flex;align-items:center;gap:8px;margin-top:24px;padding:16px 24px 0 0;
   border-top:1px solid var(--border-color)}
 .agff .sp{margin-right:auto}
+/* ⚠️ THIS REPLACES AN INLINE `style="margin:0"` THAT WAS SILENTLY CANCELLING THE RULE ABOVE.
+   The caption IS the `.sp` spacer, and an inline `margin:0` beats a stylesheet
+   `margin-right:auto` — so the footer's buttons were never pushed to the right edge; they sat
+   immediately after the caption text, wherever that happened to end (measured 323px short of
+   the pane edge). The inline style existed only to cancel `.agtn`'s own `margin-top:12px`;
+   doing that here, scoped to the footer, cancels the top margin and leaves the auto margin
+   alive. ⚠️ A one-line inline style put in to fix spacing had been quietly breaking alignment
+   for the whole life of this footer. */
+.agff .agtn{margin-top:0}
 
+/* ⚠️ `.sdrawer` PORTED FROM OPTION 1 (2 Sep 2026). This option had no drawer chrome at all, and
+   `agConfig` now opens one — without these rules Configure AI provider would open nothing and
+   fail silently, which is the worst kind of regression to ship. Values copied verbatim so the
+   three options' drawers are the same object. */
+.sdrawer{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--panel);border-left:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,.45);z-index:90;transition:right .22s ease;display:flex;flex-direction:column}
+.sdrawer.on{right:0}
+.dr-h{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border-soft);font-size:14px;font-weight:700}
+.dr-h .x{margin-left:auto;color:var(--text-dim);font-size:15px;cursor:pointer}
+.dr-b{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:11px}
+/* ⚠️ THE CONFIGURE DRAWER IS WIDE, AND ITS PARKED OFFSET MUST MOVE WITH THE WIDTH — the recorded
+   `#drawer-layout` lesson: an id-scoped width on a `.sdrawer` needs its own `right` too, or the
+   panel sits partly on screen while closed. It holds a provider rail beside a 720px form, so
+   `min(1040px, 92vw)`; below that the rail and form still fit because the Help Card takes itself
+   out at `max-width:1400px`, which is the media query it already had.
+   ⚠️ `#drawer-agcfg .dr-b` drops `.dr-b`'s own padding and gap — `#agPage` inside it brings the
+   screen's own spacing, and two paddings made the drawer's content sit 30px from its edge. */
+/* ⚠️ THE DRAWER GETS ITS OWN BLURRED SCRIM (request, 2 Sep 2026: "the background will be
+   blur"). It is NOT `.scrim2` — that one is shared with the other `.sdrawer` panels and carries
+   no blur, so adding one there would have changed every drawer in the file for a request about
+   this one.
+   ⚠️ z-index 89 sits between the page and `.sdrawer`'s 90, so the drawer stays sharp and
+   everything behind it is blurred. The variant pill is z-99999 and deliberately stays sharp —
+   it is not part of the page being dimmed.
+   ⚠️ `-webkit-backdrop-filter` is repeated because Safari still needs the prefix, and a blurred
+   scrim that silently degrades to a flat wash is the kind of thing nobody notices until a demo.
+   ⚠️ Clicking it closes the drawer — a scrim you cannot dismiss is a trap, and this flow has no
+   unsaved-work guard to justify one. */
+#agCfgScrim{position:fixed;inset:0;z-index:89;background:var(--scrim);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .18s}
+#agCfgScrim.on{opacity:1;pointer-events:auto}
+#drawer-agcfg{width:min(1440px,96vw);right:calc(-1 * min(1440px,96vw) - 20px)}
+#drawer-agcfg.on{right:0}
+#drawer-agcfg .dr-b{padding:0;gap:0}
+/* ⚠️ `flex:0 0 auto` IS WHAT MAKES THE DRAWER SCROLL. `.dr-b` is a flex COLUMN, so its child
+   defaults to `flex-shrink:1` and `.agcfg` was squashed to the body's height — the content then
+   spilled out with no scrollbar (measured: scrollHeight 756 === clientHeight 756 while content
+   ran to y=1466) and the footer sat stranded at y=700 with form behind it. Refusing to shrink is
+   what lets the body's own `overflow:auto` see something to scroll.
+   ⚠️ Removing `min-height:100%` alone did NOT fix it — that was the second guess and it was
+   wrong; the shrink is the cause. */
+#drawer-agcfg .dr-b > .agcfg{flex:0 0 auto}
+/* ⚠️ THE DRAWER HAS TO PAY FOR ITS OWN GUTTERS. On the full page this screen sat inside
+   `.stmain`'s 16px padding, so the columns never touched an edge. In the drawer `.dr-b` is
+   `padding:0` — deliberately, so `#agPage` owns its spacing — and `.aghelp` only ever had
+   `padding-left:24px`, so the help card's text ran flush to the drawer's right edge with no
+   gutter at all (2 Sep 2026: "it is not aligned"). 24px on the right mirrors its left.
+   ⚠️ `box-sizing:border-box` means the padding comes OUT of the 420px, not on top of it — the
+   column stays 420 and its text measure becomes 372. */
+#drawer-agcfg .aghelp{padding-right:24px}
+/* the rail and the form get the same treatment on their own outer edges */
+#drawer-agcfg .agcfgn{padding-left:8px}
+/* ⚠️ NO `min-height:100%` HERE — it stranded the footer. With it, `.agcfg` was pinned to the
+   drawer body's height, so the tall flattened form overflowed WITHOUT the body scrolling
+   (measured: `.dr-b` scrollHeight 756 === clientHeight 756 while content ran to y=1466) and
+   `.agff` sat at y=700, halfway up the panel with content behind it. Letting the content size
+   itself is what lets `.dr-b`'s own `overflow:auto` do its job.
+   ⚠️ `align-items:stretch` on `.agcfg` still gives the three columns equal height, so the help
+   card's left border still runs the full length of the content. */
+#drawer-agcfg .agcfg{align-items:stretch}
+/* ⚠️ INSIDE THE DRAWER THE HELP CARD IS HIDDEN. Three columns — rail, form, help — need ~1320px;
+   the drawer is 1040 at most. The card's content is not lost from the product: it is reference
+   prose about prerequisites and data handling, and the drawer is the doing surface. Its markup
+   still renders on any wider surface that calls `agCfgHTML()`. */
 /* ── the help card ────────────────────────────────────────────────────────────────────────
    Reference supplied 1 Sep 2026 (the product's "RUM Instrumentation Help Card"): a right-hand
    column with an accent-barred title and collapsible sections, the first open.
@@ -3271,7 +3541,16 @@ html[data-theme="light"] #agPage{
    ROW is only as tall as its tallest child, so on a short step the rule stopped early. The
    container carries a min-height and the columns stretch into it, which is what makes the line
    run the full panel height as the reference shows. */
-.aghelp{flex:0 0 380px;width:380px;min-width:0;padding:0 0 24px 24px;
+/* ⚠️ 420px, AND EVERY SECTION OPEN BY DEFAULT (request, 2 Sep 2026: "the help card is not
+   proper visualization — use more space, better view"). Two things were wrong at once: the
+   column was 380px so every bullet wrapped to two or three lines, and only the first section
+   was expanded — so the card filled the top third of a 900px column and left the rest empty.
+   Widening it and opening all three uses the space that was already there, and nothing is a
+   click away any more.
+   ⚠️ THE FORM DOES NOT LOSE ANYTHING. `.agcfgm` takes the remaining width but `.agform` is
+   capped at `max-width:720px`, so the 40px comes out of that column's slack, not out of the
+   fields — measured: form 829 → 789, `.agform` still 720. */
+.aghelp{flex:0 0 420px;width:420px;min-width:0;padding:0 0 24px 24px;
   border-left:1px solid var(--border-color)}
 @media (max-width:1400px){ .aghelp{display:none} }
 .agcfg.nohelp .aghelp{display:none}
@@ -3287,12 +3566,15 @@ html[data-theme="light"] #agPage{
 .aghch:hover{background:var(--nav-hover-bg)}
 .aghch obs-icon{flex:0 0 auto;color:var(--neutral-light);transition:transform .15s ease}
 .aghs.on .aghch obs-icon{transform:rotate(180deg)}
-.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.6;
+/* ⚠️ 1.65 LINE-HEIGHT AND 10px BETWEEN BULLETS — the recorded `.aiab li` rule, in a third
+   place: the gap BETWEEN points must beat the leading INSIDE a wrapped one, or a two-line bullet
+   reads as two bullets. At 12.5px/1.65 a wrapped line carries ~8px, so the margin is 10. */
+.aghcb{padding:0 16px 16px;font-size:12.5px;line-height:1.65;
   color:var(--text-color-common-secondary)}
 /* ⚠️ 16px, NOT the 18px this opened at — @padding-md on the DS structural scale. The
    conformance checker caught it as the screen's one off-scale value (layout 98). */
-.aghcb ul{margin:0;padding-left:16px}
-.aghcb li{margin-bottom:8px}
+.aghcb ul{margin:0;padding-left:18px}
+.aghcb li{margin-bottom:10px}
 .aghcb li:last-child{margin-bottom:0}
 .aghcb b{color:var(--primary-alt);font-weight:600}
 
@@ -5947,7 +6229,15 @@ function tipRedundant(el, txt){
 function tipFor(el){
   const t = el.closest && el.closest('[data-tip],[title]');
   if (!t) return null;
-  if (t.hasAttribute('title')){            /* adopt, then silence the OS tooltip */
+  /* ⚠️ NEVER ADOPT `title` FROM AN `obs-*` ELEMENT. On a DS component `title` is a PROP that the
+     component renders — obs-banner's heading, obs-page-header's, obs-drawer's — not a browser
+     tooltip. Adopting it deletes the attribute, so the component's own heading DISAPPEARS the
+     first time the pointer crosses it, leaving an empty heading element still taking up its line.
+     That is what made the success banner render its ✓ alone above the message (2 Sep 2026), and
+     it is the same trap already recorded for obs-drawer, which was worked around one call site at
+     a time. Guarding it here fixes the whole class: a DS component keeps its title, and anything
+     wanting a real tooltip on one uses `data-tip`, which is still honoured. */
+  if (t.hasAttribute('title') && !/^OBS-/.test(t.tagName)){  /* adopt, then silence the OS tooltip */
     const v = t.getAttribute('title');
     if (v && !t.getAttribute('data-tip')) t.setAttribute('data-tip', v);
     t.removeAttribute('title');
@@ -8954,7 +9244,13 @@ const stSlug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,
 /* The seed profile is the page's own signed-in user, split the way the live one was
    (“motadata admin” → First “motadata”, Last “admin”, User Name “admin”). */
 function stSeed(){
-  const lbl = document.querySelector('#sbUser .lbl');
+  /* ⚠️ `.nm` FIRST, `.lbl` ONLY AS A FALLBACK. Option 1's rail footer gained a second line
+     (the e-mail) INSIDE `.lbl` on 2 Sep 2026, so `.lbl.textContent` there is the name and the
+     address run together — "Kishan Patelkishan.patel@example.com" — and this would have seeded
+     the profile form with that as the first name. The other options still have a bare `.lbl`,
+     and this file is shared with none of them, but the fallback keeps the two shapes readable
+     by one function. */
+  const lbl = document.querySelector('#sbUser .nm') || document.querySelector('#sbUser .lbl');
   const nm = ((lbl && lbl.textContent) || 'motadata admin').trim().split(/\s+/);
   const first = nm[0] || 'motadata', last = nm.slice(1).join(' ') || 'admin';
   return { first, last, user:'admin',
@@ -9183,7 +9479,14 @@ function stReset(){
    (live calls refreshUser() after the update) */
 function stIdentity(){
   const d = ST.saved, name = (d.first+' '+d.last).trim(), ini = stInitials();
-  document.querySelectorAll('#sbUser .lbl, #userPop .uhead .nm, #userPop .upname').forEach(el => el.textContent = name);
+  /* ⚠️ WRITE THE NAME INTO `.nm` WHERE ONE EXISTS, NOT INTO `.lbl` — on Option 1's rail `.lbl`
+     now wraps the name AND the e-mail sub-line, so setting its textContent would delete the
+     sub-line on the first profile save. */
+  const nmEl = document.querySelector('#sbUser .nm');
+  document.querySelectorAll((nmEl ? '#sbUser .nm' : '#sbUser .lbl') + ', #userPop .uhead .nm, #userPop .upname')
+    .forEach(el => el.textContent = name);
+  /* the sub-line follows the saved e-mail, so the rail and the profile form cannot disagree */
+  const subEl = document.getElementById('sbUserSub'); if (subEl) subEl.textContent = d.email || '';
   const sb = document.getElementById('sbUser'); if (sb) sb.setAttribute('data-tip', name);
   document.querySelectorAll('#sbUser .miniav, #userPop .upavatar').forEach(el => {
     if (ST.savedAvatar){ el.textContent = ''; el.style.backgroundImage = `url("${ST.savedAvatar}")`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
@@ -10009,6 +10312,21 @@ const AG_USE_COLS = [
    recorded `st` search-box lesson).
    ⚠️ `setAttribute` TAKES RAW JSON, NOT `agJ()` — that HTML-escapes for markup, and an escaped
    string set as an attribute value reaches the component as literal `&quot;`. */
+/* ⚠️ EXPORT SITS BEFORE THE PRIMARY (request, 2 Sep 2026). `obs-toolbar`'s default slot lays
+   its actions out in source order, so "before Configure AI provider" is simply being emitted
+   first — the primary stays the last thing in the row, which is where the DS's Button rule wants
+   the one main action.
+   ⚠️ THE GLYPH IS THE DS's OWN `export-pdf`, confirmed with `resolve_icon` before it was used
+   ("found": true, canonical `export-pdf`) rather than assumed — an `obs-icon` given a name the
+   set does not have renders NOTHING, silently, which is indistinguishable from a styling bug.
+   ⚠️ It is icon-only with a `data-tip`, matching the Compliance Policy toolbar's own square
+   actions; the export itself is a toast, as every other export in this prototype is — there is
+   no PDF pipeline here and pretending otherwise would be the one thing that lies about
+   capability. */
+function agExportPdf(){
+  const p = agProv(AG.conn);
+  toast('Exporting Agentic AI usage as PDF' + (AG.active && p ? ' — ' + p.name + ' included' : ''));
+}
 function agSearch(v){
   AG.q = String(v == null ? '' : v);
   const t = document.getElementById('agUse');
@@ -10040,8 +10358,8 @@ function agUseRows(){
      `minmax(0,1fr)` lets the tracks shrink instead of overflowing on a narrow window. */
   const widgets = `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;padding:8px 0 12px">
       ${w('Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%')}
-      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-indigo'), '1.2s avg')}
-      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--severity-warning'), '-40%')}
+      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-aqua'), '1.2s avg')}
+      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--chart-amber'), '-40%')}
     </div>`;
 
   /* ⚠️ ALL THREE PROVIDERS ARE ROWS (request, 1 Sep 2026). Only the CONNECTED one has usage —
@@ -10091,14 +10409,21 @@ function agOvHTML(){
   const toolbar = `<obs-toolbar>
       <obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
         oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>
+      <obs-button variant="default" class="agexp" data-tip="Export as PDF"
+        onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>
       <obs-button variant="primary" onclick="agTap(agConfig)">Configure AI provider</obs-button>
     </obs-toolbar>`;
 
   /* ⚠️ THE DETAIL ONLY EXISTS ONCE A PROVIDER IS CONNECTED. Unconfigured, the page is header →
      toolbar and nothing else, and the "Not configured" tag beside the title is what says so —
      usage figures for a connection that does not exist would be an invention. */
-  const usage = !AG.active ? '' : `<div class="agsec">Usage &amp; health</div>
-    <obs-table id="agUse" row-key="id" sortable expandable empty-text="No records available"
+  /* ⚠️ NO "USAGE & HEALTH" HEADING — removed on request (2 Sep 2026). The page holds ONE table,
+     directly under its own toolbar, which is the DS `list-view` recipe's own shape
+     (page-header → toolbar → table); a section label over a single table names something there
+     is no second thing to distinguish it from. The heading also carried `margin:24px 0 12px`,
+     so the toolbar↔table gap had to move onto the table itself — see `.agpage obs-table`. */
+  const usage = !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
+      header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
   return `<div class="agpage" id="agPage">${head}${toolbar}${usage}</div>`;
@@ -10154,6 +10479,18 @@ AG_DATA.errors  = [3,2,5,1,0,2,1,4,1,0,1,2,1,0];
    (`/(chart|graph|topology|gauge|widget|heatmap|…)/`); unclassed these resolve to the generic
    `graphic`, which `--declare chart` does not cover, and the run fails with
    "⛔ CONTRACT BREACH · undeclared non-DS element" on a gap that was declared. */
+/* ⚠️ SERIES COLOURS COME FROM THE CHART PALETTE, NEVER FROM A SEVERITY TOKEN. `Error trend` was
+   drawn in `--severity-warning`, which is the token for a monitor or alert's severity LEVEL —
+   on a data series it claims a state the chart is not reporting, and that metric was reading
+   amber-for-alarm while trending DOWN 40%, i.e. improving. It is `--chart-amber` now: the
+   palette's own amber, same visual character, none of the meaning.
+   ⚠️ The first two charts BOTH used `--chart-indigo`, so a row of three unrelated metrics read
+   as two-that-belong-together plus one. Each has its own hue now — indigo, aqua, amber.
+   ⚠️ The DS ships 15 named series colours, each themed per mode, so none of this needs a
+   literal. `--chart-vivid-teal` is deliberately avoided: it resolves to #14b8a6, this
+   prototype's own accent, and a series painted in the product accent reads as chrome.
+   ⚠️ These charts are the one declared `list_gaps` gap on this screen and carry `class="agchart"`,
+   which is load-bearing — the conformance checker derives the archetype from that class. */
 function agBars(d, tok){
   const max = Math.max(1, ...d), w = 100 / d.length;
   return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
@@ -10199,7 +10536,20 @@ function agSeed(){
   if (!d || !p) return;
   d.name = p.name + ' production';
   d.key  = '••••••••••••4A2F';
-  d.test = 'ok';
+  /* ⚠️ THE SEED DOES NOT MARK THE CONNECTION TESTED (request, 2 Sep 2026: "by default it is not
+     shown — it will show [after] I click Run again"). It used to set `d.test = 'ok'`, so the
+     credentials step OPENED already Verified, with the green success banner up and the button
+     reading "Run again" — the whole test sequence had already happened before you arrived, and
+     pressing the button replayed something the screen was already claiming. Now it opens
+     untested: "Not tested" / "Run test" / no banner, and the loader → stages → success run is
+     something you actually see happen.
+     ⚠️ This is why a bug report of "clicking Run again shows the success message" could not be
+     reproduced by tracing the click — the click was always correct; the SCREEN ARRIVED in the
+     end state. When a flow cannot be reproduced, check what the state was before it started.
+     ⚠️ `d.test` is read ONLY by the wizard (the credentials pane, the footer's Continue gate and
+     its button label) — nothing on the Overview reads it, so the provider still shows as
+     connected there and the usage table is unaffected. Checked before removing it.
+     ⚠️ Option 4 has no `agSeed` at all, so it already behaved this way. */
   d.consent = [true, true, true, true];
   d.perTask = true;
   /* a routing worth showing: the routine tasks moved onto the cheap fast model, the analytical
@@ -10216,10 +10566,35 @@ function agSeed(){
 
 /* ⚠️ IT TAKES AN OPTIONAL PROVIDER so a grid row opens ITS OWN provider rather than whatever
    the rail last had. The toolbar button passes nothing and keeps the current selection. */
+/* ⚠️ IT IS A SIDE DRAWER NOW, NOT A FULL PAGE (request, 2 Sep 2026: "when I click Configure AI
+   provider the screen will show as a side popup like this", pointing at the Dashboard layout
+   drawer). That is also what the DS prescribes — `get_layout(panels)` answers "drawer for
+   create/edit", the single most-used overlay in the product (146 files).
+   ⚠️ IT REUSES `.sdrawer`, THE PROTOTYPE'S OWN DRAWER, not `obs-drawer`. The DS element was
+   tried for this very screen on 31 Aug and carries six recorded defects — it never emits its
+   documented `close` event, an `open` attribute in markup does nothing, and replacing a slotted
+   child re-runs its open animation. `.sdrawer` is what the reference screenshot actually shows,
+   it was rebuilt against the DS in the 27 Aug pass, and it has none of those problems.
+   ⚠️ `stFullOpen` IS NO LONGER USED HERE, so the Settings category list stays visible behind the
+   drawer — which is the point of a drawer: the Overview you came from is still on screen.
+   `agHelpShowTog` and `.agcfg.nohelp` remain unreferenced, as before. */
 function agConfig(pid){
   if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
-  stFullOpen({ title:'Configure AI provider', html:agCfgHTML, after:agCfgAfter,
-               info:agHelpShowTog });
+  const d = document.getElementById('drawer-agcfg');
+  if (!d) return;
+  agCfgPaint();
+  document.body.classList.add('agdrawer');
+  const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.add('on');
+  d.classList.add('on');
+  agCfgAfter();
+}
+function agCfgClose(){
+  const d = document.getElementById('drawer-agcfg');
+  if (d) d.classList.remove('on');
+  const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.remove('on');
+  document.body.classList.remove('agdrawer');
+  /* the Overview behind it shows the connection state, so it has to catch up */
+  if (typeof stMainPaint === 'function') stMainPaint();
 }
 
 /* ── the help card ────────────────────────────────────────────────────────────────────────
@@ -10249,7 +10624,13 @@ const AG_HELP = [
         transmitted — see that provider's privacy policy on the consent step.</li></ul>` },
 ];
 /* the first section open, as the reference has it */
-AG.helpOpen = [true, false, false];
+/* ⚠️ ALL THREE OPEN (request, 2 Sep 2026). It was `[true,false,false]` — the reference's own
+   default — but that reference is a TALL narrow rail where three open sections would overflow.
+   Here the column is ~900px and the three together measure ~520px, so collapsing two of them
+   bought nothing and left two-thirds of the card empty while hiding content behind a click.
+   ⚠️ `agHelpTog` still works, so they can each be folded away; this only changes what you
+   arrive to. */
+AG.helpOpen = [true, true, true];
 AG.helpShow = true;
 
 function agHelpHTML(){
@@ -10353,42 +10734,140 @@ const AG_TASKS = [
 
 function agCfgFormHTML(){
   const d = AG.cfg.d[AG.cfg.pid];
-  const body = [agStepCreds, agStepModels, agStepConsent, agStepDone][d.step]();
-  /* ⚠️ `change` IS A CUSTOM EVENT on obs-steps — bound in `agCfgBind`, not with `onchange=`. */
-  const flow = d.step > 2 ? '' : `<div class="agflow"><obs-steps id="agFlow" size="small" clickable
-      active="${d.step}" items="${agJ(AG_FLOW)}"></obs-steps></div>`;
-  return `<div class="agform">${flow}<div class="agfbody">${body}</div>${agFlowFootHTML()}</div>`;
+  /* ⚠️ ONE FORM, NO STEPPER (request, 2 Sep 2026: "remove the number of step and all fields
+     will be shown by default"). The three stages are stacked and everything is on screen at
+     once; each keeps its own `<h2 class="agcfgh">` heading, so what were step titles are now
+     section headings — Enter credentials · Model selection · Review data sharing.
+     ⚠️ THE GATES ARE UNCHANGED, only the navigation is gone. `agFlowFootHTML` still requires a
+     PASSING test and all four consent boxes before the one primary is enabled — the wizard was
+     never what enforced that, it only spread it over three screens.
+     ⚠️ `d.step` SURVIVES AS THE DONE FLAG, not as a position: `> 2` renders the completion
+     screen. Keeping it is what lets `agCfgSave` and the done state work untouched.
+     ⚠️ `agCfgGo` / `agCfgBack` / `agCfgNext` and `AG_FLOW` are KEPT AND UNREFERENCED (the house
+     pattern) — the wizard is one `flow` line away if it is ever wanted back. `agCfgBind` still
+     guards on `#agFlow` existing, so it is inert rather than broken. */
+  const body = d.step > 2 ? agStepDone()
+             : agStepCreds() + agStepModels() + agStepConsent() + agTestHTML();
+  const flow = '';
+  /* ⚠️ THE FOOTER SITS OUTSIDE `.agform` ON PURPOSE (request, 2 Sep 2026: "the line is full and
+     the button will be show on helpcard devider line"). `.agform` is capped at 720px because
+     that is a readable measure for FIELDS; the footer is the screen's ACTION BAR, so it spans
+     the whole pane and its rule runs all the way to the help card's own divider. `.agcfgm` is
+     the flex column, `.agform` takes the slack (`flex:1 1 auto`) and `.agff` sits at the
+     bottom — which is what keeps the footer clear of the variant pill. */
+  return `<div class="agform">${flow}<div class="agfbody">${body}</div></div>${agFlowFootHTML()}`;
 }
 
 /* ── 1 · credentials ───────────────────────────────────────────────────────────────────── */
 function agStepCreds(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
   const v = x => stEsc(x == null ? '' : String(x));
-  const fld = (k, label, extra) => `<obs-input block label="${label}"${extra || ''}
+  /* ⚠️ A FIELD WITH A TOOLTIP RENDERS ITS OWN LABEL. `obs-input`'s `label` prop draws the label
+     INSIDE the component's shadow root, and the shipped 0.1.166 element exposes no slot and no
+     ::part — so there is no way to put anything after that text. The reference (supplied 2 Sep
+     2026) puts the ⓘ immediately after the label, next to the required *, so for those fields the
+     label moves OUT and `.agflb` reproduces the component's own `.lbl` rule verbatim
+     (`font-size:var(--text-sm,.8rem); line-height:1.5; color:var(--text-color-common-secondary)`,
+     read from its shadow CSS). Fields with no tooltip keep the component's own label, and the two
+     are asserted to render at the same size, colour and offset.
+     ⚠️ Every field in the Advanced panel takes a tooltip, so the two label mechanisms never mix
+     inside one visual group. */
+  const fld = (k, label, extra, tip) => {
+    const inp = `<obs-input block${tip ? '' : ` label="${label}"`}${extra || ''}
       value="${v(d[k])}" oninput="agCfgIn('${k}', agDet(event))"></obs-input>`;
+    return !tip ? inp : `<div class="agfld"><span class="agflb">${label}<obs-tooltip
+      class="agtip" placement="top-start">${stEsc(tip)}</obs-tooltip></span>${inp}</div>`;
+  };
 
-  const adv = !d.adv ? '' : `<div class="agadv">
+  /* ⚠️ "(optional)" IS GONE FROM THE LABELS — the DS marks the opposite. `obs-input`'s own
+     `label` note is "a red required * is appended when `required`", and this form already uses
+     that on API key, so an unmarked label ALREADY means optional. Saying it twice, in two
+     conventions, made the two longest labels here longer still.
+     ⚠️ THE UNITS STAY IN THE LABEL, AND THAT IS A WORKAROUND, NOT A CHOICE. The registry's
+     `addonBefore/addonAfter` rule is explicit that an attached fixed segment is where a unit
+     belongs ("protocol/unit"), and `prefix/suffix` covers a unit inside the field — but the
+     shipped 0.1.166 element renders NO `<slot>` of any name (recorded in `_ds/README.md`), so
+     neither is reachable from outside. `(s)` and `(req/min)` therefore remain parenthetical.
+     ⚠️ `help` IS the DS's supporting-text slot and it DOES work (added in elements@0.1.10) —
+     it carries what "(optional)" was weakly implying, which is what each field is actually for.
+     ⚠️ `allow-clear` on the two text fields, per its usage rule: "an optional field/search where
+     clearing to empty is valid". The three numeric ones are not cleared to empty — they have
+     working defaults — so they do not get it. */
+  /* ⚠️ THE BOX IS ALWAYS RENDERED; ONLY ITS BODY IS CONDITIONAL. The toggle is the section's
+     header now, so the section has to exist for it to sit in — `!d.adv` used to return '' and
+     take the box away with the fields. */
+  const adv = `<div class="agadv${d.adv ? ' on' : ''}">
+      <obs-button class="agadvb" variant="default" onclick="agTap(agCfgAdv)">
+        ${agIc('chevron-down', 13)}Advanced settings</obs-button>
+      ${!d.adv ? '' : `<div class="agadvbd">
       <div class="agrow2">
-        ${fld('endpoint','Custom endpoint URL (optional)',' placeholder="https://gateway.internal/v1"')}
-        ${fld('proxy','Proxy (optional)',' placeholder="http://proxy.corp:8080"')}
+        ${fld('endpoint','Custom endpoint URL',' allow-clear placeholder="https://gateway.internal/v1"',
+              'Send requests to your own gateway instead of the provider\'s endpoint. Leave empty to use the provider directly.')}
+        ${fld('proxy','Proxy',' allow-clear placeholder="http://proxy.corp:8080"',
+              'Route outbound traffic through a corporate proxy. Leave empty for a direct connection.')}
       </div>
       <div class="agrow3">
-        ${fld('timeout','Request timeout (s)',' type="number"')}
-        ${fld('retries','Retry attempts',' type="number"')}
-        ${fld('rate','Rate limit (req/min)',' type="number"')}
-      </div></div>`;
+        ${fld('timeout','Request timeout (s)',' type="number"',
+              'How long to wait for a reply before the request is abandoned, in seconds.')}
+        ${fld('retries','Retry attempts',' type="number"',
+              'How many times a failed request is retried before the connection is reported as failed.')}
+        ${fld('rate','Rate limit (req/min)',' type="number"',
+              'The most requests ObserveOps will send in a minute. Keep it under your provider plan\'s limit.')}
+      </div></div>`}</div>`;
 
   /* the reference runs four named stages rather than a spinner — the wait says what it is
-     doing, and each line resolves to a ✓ as it lands */
-  const stages = (d.test === 'busy' || d.test === 'ok')
-    ? `<div style="margin-top:12px">` + AG_STAGES.map((s, i) => {
-        const done = d.test === 'ok' || i < d.stage;
-        return `<div class="agstg${done ? ' done' : ''}">${done ? agIc('check-circle', 14) : '<span class="p"></span>'}${stEsc(s)}</div>`;
-      }).join('') + `</div>` : '';
-  const note = d.test === 'ok'
-    ? `<div class="agtn ok">${agIc('check-circle', 14)}Connection verified. ${stEsc(p.name)} is reachable with this key.</div>`
-    : d.test === 'busy' ? ''
-    : `<div class="agtn">${agIc('info-circle', 14)}Enter your API key, then run a test to verify the connection before continuing.</div>`;
+     doing, and each line resolves to a ✓ as it lands.
+     ⚠️ THE RUNNING STAGE IS MARKED (`.now`). Every not-yet-done stage drew the same empty ring,
+     so while the test ran you could not tell which one was in flight from the two that had not
+     started — the four lines said "something is happening" and nothing more. */
+  /* ⚠️ THE WHOLE TEST PANEL IS ABSENT AT REST (request, 2 Sep 2026: "remove this — show only
+     when I click Run test"). The credentials step is now just the two fields and Advanced
+     settings; the panel materialises on the first run and then stays, carrying the progress line
+     and the result. THE FOOTER'S "Run test" IS WHAT STARTS IT — that button, added an hour
+     earlier, is the reason this can be removed at all: without it the only way to run a test
+     would have gone with the panel.
+     ⚠️ This is the end of three successive removals from the same block — the "Not tested" tag,
+     then the hint line, then the panel itself. Each was the same observation: at rest it reported
+     that nothing had happened yet. The tag and the button label therefore no longer need an
+     `idle` case at all, and the maps here are `busy`/`ok` only.
+     ⚠️ `st` IS STILL COMPUTED FOR IDLE, and must be — the footer's own button label and the
+     Continue gate both read it. */
+  const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
+  const stages = st !== 'busy' ? ''
+    : `<div class="agstgl"><span class="stspin"></span><span class="t">${
+        stEsc(AG_STAGES[Math.min(d.stage, AG_STAGES.length - 1)])}\u2026</span></div>`;
+  /* ⚠️ THE OUTCOME IS AN `obs-banner`, THE HINT IS NOT. The result used to be a fifth row in
+     exactly the shape of the four stages above it — same tick, same size, differing only in
+     text colour — so the one line that reports the ANSWER read as one more step. `obs-banner`
+     variant=success is the catalogued component for "a positive inline confirmation that should
+     persist on the surface" (its registry's own words), and it is a different object from a
+     stage row. The idle line stays plain muted text on purpose: it is a form HINT, not a state,
+     and a tinted block before you have done anything is heavier than what it says. */
+  /* ⚠️ NO `title` ON THE SUCCESS BANNER (request, 2 Sep 2026: "the icon and success message will
+     be shown in a single line"). `.bn` is `display:flex` with the icon and the body as siblings,
+     so a title occupies the body's first line and the message falls to a second one, leaving the
+     ✓ aligned to the title and nothing beside it. With no title the body is just the message and
+     the two share one line — and nothing is lost, because the green ✓ and the success colour
+     already say "verified", which is all the title said.
+     ⚠️ THE TITLE WAS ALSO BEING EATEN BY THIS PAGE'S TOOLTIP ENGINE. `tipFor()` adopts any
+     `title=` into `data-tip` and DELETES the attribute on first hover — the trap already recorded
+     for `obs-drawer` — so the heading vanished the moment the pointer crossed it, leaving an
+     EMPTY title element still holding that first line. That is why the ✓ sat alone above the
+     text. The engine is now guarded against `obs-*` elements (see `tipFor` in the page), so the
+     consent step's warning banner keeps its own title. */
+  const note = st === 'ok'
+    ? `<obs-banner variant="success" class="agbanok">${
+        stEsc(p.name)} is reachable with this key. Continue to pick the models it should use.</obs-banner>`
+    : '';
+  /* ⚠️ NOTHING AT REST (request, 2 Sep 2026: "remove this"). The idle body was a hint —
+     "Enter your API key, then run a test to verify the connection before continuing" — and it
+     went with the "Not tested" tag removed the same hour, for the same reason: it narrated a
+     state the panel already showed. The two fields are directly above it, the button says
+     "Run test", and the footer's Continue is visibly gated until one passes, so the sentence
+     was restating three things already on screen. At rest the panel is now its title and the
+     button; the body appears only when there is something to report — the running line, then
+     the result banner.
+     ⚠️ `.agtn` is NOT dead: the footer's KMS caption still uses it (as `.sp agtn`). */
 
   return `<h2 class="agcfgh">Enter credentials</h2>
     <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
@@ -10396,13 +10875,28 @@ function agStepCreds(){
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
     </div>
-    <obs-button class="agadvb${d.adv ? ' on' : ''}" variant="default" onclick="agTap(agCfgAdv)">
-      ${agIc('chevron-down', 13)}Advanced settings</obs-button>
-    ${adv}
-    <div class="agtest">
+    ${adv}`;
+}
+/* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
+   2 Sep 2026). It used to close `agStepCreds`, which was right while that was step 1 of a wizard
+   and the Run test button sat directly beneath it. Two changes since moved the button away: the
+   wizard was flattened into one long form, and Run test moved into the pinned footer. So the
+   control was at the bottom of the screen and its result appeared ~950px above it — off screen
+   entirely once you had scrolled to reach the button. The output now sits immediately above the
+   footer that triggers it.
+   ⚠️ IT IS ITS OWN FUNCTION so that only ONE place decides what the test shows. `agStepCreds`
+   still owns the fields; this owns the result; `agCfgFormHTML` puts them in order. */
+function agTestHTML(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
+  if (st === 'idle') return '';
+  if (st === 'ok') return `<obs-banner variant="success" class="agbanok">${
+    stEsc(p.name)} is reachable with this key. Continue to pick the models it should use.</obs-banner>`;
+  return `<div class="agtest">
       <div class="agth">${agIc('plug', 15)}<span class="t">Test connection</span>
-        <obs-button variant="primary"${d.test === 'busy' ? ' disabled' : ''} onclick="agTap(agCfgTest)">Test connection</obs-button></div>
-      ${stages}${note}
+        <obs-tag variant="tag-yellow">Testing</obs-tag></div>
+      <div class="agstgl"><span class="stspin"></span><span class="t">${
+        stEsc(AG_STAGES[Math.min(d.stage, AG_STAGES.length - 1)])}\u2026</span></div>
     </div>`;
 }
 
@@ -10415,7 +10909,7 @@ function agStepModels(){
      so a rich card is not reachable. Folding keeps every fact rather than dropping two. */
   const opts = p.models.map(m => ({ value:m.id, label:`${m.name} — ${m.note} — ${m.ctx} context` }));
   const rows = !d.perTask ? '' : `<div class="agrtw">` + AG_TASKS.map(t => `<div class="agrt">
-      <span class="n">${agIc(t.ic, 14)}${stEsc(t.label)}</span>
+      <span class="n">${agIc(t.ic, 14)}<span class="t">${stEsc(t.label)}</span></span>
       <obs-select value="${stEsc(d.routing[t.id] || d.model)}"
         options="${agJ(p.models.map(m => ({ key:m.id, label:m.name })))}"
         onchange="agCfgRoute('${t.id}', agDet(event))"></obs-select></div>`).join('') + `</div>`;
@@ -10437,21 +10931,47 @@ function agStepModels(){
 /* ── 3 · data consent ──────────────────────────────────────────────────────────────────── */
 function agStepConsent(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  /* ⚠️ THE BANNER'S TITLE IS THE LEAD-IN AND ITS BODY IS THE DETAIL — the component's own `do`
+     rule ("keep the message short; put a lead-in in `title` and the detail in the slot"). It said
+     the same thing twice: the title read "AI features transmit observability data to a third
+     party" and the body opened "When AI features are used, selected observability data may be
+     transmitted to <provider> for processing". That restatement cost a third line on the biggest,
+     loudest block of a screen whose whole point is the four checkboxes under it. The body now
+     carries only the part the title cannot say.
+     ⚠️ THE COUNT LINE EXISTS BECAUSE THE GATE WAS SILENT. `agFlowFootHTML` disables "Accept &
+     enable AI" until `consent.every(Boolean)` and nothing on screen said so — a disabled primary
+     with no reason beside it is the dead end the Designer's Guide forbids. It reports live, so
+     three of four tells you what is left.
+     ⚠️ NEITHER NOTE MAY BE WRITTEN AS AN HTML COMMENT INSIDE THE TEMPLATE BELOW. Both carry
+     backticks around code names, and a backtick inside a template literal ENDS it — `node --check`
+     reported "Unexpected token 'do'" hundreds of characters away. Prose about this file's code
+     belongs in a JS comment, outside the string. */
+  /* ⚠️ ONE PANEL, NOT TWO (request, 2 Sep 2026: "improve this section"). The section rendered a
+     banner and then TWO `.agpanel` boxes — what is transmitted, and what you must accept — so it
+     carried three stacked blocks where Credentials and Model selection each carry one, and read
+     as the heaviest of the three sections purely by container count. They are one panel now, cut
+     by a hairline: the evidence above it, the decision below it. That is the same `.agpf`
+     hairline the privacy link already used, doing the job it was written for.
+     ⚠️ THE PRIVACY LINK LOST ITS OWN RULE (`.agpll`, not `.agpf`). It belongs to "what is
+     transmitted" — it is where you go to read how the provider handles it — so a rule above it
+     was separating it from the thing it explains, and left two hairlines in one short panel. */
   return `<h2 class="agcfgh">Review data sharing &amp; processing terms</h2>
-    <obs-banner variant="warning" title="AI features transmit observability data to a third party"
-      style="margin:12px 0 16px;display:block">When AI features are used, selected observability data may be
-      transmitted to <b>${stEsc(p.name)}</b> for processing. ObserveOps does not control how third-party
-      providers process data after it is transmitted.</obs-banner>
-    <div class="agrow2">
-      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">Data that may be transmitted</div>
-        <div class="agchips">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div></div>
-      <div class="agpanel"><div class="agpt" style="margin-bottom:12px">${stEsc(p.name)} privacy policy</div>
-        <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
-    </div>
-    <div class="agpanel" style="margin-top:16px"><div class="agcons">${
-      AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
-        onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
-    }</div></div>`;
+    <obs-banner variant="warning" class="agbanwarn"
+      title="Enabling AI sends observability data to ${stEsc(p.name)}">ObserveOps cannot control how a
+      third-party provider stores or processes that data once it has been transmitted.</obs-banner>
+    <div class="agpanel">
+      <div class="agpt">Data that may be transmitted</div>
+      <div class="agchips" style="margin-top:12px">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div>
+      <div class="agpll"><obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
+      <div class="agpf">
+        <div class="agpt">Confirm to continue</div>
+        <div class="agpd" id="agConsN">${agConsText()}</div>
+        <div class="agcons" style="margin-top:12px">${
+        AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
+          onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
+      }</div>
+      </div>
+    </div>`;
 }
 
 /* ── 4 · done ──────────────────────────────────────────────────────────────────────────── */
@@ -10472,7 +10992,7 @@ function agStepDone(){
     <span class="agdmk">${agIc('check-circle', 30)}</span>
     <h2 class="agdt">Setup completed successfully</h2>
     <p class="agdp">${stEsc(p.name)} is connected and ready. AI-powered workflows can now use your configured models.</p>
-    <div class="agsum"><obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value></div>
+    <div class="agsum agpanel"><obs-key-value columns="1" variant="plain" items="${agJ(summary)}"></obs-key-value></div>
   </div>`;
 }
 
@@ -10482,17 +11002,46 @@ function agStepDone(){
    (`allConsent = consent.every(Boolean)`). Neither is invented, and neither silently passes. */
 function agFlowFootHTML(){
   const d = AG.cfg.d[AG.cfg.pid];
-  const back = d.step > 0 && d.step < 3
-    ? `<obs-button variant="default" onclick="agTap(agCfgBack)">${agIc('chevron-left', 13)}Back</obs-button>` : '';
+  /* ⚠️ ONE PRIMARY, BOTH GATES ON IT. With the wizard flattened there is no Back and no
+     Continue; `Accept & enable AI` is enabled only when the connection test has PASSED and all
+     four consent boxes are ticked — exactly the two conditions the three-step footer enforced
+     one at a time. The consent panel's own live count says how many remain, so a disabled
+     primary is never unexplained. */
+  const back = '';
   const dis = ok => ok ? '' : ' disabled';
-  const next =
-    d.step === 0 ? `<obs-button variant="primary"${dis(d.test === 'ok')} onclick="agTap(agCfgNext)">Continue</obs-button>` :
-    d.step === 1 ? `<obs-button variant="primary" onclick="agTap(agCfgNext)">Continue</obs-button>` :
-    d.step === 2 ? `<obs-button variant="primary"${dis(d.consent.every(Boolean))} onclick="agTap(agCfgNext)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>` :
-                   `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`;
+  const next = d.step > 2
+    ? `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`
+    : `<obs-button variant="primary"${dis(d.test === 'ok' && d.consent.every(Boolean))}
+         onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>`;
+  /* ⚠️ THE KMS CAPTION IS THE CREDENTIALS STEP'S, NOT THE FLOW'S. It rendered on all four
+     steps, so "Keys are encrypted with the deployment KMS · never sent to the browser" sat under
+     "Setup completed successfully" — a sentence about a field two steps back, on a screen with no
+     field on it. The empty `.sp` stays because `.agff .sp{margin-right:auto}` is what pushes
+     Back/Continue to the right edge; drop the span and the buttons slide to the left. */
+  const note = d.step === 0
+    ? `<span class="sp agtn">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>`
+    : `<span class="sp"></span>`;
+  /* ⚠️ THE TEST BUTTON IS IN THE FOOTER TOO (request, 2 Sep 2026: "add test button after
+     Continue"), AND ONLY ON THE CREDENTIALS STEP. It earns its place: `next` above disables
+     Continue until `d.test === 'ok'`, so on this step the footer shows a blocked primary and,
+     without this, nothing beside it to unblock with — the one control that clears the gate was
+     up in the panel, out of reach of where you are trying to act.
+     ⚠️ `variant="default"`, NOT primary — Continue is the step's one main action and the DS's
+     Button rule allows a single primary per group; two filled buttons side by side would make
+     the row say there are two ways forward.
+     ⚠️ Its LABEL TRACKS THE SAME THREE STATES as the panel's (Run test / Testing… / Run again),
+     read from the same `d.test`, so the two can never disagree about whether a test has run.
+     ⚠️ IT SITS BEFORE CONTINUE (request, 2 Sep 2026: "swap"). It was added after Continue the
+     hour before, in those words, which put the secondary to the RIGHT of the primary — the
+     reverse of this footer's own Back-then-Continue order. Swapping restores that: the row now
+     reads secondary, then the one main action last, which is also where Back-then-Continue puts
+     it on every other step. Don't move it back without re-reading both requests. */
+  const tst = d.step !== 0 ? '' :
+    `<obs-button variant="default"${d.test === 'busy' ? ' disabled' : ''} onclick="agTap(agCfgTest)">${
+      d.test === 'ok' ? 'Run again' : d.test === 'busy' ? 'Testing\u2026' : 'Run test'}</obs-button>`;
   return `<div class="agff" id="agFlowFoot">
-    <span class="sp agtn" style="margin:0">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>
-    ${back}${next}</div>`;
+    ${note}
+    ${back}${tst}${next}</div>`;
 }
 /* ⚠️ TICKING A CONSENT BOX REPAINTS THE FOOTER, NOT THE PANE. The only thing a tick changes is
    whether Accept is gated — and a full `agCfgPaint()` destroys and rebuilds all four
@@ -10504,6 +11053,8 @@ function agCfgFootPaint(){
   if (f) f.outerHTML = agFlowFootHTML(); else agCfgPaint();
 }
 
+/* the one place the flattened form advances: to the completion screen */
+function agCfgDone(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = 3; agCfgPaint(); }
 function agCfgNext(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.min(3, d.step + 1); agCfgPaint(); }
 function agCfgBack(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.max(0, d.step - 1); agCfgPaint(); }
 /* obs-steps `clickable` leaves future steps inert; this guards the same rule again */
@@ -10511,7 +11062,17 @@ function agCfgGo(n){ const d = AG.cfg.d[AG.cfg.pid]; if (n > d.step) return; d.s
 function agCfgPerTask(v){ const d = AG.cfg.d[AG.cfg.pid]; d.perTask = !!v;
   AG_TASKS.forEach(t => { if (!d.routing[t.id]) d.routing[t.id] = d.model; }); agCfgPaint(); }
 function agCfgRoute(id, v){ AG.cfg.d[AG.cfg.pid].routing[id] = v; }
-function agCfgConsent(i, v){ AG.cfg.d[AG.cfg.pid].consent[i] = !!v; agCfgFootPaint(); }
+function agConsText(){
+  const d = AG.cfg.d[AG.cfg.pid], n = d.consent.filter(Boolean).length;
+  return n === AG_CONSENT.length
+    ? `All ${AG_CONSENT.length} accepted \u2014 you can enable AI features.`
+    : `${n} of ${AG_CONSENT.length} accepted \u2014 all are required before AI features can be enabled.`;
+}
+/* ⚠️ WRITES ONE NODE'S TEXT, NEVER REPAINTS THE PANE — the same discipline as `agCfgFootPaint`
+   below, and for the same reason: rebuilding the pane destroys all four `obs-checkbox`es and
+   throws away the focus of the one just clicked. */
+function agConsPaint(){ const el = document.getElementById('agConsN'); if (el) el.textContent = agConsText(); }
+function agCfgConsent(i, v){ AG.cfg.d[AG.cfg.pid].consent[i] = !!v; agConsPaint(); agCfgFootPaint(); }
 
 function agCfgAdv(){ AG.cfg.d[AG.cfg.pid].adv = !AG.cfg.d[AG.cfg.pid].adv; agCfgPaint(); }
 
@@ -10541,9 +11102,16 @@ function agCfgPick(name){
 }
 /* ⚠️ THE RIGHT PANE ONLY — every repaint on this screen goes through here. Rewriting
    `#stMain` would destroy `obs-side-menu` and orphan its `select` listener. */
+/* ⚠️ THE DRAWER'S BODY IS THE PAINT TARGET NOW. `#agCfgMain` is still the inner node that gets
+   rewritten on every state change — the same discipline as before, so the provider rail and the
+   drawer chrome are never destroyed mid-interaction. The first paint has to build the whole
+   body, which is what the `#agCfgBody` branch does. */
 function agCfgPaint(){
   const main = document.getElementById('agCfgMain');
-  if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); } else stMainPaint();
+  if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); return; }
+  const body = document.getElementById('agCfgBody');
+  if (body){ body.innerHTML = agCfgHTML(); agCfgAfter(); return; }
+  stMainPaint();
 }
 /* ⚠️ THE STEPPER IS REBOUND ON EVERY PAINT, and the rail is NOT. `obs-steps` lives inside the
    pane this function replaces, so its node is destroyed each time and a listener bound once
@@ -10622,5 +11190,13 @@ ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
   document.body.appendChild(s);
 })();
 </script>
+<!-- ⚠️ THE AGENTIC-AI CONFIGURE DRAWER — same `.sdrawer` chrome the Dashboard layout panel uses,
+     which is what the request pointed at. Its footer is the flow's own (`agFlowFootHTML`), so the
+     drawer adds no second set of buttons. -->
+<div id="agCfgScrim" onclick="agCfgClose()"></div>
+<div class="sdrawer" id="drawer-agcfg">
+  <div class="dr-h">Configure AI provider <span class="x" data-tip="Close" onclick="agCfgClose()">&#10005;</span></div>
+  <div class="dr-b" id="agCfgBody"></div>
+</div>
 </body>
 </html>

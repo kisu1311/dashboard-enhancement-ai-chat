@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Motadata ObserveOps — Sidebar & Header Actions</title>
+<title>Motadata ObserveOps — Narrow Rail &amp; Nav Column</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -18,11 +18,7 @@
                                 so .dmdiv, the flyout column rule and the docs footer drew nothing */
   --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
   --white:#f4f7fb; --ink:#172336;
-  /* ⚠️ 190px, UP FROM 170 (2 Sep 2026). The brand row gained the collapse button, and the row
-     then needed 15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26(button) + 15 = 189
-     in a 170px rail — measured, and the wordmark was ellipsising to "ObserveO…". Shrinking the
-     product's own name to make room for a chrome control is the wrong way round. */
-  --rail-w:64px; --rail-w-open:190px;   /* the flyout anchors off these, not off the animating box */
+  --rail-w:64px; --rail-w-open:170px;   /* the flyout anchors off these, not off the animating box */
   --ai:#8b5cf6; --ai-2:#a78bfa; --ai-3:#c4b5fd;
   --ai-soft:rgba(139,92,246,.13); --ai-line:rgba(139,92,246,.34);
   /* the chat panel's surface wash — 5% black at the FOOT of the panel, over --card
@@ -148,10 +144,7 @@ svg{display:block}
 .shell{display:flex;flex-direction:column;height:100vh;padding-left:64px;
   transition:padding-left .18s ease,padding-right .22s ease}
 /* pinned sidebar pushes the page instead of covering it (hover-peek still overlays) */
-/* ⚠️ THE TOKEN, NOT A LITERAL. This was a hardcoded `170px` beside a `--rail-w-open` that
-   also said 170 — two copies of one number, and widening the rail moved the sidebar while
-   leaving the canvas padded for the old width. */
-body.pinned .shell{padding-left:var(--rail-w-open)}
+body.pinned .shell{padding-left:170px}
 body.pinned .sidebar{box-shadow:none;border-right:1px solid var(--border)}
 /* Full Screen (live 8.2.6 dashboard action) — canvas takes the whole viewport */
 body.fs .sidebar{transform:translateX(-100%)}
@@ -170,36 +163,7 @@ body.fs .exitfs{display:inline-flex}
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--rail-w);z-index:60;background:var(--sidebar);
   display:flex;flex-direction:column;overflow:hidden;transition:width .18s ease,transform .22s ease;border-right:1px solid var(--border-soft)}
 .sidebar.open{width:var(--rail-w-open);box-shadow:var(--shadow)}
-/* ⚠️ THE COLLAPSE BUTTON IN THE BRAND ROW. `margin-left:auto` puts it at the rail's right
-   edge beside the wordmark, which is where the reference has it.
-   ⚠️ IT IS HIDDEN WHILE THE RAIL IS COLLAPSED — at 64px the row is a 30px mark in 15px of
-   padding and there is no room; showing it there would either overlap the logo or force the
-   mark off-centre. The `.strigger` row keeps its own toggle, so the logo is the way back. */
-/* ⚠️ THE WORDMARK HAS TO BE ABLE TO SHRINK, or it pushes the button out of the rail. Measured:
-   15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26 + 15 = 189 in a 170px rail, and the
-   button ended 4px PAST the edge. Exactly the same fault as the flyout's ragged chevrons — a
-   text element that cannot shrink shoves whatever follows it off the end. */
-.strigger .brand{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.strcol{margin-left:auto;flex:0 0 26px;width:26px;height:26px;display:grid;place-items:center;
-  border-radius:5px;color:var(--text-dim);cursor:pointer;opacity:0;
-  transition:opacity .15s,background .12s,color .12s}
-.sidebar.open .strcol{opacity:1}
-.sidebar:not(.open) .strcol{pointer-events:none}
-.strcol:hover{background:var(--hover-side);color:var(--text)}
-.strcol .ic{width:17px;height:17px}
-/* ⚠️ `gap:6px`, NOT 9 — THE WORDMARK LINES UP WITH EVERY ROW LABEL BELOW IT (request,
-   2 Sep 2026: "improve this sidebar, some alignment"). MEASURED across the whole rail:
-   every `.sitem` label starts at x=51 (box 8 + inset 12 -> 20px icon ends at 40, + `gap:11`),
-   and "ObserveOps" started at x=54. A 3px stagger between the wordmark and the ten labels
-   stacked directly under it.
-   ⚠️ THE MARK'S OWN x=15 IS CORRECT AND IS NOT TOUCHED. It is 30px wide, so it CENTRES on
-   x=30 — exactly the centre of the 20px icon column at x=20. The logo is deliberately the
-   larger mark and it is already optically aligned; moving it to 20 would push its centre to
-   35 and break the one thing that was right. The gap is what absorbs the difference:
-   15 + 30 + 6 = 51.
-   ⚠️ So this number is DERIVED — mark left + mark width + gap must equal `.sitem`'s label x.
-   Change the mark's size or the rail's padding and it has to be recomputed. */
-.strigger{height:53px;flex:0 0 53px;display:flex;align-items:center;gap:6px;padding:0 15px;cursor:pointer;white-space:nowrap}
+.strigger{height:53px;flex:0 0 53px;display:flex;align-items:center;gap:9px;padding:0 15px;cursor:pointer;white-space:nowrap}
 /* ⚠️ the supplied Light.svg / Dark.svg mark. `--white` already flips per theme, so one
    SVG with `currentColor` covers both files — see AI_LOGO. */
 .brandmark{display:inline-grid;place-items:center;color:var(--white)}
@@ -282,13 +246,7 @@ body.rzing-body{user-select:none}
 .dwidget.dropbefore{box-shadow:inset 3px 0 0 var(--teal)}
 
 /* ── Add New Widget drawer (ported from Option 2) ── */
-/* ⚠️ EVERY SCRIM BLURS (request, 2 Sep 2026: "when I open every popup the background will be
-   blur"). Two already did — `.wfull` and `#searchLayer` — and five did not, so a dimmed-but-sharp
-   backdrop on one overlay sat beside a blurred one on another. All are 4px; `#searchLayer` keeps
-   its 7px, which is the spotlight deliberately going further.
-   ⚠️ `-webkit-backdrop-filter` is repeated on each because Safari still needs the prefix, and the
-   failure mode is silent: the wash still paints, only the blur goes missing. */
-#awScrim,#drillScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
+#awScrim,#drillScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
 #awScrim.on,#drillScrim.on{opacity:1;pointer-events:auto}
 /* 480 → 660px to match the live drawer, which runs a 4-up tile grid; the artwork needs
    the room. Steps back down with the viewport so it never eats a small screen. */
@@ -356,7 +314,7 @@ body.rzing-body{user-select:none}
    .ddhead / .ddx already existed here for the Add New Widget drawer, so they are NOT
    re-declared; everything else is new. ---------- */
 /* z-index above the floating variant-switcher pill (99999) so nothing overlaps the form */
-#ddScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
+#ddScrim{position:fixed;inset:0;z-index:100000;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
 #ddScrim.on{opacity:1;pointer-events:auto}
 #ddrawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:94vw;z-index:100001;background:var(--panel);
   border-left:1px solid var(--border);box-shadow:var(--shadow);display:flex;flex-direction:column;
@@ -876,12 +834,7 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
 /* ---------- module flyout (Datadog mega-menu): hovering a rail entry opens that module's
    own navigation, grouped under bold headings in columns. Measured on Datadog: flush to the
    rail, ~220px columns, 28px rows, 13px type. ---------- */
-/* ⚠️ NO LEFT BORDER (request, 2 Sep 2026). The flyout butts against the rail — which is why its
-   left corners are square (`border-radius:0 8px 8px 0`) — so a border on that edge drew a rule
-   down the seam between the two, reading as a divider inside one surface rather than as the
-   menu's own edge. The other three sides keep it; the shadow already separates this edge. */
-.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);
-  border:1px solid var(--border);border-left:0;
+.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);border:1px solid var(--border);
   border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:86vh;overflow:auto}
 html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
 /* column of [columns row] + [docs footer] — the footer is Datadog's mega-menu pattern */
@@ -894,71 +847,7 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    to the one column that needs it rather than making every column elastic. */
 .mfcol:has(.mflist.c2){width:auto}
 .mfcol+.mfcol{border-left:1px solid var(--pop-line,var(--border))}
-/* ── TWO CARDS, NOT ONE, WHENEVER THERE IS A DETAIL PANE ───────────────────────────────────
-   Request, 2 Sep 2026: "is it possible to remove the white space and show only [the pane]",
-   with the empty regions ABOVE and BELOW the pane boxed in red.
-   The flyout was a single card and the detail column a flex child of it, so the column
-   stretched to the master list's height — 675px for Settings' 19 rows — and painted the menu's
-   background down its whole length whether or not there was a pane in it. Hovering `Log
-   Settings` (4 pages) drew a 160px pane inside a 675px column: ~200px of empty surface above it
-   and ~300px below, which is what the two red boxes are.
-   ⚠️ THE FIX IS TO STOP THE COLUMN STRETCHING, not to hide anything. `align-items:flex-start`
-   makes each column shrink-wrap, and the surface moves off the flyout onto the columns
-   themselves — so the empty area is simply not painted, and the board shows through it.
-   ⚠️ ONLY THE TREE MENUS. `#mflyout:has(.mfdetail)` is true for Explorer / Alert / Setting and
-   false for Dashboard / SLO / Report, which are one column plus a docs footer and are still one
-   card. That footer is a sibling of `.mfcols`, so card-ifying the columns would strand it —
-   scoping by `:has()` avoids touching those menus at all.
-   ⚠️ `:empty` IS WHAT HIDES THE PANE when the hovered row has no children. `mfSub` sets
-   `innerHTML = ''`, which is genuinely empty (no whitespace node), so the selector holds.
-   Without it an empty bordered box floats beside the list.
-   ⚠️ THE MASTER KEEPS THE ATTACHED LOOK — no left border, radius on the right only — because it
-   still hangs off the rail. The detail card is free-floating, so it gets a full border and a
-   full radius. They are deliberately not the same shape.
-   ⚠️ THE FLYOUT KEEPS `overflow:auto` (a 19-row master must still scroll at 720px tall), which
-   clips at its PADDING box — so its padding is what gives the cards' shadows room to fall.
-   That is why the right/bottom padding grew rather than being decorative. */
-#mflyout:has(.mfdetail){background:transparent;border:0;box-shadow:none;
-  border-radius:0;padding:14px 44px 44px 0}
-#mflyout:has(.mfdetail) .mfcols{align-items:flex-start;gap:8px}
-#mflyout:has(.mfdetail) .mfcol{background:var(--pop);border:1px solid var(--border);
-  padding:12px 14px;box-shadow:10px 0 30px rgba(0,0,0,.38)}
-html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px rgba(23,35,54,.14)}
-#mflyout:has(.mfdetail) .mfcol.mfmaster{border-left:0;border-radius:0 8px 8px 0}
-#mflyout:has(.mfdetail) .mfcol.mfdetail{border-radius:8px}
-#mflyout:has(.mfdetail) .mfcol.mfdetail:empty{display:none}
-/* ⚠️ PADDING-LEFT IS 10, NOT 8 — THE HEADING AND ITS ROWS SHARE ONE LEFT EDGE (request,
-   2 Sep 2026: "the Explorer and the list of sub module will be line align").
-   MEASURED: the heading's text sat at x=212 and every row's icon at x=214. `.mfi` carries
-   `border-left:1px solid transparent` (the hover accent that lights teal) PLUS `padding:0 9px`,
-   so a row's content starts 10px inside its box while the heading's started 8px inside — a 2px
-   stagger, repeated down eleven rows in Explorer, which is what reads as "not aligned".
-   ⚠️ 10 = `.mfi`'s 1px transparent border + its 9px padding. It is DERIVED from that row, not
-   picked — change either number on `.mfi` and this one has to follow. Same fix, same reasoning
-   as `.agrt .n` vs `.agphl` in the config panel, which had a 7px version of this.
-   ⚠️ It cannot be fixed by dropping the transparent border instead: `.mfi:hover` and
-   `.mfmaster .mfi.open` both colour it, so removing it takes the hover accent with it.
-
-   ⚠️ IT IS A SECTION LABEL NOW, NOT A TITLE (request, 2 Sep 2026, on the Setting flyout:
-   "title and list of submodule is same, make to difference"). MEASURED, and they were:
-   heading 13px/700 rgb(244,247,251) against a row of 12.5px/600 rgb(244,247,251) — 0.5px of
-   size, 100 of weight, and a colour contrast of 1.00:1. The same, to any reader.
-   ⚠️ THIS IS A CONSEQUENCE OF THE ALIGNMENT ABOVE, and fixing it is part of that change. The
-   heading used to be OUTDENTED 12px from the list, and that indent was the only cue actually
-   separating them; taking it away to line them up left two near-identical type styles flush
-   against each other.
-   ⚠️ THE ROWS WERE NOT TOUCHED. They read white/600 from `.mfmaster .mfi.par`, which is a
-   recorded decision — the sub-modules are deliberately brighter than the pages in the detail
-   pane beside them. Dimming them to make room for the heading would undo that. So the HEADING
-   moved instead, and it moved DOWN in weight: the rows are what you click, and a menu's title
-   should not out-shout them.
-   ⚠️ 11px/600/.06em/uppercase/`--text-dim` IS THIS FILE'S OWN IDIOM for a label over a list —
-   `.agsub` and `.agsec` in the Settings module and `.dvnh` in Option 3's nav column all say
-   exactly this. Nothing new was invented for it.
-   ⚠️ `letter-spacing` adds its space AFTER each glyph, so the left edge is unchanged and the
-   214px alignment above survives. There is a probe assertion for both. */
-.mfsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-dim);padding:9px 8px 7px 10px}
+.mfsec{font-size:13px;font-weight:700;color:var(--white);padding:7px 8px 5px}
 .mfsec.tight{padding-top:0}
 .mfsec.cont{visibility:hidden}          /* continuation column: keeps the box, drops the label */
 .mfbeta{margin-left:6px;font-size:8.5px;font-weight:700;letter-spacing:.05em;padding:1px 4px;
@@ -967,23 +856,10 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
   border-top:1px solid var(--pop-line,var(--border));font-size:12.2px;color:var(--text-dim)}
 .mffoot:hover{color:var(--teal)}
 .mffoot .ext{margin-left:auto;font-size:11px;opacity:.8}
-/* ⚠️ THE LEFT RAIL IS GONE (request, 2 Sep 2026: "remove this line", on Report's flyout).
-   It was a 1px rule down the left of the list with each `.mfi` carrying `margin-left:-1px` and a
-   transparent left border, so hovering a row LIT ITS SEGMENT of the rail teal.
-   ⚠️ THE FLYOUTS DISAGREED WITH EACH OTHER, which is what made it read as a stray line rather
-   than as structure: `.mfcol.mfmaster .mflist,.mfcol.mfdetail .mflist` had already set
-   `border-left:0` — so Explorer, the one menu deep enough to need a spine, did not draw one,
-   while Report, Dashboard, Alert and Setting (flat lists of siblings, nothing to group) did.
-   Removing it settles that the other way: no flyout draws a rail.
-   ⚠️ THE 12px INDENT WENT WITH IT. It existed to clear the rail — it was never hierarchy, and
-   with nothing in the gutter it left every row sitting 12px right of the heading that names it.
-   The master/detail rule above already paired `border-left:0` with `margin-left:0` for exactly
-   this reason; that rule is now a no-op and is KEPT rather than deleted, the house pattern.
-   ⚠️ `.mfi` KEEPS its transparent left border and its teal `:hover` colour — that is the row's
-   hover accent and `.mfmaster .mfi.open` depends on it. Only the rail it used to sit against is
-   gone, so its `margin-left:-1px` (which pulled the row onto the rule) goes too, and its left
-   corners round like its right ones now that there is no line for them to butt against. */
-.mflist{margin:0 0 8px}
+/* ⚠️ THE RULE IS ON THE LIST, so it spans exactly the rows it owns. A menu where every row
+   sits to the right of one long line reads as one flat indent — which is what Explorer's
+   two-level tree looked like before the parent rows were pulled out of it. */
+.mflist{border-left:1px solid var(--pop-line,var(--border));margin:0 0 8px 12px}
 /* ⚠️ A SUB-MODULE THAT HAS CHILDREN sits OUTSIDE the rule and carries the weight of a
    heading without being one — it is still a row you can click. Its children then hang off
    their own short rule below it, so the line means "these belong to that". */
@@ -1002,19 +878,8 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
    the group instead of falling off the bottom of a hardcoded nine. */
 .mflist.c2{display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--mfrows,9),auto);
   column-gap:22px;justify-content:start;padding-top:2px}
-/* ⚠️ 32px + 2px, i.e. A 34px RHYTHM — THE SAME ROW PITCH AS THE RAIL ITSELF (request,
-   2 Sep 2026: "the submodule add between more space", with two reference menus whose rows
-   are noticeably further apart than ours were). It was a 28px row with NO gap, so ten rows
-   ran together as one block of text.
-   ⚠️ 34 IS NOT A NEW NUMBER — `.sitem`, the rail's own row, measures exactly 34px high. The
-   flyout row and the rail row are the same kind of thing (a place you can go), so they now
-   share one pitch and the sidebar reads as one system rather than two.
-   ⚠️ THE SPACE IS A `margin-bottom`, NOT MORE `height`. Height would grow the hit target and
-   the hover fill with it, which on a 19-row menu paints one continuous slab; the gap has to
-   be OUTSIDE the fill for the rows to read as separate. */
-.mfi{display:flex;align-items:center;gap:7px;height:32px;margin-bottom:2px;padding:0 9px;
-  border-left:1px solid transparent;
-  font-size:12.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:4px}
+.mfi{display:flex;align-items:center;gap:7px;height:28px;padding:0 9px;margin-left:-1px;border-left:1px solid transparent;
+  font-size:12.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:0 4px 4px 0}
 .mfi:hover{background:var(--pop-item-hover);color:var(--text);border-left-color:var(--teal)}
 .mfi.on{color:var(--teal)}
 /* ⚠️ THE ICON IS THE THING THAT MAKES A 31-ROW MENU READABLE. Without it every row is the
@@ -1049,21 +914,7 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
    ⚠️ THE OTHER MENUS KEEP IT. Dashboard, Report and SLO still render through `mfCol`, where
    the spine still has something to do. That is a deliberate difference, not drift. */
 .mfcol.mfmaster .mflist,.mfcol.mfdetail .mflist{border-left:0;margin-left:0}
-/* ⚠️ 236px, NOT 212 — the `DOCS ↗` chip is 44px and was added to a column sized before it
-   existed, so the longest label plus pin + chip + chevron did not fit: `Monitor`'s chevron
-   measured 3px past the row's right edge. Widened to the DS structural step above what the
-   content needs, not to the exact number, so a longer label does not re-break it. */
-/* ⚠️ 288px, NOT 236 — THE ICON COLUMN HAD TO BE PAID FOR (2 Sep 2026). Adding a module icon
-   to every row costs 22px of label (a 15px glyph on `.mfi`'s 7px gap), and this column was
-   already sized to the pixel: it went 212 -> 236 when the `DOCS ↗` chip arrived, for exactly
-   the same reason.
-   ⚠️ MEASURED, NOT ROUNDED UP BY EYE. With icons on, `Setting` truncated 7 of its 19 rows and
-   `Alert` 1 of 8; the worst deficit was 51px (`Service Level Objective`), so 236 + 51 = 287,
-   taken to 288. Explorer needed none of it — it is the shortest-labelled of the three — but
-   one rule sizes the master pane for every menu, so the widest label wins.
-   ⚠️ Verified the flyout still fits at 1280x720 after the change; that is the binding case,
-   not 1600. */
-.mfcol.mfmaster{width:288px}
+.mfcol.mfmaster{width:212px}
 /* ⚠️ `.mfcol+.mfcol` draws a left border on every following column. An EMPTY detail pane
    would therefore paint a hairline and 28px of padding against nothing, so it collapses
    itself completely until it has content. */
@@ -1090,14 +941,6 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
   border:2px solid transparent;background-clip:content-box}
 .mfcol.mfdetail .mflist::-webkit-scrollbar-track{background:transparent}
 /* the chevron that says this row has a pane behind it */
-/* ⚠️ ONE LABEL COLUMN, ONE TRAILING CLUSTER. The label takes the row's slack and ellipsises;
-   every control after it then sits at the row's right edge by construction.
-   ⚠️ THIS IS WHY THE AUTO MARGINS HAD TO GO. `.mfkc`, `.mfpin` AND `.mfdocs` each carried
-   `margin-left:auto`, and flexbox SPLITS free space between multiple auto margins — so the
-   chevron's position depended on how much slack the label left, which is why even the rows
-   that did NOT overflow sat at 370 / 376 / 377 / 378. One flexible label replaces all three. */
-.mfmaster .mfl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.mfmaster .mfkc,.mfmaster .mfpin,.mfmaster .mfdocs{margin-left:0}
 .mfkc{margin-left:auto;display:grid;place-items:center;width:14px;height:14px;flex:0 0 14px;
   color:var(--text-dim);opacity:.55;transition:transform .14s,opacity .14s,color .14s}
 .mfkc svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;
@@ -1106,13 +949,7 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
    which is what a disclosure does; this one opens a pane to its RIGHT, and 2px of travel in
    that direction is the whole story. */
 .mfmaster .mfi:hover .mfkc{opacity:.9;color:var(--text)}
-/* ⚠️ NO `transform` HERE — the chevron used to `translateX(2px)` on the open row, so it JUMPED
-   2px right the moment the pointer entered (measured: x 370.0 → 372.0). Reported 2 Sep 2026 as
-   "when I hover the icon is bump". The nudge was meant to read as "this row leads somewhere",
-   but the row already says that three other ways at the same instant — the accent border, the
-   background, and the chevron going full-opacity teal — so all the movement added was a twitch
-   under the cursor. Opacity and colour still change; nothing moves. */
-.mfmaster .mfi.open .mfkc{opacity:1;color:var(--teal)}
+.mfmaster .mfi.open .mfkc{opacity:1;color:var(--teal);transform:translateX(2px)}
 
 /* ── the detail pane's identity header ─────────────────────────────────────────────────
    ⚠️ It replaced a bare `.mfsec` heading that repeated, at the same size and weight, the
@@ -1135,24 +972,7 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
 /* ⚠️ THE PARENT WEIGHT IS A CLASS NOW. `.mfi:has(.mfic)` still governs the OTHER menus'
    module rows; a master column's rows carry `.par` so Alerts' tabs and Settings' categories
    — neither of which has an icon in this set — read as parents too. */
-/* ⚠️ `:has(.mfic)` — THE HIGHLIGHT IS FOR A ROW THAT CARRIES A MODULE ICON, NOT FOR EVERY
-   MASTER ROW (request, 2 Sep 2026, holding the Alert and Report flyouts side by side: "this
-   and this make to same").
-   MEASURED: Alert's rows rendered 12.5px/600 rgb(244,247,251) and Report's 12.5px/400
-   rgb(138,154,176) — the same content, a flat list of module names, in two different weights.
-   The only reason was structural: Alert happens to be a master/detail tree because three of
-   its eight rows have children, and Report is a plain `mfCol`. That is invisible to a reader
-   and should not change how a row looks.
-   ⚠️ THIS RESTORES A DOCUMENTED DECISION THAT HAD DRIFTED. The highlight was deliberately
-   keyed to `.mfi:has(.mfic)` (the rule ~130 lines up) with its own note: "`:not(.sub)` would
-   have re-weighted the whole rail's menus — Dashboards, Alerts, Setting and the rest ... there
-   are probe assertions that Dashboards and Setting are unchanged". This bare `.par` rule,
-   added later, re-weighted exactly those menus anyway and quietly undid it.
-   ⚠️ EXPLORER IS UNAFFECTED, which is the point — it resolves 11 of 11 icons, so its rows
-   still read heavier than the pages in the detail pane beside them, which is what the 23 Aug
-   2026 request ("sub module will be highlighted") actually asked for. Alert and Setting carry
-   no icons, so they now read like Report: one weight for one kind of row. */
-.mfmaster .mfi.par:has(.mfic){font-weight:600;color:var(--white)}
+.mfmaster .mfi.par{font-weight:600;color:var(--white)}
 /* ── the pin ───────────────────────────────────────────────────────────────────────────
    ⚠️ IT TAKES THE `margin-left:auto`, NOT THE CHEVRON. Two rows in this list carry both, and
    whichever came first would have eaten the slack and pushed the other off the edge. The pin
@@ -1169,32 +989,15 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
    children reads "…DOCS ↗ ›" — link, then "there is more behind this".
    ⚠️ Uppercase + letter-spacing is what makes a four-letter word read as a BADGE rather than
    as another menu item at the end of the row. */
-/* ⚠️ A QUIET FILL, NOT AN OUTLINE (request, 2 Sep 2026: "improve this visualization", on a row
-   showing pin + DOCS + chevron together). Datadog's chip is outlined and that works THERE
-   because it sits on a saturated blue selected bar; on this menu's soft hover an outlined
-   badge was the loudest thing in the row, and the row already carries two other controls. A
-   filled chip at low contrast reads calmer at this size than a bordered one — the same reason
-   the rail's pinned rows use a mark rather than a box.
-   ⚠️ SMALLER AND TIGHTER: 16px tall, 8.5px text, 4px padding. It was 17/9/5 with a 1px border,
-   which measured ~46px wide — a third control competing with the pin and the chevron.
-   ⚠️ The ↗ is dimmed rather than removed. It is what says "this leaves the app", and every
-   other external link in this file carries one; at full strength it doubled the chip's visual
-   weight for a glyph nobody needs to read. */
-.mfdocs{margin-left:auto;display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;
-  height:16px;padding:0 4px;border-radius:3px;background:var(--chip);border:0;
-  font-size:8.5px;font-weight:700;letter-spacing:.07em;color:var(--text-dim);
-  text-decoration:none;opacity:0;transition:opacity .12s,color .12s,background .12s}
-.mfi:hover .mfdocs,.mfi.open .mfdocs{opacity:.75}
-.mfdocs:hover{opacity:1;color:var(--teal);background:var(--sel)}
-.mfdocs .ext{font-size:8px;line-height:1;opacity:.7}
-/* the pin already owns `margin-left:auto`; with both present the pin must not also push.
-   ⚠️ 5px between each of pin · DOCS · chevron, so the three read as one cluster at the row's
-   end rather than as three separate things that happen to be near each other. */
-/* the row's trailing cluster: one flush-right group, 5px between its members. The explicit
-   `margin-left:5px` rules this replaces were ADDING to the row's own `gap:7px`, so the intended
-   5px was really 12px and the widest row overflowed its column. */
-.mfend{margin-left:auto;display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
-.mfkc.ph{visibility:hidden}
+.mfdocs{margin-left:auto;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;
+  height:17px;padding:0 5px;border-radius:3px;border:1px solid var(--border);
+  font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);
+  text-decoration:none;opacity:0;transition:opacity .12s,color .12s,border-color .12s}
+.mfi:hover .mfdocs,.mfi.open .mfdocs{opacity:.8}
+.mfdocs:hover{opacity:1;color:var(--teal);border-color:var(--teal)}
+.mfdocs .ext{font-size:9px;line-height:1}
+/* the pin already owns `margin-left:auto`; with both present the pin must not also push */
+.mfi .mfpin + .mfdocs{margin-left:6px}
 .mfpin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.85;
   stroke-linecap:round;stroke-linejoin:round}
 /* ⚠️ HIDDEN AT REST, SHOWN ON THE ROW'S HOVER — and ALWAYS shown once pinned, because a
@@ -1286,65 +1089,12 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
 /* ⚠️ 12px of left pad puts it on the ICON COLUMN (8 + 12 = 20), not the label column — as
    the last line it would otherwise read as a caption under the user's name rather than as a
    line of its own. `padding-bottom` is gone with the move: nothing follows it now. */
-/* ⚠️ THE IDENTITY'S SECOND LINE SITS INSIDE `.lbl`. `.sitem .lbl` is the thing that fades to
-   `opacity:0` when the rail collapses, so nesting the name and the sub-line in it means both
-   disappear together and there is no second collapse rule to keep in step. `.lbl` is a flex ROW
-   by default — this is the one place it has to be a column. */
-.sfoot .sid{height:auto;padding-top:5px;padding-bottom:5px}
-.sfoot .sid .lbl{flex-direction:column;align-items:flex-start;gap:1px;line-height:1.25;min-width:0}
-.sfoot .sid .nm{font-size:13px;font-weight:500}
-/* ⚠️ THE E-MAIL TRUNCATES RATHER THAN WIDENING THE RAIL. An address is the one string in this
-   footer whose length nobody controls, and the rail is a fixed 170px open — Datadog's own footer
-   ellipsises it for the same reason (`dopid43323@ea…`). */
-.sfoot .sid .sub{font-size:10.5px;font-weight:400;color:var(--text-dim);max-width:112px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-/* Approval · Health · Notifications — three equal columns, icon above label, under a hairline.
-   ⚠️ ONE COLUMN WHEN COLLAPSED, NOT `display:none`. These are the rail's three utility controls,
-   so unlike a set of extra links they have to stay REACHABLE at 64px — hiding them would take
-   Approval, Health and the notification count off the rail entirely whenever it is narrow. At
-   one column each cell is an icon with its label faded out, which is exactly what the collapsed
-   rail looked like before this moved; expanded, the three sit side by side.
-   ⚠️ `.lbl` still carries the fade, so nothing new decides when a label is visible. */
-.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:8px 4px 0;padding-top:8px;
-  border-top:1px solid rgba(255,255,255,.08)}
-.sidebar.open .squick{grid-template-columns:repeat(3,minmax(0,1fr))}
-html[data-theme="light"] .squick{border-top-color:var(--border)}
-.sq{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:6px 0 5px;border-radius:4px;color:var(--text-dim);font-size:10.5px;
-  white-space:nowrap;cursor:pointer;min-width:0}
-.sq:hover{background:var(--hover-side);color:var(--text)}
-/* ⚠️ `.on` HAD TO COME WITH THEM. `showView()` toggles it on `#sbApproval` / `#sbHealth` to mark
-   the open screen, and that selected look lived on `.sitem.on` — which these three no longer are.
-   Without this the rail would simply stop showing which of the two is open, silently, because
-   the class still lands and just styles nothing. */
-.sq.on{background:var(--pill);color:var(--ink)}
-.sq .ic{width:18px;height:18px;flex:0 0 18px}
-/* ⚠️ THE LABEL IS OUT OF FLOW WHEN COLLAPSED. Faded to `opacity:0` it would still hold its line,
-   so a 64px rail would carry three cells of dead height under three icons. `height:0` collapses
-   it; `.sidebar.open` gives it back. */
-.sq .lbl{font-size:10.5px;font-weight:400;opacity:0;height:0;overflow:hidden;transition:opacity .15s;
-  max-width:100%;text-overflow:ellipsis}
-.sidebar.open .sq .lbl{opacity:1;height:auto}
-/* the notification badge rides the icon, as it did in the row layout */
-.sq .iwrap{position:relative;display:inline-flex}
-/* ⚠️ NOT A MENU ROW. It is reference text at the foot of the profile menu — no hover, no
-   pointer, no icon column — so it cannot be mistaken for something you can click. The rail's
-   own `.sbuild` rule is kept above and is now unreferenced. */
-.upbuild{padding:9px 18px 12px;font-size:10.5px;letter-spacing:.04em;color:var(--text-dim);
-  border-top:1px solid var(--pop-line,var(--border))}
 .sbuild{font-size:10.5px;color:var(--text-dim);padding:6px 0 0 12px;letter-spacing:.04em;white-space:nowrap;opacity:0;transition:opacity .15s}
 .sidebar.open .sbuild{opacity:.85}
 /* grouped-view toggle pinned at bottom */
 /* ⚠️ 8px, NOT 10px — `.sutil`'s rows sit at x=8 (`margin:0 8px`), so a 10px pad put every
    footer row 2px to their right. Measured, not eyeballed. */
-/* ⚠️ `::before` CARRIES THE SEPARATOR `.sutil` USED TO DRAW. That block held the hairline that
-   cut the rail's foot off from the module menu, and it went when its three rows moved into the
-   footer. A `border-top` on `.sfoot` would span the full rail; this is inset the same 8px the
-   old one was. */
 .sfoot{flex:0 0 auto;padding:8px 8px 12px;position:relative;z-index:1}
-.sfoot::before{content:'';position:absolute;left:8px;right:8px;top:0;height:1px;
-  background:rgba(255,255,255,.08)}
-html[data-theme="light"] .sfoot::before{background:var(--border)}
 /* ⚠️ THE COLLAPSE ROW IS NOW BUILT TO `.sitem`'s NUMBERS (gap 11, 20px glyph at margin-left
    5, 13px label). It had gap 9, an 18px glyph at margin-left 6 and a 12px label — so its icon
    sat 3px right of every other glyph and 2px smaller, and its label 1px left of every other
@@ -1547,32 +1297,9 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 @media(max-width:1400px){.tmeta{display:none}}
 
 /* ---------- dashboard groups: collapsible bands of widgets on one canvas ---------- */
-/* ⚠️ A GROUP WITH WIDGETS HAS NO BORDER OF ITS OWN (request, 2 Sep 2026: "remove this border,
-   show only empty group"). It was given one earlier the same day and taken back: once a group
-   holds cards, the cards already say where it starts and ends, and a container edge around
-   them is a second boundary drawing the same thing. The ONLY group that needs an edge is an
-   EMPTY one — there is nothing inside it to imply its shape.
-   ⚠️ THAT EDGE IS `.gdrop`'s, NOT A CONTAINER BORDER. An empty group already renders a dashed
-   drop area; putting a border on `.dgroup` as well would ring an outline around an outline.
-   One box, dashed because it is a drop target — see `.gdrop`.
-   ⚠️ The padding and radius went with the border. They existed to make an edge read as a
-   container; with no edge they only inset the widgets from the canvas grid. */
-/* ⚠️ THE GROUP IS A BORDERED CONTAINER, AND THE HEADER'S RULE IS GONE WITH IT (request,
-   2 Sep 2026: "remove this line and add border of new group"). The header used to carry a
-   `border-bottom`, which drew a rule across the board under the group's name while nothing
-   said where the group ENDED — so a board of four groups showed four lines and no boxes. The
-   border moves to the group itself: one outline around the header and its widgets, which is
-   what actually says "these belong together".
-   ⚠️ SCOPED WITH `:has(.ghead)`, so it applies ONLY to a real group. An UNGROUPED board renders
-   the same `.dgroup` wrapper with `head = ''` around the whole canvas — bordering that would
-   draw a box round the entire flat board, which is not a group and has no header to own it.
-   ⚠️ The header keeps `position:sticky` and its own `--bg` fill: inside a bordered box it now
-   sticks to the top of that box rather than the page, which is the behaviour the box implies. */
 .dgroup{margin-bottom:16px}
-.dgroup:has(.ghead){border:1px solid var(--border-soft);border-radius:var(--radius);
-  padding:10px 12px 12px;background:var(--bg)}
 .ghead{display:flex;align-items:center;gap:9px;padding:2px 2px 8px;position:sticky;top:0;z-index:3;
-  background:var(--bg);margin-bottom:10px}
+  background:var(--bg);border-bottom:1px solid var(--border-soft);margin-bottom:10px}
 /* ⚠️ the caret COLLAPSES, the name RENAMES (annotation, 19 Aug 2026). The name used to sit
    inside this button, so clicking it collapsed the group and renaming was only reachable
    from the ⋮ menu's prompt(). They are two controls now, side by side. */
@@ -1627,12 +1354,8 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    ⚠️ This is NOT the whole-board empty state. A flat, empty dashboard still gets the big
    `.wadd` tile — that one is "this dashboard has nothing on it", which is a different
    sentence from "this group is waiting for widgets". */
-/* ⚠️ `--track`, NOT `--border` — this dashed box is now the ONLY thing marking an empty
-   group, so it has to be seen. Measured against the canvas: `--border` is 1.32 contrast in
-   dark and 1.27 in light (invisible, which is what started this), `--track` is 2.68 / 2.57 —
-   a hairline you can find without it competing with the widgets in the groups around it. */
 .gdrop{grid-column:span 12;display:flex;align-items:center;justify-content:center;gap:8px;
-  min-height:96px;padding:14px;border:1px dashed var(--track);border-radius:var(--radius);
+  min-height:96px;padding:14px;border:1px dashed var(--border);border-radius:var(--radius);
   color:var(--muted);font-size:12.4px;text-align:center}
 .gdrop svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
@@ -1679,7 +1402,7 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .wadd.big .waS{max-width:280px}
 
 /* ---- keyboard shortcuts cheat sheet (?) ---- */
-#kbHelp{position:fixed;inset:0;z-index:200002;display:none;place-items:center;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+#kbHelp{position:fixed;inset:0;z-index:200002;display:none;place-items:center;background:var(--scrim)}
 #kbHelp.on{display:grid}
 .kbCard{width:560px;max-width:92vw;max-height:82vh;overflow:auto;background:var(--panel);border:1px solid var(--border);
   border-radius:10px;box-shadow:var(--shadow);padding:16px 18px 18px}
@@ -2011,7 +1734,7 @@ html[data-theme="light"] .mdtblw input[type=checkbox]{color-scheme:light}
 /* ── the two drawers ───────────────────────────────────────────────────────────────────
    ⚠️ `position:fixed` but INSIDE `#view-manage` — a fixed element in a `display:none`
    ancestor is hidden, so leaving the screen cannot strand one. The `#lxDet` rule. */
-.mdscrim{position:fixed;inset:0;background:rgba(3,8,16,.5);z-index:200000;display:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.mdscrim{position:fixed;inset:0;background:rgba(3,8,16,.5);z-index:200000;display:none}
 .mdscrim.on{display:block}
 .mddr{position:fixed;top:0;right:0;bottom:0;width:720px;max-width:96vw;background:var(--card);
   border-left:1px solid var(--border);z-index:200001;display:none;flex-direction:column}
@@ -5427,7 +5150,7 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .wfh .x{margin-left:auto;color:var(--text-dim);font-size:15px;cursor:pointer}
 .wfh .x:hover{color:var(--text)}
 .wfb{flex:1;min-height:0;padding:16px 18px;display:flex;flex-direction:column}
-.scrim2{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s;z-index:80}
+.scrim2{position:fixed;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s;z-index:80}
 .scrim2.on{opacity:1;pointer-events:auto}
 .sdrawer{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--panel);border-left:1px solid var(--border);box-shadow:var(--shadow);z-index:90;transition:right .22s ease;display:flex;flex-direction:column}
 .sdrawer.on{right:0}
@@ -5952,7 +5675,7 @@ textarea.acta::placeholder{color:var(--muted)}
 .acpop hr{border:0;border-top:1px solid var(--pop-line);margin:4px 2px}
 
 /* rename dialog */
-.acdlgw{position:fixed;inset:0;z-index:100004;background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;place-items:center}
+.acdlgw{position:fixed;inset:0;z-index:100004;background:var(--scrim);display:none;place-items:center}
 .acdlgw.on{display:grid}
 .acdlg{width:340px;max-width:90vw;background:var(--pop);border:1px solid var(--border);border-radius:10px;
   box-shadow:var(--shadow);padding:16px}
@@ -6316,7 +6039,7 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 /* the label is the point, but it is the first thing to go if the board gets narrow */
 @media (max-width:1280px){ .cwfab{padding:0;width:44px;height:44px;justify-content:center;border-radius:50%}
   .cwfab span{display:none} }
-#cwScrim{position:fixed;inset:0;z-index:200004;background:rgba(4,10,20,.62);opacity:0;pointer-events:none;transition:opacity .18s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+#cwScrim{position:fixed;inset:0;z-index:200004;background:rgba(4,10,20,.62);opacity:0;pointer-events:none;transition:opacity .18s}
 #cwScrim.on{opacity:1;pointer-events:auto}
 #cwModal{position:fixed;inset:18px;z-index:200005;background:var(--panel);border:1px solid var(--border);
   border-radius:10px;box-shadow:var(--shadow);display:none;flex-direction:column;overflow:hidden;font-size:12.5px}
@@ -6877,7 +6600,7 @@ body.lxdense .lxtable td.msg{max-width:0}
    send button records (importing another product's exact hue puts a colour in the file
    that no token owns). The live violet #7C3AED is our --ai/--ai-2.                     */
 .lxpssc{position:fixed;inset:0;z-index:200003;background:rgba(3,10,22,.38);
-  opacity:0;pointer-events:none;transition:opacity .18s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+  opacity:0;pointer-events:none;transition:opacity .18s}
 .lxpssc.on{opacity:1;pointer-events:auto}
 html[data-theme="light"] .lxpssc{background:rgba(17,28,44,.22)}
 .lxps{position:fixed;top:0;right:0;bottom:0;width:458px;max-width:92vw;z-index:200004;
@@ -7284,84 +7007,173 @@ html[data-theme="light"] #drawer-layout{
    opposite of this prototype's convention, so linking the DS's own CSS would repaint the
    whole page. See `_ds/README.md`.
    ══════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════════════════════════════════
+   OPTION 5 — THE NARROW RAIL + NAV COLUMN, built from Plain (plain.com)
+   ──────────────────────────────────────────────────────────────────────────────────────────
+   Reference: the Plain support workspace, via Mobbin (screen 8e4cfdce…), supplied 2 Sep 2026.
+   Read off the capture — it is a still, not a live DOM, so the numbers below are PROPORTIONS
+   taken from it and then set to this product's own type scale, not measured pixels. Said
+   plainly because every other option in this folder WAS measured off a live DOM.
+
+   WHAT PLAIN DOES, AND WHY IT IS A FIFTH ANSWER:
+     • the icon rail is TINY — ~32px, icon-only, no labels, no captions, no hover-expand. Every
+       other option here is 56–72px. It carries the modules and nothing else.
+     • beside it an ALWAYS-ON nav column that is the real navigation: a workspace header, the
+       module's own rows, and — the part none of our other options has — CHILDREN INDENTED
+       UNDER THE ROW THEY BELONG TO, each with a right-aligned COUNT.
+     • sections below the primary rows are COLLAPSIBLE ("Browse ⌄").
+     • the active row is a filled, tinted, full-width rounded rect with coloured text.
+   Against the set: 1/3 hover a mega-menu, 2 docks a panel that names the module, 4 toggles a
+   panel you open. 5 is the only one where the navigation is permanently open, nested, counted,
+   and where the rail is too narrow to say anything at all.
+
+   ⚠️ THE PAINT IS THIS FILE'S TOKENS. Plain is light-only; nothing of its palette is copied.
+   ⚠️ THE RAIL AND THE COLUMN ARE DIFFERENT SURFACES — `--sidebar` and `--panel` — which is what
+   makes a 32px rail read as chrome rather than as a cut-off first column.
+   ══════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root{ --pl-rail:44px; --pl-nav:216px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
+.shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
+body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
+
+.sidebar.plside{width:calc(var(--pl-rail) + var(--pl-nav));flex-direction:row;overflow:visible;
+  background:var(--panel);border-right:1px solid var(--border)}
+.sidebar.plside.open{width:calc(var(--pl-rail) + var(--pl-nav));box-shadow:none}
+
+/* ── column A · the rail ─────────────────────────────────────────────────────────────────── */
+.plrail{flex:0 0 var(--pl-rail);width:var(--pl-rail);display:flex;flex-direction:column;
+  align-items:center;background:var(--sidebar);border-right:1px solid var(--border);padding:8px 0 10px}
+.plbrand{width:26px;height:26px;flex:0 0 26px;display:grid;place-items:center;color:var(--white);margin-bottom:12px}
+.plbrand svg{display:block;width:100%;height:100%}
+.plicons{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
+  gap:4px;width:100%;scrollbar-width:none}
+.plicons::-webkit-scrollbar{display:none}
+/* ⚠️ 28px TILE, 18px GLYPH. The rail is the one place in this option with no words at all, so
+   the tile is the only hit target and the only state — it has to be big enough to read as a
+   button and small enough to keep the rail under 44px. */
+.plib{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:7px;
+  color:var(--text-dim);cursor:pointer;position:relative;transition:background .12s,color .12s}
+.plib:hover{background:var(--hover-side);color:var(--text)}
+.plib.on{background:var(--pill);color:var(--ink)}
+.plib .ic{width:18px;height:18px;fill:currentColor}
+.plib.airail{color:var(--ai-2)}
+.plib.airail:hover{background:var(--ai-soft)}
+.plrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding-top:8px}
+.plrfoot .plib .ibadge{top:-3px;left:auto;right:-4px}
+.plav{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--white);color:var(--ink);
+  font-weight:700;font-size:10px;display:grid;place-items:center;cursor:pointer}
+
+/* ── column B · the nav column ───────────────────────────────────────────────────────────── */
+.plnav{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--panel)}
+/* ══ COLLAPSE THE NAV COLUMN (request, 2 Sep 2026) ══════════════════════════════════════════
+   This option's column is ALWAYS-ON — that is the whole pattern — so the one thing it owed the
+   canvas was a way to hand the 216px back. Collapsed, what remains is the 44px rail: still a
+   complete navigation, because the rail already carries every module.
+   ⚠️ `display:none`, NOT a width transition. The column's rows are `white-space:nowrap`, so
+   animating it to 0 reflows every label through a squeezed box on the way down and the whole
+   list visibly garbles. The sidebar has no width transition of its own here, so nothing
+   animates and there is nothing to garble.
+   ⚠️ THE SHELL PADDING FOLLOWS THE SAME TOKEN MATH. It is `rail + nav` in both rules above, so
+   the collapsed state has to override BOTH or the canvas keeps a 216px gutter for a column
+   that is no longer there. That is the `body.pinned .shell` hardcode trap from Option 1, one
+   file over. */
+body.plshut .plnav{display:none}
+body.plshut .sidebar.plside,body.plshut .sidebar.plside.open{width:var(--pl-rail)}
+body.plshut .shell,body.plshut.pinned .shell{padding-left:var(--pl-rail)}
+/* the mark becomes the way back out, exactly as Option 1's brand row does when its rail is
+   collapsed — the rail is 44px and there is no room for a labelled control */
+body.plshut .plbrand{cursor:pointer;border-radius:6px}
+body.plshut .plbrand:hover{background:var(--hover-side)}
+/* the workspace header — module name over a quiet second line, with the module's own actions */
+.plhd{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:11px 10px 9px 12px}
+.plhtt{flex:1;min-width:0}
+.plhtt b{display:block;font-size:13px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ⚠️ KEPT AND UNREFERENCED — the route subtitle was removed 2 Sep 2026; this is what a revert
+   would need. `.plhd` is `align-items:flex-start` for a two-line block, so with one line the
+   title now sits at the top of a 22px button row; that is why `.plhtt` gains the centring. */
+.plhtt span{display:block;font-size:10.5px;color:var(--text-dim);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plha{flex:0 0 auto;display:flex;gap:2px}
+.plhb{width:22px;height:22px;display:grid;place-items:center;border-radius:4px;color:var(--text-dim);cursor:pointer}
+.plhb:hover{background:var(--hover);color:var(--text)}
+.plhb svg{width:14px;height:14px;fill:currentColor}
+
+.plbody{flex:1;min-height:0;overflow-y:auto;padding:0 8px 12px;scrollbar-width:thin}
+
+/* ⚠️ 26px ROWS AND 12.5px TEXT — Plain's column is dense, and the density IS the pattern: it
+   exists to show a module's whole navigation at once, nesting and all, without a hover. */
+.plrow{display:flex;align-items:center;gap:8px;width:100%;height:26px;padding:0 7px;
+  border-radius:5px;color:var(--text-dim);font-size:12.5px;text-align:left;cursor:pointer;
+  white-space:nowrap}
+.plrow:hover{background:var(--hover);color:var(--text)}
+/* the tinted full-width active row — Plain's own selected treatment.
+   ⚠️ `--sel` is safe HERE and would not be on the rail: the column sits on `--panel`, which it
+   is clearly lighter/darker than in both themes, where against `--sidebar` in dark the two are
+   three points apart and it would vanish. That is why the rail's active mark is `--pill`. */
+.plrow.on{background:var(--sel);color:var(--teal);font-weight:600}
+.plrow .plic{flex:0 0 15px;width:15px;height:15px;fill:currentColor;opacity:.85}
+.plrow .plt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* the count — right-aligned, quiet, and only drawn when the number is REAL (see `plCount`) */
+.plrow .pln{flex:0 0 auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.plrow.on .pln{color:var(--teal);opacity:.8}
+.plrow .plch{flex:0 0 auto;width:12px;height:12px;fill:currentColor;opacity:.5}
+/* a child of the row above it — the indent is the whole point of this pattern */
+.plrow.sub{padding-left:29px;font-size:12px}
+.plrow.sub .plic{opacity:.7}
+
+/* a collapsible section header — Plain's "Browse ⌄" */
+.plsec{display:flex;align-items:center;gap:6px;width:100%;height:24px;padding:0 7px;margin-top:10px;
+  border-radius:5px;color:var(--text-dim);font-size:11px;cursor:pointer;text-align:left}
+.plsec:hover{color:var(--text)}
+.plsec .plt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.plsec .plcar{width:12px;height:12px;fill:currentColor;opacity:.6;transition:transform .15s}
+.plsec.shut .plcar{transform:rotate(-90deg)}
+.plempty{padding:10px 8px;font-size:11.5px;color:var(--text-dim)}
+/* the avatar fills its own 26px slot — the base `.miniav` is sized for the 64px rail */
+.plav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:10px;border-radius:50%}
+
 </style>
 <link rel="stylesheet" href="_settings-module.css">
 </head>
 <body>
 
 <!-- ============ Sidebar ============ -->
-<aside class="sidebar grouped" id="sidebar" onmouseenter="sbHover(1)" onmouseleave="sbHover(0);mfLater()">
-  <!-- ⚠️ THE COLLAPSE CONTROL SITS BESIDE THE WORDMARK (request + a Magnific reference, 2 Sep
-       2026: "it will be show behind the logo like this"). It was a full `Collapse` ROW at the
-       foot of the rail — a labelled line, in a stack whose every other line is a destination,
-       for a control that acts on the rail itself. Beside the logo it reads as chrome for the
-       panel, which is what it is, and the foot goes back to being places you can go.
-       ⚠️ THE ROW STILL TOGGLES, and that is deliberate rather than redundant: collapsed, the
-       rail is 64px and there is no room for a 26px button beside a 30px mark, so the button
-       hides and the LOGO is the way back out. Expanded, the button is the control and the row
-       does the same thing if you hit it — clicking a header to collapse a panel is not a
-       surprise. `stopPropagation` on the button keeps one click from toggling twice.
-       ⚠️ The label is gone, not hidden-with-CSS: `#collapseBtn` is an icon button now and its
-       word lives in `data-tip`, which is how every other icon control in this rail works. -->
-  <div class="strigger" onclick="toggleSidebar()" title="Expand / collapse">
-    <span class="brandmark" aria-label="ObserveOps"><!--LOGO--></span>
-    <span class="brand">ObserveOps</span>
-    <button class="strcol" id="collapseBtn" data-tip="Collapse sidebar"
-            onclick="event.stopPropagation();toggleSidebar()">
-      <svg class="ic" viewBox="0 0 48 48" fill="currentColor">
-        <path fill-rule="evenodd" d="M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Zm0 3.6c-.8 0-1.4.6-1.4 1.4v22c0 .8.6 1.4 1.4 1.4h26c.8 0 1.4-.6 1.4-1.4V13c0-.8-.6-1.4-1.4-1.4H11Z"/>
-        <path d="M16.2 9.5h3.4v29h-3.4z"/>
-        <g id="collapseArrow"><path d="M26.5 17.6 32.9 24l-6.4 6.4-2.4-2.4 4-4-4-4 2.4-2.4Z"/></g>
-      </svg>
-    </button>
-  </div>
-  <div class="stop">
-    <div class="sitem" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search<span class="kbd" id="sbKbd">⌘K</span></span></div>
-    <div class="sitem airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic" viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg><span class="lbl">Iris</span></div>
-  </div>
-  <nav class="smenu" id="smenu"></nav>
-  <!-- ⚠️ `.sutil` IS GONE — Approval / Health / Notifications MOVED into the footer's 3-up row
-       (request, 2 Sep 2026, against Datadog's own rail footer). They are the same three controls
-       with the same ids, handlers and tooltips; only their layout changed, from three full-width
-       rows to one row of three icon-above-label cells. Nothing new was added and nothing removed.
-       ⚠️ THE IDs ARE LOAD-BEARING: `showView()` reaches into `#sbApproval` and `#sbHealth`
-       directly (`getElementById(...).classList`), so losing either would throw on every
-       navigation, not just on those two screens. `#sbBell` and `#nbadge` carry the count.
-       ⚠️ The separator `.sutil` used to draw above the footer is now `.sfoot::before`, inset the
-       same 8px, so the rail's foot is still cut off from the module menu.
-       ⚠️ The `Sidebar` row that used to sit here was removed earlier the same day; `sbmOpen()`
-       stays unreferenced and the Layout drawer's `#layTabS` is still its door. -->
-  <div class="sfoot">
-    <!-- ⚠️ `.sbuild` USED TO SIT HERE, ABOVE Collapse — a version string wedged between the
-         hairline and two controls, so the interactive stack was interrupted by metadata
-         halfway down. It is the LAST line of the rail now (below the identity row): controls
-         together, then who you are, then what build this is. -->
-    <!-- ⚠️ THE COLLAPSE CONTROL MOVED UP BESIDE THE LOGO (request + reference, 2 Sep 2026).
-         It is in `.strigger` now — see there. `.gtoggle`'s CSS is kept and unreferenced. -->
-    <!-- ⚠️ THE IDENTITY ROW CARRIES A SECOND LINE, and the three quick links below it are a
-         3-up icon-above-label row — both from Datadog's own rail footer, measured in the browser
-         2 Sep 2026 at us5.datadoghq.com (Integrations row → avatar + email over org → a hairline
-         → Invite · Support · Help). What is copied is the SHAPE; the colours are this file's
-         tokens and the glyphs are the product's own.
-         ⚠️ `.lbl` IS WHAT COLLAPSES, so the sub-line lives INSIDE it and disappears with the name
-         when the rail narrows — no second rule to keep in step.
-         ⚠️ EVERY LINK GOES SOMEWHERE REAL. Invite opens the product's own user management
-         (`stOpen('User Settings')`); Support and Help are the two URLs already verified 200 for
-         `AI_HELP` and the profile popover. Nothing here invents a destination. -->
-    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
-    <div class="squick">
-      <div class="sq" id="sbApproval" data-tip="Approval" onmouseenter="mfHide()" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
-      <!-- Health hovers open its own sub-menu (its tab set), like a rail module -->
-      <div class="sq" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfOpenUtil('Health',this)" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
-      <div class="sq" id="sbBell" data-tip="Notification" onmouseenter="mfHide()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
+<!-- ══════════════════════════════════════════════════════════════════════════════════════════
+     OPTION 5 — the narrow rail + always-on nav column (Plain). The reasoning, the proportions
+     and the deliberate divergences are in the stylesheet, at the "OPTION 5" block at the end.
+     ⚠️ NO `onmouseenter` ON THE RAIL and no `#smenu`. This option has no hover-expand and no
+     flyout — the nav column IS the navigation, permanently. `sbHover` / `mfOpen` / `mfLater` /
+     `mfOpenUtil` are stood down in the `pl*` block, the same way Option 4 does it.
+     ⚠️ `#smenu` IS KEPT IN THE DOM but empty and hidden: `renderMenu()` writes into it on every
+     navigation and would throw on a missing node, and it is called from `selectModule`,
+     `showView`, `pickDash` and the Layout drawer. Cheaper to keep the node than to fork four
+     call sites. -->
+<aside class="sidebar plside" id="sidebar">
+
+  <!-- ── column A · the rail: modules only, no words ─────────────────────────────────────── -->
+  <div class="plrail">
+    <span class="plbrand brandmark" id="plBrand" aria-label="ObserveOps" onclick="plColExpand()"><!--LOGO--></span>
+    <div class="plicons" id="plIcons"></div>
+    <div class="plrfoot">
+      <div class="plib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg></div>
+      <div class="plib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg></div>
+      <div class="plib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></div>
+      <!-- ⚠️ `.miniav` AND `.lbl` ARE BOTH REQUIRED, even though only the avatar is painted.
+           `refreshUser()` writes the saved name/picture into `#sbUser .miniav`, and `stSeed()`
+           reads the signed-in name out of `#sbUser .lbl` to seed the Settings profile form.
+           Drop either and Settings breaks with no error here. The label is hidden, not removed
+           — `textContent` does not care that it is not on screen. -->
+      <div class="plav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span></div>
     </div>
-    <!-- ⚠️ `BUILD : 8.2.6` WAS HERE AND IS NOW IN THE PROFILE MENU (request, 2 Sep 2026:
-         "remove this and show in other way"). A version string is reference information you
-         look up once — it does not earn a permanent row in a rail whose every other line is
-         somewhere you can go. It moved to the foot of `#userPop`, which is where "about this
-         install" belongs and which the avatar above already opens.
-         ⚠️ `.sbuild`'s CSS is KEPT and unreferenced, the house pattern. -->
   </div>
+
+  <!-- ── column B · the nav column, rendered by `plPaint()` ──────────────────────────────── -->
+  <div class="plnav" id="plNav"></div>
+
+  <!-- kept for `renderMenu()` to write into; see the note above -->
+  <nav class="smenu" id="smenu" hidden></nav>
 </aside>
 
 <!-- module flyout: the module's own navigation, opened by hovering a rail entry -->
@@ -7900,16 +7712,6 @@ html[data-theme="light"] #drawer-layout{
 
 <!-- Per-widget AI summary — opens from the ✦ in any widget header -->
 <!-- Layout settings — ported from ServiceOps_Dashboard_v2's "Dashboard layout" panel -->
-<!-- ⚠️ THE AGENTIC-AI CONFIGURE DRAWER. Same `.sdrawer` chrome as Dashboard layout, which is
-     what the request pointed at: a header with a ✕, a scrolling body, and a footer of actions.
-     ⚠️ ITS FOOTER IS THE FLOW'S OWN — `agFlowFootHTML()` already renders Run test / Accept &
-     enable AI with both gates on them, so the drawer does NOT get a second set of buttons. The
-     body scrolls; the footer is the drawer's, pinned. -->
-<div id="agCfgScrim" onclick="agCfgClose()"></div>
-<div class="sdrawer" id="drawer-agcfg">
-  <div class="dr-h">Configure AI provider <span class="x" data-tip="Close" onclick="agCfgClose()">&#10005;</span></div>
-  <div class="dr-b" id="agCfgBody"></div>
-</div>
 <div class="sdrawer" id="drawer-layout">
   <div class="dr-h">Dashboard layout <span class="x" data-tip="Close" onclick="closeOverlays()">&#10005;</span></div>
   <!-- ⚠️ TWO TABS AGAIN — Layout | Sidebar (request, 27 Aug 2026: "when dashboard will be
@@ -8145,8 +7947,6 @@ html[data-theme="light"] #drawer-layout{
     <li class="div"></li>
     <li class="logout"><a href="javascript:;" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M10 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-8v-2h8V5h-8V3Zm-1.3 5.3L10 9.6 8.4 11H15v2H8.4L10 14.4l-1.3 1.3L4.6 12l4.1-3.7Z"/></svg>Logout</a></li>
   </ul>
-  <!-- the build, where "about this install" belongs — quiet, and below the actions -->
-  <div class="upbuild">BUILD : 8.2.6</div>
 </div>
 
 <div class="pop" id="notifPop">
@@ -8281,20 +8081,6 @@ html[data-theme="light"] #drawer-layout{
 <script>
 /* ================= Icon registry (extracted from live js/icons bundle via DOM) ================= */
 const ICONS = {
- /* the product's own `assign-user` glyph, verbatim from `observeops-icons/` */
- "assign-user": {
-  "viewBox": "0 0 48 48",
-  "paths": [
-   "M24 28C26.6522 28 29.1949 29.0543 31.0703 30.9297C32.9457 32.8051 34 35.3478 34 38V42C34 43.1046 33.1046 44 32 44C30.8954 44 30 43.1046 30 42V38C30 36.4087 29.3674 34.883 28.2422 33.7578C27.2578 32.7734 25.967 32.1658 24.5938 32.0293L24 32H12C10.4087 32 8.88303 32.6326 7.75781 33.7578C6.63259 34.883 6 36.4087 6 38V42C6 43.1046 5.10457 44 4 44C2.89543 44 2 43.1046 2 42V38C2 35.3478 3.05432 32.8051 4.92969 30.9297C6.80505 29.0543 9.34783 28 12 28H24ZM38 14C39.1046 14 40 14.8954 40 16V20H44C45.1046 20 46 20.8954 46 22C46 23.1046 45.1046 24 44 24H40V28C40 29.1046 39.1046 30 38 30C36.8954 30 36 29.1046 36 28V24H32C30.8954 24 30 23.1046 30 22C30 20.8954 30.8954 20 32 20H36V16C36 14.8954 36.8954 14 38 14ZM18 4C23.5228 4 28 8.47715 28 14C28 19.5228 23.5228 24 18 24C12.4772 24 8 19.5228 8 14C8 8.47715 12.4772 4 18 4ZM18 8C14.6863 8 12 10.6863 12 14C12 17.3137 14.6863 20 18 20C21.3137 20 24 17.3137 24 14C24 10.6863 21.3137 8 18 8Z"
-  ]
- },
- /* the product's own `comment-dots` glyph, verbatim from `observeops-icons/` */
- "comment-dots": {
-  "viewBox": "0 0 48 48",
-  "paths": [
-   "M24,22c-.4,0-.8,.1-1.1,.3-.3,.2-.6,.5-.7,.9-.2,.4-.2,.8-.1,1.2,0,.4,.3,.7,.5,1,.3,.3,.6,.5,1,.5s.8,0,1.2-.1c.4-.2,.7-.4,.9-.7,.2-.3,.3-.7,.3-1.1s-.2-1-.6-1.4-.9-.6-1.4-.6Zm-8,0c-.4,0-.8,.1-1.1,.3-.3,.2-.6,.5-.7,.9-.2,.4-.2,.8-.1,1.2,0,.4,.3,.7,.5,1,.3,.3,.6,.5,1,.5s.8,0,1.2-.1c.4-.2,.7-.4,.9-.7,.2-.3,.3-.7,.3-1.1s-.2-1-.6-1.4-.9-.6-1.4-.6Zm22.1-12.1c-3.8-3.8-8.8-5.9-14.1-5.9s-5.2,.5-7.7,1.5c-2.4,1-4.6,2.5-6.5,4.3-3.8,3.8-5.9,8.8-5.9,14.1,0,4.6,1.6,9.1,4.5,12.7l-4,4c-.3,.3-.5,.6-.5,1,0,.4,0,.8,.1,1.2,.2,.4,.4,.7,.8,.9s.7,.3,1.1,.3H24c5.3,0,10.4-2.1,14.1-5.9,3.8-3.8,5.9-8.8,5.9-14.1s-2.1-10.4-5.9-14.1Zm-4,26.5c-2.9,2.4-6.4,3.6-10.1,3.6H10.8l1.9-1.9c.2-.2,.3-.4,.4-.6,.1-.2,.2-.5,.2-.8,0-.5-.2-1-.6-1.4-2.6-2.6-4.2-6.1-4.6-9.7-.4-3.7,.6-7.4,2.6-10.5,2.1-3.1,5.1-5.4,8.7-6.4s7.3-.9,10.8,.5c3.4,1.4,6.2,4,8,7.2,1.7,3.3,2.3,7,1.6,10.7-.7,3.6-2.7,6.9-5.5,9.2Zm-2.1-14.4c-.4,0-.8,.1-1.1,.3-.3,.2-.6,.5-.7,.9-.2,.4-.2,.8-.1,1.2s.3,.7,.5,1c.3,.3,.6,.5,1,.5,.4,0,.8,0,1.2-.1,.4-.2,.7-.4,.9-.7,.2-.3,.3-.7,.3-1.1s-.2-1-.6-1.4c-.4-.4-.9-.6-1.4-.6Z"
-  ]
- },
  /* the product's own `columns` glyph — `observeops-icons/common/navigation-layout/columns.svg`,
     verbatim. `resolve_icon("columns")` confirms it is catalogued in the DS, and the contract
     forbids hand-drawing one. It is the Sidebar surface's mark: a pane beside a pane. */
@@ -8570,28 +8356,15 @@ const SUBNAV = {
      order, with the three that carry a dropdown showing their entries indented under them
      (kind 'sub'). */
   'Alerts': [
-    /* ⚠️ THE EIGHT TABS CARRY THEIR MODULE'S ICON in the fifth slot; the six `sub` rows do NOT
-       (request, 2 Sep 2026: the Alert and Report flyouts side by side, "make to same"). Same rule
-       as Explorer and Report — a row that names a MODULE gets that module's glyph, and the pages
-       or views underneath one stay plain, which is what keeps the two levels apart.
-       ⚠️ `Metric` -> `metric-explorer` and `Network Config` -> `ncm`: there is no bare `metric` or
-       `network-config` key, and `ico()` returns '' for a name it does not have rather than
-       throwing — so a wrong key here renders one blank row among seven and nothing reports it.
-       All eight were resolve-checked before being written in.
-       ⚠️ ALL EIGHT MUST RESOLVE OR NONE SHOW: `mfTree` gates on `tree.every(r => r.ic && ico(r.ic))`,
-       so leaving one off silently turns the icons off for the whole menu. */
-    { h:'Alerts', items:[ ['Metric', 'Alerts', null, null, 'metric-explorer'],
-                          ['Log', 'Alerts', null, null, 'log'],
-                          ['Flow', 'Alerts', null, null, 'flow'],
-                          ['Trap', 'Alerts', null, null, 'trap-viewer'],
-                          ['NetRoute', 'Alerts', null, null, 'netroute'],
+    { h:'Alerts', items:[ ['Metric', 'Alerts'], ['Log', 'Alerts'], ['Flow', 'Alerts'], ['Trap', 'Alerts'],
+                          ['NetRoute', 'Alerts'],
                             ['Source To Destination', 'Alerts', null, 'sub'],
                             ['Hop To Hop', 'Alerts', null, 'sub'],
-                          ['APM', 'Alerts', null, null, 'apm'],
+                          ['APM', 'Alerts'],
                             ['Trace Metrics', 'Alerts', null, 'sub'],
                             ['Trace Analytics', 'Alerts', null, 'sub'],
-                          ['Network Config', 'Alerts', null, null, 'ncm'],
-                          ['Real User Monitoring', 'Alerts', null, null, 'rum'],
+                          ['Network Config', 'Alerts'],
+                          ['Real User Monitoring', 'Alerts'],
                             ['RUM Metrics', 'Alerts', null, 'sub'],
                             ['RUM Analytics', 'Alerts', null, 'sub'] ]},
   ],
@@ -8683,31 +8456,11 @@ SUBNAV2['Setting']  = SUBNAV2['Settings'];
    dropdown live (Alerts' NetRoute / APM / RUM do), adding `'sub'` rows under it is all that
    is needed: `mfTreeFor` would then pick it up and it becomes two-pane by itself.
    ⚠️ `Log Compliance` is one tab, not two — it is not `Log` plus `Compliance`. */
-/* ⚠️ EVERY ROW CARRIES ITS MODULE'S ICON — the FIFTH slot (request, 2 Sep 2026: Explorer's
-   flyout and this one held side by side, "both are different make proper", then two reference
-   menus whose every row has a leading glyph, "list will be show like").
-   ⚠️ THE RULE IS "A ROW THAT NAMES A MODULE GETS THAT MODULE'S ICON". Every label here IS a
-   module — the same ten Explorer lists — so the keys already exist and nothing was drawn or
-   invented. `Dashboard` and `SLO` deliberately stay iconless: their rows are ACTIONS
-   ("＋ New dashboard", "Manage dashboards", "Error budget"), not modules, and giving an action
-   a module's glyph would say something untrue about where it goes.
-   ⚠️ TWO KEYS ARE NOT THE OBVIOUS ONES, and both are the product's own naming: `Metric` is
-   `metric-explorer` (there is no bare `metric` in the registry) and `NCCM` is `ncm`. A guessed
-   key does not throw — `ico()` returns '' — so it would silently render a row with no glyph
-   while every neighbour has one. Checked all ten resolve before writing them in.
-   ⚠️ `Log Compliance` takes `log`, not a compliance glyph: the registry has none, and the tab
-   belongs to Log. Better a truthful shared icon than an invented one. */
 SUBNAV['Report'] = [
-  { h:'Reports', items:[ ['Metric','Reports',null,null,'metric-explorer'],
-                         ['Log','Reports',null,null,'log'],
-                         ['Flow','Reports',null,null,'flow'],
-                         ['Trap','Reports',null,null,'trap-viewer'],
-                         ['Audit','Reports',null,null,'audit'],
-                         ['NCCM','Reports',null,null,'ncm'],
-                         ['APM','Reports',null,null,'apm'],
-                         ['RUM','Reports',null,null,'rum'],
-                         ['NetRoute','Reports',null,null,'netroute'],
-                         ['Log Compliance','Reports',null,null,'log'] ]},
+  { h:'Reports', items:[ ['Metric','Reports'], ['Log','Reports'], ['Flow','Reports'],
+                         ['Trap','Reports'], ['Audit','Reports'], ['NCCM','Reports'],
+                         ['APM','Reports'], ['RUM','Reports'], ['NetRoute','Reports'],
+                         ['Log Compliance','Reports'] ]},
 ];
 
 /* ⚠️ EXPLORER'S CHILDREN ARE ELEVEN SUB-MODULES, TWO OF WHICH HAVE CHILDREN OF THEIR OWN
@@ -9180,27 +8933,6 @@ function railWidth(){
 }
 /* JSON.stringify emits double quotes, which would close the onclick attribute — escape them */
 const mfAttr = v => JSON.stringify(v||'').replace(/"/g,'&quot;');
-/* ⚠️ ONE ICON RESOLVER FOR THE FLYOUT, because the glyphs live in TWO registries (request,
-   2 Sep 2026: the Setting flyout should carry icons, "reference is <the live Settings page>").
-   The rail's `ICONS` set has the 16 modules; the SETTINGS categories' own icons were harvested
-   separately into `ST_ICO` — which is exactly the set the live Settings rail draws, i.e. the
-   reference itself. All 19 of `ST_TREE`'s categories already carried a resolvable `ic`; the
-   flyout simply could not see them, because it asked `ico()` and got '' for every one.
-   ⚠️ `ST_ICO` VALUES ARE A BARE PATH `d`, not an `{viewBox, paths}` record like `ICONS`, and they
-   are all authored on the same 48x48 grid — hence the hand-built `<svg>` rather than a second
-   call into `ico()`.
-   ⚠️ `ST_ICO` IS DECLARED IN A LATER `<script>` (it is in `_settings-module.js`), so it does not
-   exist while this block is parsing. That is safe ONLY because the flyout builds lazily on first
-   hover — the same timing `mfTreeFor` already depends on for `ST_TREE` — and the try/catch makes
-   it structural rather than a matter of luck. A bare `typeof` guard is NOT enough on a `const`
-   that is genuinely in TDZ, which is the trap this file has recorded five times. */
-function mfIco(n, cls){
-  const a = ico(n, cls); if (a) return a;
-  try { if (ST_ICO && ST_ICO[n])
-    return `<svg class="${cls||'ic'}" viewBox="0 0 48 48" fill="currentColor"><path d="${ST_ICO[n]}"/></svg>`; }
-  catch(e){}
-  return '';
-}
 /* ⚠️ TWO OPTIONAL FIELDS ON A SECTION, added 23 Aug 2026 for Explorer's Monitor group:
      `parent`  — an item rendered as a full-width row ABOVE the list, for a sub-module that
                  has children. It is outside the list on purpose: a `columns:2` list would
@@ -9217,7 +8949,7 @@ function mfCol(secs, width){
        but don't print a second heading for what is one list */
     `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${s.h || '&nbsp;'}</div>` +
     (s.parent ? `<div class="mfi mfp" onclick="mfGo(${mfAttr(s.parent[1])},${mfAttr(s.parent[2])})">${
-       s.parent[3] ? mfIco(s.parent[3], 'mfic') : ''}${s.parent[0]}</div>` : '') +
+       s.parent[3] ? ico(s.parent[3], 'mfic') : ''}${s.parent[0]}</div>` : '') +
     /* ⚠️ the row count travels with the list, not the stylesheet — see `.mflist.c2` */
     `<div class="mflist${s.cols===2?' c2':''}${s.parent?' kid':''}"${
       s.cols===2 ? ` style="--mfrows:${Math.ceil(s.items.length/2)}"` : ''}>` +
@@ -9228,7 +8960,7 @@ function mfCol(secs, width){
          separates a sub-module you can open from a page or a type underneath one — see the
          note on Explorer's tree. Optional: every other menu omits it and renders as before. */
       `<div class="mfi${kind==='sub'?' sub':''}" onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${
-        ic ? mfIco(ic, 'mfic') : ''}${
+        ic ? ico(ic, 'mfic') : ''}${
         kind==='plus' ? '<span class="plus">＋</span>'+label.replace('＋ ','')
       : kind==='beta' ? label+'<span class="mfbeta">BETA</span>'
       : label}</div>`).join('') +
@@ -9289,12 +9021,9 @@ function mfTreeFor(name){
      already modelled, just drawn flat until now. */
   else if (name === 'Alert' && typeof SUBNAV !== 'undefined' && SUBNAV['Alerts']){
     t = [];
-    /* ⚠️ `ic` IS CARRIED THROUGH. It is the fifth slot on the source row and `mfTree` gates its
-       whole icon column on `tree.every(r => r.ic && ico(r.ic))` — drop it here and the data is
-       right while the menu silently renders without icons. */
-    SUBNAV['Alerts'].forEach(sec => (sec.items || []).forEach(([l, mod, act, kind, ic]) => {
+    SUBNAV['Alerts'].forEach(sec => (sec.items || []).forEach(([l, mod, act, kind]) => {
       if (kind === 'sub'){ const par = t[t.length - 1]; if (par){ (par.kids = par.kids || []).push([l, mod, act]); par.kidsAs = 'views'; } }
-      else t.push({ l, mod, act, ic });
+      else t.push({ l, mod, act });
     }));
   }
   /* Settings: 19 categories, and every one of them has pages. `ST_TREE` is the harvested
@@ -9349,10 +9078,7 @@ function mfTree(name){
      does not carry, and Settings' 18 category keys resolve for only 7 of them — so half the
      rows were indented by an icon and half were not, which is worse than no icons at all.
      Explorer resolves 11 of 11 and keeps them; Settings and Alerts show none. */
-  /* ⚠️ THE GATE AND THE RENDER MUST ASK THE SAME RESOLVER. It gated on `ico()` while the
-     Settings rows' icons live in `ST_ICO`, so all 19 resolved to '' and the menu silently
-     rendered without icons even though every row carried a valid key. */
-  const icons = tree.every(r => r.ic && mfIco(r.ic));
+  const icons = tree.every(r => r.ic && ico(r.ic));
   return '<div class="mfcol mfmaster"><div class="mfsec tight">' + name + '</div><div class="mflist">' +
     tree.map((r, k) =>
       /* ⚠️ `.par` CARRIES THE PARENT WEIGHT, NOT `:has(.mfic)`. That rule reads "a row with a
@@ -9361,25 +9087,11 @@ function mfTree(name){
          rendered at child weight in their own master column. */
       `<div class="mfi par${mfSubIdx===k?' open':''}${railPinned(r.l)?' pinned':''}" data-mfk="${k}" ` +
       `onmouseenter="mfSub(${k})" onclick="mfGo(${mfAttr(r.mod)},${mfAttr(r.act)})">` +
-        /* ⚠️ THE LABEL IS A FLEX ITEM, NOT A BARE TEXT NODE (request, 2 Sep 2026, on the
-           Settings menu's ragged chevron column). A raw text node cannot shrink, so a long
-           category — "Network Config Settings" (229px of content in a 209px row), "Service
-           Level Objective" (222px) — overflowed the row and shoved its chevron past the
-           column edge. Measured: SIX distinct chevron x positions down one list. */
-        (icons ? mfIco(r.ic, 'mfic') : '') + `<span class="mfl">${r.l}</span>` +
+        (icons ? ico(r.ic, 'mfic') : '') + r.l +
         /* ⚠️ PINNING IS EXPLORER'S ONLY — that is what was asked for, and `RAIL_PINS` holds
            labels resolved through `EXPLORER_TREE`, so a pin from another menu would not
            resolve to anything the rail could draw. `mfTreeFor` is the gate if it ever
            should: give the other trees rows that `railPinRow` can find first. */
-        /* ⚠️ THE TRAILING CONTROLS ARE ONE GROUP, NOT THREE SIBLINGS (2 Sep 2026: "not proper
-           alignment"). As siblings they were spaced by the row's own `gap:7px` PLUS an explicit
-           `margin-left:5px` each — 12px where the comment below intended 5 — and each row's
-           cluster started wherever its label happened to end, so pin / DOCS / chevron landed at
-           a different x on every row. Measured before: DOCS at 294, 302 and 316 on three
-           consecutive rows, and Monitor's chevron 3px PAST the row's own right edge.
-           One `.mfend` with `margin-left:auto` makes the cluster a single unit flush to the
-           row's right edge, with one gap inside it — so the three form a column down the list. */
-        '<span class="mfend">' +
         (name === 'Explorer' ? `<button class="mfpin" data-tip="${railPinned(r.l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" ` +
           `aria-pressed="${railPinned(r.l)}" onclick="event.stopPropagation();railPinToggle(${mfAttr(r.l)})">${MF_PIN}</button>` : '') +
         /* ⚠️ the chevron is the ONLY thing saying a row has more behind it. Without it the
@@ -9401,61 +9113,12 @@ function mfTree(name){
         ((r.doc || MOD_DOCS[name]) ? `<a class="mfdocs" tabindex="-1" target="_blank" rel="noopener"` +
           ` href="https://docs.motadata.com/motadata-aiops-docs/${r.doc || MOD_DOCS[name]}"` +
           ` onclick="event.stopPropagation()">DOCS<span class="ext">↗</span></a>` : '') +
-        /* ⚠️ THE CHEVRON'S BOX IS ALWAYS RESERVED, its glyph hidden when the row has no
-           children. Emitting it only on rows that have kids is what made DOCS sit 19px further
-           right on `Topology` than on `Monitor` — in a ten-row list the chips visibly stagger.
-           `.ph` keeps the space and paints nothing, so the meaning is unchanged: a chevron still
-           appears only where there is more behind the row. */
-        `<span class="mfkc${r.kids ? '' : ' ph'}"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>` +
-        '</span>' +
+        (r.kids ? '<span class="mfkc"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>' : '') +
       '</div>').join('') +
     '</div></div>' +
     '<div class="mfcol mfdetail" id="mfDetail"></div>';
 }
 /* the detail pane — repainted on hover, emptied for a row that has no children */
-/* ⚠️ THE PANE OPENS BESIDE THE ROW YOU ARE POINTING AT, NOT AT THE TOP OF THE COLUMN
-   (request, 2 Sep 2026: "i hover the sub module it will show child sub module but it is show in
-   top — improve wise the show behind it").
-   It always rendered flush with the top of the detail column. On `My Account`, the first row,
-   that looked deliberate; on `Utility` — the 15th of 19 — the row you are pointing at is lit near
-   the bottom of the list while its answer appears ~480px away at the top, and the eye has to
-   travel the whole column to find what it just asked for. Settings is 19 rows deep, so this is
-   the menu where it actually hurts.
-   ⚠️ IT IS `padding-top` ON THE PANE, NOT `transform`. The pane is a flex item that has to keep
-   participating in layout — `mfClamp()` sizes the flyout from it and `mfFade()` measures its
-   list — and a transform would move the paint while leaving the box where it was, so the clamp
-   would then let the content hang off the bottom.
-   ⚠️ MEASURE FROM A KNOWN BASELINE. `paddingTop` is zeroed BEFORE reading `scrollHeight`, or the
-   previous row's offset is still in the number and the pane walks further down on every hover.
-   ⚠️ THE CLAMP IS WHAT MAKES IT SAFE: `avail - content` is how much room there is to move at all,
-   so a pane taller than the list (Monitor's 18 children) gets 0 and simply stays at the top —
-   that is the correct answer, not a special case.
-   ⚠️ It aligns to the ROW's top, which includes the master list's own heading — that is the
-   point: the two tops line up on screen. */
-function mfDetailAlign(k){
-  const d = document.getElementById('mfDetail'); if (!d) return;
-  d.style.marginTop = '0px';
-  if (!d.firstChild) return;                       /* no pane open -> nothing to align */
-  const row = document.querySelector('#mflyout .mfmaster .mfi[data-mfk="' + k + '"]');
-  const master = document.querySelector('#mflyout .mfmaster');
-  if (!row || !master) return;
-  /* ⚠️ `margin-top` MOVES THE CARD; `padding-top` WOULD GROW IT. While the pane was a stretched
-     column its offset had to be padding — there was no card to move. Now that it shrink-wraps
-     into its own card, padding would put the gap INSIDE the border and the empty space this
-     change exists to remove would come straight back, just inside a box.
-     ⚠️ TWO-PASS, AND DELIBERATELY PADDING-AGNOSTIC: measure the header's own top against the
-     row's at `marginTop:0`, then push by exactly that difference. Deriving it arithmetically
-     means tracking the card's padding AND `.mfdh`'s — two numbers that would silently rot the
-     next time either is touched.
-     ⚠️ THE CLAMP IS AGAINST THE MASTER CARD, not the viewport: the pane may sit level with its
-     row only while its own bottom stays inside the list beside it. A pane taller than the list
-     (Monitor's 18 children) clamps to 0 and stays at the top, which falls out of the same
-     expression rather than needing a case of its own. */
-  const hd = d.querySelector('.mfdh') || d.firstElementChild;
-  const maxTop = Math.max(0, master.getBoundingClientRect().height - d.getBoundingClientRect().height);
-  const delta = row.getBoundingClientRect().top - hd.getBoundingClientRect().top;
-  d.style.marginTop = Math.max(0, Math.min(delta, maxTop)) + 'px';
-}
 function mfSub(k){
   const d = document.getElementById('mfDetail'); if (!d) return;
   const tree = mfTreeFor(mfTreeName) || [];
@@ -9470,17 +9133,7 @@ function mfSub(k){
      "here is that module" rather than as a second, unlabelled list.
      ⚠️ THE ROUTE IS REAL — `MODULES[].route`, the live product's own path, which is the same
      fact the Settings placeholder prints. Nothing here is invented copy. */
-  /* ⚠️ `mfIco`, NOT `ico` — THE DETAIL PANE HAD THE SAME TWO-REGISTRY BUG AS THE LIST
-     (reported 2 Sep 2026: "some title will be show icon and some is not show"). Fixing the
-     master rows left this call site behind, and the split was invisible until you opened the
-     right categories: `Compliance Settings` (metric-explorer), `SNMP Trap` (trap-viewer) and
-     `APM` (apm) drew a tile because those keys happen to exist in the RAIL's `ICONS` set,
-     while `Utility` (utility) and `Real User Monitoring` (monitor) drew none because theirs
-     live only in `ST_ICO`. Every Settings category has always had a valid key; the resolver
-     was the thing that could only see half of them.
-     ⚠️ SO EVERY ICON IN THIS FLYOUT NOW GOES THROUGH ONE FUNCTION — the master list, the
-     `mfCol` menus, the `mfTree` gate and this tile. A second resolver is how the halves drift. */
-  const tile = (r && r.ic && mfIco(r.ic)) ? mfIco(r.ic, 'mfdic') : '';
+  const tile = (r && r.ic && ico(r.ic)) ? ico(r.ic, 'mfdic') : '';
   /* ⚠️ THE ROUTE LINE IS GONE (request, 27 Aug 2026). `/settings/my-account/` under the name
      was a second line of chrome in a menu whose job is to get you somewhere in one read —
      it told you where you already were rather than what you could do next.
@@ -9499,7 +9152,6 @@ function mfSub(k){
   /* ⚠️ THE FLYOUT CHANGES HEIGHT WHEN THE PANE OPENS — Monitor's 18 children are far taller
      than the eleven — so the bottom clamp has to run again or the pane hangs off screen. */
   mfClamp();
-  mfDetailAlign(k);
   mfFade();
   /* the footer names whatever this pane is showing — see `mfDocsTarget`. It runs on EVERY
      hover including the ones that close the pane (`mfSubIdx === -1`), which is what puts the
@@ -9685,17 +9337,9 @@ function toggleSidebar(){
   const sb = document.getElementById('sidebar');
   document.body.classList.toggle('pinned', sbPinned);
   sb.classList.toggle('open', sbPinned);
-  /* ⚠️ THE BUTTON IS ICON-ONLY SINCE IT MOVED BESIDE THE LOGO (2 Sep 2026), so its `.lbl` is
-     GONE and this line used to throw `Cannot set properties of null` on every toggle — the
-     control would have broken the moment anyone pressed it. The word lives in `data-tip` now.
-     ⚠️ Both lookups are guarded: `#collapseBtn` is hidden while the rail is collapsed and a
-     future layout may not render it at all. */
   const b = document.getElementById('collapseBtn');
-  if (b){
-    b.setAttribute('data-tip', sbPinned? 'Collapse sidebar':'Expand sidebar');
-    b.removeAttribute('title');            /* a title is adopted once; keep data-tip authoritative */
-    const lb = b.querySelector('.lbl'); if (lb) lb.textContent = sbPinned? 'Collapse':'Expand';
-  }
+  b.setAttribute('data-tip', sbPinned? 'Collapse sidebar':'Expand sidebar');
+  b.querySelector('.lbl').textContent = sbPinned? 'Collapse':'Expand';
   renderMenu();                                  /* sections only fold while the rail is open */
   requestAnimationFrame(()=>{ if(!trashed) fitCanvas(); });
 }
@@ -12311,16 +11955,9 @@ function renderCanvas(){
         /* ⚠️ a flat board's empty state is the board's, and keeps the big add tile; an empty
            GROUP is a container waiting to be filled, so it is a drop area — see `.gdrop`. */
         + (ungrouped ? addTile(gi, name, true)
-                     /* ⚠️ THE EMPTY GROUP IS ITS BORDER AND NOTHING ELSE (request, 2 Sep 2026:
-                        "show only border on new group"). It carried a download-arrow glyph and
-                        "Empty group — drag widgets here, or use ＋ in the header" — a sentence
-                        naming two affordances that are both already on screen: the group's own
-                        ＋ sits in the header two lines above it, and the dashed outline IS the
-                        drop target. The outline still lights teal on drag-over (`.dropinto`), so
-                        the one thing the text was really for is said by the box itself.
-                        ⚠️ `.gdrop`'s svg/colour/font rules are left in place — they cost nothing
-                        and are what a restored message would need. */
-                     : `<div class="gdrop"></div>`)
+                     : `<div class="gdrop"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4"/>`
+                       + `<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>`
+                       + `Empty group — drag widgets here, or use ＋ in the header</div>`)
         + `</div>`);
     return `<section class="dgroup" id="grp-${gi}">${head}${body}</section>`;
   }).join('') +
@@ -13301,7 +12938,6 @@ document.addEventListener('keydown', e=>{
   setIco(document.getElementById('sbHealthIc'),'health-monitoring');
   setIco(document.getElementById('sbBellIc'),'bell');
   setIco(document.getElementById('sbSidebarIc'),'columns');
-
   setIco(document.getElementById('dashHeadIc'),'dashboard');
   setIco(document.getElementById('aprHeadIc'),'ncm-approval');
   setIco(document.getElementById('hlHeadIc'),'health-monitoring');
@@ -24504,6 +24140,154 @@ function lxLtPaint(){
 <script src="_variants.js"></script>
 <!-- Agentation visual-feedback widget (DEV-ONLY: loads only on file:// / localhost;
      no-ops on the deployed GitHub Pages site so it is never shipped to end users) -->
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════════════════════
+   OPTION 5 — the nav column's behaviour (`pl*`)
+   ───────────────────────────────────────────────────────────────────────────────────────────
+   Namespace `pl*` / `PL_*` / `.pl*`, grepped free before it was named. Geometry and the design
+   reasoning are in the stylesheet's "OPTION 5" block; this owns the behaviour.
+
+   THE MODEL: the rail picks a MODULE, the column shows that module's whole navigation — rows,
+   their children indented under them, and a count wherever a real one exists. Nothing hovers,
+   nothing opens; the column is always there. That is the Plain pattern and it is what makes
+   this different from Option 4, where the same content hides behind a `»`.
+
+   ⚠️ EVERY ROW COMES FROM DATA THAT ALREADY EXISTS — `SUBNAV` / `SUBNAV2` (what Option 1's
+   flyout renders) and `EXPLORER_TREE` (what its master column renders). Nothing here is a
+   second copy of the product's navigation; the request was "the module details is option 1".
+   ═══════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ⚠️ FOUR FUNCTIONS STOOD DOWN, NOT DELETED — the house pattern, same as Option 4. All are
+   `function` declarations in an earlier block, so reassigning the binding is enough and every
+   existing call site keeps working. `mfHide` is deliberately NOT in the list: `mfGo()` calls it
+   on every navigation and `#mflyout` is still in the document. */
+const plNoop = function(){};
+mfOpen = plNoop; mfOpenUtil = plNoop; mfLater = plNoop; sbHover = plNoop;
+
+const PL = { shut:{}, sub:null, col:false };  /* collapsed sections · expanded parent · column collapsed */
+/* Lucide `panel-left-close`, the same object Option 1's brand row uses */
+const PL_COL = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg>';
+/* ⚠️ ONE FUNCTION MOVES THE COLUMN, so the class, the tooltip and the canvas refit cannot get
+   out of step. `fitCanvas` runs after, because the canvas just gained or lost 216px and the
+   widgets were scaled against the old width — the same call Option 4's panel toggle makes. */
+function plColSet(shut){
+  PL.col = !!shut;
+  document.body.classList.toggle('plshut', PL.col);
+  const b = document.getElementById('plBrand');
+  if (b) b.setAttribute('data-tip', PL.col ? 'Expand sidebar' : 'ObserveOps');
+  if (!PL.col) plPaint();
+  if (typeof fitCanvas === 'function') setTimeout(fitCanvas, 60);
+}
+function plColTog(){ plColSet(!PL.col); }
+/* ⚠️ the mark only acts while the column is CLOSED. Open, it is a logo — making it a toggle
+   there would give the same job two controls a few pixels apart. */
+function plColExpand(){ if (PL.col) plColSet(false); }
+
+/* ⚠️ A COUNT IS ONLY DRAWN WHEN IT IS REAL. Plain puts a number on every row; inventing one
+   here would be inventing product data. Two are genuine: a parent row's own children, and a
+   dashboard category's boards. Everything else gets no number rather than a zero. */
+function plCount(r){
+  if (r && r.kids) return r.kids.length;
+  return null;
+}
+const plIco = (n, cls) => (n && ico(n, cls || 'plic')) || '';
+const PL_CHEV = '<svg class="plch" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
+const PL_CAR  = '<svg class="plcar" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+
+/* ── the rail: modules only ──────────────────────────────────────────────────────────────── */
+function plRailPaint(){
+  const el = document.getElementById('plIcons'); if (!el) return;
+  el.innerHTML =
+    `<div class="plib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
+    `<div class="plib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
+    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) =>
+      `<div class="plib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})">${ico(r.icon)}</div>`
+    ).join('');
+  setIco(document.getElementById('sbSearchIc'), 'search');
+}
+
+/* ── the column ──────────────────────────────────────────────────────────────────────────── */
+const plSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
+
+function plRowHTML(label, mod, act, o){
+  o = o || {};
+  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}"` +
+    (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
+    `>${plIco(o.ic)}<span class="plt">${label}</span>` +
+    (o.n != null ? `<span class="pln">${o.n}</span>` : '') +
+    (o.chev ? PL_CHEV : '') + `</button>`;
+}
+
+/* ⚠️ EXPLORER USES ITS TREE, NOT ITS SECTIONS. `EXPLORER_TREE` is the only source with real
+   nesting and real counts, and the nesting is the whole reason this pattern was asked for —
+   it is the "All threads → its statuses" shape from the reference. Everything else has flat
+   sections, which render as Plain's primary rows + collapsible groups. */
+function plBodyHTML(){
+  const r = RAIL[activeRail] || RAIL[0];
+  if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
+    return EXPLORER_TREE.map(t => {
+      const open = PL.sub === t.l;
+      return plRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:plCount(t), on:open,
+               click: t.kids ? `plSub(${mfAttr(t.l)})` : null }) +
+        (open && t.kids ? t.kids.map(([label, mod, act]) =>
+           plRowHTML(label, mod, act, { sub:true })).join('') : '');
+    }).join('');
+
+  const secs = plSecs(r.name);
+  if (!secs.length) return `<div class="plempty">${r.name} opens straight to its own screen.</div>`;
+  /* the FIRST section is the primary list (no header, always open); the rest are Plain's
+     collapsible "Browse" groups — which is exactly what a `SUBNAV` heading already is */
+  return secs.map((s, si) => {
+    const rows = s.items.map(([label, mod, act, kind, ic]) =>
+      plRowHTML(kind === 'plus' ? '＋ ' + label.replace('＋ ', '') : label, mod, act,
+                { ic, sub: kind === 'sub' })).join('');
+    if (!si || !s.h) return rows;
+    const shut = !!PL.shut[s.h];
+    return `<button class="plsec${shut ? ' shut' : ''}" onclick="plSec(${mfAttr(s.h)})">` +
+           `<span class="plt">${s.h}</span>${PL_CAR}</button>` + (shut ? '' : rows);
+  }).join('');
+}
+
+function plPaint(){
+  const host = document.getElementById('plNav'); if (!host) return;
+  const r = RAIL[activeRail] || RAIL[0];
+  const m = MODULES[MODULES.findIndex(x => x.name === r.mod)] || {};
+  /* ⚠️ NO ROUTE SUBTITLE (request, 2 Sep 2026: "remove this", on `SLO` over `/slo/`). It was
+     the module's own `MODULES[].route`, which is a real path and not invented — but it is a
+     DEVELOPER-facing string, and it told you where you already are rather than what you can do
+     next. The identical line was removed from the flyout's detail pane on 27 Aug 2026 for
+     exactly that reason and this reintroduced it; `route` stays on `MODULES`, unreferenced
+     here, which is what a revert would read. The column is named by the rail entry above it. */
+  host.innerHTML =
+    `<div class="plhd"><div class="plhtt"><b>${r.name}</b></div>` +
+    `<div class="plha">` +
+      `<button class="plhb" data-tip="Search  ⌘K" onclick="openSearch()"><svg viewBox="0 0 48 48" id="plSearchIc"></svg></button>` +
+      `<button class="plhb" data-tip="Sidebar settings" onclick="sbmOpen()"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5Zm0 6h18v2H3v-2Zm0 6h18v2H3v-2Z"/></svg></button>` +
+      /* ⚠️ the collapse lives in the COLUMN's header, not the rail — it acts on the column, and
+         the 44px rail has no room for a control beside a 26px mark. Expanding is the mark. */
+      `<button class="plhb" data-tip="Collapse sidebar" onclick="plColTog()">${PL_COL}</button>` +
+    `</div></div><div class="plbody">${plBodyHTML()}</div>`;
+  setIco(document.getElementById('plSearchIc'), 'search');
+  plRailPaint();
+}
+function plSub(l){ PL.sub = (PL.sub === l) ? null : l; plPaint(); }
+function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
+
+/* ⚠️ WRAPPED, NOT RE-IMPLEMENTED. `selectModule` and `showView` are the two doors into a view
+   change and both are `function` declarations, so wrapping the binding catches every caller —
+   the rail, `mfGo`, the AI panel and the Settings module included. */
+const plSelectModule0 = selectModule;
+selectModule = function(i){ plSelectModule0(i); plPaint(); };
+const plShowView0 = showView;
+showView = function(v){ plShowView0(v); plPaint(); };
+/* `renderMenu()` still runs (it writes into the hidden `#smenu`), and it is what every
+   navigation calls when the RAIL's highlight has to move — so the rail repaints with it. */
+const plRenderMenu0 = renderMenu;
+renderMenu = function(){ plRenderMenu0(); plRailPaint(); };
+
+plPaint();
+</script>
+
 <script>
 (function () {
   var dev = location.protocol === 'file:' ||
