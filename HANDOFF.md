@@ -1,4 +1,4 @@
-# Handoff — 2026-09-02 21:35
+# Handoff — 2026-09-02 22:10
 
 ## Read first
 
@@ -40,23 +40,41 @@ footer, the module flyout and the dashboard canvas.
 **Nothing mid-flight in code** — the last fix (`#drawer-agcfg .dr-b > .agcfg{flex:0 0 auto}`,
 which makes the drawer actually scroll) is verified 3/3.
 
-**Uncommitted.** Everything is on disk only: `index copy.html`, `index.html`,
-`dashboard-picker-advanced.html`, `dashboard-labelled-rail.html`, `_settings-module.css`,
-`_settings-module.js`, `_ds/README.md`, `CLAUDE.md`.
+**Published.** Commit `88d10e1` is live at
+<https://kisu1311.github.io/dashboard-enhancement-ai-chat/> — all five option pages,
+`_settings-module.*` and the `_ds/` bundle verified 200.
+
+⚠️ **THE OPTION FILES WERE RENAMED AFTERWARDS so the root URL serves Option 1.** GitHub Pages
+always serves `index.html` at the root, and that used to be Option 2:
+
+| was | is now | |
+|---|---|---|
+| `index copy.html` | **`index.html`** | Option 1 |
+| `index.html` | **`dashboard-grouped-sidebar.html`** | Option 2 |
+
+⚠️ **`index copy.html` NO LONGER EXISTS**, and it is the name every session note before this one
+uses for Option 1 — including most of `CLAUDE.md`'s own history, which was rewritten in place.
+When reading anything older than 2 Sep 2026, read "index copy.html" as "index.html", and the old
+meaning of "index.html" as `dashboard-grouped-sidebar.html`.
+
+Nothing keyed off the names but `_variants.js`, `_verify/lxbehave.py` (`FILES`) and
+`_verify/dsconf.py` (its default target) — all updated — because the option pages carry **no
+hardcoded links to each other**; navigation is entirely `_variants.js`.
 
 ## Next steps
 
-1. **`/publish`** — nothing from today is live.
-2. **Option 4 (`dashboard-labelled-rail.html`) is behind and cost a bespoke edit almost every
+1. **Option 4 (`dashboard-labelled-rail.html`) is behind and cost a bespoke edit almost every
    time.** It has no Help Card, no usage `obs-table`, no `agSeed`, no per-provider icons. Either
    port the Help Card alone (`AG_HELP` + `agHelpHTML`/`agHelpTog` + `.aghelp` CSS) or bring it
    level in one pass.
-3. **Point Options 2/3/4 at `_settings-module.*`** the way Option 1 is — one `<link>` + one
+2. **Point Options 2/3/4 at `_settings-module.*`** the way Option 1 is — one `<link>` + one
    `<script src>` each, then delete their inline copies. It would end the four-way duplication
    that made today slow.
-4. Re-run the standing suites (`lxbehave` 57/57 ×4 · `behave` 63/63 · `harness … query` 77/77) —
+3. Re-run the standing suites (`lxbehave` 57/57 ×4 · `behave` 63/63 · `harness … query` 77/77) —
    they were not re-run after the drawer change.
-5. Report the seven `obs-*` defects upstream.
+4. Report the seven `obs-*` defects upstream.
+5. The published demo data is still **unscrubbed** — `*.motadata.local` hostnames and internal
+   `172.16.x` addresses ship on a public Pages site. The repo rule says RFC 5737 + `example.com`.
 
 ## Decisions made
 

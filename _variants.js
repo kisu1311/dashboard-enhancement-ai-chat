@@ -14,8 +14,8 @@
 (function () {
   /* VARIANTS:BEGIN (managed by _sync_variants.js — do not edit by hand) */
   var VARIANTS = [
-    {"file":"index copy.html","label":"Option 1"},
-    {"file":"index.html","label":"Option 2"},
+    {"file":"index.html","label":"Option 1"},
+    {"file":"dashboard-grouped-sidebar.html","label":"Option 2"},
     {"file":"dashboard-picker-advanced.html","label":"Option 3"},
     {"file":"dashboard-labelled-rail.html","label":"Option 4"},
     {"file":"dashboard-nav-column.html","label":"Option 5"}

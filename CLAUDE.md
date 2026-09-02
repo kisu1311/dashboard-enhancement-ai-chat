@@ -11,6 +11,26 @@ anything else for the latest state of the work.
 > change — check `git remote -v` before assuming. Old Agentation sessions, annotations and
 > any shared links still carry `/Side_bar_menu/` URLs and **those Pages links are dead**.
 
+> ⚠️ **THE OPTION FILES WERE RENAMED ON 2 SEP 2026 so the root URL serves Option 1.**
+> GitHub Pages always serves `index.html` at the root, and that file used to be Option 2 —
+> so the shareable link opened the wrong prototype.
+>
+> | was | is now | |
+> |---|---|---|
+> | `index copy.html` | **`index.html`** | Option 1 |
+> | `index.html` | **`dashboard-grouped-sidebar.html`** | Option 2 |
+>
+> ⚠️ **`index copy.html` NO LONGER EXISTS.** It is the name every note written before that date
+> uses for Option 1 — this file's own history included, which was rewritten in place. Reading
+> anything older: "index copy.html" means `index.html`, and the old "index.html" means
+> `dashboard-grouped-sidebar.html`. **Both names appear in git history meaning the opposite
+> thing**, so `git log -- index.html` spans two different pages at the rename.
+>
+> The rename was cheap because **the option pages carry no hardcoded links to each other** —
+> navigation is entirely `_variants.js`. Only three places knew the names: `_variants.js`,
+> `_verify/lxbehave.py` (`FILES`) and `_verify/dsconf.py` (its default target). If you add a
+> fourth, expect it to be missed by the next rename.
+
 ## The product docs are digested — read them before inventing anything
 
 `/Users/kishanpatel/ObseverOps/_product-docs/` holds the Motadata AIOps docs
@@ -66,12 +86,12 @@ Explorer's AI Query and Pattern Summary, the Manage-dashboards screen, the Layou
 the Create/Edit Widget editor, the keyboard registry. **A change meant for both has to be
 made twice**, and that is the same cost the other options already carry.
 
-- **`index copy.html` — Option 1 · Sidebar & Header Actions.** The chrome study, and now
+- **`index.html` — Option 1 · Sidebar & Header Actions.** The chrome study, and now
   the most heavily iterated page. Datadog-style module rail (see below), the full
   Dashboard list panel ported from Option 2, time-slider strip, dynamic widget canvas,
   widget Share drawer, Full Screen, Export. **Only this page** has the on-canvas
   add-widget tile, the single-key shortcut system with its `?` sheet, and undo/redo.
-- **`index.html` — Option 2 · Grouped Sidebar + AI (main prototype).** Sidebar +
+- **`dashboard-grouped-sidebar.html` — Option 2 · Grouped Sidebar + AI (main prototype).** Sidebar +
   profile popover + notifications + spotlight search, PLUS the full Dashboard
   module: picker panel (quick-access grid, sticky category headers, only the
   current category open by default, type icons + legend, search w/ highlight),
@@ -480,10 +500,10 @@ it sets the category/page, expands it, clears the search, then routes through
 ## The Settings module lives in its own files now (`_settings-module.*`, 1 Sep 2026)
 
 Request: *"inside the setting module related all code will be copy and create setting module
-file and all setting code move in new file"*. **Option 1 only** — `index copy.html` went
+file and all setting code move in new file"*. **Option 1 only** — `index.html` went
 **2,024,257 → 1,700,157 bytes** (26,925 → 23,814 lines) and the module moved out whole:
 
-| file | what left `index copy.html` |
+| file | what left `index.html` |
 |---|---|
 | **`_settings-module.css`** | the `st*` + `stc*` CSS (was lines 6784–7150) and the `ag*` CSS with its scoped DS token block (was 7294–8295) — 1,369 lines of that file's single `<style>` |
 | **`_settings-module.js`** | the `<section id="view-settings">` chrome (was 8576–8598) and the three `<script>` blocks — `st*` (My Profile), `stc*` (Compliance Settings), `ag*` (Agentic AI) — 1,744 lines |
@@ -580,12 +600,12 @@ doing its job, not a fault.
 
 ### ⚠️ The other three options still carry their own copy
 
-`index.html`, `dashboard-picker-advanced.html` and `dashboard-labelled-rail.html` keep the
+`dashboard-grouped-sidebar.html`, `dashboard-picker-advanced.html` and `dashboard-labelled-rail.html` keep the
 Settings module inline, so the block is **no longer byte-identical across the four files** —
 the property CLAUDE.md has asserted since 19 Aug 2026. Pointing them at these two files is one
 `<link>` and one `<script src>` each, plus deleting their copies, and it would make that
 property true by construction instead of by discipline. It was **not** done here: the request
-named `index copy.html`.
+named `index.html`.
 
 ### ⚠️ A concurrent session began editing `_settings-module.js` minutes after it appeared
 
@@ -1623,7 +1643,7 @@ drag beats the responsive media queries.
 
 ## Option 1's `ai*` panel — the agentic build (17–18 Aug 2026)
 
-Everything below is **Option 1 only** (`index copy.html`, the `ai*` / `AI_*` / `.ai*`
+Everything below is **Option 1 only** (`index.html`, the `ai*` / `AI_*` / `.ai*`
 namespace). None of it is in the shared `ac*` panel, so it is a **one-file change**.
 All of it is canned and deterministic — same question, same answer, same timing.
 
@@ -2114,7 +2134,7 @@ thread. A width-triggered split (two columns past ~720px) is the open follow-up.
 
 ## The 20–21 Aug 2026 visual pass — Option 1's `ai*` panel and `lx*` module
 
-A long single-session sweep, all in `index copy.html`, driven request by request against
+A long single-session sweep, all in `index.html`, driven request by request against
 supplied screenshots and two live references (ClickUp's Brain² composer, and the live
 ObserveOps Log Search). Grouped by what it changed; each item's *why* is in the file's own
 comments at the rule or function.
@@ -2494,7 +2514,7 @@ added later inherits the palette for free.
 
 ## The 24 Aug 2026 pass — Option 1's `ai*` panel, request by request
 
-A second long single-session sweep, all in `index copy.html`, driven against supplied
+A second long single-session sweep, all in `index.html`, driven against supplied
 screenshots and a Notion reference for the thinking disclosure. The *why* for each item is
 in the file's own comments at the rule or function; this is the map.
 
@@ -2614,7 +2634,7 @@ states were measured by setting `.aifs` directly.
 
 ## The 25 Aug 2026 pass — the assistant gets a name, a mark, and a neutral palette
 
-All Option 1 (`index copy.html`). Four threads, and each one **supersedes statements
+All Option 1 (`index.html`). Four threads, and each one **supersedes statements
 elsewhere in this file** — where they conflict, this section is current.
 
 ### The assistant is called **Iris**, and its mark is `OPS AI.svg`
@@ -2799,7 +2819,7 @@ The reference is React + `motion`; this file has neither.
 
 ## The 26 Aug 2026 pass — shortcuts popover, Layout settings, dot-matrix loaders
 
-All Option 1 (`index copy.html`). Four features and two real bug fixes.
+All Option 1 (`index.html`). Four features and two real bug fixes.
 
 ### Keyboard shortcuts, on hover (`kbPop*`)
 
@@ -2925,7 +2945,7 @@ Gained **Layout settings** (first, before Move to category), and two fixes:
 
 ## The 27 Aug 2026 pass — the Sidebar tab, and the design system as the authority
 
-All **Option 1** (`index copy.html`). Two threads: the drawer was rebuilt against the
+All **Option 1** (`index.html`). Two threads: the drawer was rebuilt against the
 **ObserveOps design system** (via its MCP: `get_contract` / `get_theme` / `get_layout` /
 `get_component` / `resolve_token` / `resolve_icon` / `validate_usage` / `validate_render`)
 and against the **live product** at `172.16.12.100` (build 10.0.0); and the Dashboards tab
@@ -3631,7 +3651,7 @@ Request: *"improve this on Using the ObserveOps design system"*.
 
 ## The 2 Sep 2026 (later) pass — the flyout rebuilt, and the sidebar measured end to end
 
-All **Option 1** (`index copy.html` + `_settings-module.*`), driven request by request against
+All **Option 1** (`index.html` + `_settings-module.*`), driven request by request against
 supplied screenshots. ⚠️ Where this conflicts with the 2 Sep entries above, this is current.
 
 **The method mattered more than usual here: two of the reported "bugs" were not bugs, and only
@@ -3868,7 +3888,7 @@ where you already are rather than what you could do next).
 - ⚠️ **A SIGALRM-killed headless run leaves `/private/tmp/<profile>/SingletonLock` behind**, and
   every later run in that profile dies with "Failed to create a ProcessSingleton". `lxbehave`
   reported NO PROBE OUTPUT on four files for this reason and nothing was wrong with the pages.
-- `harness.py … query` **77/77** on `index copy.html` after all of the above.
+- `harness.py … query` **77/77** on `index.html` after all of the above.
 
 ## The 2 Sep 2026 pass (later) — Agentic AI moves into a drawer, and six framework traps
 
@@ -4145,7 +4165,7 @@ the file, and the whole swap is four things:
 
 Built from **monday.com's side navigation**, driven in the browser at
 `blue-falcon-cast.monday.com/boards/5030774530` and measured off its DOM — not copied from a
-screenshot. The page is **Option 1 (`index copy.html`) verbatim** apart from the sidebar and
+screenshot. The page is **Option 1 (`index.html`) verbatim** apart from the sidebar and
 the panel it drives; "the side details is option 1 reference" was the request, so the
 dashboard list panel, the AI panel, Log Explorer, Settings and the rest are unchanged.
 
@@ -5384,7 +5404,7 @@ the dashboard UI.
 cd /Users/kishanpatel/ObseverOps
 npm test                                          # whole repo (50+ pages, slow)
 npx playwright test tests/agentation-all.spec.js  # one spec
-npx playwright test -g "index copy"               # one test, by title
+npx playwright test -g "index.html"                # one test, by title
 npx playwright test --headed                      # watch it run
 npm run report                                    # last HTML report
 ```
@@ -5406,7 +5426,7 @@ no-ops off `file://` / localhost, so it never ships). Annotations come back via 
 `mcp__agentation__*` tools; resolve each one with a summary of what changed.
 
 The loader also injects a **stacking fix**. Agentation paints its toolbar at
-z-index 100000 and its marker/canvas layers at 99996–99998, while `index.html`'s
+z-index 100000 and its marker/canvas layers at 99996–99998, while `dashboard-grouped-sidebar.html`'s
 drawers sit at 100001 / 200001 (they have to clear the variant pill at 99999) — so
 an open drawer buried the annotation layers and notes could not be attached to
 anything inside it. The fix lifts `[data-agentation-root] > *` above everything.
@@ -5461,7 +5481,7 @@ Agentation, not the app** — pause it (⏸) to use the UI.
 - **Old probes encode old behaviour.** Several suites "failed" after requested changes
   (three thinking rows merged into one, Save widget added, exclusive-global dropped) —
   those are stale assertions, not regressions. Read the failure before fixing the code.
-- ⚠️ **This file is edited by more than one session.** `index copy.html` and `CLAUDE.md`
+- ⚠️ **This file is edited by more than one session.** `index.html` and `CLAUDE.md`
   both gained work on 17 Aug that another session wrote (the header redesign, the
   `.aiamb` ambient glow). Re-read before editing, and expect your own notes to sit beside
   someone else's.

@@ -4,7 +4,7 @@ DS conformance for the Agentic AI screen — the ONE surface in this repo built 
 `obs-*` components. Run from inside `_verify/`:
 
     python3 dsconf.py                      # all three scenes, Option 1
-    python3 dsconf.py "../index.html"      # another option file
+    python3 dsconf.py "../dashboard-grouped-sidebar.html"   # another option file
 
 ⚠️ RUNNING THE CHECKER ON A WHOLE OPTION FILE IS MEANINGLESS, and it will tell you so with a
    confident 49/100. These pages carry 16 views plus every drawer in ONE DOM and open on the
@@ -35,7 +35,7 @@ import re, subprocess, sys, os, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-SRC  = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "index copy.html"
+SRC  = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "index.html"
 OUT  = HERE / "_out"
 CHK  = ROOT / "node_modules/@mtdt/observeops-ds-spec/conformance/ds-conformance.mjs"
 
@@ -64,7 +64,7 @@ def block(s, sel_pat):
 
 def tokens_source(src_text):
     """The scoped DS token block. ⚠️ IT MOVED. On 1 Sep 2026 another session extracted the
-    st/stc/ag stylesheet out of `index copy.html` into `_settings-module.css`, so the block is
+    st/stc/ag stylesheet out of `index.html` into `_settings-module.css`, so the block is
     no longer in the HTML for Option 1 — and this script's guard read the HTML, decided there
     was no screen, and SILENTLY SKIPPED the most-edited file while still printing a pass.
     Options 2 and 3 are not migrated, so both shapes have to work."""
