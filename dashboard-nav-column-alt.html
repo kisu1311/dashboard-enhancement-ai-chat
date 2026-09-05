@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Motadata ObserveOps — Narrow Rail &amp; Nav Column</title>
+<title>Motadata ObserveOps — Narrow Rail &amp; Nav Column II</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -7009,6 +7009,20 @@ html[data-theme="light"] #drawer-layout{
    ══════════════════════════════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════════════════════════════════
+   OPTION 8 — A SECOND TAKE ON THE NARROW RAIL + NAV COLUMN (a copy of Option 5, 4 Sep 2026)
+   ──────────────────────────────────────────────────────────────────────────────────────────
+   ⚠️ THIS FILE IS A BYTE-FOR-BYTE COPY OF `dashboard-nav-column.html` apart from its <title>
+   and these lines. It was made on request as a base to diverge from, so everything below
+   still describes Option 5 and is true of both until one of them is changed.
+   ⚠️ IT KEEPS THE `pl*` NAMESPACE. Each page is self-contained, so there is no collision — but
+   `plRowHTML`, `.plrow`, `PL` and the rest now exist in TWO files, and a change meant for one
+   has to be made deliberately in the other. Nothing syncs them.
+   ⚠️ ITS COLUMN STARTS COLLAPSED, like Option 5's (`<body class="plshut">` + `PL.col:true`) —
+   which on THIS page means the sidebar is hidden entirely at boot and the canvas is full width.
+   ⚠️ IT IS NO LONGER A PURE COPY. One thing has diverged (5 Sep 2026): COLLAPSE HIDES THE WHOLE
+   SIDEBAR, rail included, leaving only the floating `#plOpen`. Option 5 keeps its rail. See the
+   "OPTION 8'S DIVERGENCE" block further down; everything else below still describes both.
+
    OPTION 5 — THE NARROW RAIL + NAV COLUMN, built from Plain (plain.com)
    ──────────────────────────────────────────────────────────────────────────────────────────
    Reference: the Plain support workspace, via Mobbin (screen 8e4cfdce…), supplied 2 Sep 2026.
@@ -7050,7 +7064,7 @@ html[data-theme="light"] #drawer-layout{
    to spare; nothing else was within 8px of its edge. The shell padding and the hover-peek both
    read this token, so the canvas and the floating column follow — the "an icon column has to be
    paid for" lesson the flyout master recorded at 236 → 288. */
-:root{ --pl-rail:52px; --pl-nav:224px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
+:root{ --pl-rail:52px; --pl-rail-open:190px; --pl-nav:224px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
 .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 
@@ -7059,12 +7073,91 @@ body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 .sidebar.plside.open{width:calc(var(--pl-rail) + var(--pl-nav));box-shadow:none}
 
 /* ── column A · the rail ─────────────────────────────────────────────────────────────────── */
-.plrail{flex:0 0 var(--pl-rail);width:var(--pl-rail);display:flex;flex-direction:column;
-  align-items:center;background:var(--sidebar);border-right:1px solid var(--border);padding:8px 0 10px}
-.plbrand{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;color:var(--white);margin-bottom:12px}
-.plbrand svg{display:block;width:100%;height:100%}
+/* ══ OPTION 8 · THE RAIL EXPANDS ON HOVER (request, 5 Sep 2026) ══════════════════════════════
+   "I hover this position, the small sidebar — show this type of sidebar", with Option 1's
+   labelled rail as the reference. Option 5 peeks the COLUMN on hover; this page peeks the RAIL
+   itself, which is the thing you are actually pointing at.
+   ⚠️ THE RAIL IS ABSOLUTE AT ALL TIMES, and that is what makes the expansion free. As a flex
+   item, widening it to 190px would SQUEEZE `.plnav` (the sidebar's own width is fixed), so the
+   column's rows would reflow and re-ellipsise on every hover. Out of the flow it simply paints
+   over them; `.plnav` pays a `margin-left` instead of relying on the rail's box.
+   ⚠️ IT NEEDS `z-index` ABOVE THE COLUMN and a shadow while expanded — over an opaque `--panel`
+   column a hairline alone would not separate them. */
+.plrail{position:absolute;left:0;top:0;bottom:0;width:var(--pl-rail);z-index:2;
+  display:flex;flex-direction:column;align-items:center;overflow:hidden;
+  background:var(--sidebar);border-right:1px solid var(--border);padding:8px 0 10px;
+  transition:width .16s ease,box-shadow .16s ease}
+.plrail:hover{width:var(--pl-rail-open);align-items:stretch;box-shadow:var(--shadow)}
+/* ⚠️ THE TWO INNER STACKS CARRY THEIR OWN `align-items:center` and it has to be overridden as
+   well — `.plrail:hover{align-items:stretch}` only governs the rail's DIRECT children. Left
+   centred, a `width:auto` row sizes to its CONTENT: the identity row came out 194px inside a
+   190px rail (measured, x=-3) because "kishan.patel@example.com" is wider than the rail, and
+   `.plidt{min-width:0}` cannot cap a parent that is shrink-to-fit. Stretched, the row fills the
+   rail and the address truncates, which is what the min-width was there for. */
+.plrail:hover .plicons,.plrail:hover .plrfoot{align-items:stretch}
+/* every tile becomes a row: the glyph keeps its 32px box, the label takes the rest */
+.plrail:hover .plib:not(.plexp),.plrail:hover .plav{width:auto;justify-content:flex-start;
+  padding:0 8px;margin:0 8px;gap:9px}
+/* ⚠️ `:not(.plexp)` IS LOAD-BEARING, and this is how the tile appeared in the first place. A
+   bare `.plrail:hover .plib{display:flex}` is (0,3,0) and OUTRANKS `.plexp{display:none}` at
+   (0,1,0) — so expanding the rail un-hid the parked expand tile and it rendered as the first row
+   of the labelled sidebar. Any future `display:none` tile in this rail needs the same exclusion,
+   or the hover state will bring it back. */
+.plrail:hover .plib:not(.plexp){display:flex;align-items:center}
+.pllbl{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;transition:opacity .12s}
+.plrail:hover .pllbl{opacity:1}
+/* the rail is 52px at rest, so a label must not paint into that width before it expands */
+.plrail:not(:hover) .pllbl{display:none}
+/* the wordmark beside the brand, and the group hairlines — both only while expanded */
+.plwm{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .12s}
+.plrail:hover .plwm{opacity:1}
+.plrail:not(:hover) .plwm{display:none}
+/* ⚠️ `width:auto` IS NOT ENOUGH ON EITHER OF THESE — both boxes are `flex:0 0 30px` / `0 0 30px`
+   at rest, and a flex BASIS beats a width, so the wordmark overflowed a 30px brand box and
+   `.plrail`'s `overflow:hidden` clipped it to "erveOps". The basis has to be released too.
+   ⚠️ AND BOTH ARE `display:grid;place-items:center` at rest, which stacks their children in one
+   cell: the identity row rendered the avatar ABOVE the name instead of beside it. A row needs
+   `display:flex`, not just a width. Neither fault is visible at 52px, where each box holds one
+   child — they only appear once the rail expands. */
+.plrail:hover .plbrand{width:auto;flex:0 0 auto;justify-content:flex-start;margin:0 8px 12px;
+  padding:0 8px;gap:9px;display:flex;align-items:center}
+/* ⚠️ THE MARK IS 30px IN BOTH STATES, as Option 1's is. It briefly shrank to 26 when expanded,
+   which meant the logo changed size as the rail opened — and the rule had to be mirrored in
+   every probe that fakes the hover. One size is fewer moving parts and matches the reference. */
+/* ⚠️ THE GROUP HAIRLINE KEEPS ITS 6px EITHER SIDE, and now it has to: with rows 2px apart the
+   13px it puts between two groups is what separates them at all. The gap BETWEEN groups must
+   beat the gap INSIDE one — the recorded `.aiab li` rule, which only became load-bearing here
+   once the rows tightened. */
+.plgap{height:1px;flex:0 0 1px;margin:6px 10px;background:var(--border);opacity:0}
+.plrail:hover .plgap{opacity:1}
+/* the identity row shows who you are once there is room for it — name over address */
+.plidt{flex:1;min-width:0;opacity:0;transition:opacity .12s}
+.plrail:hover .plidt{opacity:1}
+.plrail:not(:hover) .plidt{display:none}
+.plidt b{display:block;font-size:12.5px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plidt span{display:block;font-size:10.5px;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plrail:hover .plav{display:flex;align-items:center;width:auto;flex:0 0 auto;height:40px;
+  border-radius:6px;background:transparent;color:var(--text)}
+.plrail:hover .plav .miniav{flex:0 0 26px;width:26px;height:26px;font-size:10px}
+.plrail:hover .plav:hover{background:var(--hover-side)}
+.plbrand{width:30px;height:30px;flex:0 0 30px;display:flex;align-items:center;gap:9px;
+  color:var(--white);margin-bottom:12px}
+.plbrand .brandmark{flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center}
+.plbrand .brandmark svg{display:block;width:100%;height:100%}
+/* ⚠️ `gap:2px` — A 34px PITCH, THE ONE THIS FOLDER SETTLED ON (request, 5 Sep 2026: "make it
+   same small"). The rail was 32px tiles on a 6px gap = **38**, while the column two pixels to
+   its right is `.plrow` at 32 + 2 = **34**, and so are Option 1's flyout rows (`.mfi`). Expanded
+   to 190px that difference is what read as loose: the same words, on the same page, sitting four
+   pixels further apart than the list beside them.
+   ⚠️ THE TILE STAYS 32px. The gap is what shrinks, not the hit target — 32 is the size every
+   other control in these files uses and it was chosen deliberately on 3 Sep when this rail went
+   28 → 32. Taking height out of the row instead would undo that. */
 .plicons{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
-  gap:6px;width:100%;scrollbar-width:none}
+  gap:2px;width:100%;scrollbar-width:none}
 .plicons::-webkit-scrollbar{display:none}
 /* ⚠️ 32px TILE, 20px GLYPH — see the token note above. The rail is the one place in this option
    with no words at all, so the tile is the only hit target AND the only state; at 28/18 it was
@@ -7077,13 +7170,16 @@ body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 .plib .ic{width:20px;height:20px;fill:currentColor}
 .plib.airail{color:var(--ai-2)}
 .plib.airail:hover{background:var(--ai-soft)}
-.plrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding-top:8px}
+/* the foot is the same rhythm — it holds the same kind of row */
+.plrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;padding-top:8px}
 .plrfoot .plib .ibadge{top:-3px;left:auto;right:-4px}
 .plav{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--white);color:var(--ink);
   font-weight:700;font-size:11px;display:grid;place-items:center;cursor:pointer}
 
 /* ── column B · the nav column ───────────────────────────────────────────────────────────── */
-.plnav{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--panel)}
+/* ⚠️ `margin-left`, NOT a flex sibling — the rail is absolute now (see above), so nothing
+   reserves its 52px unless the column does it itself. */
+.plnav{flex:1;min-width:0;margin-left:var(--pl-rail);display:flex;flex-direction:column;background:var(--panel)}
 /* ══ COLLAPSE THE NAV COLUMN (request, 2 Sep 2026) ══════════════════════════════════════════
    This option's column is ALWAYS-ON — that is the whole pattern — so the one thing it owed the
    canvas was a way to hand the 216px back. Collapsed, what remains is the 44px rail: still a
@@ -7116,13 +7212,43 @@ body.plshut .plnav{display:none}
    rail's `data-tip` would say the same word a second time — on top of the column, covering a
    row, which is exactly what was reported. Hiding `.tipbox` for the duration is one rule and
    needs no change to the shared tooltip engine. */
-body.plshut.plpeek .plnav{display:flex;position:fixed;left:var(--pl-rail);top:0;bottom:0;
-  width:var(--pl-nav);z-index:59;background:var(--panel);
-  border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.34)}
-html[data-theme="light"] body.plpeek .plnav{box-shadow:8px 0 28px rgba(16,26,42,.14)}
+/* ⚠️ DISARMED ON THIS PAGE (5 Sep 2026), NOT JUST UNUSED. Option 8 hides the rail with the
+   column, so there is nothing left to hover and the peek can never be opened by a pointer —
+   but the rule was still armed, and anything that put `.plpeek` on the body would have painted
+   a 224px column floating at `left:52px` with NO RAIL BESIDE IT. A probe calling `plPeek(1)`
+   did exactly that. The rule is kept here as text because it is what a revert to Option 5's
+   behaviour needs, and `plPeek()` now returns early as well — belt and braces, because either
+   one alone leaves the other able to produce the phantom.
+   body.plshut.plpeek .plnav{display:flex;position:fixed;left:var(--pl-rail);top:0;bottom:0;
+     width:var(--pl-nav);z-index:59;background:var(--panel);
+     border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.34)}
+   html[data-theme="light"] body.plpeek .plnav{box-shadow:8px 0 28px rgba(16,26,42,.14)} */
 body.plpeek .tipbox{display:none}
-body.plshut .sidebar.plside,body.plshut .sidebar.plside.open{width:var(--pl-rail)}
-body.plshut .shell,body.plshut.pinned .shell{padding-left:var(--pl-rail)}
+/* ══ OPTION 8'S DIVERGENCE — COLLAPSE HIDES EVERYTHING ══════════════════════════════════════
+   Request, 5 Sep 2026: "when i click to collapse, show only expand icon, the full hide sidebar".
+   Option 5 keeps its 52px rail when the column folds — that is the whole point there, because
+   the rail alone is still a complete navigation. Here the sidebar goes entirely and the canvas
+   takes the full width, so the only thing left is `#plOpen`.
+   ⚠️ `overflow:hidden` IS MANDATORY. `.sidebar.plside` sets `overflow:visible` (the hover-peek
+   needed it), so a width of 0 alone leaves the rail's tiles PAINTING OUTSIDE the box — the
+   sidebar looks collapsed in the layout and is still on screen.
+   ⚠️ THE BORDER GOES TOO, or a 1px rule hangs down the left edge of an empty column.
+   ⚠️ TWO THINGS BECOME UNREACHABLE WHILE SHUT, and both are kept rather than deleted (the house
+   pattern), because they are what a revert to Option 5's behaviour would need:
+     • `.plexp`, the in-rail expand tile added on 3 Sep 2026 — its `body.plshut` rule still
+       fires, but it is inside a box that is now 0 wide and clipped;
+     • the HOVER-PEEK (`plPeek` / `body.plpeek`), which needs a rail to point at. `plPeek`
+       returns early unless `PL.col`, and while `PL.col` is true there is no rail to hover, so
+       it can no longer fire at all. Its rule below is dead for the same reason. */
+body.plshut .sidebar.plside,body.plshut .sidebar.plside.open{width:0;overflow:hidden;border-right:0}
+body.plshut .shell,body.plshut.pinned .shell{padding-left:0}
+/* the only way back — fixed on the canvas, exactly as Option 7's `#nxOpen` is, and for the same
+   reason: a control that lives in the sidebar goes away with the sidebar it collapsed */
+#plOpen{position:fixed;left:10px;top:9px;z-index:61;width:28px;height:28px;display:none;place-items:center;
+  border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer}
+#plOpen:hover{background:var(--hover)}
+#plOpen svg{width:16px;height:16px;fill:currentColor}
+body.plshut #plOpen{display:grid}
 /* the mark becomes the way back out, exactly as Option 1's brand row does when its rail is
    collapsed — the rail is 44px and there is no room for a labelled control */
 body.plshut .plbrand{cursor:pointer;border-radius:6px}
@@ -7247,18 +7373,34 @@ body.plshut .plexp{display:grid}
        rail closes it once, when the pointer leaves the rail entirely — and even then only
        after 200ms, because the pointer's route into the peeked column goes through that edge. -->
   <div class="plrail" onmouseleave="plPeekLater()">
-    <span class="plbrand brandmark" id="plBrand" aria-label="ObserveOps" data-tip="Expand sidebar" onclick="plColExpand()"><!--LOGO--></span>
+    <!-- ⚠️ NO "Expand sidebar" HERE, and no click (request, 5 Sep 2026: "don't show in"). On
+         Option 5 the brand IS the way back out, because collapsing leaves the rail on screen. On
+         this page collapsing hides the whole sidebar, so the mark is not there to be clicked —
+         `#plOpen` on the canvas is the only door — and a tooltip promising to expand something,
+         on a control that `plColExpand()` early-returns from whenever it is visible, was the last
+         place that string could still reach the screen. `plColExpand` is kept and unreferenced. -->
+    <!-- ⚠️ THE MARK AND THE WORDMARK ARE SIBLINGS, which is Option 1's own `.strigger` shape
+         (request, 5 Sep 2026: "replace from option 1") — and it is also the FIX for a mark that
+         had stopped painting. `aiLogoPaint()` fills a `.brandmark` only `if (!el.firstElementChild)`,
+         so putting the wordmark INSIDE the marked element made it non-empty and the painter
+         skipped it: the rail rendered with an empty 30px hole where the logo belongs, in both
+         states. Nesting anything inside a `.brandmark` breaks it the same way. -->
+    <span class="plbrand" id="plBrand" aria-label="ObserveOps"><span class="brandmark"><!--LOGO--></span><span class="plwm">ObserveOps</span></span>
     <div class="plicons" id="plIcons"></div>
     <div class="plrfoot">
-      <div class="plib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg></div>
-      <div class="plib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg></div>
-      <div class="plib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></div>
+      <div class="plib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="pllbl">Approval</span></div>
+      <div class="plib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="pllbl">Health Monitoring</span></div>
+      <div class="plib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="pllbl">Notification</span></div>
       <!-- ⚠️ `.miniav` AND `.lbl` ARE BOTH REQUIRED, even though only the avatar is painted.
            `refreshUser()` writes the saved name/picture into `#sbUser .miniav`, and `stSeed()`
            reads the signed-in name out of `#sbUser .lbl` to seed the Settings profile form.
            Drop either and Settings breaks with no error here. The label is hidden, not removed
            — `textContent` does not care that it is not on screen. -->
-      <div class="plav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span></div>
+      <!-- ⚠️ `.lbl` STAYS AND STAYS HIDDEN — `stSeed()` reads the signed-in name out of it to seed
+           the Settings profile form, and `refreshUser()` writes into `.miniav`. The visible name
+           beside it is a SECOND node (`.plidt b`), so neither reader is disturbed; the address is
+           on `example.com`, per the repo scrub rule. -->
+      <div class="plav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span><span class="plidt"><b>Kishan Patel</b><span>kishan.patel@example.com</span></span></div>
     </div>
   </div>
 
@@ -7274,6 +7416,8 @@ body.plshut .plexp{display:grid}
   <!-- kept for `renderMenu()` to write into; see the note above -->
   <nav class="smenu" id="smenu" hidden></nav>
 </aside>
+<!-- the only control left when the sidebar is hidden — see the `plshut` block in the stylesheet -->
+<button id="plOpen" data-tip="Show sidebar" onclick="plColSet(false)"><svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg></button>
 
 <!-- module flyout: the module's own navigation, opened by hovering a rail entry -->
 <div class="mflyout" id="mflyout"
@@ -24493,8 +24637,10 @@ function plColSet(shut){
   if (PL.peek != null) plPeekEnd();
   PL.col = !!shut;
   document.body.classList.toggle('plshut', PL.col);
-  const b = document.getElementById('plBrand');
-  if (b) b.setAttribute('data-tip', PL.col ? 'Expand sidebar' : 'ObserveOps');
+  /* ⚠️ THE BRAND'S TOOLTIP IS NOT REWRITTEN ON THIS PAGE. Option 5 flips it to "Expand sidebar"
+     while collapsed because its mark stays on screen and is the way back; here the mark is inside
+     a sidebar that is 0 wide and clipped, so the only thing that flip could do is put the string
+     back on the expanded rail's wordmark, which is what it was doing. */
   if (!PL.col) plPaint();
   if (typeof fitCanvas === 'function') setTimeout(fitCanvas, 60);
 }
@@ -24512,6 +24658,11 @@ function plColTog(){ plColSet(!PL.col); }
    is no cost to sweeping past — and a delay on a panel this large reads as lag. */
 let plPeekT = null, plPeekIn = false;
 function plPeek(i){
+  /* ⚠️ STOOD DOWN ON OPTION 8 — collapsing hides the RAIL too, so there is no tile to point at
+     and a peek would float a column against nothing. Kept whole (the house pattern) because it
+     is what a revert to Option 5's collapse would need; its CSS is commented out to match. */
+  return;
+  /* eslint-disable no-unreachable */
   if (!PL.col) return;
   clearTimeout(plPeekT);
   if (PL.peek === i && document.body.classList.contains('plpeek')) return;
@@ -24577,14 +24728,35 @@ function plRailPaint(){
        rendered on every paint and CSS-hidden until the column is shut (`.plexp`), so `plColSet`
        needs no repaint on the way down. It sits first, under the mark: the same vertical spot the
        collapse button occupied, one column to the left. The mark keeps its click as well. */
-    `<div class="plib plexp" id="plExpand" data-tip="Expand sidebar" onclick="plColExpand()">${PL_COL}</div>` +
-    `<div class="plib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
-    `<div class="plib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
-    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) =>
+    /* ⚠️ EVERY TILE CARRIES ITS LABEL IN THE MARKUP, hidden at 52px and revealed when the rail
+       expands (5 Sep 2026). It is not rendered on hover: rebuilding the list under the pointer
+       would drop the hover the moment it fired, and `data-tip` stays for the collapsed state —
+       the host's tooltip engine suppresses a tip whose text is readable on the element, so it
+       speaks at 52px and goes quiet once the words are there (`tipSeenText` skips `display:none`,
+       which is why the labels are DISPLAY-toggled and not merely faded). */
+    /* ⚠️ THE `Expand sidebar` TILE IS NOT RENDERED ON OPTION 8 (request, 5 Sep 2026: "don't
+       show"). It was added to Option 5 on 3 Sep because folding the COLUMN hid that column's own
+       collapse control; here folding hides the WHOLE sidebar, so the tile is inside a box that is
+       0 wide and clipped — it could never be reached, and `#plOpen` on the canvas is the way back.
+       Its CSS is kept (see `.plexp` in the stylesheet), which is what a revert would need. */
+    /* ⚠️ NO SEARCH AND NO IRIS ON THIS RAIL (request, 5 Sep 2026: "remove in small sidebar
+       (main), show only [the column]"). The rail carries MODULES only now — the two that left
+       were the only rows on it that were not a place to go, and both keep other doors, checked
+       before removing them:
+         Search — the COLUMN'S OWN HEADER button (`.plhb`, right there in the reference image)
+                  and ⌘K / Ctrl K, bound at two places in the host;
+         Iris   — the dashboard toolbar's "Ask Iris" pill (`.aibtn`), the `A` shortcut in `KB`,
+                  and Log Explorer's own "Ask Iris".
+       ⚠️ Their ids went with them, and `init()` touches `#sbSearch` on non-Mac platforms — see
+       the guard added there. */
+    /* ⚠️ THE GROUP HAIRLINE IS EMITTED WHERE `RAIL[].group` CHANGES — the same banding
+       `renderMenu()` draws in Option 1, and the reference image shows it. It is `opacity:0` at
+       52px rather than absent, so the rail's own rhythm does not shift when it expands. */
+    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}, n, arr) =>
+      ((n && arr[n - 1].r.group !== r.group) ? '<div class="plgap"></div>' : '') +
       `<div class="plib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
-         onmouseenter="plPeek(${i})">${ico(r.icon)}</div>`
+         onmouseenter="plPeek(${i})">${ico(r.icon)}<span class="pllbl">${r.name}</span></div>`
     ).join('');
-  setIco(document.getElementById('sbSearchIc'), 'search');
 }
 
 /* ── the column ──────────────────────────────────────────────────────────────────────────── */
@@ -24662,6 +24834,25 @@ function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
 /* ⚠️ WRAPPED, NOT RE-IMPLEMENTED. `selectModule` and `showView` are the two doors into a view
    change and both are `function` declarations, so wrapping the binding catches every caller —
    the rail, `mfGo`, the AI panel and the Settings module included. */
+/* ══ THE PROFILE / NOTIFICATION POPOVER OPENS BESIDE THE RAIL ════════════════════════════════
+   Reported 5 Sep 2026: "when I click this to open, the sidebar profile popup shows far from the
+   click". `togglePop` sets `left = sidebar.offsetWidth + 10`, which is right in Option 1, where
+   the sidebar IS the rail — here the sidebar is rail + column, so a 320px card anchored to a
+   276px box opened at x=286 while the avatar it belongs to sits at x≈11 in a 52px rail.
+   ⚠️ IT READS THE TOKEN, NOT THE BOX. `.plrail` transitions its width on hover, and measuring a
+   box mid-transition is this folder's oldest recorded trap; `--pl-rail` is never transitioned.
+   ⚠️ WHEN THE SIDEBAR IS HIDDEN the anchor falls back to 10px — the avatar is not on screen then,
+   but `renderNotifs()` and the keyboard can still open a popover, and one parked at 62px with no
+   rail beside it would read as detached. */
+const plTogglePop0 = togglePop;
+togglePop = function(id, ev){
+  plTogglePop0(id, ev);
+  const el = document.getElementById(id);
+  if (!el || !el.classList.contains('on')) return;
+  const rw = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pl-rail')) || 52;
+  el.style.left = (document.body.classList.contains('plshut') ? 10 : rw + 10) + 'px';
+};
+
 const plSelectModule0 = selectModule;
 selectModule = function(i){ plSelectModule0(i); plPaint(); };
 const plShowView0 = showView;

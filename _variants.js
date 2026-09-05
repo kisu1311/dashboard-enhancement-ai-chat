@@ -18,7 +18,10 @@
     {"file":"dashboard-grouped-sidebar.html","label":"Option 2"},
     {"file":"dashboard-picker-advanced.html","label":"Option 3"},
     {"file":"dashboard-labelled-rail.html","label":"Option 4"},
-    {"file":"dashboard-nav-column.html","label":"Option 5"}
+    {"file":"dashboard-nav-column.html","label":"Option 5"},
+    {"file":"dashboard-card-sidebar.html","label":"Option 6"},
+    {"file":"dashboard-single-column.html","label":"Option 7"},
+    {"file":"dashboard-nav-column-alt.html","label":"Option 8"}
   ];
   /* VARIANTS:END */
 

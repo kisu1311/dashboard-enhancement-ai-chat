@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Motadata ObserveOps — Narrow Rail &amp; Nav Column</title>
+<title>Motadata ObserveOps — Card Sidebar &amp; Next Steps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -1504,7 +1504,17 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
   display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--panel);
   border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.34);
   transform:translateX(0);transition:transform .2s ease}
-html[data-theme="light"] .dpanel{box-shadow:6px 0 24px rgba(23,35,54,.12)}
+/* ⚠️ THE LIGHT-THEME SHADOW OUTRANKED `.dpanel.hid`'s `box-shadow:none` AND PAINTED A SOFT GREY
+   BAND DOWN THE CANVAS (reported 5 Sep 2026 as "all line in right side"). `html[data-theme=
+   "light"] .dpanel` is (0,2,1) — an attribute selector, a type and a class — against `.dpanel.hid`
+   at (0,2,0), so it won wherever the two met, and a panel parked off-screen at
+   `translateX(-101%)` went on casting a 24px blur across the rail's edge into the board. Measured
+   in the paint, not the DOM: the pixels right of the rail ramped 238 → 248 over ~14px instead of
+   being one crisp hairline. `:not(.hid)` takes the light rule out of the fight rather than piling
+   another class onto the hider.
+   ⚠️ IT IS LIGHT-THEME ONLY, which is why it went unseen: in dark the band is invisible against
+   `--bg`. Check a report like this in BOTH themes before deciding there is nothing there. */
+html[data-theme="light"] .dpanel:not(.hid){box-shadow:6px 0 24px rgba(23,35,54,.12)}
 .dpanel.hid{transform:translateX(-101%);box-shadow:none}
 /* chevron flips to point the way the panel will move */
 .dpchev svg{transition:transform .2s ease}
@@ -7009,267 +7019,317 @@ html[data-theme="light"] #drawer-layout{
    ══════════════════════════════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════════════════════════════════
-   OPTION 5 — THE NARROW RAIL + NAV COLUMN, built from Plain (plain.com)
+   OPTION 6 — THE CARD SIDEBAR + NEXT STEPS, built from Plain's Sidekick workspace
    ──────────────────────────────────────────────────────────────────────────────────────────
-   Reference: the Plain support workspace, via Mobbin (screen 8e4cfdce…), supplied 2 Sep 2026.
-   Read off the capture — it is a still, not a live DOM, so the numbers below are PROPORTIONS
-   taken from it and then set to this product's own type scale, not measured pixels. Said
-   plainly because every other option in this folder WAS measured off a live DOM.
+   Reference: app.plain.com/workspace/…/sidekick/ — driven LIVE in the browser on 3 Sep 2026
+   and measured off its DOM (viewport 1710×951), supplied as a screenshot the same day. Unlike
+   Option 5, which was read off a Mobbin still, every number below is a measured CSS pixel
+   unless the line says it was rescaled.
 
-   WHAT PLAIN DOES, AND WHY IT IS A FIFTH ANSWER:
-     • the icon rail is TINY — ~32px, icon-only, no labels, no captions, no hover-expand. Every
-       other option here is 56–72px. It carries the modules and nothing else.
-     • beside it an ALWAYS-ON nav column that is the real navigation: a workspace header, the
-       module's own rows, and — the part none of our other options has — CHILDREN INDENTED
-       UNDER THE ROW THEY BELONG TO, each with a right-aligned COUNT.
-     • sections below the primary rows are COLLAPSIBLE ("Browse ⌄").
-     • the active row is a filled, tinted, full-width rounded rect with coloured text.
-   Against the set: 1/3 hover a mega-menu, 2 docks a panel that names the module, 4 toggles a
-   panel you open. 5 is the only one where the navigation is permanently open, nested, counted,
-   and where the rail is too narrow to say anything at all.
+   WHAT PLAIN DOES HERE, AND WHY IT IS A SIXTH ANSWER:
+     • the whole sidebar — rail AND column — is ONE FLOATING CARD: white, radius 12, a 1px ring
+       plus a 1px drop (`0 0 0 1px rgba(32,39,44,.08), 0 1px 1px rgba(32,39,44,.08)`), inset
+       8px from a `#f9f9fc` page. The content beside it is a second card of the same make, 8px
+       away. Nothing else in this folder floats its navigation; every other option is flush to
+       the viewport edge.
+     • the rail is 65px: a 40px workspace mark, then 32px tiles on a 40px pitch with 18px
+       glyphs (`stroke 1px`), active = a soft grey fill (`#e7e7ef`), radius 8. Its FOOT holds
+       four things that are not modules — an onboarding rocket with a green count badge, the
+       bell, a `?`, and the avatar (radius 8, with a presence dot) — on a 44px pitch.
+     • the column (281px, content 265) opens with a HEADER BLOCK — the module name (14px/550)
+       over a quiet second line (12px, the workspace) — and NO controls. Then the module's
+       primary rows: 36px, radius 8, an 18px glyph at +11 and 14px text at +40; the active row
+       is a full-width lavender pill (`#eef2ff`, indigo 550 text), hover `#f0f0f5`.
+     • a titled SECTION ("Active" — 12px/550 grey, 24px, 16px above it) with a `+` (24px,
+       radius 6) at its right, over rows whose glyph sits in a tinted 18px/radius-4 tile and
+       whose text is 12px/550.
+     • the column's FOOT: a right-aligned row of 32px icon buttons (8px vertical padding),
+       then an onboarding card — "Next steps": 1px ring, radius 10, 16px padding, a 20px/400
+       title, a ✕ at the corner, four 34px rows (18px glyph · 12px/550 label · chevron), a 4px
+       progress track — and under it a one-line trial notice with an underlined link.
+   Against the set: 5 already has Plain's rail + column; 6 is the SAME product's other answer —
+   the sidebar as an object on the page, with a place for what the workspace still needs done.
 
-   ⚠️ THE PAINT IS THIS FILE'S TOKENS. Plain is light-only; nothing of its palette is copied.
-   ⚠️ THE RAIL AND THE COLUMN ARE DIFFERENT SURFACES — `--sidebar` and `--panel` — which is what
-   makes a 32px rail read as chrome rather than as a cut-off first column.
+   ⚠️ THE PAINT IS THIS FILE'S TOKENS. Plain is light-only; none of its hexes are here. The
+   page behind the cards is `--panel`, the cards `--card`, the ring `--border`, the active pill
+   `--sel` + `--teal`, the grey tile `--chip`, the green `--green`. In dark, `--panel` and
+   `--card` sit three points apart and the RING is what draws the card — which is also what
+   Plain's 8%-alpha ring does on its own near-white page.
+   ⚠️ TYPE IS RESCALED, GEOMETRY IS NOT. Plain sits on a 14px base; this prototype is Inter 12
+   with a 12.8px page head, so primary rows are 13px, section and step rows 12px, the card
+   title 17px/500 against Plain's 20px/400. Every box, gap, radius and pitch is the
+   reference's own number. Inter is loaded at 400/500/600/700 here, so Plain's 550 is 600.
+   ⚠️ `--rail-w` IS THE WHOLE LEFT CHROME — card + both gutters (361px) — because `railWidth()`
+   answers "how much of the left is not canvas" for the Agentic AI drawer and the shell alike.
    ══════════════════════════════════════════════════════════════════════════════════════════ */
+/* ⚠️ THE FLOATING CARDS ARE GONE (request, 5 Sep 2026: "remove the box, it will show as
+   option 1"). Both surfaces are flush to the viewport now — no 8px gutters, no radius, no ring —
+   and the sidebar is divided from the canvas by a border, which is how every other option does
+   it. **This removes what made Option 6 a distinct answer**: it was the only page here that put
+   its navigation on the page as an object. What remains distinct is the rail + column with the
+   "Next steps" card at its foot. The pattern table above is corrected to match.
+   ⚠️ `--sk-gap` / `--sk-r` / `--sk-ring` ARE KEPT AND UNREFERENCED — the house pattern, and what
+   a revert would need. `--rail-w` is now the sidebar's own width, which is what `railWidth()`
+   and the Agentic AI drawer's `agCfgSize()` both read. */
+:root{ --sk-gap:8px; --sk-rail:64px; --sk-nav:281px; --sk-w:calc(var(--sk-rail) + var(--sk-nav));
+       --sk-r:12px; --sk-ring:0 0 0 1px var(--border), 0 1px 1px rgba(0,0,0,.06);
+       --rail-w:var(--sk-w); --rail-w-open:var(--sk-w) }
+.shell{padding-left:var(--rail-w)}
+body.pinned .shell{padding-left:var(--rail-w)}
+/* ⚠️ `.main` IS THE BASE CANVAS AGAIN — no fill, no radius, no ring, and crucially **no
+   `overflow:hidden`**, which was only ever there to round the corners of what sat inside it. */
 
-/* ⚠️ THE RAIL WENT 44 → 52px, AND ITS TILE 28 → 32 (request, 3 Sep 2026: "very small, make to
-   improve"). Measured against the other four rails before changing anything: Option 1 collapses
-   to 64px with a 20px glyph, Option 4 is a fixed 72px with a 32px tile, and this one was 44px
-   with a 28px tile and an 18px glyph — the smallest hit target in the prototype, and the only
-   rail with no words at all to compensate. 28px is also under the 32px every other control in
-   these files uses (the drawer's own »/«, Option 4's tile), so it was the odd one out rather
-   than a considered size.
-   ⚠️ IT IS STILL THE NARROWEST OF THE FIVE, which is the pattern's whole identity — 52px against
-   64 and 72. The width is derived: a 32px tile in the 10px gutters the 28px tile already had. */
-/* ⚠️ `--pl-nav` WENT 216 → 224px ON 3 Sep 2026, and it is measured, not rounded up by eye. Every
-   row in the column carries a glyph now, children included, so a nested row's text starts 23px
-   further in (glyph + gap) than it did — and "Container Orchestration", the longest child label,
-   came out 136px of text in 135px of room. A 1px overflow costs three letters, because the
-   ellipsis takes its own width. One 8px step (the file's smallest spacing unit) clears it with 7px
-   to spare; nothing else was within 8px of its edge. The shell padding and the hover-peek both
-   read this token, so the canvas and the floating column follow — the "an icon column has to be
-   paid for" lesson the flyout master recorded at 236 → 288. */
-:root{ --pl-rail:52px; --pl-nav:224px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
-.shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
-body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
-
-.sidebar.plside{width:calc(var(--pl-rail) + var(--pl-nav));flex-direction:row;overflow:visible;
-  background:var(--panel);border-right:1px solid var(--border)}
-.sidebar.plside.open{width:calc(var(--pl-rail) + var(--pl-nav));box-shadow:none}
+/* ── the sidebar card ────────────────────────────────────────────────────────────────────── */
+/* flush to the viewport: the base `.sidebar` already pins left/top/bottom to 0 and carries the
+   `border-right` that divides it from the canvas, so this only sets the width and the direction */
+.sidebar.skside,.sidebar.skside.open{width:var(--sk-w);flex-direction:row;overflow:visible;
+  background:var(--card);box-shadow:none;transition:none}
 
 /* ── column A · the rail ─────────────────────────────────────────────────────────────────── */
-.plrail{flex:0 0 var(--pl-rail);width:var(--pl-rail);display:flex;flex-direction:column;
-  align-items:center;background:var(--sidebar);border-right:1px solid var(--border);padding:8px 0 10px}
-.plbrand{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;color:var(--white);margin-bottom:12px}
-.plbrand svg{display:block;width:100%;height:100%}
-.plicons{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
-  gap:6px;width:100%;scrollbar-width:none}
-.plicons::-webkit-scrollbar{display:none}
-/* ⚠️ 32px TILE, 20px GLYPH — see the token note above. The rail is the one place in this option
-   with no words at all, so the tile is the only hit target AND the only state; at 28/18 it was
-   asked to do both jobs at the smallest size in the prototype. 32px is the size every other
-   control in these files uses and matches Option 4's tile; 20px is Option 1's rail glyph. */
-.plib{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:8px;
-  color:var(--text-dim);cursor:pointer;position:relative;transition:background .12s,color .12s}
-.plib:hover{background:var(--hover-side);color:var(--text)}
-.plib.on{background:var(--pill);color:var(--ink)}
-.plib .ic{width:20px;height:20px;fill:currentColor}
-.plib.airail{color:var(--ai-2)}
-.plib.airail:hover{background:var(--ai-soft)}
-.plrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding-top:8px}
-.plrfoot .plib .ibadge{top:-3px;left:auto;right:-4px}
-.plav{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--white);color:var(--ink);
+/* 12px top → the mark sits at y=20 as Plain's does (card 8 + 12); 14px under it → the first
+   tile at 74; tiles 32 on an 8px gap = the 40px pitch; the foot on a 12px gap = 44px pitch. */
+.skrail{flex:0 0 var(--sk-rail);width:var(--sk-rail);display:flex;flex-direction:column;align-items:center;
+  padding:12px 0 12px;border-right:1px solid var(--border);background:var(--card)}
+.skbrand{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;color:var(--white);margin-bottom:14px;border-radius:6px}
+.skbrand svg{display:block;width:32px;height:32px}
+.skicons{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
+  gap:8px;width:100%;scrollbar-width:none}
+.skicons::-webkit-scrollbar{display:none}
+/* ⚠️ THE ACTIVE TILE IS A SOFT FILL, NOT THE FILE'S DARK `--pill`. Plain marks the current
+   module with `#e7e7ef` under the same dark glyph; `--chip` is this palette's equivalent
+   (`#e3e8f2` light / `#2b394f` dark) and reads against `--card` in both themes. The glyph is
+   `--text` at rest — Plain paints every rail glyph in its text colour, not a dim one. */
+.skib{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:8px;
+  color:var(--text);cursor:pointer;position:relative;transition:background .12s}
+.skib:hover{background:var(--hover-side)}
+.skib.on{background:var(--chip)}
+.skib .ic{width:18px;height:18px;fill:currentColor}
+.skib.airail{color:var(--ai-2)}
+.skib.airail:hover{background:var(--ai-soft)}
+.skrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;padding-top:12px}
+/* the onboarding count — Plain's green disc at the rocket's foot, dark text on it. `--white`
+   is this file's inverse-of-text, so it is navy on green in light and near-white in dark. */
+/* ⚠️ THE COUNT SITS INSIDE ITS BUTTON'S BOX (4 Sep 2026). On the rail it hung 6px past the
+   tile's right edge, which was free space; in the column's foot the next button is 4px away, so
+   the same overhang would paint 2px into its neighbour and, on the last button, past the row's
+   own right edge. `right:-2px` keeps it within the 4px gap. It is a 14px disc rather than 16 for
+   the same reason — the row is five buttons now. */
+.skcnt{position:absolute;right:-2px;bottom:-1px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;
+  background:var(--green);color:var(--white);font-size:9.5px;font-weight:700;line-height:14px;text-align:center;
+  box-shadow:0 0 0 2px var(--card)}
+.skcnt[hidden]{display:none}
+/* the bell keeps its overhang — it is on the RAIL, where there is nothing beside it */
+.skrfoot .skib .ibadge{top:-5px;left:auto;right:-7px;box-shadow:0 0 0 1px var(--card)}
+/* the avatar: Plain's is a 40px radius-8 square; 32 here so the foot keeps one tile size */
+.skav{width:32px;height:32px;flex:0 0 32px;border-radius:8px;background:var(--white);color:var(--ink);
   font-weight:700;font-size:11px;display:grid;place-items:center;cursor:pointer}
+.skav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:11px;border-radius:8px}
 
 /* ── column B · the nav column ───────────────────────────────────────────────────────────── */
-.plnav{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--panel)}
-/* ══ COLLAPSE THE NAV COLUMN (request, 2 Sep 2026) ══════════════════════════════════════════
-   This option's column is ALWAYS-ON — that is the whole pattern — so the one thing it owed the
-   canvas was a way to hand the 216px back. Collapsed, what remains is the 44px rail: still a
-   complete navigation, because the rail already carries every module.
-   ⚠️ `display:none`, NOT a width transition. The column's rows are `white-space:nowrap`, so
-   animating it to 0 reflows every label through a squeezed box on the way down and the whole
-   list visibly garbles. The sidebar has no width transition of its own here, so nothing
-   animates and there is nothing to garble.
-   ⚠️ THE SHELL PADDING FOLLOWS THE SAME TOKEN MATH. It is `rail + nav` in both rules above, so
-   the collapsed state has to override BOTH or the canvas keeps a `--pl-nav`-wide gutter for a column
-   that is no longer there. That is the `body.pinned .shell` hardcode trap from Option 1, one
-   file over. */
-body.plshut .plnav{display:none}
-/* ══ HOVER-PEEK — the column floats over the canvas while the rail is hovered ═══════════════
-   Request + reference, 3 Sep 2026 (Plain's own workspace): with the column collapsed, pointing
-   at a rail icon should show that module's navigation OVER the canvas, not push it aside.
-   ⚠️ IT IS THE SAME COLUMN, NOT A SECOND ONE. `.plnav` is simply un-hidden and taken out of
-   flow — one renderer (`plPaint`), one set of rows, one set of behaviours. A separate peek
-   panel would be a second copy of `plBodyHTML` to keep in step, which is the duplication this
-   file's own notes keep warning about.
-   ⚠️ THE CANVAS MUST NOT REFLOW. `body.plshut .shell` keeps its `--pl-rail` padding and the
-   peek is `position:fixed`, so widgets do not resize as the pointer crosses the rail — that
-   would be 216px of layout thrash on a hover. It is also why `fitCanvas` is NOT called here.
-   ⚠️ IT NEEDS A SHADOW AND AN OPAQUE FILL, unlike the docked column: docked, its right border
-   divides two panels; floating, it sits on a dark canvas full of widgets and a hairline alone
-   would let the board read through the gap between them. `--panel` is already opaque.
-   ⚠️ z-index 59 — UNDER `.sidebar`'s 60, so the rail it belongs to still paints over it, and
-   over the canvas. It must stay below the drawers (90+) and the popovers.
-   ⚠️ NO TOOLTIP WHILE IT IS OPEN. The peeked column's own header names the module, so the
-   rail's `data-tip` would say the same word a second time — on top of the column, covering a
-   row, which is exactly what was reported. Hiding `.tipbox` for the duration is one rule and
-   needs no change to the shared tooltip engine. */
-body.plshut.plpeek .plnav{display:flex;position:fixed;left:var(--pl-rail);top:0;bottom:0;
-  width:var(--pl-nav);z-index:59;background:var(--panel);
-  border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.34)}
-html[data-theme="light"] body.plpeek .plnav{box-shadow:8px 0 28px rgba(16,26,42,.14)}
-body.plpeek .tipbox{display:none}
-body.plshut .sidebar.plside,body.plshut .sidebar.plside.open{width:var(--pl-rail)}
-body.plshut .shell,body.plshut.pinned .shell{padding-left:var(--pl-rail)}
-/* the mark becomes the way back out, exactly as Option 1's brand row does when its rail is
-   collapsed — the rail is 44px and there is no room for a labelled control */
-body.plshut .plbrand{cursor:pointer;border-radius:6px}
-body.plshut .plbrand:hover{background:var(--hover-side)}
-/* the expand tile — see `plRailPaint`. Hidden while the column is open (the column's own header
-   carries the collapse), shown the moment it is shut. `display:grid` because that is what `.plib`
-   is; a bare `display:block` would drop the glyph out of centre. */
-.plexp{display:none;margin-bottom:4px}
-body.plshut .plexp{display:grid}
-/* the collapse chevron stays SMALLER than a module glyph — it is chrome, not a destination */
-.plexp svg{width:18px;height:18px;fill:currentColor}
-/* the workspace header — module name over a quiet second line, with the module's own actions */
-/* ⚠️ ITS PADDING IS DERIVED FROM THE LIST, NOT PICKED (request, 3 Sep 2026: "improve the margin
-   and spacing"). It was `11px 10px 9px 12px` — three numbers that agreed with nothing below
-   them. Measured before: the title started at x=56 while every row icon and every group label
-   started at 61, and the button cluster ended at 249 against the rows' own 251. A five-pixel
-   stagger is not visible as a stagger; it just makes the header read as slightly adrift.
-     left  17 = `.plbody`'s 8px + `.plrow`'s 9px, so the title begins exactly where the rows'
-               ICONS do — and where the group labels already did.
-     right  8 = `.plbody`'s padding alone, so the cluster's outer edge lands on the rows' own
-               right edge, which is how `.mfend` is aligned in Option 1's flyout.
-   ⚠️ THE GLYPHS DO NOT LINE UP AND THAT IS THE CHOICE, not an oversight: `.plhb` insets its
-   14px glyph by 4px while a row insets its icon by 9, so box-alignment and glyph-alignment
-   cannot both hold. A right-hand control cluster is aligned by its box. */
-.plhd{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:11px 8px 9px 17px}
-.plhtt{flex:1;min-width:0}
-.plhtt b{display:block;font-size:13px;font-weight:600;color:var(--text);
+.sknav{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card)}
+#skNav{flex:1;min-height:0;display:flex;flex-direction:column}
+/* the header block — module name over a quiet line, no controls (Plain puts none here; this
+   option's search and Iris live in the rail, and its column controls in the foot) */
+/* ⚠️ THE COLLAPSE SITS IN THE HEADER (request, 4 Sep 2026: "the collapse icon will be show as
+   top"). It was the last of the column's four foot buttons. Two consequences worth knowing:
+   the header is no longer control-free, which is a DELIBERATE DIVERGENCE from Plain — its
+   Sidekick header is a title block and nothing else, and the reference is recorded that way in
+   the table above; and the foot is three buttons now, so its right edge is still the rows' but
+   the cluster is narrower.
+   ⚠️ `padding-right` WENT 12 → 8 SO THE BUTTON'S BOX LANDS ON THE ROWS' RIGHT EDGE (345), which
+   is where the section `+` already sits — the two are the only right-hand controls in this
+   column and they have to agree. The title keeps its 12px left, i.e. x=84, the reference's own
+   number. A right-hand control cluster is aligned by its BOX, the `.plhd` lesson in Option 5. */
+.skhd{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:16px 8px 12px 12px}
+/* ⚠️ THE TEXT NEEDS ITS OWN WRAPPER, and it must be `min-width:0`. `.skhd b`/`span` are the
+   ellipsising lines; as direct flex children of a row they would each be a column of their own
+   and a long module name would shove the button off the end instead of truncating. */
+.skhtt{flex:1;min-width:0}
+/* 24px on a 6px radius — the same box as the section `+` and the Next-steps ✕, the three
+   chrome buttons in this column. The glyph is 14px for the same reason. */
+.skhb{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;border-radius:6px;border:0;
+  background:transparent;color:var(--text-dim);cursor:pointer}
+.skhb:hover{background:var(--hover);color:var(--text)}
+.skhb svg{width:14px;height:14px;fill:currentColor}
+.skhd b{display:block;font-size:14px;font-weight:600;line-height:20px;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* ⚠️ KEPT AND UNREFERENCED — the route subtitle was removed 2 Sep 2026; this is what a revert
-   would need. `.plhd` is `align-items:flex-start` for a two-line block, so with one line the
-   title now sits at the top of a 22px button row; that is why `.plhtt` gains the centring. */
-.plhtt span{display:block;font-size:10.5px;color:var(--text-dim);margin-top:1px;
+.skhd span{display:block;font-size:12px;line-height:16px;margin-top:2px;color:var(--text-dim);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plha{flex:0 0 auto;display:flex;gap:2px}
-.plhb{width:22px;height:22px;display:grid;place-items:center;border-radius:4px;color:var(--text-dim);cursor:pointer}
-.plhb:hover{background:var(--hover);color:var(--text)}
-.plhb svg{width:14px;height:14px;fill:currentColor}
+.skbody{flex:1;min-height:0;overflow-y:auto;padding:0 8px 8px;scrollbar-width:thin}
+/* a primary row — 36px, radius 8, glyph at +11, text at +40 (11 + 18 + 11), all Plain's */
+.skrow{display:flex;align-items:center;gap:11px;width:100%;height:36px;margin-bottom:1px;padding:0 8px 0 11px;
+  border-radius:8px;border:0;background:transparent;color:var(--text);font-size:13px;font-weight:400;
+  text-align:left;cursor:pointer;white-space:nowrap}
+.skrow:hover{background:var(--hover)}
+/* the lavender pill: `--sel` + `--teal` is this file's tinted-selection pair (Option 5's row,
+   the Settings form's picked tile); the glyph takes the accent with the text, as Plain's does */
+.skrow.on{background:var(--sel);color:var(--teal);font-weight:600}
+.skrow .skic{flex:0 0 18px;width:18px;height:18px;fill:currentColor;color:var(--text-dim);opacity:.85}
+.skrow:hover .skic{color:var(--text);opacity:1}
+.skrow.on .skic{color:var(--teal);opacity:1}
+.skrow .skic.plus{color:var(--teal);opacity:1}
+.skrow .skt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.skrow .skn{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.skrow.on .skn{color:var(--teal);opacity:.8}
+/* a child (Explorer's tree): its glyph starts under the parent's TEXT (+40), smaller, dimmer */
+.skrow.sub{padding-left:40px;font-size:12px;color:var(--text-dim)}
+/* a titled section — Plain's "Active": 12px/550 grey over a 24px row with the `+` at its end.
+   The `+` overhangs the 8px inset by 8 so its box lands on the rows' right edge, as measured. */
+.sksec{display:flex;align-items:center;justify-content:space-between;height:24px;margin:16px 0 4px;padding:0 0 0 8px;
+  color:var(--text-dim);font-size:12px;font-weight:600}
+.sksec .skt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sksec .skadd{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;border-radius:6px;border:0;
+  background:transparent;color:var(--text-dim);cursor:pointer}
+.sksec .skadd:hover{background:var(--hover);color:var(--text)}
+.sksec .skadd svg{width:14px;height:14px;fill:currentColor}
+/* a row under a section: 12px/600 with the glyph in a tinted 18px tile (Plain's app tile) */
+.skrow.grp{font-size:12px;font-weight:600}
+.skrow.grp .sktile{flex:0 0 18px;width:18px;height:18px;border-radius:4px;background:var(--chip);
+  display:grid;place-items:center;color:var(--text)}
+.skrow.grp .sktile .skic{width:12px;height:12px;flex:none;color:inherit;opacity:1}
+.skrow.grp.on .sktile{background:var(--teal);color:var(--card)}
+.skempty{padding:10px 8px;font-size:12px;color:var(--text-dim)}
 
-/* ⚠️ 8px OF AIR UNDER THE HEADER, NOT 2. Measured: the header box ended at y=42 and the first
-   row began at 44, so the title bar sat on the list with nothing between them — and the column
-   has a 16px gap above every GROUP heading, which made the module's own name the least
-   separated thing in it. 8px is the file's own `@padding-xs` step and still leaves the group
-   gap twice as large, which is the order these two have to be in. */
-.plbody{flex:1;min-height:0;overflow-y:auto;padding:8px 8px 12px;scrollbar-width:thin}
+/* the column's foot: a right-aligned row of 32px icon buttons in 8px of vertical padding */
+.skfoot{flex:0 0 auto;display:flex;justify-content:flex-end;gap:4px;padding:8px 8px}
+.skfb{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:6px;border:0;
+  background:transparent;color:var(--text);cursor:pointer;position:relative}
+.skfb:hover{background:var(--hover)}
+.skfb.on{background:var(--chip)}
+.skfb svg{width:18px;height:18px;fill:currentColor}
 
-/* ⚠️ 32px + 2px — A 34px PITCH, NOT THE 26px IT SHIPPED AT (request, 3 Sep 2026: "it is very low
-   spacing make more space and neet to clear"). The earlier note here argued that Plain's density
-   IS the pattern; the user read it as cramped, and 34 is not a new number — it is the pitch the
-   rail's own `.sitem` and Option 1's flyout row `.mfi` already share, so the column now sits on
-   the same rhythm as the two surfaces beside it instead of a tighter one of its own.
-   ⚠️ THE SPACE IS A `margin-bottom`, NOT MORE `height` — the recorded `.mfi` lesson: height
-   grows the hover fill with it and a long list paints one continuous slab.
-   ⚠️ PRIMARY ROWS READ IN `--text`, children in `--text-dim`. Every row was `--text-dim`, so the
-   parent/child distinction rested on 29px of indent alone; that is the "clear" half. */
-.plrow{display:flex;align-items:center;gap:8px;width:100%;height:32px;margin-bottom:2px;padding:0 9px;
-  border-radius:5px;color:var(--text);font-size:12.5px;text-align:left;cursor:pointer;
-  white-space:nowrap}
-.plrow:hover{background:var(--hover);color:var(--text)}
-/* the tinted full-width active row — Plain's own selected treatment.
-   ⚠️ `--sel` is safe HERE and would not be on the rail: the column sits on `--panel`, which it
-   is clearly lighter/darker than in both themes, where against `--sidebar` in dark the two are
-   three points apart and it would vanish. That is why the rail's active mark is `--pill`. */
-.plrow.on{background:var(--sel);color:var(--teal);font-weight:600}
-.plrow .plic{flex:0 0 15px;width:15px;height:15px;fill:currentColor;opacity:.72}
-.plrow:hover .plic,.plrow.on .plic{opacity:1}
-/* the product's `plus` in a "New …" row — teal, undimmed: it is the one row that creates */
-.plrow .plic.plus{color:var(--teal);opacity:.9}
-.plrow .plt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* the count — right-aligned, quiet, and only drawn when the number is REAL (see `plCount`) */
-.plrow .pln{flex:0 0 auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.plrow.on .pln{color:var(--teal);opacity:.8}
-.plrow .plch{flex:0 0 auto;width:12px;height:12px;fill:currentColor;opacity:.5}
-/* a child of the row above it — the indent is the whole point of this pattern */
-/* 32 = 9 padding + 15 icon + 8 gap, so a child's GLYPH starts under its parent's TEXT and its own
-   text sits one glyph-and-gap further in — every row has a glyph since 3 Sep 2026 ("use it overall"),
-   so the nesting is carried by the indent plus the child's smaller, dimmer type, not by icon-vs-none */
-.plrow.sub{padding-left:32px;font-size:12px;color:var(--text-dim)}
-.plrow.sub .plic{opacity:.7}
+/* ── "Next steps" — the onboarding card ──────────────────────────────────────────────────── */
+/* 12px in from the column edge (Plain: x=84 in a column starting at 72), 4px under the foot's
+   own 8, 8px above the trial line. Inside: 16px padding, the title, the ✕ at (7,7), rows that
+   overhang the left padding by 8 so their hover fill starts where Plain's does. */
+.skns{margin:4px 12px 8px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 1px 1px rgba(0,0,0,.04);position:relative}
+.skns h4{margin:0 0 6px;font-size:17px;font-weight:500;line-height:24px;color:var(--text)}
+.sknsx{position:absolute;top:7px;right:7px;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;
+  border:0;background:transparent;color:var(--text);cursor:pointer}
+.sknsx:hover{background:var(--hover)}
+.sknsx svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.skstep{display:flex;align-items:center;gap:8px;width:calc(100% + 8px);margin:0 0 0 -8px;height:34px;padding:0 8px;
+  border-radius:6px;border:0;background:transparent;color:var(--text);font-size:12px;font-weight:600;
+  text-align:left;cursor:pointer;white-space:nowrap}
+.skstep:hover{background:var(--hover)}
+.skstep .skic{flex:0 0 18px;width:18px;height:18px;fill:currentColor;color:var(--text-dim)}
+.skstep .skt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.skstep .skch{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:var(--text-dim);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.skstep.done{color:var(--text-dim)}
+.skstep.done .skch{stroke:var(--green)}
+.skbar{height:4px;margin-top:8px;border-radius:999px;background:var(--chip);overflow:hidden}
+/* ⚠️ the fill is sized with `width:%` — the recorded `flex:50` lesson: a lone flex child fills */
+.skbar i{display:block;height:100%;width:0;border-radius:999px;background:var(--green)}
+.sktrial{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 12px 20px 20px;
+  font-size:12px;line-height:16px;color:var(--text-dim);white-space:nowrap}
+.sktrial a{color:var(--text-dim);font-weight:600;text-decoration:underline;cursor:pointer}
+.sktrial a:hover{color:var(--text)}
+#skNs:empty{display:none}
 
-/* a collapsible section header — Plain's "Browse ⌄" */
-/* ⚠️ THE FILE'S OWN SECTION-LABEL IDIOM — 11px/600/.06em/uppercase/`--text-dim` — the same voice
-   as `.mfsec` in the flyout and `.agsub` in Settings, so a group name is told from the rows under
-   it by case and weight, not only by its caret. 16px above it, i.e. more than the 2px between
-   rows: the gap BETWEEN groups has to beat the gap INSIDE one (the `.aiab li` rule). */
-.plsec{display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 9px;margin:16px 0 2px;
-  border-radius:5px;color:var(--text-dim);font-size:11px;font-weight:600;letter-spacing:.06em;
-  text-transform:uppercase;cursor:pointer;text-align:left}
-.plsec:hover{color:var(--text)}
-.plsec .plt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.plsec .plcar{width:12px;height:12px;fill:currentColor;opacity:.6;transition:transform .15s}
-.plsec.shut .plcar{transform:rotate(-90deg)}
-.plempty{padding:10px 8px;font-size:11.5px;color:var(--text-dim)}
-/* the avatar fills its own 26px slot — the base `.miniav` is sized for the 64px rail */
-.plav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:10px;border-radius:50%}
+/* ── collapsed: the card shrinks to the rail; the column peeks over the canvas on hover ──── */
+/* `display:none`, not a width transition — the rows are `nowrap` and would garble on the way
+   down (Option 5's reason). The card keeps its ring and radius at 64px; the rail's right
+   border goes, or it draws a hairline down the card's own edge. */
+body.skshut .sknav{display:none}
+body.skshut .sidebar.skside,body.skshut .sidebar.skside.open{width:var(--sk-rail)}
+/* ⚠️ THE RAIL WAS PAINTING OVER THE SIDEBAR'S OWN BORDER. `.skrail` is `flex:0 0 var(--sk-rail)`
+   = 64px, and when collapsed the SIDEBAR is 64px too — but the sidebar is border-box with a 1px
+   right border, so its content box is 63. A 64px child overflows it by exactly that 1px and its
+   opaque `--card` background covers the border. `getComputedStyle` still reported
+   `border-right: 1px rgb(227,232,242)`, so the DOM said the line was there while the PAINT showed
+   pure white at x=63 — found by sampling pixels, not by reading styles.
+   ⚠️ `flex:1 1 auto` lets the rail fill whatever the content box actually is, so the border shows
+   in the one state where it is the only thing dividing the rail from the canvas: in light theme
+   both surfaces are `#ffffff`. */
+body.skshut .skrail{border-right:0;width:auto;flex:1 1 auto}
+body.skshut .shell,body.skshut.pinned .shell{padding-left:var(--sk-rail)}
+body.skshut .skbrand{cursor:pointer}
+body.skshut .skbrand:hover{background:var(--hover-side)}
+/* the peek is the SAME column un-hidden and taken out of flow, beside the rail, as a card of
+   its own — the canvas must not reflow on a hover, so the shell keeps its collapsed padding */
+/* the peek floats over the canvas, so it keeps a shadow — that is what separates it from the
+   board behind it, and it is the one place a raised edge is still doing work here */
+body.skshut.skpeek .sknav{display:flex;position:fixed;left:var(--sk-rail);top:0;bottom:0;
+  width:var(--sk-nav);z-index:59;background:var(--card);
+  border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.28)}
+html[data-theme="light"] body.skpeek .sknav{box-shadow:8px 0 28px rgba(16,26,42,.14)}
+body.skpeek .tipbox{display:none}
+/* the expand tile — under the mark, only while shut (the column's foot carries the collapse) */
+.skexp{display:none}
+body.skshut .skexp{display:grid}
+.skexp svg{width:18px;height:18px;fill:currentColor}
 
 </style>
 <link rel="stylesheet" href="_settings-module.css">
 </head>
-<!-- ⚠️ `plshut` IS ON THE BODY IN MARKUP AS WELL AS IN `PL.col` (request, 3 Sep 2026: "by default the
-     sidebar will be collapsed"). The collapsed state is class-driven, so this is what makes the FIRST
-     paint collapsed — set only in JS, the column would flash open and the canvas would fit twice.
-     The two must agree; `plColSet` owns both from then on. Same pattern as `<body class="mpshut">` in
-     Option 2 and `dvshut` in Option 3. -->
-<body class="plshut">
+<!-- ⚠️ `skshut` IS THE BOOT STATE (5 Sep 2026) — see `SK.col` in the `sk*` block for why, and
+     why the class and the flag must agree. -->
+<body class="skshut">
 
 <!-- ============ Sidebar ============ -->
 <!-- ══════════════════════════════════════════════════════════════════════════════════════════
-     OPTION 5 — the narrow rail + always-on nav column (Plain). The reasoning, the proportions
-     and the deliberate divergences are in the stylesheet, at the "OPTION 5" block at the end.
-     ⚠️ NO `onmouseenter` ON THE RAIL and no `#smenu`. This option has no hover-expand and no
-     flyout — the nav column IS the navigation, permanently. `sbHover` / `mfOpen` / `mfLater` /
-     `mfOpenUtil` are stood down in the `pl*` block, the same way Option 4 does it.
-     ⚠️ `#smenu` IS KEPT IN THE DOM but empty and hidden: `renderMenu()` writes into it on every
-     navigation and would throw on a missing node, and it is called from `selectModule`,
-     `showView`, `pickDash` and the Layout drawer. Cheaper to keep the node than to fork four
-     call sites. -->
-<aside class="sidebar plside" id="sidebar">
+     OPTION 6 — the card sidebar + next steps (Plain's Sidekick). The measurements, the reasoning
+     and the deliberate divergences are in the stylesheet, at the "OPTION 6" block at its end.
+     ⚠️ NO `onmouseenter` ON THE RAIL and no `#smenu`. No hover-expand, no flyout — the column IS
+     the navigation, permanently. `sbHover` / `mfOpen` / `mfLater` / `mfOpenUtil` are stood down
+     in the `sk*` block, the same way Options 4 and 5 do it.
+     ⚠️ `#smenu` IS KEPT IN THE DOM, empty and hidden: `renderMenu()` writes into it on every
+     navigation and would throw on a missing node (four call sites).
+     ⚠️ `#sbApproval` / `#sbHealth` / `#sbBell` / `#sbUser` ARE STATIC MARKUP, deliberately:
+     `showView()` toggles `.on` on the first two by id and `init()` runs before this block's first
+     paint, so they cannot live in anything `skPaint` rebuilds; `refreshUser()` writes into
+     `#sbUser .miniav` and `stSeed()` reads `#sbUser .lbl` (kept hidden, not removed). -->
+<aside class="sidebar skside" id="sidebar">
 
-  <!-- ── column A · the rail: modules only, no words ─────────────────────────────────────── -->
-  <!-- ⚠️ THE RAIL, NOT EACH TILE, OWNS THE LEAVE. Per-tile `onmouseleave` fires every time the
-       pointer crosses from one icon to the next, so the peek would blink between modules. The
-       rail closes it once, when the pointer leaves the rail entirely — and even then only
-       after 200ms, because the pointer's route into the peeked column goes through that edge. -->
-  <div class="plrail" onmouseleave="plPeekLater()">
-    <span class="plbrand brandmark" id="plBrand" aria-label="ObserveOps" data-tip="Expand sidebar" onclick="plColExpand()"><!--LOGO--></span>
-    <div class="plicons" id="plIcons"></div>
-    <div class="plrfoot">
-      <div class="plib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg></div>
-      <div class="plib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg></div>
-      <div class="plib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></div>
-      <!-- ⚠️ `.miniav` AND `.lbl` ARE BOTH REQUIRED, even though only the avatar is painted.
-           `refreshUser()` writes the saved name/picture into `#sbUser .miniav`, and `stSeed()`
-           reads the signed-in name out of `#sbUser .lbl` to seed the Settings profile form.
-           Drop either and Settings breaks with no error here. The label is hidden, not removed
-           — `textContent` does not care that it is not on screen. -->
-      <div class="plav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span></div>
+  <!-- ── column A · the rail: the mark, search, Iris, the modules; then what is not a module ── -->
+  <!-- ⚠️ THE RAIL, NOT EACH TILE, OWNS THE LEAVE — per-tile `onmouseleave` would blink the peek
+       between modules; the rail closes it once, 200ms after the pointer leaves it entirely. -->
+  <div class="skrail" onmouseleave="skPeekLater()">
+    <span class="skbrand brandmark" id="skBrand" aria-label="ObserveOps" data-tip="ObserveOps" onclick="skColExpand()"><!--LOGO--></span>
+    <div class="skicons" id="skIcons"></div>
+    <div class="skrfoot">
+      <!-- ⚠️ THIS FOOT WAS REBUILT TWICE ON 4 Sep 2026, both times on request, and the two moves
+           are opposite halves of one idea: the ROCKET and the `?` went DOWN to the column's foot
+           (they belong with the Next-steps card and the licence line), and HEALTH and APPROVAL
+           came UP here (they are destinations — `showView()` screens, like every other tile on
+           this rail — where the column's foot is chrome for the column). Health leads Approval,
+           swapped from how they shipped, also on request.
+           ⚠️ THEY ARE `.skib`, THE RAIL TILE, NOT `.skfb`. Same ids, same handlers; only the
+           class and the parent changed. `showView()` still finds them by id. -->
+      <div class="skib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg></div>
+      <div class="skib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg></div>
+      <div class="skib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></div>
+      <div class="skav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span></div>
     </div>
   </div>
 
-  <!-- ── column B · the nav column, rendered by `plPaint()` ──────────────────────────────── -->
-  <!-- ⚠️ `plPeekIn` IS WHAT KEEPS THE PEEK OPEN once the pointer arrives; the deferred close
-       set by the rail's `mouseleave` checks it and stands down. Leaving the column ends it for
-       real. Both are inert while the column is docked — `plPeek` returns early unless it is
-       collapsed, and `plPeekEnd` returns early when there is no peek to end. -->
-  <div class="plnav" id="plNav"
-       onmouseenter="plPeekIn=true;clearTimeout(plPeekT)"
-       onmouseleave="plPeekIn=false;plPeekEnd()"></div>
+  <!-- ── column B · the nav column: header + rows (rendered), then the static foot ─────────── -->
+  <!-- ⚠️ `skPeekIn` keeps the peek open once the pointer arrives; the rail's deferred close checks
+       it and stands down. Both are inert while the column is docked. -->
+  <div class="sknav" onmouseenter="skPeekIn=true;clearTimeout(skPeekT)" onmouseleave="skPeekIn=false;skPeekEnd()">
+    <div id="skNav"></div>
+    <!-- Plain's foot row is Settings · Billing; ours is Next steps · Documentation · Settings
+         (requests, 4 Sep 2026). What is left here is what acts on the WORKSPACE rather than
+         being somewhere to go: the card's own switch, the docs, and the settings module. Health
+         and Approval were here for a day and are on the rail with the other destinations; the
+         COLLAPSE was here too and is the header's now.
+         ⚠️ `#sbApproval` / `#sbHealth` / `#sbBell` / `#sbUser` ARE STATIC WHEREVER THEY SIT —
+         `showView()` toggles `.on` on the first two BY ID and `init()` runs before this block's
+         first paint, so they can move between the two feet but never into `skPaint`'s output. -->
+    <div class="skfoot">
+      <!-- Plain's rocket: "N steps remaining" — here it counts the Next-steps card's open items
+           and brings the card back after it has been dismissed -->
+      <button class="skfb" id="skTour" data-tip="Next steps" onclick="skNsTog()"><svg class="ic" viewBox="0 0 48 48" id="skTourIc"></svg><span class="skcnt" id="skCnt" hidden></span></button>
+      <!-- Plain's `?` opens its help; ours opens the product documentation (checked 200) -->
+      <button class="skfb" id="skHelp" data-tip="Documentation ↗" onclick="skHelp()"><svg class="ic" viewBox="0 0 48 48" id="skHelpIc"></svg></button>
+      <button class="skfb" id="skSet" data-tip="Settings" onclick="selectModuleByName('Settings')"><svg class="ic" viewBox="0 0 48 48" id="skSetIc"></svg></button>
+    </div>
+    <div id="skNs"></div>
+    <!-- Plain: "Your trial ends in 7 days. Upgrade now". The product sells licences, not trials;
+         the number is canned like every other figure in this prototype, the link is real. -->
+    <div class="sktrial"><span>Licence renews in 23 days.</span><a onclick="skLicence()">Manage licence</a></div>
+  </div>
 
   <!-- kept for `renderMenu()` to write into; see the note above -->
   <nav class="smenu" id="smenu" hidden></nav>
@@ -8529,7 +8589,7 @@ const ICONS = {
  }
 };
 function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
-  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`): `.plrow .plic` and `.plib .ic` both say
+  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`): `.skrow .skic` and `.skib .ic` both say
      `fill:currentColor`, and a CSS rule beats a presentation ATTRIBUTE — `fill="none"` alone would
      be overpainted and the outline rendered as a blob (the recorded `.dvic svg` trap). An inline
      style outranks those rules. stroke-width 2 on a 24 box is 1.25px at 15px. */
@@ -8643,8 +8703,8 @@ const SUBNAV = {
        was copied before that landed, so its column drew eight bare labels while Explorer beside it
        drew a glyph per row. Same rule as there: a row that names a MODULE gets that module's glyph,
        and the views under it (`sub`) stay plain, which is what keeps the two levels apart — and it
-       is what `.plrow.sub`'s 32px indent was sized for (9 + 15 glyph + 8), so a child's text now
-       starts under its parent's TEXT instead of two steps past it.
+       is what `.skrow.sub`'s 40px indent is sized for (11 + 18 glyph + 11), so a child's glyph
+       starts under its parent's TEXT.
        ⚠️ The keys are `ICONS`' own, not the obvious ones: Metric is `metric-explorer` (there is no
        bare `metric`), Trap is `trap-viewer`, Network Config is `ncm`. `ico()` returns '' for a name
        it does not have rather than throwing, so a wrong key here renders one blank row among eight
@@ -24447,231 +24507,221 @@ function lxLtPaint(){
      no-ops on the deployed GitHub Pages site so it is never shipped to end users) -->
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════════════════════
-   OPTION 5 — the nav column's behaviour (`pl*`)
+   OPTION 6 — the card sidebar's behaviour (`sk*`)
    ───────────────────────────────────────────────────────────────────────────────────────────
-   Namespace `pl*` / `PL_*` / `.pl*`, grepped free before it was named. Geometry and the design
-   reasoning are in the stylesheet's "OPTION 5" block; this owns the behaviour.
-
-   THE MODEL: the rail picks a MODULE, the column shows that module's whole navigation — rows,
-   their children indented under them, and a count wherever a real one exists. Nothing hovers,
-   nothing opens; the column is always there. That is the Plain pattern and it is what makes
-   this different from Option 4, where the same content hides behind a `»`.
+   Namespace `sk*` / `SK_*` / `.sk*`, grepped free before it was named. Geometry and the design
+   reasoning are in the stylesheet's "OPTION 6" block; this owns the behaviour. It is Option 5's
+   engine (`pl*`) carried over and renamed — one rail, one column, one renderer, a hover-peek
+   while collapsed — plus the two things Plain's Sidekick adds: a titled section whose `+` is
+   the section's own create action, and the "Next steps" card with its rocket count.
 
    ⚠️ EVERY ROW COMES FROM DATA THAT ALREADY EXISTS — `SUBNAV` / `SUBNAV2` (what Option 1's
-   flyout renders) and `EXPLORER_TREE` (what its master column renders). Nothing here is a
-   second copy of the product's navigation; the request was "the module details is option 1".
+   flyout renders) and `EXPLORER_TREE` (its master column). "the list of module is option1 for
+   reference" — nothing here is a second copy of the product's navigation.
    ═══════════════════════════════════════════════════════════════════════════════════════════ */
 
-/* ⚠️ FOUR FUNCTIONS STOOD DOWN, NOT DELETED — the house pattern, same as Option 4. All are
-   `function` declarations in an earlier block, so reassigning the binding is enough and every
-   existing call site keeps working. `mfHide` is deliberately NOT in the list: `mfGo()` calls it
-   on every navigation and `#mflyout` is still in the document. */
-const plNoop = function(){};
-mfOpen = plNoop; mfOpenUtil = plNoop; mfLater = plNoop; sbHover = plNoop;
+/* ⚠️ FOUR FUNCTIONS STOOD DOWN, NOT DELETED — the house pattern (Options 4 and 5). `mfHide` is
+   deliberately NOT in the list: `mfGo()` calls it on every navigation. */
+const skNoop = function(){};
+mfOpen = skNoop; mfOpenUtil = skNoop; mfLater = skNoop; sbHover = skNoop;
 
-/* ⚠️ THE COLUMN STARTS COLLAPSED (request, 3 Sep 2026: "by default the sidebar will be collapsed").
-   `col:true` here and `class="plshut"` on `<body>` are the SAME default stated twice, and both are
-   needed: the class paints the first frame, this is what `plColTog` / `plPeek` read. It reverses
-   the pattern's own premise — Plain's column is always-on — but with the hover-peek (below) every
-   module's navigation is still one pointer-move away, and the expand tile under the mark is the
-   way to dock it. `plColSet` is NOT called at boot: nothing needs moving, and its `fitCanvas`
-   would refit a canvas that has not been drawn yet. */
-const PL = { shut:{}, sub:null, col:true, peek:null };  /* collapsed sections · expanded parent · column collapsed · peeked rail index */
-/* ⚠️ THE COLUMN RENDERS THE PEEKED MODULE, NOT THE ACTIVE ONE — that is the whole point of the
-   peek: you are looking at something you have not navigated to. Both `plPaint` and
-   `plBodyHTML` read this, so the header and the rows can never disagree about which module is
-   on screen. With no peek it falls back to `activeRail`, i.e. the docked column is unchanged. */
-const plCur = () => RAIL[PL.peek != null ? PL.peek : activeRail] || RAIL[0];
-/* Lucide `panel-left-close`, the same object Option 1's brand row uses */
-const PL_COL = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg>';
-/* ⚠️ ONE FUNCTION MOVES THE COLUMN, so the class, the tooltip and the canvas refit cannot get
-   out of step. `fitCanvas` runs after, because the canvas just gained or lost 216px and the
-   widgets were scaled against the old width — the same call Option 4's panel toggle makes. */
-function plColSet(shut){
-  /* ⚠️ A PEEK CANNOT SURVIVE THE COLUMN BEING DOCKED — it would leave `.plpeek` on the body
-     with the column in flow, i.e. fixed-positioned over the canvas AND padded for. */
-  if (PL.peek != null) plPeekEnd();
-  PL.col = !!shut;
-  document.body.classList.toggle('plshut', PL.col);
-  const b = document.getElementById('plBrand');
-  if (b) b.setAttribute('data-tip', PL.col ? 'Expand sidebar' : 'ObserveOps');
-  if (!PL.col) plPaint();
+/* ⚠️ THE COLUMN STARTS OPEN. Option 5 was asked to start collapsed; this option reproduces a
+   sidebar whose whole point is the open column with the card at its foot, so `col:false` and
+   no `skshut` on `<body>`. `ns` is the Next-steps card's visibility, `done` the steps taken. */
+/* ⚠️ THE COLUMN STARTS COLLAPSED (request, 5 Sep 2026: "by default it will be collapsed"). This
+   REVERSES the note below, which argued `col:false` because "the sidebar being reproduced is the
+   open one" — that was the reading of Plain's Sidekick, and it is overruled. Boot is the 64px
+   rail; the column is one click of the header's `»` away and the hover-peek shows any module's
+   navigation over the canvas without docking it.
+   ⚠️ `<body class="skshut">` CARRIES THE SAME DEFAULT, and both are needed: the class paints the
+   first frame (the state is class-driven), this is what `skColTog` and `skPeek` read. Set only
+   one and either the column flashes open before the script runs, or the first toggle moves it
+   the wrong way. The pattern Options 5 and 8 already use. */
+const SK = { sub:null, col:true, peek:null, ns:true, done:new Set() };
+const skCur = () => RAIL[SK.peek != null ? SK.peek : activeRail] || RAIL[0];
+/* Lucide `panel-left-close`, the same object Option 1's brand row and Option 5's foot use */
+const SK_COL  = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg>';
+const SK_CHEV = '<svg class="skch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+const SK_DONE = '<svg class="skch" viewBox="0 0 24 24"><path d="M5 12l4 4L19 7"/></svg>';
+const SK_X    = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ⚠️ ONE FUNCTION MOVES THE COLUMN — class, tooltip and canvas refit cannot get out of step.
+   `fitCanvas` runs after: the canvas just gained or lost 281px. */
+function skColSet(shut){
+  if (SK.peek != null) skPeekEnd();
+  SK.col = !!shut;
+  document.body.classList.toggle('skshut', SK.col);
+  const b = document.getElementById('skBrand');
+  if (b) b.setAttribute('data-tip', SK.col ? 'Expand sidebar' : 'ObserveOps');
+  if (!SK.col) skPaint();
   if (typeof fitCanvas === 'function') setTimeout(fitCanvas, 60);
 }
-function plColTog(){ plColSet(!PL.col); }
+function skColTog(){ skColSet(!SK.col); }
+function skColExpand(){ if (SK.col) skColSet(false); }
 
-/* ══ HOVER-PEEK ════════════════════════════════════════════════════════════════════════════
-   ⚠️ ONLY WHILE THE COLUMN IS COLLAPSED. Open, the column is already showing the active
-   module's navigation, and swapping it under the pointer for whatever the cursor brushed on
-   its way somewhere else would be the opposite of helpful.
-   ⚠️ THE CLOSE IS DEFERRED AND CANCELLABLE, because the pointer has to LEAVE the rail to
-   reach the panel — a plain `mouseleave` shuts it mid-journey. `plPeekIn` is set by the
-   column's own `mouseenter`; this is the same pattern the rail flyout uses in Option 1, and
-   the bug it exists to prevent is recorded there.
-   ⚠️ THE OPEN IS NOT DELAYED. The column is already rendered and merely un-hidden, so there
-   is no cost to sweeping past — and a delay on a panel this large reads as lag. */
-let plPeekT = null, plPeekIn = false;
-function plPeek(i){
-  if (!PL.col) return;
-  clearTimeout(plPeekT);
-  if (PL.peek === i && document.body.classList.contains('plpeek')) return;
-  PL.peek = i;
-  plPaint();                       /* repaints header + rows for the peeked module */
-  document.body.classList.add('plpeek');
+/* ══ HOVER-PEEK — only while collapsed; deferred, cancellable close (Option 5's reasons) ═══ */
+let skPeekT = null, skPeekIn = false;
+function skPeek(i){
+  if (!SK.col) return;
+  clearTimeout(skPeekT);
+  if (SK.peek === i && document.body.classList.contains('skpeek')) return;
+  SK.peek = i;
+  skPaint();
+  document.body.classList.add('skpeek');
   if (typeof tipHide === 'function') tipHide();
 }
-function plPeekLater(){ clearTimeout(plPeekT); plPeekT = setTimeout(() => { if (!plPeekIn) plPeekEnd(); }, 200); }
-/* ⚠️ IT REPAINTS ON THE WAY OUT, or the docked column keeps whatever the last peek showed the
-   next time it is opened — `plPaint` reads `plCur()`, so clearing `PL.peek` first is what puts
-   the active module back. */
-function plPeekEnd(){
-  clearTimeout(plPeekT); plPeekIn = false;
-  if (PL.peek == null && !document.body.classList.contains('plpeek')) return;
-  PL.peek = null;
-  document.body.classList.remove('plpeek');
-  plPaint();
+function skPeekLater(){ clearTimeout(skPeekT); skPeekT = setTimeout(() => { if (!skPeekIn) skPeekEnd(); }, 200); }
+function skPeekEnd(){
+  clearTimeout(skPeekT); skPeekIn = false;
+  if (SK.peek == null && !document.body.classList.contains('skpeek')) return;
+  SK.peek = null;
+  document.body.classList.remove('skpeek');
+  skPaint();
 }
-/* ⚠️ the mark only acts while the column is CLOSED. Open, it is a logo — making it a toggle
-   there would give the same job two controls a few pixels apart. */
-function plColExpand(){ if (PL.col) plColSet(false); }
 
-/* ⚠️ A COUNT IS ONLY DRAWN WHEN IT IS REAL. Plain puts a number on every row; inventing one
-   here would be inventing product data. Two are genuine: a parent row's own children, and a
-   dashboard category's boards. Everything else gets no number rather than a zero. */
-function plCount(r){
-  if (r && r.kids) return r.kids.length;
-  return null;
-}
-/* ⚠️ ONE RESOLVER, TWO REGISTRIES — Option 1's `mfIco`, in this column's shape (request, 3 Sep
-   2026: the Setting column against Option 1's Setting flyout, "also use the icon, reference is
-   Option 1"). `ico()` reads `ICONS`, the rail's 16 modules and the handful of glyphs added for
-   flyout rows; the 19 Settings categories' icons live in `ST_ICO` (`_settings-module.js`), as a
-   bare path `d` on the same 48×48 grid — and six of them happen to ALSO have a key in `ICONS`
-   (`apm`, `metric-explorer`, `trap-viewer` …), which is exactly how Option 1's pane drew some
-   tiles and not others until both call sites went through one function. `ICONS` first so a rail
-   glyph keeps its own drawing; the fallback is wrapped because `ST_ICO` is a `const` in a script
-   this block only happens to load after. */
-const plIco = (n, cls) => {
+/* a count only where one is real: a parent row's own children */
+function skCount(r){ return (r && r.kids) ? r.kids.length : null; }
+/* one resolver, two registries — Option 1's `mfIco` (ICONS, then the Settings categories' ST_ICO) */
+const skIco = (n, cls) => {
   if (!n) return '';
-  const a = ico(n, cls || 'plic'); if (a) return a;
-  try { if (ST_ICO && ST_ICO[n]) return `<svg class="${cls || 'plic'}" viewBox="0 0 48 48" fill="currentColor"><path d="${ST_ICO[n]}"/></svg>`; }
+  const a = ico(n, cls || 'skic'); if (a) return a;
+  try { if (ST_ICO && ST_ICO[n]) return `<svg class="${cls || 'skic'}" viewBox="0 0 48 48" fill="currentColor"><path d="${ST_ICO[n]}"/></svg>`; }
   catch (e) {}
   return '';
 };
-/* a Settings row's glyph is its CATEGORY's, read off `ST_TREE` by name — the harvested live list
-   that already carries `ic` per category and is what Option 1's Setting flyout renders. Looked up
-   at paint time rather than written into `SUBNAV['Settings']`, so a re-harvest cannot leave the
-   two disagreeing. Returns '' for a row that is not a category (none today), never throws. */
-const plStIc = label => { try { const c = ST_TREE.find(c => c.n === label); return (c && c.ic) || ''; } catch (e) { return ''; } };
-const PL_CHEV = '<svg class="plch" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
-const PL_CAR  = '<svg class="plcar" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+/* a Settings row's glyph is its category's, read off `ST_TREE` by name at paint time */
+const skStIc = label => { try { const c = ST_TREE.find(c => c.n === label); return (c && c.ic) || ''; } catch (e) { return ''; } };
 
-/* ── the rail: modules only ──────────────────────────────────────────────────────────────── */
-function plRailPaint(){
-  const el = document.getElementById('plIcons'); if (!el) return;
+/* ── the rail ────────────────────────────────────────────────────────────────────────────── */
+function skRailPaint(){
+  const el = document.getElementById('skIcons'); if (!el) return;
   el.innerHTML =
-    /* ⚠️ THE WAY BACK OUT IS A VISIBLE CONTROL, NOT ONLY THE LOGO (request, 3 Sep 2026: "when i
-       collapse the sidebar the expand icon is not show"). The collapse button lives in the column's
-       header, and `body.plshut` hides the column — so the control that closed it vanished with it,
-       and the only door back was the brand mark, which nothing said was a door. This tile is
-       rendered on every paint and CSS-hidden until the column is shut (`.plexp`), so `plColSet`
-       needs no repaint on the way down. It sits first, under the mark: the same vertical spot the
-       collapse button occupied, one column to the left. The mark keeps its click as well. */
-    `<div class="plib plexp" id="plExpand" data-tip="Expand sidebar" onclick="plColExpand()">${PL_COL}</div>` +
-    `<div class="plib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
-    `<div class="plib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
+    `<div class="skib skexp" id="skExpand" data-tip="Expand sidebar" onclick="skColExpand()">${SK_COL}</div>` +
+    `<div class="skib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
+    `<div class="skib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
     railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) =>
-      `<div class="plib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
-         onmouseenter="plPeek(${i})">${ico(r.icon)}</div>`
+      `<div class="skib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
+         onmouseenter="skPeek(${i})">${ico(r.icon)}</div>`
     ).join('');
   setIco(document.getElementById('sbSearchIc'), 'search');
 }
 
 /* ── the column ──────────────────────────────────────────────────────────────────────────── */
-const plSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
+const skSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
 
-function plRowHTML(label, mod, act, o){
-  o = o || {};
-  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}"` +
-    (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
-    `>${plIco(o.ic, o.icls)}<span class="plt">${label}</span>` +
-    (o.n != null ? `<span class="pln">${o.n}</span>` : '') +
-    (o.chev ? PL_CHEV : '') + `</button>`;
+/* the header's second line — Plain shows the workspace there; this product has no workspace,
+   so it says what the column holds, derived from the same data the rows come from */
+function skSubtitle(r){
+  if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined') return EXPLORER_TREE.length + ' sub-modules';
+  if (r.name === 'Setting'){ try { return ST_TREE.length + ' categories'; } catch (e) {} }
+  const n = skSecs(r.name).reduce((a, s) => a + (s.items || []).filter(it => it[3] !== 'plus' && it[3] !== 'sub').length, 0);
+  return n ? n + (n === 1 ? ' page' : ' pages') : 'Opens to its own screen';
 }
 
-/* ⚠️ EXPLORER USES ITS TREE, NOT ITS SECTIONS. `EXPLORER_TREE` is the only source with real
-   nesting and real counts, and the nesting is the whole reason this pattern was asked for —
-   it is the "All threads → its statuses" shape from the reference. Everything else has flat
-   sections, which render as Plain's primary rows + collapsible groups. */
-function plBodyHTML(){
-  const r = plCur();
+function skRowHTML(label, mod, act, o){
+  o = o || {};
+  const glyph = o.grp ? `<span class="sktile">${skIco(o.ic, 'skic')}</span>` : skIco(o.ic, o.icls || 'skic');
+  return `<button class="skrow${o.sub ? ' sub' : ''}${o.grp ? ' grp' : ''}${o.on ? ' on' : ''}"` +
+    (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
+    `>${glyph}<span class="skt">${label}</span>` +
+    (o.n != null ? `<span class="skn">${o.n}</span>` : '') + `</button>`;
+}
+
+/* Explorer renders its tree (nesting + counts); every other module its sections. The FIRST
+   section is the primary list; the rest are Plain's titled sections — and where one of them
+   carries a `plus` row, that row becomes the section's `+` (Plain's "Active +") instead of a
+   row of its own, so "create" sits with the thing it creates. The primary list keeps its
+   "New …" row: it has no header to hang a `+` on. */
+function skBodyHTML(){
+  const r = skCur();
   if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
     return EXPLORER_TREE.map(t => {
-      const open = PL.sub === t.l;
-      return plRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:plCount(t), on:open,
-               click: t.kids ? `plSub(${mfAttr(t.l)})` : null }) +
-        (open && t.kids ? t.kids.map(([label, mod, act, ic]) =>
-           plRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
+      const open = SK.sub === t.l;
+      return skRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:skCount(t), on:open, click: t.kids ? `skSub(${mfAttr(t.l)})` : null }) +
+        (open && t.kids ? t.kids.map(([label, mod, act, ic]) => skRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
     }).join('');
-
-  const secs = plSecs(r.name);
-  if (!secs.length) return `<div class="plempty">${r.name} opens straight to its own screen.</div>`;
-  /* the FIRST section is the primary list (no header, always open); the rest are Plain's
-     collapsible "Browse" groups — which is exactly what a `SUBNAV` heading already is */
+  const secs = skSecs(r.name);
+  if (!secs.length) return `<div class="skempty">${r.name} opens straight to its own screen.</div>`;
   return secs.map((s, si) => {
-    /* ⚠️ A `plus` ROW WITH A GLYPH DRAWS THE GLYPH, NOT THE TEXT ＋ (3 Sep 2026) — the text sat in
-       exactly the slot the icon column now takes, so both would print two pluses. The glyph keeps
-       the teal (`.plic.plus`) so "create" still reads as the one different kind of row. */
-    const rows = s.items.map(([label, mod, act, kind, ic]) => {
-      /* the Setting column's rows carry no fifth slot; their glyph is the category's (see `plStIc`) */
-      if (!ic && r.name === 'Setting') ic = plStIc(label);
-      return plRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
-                { ic, icls: kind === 'plus' ? 'plic plus' : null, sub: kind === 'sub' }); }).join('');
-    if (!si || !s.h) return rows;
-    const shut = !!PL.shut[s.h];
-    return `<button class="plsec${shut ? ' shut' : ''}" onclick="plSec(${mfAttr(s.h)})">` +
-           `<span class="plt">${s.h}</span>${PL_CAR}</button>` + (shut ? '' : rows);
+    const titled = si > 0 && !!s.h;
+    const plus = titled ? (s.items || []).find(it => it[3] === 'plus') : null;
+    const rows = (s.items || []).filter(it => !(titled && it[3] === 'plus')).map(([label, mod, act, kind, ic]) => {
+      if (!ic && r.name === 'Setting') ic = skStIc(label);
+      return skRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
+        { ic, icls: kind === 'plus' ? 'skic plus' : null, sub: kind === 'sub', grp: titled }); }).join('');
+    if (!titled) return rows;
+    return `<div class="sksec"><span class="skt">${s.h}</span>` +
+      (plus ? `<button class="skadd" data-tip="${plus[0].replace('＋ ', '')}" onclick="mfGo(${mfAttr(plus[1])},${mfAttr(plus[2])})">${ico('plus', 'skplus')}</button>` : '') +
+      `</div>` + rows;
   }).join('');
 }
 
-function plPaint(){
-  const host = document.getElementById('plNav'); if (!host) return;
-  const r = plCur();
-  const m = MODULES[MODULES.findIndex(x => x.name === r.mod)] || {};
-  /* ⚠️ NO ROUTE SUBTITLE (request, 2 Sep 2026: "remove this", on `SLO` over `/slo/`). It was
-     the module's own `MODULES[].route`, which is a real path and not invented — but it is a
-     DEVELOPER-facing string, and it told you where you already are rather than what you can do
-     next. The identical line was removed from the flyout's detail pane on 27 Aug 2026 for
-     exactly that reason and this reintroduced it; `route` stays on `MODULES`, unreferenced
-     here, which is what a revert would read. The column is named by the rail entry above it. */
+function skPaint(){
+  const host = document.getElementById('skNav'); if (!host) return;
+  const r = skCur();
   host.innerHTML =
-    `<div class="plhd"><div class="plhtt"><b>${r.name}</b></div>` +
-    `<div class="plha">` +
-      `<button class="plhb" data-tip="Search  ⌘K" onclick="openSearch()"><svg viewBox="0 0 48 48" id="plSearchIc"></svg></button>` +
-      `<button class="plhb" data-tip="Sidebar settings" onclick="sbmOpen()"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5Zm0 6h18v2H3v-2Zm0 6h18v2H3v-2Z"/></svg></button>` +
-      /* ⚠️ the collapse lives in the COLUMN's header, not the rail — it acts on the column, and
-         the 44px rail has no room for a control beside a 26px mark. Expanding is the mark. */
-      `<button class="plhb" data-tip="Collapse sidebar" onclick="plColTog()">${PL_COL}</button>` +
-    `</div></div><div class="plbody">${plBodyHTML()}</div>`;
-  setIco(document.getElementById('plSearchIc'), 'search');
-  plRailPaint();
+    `<div class="skhd"><div class="skhtt"><b>${r.name}</b><span>${skSubtitle(r)}</span></div>` +
+    `<button class="skhb" id="skCol" data-tip="Collapse sidebar" onclick="skColTog()">${SK_COL}</button></div>` +
+    `<div class="skbody">${skBodyHTML()}</div>`;
+  skRailPaint(); skFootPaint(); skNsPaint();
 }
-function plSub(l){ PL.sub = (PL.sub === l) ? null : l; plPaint(); }
-function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
+function skSub(l){ SK.sub = (SK.sub === l) ? null : l; skPaint(); }
+/* the static foot only needs its glyphs once and its Settings light kept true */
+function skFootPaint(){
+  ['skSetIc:settings', 'skHelpIc:help', 'skTourIc:tour'].forEach(p => { const [id, n] = p.split(':'); const e = document.getElementById(id); if (e && !e.innerHTML) setIco(e, n); });
+  const s = document.getElementById('skSet'); if (s) s.classList.toggle('on', !!document.querySelector('#view-settings.on'));
+}
+function skHelp(){ window.open('https://docs.motadata.com/motadata-aiops-docs/', '_blank', 'noopener'); }
+/* the licence line's link: the My Account › Licence page if the harvested tree has one */
+function skLicence(){
+  try { const c = ST_TREE.find(c => c.n === 'My Account'); const p = (c.subs.find(s => /licen/i.test(s[0])) || [])[0];
+        return p ? stOpen('My Account', p) : stOpen('My Account'); }
+  catch (e) { selectModuleByName('Settings'); }
+}
 
-/* ⚠️ WRAPPED, NOT RE-IMPLEMENTED. `selectModule` and `showView` are the two doors into a view
-   change and both are `function` declarations, so wrapping the binding catches every caller —
-   the rail, `mfGo`, the AI panel and the Settings module included. */
-const plSelectModule0 = selectModule;
-selectModule = function(i){ plSelectModule0(i); plPaint(); };
-const plShowView0 = showView;
-showView = function(v){ plShowView0(v); plPaint(); };
-/* `renderMenu()` still runs (it writes into the hidden `#smenu`), and it is what every
-   navigation calls when the RAIL's highlight has to move — so the rail repaints with it. */
-const plRenderMenu0 = renderMenu;
-renderMenu = function(){ plRenderMenu0(); plRailPaint(); };
+/* ══ "NEXT STEPS" ══════════════════════════════════════════════════════════════════════════
+   Plain's card lists what a new workspace still has to do — channels, team, tools, workflows.
+   The four here are this product's own first-run jobs, and EVERY ONE IS A REAL DESTINATION:
+   a Settings category from the harvested `ST_TREE`, opened through `stOpen`, its glyph the
+   category's own. ⚠️ A step is marked done when it is VISITED — the prototype has no way to
+   know a discovery ran or a user was invited, and pretending otherwise would be inventing
+   product state. The card can be dismissed (✕) and brought back from the rail's rocket, whose
+   badge counts what is still open, as Plain's "N steps remaining" does. */
+const SK_STEPS = [
+  { l:'Discover your devices',  cat:'Discovery Settings' },
+  { l:'Invite your team',       cat:'User Settings' },
+  { l:'Connect an AI provider', cat:'Agentic AI' },
+  { l:'Set up alert policies',  cat:'Policy Settings' },
+];
+function skNsPaint(){
+  const el = document.getElementById('skNs'); if (!el) return;
+  const done = SK_STEPS.filter(s => SK.done.has(s.cat)).length;
+  el.innerHTML = !SK.ns ? '' :
+    `<div class="skns"><h4>Next steps</h4><button class="sknsx" data-tip="Dismiss" onclick="skNsTog()">${SK_X}</button>` +
+    SK_STEPS.map((s, i) => `<button class="skstep${SK.done.has(s.cat) ? ' done' : ''}" onclick="skStep(${i})">` +
+      `${skIco(skStIc(s.cat), 'skic')}<span class="skt">${s.l}</span>${SK.done.has(s.cat) ? SK_DONE : SK_CHEV}</button>`).join('') +
+    `<div class="skbar"><i style="width:${Math.round(done / SK_STEPS.length * 100)}%"></i></div></div>`;
+  skCntPaint();
+}
+function skCntPaint(){
+  const c = document.getElementById('skCnt'); if (!c) return;
+  const left = SK_STEPS.filter(s => !SK.done.has(s.cat)).length;
+  c.textContent = left; c.hidden = !left;
+  const t = document.getElementById('skTour'); if (t) t.setAttribute('data-tip', left ? `Next steps · ${left} remaining` : 'Next steps');
+}
+function skStep(i){ const s = SK_STEPS[i]; SK.done.add(s.cat); stOpen(s.cat); skNsPaint(); }
+function skNsTog(){ SK.ns = !SK.ns; skNsPaint(); }
 
-plPaint();
+/* ⚠️ WRAPPED, NOT RE-IMPLEMENTED — the two doors into a view change, plus `renderMenu` (which
+   is what every navigation calls when the rail's highlight has to move) */
+const skSelectModule0 = selectModule;
+selectModule = function(i){ skSelectModule0(i); skPaint(); };
+const skShowView0 = showView;
+showView = function(v){ skShowView0(v); skPaint(); };
+const skRenderMenu0 = renderMenu;
+renderMenu = function(){ skRenderMenu0(); skRailPaint(); };
+
+skPaint();
 </script>
 
 <script>

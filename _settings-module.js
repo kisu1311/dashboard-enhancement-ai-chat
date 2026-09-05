@@ -254,6 +254,14 @@ function stHeadPaint(){
   if (i){ i.hidden = !(ST.full && ST.full.info); if (!i.innerHTML) i.innerHTML = stSvg('info-circle'); }
 }
 function stTog(cat){ const i = ST.open.indexOf(cat); if (i >= 0) ST.open.splice(i,1); else ST.open.push(cat); stNavPaint(); }
+/* a category header: expanded it folds its pages, collapsed it IS the door to the category —
+   see the icon-rail note above `#view-settings.stshut .stnav` in the stylesheet. If it is
+   already the current category the current page is kept rather than reset to the first. */
+function stCatTap(cat){
+  if (ST.nav) return stTog(cat);
+  const c = ST_TREE.find(x => x.n === cat); if (!c) return;
+  stGo(cat, ST.cat === cat ? ST.page : c.subs[0][0]);
+}
 function stSearch(v){ ST.q = v; stNavPaint(); }
 function stPanel(){ ST.nav = !ST.nav; stPanelPaint(); }
 function stPanelPaint(){
@@ -276,8 +284,8 @@ function stNavPaint(){
     const subs = (!q || catHit) ? c.subs : c.subs.filter(s => s[0].toLowerCase().includes(q));
     if (q && !subs.length) return;
     const open = q ? true : ST.open.includes(c.n);
-    html += `<div class="stcat${open?' open':''}">
-      <div class="stch" role="button" aria-expanded="${open}" onclick="stTog(${stA(c.n)})">${stSvg(c.ic,'ic')}<span class="nm">${stEsc(c.n)}</span>${c.beta?'<span class="beta">BETA</span>':''}${stSvg('chevron-right','car')}</div>
+    html += `<div class="stcat${open?' open':''}${ST.cat===c.n?' cur':''}">
+      <div class="stch" role="button" aria-expanded="${open}" data-tip="${stEsc(c.n)}" onclick="stCatTap(${stA(c.n)})">${stSvg(c.ic,'ic')}<span class="nm">${stEsc(c.n)}</span>${c.beta?'<span class="beta">BETA</span>':''}${stSvg('chevron-right','car')}</div>
       <div class="stsub">${subs.map(s => `<a class="stsi${(ST.cat===c.n && ST.page===s[0])?' on':''}" onclick="stGo(${stA(c.n)},${stA(s[0])})">${stEsc(s[0])}</a>`).join('')}</div>
     </div>`;
   });
@@ -1321,12 +1329,20 @@ const agDet = e => (e && e.detail && e.detail.length ? e.detail[0] : (e && e.det
    the reference prototype's own rule and this screen enforces it — so the grid has ONE entry:
    the connection, with its figures as COLUMNS. It listed the four metrics as four rows, each
    opening its own chart, which split one connection's health across four expanders. */
+/* ⚠️ SHARES OF THE WIDTH, NOT PIXELS (request, 3 Sep 2026: "add new column 'last usage' and
+   column will be full width"). Four fixed columns and one free one put 670px of figures on the
+   left and handed everything else to Availability, so the grid read as five columns crammed
+   into two thirds of its own row with an empty tail. `obs-table` passes a non-numeric `width`
+   straight through to the header cell's style (checked in the bundle), so a percentage lands
+   as `width:20%` on the `<th>` and the browser shares the row out. Provider gets the larger
+   share because it carries a name; the five figures split the rest evenly. */
 const AG_USE_COLS = [
-  { key:'provider', title:'Provider',       width:'220px' },
-  { key:'requests', title:'Requests today', width:'160px' },
-  { key:'latency',  title:'Avg latency',    width:'150px' },
-  { key:'errors',   title:'Error rate',     width:'140px' },
-  { key:'avail',    title:'Availability' },
+  { key:'provider', title:'Provider',       width:'20%' },
+  { key:'requests', title:'Requests today', width:'16%' },
+  { key:'latency',  title:'Avg latency',    width:'16%' },
+  { key:'errors',   title:'Error rate',     width:'16%' },
+  { key:'avail',    title:'Availability',   width:'16%' },
+  { key:'last',     title:'Last usage',     width:'16%' },
 ];
 /* ⚠️ TYPING SETS THE GRID'S `rows` ATTRIBUTE — IT MUST NOT REPAINT THE PAGE. Rewriting
    `#stMain` would destroy the search box mid-keystroke and take the caret with it (the
@@ -1364,23 +1380,45 @@ function agUseRows(){
      boundary. That is the one place inline styles are correct here.
      ⚠️ THE SVGs KEEP `class="agchart"` so the conformance checker still resolves them as the
      declared `chart` gap, and carry their height inline for the same shadow-root reason. */
-  const w = (title, sub, node, foot) =>
-    `<div style="min-width:0;padding:16px;background:var(--page-background-color);border:1px solid var(--border-color);border-radius:var(--btn-radius)">
-       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;margin-bottom:12px">
-         <div><div style="font-size:12.5px;font-weight:600;color:var(--primary-alt)">${title}</div>
-           <div style="font-size:11px;color:var(--text-color-common-secondary);margin-top:4px">${sub}</div></div>
-         <obs-tag variant="tag-primary">${foot}</obs-tag></div>
-       ${node}</div>`;
+  /* ⚠️ THE TILE IS THE DS WIDGET (request, 3 Sep 2026: "replace this chart Using the ObserveOps
+     design system"). Its header is `obs-toolbar variant="widget"` — the DS's own widget header
+     (title 14px/500 + a time-range pill + actions), which draws a bordered, rounded-TOP frame
+     with no bottom edge on purpose: the body below carries the rest of the frame. The window
+     and the delta sit in its slot, where the registry puts a widget's time-range pill.
+     ⚠️ `--common-widget-bg` IS REPOINTED ON THE HOST. The header's own CSS paints that token,
+     and it is the SAME `#172336` as the table's detail band in dark (the recorded collision) —
+     the frame would vanish there. A custom property set on the host inherits into the shadow
+     root, so the header takes the page surface, like the body. Nothing else goes in that
+     `style`: Vue forwards a host's style attribute onto the inner div (the recorded
+     `obs-banner` trap), so a `display` here would break the toolbar's own flex layout.
+     ⚠️ THE FIGURE ABOVE THE PLOT IS THE ROW'S OWN — the registry's `kpi-tile` is "a headline
+     number with a trend", and these numbers are the ones already printed in the grid row, so
+     the tile and the row cannot disagree. */
+  const w = (title, win, node, val, unit, delta) =>
+    `<div style="min-width:0">
+       <obs-toolbar variant="widget" title="${title}" style="--common-widget-bg:var(--page-background-color)">
+         <obs-tag variant="tag-primary">${win}</obs-tag>${delta ? `<obs-tag variant="tag-primary">${delta}</obs-tag>` : ''}
+       </obs-toolbar>
+       <div style="padding:10px 12px 8px;background:var(--page-background-color);border:1px solid var(--border-color);border-top:none;border-radius:0 0 6px 6px">
+         <div style="display:flex;align-items:baseline;gap:6px;margin:0 0 6px 2px">
+           <span style="font-size:18px;font-weight:600;line-height:1.2;color:var(--page-text-color)">${val}</span>
+           <span style="font-size:11px;color:var(--text-color-common-secondary)">${unit}</span></div>
+         ${node}</div></div>`;
 
   /* ⚠️ THREE FIXED TRACKS, NOT `auto-fit`. There are exactly three widgets, and `auto-fit`
      resolved to FOUR at desktop width — the three sat in a four-column raster with an empty
      tail. Stating the count makes them fill the row.
      ⚠️ No media query: this is inside the shadow root, so the page's breakpoints do not apply.
      `minmax(0,1fr)` lets the tracks shrink instead of overflowing on a narrow window. */
+  /* ⚠️ THE SHAPES ARE THE DS's TIME-SERIES SET — `data-viz`'s decision flow sends "change over
+     time" to line / area, and the product's own chart library lists area, line AND vertical bar
+     under Time Series. Volume is an AREA (its rule: "a trend where magnitude/volume matters"),
+     latency a LINE (the default trend), failures per day a VERTICAL BAR (daily buckets). The
+     grid, axis labels and series colours are all tokens the registry names for this family. */
   const widgets = `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;padding:8px 0 12px">
-      ${w('Request volume','Last 14 days', agBars(AG_DATA.volume, '--chart-indigo'), '+18%')}
-      ${w('Response time','Avg seconds',   agLine(AG_DATA.latency, '--chart-aqua'), '1.2s avg')}
-      ${w('Error trend','Failures / day',  agBars(AG_DATA.errors, '--chart-amber'), '-40%')}
+      ${w('Request volume', 'Last 14 days', agChart('area',   AG_DATA.volume,  '--chart-indigo', agFmtK),  h.requestsToday.toLocaleString(), 'requests today', '+18%')}
+      ${w('Response time',  'Last 14 days', agChart('line',   AG_DATA.latency, '--chart-aqua',   agFmtS),  h.avgLatency + ' s', 'avg response', '')}
+      ${w('Error trend',    'Last 14 days', agChart('column', AG_DATA.errors,  '--chart-amber',  agFmtK),  h.errorRate + ' %', 'error rate', '−40%')}
     </div>`;
 
   /* ⚠️ ALL THREE PROVIDERS ARE ROWS (request, 1 Sep 2026). Only the CONNECTED one has usage —
@@ -1394,9 +1432,9 @@ function agUseRows(){
     return on
       ? { id:p.id, provider:p.name,
           requests:h.requestsToday.toLocaleString(), latency:h.avgLatency + 's',
-          errors:h.errorRate + '%', avail:h.availability + '%', detail:widgets }
+          errors:h.errorRate + '%', avail:h.availability + '%', last:h.lastUsed, detail:widgets }
       : { id:p.id, provider:p.name,
-          requests:dash, latency:dash, errors:dash, avail:dash,
+          requests:dash, latency:dash, errors:dash, avail:dash, last:dash,
           detail:`<div style="padding:8px 0 12px;font-size:12.5px;line-height:1.6;color:var(--text-color-common-secondary)">`
             + `<b style="color:var(--primary-alt)">${stEsc(p.name)}</b> is not connected, so no usage has been collected for it. `
             + `${stEsc(p.tagline)} Use <b style="color:var(--primary-alt)">Configure AI provider</b> to connect it — `
@@ -1485,7 +1523,10 @@ const AG_DATA = {
 };
 
 /* the reference's own usage figures and 14-day series */
-AG_DATA.health  = { requestsToday:4820, avgLatency:1.24, errorRate:0.4, availability:99.96 };
+/* `lastUsed` is the moment of the most recent request, in the same relative voice the reference
+   prototype uses for its timestamps; the unconnected providers show an em dash, not "never" —
+   nothing has been measured, which is the rule the other four cells already follow. */
+AG_DATA.health  = { requestsToday:4820, avgLatency:1.24, errorRate:0.4, availability:99.96, lastUsed:'2 min ago' };
 AG_DATA.volume  = [180,240,210,300,280,360,420,390,460,520,480,540,610,580];
 AG_DATA.latency = [1.4,1.3,1.5,1.2,1.3,1.1,1.25,1.2,1.3,1.15,1.2,1.1,1.24,1.2];
 AG_DATA.errors  = [3,2,5,1,0,2,1,4,1,0,1,2,1,0];
@@ -1512,19 +1553,56 @@ AG_DATA.errors  = [3,2,5,1,0,2,1,4,1,0,1,2,1,0];
    prototype's own accent, and a series painted in the product accent reads as chrome.
    ⚠️ These charts are the one declared `list_gaps` gap on this screen and carry `class="agchart"`,
    which is load-bearing — the conformance checker derives the archetype from that class. */
-function agBars(d, tok){
-  const max = Math.max(1, ...d), w = 100 / d.length;
-  return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">${d.map((v, i) => {
-    const h = Math.max(0.8, (v / max) * 26);
-    return `<rect x="${(i * w + w * 0.18).toFixed(2)}" y="${(30 - h).toFixed(2)}" width="${(w * 0.64).toFixed(2)}" height="${h.toFixed(2)}" rx="0.6" fill="var(${tok})" opacity=".85"/>`;
-  }).join('')}</svg>`;
+/* ⚠️ ONE RENDERER, THREE SHAPES, DRAWN TO THE DS's OWN RULES (3 Sep 2026). The registry ships no
+   chart element — charts are Highcharts in the product and a declared gap here (`class="agchart"`
+   stays, which is what the conformance checker keys on) — so what this draws is the product's
+   chart CHROME from the tokens the `data-viz` family names: gridlines in `--neutral-lighter`,
+   axis labels in `--neutral-light` at 11px, the baseline in `--border-color`, series from the
+   chart palette (never `--primary`), markers punched back to the page surface. `agBars` /
+   `agLine` — the axis-less bars and stroke this replaced — are gone, not parked: the shapes live
+   on as `column` and `line` here.
+   ⚠️ A FIXED viewBox THAT SCALES UNIFORMLY, not `preserveAspectRatio="none"`. The old plot had no
+   text, so stretching it was free; an axis label stretched to a tile's aspect ratio is not a
+   label any more. The tile is ~370px in a three-up detail, so the 400-unit box draws near 1:1.
+   ⚠️ THE Y SCALE IS A "NICE" NUMBER (1 / 2 / 2.5 / 5 × 10ⁿ above the max) so the gridlines land
+   on round values, which is what makes them readable as a scale rather than as decoration.
+   ⚠️ X labels are real dates counted back from today — the window says "Last 14 days", and a
+   date axis that said otherwise would be the tile contradicting its own header. Every third day
+   plus the last, or fourteen labels collide at this width. */
+const agFmtK = v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + 'k' : String(Math.round(v));
+const agFmtS = v => (Math.round(v * 10) / 10) + 's';
+function agNice(max){
+  const p = Math.pow(10, Math.floor(Math.log10(max || 1))), m = (max || 1) / p;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
 }
-function agLine(d, tok){
-  const max = Math.max(...d), min = Math.min(...d), sp = (max - min) || 1;
-  const pt = d.map((v, i) => `${(i / (d.length - 1) * 100).toFixed(2)},${(28 - ((v - min) / sp) * 24).toFixed(2)}`);
-  return `<svg class="agchart" style="display:block;width:100%;height:96px" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-    <polyline points="${pt.join(' ')}" fill="none" stroke="var(${tok})" stroke-width="1.4"
-      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+function agChart(kind, d, tok, fmt){
+  const W = 400, H = 140, L = 38, R = 10, T = 10, B = 24, pw = W - L - R, ph = H - T - B;
+  const top = agNice(Math.max(...d) * 1.08), ticks = 4;
+  const y = v => T + ph - (v / top) * ph, f = n => n.toFixed(1);
+  const n = d.length, slot = pw / n, xs = i => L + slot * i + slot / 2;
+  const grid = [...Array(ticks + 1)].map((_, i) => { const v = top * i / ticks, yy = f(y(v));
+    return `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--neutral-lighter)" stroke-width="1"/>` +
+           `<text x="${L - 7}" y="${f(y(v) + 3.5)}" text-anchor="end" font-size="11" fill="var(--neutral-light)">${fmt(v)}</text>`; }).join('');
+  const day = 864e5, now = Date.now(), every = Math.ceil(n / 5);
+  const labels = [...Array(n)].map((_, i) => {
+    /* the last day always gets a label; a regular one that would land within a slot of it is
+       dropped — at fourteen days the third-day cadence puts one on day 12, and "Sep 2" and
+       "Sep 3" printed on top of each other. */
+    if ((i % every && i !== n - 1) || (i !== n - 1 && n - 1 - i < every)) return '';
+    const dt = new Date(now - (n - 1 - i) * day);
+    return `<text x="${f(xs(i))}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--neutral-light)">${dt.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</text>`; }).join('');
+  let body = '';
+  if (kind === 'column'){
+    const bw = slot * 0.56;
+    body = d.map((v, i) => `<rect x="${f(xs(i) - bw / 2)}" y="${f(y(v))}" width="${f(bw)}" height="${f(T + ph - y(v))}" rx="2" fill="var(${tok})"/>`).join('');
+  } else {
+    const pts = d.map((v, i) => `${f(xs(i))},${f(y(v))}`).join(' ');
+    if (kind === 'area') body += `<polygon points="${f(xs(0))},${f(T + ph)} ${pts} ${f(xs(n - 1))},${f(T + ph)}" fill="var(${tok})" opacity=".14"/>`;
+    body += `<polyline points="${pts}" fill="none" stroke="var(${tok})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    body += d.map((v, i) => `<circle cx="${f(xs(i))}" cy="${f(y(v))}" r="2.4" fill="var(--page-background-color)" stroke="var(${tok})" stroke-width="1.6"/>`).join('');
+  }
+  return `<svg class="agchart" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto;font-family:inherit" aria-hidden="true">` +
+    grid + `<line x1="${L}" x2="${W - R}" y1="${f(T + ph)}" y2="${f(T + ph)}" stroke="var(--border-color)"/>` + body + labels + `</svg>`;
 }
 
 const agProv = id => AG_DATA.providers.find(p => p.id === id) || AG_DATA.providers[0];
@@ -1599,16 +1677,55 @@ function agSeed(){
    ⚠️ `stFullOpen` IS NO LONGER USED HERE, so the Settings category list stays visible behind the
    drawer — which is the point of a drawer: the Overview you came from is still on screen.
    `agHelpShowTog` and `.agcfg.nohelp` remain unreferenced, as before. */
+/* ⚠️ THE DRAWER STOPS AT THE RAIL'S EDGE — see the note at `#drawer-agcfg` in the stylesheet.
+   ⚠️ IT READS `railWidth()`, WHICH READS THE TOKEN, NOT THE BOX. The rail animates its width, and
+   this file's own recorded lesson is that a `getBoundingClientRect()` on it catches the
+   transition mid-flight and parks whatever depends on it at the wrong number — the flyout bug.
+   `railWidth()` already answers "how wide is the rail meant to be", including `body.pinned`
+   (`--rail-w-open`), and the shell's padding trusts it for the same question.
+   ⚠️ GUARDED: this block also loads in pages whose rail engine differs, so a missing
+   `railWidth` leaves the CSS fallback in place rather than throwing on open. */
+function agCfgSize(){
+  const d = document.getElementById('drawer-agcfg'); if (!d) return;
+  if (typeof railWidth !== 'function') return;
+  d.style.width = Math.max(720, innerWidth - railWidth()) + 'px';
+}
+window.addEventListener('resize', () => {
+  const d = document.getElementById('drawer-agcfg');
+  if (d && d.classList.contains('on')) agCfgSize();
+});
 function agConfig(pid){
   if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
   const d = document.getElementById('drawer-agcfg');
   if (!d) return;
   agCfgPaint();
+  agCfgSize();
   document.body.classList.add('agdrawer');
   const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.add('on');
   d.classList.add('on');
   agCfgAfter();
 }
+/* ⚠️ ESCAPE CLOSES IT THROUGH `agCfgClose()`, AND THAT IS A BUG FIX, NOT A NEW SHORTCUT
+   (3 Sep 2026, found while making the drawer full width). Escape already reached this drawer:
+   the host page's own ladder matches `.sdrawer.on` and calls `closeOverlays()`, which strips
+   `.on` from every drawer and clears `#scrim2` — but it knows nothing about THIS drawer's own
+   `#agCfgScrim`, nor about `body.agdrawer`. So the panel slid away and left its blurred scrim
+   over the page, blocking it, with the Overview never repainted. Latent since the drawer was
+   built on 2 Sep; the full-width panel makes Escape the reflex, so it surfaces every time.
+   ⚠️ CAPTURE PHASE + `stopPropagation()` — the ONLY way to be sure this runs instead of the
+   host's rung, whatever order the two scripts registered in. Falling through would close the
+   drawer twice, once correctly and once badly.
+   ⚠️ NO `obs-select` GUARD. One was tried and is wrong twice over: the host has always closed
+   this drawer on Escape from anywhere inside it, so exempting a dropdown would INVENT an
+   inconsistency rather than remove one — and in bubble phase the guard could not have worked
+   anyway, because the host's handler fires regardless of what this one decides. */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const dr = document.getElementById('drawer-agcfg');
+  if (!dr || !dr.classList.contains('on')) return;
+  e.stopPropagation();
+  agCfgClose();
+}, true);
 function agCfgClose(){
   const d = document.getElementById('drawer-agcfg');
   if (d) d.classList.remove('on');
@@ -1707,10 +1824,13 @@ function agCfgHTML(){
   /* ⚠️ `#agPage` IS ON THIS SCREEN TOO, and it has to be: the scoped DS token block is
      `#agPage{…}`, so anything rendered outside that id gets none of the palette. The Overview
      and this page never coexist — `stMainPaint` swaps one for the other. */
+  /* ⚠️ `.agcfgsp` is the drawer's 24px top gutter for the RAIL, in the side menu's own `logo`
+     slot so the panel and its right rule stay full height while the rows start lower (3 Sep 2026:
+     "the line is attached"). Sized only under `#drawer-agcfg` — see that rule in the CSS. */
   return `<div class="agpage agcfg" id="agPage">
     <div class="agcfgn">
       <obs-side-menu id="agCfgNav" mode="categories" search="false"
-        active="${stEsc(p.name)}" items="${agJ(items)}"></obs-side-menu>
+        active="${stEsc(p.name)}" items="${agJ(items)}"><div slot="logo" class="agcfgsp"></div></obs-side-menu>
     </div>
     <div class="agcfgm" id="agCfgMain">${agCfgFormHTML()}</div>
     ${agHelpHTML()}

@@ -882,12 +882,29 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    menu's own edge. The other three sides keep it; the shadow already separates this edge. */
 .mflyout{position:fixed;z-index:70;display:none;background:var(--pop);
   border:1px solid var(--border);border-left:0;
-  border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:86vh;overflow:auto}
+  border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:calc(100vh - 16px);overflow:auto}
+/* ⚠️ `calc(100vh - 16px)`, NOT `86vh` (request, 3 Sep 2026: "the last submodule i can't hover it"
+   on the Setting menu). MEASURED: Setting's master column is 759px of content — 19 rows at the
+   34px pitch, a heading, two paddings — and 86vh is 574px on a 667px viewport, 694px on 807. The
+   box was capped and `overflow:auto` quietly scrolled it, so the bottom rows sat OUTSIDE the
+   visible box: a hit test at APM / Real User Monitoring / Integration / Agentic AI landed on the
+   dashboard grid behind the menu, not on the row. Nothing said the menu scrolled — the bar sat
+   44px away in the shadow gutter — and a pointer that cannot reach a row cannot open its pane.
+   The pane had the same fault one step later: aligned to a row near the bottom, it ran past the
+   box's edge and was cut off. 8px top and bottom is the same margin `mfClamp()` already keeps. */
 html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
 /* column of [columns row] + [docs footer] — the footer is Datadog's mega-menu pattern */
 .mflyout.on{display:flex;flex-direction:column;gap:0}
 .mfcols{display:flex;gap:0}
-.mfcol{width:216px;padding:0 14px;flex:0 0 auto}
+/* ⚠️ 288px — THE SAME WIDTH AS `.mfcol.mfmaster` (request, 5 Sep 2026: "the submodule sidebar
+   popup will be same width"). Measured before the change, the six flyouts came out at THREE
+   widths: 221 for SLO and Report (one 216px column), 332 for Alert, Explorer and Setting (a
+   288px master), and 471 for Dashboard (216 + a 250px Starred column). Hovering down the rail
+   made the menu jump wider and narrower under the pointer.
+   ⚠️ THE MASTER'S 288 IS WHAT WINS, not the 216: it was itself measured up from 236 on 2 Sep to
+   stop Settings' longest labels truncating, so narrowing to 216 would reintroduce that. The two
+   rules now hold one number between them — change `.mfcol` and `.mfcol.mfmaster` together. */
+.mfcol{width:288px;padding:0 14px;flex:0 0 auto}
 /* ⚠️ A COLUMN HOLDING A TWO-UP LIST SIZES TO ITS CONTENT. `.mfcol` is a fixed 216px, which
    is right for one list of labels and half of what a `.mflist.c2` grid needs — the grid
    tracks simply ran outside the column and out of the menu's own box. `:has()` keeps this
@@ -920,12 +937,45 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    That is why the right/bottom padding grew rather than being decorative. */
 #mflyout:has(.mfdetail){background:transparent;border:0;box-shadow:none;
   border-radius:0;padding:14px 44px 44px 0}
-#mflyout:has(.mfdetail) .mfcols{align-items:flex-start;gap:8px}
+/* ⚠️ THE TWO CARDS TOUCH (request, 3 Sep 2026 — the strip between them boxed in red, "remove
+   this space"). They sat 8px apart, which read as two unrelated menus floating beside each other
+   rather than as a list and the pane belonging to the row you are pointing at. */
+#mflyout:has(.mfdetail) .mfcols{align-items:flex-start;gap:0}
 #mflyout:has(.mfdetail) .mfcol{background:var(--pop);border:1px solid var(--border);
   padding:12px 14px;box-shadow:10px 0 30px rgba(0,0,0,.38)}
 html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px rgba(23,35,54,.14)}
 #mflyout:has(.mfdetail) .mfcol.mfmaster{border-left:0;border-radius:0 8px 8px 0}
-#mflyout:has(.mfdetail) .mfcol.mfdetail{border-radius:8px}
+/* ⚠️ THE MASTER SQUARES ITS RIGHT CORNERS ONLY WHILE A PANE IS ACTUALLY OPEN. `:empty` hides the
+   pane on a row with no children — Explorer has nine such rows — and a card left square on the
+   side with nothing beside it reads as clipped rather than as joined. `:has()` is already how
+   this whole block is scoped, so the condition costs nothing new. */
+#mflyout:has(.mfdetail:not(:empty)) .mfcol.mfmaster{border-radius:0}
+/* ⚠️ THE MASTER LIST SCROLLS INSIDE ITS OWN CARD when the viewport is shorter than the menu — not
+   the flyout around it. `mfClamp()` measures the room (viewport minus the flyout's and the card's
+   own paddings and the heading, read from computed styles rather than retyped) and writes it as
+   the list's `max-height`; on a tall viewport that is more than the list needs and nothing
+   changes. The bar is inside the card, beside the rows it scrolls, and `.more` draws the same
+   bottom fade the detail pane already uses so the cut-off is announced rather than silent.
+   ⚠️ `overflow:visible` ON THE TREE FLYOUT — the content is bounded now, so the outer `auto`
+   (which put a scrollbar in the shadow gutter and clipped the pane) has nothing left to do. The
+   flat menus keep it. */
+#mflyout:has(.mfdetail){overflow:visible}
+.mfcol.mfmaster{position:relative}
+.mfcol.mfmaster .mflist{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.mfcol.mfmaster .mflist::-webkit-scrollbar{width:8px}
+.mfcol.mfmaster .mflist::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;
+  border:2px solid transparent;background-clip:content-box}
+.mfcol.mfmaster .mflist::-webkit-scrollbar-track{background:transparent}
+.mfcol.mfmaster.more::after{content:'';position:absolute;left:1px;right:1px;bottom:1px;height:30px;
+  background:linear-gradient(180deg,transparent,var(--pop));pointer-events:none;border-radius:0 0 8px 0}
+/* ⚠️ THE SEAM IS ONE HAIRLINE, NOT TWO. Flush with both cards' borders drawn it would be 2px —
+   visibly heavier than every other edge in the menu — so the pane drops its LEFT border and the
+   master's right border is the join. The pane keeps its own radius on the free side only.
+   ⚠️ The master's `box-shadow` casts to the RIGHT (`10px 0 30px`), i.e. straight onto the pane.
+   That is covered rather than clipped: `.mfdetail` is the later sibling and paints its opaque
+   `--pop` over it, so the shadow only shows where the pane does not reach — above and below it,
+   which is where it belongs. Nothing here relies on a z-index. */
+#mflyout:has(.mfdetail) .mfcol.mfdetail{border-radius:0 8px 8px 0;border-left:0}
 #mflyout:has(.mfdetail) .mfcol.mfdetail:empty{display:none}
 /* ⚠️ PADDING-LEFT IS 10, NOT 8 — THE HEADING AND ITS ROWS SHARE ONE LEFT EDGE (request,
    2 Sep 2026: "the Explorer and the list of sub module will be line align").
@@ -1037,6 +1087,11 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
 .mfi.sub{padding-left:24px;height:26px;font-size:12px;color:var(--muted)}
 .mfi.sub:hover{color:var(--text)}
 .mfi .plus{color:var(--teal);font-weight:700}
+/* the product's `plus` glyph in the icon slot of a "New …" row — teal, and NOT dimmed to the
+   .72 the module marks rest at: it is the one row that creates rather than opens, and the
+   colour is what says so. `.st` is the Starred column's star, in the file's own yellow. */
+.mfi .mfic.plus{color:var(--teal);opacity:.9}
+.mfi .mfic.st{color:var(--yellow);opacity:1}
 /* ── Explorer's two panes ──────────────────────────────────────────────────────────────
    ⚠️ THE MASTER COLUMN IS A FIXED WIDTH so the eleven do not reflow when the detail pane
    appears beside them — a list that re-wraps under the cursor as a second pane opens is
@@ -1214,9 +1269,11 @@ html[data-theme="light"] #mflyout:has(.mfdetail) .mfcol{box-shadow:10px 0 30px r
 .mftag{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;
   background:rgba(139,92,246,.18);color:#a78bfa}
 .mftag.new{background:rgba(20,184,166,.18);color:var(--teal)}
-.mfsearch{display:flex;align-items:center;gap:7px;height:30px;padding:0 9px;margin:2px 8px 8px;
+/* 32px, the same height as the rows under it, so the column reads as one rhythm */
+.mfsearch{display:flex;align-items:center;gap:7px;height:32px;padding:0 9px;margin:0 0 8px;
   border:1px solid var(--border);border-radius:5px;background:var(--panel-2);color:var(--text-dim)}
 .mfsearch input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:12.5px}
+/* ⚠️ KEPT AND UNREFERENCED since 3 Sep 2026 — the Starred rows render as `.mfi` now. */
 .mfstar{display:flex;align-items:center;gap:8px;height:28px;padding:0 9px;border-radius:4px;font-size:12.5px;
   color:var(--text);cursor:pointer;white-space:nowrap}
 .mfstar:hover{background:var(--pop-item-hover)}
@@ -1267,8 +1324,9 @@ html[data-theme="light"] .stop{border-bottom-color:var(--border)}
 
 .kbd{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;color:var(--text-dim);
   background:var(--chip);border-radius:3px;padding:1px 5px}
-/* profile as the very last row */
-.sfoot .sitem{margin:6px 0 0;padding:0 7px}
+/* the identity row IS the very last row again — 8px below the rule, matching the 8px of
+   padding above it, so the hairline sits centred between the two blocks it separates */
+.sfoot .sitem{margin:8px 0 0;padding:0 7px}
 /* utility section — header actions pinned at bottom of the rail */
 .sutil{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);margin:4px 8px 0;padding:7px 0 2px;position:relative;z-index:1}
 html[data-theme="light"] .sutil{border-top-color:var(--border)}
@@ -1305,10 +1363,15 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    one column each cell is an icon with its label faded out, which is exactly what the collapsed
    rail looked like before this moved; expanded, the three sit side by side.
    ⚠️ `.lbl` still carries the fade, so nothing new decides when a label is visible. */
-.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:8px 4px 0;padding-top:8px;
-  border-top:1px solid rgba(255,255,255,.08)}
+/* ⚠️ THE RULE IS ON THE BOTTOM NOW — the quick links lead the footer since 3 Sep 2026, so the
+   separator between them and the identity row below has to sit under them. As a `border-top` it
+   would have drawn a second hairline 8px below `.sfoot::before`, which is the footer's own top
+   rule; there is nothing above `.squick` any more to separate it from. The 4px side margin is
+   unchanged, so the rule keeps the inset it always had. */
+.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:0 4px;padding-bottom:8px;
+  border-bottom:1px solid rgba(255,255,255,.08)}
 .sidebar.open .squick{grid-template-columns:repeat(3,minmax(0,1fr))}
-html[data-theme="light"] .squick{border-top-color:var(--border)}
+html[data-theme="light"] .squick{border-bottom-color:var(--border)}
 .sq{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
   padding:6px 0 5px;border-radius:4px;color:var(--text-dim);font-size:10.5px;
   white-space:nowrap;cursor:pointer;min-width:0}
@@ -7338,8 +7401,17 @@ html[data-theme="light"] #drawer-layout{
          together, then who you are, then what build this is. -->
     <!-- ⚠️ THE COLLAPSE CONTROL MOVED UP BESIDE THE LOGO (request + reference, 2 Sep 2026).
          It is in `.strigger` now — see there. `.gtoggle`'s CSS is kept and unreferenced. -->
-    <!-- ⚠️ THE IDENTITY ROW CARRIES A SECOND LINE, and the three quick links below it are a
-         3-up icon-above-label row — both from Datadog's own rail footer, measured in the browser
+    <!-- ⚠️ THE ORDER IS SWAPPED FROM THE REFERENCE — quick links FIRST, identity LAST (request,
+         3 Sep 2026, pointing at the two rows: "swap this"). Datadog's own footer, which this was
+         measured from, puts the avatar row above the hairline and Invite · Support · Help below
+         it; that is now a stated divergence rather than a copy. It also puts identity at the very
+         end of the rail, which is where `#userPop` opens from (`bottom:10px`), so the row and the
+         panel it opens now sit at the same edge.
+         ⚠️ THE HAIRLINE MOVED WITH THEM, from `.squick`'s `border-top` to its `border-bottom` —
+         it belongs BETWEEN the two blocks, and left as a top border it would have drawn a second
+         rule 8px under `.sfoot::before`.
+         ⚠️ THE IDENTITY ROW CARRIES A SECOND LINE, and the quick links are a 3-up
+         icon-above-label row — both from Datadog's rail footer, measured in the browser
          2 Sep 2026 at us5.datadoghq.com (Integrations row → avatar + email over org → a hairline
          → Invite · Support · Help). What is copied is the SHAPE; the colours are this file's
          tokens and the glyphs are the product's own.
@@ -7348,13 +7420,13 @@ html[data-theme="light"] #drawer-layout{
          ⚠️ EVERY LINK GOES SOMEWHERE REAL. Invite opens the product's own user management
          (`stOpen('User Settings')`); Support and Help are the two URLs already verified 200 for
          `AI_HELP` and the profile popover. Nothing here invents a destination. -->
-    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
     <div class="squick">
       <div class="sq" id="sbApproval" data-tip="Approval" onmouseenter="mfHide()" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
       <!-- Health hovers open its own sub-menu (its tab set), like a rail module -->
       <div class="sq" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfOpenUtil('Health',this)" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
       <div class="sq" id="sbBell" data-tip="Notification" onmouseenter="mfHide()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
     </div>
+    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
     <!-- ⚠️ `BUILD : 8.2.6` WAS HERE AND IS NOW IN THE PROFILE MENU (request, 2 Sep 2026:
          "remove this and show in other way"). A version string is reference information you
          look up once — it does not earn a permanent row in a rail whose every other line is
@@ -8471,10 +8543,100 @@ const ICONS = {
    "M25.4,32.6l-.3-.2c-.1,0-.2-.1-.4-.2l-.4-.2c-.3,0-.7,0-1,0-.3,0-.6,.3-.8,.5-.2,.2-.3,.4-.4,.7-.2,.4-.2,.8-.1,1.2,0,.4,.3,.7,.5,1,.3,.3,.6,.5,1,.6,.4,0,.8,0,1.2-.1,.2-.1,.5-.3,.7-.4,.3-.3,.5-.6,.5-1,0-.4,0-.8-.1-1.2,0-.2-.2-.4-.4-.6Zm6.6-28.6h-16c-1.6,0-3.1,.6-4.2,1.8-1.1,1.1-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h16c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V10c0-1.6-.6-3.1-1.8-4.2-1.1-1.1-2.7-1.8-4.2-1.8Zm2,34c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6h-16c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V10c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h16c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v28Z"
   ],
   "from": "12-profile.html"
+ },
+ /* ⚠️ SIX GLYPHS FOR THE DASHBOARD / SLO FLYOUT ROWS (request, 3 Sep 2026: the Dashboard and
+    SLO menus held against Explorer and Setting — "improve this and same ui"). Five are the
+    product's own SVGs from `observeops-icons/common/`, pasted verbatim: `plus` (actions-edit),
+    `star` (shapes-symbols), `screen` (media-device — the NOC wall), `calendar` (time-date
+    calendar-alt — scheduled reports), `pie-chart` (charts-metrics — an error budget is a share
+    consumed). The sixth, `sliders`, is the Lucide `sliders-horizontal` this file ALREADY draws on
+    the list panel's Manage-dashboards row and the Layout drawer — one glyph per meaning, so
+    "manage" looks the same in the menu as it does on the panel. It is a STROKE icon on a 24 box,
+    which is why `ico()` learned a `stroke` flag rather than this being redrawn as a fill shape. */
+ "plus": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"
+  ]
+ },
+ "star": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.9,19.4c-.1-.4-.4-.7-.7-.9-.3-.2-.7-.4-1.1-.4l-11.4-1.7-5.1-10.3c-.2-.3-.4-.6-.7-.8-.3-.2-.7-.3-1.1-.3s-.7,.1-1.1,.3c-.3,.2-.6,.5-.7,.8l-5.1,10.3-11.4,1.7c-.4,0-.7,.2-1,.4-.3,.2-.5,.6-.6,.9-.1,.3-.1,.7,0,1.1,0,.4,.3,.7,.5,.9l8.2,8-2,11.3c0,.4,0,.8,.1,1.1,.1,.4,.4,.7,.7,.9,.3,.2,.7,.3,1,.4,.4,0,.7,0,1.1-.2l10.2-5.3,10.2,5.4c.3,.2,.6,.2,.9,.2,.4,0,.8-.1,1.2-.4,.3-.2,.5-.5,.7-.9,.1-.4,.2-.7,.1-1.1l-2-11.3,8.2-8c.3-.2,.5-.6,.6-.9,.1-.4,.1-.7,0-1.1Zm-12.3,8c-.2,.2-.4,.5-.5,.8-.1,.3-.1,.6,0,1l1.4,8.4-7.5-4c-.3-.2-.6-.2-.9-.2s-.6,0-.9,.2l-7.5,4,1.4-8.4c0-.3,0-.7,0-1-.1-.3-.3-.6-.5-.8l-6-6,8.4-1.2c.3,0,.6-.2,.9-.4,.3-.2,.5-.4,.6-.7l3.6-7.6,3.8,7.6c.1,.3,.4,.5,.6,.7,.3,.2,.6,.3,.9,.4l8.4,1.2-6,6Z"
+  ]
+ },
+ "screen": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "m43.79,8.18c-.39-.37-.91-.58-1.46-.58H5.67c-.55,0-1.07.21-1.46.58-.39.37-.61.89-.61,1.42v28.8c0,.53.22,1.05.61,1.42.39.37.91.58,1.46.58h36.67c.55,0,1.07-.21,1.46-.58.39-.37.61-.89.61-1.42V9.6c0-.53-.22-1.05-.61-1.42Zm-3.52,28.22H7.73V11.64h32.53v24.76Z"
+  ]
+ },
+ "calendar": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M34,38c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm0-8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10,0c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1-.4,.2-.7,.4-.9,.7-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10,8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6ZM42.2,7.8c-1.1-1.1-2.7-1.8-4.2-1.8h-2V4c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v2h-16V4c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v2h-2c-1.6,0-3.1,.6-4.2,1.8s-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h28c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V12c0-1.6-.6-3.1-1.8-4.2Zm-2.2,32.2c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6H10c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V22h32v18Zm0-22H8v-6c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h2v2c0,.5,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.4-.4,.6-.9,.6-1.4v-2h16v2c0,.5,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.4-.4,.6-.9,.6-1.4v-2h2c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v6Zm-16,20c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1-.4,.2-.7,.4-.9,.7-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10-8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6Z"
+  ]
+ },
+ "pie-chart": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38,24h-14V10c0-1.2-.8-2-2-2-10,0-18,8-18,18s8,18,18,18,18-8,18-18c0-1.2-.8-2-2-2Zm-14,15.8c-7.6,1.2-14.8-4.2-15.8-11.8-1.2-7.6,4.2-14.8,11.8-15.8v13.8c0,1.2,.8,2,2,2h13.8c-.8,6.2-5.6,11-11.8,11.8ZM30,4c-1.2,0-2,.8-2,2v12c0,1.2,.8,2,2,2h12c1.2,0,2-.8,2-2,0-7.8-6.2-14-14-14Zm2,12v-7.8c4,.8,7,3.8,7.8,7.8h-7.8Z"
+  ]
+ },
+ "sliders": {
+  "viewBox": "0 0 24 24",
+  "stroke": true,
+  "paths": [
+   "M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"
+  ]
+ },
+ /* ⚠️ FIVE GLYPHS FOR THE HEALTH MONITORING FLYOUT (request, 3 Sep 2026: its plain rows held
+    against the Report menu — "this will be improve as like this"). All five are the product's
+    own SVGs from `observeops-icons/`, verbatim, and every one is an EXACT name match for its tab
+    — `application`, `database`, `sessions`, `upgrade`, `restore` — so nothing was interpreted.
+    Health Overview and Alert reuse `health-monitoring` and `alert`, which this registry already
+    carries for the rail. Where they are used is `HEALTH_ICO`, beside `mfOpenUtil`. */
+ "application": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M44.1,12.8c-.2-.6-.7-1-1.3-1.2L24.8,3.3c-.5-.2-1.1-.2-1.6,0L4.9,11.7c-.6,.3-1.1,.9-1.1,1.6v21.2c0,.7,.4,1.4,1.1,1.7l18.2,8.4,.3,.2h.6c0,0,.1,0,.2,0,0,0,0,0,.1,0h.5v-.2l18.3-8.4c.7-.3,1.1-1,1.1-1.7V12.8h-.1ZM24,7.1l13.8,6.4-4.1,1.9-13.8-6.4,4.1-1.9Zm-1.9,33l-14.4-6.7V16.4l14.4,6.7v17Zm1.9-20.2l-13.8-6.4,5.2-2.4,13.8,6.4-5.2,2.4Zm16.4,13.5l-14.5,6.7V23l5.5-2.6v3.5c0,.5,.2,1,.6,1.3,.4,.3,.9,.5,1.4,.5,1,0,1.8-.8,1.8-1.9v-5.2l5.1-2.3v17Z"
+  ]
+ },
+ "database": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M16.67,31.87c-.36,0-.72,.1-1.02,.3-.3,.19-.54,.47-.68,.79-.14,.32-.18,.67-.1,1.01,.07,.34,.25,.65,.5,.9s.58,.41,.94,.48c.36,.07,.72,.03,1.06-.1,.34-.13,.62-.36,.82-.64,.2-.29,.31-.63,.31-.97,0-.46-.19-.91-.54-1.24s-.81-.51-1.3-.51ZM24,6.5c-7.33,0-14.67,2.4-14.67,7v21c0,4.6,7.33,7,14.67,7s14.67-2.4,14.67-7V13.5c0-4.6-7.33-7-14.67-7Zm11,28c0,1.24-4.18,3.5-11,3.5s-11-2.26-11-3.5v-5.72c3.43,1.56,7.2,2.32,11,2.22,3.8,.1,7.57-.67,11-2.22v5.72Zm0-10.5c0,1.24-4.18,3.5-11,3.5s-11-2.26-11-3.5v-5.72c3.43,1.56,7.2,2.32,11,2.22,3.8,.1,7.57-.67,11-2.22v5.72Zm-11-7c-6.82,0-11-2.26-11-3.5s4.18-3.5,11-3.5,11,2.26,11,3.5-4.18,3.5-11,3.5Zm-7.33,4.38c-.36,0-.72,.1-1.02,.29-.3,.19-.54,.47-.68,.79-.14,.32-.18,.67-.1,1.01,.07,.34,.25,.65,.5,.9s.58,.41,.94,.48c.36,.07,.72,.03,1.06-.1s.62-.36,.82-.64c.2-.29,.31-.63,.31-.97,0-.46-.19-.91-.54-1.24-.34-.33-.81-.51-1.3-.51Z"
+  ]
+ },
+ "sessions": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M19.11,22.98c0-1-.8-1.8-1.8-1.8H5.8c-1-.02-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h11.49c1,0,1.82-.8,1.82-1.8Zm.25,5.64c0-1-.8-1.8-1.8-1.8H8.24c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h9.33c1,0,1.8-.8,1.8-1.8ZM29.8,11.38v-3.05h1.36c1,0,1.8-.8,1.8-1.8s-.8-1.82-1.8-1.82h-6.33c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h1.36v3.07c-3.31,.38-6.44,1.76-8.93,4.02-.75,.67-.8,1.82-.13,2.55,.67,.75,1.82,.8,2.55,.13,2.27-2.05,5.22-3.18,8.29-3.18,6.84,0,12.4,5.56,12.4,12.4s-5.56,12.4-12.4,12.4c-4.44,0-8.56-2.4-10.78-6.27-.47-.87-1.58-1.18-2.45-.67-.87,.49-1.16,1.6-.67,2.45,2.85,4.98,8.18,8.09,13.91,8.09,8.84,0,16.02-7.18,16.02-16,0-8.22-6.22-15-14.2-15.91Zm5.49,12.95c.75-.65,.82-1.8,.16-2.55-.65-.75-1.8-.82-2.55-.16l-5.51,4.84-2.02-2.07c-.71-.71-1.84-.73-2.55-.04-.71,.69-.73,1.84-.04,2.55l4.42,4.51,8.07-7.07Z"
+  ]
+ },
+ "upgrade": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.5098 18.9594C42.9498 18.3794 42.1598 18.0394 41.3398 18.0394H38.1798C38.1198 17.8794 38.0598 17.7194 37.9898 17.5594L40.2298 15.3294C40.8098 14.7494 41.1298 13.9794 41.1298 13.1694C41.1298 12.3594 40.8198 11.5994 40.2498 10.9994L36.5598 7.28938C35.3998 6.12938 33.3898 6.12938 32.2298 7.28938L30.0698 9.43937C29.8898 9.35937 29.7198 9.28938 29.5398 9.21938V6.15937C29.5198 4.47938 28.1398 3.10938 26.4598 3.10938H21.2198C19.5298 3.10938 18.1598 4.47938 18.1598 6.16938V9.14937C18.0198 9.20937 17.8798 9.25938 17.7298 9.32938L15.6498 7.20938C14.5598 6.06938 12.5298 5.99938 11.3098 7.16938L7.5798 10.8294C6.9998 11.3894 6.6598 12.1794 6.6598 12.9994C6.6598 13.8194 6.9698 14.5694 7.5398 15.1694L9.6598 17.3194C9.5798 17.4994 9.5098 17.6794 9.4398 17.8594H6.3898C5.5898 17.8494 4.8298 18.1594 4.2298 18.7294C3.6498 19.3094 3.3298 20.0794 3.3298 20.8794L3.2998 26.1394C3.2998 27.8394 4.6698 29.2194 6.3498 29.2194H9.4798C9.5398 29.3794 9.5998 29.5294 9.6798 29.6894L7.4498 31.9094C6.8698 32.4894 6.5498 33.2594 6.5498 34.0694C6.5498 34.8794 6.8598 35.6394 7.4298 36.2394L11.1198 39.9494C12.2798 41.1094 14.2998 41.0894 15.4298 39.9694L17.7398 37.6794C17.8698 37.7294 17.9998 37.7894 18.1298 37.8394V41.1094C18.1298 42.7994 19.4998 44.1694 21.1898 44.1694H27.7698V40.1794H22.1398V37.1894C22.1398 35.8794 21.2998 34.7094 20.0698 34.2994C19.7098 34.1794 19.3198 34.0194 18.8798 33.8094C17.7498 33.2794 16.2898 33.5194 15.4098 34.3994L13.2998 36.5094L10.8898 34.0894L12.9298 32.0594C13.8698 31.1194 14.0998 29.7094 13.5098 28.5294C13.2998 28.1094 13.1298 27.6994 12.9998 27.2894C12.5598 26.0794 11.4098 25.2594 10.1398 25.2594H7.2998L7.31981 21.8294H10.1098C11.4198 21.8394 12.5798 21.0094 12.9998 19.7894C13.1598 19.3394 13.3398 18.8994 13.5498 18.4794C14.1098 17.3194 13.8798 15.9194 12.9798 14.9894L11.0198 13.0294L13.4598 10.6294L15.3598 12.5694C16.2698 13.5094 17.6798 13.7494 18.8498 13.1894C19.2598 12.9994 19.6798 12.8294 20.0698 12.6894C21.3198 12.2694 22.1498 11.1094 22.1498 9.79938V7.08938H25.5498V9.84938C25.5498 11.1394 26.3698 12.2994 27.5898 12.7394C28.0498 12.8994 28.4798 13.0794 28.8698 13.2794C30.0498 13.8694 31.4698 13.6394 32.3898 12.7194L34.3598 10.7594L36.7598 13.1694L34.7198 15.1994C33.8198 16.0994 33.5698 17.4894 34.1098 18.6594C34.2898 19.0494 34.4598 19.4794 34.5998 19.8894C35.0198 21.1494 36.1798 21.9894 37.4898 21.9894H40.3798L40.3598 25.2594L44.3398 25.2294L44.3698 21.1094C44.3698 20.2994 44.0598 19.5394 43.4998 18.9494L43.5098 18.9594ZM36.6198 23.7194C35.8598 22.9594 34.6298 22.9594 33.8698 23.7194L28.0898 29.4994C27.3298 30.2594 27.3298 31.4894 28.0898 32.2494C28.8498 33.0094 30.0798 33.0094 30.8398 32.2494L33.2998 29.7894V42.4394C33.2998 43.5094 34.1698 44.3894 35.2498 44.3894C36.3298 44.3894 37.1998 43.5194 37.1998 42.4394V29.7894L39.6598 32.2494C40.4198 33.0094 41.6498 33.0094 42.4098 32.2494C43.1698 31.4894 43.1698 30.2594 42.4098 29.4994L36.6298 23.7194H36.6198ZM23.9998 20.0294C26.1898 20.0294 27.9698 21.8094 27.9698 23.9994H31.9698C31.9698 19.6094 28.3898 16.0294 23.9998 16.0294C19.6098 16.0294 16.0298 19.6094 16.0298 23.9994C16.0298 28.3894 19.6098 31.9694 23.9998 31.9694V27.9694C21.8098 27.9694 20.0298 26.1894 20.0298 23.9994C20.0298 21.8094 21.8098 20.0294 23.9998 20.0294ZZ"
+  ]
+ },
+ "restore": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "m27,7c-9.3,0-17,7.7-17,17v3.17l-2.59-2.59c-.78-.78-2.05-.78-2.83,0-.78.78-.78,2.05,0,2.83l6,6c.78.78,2.05.78,2.83,0l6-6c.78-.78.78-2.05,0-2.83-.78-.78-2.05-.78-2.83,0l-2.59,2.59v-3.17c0-7.1,5.9-13,13-13s13,5.9,13,13-5.9,13-13,13c-1.1,0-2,.9-2,2s.9,2,2,2c9.3,0,17-7.7,17-17S36.3,7,27,7Z"
+  ]
  }
 };
 function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
-  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" fill="currentColor">` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
+  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`), not as attributes alone: several
+     containers in this file say `svg{fill:currentColor}`, and a CSS rule beats a presentation
+     ATTRIBUTE — so `fill="none"` on its own would be overpainted and the outline rendered as a
+     blob (the recorded `.dvic svg` trap). An inline style outranks any of those rules.
+     stroke-width 2 on a 24 box is 1.25px at the 15px the menus draw it — the derived-weight rule. */
+  const paint = i.stroke
+    ? 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill:none"'
+    : 'fill="currentColor"';
+  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" ${paint}>` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
 function setIco(el, name){ const i = ICONS[name]; if(!el||!i) return; el.setAttribute('viewBox', i.viewBox); el.innerHTML = i.paths.map(d=>`<path fill="currentColor" d="${d}"/>`).join(''); }
 
 /* ================= Sidebar model (live ul.mainMenu, 16 modules; groups from docs IA) ================= */
@@ -8550,13 +8712,23 @@ let activeRail = 0;
 /* Sub-menus. Each item is [label, module-to-open | null, action | null, kind].
    Page names are the docs' own wording wherever the docs name that page. */
 const SUBNAV = {
+  /* ⚠️ EVERY ROW CARRIES A GLYPH IN THE FIFTH SLOT (request, 3 Sep 2026: this menu and SLO's held
+     against Explorer and Setting — "improve this and same ui"). This REVERSES the note at
+     `SUBNAV['Report']` that kept Dashboard and SLO iconless because their rows are actions: a
+     menu where three of six flyouts lead every row with a mark and the other three lead with
+     nothing reads as two systems, and the user said so. The rule is now "every flyout row has a
+     glyph", and an ACTION row gets the glyph of what it DOES rather than a module's: a list row
+     takes the module it lists (`dashboard` / `screen` / `report`), a "New …" row the product's
+     `plus` (teal, replacing the text ＋ that used to sit in exactly that slot), Manage the
+     `sliders` the list panel's own Manage-dashboards row draws, Scheduled a `calendar`. */
   'Dashboards': [
-    { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()'],
-                              ['＋ New dashboard', null, 'dashNew()', 'plus'],
-                              ['Manage dashboards', null, 'openManage()'] ]},
-    { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()"],
-                              ['＋ New NOC view', null, 'openNocNew()', 'plus'] ]},
-    { h:'Reports',    items:[ ['Report list', 'Reports'], ['Scheduled reports', 'Reports'] ]},
+    { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()', null, 'dashboard'],
+                              ['＋ New dashboard', null, 'dashNew()', 'plus', 'plus'],
+                              ['Manage dashboards', null, 'openManage()', null, 'sliders'] ]},
+    { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()", null, 'screen'],
+                              ['＋ New NOC view', null, 'openNocNew()', 'plus', 'plus'] ]},
+    { h:'Reports',    items:[ ['Report list', 'Reports', null, null, 'report'],
+                              ['Scheduled reports', 'Reports', null, null, 'calendar'] ]},
   ],
   /* Monitors is the live product's own monitor taxonomy — Inventory plus the monitor
      types, in the product's order (replaces the docs-derived task list). It runs across
@@ -8613,9 +8785,12 @@ const SUBNAV = {
                             ['Onboarding process', 'NCCM'], ['Approvals', null, "showView('approval')"] ]},
     { h:'NetRoute', items:[ ['NetRoute analysis', 'NetRoute'], ['Path monitoring', 'NetRoute'] ]},
   ],
+  /* same rule as `Dashboards` above: the list row wears the module's `slo`, New the `plus`, and
+     Error budget a `pie-chart` — a budget is a share consumed, which is what that glyph draws. */
   'SLO': [
-    { h:'Service Level Objective', items:[ ['SLO list', 'SLO'], ['＋ New SLO', 'SLO', null, 'plus'],
-                                           ['Error budget', 'SLO'] ]},
+    { h:'Service Level Objective', items:[ ['SLO list', 'SLO', null, null, 'slo'],
+                                           ['＋ New SLO', 'SLO', null, 'plus', 'plus'],
+                                           ['Error budget', 'SLO', null, null, 'pie-chart'] ]},
   ],
   /* Settings is the module's own 18-category rail, in the product's order */
   'Settings': [
@@ -8688,9 +8863,10 @@ SUBNAV2['Setting']  = SUBNAV2['Settings'];
    menus whose every row has a leading glyph, "list will be show like").
    ⚠️ THE RULE IS "A ROW THAT NAMES A MODULE GETS THAT MODULE'S ICON". Every label here IS a
    module — the same ten Explorer lists — so the keys already exist and nothing was drawn or
-   invented. `Dashboard` and `SLO` deliberately stay iconless: their rows are ACTIONS
-   ("＋ New dashboard", "Manage dashboards", "Error budget"), not modules, and giving an action
-   a module's glyph would say something untrue about where it goes.
+   invented. ⚠️ SUPERSEDED 3 Sep 2026: `Dashboard` and `SLO` carry glyphs too now — see the note
+   at `SUBNAV['Dashboards']`. This paragraph used to argue they should stay iconless because their
+   rows are ACTIONS, and that reasoning still decides WHICH glyph an action row gets (what it does,
+   not a module it is not); it no longer decides whether it gets one.
    ⚠️ TWO KEYS ARE NOT THE OBVIOUS ONES, and both are the product's own naming: `Metric` is
    `metric-explorer` (there is no bare `metric` in the registry) and `NCCM` is `ncm`. A guessed
    key does not throw — `ico()` returns '' — so it would silently render a row with no glyph
@@ -9227,9 +9403,13 @@ function mfCol(secs, width){
       /* ⚠️ the ICON is the FIFTH slot, after label / module / action / kind. It is what
          separates a sub-module you can open from a page or a type underneath one — see the
          note on Explorer's tree. Optional: every other menu omits it and renders as before. */
+      /* ⚠️ A `plus` ROW WITH A GLYPH DRAWS THE GLYPH IN THE ICON SLOT AND NO TEXT ＋ (3 Sep 2026).
+         The text ＋ sat in exactly the place the icon column now occupies, so keeping both would
+         print two pluses side by side. The glyph keeps the teal (`.mfic.plus`) so "create" still
+         reads as the one different kind of row. Rows without a glyph render exactly as before. */
       `<div class="mfi${kind==='sub'?' sub':''}" onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${
-        ic ? mfIco(ic, 'mfic') : ''}${
-        kind==='plus' ? '<span class="plus">＋</span>'+label.replace('＋ ','')
+        ic ? mfIco(ic, kind==='plus' ? 'mfic plus' : 'mfic') : ''}${
+        kind==='plus' ? (ic ? '' : '<span class="plus">＋</span>')+label.replace('＋ ','')
       : kind==='beta' ? label+'<span class="mfbeta">BETA</span>'
       : label}</div>`).join('') +
     `</div>`).join('') + `</div>`;
@@ -9498,8 +9678,18 @@ function mfSub(k){
     : '';
   /* ⚠️ THE FLYOUT CHANGES HEIGHT WHEN THE PANE OPENS — Monitor's 18 children are far taller
      than the eleven — so the bottom clamp has to run again or the pane hangs off screen. */
-  mfClamp();
+  /* ⚠️ ALIGN FIRST, CLAMP SECOND (3 Sep 2026: "the last submodule i can't hover it"). The other
+     way round, `mfClamp()` measured the box while the PREVIOUS row's `margin-top` was still on
+     the pane under the NEW row's content — Real User Monitoring's 566px under Integration's
+     332px pane read as a 956px box — so the flyout was shoved to the top of the viewport, then
+     `mfDetailAlign` shrank the box back and the next hover let it drop again. Measured: the
+     box's top went 38 → 8 → 38 across three rows at 807px, and through FOUR positions at 957px.
+     A menu that moves under the pointer puts a different row under it, which fires that row's
+     hover, which moves it again — that is the row you "cannot hover". `mfDetailAlign` zeroes
+     the margin before it measures, so once it has run the box is its true size and the clamp
+     reads a settled number. */
   mfDetailAlign(k);
+  mfClamp();
   mfFade();
   /* the footer names whatever this pane is showing — see `mfDocsTarget`. It runs on EVERY
      hover including the ones that close the pane (`mfSubIdx === -1`), which is what puts the
@@ -9508,19 +9698,48 @@ function mfSub(k){
 }
 /* says "there is more below" only while there is. Bound per paint, because the list node is
    replaced on every hover. */
-function mfFade(){
-  const d = document.getElementById('mfDetail'); if (!d) return;
-  const l = d.querySelector('.mflist');
-  if (!l){ d.classList.remove('more'); return; }
-  const paint = () => d.classList.toggle('more', l.scrollTop + l.clientHeight < l.scrollHeight - 2);
+/* the bottom fade on a card whose list has more below the fold — the detail pane AND, since
+   3 Sep 2026, the master column (see `mfClamp`). One helper, two cards, so they cannot differ. */
+function mfFadeCard(card){
+  if (!card) return;
+  const l = card.querySelector('.mflist');
+  if (!l){ card.classList.remove('more'); return; }
+  const paint = () => card.classList.toggle('more', l.scrollTop + l.clientHeight < l.scrollHeight - 2);
   l.onscroll = paint;
   paint();
+}
+function mfFade(){
+  mfFadeCard(document.getElementById('mfDetail'));
+  mfFadeCard(document.querySelector('#mflyout .mfmaster'));
 }
 /* one clamp, used by the initial open and by every pane change */
 let mfAnchorTop = 0;
 function mfClamp(){
   const fly = document.getElementById('mflyout'); if (!fly) return;
-  fly.style.top = Math.max(8, Math.min(mfAnchorTop, innerHeight - fly.offsetHeight - 8)) + 'px';
+  /* ⚠️ BOUND THE MASTER LIST TO THE VIEWPORT FIRST, then place the box (3 Sep 2026 — see the
+     note at `.mflyout`'s max-height). The room is the viewport less everything around the list
+     that is not the list: the flyout's own paddings, the card's paddings and borders, the heading
+     and the list's bottom margin — all READ from computed styles, so a padding changed in the
+     sheet cannot leave a stale number here. On a tall viewport the result exceeds the list's
+     content and the max-height is inert. `mfFade()` then paints the cut-off cue, if any. */
+  const list = fly.querySelector('.mfmaster .mflist');
+  if (list){
+    const card = list.closest('.mfmaster'), hd = card.querySelector('.mfsec');
+    const px = v => parseFloat(v) || 0, cf = getComputedStyle(fly), cc = getComputedStyle(card), cl = getComputedStyle(list);
+    const over = px(cf.paddingTop) + px(cf.paddingBottom) + px(cc.paddingTop) + px(cc.paddingBottom)
+               + px(cc.borderTopWidth) + px(cc.borderBottomWidth) + px(cl.marginTop) + px(cl.marginBottom)
+               + (hd ? hd.offsetHeight : 0);
+    list.style.maxHeight = Math.max(120, innerHeight - 16 - over) + 'px';
+    mfFadeCard(card);
+  }
+  /* ⚠️ AN OPEN MENU KEEPS ITS PLACE. The anchor decides the top ONCE, when the menu opens; a
+     pane change only ever pushes the box UP if it would otherwise run off the bottom, and never
+     lets it drift back down. With the master bounded above and the pane clamped to the master,
+     the box does not change height between rows at all — this is the guarantee that a rounding
+     pixel cannot turn into a jump under the pointer. `mfOpen` clears the inline top so a fresh
+     open starts from its own anchor rather than the previous menu's position. */
+  const cur = fly.classList.contains('on') && fly.style.top ? parseFloat(fly.style.top) : mfAnchorTop;
+  fly.style.top = Math.max(8, Math.min(cur, innerHeight - fly.offsetHeight - 8)) + 'px';
 }
 /* Documentation link per module, Datadog's mega-menu footer. Paths verified against
    docs.motadata.com (the module section indexes differ from the module names). */
@@ -9615,7 +9834,13 @@ function mfOpen(i, el){
     cols += `<div class="mfcol" style="width:250px"><div class="mfsec tight">Starred dashboards</div>
       <div class="mfsearch"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg>
         <input placeholder="Search all dashboards" onkeydown="if(event.key==='Enter'){mfHide();openDPanel();dashSearch(this.value)}" onclick="event.stopPropagation()"/></div>` +
-      (fav.length ? fav.map(n=>`<div class="mfstar" onclick="mfHide();pickDash('${n.replace(/'/g,"\\'")}')"><span class="st">★</span>${n}</div>`).join('')
+      /* ⚠️ A STARRED ROW IS AN `.mfi` NOW, NOT A `.mfstar` (3 Sep 2026) — the same 32px row, the
+         same 7px gap, the same 15px icon slot as every other row in the menu, with the product's
+         `star` glyph in this file's `--yellow` where the other rows carry their module's mark. It
+         was a 28px row with a ★ character: one pitch and one glyph weight in the left column, a
+         different pitch and a typographic star in the right, inside a single card. `.mfstar` is
+         kept in the sheet, unreferenced — the house pattern. */
+      (fav.length ? fav.map(n=>`<div class="mfi" onclick="mfHide();pickDash('${n.replace(/'/g,"\\'")}')">${ico('star','mfic st')}${n}</div>`).join('')
                   : '<div class="mfempty">No starred dashboards yet.</div>') + `</div>`;
   }
   /* ⚠️ THE FOOTER IS NOW A FALLBACK, NOT THE DEFAULT. A two-pane menu carries `DOCS ↗` on
@@ -9628,21 +9853,44 @@ function mfOpen(i, el){
      instead would catch the width mid-transition and park the flyout at 64px, which is
      what put the menu underneath the expanding rail. */
   fly.style.left = railWidth() + 'px';
+  fly.style.top = '';                    /* a fresh open starts from ITS anchor, not the last menu's top */
   fly.classList.add('on');
   mfAnchorTop = b.top - 12;
   mfClamp();
 }
 /* The utility rail items get the same flyout treatment. Health's sub-menu IS its tab set,
    read from HEALTH_TABS so the menu and the page can't list different tabs. */
+/* ⚠️ A GLYPH PER HEALTH TAB, KEYED BY THE TAB'S LABEL (request, 3 Sep 2026: the Health flyout's
+   plain rows held against the Report menu — "this will be improve as like this"). This menu was
+   the last one in the rail whose rows had no mark, so it read as a different kind of list from
+   the five beside it. The rows now carry the FIFTH slot `mfCol` already renders, and inherit the
+   same weight and colour every other glyph row has — nothing about the row shape is new here.
+   ⚠️ KEYED BY LABEL, NOT BY INDEX. `HEALTH_TABS` is also what the Health page renders its tab bar
+   from; a parallel array would be a second copy of its order, and reordering the tabs would
+   silently put the wrong glyph on every row after the change. A label that gains no entry here
+   simply renders without a mark — and `mfCol` does not gate the whole menu on it, unlike
+   `mfTree`, so one miss cannot switch the icons off for the rest.
+   ⚠️ EVERY KEY WAS RESOLVE-CHECKED: `ico()` returns '' for a name it does not have rather than
+   throwing, so a typo here is one blank row among seven that nothing reports. */
+const HEALTH_ICO = {
+  'Health Overview': 'health-monitoring',   /* the module's own mark — the overview IS the module */
+  'Application':     'application',
+  'Database':        'database',
+  'Live Session':    'sessions',
+  'Alert':           'alert',
+  'Upgrade':         'upgrade',
+  'Restore':         'restore',
+};
 function mfOpenUtil(key, el){
   clearTimeout(mfTimer);
   mfHoverIdx = -1;
   if (!document.getElementById('sidebar').classList.contains('open')){ mfHide(); return; }
   const fly = document.getElementById('mflyout');
   const secs = [{ h:'Health Monitoring',
-                  items: HEALTH_TABS.map((t,i)=>[t, null, `showView('health');setHealthTab(${i})`]) }];
+                  items: HEALTH_TABS.map((t,i)=>[t, null, `showView('health');setHealthTab(${i})`, null, HEALTH_ICO[t]]) }];
   fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>` + mfDocs(key);   /* utility menus have no master column */
   fly.style.left = railWidth() + 'px';
+  fly.style.top = '';
   fly.classList.add('on');
   const b = el.getBoundingClientRect();
   mfAnchorTop = b.top - 12;
@@ -13319,8 +13567,14 @@ document.addEventListener('keydown', e=>{
   trSet(8);
   applyTheme((()=>{ try{ return localStorage.getItem('oo-theme')||'dark'; }catch(e){ return 'dark'; } })());
   if(!/Mac|iP(hone|ad)/.test(navigator.platform||'')){
-    document.getElementById('sbKbd').textContent = 'Ctrl K';
-    document.getElementById('sbSearch').setAttribute('data-tip','Search  Ctrl K');
+    /* ⚠️ GUARDED (5 Sep 2026) — AND IT WAS AN INIT-ABORTING CRASH, not a tidy-up. Neither node
+       exists in this option: its rail is built by its own block and carries no `#sbKbd` keycap.
+       `getElementById(...).textContent` on null throws, and this sits INSIDE `init()`, so on
+       any non-Mac platform the whole dashboard stopped initialising here — the time chip, the
+       canvas and the tabs all downstream of it. It never showed on a Mac, and headless Chrome
+       on a Mac reports a Mac, so no probe in this folder could have caught it either. */
+    const kbd = document.getElementById('sbKbd'); if (kbd) kbd.textContent = 'Ctrl K';
+    const sbs = document.getElementById('sbSearch'); if (sbs) sbs.setAttribute('data-tip','Search  Ctrl K');
   }
   renderTabs(); renderCanvas();
   tsBind(); tsRender();

@@ -55,12 +55,42 @@
    and its scrollbar then read as the boundary. The product draws this rule: the DS describes
    `side-menu` as "flush white + right border", and the Create SLO Profile screen has the same
    line between its rail and its form.
-   ⚠️ IT MUST GO WHEN THE LIST COLLAPSES. `stshut` takes the width to 0; a border left on would
-   draw a 1px line down an otherwise empty column. */
+   ⚠️ IT STAYS WHEN THE LIST COLLAPSES (since 3 Sep 2026) — the collapsed state is a column
+   too, see below — so the rule still has an edge to sit on. */
 .stnav{width:246px;flex:0 0 246px;display:flex;flex-direction:column;min-height:0;
        padding:8px 0 0 8px;overflow:hidden;border-right:1px solid var(--border);
        transition:width .18s,flex-basis .18s,padding .18s}
-#view-settings.stshut .stnav{width:0;flex-basis:0;padding:0;border-right:0}
+/* ══ COLLAPSED IS AN ICON RAIL, NOT NOTHING ═══════════════════════════════════════════════
+   Request, 3 Sep 2026: "when I collapse the setting sub module it doesn't hide fully — show
+   the sidebar by default icon". It used to go to 0px, which is what the live splitpane does —
+   but live has no glyph per category to fall back on, and this list does: the product's own
+   19 icons (`ST_ICO`), which are exactly what makes a 52px column readable with no words.
+   ⚠️ 52px / 32px TILE / 20px GLYPH ARE THE RAIL NUMBERS THIS FOLDER SETTLED ON TODAY — Option
+   5's rail and the drawer's own »/« — so the collapsed list is the same object as the rails it
+   sits beside rather than a third size. The tile is `.stch` itself: it was already the click
+   target and already `display:flex`, so it only loses its padding and its words.
+   ⚠️ A TILE NAVIGATES, IT DOES NOT FOLD. Expanded, a category header toggles its pages open;
+   collapsed there are no pages to show, so the same row goes to the category's first page
+   (`stCatTap`). One element, two states, the behaviour that makes sense in each.
+   ⚠️ THE TOOLTIP COMES FREE. Every header carries `data-tip` = its own name, and the host's
+   tooltip engine suppresses a tip whose text is readable on the element (`tipSeenText` skips
+   `display:none` nodes) — so it is silent while the label shows and speaks once it is hidden.
+   ⚠️ THE CURRENT CATEGORY IS LIT (`.stcat.cur`) only here: expanded, the lit PAGE (`.stsi.on`)
+   already says where you are, and lighting its parent too would say it twice. The class is
+   emitted in both states and styled in one.
+   ⚠️ `#view-settings.stshut .stsub` OUTRANKS `.stcat.open .stsub` on the id, which is what keeps
+   an open category's pages from spilling out of a 52px column. */
+#view-settings.stshut .stnav{width:52px;flex-basis:52px;padding:8px 0 0}
+#view-settings.stshut .stsearch,#view-settings.stshut .stch .nm,#view-settings.stshut .stch .beta,
+#view-settings.stshut .stch .car,#view-settings.stshut .stsub,#view-settings.stshut .stempty{display:none}
+#view-settings.stshut .stlist{min-width:0;padding:0 0 12px;scrollbar-width:none}
+#view-settings.stshut .stlist::-webkit-scrollbar{display:none}
+#view-settings.stshut .stcat{border-bottom:0}
+#view-settings.stshut .stch{width:32px;height:32px;min-height:0;margin:0 auto 6px;padding:0;
+  justify-content:center;border-radius:8px;color:var(--text-dim)}
+#view-settings.stshut .stch .ic{width:20px;height:20px;margin:0;flex:0 0 20px}
+#view-settings.stshut .stch:hover{background:var(--hover);color:var(--text)}
+#view-settings.stshut .stcat.cur .stch{background:var(--chip);color:var(--white)}
 /* a full-page screen (Create Benchmark, Create Rule, a benchmark's view) replaces the list AND
    the content, as live — the head becomes “‹ <title>” and the left list is gone */
 #view-settings.stfullpg .stnav{display:none}
@@ -1591,9 +1621,51 @@ html[data-theme="light"] #agPage{
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   opacity:0;pointer-events:none;transition:opacity .18s}
 #agCfgScrim.on{opacity:1;pointer-events:auto}
-#drawer-agcfg{width:min(1440px,96vw);right:calc(-1 * min(1440px,96vw) - 20px)}
+/* ⚠️ EVERYTHING EXCEPT THE RAIL (request, 3 Sep 2026: "not full screen sorry but the background
+   sidebar will be show"). Three widths were tried in one day and this is the settled one — it was
+   `min(1440px,96vw)` (a panel beside the app, with a strip of page showing), then briefly the
+   full viewport (which covered the rail), and now the full width MINUS the sidebar, so the app's
+   navigation stays visible behind the scrim while the drawer is everything else.
+   ⚠️ THE RAIL IS DIMMED, NOT INTERACTIVE. `#agCfgScrim` is `inset:0` at z-index 89 and `.sidebar`
+   is z-index 60, so the scrim still covers the rail — it shows through blurred, and no pointer
+   reaches it. That is also what keeps the width stable: the rail cannot hover-expand underneath
+   an open drawer, so the number measured on open stays true.
+   ⚠️ `calc(100% - var(--rail-w))` IS THE FALLBACK, NOT THE ANSWER — `body.pinned` widens the rail
+   to `--rail-w-open`, and this token is only the collapsed width. `agCfgSize()` sets the real one
+   from `railWidth()`, which is the function `.shell` and the flyout already trust for exactly
+   this question.
+   ⚠️ THE PARKED OFFSET STAYS `-100%` — wider than any width this can take, so the panel is fully
+   off screen while closed whatever the rail is doing (an id-scoped width needs its own parked
+   `right`, the recorded `#drawer-layout` lesson).
+   ⚠️ `@media (max-width:1400px)` ON THE HELP CARD IS STILL RIGHT: the drawer is now the viewport
+   less a 64–190px rail, so the viewport still predicts it to within one rail width, and the card
+   only has to go when three columns genuinely stop fitting. A drawer sized to anything narrower
+   than this would need a container query instead (tried on 3 Sep, reverted with its width). */
+#drawer-agcfg{width:calc(100% - var(--rail-w));right:-100%}
 #drawer-agcfg.on{right:0}
 #drawer-agcfg .dr-b{padding:0;gap:0}
+/* ⚠️ THE 24px TOP GUTTER IS INSIDE EACH COLUMN, NOT ON `#agPage` (two requests, 3 Sep 2026:
+   "add more spacing", then — with the gutter on the page — "the line is attached", pointing at
+   the help card's rule meeting its own title). The first answer padded the page: the header rule
+   ended at y=51 and the rail's first row, "Enter credentials" and the help card's title all began
+   at y=51, so one padding on the page moved all three. But `.aghelp` draws its own `border-left`
+   and the side menu draws its own `border-right`, so both vertical rules moved down WITH the
+   content and started 24px below the header, mid-air, flush with the first line of text — a
+   panel divider that begins where the title begins reads as attached to the title.
+   Now the COLUMNS stay full height (both rules meet the header rule at y=51) and the CONTENT
+   inside each starts 24px down: `.agcfgm` and `.aghelp` are padded, and the rail gets a 24px
+   spacer in `obs-side-menu`'s `logo` slot — its documented top-of-panel slot ("adds no height
+   when unused"), rendered INSIDE its `.sm`, so the panel's own background and rule run from the
+   header down while the rows start under the spacer. Page CSS cannot pad `.rows` (shadow DOM),
+   and padding the HOST moves the rule too — the slot is the component's only hook above its rows.
+   The spacer is `.agcfgsp` in `agCfgHTML`; it is sized ONLY here, so on any other surface it is
+   a zero-height div.
+   ⚠️ THE RAIL'S PANEL IS NOT THE DRAWER'S COLOUR (`--side-menu-bg`: #fff on a #f7f9fc drawer in
+   light, #07101f on #0a1322 in dark), which is the other reason the page-level padding was wrong:
+   it left a 24px strip of drawer above a panel of a different colour.
+   24px = `@padding-lg`, the gutter `.agcfgm` and `.aghelp` already keep on their left edges. */
+#drawer-agcfg .agcfgm{padding-top:24px}
+#drawer-agcfg .agcfgsp{height:24px}
 /* ⚠️ `flex:0 0 auto` IS WHAT MAKES THE DRAWER SCROLL. `.dr-b` is a flex COLUMN, so its child
    defaults to `flex-shrink:1` and `.agcfg` was squashed to the body's height — the content then
    spilled out with no scrollbar (measured: scrollHeight 756 === clientHeight 756 while content
@@ -1609,7 +1681,7 @@ html[data-theme="light"] #agPage{
    gutter at all (2 Sep 2026: "it is not aligned"). 24px on the right mirrors its left.
    ⚠️ `box-sizing:border-box` means the padding comes OUT of the 420px, not on top of it — the
    column stays 420 and its text measure becomes 372. */
-#drawer-agcfg .aghelp{padding-right:24px}
+#drawer-agcfg .aghelp{padding-top:24px;padding-right:24px}
 /* the rail and the form get the same treatment on their own outer edges */
 #drawer-agcfg .agcfgn{padding-left:8px}
 /* ⚠️ NO `min-height:100%` HERE — it stranded the footer. With it, `.agcfg` was pinned to the

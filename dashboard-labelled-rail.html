@@ -1048,6 +1048,11 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
   border-radius:9px;font-size:9.5px;font-weight:700;line-height:14px;text-align:center;box-shadow:0 0 0 1px var(--sidebar)}
 .miniav{width:24px;height:24px;border-radius:50%;background:var(--white);color:var(--ink);
   font-weight:700;font-size:10px;display:grid;place-items:center;flex:0 0 24px;margin-left:3px}
+/* ⚠️ NOT A MENU ROW. It is reference text at the foot of the profile menu — no hover, no
+   pointer, no icon column — so it cannot be mistaken for something you can click. The rail's
+   own `.sbuild` rule is kept below and is now unreferenced. */
+.upbuild{padding:9px 18px 12px;font-size:10.5px;letter-spacing:.04em;color:var(--text-dim);
+  border-top:1px solid var(--pop-line,var(--border))}
 .sbuild{font-size:10.5px;color:var(--text-dim);padding:0 13px 6px;letter-spacing:.04em;white-space:nowrap;opacity:0;transition:opacity .15s}
 .sidebar.open .sbuild{opacity:.85}
 /* grouped-view toggle pinned at bottom */
@@ -6844,12 +6849,42 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
    and its scrollbar then read as the boundary. The product draws this rule: the DS describes
    `side-menu` as "flush white + right border", and the Create SLO Profile screen has the same
    line between its rail and its form.
-   ⚠️ IT MUST GO WHEN THE LIST COLLAPSES. `stshut` takes the width to 0; a border left on would
-   draw a 1px line down an otherwise empty column. */
+   ⚠️ IT STAYS WHEN THE LIST COLLAPSES (since 3 Sep 2026) — the collapsed state is a column
+   too, see below — so the rule still has an edge to sit on. */
 .stnav{width:246px;flex:0 0 246px;display:flex;flex-direction:column;min-height:0;
        padding:8px 0 0 8px;overflow:hidden;border-right:1px solid var(--border);
        transition:width .18s,flex-basis .18s,padding .18s}
-#view-settings.stshut .stnav{width:0;flex-basis:0;padding:0;border-right:0}
+/* ══ COLLAPSED IS AN ICON RAIL, NOT NOTHING ═══════════════════════════════════════════════
+   Request, 3 Sep 2026: "when I collapse the setting sub module it doesn't hide fully — show
+   the sidebar by default icon". It used to go to 0px, which is what the live splitpane does —
+   but live has no glyph per category to fall back on, and this list does: the product's own
+   19 icons (`ST_ICO`), which are exactly what makes a 52px column readable with no words.
+   ⚠️ 52px / 32px TILE / 20px GLYPH ARE THE RAIL NUMBERS THIS FOLDER SETTLED ON TODAY — Option
+   5's rail and the drawer's own »/« — so the collapsed list is the same object as the rails it
+   sits beside rather than a third size. The tile is `.stch` itself: it was already the click
+   target and already `display:flex`, so it only loses its padding and its words.
+   ⚠️ A TILE NAVIGATES, IT DOES NOT FOLD. Expanded, a category header toggles its pages open;
+   collapsed there are no pages to show, so the same row goes to the category's first page
+   (`stCatTap`). One element, two states, the behaviour that makes sense in each.
+   ⚠️ THE TOOLTIP COMES FREE. Every header carries `data-tip` = its own name, and the host's
+   tooltip engine suppresses a tip whose text is readable on the element (`tipSeenText` skips
+   `display:none` nodes) — so it is silent while the label shows and speaks once it is hidden.
+   ⚠️ THE CURRENT CATEGORY IS LIT (`.stcat.cur`) only here: expanded, the lit PAGE (`.stsi.on`)
+   already says where you are, and lighting its parent too would say it twice. The class is
+   emitted in both states and styled in one.
+   ⚠️ `#view-settings.stshut .stsub` OUTRANKS `.stcat.open .stsub` on the id, which is what keeps
+   an open category's pages from spilling out of a 52px column. */
+#view-settings.stshut .stnav{width:52px;flex-basis:52px;padding:8px 0 0}
+#view-settings.stshut .stsearch,#view-settings.stshut .stch .nm,#view-settings.stshut .stch .beta,
+#view-settings.stshut .stch .car,#view-settings.stshut .stsub,#view-settings.stshut .stempty{display:none}
+#view-settings.stshut .stlist{min-width:0;padding:0 0 12px;scrollbar-width:none}
+#view-settings.stshut .stlist::-webkit-scrollbar{display:none}
+#view-settings.stshut .stcat{border-bottom:0}
+#view-settings.stshut .stch{width:32px;height:32px;min-height:0;margin:0 auto 6px;padding:0;
+  justify-content:center;border-radius:8px;color:var(--text-dim)}
+#view-settings.stshut .stch .ic{width:20px;height:20px;margin:0;flex:0 0 20px}
+#view-settings.stshut .stch:hover{background:var(--hover);color:var(--text)}
+#view-settings.stshut .stcat.cur .stch{background:var(--chip);color:var(--white)}
 /* a full-page screen (Create Benchmark, Create Rule, a benchmark's view) replaces the list AND
    the content, as live — the head becomes “‹ <title>” and the left list is gone */
 #view-settings.stfullpg .stnav{display:none}
@@ -8165,9 +8200,51 @@ html[data-theme="light"] #agPage{
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   opacity:0;pointer-events:none;transition:opacity .18s}
 #agCfgScrim.on{opacity:1;pointer-events:auto}
-#drawer-agcfg{width:min(1440px,96vw);right:calc(-1 * min(1440px,96vw) - 20px)}
+/* ⚠️ EVERYTHING EXCEPT THE RAIL (request, 3 Sep 2026: "not full screen sorry but the background
+   sidebar will be show"). Three widths were tried in one day and this is the settled one — it was
+   `min(1440px,96vw)` (a panel beside the app, with a strip of page showing), then briefly the
+   full viewport (which covered the rail), and now the full width MINUS the sidebar, so the app's
+   navigation stays visible behind the scrim while the drawer is everything else.
+   ⚠️ THE RAIL IS DIMMED, NOT INTERACTIVE. `#agCfgScrim` is `inset:0` at z-index 89 and `.sidebar`
+   is z-index 60, so the scrim still covers the rail — it shows through blurred, and no pointer
+   reaches it. That is also what keeps the width stable: the rail cannot hover-expand underneath
+   an open drawer, so the number measured on open stays true.
+   ⚠️ `calc(100% - var(--rail-w))` IS THE FALLBACK, NOT THE ANSWER — `body.pinned` widens the rail
+   to `--rail-w-open`, and this token is only the collapsed width. `agCfgSize()` sets the real one
+   from `railWidth()`, which is the function `.shell` and the flyout already trust for exactly
+   this question.
+   ⚠️ THE PARKED OFFSET STAYS `-100%` — wider than any width this can take, so the panel is fully
+   off screen while closed whatever the rail is doing (an id-scoped width needs its own parked
+   `right`, the recorded `#drawer-layout` lesson).
+   ⚠️ `@media (max-width:1400px)` ON THE HELP CARD IS STILL RIGHT: the drawer is now the viewport
+   less a 64–190px rail, so the viewport still predicts it to within one rail width, and the card
+   only has to go when three columns genuinely stop fitting. A drawer sized to anything narrower
+   than this would need a container query instead (tried on 3 Sep, reverted with its width). */
+#drawer-agcfg{width:calc(100% - var(--rail-w));right:-100%}
 #drawer-agcfg.on{right:0}
 #drawer-agcfg .dr-b{padding:0;gap:0}
+/* ⚠️ THE 24px TOP GUTTER IS INSIDE EACH COLUMN, NOT ON `#agPage` (two requests, 3 Sep 2026:
+   "add more spacing", then — with the gutter on the page — "the line is attached", pointing at
+   the help card's rule meeting its own title). The first answer padded the page: the header rule
+   ended at y=51 and the rail's first row, "Enter credentials" and the help card's title all began
+   at y=51, so one padding on the page moved all three. But `.aghelp` draws its own `border-left`
+   and the side menu draws its own `border-right`, so both vertical rules moved down WITH the
+   content and started 24px below the header, mid-air, flush with the first line of text — a
+   panel divider that begins where the title begins reads as attached to the title.
+   Now the COLUMNS stay full height (both rules meet the header rule at y=51) and the CONTENT
+   inside each starts 24px down: `.agcfgm` and `.aghelp` are padded, and the rail gets a 24px
+   spacer in `obs-side-menu`'s `logo` slot — its documented top-of-panel slot ("adds no height
+   when unused"), rendered INSIDE its `.sm`, so the panel's own background and rule run from the
+   header down while the rows start under the spacer. Page CSS cannot pad `.rows` (shadow DOM),
+   and padding the HOST moves the rule too — the slot is the component's only hook above its rows.
+   The spacer is `.agcfgsp` in `agCfgHTML`; it is sized ONLY here, so on any other surface it is
+   a zero-height div.
+   ⚠️ THE RAIL'S PANEL IS NOT THE DRAWER'S COLOUR (`--side-menu-bg`: #fff on a #f7f9fc drawer in
+   light, #07101f on #0a1322 in dark), which is the other reason the page-level padding was wrong:
+   it left a 24px strip of drawer above a panel of a different colour.
+   24px = `@padding-lg`, the gutter `.agcfgm` and `.aghelp` already keep on their left edges. */
+#drawer-agcfg .agcfgm{padding-top:24px}
+#drawer-agcfg .agcfgsp{height:24px}
 /* ⚠️ `flex:0 0 auto` IS WHAT MAKES THE DRAWER SCROLL. `.dr-b` is a flex COLUMN, so its child
    defaults to `flex-shrink:1` and `.agcfg` was squashed to the body's height — the content then
    spilled out with no scrollbar (measured: scrollHeight 756 === clientHeight 756 while content
@@ -8183,7 +8260,7 @@ html[data-theme="light"] #agPage{
    gutter at all (2 Sep 2026: "it is not aligned"). 24px on the right mirrors its left.
    ⚠️ `box-sizing:border-box` means the padding comes OUT of the 420px, not on top of it — the
    column stays 420 and its text measure becomes 372. */
-#drawer-agcfg .aghelp{padding-right:24px}
+#drawer-agcfg .aghelp{padding-top:24px;padding-right:24px}
 /* the rail and the form get the same treatment on their own outer edges */
 #drawer-agcfg .agcfgn{padding-left:8px}
 /* ⚠️ NO `min-height:100%` HERE — it stranded the footer. With it, `.agcfg` was pinned to the
@@ -8573,7 +8650,24 @@ html[data-theme="light"] #agPage{
    here is that the panel is DOCKED and that ONE control opens it — not a width that squeezes
    a panel designed around 340. The module nav panel takes the same token so the two are one
    column and the »/« keeps meaning one thing. */
-:root{ --rail-w:72px; --rail-w-open:72px; --mr-item:58px; --mr-tile:32px; --mr-pan:340px; }
+/* ⚠️ `--mr-nav` IS THE SUB-MODULE PANEL AND IT IS **NOT** `--mr-pan` (request, 3 Sep 2026:
+   "this sidebar in sub module sidepopup is shown very big size, make it a proper size").
+   The two shared one token because `»/«` used to drive BOTH — the list panel on Dashboards,
+   the nav panel elsewhere — so one width kept them reading as one column. `mrApply` has
+   driven only the nav panel since earlier today ("one panel, every module — the list panel is
+   left alone"), so the nav panel was inheriting 340px for a reason that no longer applies to
+   it, and 340px of column for a list of plain text rows is what reads as oversized.
+   ⚠️ 279px IS THE REFERENCE'S OWN MEASUREMENT — monday's panel, recorded at the top of this
+   block — and the note above `--mr-pan` explains why the LIST panel could not take it: its
+   filter row is `nowrap` + `overflow-x:auto`, so at 279 the lit chip scrolled out of sight.
+   That argument was always about the list panel's chips; the nav panel has none.
+   ⚠️ IT CLEARS THE LONGEST LABEL WITH ROOM. Measured at 279: the widest row in any of the six
+   panels is Setting's "Service Level Objective" plus its BETA chip, and nothing truncates in
+   any module — there is a probe assertion over all six comparing `scrollWidth` to
+   `clientWidth` on every label, because a rule that ellipsises silently is the failure this
+   width change could introduce. */
+:root{ --rail-w:72px; --rail-w-open:72px; --mr-item:58px; --mr-tile:32px;
+       --mr-pan:340px; --mr-nav:279px; }
 
 /* ⚠️ `.shell`'s padding was the literal `64px`, not the token — it has to be repointed or
    the canvas sits 8px under the rail. Same for the pinned override, which now has nothing
@@ -8597,8 +8691,32 @@ body.pinned .sidebar{box-shadow:none}
 
 /* ⚠️ »/« LIVES IN ITS OWN SLOT ABOVE THE LIST, and is deliberately NOT a rail item: it
    acts on the panel BESIDE the rail, not on anything in it. monday gives it the same
-   32px slot, and the distinction is what stops it reading as a seventh module. */
-.mrexp{flex:0 0 32px;height:32px;display:grid;place-items:center;margin:0 0 10px}
+   32px slot, and the distinction is what stops it reading as a seventh module.
+   ⚠️ IT IS HIDDEN WHILE THE PANEL IS OPEN (request + screenshots, 3 Sep 2026: "when I click
+   this expand icon the sidebar opens like this — the icon will be removed in the sidebar
+   because the expanded sidebar already shows the icon"). The panel's own header carries a «
+   at the same height, so with the panel open the two sat 60px apart doing one job, and the
+   rail's copy was the one pointing at something you could already see. `display:none`, not
+   `visibility:hidden` — the slot goes with it, so Search moves up to meet the mark instead
+   of leaving a 42px hole where a control used to be.
+   ⚠️ THE COLLAPSED STATE MUST KEEP IT. It is the only way back — the control that opens the
+   panel cannot live inside the panel. That is the same trap Option 5 hit on the same day
+   ("when I collapse the sidebar the expand icon is not shown"), and the same fix: one
+   control per state, each rendered where the other is not. */
+/* ⚠️ 16px OF AIR ON BOTH SIDES, AND THE TWO NUMBERS ARE DIFFERENT BECAUSE THE NEIGHBOURS
+   ARE (request, 3 Sep 2026: "add more margin"). Measured before touching it: the mark ended
+   at y=38 and the button began at y=46 — 8px — while below it the first glyph (Search) began
+   at y=94 against the button's y=78, i.e. 16px. So it was twice as close to the logo as to
+   the modules and read as belonging to the brand row rather than sitting between the two.
+   Both sides are 16px now, which is not a new number: it is the rail's own gap between
+   items, measured at 16px (80px pitch, 64px item).
+   ⚠️ NEITHER VALUE IS THE GAP YOU SEE — each has a neighbour's padding inside it. Above,
+   `.strigger` is a 46px box around a 30px mark, so it already contributes 8px and the margin
+   supplies the other 8. Below, `.sitem` is `padding:6px 0` around its glyph, so 10px of
+   margin lands as 16px of visible space. Change either neighbour and re-measure rather than
+   reading these as the gaps themselves. */
+.mrexp{flex:0 0 32px;height:32px;display:grid;place-items:center;margin:8px 0 10px}
+body.mrnav .mrexp{display:none}
 .mrexpb{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
   color:var(--text-dim);display:grid;place-items:center;background:transparent;cursor:pointer;
   transition:background .12s,color .12s,border-color .12s}
@@ -8671,7 +8789,18 @@ body.pinned .sidebar{box-shadow:none}
   height:14px;padding:0 4px;border-radius:3px;background:var(--blue);color:#fff;
   font-size:8px;font-weight:700;letter-spacing:.05em;line-height:14px}
 .sidebar.mrail .sitem.on .beta{background:var(--blue);color:#fff}
-/* the "opens on sign-in" mark: top-LEFT, so it never collides with the badge */
+/* ⚠️ THIS RAIL DRAWS NO "OPENS ON SIGN-IN" MARK, and the rule below is kept and unreferenced
+   (request, 3 Sep 2026: "in option 4 remove the home icon on dashboard icon"). Option 1's rail
+   is a row — icon, label, then a right-hand slot the mark sits in. This one is a 58px column
+   with a 32px tile above a label and no such slot, so the mark had to be absolutely positioned
+   ON the tile, where it read as part of the module's own glyph rather than as a status about it.
+   ⚠️ NOTHING IS LOST, because the rail ALREADY SAYS IT A BETTER WAY: `renderMenu` lifts whatever
+   holds `RAIL_HOME` to the top of the rail, so the home entry is the first one you see. A badge
+   repeating that, in the one place there was no room for it, was saying it twice.
+   ⚠️ THE SETTING IS UNTOUCHED — `RAIL_HOME` / `DASH_DEFAULT` still drive the lift, and the
+   Layout drawer's Sidebar tab still has its HOME column, which is where you set and read it.
+   Only this rail's badge is gone. The three emitters keep their `hm` variable rather than
+   dropping it from their templates, so restoring the mark is one expression each. */
 .sidebar.mrail .sitem .hm{display:grid;position:absolute;top:1px;left:3px;margin:0;flex:none}
 /* the count sits on the tile's corner, not 7px above a 20px glyph */
 .sidebar.mrail .sitem .ibadge{top:-3px;left:auto;right:-5px}
@@ -8744,25 +8873,49 @@ html[data-theme="light"] .dpanel{box-shadow:none}
    `width` alone collapses nothing — the item keeps its basis and the panel just clips. */
 .dpanel.hid{width:0;flex-basis:0;border-right-width:0;transform:none}
 
-.mrpan{position:fixed;left:var(--rail-w);top:0;bottom:0;width:var(--mr-pan);z-index:55;
+.mrpan{position:fixed;left:var(--rail-w);top:0;bottom:0;width:var(--mr-nav);z-index:55;
   background:var(--panel);border-right:1px solid var(--border);
   display:none;flex-direction:column;overflow:hidden}
 body.mrnav .mrpan{display:flex}
-body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-pan))}
+/* ⚠️ ONE TOKEN DRIVES BOTH SIDES — the panel's width and the padding the shell gives up for
+   it. Two copies of that number is the recorded `--dp-w` bug: the panel moves and the canvas
+   stays padded for the old width. */
+body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-nav))}
 .mrph{display:flex;align-items:center;gap:8px;height:46px;flex:0 0 46px;padding:0 8px 0 14px}
 .mrph .t{font-size:14px;font-weight:600;color:var(--text);flex:1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mrphb{width:28px;height:28px;flex:0 0 28px;border-radius:6px;display:grid;place-items:center;
-  color:var(--text-dim);cursor:pointer}
-.mrphb:hover{background:var(--hover);color:var(--text)}
-.mrphb .ic{width:16px;height:16px}
+/* ⚠️ THE PANEL'S CLOSE CONTROL IS `.mrexpb` — THE SAME CLASS AS THE RAIL'S OPEN CONTROL
+   (request + screenshots, 3 Sep 2026: "this icon and this icon will be shown as same").
+   They are ONE control in two states — open the panel, close the panel — and they were two
+   objects: 28×32 borderless on radius 6 in the header, 32×32 bordered on radius 8 in the rail,
+   with a 16px glyph against an 18px one. Since only one is ever on screen (the rail's copy is
+   hidden while the panel is open, earlier the same day) the difference read as the control
+   changing shape as you used it.
+   ⚠️ THE RAIL'S TREATMENT IS THE ONE THAT SURVIVES, because it is the MEASURED one: monday's
+   own »/« is a 32×32 button, 1px border, radius 8, 18px glyph — recorded at the top of this
+   block. The header's 28px borderless tile was the copy that had drifted.
+   ⚠️ ONE CLASS, NOT TWO MATCHING RULES. A second rule holding the same numbers is how these
+   two came apart in the first place; `.mrphb` now carries only what is about being IN the
+   header, which is the flex basis.
+   ⚠️ THE GLYPHS STILL POINT OPPOSITE WAYS, and that is not a difference in the control: it is
+   the same chevron, and it names the ACTION (» opens, « closes) — the rule this file records
+   at `mrPaint`. Both pointing one way would have one of them describing a state you can see
+   rather than the thing pressing it does. */
+.mrphb{flex:0 0 32px}
 .mrpb{flex:1;min-height:0;overflow-y:auto;padding:0 8px 10px}
 .mrsec{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--text-dim);padding:12px 8px 4px}
 /* the rows are the panel's own, not `.mfi` — that class carries the flyout's left rule and
    its 28px hover strip, both of which belong to a menu hanging off the rail */
+/* ⚠️ `font` AND `background` ARE DECLARED HERE BECAUSE THE ROW IS NO LONGER A `<button>` —
+   the sheet's `button{font-family:inherit;background:transparent;border:0;font-size:inherit}`
+   reset does not reach a div, and `body`'s 12.8px would otherwise win over the 12.5px this
+   row is sized for. `user-select:none` replaces the drag-select a button never had. */
 .mrr{display:flex;align-items:center;gap:9px;width:100%;height:32px;padding:0 8px;
-  border-radius:4px;color:var(--text-dim);font-size:12.5px;text-align:left;cursor:pointer}
+  border:0;background:transparent;font-family:inherit;
+  border-radius:4px;color:var(--text-dim);font-size:12.5px;text-align:left;cursor:pointer;
+  user-select:none}
+.mrr:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 .mrr:hover{background:var(--hover);color:var(--text)}
 /* ⚠️ A ROW WITH A MODULE ICON IS A MODULE, AND IT IS WEIGHTED — the same rule, keyed the
    same way, as `.mfi:has(.mfic)` in the flyout this panel replaces. Explorer lists eleven
@@ -8773,9 +8926,57 @@ body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-pan))}
    `.sub`, so `:not(.sub)` would re-weight Dashboard's, Alert's and Setting's lists too. */
 .mrr:has(.mfic){color:var(--text);font-weight:600}
 .mrr.par{color:var(--text);font-weight:600}
-.mrr.sub{padding-left:24px;font-size:12px}
+/* 32 = 8 padding + 15 icon + 9 gap, so a child's text starts under its parent's TEXT, not
+   its icon — the Option 5 rule. Children are only ever rendered under an OPEN parent now. */
+.mrr.sub{padding-left:32px;font-size:12px}
+.mrr .mrl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the parent row's tail — its child COUNT (a real number, see `mrParent`) and a chevron that
+   turns to point down while the row is open. Quiet at rest so the label stays the row. */
+/* ⚠️ THE ROW'S TAIL IS ONE CLUSTER WITH RESERVED BOXES, so pin, count and chevron each form
+   a COLUMN down the list — the recorded `.mfend` lesson from Option 1's flyout, where a tail
+   that started wherever each label happened to end put the same control at six different x
+   positions. Every slot keeps its box whether or not that row has anything to put in it: in
+   Explorer's panel `Log` has no count and no children, and without the reserved boxes its pin
+   would sit 30px right of `Monitor`'s. */
+.mrend{margin-left:auto;display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
+.mrr .mrn{flex:0 0 18px;width:18px;text-align:right;font-size:10.5px;font-weight:500;
+  color:var(--muted);font-variant-numeric:tabular-nums}
+.mrr .mrch{flex:0 0 12px;width:12px;height:12px;opacity:.55;transition:transform .15s}
+.mrr .mrch.ph{visibility:hidden}
+.mrr.par:hover .mrch,.mrr.open .mrch{opacity:.9}
+.mrr.open .mrch{transform:rotate(90deg)}
+/* ── the pin ──────────────────────────────────────────────────────────────────────────
+   ⚠️ THE PANEL IS THE ONLY PLACE THIS OPTION CAN PIN FROM (request, 3 Sep 2026: "in explorer
+   the sub module when I pin the submodule it will show in main sidebar"). The model was all
+   here already — `RAIL_PINS`, `railPinToggle`, `railPinsHTML` and the band `renderMenu` emits
+   under Explorer — but the only CONTROL onto it was the flyout's pin, and this option stands
+   the flyout down (`mfOpen` is a no-op here), so nothing could reach it. This is that control,
+   not a second implementation: it calls the same `railPinToggle`.
+   ⚠️ EXPLORER'S ROWS ONLY, which is what `RAIL_PINS` can hold — `railPinRow` resolves every
+   pin against `EXPLORER_TREE`, so a pin on an Alert or Setting row would push a name the rail
+   cannot render.
+   ⚠️ `stopPropagation` IS LOAD-BEARING: the row underneath either navigates or unfolds, and a
+   pin that also did one of those would make the control unusable on exactly the rows that
+   have children. Same reason Option 1's flyout pin carries it.
+   ⚠️ HIDDEN AT REST, SHOWN ON HOVER — AND ALWAYS ONCE PINNED, or a pinned row cannot be
+   un-pinned without the reader guessing a control lives there. Option 1's rule, verbatim.
+   ⚠️ FILLED = PINNED. One glyph, two states, from `MF_PIN` — the same const the flyout and the
+   Layout drawer's Sidebar tab read, so the three surfaces cannot draw different pins. */
+.mrpn{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center;padding:0;border:0;
+  border-radius:4px;background:transparent;color:var(--text-dim);cursor:pointer;opacity:0;
+  transition:opacity .12s,color .12s,background .12s}
+.mrpn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.85;
+  stroke-linecap:round;stroke-linejoin:round}
+.mrr:hover .mrpn,.mrr.pinned .mrpn{opacity:.75}
+.mrpn:hover{opacity:1;color:var(--text);background:var(--hover)}
+.mrr.pinned .mrpn{color:var(--teal)}
+.mrr.pinned .mrpn svg{fill:currentColor;stroke:currentColor}
 .mrr .mfic{width:15px;height:15px;flex:0 0 15px;fill:currentColor}
 .mrr .plus{color:var(--teal);font-weight:600}
+.mrr .mfic{opacity:.72}
+.mrr:hover .mfic{opacity:1}
+/* the product's `plus` in a "New …" row — teal and undimmed: it is the one row that creates */
+.mrr .mfic.plus{color:var(--teal);opacity:.9}
 .mrpf{flex:0 0 auto;padding:0 8px 10px}
 .mrpf .mffoot{margin:0;padding:9px 8px 0}
 .mrempty{padding:14px 10px;font-size:12px;color:var(--text-dim)}
@@ -8814,24 +9015,55 @@ body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-pan))}
     <div class="sitem airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic" viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg><span class="lbl">Iris</span></div>
   </div>
   <nav class="smenu" id="smenu"></nav>
-  <!-- ⚠️ THE TAIL IS THE REFERENCE'S: Favorites, then an overflow. Notification is the one
-       extra — it carries a live count, and a number nobody can see is not a number. -->
+  <!-- ⚠️ THE TAIL IS OPTION 1's FOOTER NOW (request + screenshots, 3 Sep 2026: "remove this
+       and add [this], reference option 1"). It was monday's — Favorites · Notification ·
+       More — with Approval and Health Monitoring hidden one click behind the `···`.
+       ⚠️ THE ARGUMENT FOR THE OVERFLOW DID NOT SURVIVE ITS OWN CONTENTS. The note here used
+       to say the rail is "a fixed list of the things you reach constantly, and everything
+       else lives behind ···". Approval and Health are two of the product's own screens with
+       nowhere else to be reached from in this option, so the overflow was hiding
+       destinations rather than deferring extras — and it left Notification stranded outside
+       it as the one thing that could not be hidden, which is three different treatments for
+       three peers.
+       ⚠️ THEY ARE `.sitem`s, NOT OPTION 1's 3-UP `.squick` GRID. That grid needs Option 1's
+       190px open rail to fit three cells side by side; this rail is a fixed 72px, and
+       Option 1 itself falls back to ONE COLUMN at its 64px collapsed width. So a column is
+       Option 1's own answer at this width, and here it is also the rail's native shape —
+       icon tile over a label, exactly like the six modules above.
+       ⚠️ `mrFav` AND `mrMoreTog` ARE KEPT AND UNREFERENCED, the house pattern, with the
+       `#mrMoreM` markup. Favorites is still reachable — it is a filter chip in the dashboard
+       list panel, which is where it lives — and `Customize menu` is the Layout drawer's
+       Sidebar tab, which is how Option 1 reaches it too.
+       ⚠️ THE IDs MOVED WITH THE ROWS. `showView()` does `getElementById('sbApproval')` and
+       `('sbHealth')` unguarded, so they have to exist somewhere; they are `.sitem`s now, and
+       `.sitem.on` already carries the selected look `.mrmi.on` was giving them.
+       ⚠️ IT IS "Notification", SINGULAR — Option 1 says "Notifications" and it does NOT fit
+       here. Measured: at Inter 11px the plural is 66px against this rail's 62px label box, so
+       it ellipsised; the singular is the product's own word and fits. The same measurement is
+       why "Dashboard" and "Notification" set the 62px box in the first place — see the label
+       note in the stylesheet. -->
   <div class="sutil">
-    <div class="sitem" id="sbFav" data-tip="Favorites" onclick="mrFav()"><svg class="ic" viewBox="0 0 24 24" id="mrFavIc"></svg><span class="lbl">Favorites</span></div>
+    <div class="sitem" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
+    <div class="sitem" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
     <div class="sitem" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notification</span></div>
-    <div class="sitem" id="sbMore" data-tip="More" onclick="mrMoreTog(event)"><svg class="ic" viewBox="0 0 24 24" id="mrMoreIc"></svg><span class="lbl">More</span></div>
   </div>
   <div class="sfoot">
-    <div class="sbuild">8.2.6</div>
+    <!-- ⚠️ `8.2.6` LEFT THE RAIL FOR THE PROFILE MENU, as it did in Option 1 on 2 Sep 2026: a
+         version string is reference information you look up once, and it does not earn a
+         permanent row in a rail whose every other line is somewhere you can go. `.sbuild` is
+         kept and unreferenced. -->
     <div class="sitem" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl">Kishan Patel</span></div>
   </div>
 </aside>
 
 <!-- the rail's overflow. It is a `.pop`, so `closePops()` and the scrim already close it. -->
+<!-- ⚠️ KEPT AND UNREFERENCED since 3 Sep 2026 — the `···` that opened it left the rail with
+     Approval and Health, which are `.sitem`s up there now. **Their ids went with them**, so
+     this markup must not carry `id="sbApproval"` / `id="sbHealth"` any more: two elements with
+     one id makes `getElementById` return whichever comes first, and `showView()` would then
+     mark a menu row nobody can see instead of the rail row. The two rows are commented out
+     rather than deleted so the menu is one edit from coming back. -->
 <div class="pop" id="mrMoreM" role="menu" aria-label="More">
-  <button class="mrmi" id="sbApproval" onclick="closePops();showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg>Approval</button>
-  <button class="mrmi" id="sbHealth" onclick="closePops();showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg>Health Monitoring</button>
-  <div class="mrmsep"></div>
   <!-- monday's own last row is "Customize menu", and this prototype already has that screen:
        the Sidebar tab of the Layout drawer governs what is in this rail. -->
   <button class="mrmi" id="sbSidebar" onclick="closePops();sbmOpen()"><svg class="ic" viewBox="0 0 48 48" id="sbSidebarIc"></svg>Customize menu</button>
@@ -9641,6 +9873,8 @@ body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-pan))}
     <li class="div"></li>
     <li class="logout"><a href="javascript:;" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M10 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-8v-2h8V5h-8V3Zm-1.3 5.3L10 9.6 8.4 11H15v2H8.4L10 14.4l-1.3 1.3L4.6 12l4.1-3.7Z"/></svg>Logout</a></li>
   </ul>
+  <!-- the build, where "about this install" belongs — quiet, and below the actions -->
+  <div class="upbuild">BUILD : 8.2.6</div>
 </div>
 
 <div class="pop" id="notifPop">
@@ -9965,10 +10199,60 @@ const ICONS = {
    "M25.4,32.6l-.3-.2c-.1,0-.2-.1-.4-.2l-.4-.2c-.3,0-.7,0-1,0-.3,0-.6,.3-.8,.5-.2,.2-.3,.4-.4,.7-.2,.4-.2,.8-.1,1.2,0,.4,.3,.7,.5,1,.3,.3,.6,.5,1,.6,.4,0,.8,0,1.2-.1,.2-.1,.5-.3,.7-.4,.3-.3,.5-.6,.5-1,0-.4,0-.8-.1-1.2,0-.2-.2-.4-.4-.6Zm6.6-28.6h-16c-1.6,0-3.1,.6-4.2,1.8-1.1,1.1-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h16c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V10c0-1.6-.6-3.1-1.8-4.2-1.1-1.1-2.7-1.8-4.2-1.8Zm2,34c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6h-16c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V10c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h16c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v28Z"
   ],
   "from": "12-profile.html"
+ },
+ /* ⚠️ SIX GLYPHS FOR THE DASHBOARD / SLO ROWS (request, 3 Sep 2026, made in Option 1 and here so
+    the detail panel and Option 1's flyout draw the same marks for the same rows). Five are the
+    product's own SVGs from `observeops-icons/common/`, verbatim: `plus`, `star`, `screen` (the
+    NOC wall), `calendar` (scheduled reports), `pie-chart` (an error budget is a share consumed).
+    `sliders` is the Lucide `sliders-horizontal` the list panel's Manage-dashboards row already
+    draws — a STROKE icon on a 24 box, which is why `ico()` carries a `stroke` flag. */
+ "plus": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"
+  ]
+ },
+ "star": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M43.9,19.4c-.1-.4-.4-.7-.7-.9-.3-.2-.7-.4-1.1-.4l-11.4-1.7-5.1-10.3c-.2-.3-.4-.6-.7-.8-.3-.2-.7-.3-1.1-.3s-.7,.1-1.1,.3c-.3,.2-.6,.5-.7,.8l-5.1,10.3-11.4,1.7c-.4,0-.7,.2-1,.4-.3,.2-.5,.6-.6,.9-.1,.3-.1,.7,0,1.1,0,.4,.3,.7,.5,.9l8.2,8-2,11.3c0,.4,0,.8,.1,1.1,.1,.4,.4,.7,.7,.9,.3,.2,.7,.3,1,.4,.4,0,.7,0,1.1-.2l10.2-5.3,10.2,5.4c.3,.2,.6,.2,.9,.2,.4,0,.8-.1,1.2-.4,.3-.2,.5-.5,.7-.9,.1-.4,.2-.7,.1-1.1l-2-11.3,8.2-8c.3-.2,.5-.6,.6-.9,.1-.4,.1-.7,0-1.1Zm-12.3,8c-.2,.2-.4,.5-.5,.8-.1,.3-.1,.6,0,1l1.4,8.4-7.5-4c-.3-.2-.6-.2-.9-.2s-.6,0-.9,.2l-7.5,4,1.4-8.4c0-.3,0-.7,0-1-.1-.3-.3-.6-.5-.8l-6-6,8.4-1.2c.3,0,.6-.2,.9-.4,.3-.2,.5-.4,.6-.7l3.6-7.6,3.8,7.6c.1,.3,.4,.5,.6,.7,.3,.2,.6,.3,.9,.4l8.4,1.2-6,6Z"
+  ]
+ },
+ "screen": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "m43.79,8.18c-.39-.37-.91-.58-1.46-.58H5.67c-.55,0-1.07.21-1.46.58-.39.37-.61.89-.61,1.42v28.8c0,.53.22,1.05.61,1.42.39.37.91.58,1.46.58h36.67c.55,0,1.07-.21,1.46-.58.39-.37.61-.89.61-1.42V9.6c0-.53-.22-1.05-.61-1.42Zm-3.52,28.22H7.73V11.64h32.53v24.76Z"
+  ]
+ },
+ "calendar": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M34,38c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm0-8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10,0c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1-.4,.2-.7,.4-.9,.7-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10,8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6ZM42.2,7.8c-1.1-1.1-2.7-1.8-4.2-1.8h-2V4c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v2h-16V4c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v2h-2c-1.6,0-3.1,.6-4.2,1.8s-1.8,2.7-1.8,4.2v28c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h28c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V12c0-1.6-.6-3.1-1.8-4.2Zm-2.2,32.2c0,.5-.2,1-.6,1.4s-.9,.6-1.4,.6H10c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V22h32v18Zm0-22H8v-6c0-.5,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h2v2c0,.5,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.4-.4,.6-.9,.6-1.4v-2h16v2c0,.5,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.4-.4,.6-.9,.6-1.4v-2h2c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v6Zm-16,20c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9s.2-.8,.1-1.2c0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1-.4,.2-.7,.4-.9,.7-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4,.9,.6,1.4,.6Zm-10-8c.4,0,.8-.1,1.1-.3,.3-.2,.6-.5,.7-.9,.2-.4,.2-.8,.1-1.2,0-.4-.3-.7-.5-1-.3-.3-.6-.5-1-.5-.4,0-.8,0-1.2,.1s-.7,.4-.9,.7c-.2,.3-.3,.7-.3,1.1s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6Z"
+  ]
+ },
+ "pie-chart": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M38,24h-14V10c0-1.2-.8-2-2-2-10,0-18,8-18,18s8,18,18,18,18-8,18-18c0-1.2-.8-2-2-2Zm-14,15.8c-7.6,1.2-14.8-4.2-15.8-11.8-1.2-7.6,4.2-14.8,11.8-15.8v13.8c0,1.2,.8,2,2,2h13.8c-.8,6.2-5.6,11-11.8,11.8ZM30,4c-1.2,0-2,.8-2,2v12c0,1.2,.8,2,2,2h12c1.2,0,2-.8,2-2,0-7.8-6.2-14-14-14Zm2,12v-7.8c4,.8,7,3.8,7.8,7.8h-7.8Z"
+  ]
+ },
+ "sliders": {
+  "viewBox": "0 0 24 24",
+  "stroke": true,
+  "paths": [
+   "M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"
+  ]
  }
 };
 function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
-  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" fill="currentColor">` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
+  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`): `.mrr .mfic` says `fill:currentColor`,
+     and a CSS rule beats a presentation ATTRIBUTE — `fill="none"` alone would be overpainted and
+     the outline rendered as a blob (the recorded `.dvic svg` trap). An inline style outranks it.
+     stroke-width 2 on a 24 box is 1.25px at the 15px the rows draw it. */
+  const paint = i.stroke
+    ? 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill:none"'
+    : 'fill="currentColor"';
+  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" ${paint}>` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
 function setIco(el, name){ const i = ICONS[name]; if(!el||!i) return; el.setAttribute('viewBox', i.viewBox); el.innerHTML = i.paths.map(d=>`<path fill="currentColor" d="${d}"/>`).join(''); }
 
 /* ================= Sidebar model (live ul.mainMenu, 16 modules; groups from docs IA) ================= */
@@ -10044,13 +10328,26 @@ let activeRail = 0;
 /* Sub-menus. Each item is [label, module-to-open | null, action | null, kind].
    Page names are the docs' own wording wherever the docs name that page. */
 const SUBNAV = {
+  /* ⚠️ EVERY ROW CARRIES A GLYPH IN THE FIFTH SLOT (3 Sep 2026) — the same data change as Option 1,
+     so this panel and that flyout show one mark per row. An ACTION row gets the glyph of what it
+     DOES: a list row the module it lists, "New …" the product's `plus` (teal, in the slot the text
+     ＋ used to take), Manage the `sliders` the list panel's own Manage row draws, Scheduled a
+     `calendar`. See the note at `SUBNAV['Dashboards']` in `index.html`. */
   'Dashboards': [
-    { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()'],
-                              ['＋ New dashboard', null, 'dashNew()', 'plus'],
-                              ['Manage dashboards', null, 'openManage()'] ]},
-    { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()"],
-                              ['＋ New NOC view', null, 'openNocNew()', 'plus'] ]},
-    { h:'Reports',    items:[ ['Report list', 'Reports'], ['Scheduled reports', 'Reports'] ]},
+    { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()', null, 'dashboard'],
+                              ['＋ New dashboard', null, 'dashNew()', 'plus', 'plus'],
+                              ['Manage dashboards', null, 'openManage()', null, 'sliders'] ]},
+    { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()", null, 'screen'],
+                              ['＋ New NOC view', null, 'openNocNew()', 'plus', 'plus'] ]},
+    /* ⚠️ NO REPORTS GROUP HERE ANY MORE (3 Sep 2026, "I can't understand some sub module
+       grouping"). It was `{ h:'Reports', items:[ Report list · Scheduled reports ] }` — a
+       leftover from the seven-entry rail, which had no Report entry, so Reports was tucked under
+       Dashboards to stay reachable. The rail has carried `Report` since 23 Aug 2026 with a panel
+       of its own, and the docs put Reports in its own section (`Reports/overview`), not under
+       `dashboards/` — whose nine pages are Overview … NOC View. In THIS option's panel that group
+       sat under a module heading and read as a third kind of dashboard.
+       ⚠️ Options 1–3 still carry it in their Dashboard flyouts — this file has its own copy of
+       these arrays, and the request named Option 4. */
   ],
   /* Monitors is the live product's own monitor taxonomy — Inventory plus the monitor
      types, in the product's order (replaces the docs-derived task list). It runs across
@@ -10095,8 +10392,9 @@ const SUBNAV = {
     { h:'NetRoute', items:[ ['NetRoute analysis', 'NetRoute'], ['Path monitoring', 'NetRoute'] ]},
   ],
   'SLO': [
-    { h:'Service Level Objective', items:[ ['SLO list', 'SLO'], ['＋ New SLO', 'SLO', null, 'plus'],
-                                           ['Error budget', 'SLO'] ]},
+    { h:'Service Level Objective', items:[ ['SLO list', 'SLO', null, null, 'slo'],
+                                           ['＋ New SLO', 'SLO', null, 'plus', 'plus'],
+                                           ['Error budget', 'SLO', null, null, 'pie-chart'] ]},
   ],
   /* Settings is the module's own 18-category rail, in the product's order */
   'Settings': [
@@ -10440,7 +10738,7 @@ function railDashPinsHTML(only){
        one the filter above uses — only one of the two records is ever set, and the mark has to
        agree with whichever it is. */
     const hm = (!RAIL_HOME && DASH_DEFAULT === n)
-      ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+      ? '' : '';   /* see the `.hm` note in the stylesheet — this rail draws no home mark */
     return `<div class="sitem pin dash${on?' on':''}" data-tip="${layEsc(n)}" onclick="pickDashPin(${mfAttr(n)})">` +
       `${ico('dashboard')}<span class="lbl"><span class="t">${layEsc(n)}</span><i class="pd"></i></span>${hm}</div>`;
   }).join('');
@@ -10458,7 +10756,7 @@ function railPinsHTML(only){
   return railPinsOrdered().filter(l => only ? l === only : l !== RAIL_HOME).map(l => {
     const r = railPinRow(l); if (!r) return '';
     const on = railPinActive() === l;
-    const hm = l === RAIL_HOME ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+    const hm = '';   /* see the `.hm` note in the stylesheet — this rail draws no home mark */
     return `<div class="sitem pin${on?' on':''}" data-tip="${r.l}" onclick="pickPin(${mfAttr(l)})">` +
       `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span><i class="pd"></i></span>${hm}</div>`;
   }).join('');
@@ -10502,7 +10800,7 @@ function railPinToggle(l){
 /* one rail row — extracted so `renderMenu` can emit it in two places without a second copy */
 function railRowHTML(r, i){
   const lit = i === activeRail && !railPinActive() && !(r.name === 'Dashboard' && railDashActive());
-  const hm = r.name === RAIL_HOME ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+  const hm = '';   /* see the `.hm` note in the stylesheet — this rail draws no home mark */
   return `<div class="sitem${lit?' on':''}" data-tip="${r.name}" onclick="pickRail(${i})"
       onmouseenter="mfOpen(${i},this)">
     ${ico(r.icon)}<span class="lbl">${r.name}${r.beta?' <span class="beta">BETA</span>':''}</span>${hm}</div>`;
@@ -10526,50 +10824,50 @@ function renderMenu(){
      at. `sbmHomeTog` / `sbmDashHome` already guarantee only one of the two is set. */
   const homeDash = !RAIL_HOME && DASH_DEFAULT && DASH_PINS.indexOf(DASH_DEFAULT) > -1
                    && DASH_INDEX[DASH_DEFAULT] ? DASH_DEFAULT : null;
+  /* ⚠️ A PIN SITS DIRECTLY UNDER THE RAIL ROW IT BELONGS TO — Option 1's rule, ported here
+     3 Sep 2026 once this option gained a pin control of its own and the old placement became
+     visible. Both bands were anchored to GROUP BOUNDARIES: module pins to the first `admin`
+     row (i.e. just before Setting) and dashboard pins to the `work` group. Explorer and Report
+     share the `analyse` group and Dashboard, Alert and SLO all share `work`, so a pinned
+     sub-module rendered after **Report** and a pinned board after **SLO** — each reading as if
+     it belonged to the row above it rather than to its parent. Measured with Log and APM
+     pinned: the band landed between Report and Setting.
+     ⚠️ ONE RULE, BOTH BANDS, stated once — that is what stopped the two drifting apart in
+     Option 1, where module pins were fixed and dashboard pins were left on the old anchor.
+     ⚠️ `pinsOut` / `dashOut` make it idempotent, which is what lets the same call sit on the
+     home-lift path AND in the loop without a band ever being written twice.
+     ⚠️ `PIN_BEFORE` / `DASH_AFTER` ARE DELETED, not left beside this. A live const naming a
+     rule nothing follows is how both anchors stayed wrong through two fixes. */
+  const PIN_UNDER  = 'Explorer';               /* RAIL_PINS are EXPLORER_TREE children */
+  const DASH_UNDER = 'Dashboard';              /* DASH_PINS are boards, i.e. Dashboard's */
+  const pinsFor = name => {
+    let out = '';
+    if (!pinsOut && RAIL_PINS.length && name === PIN_UNDER){  out += railPinsHTML();     pinsOut = true; }
+    if (!dashOut && DASH_PINS.length && name === DASH_UNDER){ out += railDashPinsHTML(); dashOut = true; }
+    return out;
+  };
+  /* ⚠️ A ROW'S PINS FOLLOW IT EVEN WHEN IT IS THE ONE LIFTED TO THE TOP — the loop skips the
+     home row, so without this the band misses its anchor and falls through to the tail: the
+     pins would land at the BOTTOM precisely when their parent is at the TOP. */
   if (homeIdx > -1 && !RAIL_HIDDEN.has(RAIL_HOME))
-    html += railRowHTML(RAIL[homeIdx], homeIdx) + '<div class="sgroup-gap"></div>';
+    html += railRowHTML(RAIL[homeIdx], homeIdx) + pinsFor(RAIL_HOME) + '<div class="sgroup-gap"></div>';
   else if (homePin)
     html += railPinsHTML(RAIL_HOME) + '<div class="sgroup-gap"></div>';
   else if (homeDash)
     html += railDashPinsHTML(homeDash) + '<div class="sgroup-gap"></div>';
-  const DASH_AFTER = 'work';                   /* the group Dashboard lives in */
-  /* ⚠️ PINNED MODULES SIT IMMEDIATELY BEFORE `Setting` (request, 31 Aug 2026), and the anchor
-     is now WHERE SETTING ACTUALLY IS rather than a group boundary that happens to fall there.
-     It used to key off `PIN_AFTER='analyse'` — emit the band when the group changes away from
-     Explorer's. In the shipped order that lands in the same place, which is why it looked
-     right; but the Sidebar tab lets you REORDER and HIDE rail entries, and then the group
-     change either fires somewhere else or never fires at all, and the pins fall through to the
-     tail — below Setting. Anchoring to the first visible `admin` row states the rule instead
-     of relying on the default order to imply it.
-     ⚠️ The anchor skips hidden rows and the one lifted to the top as `RAIL_HOME`, because
-     neither is rendered in the loop. With no admin row left, `pinsOut` stays false and the
-     tail fallback below still emits the band — which is the right answer when there is no
-     Setting to sit before. */
-  const PIN_BEFORE = 'admin';                  /* the group Setting lives in */
-  const pinAnchor = (railOrdered().find(({ r, i }) =>
-        !RAIL_HIDDEN.has(r.name) && i !== homeIdx && r.group === PIN_BEFORE) || {}).r || null;
   railOrdered().forEach(({r, i})=>{
     /* ⚠️ A HIDDEN ENTRY IS SKIPPED BEFORE THE GROUP LOGIC, so hiding the last row of a group
        does not leave its divider behind pointing at nothing. */
     if (RAIL_HIDDEN.has(r.name)) return;
     if (i === homeIdx) return;                 /* already at the top */
-    if (last !== null && r.group !== last){
-      /* pinned DASHBOARDS sit under the Dashboard row they belong to, in their own band —
-         module pins get theirs further down, under Explorer */
-      if (last === DASH_AFTER && DASH_PINS.length){
-        html += '<div class="sgroup-gap"></div>' + railDashPinsHTML();
-        dashOut = true;
-      }
-      html += '<div class="sgroup-gap"></div>';
-    }
-    /* the pinned band gets its own hairlines — it is neither part of the group above it nor
-       of the one below, and reading as either would be a lie about where it came from */
-    if (!pinsOut && RAIL_PINS.length && pinAnchor && r === pinAnchor){
-      html += railPinsHTML() + '<div class="sgroup-gap"></div>';
-      pinsOut = true;
-    }
+    if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
     last = r.group;
-    html += railRowHTML(r, i);
+    /* ⚠️ AFTER the row, and with NO HAIRLINE of its own. Both bands used to be fenced by
+       `sgroup-gap` because they sat between two groups and belonged to neither. That inverts
+       once a band sits under its parent: a rule between Explorer and its own pinned children
+       would deny exactly the relationship this placement exists to show. The groups' own
+       hairlines still bound each band. */
+    html += railRowHTML(r, i) + pinsFor(r.name);
   });
   if (!dashOut && DASH_PINS.length) html += '<div class="sgroup-gap"></div>' + railDashPinsHTML();
   if (!pinsOut && RAIL_PINS.length) html += '<div class="sgroup-gap"></div>' + railPinsHTML();
@@ -14560,8 +14858,14 @@ document.addEventListener('keydown', e=>{
   trSet(8);
   applyTheme((()=>{ try{ return localStorage.getItem('oo-theme')||'dark'; }catch(e){ return 'dark'; } })());
   if(!/Mac|iP(hone|ad)/.test(navigator.platform||'')){
-    document.getElementById('sbKbd').textContent = 'Ctrl K';
-    document.getElementById('sbSearch').setAttribute('data-tip','Search  Ctrl K');
+    /* ⚠️ GUARDED (5 Sep 2026) — AND IT WAS AN INIT-ABORTING CRASH, not a tidy-up. Neither node
+       exists in this option: its rail is built by its own block and carries no `#sbKbd` keycap.
+       `getElementById(...).textContent` on null throws, and this sits INSIDE `init()`, so on
+       any non-Mac platform the whole dashboard stopped initialising here — the time chip, the
+       canvas and the tabs all downstream of it. It never showed on a Mac, and headless Chrome
+       on a Mac reports a Mac, so no probe in this folder could have caught it either. */
+    const kbd = document.getElementById('sbKbd'); if (kbd) kbd.textContent = 'Ctrl K';
+    const sbs = document.getElementById('sbSearch'); if (sbs) sbs.setAttribute('data-tip','Search  Ctrl K');
   }
   renderTabs(); renderCanvas();
   tsBind(); tsRender();
@@ -25918,6 +26222,14 @@ function stHeadPaint(){
   if (i){ i.hidden = !(ST.full && ST.full.info); if (!i.innerHTML) i.innerHTML = stSvg('info-circle'); }
 }
 function stTog(cat){ const i = ST.open.indexOf(cat); if (i >= 0) ST.open.splice(i,1); else ST.open.push(cat); stNavPaint(); }
+/* a category header: expanded it folds its pages, collapsed it IS the door to the category —
+   see the icon-rail note above `#view-settings.stshut .stnav` in the stylesheet. If it is
+   already the current category the current page is kept rather than reset to the first. */
+function stCatTap(cat){
+  if (ST.nav) return stTog(cat);
+  const c = ST_TREE.find(x => x.n === cat); if (!c) return;
+  stGo(cat, ST.cat === cat ? ST.page : c.subs[0][0]);
+}
 function stSearch(v){ ST.q = v; stNavPaint(); }
 function stPanel(){ ST.nav = !ST.nav; stPanelPaint(); }
 function stPanelPaint(){
@@ -25940,8 +26252,8 @@ function stNavPaint(){
     const subs = (!q || catHit) ? c.subs : c.subs.filter(s => s[0].toLowerCase().includes(q));
     if (q && !subs.length) return;
     const open = q ? true : ST.open.includes(c.n);
-    html += `<div class="stcat${open?' open':''}">
-      <div class="stch" role="button" aria-expanded="${open}" onclick="stTog(${stA(c.n)})">${stSvg(c.ic,'ic')}<span class="nm">${stEsc(c.n)}</span>${c.beta?'<span class="beta">BETA</span>':''}${stSvg('chevron-right','car')}</div>
+    html += `<div class="stcat${open?' open':''}${ST.cat===c.n?' cur':''}">
+      <div class="stch" role="button" aria-expanded="${open}" data-tip="${stEsc(c.n)}" onclick="stCatTap(${stA(c.n)})">${stSvg(c.ic,'ic')}<span class="nm">${stEsc(c.n)}</span>${c.beta?'<span class="beta">BETA</span>':''}${stSvg('chevron-right','car')}</div>
       <div class="stsub">${subs.map(s => `<a class="stsi${(ST.cat===c.n && ST.page===s[0])?' on':''}" onclick="stGo(${stA(c.n)},${stA(s[0])})">${stEsc(s[0])}</a>`).join('')}</div>
     </div>`;
   });
@@ -27160,16 +27472,55 @@ AG_DATA.providers.forEach(p => { AG.cfg.d[p.id] = {
 /* ⚠️ A SIDE DRAWER, NOT A FULL PAGE (request, 2 Sep 2026) — see the note in the other options.
    It reuses `.sdrawer`, this prototype's own drawer, rather than `obs-drawer`, which carries six
    recorded defects for exactly this screen. */
+/* ⚠️ THE DRAWER STOPS AT THE RAIL'S EDGE — see the note at `#drawer-agcfg` in the stylesheet.
+   ⚠️ IT READS `railWidth()`, WHICH READS THE TOKEN, NOT THE BOX. The rail animates its width, and
+   this file's own recorded lesson is that a `getBoundingClientRect()` on it catches the
+   transition mid-flight and parks whatever depends on it at the wrong number — the flyout bug.
+   `railWidth()` already answers "how wide is the rail meant to be", including `body.pinned`
+   (`--rail-w-open`), and the shell's padding trusts it for the same question.
+   ⚠️ GUARDED: this block also loads in pages whose rail engine differs, so a missing
+   `railWidth` leaves the CSS fallback in place rather than throwing on open. */
+function agCfgSize(){
+  const d = document.getElementById('drawer-agcfg'); if (!d) return;
+  if (typeof railWidth !== 'function') return;
+  d.style.width = Math.max(720, innerWidth - railWidth()) + 'px';
+}
+window.addEventListener('resize', () => {
+  const d = document.getElementById('drawer-agcfg');
+  if (d && d.classList.contains('on')) agCfgSize();
+});
 function agConfig(pid){
   if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
   const d = document.getElementById('drawer-agcfg');
   if (!d) return;
   agCfgPaint();
+  agCfgSize();
   document.body.classList.add('agdrawer');
   const sc = document.getElementById('agCfgScrim'); if (sc) sc.classList.add('on');
   d.classList.add('on');
   agCfgAfter();
 }
+/* ⚠️ ESCAPE CLOSES IT THROUGH `agCfgClose()`, AND THAT IS A BUG FIX, NOT A NEW SHORTCUT
+   (3 Sep 2026, found while making the drawer full width). Escape already reached this drawer:
+   the host page's own ladder matches `.sdrawer.on` and calls `closeOverlays()`, which strips
+   `.on` from every drawer and clears `#scrim2` — but it knows nothing about THIS drawer's own
+   `#agCfgScrim`, nor about `body.agdrawer`. So the panel slid away and left its blurred scrim
+   over the page, blocking it, with the Overview never repainted. Latent since the drawer was
+   built on 2 Sep; the full-width panel makes Escape the reflex, so it surfaces every time.
+   ⚠️ CAPTURE PHASE + `stopPropagation()` — the ONLY way to be sure this runs instead of the
+   host's rung, whatever order the two scripts registered in. Falling through would close the
+   drawer twice, once correctly and once badly.
+   ⚠️ NO `obs-select` GUARD. One was tried and is wrong twice over: the host has always closed
+   this drawer on Escape from anywhere inside it, so exempting a dropdown would INVENT an
+   inconsistency rather than remove one — and in bubble phase the guard could not have worked
+   anyway, because the host's handler fires regardless of what this one decides. */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const dr = document.getElementById('drawer-agcfg');
+  if (!dr || !dr.classList.contains('on')) return;
+  e.stopPropagation();
+  agCfgClose();
+}, true);
 function agCfgClose(){
   const d = document.getElementById('drawer-agcfg');
   if (d) d.classList.remove('on');
@@ -27196,10 +27547,13 @@ function agCfgHTML(){
   /* ⚠️ `#agPage` IS ON THIS SCREEN TOO, and it has to be: the scoped DS token block is
      `#agPage{…}`, so anything rendered outside that id gets none of the palette. The Overview
      and this page never coexist — `stMainPaint` swaps one for the other. */
+  /* ⚠️ `.agcfgsp` is the drawer's 24px top gutter for the RAIL, in the side menu's own `logo`
+     slot so the panel and its right rule stay full height while the rows start lower (3 Sep 2026:
+     "the line is attached"). Sized only under `#drawer-agcfg` — see that rule in the CSS. */
   return `<div class="agpage agcfg" id="agPage">
     <div class="agcfgn">
       <obs-side-menu id="agCfgNav" mode="categories" search="false"
-        active="${stEsc(p.name)}" items="${agJ(items)}"></obs-side-menu>
+        active="${stEsc(p.name)}" items="${agJ(items)}"><div slot="logo" class="agcfgsp"></div></obs-side-menu>
     </div>
     <div class="agcfgm" id="agCfgMain">${agCfgFormHTML()}</div>
   </div>`;
@@ -27723,22 +28077,41 @@ Object.assign(ICONS, {
     'M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2'] }
 });
 
-/* ⚠️ THE PANEL STARTS OPEN, AND IT HAS TO (request, 1 Sep 2026: "the sidebar is not show sub
-   module — the reference is option 1 but the ui is same as monday.com"). It shipped `false`
-   to match `.dpanel hid`, Option 1's own default — and that was the wrong thing to copy,
-   because Option 1 does not NEED a panel to show a module's sub-navigation: it hangs a
-   mega-menu flyout off every rail row, so Explorer's eleven sub-modules are one hover away.
-   THIS option stood that flyout down (it is not monday's UI), which makes the docked panel
-   the ONLY place sub-modules exist — and starting it closed meant a fresh load showed six
-   rail icons and no way to learn that anything sits under them.
-   ⚠️ The two halves of the request pull in different directions and both are honoured here:
+/* ⚠️ THE PANEL STARTS CLOSED (request, 3 Sep 2026: "by default collapse this sidebar"). This
+   REVERSES the 1 Sep 2026 decision recorded below, and that note is kept because its reasoning
+   is still the thing to weigh if it is ever changed back — read both before touching this.
+   ⚠️ WHAT THE OLD ARGUMENT SAID, and why it no longer decides it: this option stands the
+   mega-menu flyout down, so the docked panel is the ONLY place sub-modules exist, and a cold
+   load therefore showed rail icons with nothing saying anything sat under them. That was true
+   when it was written — the rail carried NO visible way to open the panel, only the panel's own
+   « to close it. It is not true now: the rail's `»` is rendered exactly when the panel is shut
+   (3 Sep 2026), sits directly under the wordmark with 16px of air, and is tooltipped
+   "Show details". The affordance the old note was protecting is on screen; the default is
+   therefore a preference again, and this is the one that was asked for.
+   ⚠️ IT IS STILL ONLY THE COLD START. `MR.want` survives moving between modules either way, so
+   a reader who opens the panel keeps it open for the session.
+   ⚠️ The two halves of the 1 Sep request pull in different directions and both are honoured:
    the CONTENT is Option 1's (`SUBNAV` + `SUBNAV2`, the same arrays its flyout renders, via
    `mrNavPaint`), the PRESENTATION is monday's (a docked panel beside the rail, not a hover
    mega-menu). Restoring the flyout would have satisfied "reference is option 1" and broken
    "the ui is same as monday.com".
-   ⚠️ It is still a PREFERENCE, not a lock — `»/«` closes it and the choice then survives
-   moving between modules. Defaulting open only fixes the cold start. */
-const MR = { want:true };
+   ⚠️ It is still a PREFERENCE, not a lock — `»/«` toggles it and the choice then survives
+   moving between modules. */
+/* ⚠️ `»/«` OPENS THE SUB-MODULE PANEL ON DASHBOARDS TOO — NOT THE LIST PANEL (request, 3 Sep
+   2026: "when i click the expand & collapse icon to show wrong sidebar … i just say to open the
+   submodule sidebar like option 1 is reference"). The table above that routes Dashboards to
+   `.dpanel` is SUPERSEDED. On Dashboards the control opened the dashboard LIST — quick access,
+   categories, boards — where every other module opened its sub-navigation; so the one place a
+   reader first presses it, it showed a different kind of thing from everywhere else. Option 1's
+   Dashboard flyout is the reference, and that is `SUBNAV['Dashboards']`: Dashboard list · New ·
+   Manage · NOC view · Reports. `#mrNav` renders exactly that here now, on every module.
+   ⚠️ THE LIST PANEL IS NOT GONE AND NOT COUPLED. `.dpanel` still has its own chevron in the page
+   head (`#dpanelBtn`), and the sub-module panel's own first row — "Dashboard list" — opens it.
+   `MR.want` no longer reads or writes the list panel's state; `mrFav()` opens the list panel
+   directly, because the Favorites filter lives there. */
+/* `open` — the parent rows the reader has unfolded, keyed `<module>›<label>` so a state
+   survives moving between modules and two modules' same-named rows cannot share one. */
+const MR = { want:false, open:new Set() };
 let mrFitT = null;
 
 const mrDashOn = () => { const v = document.getElementById('view-dashboard');
@@ -27750,13 +28123,9 @@ function mrPanelTog(){ MR.want = !MR.want; mrApply(true); }
 /* ⚠️ `mrApply` IS THE ONLY THING THAT MOVES EITHER PANEL, so the two can never disagree
    about the preference. It is idempotent: everything that changes where you are calls it. */
 function mrApply(animate){
-  const dash = mrDashOn(), p = document.getElementById('dpanel');
-  document.body.classList.toggle('mrnav', MR.want && !dash);
-  if (!dash) mrNavPaint();
-  /* ⚠️ go through `toggleDPanel()` rather than the class — it also flips `#dpanelBtn`'s
-     chevron and rewrites its tooltip, and a list panel whose own control lies about its
-     state is worse than one with no control. */
-  if (p && dash && p.classList.contains('hid') === MR.want) toggleDPanel();
+  /* one panel, every module — see the note above `MR`. The list panel is left alone. */
+  document.body.classList.toggle('mrnav', MR.want);
+  mrNavPaint();
   mrPaint();
   /* ⚠️ THE PANEL PUSHES THE CANVAS IN THIS OPTION (see the stylesheet), so the widgets were
      scaled by `fitCanvas` against the old width. Re-fit AFTER the .2s transition — reading
@@ -27769,10 +28138,12 @@ function mrApply(animate){
    AI panel's layout toggle records: the class describes the state, the glyph the action. */
 function mrPaint(){
   const b = document.getElementById('mrExpBtn'); if (!b) return;
-  const open = mrDashOn()
-    ? !(document.getElementById('dpanel')||{classList:{contains:()=>true}}).classList.contains('hid')
-    : document.body.classList.contains('mrnav');
-  setIco(document.getElementById('mrExpIc'), open ? 'mr-chev-left' : 'mr-chev-right');
+  const open = document.body.classList.contains('mrnav');
+  /* ⚠️ THE GLYPH IS ALWAYS » NOW. The button is only ever on screen while the panel is CLOSED
+     (`body.mrnav .mrexp{display:none}`), so its only action is "open" — painting a « into a
+     hidden control was describing a state nobody can see it in. The `open` branch is kept
+     because `mrPaint` still runs in both states and the tooltip below reads from it. */
+  setIco(document.getElementById('mrExpIc'), 'mr-chev-right');
   b.setAttribute('data-tip', open ? 'Hide details' : 'Show details');
   b.removeAttribute('title');      /* a title is adopted once; keep data-tip authoritative */
 }
@@ -27782,28 +28153,118 @@ function mrPaint(){
    the continuation the two-column flyout used; here the column is one list, so it simply
    follows on. */
 const mrSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
-const mrRow = ([label, mod, act, kind, ic], parent) =>
-  `<button class="mrr${parent ? ' par' : ''}${kind === 'sub' ? ' sub' : ''}"
-     onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${ic ? ico(ic, 'mfic') : ''}${
-    kind === 'plus' ? '<span class="plus">＋</span>' + label.replace('＋ ', '')
+/* ⚠️ THE PANEL IS A TREE NOW, NOT A FLAT LIST (request + screenshot, 3 Sep 2026: "improve the
+   submodule list because I can't understand some sub module grouping"). Measured against the six
+   panels side by side, four things were making the grouping unreadable:
+     · Explorer printed Monitor's 18 monitor types INLINE, so the panel ran to 31 rows, Topology
+       sat 20 rows down and Flow · Trap · Audit · Report were below the fold at 1000px;
+     · Alert's NetRoute / APM / Real User Monitoring — the three rows that HAVE children — looked
+       identical to Metric and Log beside them (no icon, so `:has(.mfic)` never weighted them), and
+       only the indent under them hinted that anything was theirs;
+     · every panel's FIRST heading repeated the panel's own title (`Dashboard` → DASHBOARDS,
+       `Alert` → ALERTS, `Setting` → SETTINGS …) — the flyout's column heading carried into a
+       panel that already has a title, and in Dashboard's case it made NOC VIEW and REPORTS read
+       as peers OF THE MODULE rather than groups inside it;
+     · Dashboard carried a REPORTS group at all — see the data note at `SUBNAV['Dashboards']`.
+   The shape is now the one Option 5's column and monday's own folders use:
+     · a row WITH CHILDREN is a PARENT: weighted, with its child COUNT and a chevron, and its
+       children are hidden until it is opened — `mrSub` toggles it (`MR.open`), the children
+       navigate. Explorer opens as ELEVEN rows, which is what the flyout was corrected to on
+       27 Aug 2026 ("show only sub module"), and Alert's three parents finally look like parents.
+       ⚠️ A parent row TOGGLES, it does not navigate — its first child (Inventory, Compliance,
+       Source To Destination) is the landing the module opens on anyway, and giving one row two
+       jobs is how the Explorer flyout's own headings ended up as "labels you could not click".
+     · the FIRST section prints NO heading — it is the module's own primary list, under the title
+       that already names it. Later headings (NOC VIEW) stay as group labels.
+     · children are derived, not authored: a run of `'sub'` rows belongs to the row before it,
+       the same convention `mfTreeFor` reads for the flyout, so no data changed shape. Explorer
+       reads `EXPLORER_TREE` directly — the one source with real nesting and real counts — as
+       Option 5 does.
+   ⚠️ THE COUNT IS ONLY EVER A REAL NUMBER — `kids.length` — the Option 5 rule; a row with nothing
+   under it gets no chevron and no number, not a zero. */
+/* ⚠️ THE CHEVRON'S BOX IS THE `<span class="mrch">` NOW, not the svg — a reserved slot has to
+   keep its width while showing nothing, and `visibility:hidden` on the svg alone would leave
+   the span at zero. `MR_CHEV` is kept for any caller wanting the standalone glyph. */
+const MR_CHEV_P = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" style="fill:none;width:100%;height:100%"><path d="M9 5l7 7-7 7"/></svg>';
+const MR_CHEV = '<svg class="mrch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" style="fill:none"><path d="M9 5l7 7-7 7"/></svg>';
+/* the row's tail. `pin` is a label to pin or null; `n` a real count or null; `chev` whether
+   the row has children. Every slot is emitted whenever ANY row in the panel uses it, so the
+   three read as columns — see `.mrend`. */
+const mrEnd = (pin, n, chev) => (pin == null && n == null && !chev) ? '' : '<span class="mrend">' +
+  (pin == null ? '' : `<button class="mrpn" aria-pressed="${railPinned(pin)}" data-tip="${
+      railPinned(pin) ? 'Unpin from sidebar' : 'Pin to sidebar'}" onclick="event.stopPropagation();railPinToggle(${
+      mfAttr(pin)})">${MF_PIN}</button>`) +
+  `<span class="mrn">${n == null ? '' : n}</span>` +
+  `<span class="mrch${chev ? '' : ' ph'}">${MR_CHEV_P}</span></span>`;
+/* ⚠️ THE ROW IS A `div role="button"`, NOT A `<button>` — AND THAT IS THE PIN'S DOING.
+   A `<button>` may not contain another button: the HTML parser CLOSES the outer one when it
+   meets the inner, so `.mrend` was hoisted out of the row and became its sibling. Nothing
+   errored and the pin drew in roughly the right place; the tell was `row.querySelector('.mrn')`
+   returning null on a row that visibly had a count. This file records the same trap twice
+   already (the AI panel's chat-name trigger, the group-title rename) and Option 1's flyout row
+   is a `div` for exactly this reason.
+   ⚠️ THE KEYBOARD HAS TO BE PUT BACK BY HAND — a div is not focusable and does not fire on
+   Enter or Space. `mrKey` does both, and `.mrr` carries the padding/colour/cursor the UA gave
+   the button for free (the recorded `.aihm .conv` regression, where a row turned into a div
+   silently lost every rule scoped to `button`). */
+const mrRow = ([label, mod, act, kind, ic], pin) =>
+  `<div class="mrr${kind === 'sub' ? ' sub' : ''}${pin && railPinned(pin) ? ' pinned' : ''}"
+     role="button" tabindex="0" onkeydown="mrKey(event,this)"
+     onclick="mfGo(${mfAttr(mod)},${mfAttr(act == null ? null : act)})">${ic ? ico(ic, kind === 'plus' ? 'mfic plus' : 'mfic') : ''}<span class="mrl">${
+    /* a `plus` row with a glyph draws the glyph in the icon slot and no text ＋ — both would
+       print two pluses side by side; the glyph keeps the teal so "create" still stands out */
+    kind === 'plus' ? (ic ? '' : '<span class="plus">＋</span>') + label.replace('＋ ', '')
   : kind === 'beta' ? label + '<span class="mfbeta">BETA</span>'
-  : label}</button>`;
+  : label}</span>${pin == null ? '' : mrEnd(pin, null, false)}</div>`;
+const mrParent = (key, label, ic, kids, pin) => {
+  const open = MR.open.has(key);
+  return `<div class="mrr par${open ? ' open' : ''}${pin && railPinned(pin) ? ' pinned' : ''}" role="button" tabindex="0"
+      aria-expanded="${open}" onkeydown="mrKey(event,this)" onclick="mrSub(${mfAttr(key)})">${
+      ic ? ico(ic, 'mfic') : ''}<span class="mrl">${label}</span>${mrEnd(pin, kids.length, true)}</div>` +
+    (open ? kids.map(([l, m, a]) => mrRow([l, m, a == null ? null : a, 'sub'])).join('') : '');
+};
+/* Enter and Space activate the row, as they would on the button it used to be. Space is
+   preventDefault'd or the panel scrolls under the press. A key that reaches this from the PIN
+   inside the row is ignored — the pin is a real button and handles its own. */
+function mrKey(e, el){
+  if (e.target !== el) return;
+  if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+  e.preventDefault(); el.click();
+}
+function mrSub(key){ if (MR.open.has(key)) MR.open.delete(key); else MR.open.add(key); mrNavPaint(); }
+function mrBodyHTML(r){
+  /* ⚠️ THE PIN IS EXPLORER'S ONLY — `railPinRow` resolves a pin against `EXPLORER_TREE`, so
+     these are the only labels the rail band can render. */
+  if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
+    return EXPLORER_TREE.map(t => t.kids
+      ? mrParent(r.name + '›' + t.l, t.l, t.ic, t.kids, t.l)
+      : mrRow([t.l, t.mod, t.act || null, null, t.ic], t.l)).join('');
+  const secs = mrSecs(r.name);
+  if (!secs.length)
+    return `<div class="mrempty">${r.name} opens straight to its own screen — it has no sub-pages.</div>`;
+  return secs.map((s, si) => {
+    const rows = [];
+    for (let k = 0; k < s.items.length; k++){
+      const it = s.items[k]; if (it[3] === 'sub') continue;        /* consumed by its parent */
+      const kids = [];
+      for (let j = k + 1; j < s.items.length && s.items[j][3] === 'sub'; j++) kids.push(s.items[j]);
+      rows.push(kids.length ? mrParent(r.name + '›' + it[0], it[0], it[4], kids) : mrRow(it));
+    }
+    /* h:'' is the flyout's continuation marker — one list, so no second heading either */
+    return (si && s.h ? `<div class="mrsec">${s.h}</div>` : '') + rows.join('');
+  }).join('');
+}
 
 function mrNavPaint(){
   const host = document.getElementById('mrNav'); if (!host) return;
-  const r = RAIL[activeRail] || RAIL[0], secs = mrSecs(r.name);
+  const r = RAIL[activeRail] || RAIL[0];
   host.innerHTML =
     `<div class="mrph"><span class="t">${r.name}</span>` +
-      `<button class="mrphb" data-tip="Hide details" onclick="mrPanelTog()">${
-        ico('mr-chev-left')}</button></div>` +
-    `<div class="mrpb">` + (secs.length ? secs.map(s =>
-        /* h:'' is the flyout's continuation marker — one list, so print no second heading */
-        (s.h ? `<div class="mrsec">${s.h}</div>` : '') +
-        (s.parent ? mrRow(s.parent, true) : '') +
-        s.items.map(it => mrRow(it, false)).join('')
-      ).join('')
-      : `<div class="mrempty">${r.name} opens straight to its own screen — it has no sub-pages.</div>`) +
-    `</div><div class="mrpf">${mfDocs(r.name)}</div>`;
+      `<button class="mrexpb mrphb" data-tip="Hide details" onclick="mrPanelTog()">${
+        ico('mr-chev-left', 'ic')}</button></div>` +
+    `<div class="mrpb">` + mrBodyHTML(r) + `</div><div class="mrpf">${mfDocs(r.name)}</div>`;
 }
 
 /* ── the tail: Favorites and the overflow ─────────────────────────────────────────── */
@@ -27812,7 +28273,8 @@ function mrNavPaint(){
    that nothing outside the panel could reach. */
 function mrFav(){
   if (!mrDashOn()) selectModuleByName('Dashboards');
-  MR.want = true; mrApply(true);
+  /* the Favorites filter is the LIST panel's, so this opens the list panel — not `#mrNav` */
+  if (typeof openDPanel === 'function') openDPanel();
   if (dashState.filter !== 'fav') setDashFilter('fav');
 }
 
@@ -27846,11 +28308,18 @@ const mrSelectModule0 = selectModule;
 selectModule = function(i){ mrSelectModule0(i); mrApply(false); };
 const mrShowView0 = showView;
 showView = function(v){ mrShowView0(v); mrApply(false); };
-/* the list panel has its own chevron in the page head; pressing that IS the preference */
-const mrToggleDPanel0 = toggleDPanel;
-toggleDPanel = function(){ mrToggleDPanel0();
-  if (mrDashOn()) MR.want = !document.getElementById('dpanel').classList.contains('hid');
-  mrPaint(); };
+/* ⚠️ `railPinToggle` REPAINTS THE RAIL AND THE FLYOUT — and the flyout is stood down here, so
+   without this the panel you just pressed the pin in keeps its old state while the rail behind
+   it has already changed. Exactly the reason that function already repaints `sbmPaint` for the
+   Layout drawer's Sidebar tab: every surface showing `RAIL_PINS` has to follow one toggle.
+   Wrapped rather than edited into the shared function, the way `selectModule` and `showView`
+   above are, so the earlier block stays byte-identical with the other options. */
+const mrPinToggle0 = railPinToggle;
+railPinToggle = function(l){ mrPinToggle0(l); mrNavPaint(); };
+/* ⚠️ `toggleDPanel` is NO LONGER WRAPPED (3 Sep 2026). It used to write `MR.want` from the list
+   panel's state, back when `»/«` drove that panel on Dashboards; the two are independent now,
+   and a wrapper that still copied one into the other would close the sub-module panel every
+   time the list panel's own chevron was pressed. */
 
 /* ── boot ─────────────────────────────────────────────────────────────────────────── */
 setIco(document.getElementById('mrFavIc'),  'mr-star');

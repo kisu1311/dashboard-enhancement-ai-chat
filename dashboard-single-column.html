@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Motadata ObserveOps — Narrow Rail &amp; Nav Column</title>
+<title>Motadata ObserveOps — One Column, No Rail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -7009,271 +7009,386 @@ html[data-theme="light"] #drawer-layout{
    ══════════════════════════════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════════════════════════════════
-   OPTION 5 — THE NARROW RAIL + NAV COLUMN, built from Plain (plain.com)
+   OPTION 7 — ONE COLUMN, NO RAIL, built from Notion
    ──────────────────────────────────────────────────────────────────────────────────────────
-   Reference: the Plain support workspace, via Mobbin (screen 8e4cfdce…), supplied 2 Sep 2026.
-   Read off the capture — it is a still, not a live DOM, so the numbers below are PROPORTIONS
-   taken from it and then set to this product's own type scale, not measured pixels. Said
-   plainly because every other option in this folder WAS measured off a live DOM.
+   Reference: `app.notion.com/library/recents` — driven LIVE in the browser on 4 Sep 2026 and
+   measured off its DOM (viewport 1710×951), with the user's own workspace as the sample.
 
-   WHAT PLAIN DOES, AND WHY IT IS A FIFTH ANSWER:
-     • the icon rail is TINY — ~32px, icon-only, no labels, no captions, no hover-expand. Every
-       other option here is 56–72px. It carries the modules and nothing else.
-     • beside it an ALWAYS-ON nav column that is the real navigation: a workspace header, the
-       module's own rows, and — the part none of our other options has — CHILDREN INDENTED
-       UNDER THE ROW THEY BELONG TO, each with a right-aligned COUNT.
-     • sections below the primary rows are COLLAPSIBLE ("Browse ⌄").
-     • the active row is a filled, tinted, full-width rounded rect with coloured text.
-   Against the set: 1/3 hover a mega-menu, 2 docks a panel that names the module, 4 toggles a
-   panel you open. 5 is the only one where the navigation is permanently open, nested, counted,
-   and where the rail is too narrow to say anything at all.
+   WHAT NOTION DOES, AND WHY IT IS A SEVENTH ANSWER:
+     • THERE IS NO ICON RAIL. Options 1–6 all have one; this is a single 270px column and that
+       is the whole idea — every destination is a labelled row, nothing is a glyph you have to
+       hover to read, and the column is the only navigation surface.
+     • it opens with a WORKSPACE ROW (a 20px radius-4 mark + a 14px/500 name), then a row of
+       QUICK ACTIONS: a filled "Home" pill and three icon-only buttons at 22px.
+     • the body is SECTIONS of plain rows — a 12px/500 grey label, then 30px rows with a 20px
+       glyph at +9 and 14px text at +38, no fills, hover and active both `rgba(33,27,23,.05)`
+       at radius 6. A section can end in a muted "⋯ More".
+     • pages NEST inside their parent, indented, which is how one column carries a whole tree.
+     • it ends in a PINNED BAR: a rounded-full "New chat ⌘O" button and a 40px square beside it.
+   Against the set: 1/3 hover a mega-menu off a rail, 2 docks a panel beside one, 4 labels the
+   rail, 5 puts a nav column next to a tiny one, 6 floats the whole thing as a card. 7 deletes
+   the rail outright and puts modules, recents, starred boards and the utilities in one list.
 
-   ⚠️ THE PAINT IS THIS FILE'S TOKENS. Plain is light-only; nothing of its palette is copied.
-   ⚠️ THE RAIL AND THE COLUMN ARE DIFFERENT SURFACES — `--sidebar` and `--panel` — which is what
-   makes a 32px rail read as chrome rather than as a cut-off first column.
+   ⚠️ THE PAINT IS THIS FILE'S TOKENS. Notion is light-only and warm (`#f9f8f7` on white); the
+   column is `--panel` on a `--bg` page here, and its selected fill is `--sel` with `--teal`
+   text, this prototype's own tinted-selection pair. None of Notion's hexes are in the file.
+   ⚠️ TYPE IS RESCALED, GEOMETRY IS NOT. Notion sits on a 14px base and this prototype on Inter
+   12: rows are 13px here against its 14, section labels 11px against 12. Every box, gap,
+   radius, indent and pitch below is the reference's own measured number.
+   ⚠️ `--rail-w` IS THE COLUMN'S WIDTH, which is what `railWidth()` and `.shell` both read.
    ══════════════════════════════════════════════════════════════════════════════════════════ */
+:root{ --nx-w:270px; --rail-w:var(--nx-w); --rail-w-open:var(--nx-w) }
+.shell{padding-left:var(--nx-w)}
+body.pinned .shell{padding-left:var(--nx-w)}
 
-/* ⚠️ THE RAIL WENT 44 → 52px, AND ITS TILE 28 → 32 (request, 3 Sep 2026: "very small, make to
-   improve"). Measured against the other four rails before changing anything: Option 1 collapses
-   to 64px with a 20px glyph, Option 4 is a fixed 72px with a 32px tile, and this one was 44px
-   with a 28px tile and an 18px glyph — the smallest hit target in the prototype, and the only
-   rail with no words at all to compensate. 28px is also under the 32px every other control in
-   these files uses (the drawer's own »/«, Option 4's tile), so it was the odd one out rather
-   than a considered size.
-   ⚠️ IT IS STILL THE NARROWEST OF THE FIVE, which is the pattern's whole identity — 52px against
-   64 and 72. The width is derived: a 32px tile in the 10px gutters the 28px tile already had. */
-/* ⚠️ `--pl-nav` WENT 216 → 224px ON 3 Sep 2026, and it is measured, not rounded up by eye. Every
-   row in the column carries a glyph now, children included, so a nested row's text starts 23px
-   further in (glyph + gap) than it did — and "Container Orchestration", the longest child label,
-   came out 136px of text in 135px of room. A 1px overflow costs three letters, because the
-   ellipsis takes its own width. One 8px step (the file's smallest spacing unit) clears it with 7px
-   to spare; nothing else was within 8px of its edge. The shell padding and the hover-peek both
-   read this token, so the canvas and the floating column follow — the "an icon column has to be
-   paid for" lesson the flyout master recorded at 236 → 288. */
-:root{ --pl-rail:52px; --pl-nav:224px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
-.shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
-body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
+/* ⚠️ NO RIGHT BORDER — Notion has none. The column is `--panel` against a `--bg` canvas and
+   the change of surface is the edge, which is the same argument the Settings list's own rule
+   makes in reverse: there, both sides are white and the rule has to draw the boundary. */
+.sidebar.nxside,.sidebar.nxside.open{width:var(--nx-w);flex-direction:column;overflow:hidden;
+  background:var(--panel);border-right:0;box-shadow:none;transition:none}
+/* ⚠️ EVEN EDGES, ON ONE SCALE (request, 5 Sep 2026: "proper spacing, margin and padding").
+   It was `0 8px 12px` — no top padding at all, 8 at the sides and 12 at the foot — so the column
+   had three different edges and the first row's air came from a `margin-top` on the workspace
+   row instead. One `8px` sets all four and the rows below can stop compensating. */
+.nxcol{flex:1;min-height:0;display:flex;flex-direction:column;padding:8px}
 
-.sidebar.plside{width:calc(var(--pl-rail) + var(--pl-nav));flex-direction:row;overflow:visible;
-  background:var(--panel);border-right:1px solid var(--border)}
-.sidebar.plside.open{width:calc(var(--pl-rail) + var(--pl-nav));box-shadow:none}
-
-/* ── column A · the rail ─────────────────────────────────────────────────────────────────── */
-.plrail{flex:0 0 var(--pl-rail);width:var(--pl-rail);display:flex;flex-direction:column;
-  align-items:center;background:var(--sidebar);border-right:1px solid var(--border);padding:8px 0 10px}
-.plbrand{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;color:var(--white);margin-bottom:12px}
-.plbrand svg{display:block;width:100%;height:100%}
-.plicons{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;
-  gap:6px;width:100%;scrollbar-width:none}
-.plicons::-webkit-scrollbar{display:none}
-/* ⚠️ 32px TILE, 20px GLYPH — see the token note above. The rail is the one place in this option
-   with no words at all, so the tile is the only hit target AND the only state; at 28/18 it was
-   asked to do both jobs at the smallest size in the prototype. 32px is the size every other
-   control in these files uses and matches Option 4's tile; 20px is Option 1's rail glyph. */
-.plib{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:8px;
-  color:var(--text-dim);cursor:pointer;position:relative;transition:background .12s,color .12s}
-.plib:hover{background:var(--hover-side);color:var(--text)}
-.plib.on{background:var(--pill);color:var(--ink)}
-.plib .ic{width:20px;height:20px;fill:currentColor}
-.plib.airail{color:var(--ai-2)}
-.plib.airail:hover{background:var(--ai-soft)}
-.plrfoot{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding-top:8px}
-.plrfoot .plib .ibadge{top:-3px;left:auto;right:-4px}
-.plav{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--white);color:var(--ink);
-  font-weight:700;font-size:11px;display:grid;place-items:center;cursor:pointer}
-
-/* ── column B · the nav column ───────────────────────────────────────────────────────────── */
-.plnav{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--panel)}
-/* ══ COLLAPSE THE NAV COLUMN (request, 2 Sep 2026) ══════════════════════════════════════════
-   This option's column is ALWAYS-ON — that is the whole pattern — so the one thing it owed the
-   canvas was a way to hand the 216px back. Collapsed, what remains is the 44px rail: still a
-   complete navigation, because the rail already carries every module.
-   ⚠️ `display:none`, NOT a width transition. The column's rows are `white-space:nowrap`, so
-   animating it to 0 reflows every label through a squeezed box on the way down and the whole
-   list visibly garbles. The sidebar has no width transition of its own here, so nothing
-   animates and there is nothing to garble.
-   ⚠️ THE SHELL PADDING FOLLOWS THE SAME TOKEN MATH. It is `rail + nav` in both rules above, so
-   the collapsed state has to override BOTH or the canvas keeps a `--pl-nav`-wide gutter for a column
-   that is no longer there. That is the `body.pinned .shell` hardcode trap from Option 1, one
-   file over. */
-body.plshut .plnav{display:none}
-/* ══ HOVER-PEEK — the column floats over the canvas while the rail is hovered ═══════════════
-   Request + reference, 3 Sep 2026 (Plain's own workspace): with the column collapsed, pointing
-   at a rail icon should show that module's navigation OVER the canvas, not push it aside.
-   ⚠️ IT IS THE SAME COLUMN, NOT A SECOND ONE. `.plnav` is simply un-hidden and taken out of
-   flow — one renderer (`plPaint`), one set of rows, one set of behaviours. A separate peek
-   panel would be a second copy of `plBodyHTML` to keep in step, which is the duplication this
-   file's own notes keep warning about.
-   ⚠️ THE CANVAS MUST NOT REFLOW. `body.plshut .shell` keeps its `--pl-rail` padding and the
-   peek is `position:fixed`, so widgets do not resize as the pointer crosses the rail — that
-   would be 216px of layout thrash on a hover. It is also why `fitCanvas` is NOT called here.
-   ⚠️ IT NEEDS A SHADOW AND AN OPAQUE FILL, unlike the docked column: docked, its right border
-   divides two panels; floating, it sits on a dark canvas full of widgets and a hairline alone
-   would let the board read through the gap between them. `--panel` is already opaque.
-   ⚠️ z-index 59 — UNDER `.sidebar`'s 60, so the rail it belongs to still paints over it, and
-   over the canvas. It must stay below the drawers (90+) and the popovers.
-   ⚠️ NO TOOLTIP WHILE IT IS OPEN. The peeked column's own header names the module, so the
-   rail's `data-tip` would say the same word a second time — on top of the column, covering a
-   row, which is exactly what was reported. Hiding `.tipbox` for the duration is one rule and
-   needs no change to the shared tooltip engine. */
-body.plshut.plpeek .plnav{display:flex;position:fixed;left:var(--pl-rail);top:0;bottom:0;
-  width:var(--pl-nav);z-index:59;background:var(--panel);
-  border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.34)}
-html[data-theme="light"] body.plpeek .plnav{box-shadow:8px 0 28px rgba(16,26,42,.14)}
-body.plpeek .tipbox{display:none}
-body.plshut .sidebar.plside,body.plshut .sidebar.plside.open{width:var(--pl-rail)}
-body.plshut .shell,body.plshut.pinned .shell{padding-left:var(--pl-rail)}
-/* the mark becomes the way back out, exactly as Option 1's brand row does when its rail is
-   collapsed — the rail is 44px and there is no room for a labelled control */
-body.plshut .plbrand{cursor:pointer;border-radius:6px}
-body.plshut .plbrand:hover{background:var(--hover-side)}
-/* the expand tile — see `plRailPaint`. Hidden while the column is open (the column's own header
-   carries the collapse), shown the moment it is shut. `display:grid` because that is what `.plib`
-   is; a bare `display:block` would drop the glyph out of centre. */
-.plexp{display:none;margin-bottom:4px}
-body.plshut .plexp{display:grid}
-/* the collapse chevron stays SMALLER than a module glyph — it is chrome, not a destination */
-.plexp svg{width:18px;height:18px;fill:currentColor}
-/* the workspace header — module name over a quiet second line, with the module's own actions */
-/* ⚠️ ITS PADDING IS DERIVED FROM THE LIST, NOT PICKED (request, 3 Sep 2026: "improve the margin
-   and spacing"). It was `11px 10px 9px 12px` — three numbers that agreed with nothing below
-   them. Measured before: the title started at x=56 while every row icon and every group label
-   started at 61, and the button cluster ended at 249 against the rows' own 251. A five-pixel
-   stagger is not visible as a stagger; it just makes the header read as slightly adrift.
-     left  17 = `.plbody`'s 8px + `.plrow`'s 9px, so the title begins exactly where the rows'
-               ICONS do — and where the group labels already did.
-     right  8 = `.plbody`'s padding alone, so the cluster's outer edge lands on the rows' own
-               right edge, which is how `.mfend` is aligned in Option 1's flyout.
-   ⚠️ THE GLYPHS DO NOT LINE UP AND THAT IS THE CHOICE, not an oversight: `.plhb` insets its
-   14px glyph by 4px while a row insets its icon by 9, so box-alignment and glyph-alignment
-   cannot both hold. A right-hand control cluster is aligned by its box. */
-.plhd{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:11px 8px 9px 17px}
-.plhtt{flex:1;min-width:0}
-.plhtt b{display:block;font-size:13px;font-weight:600;color:var(--text);
+/* ── the workspace row ───────────────────────────────────────────────────────────────────── */
+/* 30px tall in a 6px top inset, its mark 20px at x=17 and its name at x=46 — Notion's numbers.
+   It is the identity control here: with no rail there is nowhere else for the avatar to live. */
+/* ⚠️ THE ROW IS A CONTAINER, NOT A BUTTON (4 Sep 2026, when the collapse was added to it).
+   `#sbUser` is still a real `<button>` inside it and keeps the hover fill; the toggle is its
+   sibling. A button inside a button is invalid and eats the clicks — the recorded `.aiht` /
+   `gNameEdit` lesson, and the same reason this file's caret is a `role="button"` span. */
+.nxws{display:flex;align-items:center;gap:2px;height:30px;flex:0 0 30px;margin:0}
+.nxwsb{flex:1;min-width:0;display:flex;align-items:center;gap:9px;height:30px;padding:0 9px;
+  border-radius:6px;border:0;background:transparent;color:var(--text);cursor:pointer;text-align:left}
+.nxwsb:hover{background:var(--hover)}
+/* ⚠️ VISIBLE AT REST — a DELIBERATE DIVERGENCE. Notion reveals this control only when the
+   sidebar is hovered; here it is the ONLY way to collapse a column that IS the whole
+   navigation, and this folder has already had to fix one "the way back out was invisible"
+   report (Option 5's expand tile, 3 Sep 2026). It is dimmed rather than hidden. */
+.nxwsc{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;border:0;border-radius:6px;
+  background:transparent;color:var(--text-dim);cursor:pointer}
+.nxwsc:hover{background:var(--hover);color:var(--text)}
+.nxwsc svg{width:15px;height:15px;fill:currentColor}
+.nxws .nxmk{width:20px;height:20px;flex:0 0 20px;border-radius:4px;display:grid;place-items:center;color:var(--white)}
+.nxws .nxmk svg{width:100%;height:100%;display:block}
+.nxwsb b{flex:1;min-width:0;font-size:13px;font-weight:600;line-height:20px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* ⚠️ KEPT AND UNREFERENCED — the route subtitle was removed 2 Sep 2026; this is what a revert
-   would need. `.plhd` is `align-items:flex-start` for a two-line block, so with one line the
-   title now sits at the top of a 22px button row; that is why `.plhtt` gains the centring. */
-.plhtt span{display:block;font-size:10.5px;color:var(--text-dim);margin-top:1px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plha{flex:0 0 auto;display:flex;gap:2px}
-.plhb{width:22px;height:22px;display:grid;place-items:center;border-radius:4px;color:var(--text-dim);cursor:pointer}
-.plhb:hover{background:var(--hover);color:var(--text)}
-.plhb svg{width:14px;height:14px;fill:currentColor}
+.nxwsb .miniav{width:18px;height:18px;flex:0 0 18px;margin:0;font-size:9px}
 
-/* ⚠️ 8px OF AIR UNDER THE HEADER, NOT 2. Measured: the header box ended at y=42 and the first
-   row began at 44, so the title bar sat on the list with nothing between them — and the column
-   has a 16px gap above every GROUP heading, which made the module's own name the least
-   separated thing in it. 8px is the file's own `@padding-xs` step and still leaves the group
-   gap twice as large, which is the order these two have to be in. */
-.plbody{flex:1;min-height:0;overflow-y:auto;padding:8px 8px 12px;scrollbar-width:thin}
+/* ── the quick-action row ────────────────────────────────────────────────────────────────── */
+/* Notion: 32px tall, 2px gap, a filled pill for Home and 22px icon-only buttons after it */
+/* 8px above and below — the header block and the list are separated by one step, not by 6 and 8 */
+.nxact{display:flex;align-items:center;gap:2px;height:32px;flex:0 0 32px;margin:8px 0}
+.nxpill{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 9px;border:0;border-radius:999px;
+  background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer}
+.nxpill:hover{background:var(--hover)}
+.nxpill.on{background:var(--sel);color:var(--teal)}
+.nxpill svg{width:18px;height:18px;flex:0 0 18px;fill:currentColor}
+.nxab{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:0;border-radius:6px;
+  background:transparent;color:var(--text-dim);cursor:pointer;position:relative}
+.nxab:hover{background:var(--hover);color:var(--text)}
+.nxab svg{width:18px;height:18px;fill:currentColor}
+.nxab.airail{color:var(--ai-2)}
+.nxab.airail:hover{background:var(--ai-soft)}
+.nxab .ibadge{top:-2px;left:auto;right:-2px;box-shadow:0 0 0 2px var(--panel)}
 
-/* ⚠️ 32px + 2px — A 34px PITCH, NOT THE 26px IT SHIPPED AT (request, 3 Sep 2026: "it is very low
-   spacing make more space and neet to clear"). The earlier note here argued that Plain's density
-   IS the pattern; the user read it as cramped, and 34 is not a new number — it is the pitch the
-   rail's own `.sitem` and Option 1's flyout row `.mfi` already share, so the column now sits on
-   the same rhythm as the two surfaces beside it instead of a tighter one of its own.
-   ⚠️ THE SPACE IS A `margin-bottom`, NOT MORE `height` — the recorded `.mfi` lesson: height
-   grows the hover fill with it and a long list paints one continuous slab.
-   ⚠️ PRIMARY ROWS READ IN `--text`, children in `--text-dim`. Every row was `--text-dim`, so the
-   parent/child distinction rested on 29px of indent alone; that is the "clear" half. */
-.plrow{display:flex;align-items:center;gap:8px;width:100%;height:32px;margin-bottom:2px;padding:0 9px;
-  border-radius:5px;color:var(--text);font-size:12.5px;text-align:left;cursor:pointer;
-  white-space:nowrap}
-.plrow:hover{background:var(--hover);color:var(--text)}
-/* the tinted full-width active row — Plain's own selected treatment.
-   ⚠️ `--sel` is safe HERE and would not be on the rail: the column sits on `--panel`, which it
-   is clearly lighter/darker than in both themes, where against `--sidebar` in dark the two are
-   three points apart and it would vanish. That is why the rail's active mark is `--pill`. */
-.plrow.on{background:var(--sel);color:var(--teal);font-weight:600}
-.plrow .plic{flex:0 0 15px;width:15px;height:15px;fill:currentColor;opacity:.72}
-.plrow:hover .plic,.plrow.on .plic{opacity:1}
-/* the product's `plus` in a "New …" row — teal, undimmed: it is the one row that creates */
-.plrow .plic.plus{color:var(--teal);opacity:.9}
-.plrow .plt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* the count — right-aligned, quiet, and only drawn when the number is REAL (see `plCount`) */
-.plrow .pln{flex:0 0 auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.plrow.on .pln{color:var(--teal);opacity:.8}
-.plrow .plch{flex:0 0 auto;width:12px;height:12px;fill:currentColor;opacity:.5}
-/* a child of the row above it — the indent is the whole point of this pattern */
-/* 32 = 9 padding + 15 icon + 8 gap, so a child's GLYPH starts under its parent's TEXT and its own
-   text sits one glyph-and-gap further in — every row has a glyph since 3 Sep 2026 ("use it overall"),
-   so the nesting is carried by the indent plus the child's smaller, dimmer type, not by icon-vs-none */
-.plrow.sub{padding-left:32px;font-size:12px;color:var(--text-dim)}
-.plrow.sub .plic{opacity:.7}
+/* ── the list ────────────────────────────────────────────────────────────────────────────── */
+/* ⚠️ NO TOP PADDING HERE ANY MORE. It was 6px, added when the section header was removed to
+   replace the margin that header used to contribute — but `.nxact` already sets an 8px bottom
+   margin, so the list was carrying 14px of air in two values from two places. The gap belongs to
+   the block above it, once. */
+.nxbody{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin}
+/* the section label: 12px/500 grey at x=16 — 11px here on this file's smaller base. 16px above
+   it, i.e. more than the 1px between rows: the gap BETWEEN groups beats the gap INSIDE one. */
+/* ⚠️ THE SECTION HEADER IS OPTION 5'S `.plsec` (request, 4 Sep 2026: "improve this as option 5").
+   It was Notion's own sentence-case label; it is now THIS FILE'S label idiom — 11px/600/.06em/
+   UPPERCASE/`--text-dim` — the same voice as `.plsec` in Option 5, `.mfsec` in Option 1's flyout
+   and `.agsub` in Settings. That is a stated divergence from the reference, taken on purpose: it
+   is what tells a group name from the rows under it by case and weight rather than by size
+   alone, and it makes this the only surface in the folder that spelled its labels differently.
+   ⚠️ THE LABEL TAKES THE SLACK AND THE CARET SITS AT THE END, which is `.plsec`'s own layout
+   (`.plt{flex:1}` then the caret). The explicit-spacer version this replaces existed because a
+   `space-between` header right-aligned every label the moment it gained a second child; one
+   flexible label cannot break that way, and it is the same fix the flyout's ragged chevrons got
+   on 2 Sep 2026. */
+.nxsec{display:flex;align-items:center;gap:6px;height:26px;margin:16px 0 2px;
+  padding:0 8px 0 9px;color:var(--text-dim);font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase}
+.nxsec:hover{color:var(--text)}
+.nxsec .nxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.nxbody > .nxsec:first-child{margin-top:6px}
+.nxsec .nxadd{width:20px;height:20px;flex:0 0 20px;display:grid;place-items:center;border:0;border-radius:4px;
+  background:transparent;color:var(--text-dim);cursor:pointer}
+.nxsec .nxadd:hover{background:var(--hover);color:var(--text)}
+.nxsec .nxadd svg{width:13px;height:13px;fill:currentColor}
+/* the row: 30px on a 6px radius, glyph 20px at +9, text at +38 (9 + 20 + 9) */
+/* ⚠️ 2px BETWEEN ROWS, NOT 1 — a 30px row on a 32px pitch. 1px is off the 4-scale everything
+   else in this column now uses, and it left nothing to distinguish "next row" from "next group"
+   once the group gaps were only 6. */
+.nxrow{display:flex;align-items:center;gap:9px;width:100%;height:30px;margin-bottom:2px;padding:0 8px 0 9px;
+  border:0;border-radius:6px;background:transparent;color:var(--text);font-size:13px;font-weight:400;
+  text-align:left;cursor:pointer;white-space:nowrap}
+.nxrow:hover{background:var(--hover)}
+/* ══ THE ACTIVE ROW IS A NEUTRAL FILL (request, 5 Sep 2026) ══════════════════════════════════
+   It was four signals at once — a teal left bar, a teal-tinted fill, teal text and a teal glyph —
+   for the single fact of "you are here". It is now ONE: a grey fill, with the text at its normal
+   colour and 600 weight.
+   ⚠️ **TEAL IS RESERVED FOR THINGS YOU ACT ON.** In this list that is the `＋ New dashboard` and
+   `＋ New NOC view` rows, whose plus keeps `--teal` — the one place the accent still appears, and
+   it now reads as "this creates something" rather than competing with the selection.
+   ⚠️ **THE LEFT BAR IS GONE**, five hours after it was added from Grafana. Both readings are
+   recorded on purpose: Grafana marks the row's edge, this list marks the row. Don't restore the
+   bar on the strength of the Grafana note alone.
+   ⚠️ `--chip` NOT `--hover`. `--hover` IS the hover fill, so an active row would have been
+   indistinguishable from whatever the pointer was on — measured: both `#ecf1f9` in light. `--chip`
+   sits one step darker (`#e3e8f2` light / `#2b394f` dark) and reads against both. */
+.nxrow.on{background:var(--chip);color:var(--text);font-weight:600}
+.nxrow.on .nxic{color:var(--text);opacity:1}
+.nxrow.on .nxcar{color:var(--text-dim)}
+.nxrow.on .nxn{color:var(--muted);opacity:1}
+/* the hover of an already-active row still has to move, or the row looks dead under the pointer */
+.nxrow.on:hover{background:var(--pop-item-hover,var(--chip));filter:brightness(1.04)}
+.nxrow .nxic{flex:0 0 20px;width:20px;height:20px;fill:currentColor;color:var(--text-dim);opacity:.9}
+.nxrow:hover .nxic{color:var(--text);opacity:1}
+/* ⚠️ THE ACTIVE GLYPH TOOK `--teal` HERE, AND THIS LINE IS WHY THE FIRST FIX DID NOTHING: it
+   sits LATER in the sheet than the new `.nxrow.on .nxic` rule at equal specificity, so source
+   order handed it the win and the glyph stayed teal while everything around it went neutral.
+   Deleted rather than overridden — a fourth rule for the same property would have been the
+   next thing to lose. */
+.nxrow .nxic.plus{color:var(--teal);opacity:1}
+.nxrow .nxt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.nxrow .nxn{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* (the active count took `--teal` here until 5 Sep 2026) */
+/* ══ THE CARET SITS AT THE ROW'S RIGHT EDGE AND IS ALWAYS THERE (5 Sep 2026) ═════════════════
+   Reference: Grafana's docked nav (play.grafana.org), driven in the browser. Every expandable
+   row there carries a chevron at its far right, visible at rest, pointing down when the row is
+   open — the glyph on the left never moves and never disappears.
+   ⚠️ THIS REPLACES A CARET THAT SHARED THE GLYPH'S SLOT and only appeared on hover. That was
+   Notion's behaviour (its page icon becomes a triangle under the pointer) and it had two costs:
+   the row lost its identifying glyph exactly while you were pointing at it, and nothing told you
+   a row could be opened until you were already on it. This folder has now had four separate
+   reports of a control being invisible until hovered; that is the pattern being corrected.
+   ⚠️ IT IS STILL A `role="button"` SPAN, NOT A `<button>` — the row itself is a button and
+   interactive content inside one is invalid and eats the clicks (the recorded `.aiht` lesson).
+   ⚠️ `.nxig` IS KEPT as a plain 20px box so the glyph's slot and the +38 text position are
+   unchanged; it is no longer a stack. */
+.nxrow .nxig{flex:0 0 20px;width:20px;height:20px;display:grid;place-items:center}
+.nxrow .nxcar{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;border-radius:3px;
+  color:var(--text-dim);opacity:.75;transition:opacity .1s,background .1s}
+.nxrow:hover .nxcar{opacity:1}
+.nxrow .nxcar:hover{background:var(--chip)}
+/* (the active caret took `--teal` here until 5 Sep 2026; the active row is neutral now) */
+.nxrow.open .nxcar svg{transform:rotate(90deg)}
+.nxrow .nxcar svg{width:12px;height:12px;fill:currentColor;display:block;transition:transform .15s}
+/* a nested page — Notion indents the child so its GLYPH starts under the parent's TEXT */
+.nxrow.sub{padding-left:38px;font-size:12.5px;color:var(--text-dim)}
+.nxrow.sub .nxic{flex:0 0 16px;width:16px;height:16px}
+.nxrow.sub2{padding-left:63px}
+/* ══ AN EXPANDED MODULE IS A BLOCK, NOT A RUN OF LOOSE ROWS (4 Sep 2026, "improve the list") ══
+   Two faults, both only visible once a module was actually open:
+     • ITS PAGES RAN STRAIGHT INTO THE NEXT MODULE. Seven nested rows sat 1px from `Alert` — the
+       same gap they had from each other — so nothing said where the expansion ended, and a
+       12.5px dim page abutting a 13px module row read as one flat list at a glance.
+     • THE DATA'S OWN GROUPING WAS THROWN AWAY. `SUBNAV['Dashboards']` has three sections and
+       all seven rows rendered as one, so `Report list` looked like a page of Dashboards.
+   ⚠️ THE GUIDE IS DRAWN AT THE PARENT'S GLYPH CENTRE — 19px = the row's 9px padding + half its
+   20px glyph — so it descends from the icon the block belongs to, not from an arbitrary inset.
+   The second level's guide is at 46 = 38 + half of 16, by the same rule. Both are pseudo
+   elements on the WRAPPER, so no child's own padding had to change and the +38/+63 indents the
+   probe measures are untouched.
+   ⚠️ `--track` at .5, NOT `--border`: measured on 2 Sep 2026, `--border` is 1.32 contrast on
+   this surface in dark and 1.27 in light — invisible, which is what the empty-group report
+   turned out to be. `--track` is the only token that lands in a findable band in BOTH themes. */
+/* the same step under an expanded module's block, so the next module is as clearly separated
+   from its pages as its pages are from each other */
+.nxkids{position:relative;margin-bottom:12px}
+.nxkids::before{content:'';position:absolute;left:19px;top:0;bottom:2px;width:1px;
+  background:var(--track);opacity:.45;border-radius:1px}
+.nxkids2{position:relative}
+.nxkids2::before{content:'';position:absolute;left:46px;top:0;bottom:2px;width:1px;
+  background:var(--track);opacity:.4;border-radius:1px}
+/* a nested group label — the module's own `SUBNAV` heading. Smaller and lighter than the
+   list's own section labels (`.nxsec`, 11px/600) so the two levels cannot be confused, and
+   sentence case rather than the section labels' own voice for the same reason. */
+/* ⚠️ 12px ABOVE A GROUP LABEL, against 2px between rows — the gap BETWEEN groups must beat the
+   gap INSIDE one, the rule this folder has recorded four times (`.aiab li`, `.aichips`, `.mfsec`,
+   the rail's own hairline). At 6 against 1 both read as "a small gap" and the groups stopped
+   grouping; 12 against 2 is a 6× step and reads at a glance. */
+.nxgrp{display:flex;align-items:center;height:22px;margin:12px 0 2px;padding:0 8px 0 38px;
+  color:var(--text-dim);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ══ A SECTION FOLDS (Notion's own sidebar sections do) ══════════════════════════════════════
+   The list is four sections and ~30 rows with a module open; folding Recents or Workspace is
+   how the reference keeps that readable. The caret is the label's own, revealed on hover like
+   the row caret, and the whole header is the hit target. */
+.nxsec{cursor:pointer;border-radius:6px}
+.nxsec:hover{background:var(--hover);color:var(--text)}
+/* ⚠️ VISIBLE AT REST AND POINTING DOWN WHEN OPEN — `.plsec .plcar`'s own behaviour, rotating
+   -90° when the section is shut. It was hover-only and pointing right; a fold control that
+   appears only under the pointer is the "way back out was invisible" complaint this folder has
+   already had to fix twice. `.6` opacity is `.plcar`'s. */
+.nxsec .nxscar{flex:0 0 12px;width:12px;height:12px;display:grid;place-items:center;color:var(--text-dim)}
+.nxsec .nxscar svg{width:12px;height:12px;fill:currentColor;display:block;opacity:.6;transition:transform .15s}
+.nxsec:hover .nxscar svg{opacity:1}
+.nxsec.shut .nxscar svg{transform:rotate(-90deg)}
+/* the muted "⋯ More" that closes a section */
+.nxmore{color:var(--text-dim);font-size:12.5px}
+.nxmore .nxic{opacity:.7}
+.nxempty{padding:6px 9px 10px;font-size:12px;color:var(--text-dim)}
 
-/* a collapsible section header — Plain's "Browse ⌄" */
-/* ⚠️ THE FILE'S OWN SECTION-LABEL IDIOM — 11px/600/.06em/uppercase/`--text-dim` — the same voice
-   as `.mfsec` in the flyout and `.agsub` in Settings, so a group name is told from the rows under
-   it by case and weight, not only by its caret. 16px above it, i.e. more than the 2px between
-   rows: the gap BETWEEN groups has to beat the gap INSIDE one (the `.aiab li` rule). */
-.plsec{display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 9px;margin:16px 0 2px;
-  border-radius:5px;color:var(--text-dim);font-size:11px;font-weight:600;letter-spacing:.06em;
-  text-transform:uppercase;cursor:pointer;text-align:left}
-.plsec:hover{color:var(--text)}
-.plsec .plt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.plsec .plcar{width:12px;height:12px;fill:currentColor;opacity:.6;transition:transform .15s}
-.plsec.shut .plcar{transform:rotate(-90deg)}
-.plempty{padding:10px 8px;font-size:11.5px;color:var(--text-dim)}
-/* the avatar fills its own 26px slot — the base `.miniav` is sized for the 64px rail */
-.plav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:10px;border-radius:50%}
+/* ── the workspace four, as a footer row ─────────────────────────────────────────────────── */
+/* ⚠️ EQUAL COLUMNS BY `1fr`, NOT BY FLEX — `repeat(4,minmax(0,1fr))` is what stops the widest
+   label ("Settings") sizing the row and leaving the other three adrift; `minmax(0,…)` is the part
+   that lets a track shrink below its content, without which a long word overflows the grid.
+   The same rule Option 1's `.squick` uses. */
+.nxquick{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;
+  margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+/* ⚠️ 8/8 — symmetric AND on the scale. It was `7px 0 6px`: a 1px asymmetry no other value in
+   this column has, and 7 is off the 4px step everything else now uses. Nothing optical needed
+   it; the glyph and the label are already centred by the flex column. */
+.nxq{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border:0;
+  border-radius:6px;background:transparent;color:var(--text-dim);font-size:10.5px;
+  white-space:nowrap;cursor:pointer;min-width:0}
+.nxq:hover{background:var(--hover);color:var(--text)}
+/* ⚠️ `.on` HAS TO BE STYLED HERE TOO. `showView()` toggles it on `#sbApproval` / `#sbHealth`, and
+   the selected look used to live on `.nxrow.on` — which these are no longer. Without this the
+   class still lands and simply styles nothing, so the footer would stop saying which screen is
+   open, silently. The identical trap is recorded at Option 1's `.sq.on`. */
+.nxq.on{background:var(--sel);color:var(--teal)}
+.nxq .ic{width:18px;height:18px;flex:0 0 18px;fill:currentColor}
+.nxq span{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+
+/* ── the pinned bar ──────────────────────────────────────────────────────────────────────── */
+/* Notion: a rounded-full CTA and a 40px square beside it, both on the column's own surface
+   with a ring rather than a fill, in 8px of padding. */
+.nxbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 0 0}
+.nxcta{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;height:40px;
+  padding:0 14px;border:1px solid var(--border);border-radius:999px;background:var(--card);
+  color:var(--text);font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.nxcta:hover{background:var(--hover)}
+.nxcta svg{width:16px;height:16px;flex:0 0 16px;fill:currentColor;color:var(--ai-2)}
+/* the keycap is the file's own — `.tipk`'s shape, so a shortcut reads the same everywhere */
+.nxcta .nxk{flex:0 0 auto;padding:1px 5px;border-radius:4px;background:var(--chip);color:var(--text-dim);
+  font-size:10.5px;font-weight:600;font-family:'JetBrains Mono',ui-monospace,monospace}
+.nxsq{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border:1px solid var(--border);
+  border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.nxsq:hover{background:var(--hover)}
+.nxsq svg{width:17px;height:17px;fill:currentColor}
+
+/* ══ THE POPOVERS OPEN BESIDE THEIR TRIGGER, NOT AT THE FOOT OF THE SCREEN ═══════════════════
+   Reported 5 Sep 2026: "when I click the notification the popup opens behind/below the sidebar".
+   `#userPop` and `#notifPop` are authored for Option 1's rail, where the bell and the avatar sit
+   at the BOTTOM — hence `bottom:10px` / `bottom:56px` and an arrow pinned from the bottom edge.
+   In this option both live at the TOP, in the action row, so a card anchored to the viewport
+   floor opened ~500px below the button that summoned it.
+   ⚠️ `body #…` IS THE SPECIFICITY THIS NEEDS. The authored rules are `#userPop{…bottom:10px}`
+   at (1,0,0) and `#userPop::before{bottom:22px}` at (1,0,1); a plain `#userPop{bottom:auto}`
+   would only tie and lose on source order. Adding `body` puts these at (1,0,1)/(1,0,2).
+   ⚠️ THE ARROW IS PLACED FROM A CUSTOM PROPERTY the JS sets per open (`--nxarrow`), because it
+   has to point at wherever the trigger actually is — the bell and the avatar are on different
+   rows. Its fallback keeps the authored look if the wrapper never runs. */
+body #userPop,body #notifPop{bottom:auto}
+body #userPop::before,body #notifPop::before{top:var(--nxarrow,22px);bottom:auto}
+
+/* ── collapsed: the column goes away entirely ────────────────────────────────────────────── */
+/* ⚠️ THERE IS NO RAIL TO FALL BACK ON, so collapsing here removes ALL navigation — which is
+   what Notion does, and why its own control is a FLOATING one that stays on the canvas.
+   ⚠️ THE PAIR IS `#nxCol` (in the workspace row) AND `#nxOpen` (fixed at the canvas's top-left,
+   shown only while the column is shut). They are ONE control in two places, because the first
+   one goes away with the thing it collapsed — exactly the fault reported against Option 5's
+   column on 3 Sep 2026, where the collapse lived in a header that `plshut` hid. `#nxOpen` sits
+   at 10,9 so it lands where the column's own toggle was, one step left. */
+body.nxshut .sidebar.nxside{width:0;border:0}
+body.nxshut .shell,body.nxshut.pinned .shell{padding-left:0}
+body.nxshut .nxcol{display:none}
+#nxOpen{position:fixed;left:10px;top:9px;z-index:61;width:28px;height:28px;display:none;place-items:center;
+  border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer}
+#nxOpen svg{width:16px;height:16px;fill:currentColor}
+body.nxshut #nxOpen{display:grid}
 
 </style>
 <link rel="stylesheet" href="_settings-module.css">
 </head>
-<!-- ⚠️ `plshut` IS ON THE BODY IN MARKUP AS WELL AS IN `PL.col` (request, 3 Sep 2026: "by default the
-     sidebar will be collapsed"). The collapsed state is class-driven, so this is what makes the FIRST
-     paint collapsed — set only in JS, the column would flash open and the canvas would fit twice.
-     The two must agree; `plColSet` owns both from then on. Same pattern as `<body class="mpshut">` in
-     Option 2 and `dvshut` in Option 3. -->
-<body class="plshut">
+<!-- ⚠️ NO STATE CLASS ON THE BODY: Option 7's column is OPEN, and collapsing it removes the
+     navigation entirely (there is no rail) — see `#nxOpen` and the `nxshut` block in the
+     stylesheet. Option 5, two copies back, ships `<body class="plshut">`. -->
+<body>
 
 <!-- ============ Sidebar ============ -->
 <!-- ══════════════════════════════════════════════════════════════════════════════════════════
-     OPTION 5 — the narrow rail + always-on nav column (Plain). The reasoning, the proportions
-     and the deliberate divergences are in the stylesheet, at the "OPTION 5" block at the end.
-     ⚠️ NO `onmouseenter` ON THE RAIL and no `#smenu`. This option has no hover-expand and no
-     flyout — the nav column IS the navigation, permanently. `sbHover` / `mfOpen` / `mfLater` /
-     `mfOpenUtil` are stood down in the `pl*` block, the same way Option 4 does it.
-     ⚠️ `#smenu` IS KEPT IN THE DOM but empty and hidden: `renderMenu()` writes into it on every
-     navigation and would throw on a missing node, and it is called from `selectModule`,
-     `showView`, `pickDash` and the Layout drawer. Cheaper to keep the node than to fork four
-     call sites. -->
-<aside class="sidebar plside" id="sidebar">
+     OPTION 7 — one column, no rail (Notion). The measurements, the reasoning and the deliberate
+     divergences are in the stylesheet, at the "OPTION 7" block at its end.
+     ⚠️ THERE IS NO ICON RAIL IN THIS FILE. Everything the other options put on one — search,
+     Iris, the modules, the notification bell, the identity — is a labelled row or a button in
+     this column. That is the pattern, not an omission.
+     ⚠️ `mfOpen` / `mfOpenUtil` / `mfLater` / `sbHover` are stood down in the `nx*` block, as in
+     Options 4–6; `mfHide` is not (`mfGo()` calls it on every navigation).
+     ⚠️ `#smenu` IS KEPT, empty and hidden — `renderMenu()` writes into it on every navigation
+     and would throw on a missing node (four call sites).
+     ⚠️ `#sbApproval` / `#sbHealth` / `#sbBell` / `#sbUser` ARE STATIC MARKUP even though they
+     look like list rows: `showView()` toggles `.on` on the first two BY ID, `refreshUser()`
+     writes into `#sbUser .miniav`, and `stSeed()` reads `#sbUser .lbl`. The Workspace section
+     is therefore authored here, not emitted by `nxPaint`. -->
+<aside class="sidebar nxside" id="sidebar">
+  <div class="nxcol">
 
-  <!-- ── column A · the rail: modules only, no words ─────────────────────────────────────── -->
-  <!-- ⚠️ THE RAIL, NOT EACH TILE, OWNS THE LEAVE. Per-tile `onmouseleave` fires every time the
-       pointer crosses from one icon to the next, so the peek would blink between modules. The
-       rail closes it once, when the pointer leaves the rail entirely — and even then only
-       after 200ms, because the pointer's route into the peeked column goes through that edge. -->
-  <div class="plrail" onmouseleave="plPeekLater()">
-    <span class="plbrand brandmark" id="plBrand" aria-label="ObserveOps" data-tip="Expand sidebar" onclick="plColExpand()"><!--LOGO--></span>
-    <div class="plicons" id="plIcons"></div>
-    <div class="plrfoot">
-      <div class="plib" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg></div>
-      <div class="plib" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg></div>
-      <div class="plib" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></div>
-      <!-- ⚠️ `.miniav` AND `.lbl` ARE BOTH REQUIRED, even though only the avatar is painted.
-           `refreshUser()` writes the saved name/picture into `#sbUser .miniav`, and `stSeed()`
-           reads the signed-in name out of `#sbUser .lbl` to seed the Settings profile form.
-           Drop either and Settings breaks with no error here. The label is hidden, not removed
-           — `textContent` does not care that it is not on screen. -->
-      <div class="plav" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl" hidden>Kishan Patel</span></div>
+    <!-- the workspace row — the mark, the product, and the signed-in identity it opens -->
+    <div class="nxws">
+      <button class="nxwsb" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)">
+        <span class="nxmk brandmark"><!--LOGO--></span><b>ObserveOps</b><span class="miniav">KP</span>
+        <span class="lbl" hidden>Kishan Patel</span>
+      </button>
+      <!-- the collapse. Its twin is `#nxOpen`, fixed on the canvas — see the `nxshut` block. -->
+      <button class="nxwsc" id="nxCol" data-tip="Collapse sidebar" onclick="nxColSet(true)"><svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg></button>
     </div>
-  </div>
 
-  <!-- ── column B · the nav column, rendered by `plPaint()` ──────────────────────────────── -->
-  <!-- ⚠️ `plPeekIn` IS WHAT KEEPS THE PEEK OPEN once the pointer arrives; the deferred close
-       set by the rail's `mouseleave` checks it and stands down. Leaving the column ends it for
-       real. Both are inert while the column is docked — `plPeek` returns early unless it is
-       collapsed, and `plPeekEnd` returns early when there is no peek to end. -->
-  <div class="plnav" id="plNav"
-       onmouseenter="plPeekIn=true;clearTimeout(plPeekT)"
-       onmouseleave="plPeekIn=false;plPeekEnd()"></div>
+    <!-- the quick actions — Notion's Home pill, then icon-only Iris / Notifications / Search -->
+    <div class="nxact">
+      <button class="nxpill" id="nxHome" onclick="nxHome()"><svg viewBox="0 0 48 48" id="nxHomeIc"></svg>Home</button>
+      <span style="flex:1"></span>
+      <button class="nxab airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic" viewBox="0 0 48 48" id="nxAiIc"></svg></button>
+      <button class="nxab" id="sbBell" data-tip="Notification" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span></button>
+      <button class="nxab" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></button>
+    </div>
+
+    <!-- Modules · Recents · Starred, rendered by `nxPaint()`; then the static Workspace rows -->
+    <div class="nxbody" id="nxBody"></div>
+
+    <!-- ⚠️ THE WORKSPACE FOUR, AS A 4-UP ICON ROW (request, 5 Sep 2026). Same shape as Option 1's
+         `.squick`, which was measured off Datadog's own rail footer on 2 Sep: a glyph over a
+         10.5px label, equal columns, a hairline above.
+         ⚠️ STATIC MARKUP, NOT RENDERED — `showView()` toggles `.on` on `#sbApproval` / `#sbHealth`
+         BY ID and `init()` runs before this block's first paint, so they must never be rebuilt.
+         That is why the list version had to move its nodes between repaints; here the problem
+         does not arise.
+         ⚠️ THE LABELS ARE SHORTENED, not ellipsised: four columns in ~254px is ~63px each, and
+         "Health Monitoring" needs 96. The full name stays in `data-tip`. -->
+    <div class="nxquick">
+      <button class="nxq" id="sbApproval" data-tip="Approval" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span>Approval</span></button>
+      <button class="nxq" id="sbHealth" data-tip="Health Monitoring" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span>Health</span></button>
+      <button class="nxq" id="nxSet" data-tip="Settings" onclick="selectModuleByName('Settings')"><svg class="ic" viewBox="0 0 48 48" id="nxSetIc"></svg><span>Settings</span></button>
+      <button class="nxq" data-tip="Documentation ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48" id="nxDocIc"></svg><span>Docs</span></button>
+    </div>
+
+    <!-- ⚠️ NOTION'S PINNED BAR IS GONE (request, 5 Sep 2026: "remove"). It held an "Ask Iris ⌘I"
+         button and a ＋ square, and BOTH KEEP OTHER DOORS — checked before removing them, the
+         same test every removal in this file has had:
+           Iris          — the action row's own `#sbAI` two rows above, the dashboard toolbar's
+                           `.aibtn` pill, and the `A` shortcut in `KB`;
+           New dashboard — the Dashboard module's own `＋ New dashboard` row in this very list,
+                           the page head's `#newDashBtn`, the list panel's `#dnewBtn`, the Manage
+                           screen's button, and the `N` shortcut.
+         The column now ends on the `.nxquick` footer row. `.nxbar` / `.nxcta` / `.nxsq` / `.nxk`
+         are kept and unreferenced in the stylesheet, the house pattern. -->
+  </div>
 
   <!-- kept for `renderMenu()` to write into; see the note above -->
   <nav class="smenu" id="smenu" hidden></nav>
 </aside>
+<!-- the only way back when the column is shut — there is no rail to hold it -->
+<button id="nxOpen" data-tip="Show sidebar" onclick="nxColSet(false)"><svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg></button>
 
 <!-- module flyout: the module's own navigation, opened by hovering a rail entry -->
 <div class="mflyout" id="mflyout"
@@ -8529,7 +8644,7 @@ const ICONS = {
  }
 };
 function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
-  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`): `.plrow .plic` and `.plib .ic` both say
+  /* ⚠️ A STROKE ENTRY CARRIES ITS PAINT INLINE (`style=`): `.nxrow .nxic` and `.nxab .ic` both say
      `fill:currentColor`, and a CSS rule beats a presentation ATTRIBUTE — `fill="none"` alone would
      be overpainted and the outline rendered as a blob (the recorded `.dvic svg` trap). An inline
      style outranks those rules. stroke-width 2 on a 24 box is 1.25px at 15px. */
@@ -8643,8 +8758,8 @@ const SUBNAV = {
        was copied before that landed, so its column drew eight bare labels while Explorer beside it
        drew a glyph per row. Same rule as there: a row that names a MODULE gets that module's glyph,
        and the views under it (`sub`) stay plain, which is what keeps the two levels apart — and it
-       is what `.plrow.sub`'s 32px indent was sized for (9 + 15 glyph + 8), so a child's text now
-       starts under its parent's TEXT instead of two steps past it.
+       is what `.nxrow.sub`'s 38px indent is sized for (9 + 20 glyph + 9), so a child's glyph
+       starts under its parent's TEXT.
        ⚠️ The keys are `ICONS`' own, not the obvious ones: Metric is `metric-explorer` (there is no
        bare `metric`), Trap is `trap-viewer`, Network Config is `ncm`. `ico()` returns '' for a name
        it does not have rather than throwing, so a wrong key here renders one blank row among eight
@@ -24447,231 +24562,238 @@ function lxLtPaint(){
      no-ops on the deployed GitHub Pages site so it is never shipped to end users) -->
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════════════════════
-   OPTION 5 — the nav column's behaviour (`pl*`)
+   OPTION 7 — one column, no rail (`nx*`)
    ───────────────────────────────────────────────────────────────────────────────────────────
-   Namespace `pl*` / `PL_*` / `.pl*`, grepped free before it was named. Geometry and the design
-   reasoning are in the stylesheet's "OPTION 5" block; this owns the behaviour.
+   Namespace `nx*` / `NX_*` / `.nx*`, grepped free before it was named. Geometry and the design
+   reasoning are in the stylesheet's "OPTION 7" block; this owns the behaviour.
 
-   THE MODEL: the rail picks a MODULE, the column shows that module's whole navigation — rows,
-   their children indented under them, and a count wherever a real one exists. Nothing hovers,
-   nothing opens; the column is always there. That is the Plain pattern and it is what makes
-   this different from Option 4, where the same content hides behind a `»`.
+   THE MODEL: one list, four sections. **Modules** is Option 1's rail — the same six entries,
+   in the same order, from the same `RAIL` array — and the one you are in EXPANDS to show its
+   own pages under it, which is how Notion carries a whole tree in a single column. **Recents**
+   and **Starred** are the dashboards the list panel already tracks. **Workspace** is what the
+   other options keep in a rail foot.
 
-   ⚠️ EVERY ROW COMES FROM DATA THAT ALREADY EXISTS — `SUBNAV` / `SUBNAV2` (what Option 1's
-   flyout renders) and `EXPLORER_TREE` (what its master column renders). Nothing here is a
-   second copy of the product's navigation; the request was "the module details is option 1".
+   ⚠️ EVERY ROW COMES FROM DATA THAT ALREADY EXISTS — `RAIL`, `SUBNAV` / `SUBNAV2`,
+   `EXPLORER_TREE`, `DASH_RECENT`, `DASH_FAVS`, `DASH_INDEX`. "the module list reference on
+   option1" — nothing here is a second copy of the product's navigation.
    ═══════════════════════════════════════════════════════════════════════════════════════════ */
 
-/* ⚠️ FOUR FUNCTIONS STOOD DOWN, NOT DELETED — the house pattern, same as Option 4. All are
-   `function` declarations in an earlier block, so reassigning the binding is enough and every
-   existing call site keeps working. `mfHide` is deliberately NOT in the list: `mfGo()` calls it
-   on every navigation and `#mflyout` is still in the document. */
-const plNoop = function(){};
-mfOpen = plNoop; mfOpenUtil = plNoop; mfLater = plNoop; sbHover = plNoop;
+/* ⚠️ FOUR FUNCTIONS STOOD DOWN, NOT DELETED — the house pattern. `mfHide` is not among them. */
+const nxNoop = function(){};
+mfOpen = nxNoop; mfOpenUtil = nxNoop; mfLater = nxNoop; sbHover = nxNoop;
 
-/* ⚠️ THE COLUMN STARTS COLLAPSED (request, 3 Sep 2026: "by default the sidebar will be collapsed").
-   `col:true` here and `class="plshut"` on `<body>` are the SAME default stated twice, and both are
-   needed: the class paints the first frame, this is what `plColTog` / `plPeek` read. It reverses
-   the pattern's own premise — Plain's column is always-on — but with the hover-peek (below) every
-   module's navigation is still one pointer-move away, and the expand tile under the mark is the
-   way to dock it. `plColSet` is NOT called at boot: nothing needs moving, and its `fitCanvas`
-   would refit a canvas that has not been drawn yet. */
-const PL = { shut:{}, sub:null, col:true, peek:null };  /* collapsed sections · expanded parent · column collapsed · peeked rail index */
-/* ⚠️ THE COLUMN RENDERS THE PEEKED MODULE, NOT THE ACTIVE ONE — that is the whole point of the
-   peek: you are looking at something you have not navigated to. Both `plPaint` and
-   `plBodyHTML` read this, so the header and the rows can never disagree about which module is
-   on screen. With no peek it falls back to `activeRail`, i.e. the docked column is unchanged. */
-const plCur = () => RAIL[PL.peek != null ? PL.peek : activeRail] || RAIL[0];
-/* Lucide `panel-left-close`, the same object Option 1's brand row uses */
-const PL_COL = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg>';
-/* ⚠️ ONE FUNCTION MOVES THE COLUMN, so the class, the tooltip and the canvas refit cannot get
-   out of step. `fitCanvas` runs after, because the canvas just gained or lost 216px and the
-   widgets were scaled against the old width — the same call Option 4's panel toggle makes. */
-function plColSet(shut){
-  /* ⚠️ A PEEK CANNOT SURVIVE THE COLUMN BEING DOCKED — it would leave `.plpeek` on the body
-     with the column in flow, i.e. fixed-positioned over the canvas AND padded for. */
-  if (PL.peek != null) plPeekEnd();
-  PL.col = !!shut;
-  document.body.classList.toggle('plshut', PL.col);
-  const b = document.getElementById('plBrand');
-  if (b) b.setAttribute('data-tip', PL.col ? 'Expand sidebar' : 'ObserveOps');
-  if (!PL.col) plPaint();
-  if (typeof fitCanvas === 'function') setTimeout(fitCanvas, 60);
-}
-function plColTog(){ plColSet(!PL.col); }
+/* `open` is the expanded module (one at a time, like the canvas's own groups), `sub` the
+   expanded sub-module inside Explorer, `more` the sections showing their full list. */
+const NX = { open:null, sub:null, more:{}, shut:{}, col:false };
+/* ⚠️ THE PRODUCT'S OWN CHEVRON, PASTED VERBATIM from `observeops-icons/common/arrows-direction/
+   chevron-right.svg` (request, 5 Sep 2026: "improve this icon — I already gave the icon website,
+   use it, and next time any icon you need, use this"). It was a HAND-DRAWN FILLED TRIANGLE
+   (`M9 5l7 7-7 7z`) sitting among outline glyphs, which is the exact fault the icon-source rule
+   exists to prevent: a solid mark in a row of strokes reads as a different family at any size,
+   and a path drawn by hand has none of the optical centring a real set has already resolved.
+   ⚠️ IT IS A 48 GRID, like every other `ICONS` entry here — do not rescale it onto 24 by hand;
+   the consumers size the `<svg>` in CSS. `fill="currentColor"` is the source's own, so it takes
+   the row's colour (dim at rest, `--teal` on the active row) with no override. */
+const NX_CAR  = '<svg viewBox="0 0 48 48"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+/* the section caret — UNREFERENCED since the last header was removed, and swapped to the
+   product's own `chevron-down.svg` at the same time as `NX_CAR`, so a revert cannot bring the
+   hand-drawn triangle back with it */
+const NX_SCAR = '<svg viewBox="0 0 48 48"><path fill="currentColor" d="M37.4,16.6c-.8-.8-2-.8-2.8,0l-10.6,10.6-10.6-10.6c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l12,12c.8,.8,2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+const NX_DOTS = '<svg class="nxic" viewBox="0 0 24 24"><path d="M6 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>';
+/* how many rows a section shows before it offers "More" — Notion's Recents shows ten */
+const NX_CAP = 6;
 
-/* ══ HOVER-PEEK ════════════════════════════════════════════════════════════════════════════
-   ⚠️ ONLY WHILE THE COLUMN IS COLLAPSED. Open, the column is already showing the active
-   module's navigation, and swapping it under the pointer for whatever the cursor brushed on
-   its way somewhere else would be the opposite of helpful.
-   ⚠️ THE CLOSE IS DEFERRED AND CANCELLABLE, because the pointer has to LEAVE the rail to
-   reach the panel — a plain `mouseleave` shuts it mid-journey. `plPeekIn` is set by the
-   column's own `mouseenter`; this is the same pattern the rail flyout uses in Option 1, and
-   the bug it exists to prevent is recorded there.
-   ⚠️ THE OPEN IS NOT DELAYED. The column is already rendered and merely un-hidden, so there
-   is no cost to sweeping past — and a delay on a panel this large reads as lag. */
-let plPeekT = null, plPeekIn = false;
-function plPeek(i){
-  if (!PL.col) return;
-  clearTimeout(plPeekT);
-  if (PL.peek === i && document.body.classList.contains('plpeek')) return;
-  PL.peek = i;
-  plPaint();                       /* repaints header + rows for the peeked module */
-  document.body.classList.add('plpeek');
-  if (typeof tipHide === 'function') tipHide();
-}
-function plPeekLater(){ clearTimeout(plPeekT); plPeekT = setTimeout(() => { if (!plPeekIn) plPeekEnd(); }, 200); }
-/* ⚠️ IT REPAINTS ON THE WAY OUT, or the docked column keeps whatever the last peek showed the
-   next time it is opened — `plPaint` reads `plCur()`, so clearing `PL.peek` first is what puts
-   the active module back. */
-function plPeekEnd(){
-  clearTimeout(plPeekT); plPeekIn = false;
-  if (PL.peek == null && !document.body.classList.contains('plpeek')) return;
-  PL.peek = null;
-  document.body.classList.remove('plpeek');
-  plPaint();
-}
-/* ⚠️ the mark only acts while the column is CLOSED. Open, it is a logo — making it a toggle
-   there would give the same job two controls a few pixels apart. */
-function plColExpand(){ if (PL.col) plColSet(false); }
-
-/* ⚠️ A COUNT IS ONLY DRAWN WHEN IT IS REAL. Plain puts a number on every row; inventing one
-   here would be inventing product data. Two are genuine: a parent row's own children, and a
-   dashboard category's boards. Everything else gets no number rather than a zero. */
-function plCount(r){
-  if (r && r.kids) return r.kids.length;
-  return null;
-}
-/* ⚠️ ONE RESOLVER, TWO REGISTRIES — Option 1's `mfIco`, in this column's shape (request, 3 Sep
-   2026: the Setting column against Option 1's Setting flyout, "also use the icon, reference is
-   Option 1"). `ico()` reads `ICONS`, the rail's 16 modules and the handful of glyphs added for
-   flyout rows; the 19 Settings categories' icons live in `ST_ICO` (`_settings-module.js`), as a
-   bare path `d` on the same 48×48 grid — and six of them happen to ALSO have a key in `ICONS`
-   (`apm`, `metric-explorer`, `trap-viewer` …), which is exactly how Option 1's pane drew some
-   tiles and not others until both call sites went through one function. `ICONS` first so a rail
-   glyph keeps its own drawing; the fallback is wrapped because `ST_ICO` is a `const` in a script
-   this block only happens to load after. */
-const plIco = (n, cls) => {
+/* one resolver, two registries — Option 1's `mfIco` (ICONS first, then the Settings categories) */
+const nxIco = (n, cls) => {
   if (!n) return '';
-  const a = ico(n, cls || 'plic'); if (a) return a;
-  try { if (ST_ICO && ST_ICO[n]) return `<svg class="${cls || 'plic'}" viewBox="0 0 48 48" fill="currentColor"><path d="${ST_ICO[n]}"/></svg>`; }
+  const a = ico(n, cls || 'nxic'); if (a) return a;
+  try { if (ST_ICO && ST_ICO[n]) return `<svg class="${cls || 'nxic'}" viewBox="0 0 48 48" fill="currentColor"><path d="${ST_ICO[n]}"/></svg>`; }
   catch (e) {}
   return '';
 };
-/* a Settings row's glyph is its CATEGORY's, read off `ST_TREE` by name — the harvested live list
-   that already carries `ic` per category and is what Option 1's Setting flyout renders. Looked up
-   at paint time rather than written into `SUBNAV['Settings']`, so a re-harvest cannot leave the
-   two disagreeing. Returns '' for a row that is not a category (none today), never throws. */
-const plStIc = label => { try { const c = ST_TREE.find(c => c.n === label); return (c && c.ic) || ''; } catch (e) { return ''; } };
-const PL_CHEV = '<svg class="plch" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
-const PL_CAR  = '<svg class="plcar" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+const nxStIc = label => { try { const c = ST_TREE.find(c => c.n === label); return (c && c.ic) || ''; } catch (e) { return ''; } };
+/* a board's own System / Mine / Shared mark, the one the list panel draws. `MICON` entries are
+   raw `<svg viewBox=…>` with no class, so the class has to be injected or the glyph renders at
+   its natural size and blows the row height apart — the recorded `railPinRow` lesson. */
+const nxDashIc = name => {
+  try { const t = (DASH_INDEX[name] || {}).t; const s = MICON[t] || MICON.system;
+        return s ? s.replace('<svg ', '<svg class="nxic" ') : ''; } catch (e) { return ''; }
+};
 
-/* ── the rail: modules only ──────────────────────────────────────────────────────────────── */
-function plRailPaint(){
-  const el = document.getElementById('plIcons'); if (!el) return;
-  el.innerHTML =
-    /* ⚠️ THE WAY BACK OUT IS A VISIBLE CONTROL, NOT ONLY THE LOGO (request, 3 Sep 2026: "when i
-       collapse the sidebar the expand icon is not show"). The collapse button lives in the column's
-       header, and `body.plshut` hides the column — so the control that closed it vanished with it,
-       and the only door back was the brand mark, which nothing said was a door. This tile is
-       rendered on every paint and CSS-hidden until the column is shut (`.plexp`), so `plColSet`
-       needs no repaint on the way down. It sits first, under the mark: the same vertical spot the
-       collapse button occupied, one column to the left. The mark keeps its click as well. */
-    `<div class="plib plexp" id="plExpand" data-tip="Expand sidebar" onclick="plColExpand()">${PL_COL}</div>` +
-    `<div class="plib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
-    `<div class="plib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
-    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) =>
-      `<div class="plib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
-         onmouseenter="plPeek(${i})">${ico(r.icon)}</div>`
-    ).join('');
-  setIco(document.getElementById('sbSearchIc'), 'search');
-}
-
-/* ── the column ──────────────────────────────────────────────────────────────────────────── */
-const plSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
-
-function plRowHTML(label, mod, act, o){
+function nxRow(label, o){
   o = o || {};
-  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}"` +
-    (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
-    `>${plIco(o.ic, o.icls)}<span class="plt">${label}</span>` +
-    (o.n != null ? `<span class="pln">${o.n}</span>` : '') +
-    (o.chev ? PL_CHEV : '') + `</button>`;
+  const mark = o.car ? `<span class="nxig">${o.ic || ''}</span>` : (o.ic || '');
+  /* the chevron closes the row, after the count — Grafana's order */
+  const car = o.car
+    ? `<span class="nxcar" role="button" tabindex="-1" data-tip="Expand" onclick="event.stopPropagation();${o.car}">${NX_CAR}</span>`
+    : '';
+  return `<button class="nxrow${o.sub ? ' sub' : ''}${o.sub2 ? ' sub2' : ''}${o.on ? ' on' : ''}${o.open ? ' open' : ''}${o.more ? ' nxmore' : ''}"` +
+    ` onclick="${o.click}">` + mark + `<span class="nxt">${label}</span>` +
+    (o.n != null ? `<span class="nxn">${o.n}</span>` : '') + car + `</button>`;
+}
+/* ⚠️ THE HEADER IS A `<div role="button">`, NOT A `<button>` — it can carry the section's own
+   `+`, and interactive content inside a button is invalid and eats the clicks. Same rule as the
+   row caret and the workspace row. */
+function nxSec(title, add){
+  const shut = !!NX.shut[title];
+  return `<div class="nxsec${shut ? ' shut' : ''}" role="button" tabindex="0" onclick="nxFold(${mfAttr(title)})">` +
+    `<span class="nxt">${title}</span><span class="nxscar">${NX_SCAR}</span>` +
+    (add ? `<button class="nxadd" data-tip="${add.tip}" onclick="event.stopPropagation();${add.click}">${ico('plus', 'nxplus')}</button>` : '') + `</div>`;
 }
 
-/* ⚠️ EXPLORER USES ITS TREE, NOT ITS SECTIONS. `EXPLORER_TREE` is the only source with real
-   nesting and real counts, and the nesting is the whole reason this pattern was asked for —
-   it is the "All threads → its statuses" shape from the reference. Everything else has flat
-   sections, which render as Plain's primary rows + collapsible groups. */
-function plBodyHTML(){
-  const r = plCur();
+/* the pages of one module, indented under it — `EXPLORER_TREE` where there is one (it is the
+   only source with real nesting), the module's own `SUBNAV` sections otherwise */
+function nxPages(r){
+  let body;
   if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
-    return EXPLORER_TREE.map(t => {
-      const open = PL.sub === t.l;
-      return plRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:plCount(t), on:open,
-               click: t.kids ? `plSub(${mfAttr(t.l)})` : null }) +
-        (open && t.kids ? t.kids.map(([label, mod, act, ic]) =>
-           plRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
+    body = EXPLORER_TREE.map(t => {
+      const open = NX.sub === t.l;
+      return nxRow(t.l, { sub:true, ic:nxIco(t.ic), open, n:(t.kids ? t.kids.length : null),
+               car: t.kids ? `nxSub(${mfAttr(t.l)})` : null,
+               click: t.kids ? `nxSub(${mfAttr(t.l)})` : `mfGo(${mfAttr(t.mod)},${mfAttr(t.act)})` }) +
+        (open && t.kids ? `<div class="nxkids2">` + t.kids.map(([l, mod, act, ic]) =>
+           nxRow(l, { sub:true, sub2:true, ic:nxIco(ic), click:`mfGo(${mfAttr(mod)},${mfAttr(act)})` })).join('') + `</div>` : '');
     }).join('');
-
-  const secs = plSecs(r.name);
-  if (!secs.length) return `<div class="plempty">${r.name} opens straight to its own screen.</div>`;
-  /* the FIRST section is the primary list (no header, always open); the rest are Plain's
-     collapsible "Browse" groups — which is exactly what a `SUBNAV` heading already is */
-  return secs.map((s, si) => {
-    /* ⚠️ A `plus` ROW WITH A GLYPH DRAWS THE GLYPH, NOT THE TEXT ＋ (3 Sep 2026) — the text sat in
-       exactly the slot the icon column now takes, so both would print two pluses. The glyph keeps
-       the teal (`.plic.plus`) so "create" still reads as the one different kind of row. */
-    const rows = s.items.map(([label, mod, act, kind, ic]) => {
-      /* the Setting column's rows carry no fifth slot; their glyph is the category's (see `plStIc`) */
-      if (!ic && r.name === 'Setting') ic = plStIc(label);
-      return plRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
-                { ic, icls: kind === 'plus' ? 'plic plus' : null, sub: kind === 'sub' }); }).join('');
-    if (!si || !s.h) return rows;
-    const shut = !!PL.shut[s.h];
-    return `<button class="plsec${shut ? ' shut' : ''}" onclick="plSec(${mfAttr(s.h)})">` +
-           `<span class="plt">${s.h}</span>${PL_CAR}</button>` + (shut ? '' : rows);
-  }).join('');
+  else {
+    const secs = (SUBNAV[r.name] || []).concat(SUBNAV2[r.name] || []);
+    if (!secs.length) return `<div class="nxempty">${r.name} opens straight to its own screen.</div>`;
+    /* ⚠️ THE FIRST SECTION IS UNTITLED, the rest carry their heading — the same rule Option 6's
+       column uses, and for the same reason: a module's first group is almost always named after
+       the module itself (`Dashboard` → "Dashboards"), so a label there says the row above twice.
+       An `h:''` continuation section is untitled too, by the same test. */
+    body = secs.map((sec, i) =>
+      (i && sec.h ? `<div class="nxgrp">${sec.h}</div>` : '') +
+      (sec.items || []).map(([l, mod, act, kind, ic]) => {
+        if (!ic && r.name === 'Setting') ic = nxStIc(l);
+        return nxRow(l.replace('＋ ', ''), { sub:true, ic:nxIco(ic, kind === 'plus' ? 'nxic plus' : 'nxic'),
+          click:`mfGo(${mfAttr(mod)},${mfAttr(act)})` });
+      }).join('')).join('');
+  }
+  return `<div class="nxkids">${body}</div>`;
 }
 
-function plPaint(){
-  const host = document.getElementById('plNav'); if (!host) return;
-  const r = plCur();
-  const m = MODULES[MODULES.findIndex(x => x.name === r.mod)] || {};
-  /* ⚠️ NO ROUTE SUBTITLE (request, 2 Sep 2026: "remove this", on `SLO` over `/slo/`). It was
-     the module's own `MODULES[].route`, which is a real path and not invented — but it is a
-     DEVELOPER-facing string, and it told you where you already are rather than what you can do
-     next. The identical line was removed from the flyout's detail pane on 27 Aug 2026 for
-     exactly that reason and this reintroduced it; `route` stays on `MODULES`, unreferenced
-     here, which is what a revert would read. The column is named by the rail entry above it. */
-  host.innerHTML =
-    `<div class="plhd"><div class="plhtt"><b>${r.name}</b></div>` +
-    `<div class="plha">` +
-      `<button class="plhb" data-tip="Search  ⌘K" onclick="openSearch()"><svg viewBox="0 0 48 48" id="plSearchIc"></svg></button>` +
-      `<button class="plhb" data-tip="Sidebar settings" onclick="sbmOpen()"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5Zm0 6h18v2H3v-2Zm0 6h18v2H3v-2Z"/></svg></button>` +
-      /* ⚠️ the collapse lives in the COLUMN's header, not the rail — it acts on the column, and
-         the 44px rail has no room for a control beside a 26px mark. Expanding is the mark. */
-      `<button class="plhb" data-tip="Collapse sidebar" onclick="plColTog()">${PL_COL}</button>` +
-    `</div></div><div class="plbody">${plBodyHTML()}</div>`;
-  setIco(document.getElementById('plSearchIc'), 'search');
-  plRailPaint();
+/* a section of dashboards — Recents and Starred, both read off the list panel's own state */
+function nxBoards(title, names, key){
+  if (!names.length) return '';
+  if (NX.shut[title]) return nxSec(title);
+  const all = !!NX.more[key], show = all ? names : names.slice(0, NX_CAP);
+  return nxSec(title) + show.map(n =>
+      nxRow(n, { ic:nxDashIc(n), on:(typeof dashState !== 'undefined' && dashState.cur === n && !!document.querySelector('#view-dashboard.on')),
+                 click:`nxBoard(${mfAttr(n)})` })).join('') +
+    (names.length > NX_CAP ? nxRow(all ? 'Less' : 'More', { more:true, ic:NX_DOTS, click:`nxMore(${mfAttr(key)})` }) : '');
 }
-function plSub(l){ PL.sub = (PL.sub === l) ? null : l; plPaint(); }
-function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
 
-/* ⚠️ WRAPPED, NOT RE-IMPLEMENTED. `selectModule` and `showView` are the two doors into a view
-   change and both are `function` declarations, so wrapping the binding catches every caller —
-   the rail, `mfGo`, the AI panel and the Settings module included. */
-const plSelectModule0 = selectModule;
-selectModule = function(i){ plSelectModule0(i); plPaint(); };
-const plShowView0 = showView;
-showView = function(v){ plShowView0(v); plPaint(); };
-/* `renderMenu()` still runs (it writes into the hidden `#smenu`), and it is what every
-   navigation calls when the RAIL's highlight has to move — so the rail repaints with it. */
-const plRenderMenu0 = renderMenu;
-renderMenu = function(){ plRenderMenu0(); plRailPaint(); };
+function nxBodyHTML(){
+  /* ⚠️ NO SECTION HEADER (request, 5 Sep 2026: "remove"). With Recents, Starred and Workspace
+     gone there is one list left, and a label over the only thing on screen names nothing you
+     could confuse it with — the header above it already says which module you are in.
+     ⚠️ `nxSec` / `nxFold` / `NX.shut` and the whole `.nxsec` block are KEPT AND UNREFERENCED,
+     the house pattern; they are what a second section would need. `.nxbody`'s own 6px of top
+     padding replaces the `:first-child` margin the header used to contribute. */
+  const mods = (railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) => {
+    const open = NX.open === r.name;
+    return nxRow(r.name, { ic:ico(r.icon, 'nxic'), on:i === activeRail, open,
+             car:`nxOpenMod(${mfAttr(r.name)})`, click:`pickRail(${i});nxOpenMod(${mfAttr(r.name)},1)` }) +
+      (open ? nxPages(r) : '');
+  }).join(''));
+  /* ⚠️ THE LIST IS MODULES ONLY NOW (requests, 5 Sep 2026). Three sections left it in one pass:
+       • WORKSPACE — Approval · Health · Settings · Documentation became the 4-up `.nxquick` row
+         at the foot of the column, the same shape as Option 1's `.squick` (Datadog's rail
+         footer). Four full-width rows carrying a module's weight, for things you reach
+         occasionally, now cost one row of height between them.
+       • RECENTS and STARRED — removed outright ("remove it"). They were the dashboards the list
+         panel already tracks, and the panel is still where they live: the Dashboard module's own
+         `Dashboard list` row opens it, and the canvas keeps its ★ filter.
+     ⚠️ `nxBoards`, `nxBoard`, `nxDashIc`, `NX_CAP` and `NX.more` ARE KEPT AND UNREFERENCED — the
+     house pattern, and what a revert would need. `NX_DOTS` (the "⋯ More" glyph) goes with them.
+     ⚠️ `nxSec`'s fold now applies to one section. The `MODULES` label is kept: it names what the
+     list is, and the header above it is a workspace row rather than a heading. */
+  return mods;
+}
+/* ⚠️ `NX_UTIL` AND THE `#nxUtil` MOVE ARE GONE. The four rows are static markup in the footer
+   now, so the ids `showView()` toggles are simply never rebuilt — which is what the moving
+   machinery existed to guarantee. Simpler and one fewer thing to get wrong on a repaint. */
 
-plPaint();
+function nxPaint(){
+  const el = document.getElementById('nxBody'); if (!el) return;
+  el.innerHTML = nxBodyHTML();
+  ['nxHomeIc:dashboard', 'nxAiIc:', 'sbBellIc:bell', 'sbSearchIc:search', 'nxSetIc:settings',
+   'nxDocIc:help', 'sbApprovalIc:ncm-approval', 'sbHealthIc:health-monitoring'].forEach(p => {
+    const [id, n] = p.split(':'); const e = document.getElementById(id); if (e && n && !e.innerHTML) setIco(e, n);
+  });
+  const ai = document.getElementById('nxAiIc');
+  if (ai && !ai.innerHTML && typeof AI_SPARK === 'string') ai.innerHTML = AI_SPARK.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  /* (the pinned bar's mark was painted here until the bar was removed on 5 Sep 2026) */
+  const h = document.getElementById('nxHome');
+  if (h) h.classList.toggle('on', !!document.querySelector('#view-dashboard.on'));
+  const s = document.getElementById('nxSet');
+  if (s) s.classList.toggle('on', !!document.querySelector('#view-settings.on'));
+}
+
+/* ⚠️ THE ROW BOTH NAVIGATES AND EXPANDS, and the caret expands only. A module row that merely
+   unfolded would leave no way to reach the module itself; one that only navigated would hide
+   its pages behind a second click on a control the row does not have. `force` is what stops
+   the row TOGGLING its own pages shut when you click the module you are already in. */
+function nxOpenMod(name, force){ NX.open = (NX.open === name && !force) ? null : name; NX.sub = null; nxPaint(); }
+function nxSub(l){ NX.sub = (NX.sub === l) ? null : l; nxPaint(); }
+function nxMore(k){ NX.more[k] = !NX.more[k]; nxPaint(); }
+/* folds a section of the list. ⚠️ There are two now — Recents and Starred; the Workspace section
+   became the footer row on 5 Sep, so the note that used to sit here about keeping `#nxUtil` in
+   the document while folded no longer applies to anything. */
+function nxFold(t){ NX.shut[t] = !NX.shut[t]; nxPaint(); }
+function nxBoard(n){ if (typeof pickDash === 'function') pickDash(n); showView('dashboard'); }
+function nxHome(){ showView('dashboard'); }
+function nxColSet(shut){
+  NX.col = !!shut;
+  document.body.classList.toggle('nxshut', NX.col);
+  if (typeof fitCanvas === 'function') setTimeout(fitCanvas, 60);
+}
+
+/* ══ THE POPOVERS FOLLOW THE CONTROL THAT OPENED THEM ════════════════════════════════════════
+   `togglePop` sets `left = sidebar.offsetWidth + 10` and leaves the authored `bottom`, which is
+   right in Option 1 (a rail, with the bell and the avatar at its foot). Here the sidebar is a
+   270px column and both triggers are at the TOP, so the card opened beside the column but ~500px
+   down the page, nowhere near the click.
+   ⚠️ IT READS `--nx-w`, NOT THE BOX. A measured width would be wrong mid-transition, and this
+   folder's oldest recorded trap is measuring an animating element. A custom property never is.
+   ⚠️ IT CLAMPS TO THE VIEWPORT. `#notifPop` is up to 620px tall, so aligning its top with a
+   trigger 50px down the page would run it off the bottom on a short screen; it is pushed up and
+   the ARROW stays on the trigger, which is what `--nxarrow` is for.
+   ⚠️ THE ARROW IS MEASURED FROM THE CARD'S OWN TOP, so it points at the trigger's middle wherever
+   the clamp put the card. */
+const nxTogglePop0 = togglePop;
+togglePop = function(id, ev){
+  nxTogglePop0(id, ev);
+  const el = document.getElementById(id);
+  if (!el || !el.classList.contains('on')) return;
+  const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nx-w')) || 270;
+  el.style.left = (document.body.classList.contains('nxshut') ? 10 : w + 10) + 'px';
+  const trig = document.getElementById(id === 'notifPop' ? 'sbBell' : id === 'userPop' ? 'sbUser' : '');
+  if (!trig) return;
+  const r = trig.getBoundingClientRect();
+  const top = Math.max(10, Math.min(r.top, innerHeight - el.offsetHeight - 10));
+  el.style.top = top + 'px';
+  el.style.bottom = 'auto';
+  el.style.setProperty('--nxarrow', Math.round(r.top + r.height / 2 - top - 5) + 'px');
+};
+
+/* ⚠️ WRAPPED, NOT RE-IMPLEMENTED — the two doors into a view change, plus `renderMenu` */
+/* ⚠️ `selectModule(i)` TAKES A `MODULES` INDEX, NOT A `RAIL` ONE — they are different arrays of
+   different lengths (16 vs 6). Indexing `RAIL` with it opened the wrong module's pages, or none,
+   and the symptom was subtle: the rail highlight was right (the host sets `activeRail` itself
+   from `MOD_TO_RAIL`) while the list underneath still showed the module you had left. Read
+   `activeRail` AFTER the original runs — it is the host's own answer to "which rail entry is
+   this", and it is maintained on every path in (`pickRail`, `selectModuleByName`, `stOpen`). */
+const nxSelectModule0 = selectModule;
+selectModule = function(i){ nxSelectModule0(i); const r = RAIL[activeRail]; if (r) NX.open = r.name; nxPaint(); };
+const nxShowView0 = showView;
+showView = function(v){ nxShowView0(v); nxPaint(); };
+const nxRenderMenu0 = renderMenu;
+renderMenu = function(){ nxRenderMenu0(); nxPaint(); };
+
+/* the module you land in is the one that opens, so the column shows a real tree on first paint */
+NX.open = (RAIL[activeRail] || RAIL[0]).name;
+nxPaint();
 </script>
 
 <script>

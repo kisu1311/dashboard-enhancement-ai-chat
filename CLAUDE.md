@@ -75,6 +75,26 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
+⚠️ **THERE ARE EIGHT OPTIONS NOW** (5 Sep 2026), each demonstrating a different sidebar over the
+same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
+pattern"* is the map; in file order:
+
+| # | file | sidebar |
+|---|---|---|
+| 1 | `index.html` | icon rail + hover mega-menu (Datadog) |
+| 2 | `dashboard-grouped-sidebar.html` | icon rail + always-docked panel (ClickUp) |
+| 3 | `dashboard-picker-advanced.html` | Option 1's rail; the denser dashboard picker |
+| 4 | `dashboard-labelled-rail.html` | labelled rail + a panel you open (monday.com) |
+| 5 | `dashboard-nav-column.html` | narrow rail + always-on nav column (Plain) |
+| 6 | `dashboard-card-sidebar.html` | rail + column + a "Next steps" card (Plain · Sidekick) |
+| 7 | `dashboard-single-column.html` | **no rail at all** — one 270px column (Notion) |
+| 8 | `dashboard-nav-column-alt.html` | Option 5's pattern; collapse hides everything |
+
+⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's. A
+change meant for every option is now an **eight-file** change, and Options 5 and 8 additionally
+share the `pl*` namespace with nothing syncing them. Each option's own sidebar block is the only
+part that differs; everything below this line describes content they all carry.
+
 Four pages are in the switcher, labelled **Option 1 / 2 / 3 / 4**. All of them carry the
 shared **`ac*` chat panel** on top of their own AI, **the `lx*` Log Explorer module and the
 `st*` Settings module** (My Account › My Profile, cloned from live 8.2.7 — see below), and
@@ -3980,6 +4000,883 @@ because **an automation-driven tab never advances a width transition** — injec
 | canvas | the group header rule replaced by a border on `.dgroup:has(.ghead)`; an empty group is its dashed border and nothing else |
 | everywhere | **every translucent full-screen overlay now blurs** — verified generically, not by list |
 
+## The 3 Sep 2026 pass — every flyout row has a glyph, and three sidebars fixed
+
+Options **1, 4 and 5**, driven request by request from screenshots. ⚠️ Where this conflicts
+with anything above, this section is current.
+
+### Dashboard and SLO flyouts carry glyphs now (Option 1; same data in Options 4 and 5)
+
+Request: the Dashboard and SLO menus held against Explorer and Setting — *"improve this and
+same ui"*. Three of six flyouts led every row with a mark and the other three led with nothing.
+
+- **The fifth slot on every `SUBNAV['Dashboards']` / `SUBNAV['SLO']` row.** ⚠️ **This REVERSES
+  the note at `SUBNAV['Report']`** that kept them iconless because their rows are actions. The
+  rule now: **every flyout row has a glyph, and an ACTION row gets the glyph of what it does** —
+  a list row the module it lists (`dashboard` / `screen` / `report` / `slo`), a "New …" row the
+  product's `plus` (teal, in the slot the text ＋ used to take), Manage the `sliders` the list
+  panel's own Manage-dashboards row draws, Scheduled a `calendar`, Error budget a `pie-chart`.
+- **Six `ICONS` entries** — five are product SVGs from `observeops-icons/common/` pasted
+  verbatim (`plus`, `star`, `screen`, `calendar` = calendar-alt, `pie-chart`); **`sliders` is a
+  STROKE icon on a 24 box** (the Lucide `sliders-horizontal` already in the file), so **`ico()`
+  gained a `stroke` flag**. ⚠️ A stroke entry carries `style="fill:none"` INLINE: `.mrr .mfic`,
+  `.plrow .plic` and `.plib .ic` all say `fill:currentColor`, and a CSS rule beats a presentation
+  attribute — without the inline style the outline paints as a blob (the `.dvic svg` trap).
+- ⚠️ **A `plus` row with a glyph draws NO text ＋** — `mfCol`, Option 4's `mrRow` and Option 5's
+  `plBodyHTML` all test `ic` first. Both together printed two pluses side by side.
+- **The Starred rows are `.mfi` now, not `.mfstar`** — the same 32px row and 15px slot as the
+  rest of the card, with the product's `star` in `--yellow`. `.mfstar` is kept, unreferenced.
+- ⚠️ **`ICONS` and `SUBNAV` are per file.** Done in `index.html`, `dashboard-labelled-rail.html`
+  and `dashboard-nav-column.html`. **Options 2 and 3 were not touched** and still render the
+  old iconless rows (they were already behind on the 2 Sep icon work).
+
+### Option 5 — an expand tile, and the column on the 34px pitch
+
+- ⚠️ **The collapse button lived in the column's header, and `body.plshut` hid the column** —
+  so the control that closed it vanished with it and the only door back was the brand mark,
+  which nothing said was a door (*"when i collapse the sidebar the expand icon is not show"*).
+  `plRailPaint` now renders **`#plExpand`** (`.plib.plexp`) first under the mark, CSS-hidden
+  until `body.plshut`, so `plColSet` needs no repaint on the way down. The mark keeps its click.
+- **Rows went 26px → 32px + 2px** — the 34px pitch `.sitem` and `.mfi` already share
+  (*"very low spacing"*). ⚠️ This overrides the earlier note that Plain's density IS the
+  pattern. Primary rows read in `--text`, children in `--text-dim`; section headers use the
+  file's label idiom (11px/600/.06em/uppercase) with 16px above — the gap between groups beats
+  the gap inside one. `.plrow.sub` indents 32 = 9 + 15 + 8 so a child's text starts under its
+  parent's TEXT.
+
+- **The Alert column's eight module rows carry their glyph** (request, 3 Sep 2026: *"add submodule
+  icon — reference is Option 1"*). Option 1's Alert flyout has had a module icon per row since
+  2 Sep; this file was copied before that landed, so `SUBNAV['Alerts']` had no fifth slot and the
+  column drew bare labels beside an Explorer that drew a glyph per row. **Data only** —
+  `plBodyHTML` already renders the fifth slot — and the keys are Option 1's verbatim
+  (`metric-explorer` · `log` · `flow` · `trap-viewer` · `netroute` · `apm` · `ncm` · `rum`). The
+  six `sub` views stay plain, and `.plrow.sub`'s 32px indent (9 + 15 + 8) now does what it was
+  sized for: a child's text starts under its parent's TEXT rather than two steps past it.
+  ⚠️ **Options 2, 3 and 4 still carry the iconless `SUBNAV['Alerts']`** — the same one-block data
+  change each (Option 4's `mrRow` already reads the slot).
+  ⚠️ **This file's `SUBNAV['Report']` is still iconless too** (10 rows, 0 glyphs, measured) while
+  Option 1's Report flyout carries them — the same change, not asked for here.
+- **The column STARTS COLLAPSED** (request, 3 Sep 2026: *"by default the sidebar will be
+  collapsed"*). Boot is a 44px rail, the expand tile under the mark, and the canvas padded for the
+  rail alone; the column docks on the tile or the mark and folds again from its own header. It
+  is the same default stated twice — `<body class="plshut">` for the first paint and `PL.col:true`
+  for the toggles — and both are needed: class only, and the first `plColTog` would open a column
+  the state thought was already open; state only, and the column flashes open for a frame while
+  the canvas fits twice (the `mpshut` / `dvshut` pattern of Options 2 and 3). The brand mark's
+  `data-tip="Expand sidebar"` is in the markup for the same reason — `plColSet` only writes it on
+  a toggle. ⚠️ **This reverses the pattern's own premise** (Plain's column is always-on, and the
+  Option 5 section below still describes it that way); the hover-peek is what keeps every module's
+  navigation one pointer-move away, so nothing became unreachable. `plColSet` is deliberately NOT
+  called at boot — nothing needs moving, and its `fitCanvas` would refit a canvas not yet drawn.
+- **The Setting column's 19 rows carry the product's category icons** (request, 3 Sep 2026: *"also
+  use the icon, reference is Option 1"*). Nothing was added to `SUBNAV['Settings']`: `plStIc(label)`
+  reads the category's `ic` off `ST_TREE` at paint time (the harvested list Option 1's Setting
+  flyout renders), and **`plIco` is now Option 1's `mfIco` — one resolver over `ICONS` then
+  `ST_ICO`**. Six categories resolve in both registries, which is exactly how Option 1's pane drew
+  some tiles and not others until both call sites shared one function.
+- **EVERY ROW IN THE COLUMN HAS A GLYPH NOW — Explorer's children included** (request, 3 Sep 2026:
+  *"if in sidebar they have icon, use it overall"*, holding Monitor's 18 plain children against
+  the ten glyph-led sub-modules). ⚠️ **This REVERSES, for this column only, Option 1's 23 Aug rule
+  that "the 20 children deliberately have none"** — there, icon-vs-none was the level cue in a flat
+  flyout; here the indent (a child's glyph sits under its parent's TEXT) plus the child's smaller,
+  dimmer type carry the nesting, so the cue survives. A child is `[label, module, act, ic]` in
+  `EXPLORER_TREE`, `act` padded `null` so the slot does not shift.
+  ⚠️ **THE PRODUCT HAS NO GLYPH PER MONITOR TYPE** — its `monitors/` icon set is per vendor. All 19
+  new `ICONS` entries are product SVGs pasted verbatim from `observeops-icons/` (single path, 48
+  grid), but the MAPPING is a reading, recorded above the entries: the Discovery Profile's own
+  category tiles (`discovery-server` / `-storage` / `-virtualization` / `-hci` / `-container` /
+  `-service-check`) for those six types; `inventory` · `network` · `database` · `process` ·
+  `kubernetes` · `metric-explorer` · `compare` by name; and the nearest product glyph for the rest
+  — SDN → `sdn-topology`, Cloud → `cloud-topology`, Interface → `port`, WAN Link →
+  `cisco-wan-link`, Service → `service-set`, Other → `custom`, Compliance → `shield-check`.
+  `interface`, `service` and `rule-compliance` are in the DS registry (`list_icons`) but in
+  neither the harvest nor the vendored bundle, so they could not be inlined; swap them in if the
+  SVGs are ever harvested. ⚠️ **Option 5 only** — Option 1's flyout keeps its plain children.
+  ⚠️ **`--pl-nav` WENT 216 → 224px WITH IT, measured.** A nested row's text now starts 23px further
+  in, and "Container Orchestration" came out 136px of text in 135px of room — a 1px overflow that
+  costs three letters, because the ellipsis takes its own width. One 8px step clears it with 7px to
+  spare; nothing else in any column was within 8px of its edge. The shell padding and the
+  hover-peek read the token, so nothing else had to move. ⚠️ **The probe that said "labels fit"
+  was wrong** — it compared the label span to itself, while the clipping is `.plrow`'s own
+  `nowrap`. Measure a Range over the TEXT against the row's content box, not the span's
+  `scrollWidth`.
+
+### Option 4 — `»/«` opens the sub-module panel on Dashboards too
+
+⚠️ **The "one preference, two surfaces" table above is SUPERSEDED.** On Dashboards the control
+opened the dashboard LIST panel while every other module opened its sub-navigation — the one
+place a reader first presses it showed a different kind of thing (*"to show wrong sidebar … open
+the submodule sidebar like option 1"*). `mrApply` toggles `body.mrnav` from `MR.want` on every
+module and leaves `.dpanel` alone; `mrPaint` reads `mrnav` only; the `toggleDPanel` wrapper is
+gone (it copied the list panel's state into `MR.want`, which would now close the sub-module
+panel whenever the list panel's own chevron was pressed); `mrFav()` opens the list panel
+directly because the Favorites filter lives there. The list panel is still reachable from its
+page-head chevron and from the panel's own first row, *Dashboard list*. Chrome cost at boot is
+unchanged — `#mrNav` is the same 340px the list panel was.
+
+### The Setting flyout's last rows — two faults, one report
+
+*"when i hover the submodule in setting module … the last submodule i can't hover it"*. Measured
+rather than guessed, because the row highlighted on hover yet the pane did not change:
+
+- ⚠️ **The flyout was capped at `86vh` and its content is 759px** (19 rows at 34px + heading +
+  paddings). At a 667px viewport the cap is 574px, so APM / Real User Monitoring / Integration /
+  Agentic AI sat OUTSIDE the visible box — a hit test at their centres landed on the dashboard
+  grid behind the menu. `overflow:auto` scrolled the box silently, with the bar 44px away in
+  the shadow gutter. Now: `max-height:calc(100vh - 16px)`, and **`mfClamp()` bounds the MASTER
+  LIST to the viewport** (room read from computed paddings + the heading, never retyped) so the
+  list scrolls inside its own card with the same `.more` bottom fade the detail pane has
+  (`mfFadeCard` serves both). The tree flyout is `overflow:visible`; the flat menus keep `auto`.
+- ⚠️ **`mfSub` called `mfClamp()` BEFORE `mfDetailAlign(k)`** — so the clamp measured the box
+  with the PREVIOUS row's `margin-top` still on the pane under the NEW row's content (566px of
+  margin under a 332px pane read as a 956px box), shoved the flyout to the top of the viewport,
+  and the next hover let it drop back. Measured: the box's top went 38 → 8 → 38 at 807px and
+  through **four** positions at 957px. **A menu that moves under the pointer puts a different
+  row under it**, which fires that row's hover, which moves it again — that is the row you
+  "cannot hover". Align first, clamp second; and **`mfClamp` now keeps an open menu's top**
+  (it only pushes UP if the box would overflow, never drifts down). `mfOpen` / `mfOpenUtil`
+  clear the inline top so a fresh open starts from its own anchor.
+- Verified by a probe that sweeps all 19 rows down and back up at 667 / 807 / 957px: one top
+  per run, no pane past the box, box inside the viewport, and the last four rows hit-testable
+  after the list is scrolled.
+
+### Settings › Agentic AI — a sixth column, DS widgets, and a drawer that fills the room
+
+Three requests later the same day, in `_settings-module.js` / `.css` (Option 1) and the inline
+copies in Options 2 and 3 (and 4 for the drawer; it has no usage table).
+
+- **`Last usage` is the sixth column of the usage grid**, and **the columns are SHARES of the
+  width, not pixels** (*"column will be full width"*). Four fixed columns plus one free one put
+  670px of figures on the left and handed the rest to Availability. `obs-table` passes a
+  non-numeric `width` straight to the header cell's style (checked in the bundle), so `'20%'` /
+  `'16%'` land as `<th style="width:…">` and the browser shares the row out — measured 227 / 183 /
+  182 / 181 / 182 / 182 across an 1158px table. `AG_DATA.health.lastUsed` feeds the connected
+  row; the others keep the em dash (nothing measured ≠ measuring nothing).
+- **The three trend tiles are DS widgets** (*"replace this chart Using the ObserveOps design
+  system"*). The registry is explicit that charts are Highcharts in the product and a declared
+  gap here — no `obs-*` chart exists and the engine is licensed — so what changed is everything
+  around and inside the plot that the DS DOES specify:
+  - the tile header is **`obs-toolbar variant="widget"`** (the DS widget header: 14px/500 title,
+    a time-range pill slot), which draws its own rounded-TOP frame with no bottom edge — the body
+    div carries the rest of the frame;
+  - ⚠️ **`--common-widget-bg` is repointed on the host** (`style="--common-widget-bg:var(--page-
+    background-color)"`): the header paints that token and it is the same `#172336` as the
+    table's detail band in dark. **Nothing else may go in that `style`** — Vue forwards a host's
+    style attribute onto the inner div (the recorded `obs-banner` trap), so a `display` there
+    breaks the toolbar's flex layout;
+  - the plot is drawn by one `agChart(kind, …)` to the tokens the `data-viz` family names:
+    gridlines `--neutral-lighter`, axis labels 11px `--neutral-light`, baseline `--border-color`,
+    series from the chart palette, markers punched back to the page surface. Shapes follow the
+    DS's own time-series set — volume is an **area**, latency a **line**, failures/day a
+    **vertical bar**. A "nice" y-scale (1/2/2.5/5×10ⁿ) puts gridlines on round values; x labels
+    are real dates counted back from today so the axis agrees with the "Last 14 days" pill.
+    ⚠️ The last day is always labelled and a regular label within a slot of it is dropped —
+    day 12 and day 13 printed "Sep 2Sep 3" on top of each other before that.
+  - ⚠️ **A fixed `viewBox` that scales UNIFORMLY**, not `preserveAspectRatio="none"` — the old
+    axis-less plot could stretch for free; a stretched axis label is not a label.
+  - `agBars` / `agLine` are gone, not parked — `column` and `line` in `agChart` are the same shapes.
+- **The Configure drawer is EVERYTHING EXCEPT THE RAIL** (request, 3 Sep 2026: *"not full screen
+  sorry but the background sidebar will be show"*). **Three widths were tried in one day** and
+  this is the settled one: `min(1440px,96vw)` (a panel beside the app, a strip of page showing)
+  → briefly the full viewport (which covered the rail) → the full width **minus the sidebar**, so
+  the app's navigation stays visible behind the scrim.
+  - ⚠️ **THE RAIL IS DIMMED, NOT INTERACTIVE.** `#agCfgScrim` is `inset:0` at z-index 89 and
+    `.sidebar` is z-index 60, so the scrim still covers the rail — it shows through blurred and
+    no pointer reaches it. That is also what keeps the width stable: the rail cannot hover-expand
+    under an open drawer, so the number taken on open stays true. Probed: what is painted over the
+    rail is `agCfgScrim` in all four files.
+  - ⚠️ **`agCfgSize()` READS `railWidth()`, WHICH READS THE TOKEN, NOT THE BOX.** The rail animates
+    its width and this folder's own recorded lesson is that measuring it catches the transition
+    mid-flight — the flyout bug. `railWidth()` already answers "how wide is the rail meant to be",
+    `body.pinned` (`--rail-w-open`) included, and `.shell`'s padding trusts it for the same
+    question. The CSS `calc(100% - var(--rail-w))` is only the first-paint fallback: that token is
+    the COLLAPSED width and would be wrong while pinned.
+  - Measured, drawer-left = rail-right in every option: **64 / 56 / 64 / 72**, no horizontal
+    overflow at 1500 or 1920, help card still shown.
+  - ⚠️ **AN EARLIER, DIFFERENT WIDTH WAS BUILT AND REVERTED THE SAME DAY** — list-edge-to-window
+    ("show only background sidebar"), sized by measuring `.stnav`, with the help card moved to a
+    container query because the viewport no longer predicted the drawer. Reverted on request.
+    **Do not re-derive it**; if the drawer ever gets narrower than "viewport minus a rail", the
+    help card needs a container query again.
+- ⚠️ **ESCAPE ON THIS DRAWER WAS LEAVING ITS SCRIM BEHIND — a latent bug found by the width
+  change.** Escape already reached the drawer: the host page's ladder matches `.sdrawer.on` and
+  calls `closeOverlays()`, which strips `.on` from every drawer and clears `#scrim2` — but knows
+  nothing about `#agCfgScrim` or `body.agdrawer`. So the panel slid away and left its blurred
+  scrim over the page, blocking it, with the Overview never repainted. Latent since the drawer
+  was built on 2 Sep; a full-width panel makes Escape the reflex, so it surfaced every time.
+  The `ag*` block now handles Escape itself in **capture phase with `stopPropagation()`** — the
+  only way to be sure it runs INSTEAD of the host's rung whatever order the scripts registered
+  in; falling through would close the drawer twice, once correctly and once badly.
+  ⚠️ **No `obs-select` guard.** One was written and removed: the host has always closed this
+  drawer on Escape from anywhere inside it, so exempting a dropdown would invent an inconsistency
+  — and a bubble-phase guard could not work anyway, since the host's handler fires regardless.
+  Measured: the probe reported the drawer closed but `afterEscOnSelect` false, which is what
+  exposed the host handler in the first place.
+
+### The Health flyout carries a glyph per row (Option 1)
+
+Request, 3 Sep 2026 — the Health Monitoring flyout's plain rows held against the Report menu:
+*"this will be improve as like this"*. It was the last menu in the rail whose rows had no mark,
+so it read as a different kind of list from the five beside it.
+
+- **`HEALTH_ICO`**, beside `mfOpenUtil`, maps each tab LABEL to a glyph, and `mfOpenUtil` passes it
+  as the fifth slot `mfCol` already renders — so the rows inherit the weight, colour and pitch
+  every other glyph row has. Measured against a Report row: 600 / same colour / 32px, identical.
+- ⚠️ **KEYED BY LABEL, NOT INDEX.** `HEALTH_TABS` is also what the Health page renders its tab bar
+  from; a parallel array would be a second copy of its order, and reordering the tabs would put
+  the wrong glyph on every row after the change without anything reporting it.
+- ⚠️ **A miss here is one blank row, not a dead menu** — `mfCol` renders whatever slot it is
+  given, unlike `mfTree`, which gates all-or-nothing. `ico()` still returns `''` for an unknown
+  name rather than throwing, so every key was resolve-checked before being written in.
+- **Five product SVGs joined `ICONS`** (`application`, `database`, `sessions`, `upgrade`,
+  `restore`), each an exact name match for its tab, verbatim from `observeops-icons/`. Health
+  Overview reuses `health-monitoring` (the overview IS the module) and Alert reuses `alert`.
+- ⚠️ **Option 1 only.** Options 3, 4 and 5 carry their own `mfOpenUtil` (4 and 5 stand it down)
+  and their own `ICONS`, and were not touched.
+
+### The Setting flyout's two cards touch (Option 1)
+
+Request, 3 Sep 2026 — the vertical strip between the Setting list and the Utility pane boxed in
+red: *"remove this space"*. The two cards sat 8px apart (`.mfcols{gap:8px}`, from the 2 Sep
+two-card change), which read as two unrelated menus floating beside each other rather than as a
+list and the pane belonging to the row you are pointing at.
+
+- **`gap:0`**, so the pane's left edge meets the master's right edge exactly. Measured 0 on every
+  pane, and the pane still opens level with its own row (the `margin-top` alignment is untouched).
+- ⚠️ **THE SEAM IS ONE HAIRLINE, NOT TWO.** Flush with both cards' borders drawn it would be 2px —
+  visibly heavier than every other edge in the menu — so the pane drops its **left** border and
+  the master's right border is the join. The pane keeps a radius on its free side only.
+- ⚠️ **THE MASTER SQUARES ITS RIGHT CORNERS ONLY WHILE A PANE IS ACTUALLY OPEN**
+  (`#mflyout:has(.mfdetail:not(:empty))`). `:empty` hides the pane on a row with no children —
+  Explorer has nine of them — and a card left square on the side with nothing beside it reads as
+  clipped rather than as joined. Probed both ways: `0px` with a pane, `0 8px 8px 0` without.
+- ⚠️ **The master's `box-shadow` casts straight onto the pane** (`10px 0 30px`). That is covered,
+  not clipped: `.mfdetail` is the later sibling and paints its opaque `--pop` over it, so the
+  shadow shows only above and below the pane, which is where it belongs. Nothing relies on a
+  `z-index` here.
+- ⚠️ **Option 1 only** — `#mflyout:has(.mfdetail)` matches in no other option file.
+
+### The rail footer's two rows were swapped (Option 1)
+
+Request, 3 Sep 2026, pointing at the identity row over Approval · Health · Notifications:
+*"swap this"*. The quick links lead the footer now and the identity row is the last line of the
+rail.
+
+- ⚠️ **THIS DIVERGES FROM THE REFERENCE THE FOOTER WAS BUILT FROM.** Datadog's own rail footer —
+  measured in the browser on 2 Sep 2026, which is where this footer's shape came from — puts the
+  avatar row ABOVE the hairline and Invite · Support · Help below it. Recorded as a stated
+  divergence rather than left looking like a copy. It does put identity at the very end of the
+  rail, which is the edge `#userPop` opens from (`bottom:10px`).
+- ⚠️ **THE HAIRLINE MOVED WITH THEM** — `.squick`'s `border-top` became a `border-bottom` (and its
+  `padding-top` a `padding-bottom`). The rule belongs BETWEEN the two blocks; left on top it would
+  have drawn a second hairline 8px under `.sfoot::before`, the footer's own top rule, with nothing
+  above `.squick` left to separate it from. The 4px side margin is untouched, so the rule keeps
+  its inset. `.sfoot .sitem`'s margin went 6px → 8px so the rule sits centred between the two.
+- ⚠️ Nothing else moved: the same three ids, handlers and tooltips. `showView()` still reaches
+  `#sbApproval` / `#sbHealth` directly, the bell still carries `#nbadge`, and collapsed the row
+  is still ONE column so all three stay reachable at 64px.
+- Verified: order `squick` then `sid`; the rule is a 1px bottom border with 8px either side; all
+  four footer controls hit-test to themselves; Approval and Health still light on navigation;
+  `#userPop` still opens 10px off the viewport bottom; collapsed the bell is still on screen.
+- ⚠️ **Option 1 only** — `.squick` exists in no other option file.
+
+### The Settings category list collapses to an ICON RAIL, not to nothing (all five options)
+
+Request, 3 Sep 2026: *"when I collapse the setting sub module it doesn't hide fully — show the
+sidebar by default icon"*. The head's `‹` used to take `.stnav` to 0px, which is what the live
+splitpane does — but live has no glyph per category to fall back on, and this list does: the
+product's own 19 icons in `ST_ICO`. Collapsed it is now a **52px column of 32px tiles with 20px
+glyphs**, the numbers Option 5's rail and the Layout drawer's `»/«` already use, so it reads as
+the same object as the rails beside it rather than a third size.
+
+- ⚠️ **A TILE NAVIGATES, IT DOES NOT FOLD.** `stCatTap` toggles the category's pages while the list
+  is expanded and goes to the category's first page while it is collapsed (keeping the current
+  page when it is already the current category). One element, two states, the behaviour that
+  makes sense in each.
+- ⚠️ **THE TOOLTIP COMES FREE, AND IT IS SILENT WHILE THE NAME SHOWS.** Every header carries
+  `data-tip` = its own name; `tipRedundant` suppresses a tip whose text is readable on the
+  element, and `.nm` is `display:none` collapsed, so the tip speaks only then. ⚠️ A probe that
+  hovers a tile and re-expands the list before the engine's **320ms** timer fires sees no
+  tooltip — that is the suppression working, not a bug. It cost one phantom failure on all five
+  files; check the tooltip at t+500ms *before* re-expanding.
+- ⚠️ `.stcat.cur` is emitted in both states and styled only in the collapsed one — expanded, the
+  lit page (`.stsi.on`) already says where you are, and lighting its parent would say it twice.
+- ⚠️ `#view-settings.stshut .stsub` outranks `.stcat.open .stsub` on the id, which is what keeps
+  an open category's pages from spilling out of a 52px column.
+- **The right border STAYS** — the collapsed state is a column too, so the rule still has an edge
+  to sit on. This reverses the older note at `.stnav` that it "must go when the list collapses".
+- **In all five files**: Options 1 and 5 read it from `_settings-module.*`; Options 2, 3 and 4
+  carry the inline copy. The `stfullpg` full-page screens still hide the list entirely.
+- Verified per option with a 26-assertion probe: 246 → 52 → 246px, border kept, search and
+  names hidden, 19 tiles at 32×32 each with a glyph path at 20px, an open category's pages
+  hidden, the current tile lit, the last tile hit-testable, a hit-tested real click on a tile
+  landing on its first page with the list still collapsed and the lit tile following, the head
+  button reading *Show settings menu*, the tooltip naming the category; both themes screenshotted.
+
+### Verification notes from this pass
+
+- ⚠️ **Headless Chrome here prints the DOM and then does not exit.** Every `--dump-dom` probe
+  reported `TIMEOUT (killed)` AND a full verdict — the probe is fine; the process is not. A
+  runner that waits for exit before reading stdout hangs for the whole timeout with the answer
+  already in the pipe. `Popen` + `communicate(timeout)` + `killpg`, then parse.
+- ⚠️ **A filtered view of a function hides the anchor you are about to edit against.** A `grep
+  -v` that dropped comment lines showed `mfClamp();` and `mfDetailAlign(k);` as adjacent; on
+  disk a comment sat between them and the replace matched nothing. Print the exact lines.
+- The hover bug was invisible to synthetic `mouseenter` dispatch (the probe drove the handler
+  and the pane changed); only hit-testing the rows and logging the box's top across the sweep
+  found it. A green probe is not a working feature, again.
+
+## Option 6 — the card sidebar (`dashboard-card-sidebar.html`, 3 Sep 2026)
+
+Built from **Plain's Sidekick workspace** (`app.plain.com/workspace/…/sidekick/`), **driven live
+in the browser and measured off its DOM** at 1710×951 — unlike Option 5, which was read off a
+Mobbin still. The page is **Option 5 with a different sidebar**; its `pl*` block was replaced
+wholesale by `sk*` and nothing else in the file was touched, so the AI panel, Log Explorer,
+Settings and the canvas are Option 1's as before ("the list of module is option1 for reference").
+
+### Why it is a sixth answer
+
+⚠️ **THE FLOATING CARDS WERE REMOVED ON 5 Sep 2026** (request: *"remove the box, it will show as
+option 1"*). Both surfaces are flush to the viewport now — no 8px gutters, no radius, no ring —
+and the sidebar is divided from the canvas by a border, as in every other option. **That was what
+made this a distinct answer**, and it is honest to say the page is now closer to the others: what
+remains its own is the rail + column pairing and the **"Next steps" card at the column's foot**,
+which is the one card still on the page and the only option with a place for what the workspace
+still has to do.
+
+What the cards were, for a revert: the sidebar inset 8px from a `--panel` page at radius 12 with
+a 1px ring plus a 1px drop, and the content beside it a second card of the same make. The tokens
+survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
+
+| part | measured off Plain | here |
+|---|---|---|
+| card | `8px` inset, radius 12, `0 0 0 1px rgba(32,39,44,.08), 0 1px 1px` | **removed 5 Sep 2026** — flush, with a border |
+| rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px, `--chip` for the active tile |
+| rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Next steps · Notification · Documentation · avatar, 32px tiles |
+| column | 281px: header 14px/550 over a 12px line, **no controls** | same, second line derived (see below) |
+| row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` + `--teal`, this file's tinted-selection pair |
+| section | "Active" 12px/550 over 24px, `+` at its right (24px, radius 6), 16px above | same, and the `+` is real (below) |
+| section row | glyph in a tinted **18px radius-4 tile**, text 12px/550 | `--chip` tile, `--teal` when the row is active |
+| column foot | right-aligned 32px icon buttons in 8px of padding | Approval · Health · Settings · Collapse |
+| Next steps | ring, radius 10, 16px pad, 20px/400 title, ✕ at (7,7), four **34px** rows, a **4px** track | same, title 17px/500 (see the type note) |
+| trial line | 12px, underlined link, 20px above the card's bottom edge | a licence line |
+
+- ⚠️ **THE PAINT IS THIS FILE'S TOKENS.** Plain is light-only; none of its hexes are in the file.
+  In DARK the card is `--card` against a `--panel` page — three points apart — so **the ring is
+  what draws the card**, which is exactly what an 8%-alpha ring does on Plain's near-white page.
+- ⚠️ **TYPE IS RESCALED, GEOMETRY IS NOT.** Plain sits on a 14px base and this prototype on Inter
+  12, so rows are 13px and the card title 17px/500 against its 20px/400 — but every box, gap,
+  radius and pitch is the reference's own number. Inter is loaded at 400/500/600/700, so Plain's
+  550 is 600 here.
+- ⚠️ **`--rail-w` IS THE WHOLE LEFT CHROME — card + both gutters (361px)**, not the card's width.
+  `railWidth()` answers "how much of the left is not canvas" for `.shell` AND for the Agentic AI
+  drawer's `agCfgSize()`; give it the card alone and the drawer opens 16px too wide.
+- ⚠️ **`.main`'s `overflow:hidden` WENT WITH THE CARDS.** It existed only to round the corners of
+  what sat inside it, and it was safe only because a `position:fixed` descendant is not clipped by
+  an ancestor's overflow. It is gone, so a merely-absolute child is no longer at risk either.
+- ⚠️ **`--rail-w` IS THE SIDEBAR'S OWN WIDTH AGAIN** (it was width + both gutters). `railWidth()`
+  and the Agentic AI drawer's `agCfgSize()` both read it, so the drawer follows automatically.
+- ⚠️ **THE PEEK KEEPS ITS SHADOW.** It floats over the board, so a hairline alone would let the
+  canvas read through the gap — the one place a raised edge is still doing work on this page.
+- **The section `+` is the section's own create action.** Where a `SUBNAV` group carries a
+  `plus` row (NOC View's *＋ New NOC view*), that row becomes the header's `+` instead of a row
+  of its own, so "create" sits with the thing it creates — Plain's *Active +*. The **primary
+  list keeps its "New …" row**: it has no header to hang a `+` on. There are probe assertions
+  that the promoted row is not also rendered below, and that a group without one (Reports) gets
+  no `+`.
+- **The header's second line is derived, never invented.** Plain shows the workspace there; this
+  product has no workspace, so `skSubtitle()` counts what the column is showing — `10
+  sub-modules` for Explorer, `19 categories` for Setting, `N pages` elsewhere, from the same
+  arrays the rows come from.
+- **"Next steps" is four REAL destinations** — Discovery Settings · User Settings · Agentic AI ·
+  Policy Settings, each opened with `stOpen()` and wearing that category's own harvested glyph.
+  ⚠️ **A step is marked done when it is VISITED.** The prototype cannot know that a discovery ran
+  or a user was invited, and claiming otherwise would be inventing product state. The ✕ dismisses
+  the card and the rail's rocket brings it back, its badge counting what is still open — Plain's
+  "N steps remaining".
+  ⚠️ The progress fill is `width:%` on a block child, never `flex` — the recorded `flex:50` bug
+  would paint every card complete.
+- ⚠️ **`#sbApproval` / `#sbHealth` / `#sbBell` / `#sbUser` ARE STATIC MARKUP.** `showView()`
+  toggles `.on` on the first two BY ID and `init()` runs before this block's first paint, so they
+  cannot live in anything `skPaint` rebuilds; `refreshUser()` writes into `#sbUser .miniav` and
+  `stSeed()` reads `#sbUser .lbl` (kept, hidden). That is the same trap Options 4 and 5 record.
+- ⚠️ **The column starts COLLAPSED** (request, 5 Sep 2026: *"by default it will be collapsed"*).
+  This reverses the original reading, which kept it open because "the sidebar being reproduced is
+  the open one". Boot is the 64px rail; the column is one click of the header's `»` away and the
+  hover-peek shows any module's navigation without docking it. `<body class="skshut">` and
+  `SK.col:true` carry the same default and both are needed — the class paints the first frame,
+  the flag is what the toggles read.
+- Collapsed it is the 64px rail, still a card, with the same **hover-peek** Option 5 has: the
+  same column un-hidden and taken out of flow beside the rail, so the canvas never reflows on a
+  hover. `mfOpen` / `mfOpenUtil` / `mfLater` / `sbHover` are stood down; `mfHide` is not.
+- Verified with a **63-assertion probe** — every measurement in the table above, hit-tested
+  clicks on a step, the ✕, the rocket, the collapse and the expand tile, the peek, the Setting
+  and Explorer columns, and label fit — plus `harness … query` **77/77**, `lxbehave` **57/57 ×6**,
+  both themes screenshotted. ⚠️ One probe assertion was wrong, not the page: it expected Explorer
+  to say *11 sub-modules* from a CLAUDE.md line that counts Report, which is a rail entry;
+  `EXPLORER_TREE` holds 10.
+
+## Option 7 — one column, no rail (`dashboard-single-column.html`, 4 Sep 2026)
+
+Built from **Notion** (`app.notion.com/library/recents`), **driven live in the browser and
+measured off its DOM** at 1710×951. The page is Option 6 with its sidebar replaced; the `sk*`
+block went out whole and `nx*` came in, so everything else is Option 1's as before ("the module
+list reference on option1").
+
+### Why it is a seventh answer
+
+**There is no icon rail.** Options 1–6 all have one. This is a single 270px column, every
+destination is a labelled row, and nothing has to be hovered to be read. It is also the only
+option where the whole navigation nests in one list: the module you are in expands to show its
+own pages under it, and Explorer nests a second level under that.
+
+| part | measured off Notion | here |
+|---|---|---|
+| column | **270px**, `#f9f8f7` on white, **no right border**, padding `0 8px 12px` | `--panel` on `--bg`; the change of surface is the edge |
+| workspace row | 30px, a 20px radius-4 mark at **+9**, name 14px/500 at **+38** | the product mark, "ObserveOps", the signed-in avatar, and the collapse |
+| actions | 32px row, 2px gap: a rounded-full "Home" pill on a 5% fill, then 22px icon buttons | Home · Iris · Notifications · Search |
+| section label | **12px/500** grey at +8, 16px above | 11px/600 `--text-dim` (this file's smaller base) |
+| row | **30px**, radius 6, glyph 20px at **+9**, text at **+38**, hover and active a 5% fill | `--hover`; active `--sel` + `--teal` |
+| nesting | a child indents so its glyph starts under the parent's text | 38px, and 63px for the second level |
+| section tail | a muted "⋯ More" | same, over `NX_CAP` = 6 |
+| pinned bar | a rounded-full CTA with a ⌘ keycap, and a 40px square beside it | **removed 5 Sep 2026** — the column ends on the footer row |
+
+- ⚠️ **THE CARET TAKES THE GLYPH'S SLOT, it does not sit beside it.** Notion swaps the page icon
+  for a disclosure triangle under the pointer, and that is also the only way the text can stay at
+  +38: in the flow a 14px caret plus its gap pushed every module label to **+58** while its own
+  children were indented to 38, so a child's glyph landed to the LEFT of its parent's text. Both
+  live in a 20px `.nxig` box, stacked. The caret is a `role="button"` span — the row is a real
+  `<button>` and interactive content inside one eats the clicks.
+- ⚠️ **THE ROW BOTH NAVIGATES AND EXPANDS; THE CARET ONLY EXPANDS.** A module row that merely
+  unfolded would leave no way to reach the module; one that only navigated would hide its pages
+  behind a control the row does not have. `nxOpenMod(name, force)`'s `force` is what stops the row
+  toggling its own pages shut when you click the module you are already in.
+- ⚠️ **`selectModule(i)` TAKES A `MODULES` INDEX, NOT A `RAIL` ONE** — 16 entries against 6. The
+  wrapper indexed `RAIL` with it and opened the wrong module's pages, or none. The symptom was
+  subtle enough to pass a first probe: the rail highlight was right (the host maintains
+  `activeRail` itself from `MOD_TO_RAIL`) while the list underneath still showed the module you
+  had left. Read `activeRail` AFTER the original runs.
+- ⚠️ **THE WORKSPACE ROWS ARE AUTHORED AND MOVED, NOT RE-EMITTED.** `#sbApproval` / `#sbHealth`
+  carry ids `showView()` toggles by hand and `init()` runs before this block's first paint, so
+  `nxPaint` builds them once and then *appends the same nodes* into each new `#nxUtil`. A probe
+  asserts all four survive two repaints with their ids intact.
+- ⚠️ **COLLAPSING REMOVES ALL NAVIGATION**, because there is no rail to fall back on — which is
+  what Notion does, and why its expand control floats on the canvas rather than living in the
+  sidebar. The pair is **`#nxCol`**, at the end of the workspace row, and **`#nxOpen`**, fixed at
+  the canvas's top-left and shown only while the column is shut. They are one control in two
+  places because the first goes away with the thing it collapsed — the exact fault reported
+  against Option 5 on 3 Sep 2026, where the collapse lived in a header that `plshut` hid.
+  ⚠️ **The workspace row had to become a CONTAINER when the collapse was added to it** (4 Sep
+  2026). `#sbUser` is still a real `<button>` inside it and keeps the hover fill; the toggle is
+  its sibling. A button inside a button is invalid and eats the clicks — the same lesson this
+  file's own caret follows.
+  ⚠️ **`#nxCol` IS VISIBLE AT REST, a deliberate divergence** — Notion reveals its toggle only on
+  hover. Here it is the only way to collapse a column that IS the whole navigation, and this
+  folder has already had to fix one "the way back out was invisible" report. It is dimmed, not
+  hidden.
+- **Recents and Starred are the list panel's own state** (`DASH_RECENT` / `DASH_FAVS`), each row
+  wearing that board's System / Mine / Shared mark from `MICON` — which is raw `<svg viewBox=…>`
+  with no class, so the class has to be injected or the glyph renders at natural size and blows
+  the row height apart (the recorded `railPinRow` lesson).
+- ⚠️ **`book-open` IS NOT IN THIS FILE'S `ICONS`.** The Documentation row uses `help`, the key
+  Option 6's `?` used. `ico()` returns `''` for a name it does not have rather than throwing, so a
+  guessed key renders one blank row and nothing reports it.
+### The list is MODULES ONLY, and the workspace four are a footer row (5 Sep 2026)
+
+Three sections left the list in one pass, on two requests:
+
+- **WORKSPACE became a 4-up icon row at the foot of the column** — Approval · Health · Settings ·
+  Docs, a glyph over a 10.5px label, the same shape as Option 1's `.squick` (measured off
+  Datadog's rail footer on 2 Sep). They were four full-width rows carrying a module's weight, for
+  screens you reach occasionally; as a footer they cost one row of height between them.
+  ⚠️ **`repeat(4,minmax(0,1fr))`, NOT FLEX.** `1fr` is what stops the widest label sizing the row
+  and leaving the other three adrift, and `minmax(0,…)` is the part that lets a track shrink below
+  its content — without it a long word overflows the grid.
+  ⚠️ **THE LABELS ARE SHORTENED, NOT ELLIPSISED.** Four columns in ~254px is ~63px each and
+  "Health Monitoring" needs 96. The full name stays in `data-tip`.
+  ⚠️ **`.nxq.on` HAS TO BE STYLED.** `showView()` toggles `.on` on `#sbApproval` / `#sbHealth` by
+  id, and the selected look lived on `.nxrow.on` — which these are no longer. Without the rule the
+  class still lands and styles nothing, so the footer stops saying which screen is open, silently.
+  The identical trap is recorded at Option 1's `.sq.on`.
+  ⚠️ **STATIC MARKUP, which removed a whole mechanism.** The list version had to MOVE its four
+  nodes between repaints to keep those ids alive (`NX_UTIL` / `#nxUtil`); in the footer they are
+  simply never rebuilt. Both are gone.
+- **RECENTS and STARRED were removed outright** (*"remove it"*). They were the dashboards the list
+  panel already tracks, and the panel is still where they live — the Dashboard module's own
+  `Dashboard list` row opens it and the canvas keeps its ★ filter.
+  ⚠️ `nxBoards`, `nxBoard`, `nxDashIc`, `NX_CAP`, `NX_DOTS` and `NX.more` are **kept and
+  unreferenced**, the house pattern, and are what a revert needs.
+- ⚠️ **THE POPOVERS OPENED AT THE FOOT OF THE SCREEN** (reported 5 Sep 2026 for the bell, then
+  the avatar — the same bug twice). `#userPop` and `#notifPop` are authored for Option 1's RAIL,
+  where both triggers sit at the bottom: `bottom:10px` / `bottom:56px`, with the arrow pinned from
+  the bottom edge. Here both live at the TOP, in the action row, so a card summoned from y≈50
+  opened ~500px down the page. `togglePop` is wrapped and positions each one from its own
+  trigger's box.
+  ⚠️ **`body #…` IS THE SPECIFICITY IT NEEDS.** The authored rules are `#userPop{bottom:10px}` at
+  (1,0,0) and `#userPop::before{bottom:22px}` at (1,0,1); a plain `#userPop{bottom:auto}` would
+  only tie and lose on source order.
+  ⚠️ **IT READS `--nx-w`, NOT THE BOX** — measuring an element mid-transition is this folder's
+  oldest recorded trap, and a custom property never is.
+  ⚠️ **IT CLAMPS TO THE VIEWPORT AND THE ARROW STAYS ON THE TRIGGER.** `#notifPop` is up to 620px
+  tall, so aligning its top with a trigger 50px down would run it off a short screen; the card is
+  pushed up and `--nxarrow` — measured from the card's own top — keeps the arrow pointing at the
+  control. That is also why the probe accepts "level with the trigger OR at the 10px margin".
+- ⚠️ **THE PINNED BAR WENT AS WELL** (request, same day). It held an *Ask Iris ⌘I* button and a
+  ＋ square, and **both keep other doors** — the check every removal in this file gets before it
+  happens: Iris has the action row's own `#sbAI` two rows above, the dashboard toolbar's `.aibtn`
+  pill and the `A` shortcut; New dashboard has this list's own `＋ New dashboard` row, the page
+  head's `#newDashBtn`, the list panel's `#dnewBtn`, the Manage screen's button and the `N`
+  shortcut. `.nxbar` / `.nxcta` / `.nxsq` / `.nxk` are kept and unreferenced.
+- ⚠️ **THE `MODULES` HEADER WENT TOO** (a further request the same day). With one list left, a
+  label over the only thing on screen names nothing you could confuse it with — and the row above
+  it already says which module you are in. **This reverses the note that kept it**, written an
+  hour earlier; don't restore it on the strength of that reasoning.
+  ⚠️ `nxSec` / `nxFold` / `NX.shut` and the whole `.nxsec` block are **kept and unreferenced** —
+  what a second section would need.
+  ⚠️ `.nxbody` GAINED 6px OF TOP PADDING, because the header's own `:first-child` margin was what
+  held the first module row off the action row above it. Removing a heading takes its spacing
+  with it; that space still has to come from somewhere.
+
+### The column is on one spacing scale (5 Sep 2026)
+
+Request: *"add proper spacing and margin, padding — need to clear UI"*. **Measured before
+changing anything**, and the column was carrying four different steps for the same jobs:
+
+| between | was | now |
+|---|---|---|
+| the column's own edges | `0 8px 12px` — no top, three different sides | **`8px`** all round |
+| workspace row → action row | 6 | **8** |
+| action row → the list | 8, **plus** 6px of `padding-top` on the list = 14 in two places | **8**, once |
+| row → row | 1 | **2** (a 32px pitch) |
+| row → group label | 6 | **12** |
+| an expanded module's block → the next module | 6 | **12** |
+| list → footer rule → footer buttons | 8 / 8 | unchanged, already on scale |
+| the footer button's own padding | `7px 0 6px` | **`8px 0`** |
+
+- ⚠️ **THE GROUP GAP IS THE ONE THAT MATTERED.** At 6 against 1, "next row" and "next group" were
+  both just "a small gap" and the grouping stopped working. 12 against 2 is a 6× step and reads at
+  a glance — the rule this folder has now recorded five times (`.aiab li`, `.aichips`, `.mfsec`,
+  the rail hairline, and here).
+- ⚠️ **THE 14px ABOVE THE LIST WAS TWO VALUES FROM TWO PLACES** — `.nxact`'s 8px bottom margin and
+  a 6px `padding-top` added to `.nxbody` when the section header was removed, each unaware of the
+  other. The gap belongs to the block above it, once.
+- ⚠️ **THE COLUMN'S TOP EDGE CAME FROM A CHILD.** With `padding:0 8px 12px` the first row's air was
+  a `margin-top` on the workspace row, so the top and bottom edges could not agree and every
+  change to that row moved the whole column. `padding:8px` sets all four and the children stop
+  compensating.
+- There is a probe assertion that **every** spacing value in the column is on the scale, so the
+  next off-step number fails rather than being noticed by eye.
+
+### The list took two things from Grafana (5 Sep 2026)
+
+Reference: **Grafana's docked nav** at `play.grafana.org`, driven in the browser. Its tree is the
+same shape as this list, and two of its decisions are better than what was here.
+
+- **THE CHEVRON SITS AT THE ROW'S RIGHT EDGE AND IS ALWAYS VISIBLE.** Grafana puts one on every
+  expandable row, at the far right, pointing down when the row is open; the glyph on the left
+  never moves. ⚠️ **This replaces a caret that SHARED the glyph's slot and appeared only on
+  hover** — Notion's behaviour, and it cost two things: the row lost its identifying glyph exactly
+  while you were pointing at it, and nothing said a row could be opened until you were already on
+  it. That is the fourth "the control is invisible until hovered" report in this folder; the
+  pattern is what is being corrected, not just this instance.
+  ⚠️ **THE CHEVRON GLYPH IS THE PRODUCT'S OWN**, pasted verbatim from
+  `observeops-icons/common/arrows-direction/chevron-right.svg` (request, 5 Sep 2026: *"improve
+  this icon — I already gave the icon website, use it, and next time any icon you need, use
+  this"*). It shipped as a HAND-DRAWN FILLED TRIANGLE (`M9 5l7 7-7 7z`) among outline glyphs,
+  which is exactly the fault the icon rule exists to prevent: a solid mark in a row of strokes
+  reads as a different family at any size, and a path drawn by hand has none of the optical
+  centring a real set has resolved. It is a 48 grid like every other `ICONS` entry — **never
+  rescale one onto 24 by hand**; the consumers size the `<svg>` in CSS, and `fill="currentColor"`
+  is the source's own so it takes the row's colour with no override. `NX_SCAR` was swapped at the
+  same time although it is unreferenced, so a revert cannot bring the triangle back with it.
+  ⚠️ **THE STANDING RULE, reaffirmed:** take a glyph from `observeops-icons/` first (~790 SVGs,
+  the product's own), then Lucide/Tabler; never draw one. It is in the session memory too.
+- ⚠️ **THE ACCENT BAR WAS REMOVED FIVE HOURS LATER** (request, 5 Sep 2026: *"I need to change
+  active style"*, then *neutral fill, no teal*). The active row had become FOUR signals for one
+  fact — a teal bar, a teal-tinted fill, teal text and a teal glyph — and is now **one**: a
+  `--chip` fill with the text at its normal colour and 600 weight.
+  ⚠️ **TEAL IS RESERVED FOR THINGS YOU ACT ON.** In this list that is the two `＋` create rows,
+  which keep it, so the accent now reads as "this makes something" instead of competing with the
+  selection.
+  ⚠️ **`--chip`, NOT `--hover`** — `--hover` IS the hover fill, so an active row would have been
+  indistinguishable from whatever the pointer was on (measured: both `#ecf1f9` in light).
+  ⚠️ **THREE OLDER TEAL RULES HAD TO BE DELETED, NOT OVERRIDDEN.** `.nxrow.on .nxic`,
+  `.nxrow.on .nxn` and `.nxrow.on .nxcar` all sat LATER in the sheet at equal specificity, so
+  source order handed them the win — the first fix changed nothing and the glyph stayed teal
+  while everything around it went neutral. A fourth rule for the same property would have been
+  the next thing to lose.
+  Both readings are recorded on purpose; **do not restore the bar on the strength of the Grafana
+  note below alone.** What that note describes is what this replaced.
+- **~~THE ACTIVE ROW CARRIES A LEFT ACCENT BAR.~~** *(superseded, same day — see above.)* Grafana's own mark, and this product's: the root
+  CLAUDE.md records the accent bar as *"the sidebar's nav pattern"* — the thing a selected CARD
+  must not use. This list is a sidebar, so it is where it belongs.
+  ⚠️ **`box-shadow:inset`, NOT `border-left`.** A border would move the row's content 3px right on
+  the active row only, so every glyph would shift as you navigated. An inset shadow paints inside
+  the box, costs no layout, and follows the 6px radius for free. There is a probe assertion that
+  the text is still at +38 on the active row.
+- ⚠️ **NOT TAKEN: Grafana's children have no icons at all** and sit at their parent's text x, so
+  the nesting is carried by the missing glyph rather than by indentation. This list gives every
+  child a glyph, which was an explicit request on 3 Sep ("use it overall"). Recorded rather than
+  changed.
+
+### The list was improved; the header and the footer were not (4 Sep 2026)
+
+Request: *"improve the only list of module … don't change this or this"*, pointing at the
+workspace/action row and the pinned bar. Everything below is inside `#nxBody`.
+
+- **AN EXPANDED MODULE IS A BLOCK, NOT A RUN OF LOOSE ROWS.** Its pages ran straight into the
+  next module — seven nested rows sat 1px from `Alert`, the same gap they had from each other —
+  so nothing said where the expansion ended. They are wrapped in `.nxkids` with 6px under it and
+  a **guide line at 19px = the row's 9px padding + half its 20px glyph**, so the rule descends
+  from the icon the block belongs to. Explorer's second level gets its own at 46 by the same
+  rule. ⚠️ Both are pseudo-elements on the WRAPPER, so no child's padding changed and the +38 /
+  +63 indents are untouched. ⚠️ `--track` at .45, **not `--border`** — measured 2 Sep 2026,
+  `--border` is 1.32 contrast on this surface in dark and 1.27 in light, i.e. invisible.
+- **THE DATA'S OWN GROUPING IS KEPT.** `SUBNAV['Dashboards']` has three sections and all seven
+  rows rendered as one, so *Report list* looked like a page of Dashboards. Nested `.nxgrp` labels
+  now carry them. ⚠️ **The first section stays untitled** — a module's first group is almost
+  always named after the module itself, so a label there says the row above twice; the same rule
+  Option 6's column uses. An `h:''` continuation is untitled by the same test.
+  ⚠️ **A `plus` row is NOT promoted to a `+` here**, unlike Option 6: this option's whole idea is
+  that every destination is a labelled row, and *New dashboard* is a destination.
+- **SECTIONS FOLD** (`nxFold`), as Notion's own do — four sections and ~30 rows with a module
+  open is what makes that worth having. ⚠️ **Workspace hides `#nxUtil` rather than dropping it**,
+  because it holds the four authored rows whose ids `showView()` toggles. `[hidden]` is safe
+  there only because nothing gives it a `display` — the `.stpt[hidden]` trap, checked not assumed.
+- **THE SECTION HEADER IS OPTION 5's `.plsec`** (request, same day: *"improve this as option 5"*).
+  It was Notion's sentence-case label; it is now **this file's own label idiom — 11px/600/.06em/
+  UPPERCASE/`--text-dim`, 26px tall** — the voice `.plsec`, `.mfsec` and `.agsub` already share,
+  with the label taking the slack and the caret at the row's end. ⚠️ **A stated divergence from
+  the reference**, taken because this was the only surface in the folder spelling its labels
+  differently, and because case and weight are what separate a group name from the rows under it.
+  The nested `.nxgrp` labels take the same idiom one step quieter (10px).
+  ⚠️ **The caret is Option 5's `PL_CAR`** — a filled DOWN triangle, visible at rest, rotating -90°
+  when the section is shut. It was hover-only and pointing right, which is the "way back out was
+  invisible" complaint this folder has already fixed twice.
+- ⚠️ **THIS REPLACED A `space-between` HEADER THAT BROKE ON ITS SECOND CHILD.** With one child it
+  looks left-aligned, so it read as correct for a day; with the caret added, every section label
+  jumped to the column's RIGHT EDGE. One flexible label cannot fail that way — the same fix the
+  flyout's ragged chevrons got on 2 Sep 2026.
+  ⚠️ The caret must not PRECEDE the label: it would push every label 12px off the x the row
+  glyphs sit on (17px, which is Notion's own 16), and absolutely positioning it into the gutter
+  would be clipped, because `.nxbody` sets `overflow-y:auto` and that computes `overflow-x` to
+  `auto` as well.
+
+- Verified with a **58-assertion probe** — every measurement above, hit-tested clicks on a module
+  row, the caret, a Recents board, Home, and both halves of the collapse pair; Explorer nesting two deep; Setting's 19
+  categories; label fit — plus `harness … query` **77/77**, `lxbehave` **57/57 ×7**, both themes
+  screenshotted. ⚠️ **Five probe failures across this build were the probe's own**, all one
+  cause: node references captured before a repaint (the recorded "regenerate after every render"
+  trap, in the test rather than the page). Re-query after anything that rebuilds `#nxBody`.
+
+## Option 8 — a second take on the nav column (`dashboard-nav-column-alt.html`, 4 Sep 2026)
+
+Made on request: *"option5 will be copy and create the option 8"*. It is a **byte-for-byte copy
+of `dashboard-nav-column.html`** apart from its `<title>` and a banner at the head of its
+stylesheet's Option 5 block. Everything CLAUDE.md says about Option 5 is true of it until one of
+them is changed.
+
+- ⚠️ **IT KEEPS THE `pl*` NAMESPACE.** Each page in this folder is self-contained, so there is no
+  collision — but `plRowHTML`, `plBodyHTML`, `.plrow`, `PL` and the rest now exist in TWO files.
+  **Nothing syncs them**: a change meant for the nav-column pattern has to be made deliberately in
+  both, and a `grep` for any `pl*` name now returns two files' worth of hits.
+- ⚠️ **THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT.** It is `-alt` because it is a second
+  take on the same design; the moment it becomes something else, rename it — the folder's
+  convention is that a file is named for what its sidebar IS (`labelled-rail`, `card-sidebar`,
+  `single-column`), and `_variants.js`, `lxbehave.py`'s `FILES` and `dsconf.py` are the three
+  places that would need to follow (the rename lesson recorded at the top of this file).
+- It carries every 3–4 Sep change Option 5 has: the Alert rows' glyphs, the Setting column's
+  category icons, Explorer's child glyphs, `--pl-nav` at 224px.
+
+### Its one divergence: collapse hides EVERYTHING (5 Sep 2026)
+
+Request: *"when i click to collapse, show only expand icon, the full hide sidebar"*. Option 5
+keeps its 52px rail when the column folds — that is the point there, because the rail alone is
+still a complete navigation. Here the sidebar goes entirely, the canvas takes the full width, and
+the only thing left is **`#plOpen`**, fixed at the canvas's top-left exactly as Option 7's
+`#nxOpen` is. **Its column starts collapsed, so that is also the boot state.**
+
+- ⚠️ **`overflow:hidden` IS MANDATORY ON THE COLLAPSED SIDEBAR.** `.sidebar.plside` sets
+  `overflow:visible` (the hover-peek needed it), so `width:0` alone leaves the rail's tiles
+  PAINTING OUTSIDE the box — collapsed in the layout and still on screen. The right border has to
+  go with it, or a 1px rule hangs down the edge of nothing.
+- ⚠️ **THE HOVER-PEEK IS DISARMED, NOT MERELY UNUSED — and it was a real latent bug.** With no
+  rail to point at, a peek can never be opened by a pointer, but the rule stayed ARMED: anything
+  putting `.plpeek` on the body painted a 224px column floating at `left:52px` **with no rail
+  beside it**. A probe calling `plPeek(1)` did exactly that. Both halves are now neutralised —
+  `plPeek()` returns first, and the CSS rule is kept as commented text — because either one alone
+  leaves the other able to produce the phantom.
+### The rail expands on hover, and the popover found its anchor (5 Sep 2026)
+
+Two more requests the same day, both on Option 8 only.
+
+**1 · Hovering the 52px rail expands it to a labelled 190px sidebar** (Option 1's rail as the
+supplied reference). Option 5 peeks the COLUMN on hover; this page peeks the RAIL, which is the
+thing the pointer is actually on — and its own peek was disarmed above, so the gesture was free.
+
+- ⚠️ **THE RAIL IS `position:absolute` AT ALL TIMES, and that is what makes the expansion free.**
+  As a flex item, widening it to 190px would SQUEEZE `.plnav` — the sidebar's own width is fixed —
+  so the column's rows would reflow and re-ellipsise on every hover. Out of the flow it simply
+  paints over them, and `.plnav` pays a `margin-left:var(--pl-rail)` instead.
+- ⚠️ **EVERY LABEL IS IN THE MARKUP, hidden at 52px** — not rendered on hover, which would drop
+  the hover the moment it fired by rebuilding the list under the pointer. They are DISPLAY-toggled
+  rather than faded so the tooltip engine keeps working: `tipSeenText` skips `display:none`, so
+  `data-tip` speaks at 52px and goes quiet once the words are there.
+- ⚠️ **THREE BOXES NEEDED MORE THAN A WIDTH, and none of the faults is visible at 52px** — each
+  holds one child there, so they only appear once the rail expands:
+  · `.plbrand` and `.plav` are `flex:0 0 30px`, and **a flex BASIS beats a width**, so the
+    wordmark overflowed a 30px box and `overflow:hidden` clipped it to *"erveOps"*;
+  · both are `display:grid;place-items:center`, which stacks their children in one cell — the
+    identity row rendered the avatar ABOVE the name instead of beside it;
+  · `.plicons` and `.plrfoot` carry their own `align-items:center`, which `.plrail:hover`'s
+    `stretch` does not reach (it governs direct children only). Left centred, a `width:auto` row
+    sizes to its CONTENT: the identity came out **194px inside a 190px rail** (measured at x=-3),
+    because the address is wider than the rail and `min-width:0` cannot cap a shrink-to-fit
+    parent. Stretched, the row fills the rail and the address truncates.
+- The group hairlines come from `RAIL[].group`, the same banding `renderMenu()` draws in Option 1,
+  and are `opacity:0` at 52px rather than absent so the rail's rhythm does not shift as it opens.
+- ⚠️ **THE RAIL IS ON THE 34px PITCH THE FOLDER SETTLED ON** (request, 5 Sep 2026: *"make it same
+  small"*). It was 32px tiles on a **6px** gap = 38, while `.plrow` two pixels to its right is
+  32 + 2 = **34**, and so are Option 1's flyout rows. Expanded to 190px that is what read as
+  loose: the same words on the same page, four pixels further apart than the list beside them.
+  ⚠️ **THE TILE STAYS 32px** — the GAP shrinks, not the hit target. 32 is the size every other
+  control in these files uses, and this rail was deliberately taken 28 → 32 on 3 Sep; pulling
+  height out of the row instead would undo that. There is a probe assertion comparing the rail's
+  measured pitch to `.plrow`'s on the same page, rather than to a number.
+  ⚠️ **THE GROUP HAIRLINE'S 6px EITHER SIDE BECAME LOAD-BEARING** with the change: at a 2px row
+  gap, the 13px it puts between two groups is the only thing separating them. The gap BETWEEN
+  groups must beat the gap INSIDE one — the recorded `.aiab li` rule, newly binding here.
+- ⚠️ **`#sbUser` keeps its hidden `.lbl`** — `stSeed()` reads the signed-in name out of it — and
+  the visible name is a SECOND node (`.plidt b`), so neither that reader nor `refreshUser()`'s
+  `.miniav` is disturbed. The address is on `example.com`, per the repo scrub rule.
+
+**1b · The rail is MODULES ONLY** (request, 5 Sep 2026: *"remove in small sidebar (main), show
+only [the column]"*). Search and Iris left it — the only two rows on it that were not a place to
+go. **Both doors were checked before removing them**: Search has the column's own header button
+(visible in the supplied image) and ⌘K/Ctrl K bound at two places in the host; Iris has the
+dashboard toolbar's `.aibtn` pill, the `A` shortcut in `KB`, and Log Explorer's own *Ask Iris*.
+
+- ⚠️ **THE BRAND MARK STOPPED PAINTING, and the cause is worth knowing.** `aiLogoPaint()` fills a
+  `.brandmark` only `if (!el.firstElementChild)`, so putting the wordmark span INSIDE the marked
+  element made it non-empty and the painter skipped it — the rail rendered an empty 30px hole
+  where the logo belongs, in **both** states, and no assertion covered it because every probe was
+  measuring boxes rather than content. The mark and the wordmark are **siblings** now, which is
+  Option 1's own `.strigger` shape (*"replace from option 1"*). **Nesting anything inside a
+  `.brandmark` breaks it the same way.** The mark is 30px in both states, as Option 1's is.
+- ⚠️ **`init()` TOUCHES `#sbSearch`, AND THAT WAS ALREADY AN INIT-ABORTING CRASH** — see the entry
+  below; removing the id would only have made it certain.
+
+**2 · The profile popover opens beside the rail, not past the whole sidebar.** Reported as *"the
+popup shows far from the click"*. `togglePop` sets `left = sidebar.offsetWidth + 10`, which is
+right in Option 1, where the sidebar IS the rail — here the sidebar is rail + column, so a 320px
+card anchored to a 276px box opened at **x=286** while the avatar it belongs to sits at x≈11.
+`togglePop` is wrapped and repositions it to `--pl-rail + 10`.
+
+- ⚠️ **IT READS THE TOKEN, NOT THE BOX.** `.plrail` transitions its width on hover, and measuring
+  a box mid-transition is this folder's oldest recorded trap. A custom property is never
+  transitioned.
+- ⚠️ With the sidebar hidden the anchor falls back to 10px — the avatar is not on screen then, but
+  the keyboard and `renderNotifs()` can still open a popover, and one parked at 62px with no rail
+  beside it would read as detached.
+
+- ⚠️ **`.plexp`, the in-rail expand tile, IS NO LONGER RENDERED HERE** (request, 5 Sep 2026:
+  *"don't show"*). It was added to Option 5 on 3 Sep because folding the COLUMN hid that column's
+  own collapse control; on this page folding hides the WHOLE sidebar, so the tile sits in a box
+  that is 0 wide and clipped and could never be reached — `#plOpen` on the canvas is the way back.
+  Its CSS is kept, which is what a revert to Option 5's collapse would need.
+  ⚠️ **THE STRING ALSO REACHED THE SCREEN AS A TOOLTIP**, which removing the tile did not fix
+  (reported again the same day). `#plBrand` carried `data-tip="Expand sidebar"` in markup and
+  `plColSet` rewrote it on every toggle — Option 5's behaviour, where the mark IS the way back
+  because collapsing leaves the rail on screen. Here the mark is inside a sidebar that is 0 wide
+  and clipped when collapsed, so the flip could only ever put the string on the EXPANDED rail's
+  wordmark, on a control `plColExpand()` early-returns from whenever it is visible. Both the
+  attribute and the click are gone, and `plColSet` no longer writes it. **There is now no element
+  in this file offering it, in either state** — asserted over every `[data-tip]`, not just over
+  rendered text, because that is how it survived the first fix.
+  ⚠️ **IT REAPPEARED ONCE BEFORE THAT, AND THE CAUSE GENERALISES.** A bare `.plrail:hover .plib{display:flex}`
+  is (0,3,0) and OUTRANKS `.plexp{display:none}` at (0,1,0), so expanding the rail un-hid the
+  parked tile and it rendered as the FIRST row of the labelled sidebar. Both hover rules now carry
+  `:not(.plexp)`. **Any future `display:none` tile in this rail needs the same exclusion**, or the
+  hover state brings it back.
+- Registered as **Option 8** in `_variants.js` and added to `lxbehave.py`'s `FILES`.
+- Verified: `lxbehave` **57/57** (now ×8), `harness … query` **77/77**, Option 5's own
+  32-assertion sidebar probe run against the copy, and a **21-assertion probe of the full-hide
+  collapse** — the sidebar at 0 with nothing hit-testable behind it, the canvas at full width, the
+  expand button as the only control, a real click each way, and the disarmed peek. All pass.
+
+## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
+
+Found while removing Option 8's rail search, and it was **live in every option**:
+
+```js
+if (!/Mac|iP(hone|ad)/.test(navigator.platform||'')){
+  document.getElementById('sbKbd').textContent = 'Ctrl K';        // ← null in six files
+  document.getElementById('sbSearch').setAttribute(…);
+}
+```
+
+- ⚠️ **`#sbKbd` DOES NOT EXIST** in Options 5, 6, 7 or 8 — each builds its own rail and none of
+  them renders that keycap — and `getElementById(...).textContent` on `null` **throws inside
+  `init()`**, so on any non-Mac platform the whole dashboard stopped initialising at that line.
+  Everything downstream of it — the canvas, the tabs, the time chip — never ran.
+- ⚠️ **NO PROBE IN THIS FOLDER COULD EVER HAVE CAUGHT IT.** The branch only runs off a Mac, and
+  headless Chrome on a Mac reports a Mac. It was proved by overriding `navigator.platform` in an
+  injected `<head>` script *before* the page's own scripts run: unguarded it reports
+  `Cannot set properties of null (setting 'textContent')`, guarded it reports none.
+- Both lookups are guarded now in **all six** files that had the unguarded pair (Options 1, 4, 5,
+  6, 7, 8 — Options 2 and 3 do not carry it). Options 1 and 4 do have `#sbKbd`, so they were never
+  crashing; they are guarded for consistency.
+- ⚠️ This is the same class the folder's notes already record five times — *"a `let` in a later
+  block is not hoisted"*, *"three init-aborting `ReferenceError`s"*. **Only a fresh load on the
+  affected platform shows it**, which is exactly why it lasted.
+
+## Option 1's flyouts are one column width (5 Sep 2026)
+
+Request: *"the submodule sidebar popup will be same width"*. Measured first — the six menus came
+out at **three** widths, so hovering down the rail made the menu jump wider and narrower under
+the pointer:
+
+| menu | was | now |
+|---|---|---|
+| SLO · Report | 221 (one 216px column) | **293** |
+| Alert · Explorer · Setting | 332 (a 288px master) | **332** |
+| Dashboard | 471 (216 + a 250px Starred column) | 543 |
+
+`.mfcol` went **216 → 288**, the width `.mfcol.mfmaster` already had, so every menu's primary
+column is now the same. ⚠️ **THE MASTER'S 288 IS WHAT WINS, not the 216** — it was itself measured
+up from 236 on 2 Sep to stop Settings' longest labels truncating, so narrowing to 216 would
+reintroduce that. The two rules hold one number between them; change them together.
+
+⚠️ **TWO THINGS STILL MAKE A MENU WIDER, and neither was in scope:** the master/detail menus carry
+44px of right padding so the two cards' shadows have room to fall (2 Sep), which is the 332 against
+the single-column 293; and **Dashboard has a second, 250px Starred column**, so it is 543. Making
+every menu identical means deciding what happens to that column — narrowing it, stacking it under
+the list, or dropping it — which is a change to what the menu contains, not to its width.
+
+## Two paint bugs the DOM said were fine (5 Sep 2026)
+
+Both reported on Option 6, both invisible to `getComputedStyle`, both found by sampling pixels.
+
+**1 · A hidden panel was casting a shadow across the canvas.** Reported as *"all line in right
+side"*. `.dpanel.hid` parks the dashboard list off-screen at `translateX(-101%)` and clears its
+shadow — but `html[data-theme="light"] .dpanel{box-shadow:…}` is **(0,2,1)** (an attribute
+selector, a type and a class) against `.dpanel.hid`'s **(0,2,0)**, so the light rule won and a
+24px blur went on painting from x=61 across the rail's edge into the board. The pixels right of
+the rail ramped **238 → 248 over ~14px** instead of being one hairline. Fixed with
+`:not(.hid)` on the light rule rather than piling another class onto the hider.
+- ⚠️ **LIGHT THEME ONLY**, which is why it survived: in dark the band is invisible against `--bg`.
+  Check a "there's a line" report in BOTH themes before concluding there is nothing there.
+- ⚠️ **THE SAME PAIR IS STILL LIVE IN Options 1, 2, 4, 5, 7 AND 8** — one line each. Not fixed
+  there: the report was against Option 6 and the panel's resting position differs per option.
+
+**2 · A 64px child was painting over its 64px parent's border.** In the collapsed state
+`.skrail` is `flex:0 0 var(--sk-rail)` = 64px and the sidebar is 64px too — but the sidebar is
+border-box with a 1px right border, so its **content box is 63**. The rail overflowed by exactly
+that pixel and its opaque `--card` background covered the border. `getComputedStyle` still
+returned `border-right: 1px rgb(227,232,242)`; the paint was pure white at x=63. In light theme
+both surfaces are `#ffffff`, so that border is the only thing dividing the rail from the canvas.
+`flex:1 1 auto` lets the rail fill whatever the content box actually is.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·
@@ -4135,6 +5032,9 @@ one and only the presentation differs.
 | 3 | icon rail + hover mega-menu flyout — **Option 1's, since 23 Aug 2026** | Datadog |
 | 4 | **labelled** icon rail + a detail panel **you open** | monday.com |
 | 5 | **ultra-narrow** icon rail + an always-on **nav column** | Plain |
+| 6 | rail + column, with a **Next steps** card at its foot | Plain · Sidekick |
+| 7 | **no rail at all** — one 270px column of labelled rows | Notion |
+| 8 | Option 5's rail + column, but collapse **hides everything** | Plain (via Option 5) |
 
 ⚠️ **OPTION 3 NO LONGER DEMONSTRATES THE DEVREV COLUMN** (request, 23 Aug 2026: *"copy
 Option 1's sidebar and set it in Option 3"*). It runs Option 1's icon rail + flyout. The
@@ -4355,7 +5255,7 @@ statuses" shape.
 - **`.plrail` (44px)** — logo, Search, Iris, the `RAIL` modules, then Approval / Health /
   Notifications / avatar. **Icon-only, no labels, no hover-expand, no flyout.** 28px tile,
   18px glyph; active tile is `--pill`.
-- **`.plnav` (216px)** — a header (module name over its route, plus Search and Sidebar
+- **`.plnav` (224px — was 216 until 3 Sep 2026, see below)** — a header (module name over its route, plus Search and Sidebar
   settings), then the rows.
 - ⚠️ **EXPLORER RENDERS FROM `EXPLORER_TREE`, EVERYTHING ELSE FROM `SUBNAV`/`SUBNAV2`.** The
   tree is the only source with real nesting and real counts, and nesting is what the pattern
