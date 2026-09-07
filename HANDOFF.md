@@ -14,7 +14,7 @@ Three places in `CLAUDE.md`, in this order:
 
 Also still worth reading: **"An init-aborting crash on Windows and Linux, in six files"** (5 Sep) —
 no probe here could have caught it — and the previous session's **"Settings › My Account ›
-License"** section (unchanged today, still uncommitted).
+License"** section (unchanged today; committed and live with this push).
 
 ## What we worked on this session
 
