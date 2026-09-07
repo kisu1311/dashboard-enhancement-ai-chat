@@ -1,4 +1,4 @@
-# Handoff — 2026-09-07 15:01
+# Handoff — 2026-09-07 16:07
 
 ## Read first
 
@@ -11,6 +11,9 @@ Three places in `CLAUDE.md`, in this order:
    each bullet with its request, what changed and why, and what it implies.
 3. **"Option 6 — the card sidebar" › "Option 5's 7 Sep column changes, ported"** — the map from
    Option 5's `pl*` names to Option 6's `sk*` ones, and the two places they differ.
+4. **Option 8's and Option 4's port notes** — *"Option 5's 7 Sep column changes, ported"* under
+   Option 8, and *"The 7 Sep 2026 column changes, ported to the docked panel"* under Option 4:
+   what each already had, what came across, and the two adaptations each needed.
 
 Also still worth reading: **"An init-aborting crash on Windows and Linux, in six files"** (5 Sep) —
 no probe here could have caught it — and the previous session's **"Settings › My Account ›
@@ -20,8 +23,10 @@ License"** section (unchanged today; committed and live with this push).
 
 The sidebar column of **Option 5** (`dashboard-nav-column.html`), request by request from
 screenshots, then the same set ported to **Option 6** (`dashboard-card-sidebar.html`), then
-Option 6's Next steps card and licence line brought back into Option 5. All of it is the nav
-column; nothing on the canvas, the AI panel or Settings changed.
+Option 6's Next steps card and licence line brought back into Option 5 — and, after the publish,
+the whole set ported to **Option 8** (`dashboard-nav-column-alt.html`, as today's diff of Option 5)
+and to **Option 4**'s docked panel (`dashboard-labelled-rail.html`, the remainder its panel did not
+already have). Nothing on the canvas, the AI panel or Settings changed.
 
 ## Completed
 
@@ -51,6 +56,13 @@ column; nothing on the canvas, the AI panel or Settings changed.
   change there — its sections carry a `+`, not a caret.
 - **Option 6 · the Next steps card's second row reads "Create user"** (was "Invite your team"),
   the product's own name for the job. It still opens User Settings.
+- **Option 8 · the full Option 5 set** applied as today's diff (11 hunks, 9 clean, 2 hand-ported:
+  the width token, and pinned rail tiles that carry a label for the hover-expanded rail).
+- **Option 4 · the remainder its panel lacked**: the DOCS chip on tree-menu rows (footer kept for
+  SLO · Report), the ten per-sub-module `doc:` paths its Explorer tree never had, the product
+  chevron glyph, the foot row + Next steps card + licence line rendered by `mrNavPaint`, and the
+  reserved slots gated on a panel having parents (Setting's `Service Level Objective BETA` clipped
+  otherwise).
 - **Widths, measured**: Option 5's `--pl-nav` 224 → 264 → **280px**; Option 6's `--sk-nav`
   281 → **296px**. Both because the DOCS chip (45px, in flow while invisible) and the reserved
   count slot + chevron box clipped the longest labels (`Network Config Settings`, `Real User
@@ -63,17 +75,18 @@ column; nothing on the canvas, the AI panel or Settings changed.
 
 ## In progress
 
-Nothing mid-flight. **Everything is committed and live** — `51abeb4` on `main` carries today's two
-option files plus the previous session's License work, and Pages served the new markup within a
-minute of the push (checked for today's markers on both option pages).
+Nothing mid-flight. **Everything is committed and live** — the Option 5 / 6 work in `51abeb4`, the
+Option 8 and Option 4 ports in the commit after the two handoff fixes; Pages served the new markup
+for both ported pages within a minute of the push. Both ports are verified (Option 8: 79 + 29 probe
+assertions, harness 77/77; Option 4: 43 assertions, harness 77/77).
 
 ## Next steps
 
 1. **Decide on the two behaviours today's chevrons imply, both recorded, neither resolved**: one
-   parent opens at a time (`PL.sub` / `SK.sub` are single values), and an open parent still wears
-   the tinted `.on` row as well as the turned chevron — two signals for one state.
-2. **Options 7 and 8 carry none of today's column changes.** Option 8 is a copy of Option 5's
-   `pl*` block, so it is the same edit set; Option 7 has its own `nx*` list.
+   parent opens at a time in Options 5 / 6 / 8 (`PL.sub` / `SK.sub` are single values — Option 4
+   folds independently), and an open parent still wears the tinted `.on` row as well as the
+   turned chevron — two signals for one state.
+2. **Option 7 carries none of today's column changes** (its own `nx*` list).
 3. The earlier list still stands: the `.dpanel` shadow bug in six files, Option 1's wider
    Dashboard flyout, Options 2/3 behind on flyout icons.
 

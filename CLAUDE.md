@@ -4804,8 +4804,9 @@ them is changed.
   convention is that a file is named for what its sidebar IS (`labelled-rail`, `card-sidebar`,
   `single-column`), and `_variants.js`, `lxbehave.py`'s `FILES` and `dsconf.py` are the three
   places that would need to follow (the rename lesson recorded at the top of this file).
-- It carries every 3–4 Sep change Option 5 has: the Alert rows' glyphs, the Setting column's
-  category icons, Explorer's child glyphs, `--pl-nav` at 224px.
+- It carries every 3–4 Sep change Option 5 has (the Alert rows' glyphs, the Setting column's
+  category icons, Explorer's child glyphs) and, since 7 Sep 2026, the whole 7 Sep set — see
+  *"Option 5's 7 Sep column changes, ported"* below; `--pl-nav` is 280px.
 
 ### Its one divergence: collapse hides EVERYTHING (5 Sep 2026)
 
@@ -4922,6 +4923,26 @@ card anchored to a 276px box opened at **x=286** while the avatar it belongs to 
   32-assertion sidebar probe run against the copy, and a **21-assertion probe of the full-hide
   collapse** — the sidebar at 0 with nothing hit-testable behind it, the canvas at full width, the
   expand button as the only control, a real click each way, and the disarmed peek. All pass.
+
+### Option 5's 7 Sep column changes, ported (7 Sep 2026)
+
+Request: *"in option 5 today those changes apply in option 8"*. Everything the Option 5 section
+records for 7 Sep is here — applied as **today's actual diff of Option 5** (`diff` of the file
+before and after the session, 11 hunks, `patch -F3`), which is the faithful route while the two
+files share the `pl*` namespace. Nine hunks applied clean; two were hand-ported where this file
+deliberately differs:
+
+- **`--pl-nav` 224 → 280px** on this file's token line, which also carries `--pl-rail-open`.
+- **The pinned tiles carry a `.pllbl`**, like the module tiles — this rail expands to 190px on
+  hover and shows every tile's label, so a pin tile without one would be the only wordless row
+  on the open rail. The group hairlines (`.plgap`) are emitted as before, ahead of the band.
+
+Same set as Option 5: row chevron · Alert tree · product section caret · DOCS chip and footer ·
+pin/unpin with rail tiles · aligned `.plend` cluster · the column foot, Next steps card and
+licence line (the `.plnavin` host split). The collapse still hides the whole sidebar, card
+included; `#plOpen` stays the way back. Verified with Option 5's probes pointed at this file
+(**79** column assertions, incl. the tile label; **29** Next-steps assertions, with the peek
+checks swapped for this file's whole-sidebar collapse), `harness … query` **77/77**, screenshots.
 
 ## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
 
@@ -5398,6 +5419,36 @@ what you reach constantly and everything else lives one click behind `···`.
 | panel corner | 16px top-left | square | its panel is the top-left-most surface, under a global top bar; ours starts BELOW `.pagehead`, mid-page, where a curve is a notch out of the header. Built, measured in both themes, removed |
 | identity row | none — the avatar is in the top bar | avatar, **unlabelled** | a person's name is the one rail label whose length nobody controls ("Kishan Patel" is 64px against a 62px box). ⚠️ The `.lbl` is HIDDEN, not removed — `stSeed()` reads it to seed the Settings profile form and `refreshUser()` writes back into it |
 | tail | Favorites · More | Favorites · **Notification** · More | see above |
+
+### The 7 Sep 2026 column changes, ported to the docked panel
+
+Request: *"& add option 4 also"*, after Options 6 and 8. **This panel already had most of the
+set** — folding parents with a count and chevron (`mrParent`, `MR.open`, independent per row),
+the reserved-slot cluster (`.mrend`), the pin on Explorer rows, Alert's parents derived from the
+`sub` runs, and a `mfDocs` footer — so what came across is the remainder:
+
+- **Datadog's `DOCS ↗` chip on the rows of a TREE menu** (`.mrdoc`, Explorer · Alert · Setting),
+  to that row's own page; **the `mfDocs` footer stays for a FLAT menu** (SLO · Report) — Option 1's
+  split. ⚠️ **`EXPLORER_TREE` HAD NO `doc:` HERE.** This page was copied on 1 Sep, a day before
+  Option 1's tree gained its ten per-sub-module paths, so the chip fell back to the Explorer
+  overview on every row until they were added (read off Option 5's tree by label, all ten).
+- **The product's `chevron-right`** in `MR_CHEV_P` / `MR_CHEV`, replacing a hand-drawn stroke.
+- **The foot row · Next steps card · licence line** (`.mrcfoot` / `.mrns` / `.mrtrial`, `MR_STEPS`,
+  `mrNsHTML` …). ⚠️ **Rendered by `mrNavPaint`, not as static markup** — this panel rewrites its
+  whole innerHTML on every module change, so the state (`MR.ns`, `MR.done`) is what survives and
+  the card is re-emitted each paint. Foot ids end in `Btn` (`mrHelp()` is a function).
+- ⚠️ **THE RESERVED SLOTS ARE NOW GATED ON THE PANEL HAVING PARENTS** (`mrSlots`). They exist so a
+  pin or chip sits at one x whether or not its row has children — right in Explorer and Alert,
+  but in Setting no row has children and the 40px they reserved clipped `Service Level Objective
+  BETA` once the chip arrived. The panel is **279px** (`--mr-nav`; `--mr-pan` is the LIST panel's
+  340) and was not widened.
+- Verified by a **43-assertion probe** (chip hrefs incl. Log → `log-management/overview`, one x
+  for pins and chips, the product glyph, DOCS click not folding, Monitor + NCCM open together,
+  pin → the rail's `.sitem.pin` row → unpin, Alert's three parents, Setting's fallback, the two
+  footers, label fit in every panel, the card's dismiss / restore / step / badge / licence link),
+  `harness … query` **77/77**, both panels screenshotted. ⚠️ A hit-test on a row that has scrolled
+  below `.mrpb` lands on whatever is painted there — the probe scrolls the row into the panel's
+  own scroller first (never `scrollIntoView`, which also scrolls the window).
 
 ### Things that bit, and would bite again
 

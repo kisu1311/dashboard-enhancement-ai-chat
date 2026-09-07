@@ -7064,7 +7064,7 @@ html[data-theme="light"] #drawer-layout{
    to spare; nothing else was within 8px of its edge. The shell padding and the hover-peek both
    read this token, so the canvas and the floating column follow — the "an icon column has to be
    paid for" lesson the flyout master recorded at 236 → 288. */
-:root{ --pl-rail:52px; --pl-rail-open:190px; --pl-nav:224px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
+:root{ --pl-rail:52px; --pl-rail-open:190px; --pl-nav:280px; --rail-w:calc(var(--pl-rail) + var(--pl-nav)); --rail-w-open:calc(var(--pl-rail) + var(--pl-nav)); }
 .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 
@@ -7321,12 +7321,98 @@ body.plshut .plexp{display:grid}
 .plrow .pln{flex:0 0 auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .plrow.on .pln{color:var(--teal);opacity:.8}
 .plrow .plch{flex:0 0 auto;width:12px;height:12px;fill:currentColor;opacity:.5}
+/* THE TRAILING CONTROLS ARE ONE GROUP, NOT FOUR SIBLINGS — Option 1's `.mfend`, ported on request
+   (7 Sep 2026: "the docs link and pin icon make proper alignment like option 1"). As siblings the
+   pin landed at a different x on every row: Monitor's sat 40px left of Topology's because Monitor
+   also carries a count and a chevron and Topology does not. One flush-right cluster with one 5px
+   gap inside it, and — the half that does the aligning — THE COUNT SLOT AND THE CHEVRON BOX ARE
+   RESERVED ON EVERY TREE ROW (`.ph`: `visibility:hidden` keeps the box and paints nothing), which
+   is precisely Option 1's `.mfkc.ph`. So pin · DOCS · count · chevron form four columns down the
+   list, and the meaning is unchanged: a number and a chevron still appear only where a row has
+   children. Gap 5 inside, the row's own 8 outside — the same two numbers Option 1 uses. */
+.plrow .plend{margin-left:auto;display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
+.plrow .plend .pln{min-width:14px;text-align:right}
+.plrow .plend .ph{visibility:hidden}
 /* a child of the row above it — the indent is the whole point of this pattern */
 /* 32 = 9 padding + 15 icon + 8 gap, so a child's GLYPH starts under its parent's TEXT and its own
    text sits one glyph-and-gap further in — every row has a glyph since 3 Sep 2026 ("use it overall"),
    so the nesting is carried by the indent plus the child's smaller, dimmer type, not by icon-vs-none */
 .plrow.sub{padding-left:32px;font-size:12px;color:var(--text-dim)}
 .plrow.sub .plic{opacity:.7}
+/* the expand/collapse chevron on a row that HAS children — Monitor and NCCM (request, 7 Sep 2026:
+   "the explorer add submodule expand & collapse with icon"). Those two rows toggled on click but
+   nothing on them said so; the count alone reads as data, not as a control.
+   ⚠️ AT THE ROW'S RIGHT EDGE AND ALWAYS VISIBLE — the Grafana placement Option 7 settled on
+   5 Sep 2026, not a caret that appears on hover or takes the glyph's slot: this folder has had
+   four "the control is invisible until hovered" reports, and a caret in the icon slot loses the
+   row's own glyph exactly while you point at it. It sits after the count, so a row reads
+   `glyph · name · 18 · ›`.
+   ⚠️ THE GLYPH IS THE PRODUCT'S OWN `chevron-right` (`observeops-icons/common/arrows-direction/`,
+   48 grid, verbatim — `PL_CV`), NOT `PL_CAR`: that is the section header's hand-drawn filled
+   triangle, and a solid mark among the row's stroked product glyphs is the fault the icon rule
+   exists to prevent. Points RIGHT collapsed, rotates to DOWN when the row is open — "there is
+   more below". The state class is `plopen`, not a bare `open`: `.sidebar.open` is the rail's
+   expanded state and a state class must never share a name with anything else in the sheet. */
+.plrow .plcv{flex:0 0 12px;width:12px;height:12px;fill:currentColor;opacity:.55;transition:transform .15s}
+.plrow:hover .plcv,.plrow.on .plcv{opacity:.9}
+.plrow.plopen .plcv{transform:rotate(90deg)}
+/* Datadog's `DOCS ↗` chip, ON THE ROW — Option 1's `.mfdocs` at its current numbers (16px tall,
+   8.5px/700, 4px padding, `--chip` fill), ported here on request (7 Sep 2026: "add docs link
+   module-wise like option 1"). Hidden at rest, shown on the row's hover and on an expanded parent,
+   exactly as Option 1 reveals it — it is a secondary control on a row that already carries its
+   glyph, count and chevron, and a chip on every one of Setting's 19 rows at rest would be noise.
+   ⚠️ IT STAYS IN FLOW WHILE INVISIBLE (opacity, not display), so the label does not reflow under
+   the cursor on hover — and that is why the column had to pay for it in width (`--pl-nav`,
+   224 → 264 → 280): an in-flow chip on the longest Setting labels truncated them at rest for a
+   control nobody could see. Same trade Option 1 made twice (212 → 236 → 288). MEASURED, not
+   estimated: the chip is 45px wide (8.5px/700 "DOCS" + its letter-spacing + ↗ + 8px padding), and
+   at 240 `Network Config Settings` still clipped by 15px and `Service Level Objective` by 8 — 256
+   would have left the first with 1px to spare, which is the "136px of text in 135px of room" trap
+   recorded at the 224 step, so 264 with 9px in hand. Then Alert became a tree (same day) and its
+   rows gained the reserved count slot + chevron box (`.plend .ph`, 14 + 5 + 12 + 5 = 36px more):
+   `Real User Monitoring` clipped by 6 at 264, 272 would leave 2, so 280 with 10. The shell padding
+   and the hover-peek read the token, so nothing else moves; `harness … query` re-run at 280.
+   ⚠️ A REAL `<a>` INSIDE THE ROW'S `<button>`. Invalid nesting by the spec, but measured in
+   Chrome: a hit-tested click on the anchor follows its href and, with `stopPropagation`, does
+   NOT fire the row's own handler — so middle-click, hover URL and copy-link all keep working,
+   which a `window.open` span would lose. */
+.plrow .pldoc{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;height:16px;padding:0 4px;
+  border-radius:3px;background:var(--chip);font-size:8.5px;font-weight:700;letter-spacing:.07em;
+  color:var(--text-dim);text-decoration:none;opacity:0;transition:opacity .12s,color .12s,background .12s}
+.plrow:hover .pldoc,.plrow.plopen .pldoc{opacity:.75}
+.plrow .pldoc:hover{opacity:1;color:var(--teal);background:var(--sel)}
+.plrow .pldoc .ext{font-size:8px;line-height:1;opacity:.7}
+/* the pin — Option 1's `.mfpin`, on the Explorer rows only (request, 7 Sep 2026: "the module list
+   will be pin & unpin module like option 1"). Same glyph (`MF_PIN`), same reveal (hover, and ALWAYS
+   once pinned — a pinned row has to be un-pinnable without guessing where the control is), same
+   `filled = pinned` rule. It sits FIRST in the trailing cluster, before DOCS, the order Option 1's
+   `.mfend` uses. ⚠️ A `<span role="button">`, not a `<button>`: the row IS a button and a button
+   inside a button is the nesting that eats clicks (Option 7's caret lesson). */
+.plrow .plpin{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;border-radius:4px;
+  color:var(--text-dim);cursor:pointer;opacity:0;transition:opacity .12s,color .12s,background .12s}
+.plrow .plpin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.85;
+  stroke-linecap:round;stroke-linejoin:round}
+.plrow:hover .plpin,.plrow .plpin.pinned{opacity:.75}
+.plrow .plpin:hover{opacity:1;color:var(--text);background:var(--hover-side)}
+.plrow .plpin.pinned{color:var(--teal)}
+.plrow .plpin.pinned svg{fill:currentColor}
+/* a pinned sub-module's tile on the rail — under Explorer, in Option 1's band position. At 52px
+   there is no room for a pin mark beside a 20px glyph, exactly as on Option 1's collapsed rail;
+   the tooltip names it and the column's row shows the filled pin. */
+.plib.plpinned .ic{opacity:.85}
+/* the documentation footer for a column whose rows are ACTIONS — Dashboard, SLO, Report, the
+   menus Option 1 renders through `mfCol` with its `.mffoot`. A tree menu's rows carry the DOCS
+   chip instead, which is the split Option 1 settled on 2 Sep 2026 ("it replaces the full-width
+   footer"). Sits under the rows inside `.plbody`, not pinned to the column's foot, so it reads as
+   the menu's last line rather than as chrome floating 600px below it. Hairline on `--pop-line`,
+   the token `.mffoot` uses for the same rule. */
+.plfoot{display:flex;align-items:center;gap:8px;margin:14px 0 0;padding:10px 9px 2px;
+  border-top:1px solid var(--pop-line,var(--border));font-size:11.5px;color:var(--text-dim);
+  text-decoration:none;white-space:nowrap}
+.plfoot:hover{color:var(--teal)}
+.plfoot svg{flex:0 0 13px;width:13px;height:13px}
+.plfoot span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.plfoot .ext{flex:0 0 auto;font-size:10px;opacity:.8}
 
 /* a collapsible section header — Plain's "Browse ⌄" */
 /* ⚠️ THE FILE'S OWN SECTION-LABEL IDIOM — 11px/600/.06em/uppercase/`--text-dim` — the same voice
@@ -7338,9 +7424,55 @@ body.plshut .plexp{display:grid}
   text-transform:uppercase;cursor:pointer;text-align:left}
 .plsec:hover{color:var(--text)}
 .plsec .plt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* the caret is the product's own `chevron-down` (`PL_CAR`, 7 Sep 2026: "improve this icon in
+   overall") — it was a hand-drawn 5px filled triangle, the one solid mark in a column of stroked
+   product glyphs. Same 12px box as the row chevron `.plcv`, so the two read as one family; DOWN
+   at rest (open), turned to RIGHT when the section is shut. */
 .plsec .plcar{width:12px;height:12px;fill:currentColor;opacity:.6;transition:transform .15s}
 .plsec.shut .plcar{transform:rotate(-90deg)}
 .plempty{padding:10px 8px;font-size:11.5px;color:var(--text-dim)}
+
+/* ── the column foot, the "Next steps" card and the licence line — Option 6's `.skfoot` / `.skns` /
+   `.sktrial`, ported 7 Sep 2026 ("the same will be add in option 5"); same numbers, `pl` names.
+   `.plnavin` is the painted host: it takes the slack and scrolls (its `.plbody` does), so the foot
+   and the card stay put below it. ──────────────────────────────────────────────────────────── */
+.plnavin{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.plcfoot{flex:0 0 auto;display:flex;justify-content:flex-end;gap:4px;padding:8px 8px}
+.plfb{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:6px;border:0;
+  background:transparent;color:var(--text);cursor:pointer;position:relative}
+.plfb:hover{background:var(--hover)}
+.plfb.on{background:var(--chip)}
+.plfb svg{width:18px;height:18px;fill:currentColor}
+/* the count sits INSIDE its button's box (the next button is 4px away); its ring is `--panel`, the
+   surface this column sits on, where Option 6's is `--card` for the same reason */
+.plcnt{position:absolute;right:-2px;bottom:-1px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;
+  background:var(--green);color:var(--white);font-size:9.5px;font-weight:700;line-height:14px;text-align:center;
+  box-shadow:0 0 0 2px var(--panel)}
+.plcnt[hidden]{display:none}
+.plns{margin:4px 12px 8px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 1px 1px rgba(0,0,0,.04);position:relative}
+.plns h4{margin:0 0 6px;font-size:17px;font-weight:500;line-height:24px;color:var(--text)}
+.plnsx{position:absolute;top:7px;right:7px;width:24px;height:24px;display:grid;place-items:center;border-radius:6px;
+  border:0;background:transparent;color:var(--text);cursor:pointer}
+.plnsx:hover{background:var(--hover)}
+.plnsx svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.plstep{display:flex;align-items:center;gap:8px;width:calc(100% + 8px);margin:0 0 0 -8px;height:34px;padding:0 8px;
+  border-radius:6px;border:0;background:transparent;color:var(--text);font-size:12px;font-weight:600;
+  text-align:left;cursor:pointer;white-space:nowrap}
+.plstep:hover{background:var(--hover)}
+.plstep .plic{flex:0 0 18px;width:18px;height:18px;fill:currentColor;color:var(--text-dim)}
+.plstep .plt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.plstep .plnch{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:var(--text-dim);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.plstep.done{color:var(--text-dim)}
+.plstep.done .plnch{stroke:var(--green)}
+.plbar{height:4px;margin-top:8px;border-radius:999px;background:var(--chip);overflow:hidden}
+/* the fill is `width:%` — the recorded `flex:50` lesson: a lone flex child fills */
+.plbar i{display:block;height:100%;width:0;border-radius:999px;background:var(--green)}
+.pltrial{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 12px 20px 20px;
+  font-size:12px;line-height:16px;color:var(--text-dim);white-space:nowrap}
+.pltrial a{color:var(--text-dim);font-weight:600;text-decoration:underline;cursor:pointer}
+.pltrial a:hover{color:var(--text)}
+#plNs:empty{display:none}
 /* the avatar fills its own 26px slot — the base `.miniav` is sized for the 64px rail */
 .plav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:10px;border-radius:50%}
 
@@ -7409,9 +7541,29 @@ body.plshut .plexp{display:grid}
        set by the rail's `mouseleave` checks it and stands down. Leaving the column ends it for
        real. Both are inert while the column is docked — `plPeek` returns early unless it is
        collapsed, and `plPeekEnd` returns early when there is no peek to end. -->
-  <div class="plnav" id="plNav"
+  <div class="plnav"
        onmouseenter="plPeekIn=true;clearTimeout(plPeekT)"
-       onmouseleave="plPeekIn=false;plPeekEnd()"></div>
+       onmouseleave="plPeekIn=false;plPeekEnd()">
+    <!-- `plPaint` writes the header + list into THIS host; what follows it is static, because it is
+         painted once and repainted in place (`plFootPaint` / `plNsPaint`) — ported from Option 6's
+         column foot on request (7 Sep 2026: "the same will be add in option 5"). -->
+    <div class="plnavin" id="plNav"></div>
+    <!-- Option 6's foot row: Next steps (Plain's rocket, counting the card's open items and bringing
+         it back once dismissed) · Documentation · Settings.
+         ⚠️ ids are `plTourBtn` / `plHelpBtn` / `plSetBtn`, NOT `plHelp` — an element id becomes a
+         window global and `plHelp()` is a function in this block; Option 6 carries that exact
+         collision (`id="skHelp"` beside `function skHelp`) and only survives it because a function
+         declaration wins the name. -->
+    <div class="plcfoot">
+      <button class="plfb" id="plTourBtn" data-tip="Next steps" onclick="plNsTog()"><svg class="ic" viewBox="0 0 48 48" id="plTourIc"></svg><span class="plcnt" id="plCnt" hidden></span></button>
+      <button class="plfb" id="plHelpBtn" data-tip="Documentation ↗" onclick="plHelp()"><svg class="ic" viewBox="0 0 48 48" id="plHelpIc"></svg></button>
+      <button class="plfb" id="plSetBtn" data-tip="Settings" onclick="selectModuleByName('Settings')"><svg class="ic" viewBox="0 0 48 48" id="plSetIc"></svg></button>
+    </div>
+    <div id="plNs"></div>
+    <!-- Plain: "Your trial ends in 7 days. Upgrade now". The product sells licences, not trials; the
+         number is canned like every other figure here, the link lands on My Account › License. -->
+    <div class="pltrial"><span>Licence renews in 23 days.</span><a onclick="plLicence()">Manage licence</a></div>
+  </div>
 
   <!-- kept for `renderMenu()` to write into; see the note above -->
   <nav class="smenu" id="smenu" hidden></nav>
@@ -24620,7 +24772,7 @@ mfOpen = plNoop; mfOpenUtil = plNoop; mfLater = plNoop; sbHover = plNoop;
    module's navigation is still one pointer-move away, and the expand tile under the mark is the
    way to dock it. `plColSet` is NOT called at boot: nothing needs moving, and its `fitCanvas`
    would refit a canvas that has not been drawn yet. */
-const PL = { shut:{}, sub:null, col:true, peek:null };  /* collapsed sections · expanded parent · column collapsed · peeked rail index */
+const PL = { shut:{}, sub:null, col:true, peek:null, ns:true, done:new Set() };  /* collapsed sections · expanded parent · column collapsed · peeked rail index · Next-steps card shown · steps visited */
 /* ⚠️ THE COLUMN RENDERS THE PEEKED MODULE, NOT THE ACTIVE ONE — that is the whole point of the
    peek: you are looking at something you have not navigated to. Both `plPaint` and
    `plBodyHTML` read this, so the header and the rows can never disagree about which module is
@@ -24715,7 +24867,49 @@ const plIco = (n, cls) => {
    two disagreeing. Returns '' for a row that is not a category (none today), never throws. */
 const plStIc = label => { try { const c = ST_TREE.find(c => c.n === label); return (c && c.ic) || ''; } catch (e) { return ''; } };
 const PL_CHEV = '<svg class="plch" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
-const PL_CAR  = '<svg class="plcar" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+/* the product's `chevron-down` (`observeops-icons/common/arrows-direction/chevron-down.svg`),
+   verbatim — the section header's caret. It was a hand-drawn filled triangle until 7 Sep 2026. */
+const PL_CAR  = '<svg class="plcar" viewBox="0 0 48 48"><path fill="currentColor" d="M37.4,16.6c-.8-.8-2-.8-2.8,0l-10.6,10.6-10.6-10.6c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l12,12c.8,.8,2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+/* the product's `chevron-right` — `observeops-icons/common/arrows-direction/chevron-right.svg`,
+   pasted verbatim on its own 48 grid (never rescaled by hand; `.plcv` sizes the box). Its
+   `fill="currentColor"` is the source's own, so it takes the row's colour with no override. */
+const PL_CV   = '<svg class="plcv" viewBox="0 0 48 48"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+
+/* ── documentation, module-wise (request, 7 Sep 2026: "add docs link module-wise like option 1") ──
+   Option 1 has two shapes and this column keeps both:
+     · a TREE menu (Explorer · Alert · Setting) puts Datadog's `DOCS ↗` chip on each row, linking
+       to THAT row's own page — `EXPLORER_TREE[].doc` for a sub-module, `MF_ST_DOCS[category]` for
+       a Settings category — and falls back to the module's `MOD_DOCS` entry for a row with none
+       (every Alert tab; `Agentic AI`, which is not on the instance);
+     · a FLAT menu (Dashboard · SLO · Report) carries one `<Module> documentation ↗` footer under
+       its rows — its rows are actions, and a chip per action would link the same page N times.
+   ⚠️ EVERY PATH IS ONE OPTION 1 ALREADY CARRIES, each `curl`-verified 200 when it was added, and
+   `MOD_DOCS`' aliases (`Explorer` → `Explorers` …) are what make the rail's singular names resolve.
+   Nothing is composed here; a docs slug does not follow the module name (`log-management`,
+   `audit-trail`) and a guessed one is a confident 404. */
+const PL_DOCS_BASE = 'https://docs.motadata.com/motadata-aiops-docs/';
+const PL_CHIP_COLS = { Explorer:1, Alert:1, Setting:1 };   /* Option 1's `mfTree` menus */
+const plDocOf = n => { try { return (MOD_DOCS && MOD_DOCS[n]) || null; } catch (e) { return null; } };
+/* the row's own page — sub-module → its `doc`; Settings category → `MF_ST_DOCS`; else the module's */
+const plRowDoc = (name, label, kind) => {
+  if (kind === 'sub') return null;
+  if (name === 'Setting'){ try { if (MF_ST_DOCS[label]) return MF_ST_DOCS[label]; } catch (e) {} }
+  return plDocOf(name);
+};
+/* ⚠️ `stopPropagation` is mandatory: the row is `onclick="mfGo(…)"` / `plSub(…)`, so without it
+   the chip would ALSO navigate (or fold the parent) behind the tab it opened. `tabindex="-1"`
+   keeps Tab on the rows — the chip is reached by pointer, as in Option 1. */
+const plDocChip = p => p ? `<a class="pldoc" tabindex="-1" target="_blank" rel="noopener" href="${PL_DOCS_BASE}${p}" onclick="event.stopPropagation()">DOCS<span class="ext">↗</span></a>` : '';
+/* Lucide `book` — the same glyph Option 1's `mfDocs()` footer draws, pasted from it verbatim */
+const PL_BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-1.5Z"/><path d="M8 7h7M8 11h7"/></svg>';
+function plDocsFoot(name){
+  const p = plDocOf(name); if (!p) return '';
+  return `<a class="plfoot" href="${PL_DOCS_BASE}${p}" target="_blank" rel="noopener">${PL_BOOK}<span>${name} documentation</span><span class="ext">↗</span></a>`;
+}
+/* the pin control on an Explorer row — Option 1's `.mfpin`, same glyph, same handler
+   (`railPinToggle`, which owns `RAIL_PINS`), so the two options cannot disagree about what is
+   pinned. The row's hover reveals it; `.pinned` keeps it shown and filled. */
+const plPinBtn = l => `<span class="plpin${railPinned(l) ? ' pinned' : ''}" role="button" data-tip="${railPinned(l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" aria-pressed="${railPinned(l)}" onclick="event.stopPropagation();railPinToggle(${mfAttr(l)})">${MF_PIN}</span>`;
 
 /* ── the rail: modules only ──────────────────────────────────────────────────────────────── */
 function plRailPaint(){
@@ -24752,11 +24946,22 @@ function plRailPaint(){
     /* ⚠️ THE GROUP HAIRLINE IS EMITTED WHERE `RAIL[].group` CHANGES — the same banding
        `renderMenu()` draws in Option 1, and the reference image shows it. It is `opacity:0` at
        52px rather than absent, so the rail's own rhythm does not shift when it expands. */
-    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}, n, arr) =>
-      ((n && arr[n - 1].r.group !== r.group) ? '<div class="plgap"></div>' : '') +
-      `<div class="plib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
-         onmouseenter="plPeek(${i})">${ico(r.icon)}<span class="pllbl">${r.name}</span></div>`
-    ).join('');
+    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}, n, arr) => {
+      /* a pinned sub-module sits directly under Explorer — Option 5's port of Option 1's
+         `pinsFor('Explorer')` band (7 Sep 2026), as tiles. ⚠️ EACH CARRIES A `.pllbl` LIKE THE
+         MODULE TILES: this rail expands to 190px on hover and shows every tile's label, so a pin
+         tile without one would be the only wordless row on the open rail. When a pinned module
+         is the active one its tile lights and Explorer's does not (`railRowHTML`'s rule). */
+      const pins = (r.name === 'Explorer' && typeof railPinsOrdered === 'function') ? railPinsOrdered().map(l => {
+        const p = railPinRow(l); if (!p) return '';
+        return `<div class="plib plpinned${railPinActive() === l ? ' on' : ''}" data-tip="${p.l}" data-pin="${p.l}"` +
+               ` onclick="pickPin(${mfAttr(l)})" onmouseenter="plPeek(${i})">${ico(p.ic)}<span class="pllbl">${p.l}</span></div>`;
+      }).join('') : '';
+      const lit = i === activeRail && !(r.name === 'Explorer' && railPinActive());
+      return ((n && arr[n - 1].r.group !== r.group) ? '<div class="plgap"></div>' : '') +
+        `<div class="plib${lit ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
+         onmouseenter="plPeek(${i})">${ico(r.icon)}<span class="pllbl">${r.name}</span></div>` + pins;
+    }).join('');
 }
 
 /* ── the column ──────────────────────────────────────────────────────────────────────────── */
@@ -24764,23 +24969,69 @@ const plSecs = n => (SUBNAV[n] || []).concat(SUBNAV2[n] || []);
 
 function plRowHTML(label, mod, act, o){
   o = o || {};
-  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}"` +
+  /* `kids` = the row expands/collapses (it draws the chevron); `open` = it is expanded now
+     (the chevron turns down). Both are read off `EXPLORER_TREE` by the caller — a row that has no
+     children never gets a chevron, so the control cannot promise something the row cannot do. */
+  /* the trailing cluster is pin · DOCS · count · chevron — Option 1's `.mfend` order, with the
+     count kept beside the chevron so the pair at the row's edge is the same on every row whether
+     or not the hover controls are showing. `pin` is the row's label (Explorer only); `doc` a path. */
+  /* `tree` (Explorer's parent rows) reserves the count slot and the chevron box on EVERY row so
+     the controls before them align — see `.plend`. A placeholder is `.ph`: box kept, nothing painted. */
+  const end =
+    (o.pin ? plPinBtn(o.pin) : '') +
+    plDocChip(o.doc) +
+    (o.n != null ? `<span class="pln">${o.n}</span>` : (o.tree ? '<span class="pln ph"></span>' : '')) +
+    (o.kids ? PL_CV : (o.tree ? PL_CV.replace('class="plcv"', 'class="plcv ph"') : '')) +
+    (o.chev ? PL_CHEV : '');
+  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}${o.open ? ' plopen' : ''}"` +
     (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
     `>${plIco(o.ic, o.icls)}<span class="plt">${label}</span>` +
-    (o.n != null ? `<span class="pln">${o.n}</span>` : '') +
-    (o.chev ? PL_CHEV : '') + `</button>`;
+    (end ? `<span class="plend">${end}</span>` : '') + `</button>`;
 }
 
 /* ⚠️ EXPLORER USES ITS TREE, NOT ITS SECTIONS. `EXPLORER_TREE` is the only source with real
    nesting and real counts, and the nesting is the whole reason this pattern was asked for —
    it is the "All threads → its statuses" shape from the reference. Everything else has flat
    sections, which render as Plain's primary rows + collapsible groups. */
+/* ⚠️ ALERT IS A TREE TOO (request, 7 Sep 2026: "in this add icon expand collapse", pointing at
+   NetRoute / APM / Real User Monitoring and their views). It rendered flat from `SUBNAV['Alerts']`
+   — the three tab rows with dropdowns and their `sub` views all drawn at once, always open, so the
+   column's one nesting cue was 32px of indent while Explorer beside it folded its parents behind a
+   chevron. This is Option 1's own reading of that list (`mfTreeFor('Alert')`: a non-`sub` row is a
+   tab, the `sub` rows after it are that tab's dropdown — a parent and its children, already
+   modelled), rebuilt here rather than called, because this file's inherited copy still destructures
+   `[l, mod, act, kind]` and DROPS the fifth-slot glyph the 3 Sep change added. Cached once;
+   `SUBNAV` never changes at runtime. Children are `[label, mod, act, ic]`, the tree's own shape. */
+let PL_ALERT_TREE = null;
+function plAlertTree(){
+  if (PL_ALERT_TREE) return PL_ALERT_TREE;
+  const t = [];
+  try {
+    (SUBNAV['Alerts'] || []).forEach(sec => (sec.items || []).forEach(([l, mod, act, kind, ic]) => {
+      if (kind === 'sub'){ const par = t[t.length - 1]; if (par){ (par.kids = par.kids || []).push([l, mod, act, ic]); par.kidsAs = 'views'; } }
+      else t.push({ l, mod, act, ic });
+    }));
+  } catch (e) {}
+  return (PL_ALERT_TREE = t);
+}
+/* the column's tree, if the module has one — Explorer's is the file's own `EXPLORER_TREE`, Alert's
+   is derived above; everything else renders as flat sections */
+function plTreeFor(name){
+  if (name === 'Explorer') return (typeof EXPLORER_TREE !== 'undefined') ? EXPLORER_TREE : null;
+  if (name === 'Alert') return plAlertTree();
+  return null;
+}
+
 function plBodyHTML(){
   const r = plCur();
-  if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
-    return EXPLORER_TREE.map(t => {
+  const tree = plTreeFor(r.name);
+  if (tree)
+    return tree.map(t => {
       const open = PL.sub === t.l;
-      return plRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:plCount(t), on:open,
+      /* ⚠️ PINNING STAYS EXPLORER'S ONLY — Option 1's rule: `RAIL_PINS` are resolved through
+         `EXPLORER_TREE`, so a pin from Alert's tree could not be drawn on the rail. */
+      return plRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:plCount(t), on:open, kids:!!t.kids, open,
+               pin: r.name === 'Explorer' ? t.l : null, doc: t.doc || plDocOf(r.name), tree: true,
                click: t.kids ? `plSub(${mfAttr(t.l)})` : null }) +
         (open && t.kids ? t.kids.map(([label, mod, act, ic]) =>
            plRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
@@ -24798,12 +25049,13 @@ function plBodyHTML(){
       /* the Setting column's rows carry no fifth slot; their glyph is the category's (see `plStIc`) */
       if (!ic && r.name === 'Setting') ic = plStIc(label);
       return plRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
-                { ic, icls: kind === 'plus' ? 'plic plus' : null, sub: kind === 'sub' }); }).join('');
+                { ic, icls: kind === 'plus' ? 'plic plus' : null, sub: kind === 'sub',
+                  doc: PL_CHIP_COLS[r.name] ? plRowDoc(r.name, label, kind) : null }); }).join('');
     if (!si || !s.h) return rows;
     const shut = !!PL.shut[s.h];
     return `<button class="plsec${shut ? ' shut' : ''}" onclick="plSec(${mfAttr(s.h)})">` +
            `<span class="plt">${s.h}</span>${PL_CAR}</button>` + (shut ? '' : rows);
-  }).join('');
+  }).join('') + (PL_CHIP_COLS[r.name] ? '' : plDocsFoot(r.name));
 }
 
 function plPaint(){
@@ -24826,10 +25078,58 @@ function plPaint(){
       `<button class="plhb" data-tip="Collapse sidebar" onclick="plColTog()">${PL_COL}</button>` +
     `</div></div><div class="plbody">${plBodyHTML()}</div>`;
   setIco(document.getElementById('plSearchIc'), 'search');
-  plRailPaint();
+  plRailPaint(); plFootPaint(); plNsPaint();
 }
 function plSub(l){ PL.sub = (PL.sub === l) ? null : l; plPaint(); }
 function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
+
+/* ══ the column foot · "NEXT STEPS" · the licence line — Option 6's `sk*` twins, ported 7 Sep 2026 ═══
+   Plain's card lists what a new workspace still has to do; the four here are this product's own
+   first-run jobs and EVERY ONE IS A REAL DESTINATION — a Settings category from the harvested
+   `ST_TREE`, opened through `stOpen`, its glyph the category's own. ⚠️ A step is marked done when it
+   is VISITED — the prototype cannot know a discovery ran or a user was created, and pretending
+   otherwise would be inventing product state. ✕ dismisses the card; the foot's rocket brings it
+   back, its badge counting what is still open (Plain's "N steps remaining"). The glyphs are
+   Option 6's (Lucide-shaped `x` / `check` / a stroked chevron), copied so the two cards match. */
+const PL_X     = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const PL_NCHEV = '<svg class="plnch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+const PL_DONE  = '<svg class="plnch" viewBox="0 0 24 24"><path d="M5 12l4 4L19 7"/></svg>';
+const PL_STEPS = [
+  { l:'Discover your devices',  cat:'Discovery Settings' },
+  { l:'Create user',            cat:'User Settings' },   /* the product's own job name ("Create User" in User Settings › Users) */
+  { l:'Connect an AI provider', cat:'Agentic AI' },
+  { l:'Set up alert policies',  cat:'Policy Settings' },
+];
+/* the static foot only needs its glyphs once and its Settings light kept true */
+function plFootPaint(){
+  ['plSetIc:settings', 'plHelpIc:help', 'plTourIc:tour'].forEach(p => { const [id, n] = p.split(':'); const e = document.getElementById(id); if (e && !e.innerHTML) setIco(e, n); });
+  const s = document.getElementById('plSetBtn'); if (s) s.classList.toggle('on', !!document.querySelector('#view-settings.on'));
+}
+function plHelp(){ window.open('https://docs.motadata.com/motadata-aiops-docs/', '_blank', 'noopener'); }
+/* the licence line's link: the My Account › License page if the harvested tree has one */
+function plLicence(){
+  try { const c = ST_TREE.find(c => c.n === 'My Account'); const p = (c.subs.find(s => /licen/i.test(s[0])) || [])[0];
+        return p ? stOpen('My Account', p) : stOpen('My Account'); }
+  catch (e) { selectModuleByName('Settings'); }
+}
+function plNsPaint(){
+  const el = document.getElementById('plNs'); if (!el) return;
+  const done = PL_STEPS.filter(s => PL.done.has(s.cat)).length;
+  el.innerHTML = !PL.ns ? '' :
+    `<div class="plns"><h4>Next steps</h4><button class="plnsx" data-tip="Dismiss" onclick="plNsTog()">${PL_X}</button>` +
+    PL_STEPS.map((s, i) => `<button class="plstep${PL.done.has(s.cat) ? ' done' : ''}" onclick="plStep(${i})">` +
+      `${plIco(plStIc(s.cat), 'plic')}<span class="plt">${s.l}</span>${PL.done.has(s.cat) ? PL_DONE : PL_NCHEV}</button>`).join('') +
+    `<div class="plbar"><i style="width:${Math.round(done / PL_STEPS.length * 100)}%"></i></div></div>`;
+  plCntPaint();
+}
+function plCntPaint(){
+  const c = document.getElementById('plCnt'); if (!c) return;
+  const left = PL_STEPS.filter(s => !PL.done.has(s.cat)).length;
+  c.textContent = left; c.hidden = !left;
+  const t = document.getElementById('plTourBtn'); if (t) t.setAttribute('data-tip', left ? `Next steps · ${left} remaining` : 'Next steps');
+}
+function plStep(i){ const s = PL_STEPS[i]; PL.done.add(s.cat); stOpen(s.cat); plNsPaint(); }
+function plNsTog(){ PL.ns = !PL.ns; plNsPaint(); }
 
 /* ⚠️ WRAPPED, NOT RE-IMPLEMENTED. `selectModule` and `showView` are the two doors into a view
    change and both are `function` declarations, so wrapping the binding catches every caller —
@@ -24861,6 +25161,12 @@ showView = function(v){ plShowView0(v); plPaint(); };
    navigation calls when the RAIL's highlight has to move — so the rail repaints with it. */
 const plRenderMenu0 = renderMenu;
 renderMenu = function(){ plRenderMenu0(); plRailPaint(); };
+/* `railPinToggle` repaints the rail (through `renderMenu`) and Option 1's flyout (guarded on
+   `mfTreeName`, which this page never sets); the COLUMN's row has to follow too, or the pin you
+   pressed keeps its old state while the rail has already changed — the same two-surface rule
+   `railPinToggle` records for `sbmPaint`. */
+const plRailPinToggle0 = railPinToggle;
+railPinToggle = function(l){ plRailPinToggle0(l); plPaint(); };
 
 plPaint();
 </script>
