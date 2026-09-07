@@ -63,20 +63,18 @@ column; nothing on the canvas, the AI panel or Settings changed.
 
 ## In progress
 
-Nothing mid-flight. **Nothing is committed or published.** `git status` shows today's two option
-files (`dashboard-nav-column.html`, `dashboard-card-sidebar.html`) plus `CLAUDE.md` / `HANDOFF.md`,
-on top of the previous session's still-uncommitted License work (`_settings-module.js`,
-`_settings-module.css`, `_verify/dsconf.py`).
+Nothing mid-flight. **Everything is committed and live** — `51abeb4` on `main` carries today's two
+option files plus the previous session's License work, and Pages served the new markup within a
+minute of the push (checked for today's markers on both option pages).
 
 ## Next steps
 
-1. **Commit and publish** — two sessions of work are uncommitted. `/publish` does it.
-2. **Decide on the two behaviours today's chevrons imply, both recorded, neither resolved**: one
+1. **Decide on the two behaviours today's chevrons imply, both recorded, neither resolved**: one
    parent opens at a time (`PL.sub` / `SK.sub` are single values), and an open parent still wears
    the tinted `.on` row as well as the turned chevron — two signals for one state.
-3. **Options 7 and 8 carry none of today's column changes.** Option 8 is a copy of Option 5's
+2. **Options 7 and 8 carry none of today's column changes.** Option 8 is a copy of Option 5's
    `pl*` block, so it is the same edit set; Option 7 has its own `nx*` list.
-4. The earlier list still stands: the `.dpanel` shadow bug in six files, Option 1's wider
+3. The earlier list still stands: the `.dpanel` shadow bug in six files, Option 1's wider
    Dashboard flyout, Options 2/3 behind on flyout icons.
 
 ## Decisions made
