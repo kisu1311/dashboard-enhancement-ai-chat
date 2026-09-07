@@ -63,12 +63,15 @@ def block(s, sel_pat):
     return s[i + 1:j]
 
 def tokens_source(src_text):
-    """The scoped DS token block. ⚠️ IT MOVED. On 1 Sep 2026 another session extracted the
+    """The scoped DS token block. ⚠️ ITS SELECTOR IS A LIST NOW (7 Sep 2026): the Product
+    License page joined it as `#agPage,#licPage,#licHist,#licHistF{`, so the matches below
+    take `[^{]*` after `#agPage` — a bare `#agPage{` no longer occurs and `block()` would
+    have thrown on `m.start()`. ⚠️ IT MOVED. On 1 Sep 2026 another session extracted the
     st/stc/ag stylesheet out of `index.html` into `_settings-module.css`, so the block is
     no longer in the HTML for Option 1 — and this script's guard read the HTML, decided there
     was no screen, and SILENTLY SKIPPED the most-edited file while still printing a pass.
     Options 2 and 3 are not migrated, so both shapes have to work."""
-    if '\n#agPage{' in src_text:
+    if re.search(r'\n#agPage[^{]*\{', src_text):
         return src_text
     ext = ROOT / '_settings-module.css'
     if ext.exists():
@@ -77,8 +80,8 @@ def tokens_source(src_text):
 
 def build(src_text, wiz, dest):
     tok   = tokens_source(src_text)
-    dark  = block(tok, r'\n#agPage\{')
-    light = block(tok, r'\nhtml\[data-theme="light"\] #agPage\{')
+    dark  = block(tok, r'\n#agPage[^{]*\{')
+    light = block(tok, r'\nhtml\[data-theme="light"\] #agPage[^{]*\{')
     h = src_text.replace("s.src = 'agentation-embed.js';", "s.src = '';")   # the loader hangs headless runs
     adapter = ('<style id="__dsadapt">'
       'html:not([data-theme="dark-theme"]) #agPage{' + light + '}'
@@ -122,7 +125,7 @@ def main():
     #    saying "register the new screen as ST_PAGES['Agentic AI › Overview']" — which a naive
     #    substring test matches, so the guard never fired and `build()` threw on the missing
     #    rule instead. The scoped token block is what this script actually needs.
-    if "\n#agPage{" not in tokens_source(src):
+    if not re.search(r"\n#agPage[^{]*\{", tokens_source(src)):   # the selector is a list since 7 Sep 2026
         print("no Agentic AI screen registered in %s — nothing to check yet." % SRC.name)
         print("(register it as ST_PAGES['Agentic AI \u203a Overview'] = { html, after } and re-run)")
         sys.exit(0)

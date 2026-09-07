@@ -469,7 +469,7 @@ it sets the category/page, expands it, clears the search, then routes through
 | left list | **Search**, then the product's **18 categories in the live order**, each with the product's **own icon** (harvested SVG paths in `ST_ICO`), collapsible, **BETA** on Service Level Objective, **every sub-page of every category** (`ST_TREE`, 95 pages, each carrying its live route). Search matches a **category name** (all its pages) or a **page name**, case-insensitive substring, and expands what it matched — verified with “prof”, “utility”, “ACCOUNT”, “PING” against the live list. Clearing it restores the collapse state |
 | My Profile | 120px avatar circle with the initials (`first[0]+last[0]`, **live off the two name fields**) · **Change** → file picker (JPEG/JPG/PNG/SVG; anything else refused with the live error text) → `Change | Remove` · First Name\* · Last Name\* · User Name\* (disabled, “Must be unique”) · Email Address\* · Mobile Number · **Change Password OFF/ON** → Current Password\* · Password\* (“Do not use simple password”) · Confirm Password\* (“Same as the password field”, `onpaste` blocked), each with an **eye** toggle (`eye` hidden ↔ `eye-slash` shown) · **Reset · Update My Profile** |
 | validation | the component's own rules: names required + `/^[a-zA-Z\s'\-]{1,50}$/`; email required + email; mobile numeric 8–12; current password required; password required + the instance's policy (min 6, special, number, lower, upper; max 64, `ST_PW`); confirm required + must match. Messages are the ones the live form printed |
-| every other page | UI Preference, License and the 17 other categories land on a `.modcard` placeholder that names the **live route** — not built, and it says so |
+| every other page | UI Preference and the 17 other categories land on a `.modcard` placeholder that names the **live route** — not built, and it says so. ⚠️ **License IS built now** (7 Sep 2026) — see *Settings › My Account › License — Product License* below |
 
 - ⚠️ **A REQUIRED-EMPTY field shows NO message on live** — only the label and the
   underline turn red (the explain node is rendered `display:none`). Reproduced: `stValidate`
@@ -4100,6 +4100,100 @@ same ui"*. Three of six flyouts led every row with a mark and the other three le
   was wrong** — it compared the label span to itself, while the clipping is `.plrow`'s own
   `nowrap`. Measure a Range over the TEXT against the row's content box, not the span's
   `scrollWidth`.
+- **A row that HAS children carries an expand/collapse chevron** (request, 7 Sep 2026: *"the
+  explorer add submodule expand & collapse with icon"*). Monitor and NCCM already toggled their
+  children on click, but nothing on the row said so — the count reads as data, not as a control.
+  `plRowHTML` takes `kids` (draw it) and `open` (turn it); `plBodyHTML` reads both off
+  `EXPLORER_TREE`, so a row with no children can never get one. It is the product's own
+  `chevron-right` (`PL_CV`, 48 grid, verbatim), **at the row's right edge after the count and
+  visible at rest** — the Grafana placement Option 7 settled on 5 Sep, for the same reason:
+  four "the control is invisible until hovered" reports in this folder. Points right shut,
+  rotates down open (`.plrow.plopen`; not a bare `open`, which is the rail's own state class).
+  ⚠️ **Behaviour is unchanged**: the whole row is still the
+  toggle, one parent opens at a time (`PL.sub` is a single value), and the open parent still
+  wears `.on` — so an expanded Monitor now shows two signals for one state, the tinted row and
+  the turned chevron. Both are recorded, not resolved. ⚠️ **Option 5 only** — Option 8's `pl*`
+  copy and Option 6's `sk*` column render the same tree without it. Verified by a 26-assertion
+  headless probe (placement, size, rotation, hit-tested clicks on both parents, 18/2 children,
+  no chevron in the Alert column) and both themes screenshotted.
+- **The section caret is the product's `chevron-down` too** (request, 7 Sep 2026, later the same
+  day: *"improve this icon in overall"*, pointing at NOC VIEW / REPORTS). `PL_CAR` was a
+  hand-drawn 5px filled triangle — the one solid mark in a column of stroked product glyphs. Same
+  12px box as the row chevron so the two read as one family; down at rest, turned right when the
+  section is shut (the existing `-90deg` rule, unchanged).
+- **Docs link, module-wise, like Option 1** (request, 7 Sep 2026). Option 1 has two shapes and the
+  column keeps both: a **tree menu** (Explorer · Alert · Setting) puts Datadog's `DOCS ↗` chip on
+  each row (`.pldoc`, Option 1's `.mfdocs` at its current numbers, hover-revealed) linking to THAT
+  row's page — `EXPLORER_TREE[].doc` for a sub-module, `MF_ST_DOCS[category]` for a Settings
+  category, the module's `MOD_DOCS` entry for a row with none (every Alert tab; Agentic AI); a
+  **flat menu** (Dashboard · SLO · Report) gets one `<Module> documentation ↗` footer (`.plfoot`,
+  Option 1's `.mffoot`) as the last line inside `.plbody`. ⚠️ **No data was added** — the tree's
+  `doc:` slots, `MF_ST_DOCS` and `MOD_DOCS` with its singular aliases were all inherited from
+  Option 1's page and unrendered until now; every path was `curl`-verified 200 when Option 1 got it.
+  ⚠️ **A real `<a>` inside the row's `<button>`** — invalid nesting, but measured in Chrome: a
+  hit-tested click follows the href and with `stopPropagation` does not fire the row, so
+  middle-click / hover-URL / copy-link keep working where a `window.open` span would lose them.
+- **Pin / unpin on the Explorer rows, like Option 1** (request, 7 Sep 2026). `.plpin` is Option 1's
+  `.mfpin` — same `MF_PIN` glyph, hover-revealed, always shown and filled teal once pinned, same
+  `railPinToggle` handler, so the two options move the same `RAIL_PINS`. **Pinned sub-modules
+  render on the rail as 32px tiles directly under Explorer** (`.plib.plpinned`, from Option 1's
+  own `railPinsOrdered` / `railPinRow` / `pickPin`); when a pinned module is the active one its
+  tile lights and Explorer's does not (`railRowHTML`'s rule). `railPinToggle` is wrapped to
+  `plPaint()` after, or the row keeps its old pin while the rail has already changed.
+  ⚠️ The pin is a `<span role="button">` — a button inside the row's button is the nesting that
+  eats clicks. At 52px the rail tile carries no pin mark, exactly as Option 1's collapsed rail.
+- **The trailing controls are ONE cluster, `.plend`** (request, same day: *"make proper alignment
+  like option 1"*). As siblings the pin landed 40px further left on Monitor than on Topology,
+  because only Monitor carried a count and a chevron. Option 1's `.mfend` port: one flush-right
+  group, 5px inside, and — the half that aligns — **the count slot and the chevron box are
+  reserved on every tree row** (`.ph`: `visibility:hidden`, the `.mfkc.ph` trick), so pin · DOCS ·
+  count · chevron form four columns down the list while a number and a chevron still paint only
+  where a row has children.
+- **Alert is a collapsible tree too** (request, 7 Sep 2026: *"in this add icon expand collapse"*,
+  pointing at NetRoute / APM / Real User Monitoring and their views). It rendered flat from
+  `SUBNAV['Alerts']`, every view always shown, with 32px of indent as its only nesting cue while
+  Explorer beside it folded its parents behind a chevron. `plAlertTree()` is Option 1's own reading
+  of that list (`mfTreeFor('Alert')`: a non-`sub` row is a tab, the `sub` rows after it are its
+  dropdown), rebuilt in the `pl*` block because this file's inherited copy drops the fifth-slot
+  glyph; `plTreeFor(name)` hands Explorer's or Alert's tree to ONE renderer, so the three parents
+  get the chevron, the `2` count, the accordion, the aligned `.plend` cluster and the DOCS chip by
+  construction. ⚠️ **The views start FOLDED now** (they were always open) and **a parent row
+  toggles instead of navigating** — the Explorer behaviour, so the column has one rule. Pinning
+  stays Explorer's only, Option 1's rule.
+- ⚠️ **`--pl-nav` went 224 → 264 → 280px, measured.** The chip stays in flow while invisible
+  (opacity, so the label cannot reflow under the cursor), and it is **45px** wide, not the 36
+  estimated: at 240 `Network Config Settings` still clipped by 15px and `Service Level Objective`
+  by 8; 256 would have left 1px in hand — the recorded 224-step trap — so 264 with 9px. Then the
+  Alert tree reserved the count slot and chevron box on its rows (36px more) and `Real User
+  Monitoring` clipped by 6; 272 would leave 2, so 280 with 10. Same trade Option 1 made twice.
+  `harness … query` 77/77 at all seven resolutions with the wider column.
+- **Option 6's column foot, "Next steps" card and licence line are in this column too** (request,
+  7 Sep 2026: *"the same will be add in option 5"*, with Option 6's card as the picture). Ported
+  as `.plcfoot` / `.plfb` / `.plcnt` / `.plns` / `.plstep` / `.plbar` / `.pltrial` and the
+  `PL_STEPS` / `plNsPaint` / `plCntPaint` / `plStep` / `plNsTog` / `plFootPaint` / `plHelp` /
+  `plLicence` twins — same numbers, same four real destinations, same visited-means-done rule.
+  ⚠️ **THE COLUMN'S MARKUP CHANGED SHAPE FOR IT.** `plPaint` used to rewrite the whole `.plnav`;
+  the painted host is now an inner `#plNav.plnavin` (`flex:1 1 auto;min-height:0`, so its
+  `.plbody` still scrolls) and the foot · `#plNs` · `.pltrial` are STATIC siblings after it —
+  painted once, repainted in place — exactly Option 6's `.sknav` shape. The peek and collapse
+  rules stay on `.plnav`, so the card collapses and peeks with the column.
+  ⚠️ **The foot's ids are `plTourBtn` / `plHelpBtn` / `plSetBtn`, not `plHelp`** — an element id
+  is a window global and `plHelp()` is a function in this block. Option 6 carries that exact
+  collision (`id="skHelp"` beside `function skHelp`) and survives it only because a function
+  declaration wins the name; not repeated here.
+  ⚠️ The badge's ring is `--panel`, the surface this column sits on (Option 6's is `--card`, its
+  surface) — same reason, different token.
+  Verified by a 29-assertion probe (order of the four blocks, three 32px foot buttons with their
+  glyphs, badge 4 → dismiss → rocket brings the card back, a hit-tested step landing on Settings ›
+  User Settings with the tick, the 25% bar and badge 3, the Settings button lit there, Manage
+  licence landing on My Account › License, the 19-row Setting list still scrolling inside the
+  host with the foot below it, the card hidden when collapsed and shown in the peek), the earlier
+  78-assertion column probe still green, both themes screenshotted.
+- Verified by a **78-assertion probe** (label fit in all six columns, the Alert tree end to end, chip hrefs per row, chip
+  click does not fold the parent, hit-tested pin → `RAIL_PINS` → rail tile under Explorer → tile
+  click lights it and not Explorer → unpin removes all three, Alert/Setting chips and fallbacks,
+  the three footers, the four columns of alignment, the caret's glyph and rotation), both themes
+  screenshotted. ⚠️ **Option 5 only** — Options 6 and 8 render the same column without any of it.
 
 ### Option 4 — `»/«` opens the sub-module panel on Dashboards too
 
@@ -4352,12 +4446,12 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
 |---|---|---|
 | card | `8px` inset, radius 12, `0 0 0 1px rgba(32,39,44,.08), 0 1px 1px` | **removed 5 Sep 2026** — flush, with a border |
 | rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px, `--chip` for the active tile |
-| rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Next steps · Notification · Documentation · avatar, 32px tiles |
-| column | 281px: header 14px/550 over a 12px line, **no controls** | same, second line derived (see below) |
+| rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Approval · Health · Notification · avatar, 32px tiles (Next steps and Documentation moved to the column foot, 4 Sep 2026) |
+| column | 281px: header 14px/550 over a 12px line, **no controls** | **296px** since 7 Sep 2026 (the DOCS chip and reserved slots, see the port note), second line derived (see below) |
 | row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` + `--teal`, this file's tinted-selection pair |
 | section | "Active" 12px/550 over 24px, `+` at its right (24px, radius 6), 16px above | same, and the `+` is real (below) |
 | section row | glyph in a tinted **18px radius-4 tile**, text 12px/550 | `--chip` tile, `--teal` when the row is active |
-| column foot | right-aligned 32px icon buttons in 8px of padding | Approval · Health · Settings · Collapse |
+| column foot | right-aligned 32px icon buttons in 8px of padding | Next steps (rocket + count) · Documentation · Settings — the collapse is the header's |
 | Next steps | ring, radius 10, 16px pad, 20px/400 title, ✕ at (7,7), four **34px** rows, a **4px** track | same, title 17px/500 (see the type note) |
 | trial line | 12px, underlined link, 20px above the card's bottom edge | a licence line |
 
@@ -4415,6 +4509,31 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
   both themes screenshotted. ⚠️ One probe assertion was wrong, not the page: it expected Explorer
   to say *11 sub-modules* from a CLAUDE.md line that counts Report, which is a rail entry;
   `EXPLORER_TREE` holds 10.
+
+### Option 5's 7 Sep column changes, ported (7 Sep 2026)
+
+Request: *"in option 5 all changes is done, those changes also apply in option 6"*. Everything the
+Option 5 section above records for 7 Sep is in this file's `sk*` block now, same code in the `sk`
+namespace, differing only where this column's markup does. Read the reasoning there; here is the map:
+
+| Option 5 | here | note |
+|---|---|---|
+| `PL_CV` / `.plcv` / `.plopen` | `SK_CV` / `.skcv` / `.skopen` | row chevron on Monitor · NCCM · NetRoute · APM · Real User Monitoring |
+| `.pldoc` / `plDocChip` / `plRowDoc` | `.skdoc` / `skDocChip` / `skRowDoc` | DOCS chip on Explorer · Alert · Setting rows |
+| `.plfoot` / `plDocsFoot` | **`.skdocf`** / `skDocsFoot` | ⚠️ renamed: `.skfoot` is this column's own icon-button foot |
+| `.plpin` / `plPinBtn` | `.skpin` / `skPinBtn` | Explorer rows only; pinned tiles on the rail as `.skib.skpinned` |
+| `.plend` + `.ph` | `.skend` + `.ph` | the aligned cluster; 5px inside, the row's own 11 outside |
+| `plAlertTree` / `plTreeFor` | `skAlertTree` / `skTreeFor` | Alert folds its three parents |
+| `railPinToggle` wrap → `plPaint` | → `skPaint` | |
+
+- ⚠️ **No section-caret change here** — this column's sections have no caret (they carry Plain's
+  `+`), so the `PL_CAR` swap has no counterpart.
+- ⚠️ **`--sk-nav` went 281 → 296px.** 281 was Plain's measured column; with the in-flow chip and
+  the reserved count slot + chevron box, `Real User Monitoring` clipped by 3px, so 296 with 12 in
+  hand. Everything else reads the token.
+- Verified by the Option 5 probe mapped onto this namespace — **73 assertions**, all passing
+  (the section-caret block removed, row padding 8 not 9) — plus `harness … query` at the new
+  width, both themes screenshotted.
 
 ## Option 7 — one column, no rail (`dashboard-single-column.html`, 4 Sep 2026)
 
@@ -4877,6 +4996,101 @@ returned `border-right: 1px rgb(227,232,242)`; the paint was pure white at x=63.
 both surfaces are `#ffffff`, so that border is the only thing dividing the rail from the canvas.
 `flex:1 1 auto` lets the rail fill whatever the content box actually is.
 
+## Settings › My Account › License — Product License, on the design system (7 Sep 2026)
+
+**Option 1 only** (`_settings-module.js` / `.css`, registered as `ST_PAGES['My Account › License']`,
+namespace `lic*` / `LIC_*` / `.lic*`, grepped free first). Built from **live build 10.0.1** at
+`/settings/my-account/license` — the DOM and computed styles, the Vue components read out of
+`__vue__` (`LicenseDetails` · `LicenseQuotaUsageTab` · `LicenseQuotaRow` · `LicenseHistoryModal`
+· `ActivationCodeModal` · `LicenseEpsTab`) and their handlers out of the settings chunk
+(`settings-4ea5ffd0.*.js`, fetched with `curl -k`) — and from the **ObserveOps License Guide**
+(`docs.motadata.com/observeops-docs/getting-started/license-guide`, the 2 licence types and the
+6 per-module metering rules), which is the detail text under each quota row.
+
+⚠️ **THE DOC SITE IS `observeops-docs`, NOT `motadata-aiops-docs`.** Both exist; the AIOps one
+has an older `license-guide` with different wording. `_product-docs/` was digested from the
+AIOps site, so it carries no licence page — the guide was fetched fresh.
+
+### What the live page is (so nobody re-derives it)
+
+| part | live 10.0.1 |
+|---|---|
+| header | `‹` · file-certificate · **Product License** · `Export` (default, download icon) · `Upgrade Now` (primary, behind `LICENSE_CREATE_PERMISSION`) |
+| tabs | **License & Quota Usage** (tacho-meter) · **EPS Trend Breakdown** (heart-rate) |
+| edition card | eyebrow *ObserveOps Edition* · **Infinity ∞** in a gradient · *✓ Unified Edition* chip · a blurb · License Type / Issue Date / Account / Status · a Jul 2026 → Aug 2030 term bar · a **1440 DAYS LEFT** ring · *Expires August 17, 2030* |
+| quota rows | six cards, each a 3px accent border + icon + title + token (`DEV · base platform`, `FSRC · add-on` …) + `Healthy` chip + `170 of 5,000 devices` + `History` + a 12px meter + `4,830 remaining` + `▲ +15 · 30d` + a Highcharts sparkline; Monitored Devices adds *Agentless / Agent-based* and a **BY TYPE** stacked bar; APM adds *Applications (monolith) / Agents (microservices)* |
+| range | `7d · 15d · 30d` buttons; the hint reads *Click a row for historical consumption & CSV export* |
+| History | a **720px MModal**: token · Range · `Current · Period start · Peak · Average · Change` · an area chart with a dashed **license cap** · `Close` · `Export as CSV` (columns `date,resource,value,cap,utilization_pct`, newest first) |
+| Upgrade Now | `activateNow()` → the **Activation Code** modal: *Upgradation code* + the current code + copy · *Please email the above activation code to support@motadata.com* (a mailto with the code in the body) · a required 6-row *Paste your code here...* textarea · `Cancel` · `Activate License` → `PUT /settings/license/{id}` with `license.activation.code` |
+| Export | `handleExport` renders the page root to an image named `license-<edition>` (html2canvas) |
+| EPS tab | `HARDWARE CEILING 765 · ALLOCATED 950 (124% of ceiling) · INGESTED LIVE 0 · DROP STATUS clean` · two rule lines (notify / drop at 100% for 60 s) · *Dynamic EPS · allocation by signal* (Log 314 · Flow 152 · APM 266 · RUM 219) · *Calculated vs actual EPS · per telemetry* (a Total tile + four) |
+
+### How it is built here — the flow is live's, the parts are the DS's
+
+| region | DS part |
+|---|---|
+| header | `obs-page-header` (`heading`, mark in `before`, actions in the default slot, `no-divider` because the tab bar rules) |
+| tabs | `obs-tabs` with `icon`s; the active key is read back through a **MutationObserver on the reflected `value` attribute** |
+| edition card | `obs-tag` (`tag-primary` + check) · `obs-key-value variant="plain" columns="2"` · a term bar and a days-left ring (declared gaps) |
+| quota usage | **`obs-table expandable`** — `link` · text · `bar` · `sparkline` · `status` · `button` cells; the **expandable detail** holds the metering rule and the breakdowns (inline-styled: it is inner-HTMLed into the shadow root) |
+| range | `obs-radio as-button size="small"` — the DS's own *time range 1h/24h/7d/30d* example. ⚠️ `segmented` / `variant="segmented"` render a plain radio list; **`as-button`** is the attribute the element actually reads |
+| History | the **house drawer** (`stcDrOpen`), `obs-radio` range · **`obs-metric-list`** for the five figures · a line chart against the cap · `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
+| Upgrade Now | **`obs-modal`** "Activation Code" — the live flow exactly; `obs-input type="textarea" block`; the primary is disabled until a code is pasted and the hint says so; Activate replaces the licence (Annual Subscription, one year from today) and repaints |
+| EPS tab | `obs-metric-list` (four figures) · `obs-key-value` (the drop policy) · `obs-table` with `bar` cells · `obs-toolbar variant="widget"` tiles over line charts |
+
+- ⚠️ **THE TOKEN SCOPE GREW.** The scoped DS block's selectors are now
+  `#agPage,#licPage,#licHist,#licHistF{` (three places) — the page, the drawer body and the
+  drawer footer, because the drawer is portalled to `<body>`. `_verify/dsconf.py`'s regexes
+  were widened to `#agPage[^{]*\{` to keep matching; a bare `#agPage{` no longer exists.
+- ⚠️ **`licVal(e)`, not `agDet(e)`.** `agDet` tests `detail.length`, which is also true of a
+  string payload and would return its first character.
+- ⚠️ **`licNice`, not `agNice`, for these charts** — the 1/2/2.5/5/10 steps took a 951 eps
+  allocation to a 2,000 axis and a 5,000 cap to 10,000.
+- ⚠️ **obs-input's textarea group is a hardcoded 280px**; only its own `block` attribute
+  widens it. `rows` is not read.
+- ⚠️ **`obs-key-value`'s `status` field IS the label** — `{value:"Activated", status:"active"}`
+  renders the tag **"Active"** (the status map's word), not the value.
+- ⚠️ **`obs-modal` leaves `open` true after its own ✕** — it emits `cancel` and `close`; sync
+  `md.open = false` in the listener, and **close it before `stMainPaint()`** repaints the page.
+- ⚠️ **The window switch sets the table's `rows` and `columns` ATTRIBUTES** (raw JSON, not
+  `agJ`) — a repaint would rebuild the tabs and every open detail row under the pointer.
+
+### Deliberate differences from live, recorded so none is mistaken for the product
+
+- the live rows are bespoke **cards**; here they are `obs-table` rows and the breakdowns
+  moved into the expandable detail — the DS has no "card row with a meter";
+- History opens in a **drawer**, not a modal — the DS panel guide files drill-down detail
+  under the drawer and keeps the modal for confirm/collect, which is exactly what the
+  Activation Code dialog is (so that one stays a modal);
+- colours are **chart-palette tokens**, not the live `--license-*` palette (Tokyo Night hues);
+  the edition name is `--primary-alt` text, not a gradient; the status tag reads *Active*;
+- **Export prints** (the `stcExport` rule) where live snapshots the DOM to an image;
+- **the EPS ingest is seeded** (Log 212 · Flow 98 · APM 140 · RUM 61 of the live allocations)
+  because the instance is idle and every live counter reads 0; the licence and quota figures
+  are the instance's own;
+- no `‹` back button — the page sits beside the settings list here, as My Profile does.
+
+### Verifying it
+
+Headless shots via a stripped copy (`shot.sh` in the session scratch dir: Agentation loader
+removed, `stOpen('My Account','License')` injected, `--virtual-time-budget`, `alarm 45`) in
+both themes, both tabs, the drawer, the modal and the **completed activation** (which needs
+virtual time — see the next note). JS probes drove the expand chevron, the 7d switch (headers
+and change column follow), History (drawer, metric list, axis, footer), the drawer's own range,
+the paste box → button enable → Activate → repaint, and the EPS tab (5 tiles, 4 rows, KPIs).
+`lxbehave` **57/57 ×8** · `behave` **63/63** · `harness … query` **77/77** · the DS conformance
+checker (a `dsconf.py` variant isolating `#licPage`, gaps `chart` + `gauge` declared) scores
+**100/100 on both tabs** (layout 97). ⚠️ The Agentic AI check reads **87/100 (component 58)** both
+before and after this change — measured against the pre-change module files — so the 100 / 89
+recorded on 1 Sep is stale, not a regression. The rendered `#licPage` carries **0 hex / rgb literals**; `validate_usage` flags only `--btn-radius` and
+`--widget-border-radius`, which are the scoped block's runtime names for the DS structural
+tokens (the recorded LESS-vs-runtime divergence).
+⚠️ **THE EXTENSION'S TABS ARE HIDDEN** (`document.visibilityState === 'hidden'`) while the
+user is not looking at that window: `setTimeout` is throttled to once a minute, and every
+screenshot fails with *"Script injection timed out"*. The 900 ms activation timer "never
+fired" and the page "froze" for an hour before this was measured. Sync JS probes still work
+there; anything timer-, animation- or screenshot-shaped goes headless.
+
 ## Responsive — the seven target resolutions
 
 All three pages are verified at **1280×720 · 1366×768 · 1440×900 · 1536×864 · 1600×900 ·
@@ -5255,7 +5469,7 @@ statuses" shape.
 - **`.plrail` (44px)** — logo, Search, Iris, the `RAIL` modules, then Approval / Health /
   Notifications / avatar. **Icon-only, no labels, no hover-expand, no flyout.** 28px tile,
   18px glyph; active tile is `--pill`.
-- **`.plnav` (224px — was 216 until 3 Sep 2026, see below)** — a header (module name over its route, plus Search and Sidebar
+- **`.plnav` (280px — 216 until 3 Sep 2026, 224 until 7 Sep, see the two width notes below)** — a header (module name over its route, plus Search and Sidebar
   settings), then the rows.
 - ⚠️ **EXPLORER RENDERS FROM `EXPLORER_TREE`, EVERYTHING ELSE FROM `SUBNAV`/`SUBNAV2`.** The
   tree is the only source with real nesting and real counts, and nesting is what the pattern

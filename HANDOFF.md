@@ -1,119 +1,115 @@
-# Handoff — 2026-09-05 23:30
+# Handoff — 2026-09-07 15:01
 
 ## Read first
 
-Two places in `CLAUDE.md`, in this order:
+Three places in `CLAUDE.md`, in this order:
 
-1. **"Pages (variants)"** (near the top) — it now opens with the eight-option map. The folder
-   holds eight sidebar prototypes over the same content, and Options 6, 7 and 8 all descend from
-   Option 5's page. **A change meant for all of them is an eight-file change.**
-2. The sections for whichever option you are touching. The new ones are
-   **"Option 6 — the card sidebar"**, **"Option 7 — one column, no rail"** and
-   **"Option 8 — a second take on the nav column"**, each just above *Responsive*.
+1. **"Pages (variants)"** (near the top) — the eight-option map. Options 6, 7 and 8 descend from
+   Option 5's page; a change meant for all of them is an eight-file change.
+2. **"Option 5 — the narrow rail + nav column"**, especially the run of 7 Sep 2026 bullets under
+   *"Option 5 — an expand tile, and the column on the 34px pitch"* — today's work on that column,
+   each bullet with its request, what changed and why, and what it implies.
+3. **"Option 6 — the card sidebar" › "Option 5's 7 Sep column changes, ported"** — the map from
+   Option 5's `pl*` names to Option 6's `sk*` ones, and the two places they differ.
 
-Also read **"An init-aborting crash on Windows and Linux, in six files"** — it is the one bug
-this session found that affected everything, and it explains why no probe here could have caught
-it.
+Also still worth reading: **"An init-aborting crash on Windows and Linux, in six files"** (5 Sep) —
+no probe here could have caught it — and the previous session's **"Settings › My Account ›
+License"** section (unchanged today, still uncommitted).
 
 ## What we worked on this session
 
-Three new sidebar options were built and then refined request by request against screenshots:
-Option 6 from Plain's Sidekick, Option 7 from Notion, and Option 8 as a copy of Option 5 that
-diverged. Along the way three real bugs surfaced that had nothing to do with the new work — an
-init crash on non-Mac platforms, a hidden panel casting a shadow, and a rail painting over its
-own border.
+The sidebar column of **Option 5** (`dashboard-nav-column.html`), request by request from
+screenshots, then the same set ported to **Option 6** (`dashboard-card-sidebar.html`), then
+Option 6's Next steps card and licence line brought back into Option 5. All of it is the nav
+column; nothing on the canvas, the AI panel or Settings changed.
 
 ## Completed
 
-**New options, all registered in the switcher and in `_verify/lxbehave.py`:**
-
-- **Option 6 · `dashboard-card-sidebar.html`** — built from Plain's Sidekick, measured live in
-  the browser. Rail + column + a "Next steps" card of four real Settings destinations with a
-  count badge. Its floating-card look was **removed on request**, so both surfaces are flush now;
-  it boots collapsed.
-- **Option 7 · `dashboard-single-column.html`** — built from Notion, measured live. One 270px
-  column, **no icon rail at all**, modules expanding to their own pages with Explorer nesting
-  twice. Since refined a lot: Grafana's right-edge chevron, a neutral active fill, the workspace
-  four moved to an icon footer row, Recents/Starred/Workspace/the MODULES header/the pinned bar
-  all removed, popovers re-anchored, and the whole column put on one 2/8/12 spacing scale.
-- **Option 8 · `dashboard-nav-column-alt.html`** — a copy of Option 5, then diverged: collapse
-  hides the whole sidebar, hovering the 52px rail expands it to a labelled 190px sidebar over the
-  column, and the rail is modules only on the folder's 34px pitch.
-
-**Fixes that were not part of any request:**
-
-- **An init-aborting crash in six files** — `init()` dereferenced `#sbKbd`, which does not exist
-  in Options 5–8, inside a non-Mac branch. The dashboard never initialised on Windows or Linux.
-  Proved by spoofing `navigator.platform`; guarded in Options 1, 4, 5, 6, 7 and 8.
-- **Two paint bugs on Option 6**, both invisible to the DOM and found by sampling pixels: a
-  hidden panel casting a 24px shadow across the canvas, and the collapsed rail painting over the
-  sidebar's own 1px border.
-
-**Earlier in the session:** the Settings category list collapses to an icon rail in all five of
-the then-existing options, Option 5's Alert column and Setting column gained glyphs, and Option
-1's flyout columns were equalised at 288px.
-
-**A design canvas** was published for Option 7's spacing:
-https://claude.ai/code/artifact/eaf6c152-b520-4f27-b320-1fee95cb3d96 — the sidebar, the same
-sidebar with every gap measured, and the three-step scale. Built from the prototype's own tokens.
-
-**Suites at the end:** `harness … query` 77/77 on every page touched · `lxbehave` 57/57 ×8 ·
-`behave` 63/63 · per-option probes 52–109 assertions each, all green.
+- **Option 5 · rows with children carry an expand/collapse chevron** — the product's own
+  `chevron-right`, at the row's right edge, visible at rest, turned down when open. Monitor and
+  NCCM in Explorer; NetRoute, APM and Real User Monitoring in Alert.
+- **Option 5 · Alert is a collapsible tree**, derived from `SUBNAV['Alerts']` the way Option 1's
+  flyout reads it (`plAlertTree` / `plTreeFor`). Its views start folded; a parent row toggles
+  instead of navigating.
+- **Option 5 · the section caret is the product's `chevron-down`** (`PL_CAR`), replacing a
+  hand-drawn filled triangle.
+- **Option 5 · docs link, module-wise like Option 1** — a hover-revealed `DOCS ↗` chip on every
+  Explorer, Alert and Setting row linking to that row's own page (with the module's page as the
+  fallback), and one `<Module> documentation ↗` footer under the Dashboard, SLO and Report lists.
+  No paths were added; the data was inherited from Option 1's page.
+- **Option 5 · pin / unpin on Explorer rows** (`.plpin`, Option 1's `.mfpin`), with pinned
+  sub-modules rendered as rail tiles directly under Explorer. It moves the same `RAIL_PINS`
+  Option 1 and the Layout drawer's Sidebar tab use.
+- **Option 5 · the trailing controls are one aligned cluster** (`.plend`): pin · DOCS · count ·
+  chevron, with the count slot and chevron box reserved on every tree row so the four form
+  columns.
+- **Option 5 · the column foot, the Next steps card and the licence line**, ported from Option 6
+  (`.plcfoot` / `.plns` / `.pltrial`). The column's markup changed shape for it: `plPaint` now
+  writes into an inner `#plNav.plnavin`, and the three new pieces are static siblings after it.
+- **Option 6 · every one of the row-level changes above** ported into its `sk*` block (chevron,
+  Alert tree, DOCS chip and footer, pins and rail tiles, aligned cluster). No section-caret
+  change there — its sections carry a `+`, not a caret.
+- **Option 6 · the Next steps card's second row reads "Create user"** (was "Invite your team"),
+  the product's own name for the job. It still opens User Settings.
+- **Widths, measured**: Option 5's `--pl-nav` 224 → 264 → **280px**; Option 6's `--sk-nav`
+  281 → **296px**. Both because the DOCS chip (45px, in flow while invisible) and the reserved
+  count slot + chevron box clipped the longest labels (`Network Config Settings`, `Real User
+  Monitoring`).
+- **Verified**: Option 5 — a 78-assertion column probe, a 29-assertion Next-steps probe, the
+  seven-resolution `harness … query` 77/77 (once per width step); Option 6 — the same column probe
+  mapped onto the `sk` namespace, 73/73, an 8-check probe of the renamed step, `harness` 77/77.
+  Both themes screenshotted for every screen touched. `CLAUDE.md` records each change under its
+  option, including what each one implies.
 
 ## In progress
 
-Nothing mid-flight. Every change is applied, verified and written up.
-
-**Nothing is committed or published.** `git status` shows eleven modified files and three
-untracked ones (`dashboard-card-sidebar.html`, `dashboard-single-column.html`,
-`dashboard-nav-column-alt.html`). The three new options exist only on disk.
+Nothing mid-flight. **Nothing is committed or published.** `git status` shows today's two option
+files (`dashboard-nav-column.html`, `dashboard-card-sidebar.html`) plus `CLAUDE.md` / `HANDOFF.md`,
+on top of the previous session's still-uncommitted License work (`_settings-module.js`,
+`_settings-module.css`, `_verify/dsconf.py`).
 
 ## Next steps
 
-1. **Commit and publish.** The three new option files are untracked, so a `git add` is needed
-   before the Pages deploy or they will be missing from the live site.
-2. **The shadow bug is still live in six files.** `html[data-theme="light"] .dpanel{box-shadow:…}`
-   outranks `.dpanel.hid`'s `box-shadow:none` in Options 1, 2, 4, 5, 7 and 8. One line each —
-   the fix is in Option 6 to copy.
-3. **Option 1's Dashboard flyout is still wider than the others** (543 against 332) because of
-   its Starred column. Equalising it means deciding what happens to that column — narrow it,
-   stack it under the list, or drop it.
-4. **Options 2 and 3 are behind on the icon work** — their Dashboard, SLO and Alert flyout rows
-   still have no glyphs.
-5. Option 5's Report column has no glyphs, while Option 1's Report flyout does.
+1. **Commit and publish** — two sessions of work are uncommitted. `/publish` does it.
+2. **Decide on the two behaviours today's chevrons imply, both recorded, neither resolved**: one
+   parent opens at a time (`PL.sub` / `SK.sub` are single values), and an open parent still wears
+   the tinted `.on` row as well as the turned chevron — two signals for one state.
+3. **Options 7 and 8 carry none of today's column changes.** Option 8 is a copy of Option 5's
+   `pl*` block, so it is the same edit set; Option 7 has its own `nx*` list.
+4. The earlier list still stands: the `.dpanel` shadow bug in six files, Option 1's wider
+   Dashboard flyout, Options 2/3 behind on flyout icons.
 
 ## Decisions made
 
-- **Option 6 lost the floating cards and Option 7 lost most of its list, both on request.** Each
-  removed what made that option distinct, and both are recorded as such rather than quietly
-  dropped. Option 6's tokens and Option 7's removed renderers are kept unreferenced so either is
-  one edit from coming back.
-- **Every removal was checked for other doors first.** Before Search, Iris, the pinned bar or the
-  expand tile came out, the alternative routes to each were confirmed and written down.
-- **Option 7's active row is one signal, not four** — a neutral fill, with teal reserved for the
-  create rows. Chosen from four options put to the user.
-- **Icons always come from `observeops-icons/` first**, then Lucide or Tabler; never drawn by
-  hand. Recorded in the session memory as well as in `CLAUDE.md`.
+- **Match Option 1, not invent** — every control ported this session (chevron placement, the
+  DOCS chip and its hover reveal, the pin, the reserved-slot alignment) is Option 1's own pattern
+  in this column's shape; the reasoning lives once, at Option 5's rules, and Option 6's notes
+  point at it.
+- **Pay for hidden controls in width rather than take them out of flow.** The DOCS chip stays in
+  flow while invisible so labels never reflow under the cursor; the columns widened to fit, in
+  measured steps, never to a margin of 1–2px.
+- **Chips on tree menus, one footer on flat menus** — Option 1's own split. A per-action chip on
+  Dashboard's rows would link the same page N times.
+- **A real `<a>` inside the row's `<button>`** for the chip, tested in Chrome, so middle-click,
+  hover URL and copy-link keep working.
+- **"Create user"** over "Create a user" — the wording given, and the product's own term.
 
 ## Gotchas & notes
 
-- **A green probe is not a working feature, and this session proved it repeatedly.** Around a
-  dozen assertion failures were the tests' own fault, nearly all one cause: nodes captured before
-  a repaint. Re-query after anything that rebuilds a list, and keep a driver next to its
-  assertion.
-- **Measure the paint, not the DOM.** Three bugs reported correct values through
-  `getComputedStyle` while the screen showed something else — a covered border, a stray shadow, a
-  web component drawing outside its own box.
-- **Deleting a later CSS rule beats adding an earlier one.** Two fixes silently did nothing
-  because an older rule sat further down the sheet at equal specificity.
-- **Headless Chrome here prints the DOM and then does not exit.** Read stdout on timeout rather
-  than treating the timeout as failure.
-- **Probe copies must be re-made after every edit**, including any assets they link to, or you
-  verify the previous version.
-- The user views these over a local server with no cache headers, so a plain reload can serve the
-  old file. A hard reload or a `?v=` query is the fix — one report this session was a cached page,
-  not a bug.
-
-## Handoff
-
-Whole-project context is in [CLAUDE.md](CLAUDE.md).
+- **`harness.py` still reports phantom failures on an early read** — one run today said "49 of
+  77 FAILED" on a page that passed 77/77 immediately before and after, with no layout change in
+  between. A healthy run has exactly one verdict string; re-run before believing a red one.
+- **A width probe must measure the label against its own clipper**, and must be re-run after
+  every width step: 240 → 264 → 280 each surfaced a new longest label.
+- **Anchor-and-replace edits need the exact on-disk text.** A CLAUDE.md insert anchored on two
+  lines that read as adjacent in a filtered grep failed because they were 40 lines apart.
+- **Grep before naming.** `.skfoot` was already Option 6's icon-button foot, so its docs footer
+  is `.skdocf`; Option 5's foot buttons are `plTourBtn` / `plHelpBtn` / `plSetBtn` because an
+  element id is a window global and `plHelp()` is a function (Option 6 carries that exact
+  collision as `id="skHelp"` and survives it only because a function declaration wins the name).
+- **Headless Chrome prints the DOM and does not exit** — every `--dump-dom` probe here uses
+  `Popen` + `communicate(timeout)` + `killpg`, then parses. A plain invocation hangs the tool
+  for its full timeout with the answer already in the pipe.
+- The probe scripts (`probe.py`, `probe2.py`, `probe6.py`, `probe-ns5.py`) live in the session
+  scratchpad, not the repo; the `pl→sk` mapping in `probe6.py` is a string substitution and had
+  to drop the section-caret block by hand.

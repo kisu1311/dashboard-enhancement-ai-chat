@@ -7071,7 +7071,11 @@ html[data-theme="light"] #drawer-layout{
    ⚠️ `--sk-gap` / `--sk-r` / `--sk-ring` ARE KEPT AND UNREFERENCED — the house pattern, and what
    a revert would need. `--rail-w` is now the sidebar's own width, which is what `railWidth()`
    and the Agentic AI drawer's `agCfgSize()` both read. */
-:root{ --sk-gap:8px; --sk-rail:64px; --sk-nav:281px; --sk-w:calc(var(--sk-rail) + var(--sk-nav));
+/* ⚠️ `--sk-nav` WAS PLAIN'S MEASURED 281 AND IS 296 SINCE 7 Sep 2026 — the Option 5 port put a hover-
+   revealed DOCS chip (45px, in flow while invisible) and a reserved count slot + chevron box on every
+   tree row, and `Real User Monitoring` in the Alert column then clipped by 3px at 281. Measured, not
+   rounded: 296 leaves 12 in hand. Everything else reads the token (`--sk-w`, `--rail-w`, the peek). */
+:root{ --sk-gap:8px; --sk-rail:64px; --sk-nav:296px; --sk-w:calc(var(--sk-rail) + var(--sk-nav));
        --sk-r:12px; --sk-ring:0 0 0 1px var(--border), 0 1px 1px rgba(0,0,0,.06);
        --rail-w:var(--sk-w); --rail-w-open:var(--sk-w) }
 .shell{padding-left:var(--rail-w)}
@@ -7173,6 +7177,53 @@ body.pinned .shell{padding-left:var(--rail-w)}
 .skrow.on .skn{color:var(--teal);opacity:.8}
 /* a child (Explorer's tree): its glyph starts under the parent's TEXT (+40), smaller, dimmer */
 .skrow.sub{padding-left:40px;font-size:12px;color:var(--text-dim)}
+/* ── ported from Option 5, 7 Sep 2026 ("those changes also apply in option 6"). Same reasoning as
+   there, recorded once at Option 5's rules; here only what differs is noted. ──────────────────── */
+/* the expand/collapse chevron on a row that HAS children — the product's `chevron-right` (`SK_CV`),
+   at the row's right edge, visible at rest; points right shut, down open (`.skopen`, not a bare
+   `open` — `.sidebar.open` is the rail's own state class) */
+.skrow .skcv{flex:0 0 12px;width:12px;height:12px;fill:currentColor;opacity:.55;transition:transform .15s}
+.skrow:hover .skcv,.skrow.on .skcv{opacity:.9}
+.skrow.skopen .skcv{transform:rotate(90deg)}
+/* Datadog's `DOCS ↗` chip on the row — Option 1's `.mfdocs` numbers; hover-revealed, in flow while
+   invisible so the label cannot reflow under the cursor; a real `<a>` inside the row's `<button>`
+   (measured in Chrome: a hit-tested click follows the href and, with `stopPropagation`, does not
+   fire the row) */
+.skrow .skdoc{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;height:16px;padding:0 4px;
+  border-radius:3px;background:var(--chip);font-size:8.5px;font-weight:700;letter-spacing:.07em;
+  color:var(--text-dim);text-decoration:none;opacity:0;transition:opacity .12s,color .12s,background .12s}
+.skrow:hover .skdoc,.skrow.skopen .skdoc{opacity:.75}
+.skrow .skdoc:hover{opacity:1;color:var(--teal);background:var(--sel)}
+.skrow .skdoc .ext{font-size:8px;line-height:1;opacity:.7}
+/* the pin — Option 1's `.mfpin` on the Explorer rows only: hover-revealed, always shown and filled
+   teal once pinned; a `<span role="button">`, since a button inside the row's button eats clicks */
+.skrow .skpin{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;border-radius:4px;
+  color:var(--text-dim);cursor:pointer;opacity:0;transition:opacity .12s,color .12s,background .12s}
+.skrow .skpin svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.85;
+  stroke-linecap:round;stroke-linejoin:round}
+.skrow:hover .skpin,.skrow .skpin.pinned{opacity:.75}
+.skrow .skpin:hover{opacity:1;color:var(--text);background:var(--hover-side)}
+.skrow .skpin.pinned{color:var(--teal)}
+.skrow .skpin.pinned svg{fill:currentColor}
+/* the trailing controls are ONE flush-right cluster (Option 1's `.mfend`): pin · DOCS · count ·
+   chevron, 5px inside, the row's own 11 outside — and the count slot and chevron box are RESERVED
+   on every tree row (`.ph`: box kept, nothing painted), which is what puts the four in columns */
+.skrow .skend{margin-left:auto;display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
+.skrow .skend .skn{min-width:14px;text-align:right}
+.skrow .skend .ph{visibility:hidden}
+/* a pinned sub-module's tile on the rail, under Explorer; no pin mark at 64px, as on Option 1's
+   collapsed rail — the tooltip names it and the column's row shows the filled pin */
+.skib.skpinned .ic{opacity:.85}
+/* the documentation footer for a column whose rows are ACTIONS (Dashboard · SLO · Report) — the
+   last line inside `.skbody`. ⚠️ `.skdocf`, because `.skfoot` is this column's own icon-button
+   foot 30 lines down; the collision this file's notes warn about, avoided by grepping first. */
+.skdocf{display:flex;align-items:center;gap:8px;margin:14px 0 0;padding:10px 11px 2px;
+  border-top:1px solid var(--pop-line,var(--border));font-size:12px;color:var(--text-dim);
+  text-decoration:none;white-space:nowrap}
+.skdocf:hover{color:var(--teal)}
+.skdocf svg{flex:0 0 13px;width:13px;height:13px}
+.skdocf span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.skdocf .ext{flex:0 0 auto;font-size:10px;opacity:.8}
 /* a titled section — Plain's "Active": 12px/550 grey over a 24px row with the `+` at its end.
    The `+` overhangs the 8px inset by 8 so its box lands on the rows' right edge, as measured. */
 .sksec{display:flex;align-items:center;justify-content:space-between;height:24px;margin:16px 0 4px;padding:0 0 0 8px;
@@ -24544,6 +24595,45 @@ const SK_COL  = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0
 const SK_CHEV = '<svg class="skch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
 const SK_DONE = '<svg class="skch" viewBox="0 0 24 24"><path d="M5 12l4 4L19 7"/></svg>';
 const SK_X    = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+/* ── ported from Option 5 (7 Sep 2026) — the docs chip / footer, the pin, the row chevron and the
+   Alert tree. The reasoning lives at Option 5's `PL_*` twins; this is the same code in the `sk`
+   namespace, differing only where this column's markup does. ──────────────────────────────── */
+/* the product's `chevron-right`, verbatim on its 48 grid; `.skcv` sizes the box */
+const SK_CV   = '<svg class="skcv" viewBox="0 0 48 48"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+const SK_DOCS_BASE = 'https://docs.motadata.com/motadata-aiops-docs/';
+const SK_CHIP_COLS = { Explorer:1, Alert:1, Setting:1 };   /* Option 1's `mfTree` menus get chips; flat menus a footer */
+const skDocOf = n => { try { return (MOD_DOCS && MOD_DOCS[n]) || null; } catch (e) { return null; } };
+const skRowDoc = (name, label, kind) => {
+  if (kind === 'sub') return null;
+  if (name === 'Setting'){ try { if (MF_ST_DOCS[label]) return MF_ST_DOCS[label]; } catch (e) {} }
+  return skDocOf(name);
+};
+const skDocChip = p => p ? `<a class="skdoc" tabindex="-1" target="_blank" rel="noopener" href="${SK_DOCS_BASE}${p}" onclick="event.stopPropagation()">DOCS<span class="ext">↗</span></a>` : '';
+const SK_BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-1.5Z"/><path d="M8 7h7M8 11h7"/></svg>';
+function skDocsFoot(name){
+  const p = skDocOf(name); if (!p) return '';
+  return `<a class="skdocf" href="${SK_DOCS_BASE}${p}" target="_blank" rel="noopener">${SK_BOOK}<span>${name} documentation</span><span class="ext">↗</span></a>`;
+}
+const skPinBtn = l => `<span class="skpin${railPinned(l) ? ' pinned' : ''}" role="button" data-tip="${railPinned(l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" aria-pressed="${railPinned(l)}" onclick="event.stopPropagation();railPinToggle(${mfAttr(l)})">${MF_PIN}</span>`;
+/* Alert as a tree — Option 1's `mfTreeFor('Alert')` reading of `SUBNAV['Alerts']` (a non-`sub` row
+   is a tab, the `sub` rows after it its dropdown), rebuilt here to carry the fifth-slot glyph */
+let SK_ALERT_TREE = null;
+function skAlertTree(){
+  if (SK_ALERT_TREE) return SK_ALERT_TREE;
+  const t = [];
+  try {
+    (SUBNAV['Alerts'] || []).forEach(sec => (sec.items || []).forEach(([l, mod, act, kind, ic]) => {
+      if (kind === 'sub'){ const par = t[t.length - 1]; if (par){ (par.kids = par.kids || []).push([l, mod, act, ic]); par.kidsAs = 'views'; } }
+      else t.push({ l, mod, act, ic });
+    }));
+  } catch (e) {}
+  return (SK_ALERT_TREE = t);
+}
+function skTreeFor(name){
+  if (name === 'Explorer') return (typeof EXPLORER_TREE !== 'undefined') ? EXPLORER_TREE : null;
+  if (name === 'Alert') return skAlertTree();
+  return null;
+}
 
 /* ⚠️ ONE FUNCTION MOVES THE COLUMN — class, tooltip and canvas refit cannot get out of step.
    `fitCanvas` runs after: the canvas just gained or lost 281px. */
@@ -24599,10 +24689,19 @@ function skRailPaint(){
     `<div class="skib skexp" id="skExpand" data-tip="Expand sidebar" onclick="skColExpand()">${SK_COL}</div>` +
     `<div class="skib" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg></div>` +
     `<div class="skib airail" id="sbAI" data-tip="Iris" onclick="aiOpen()">${AI_SPARK ? `<svg class="ic" viewBox="0 0 48 48">${AI_SPARK.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>` : ''}</div>` +
-    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) =>
-      `<div class="skib${i === activeRail ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
-         onmouseenter="skPeek(${i})">${ico(r.icon)}</div>`
-    ).join('');
+    railOrdered().filter(({r}) => !RAIL_HIDDEN.has(r.name)).map(({r, i}) => {
+      /* a pinned sub-module sits directly under Explorer — Option 1's `pinsFor('Explorer')` band as
+         tiles, from the inherited `railPinsOrdered` / `railPinRow` / `railPinActive` / `pickPin`;
+         when a pinned module is active its tile lights and Explorer's does not (`railRowHTML`'s rule) */
+      const pins = (r.name === 'Explorer' && typeof railPinsOrdered === 'function') ? railPinsOrdered().map(l => {
+        const p = railPinRow(l); if (!p) return '';
+        return `<div class="skib skpinned${railPinActive() === l ? ' on' : ''}" data-tip="${p.l}" data-pin="${p.l}"` +
+               ` onclick="pickPin(${mfAttr(l)})" onmouseenter="skPeek(${i})">${ico(p.ic)}</div>`;
+      }).join('') : '';
+      const lit = i === activeRail && !(r.name === 'Explorer' && railPinActive());
+      return `<div class="skib${lit ? ' on' : ''}" data-tip="${r.name}" onclick="pickRail(${i})"
+         onmouseenter="skPeek(${i})">${ico(r.icon)}</div>` + pins;
+    }).join('');
   setIco(document.getElementById('sbSearchIc'), 'search');
 }
 
@@ -24621,10 +24720,17 @@ function skSubtitle(r){
 function skRowHTML(label, mod, act, o){
   o = o || {};
   const glyph = o.grp ? `<span class="sktile">${skIco(o.ic, 'skic')}</span>` : skIco(o.ic, o.icls || 'skic');
-  return `<button class="skrow${o.sub ? ' sub' : ''}${o.grp ? ' grp' : ''}${o.on ? ' on' : ''}"` +
+  /* trailing cluster pin · DOCS · count · chevron; `tree` reserves the count slot and chevron box
+     on every row so the two controls before them align (`.skend`, `.ph`) */
+  const end =
+    (o.pin ? skPinBtn(o.pin) : '') +
+    skDocChip(o.doc) +
+    (o.n != null ? `<span class="skn">${o.n}</span>` : (o.tree ? '<span class="skn ph"></span>' : '')) +
+    (o.kids ? SK_CV : (o.tree ? SK_CV.replace('class="skcv"', 'class="skcv ph"') : ''));
+  return `<button class="skrow${o.sub ? ' sub' : ''}${o.grp ? ' grp' : ''}${o.on ? ' on' : ''}${o.open ? ' skopen' : ''}"` +
     (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
     `>${glyph}<span class="skt">${label}</span>` +
-    (o.n != null ? `<span class="skn">${o.n}</span>` : '') + `</button>`;
+    (end ? `<span class="skend">${end}</span>` : '') + `</button>`;
 }
 
 /* Explorer renders its tree (nesting + counts); every other module its sections. The FIRST
@@ -24634,10 +24740,13 @@ function skRowHTML(label, mod, act, o){
    "New …" row: it has no header to hang a `+` on. */
 function skBodyHTML(){
   const r = skCur();
-  if (r.name === 'Explorer' && typeof EXPLORER_TREE !== 'undefined')
-    return EXPLORER_TREE.map(t => {
+  const tree = skTreeFor(r.name);   /* Explorer's own tree, or Alert's derived one; pinning stays Explorer's only */
+  if (tree)
+    return tree.map(t => {
       const open = SK.sub === t.l;
-      return skRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:skCount(t), on:open, click: t.kids ? `skSub(${mfAttr(t.l)})` : null }) +
+      return skRowHTML(t.l, t.mod, t.act, { ic:t.ic, n:skCount(t), on:open, kids:!!t.kids, open, tree:true,
+               pin: r.name === 'Explorer' ? t.l : null, doc: t.doc || skDocOf(r.name),
+               click: t.kids ? `skSub(${mfAttr(t.l)})` : null }) +
         (open && t.kids ? t.kids.map(([label, mod, act, ic]) => skRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
     }).join('');
   const secs = skSecs(r.name);
@@ -24648,12 +24757,13 @@ function skBodyHTML(){
     const rows = (s.items || []).filter(it => !(titled && it[3] === 'plus')).map(([label, mod, act, kind, ic]) => {
       if (!ic && r.name === 'Setting') ic = skStIc(label);
       return skRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
-        { ic, icls: kind === 'plus' ? 'skic plus' : null, sub: kind === 'sub', grp: titled }); }).join('');
+        { ic, icls: kind === 'plus' ? 'skic plus' : null, sub: kind === 'sub', grp: titled,
+          doc: SK_CHIP_COLS[r.name] ? skRowDoc(r.name, label, kind) : null }); }).join('');
     if (!titled) return rows;
     return `<div class="sksec"><span class="skt">${s.h}</span>` +
       (plus ? `<button class="skadd" data-tip="${plus[0].replace('＋ ', '')}" onclick="mfGo(${mfAttr(plus[1])},${mfAttr(plus[2])})">${ico('plus', 'skplus')}</button>` : '') +
       `</div>` + rows;
-  }).join('');
+  }).join('') + (SK_CHIP_COLS[r.name] ? '' : skDocsFoot(r.name));
 }
 
 function skPaint(){
@@ -24684,12 +24794,12 @@ function skLicence(){
    The four here are this product's own first-run jobs, and EVERY ONE IS A REAL DESTINATION:
    a Settings category from the harvested `ST_TREE`, opened through `stOpen`, its glyph the
    category's own. ⚠️ A step is marked done when it is VISITED — the prototype has no way to
-   know a discovery ran or a user was invited, and pretending otherwise would be inventing
+   know a discovery ran or a user was created, and pretending otherwise would be inventing
    product state. The card can be dismissed (✕) and brought back from the rail's rocket, whose
    badge counts what is still open, as Plain's "N steps remaining" does. */
 const SK_STEPS = [
   { l:'Discover your devices',  cat:'Discovery Settings' },
-  { l:'Invite your team',       cat:'User Settings' },
+  { l:'Create user',            cat:'User Settings' },   /* the product's own job name ("Create User" in User Settings › Users), request 7 Sep 2026 — was "Invite your team", Plain's wording */
   { l:'Connect an AI provider', cat:'Agentic AI' },
   { l:'Set up alert policies',  cat:'Policy Settings' },
 ];
@@ -24720,6 +24830,9 @@ const skShowView0 = showView;
 showView = function(v){ skShowView0(v); skPaint(); };
 const skRenderMenu0 = renderMenu;
 renderMenu = function(){ skRenderMenu0(); skRailPaint(); };
+/* the column's row must follow a pin toggle too, or it keeps its old pin while the rail has changed */
+const skRailPinToggle0 = railPinToggle;
+railPinToggle = function(l){ skRailPinToggle0(l); skPaint(); };
 
 skPaint();
 </script>

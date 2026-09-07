@@ -2312,3 +2312,502 @@ function agCfgSave(){
    ReferenceError that aborts the whole block. Re-add both together or neither. */
 agSeed();   /* see the note at `agSeed` — it must run after AG_TASKS is initialised */
 ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   PRODUCT LICENSE  —  Settings › My Account › License, built on the ObserveOps design system
+   (7 Sep 2026). Read off live build 10.0.1 at /settings/my-account/license — the DOM, the
+   computed styles, the Vue components (LicenseDetails · LicenseQuotaUsageTab · LicenseQuotaRow
+   · LicenseHistoryModal · ActivationCodeModal · LicenseEpsTab) and their handlers out of the
+   settings chunk — and the ObserveOps License Guide
+   (docs.motadata.com/observeops-docs/getting-started/license-guide), whose per-module metering
+   rules are the detail text under each quota row.
+
+   The FLOW is the live one; the PARTS are the DS's (every element below is in the registry):
+   · header        obs-page-header · Export (default, download icon) · Upgrade Now (primary)
+   · two tabs      obs-tabs — License & Quota Usage | EPS Trend Breakdown (icons as live)
+   · edition card  obs-tag + obs-key-value (plain, 2 columns) + a term bar + a days-left ring
+   · quota usage   obs-table — link · text · bar · sparkline · status · button cells, EXPANDABLE
+                   rows carrying the metering rule and the breakdowns; obs-radio as-button for
+                   the 7d / 15d / 30d window (the DS's own "time range 1h/24h/7d/30d" example)
+   · history       the house drawer (stcDrOpen): obs-radio range · obs-metric-list for the
+                   five figures · a line chart against the licence cap · Close · Export as CSV
+                   (a real file, the live's own columns: date,resource,value,cap,utilization_pct)
+   · Upgrade Now   obs-modal "Activation Code" — the live's flow exactly: the current code with
+                   a copy button, a mailto to support, a paste box, Cancel · Activate License
+   · EPS tab       obs-metric-list (the four figures) · obs-key-value (the drop policy) ·
+                   obs-table with bar cells (allocation by signal) · obs-toolbar variant="widget"
+                   tiles over line charts, dashed at the allocation
+
+   ⚠️ DECLARED data-viz GAPS (the DS ships no chart element): the days-left ring (gauge), the
+   term bar and the by-type stacked bar (bar), the history and EPS line charts (trend-line).
+   They carry class="licchart" / "licgauge" so the conformance checker resolves the archetype,
+   and every colour in them is a token — series from the chart palette, never --primary.
+
+   ⚠️ DELIBERATE DIFFERENCES FROM LIVE, recorded so nothing here is mistaken for the product:
+   · the live rows are bespoke CARDS (a 3px accent border, a 12px meter, a Highcharts sparkline
+     in the corner); here they are obs-table rows — the DS has no "card row with a meter", and
+     the table has every cell type the row needs. The breakdowns (agentless/agent split, BY TYPE
+     stacked bar, monolith/agent split) moved into the expandable detail, which is also where
+     the docs' metering rule now lives;
+   · history opens in a DRAWER, not the live's 720px modal. The DS panel guide files drill-down
+     detail under the drawer ("~90% deep drill-downs") and keeps the modal for confirm/collect —
+     which is exactly what the Activation Code dialog is, so THAT one stays a modal, as live;
+   · colours are chart-palette tokens, not the live's own --license-* palette; the edition name
+     is --primary-alt text, not a gradient (no token owns one); the status reads "Active" — the
+     label the DS status map gives the "active" key — where live prints "Activated";
+   · Export prints (the browser's own PDF writer, the stcExport rule) where live snapshots the
+     page to an image with html2canvas;
+   · the EPS figures are SEEDED — the instance is idle and every live counter there reads 0, so
+     charts drawn from it would have nothing to say. The licence and quota figures are the
+     instance's own (170 of 5,000 devices, +15 over 30 days, 1 NCCM device, 2 RUM apps …).
+   ⚠️ `licVal(e)` UNWRAPS obs-* EVENT PAYLOADS. `agDet` tests `detail.length`, which is also
+   true of a plain STRING payload and would hand back its first character — obs-input's `input`
+   detail is `[value]` today, but the guard costs nothing.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false };
+const LIC_RANGES = [{ value:7, label:'7d' }, { value:15, label:'15d' }, { value:30, label:'30d' }];
+const LIC_TABS = [{ key:'usage', label:'License & Quota Usage', icon:'tacho-meter' },
+                  { key:'eps',   label:'EPS Trend Breakdown',   icon:'heart-rate' }];
+
+const LIC_DATA = {
+  edition: { name:'Infinity', chip:'Unified Edition',
+    blurb:'One edition for the full-stack observability platform.',
+    blurb2:'devices for the base, add-on modules metered by their own unit.' },
+  /* the instance's own licence: a Free edition issued 17 Jul 2026, expiring 17 Aug 2030 */
+  license: { type:'Free', issued:'2026-07-17', expires:'2030-08-17', account:'Motadata',
+    status:'active', code:'OBSV-INF-2026-7K2Q-M4XD-9RTA-B5CE-U8HW' },
+  /* the six entitlements, in the live order, with the live figures. `delta` is the change over
+     the 30-day window the live sparkline reported; `rule` is the License Guide's metering note;
+     `trend` marks the two whose history the live plots WITHOUT a cap line (its `trendType`) */
+  quotas: [
+    { key:'device', title:'Monitored Devices', token:'DEV · base platform', icon:'server', tok:'--chart-indigo',
+      used:170, total:5000, unit:'devices', delta:15,
+      rule:'Per provisioned entity — one license per network device, server, VM, application, database, storage, WAN link or NetRoute; one per two wireless access points. Interfaces, processes and services are not licensed, and an entity monitored both agentlessly and by agent counts once.',
+      sub:[{ label:'Agentless (SNMP / API / WMI)', value:170, tok:'--chart-indigo' }, { label:'Agent-based', value:0, tok:'--chart-emerald-green' }],
+      deploy:[{ label:'Cloud', value:86, tok:'--chart-indigo' }, { label:'Servers', value:28, tok:'--chart-emerald-green' },
+              { label:'Network Devices', value:14, tok:'--chart-neon-purple' }, { label:'Virtualization', value:6, tok:'--chart-amber' },
+              { label:'HCI', value:2, tok:'--chart-hot-pink' }, { label:'Other', value:1, tok:'--chart-rose-red' }, { label:'Database', value:1, tok:'--chart-aqua' }] },
+    { key:'flow', title:'Flow Sources', token:'FSRC · add-on', icon:'flow', tok:'--chart-emerald-green',
+      used:0, total:100, unit:'exporters', delta:0, trend:true,
+      rule:'Per flow source — one license per unique flow exporter. Several flow protocols or interfaces from one exporter count as one source; metering is by exporter count, not flows per second or data volume.' },
+    { key:'log', title:'Log Sources', token:'LSRC · add-on', icon:'log', tok:'--chart-neon-purple',
+      used:0, total:100, unit:'sources', delta:0, trend:true,
+      rule:'Per log source — one license per unique log-emitting source (hostname, IP, agent id or application id). Several log types or files from one source count as one source; metering is by source count, not data volume.' },
+    { key:'nccm', title:'NCCM Managed Devices', token:'NDEV · add-on', icon:'ncm', tok:'--chart-hot-pink',
+      used:1, total:100, unit:'devices', delta:0,
+      rule:'Per managed network device — one license per device under configuration and firmware management, counted independently of whether the device is also a monitored entity.' },
+    { key:'apm', title:'APM Instrumented Units', token:'APP · AGT · add-on', icon:'apm', tok:'--chart-amber',
+      used:0, total:52, unit:'units', delta:0,
+      rule:'Per instrumented application instance for a monolith, per APM agent for microservices — one agent covers every service on its node or cluster.',
+      sub:[{ label:'Applications (monolith)', value:0, of:52, tok:'--chart-amber' }, { label:'Agents (microservices)', value:0, of:0, tok:'--chart-golden-yellow' }] },
+    { key:'rum', title:'RUM Front-end Apps', token:'FEA · add-on', icon:'rum', tok:'--chart-aqua',
+      used:2, total:50, unit:'apps', delta:0,
+      rule:'Per instrumented front-end application — one license per unique instrumented web or mobile front-end application.' },
+  ],
+  /* the EPS tab. The hardware ceiling and the per-signal allocations are the instance's; the
+     live ingest is seeded (see the header note) */
+  eps: { ceiling:765,
+    notify:'On a telemetry threshold breach an admin is alerted — nothing is dropped.',
+    drop:'At 100% sustained for 60 s, excess events are shed to protect ingestion.',
+    signals:[ { key:'log',  label:'Log',  icon:'log',  tok:'--chart-neon-purple',  alloc:314, live:212 },
+              { key:'flow', label:'Flow', icon:'flow', tok:'--chart-emerald-green', alloc:152, live:98 },
+              { key:'apm',  label:'APM',  icon:'apm',  tok:'--chart-amber',        alloc:266, live:140 },
+              { key:'rum',  label:'RUM',  icon:'rum',  tok:'--chart-aqua',         alloc:219, live:61 } ] },
+};
+
+/* ── helpers ────────────────────────────────────────────────────────────────────────────── */
+const licVal  = e => (e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail);
+const licFmt  = n => Number(n || 0).toLocaleString('en-US');
+const licDate = (d, o) => d.toLocaleDateString('en-US', o);
+const licLong = d => licDate(d, { month:'long', day:'numeric', year:'numeric' });            /* August 17, 2030 */
+const licFull = d => licDate(d, { weekday:'short', month:'short', day:'2-digit', year:'numeric' }); /* Sat, Aug 08, 2026 */
+const licMY   = d => licDate(d, { month:'short', year:'numeric' });                          /* Jul 2026 */
+const licToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const licQuota = k => LIC_DATA.quotas.find(q => q.key === k);
+/* a finer "nice" ceiling than agNice's 1 / 2 / 2.5 / 5 / 10 — those steps took a 951 eps
+   allocation to a 2,000 axis and a 5,000 cap to 10,000, squashing the line into the bottom
+   quarter. Round values still land on the gridlines; the headroom is just smaller. */
+function licNice(max){
+  const p = Math.pow(10, Math.floor(Math.log10(max || 1))), m = (max || 1) / p;
+  return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find(x => m <= x) || 10) * p;
+}
+/* its own PRNG — `rng()` is Option 1's and this file is loaded by more than one page */
+function licRng(seed){ let s = (seed % 2147483647) || 1; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+
+/* daily consumption over the window, ending at the row's CURRENT figure. Deterministic per
+   row + window, so a repaint never redraws a different history; the 30-day change is the
+   instance's own (+15 devices) and a shorter window takes a proportional share of it. */
+function licSeries(q, days){
+  const r = licRng(q.key.length * 7919 + days * 131 + q.used * 17 + 1);
+  const delta = Math.round((q.delta || 0) * days / 30), start = Math.max(0, q.used - delta);
+  const w = [...Array(days)].map(() => 0.35 + r()), tot = w.reduce((a, b) => a + b, 0);
+  let carried = 0; const out = [start];
+  for (let i = 0; i < days; i++){ carried += delta * w[i] / tot; out.push(Math.min(q.used, start + Math.round(carried))); }
+  out[days] = q.used;
+  return out;
+}
+function licStats(q, s){
+  const avg = Math.round(s.reduce((a, b) => a + b, 0) / s.length);
+  return { current:q.used, start:s[0], peak:Math.max(...s), avg, change:q.used - s[0] };
+}
+/* the DS status map has no "watch" level, so a row is healthy until it is over its allotment */
+const licLevel = q => (q.total && q.used >= q.total) ? 'critical' : 'healthy';
+
+/* ── the page ───────────────────────────────────────────────────────────────────────────── */
+function licHTML(){
+  return `<div class="licpage" id="licPage">${licHeadHTML()}
+    <div class="lictabs"><obs-tabs id="licTabs" tabs="${agJ(LIC_TABS)}" value="${LIC.tab}">
+      <div slot="usage">${licUsageHTML()}</div>
+      <div slot="eps">${licEpsHTML()}</div>
+    </obs-tabs></div>
+    ${licActHTML()}
+  </div>`;
+}
+
+/* Organisms/PageHeader — `heading`, the product's file-certificate mark in `before`, and the
+   two actions in the default slot. `no-divider`: the tab bar directly beneath draws its own
+   rule, and two hairlines 44px apart is what the live page avoids too. */
+function licHeadHTML(){
+  return `<div class="lichead"><obs-page-header heading="Product License" no-divider>
+    <span slot="before" class="lichmk">${agIc('file-certificate', 26)}</span>
+    <span class="lichact">
+      <obs-button variant="default" onclick="agTap(licExport)">${agIc('download', 14)}Export</obs-button>
+      <obs-button variant="primary" onclick="agTap(licActOpen)">Upgrade Now</obs-button>
+    </span>
+  </obs-page-header></div>`;
+}
+
+/* ── tab 1 · License & Quota Usage ──────────────────────────────────────────────────────── */
+function licUsageHTML(){
+  return licHeroHTML() + `
+    <div class="licsec"><h3>License &amp; Quota Usage</h3>
+      <span class="lichint">Expand a row for its metering rule · History opens the trend and a CSV export</span>
+      <obs-radio id="licRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${LIC.range}"></obs-radio></div>
+    <obs-table id="licTable" row-key="id" expandable sortable="false"
+      columns="${agJ(licCols())}" rows="${agJ(licRows())}"></obs-table>`;
+}
+
+/* the edition card. Left: what the edition is; middle: the record (obs-key-value) and the term
+   as a bar; right: days left as a ring (data-viz gauge — a single value read against a range,
+   which is the registry's own test for a gauge). */
+function licHeroHTML(){
+  const L = LIC_DATA.license, E = LIC_DATA.edition;
+  const issued = new Date(L.issued + 'T00:00:00'), expires = new Date(L.expires + 'T00:00:00'), today = licToday();
+  const total = Math.round((expires - issued) / 864e5), left = Math.max(0, Math.round((expires - today) / 864e5));
+  const done = Math.min(1, Math.max(0, (today - issued) / (expires - issued)));
+  const r = 56, C = 2 * Math.PI * r, off = C * (1 - Math.min(1, left / total));
+  const kv = [['License Type', L.type], ['Issue Date', licLong(issued)], ['Account', L.account],
+              { label:'Status', value:'Activated', status:L.status }];
+  return `<div class="lichero">
+    <div class="liced">
+      <div class="liceye">${agIc('licence', 14)}ObserveOps Edition</div>
+      <div class="licname">${stEsc(E.name)}<span class="inf" aria-hidden="true">∞</span></div>
+      <obs-tag variant="tag-primary">${agIc('check', 12)} ${stEsc(E.chip)}</obs-tag>
+      <p class="licblurb">${stEsc(E.blurb)} <b>Licensed by what you monitor</b> — ${stEsc(E.blurb2)}</p>
+    </div>
+    <div class="licmeta">
+      <obs-key-value variant="plain" columns="2" items="${agJ(kv)}"></obs-key-value>
+      <div class="licterm"><span>${licMY(issued)}</span>
+        <span class="lictrack licchart" role="img" aria-label="${Math.round(done * 100)}% of the license term elapsed"><span class="licfill" style="width:${(done * 100).toFixed(2)}%"></span></span>
+        <span>${licMY(expires)}</span></div>
+    </div>
+    <div class="licring">
+      <svg class="licgauge" viewBox="0 0 128 128" role="img" aria-label="${left} days left of ${total}">
+        <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--neutral-lighter)" stroke-width="10"/>
+        <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--chart-indigo)" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90 64 64)"/>
+        <text x="64" y="62" text-anchor="middle" font-size="24" font-weight="600" fill="var(--page-text-color)">${licFmt(left)}</text>
+        <text x="64" y="79" text-anchor="middle" font-size="9" font-weight="600" letter-spacing=".08em" fill="var(--neutral-regular)">DAYS LEFT</text>
+      </svg>
+      <div class="licexp"><span>Expires</span><b>${licLong(expires)}</b></div>
+    </div>
+  </div>`;
+}
+
+/* the quota grid. Declared as a function because two headers name the window. */
+function licCols(){
+  return [
+    { key:'name',   title:'Entitlement', type:'link',  width:'19%' },
+    { key:'token',  title:'Metric',                    width:'17%' },
+    { key:'used',   title:'Used',        align:'right', width:'7%' },
+    { key:'total',  title:'Allotted',    align:'right', width:'11%' },
+    { key:'pct',    title:'Usage',       type:'bar',   width:'10%' },
+    { key:'remain', title:'Remaining',   align:'right', width:'8%' },
+    { key:'trend',  title:'Trend · ' + LIC.range + 'd',  type:'sparkline', width:'10%' },
+    { key:'change', title:'Change · ' + LIC.range + 'd', align:'right', width:'8%' },
+    { key:'status', title:'Status',      type:'status', width:'7%' },
+    { key:'hist',   title:'',            type:'button', width:'3%' },
+  ];
+}
+function licRows(){
+  return LIC_DATA.quotas.map(q => {
+    const s = licSeries(q, LIC.range), ch = q.used - s[0];
+    return { id:q.key, name:{ text:q.title, icon:q.icon }, token:q.token,
+      used:licFmt(q.used), total:licFmt(q.total) + ' ' + q.unit,
+      pct: q.total ? Math.round(q.used / q.total * 100) : 0,
+      remain: licFmt(Math.max(q.total - q.used, 0)), trend:s,
+      change: ch ? (ch > 0 ? '▲ +' : '▼ −') + licFmt(Math.abs(ch)) : '—',
+      status: licLevel(q),
+      hist:{ text:'History', icon:'history', variant:'transparent' },
+      detail: licDetailHTML(q) };
+  });
+}
+/* ⚠️ THE DETAIL IS INNER-HTMLed INTO obs-table's SHADOW ROOT, so this stylesheet cannot reach
+   it and the layout is inline with `var(--token)` values, which do inherit across the boundary
+   (the agUseRows rule). The by-type bar is the data-viz `bar` gap and keeps class="licchart". */
+function licDetailHTML(q){
+  const muted = 'color:var(--text-color-common-secondary)', ink = 'color:var(--page-text-color)';
+  const dot = tok => `<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(${tok})"></i>`;
+  let h = `<div style="display:grid;gap:12px;padding:2px 0 4px;font-size:12px;line-height:1.5;${muted}">
+    <div><span style="${ink};font-weight:500">How it is metered</span> — ${stEsc(q.rule)}</div>`;
+  if (q.sub) h += `<div style="display:flex;flex-wrap:wrap;gap:8px 22px">` + q.sub.map(s =>
+    `<span style="display:inline-flex;align-items:center;gap:7px">${dot(s.tok)}${stEsc(s.label)} <b style="${ink};font-weight:600">${licFmt(s.value)}</b>${s.of != null ? `<span>of ${licFmt(s.of)} ${q.unit}</span>` : ''}</span>`).join('') + `</div>`;
+  if (q.deploy){
+    const tot = q.deploy.reduce((a, d) => a + d.value, 0) || 1;
+    h += `<div><div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular);margin:0 0 6px">By type</div>
+      <div class="licchart" role="img" aria-label="Monitored devices by type" style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--neutral-lighter);gap:2px">` +
+      q.deploy.map(d => `<i style="display:block;width:${(d.value / tot * 100).toFixed(2)}%;background:var(${d.tok})"></i>`).join('') + `</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px">` +
+      q.deploy.map(d => `<span style="display:inline-flex;align-items:center;gap:6px">${dot(d.tok)}${stEsc(d.label)} <b style="${ink};font-weight:600">${licFmt(d.value)}</b> <span>${Math.round(d.value / tot * 100)}%</span></span>`).join('') + `</div></div>`;
+  }
+  return h + `</div>`;
+}
+
+/* ⚠️ THE WINDOW SWITCH SETS THE GRID'S ATTRIBUTES — IT DOES NOT REPAINT THE PAGE. A repaint
+   would rebuild the tabs (and every open detail row) under the pointer. `setAttribute` takes
+   RAW JSON, not `agJ()` (the recorded trap: escaped JSON reaches the component as literal
+   `&quot;`). */
+function licSetRange(v){
+  v = +v; if (!v || v === LIC.range) return; LIC.range = v;
+  const tb = document.getElementById('licTable'); if (!tb) return;
+  tb.setAttribute('columns', JSON.stringify(licCols()));
+  tb.setAttribute('rows', JSON.stringify(licRows()));
+}
+
+/* ── history — the house drawer, DS parts inside it ─────────────────────────────────────── */
+function licHistOpen(key){
+  const q = licQuota(key); if (!q) return;
+  LIC.hist = key; LIC.hrange = LIC.range;
+  stcDrOpen(q.title + ' · Historical Consumption',
+    `<div id="licHist">${licHistBodyHTML()}</div>`,
+    `<span id="licHistF" class="lichf"><span class="lichnote" id="licHistNote">${licHistNote()}</span>
+       <obs-button variant="default" onclick="agTap(stcDrClose)">Close</obs-button>
+       <obs-button variant="primary" onclick="agTap(licHistCsv)">${agIc('export-csv', 14)}Export as CSV</obs-button></span>`);
+  licHistBind();
+}
+function licHistWindow(){ const end = licToday(); return { start:new Date(end - LIC.hrange * 864e5), end }; }
+function licHistNote(){ const w = licHistWindow(); return `${licFull(w.start)} → ${licFull(w.end)} · ${LIC.hrange} days`; }
+function licHistBodyHTML(){
+  const q = licQuota(LIC.hist), days = LIC.hrange, s = licSeries(q, days), st = licStats(q, s);
+  const items = [[licFmt(st.current), q.unit, 'Current'], [licFmt(st.start), q.unit, 'Period start'],
+                 [licFmt(st.peak), q.unit, 'Peak'], [licFmt(st.avg), q.unit, 'Average'],
+                 [(st.change > 0 ? '+' : st.change < 0 ? '−' : '') + licFmt(Math.abs(st.change)), q.unit, 'Change over ' + days + ' days']];
+  const w = licHistWindow(), cap = q.trend ? 0 : q.total;
+  return `<div class="lichtop">
+      <span class="lichtok"><i style="background:var(${q.tok})"></i>${stEsc(q.token)}</span>
+      <span class="lichrng"><span class="licsub">Range</span>
+        <obs-radio id="licHRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${days}"></obs-radio></span></div>
+    <obs-metric-list items="${agJ(items)}"></obs-metric-list>
+    <div class="lichchart">${licHistChart(s, q)}</div>
+    <div class="lichaxis"><span>${licFull(w.start)}</span>${cap ? `<span class="cap">– – license cap ${licFmt(cap)}</span>` : ''}<span>${licFull(w.end)}</span></div>`;
+}
+function licHistBind(){
+  const rg = document.getElementById('licHRange');
+  if (rg) rg.addEventListener('change', e => {
+    LIC.hrange = +licVal(e);
+    const b = document.getElementById('licHist'); if (b) b.innerHTML = licHistBodyHTML();
+    const n = document.getElementById('licHistNote'); if (n) n.textContent = licHistNote();
+    licHistBind();
+  });
+}
+/* the live chart's shape: an area under the line, the cap as a dashed red rule, and the scale
+   running to the CAP when there is one (as live — a 170-device fleet under a 5,000 cap reads as
+   a line near the floor, which is the point), to the data when there is not. */
+function licHistChart(s, q){
+  const W = 640, H = 220, L = 46, R = 12, T = 12, B = 22, pw = W - L - R, ph = H - T - B;
+  const cap = q.trend ? 0 : q.total, top = licNice(Math.max(cap, Math.max(...s), 1) * 1.06), ticks = 4;
+  const y = v => T + ph - (v / top) * ph, f = n => n.toFixed(1), n = s.length, xs = i => L + pw * i / Math.max(1, n - 1);
+  const grid = [...Array(ticks + 1)].map((_, i) => { const v = top * i / ticks, yy = f(y(v));
+    return `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--neutral-lighter)"/>` +
+           `<text x="${L - 8}" y="${f(y(v) + 3.5)}" text-anchor="end" font-size="11" fill="var(--neutral-light)">${licFmt(Math.round(v))}</text>`; }).join('');
+  const pts = s.map((v, i) => `${f(xs(i))},${f(y(v))}`).join(' ');
+  return `<svg class="licchart" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto;font-family:inherit" aria-hidden="true">${grid}
+    <line x1="${L}" x2="${W - R}" y1="${f(T + ph)}" y2="${f(T + ph)}" stroke="var(--border-color)"/>
+    <polygon points="${f(xs(0))},${f(T + ph)} ${pts} ${f(xs(n - 1))},${f(T + ph)}" fill="var(${q.tok})" opacity=".14"/>
+    <polyline points="${pts}" fill="none" stroke="var(${q.tok})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${cap ? `<line x1="${L}" x2="${W - R}" y1="${f(y(cap))}" y2="${f(y(cap))}" stroke="var(--secondary-red)" stroke-dasharray="4 3"/>` : ''}
+    <circle cx="${f(xs(n - 1))}" cy="${f(y(s[n - 1]))}" r="3" fill="var(${q.tok})" stroke="var(--page-background-color)" stroke-width="1.5"/></svg>`;
+}
+/* the live modal's own CSV: date,resource,value,cap,utilization_pct — newest row first */
+function licHistCsv(){
+  const q = licQuota(LIC.hist); if (!q) return;
+  const days = LIC.hrange, s = licSeries(q, days), end = licToday(), cap = q.trend ? '' : q.total;
+  const head = ['date', 'resource', 'value', 'cap', 'utilization_pct'];
+  const body = s.map((v, i) => [licFull(new Date(end - (days - i) * 864e5)), q.title, v, cap, cap ? (v / cap * 100).toFixed(1) : '']).reverse();
+  if (typeof lxDownload !== 'function') return toast('CSV export needs the Log Explorer helpers this page does not carry');
+  const csv = [head].concat(body).map(r => r.map(lxCsvCell).join(',')).join('\r\n');
+  const name = `license-${q.key}-${days}d-${lxFileStamp()}.csv`;
+  if (!lxDownload(name, csv, 'text/csv')) return toast('The browser blocked the download — open this page over http rather than file://');
+  toast(`Exported ${body.length} days of ${q.title} to ${name}`);
+}
+
+/* ── Export ─────────────────────────────────────────────────────────────────────────────── */
+/* live `handleExport` renders the page to an image named license-<edition>; a single
+   self-contained file has no image writer, and the browser's print dialog is a real PDF one —
+   the stcExport rule: say so rather than ship a fake */
+function licExport(){
+  toast('Printing the Product License report — choose “Save as PDF” in the print dialog');
+  setTimeout(() => window.print(), 260);
+}
+
+/* ── Upgrade Now — the live Activation Code modal, on obs-modal ─────────────────────────── */
+/* live: `activateNow(){ this.showActivationCode = true }` → ActivationCodeModal (MModal 720):
+   an "Upgradation code" cell + the current code + a copy cell, "Please email the above
+   activation code to support@motadata.com" (a mailto with the code in the body), a required
+   6-row textarea "Paste your code here...", Cancel · Activate License → PUT
+   /settings/license/{id} {license.activation.code} → the licence is re-fetched. */
+/* ⚠️ `block` ON THE PASTE BOX, NOT `width:100%` ON THE HOST. obs-input's textarea group is a
+   hardcoded 280px (`.grp.area{width:280px}` in its shadow CSS, measured); only its own `block`
+   attribute switches the group to the host's width. `rows` is not a prop it reads either — the
+   field stays at its three rows and grows with the paste. */
+function licActHTML(){
+  const L = LIC_DATA.license;
+  const mail = 'mailto:support@motadata.com?subject=' + encodeURIComponent(L.account + ' License Renewal') +
+               '&body=' + encodeURIComponent('Please provide us a license code.\n\nOur activation code is as below:\n\n' + L.code);
+  return `<obs-modal id="licAct" title="Activation Code" width="720">
+    <div class="licact">
+      <div class="licsub">Upgradation code</div>
+      <div class="liccode"><code id="licCodeCur">${stEsc(L.code)}</code>
+        <obs-button variant="neutral-lightest" aria-label="Copy activation code" onclick="agTap(licCopy)">${agIc('copy', 14)}</obs-button></div>
+      <p class="lichelp">Please email the above activation code to <obs-link href="${mail}">support@motadata.com</obs-link>. The new license code comes back by mail — paste it below to activate.</p>
+      <obs-input id="licCode" type="textarea" block placeholder="Paste your code here..."></obs-input>
+      <p class="lichelp2" id="licActHint">${licActHint()}</p>
+    </div>
+    <span slot="footer" class="licactf">
+      <obs-button variant="default" onclick="agTap(licActClose)">Cancel</obs-button>
+      <obs-button variant="primary" id="licActBtn" disabled onclick="agTap(licActivate)">Activate License</obs-button>
+    </span>
+  </obs-modal>`;
+}
+/* the gate says WHY it is shut — a disabled primary with no reason beside it is the dead end
+   the Designer's Guide forbids (the agConsText rule) */
+const licActHint = () => LIC.code.trim() ? 'Activating replaces the current license with the entitlements in this code.' : 'Activate License is enabled once a code is pasted.';
+function licActOpen(){ const md = document.getElementById('licAct'); if (!md) return; md.open = true; licActPaint(); }
+function licActClose(){ const md = document.getElementById('licAct'); if (md) md.open = false; }
+function licActPaint(){
+  const b = document.getElementById('licActBtn'); if (b){ if (LIC.code.trim() && !LIC.busy) b.removeAttribute('disabled'); else b.setAttribute('disabled', ''); if (LIC.busy) b.setAttribute('loading', ''); else b.removeAttribute('loading'); }
+  const h = document.getElementById('licActHint'); if (h) h.textContent = licActHint();
+}
+function licCopy(){
+  const code = LIC_DATA.license.code;
+  const done = () => toast('Activation code copied!');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, () => toast('Copy blocked — select the code and copy it by hand'));
+  else toast('Copy blocked — select the code and copy it by hand');
+}
+/* ⚠️ THE MODAL CLOSES BEFORE THE PAGE REPAINTS. `stMainPaint` rebuilds `#stMain`, and a native
+   <dialog> destroyed while it is in the top layer leaves the page inert behind nothing. */
+function licActivate(){
+  if (LIC.busy || !LIC.code.trim()) return;
+  LIC.busy = true; licActPaint();
+  setTimeout(() => {
+    const L = LIC_DATA.license, t = licToday(), e = new Date(t); e.setFullYear(e.getFullYear() + 1);
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    L.type = 'Annual Subscription'; L.issued = iso(t); L.expires = iso(e); L.status = 'active';
+    L.code = LIC.code.trim().replace(/\s+/g, '').toUpperCase().slice(0, 40) || L.code;
+    LIC.code = ''; LIC.busy = false;
+    licActClose();
+    stMainPaint();
+    toast('License activated — Annual Subscription, valid until ' + licLong(e));
+  }, 900);
+}
+
+/* ── tab 2 · EPS Trend Breakdown ────────────────────────────────────────────────────────── */
+const LIC_EPS_COLS = [
+  { key:'signal', title:'Signal',        width:'20%' },
+  { key:'share',  title:'Share of pool', width:'16%' },
+  { key:'alloc',  title:'Allocated',     align:'right', width:'15%' },
+  { key:'live',   title:'Ingested live', align:'right', width:'15%' },
+  { key:'util',   title:'Utilization',   type:'bar',    width:'20%' },
+  { key:'state',  title:'State',         type:'status', width:'14%' },
+];
+/* 24 hourly points ending at the live figure, seeded per signal */
+function licEpsSeries(sig){
+  const r = licRng(sig.alloc * 31 + sig.live * 7 + 3), out = [];
+  for (let i = 0; i < 24; i++){ const wave = Math.sin((i - 6) / 24 * Math.PI * 2) * 0.18; out.push(Math.max(0, Math.round(sig.live * (0.82 + wave + (r() - 0.5) * 0.22)))); }
+  out[23] = sig.live; return out;
+}
+function licEpsHTML(){
+  const E = LIC_DATA.eps, alloc = E.signals.reduce((a, s) => a + s.alloc, 0), live = E.signals.reduce((a, s) => a + s.live, 0);
+  const dropping = live > alloc;
+  const kpi = [[licFmt(E.ceiling), 'eps', 'Hardware ceiling'],
+               [licFmt(alloc), 'eps', 'Allocated (' + Math.round(alloc / E.ceiling * 100) + '% of ceiling)'],
+               [licFmt(live), 'eps', 'Ingested live (' + Math.round(live / alloc * 100) + '% utilization)'],
+               [dropping ? 'dropping' : 'clean', '', 'Drop status (' + (dropping ? 'over allocation' : 'within limits') + ')', dropping ? '--severity-critical' : '--severity-clear']];
+  const policy = [['Notify', E.notify], ['Drop', E.drop]];
+  const rows = E.signals.map(s => ({ id:s.key, signal:s.label, share:Math.round(s.alloc / alloc * 100) + '% of pool',
+    alloc:licFmt(s.alloc) + ' eps', live:licFmt(s.live) + ' eps', util:Math.round(s.live / s.alloc * 100), state:s.live > s.alloc ? 'critical' : 'healthy' }));
+  const per = E.signals.map(s => ({ label:s.label, tok:s.tok, alloc:s.alloc, live:s.live, series:licEpsSeries(s) }));
+  const total = { label:'Total · all telemetry', tok:'--chart-indigo', alloc, live,
+    series: per[0].series.map((_, i) => per.reduce((a, p) => a + p.series[i], 0)) };
+  return `<div class="licgrid2">
+      <div class="licpanel"><div class="licsub">Events per second</div><obs-metric-list items="${agJ(kpi)}"></obs-metric-list></div>
+      <div class="licpanel"><div class="licsub">Drop policy</div><obs-key-value variant="plain" items="${agJ(policy)}"></obs-key-value></div>
+    </div>
+    <div class="licsec"><h3>Dynamic EPS · allocation by signal</h3><span class="lichint">allocated vs live ingested</span></div>
+    <obs-table id="licAlloc" row-key="id" sortable="false" columns="${agJ(LIC_EPS_COLS)}" rows="${agJ(rows)}"></obs-table>
+    <div class="licsec"><h3>Calculated vs actual EPS · per telemetry</h3>
+      <span class="liclegend"><span><i style="border-color:var(--page-text-color)"></i>ingested</span><span><i style="border-color:var(--secondary-red)"></i>dropped</span><span><i class="dash" style="border-color:var(--neutral-light)"></i>allocated</span></span></div>
+    <div class="lictiles">${licTileHTML(total, true)}${per.map(p => licTileHTML(p, false)).join('')}</div>`;
+}
+/* the tile IS the DS widget: `obs-toolbar variant="widget"` is its header (title + the window
+   as a tag, where the registry puts a widget's time-range pill); the body carries the rest of
+   the frame. The figure above the plot is the row's own, so tile and grid cannot disagree. */
+function licTileHTML(t, full){
+  const avg = Math.round(t.series.reduce((a, b) => a + b, 0) / t.series.length), peak = Math.max(...t.series);
+  return `<div class="lictile${full ? ' full' : ''}">
+    <obs-toolbar variant="widget" title="${stEsc(t.label)}"><obs-tag variant="tag-primary">Last 24 hours</obs-tag></obs-toolbar>
+    <div class="lictileb">
+      <div class="lictilev"><b>${licFmt(t.live)}</b><span>/ ${licFmt(t.alloc)} eps</span></div>
+      ${licEpsChart(t, full)}
+      <div class="lictilef"><span>avg <b>${licFmt(avg)}</b></span><span>peak <b>${licFmt(peak)}</b></span><span>util <b>${Math.round(t.live / t.alloc * 100)}%</b></span></div>
+    </div></div>`;
+}
+/* ingested as the signal's line, the allocation as a dashed rule, and anything above it in
+   red — the live legend's three series. A fixed viewBox that scales UNIFORMLY (the agChart
+   rule): the full-width tile takes a wider box so it does not grow tall. */
+function licEpsChart(t, full){
+  const W = full ? 1200 : 560, H = 120, L = 40, R = 10, T = 10, B = 18, pw = W - L - R, ph = H - T - B;
+  const s = t.series, top = licNice(Math.max(t.alloc, Math.max(...s), 1) * 1.15), ticks = 3;
+  const y = v => T + ph - (v / top) * ph, f = n => n.toFixed(1), n = s.length, xs = i => L + pw * i / (n - 1);
+  const grid = [...Array(ticks + 1)].map((_, i) => { const v = top * i / ticks, yy = f(y(v));
+    return `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--neutral-lighter)"/>` +
+           `<text x="${L - 7}" y="${f(y(v) + 3.5)}" text-anchor="end" font-size="11" fill="var(--neutral-light)">${licFmt(Math.round(v))}</text>`; }).join('');
+  const hours = [...Array(n)].map((_, i) => (i % 6 && i !== n - 1) ? '' :
+    `<text x="${f(xs(i))}" y="${H - 4}" text-anchor="middle" font-size="11" fill="var(--neutral-light)">${i === n - 1 ? 'now' : '−' + (n - 1 - i) + 'h'}</text>`).join('');
+  const pts = s.map((v, i) => `${f(xs(i))},${f(y(v))}`).join(' ');
+  const over = s.map((v, i) => v > t.alloc ? `<circle cx="${f(xs(i))}" cy="${f(y(v))}" r="2.6" fill="var(--secondary-red)"/>` : '').join('');
+  return `<svg class="licchart" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;height:auto;font-family:inherit" aria-hidden="true">${grid}
+    <line x1="${L}" x2="${W - R}" y1="${f(T + ph)}" y2="${f(T + ph)}" stroke="var(--border-color)"/>
+    <polyline points="${pts}" fill="none" stroke="var(${t.tok})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="${L}" x2="${W - R}" y1="${f(y(t.alloc))}" y2="${f(y(t.alloc))}" stroke="var(--neutral-light)" stroke-dasharray="4 3"/>
+    ${over}${hours}</svg>`;
+}
+
+/* ── wiring ─────────────────────────────────────────────────────────────────────────────── */
+/* ⚠️ CUSTOM EVENTS NEED addEventListener (the recorded rule — an inline on<name>= for a custom
+   name is inert markup). The tab is read back through a MutationObserver on the reflected
+   `value` attribute: the element reflects it on every click, which is the one signal that does
+   not depend on knowing the event's name. */
+function licAfter(){
+  const tabs = document.getElementById('licTabs');
+  if (tabs) new MutationObserver(() => { const v = tabs.getAttribute('value'); if (v) LIC.tab = v; }).observe(tabs, { attributes:true, attributeFilter:['value'] });
+  const rg = document.getElementById('licRange'); if (rg) rg.addEventListener('change', e => licSetRange(licVal(e)));
+  const tb = document.getElementById('licTable');
+  if (tb) tb.addEventListener('cellaction', e => { const d = licVal(e); if (d && (d.key === 'hist' || d.key === 'name')) licHistOpen(d.id); });
+  const md = document.getElementById('licAct');
+  if (md){ md.addEventListener('close', () => { md.open = false; }); md.addEventListener('cancel', () => { md.open = false; }); }
+  const ta = document.getElementById('licCode');
+  if (ta) ta.addEventListener('input', e => { const v = licVal(e); LIC.code = v == null ? '' : String(v); licActPaint(); });
+}
+ST_PAGES['My Account › License'] = { html: licHTML, after: licAfter };
