@@ -2323,39 +2323,56 @@ ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
    (docs.motadata.com/observeops-docs/getting-started/license-guide), whose per-module metering
    rules are the detail text under each quota row.
 
-   The FLOW is the live one; the PARTS are the DS's (every element below is in the registry):
-   · header        obs-page-header · Export (default, download icon) · Upgrade Now (primary)
-   · two tabs      obs-tabs — License & Quota Usage | EPS Trend Breakdown (icons as live)
-   · edition card  obs-tag + obs-key-value (plain, 2 columns) + a term bar + a days-left ring
-   · quota usage   obs-table — link · text · bar · sparkline · status · button cells, EXPANDABLE
-                   rows carrying the metering rule and the breakdowns; obs-radio as-button for
-                   the 7d / 15d / 30d window (the DS's own "time range 1h/24h/7d/30d" example)
-   · history       the house drawer (stcDrOpen): obs-radio range · obs-metric-list for the
-                   five figures · a line chart against the licence cap · Close · Export as CSV
-                   (a real file, the live's own columns: date,resource,value,cap,utilization_pct)
-   · Upgrade Now   obs-modal "Activation Code" — the live's flow exactly: the current code with
-                   a copy button, a mailto to support, a paste box, Cancel · Activate License
-   · EPS tab       obs-metric-list (the four figures) · obs-key-value (the drop policy) ·
-                   obs-table with bar cells (allocation by signal) · obs-toolbar variant="widget"
-                   tiles over line charts, dashed at the allocation
+   The FLOW is the live one; EVERY PART is a DS element (7 Sep 2026, second pass — the first
+   build still composed the edition card, the row detail, the legend and the code box from raw
+   spans, which is exactly what the contract calls a reproduction. Nothing here is drawn any more
+   except the two line charts):
+   · header         obs-page-header — heading, the licence status as an obs-tag in the `title`
+                    slot, Export (default) · Upgrade Now (primary)
+   · overview       three DS WIDGETS (obs-toolbar variant="widget" + body): Edition (the name,
+                    obs-tags, the guide's line, obs-key-value for License Type · Account) ·
+                    Validity (obs-metric-list for days left, a one-row obs-table whose `bar` cell
+                    is the term elapsed) · Support & renewal (obs-links from the License Guide's
+                    Support & Contact, an obs-button into the Activation Code modal)
+   · two tabs       obs-tabs — License & Quota Usage | EPS Trend Breakdown (icons as live)
+   · section heads  obs-toolbar (grid variant): the title in `start`, the hint and the control after
+   · quota usage    obs-table — link · text · bar · sparkline · status · button cells, EXPANDABLE
+                    rows; the DETAIL is DS too: obs-banner (info) for the metering rule, obs-key-value
+                    for the agentless/agent (or monolith/agent) split, and a NESTED obs-table whose `bar`
+                    cells carry the by-type share; obs-radio as-button for the 7d / 15d / 30d window
+   · history        the house drawer (stcDrOpen): the token as an obs-tag · obs-radio range ·
+                    obs-metric-list for the five figures · a line chart against the licence cap ·
+                    obs-button Close · Export as CSV (a real file, the live's own columns)
+   · Upgrade Now    obs-modal "Activation Code" — a read-only labelled obs-input carrying the current
+                    code + an obs-button copy, obs-link mailto, an obs-input textarea (`block`),
+                    obs-button Cancel · Activate License
+   · EPS tab        two widget tiles (obs-toolbar variant="widget" + obs-metric-list / obs-key-value)
+                    · obs-table with bar cells (allocation by signal) · a legend of obs-tags ·
+                    five widget tiles, each obs-toolbar (title + window/avg/peak/util tags) over
+                    obs-metric-list (the live figure) over a line chart dashed at the allocation
 
-   ⚠️ DECLARED data-viz GAPS (the DS ships no chart element): the days-left ring (gauge), the
-   term bar and the by-type stacked bar (bar), the history and EPS line charts (trend-line).
-   They carry class="licchart" / "licgauge" so the conformance checker resolves the archetype,
-   and every colour in them is a token — series from the chart palette, never --primary.
+   ⚠️ THE ONE DECLARED data-viz GAP LEFT: the line charts (history · the five EPS tiles). The DS
+   ships no chart element, `list_gaps` says so, and they carry class="licchart" so the conformance
+   checker resolves the archetype; every colour in them is a token. The days-left ring, the term
+   bar and the by-type stacked bar of the first build are GONE — each had a DS answer (a metric
+   row, the record's dates, a table with bar cells), so a gap was not the honest call.
 
    ⚠️ DELIBERATE DIFFERENCES FROM LIVE, recorded so nothing here is mistaken for the product:
    · the live rows are bespoke CARDS (a 3px accent border, a 12px meter, a Highcharts sparkline
      in the corner); here they are obs-table rows — the DS has no "card row with a meter", and
-     the table has every cell type the row needs. The breakdowns (agentless/agent split, BY TYPE
-     stacked bar, monolith/agent split) moved into the expandable detail, which is also where
-     the docs' metering rule now lives;
+     the table has every cell type the row needs. The breakdowns moved into the expandable
+     detail, which is also where the docs' metering rule now lives;
+   · the live edition HERO (gradient "Infinity ∞", a ring, a term bar, four meta cells) is a row
+     of three DS widgets — the ring became a metric row, the term bar a `bar` cell, the meta cells
+     key-value rows. It was a key-value card beside a metric list ("very bad ui"), then the
+     header's detail-meta strip ("also bad ui"), both the same day — recorded so neither is tried
+     a third time;
    · history opens in a DRAWER, not the live's 720px modal. The DS panel guide files drill-down
      detail under the drawer ("~90% deep drill-downs") and keeps the modal for confirm/collect —
      which is exactly what the Activation Code dialog is, so THAT one stays a modal, as live;
-   · colours are chart-palette tokens, not the live's own --license-* palette; the edition name
-     is --primary-alt text, not a gradient (no token owns one); the status reads "Active" — the
-     label the DS status map gives the "active" key — where live prints "Activated";
+   · the status reads "Active" — the label the DS status map gives the "active" key — where live
+     prints "Activated"; the per-type colours of the live stacked bar are gone with it (the DS
+     bar cell paints in the product's own ink);
    · Export prints (the browser's own PDF writer, the stcExport rule) where live snapshots the
      page to an image with html2canvas;
    · the EPS figures are SEEDED — the instance is idle and every live counter there reads 0, so
@@ -2384,10 +2401,10 @@ const LIC_DATA = {
     { key:'device', title:'Monitored Devices', token:'DEV · base platform', icon:'server', tok:'--chart-indigo',
       used:170, total:5000, unit:'devices', delta:15,
       rule:'Per provisioned entity — one license per network device, server, VM, application, database, storage, WAN link or NetRoute; one per two wireless access points. Interfaces, processes and services are not licensed, and an entity monitored both agentlessly and by agent counts once.',
-      sub:[{ label:'Agentless (SNMP / API / WMI)', value:170, tok:'--chart-indigo' }, { label:'Agent-based', value:0, tok:'--chart-emerald-green' }],
-      deploy:[{ label:'Cloud', value:86, tok:'--chart-indigo' }, { label:'Servers', value:28, tok:'--chart-emerald-green' },
-              { label:'Network Devices', value:14, tok:'--chart-neon-purple' }, { label:'Virtualization', value:6, tok:'--chart-amber' },
-              { label:'HCI', value:2, tok:'--chart-hot-pink' }, { label:'Other', value:1, tok:'--chart-rose-red' }, { label:'Database', value:1, tok:'--chart-aqua' }] },
+      sub:[{ label:'Agentless (SNMP / API / WMI)', value:170 }, { label:'Agent-based', value:0 }],
+      deploy:[{ label:'Cloud', value:86 }, { label:'Servers', value:28 },
+              { label:'Network Devices', value:14 }, { label:'Virtualization', value:6 },
+              { label:'HCI', value:2 }, { label:'Other', value:1 }, { label:'Database', value:1 }] },
     { key:'flow', title:'Flow Sources', token:'FSRC · add-on', icon:'flow', tok:'--chart-emerald-green',
       used:0, total:100, unit:'exporters', delta:0, trend:true,
       rule:'Per flow source — one license per unique flow exporter. Several flow protocols or interfaces from one exporter count as one source; metering is by exporter count, not flows per second or data volume.' },
@@ -2400,7 +2417,7 @@ const LIC_DATA = {
     { key:'apm', title:'APM Instrumented Units', token:'APP · AGT · add-on', icon:'apm', tok:'--chart-amber',
       used:0, total:52, unit:'units', delta:0,
       rule:'Per instrumented application instance for a monolith, per APM agent for microservices — one agent covers every service on its node or cluster.',
-      sub:[{ label:'Applications (monolith)', value:0, of:52, tok:'--chart-amber' }, { label:'Agents (microservices)', value:0, of:0, tok:'--chart-golden-yellow' }] },
+      sub:[{ label:'Applications (monolith)', value:0, of:52 }, { label:'Agents (microservices)', value:0, of:0 }] },
     { key:'rum', title:'RUM Front-end Apps', token:'FEA · add-on', icon:'rum', tok:'--chart-aqua',
       used:2, total:50, unit:'apps', delta:0,
       rule:'Per instrumented front-end application — one license per unique instrumented web or mobile front-end application.' },
@@ -2422,6 +2439,7 @@ const licFmt  = n => Number(n || 0).toLocaleString('en-US');
 const licDate = (d, o) => d.toLocaleDateString('en-US', o);
 const licLong = d => licDate(d, { month:'long', day:'numeric', year:'numeric' });            /* August 17, 2030 */
 const licFull = d => licDate(d, { weekday:'short', month:'short', day:'2-digit', year:'numeric' }); /* Sat, Aug 08, 2026 */
+const licMed  = d => licDate(d, { month:'short', day:'numeric', year:'numeric' });                 /* Aug 17, 2030 — the widget table's cell is ~120px */
 const licMY   = d => licDate(d, { month:'short', year:'numeric' });                          /* Jul 2026 */
 const licToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const licQuota = k => LIC_DATA.quotas.find(q => q.key === k);
@@ -2465,12 +2483,18 @@ function licHTML(){
   </div>`;
 }
 
-/* Organisms/PageHeader — `heading`, the product's file-certificate mark in `before`, and the
-   two actions in the default slot. `no-divider`: the tab bar directly beneath draws its own
-   rule, and two hairlines 44px apart is what the live page avoids too. */
+/* Organisms/PageHeader — `heading`, the product's file-certificate mark in `before`, the licence
+   STATUS as an obs-tag in the `title` slot (the registry's "a status badge, e.g. the monitor detail
+   Up"), the two actions in the default slot. `no-divider`: the tab bar beneath draws its own rule.
+   ⚠️ THE RECORD IS NOT IN THE HEADER ANY MORE. It was carried as the detail-meta strip (subtitle +
+   a key:value row) for one pass and reported as "also bad ui" — a line of small labelled text is
+   the RUM span header's shape, not an overview. The overview is now the three widgets at the top
+   of the usage tab (`licOverviewHTML`), the product's own dashboard vocabulary. */
 function licHeadHTML(){
+  const L = LIC_DATA.license, active = L.status === 'active';
   return `<div class="lichead"><obs-page-header heading="Product License" no-divider>
     <span slot="before" class="lichmk">${agIc('file-certificate', 26)}</span>
+    <obs-tag slot="title" variant="${active ? 'tag-green' : 'tag-red'}">${active ? 'Active' : 'Expired'}</obs-tag>
     <span class="lichact">
       <obs-button variant="default" onclick="agTap(licExport)">${agIc('download', 14)}Export</obs-button>
       <obs-button variant="primary" onclick="agTap(licActOpen)">Upgrade Now</obs-button>
@@ -2479,66 +2503,84 @@ function licHeadHTML(){
 }
 
 /* ── tab 1 · License & Quota Usage ──────────────────────────────────────────────────────── */
+/* the section head is Organisms/Toolbar's grid variant — the title in `start`, the hint and the
+   window switch after it — the same shape the Agentic AI page puts above its own table */
+/* ── the overview: three DS WIDGETS (7 Sep 2026, third pass) ─────────────────────────────
+   The product's own overview vocabulary is a row of widgets, and the DS ships the chrome:
+   `obs-toolbar variant="widget"` draws the framed header (title + a tag in the pill slot) and the
+   body carries the rest of the frame — the same tile the EPS tab already uses, so the page speaks
+   one language. Inside them, only DS parts:
+   · Edition   — the edition name (page text), obs-tags, the guide's one-line description, and an
+                 obs-key-value (plain) for License Type · Account
+   · Validity  — obs-metric-list for DAYS LEFT (the KPI, coloured by threshold through the item's
+                 severity token) and a one-row obs-table whose `bar` cell is the term elapsed —
+                 the DS answer to the live ring and term bar
+   · Support   — the License Guide's Support & Contact section: obs-links to the portal and the
+                 mailbox, one line on how overages are handled, and a neutral obs-button into the
+                 same Activation Code modal Upgrade Now opens
+   ⚠️ Two earlier shapes were built and rejected the same day: a key-value card beside a metric
+   list ("very bad ui"), then the header's detail-meta strip ("also bad ui"). Both are recorded
+   above so neither is tried a third time. */
+function licOverviewHTML(){
+  const L = LIC_DATA.license, E = LIC_DATA.edition, active = L.status === 'active';
+  const issued = new Date(L.issued + 'T00:00:00'), expires = new Date(L.expires + 'T00:00:00'), today = licToday();
+  const total = Math.max(1, Math.round((expires - issued) / 864e5)), left = Math.max(0, Math.round((expires - today) / 864e5));
+  const elapsed = Math.min(100, Math.max(0, Math.round((today - issued) / (expires - issued) * 100)));
+  const days = [licFmt(left), 'days', active ? 'left on the license' : 'the license has expired'];
+  if (!active || left <= 30) days.push('--severity-critical'); else if (left <= 90) days.push('--severity-warning');
+  const term = [{ key:'issued', title:'Issued', width:'34%' }, { key:'expires', title:'Expires', width:'34%' }, { key:'elapsed', title:'Term elapsed', type:'bar', width:'32%' }];
+  const widget = (title, tag, body) => `<div class="licwid"><obs-toolbar variant="widget" title="${title}">${tag ? `<obs-tag variant="tag-primary">${tag}</obs-tag>` : ''}</obs-toolbar><div class="lictileb licwidb">${body}</div></div>`;
+  return `<div class="licwids">
+    ${widget('Edition', E.chip, `
+      <div class="licedn">${stEsc(E.name)} <span aria-hidden="true">∞</span></div>
+      <p class="lichelp">${stEsc(E.blurb)} Licensed by what you monitor — ${stEsc(E.blurb2)}</p>
+      <obs-key-value variant="plain" items="${agJ([['License Type', L.type], ['Account', L.account]])}"></obs-key-value>`)}
+    ${widget('Validity', licFmt(total) + '-day term', `
+      <obs-metric-list items="${agJ([days])}"></obs-metric-list>
+      <obs-table row-key="id" sortable="false" columns="${agJ(term)}" rows="${agJ([{ id:'term', issued:licMed(issued), expires:licMed(expires), elapsed }])}"></obs-table>`)}
+    ${widget('Support & renewal', '', `
+      <p class="lichelp">Licenses are consumed as entities and sources are provisioned; overages are handled through add-on packs or a true-up, and a new activation code replaces this license in place.</p>
+      <div class="liclinks">
+        <obs-link external href="https://support.motadata.com" onclick="return false">support.motadata.com${agIc('external-link', 12)}</obs-link>
+        <obs-link href="mailto:support@motadata.com">support@motadata.com</obs-link>
+      </div>
+      <obs-button variant="neutral-lightest" onclick="agTap(licActOpen)">${agIc('key', 14)}Activate a new code</obs-button>`)}
+  </div>`;
+}
 function licUsageHTML(){
-  return licHeroHTML() + `
-    <div class="licsec"><h3>License &amp; Quota Usage</h3>
+  return licOverviewHTML() + `<obs-toolbar class="lictb"><span slot="start" class="lictbt">License &amp; Quota Usage</span>
       <span class="lichint">Expand a row for its metering rule · History opens the trend and a CSV export</span>
-      <obs-radio id="licRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${LIC.range}"></obs-radio></div>
+      <obs-radio id="licRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${LIC.range}"></obs-radio></obs-toolbar>
     <obs-table id="licTable" row-key="id" expandable sortable="false"
       columns="${agJ(licCols())}" rows="${agJ(licRows())}"></obs-table>`;
 }
-
-/* the edition card. Left: what the edition is; middle: the record (obs-key-value) and the term
-   as a bar; right: days left as a ring (data-viz gauge — a single value read against a range,
-   which is the registry's own test for a gauge). */
-function licHeroHTML(){
-  const L = LIC_DATA.license, E = LIC_DATA.edition;
-  const issued = new Date(L.issued + 'T00:00:00'), expires = new Date(L.expires + 'T00:00:00'), today = licToday();
-  const total = Math.round((expires - issued) / 864e5), left = Math.max(0, Math.round((expires - today) / 864e5));
-  const done = Math.min(1, Math.max(0, (today - issued) / (expires - issued)));
-  const r = 56, C = 2 * Math.PI * r, off = C * (1 - Math.min(1, left / total));
-  const kv = [['License Type', L.type], ['Issue Date', licLong(issued)], ['Account', L.account],
-              { label:'Status', value:'Activated', status:L.status }];
-  return `<div class="lichero">
-    <div class="liced">
-      <div class="liceye">${agIc('licence', 14)}ObserveOps Edition</div>
-      <div class="licname">${stEsc(E.name)}<span class="inf" aria-hidden="true">∞</span></div>
-      <obs-tag variant="tag-primary">${agIc('check', 12)} ${stEsc(E.chip)}</obs-tag>
-      <p class="licblurb">${stEsc(E.blurb)} <b>Licensed by what you monitor</b> — ${stEsc(E.blurb2)}</p>
-    </div>
-    <div class="licmeta">
-      <obs-key-value variant="plain" columns="2" items="${agJ(kv)}"></obs-key-value>
-      <div class="licterm"><span>${licMY(issued)}</span>
-        <span class="lictrack licchart" role="img" aria-label="${Math.round(done * 100)}% of the license term elapsed"><span class="licfill" style="width:${(done * 100).toFixed(2)}%"></span></span>
-        <span>${licMY(expires)}</span></div>
-    </div>
-    <div class="licring">
-      <svg class="licgauge" viewBox="0 0 128 128" role="img" aria-label="${left} days left of ${total}">
-        <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--neutral-lighter)" stroke-width="10"/>
-        <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--chart-indigo)" stroke-width="10" stroke-linecap="round"
-          stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90 64 64)"/>
-        <text x="64" y="62" text-anchor="middle" font-size="24" font-weight="600" fill="var(--page-text-color)">${licFmt(left)}</text>
-        <text x="64" y="79" text-anchor="middle" font-size="9" font-weight="600" letter-spacing=".08em" fill="var(--neutral-regular)">DAYS LEFT</text>
-      </svg>
-      <div class="licexp"><span>Expires</span><b>${licLong(expires)}</b></div>
-    </div>
-  </div>`;
-}
-
-/* the quota grid. Declared as a function because two headers name the window. */
+/* the quota grid. Declared as a function because two headers name the window — and because the
+   column set follows the width: at 1280 with the settings list open the pane is ~950px, and ten
+   columns wrapped every label to three lines and pushed History past the edge. Below 1366px the
+   two derivable columns go (Remaining = Allotted − Used; Change is the sparkline's own delta and
+   reads "—" on five of six rows), and the others take the room. `licAfter` re-sets the columns
+   when the query flips. */
+const LIC_MQ = '(max-width:1366px)';
 function licCols(){
-  return [
-    { key:'name',   title:'Entitlement', type:'link',  width:'19%' },
-    { key:'token',  title:'Metric',                    width:'17%' },
+  const narrow = window.matchMedia && window.matchMedia(LIC_MQ).matches;
+  const cols = [
+    { key:'name',   title:'Entitlement', type:'link',  width: narrow ? '24%' : '19%' },
+    { key:'token',  title:'Metric',                    width: narrow ? '18%' : '17%' },
     { key:'used',   title:'Used',        align:'right', width:'7%' },
-    { key:'total',  title:'Allotted',    align:'right', width:'11%' },
-    { key:'pct',    title:'Usage',       type:'bar',   width:'10%' },
+    { key:'total',  title:'Allotted',    align:'right', width: narrow ? '13%' : '11%' },
+    { key:'pct',    title:'Usage',       type:'bar',   width: narrow ? '13%' : '10%' },
     { key:'remain', title:'Remaining',   align:'right', width:'8%' },
-    { key:'trend',  title:'Trend · ' + LIC.range + 'd',  type:'sparkline', width:'10%' },
+    { key:'trend',  title:'Trend · ' + LIC.range + 'd',  type:'sparkline', width: narrow ? '12%' : '10%' },
     { key:'change', title:'Change · ' + LIC.range + 'd', align:'right', width:'8%' },
-    { key:'status', title:'Status',      type:'status', width:'7%' },
-    { key:'hist',   title:'',            type:'button', width:'3%' },
+    { key:'status', title:'Status',      type:'status', width: narrow ? '9%' : '7%' },
+    { key:'hist',   title:'',            type:'button', width: narrow ? '4%' : '3%' },
   ];
+  return narrow ? cols.filter(c => c.key !== 'remain' && c.key !== 'change') : cols;
+}
+/* re-set the grid's columns when the width query flips — attributes only, no repaint */
+function licColsSync(){
+  const tb = document.getElementById('licTable'); if (!tb) return;
+  tb.setAttribute('columns', JSON.stringify(licCols()));
 }
 function licRows(){
   return LIC_DATA.quotas.map(q => {
@@ -2553,27 +2595,31 @@ function licRows(){
       detail: licDetailHTML(q) };
   });
 }
-/* ⚠️ THE DETAIL IS INNER-HTMLed INTO obs-table's SHADOW ROOT, so this stylesheet cannot reach
-   it and the layout is inline with `var(--token)` values, which do inherit across the boundary
-   (the agUseRows rule). The by-type bar is the data-viz `bar` gap and keeps class="licchart". */
+/* ⚠️ THE DETAIL IS INNER-HTMLed INTO obs-table's SHADOW ROOT — and custom elements written there
+   still upgrade (measured: nested obs-key-value and obs-table both get a shadow root and render),
+   so the detail is DS all the way down: obs-banner for the metering rule, obs-key-value for the split, and a
+   NESTED obs-table whose `bar` cells carry the by-type share. The one inline style is the grid
+   that stacks them — this stylesheet cannot reach into the shadow root. */
+const LIC_TYPE_COLS = [
+  { key:'type',  title:'Device type',    width:'44%' },
+  { key:'count', title:'Devices',        align:'right', width:'16%' },
+  { key:'share', title:'Share of fleet', type:'bar',    width:'40%' },
+];
 function licDetailHTML(q){
-  const muted = 'color:var(--text-color-common-secondary)', ink = 'color:var(--page-text-color)';
-  const dot = tok => `<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(${tok})"></i>`;
-  let h = `<div style="display:grid;gap:12px;padding:2px 0 4px;font-size:12px;line-height:1.5;${muted}">
-    <div><span style="${ink};font-weight:500">How it is metered</span> — ${stEsc(q.rule)}</div>`;
-  if (q.sub) h += `<div style="display:flex;flex-wrap:wrap;gap:8px 22px">` + q.sub.map(s =>
-    `<span style="display:inline-flex;align-items:center;gap:7px">${dot(s.tok)}${stEsc(s.label)} <b style="${ink};font-weight:600">${licFmt(s.value)}</b>${s.of != null ? `<span>of ${licFmt(s.of)} ${q.unit}</span>` : ''}</span>`).join('') + `</div>`;
+  /* obs-banner, not a key-value row: the single-column list caps itself at 480px (`.kv.cols-1`
+     in its shadow CSS) and wrapped the rule to six lines beside an empty band. The banner is the
+     DS's lead-in + detail message and spans the row; `info` is its own "a hint" variant. */
+  const parts = [`<obs-banner variant="info" title="Metered per">${stEsc(q.rule)}</obs-banner>`];
+  if (q.sub) parts.push(`<obs-key-value variant="plain" columns="2" items="${agJ(q.sub.map(x =>
+    [x.label, licFmt(x.value) + (x.of != null ? ' of ' + licFmt(x.of) + ' ' + q.unit : '')]))}"></obs-key-value>`);
   if (q.deploy){
     const tot = q.deploy.reduce((a, d) => a + d.value, 0) || 1;
-    h += `<div><div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular);margin:0 0 6px">By type</div>
-      <div class="licchart" role="img" aria-label="Monitored devices by type" style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--neutral-lighter);gap:2px">` +
-      q.deploy.map(d => `<i style="display:block;width:${(d.value / tot * 100).toFixed(2)}%;background:var(${d.tok})"></i>`).join('') + `</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px">` +
-      q.deploy.map(d => `<span style="display:inline-flex;align-items:center;gap:6px">${dot(d.tok)}${stEsc(d.label)} <b style="${ink};font-weight:600">${licFmt(d.value)}</b> <span>${Math.round(d.value / tot * 100)}%</span></span>`).join('') + `</div></div>`;
+    const rows = q.deploy.map(d => ({ id:d.label.toLowerCase().replace(/\W+/g, '-'), type:d.label,
+      count:licFmt(d.value), share:Math.round(d.value / tot * 100) }));
+    parts.push(`<obs-table row-key="id" sortable="false" columns="${agJ(LIC_TYPE_COLS)}" rows="${agJ(rows)}"></obs-table>`);
   }
-  return h + `</div>`;
+  return `<div style="display:grid;gap:12px;padding:2px 0 4px">${parts.join('')}</div>`;
 }
-
 /* ⚠️ THE WINDOW SWITCH SETS THE GRID'S ATTRIBUTES — IT DOES NOT REPAINT THE PAGE. A repaint
    would rebuild the tabs (and every open detail row) under the pointer. `setAttribute` takes
    RAW JSON, not `agJ()` (the recorded trap: escaped JSON reaches the component as literal
@@ -2605,8 +2651,8 @@ function licHistBodyHTML(){
                  [(st.change > 0 ? '+' : st.change < 0 ? '−' : '') + licFmt(Math.abs(st.change)), q.unit, 'Change over ' + days + ' days']];
   const w = licHistWindow(), cap = q.trend ? 0 : q.total;
   return `<div class="lichtop">
-      <span class="lichtok"><i style="background:var(${q.tok})"></i>${stEsc(q.token)}</span>
-      <span class="lichrng"><span class="licsub">Range</span>
+      <obs-tag variant="tag-primary">${stEsc(q.token)}</obs-tag>
+      <span class="lichrng">Range
         <obs-radio id="licHRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${days}"></obs-radio></span></div>
     <obs-metric-list items="${agJ(items)}"></obs-metric-list>
     <div class="lichchart">${licHistChart(s, q)}</div>
@@ -2677,11 +2723,10 @@ function licActHTML(){
                '&body=' + encodeURIComponent('Please provide us a license code.\n\nOur activation code is as below:\n\n' + L.code);
   return `<obs-modal id="licAct" title="Activation Code" width="720">
     <div class="licact">
-      <div class="licsub">Upgradation code</div>
-      <div class="liccode"><code id="licCodeCur">${stEsc(L.code)}</code>
+      <div class="liccode"><obs-input id="licCodeCur" label="Upgradation code" value="${stEsc(L.code)}" readonly block></obs-input>
         <obs-button variant="neutral-lightest" aria-label="Copy activation code" onclick="agTap(licCopy)">${agIc('copy', 14)}</obs-button></div>
       <p class="lichelp">Please email the above activation code to <obs-link href="${mail}">support@motadata.com</obs-link>. The new license code comes back by mail — paste it below to activate.</p>
-      <obs-input id="licCode" type="textarea" block placeholder="Paste your code here..."></obs-input>
+      <obs-input id="licCode" type="textarea" block label="New license code" placeholder="Paste your code here..."></obs-input>
       <p class="lichelp2" id="licActHint">${licActHint()}</p>
     </div>
     <span slot="footer" class="licactf">
@@ -2750,27 +2795,32 @@ function licEpsHTML(){
   const per = E.signals.map(s => ({ label:s.label, tok:s.tok, alloc:s.alloc, live:s.live, series:licEpsSeries(s) }));
   const total = { label:'Total · all telemetry', tok:'--chart-indigo', alloc, live,
     series: per[0].series.map((_, i) => per.reduce((a, p) => a + p.series[i], 0)) };
+  /* the two summary tiles are the DS widget: its `widget` toolbar as the header, a DS list inside */
+  const tile = (title, body) => `<div class="lictile"><obs-toolbar variant="widget" title="${title}"></obs-toolbar><div class="lictileb">${body}</div></div>`;
+  /* the legend is a row of obs-tags — a chart's legend is chart chrome, but the chips are the DS's */
+  const legend = [['ingested', '--page-text-color', 'horizontal-rule'], ['dropped', '--secondary-red', 'horizontal-rule'], ['allocated', '--neutral-light', 'minus']]
+    .map(([t, tok, ic]) => `<obs-tag variant="tag-primary"><span style="color:var(${tok})">${agIc(ic, 12)}</span> ${t}</obs-tag>`).join('');
   return `<div class="licgrid2">
-      <div class="licpanel"><div class="licsub">Events per second</div><obs-metric-list items="${agJ(kpi)}"></obs-metric-list></div>
-      <div class="licpanel"><div class="licsub">Drop policy</div><obs-key-value variant="plain" items="${agJ(policy)}"></obs-key-value></div>
+      ${tile('Events per second', `<obs-metric-list items="${agJ(kpi)}"></obs-metric-list>`)}
+      ${tile('Drop policy', `<obs-key-value variant="plain" items="${agJ(policy)}"></obs-key-value>`)}
     </div>
-    <div class="licsec"><h3>Dynamic EPS · allocation by signal</h3><span class="lichint">allocated vs live ingested</span></div>
+    <obs-toolbar class="lictb"><span slot="start" class="lictbt">Dynamic EPS · allocation by signal</span><span class="lichint">allocated vs live ingested</span></obs-toolbar>
     <obs-table id="licAlloc" row-key="id" sortable="false" columns="${agJ(LIC_EPS_COLS)}" rows="${agJ(rows)}"></obs-table>
-    <div class="licsec"><h3>Calculated vs actual EPS · per telemetry</h3>
-      <span class="liclegend"><span><i style="border-color:var(--page-text-color)"></i>ingested</span><span><i style="border-color:var(--secondary-red)"></i>dropped</span><span><i class="dash" style="border-color:var(--neutral-light)"></i>allocated</span></span></div>
+    <obs-toolbar class="lictb"><span slot="start" class="lictbt">Calculated vs actual EPS · per telemetry</span><span class="liclegend">${legend}</span></obs-toolbar>
     <div class="lictiles">${licTileHTML(total, true)}${per.map(p => licTileHTML(p, false)).join('')}</div>`;
 }
-/* the tile IS the DS widget: `obs-toolbar variant="widget"` is its header (title + the window
-   as a tag, where the registry puts a widget's time-range pill); the body carries the rest of
-   the frame. The figure above the plot is the row's own, so tile and grid cannot disagree. */
+/* the tile IS the DS widget: `obs-toolbar variant="widget"` is its header — the title, then the
+   window, avg, peak and util as tags, where the registry puts a widget's time-range pill — and
+   the body is an obs-metric-list row (the live figure, the DS's KPI) over the chart. The first
+   build typed the figure and the avg/peak/util footer as raw spans. */
 function licTileHTML(t, full){
   const avg = Math.round(t.series.reduce((a, b) => a + b, 0) / t.series.length), peak = Math.max(...t.series);
+  const util = Math.round(t.live / t.alloc * 100);
   return `<div class="lictile${full ? ' full' : ''}">
-    <obs-toolbar variant="widget" title="${stEsc(t.label)}"><obs-tag variant="tag-primary">Last 24 hours</obs-tag></obs-toolbar>
+    <obs-toolbar variant="widget" title="${stEsc(t.label)}"><obs-tag variant="tag-primary">Last 24 hours</obs-tag><obs-tag variant="tag-primary">avg ${licFmt(avg)}</obs-tag><obs-tag variant="tag-primary">peak ${licFmt(peak)}</obs-tag><obs-tag variant="tag-primary">util ${util}%</obs-tag></obs-toolbar>
     <div class="lictileb">
-      <div class="lictilev"><b>${licFmt(t.live)}</b><span>/ ${licFmt(t.alloc)} eps</span></div>
+      <obs-metric-list items="${agJ([[licFmt(t.live), 'eps', 'ingested now · ' + licFmt(t.alloc) + ' eps allocated']])}"></obs-metric-list>
       ${licEpsChart(t, full)}
-      <div class="lictilef"><span>avg <b>${licFmt(avg)}</b></span><span>peak <b>${licFmt(peak)}</b></span><span>util <b>${Math.round(t.live / t.alloc * 100)}%</b></span></div>
     </div></div>`;
 }
 /* ingested as the signal's line, the allocation as a dashed rule, and anything above it in
@@ -2803,6 +2853,8 @@ function licAfter(){
   const tabs = document.getElementById('licTabs');
   if (tabs) new MutationObserver(() => { const v = tabs.getAttribute('value'); if (v) LIC.tab = v; }).observe(tabs, { attributes:true, attributeFilter:['value'] });
   const rg = document.getElementById('licRange'); if (rg) rg.addEventListener('change', e => licSetRange(licVal(e)));
+  /* one listener for the life of the page, not one per paint */
+  if (window.matchMedia && !LIC.mq){ LIC.mq = window.matchMedia(LIC_MQ); LIC.mq.addEventListener('change', licColsSync); }
   const tb = document.getElementById('licTable');
   if (tb) tb.addEventListener('cellaction', e => { const d = licVal(e); if (d && (d.key === 'hist' || d.key === 'name')) licHistOpen(d.id); });
   const md = document.getElementById('licAct');

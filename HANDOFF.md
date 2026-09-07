@@ -1,4 +1,4 @@
-# Handoff — 2026-09-07 16:07
+# Handoff — 2026-09-08 00:25
 
 ## Read first
 
@@ -14,6 +14,9 @@ Three places in `CLAUDE.md`, in this order:
 4. **Option 8's and Option 4's port notes** — *"Option 5's 7 Sep column changes, ported"* under
    Option 8, and *"The 7 Sep 2026 column changes, ported to the docked panel"* under Option 4:
    what each already had, what came across, and the two adaptations each needed.
+5. **"The sidebar UX pass — UX Planet's twelve rules"** (just above *Responsive*) — the audit
+   table: which of the twelve rules each option already met, what was added under `ux*`, and the
+   one rule deliberately not built (an account switcher) and why.
 
 Also still worth reading: **"An init-aborting crash on Windows and Linux, in six files"** (5 Sep) —
 no probe here could have caught it — and the previous session's **"Settings › My Account ›
@@ -21,15 +24,27 @@ License"** section (unchanged today; committed and live with this push).
 
 ## What we worked on this session
 
-The sidebar column of **Option 5** (`dashboard-nav-column.html`), request by request from
-screenshots, then the same set ported to **Option 6** (`dashboard-card-sidebar.html`), then
-Option 6's Next steps card and licence line brought back into Option 5 — and, after the publish,
-the whole set ported to **Option 8** (`dashboard-nav-column-alt.html`, as today's diff of Option 5)
-and to **Option 4**'s docked panel (`dashboard-labelled-rail.html`, the remainder its panel did not
-already have). Nothing on the canvas, the AI panel or Settings changed.
+A long 7 Sep session on the sidebars. The column of **Option 5** (`dashboard-nav-column.html`),
+request by request from screenshots; the same set ported to **Option 6**, then Option 6's Next
+steps card back into Option 5; after a publish, the set ported to **Option 8** (as the day's diff
+of Option 5) and to **Option 4**'s docked panel; Option 6's active colours moved to `--action`; and
+finally **a UX pass over all eight sidebars** against UX Planet's twelve rules. Nothing on the
+canvas, the AI panel or Settings changed.
 
 ## Completed
 
+- **Later on 7 Sep · the License page's second pass** (Option 1, `_settings-module.js` / `.css`):
+  every region is a DS element now — the edition hero became THREE DS WIDGETS under the tabs
+  (Edition · Validity with the days-left metric and a term-elapsed bar cell · Support & renewal
+  from the License Guide); two earlier shapes were rejected the same day (a key-value card +
+  metric list, then the header's detail-meta strip) and are recorded in CLAUDE.md; the expandable row detail is an
+  `obs-banner` (metering rule) + `obs-key-value` (split) + a **nested `obs-table` with bar cells**
+  (by type); section heads are `obs-toolbar`s; the chart legend is `obs-tag`s; the activation code
+  sits in a read-only labelled `obs-input`; the EPS tiles carry avg/peak/util as header tags and
+  the figure as a metric row. The ring, term bar, stacked bar and every raw span are gone; the two
+  line charts are the one declared gap. Verified by headless shots (both themes, both tabs, the
+  expanded row, drawer, modal) and JS probes; `CLAUDE.md`'s License section carries the audit
+  table. **Not committed** — see git status.
 - **Option 5 · rows with children carry an expand/collapse chevron** — the product's own
   `chevron-right`, at the row's right edge, visible at rest, turned down when open. Monitor and
   NCCM in Explorer; NetRoute, APM and Real User Monitoring in Alert.
@@ -63,6 +78,16 @@ already have). Nothing on the canvas, the AI panel or Settings changed.
   chevron glyph, the foot row + Next steps card + licence line rendered by `mrNavPaint`, and the
   reserved slots gated on a panel having parents (Setting's `Service Level Objective BETA` clipped
   otherwise).
+- **Option 6 · the active rail tile and the active row take `--action` / `--action-fg`**
+  (#1d2a3e in light, inverting in dark) instead of `--chip` and `--teal`; teal stays on the rows
+  that create. Consequence stated: in dark the active row's ink equals normal text, so the state
+  is the fill + weight there.
+- **All eight options · the sidebar UX pass** from UX Planet's twelve rules: drag-to-resize on
+  every column with min/max, persistence and double-click reset (rule 9); a search field with
+  `⌘K` / `Ctrl K` in the box at the top of the columns that only had an icon (rule 10); a 160ms
+  slide-in on just-opened children (rule 4); focus outlines on every row/control (rule 7); a quiet
+  "What's new · 10.0.1" row to the release notes where a sidebar had no bottom slot (rule 5).
+  159 probe assertions across the eight files, harness 77/77 on all six columns.
 - **Widths, measured**: Option 5's `--pl-nav` 224 → 264 → **280px**; Option 6's `--sk-nav`
   281 → **296px**. Both because the DOCS chip (45px, in flow while invisible) and the reserved
   count slot + chevron box clipped the longest labels (`Network Config Settings`, `Real User
@@ -75,10 +100,11 @@ already have). Nothing on the canvas, the AI panel or Settings changed.
 
 ## In progress
 
-Nothing mid-flight. **Everything is committed and live** — the Option 5 / 6 work in `51abeb4`, the
-Option 8 and Option 4 ports in the commit after the two handoff fixes; Pages served the new markup
-for both ported pages within a minute of the push. Both ports are verified (Option 8: 79 + 29 probe
-assertions, harness 77/77; Option 4: 43 assertions, harness 77/77).
+Nothing mid-flight. **Everything is committed and live**: the Option 5 / 6 column work
+(`51abeb4`), the Option 8 / 4 ports (`b0aec72`), and — in the commit after this file's last edit —
+Option 6's active colours, the sidebar UX pass across all eight options, and a concurrent session's
+third pass on the License page (`_settings-module.*`, smoke-tested before the push: the page
+renders on the DS elements with no errors).
 
 ## Next steps
 
@@ -104,6 +130,11 @@ assertions, harness 77/77; Option 4: 43 assertions, harness 77/77).
 - **A real `<a>` inside the row's `<button>`** for the chip, tested in Chrome, so middle-click,
   hover URL and copy-link keep working.
 - **"Create user"** over "Create a user" — the wording given, and the product's own term.
+- **UX Planet's rules were audited before anything was built**, and only gaps were filled: no
+  account switcher (the product has none to switch), no width changes for rule 1 (the widths were
+  measured against content this week; the resize grip gives the reader the range instead).
+- **The grip sits inside the column edge**, not straddling it, because three of the six columns
+  clip overflow and one control must not have two widths.
 
 ## Gotchas & notes
 
@@ -121,6 +152,12 @@ assertions, harness 77/77; Option 4: 43 assertions, harness 77/77).
 - **Headless Chrome prints the DOM and does not exit** — every `--dump-dom` probe here uses
   `Popen` + `communicate(timeout)` + `killpg`, then parses. A plain invocation hangs the tool
   for its full timeout with the answer already in the pipe.
-- The probe scripts (`probe.py`, `probe2.py`, `probe6.py`, `probe-ns5.py`) live in the session
+- **Medium blocks both the fetch tool and `curl`** (Cloudflare 403 on uxplanet.org). The article
+  was read through the user's Chrome session (`get_page_text`); a condensed copy of the twelve
+  rules is in the session scratchpad (`sidebar-rules.md`).
+- **One shared edit script for eight files needs per-file anchors** — Option 8's `.plnav` rule
+  carries a `margin-left` Option 5's does not, and `nxPaint` is followed by a comment, not the next
+  function; both aborted the first run. Assert every anchor's count before touching a file.
+- The probe scripts (`probe.py`, `probe2.py`, `probe6.py`, `probe-ns5.py`, `probe-ux.py`) live in the session
   scratchpad, not the repo; the `pl→sk` mapping in `probe6.py` is a string substitution and had
   to drop the section-caret block by hand.

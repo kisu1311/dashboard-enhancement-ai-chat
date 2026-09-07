@@ -1800,9 +1800,12 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 
 
 /* ═══ PRODUCT LICENSE (`lic*`) — Settings › My Account › License, 7 Sep 2026 ═══════════════
-   Built on the DS elements (see the block's header in `_settings-module.js`); this sheet
-   carries only the page's LAYOUT and the parts the DS leaves to the page — the edition card,
-   the days-left ring, the term bar, the chart tiles, the drawer body.
+   Built on the DS elements (see the block's header in `_settings-module.js`). Since the second
+   pass the same day EVERY region is a DS element, so this sheet is LAYOUT ONLY: grids and gaps,
+   the `display:block` an unknown-element host needs, the body that finishes the frame an
+   `obs-toolbar variant="widget"` starts, and the text styles of the two toolbar titles. The
+   first build's edition card, ring, term bar, legend rules and code box are gone with the
+   markup they styled.
    ⚠️ The DS tokens reach this page through the scoped token block above: `#licPage`, `#licHist`
    and `#licHistF` are listed beside `#agPage` in all three of its selectors. Anything this page
    renders OUTSIDE those subtrees inherits none of it.
@@ -1810,8 +1813,8 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    which is Compliance's element — the drawer chrome is its; only what sits inside is this page's.
    ⚠️ Names grepped free before use: no `.lic*` class, `lic*` function or `LIC_*` constant
    existed in `index.html` or this module.
-   ⚠️ Spacing is on the DS structural scale (16 = @padding-md, 24 = @padding-lg, 12 = @padding-sm,
-   8 = @padding-xs); the two 20px section gaps are 16 + the 4px the tab strip already carries. */
+   ⚠️ Spacing is on the DS structural scale (16 = @padding-md, 12 = @padding-sm, 8 = @padding-xs);
+   the 20px above a section toolbar is 16 + the 4px the toolbar's own row carries. */
 .licpage{flex:0 0 auto;min-width:0}
 .lichead obs-page-header{display:block;--page-header-padding:8px 8px 4px}
 .lichmk{display:grid;place-items:center;width:26px;height:26px;color:var(--primary-alt)}
@@ -1819,63 +1822,44 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 .lictabs{margin:4px 0 0}
 .lictabs obs-tabs{display:block}
 .lictabs [slot]{display:block;padding-top:16px}
+/* every DS host this page places is an unknown element to the browser, i.e. `display:inline`
+   until told otherwise — the recorded `obs-radio` "phantom gap" lesson */
+.licpage obs-key-value,.licpage obs-metric-list,.licpage obs-table,.licpage obs-toolbar{display:block}
 
-/* ── the edition card ─────────────────────────────────────────────────────────────────────
-   The DS widget surface (--common-widget-bg · --border-color · --widget-border-radius), three
-   columns: the edition, the record, the ring. The live paints the name in a gradient and the
-   card in its own --license-* palette; here the name is --primary-alt (the DS heading colour)
-   and the one accent is --chart-indigo, the palette's first series colour. */
-.lichero{display:grid;grid-template-columns:minmax(240px,1fr) minmax(380px,1.5fr) 180px;gap:32px;align-items:center;
-  padding:20px 24px;border:1px solid var(--border-color);border-radius:var(--widget-border-radius);background:var(--common-widget-bg)}
-.liceye{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular)}
-.licname{display:flex;align-items:baseline;gap:8px;margin:6px 0 10px;font-size:28px;font-weight:600;line-height:1.1;color:var(--primary-alt)}
-.licname .inf{font-size:22px;color:var(--chart-indigo)}
-.licblurb{margin:12px 0 0;max-width:380px;font-size:12.8px;line-height:1.55;color:var(--text-color-common-secondary)}
-.licblurb b{font-weight:500;color:var(--page-text-color)}
-.licmeta obs-key-value{display:block}
-.licterm{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:11px;color:var(--neutral-regular)}
-/* the term bar is the data-viz `bar` gap. The FILL is width:% on a block child, never flex —
-   a lone flex child takes the whole track (the recorded flex:50 trap). */
-.lictrack{flex:1;display:block;height:6px;border-radius:3px;background:var(--neutral-lighter);overflow:hidden}
-.licfill{display:block;height:100%;border-radius:3px;background:var(--chart-indigo)}
-.licring{display:grid;justify-items:center;gap:8px}
-.licring svg{display:block;width:128px;height:128px}
-.licexp{display:grid;justify-items:center;gap:2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular)}
-.licexp b{font-size:12.8px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--page-text-color)}
+/* ── the overview widgets: the same widget frame the EPS tiles use ───────────────────────── */
+.licwids{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+.licwid{display:flex;flex-direction:column;min-width:0}
+.licwid obs-toolbar{display:block}
+.licwidb{flex:1 1 auto;display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px}
+/* the edition name is the one piece of page-level type: --primary-alt is the DS heading colour */
+.licedn{font-size:24px;font-weight:600;line-height:1.15;color:var(--primary-alt)}
+.licedn span{color:var(--chart-indigo)}
+.licwidb obs-key-value,.licwidb obs-metric-list,.licwidb obs-table{display:block}
+.licwidb .lichelp{margin:0}
+.liclinks{display:flex;flex-direction:column;gap:6px}
+.liclinks obs-link obs-icon{margin-left:4px;vertical-align:-1px}
+.licwidb obs-button{align-self:flex-start;margin-top:auto}
 
-/* ── section heads: title · hint · a control at the right ───────────────────────────────── */
-.licsec{display:flex;align-items:center;gap:12px;margin:20px 0 10px}
-.licsec h3{margin:0;font-size:14px;font-weight:600;color:var(--primary-alt)}
-.lichint{margin-left:auto;font-size:11.5px;color:var(--text-color-common-secondary)}
-.licsec obs-radio{display:block;flex:0 0 auto}
-.licpage obs-table{display:block}
+/* ── section toolbars (Organisms/Toolbar, grid variant): title in `start`, hint + control after */
+.lictb{margin:20px 0 8px}
+.lictabs [slot] > .lictb:first-child{margin-top:0}   /* the pane's own 16px already separates it from the tab rule */
+.licwids + .lictb{margin-top:24px}
+.lictbt{font-size:14px;font-weight:600;color:var(--primary-alt)}
+.lichint{font-size:11.5px;color:var(--text-color-common-secondary)}
+.lictb obs-radio{display:block}
+.liclegend{display:inline-flex;gap:6px}
 
-/* ── panels + the EPS tiles ─────────────────────────────────────────────────────────────── */
-.licpanel{padding:16px;border:1px solid var(--border-color);border-radius:var(--btn-radius);background:var(--common-widget-bg)}
-.licpanel obs-metric-list,.licpanel obs-key-value{display:block}
+/* ── widget tiles: the `widget` toolbar draws the rounded TOP of the frame, the body the rest ── */
 .licgrid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
-.licsub{margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular)}
 .lictiles{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .lictile.full{grid-column:1/-1}
-.lictile obs-toolbar{display:block}
-/* the body carries the rest of the widget frame the `widget` toolbar starts */
 .lictileb{padding:10px 12px 8px;border:1px solid var(--border-color);border-top:none;border-radius:0 0 6px 6px;background:var(--common-widget-bg)}
-.lictilev{display:flex;align-items:baseline;gap:6px;margin:0 0 6px 2px}
-.lictilev b{font-size:18px;font-weight:600;line-height:1.2;color:var(--page-text-color)}
-.lictilev span{font-size:11px;color:var(--text-color-common-secondary)}
-.lictilef{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--neutral-regular)}
-.lictilef b{font-weight:600;color:var(--page-text-color)}
-.liclegend{margin-left:auto;display:flex;gap:14px;font-size:11px;color:var(--neutral-regular)}
-.liclegend i{display:inline-block;width:14px;margin-right:5px;border-top:2px solid;vertical-align:middle}
-.liclegend i.dash{border-top-style:dashed}
+.lictileb obs-metric-list{margin:0 0 6px}
 
 /* ── the history drawer's body and footer ───────────────────────────────────────────────── */
 #licHist{display:grid;gap:16px}
 .lichtop{display:flex;align-items:center;gap:12px}
-.lichtok{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--text-color-common-secondary)}
-.lichtok i{width:10px;height:10px;border-radius:3px}
-.lichrng{margin-left:auto;display:inline-flex;align-items:center;gap:10px}
-.lichrng .licsub{margin:0}
+.lichrng{margin-left:auto;display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-regular)}
 .lichrng obs-radio{display:block}
 #licHist obs-metric-list{display:block}
 .lichchart{padding:4px 0 0}
@@ -1886,21 +1870,24 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 
 /* ── the activation modal ───────────────────────────────────────────────────────────────── */
 .licact{display:grid;gap:12px;padding:4px 0}
-.licact .licsub{margin:0}
-.liccode{display:flex;align-items:center;gap:8px}
-.liccode code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 12px;font-family:var(--numeric-font-family);font-size:12.5px;
-  color:var(--page-text-color);background:var(--neutral-lightest);border:1px solid var(--border-color);border-radius:var(--btn-radius)}
+.liccode{display:flex;align-items:flex-end;gap:8px}
+.liccode obs-input{flex:1;min-width:0}
+.licact obs-input{display:block}
 .lichelp{margin:0;font-size:12.5px;line-height:1.5;color:var(--text-color-common-secondary)}
 .lichelp2{margin:0;font-size:11.5px;color:var(--neutral-regular)}
-.licact obs-input{display:block;width:100%}
 .licactf{display:inline-flex;gap:8px}
 
+/* below 1366 the pane is ~950px with the settings list open: the Edition widget takes the full
+   row and Validity · Support share the next, rather than three ~300px columns or one tall stack */
+@media (max-width:1366px){
+  .licwids{grid-template-columns:1fr 1fr}
+  .licwids .licwid:first-child{grid-column:1/-1}
+}
 @media (max-width:1280px){
-  .lichero{grid-template-columns:1fr 1fr}
-  .licring{grid-column:1/-1;justify-items:start}
   .licgrid2,.lictiles{grid-template-columns:1fr}
   .lictile.full{grid-column:auto}
 }
+@media (max-width:1024px){ .licwids{grid-template-columns:1fr} }
 
 /* ── ONE VERTICAL RHYTHM FOR THE CONFIG FORM ───────────────────────────────────────────────
    Request, 2 Sep 2026: "make to proper alignment in 3 section and same spacing for all field".

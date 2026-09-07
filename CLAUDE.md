@@ -4445,10 +4445,10 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
 | part | measured off Plain | here |
 |---|---|---|
 | card | `8px` inset, radius 12, `0 0 0 1px rgba(32,39,44,.08), 0 1px 1px` | **removed 5 Sep 2026** — flush, with a border |
-| rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px, `--chip` for the active tile |
+| rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px; the active tile is **`--action` / `--action-fg`** since 7 Sep 2026 (request: *"the sidebar active color is use #1d2a3e"* — `--action`'s light value exactly, inverting to #cad3e2 in dark). It was `--chip`, the hover's own grey |
 | rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Approval · Health · Notification · avatar, 32px tiles (Next steps and Documentation moved to the column foot, 4 Sep 2026) |
 | column | 281px: header 14px/550 over a 12px line, **no controls** | **296px** since 7 Sep 2026 (the DOCS chip and reserved slots, see the port note), second line derived (see below) |
-| row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` + `--teal`, this file's tinted-selection pair |
+| row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` fill with **`--action` ink** since 7 Sep 2026 (request: the active row "is change the #1d2a3e"; it was `--teal`, which the column keeps for its create rows). A section row's active tile takes the same pair |
 | section | "Active" 12px/550 over 24px, `+` at its right (24px, radius 6), 16px above | same, and the `+` is real (below) |
 | section row | glyph in a tinted **18px radius-4 tile**, text 12px/550 | `--chip` tile, `--teal` when the row is active |
 | column foot | right-aligned 32px icon buttons in 8px of padding | Next steps (rocket + count) · Documentation · Settings — the collapse is the header's |
@@ -5046,19 +5046,35 @@ AIOps site, so it carries no licence page — the guide was fetched fresh.
 | Export | `handleExport` renders the page root to an image named `license-<edition>` (html2canvas) |
 | EPS tab | `HARDWARE CEILING 765 · ALLOCATED 950 (124% of ceiling) · INGESTED LIVE 0 · DROP STATUS clean` · two rule lines (notify / drop at 100% for 60 s) · *Dynamic EPS · allocation by signal* (Log 314 · Flow 152 · APM 266 · RUM 219) · *Calculated vs actual EPS · per telemetry* (a Total tile + four) |
 
-### How it is built here — the flow is live's, the parts are the DS's
+### How it is built here — the flow is live's, EVERY part is the DS's
+
+⚠️ **SECOND PASS THE SAME DAY** (request: *"the components are not ObserveOps — verify all
+components are using the ObserveOps design system"*, with the expanded row's hand-made stacked
+bar and legend as the example). The first build still composed the edition card (eyebrow, big
+name, ring, term bar), the row detail (dot chips, a stacked bar, a legend), the chart legend and
+the activation-code box from raw spans. All of that is gone; the audit below is the current state,
+and the only thing still drawn is the two line charts.
 
 | region | DS part |
 |---|---|
-| header | `obs-page-header` (`heading`, mark in `before`, actions in the default slot, `no-divider` because the tab bar rules) |
+| header | `obs-page-header` — `heading`, the licence status as an `obs-tag` in the `title` slot, actions in the default slot, `no-divider` because the tab bar rules. Nothing else: the record lives in the overview widgets |
 | tabs | `obs-tabs` with `icon`s; the active key is read back through a **MutationObserver on the reflected `value` attribute** |
-| edition card | `obs-tag` (`tag-primary` + check) · `obs-key-value variant="plain" columns="2"` · a term bar and a days-left ring (declared gaps) |
-| quota usage | **`obs-table expandable`** — `link` · text · `bar` · `sparkline` · `status` · `button` cells; the **expandable detail** holds the metering rule and the breakdowns (inline-styled: it is inner-HTMLed into the shadow root) |
+| overview | **three DS widgets** (`obs-toolbar variant="widget"` header + body, the EPS tab's own tile): **Edition** (the name as page text, `obs-tag`s, the guide's line, `obs-key-value` for License Type · Account) · **Validity** (`obs-metric-list` for days left, coloured by a severity token at ≤ 90 / ≤ 30 days, and a one-row `obs-table` whose `bar` cell is the term elapsed) · **Support & renewal** (the License Guide's Support & Contact as `obs-link`s, one line on overages, an `obs-button` into the Activation Code modal). Below 1366px Edition spans the row and the other two share the next. ⚠️ **Two shapes were rejected the same day**: an `obs-key-value` card beside an `obs-metric-list` (*"very bad ui"* — two unrelated tables), then the header's detail-meta strip (*"also bad ui"* — a line of small labelled text is the RUM span header, not an overview). Don't try either a third time |
+| section heads | **`obs-toolbar`** (grid variant): the title in `start`, the hint and the control after it |
+| quota usage | **`obs-table expandable`** — `link` · text · `bar` · `sparkline` · `status` · `button` cells |
+| the expandable detail | **DS all the way down, inside the shadow root**: `obs-banner variant="info" title="Metered per"` for the guide's rule, `obs-key-value variant="plain" columns="2"` for the agentless/agent (or monolith/agent) split, and a **nested `obs-table`** whose `bar` cells carry the by-type share (7 rows for Monitored Devices). Nested custom elements written into the detail DO upgrade (measured) |
 | range | `obs-radio as-button size="small"` — the DS's own *time range 1h/24h/7d/30d* example. ⚠️ `segmented` / `variant="segmented"` render a plain radio list; **`as-button`** is the attribute the element actually reads |
-| History | the **house drawer** (`stcDrOpen`), `obs-radio` range · **`obs-metric-list`** for the five figures · a line chart against the cap · `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
-| Upgrade Now | **`obs-modal`** "Activation Code" — the live flow exactly; `obs-input type="textarea" block`; the primary is disabled until a code is pasted and the hint says so; Activate replaces the licence (Annual Subscription, one year from today) and repaints |
-| EPS tab | `obs-metric-list` (four figures) · `obs-key-value` (the drop policy) · `obs-table` with `bar` cells · `obs-toolbar variant="widget"` tiles over line charts |
+| History | the **house drawer** (`stcDrOpen`): the token as an `obs-tag`, `obs-radio` range, **`obs-metric-list`** for the five figures, a line chart against the cap (gap), `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
+| Upgrade Now | **`obs-modal`** "Activation Code" — a **read-only labelled `obs-input`** carrying the current code + an `obs-button` copy, an `obs-link` mailto, an `obs-input type="textarea" block` with its own label, Cancel · Activate License; the primary is disabled until a code is pasted and the hint says so; Activate replaces the licence (Annual Subscription, one year from today) and repaints |
+| EPS tab | two **widget tiles** (`obs-toolbar variant="widget"` header + `obs-metric-list` / `obs-key-value` body) · `obs-toolbar` section heads · `obs-table` with `bar` cells · a legend of **`obs-tag`s** · five widget tiles, each `obs-toolbar` (title + window / avg / peak / util as tags) over an `obs-metric-list` row (the live figure) over a line chart dashed at the allocation (gap) |
 
+- ⚠️ **THE ONE DECLARED GAP LEFT IS THE LINE CHART** (history, the five EPS tiles) — the DS ships
+  no chart element and `list_gaps` says so; they carry `class="licchart"` for the conformance
+  checker and every colour is a token. The ring, the term bar and the stacked bar each had a DS
+  answer (a metric row, the record's dates, a table with bar cells), so a gap was not honest there.
+- ⚠️ **`obs-key-value` caps a single-column list at 480px** (`.kv.cols-1{max-width:480px}` in its
+  shadow CSS) — a long value wraps into a narrow column beside an empty band. That is why the
+  metering rule is a banner, not a key-value row.
 - ⚠️ **THE TOKEN SCOPE GREW.** The scoped DS block's selectors are now
   `#agPage,#licPage,#licHist,#licHistF{` (three places) — the page, the drawer body and the
   drawer footer, because the drawer is portalled to `<body>`. `_verify/dsconf.py`'s regexes
@@ -5068,23 +5084,35 @@ AIOps site, so it carries no licence page — the guide was fetched fresh.
 - ⚠️ **`licNice`, not `agNice`, for these charts** — the 1/2/2.5/5/10 steps took a 951 eps
   allocation to a 2,000 axis and a 5,000 cap to 10,000.
 - ⚠️ **obs-input's textarea group is a hardcoded 280px**; only its own `block` attribute
-  widens it. `rows` is not read.
+  widens it. `rows` is not read. `label`, `value` and `readonly` ARE read (the code box).
 - ⚠️ **`obs-key-value`'s `status` field IS the label** — `{value:"Activated", status:"active"}`
   renders the tag **"Active"** (the status map's word), not the value.
 - ⚠️ **`obs-modal` leaves `open` true after its own ✕** — it emits `cancel` and `close`; sync
   `md.open = false` in the listener, and **close it before `stMainPaint()`** repaints the page.
 - ⚠️ **The window switch sets the table's `rows` and `columns` ATTRIBUTES** (raw JSON, not
   `agJ`) — a repaint would rebuild the tabs and every open detail row under the pointer.
+- ⚠️ **Below 1366px the grid drops Remaining and Change** (`LIC_MQ`, `licColsSync` on the
+  media query's `change`). At 1280 with the settings list open the pane is ~950px, and ten
+  columns wrapped every label to three lines and pushed History past the edge. Both dropped
+  columns are derivable: Remaining is Allotted − Used, Change is the sparkline's own delta and
+  reads "—" on five of six rows.
+- ⚠️ **A function swap that anchors on the COMMENT above a function leaves the old body in
+  place.** The second pass did exactly that for four functions and shipped, for one edit, two
+  `function licHeadHTML()`s — the later (old) one wins silently, the duplicate-function trap the
+  root CLAUDE.md opens with. Assert one definition per name after any scripted replace.
 
 ### Deliberate differences from live, recorded so none is mistaken for the product
 
 - the live rows are bespoke **cards**; here they are `obs-table` rows and the breakdowns
   moved into the expandable detail — the DS has no "card row with a meter";
+- the live edition **hero** (gradient "Infinity ∞", a ring, a term bar, four meta cells) is the
+  page header's subtitle and meta strip — the DS's own entity detail header; the per-type colours
+  of the live stacked bar went with it (the DS bar cell paints in the product's ink);
 - History opens in a **drawer**, not a modal — the DS panel guide files drill-down detail
   under the drawer and keeps the modal for confirm/collect, which is exactly what the
   Activation Code dialog is (so that one stays a modal);
-- colours are **chart-palette tokens**, not the live `--license-*` palette (Tokyo Night hues);
-  the edition name is `--primary-alt` text, not a gradient; the status tag reads *Active*;
+- the chart series colours are **chart-palette tokens**, not the live `--license-*` palette
+  (Tokyo Night hues); the status tag reads *Active*;
 - **Export prints** (the `stcExport` rule) where live snapshots the DOM to an image;
 - **the EPS ingest is seeded** (Log 212 · Flow 98 · APM 140 · RUM 61 of the live allocations)
   because the instance is idle and every live counter reads 0; the licence and quota figures
@@ -5100,8 +5128,9 @@ virtual time — see the next note). JS probes drove the expand chevron, the 7d 
 and change column follow), History (drawer, metric list, axis, footer), the drawer's own range,
 the paste box → button enable → Activate → repaint, and the EPS tab (5 tiles, 4 rows, KPIs).
 `lxbehave` **57/57 ×8** · `behave` **63/63** · `harness … query` **77/77** · the DS conformance
-checker (a `dsconf.py` variant isolating `#licPage`, gaps `chart` + `gauge` declared) scores
-**100/100 on both tabs** (layout 97). ⚠️ The Agentic AI check reads **87/100 (component 58)** both
+checker (a `dsconf.py` variant isolating `#licPage`, one declared gap: `chart`) scores
+**100/100 on both tabs, the usage tab with a row expanded** — token, component, philosophy and
+layout all 100 after the second pass (the first build read layout 97 with `gauge` also declared). ⚠️ The Agentic AI check reads **87/100 (component 58)** both
 before and after this change — measured against the pre-change module files — so the 100 / 89
 recorded on 1 Sep is stale, not a regression. The rendered `#licPage` carries **0 hex / rgb literals**; `validate_usage` flags only `--btn-radius` and
 `--widget-border-radius`, which are the scoped block's runtime names for the DS structural
@@ -5111,6 +5140,47 @@ user is not looking at that window: `setTimeout` is throttled to once a minute, 
 screenshot fails with *"Script injection timed out"*. The 900 ms activation timer "never
 fired" and the page "froze" for an hour before this was measured. Sync JS probes still work
 there; anything timer-, animation- or screenshot-shaped goes headless.
+
+## The sidebar UX pass — UX Planet's twelve rules, applied to every option (7 Sep 2026)
+
+Request: *"read all rules and improve the all sidebar option"*, with
+<https://uxplanet.org/best-ux-practices-for-designing-a-sidebar-9174ee0ecaa2> (D. Sergushkin,
+Dec 2024). Medium blocks both the fetch tool and `curl` (Cloudflare 403); the article was read
+through the user's own Chrome session. Its twelve rules, and what each option had before anything
+was touched, were audited first; only the gaps were built. Everything added is namespaced **`ux*`**
+and marked *rule N* at the rule or function.
+
+| rule | already there | added (7 Sep) |
+|---|---|---|
+| 1 width 240–300 / 48–64, tooltips | rails 52–72, columns 270–296, `data-tip` everywhere | — (widths were measured against content this week; not changed) |
+| 2 dynamic Settings nav | every column swaps to the 19 categories; Settings has its own rail | — |
+| 3 account switcher | — | **NOT built.** The product has no multi-account concept — its only "tenant" is the Azure AD field on an integration (`_product-docs`) — so it would be invention |
+| 4 expandable sub-items, smooth | chevrons (this week), `.15s` rotate | **`.uxin`** — a 160ms slide-in on the children of the parent you *just* opened (`PL/SK/NX/MR.just`, consumed by the paint that renders them; never on an unrelated repaint); off under `prefers-reduced-motion` |
+| 5 bottom space for updates | Next steps card + licence line (4 · 5 · 6 · 8) | **`.uxnews`** in 1 · 2 · 3 · 7 — "What's new · 10.0.1", the product's `message-star`, the release-notes page (`curl` 200); dimmer/smaller than the rows, above the identity row / footer |
+| 6 light / dark / system | Dark · Light · Auto in the profile popover, `matchMedia` | — |
+| 7 active + focus states | active fills/inks; `.mrr:focus-visible` in Option 4 only | **`:focus-visible`** outlines on every row and control of the columns (2 · 5 · 6 · 7 · 8 rows are `<button>`s under a reset that paints nothing) |
+| 8 prioritise, dividers, customise | group hairlines; the Layout drawer's Sidebar tab (hide · order · home · pins) | — |
+| 9 adjustable width | — | **`.uxgrip` + `uxGrip()`** on every column (2 · 4 · 5 · 6 · 7 · 8): drag the edge, 4px `--track` bar on hover as the cue, min/max clamp, double-click resets, width persisted per option (`oo-w-*`) and written **inline on `<html>`** so the responsive `:root` steps cannot stomp it (the `--ac-w` mechanism). ONE drag engine: window listeners bound once, the grip only starts a drag, so Option 4's panel (which rebuilds its innerHTML) re-mounts its grip per paint without stacking listeners. Not on 1 · 3: their rail is a fixed hover-expand, not a resizable column |
+| 10 quick search at the top, shortcut in the box | 1 · 3 · 4 rail rows at the top with the keycap; 5 · 6 · 8 an icon in the column header; 7 an icon in the action row; 2 none in the panel | **`.uxsrch`** — a search FIELD under the column header (5 · 6 · 8), under the action row (7), at the top of the docked panel (2), `⌘K` / `Ctrl K` shown in the box (`UX_KEY`; Option 7 reuses `#sbSearch` / `#sbKbd` so `init()`'s platform swap still lands). It opens the spotlight — one door, not a second engine. The icon it replaces is removed |
+| 11 targeted actions | ＋ create rows, pins, DOCS chips, section `+` | — |
+| 12 secondary quick-access sidebar | the pinned band under Explorer (1 · 3 · 4 · 5 · 6 · 8) | — |
+
+- ⚠️ **Rule 1's ranges are reported, not enforced.** Options 5 / 6 / 8 total 332–360px with their rail
+  and Option 4's labelled rail is 72; each width was measured against its longest label this
+  week, and the reference products they copy sit at those numbers. The resize grip is what gives
+  the reader the range the article asks for.
+- ⚠️ **The grip sits INSIDE the column's edge (`right:0; width:7px`)**, not straddling it: three of
+  the six containers are `overflow:hidden`, and an overhang would be clipped on those and not on
+  the others — two different widths for one control.
+- ⚠️ **`.plnav` / `.sknav` gained `position:relative`** to host the grip; Option 8's `.plnav` carries
+  a `margin-left` for its absolute rail, which is why the shared edit script had to anchor on that
+  file's own rule text (it aborted on the first attempt).
+- Verified: a per-option probe (grip mounted at the edge and hit-testable, a synthetic drag moves
+  the token by the delta, clamps at min and max, persists, double-click resets, one grip after a
+  repaint; the field's keycap and that it opens the spotlight and left no second icon; children
+  animate on the opening paint and NOT on the next; the focus rule; the what's-new link and version)
+  — **159 assertions across the eight files, all passing**; `harness … query` **77/77 on all six
+  column options**; Options 5, 7 and 1 screenshotted.
 
 ## Responsive — the seven target resolutions
 
@@ -5520,7 +5590,7 @@ statuses" shape.
 - **`.plrail` (44px)** — logo, Search, Iris, the `RAIL` modules, then Approval / Health /
   Notifications / avatar. **Icon-only, no labels, no hover-expand, no flyout.** 28px tile,
   18px glyph; active tile is `--pill`.
-- **`.plnav` (280px — 216 until 3 Sep 2026, 224 until 7 Sep, see the two width notes below)** — a header (module name over its route, plus Search and Sidebar
+- **`.plnav` (280px — 216 until 3 Sep 2026, 224 until 7 Sep, see the two width notes below; user-resizable since the 7 Sep UX pass)** — a header (module name, plus Sidebar
   settings), then the rows.
 - ⚠️ **EXPLORER RENDERS FROM `EXPLORER_TREE`, EVERYTHING ELSE FROM `SUBNAV`/`SUBNAV2`.** The
   tree is the only source with real nesting and real counts, and nesting is what the pattern

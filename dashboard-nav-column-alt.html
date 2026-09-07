@@ -7179,7 +7179,7 @@ body.pinned .shell{padding-left:calc(var(--pl-rail) + var(--pl-nav))}
 /* ── column B · the nav column ───────────────────────────────────────────────────────────── */
 /* ⚠️ `margin-left`, NOT a flex sibling — the rail is absolute now (see above), so nothing
    reserves its 52px unless the column does it itself. */
-.plnav{flex:1;min-width:0;margin-left:var(--pl-rail);display:flex;flex-direction:column;background:var(--panel)}
+.plnav{flex:1;min-width:0;margin-left:var(--pl-rail);display:flex;flex-direction:column;background:var(--panel);position:relative}   /* relative: hosts `.uxgrip` */
 /* ══ COLLAPSE THE NAV COLUMN (request, 2 Sep 2026) ══════════════════════════════════════════
    This option's column is ALWAYS-ON — that is the whole pattern — so the one thing it owed the
    canvas was a way to hand the 216px back. Collapsed, what remains is the 44px rail: still a
@@ -7476,6 +7476,42 @@ body.plshut .plexp{display:grid}
 /* the avatar fills its own 26px slot — the base `.miniav` is sized for the 64px rail */
 .plav .miniav{width:100%;height:100%;flex:none;margin:0;font-size:10px;border-radius:50%}
 
+
+/* ── SIDEBAR UX PASS, 7 Sep 2026 — UX Planet, "Best UX Practices for Designing a Sidebar"
+   (D. Sergushkin, Dec 2024), applied to every option. What each option lacked is added under
+   the `ux*` names below; what it already had (tooltips, dynamic Settings nav, dark/light/auto,
+   active states, dividers, the Sidebar tab's customisation, targeted actions, the pinned band)
+   is left alone. Rule 3 (an account switcher) is NOT built: the product has no multi-account
+   concept — its only "tenant" is the Azure AD field on an integration — so it would be invention.
+   ⚠️ A state class and a control never share a name here: `uxdrag` is on the body, `.uxgrip` is
+   the control. */
+/* rule 9 · adjustable width — drag the column's edge; a 4px bar appears on hover as the cue
+   (the AI panel's `.aigw` convention), min/max clamp, double-click resets, the width persists
+   per option in localStorage and is written INLINE on <html> so the responsive `:root` steps
+   cannot stomp it (the recorded `--ac-w` mechanism). */
+.uxgrip{position:absolute;top:0;bottom:0;right:0;width:7px;cursor:ew-resize;z-index:6}
+.uxgrip::before{content:'';position:absolute;top:0;bottom:0;left:3px;width:4px;border-radius:2px;background:var(--track);opacity:0;transition:opacity .12s}
+.uxgrip:hover::before,.uxgrip.on::before{opacity:.9}
+body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
+/* rule 10 · a search FIELD at the top of the column with its shortcut shown IN the box — it was
+   an icon button whose keycap lived only in a tooltip. It is a button that opens the spotlight
+   (typing happens there), so it is one door, not a second search engine. */
+.uxsrch{display:flex;align-items:center;gap:8px;height:30px;margin:0 8px 6px;padding:0 9px;border:1px solid var(--border);
+  border-radius:6px;background:var(--panel-2);color:var(--text-dim);font-size:12.5px;cursor:pointer;flex:0 0 auto;
+  width:calc(100% - 16px);text-align:left}
+.uxsrch:hover{border-color:var(--track);color:var(--text)}
+.uxsrch:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.uxsrch svg{width:14px;height:14px;flex:0 0 14px;fill:currentColor}
+.uxsrch span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uxsrch kbd{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;color:var(--text-dim);background:var(--chip);border-radius:3px;padding:1px 5px}
+/* rule 4 · a short slide-in on the children of a parent you JUST opened (`*.just`, consumed by
+   the paint that renders them — never on an unrelated repaint), off under reduced motion */
+@keyframes uxin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.uxin{animation:uxin .16s ease-out both}
+@media (prefers-reduced-motion:reduce){.uxin{animation:none}}
+/* rule 7 · a defined FOCUS state for every row and control in the column (they are buttons, and
+   the sheet's button reset paints nothing for keyboard focus) */
+.plrow:focus-visible,.plsec:focus-visible,.plfb:focus-visible,.plstep:focus-visible,.plhb:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
 <link rel="stylesheet" href="_settings-module.css">
 </head>
@@ -24912,6 +24948,33 @@ function plDocsFoot(name){
 const plPinBtn = l => `<span class="plpin${railPinned(l) ? ' pinned' : ''}" role="button" data-tip="${railPinned(l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" aria-pressed="${railPinned(l)}" onclick="event.stopPropagation();railPinToggle(${mfAttr(l)})">${MF_PIN}</span>`;
 
 /* ── the rail: modules only ──────────────────────────────────────────────────────────────── */
+
+/* ── SIDEBAR UX PASS, 7 Sep 2026 (UX Planet's sidebar rules) — shared helpers, `ux*` ─────────── */
+const UX_KEY = /Mac|iP(hone|ad)/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
+function uxSearchHTML(){ return `<button class="uxsrch" type="button" onclick="openSearch()"><svg class="uxsi" viewBox="0 0 48 48"></svg><span>Search</span><kbd>${UX_KEY}</kbd></button>`; }
+function uxSearchIco(root){ (root || document).querySelectorAll('.uxsrch .uxsi').forEach(e => { if (!e.innerHTML) setIco(e, 'search'); }); }
+/* rule 9 · one drag engine: the grip only starts a drag; the window listeners are bound ONCE and
+   read `UX_DRAG`, so a panel that rebuilds its innerHTML (Option 4's `mrNavPaint`) can re-mount
+   its grip on every paint without stacking listeners. Width is written inline on <html>. */
+let UX_DRAG = null;
+function uxGrip(sel, token, min, max, key){
+  const host = document.querySelector(sel); if (!host || host.querySelector(':scope > .uxgrip')) return;
+  const root = document.documentElement;
+  if (!root.style.getPropertyValue(token)){ try { const w = +localStorage.getItem(key); if (w >= min && w <= max) root.style.setProperty(token, w + 'px'); } catch (e) {} }
+  const g = document.createElement('div'); g.className = 'uxgrip'; g.setAttribute('data-tip', 'Drag to resize · double-click to reset');
+  g.addEventListener('mousedown', e => {
+    UX_DRAG = { token, min, max, key, g, x0: e.clientX, w0: parseFloat(getComputedStyle(root).getPropertyValue(token)) || min };
+    g.classList.add('on'); document.body.classList.add('uxdrag'); e.preventDefault();
+  });
+  g.addEventListener('dblclick', () => { root.style.removeProperty(token); try { localStorage.removeItem(key); } catch (e) {} uxAfter(); });
+  host.appendChild(g);
+}
+function uxAfter(){ if (typeof fitCanvas === 'function'){ try { fitCanvas(); } catch (e) {} } }
+addEventListener('mousemove', e => { const d = UX_DRAG; if (!d) return;
+  document.documentElement.style.setProperty(d.token, Math.max(d.min, Math.min(d.max, d.w0 + (e.clientX - d.x0))) + 'px'); });
+addEventListener('mouseup', () => { const d = UX_DRAG; if (!d) return; UX_DRAG = null; d.g.classList.remove('on'); document.body.classList.remove('uxdrag');
+  try { localStorage.setItem(d.key, parseInt(getComputedStyle(document.documentElement).getPropertyValue(d.token))); } catch (e) {} uxAfter(); });
+
 function plRailPaint(){
   const el = document.getElementById('plIcons'); if (!el) return;
   el.innerHTML =
@@ -24983,7 +25046,7 @@ function plRowHTML(label, mod, act, o){
     (o.n != null ? `<span class="pln">${o.n}</span>` : (o.tree ? '<span class="pln ph"></span>' : '')) +
     (o.kids ? PL_CV : (o.tree ? PL_CV.replace('class="plcv"', 'class="plcv ph"') : '')) +
     (o.chev ? PL_CHEV : '');
-  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}${o.open ? ' plopen' : ''}"` +
+  return `<button class="plrow${o.sub ? ' sub' : ''}${o.on ? ' on' : ''}${o.open ? ' plopen' : ''}${o.cls || ''}"` +
     (o.click ? ` onclick="${o.click}"` : ` onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})"`) +
     `>${plIco(o.ic, o.icls)}<span class="plt">${label}</span>` +
     (end ? `<span class="plend">${end}</span>` : '') + `</button>`;
@@ -25034,7 +25097,7 @@ function plBodyHTML(){
                pin: r.name === 'Explorer' ? t.l : null, doc: t.doc || plDocOf(r.name), tree: true,
                click: t.kids ? `plSub(${mfAttr(t.l)})` : null }) +
         (open && t.kids ? t.kids.map(([label, mod, act, ic]) =>
-           plRowHTML(label, mod, act, { sub:true, ic })).join('') : '');
+           plRowHTML(label, mod, act, { sub:true, ic, cls: PL.just === t.l ? ' uxin' : '' })).join('') : '');
     }).join('');
 
   const secs = plSecs(r.name);
@@ -25071,16 +25134,17 @@ function plPaint(){
   host.innerHTML =
     `<div class="plhd"><div class="plhtt"><b>${r.name}</b></div>` +
     `<div class="plha">` +
-      `<button class="plhb" data-tip="Search  ⌘K" onclick="openSearch()"><svg viewBox="0 0 48 48" id="plSearchIc"></svg></button>` +
       `<button class="plhb" data-tip="Sidebar settings" onclick="sbmOpen()"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5Zm0 6h18v2H3v-2Zm0 6h18v2H3v-2Z"/></svg></button>` +
       /* ⚠️ the collapse lives in the COLUMN's header, not the rail — it acts on the column, and
          the 44px rail has no room for a control beside a 26px mark. Expanding is the mark. */
       `<button class="plhb" data-tip="Collapse sidebar" onclick="plColTog()">${PL_COL}</button>` +
-    `</div></div><div class="plbody">${plBodyHTML()}</div>`;
-  setIco(document.getElementById('plSearchIc'), 'search');
+    `</div></div>` + uxSearchHTML() + `<div class="plbody">${plBodyHTML()}</div>`;
+  uxSearchIco(host);
   plRailPaint(); plFootPaint(); plNsPaint();
+  uxGrip('.plnav', '--pl-nav', 240, 380, 'oo-w-pl8');   /* rule 9 */
+  PL.just = null;                                        /* rule 4 */
 }
-function plSub(l){ PL.sub = (PL.sub === l) ? null : l; plPaint(); }
+function plSub(l){ PL.sub = (PL.sub === l) ? null : l; PL.just = PL.sub; plPaint(); }
 function plSec(h){ PL.shut[h] = !PL.shut[h]; plPaint(); }
 
 /* ══ the column foot · "NEXT STEPS" · the licence line — Option 6's `sk*` twins, ported 7 Sep 2026 ═══

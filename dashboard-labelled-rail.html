@@ -9031,6 +9031,31 @@ body.mrnav .shell{padding-left:calc(var(--rail-w) + var(--mr-nav))}
 .mrmi.on{background:var(--chip);color:var(--text);font-weight:600}
 .mrmi.on .ic{color:var(--text)}
 
+
+/* ── SIDEBAR UX PASS, 7 Sep 2026 — UX Planet, "Best UX Practices for Designing a Sidebar"
+   (D. Sergushkin, Dec 2024), applied to every option. What each option lacked is added under
+   the `ux*` names below; what it already had (tooltips, dynamic Settings nav, dark/light/auto,
+   active states, dividers, the Sidebar tab's customisation, targeted actions, the pinned band)
+   is left alone. Rule 3 (an account switcher) is NOT built: the product has no multi-account
+   concept — its only "tenant" is the Azure AD field on an integration — so it would be invention.
+   ⚠️ A state class and a control never share a name here: `uxdrag` is on the body, `.uxgrip` is
+   the control. */
+/* rule 9 · adjustable width — drag the column's edge; a 4px bar appears on hover as the cue
+   (the AI panel's `.aigw` convention), min/max clamp, double-click resets, the width persists
+   per option in localStorage and is written INLINE on <html> so the responsive `:root` steps
+   cannot stomp it (the recorded `--ac-w` mechanism). */
+.uxgrip{position:absolute;top:0;bottom:0;right:0;width:7px;cursor:ew-resize;z-index:6}
+.uxgrip::before{content:'';position:absolute;top:0;bottom:0;left:3px;width:4px;border-radius:2px;background:var(--track);opacity:0;transition:opacity .12s}
+.uxgrip:hover::before,.uxgrip.on::before{opacity:.9}
+body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
+/* rule 4 · a short slide-in on the children of a parent you JUST opened (`*.just`, consumed by
+   the paint that renders them — never on an unrelated repaint), off under reduced motion */
+@keyframes uxin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.uxin{animation:uxin .16s ease-out both}
+@media (prefers-reduced-motion:reduce){.uxin{animation:none}}
+/* rule 7 · a defined FOCUS state for every row and control in the column (they are buttons, and
+   the sheet's button reset paints nothing for keyboard focus) */
+.mrfb:focus-visible,.mrstep:focus-visible,.mrpn:focus-visible,.mrnsx:focus-visible,.mrexpb:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
 </head>
 <body>
@@ -28278,8 +28303,8 @@ const mrEnd = (pin, n, chev, doc) => (pin == null && n == null && !chev && !doc)
    Enter or Space. `mrKey` does both, and `.mrr` carries the padding/colour/cursor the UA gave
    the button for free (the recorded `.aihm .conv` regression, where a row turned into a div
    silently lost every rule scoped to `button`). */
-const mrRow = ([label, mod, act, kind, ic], pin, doc) =>
-  `<div class="mrr${kind === 'sub' ? ' sub' : ''}${pin && railPinned(pin) ? ' pinned' : ''}"
+const mrRow = ([label, mod, act, kind, ic], pin, doc, cls) =>
+  `<div class="mrr${kind === 'sub' ? ' sub' : ''}${pin && railPinned(pin) ? ' pinned' : ''}${cls || ''}"
      role="button" tabindex="0" onkeydown="mrKey(event,this)"
      onclick="mfGo(${mfAttr(mod)},${mfAttr(act == null ? null : act)})">${ic ? ico(ic, kind === 'plus' ? 'mfic plus' : 'mfic') : ''}<span class="mrl">${
     /* a `plus` row with a glyph draws the glyph in the icon slot and no text ＋ — both would
@@ -28292,7 +28317,7 @@ const mrParent = (key, label, ic, kids, pin, doc) => {
   return `<div class="mrr par${open ? ' open' : ''}${pin && railPinned(pin) ? ' pinned' : ''}" role="button" tabindex="0"
       aria-expanded="${open}" onkeydown="mrKey(event,this)" onclick="mrSub(${mfAttr(key)})">${
       ic ? ico(ic, 'mfic') : ''}<span class="mrl">${label}</span>${mrEnd(pin, kids.length, true, doc)}</div>` +
-    (open ? kids.map(([l, m, a]) => mrRow([l, m, a == null ? null : a, 'sub'])).join('') : '');
+    (open ? kids.map(([l, m, a]) => mrRow([l, m, a == null ? null : a, 'sub'], undefined, undefined, MR.just === key ? ' uxin' : '')).join('') : '');
 };
 /* Enter and Space activate the row, as they would on the button it used to be. Space is
    preventDefault'd or the panel scrolls under the press. A key that reaches this from the PIN
@@ -28302,7 +28327,7 @@ function mrKey(e, el){
   if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
   e.preventDefault(); el.click();
 }
-function mrSub(key){ if (MR.open.has(key)) MR.open.delete(key); else MR.open.add(key); mrNavPaint(); }
+function mrSub(key){ if (MR.open.has(key)){ MR.open.delete(key); MR.just = null; } else { MR.open.add(key); MR.just = key; } mrNavPaint(); }
 function mrBodyHTML(r){
   /* ⚠️ THE PIN IS EXPLORER'S ONLY — `railPinRow` resolves a pin against `EXPLORER_TREE`, so
      these are the only labels the rail band can render. */
@@ -28329,6 +28354,33 @@ function mrBodyHTML(r){
   }).join('');
 }
 
+
+/* ── SIDEBAR UX PASS, 7 Sep 2026 (UX Planet's sidebar rules) — shared helpers, `ux*` ─────────── */
+const UX_KEY = /Mac|iP(hone|ad)/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
+function uxSearchHTML(){ return `<button class="uxsrch" type="button" onclick="openSearch()"><svg class="uxsi" viewBox="0 0 48 48"></svg><span>Search</span><kbd>${UX_KEY}</kbd></button>`; }
+function uxSearchIco(root){ (root || document).querySelectorAll('.uxsrch .uxsi').forEach(e => { if (!e.innerHTML) setIco(e, 'search'); }); }
+/* rule 9 · one drag engine: the grip only starts a drag; the window listeners are bound ONCE and
+   read `UX_DRAG`, so a panel that rebuilds its innerHTML (Option 4's `mrNavPaint`) can re-mount
+   its grip on every paint without stacking listeners. Width is written inline on <html>. */
+let UX_DRAG = null;
+function uxGrip(sel, token, min, max, key){
+  const host = document.querySelector(sel); if (!host || host.querySelector(':scope > .uxgrip')) return;
+  const root = document.documentElement;
+  if (!root.style.getPropertyValue(token)){ try { const w = +localStorage.getItem(key); if (w >= min && w <= max) root.style.setProperty(token, w + 'px'); } catch (e) {} }
+  const g = document.createElement('div'); g.className = 'uxgrip'; g.setAttribute('data-tip', 'Drag to resize · double-click to reset');
+  g.addEventListener('mousedown', e => {
+    UX_DRAG = { token, min, max, key, g, x0: e.clientX, w0: parseFloat(getComputedStyle(root).getPropertyValue(token)) || min };
+    g.classList.add('on'); document.body.classList.add('uxdrag'); e.preventDefault();
+  });
+  g.addEventListener('dblclick', () => { root.style.removeProperty(token); try { localStorage.removeItem(key); } catch (e) {} uxAfter(); });
+  host.appendChild(g);
+}
+function uxAfter(){ if (typeof fitCanvas === 'function'){ try { fitCanvas(); } catch (e) {} } }
+addEventListener('mousemove', e => { const d = UX_DRAG; if (!d) return;
+  document.documentElement.style.setProperty(d.token, Math.max(d.min, Math.min(d.max, d.w0 + (e.clientX - d.x0))) + 'px'); });
+addEventListener('mouseup', () => { const d = UX_DRAG; if (!d) return; UX_DRAG = null; d.g.classList.remove('on'); document.body.classList.remove('uxdrag');
+  try { localStorage.setItem(d.key, parseInt(getComputedStyle(document.documentElement).getPropertyValue(d.token))); } catch (e) {} uxAfter(); });
+
 function mrNavPaint(){
   const host = document.getElementById('mrNav'); if (!host) return;
   const r = RAIL[activeRail] || RAIL[0];
@@ -28350,6 +28402,8 @@ function mrNavPaint(){
     `</div><div id="mrNs">${mrNsHTML()}</div>` +
     `<div class="mrtrial"><span>Licence renews in 23 days.</span><a onclick="mrLicence()">Manage licence</a></div>`;
   mrFootPaint();
+  uxGrip('#mrNav', '--mr-nav', 240, 360, 'oo-w-mr4');   /* rule 9 — re-mounted per paint; listeners are bound once */
+  MR.just = null;                                       /* rule 4 */
 }
 
 /* ══ the panel foot · "NEXT STEPS" · the licence line — Option 5's `pl*` twins ════════════════
