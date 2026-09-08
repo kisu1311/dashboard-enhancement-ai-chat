@@ -4445,7 +4445,7 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
 | part | measured off Plain | here |
 |---|---|---|
 | card | `8px` inset, radius 12, `0 0 0 1px rgba(32,39,44,.08), 0 1px 1px` | **removed 5 Sep 2026** — flush, with a border |
-| rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px; the active tile is **`--action` / `--action-fg`** since 7 Sep 2026 (request: *"the sidebar active color is use #1d2a3e"* — `--action`'s light value exactly, inverting to #cad3e2 in dark). It was `--chip`, the hover's own grey |
+| rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px; the active tile is **`--action` / `--action-fg`** since 7 Sep 2026 (request: *"the sidebar active color is use #1d2a3e"* — `--action`'s light value exactly, inverting to #cad3e2 in dark). It was `--chip`, the hover's own grey. The expand tile's chevron is **16px** since 8 Sep 2026, matching the header's collapse |
 | rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Approval · Health · Notification · avatar, 32px tiles (Next steps and Documentation moved to the column foot, 4 Sep 2026) |
 | column | 281px: header 14px/550 over a 12px line, **no controls** | **296px** since 7 Sep 2026 (the DOCS chip and reserved slots, see the port note), second line derived (see below) |
 | row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` fill with **`--action` ink** since 7 Sep 2026 (request: the active row "is change the #1d2a3e"; it was `--teal`, which the column keeps for its create rows). A section row's active tile takes the same pair |
@@ -4509,6 +4509,76 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
   both themes screenshotted. ⚠️ One probe assertion was wrong, not the page: it expected Explorer
   to say *11 sub-modules* from a CLAUDE.md line that counts Report, which is a rail entry;
   `EXPLORER_TREE` holds 10.
+
+### The expand and collapse icons are one size (8 Sep 2026)
+
+Request, pointing at the column header's collapse button and the rail's expand tile: *"the expand
+and collapse icon size will be same"*. They were **14px** (`.skhb svg`, the header) against
+**18px** (`.skexp svg`, the rail tile, sized like a module glyph). Both are **16px** now — the
+chevron is chrome, not a destination, so it stays a step under the 18px module glyphs (Option 5's
+own rule for its `.plexp`), and the two halves of one control agree. ⚠️ Options 5 and 8 carry the
+same 14 / 18 pair (`.plhb svg` / `.plexp svg`) and were not touched.
+
+### The Report column has two sections under the types (8 Sep 2026)
+
+Request: *"in report module add new section 'Create Custom Report' and 'Schedule report' — in
+schedule report list has show favorite report"*. Under the ten report types:
+- **Create Custom Report** — **one full-width primary button at the TOP of the column** (`SK_CTA`
+  / `.skcta`, on the `--action` pair), the request's second form later the same day: *"create
+  custom report section in top and show as 'Create Custom Report' button"*. It shipped for an hour
+  as a titled section of the docs' fourteen custom report types, one create row each — fourteen rows
+  for one action, pushing the favourites below the fold. `RPT_TYPES` is kept, unreferenced, for a
+  type picker if the create form is ever built. ⚠️ The prototype has no create-report form: the
+  button opens the Reports module and says so in a toast — the house pattern for a screen that is
+  not built, never a silent no-op. `SK_CTA` is per module; only Report declares one.
+- **Scheduled Reports** — the reports you have STARRED (`REPORT_FAVS`, four of the docs' own report
+  titles, the `star` glyph). The docs' Favorites is "reports you've starred for quick access", and
+  Schedule is each report's own delivery toggle; the request's "show favorite report" is that list.
+  Titled with the product's word ("Scheduled Reports"; the request wrote "Schedule report").
+⚠️ **THE FAVOURITES SIT AT THE TOP, ABOVE THE BUTTON** (request, later the same day: *"the
+'Scheduled Reports' will be show before 'create custom report' on top"*), so the column reads
+**Scheduled Reports → Create Custom Report → the ten types**. `SK_TOP` names the section a column
+lifts; `skSecHTML` — extracted from `skBodyRest`'s map — renders it in both positions, so heading,
+tiles and `+` promotion cannot drift, and `skBodyRest` filters it out of its usual place so it
+cannot render twice. ⚠️ **The filter runs BEFORE the map**: `titled` is `si > 0`, so removing a
+later section must not promote the module's own first section into a headed one.
+⚠️ `.skbody > .sksec:first-child` drops the 16px group gap to 2px — that gap separates a group from
+the rows above it, and at the top of the column there are none.
+⚠️ **Consequence, stated rather than resolved:** the column now opens on four starred reports, so
+the module's own ten types begin below them. The subtitle counts 14 pages; the docs footer stays
+(Report is a flat menu). Option 6 only.
+
+### NOC View carries Create and Manage rows (8 Sep 2026)
+
+Request: *"the NOC View add 2 new 'Create NOC View' & 'Manage NOC View'"*. The group is now
+`NOC view list · Create NOC View · Manage NOC View`. **The header's `+` went with it**: the create
+action had been a `plus` row, which this column promotes into the section header (Plain's
+"Active +"), and an explicit Create row beside that `+` would be two doors to one form — the row
+replaces it (kind `null`, so it is not promoted). Create opens the NOC create form (`openNocNew`).
+⚠️ **Manage lands on the Manage DASHBOARDS screen** (`openManage`): the prototype has no NOC manage
+screen and that grid lists `DASH_GROUPS`, not `NOC_VIEWS` — a NOC tab there is the thing this row
+now asks for. The subtitle counts 5 pages. Option 6 only.
+
+### A click inside the sidebar no longer closes the popover it just opened (8 Sep 2026, all eight options)
+
+Found while verifying the NOC rows above, and **pre-existing** — the old section `+` had it too,
+proved against the pre-session copy. The page's document click handler closed every `.pop` unless
+the click came from a `.pop` or a rail **`.sitem`**; a column row (`.skrow`, `.plrow`, `.nxrow`,
+`.mrr`, `.mpi`) or a flyout row is none of those, so it ran in the same bubble as the row's own
+handler and shut the NOC create form before it painted. The exemption now covers `.sidebar`,
+`#mflyout`, `#mpanel` and `#mrNav`. A click on the canvas still closes, and the rail-tile paths
+still open — probed both ways. The same one-line handler was in all eight files and is fixed in all.
+⚠️ **Any action a sidebar row opens a popover with had been silently dead in Options 2–8** until
+this; it only looked like "the row does nothing".
+
+### The Dashboard column has no Reports group (8 Sep 2026)
+
+Request: *"remove report in option 6"*, pointing at the REPORTS section (Report list · Scheduled
+reports) under NOC View. It was the leftover Option 4 removed on 3 Sep: a group tucked under
+Dashboards from the seven-entry rail that had no Report entry. The rail has carried `Report` since
+23 Aug with a column of its own, so the group filed reports under the wrong module. **Data only** —
+the section left `SUBNAV['Dashboards']` in this file; the subtitle now counts 3 pages.
+⚠️ Options 1 · 2 · 3 · 5 · 7 · 8 still carry it in their own `SUBNAV` copies.
 
 ### Option 5's 7 Sep column changes, ported (7 Sep 2026)
 
@@ -5063,11 +5133,35 @@ and the only thing still drawn is the two line charts.
 | section heads | **`obs-toolbar`** (grid variant): the title in `start`, the hint and the control after it |
 | quota usage | **`obs-table expandable`** — `link` · text · `bar` · `sparkline` · `status` · `button` cells |
 | the expandable detail | **DS all the way down, inside the shadow root**: `obs-banner variant="info" title="Metered per"` for the guide's rule, `obs-key-value variant="plain" columns="2"` for the agentless/agent (or monolith/agent) split, and a **nested `obs-table`** whose `bar` cells carry the by-type share (7 rows for Monitored Devices). Nested custom elements written into the detail DO upgrade (measured) |
-| range | `obs-radio as-button size="small"` — the DS's own *time range 1h/24h/7d/30d* example. ⚠️ `segmented` / `variant="segmented"` render a plain radio list; **`as-button`** is the attribute the element actually reads |
+| range | `obs-radio as-button size="small"` — the DS's own *time range 1h/24h/7d/30d* example. ⚠️ `segmented` / `variant="segmented"` render a plain radio list; **`as-button`** is the attribute the element actually reads. ⚠️ **Option values must be STRINGS and the selection is set as a PROPERTY** (`el.value = '30'`): it compares strictly, numeric options never match, and the `value` attribute alone does not select — the switch showed no selected segment for a day (`licRadioSync`) |
 | History | the **house drawer** (`stcDrOpen`): the token as an `obs-tag`, `obs-radio` range, **`obs-metric-list`** for the five figures, a line chart against the cap (gap), `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
 | Upgrade Now | **`obs-modal`** "Activation Code" — a **read-only labelled `obs-input`** carrying the current code + an `obs-button` copy, an `obs-link` mailto, an `obs-input type="textarea" block` with its own label, Cancel · Activate License; the primary is disabled until a code is pasted and the hint says so; Activate replaces the licence (Annual Subscription, one year from today) and repaints |
 | EPS tab | two **widget tiles** (`obs-toolbar variant="widget"` header + `obs-metric-list` / `obs-key-value` body) · `obs-toolbar` section heads · `obs-table` with `bar` cells · a legend of **`obs-tag`s** · five widget tiles, each `obs-toolbar` (title + window / avg / peak / util as tags) over an `obs-metric-list` row (the live figure) over a line chart dashed at the allocation (gap) |
 
+- ⚠️ **THE ACCENT IS THE PROTOTYPE'S TEAL, NOT THE DS NAVY** (request, 8 Sep 2026: *"#172336 … and
+  #cad3e2 — replace with rgb(20,184,166)"*). `--primary` is re-pointed **across the whole DS scope**
+  (`#agPage,#licPage,#licHist,#licHistF`, request 8 Sep 2026: *"replace #172336 / #cad3e2 with
+  #14b8a6 everywhere the active colour uses the primary colour"*) to `#14b8a6` dark / `#0e8578` light — the prototype's own
+  `--teal` / `--teal-dim` pair — so the active tab, the selected range segment, every bar cell,
+  the links, both primary buttons and the ∞ glyph take it — and the **Agentic AI page's** active tab,
+  its *Configure AI provider* primary button and its selected side-menu row take it too. The DS
+  navy is now used nowhere in this prototype; the rest of Option 1 already used this teal. ⚠️ This
+  **overrides the earlier "Agentic AI brand primary is navy, NOT teal" note** — a direct, repeated
+  request. The **AI mark stays `--chart-indigo` violet**: that is the AI accent, not an
+  active/primary state, and the request named the primary colour only. `--radio-btn-box-selected-bg` is a literal in the scoped
+  block and is re-bound to `--primary` so the range segments follow; so are `--primary-button-bg` /
+  `-text` / `-hover-*` (obs-button reads its own pair, not `--primary`). **The table's bar fill is
+  `--primary-alt`** (measured in the bundle) — #cad3e2 in dark on a #172336 track, which is exactly
+  the pair the request quoted — so `--primary-alt` is re-bound to the accent **on `obs-table` only**;
+  titles keep it as ink. ⚠️ **The light rule must repeat every pair**: the scoped block declares
+  them under `html[data-theme="light"] #licPage` (1,1,1), which outranks a bare `#licPage` rule —
+  light buttons stayed navy until it did. ⚠️ **Two literals, one per
+  theme, are deliberate**: obs-button paints its primary label in `--page-background-color`, and
+  white on `#14b8a6` is 2.5:1 where white on `#0e8578` clears 4:1. ⚠️ `var(--teal)` would be
+  circular here — the re-point block binds `--teal` to `--primary` in this scope. ⚠️ Titles and
+  body text (`--primary-alt`, `--page-text-color`) were NOT changed; the ask was read as the
+  accent role, not the ink — say so if the title was meant too. This is the root CLAUDE.md's
+  "the DS ships no interaction accent" gap, answered the way it prescribes.
 - ⚠️ **THE ONE DECLARED GAP LEFT IS THE LINE CHART** (history, the five EPS tiles) — the DS ships
   no chart element and `list_gaps` says so; they carry `class="licchart"` for the conformance
   checker and every colour is a token. The ring, the term bar and the stacked bar each had a DS

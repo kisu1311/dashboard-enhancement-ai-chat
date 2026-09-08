@@ -1,4 +1,4 @@
-# Handoff — 2026-09-08 10:35
+# Handoff — 2026-09-08 13:01
 
 ## Read first
 
@@ -25,7 +25,7 @@ License"** section (unchanged today; committed and live with this push).
 
 ## What we worked on this session
 
-A long 7 Sep session on the sidebars. The column of **Option 5** (`dashboard-nav-column.html`),
+A long session across 7–8 Sep on the sidebars. The column of **Option 5** (`dashboard-nav-column.html`),
 request by request from screenshots; the same set ported to **Option 6**, then Option 6's Next
 steps card back into Option 5; after a publish, the set ported to **Option 8** (as the day's diff
 of Option 5) and to **Option 4**'s docked panel; Option 6's active colours moved to `--action`; and
@@ -46,6 +46,12 @@ canvas, the AI panel or Settings changed.
   line charts are the one declared gap. Verified by headless shots (both themes, both tabs, the
   expanded row, drawer, modal) and JS probes; `CLAUDE.md`'s License section carries the audit
   table. **Not committed** — see git status.
+- **8 Sep · the DS settings pages' accent is teal** (License AND Agentic AI) — `--primary` re-pointed to the prototype's
+  `#14b8a6` / `#0e8578` pair inside the License scope only (tabs, range segments, bar cells, links,
+  primary buttons, the ∞); the Agentic AI page's active tab, primary button and selected rail row
+  follow; titles and text untouched; the AI mark stays violet; DS navy is no longer used anywhere. Found
+  on the way: `obs-radio` never showed a selected segment — it needs STRING option values and the
+  `value` set as a property (`licRadioSync`); fixed for both range switches.
 - **Option 5 · rows with children carry an expand/collapse chevron** — the product's own
   `chevron-right`, at the row's right edge, visible at rest, turned down when open. Monitor and
   NCCM in Explorer; NetRoute, APM and Real User Monitoring in Alert.
@@ -97,6 +103,23 @@ canvas, the AI panel or Settings changed.
   focus opening the rail (rule 7), re-applied after every repaint by a MutationObserver.
   Verified: 73 round-2 assertions + the 159 round-1 assertions re-run, all passing; harness 77/77 on
   the three files whose width tokens changed; Options 1 and 3 screenshotted.
+- **All eight options · a click inside the sidebar no longer closes the popover it just opened** —
+  a pre-existing document-click handler exempted only rail `.sitem`s, so any popover a column or
+  flyout row opened (the NOC create form) was shut in the same click. Found because the new Create
+  row "did nothing"; the old `+` had the same fault.
+- **Option 6 · the expand (rail) and collapse (header) icons are both 16px** (8 Sep); they were 18
+  and 14. Options 5 and 8 keep the same mismatch.
+- **Option 6 · the Report column** (8 Sep) reads **Scheduled Reports → Create Custom Report →
+  the ten types**: four starred reports from the docs' own titles at the top, then a full-width
+  primary button (opens Reports and says the create form is not built). The create action was a
+  fourteen-row section for an hour, then a button; the favourites were moved above it on request.
+  `SK_TOP` is the mechanism — a named section a column lifts to the top, rendered by the same
+  `skSecHTML` as in-place sections.
+- **Option 6 · NOC View has Create and Manage rows** (8 Sep), replacing the header's `+`. Create is
+  real; Manage lands on the Manage dashboards screen, which does not list NOC views — a NOC tab there
+  is what the row now asks for.
+- **Option 6 · the Reports group left the Dashboard column** (8 Sep) — the leftover Option 4 removed
+  on 3 Sep, filed under the wrong module. Data only; the other six options still carry it.
 - **Widths, measured**: Option 5's `--pl-nav` 224 → 264 → **280px**; Option 6's `--sk-nav`
   281 → **296px**. Both because the DOCS chip (45px, in flow while invisible) and the reserved
   count slot + chevron box clipped the longest labels (`Network Config Settings`, `Real User
@@ -109,14 +132,17 @@ canvas, the AI panel or Settings changed.
 
 ## In progress
 
-Nothing mid-flight. **Everything is committed and live** — through `0a339a8` (the Option 5/6
-column work, the Option 8/4 ports, Option 6's active colours, round 1 of the UX pass, the License
-page's third pass) and the commit after this file's last edit (round 2 of the UX pass, seven option
-files); Pages served round 2's markup within a minute of the push.
+Nothing mid-flight. **Everything is committed and live** — through `1a0cd62` (up to round 2 of the
+UX pass) and the commit after this file's last edit (today's Option 6 column work, the
+popover-closing fix in all eight option files, and a concurrent session's License range control in
+`_settings-module.*`, smoke-tested before the push). Pages served the new markup within a minute.
 
 ## Next steps
 
-1. **Decide on the two behaviours the chevrons imply, both recorded, neither resolved**: one
+1. **Commit and publish** today's Option 6 column changes and the popover fix — `/publish`.
+   Then decide whether the Manage dashboards screen gets a NOC tab, so "Manage NOC View" has a
+   real landing.
+2. **Decide on the two behaviours the chevrons imply, both recorded, neither resolved**: one
    parent opens at a time in Options 5 / 6 / 8 (`PL.sub` / `SK.sub` are single values — Option 4
    folds independently), and an open parent still wears the tinted `.on` row as well as the
    turned chevron — two signals for one state.

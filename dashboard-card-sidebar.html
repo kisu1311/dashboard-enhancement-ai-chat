@@ -7159,7 +7159,7 @@ body.pinned .shell{padding-left:var(--rail-w)}
 .skhb{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;border-radius:6px;border:0;
   background:transparent;color:var(--text-dim);cursor:pointer}
 .skhb:hover{background:var(--hover);color:var(--text)}
-.skhb svg{width:14px;height:14px;fill:currentColor}
+.skhb svg{width:16px;height:16px;fill:currentColor}   /* = `.skexp svg`; was 14 against the rail's 18 */
 .skhd b{display:block;font-size:14px;font-weight:600;line-height:20px;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .skhd span{display:block;font-size:12px;line-height:16px;margin-top:2px;color:var(--text-dim);
@@ -7235,6 +7235,9 @@ body.pinned .shell{padding-left:var(--rail-w)}
 .skdocf .ext{flex:0 0 auto;font-size:10px;opacity:.8}
 /* a titled section — Plain's "Active": 12px/550 grey over a 24px row with the `+` at its end.
    The `+` overhangs the 8px inset by 8 so its box lands on the rows' right edge, as measured. */
+/* ⚠️ 16px ABOVE A GROUP SEPARATES IT FROM THE ROWS ABOVE IT — at the TOP of the column there are
+   none, so the lifted section (`SK_TOP`) takes the create button's own 2px instead. */
+.skbody > .sksec:first-child{margin-top:2px}
 .sksec{display:flex;align-items:center;justify-content:space-between;height:24px;margin:16px 0 4px;padding:0 0 0 8px;
   color:var(--text-dim);font-size:12px;font-weight:600}
 .sksec .skt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -7249,6 +7252,16 @@ body.pinned .shell{padding-left:var(--rail-w)}
 .skrow.grp .sktile .skic{width:12px;height:12px;flex:none;color:inherit;opacity:1}
 .skrow.grp.on .sktile{background:var(--action);color:var(--action-fg)}   /* a section row's active tile, same pair */
 .skempty{padding:10px 8px;font-size:12px;color:var(--text-dim)}
+/* a module's ONE create action as a full-width primary button at the top of its column (`SK_CTA`;
+   Report's "Create Custom Report", request 8 Sep 2026). The primary pair (`--action` /
+   `--action-fg`) — the same paint as the active tile and the page's primary buttons, so it reads as
+   the one thing on the column you press to make something. 32px; `width:100%` of the body's content
+   box, which `.skbody`'s own 8px padding already insets — a second inset here doubled it. */
+.skcta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:32px;margin:2px 0 10px;
+  border:0;border-radius:6px;background:var(--action);color:var(--action-fg);font-size:12.5px;font-weight:600;cursor:pointer}
+.skcta:hover{background:var(--action-h)}
+.skcta:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.skcta svg{width:14px;height:14px;fill:currentColor}
 
 /* the column's foot: a right-aligned row of 32px icon buttons in 8px of vertical padding */
 .skfoot{flex:0 0 auto;display:flex;justify-content:flex-end;gap:4px;padding:8px 8px}
@@ -7318,7 +7331,7 @@ body.skpeek .tipbox{display:none}
 /* the expand tile — under the mark, only while shut (the column's foot carries the collapse) */
 .skexp{display:none}
 body.skshut .skexp{display:grid}
-.skexp svg{width:18px;height:18px;fill:currentColor}
+.skexp svg{width:16px;height:16px;fill:currentColor}   /* = `.skhb svg` — the expand and collapse icons are ONE size (request, 8 Sep 2026) */
 
 
 /* ── SIDEBAR UX PASS, 7 Sep 2026 — UX Planet, "Best UX Practices for Designing a Sidebar"
@@ -8779,10 +8792,22 @@ const SUBNAV = {
     { h:'Dashboards', items:[ ['Dashboard list', null, 'openDPanel()', null, 'dashboard'],
                               ['＋ New dashboard', null, 'dashNew()', 'plus', 'plus'],
                               ['Manage dashboards', null, 'openManage()', null, 'sliders'] ]},
+    /* ⚠️ TWO ROWS INSTEAD OF THE HEADER'S `+` (request, 8 Sep 2026: "the NOC View add 2 new 'Create
+       NOC View' & 'Manage NOC View'"). The create action used to be a `plus` row, which this column
+       promotes into the section header's `+` (Plain's "Active +"); an explicit Create row AND that
+       `+` would be two doors to one form, so the row replaces it — kind `null`, so it stays a row.
+       Create opens the NOC create form (`openNocNew`, real). ⚠️ Manage lands on the Manage
+       DASHBOARDS screen (`openManage`) — the prototype has no NOC manage screen and that grid lists
+       `DASH_GROUPS`, not `NOC_VIEWS`; a NOC tab there is the thing this row now asks for. */
     { h:'NOC View',   items:[ ['NOC view list', null, "setDashTab('noc');openDPanel()", null, 'screen'],
-                              ['＋ New NOC view', null, 'openNocNew()', 'plus', 'plus'] ]},
-    { h:'Reports',    items:[ ['Report list', 'Reports', null, null, 'report'],
-                              ['Scheduled reports', 'Reports', null, null, 'calendar'] ]},
+                              ['Create NOC View', null, 'openNocNew()', null, 'plus'],
+                              ['Manage NOC View', null, 'openManage()', null, 'sliders'] ]},
+    /* ⚠️ NO REPORTS GROUP HERE ANY MORE (request, 8 Sep 2026: "remove report in option 6"). It was
+       `{ h:'Reports', items:[ Report list · Scheduled reports ] }` — a leftover from the seven-entry
+       rail, which had no Report entry, so Reports was tucked under Dashboards to stay reachable.
+       The rail has carried `Report` since 23 Aug 2026 with a column of its own (`SUBNAV['Report']`
+       lists exactly these two rows), so here it said the same thing twice. Option 4 dropped it on
+       3 Sep for the same reason. ⚠️ Options 1 · 2 · 3 · 5 · 7 · 8 still carry it in their copies. */
   ],
   /* Monitors is the live product's own monitor taxonomy — Inventory plus the monitor
      types, in the product's order (replaces the docs-derived task list). It runs across
@@ -8911,11 +8936,35 @@ SUBNAV2['Setting']  = SUBNAV2['Settings'];
    dropdown live (Alerts' NetRoute / APM / RUM do), adding `'sub'` rows under it is all that
    is needed: `mfTreeFor` would then pick it up and it becomes two-pane by itself.
    ⚠️ `Log Compliance` is one tab, not two — it is not `Log` plus `Compliance`. */
+/* ⚠️ TWO SECTIONS UNDER THE REPORT TYPES (request, 8 Sep 2026: "in report module add new section
+   'Create Custom Report' and 'Schedule report' — in schedule report list has show favorite report").
+   Both are the product's own vocabulary, read off the Reports docs:
+     · "Create Custom Report" is ONE BUTTON AT THE TOP OF THE COLUMN (`SK_CTA`, request later the
+       same day: "create custom report section in top and show as 'Create Custom Report' button").
+       It shipped for an hour as a titled section of the docs' fourteen custom report TYPES, one
+       create row each — fourteen rows for one action, and they pushed the favourites below the
+       fold. `RPT_TYPES` is kept, unreferenced, for a type picker if the create form is ever built.
+       ⚠️ The prototype has no create-report form: the button opens the Reports module and SAYS
+       so (the house pattern for a screen that is not built — a toast, never a silent no-op).
+     · "Scheduled Reports" lists the reports you have STARRED (`REPORT_FAVS`) — the docs' Favorites
+       ("reports you've starred for quick access") is what the request means by "show favorite
+       report", and Schedule is each report's own delivery toggle. The names are the docs' own
+       report titles. Titled "Scheduled Reports" (the product's word; the request wrote "Schedule
+       report").
+   Both sections render through the column's titled-section path (`.skrow.grp` tiles), so they
+   fold in with NOC View's shape rather than adding a third. */
+const REPORT_FAVS = ['Availability Flap Summary', 'Capacity Forecasting', 'Audit Reports', 'Compliance Reports'];
+const RPT_TYPES = ['Availability', 'Performance', 'Inventory', 'Active Alerts', 'Availability Status', 'Metric Alerts',
+                   'Log Analytics', 'Log Events', 'Flow Analytics', 'Custom Script', 'Polling Data', 'Trap Events',
+                   'Forecast', 'Capacity Forecasting'];
+function rptCreate(t){ selectModuleByName('Reports'); toast(t ? `Create custom report · ${t} — the create form is not built in this prototype` : 'Create custom report — the create form is not built in this prototype'); }
+function rptOpen(n){ selectModuleByName('Reports'); toast(`${n} — opens in Reports; scheduling is the report's own Schedule toggle there`); }
 SUBNAV['Report'] = [
   { h:'Reports', items:[ ['Metric','Reports'], ['Log','Reports'], ['Flow','Reports'],
                          ['Trap','Reports'], ['Audit','Reports'], ['NCCM','Reports'],
                          ['APM','Reports'], ['RUM','Reports'], ['NetRoute','Reports'],
                          ['Log Compliance','Reports'] ]},
+  { h:'Scheduled Reports',    items: REPORT_FAVS.map(n => [n, 'Reports', `rptOpen(${JSON.stringify(n)})`, null, 'star']) },
 ];
 
 /* ⚠️ EXPLORER'S CHILDREN ARE ELEVEN SUB-MODULES, TWO OF WHICH HAVE CHILDREN OF THEIR OWN
@@ -10642,7 +10691,11 @@ document.addEventListener('keydown', e=>{
   if ((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
 });
 document.addEventListener('click', e=>{
-  if (!e.target.closest('.pop') && !e.target.closest('.sitem')) closePops();
+  /* ⚠️ A CLICK INSIDE THE SIDEBAR MUST NOT CLOSE THE POPOVER IT JUST OPENED (8 Sep 2026). This ran
+     in the same bubble as a column row's own handler, so a row whose action opens a `.pop` — the
+     NOC create form, from "Create NOC View" or the old section `+` — had it shut before paint.
+     Only rail `.sitem`s were exempt; the columns, the flyout and the docked panels were not. */
+  if (!e.target.closest('.pop') && !e.target.closest('.sitem, .sidebar, #mflyout, #mpanel, #mrNav')) closePops();
 });
 
 /* seeded PRNG charts (repo convention) */
@@ -24830,8 +24883,43 @@ function skRowHTML(label, mod, act, o){
    carries a `plus` row, that row becomes the section's `+` (Plain's "Active +") instead of a
    row of its own, so "create" sits with the thing it creates. The primary list keeps its
    "New …" row: it has no header to hang a `+` on. */
+/* a module's one create action, rendered as a button at the top of its column — see `.skcta` */
+const SK_CTA = { Report: { l:'Create Custom Report', act:'rptCreate()' } };
+function skCtaHTML(r){
+  const c = SK_CTA[r.name]; if (!c) return '';
+  return `<button class="skcta" type="button" onclick="mfGo(null,${mfAttr(c.act)})">${ico('plus', 'skplus')}<span>${c.l}</span></button>`;
+}
+/* ⚠️ A SECTION THIS COLUMN LIFTS TO THE TOP, ABOVE THE CREATE BUTTON (request, 8 Sep 2026:
+   "the 'Scheduled Reports' will be show before 'create custom report' on top"). It is the same
+   titled section rendered by the same function — only its POSITION changes — so the heading, the
+   tiles and the `+` promotion behave identically wherever it sits, and `skBodyRest` drops it from
+   its usual place so it cannot render twice. Consequence, stated: the Report column now opens on
+   four starred reports, so the module's own ten types begin below them. */
+const SK_TOP = { Report: 'Scheduled Reports' };
+function skTopHTML(r){
+  const h = SK_TOP[r.name]; if (!h) return '';
+  const s = skSecs(r.name).find(x => x.h === h); if (!s) return '';
+  return skSecHTML(r, s, true);
+}
 function skBodyHTML(){
   const r = skCur();
+  return skTopHTML(r) + skCtaHTML(r) + skBodyRest(r);
+}
+/* one titled-or-primary section — extracted from `skBodyRest`'s map so the lifted section and the
+   in-place ones cannot drift apart */
+function skSecHTML(r, s, titled){
+  const plus = titled ? (s.items || []).find(it => it[3] === 'plus') : null;
+  const rows = (s.items || []).filter(it => !(titled && it[3] === 'plus')).map(([label, mod, act, kind, ic]) => {
+    if (!ic && r.name === 'Setting') ic = skStIc(label);
+    return skRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
+      { ic, icls: kind === 'plus' ? 'skic plus' : null, sub: kind === 'sub', grp: titled,
+        doc: SK_CHIP_COLS[r.name] ? skRowDoc(r.name, label, kind) : null }); }).join('');
+  if (!titled) return rows;
+  return `<div class="sksec"><span class="skt">${s.h}</span>` +
+    (plus ? `<button class="skadd" data-tip="${plus[0].replace('＋ ', '')}" onclick="mfGo(${mfAttr(plus[1])},${mfAttr(plus[2])})">${ico('plus', 'skplus')}</button>` : '') +
+    `</div>` + rows;
+}
+function skBodyRest(r){
   const tree = skTreeFor(r.name);   /* Explorer's own tree, or Alert's derived one; pinning stays Explorer's only */
   if (tree)
     return tree.map(t => {
@@ -24841,21 +24929,13 @@ function skBodyHTML(){
                click: t.kids ? `skSub(${mfAttr(t.l)})` : null }) +
         (open && t.kids ? t.kids.map(([label, mod, act, ic]) => skRowHTML(label, mod, act, { sub:true, ic, cls: SK.just === t.l ? ' uxin' : '' })).join('') : '');
     }).join('');
-  const secs = skSecs(r.name);
+  /* the lifted section is dropped here — `skTopHTML` has already rendered it above the button.
+     ⚠️ Filtering BEFORE the map is what keeps the primary list at index 0: `titled` is `si > 0`,
+     so removing a later section cannot promote the module's own first section into a headed one. */
+  const secs = skSecs(r.name).filter(x => x.h !== SK_TOP[r.name]);
   if (!secs.length) return `<div class="skempty">${r.name} opens straight to its own screen.</div>`;
-  return secs.map((s, si) => {
-    const titled = si > 0 && !!s.h;
-    const plus = titled ? (s.items || []).find(it => it[3] === 'plus') : null;
-    const rows = (s.items || []).filter(it => !(titled && it[3] === 'plus')).map(([label, mod, act, kind, ic]) => {
-      if (!ic && r.name === 'Setting') ic = skStIc(label);
-      return skRowHTML(kind === 'plus' && !ic ? '＋ ' + label.replace('＋ ', '') : label.replace('＋ ', ''), mod, act,
-        { ic, icls: kind === 'plus' ? 'skic plus' : null, sub: kind === 'sub', grp: titled,
-          doc: SK_CHIP_COLS[r.name] ? skRowDoc(r.name, label, kind) : null }); }).join('');
-    if (!titled) return rows;
-    return `<div class="sksec"><span class="skt">${s.h}</span>` +
-      (plus ? `<button class="skadd" data-tip="${plus[0].replace('＋ ', '')}" onclick="mfGo(${mfAttr(plus[1])},${mfAttr(plus[2])})">${ico('plus', 'skplus')}</button>` : '') +
-      `</div>` + rows;
-  }).join('') + (SK_CHIP_COLS[r.name] ? '' : skDocsFoot(r.name));
+  return secs.map((s, si) => skSecHTML(r, s, si > 0 && !!s.h)).join('') +
+    (SK_CHIP_COLS[r.name] ? '' : skDocsFoot(r.name));
 }
 
 function skPaint(){

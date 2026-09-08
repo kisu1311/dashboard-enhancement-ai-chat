@@ -2370,6 +2370,9 @@ ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
    · history opens in a DRAWER, not the live's 720px modal. The DS panel guide files drill-down
      detail under the drawer ("~90% deep drill-downs") and keeps the modal for confirm/collect —
      which is exactly what the Activation Code dialog is, so THAT one stays a modal, as live;
+   · the ACCENT is the prototype's teal (`--primary` re-pointed to #14b8a6 / #0e8578 inside the
+     License scope, request 8 Sep 2026) — the active tab, the range segment, the bar cells, links,
+     the primary buttons and the ∞ glyph; the DS navy stays everywhere else on the site;
    · the status reads "Active" — the label the DS status map gives the "active" key — where live
      prints "Activated"; the per-type colours of the live stacked bar are gone with it (the DS
      bar cell paints in the product's own ink);
@@ -2383,7 +2386,15 @@ ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
    detail is `[value]` today, but the guard costs nothing.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
 const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false };
-const LIC_RANGES = [{ value:7, label:'7d' }, { value:15, label:'15d' }, { value:30, label:'30d' }];
+/* ⚠️ STRING VALUES, AND THE SELECTION IS SET AS A PROPERTY. obs-radio compares option values
+   strictly against `value`, and it honours the `value` PROPERTY only as a string: numeric options
+   never matched ("30" !== 30) and a numeric property never matched either, so the segment control
+   showed NO selected segment at rest — invisible for a day because the DS navy fill on the dark
+   canvas was faint anyway. Measured 8 Sep 2026: string options + `el.value = '30'` selects;
+   every other combination does not. The change event still hands back the option's value, so the
+   readers coerce with `+`. */
+const LIC_RANGES = [{ value:'7', label:'7d' }, { value:'15', label:'15d' }, { value:'30', label:'30d' }];
+function licRadioSync(id, v){ const el = document.getElementById(id); if (el) el.value = String(v); }
 const LIC_TABS = [{ key:'usage', label:'License & Quota Usage', icon:'tacho-meter' },
                   { key:'eps',   label:'EPS Trend Breakdown',   icon:'heart-rate' }];
 
@@ -2660,6 +2671,7 @@ function licHistBodyHTML(){
 }
 function licHistBind(){
   const rg = document.getElementById('licHRange');
+  licRadioSync('licHRange', LIC.hrange);
   if (rg) rg.addEventListener('change', e => {
     LIC.hrange = +licVal(e);
     const b = document.getElementById('licHist'); if (b) b.innerHTML = licHistBodyHTML();
@@ -2852,7 +2864,7 @@ function licEpsChart(t, full){
 function licAfter(){
   const tabs = document.getElementById('licTabs');
   if (tabs) new MutationObserver(() => { const v = tabs.getAttribute('value'); if (v) LIC.tab = v; }).observe(tabs, { attributes:true, attributeFilter:['value'] });
-  const rg = document.getElementById('licRange'); if (rg) rg.addEventListener('change', e => licSetRange(licVal(e)));
+  const rg = document.getElementById('licRange'); if (rg){ rg.addEventListener('change', e => licSetRange(licVal(e))); licRadioSync('licRange', LIC.range); }
   /* one listener for the life of the page, not one per paint */
   if (window.matchMedia && !LIC.mq){ LIC.mq = window.matchMedia(LIC_MQ); LIC.mq.addEventListener('change', licColsSync); }
   const tb = document.getElementById('licTable');

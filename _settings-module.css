@@ -1815,6 +1815,53 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    existed in `index.html` or this module.
    ⚠️ Spacing is on the DS structural scale (16 = @padding-md, 12 = @padding-sm, 8 = @padding-xs);
    the 20px above a section toolbar is 16 + the 4px the toolbar's own row carries. */
+/* ── THE ACCENT IS THE PROTOTYPE'S TEAL, NOT THE DS NAVY (request, 8 Sep 2026) ────────────────
+   The DS has no interaction accent distinct from `--primary`, and on this page `--primary` was
+   painting the active tab, the selected range segment, every bar cell, every link and both primary
+   buttons in the navy/off-white pair (#111c2c light · #e3e8f2 dark) — nothing for the eye to land
+   on, and unlike every other surface in this prototype, which uses the live console's teal. The
+   root CLAUDE.md records this exact gap and its answer: declare the departure ONCE in the token
+   scope rather than sprinkle literals. `--primary` is re-pointed for the License subtree only —
+   the page, the drawer body and the drawer footer — so the DS's navy is untouched everywhere else.
+   ⚠️ TWO VALUES, ONE PER THEME, the prototype's own `--teal` / `--teal-dim` pair: #14b8a6 on the
+   dark canvas, #0e8578 on white — obs-button paints its primary label in `--page-background-color`,
+   and white on #14b8a6 is 2.5:1 where white on #0e8578 clears 4:1. ⚠️ `var(--teal)` cannot be
+   used here: the re-point block above already binds `--teal` to `--primary` inside this scope,
+   so the reference would be circular.
+   ⚠️ `--primary-alt` (titles, the edition name) and `--page-text-color` are NOT touched — those
+   are ink, and the ask was the accent. The selected range segment reads `--radio-btn-box-selected-bg`,
+   a literal in the scoped block, so it is re-bound to `--primary` to follow. */
+/* ⚠️ THE ACCENT IS TEAL ACROSS THE WHOLE DS SCOPE, NOT JUST LICENSE (request, 8 Sep 2026:
+   "replace #172336 / #cad3e2 with #14b8a6 EVERYWHERE the active colour uses the primary colour").
+   The scoped DS token block (`#agPage,#licPage,#licHist,#licHistF`) is the ONLY place in this
+   prototype that paints active/primary chrome in the DS navy pair — every other surface already
+   uses this teal. So `--primary` is re-pointed for all four ids: the Agentic AI page's active
+   tab, its "Configure AI provider" primary button and its selected side-menu row now match the
+   License page and the rest of the console. The AI mark stays `--chart-indigo` (violet) — that is
+   the AI accent, not an active/primary state, and the request named the primary colour only.
+   ⚠️ THIS OVERRIDES the earlier "brand primary is navy, NOT teal" note on the Agentic AI screen —
+   a direct, repeated request; the divergence is declared here rather than reverted. */
+#agPage,#licPage,#licHist,#licHistF{--primary:#14b8a6;
+  /* obs-button's primary reads its OWN pair, not --primary (registry tokensUsed: --primary-button-bg /
+     --primary-button-text) — measured: the buttons stayed white after --primary alone moved */
+  --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
+  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-text-color));--primary-button-hover-text:var(--page-background-color);
+  --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
+/* ⚠️ THE LIGHT RULE REPEATS THE BUTTON AND RADIO PAIRS. The scoped token block declares them under
+   `html[data-theme="light"] #licPage` (1,1,1), which outranks the (1,0,0) rule above — measured:
+   with only `--primary` here, light-theme buttons stayed navy while dark went teal. */
+html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF{--primary:#0e8578;
+  --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
+  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-text-color));--primary-button-hover-text:var(--page-background-color);
+  --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
+/* ⚠️ THE TABLE'S BAR CELL PAINTS ITS FILL IN `--primary-alt` (measured in the bundle:
+   `background: var(--primary-alt)`, `--severity-major` past 70%) — which is #cad3e2 in dark, the
+   very swatch the request named, on a #172336 track. `--primary-alt` is also every title on the
+   page, so it is re-bound to the accent ON THE TABLES ONLY; the nested by-type table inherits it
+   through the outer table's shadow tree. Titles stay ink. The Agentic AI usage table has no bar
+   cell, so the rule is inert there, but it is scoped to both for parity. */
+.licpage obs-table,.agpage obs-table{--primary-alt:var(--primary)}
+
 .licpage{flex:0 0 auto;min-width:0}
 .lichead obs-page-header{display:block;--page-header-padding:8px 8px 4px}
 .lichmk{display:grid;place-items:center;width:26px;height:26px;color:var(--primary-alt)}
@@ -1833,7 +1880,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 .licwidb{flex:1 1 auto;display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px}
 /* the edition name is the one piece of page-level type: --primary-alt is the DS heading colour */
 .licedn{font-size:24px;font-weight:600;line-height:1.15;color:var(--primary-alt)}
-.licedn span{color:var(--chart-indigo)}
+.licedn span{color:var(--primary)}   /* the ∞ follows the accent, not the chart palette */
 .licwidb obs-key-value,.licwidb obs-metric-list,.licwidb obs-table{display:block}
 .licwidb .lichelp{margin:0}
 .liclinks{display:flex;flex-direction:column;gap:6px}

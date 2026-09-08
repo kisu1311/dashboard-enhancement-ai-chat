@@ -10818,7 +10818,11 @@ document.addEventListener('keydown', e=>{
   if ((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
 });
 document.addEventListener('click', e=>{
-  if (!e.target.closest('.pop') && !e.target.closest('.sitem')) closePops();
+  /* ⚠️ A CLICK INSIDE THE SIDEBAR MUST NOT CLOSE THE POPOVER IT JUST OPENED (8 Sep 2026). This ran
+     in the same bubble as a column row's own handler, so a row whose action opens a `.pop` — the
+     NOC create form, from "Create NOC View" or the old section `+` — had it shut before paint.
+     Only rail `.sitem`s were exempt; the columns, the flyout and the docked panels were not. */
+  if (!e.target.closest('.pop') && !e.target.closest('.sitem, .sidebar, #mflyout, #mpanel, #mrNav')) closePops();
 });
 
 /* seeded PRNG charts (repo convention) */
