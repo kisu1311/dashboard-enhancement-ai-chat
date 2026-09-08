@@ -9056,6 +9056,8 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a defined FOCUS state for every row and control in the column (they are buttons, and
    the sheet's button reset paints nothing for keyboard focus) */
 .mrfb:focus-visible,.mrstep:focus-visible,.mrpn:focus-visible,.mrnsx:focus-visible,.mrexpb:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+/* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
+.sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
 </head>
 <body>
@@ -28380,6 +28382,24 @@ addEventListener('mousemove', e => { const d = UX_DRAG; if (!d) return;
   document.documentElement.style.setProperty(d.token, Math.max(d.min, Math.min(d.max, d.w0 + (e.clientX - d.x0))) + 'px'); });
 addEventListener('mouseup', () => { const d = UX_DRAG; if (!d) return; UX_DRAG = null; d.g.classList.remove('on'); document.body.classList.remove('uxdrag');
   try { localStorage.setItem(d.key, parseInt(getComputedStyle(document.documentElement).getPropertyValue(d.token))); } catch (e) {} uxAfter(); });
+
+/* rule 7 · KEYBOARD. The rail's rows, the tiles, the flyout's rows and the docked panel's rows are
+   all `<div onclick>` — nothing a keyboard could reach, so the sidebar had a focus STATE for
+   nothing to receive. Every such element gets `tabindex=0` + `role=button`, Enter / Space
+   activates it, and focus moving into the rail opens it the way hover does (and closes it when
+   focus leaves). A MutationObserver re-applies this after every repaint, so no builder needed
+   changing — the observer watches childList only, and setting an attribute is not one. */
+const UX_FOCUS_SEL = '.sitem,.plib,.skib,.mpi,.mfi';
+function uxFocusable(root){ (root || document).querySelectorAll(UX_FOCUS_SEL).forEach(el => {
+  if (!el.hasAttribute('tabindex')) el.tabIndex = 0; if (!el.getAttribute('role')) el.setAttribute('role', 'button'); }); }
+addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof Element && e.target.matches(UX_FOCUS_SEL)){ e.preventDefault(); e.target.click(); } });
+(function(){
+  uxFocusable();
+  const mo = new MutationObserver(() => uxFocusable());
+  ['.sidebar', '#mflyout', '#mpanel'].forEach(q => { const n = document.querySelector(q); if (n) mo.observe(n, { childList:true, subtree:true }); });
+  const sb = document.querySelector('.sidebar');
+  if (sb && typeof sbHover === 'function'){ sb.addEventListener('focusin', () => sbHover(1)); sb.addEventListener('focusout', e => { if (!sb.contains(e.relatedTarget)) sbHover(0); }); }
+})();
 
 function mrNavPaint(){
   const host = document.getElementById('mrNav'); if (!host) return;

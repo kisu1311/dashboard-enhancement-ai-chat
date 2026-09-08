@@ -650,7 +650,7 @@ line is a destination — for a control that acts on the rail itself.
 - ⚠️ **`toggleSidebar()` WROTE INTO THE `.lbl` THAT WENT WITH THE LABEL** — `b.querySelector(
   '.lbl').textContent = …` would have thrown `Cannot set properties of null` on the first
   press, i.e. the control would have shipped broken. Both lookups are guarded now.
-- ⚠️ **`--rail-w-open` WENT 170 → 190px.** With the button added the row needs
+- ⚠️ **`--rail-w-open` WENT 170 → 190px** (and to **240px** on 8 Sep 2026 — the sidebar-rule floor; see *Round 2* under the UX pass). With the button added the row needs
   `15 + 30 + 9 + 85("ObserveOps" at 14px/600) + 9 + 26 + 15 = 189` — measured, and the wordmark
   was ellipsising to "ObserveO…". Shrinking the product's own name to fit a chrome control is
   the wrong way round. `.brand` also gained `flex:0 1 auto; min-width:0; ellipsis` — the same
@@ -5181,6 +5181,41 @@ and marked *rule N* at the rule or function.
   animate on the opening paint and NOT on the next; the focus rule; the what's-new link and version)
   — **159 assertions across the eight files, all passing**; `harness … query` **77/77 on all six
   column options**; Options 5, 7 and 1 screenshotted.
+
+### Round 2 — the rail options, and keyboard reach everywhere (8 Sep 2026)
+
+Request, with Option 1's expanded rail as the picture: *"and this rules will be apply in option 1
+to option 8"*. Round 1 had given the rail options (1 · 3, and 8's hover rail) the least, because
+their sidebar is a hover-expanding rail rather than a resizable column. What this round adds:
+
+- **Rule 1 · the expanded rail is 240px** — the article's floor — in Options 1 (was 190), 3 (was
+  170) and 8's hover rail (`--pl-rail-open`, was 190). The flyout's anchor and the pinned shell read
+  the token, so nothing else moved; the brand row that once ellipsised at 170 has room to spare.
+- **Rule 9 · the expanded rail is resizable** in Options 1 and 3 — the same `uxGrip` engine on
+  `.sidebar`, token `--rail-w-open`, 240–320, hidden while the rail is collapsed (`.sidebar:not(.open)
+  .uxgrip`): a grip on a 64px rail would be a handle for a width that is not a preference.
+  ⚠️ **`sbHover(0)` stands down while `UX_DRAG` is set** — the pointer crossing the rail's edge
+  mid-drag used to fire the collapse timer. Option 8 keeps one grip (its column); a second on its
+  hover rail would be two handles in one sidebar.
+- **Rule 4 · the flyout slides in** (`uxfly`, 140ms) instead of popping. `.on` is added once per
+  open — `mfOpen` re-adds it while you move between rows, which does not restart an animation —
+  and `mfHide` removes it. Off under reduced motion.
+- **Rule 10 · the rail's Search row reads as a FIELD once the rail is open** (`.sidebar.open
+  #sbSearch`: a border on the field surface, the keycap it already carried). Collapsed it is the
+  64px tile it always was. ⚠️ Option 3's row carries no keycap and never did: `⌘K` there opens its
+  `oa*` AI panel (captured, `stopPropagation`), so its search has no shortcut to show.
+- **Rule 7 · keyboard reach, every option.** The rail's rows, the tiles, the flyout's rows and the
+  docked panel's rows were all `<div onclick>` — nothing a keyboard could reach, so the focus state
+  had nothing to receive. `uxFocusable()` gives every `.sitem / .plib / .skib / .mpi / .mfi`
+  `tabindex=0` + `role=button`; Enter / Space activates (`click()`); focus moving into the rail
+  opens it as hover does (`focusin` → `sbHover(1)`, `focusout` → `sbHover(0)`); one
+  `:focus-visible` outline rule covers them. ⚠️ **A MutationObserver re-applies it after every
+  repaint**, watching `childList` only — setting an attribute is not a childList mutation, so it
+  cannot feed itself — and no row builder had to change. ⚠️ Its callback is a microtask: a probe
+  that reads `tabIndex` synchronously after a repaint sees the OLD rows unset (it did, seven
+  times). Wait a tick.
+- ⚠️ **Option 3 has no `body.pinned .shell` rule at all** — pinning its rail never padded the
+  canvas, before or after this. Pre-existing; not fixed here.
 
 ## Responsive — the seven target resolutions
 

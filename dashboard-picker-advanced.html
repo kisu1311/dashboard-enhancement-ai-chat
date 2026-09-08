@@ -24,7 +24,7 @@
   --red:#f2504b; --orange:#fb923c; --yellow:#eab308; --green:#22c55e; --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
   --ok-bg:rgba(34,197,94,.15); --ok-bd:rgba(34,197,94,.45);
   --pend-bg:rgba(251,146,60,.14); --pend-bd:rgba(251,146,60,.45);
-  --rail-w:64px; --rail-w-open:170px;   /* Option 1's icon rail + hover flyout (see the note at .sidebar.devrev) */   /* the flyout anchors off these, not off the animating box */
+  --rail-w:64px; --rail-w-open:240px;   /* rule 1's floor for an expanded sidebar (was 170px, 8 Sep 2026) */   /* Option 1's icon rail + hover flyout (see the note at .sidebar.devrev) */   /* the flyout anchors off these, not off the animating box */
   --radius:8px; --radius-sm:4px;
   --shadow:0 12px 40px rgba(0,0,0,.55); --pop-shadow:0 2px 8px rgba(0,0,0,.35);
   --scrim:rgba(4,10,20,.45);
@@ -3992,6 +3992,31 @@ html[data-theme="light"] #agPage{
    version tag; smaller and dimmer than the rows above it, as the rule asks */
 .sitem.uxnews{opacity:.85}
 .sitem.uxnews .uxtag{margin-left:6px;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--text-dim);background:var(--chip);border-radius:3px;padding:1px 5px}
+/* ── SIDEBAR UX PASS, round 2 (8 Sep 2026) — the rail options, which round 1 touched least ──── */
+/* rule 9 · the EXPANDED rail is resizable — `--rail-w-open` is the one token the rail, the flyout's
+   anchor and the pinned shell all read. The grip only exists while the rail is open; a grip on a
+   64px rail would be a resize handle for a width that is not a preference. `sbHover(0)` stands
+   down during a drag so the pointer crossing the rail's edge cannot collapse it mid-drag. */
+.sidebar:not(.open) .uxgrip{display:none}
+/* rule 10 · the search row reads as a FIELD once the rail is open — a border and the field
+   surface, the keycap it already carried; collapsed it is the 64px tile it always was */
+.sidebar.open #sbSearch{background:var(--panel-2);border:1px solid var(--border);border-radius:6px}
+.sidebar.open #sbSearch:hover{border-color:var(--track);background:var(--panel-2)}
+/* rule 4 · the flyout slides in instead of popping — `.on` is added once per open (`mfOpen`
+   re-adds it while switching rows, which does not restart the animation), removed by `mfHide` */
+@keyframes uxfly{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.mflyout.on{animation:uxfly .14s ease-out}
+@media (prefers-reduced-motion:reduce){.mflyout.on{animation:none}}
+/* rule 9 · adjustable width — drag the column's edge; a 4px bar appears on hover as the cue
+   (the AI panel's `.aigw` convention), min/max clamp, double-click resets, the width persists
+   per option in localStorage and is written INLINE on <html> so the responsive `:root` steps
+   cannot stomp it (the recorded `--ac-w` mechanism). */
+.uxgrip{position:absolute;top:0;bottom:0;right:0;width:7px;cursor:ew-resize;z-index:6}
+.uxgrip::before{content:'';position:absolute;top:0;bottom:0;left:3px;width:4px;border-radius:2px;background:var(--track);opacity:0;transition:opacity .12s}
+.uxgrip:hover::before,.uxgrip.on::before{opacity:.9}
+body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
+/* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
+.sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
 </head>
 <!-- Both side panels start COLLAPSED (annotation, 13 Aug 2026): `dvshut` flips --rail-w
@@ -5101,6 +5126,53 @@ function selectModule(i){
 }
 /* Sidebar: hover peeks, the button pins it open. Ported from Option 1 so all three
    options share one rail behaviour. */
+
+/* ── SIDEBAR UX PASS, 7 Sep 2026 (UX Planet's sidebar rules) — shared helpers, `ux*` ─────────── */
+const UX_KEY = /Mac|iP(hone|ad)/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
+function uxSearchHTML(){ return `<button class="uxsrch" type="button" onclick="openSearch()"><svg class="uxsi" viewBox="0 0 48 48"></svg><span>Search</span><kbd>${UX_KEY}</kbd></button>`; }
+function uxSearchIco(root){ (root || document).querySelectorAll('.uxsrch .uxsi').forEach(e => { if (!e.innerHTML) setIco(e, 'search'); }); }
+/* rule 9 · one drag engine: the grip only starts a drag; the window listeners are bound ONCE and
+   read `UX_DRAG`, so a panel that rebuilds its innerHTML (Option 4's `mrNavPaint`) can re-mount
+   its grip on every paint without stacking listeners. Width is written inline on <html>. */
+let UX_DRAG = null;
+function uxGrip(sel, token, min, max, key){
+  const host = document.querySelector(sel); if (!host || host.querySelector(':scope > .uxgrip')) return;
+  const root = document.documentElement;
+  if (!root.style.getPropertyValue(token)){ try { const w = +localStorage.getItem(key); if (w >= min && w <= max) root.style.setProperty(token, w + 'px'); } catch (e) {} }
+  const g = document.createElement('div'); g.className = 'uxgrip'; g.setAttribute('data-tip', 'Drag to resize · double-click to reset');
+  g.addEventListener('mousedown', e => {
+    UX_DRAG = { token, min, max, key, g, x0: e.clientX, w0: parseFloat(getComputedStyle(root).getPropertyValue(token)) || min };
+    g.classList.add('on'); document.body.classList.add('uxdrag'); e.preventDefault();
+  });
+  g.addEventListener('dblclick', () => { root.style.removeProperty(token); try { localStorage.removeItem(key); } catch (e) {} uxAfter(); });
+  host.appendChild(g);
+}
+function uxAfter(){ if (typeof fitCanvas === 'function'){ try { fitCanvas(); } catch (e) {} } }
+addEventListener('mousemove', e => { const d = UX_DRAG; if (!d) return;
+  document.documentElement.style.setProperty(d.token, Math.max(d.min, Math.min(d.max, d.w0 + (e.clientX - d.x0))) + 'px'); });
+addEventListener('mouseup', () => { const d = UX_DRAG; if (!d) return; UX_DRAG = null; d.g.classList.remove('on'); document.body.classList.remove('uxdrag');
+  try { localStorage.setItem(d.key, parseInt(getComputedStyle(document.documentElement).getPropertyValue(d.token))); } catch (e) {} uxAfter(); });
+
+/* rule 7 · KEYBOARD. The rail's rows, the tiles, the flyout's rows and the docked panel's rows are
+   all `<div onclick>` — nothing a keyboard could reach, so the sidebar had a focus STATE for
+   nothing to receive. Every such element gets `tabindex=0` + `role=button`, Enter / Space
+   activates it, and focus moving into the rail opens it the way hover does (and closes it when
+   focus leaves). A MutationObserver re-applies this after every repaint, so no builder needed
+   changing — the observer watches childList only, and setting an attribute is not one. */
+const UX_FOCUS_SEL = '.sitem,.plib,.skib,.mpi,.mfi';
+function uxFocusable(root){ (root || document).querySelectorAll(UX_FOCUS_SEL).forEach(el => {
+  if (!el.hasAttribute('tabindex')) el.tabIndex = 0; if (!el.getAttribute('role')) el.setAttribute('role', 'button'); }); }
+addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof Element && e.target.matches(UX_FOCUS_SEL)){ e.preventDefault(); e.target.click(); } });
+(function(){
+  uxFocusable();
+  const mo = new MutationObserver(() => uxFocusable());
+  ['.sidebar', '#mflyout', '#mpanel'].forEach(q => { const n = document.querySelector(q); if (n) mo.observe(n, { childList:true, subtree:true }); });
+  const sb = document.querySelector('.sidebar');
+  if (sb && typeof sbHover === 'function'){ sb.addEventListener('focusin', () => sbHover(1)); sb.addEventListener('focusout', e => { if (!sb.contains(e.relatedTarget)) sbHover(0); }); }
+})();
+
+uxGrip('.sidebar', '--rail-w-open', 240, 320, 'oo-w-rail3');   /* rule 9 — the expanded rail */
+
 let sbPinned = false, sbHoverT = null;
 function toggleSidebar(){
   sbPinned = !sbPinned;
@@ -5118,6 +5190,7 @@ function sbHover(on){
      there was nothing to expand. Option 3 runs the icon rail now, and hover-expand is how
      you read the labels and reach a module's sub-menu. */
   if (sbPinned) return;
+  if(!on && UX_DRAG) return;               /* rule 9 — never collapse under a drag */
   const sb = document.getElementById('sidebar');
   clearTimeout(sbHoverT);
   if(on){

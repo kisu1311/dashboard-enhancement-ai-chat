@@ -1,4 +1,4 @@
-# Handoff — 2026-09-08 00:25
+# Handoff — 2026-09-08 10:35
 
 ## Read first
 
@@ -16,7 +16,8 @@ Three places in `CLAUDE.md`, in this order:
    what each already had, what came across, and the two adaptations each needed.
 5. **"The sidebar UX pass — UX Planet's twelve rules"** (just above *Responsive*) — the audit
    table: which of the twelve rules each option already met, what was added under `ux*`, and the
-   one rule deliberately not built (an account switcher) and why.
+   one rule deliberately not built (an account switcher) and why — and its **"Round 2"**
+   subsection (8 Sep): the rail options brought up to the same rules, and keyboard reach everywhere.
 
 Also still worth reading: **"An init-aborting crash on Windows and Linux, in six files"** (5 Sep) —
 no probe here could have caught it — and the previous session's **"Settings › My Account ›
@@ -88,6 +89,14 @@ canvas, the AI panel or Settings changed.
   slide-in on just-opened children (rule 4); focus outlines on every row/control (rule 7); a quiet
   "What's new · 10.0.1" row to the release notes where a sidebar had no bottom slot (rule 5).
   159 probe assertions across the eight files, harness 77/77 on all six columns.
+- **Round 2 of the UX pass (8 Sep, on request "apply the rules in option 1 to option 8")**: the
+  expanded rail is 240px in Options 1, 3 and 8 (rule 1's floor); the expanded rail is drag-resizable
+  in Options 1 and 3 with the hover-collapse suppressed during a drag (rule 9); the flyout slides in
+  (rule 4); the rail's Search row reads as a field when open (rule 10); and every rail row, tile,
+  flyout row and panel row is keyboard-reachable in Options 1–6 and 8, Enter/Space activating and
+  focus opening the rail (rule 7), re-applied after every repaint by a MutationObserver.
+  Verified: 73 round-2 assertions + the 159 round-1 assertions re-run, all passing; harness 77/77 on
+  the three files whose width tokens changed; Options 1 and 3 screenshotted.
 - **Widths, measured**: Option 5's `--pl-nav` 224 → 264 → **280px**; Option 6's `--sk-nav`
   281 → **296px**. Both because the DOCS chip (45px, in flow while invisible) and the reserved
   count slot + chevron box clipped the longest labels (`Network Config Settings`, `Real User
@@ -100,15 +109,14 @@ canvas, the AI panel or Settings changed.
 
 ## In progress
 
-Nothing mid-flight. **Everything is committed and live**: the Option 5 / 6 column work
-(`51abeb4`), the Option 8 / 4 ports (`b0aec72`), and — in the commit after this file's last edit —
-Option 6's active colours, the sidebar UX pass across all eight options, and a concurrent session's
-third pass on the License page (`_settings-module.*`, smoke-tested before the push: the page
-renders on the DS elements with no errors).
+Nothing mid-flight. **Everything is committed and live** — through `0a339a8` (the Option 5/6
+column work, the Option 8/4 ports, Option 6's active colours, round 1 of the UX pass, the License
+page's third pass) and the commit after this file's last edit (round 2 of the UX pass, seven option
+files); Pages served round 2's markup within a minute of the push.
 
 ## Next steps
 
-1. **Decide on the two behaviours today's chevrons imply, both recorded, neither resolved**: one
+1. **Decide on the two behaviours the chevrons imply, both recorded, neither resolved**: one
    parent opens at a time in Options 5 / 6 / 8 (`PL.sub` / `SK.sub` are single values — Option 4
    folds independently), and an open parent still wears the tinted `.on` row as well as the
    turned chevron — two signals for one state.
@@ -135,6 +143,10 @@ renders on the DS elements with no errors).
   measured against content this week; the resize grip gives the reader the range instead).
 - **The grip sits inside the column edge**, not straddling it, because three of the six columns
   clip overflow and one control must not have two widths.
+- **Keyboard reach via a MutationObserver, not by editing row builders** — seven builders across
+  the options would each have needed the same three attributes; one observer on the sidebar, the
+  flyout and the panel covers every repaint. It watches childList only, so setting attributes
+  cannot re-trigger it.
 
 ## Gotchas & notes
 
@@ -155,6 +167,11 @@ renders on the DS elements with no errors).
 - **Medium blocks both the fetch tool and `curl`** (Cloudflare 403 on uxplanet.org). The article
   was read through the user's Chrome session (`get_page_text`); a condensed copy of the twelve
   rules is in the session scratchpad (`sidebar-rules.md`).
+- **A MutationObserver callback is a microtask** — a probe that reads the rows synchronously
+  after a repaint sees them unset and reports a failure on working code (seven phantom failures
+  in round 2). Wait a tick before asserting.
+- **Option 3 has no `body.pinned .shell` rule** — pinning its rail has never padded the canvas;
+  pre-existing, not fixed. Its Search row has no keycap because `⌘K` there opens the `oa*` panel.
 - **One shared edit script for eight files needs per-file anchors** — Option 8's `.plnav` rule
   carries a `margin-left` Option 5's does not, and `nxPaint` is followed by a comment, not the next
   function; both aborted the first run. Assert every anchor's count before touching a file.
