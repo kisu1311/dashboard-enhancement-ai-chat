@@ -75,7 +75,7 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-⚠️ **THERE ARE EIGHT OPTIONS NOW** (5 Sep 2026), each demonstrating a different sidebar over the
+⚠️ **THERE ARE NINE OPTIONS NOW** (Option 9 added 8 Sep 2026), each demonstrating a different sidebar over the
 same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
 pattern"* is the map; in file order:
 
@@ -89,10 +89,12 @@ pattern"* is the map; in file order:
 | 6 | `dashboard-card-sidebar.html` | rail + column + a "Next steps" card (Plain · Sidekick) |
 | 7 | `dashboard-single-column.html` | **no rail at all** — one 270px column (Notion) |
 | 8 | `dashboard-nav-column-alt.html` | Option 5's pattern; collapse hides everything |
+| 9 | `dashboard-card-sidebar-alt.html` | Option 6's pattern, copied 8 Sep 2026 |
 
-⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's. A
-change meant for every option is now an **eight-file** change, and Options 5 and 8 additionally
-share the `pl*` namespace with nothing syncing them. Each option's own sidebar block is the only
+⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's, and
+**Option 9 is a byte copy of Option 6**. A change meant for every option is a **nine-file** change;
+Options 5 and 8 share the `pl*` namespace and Options 6 and 9 share `sk*`, with **nothing syncing
+either pair**. Each option's own sidebar block is the only
 part that differs; everything below this line describes content they all carry.
 
 Four pages are in the switcher, labelled **Option 1 / 2 / 3 / 4**. All of them carry the
@@ -4446,7 +4448,7 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
 |---|---|---|
 | card | `8px` inset, radius 12, `0 0 0 1px rgba(32,39,44,.08), 0 1px 1px` | **removed 5 Sep 2026** — flush, with a border |
 | rail | **65px**: 40px mark at y=20, then 32px tiles on a **40px pitch**, 18px glyphs, active `#e7e7ef` | 64px; the active tile is **`--action` / `--action-fg`** since 7 Sep 2026 (request: *"the sidebar active color is use #1d2a3e"* — `--action`'s light value exactly, inverting to #cad3e2 in dark). It was `--chip`, the hover's own grey. The expand tile's chevron is **16px** since 8 Sep 2026, matching the header's collapse |
-| rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | Approval · Health · Notification · avatar, 32px tiles (Next steps and Documentation moved to the column foot, 4 Sep 2026) |
+| rail foot | rocket + green count · bell · `?` · 40px radius-8 avatar, **44px pitch** | **Iris · Health · Next steps · Approval · Notification · avatar**, 32px tiles on an even 12px gap (Documentation moved to the column foot 4 Sep 2026; Next steps arrived 8 Sep; Iris joined them 8 Sep, see below) |
 | column | 281px: header 14px/550 over a 12px line, **no controls** | **296px** since 7 Sep 2026 (the DOCS chip and reserved slots, see the port note), second line derived (see below) |
 | row | **36px**, radius 8, glyph at **+11**, text at **+40**, active a lavender pill | `--sel` fill with **`--action` ink** since 7 Sep 2026 (request: the active row "is change the #1d2a3e"; it was `--teal`, which the column keeps for its create rows). A section row's active tile takes the same pair |
 | section | "Active" 12px/550 over 24px, `+` at its right (24px, radius 6), 16px above | same, and the `+` is real (below) |
@@ -4510,6 +4512,187 @@ survive — `--sk-gap`, `--sk-r`, `--sk-ring` are kept and unreferenced.
   to say *11 sub-modules* from a CLAUDE.md line that counts Report, which is a rail entry;
   `EXPLORER_TREE` holds 10.
 
+### The profile and notification popovers open beside the RAIL (8 Sep 2026)
+
+Request: *"the popup will open behind the icon, overlapping [the column]"*. `togglePop` places them
+at `#sidebar.offsetWidth + 10`, which is right in Option 1 — there the sidebar **is** the rail. Here
+the sidebar is rail + column, so a card summoned from an icon at x≈32 opened ~370px away, past
+everything, with the whole column sitting between the control and its own menu.
+
+- `togglePop` is **wrapped, not re-implemented**, and re-places the card at `--sk-rail +
+  SK_POP_GAP` = 76px.
+- ⚠️ **`SK_POP_GAP` IS ONE CONSTANT FOR EVERY CARD THE SIDEBAR SUMMONS** (request, 8 Sep 2026: the
+  level-1 popovers "will show at the same space of 12px"): the profile and notification popovers,
+  the Next-steps card and Explorer's module grid. It was `10` written out in four places, so four
+  cards opened from one rail could drift apart. **Level 1 anchors to the RAIL, the two cards anchor
+  to the whole sidebar** — that difference is deliberate and stays: a popover belongs beside its
+  control, while the cards belong beside the navigation they extend.
+- ⚠️ **It reads the TOKEN, not a measured box** — `.skside` transitions its width when the column
+  folds, and a rect read mid-transition reports the old number (this folder's oldest trap). It is
+  74px in both column states.
+- ⚠️ **Overlapping the column is the point, not a side effect**: a popover belongs beside the control
+  that opened it, and the column behind it is not what you are using at that moment.
+- ⚠️ A probe that measured `.skrail`'s own rect instead reported 11px when collapsed and looked like
+  a bug: `.skrail` is `flex:1 1 auto` inside a border-box sidebar, so its content edge is 63, not 64.
+  Assert against the token.
+
+### Explorer's module grid, and search back in the column header (8 Sep 2026)
+
+- **The column header is `search · collapse`** — the icon arrived on 8 Sep (*"when I expand the
+  sidebar the search icon also shows after the collapse icon"*) and the two were **swapped** later
+  the same day (*"swap the icon"*). The 8 Sep rule that took the search FIELD off every column but
+  Setting stands; this is the **icon**, in the header's control cluster, on every expanded column,
+  opening the same spotlight ⌘K does. Search leads because collapse acts on the column itself, so
+  the control that folds it sits at the column's own outer edge — and search now keeps the same
+  slot the rail's tile takes when the column is shut.
+- **THE RAIL CARRIES SEARCH ONLY WHILE THE COLUMN IS SHUT** (`.sksrch`, request 8 Sep 2026: *"when
+  the sidebar will be collapsed the search icon show before expand icon"*). It had been removed
+  outright hours earlier — *"when I expand the sidebar the search icon shows [in the header]
+  behind, so remove the main sidebar [one]"* — because the header had just gained one and two
+  magnifiers sat eight pixels apart.
+  ⚠️ **BOTH REQUESTS ARE SATISFIED BY THE SAME GATE, which is why this is not a revert**:
+  `body.skshut` shows the rail's tile, and that is exactly the state in which the header is not on
+  screen. There is a probe assertion, in both column states, that **exactly one magnifier is
+  visible** — that is the invariant, not the presence or absence of either control.
+  ⚠️ **IT LEADS THE EXPAND TILE**, mirroring the header's own order, so the magnifier holds its
+  slot as the column opens and shuts.
+  ⚠️ **SAME GATE AS `.skexp`, deliberately** — `display:none` plus a `body.skshut` rule. A JS test
+  would have to be re-evaluated by every path that folds the column; the class is the one thing
+  every path already agrees on.
+  ⚠️ **IT IS NOT `#sbSearch`.** `init()` touches that id off a Mac, and its removal is why those
+  lookups were guarded in all six rail files on 5 Sep — reusing it would put a keycap swap back on
+  a tile with no room for one. A probe forces `navigator.platform` to `Win32` to prove the guard
+  still holds.
+- **Hovering Explorer's rail tile opens the module GRID** (`skGrid` / `.skgrid` / `#skGridPop`),
+  from a supplied ClickUp reference: its eleven sub-modules as icon-over-label tiles, three to a
+  row, over a **Customize navigation** button. ⚠️ **HOVER OPENS IT AND THE COLUMN PEEK DOES NOT RUN
+  FOR THIS TILE** (request, same day: *"when I hover the Explorer icon don't show [the peeked
+  column], show only [the grid]"*). Every other tile still peeks; this is the one module whose
+  contents have a second, better view. ⚠️ **Click now only navigates** — it used to toggle the grid
+  as well, which fought the hover: clicking a tile whose grid was already open would have closed it.
+  ⚠️ The grid keeps the Next-steps card's grace period, and **hovering any other tile closes it**,
+  or it would hang over the column that tile is peeking. ⚠️ Its tiles come from `EXPLORER_TREE`, the same source the
+  column lists, so the two cannot disagree; a tile navigates through `mfGo`, so Geo Map toasts there
+  exactly as its row does. ⚠️ **Customize navigation opens the Layout drawer's Sidebar tab**
+  (`layOpen(); layTab('sidebar')`) — that screen already IS "customise navigation": hide, reorder,
+  pin, choose what opens on sign-in. ⚠️ It is not a `.pop`, so `closePops()` does not know about it;
+  it carries its own capture-phase `mousedown` click-away.
+
+### Next steps is a rail tile with a hover card (8 Sep 2026)
+
+Request: *"Next Steps will be shown after the Health icon, as a module icon, and I hover it to show
+a small popup with all the next steps"*. It was a `.skfb` in the column's foot opening a card parked
+above the licence line — a permanent card holding four rows you visit once each.
+
+- **The tile is `.skib` in `.skrfoot`, directly after Health**, and **keeps the old ids**
+  (`skTour` / `skTourIc` / `skCnt`), so `skFootPaint`'s icon list and `skCntPaint`'s badge and
+  tooltip work unchanged — only the class and the parent moved, exactly as Health and Approval did
+  on 4 Sep.
+- **The card is `#skNsPop`, appended to `<body>`** (260px beside a 64px rail), tracking the tile
+  vertically and clamped to the viewport. ⚠️ **HORIZONTALLY IT CLEARS THE WHOLE SIDEBAR, NOT THE
+  TILE** (reported 8 Sep, "the popup opens not proper"): the tile is 32px centred in a 64px rail, so
+  `tile.right + 10` put the card **inside the rail, over the icons**. ⚠️ **The width comes from the
+  `--sk-rail` / `--sk-nav` TOKENS and `body.skshut`, not from a measured box** — `.skside`
+  transitions its width when the column folds, and this folder's oldest recorded trap is that a rect
+  read mid-transition reports the old number. ⚠️ **`visibility`, not `display:none`** — `skNsPlace`
+  measures it to position it, and a `display:none` element has no box (the `kbPopOpen` lesson).
+  ⚠️ **Measure, place, THEN reveal**, or it transitions in at the previous position.
+- ⚠️ **The hover follows this file's `kbPop` rules**: opening is delayed 140ms so sweeping the rail
+  does not flash a card, and closing is **deferred 200ms and cancelled by the card's own
+  `mouseenter`** — the pointer has to cross the gap, and a plain `mouseleave` would shut it
+  mid-journey (the rail-flyout bug). **Click toggles it as well**, since hover alone is unreachable
+  by keyboard or touch.
+- **The badge reads `done/total`, not what is left** (request, 8 Sep 2026: *"the icon will show
+  0/4"*). It said `4` — a bare number on a green disc reads as "4 new things" when it meant "4 still
+  to do"; `0/4` says exactly what the card's foot says, and the two agree by construction.
+  ⚠️ **It still hides once everything is done** — the badge exists to say there is something left,
+  and a permanent `4/4` is a sticker. ⚠️ The pill's padding went to 4px: it carries three characters
+  now, measured at **24.5px on a 32px tile**, so it still sits inside the tile's own box.
+- ⚠️ **THE BADGE IS PAINTED BY `skFootPaint` NOW.** `skNsPaint` used to end in `skCntPaint()` and ran
+  on every `skPaint`; it only runs when the card opens, so the tile carried no count until the first
+  hover — caught by a probe, not by eye.
+- **The card was then rebuilt to a supplied reference** (same day): title **Suggested next steps**
+  over *"Optional — do these anytime."*, a ✕ in the corner, each step showing **Done** in `--green`
+  where it is finished and the product's `long-arrow-right` where it is not, and a foot of
+  *"N of 4 done"* against **Don't show again**. ⚠️ That control **hides the rail tile for the
+  session and nothing brings it back** — which is what the words promise; a real product would
+  persist it and offer it in Settings. Stated rather than softened.
+- ⚠️ **THE TILE CARRIES NO `data-tip` AND NO `title`** — the delegated tooltip engine fires on either
+  and opened a tooltip UNDER the card on the same hover (reported with a screenshot). `aria-label`
+  names it, and `skCntPaint` writes the count there instead. **This is the same rule Option 1's
+  shortcuts popover already records**, hit a second time.
+- ⚠️ **Its glyph is `onboard`** — the product's own `file-document/clipboard.svg`, a checklist board.
+  It was `tour` (stacked cards), which read as "windows", not "things to finish".
+- The column foot is **Documentation · Layout** now, and the licence line stayed. `skNsTog`,
+  `SK.ns` and `.skns` are kept, unreferenced.
+- ⚠️ **Option 9 was copied BEFORE this change** and still has the card in its column — the
+  "nothing syncs them" warning, one change old.
+
+### Section headings fold, and the foot gains the Layout drawer (8 Sep 2026)
+
+- **Every `.sksec` heading folds its rows** — *"add expand and collapse in Scheduled Reports"*. Every
+  one, not only that section: a column where one heading folds and the others do not reads as a bug,
+  and it is what Option 5's `.plsec` has always done. The caret is the same product chevron the rows
+  use, down while open and right when shut.
+  ⚠️ **The key is `<module>›<heading>`**, not the heading alone — two modules can name a section the
+  same thing and one fold must not close the other's. There is a probe assertion that folding
+  Report's section leaves Dashboard's NOC View open.
+  ⚠️ **The heading is a `<div role="button">`, not a `<button>`** — it may still carry the promoted
+  `+` (SLO's *＋ New SLO*), and a button inside a button is the nesting this file records twice as
+  eating the clicks. `.skadd` stops propagation so the `+` cannot also fold the section.
+- **The column foot gains the Layout drawer**, in the slot the Settings gear left — *"add layout
+  setting icon"*. It calls the same `layOpen()` the dashboard toolbar and the Manage screen use: one
+  drawer, three doors. ⚠️ **Its glyph is `columns`, not `sliders`** — the toolbar marks this drawer
+  with Lucide `sliders-horizontal`, but this column already spends `sliders` on *Manage dashboards*
+  and *Manage NOC View*, so the same glyph would mean two things on one screen. `columns` is the
+  product's own `navigation-layout/columns.svg`, already in `ICONS`.
+
+### Four more column changes (8 Sep 2026)
+
+- **The search field is the Setting column's only** — *"remove the [search] everywhere, don't
+  remove only [in the] setting module"*. The 7 Sep UX pass had put it on every column (UX Planet
+  rule 10); Setting is the one with 19 categories to hunt through. ⚠️ **Nothing became
+  unreachable**: ⌘K / Ctrl K opens the same spotlight from any column and the rail's Search tile is
+  untouched. This is a deliberate retreat from rule 10 in seven of the eight columns.
+- **The section tile has breathing room** — *"improve background colour"*, pointing at these. Once
+  the glyph grew to 18px (below) it filled the 18px tile edge to edge and the fill read as a smudge
+  behind the icon, not a tile. It is **26px around an 18px glyph with a 18px FOOTPRINT**: `margin:0
+  -4px` cancels the 8px it gained, so the row's text still starts at 40px and the glyphs share a
+  left edge with the plain rows'. ⚠️ `flex:0 0 26px`, not a `width` — **a flex basis beats a width**
+  (recorded at `.aihm button svg`); left at 18 the tile stayed 18px and the negative margins dragged
+  the text 8px left. ⚠️ **The fill is still `--chip`, measured**: 1.19 contrast against the column in
+  light and 1.55 in dark, the only neutral visible in BOTH — `--hover` is 1.10 / 1.07 (gone in dark)
+  and `--track` 2.57 / 2.56 (a slab). One token if it should be lighter.
+- **One icon size in a column** — *"same icon size in NOC View or dashboard list"*. A section row's
+  glyph was 12px inside its 18px tile while a plain row's was 18px, so two groups in one column drew
+  their icons at visibly different sizes. The tiled glyph is 18px now and fills its tile; the
+  product's glyphs are on a 48 grid with their own margin, so they do not touch its edges. **The
+  tile still marks a section row — the size no longer does**, and the text x is unchanged in both.
+- **The Next steps card has no progress bar** — *"remove the line"*. The same fact is already in two
+  places: each done step wears a green tick, and the rail's rocket carries the count of what is
+  left. `.skbar` is kept, unreferenced.
+- **Explorer has an eleventh row, `Geo Map`** — *"in explorer add Geo Map"*, with the product's own
+  `location-pin` glyph (added to `ICONS` as `geo-map`, `{viewBox, paths}` like every other entry —
+  ⚠️ **this registry holds objects, not SVG strings**, unlike Option 5's; a string entry renders
+  nothing and `ico()` gives no error). ⚠️ **It has no screen and no docs page** — there is no Geo Map
+  module in `MODULES` and nothing in the harvested sitemap answers to it — so the row toasts that it
+  is not built rather than navigating somewhere it is not. **Do not point it at the Topology map**:
+  that would claim the two are the same screen. Appended rather than slotted beside Topology; one
+  line to move if it belongs there.
+
+### The documentation footer and the foot's Settings gear are gone (8 Sep 2026)
+
+Two removals, both Option 6 only:
+- **`<Module> documentation ↗`** at the foot of the three flat menus (Dashboard · SLO · Report) —
+  *"remove the document link in everywhere"*. `skDocsFoot` / `SK_BOOK` / `.skdocf` are **kept and
+  unreferenced**, the house pattern, so it is one call away. ⚠️ **The other two documentation
+  surfaces are untouched**: the `DOCS ↗` chip on the tree menus' rows (Explorer · Alert · Setting)
+  and the `?` button in the column foot, which still opens the product docs.
+- **The Settings gear in the column foot** — *"remove the setting icon"*. The foot is Next steps ·
+  Documentation now. ⚠️ **Settings is not stranded**: the rail carries its own `Setting` entry, the
+  door every other module uses. `skFootPaint` already guarded for the missing node, and the `.on`
+  light it used to paint while you were in Settings goes with the button.
+
 ### The expand and collapse icons are one size (8 Sep 2026)
 
 Request, pointing at the column header's collapse button and the rail's expand tile: *"the expand
@@ -4535,17 +4718,33 @@ schedule report list has show favorite report"*. Under the ten report types:
   titles, the `star` glyph). The docs' Favorites is "reports you've starred for quick access", and
   Schedule is each report's own delivery toggle; the request's "show favorite report" is that list.
   Titled with the product's word ("Scheduled Reports"; the request wrote "Schedule report").
-⚠️ **THE FAVOURITES SIT AT THE TOP, ABOVE THE BUTTON** (request, later the same day: *"the
-'Scheduled Reports' will be show before 'create custom report' on top"*), so the column reads
-**Scheduled Reports → Create Custom Report → the ten types**. `SK_TOP` names the section a column
+⚠️ **THE COLUMN READS: BUTTON → SCHEDULED REPORTS → THE TEN TYPES.** The favourites were moved
+above the module's own list first (*"the 'Scheduled Reports' will be show before 'create custom
+report'"*) and the button was then put back on top ten minutes later (*"the create custom report
+will be show on top"*) — the one thing you press to MAKE something leads, then what you have
+starred, then everything the module has. **Both requests are recorded; don't swap them back on the
+strength of one.** `SK_TOP` names the section a column
 lifts; `skSecHTML` — extracted from `skBodyRest`'s map — renders it in both positions, so heading,
 tiles and `+` promotion cannot drift, and `skBodyRest` filters it out of its usual place so it
 cannot render twice. ⚠️ **The filter runs BEFORE the map**: `titled` is `si > 0`, so removing a
 later section must not promote the module's own first section into a headed one.
 ⚠️ `.skbody > .sksec:first-child` drops the 16px group gap to 2px — that gap separates a group from
 the rows above it, and at the top of the column there are none.
-⚠️ **Consequence, stated rather than resolved:** the column now opens on four starred reports, so
-the module's own ten types begin below them. The subtitle counts 14 pages; the docs footer stays
+⚠️ **THE MODULE'S OWN LIST IS HEADED `Report Types` NOW** (request, 8 Sep 2026: the starred reports
+and the types "both are different, make it difference" — they ran together as one list with nothing
+between them). Two changes, both small: the first section prints its heading **when a section is
+lifted above it** (the rule that suppresses it exists because it would repeat the column title
+directly beneath it — with something in between, it has to name where it starts), and `skSecHTML`
+now takes **`titled` and `grp` as two questions** rather than one flag, so the list gets the heading
+while its rows stay PLAIN. The tiles and the 600 weight are what say "starred"; making the types
+tiles too would have been the opposite of the request. `grp` also gates the `+` promotion.
+⚠️ The heading text is the docs' own `Type` field ("the category of data displayed, for example …
+Flow Analytics, Log Compliance, NCCM, APM"), not `Reports`, which would name nothing under a column
+titled *Report*. It is **invisible in every other option**, which renders this list first.
+⚠️ **Consequence, stated rather than resolved:** the module's own ten types begin below six rows.
+⚠️ The 16px above the lifted section COLLAPSES with the button's 10px bottom margin to one 16px gap
+— the standard group step, not 26px; `.skbody > .sksec:first-child` drops it to 2px only when a
+lifted section leads (no button). The subtitle counts 14 pages; the docs footer stays
 (Report is a flat menu). Option 6 only.
 
 ### NOC View carries Create and Manage rows (8 Sep 2026)
@@ -4604,6 +4803,231 @@ namespace, differing only where this column's markup does. Read the reasoning th
 - Verified by the Option 5 probe mapped onto this namespace — **73 assertions**, all passing
   (the section-caret block removed, row padding 8 not 9) — plus `harness … query` at the new
   width, both themes screenshotted.
+
+### Level 3 — Explorer's grid pins, and lends the rail an icon (Option 6, 8 Sep 2026)
+
+The user's own three-level model, stated on 8 Sep 2026: **level 1** is a single-click utility
+popover (notifications, profile, Approval, Health); **level 2** is module → column → screen;
+**level 3** is *"when I click the Explorer icon it shows a popup of the sub modules, and I click
+to open a module and the icon will be added automatically in the sidebar, and I go to another
+module the added module will be removed."* Levels 1 and 2 already existed. This built level 3, and
+finished the grid the same day it was asked for.
+
+| the ask | what it is |
+|---|---|
+| *"the level 3 popup will be open behind the 12px"* | `#skGridPop` opens at **`--sk-rail + SK_POP_GAP`**, over the column |
+| *"add pin & unpin option"* (ClickUp's inbox as the reference) | a pin per tile, `railPinToggle`, hover-revealed |
+| *"the icon will be added automatically in the sidebar"* | `SK.tmp` → a **`.skib.sktmp`** tile under Explorer |
+| *"I go to other module the added module will be removed"* | `skTmp()` — derived, never cleared by hand |
+
+- ⚠️ **THE GRID NOW OPENS AT `rail + 12`, NOT PAST THE WHOLE SIDEBAR.** It was
+  `rail + nav + 12`, so with the column open a card summoned from a tile at x≈32 landed **~370px
+  away**, with the column stranded between the control and its own menu. The profile and
+  notification popovers were moved for exactly this reason hours earlier; this applies the same
+  rule to the third level, so **all four cards this sidebar summons now land at one offset** —
+  there is a probe assertion comparing the grid's left edge to `#userPop`'s (both 76 at
+  `--sk-rail:64`).
+- ⚠️ **THE PIN IS THE SAME `railPinToggle` EVERYTHING ELSE DRIVES.** `RAIL_PINS` holds labels
+  resolved through `EXPLORER_TREE`, so the grid, the column's `.skrow .skpin`, the rail's pinned
+  band and the Layout drawer's Sidebar tab cannot disagree about what is pinned. Nothing new was
+  modelled.
+  - ⚠️ **`event.stopPropagation()`**, or pressing the pin also opens the module — the pin sits
+    inside the tile's own `<button>`, which is what puts it on the thing it pins.
+  - ⚠️ **A `<span role="button">` with NO `tabindex`**, exactly as the column's `skPinBtn` is.
+    Interactive content inside a `<button>` is invalid and eats the clicks. Keyboard pinning lives
+    on the Sidebar tab, which is the complete surface for it. Stated, not softened.
+  - ⚠️ **A PINNED PIN SHOWS AT REST; the others reveal on hover.** A mark that only appears under
+    the pointer cannot report a state, and *"which of these am I already carrying"* is the question
+    the grid is opened with. Measured: pinned `.75`, unpinned `0`.
+  - ⚠️ **The card repaints IN PLACE after a toggle** (`skGridEl().innerHTML = skGridHTML()`), never
+    `skGrid(true)` — that re-measures and moves the card out from under the pointer. `skGridHTML`
+    was extracted for exactly this, so there is one renderer.
+- ⚠️ **THE TEMPORARY TILE'S REMOVAL IS DERIVED, NOT WIRED.** `skTmp()` answers *"is it still
+  true?"* by asking whether its module is the one open, so **every door into a view** — the rail,
+  the column, the flyout, a shortcut, `stOpen`, the AI panel — drops it for free. Clearing it from
+  each caller would mean finding all of them, and missing one leaves a tile claiming a screen you
+  have left, which is the exact failure it exists to avoid.
+- ⚠️ **ONE AT A TIME.** `SK.tmp` is a single label, so opening a second sub-module replaces the
+  first. A queue of temporaries growing behind Explorer is the clutter pinning already has a
+  deliberate control for.
+- ⚠️ **A PINNED SUB-MODULE NEVER ALSO GETS ONE**, and pinning the one you are in swaps the
+  temporary tile for the permanent one — two tiles for one module would light together.
+- ⚠️ **IT IS A DASHED RING (`outline`, not a border), NOT THE PIN MARK.** The two are on the rail
+  for different reasons — one you chose and it stays, one arrived with the screen and leaves with
+  it — so they must not look the same. `outline` because a border would shrink the 32px box and put
+  this one tile's glyph a pixel off every other one's. It renders `.on`, because `skTmp()` only
+  returns a row whose module is open: while it is there, it **is** the module you are using.
+- ⚠️ **A ROW WITH AN `act` GETS NO TILE.** `Geo Map` toasts that it is not built and `mfGo` returns
+  before any module changes, so a tile for it would stand for a screen that was never opened — and,
+  sharing `Monitors` with the `Monitor` row, `skTmp` would have kept it alive on somebody else's
+  screen.
+- ⚠️ **EXPLORER'S TILE NAVIGATES NOWHERE — IT OPENS THE CARD AND NOTHING ELSE** (request, 8 Sep
+  2026: *"when I click the Explorer icon, open only [the popup] — not the main screen"*). Its
+  `onclick` ran `pickRail(i)` first, which opened Explorer's own module (Metric Explorer) behind
+  the card: you pressed a launcher and it took you somewhere before you had chosen anything.
+  **The grid IS Explorer's navigation** — picking a tile is what opens a screen, and `MOD_TO_RAIL`
+  maps every sub-module back to Explorer, so the column still lands on Explorer's tree the moment
+  you choose one. Every other rail entry is a place to go and still behaves as one.
+  Three things follow, and each was a real defect the navigation was causing:
+  - ⚠️ **THE TOOLTIP STOPPED PAINTING OVER THE CARD.** Reported with a screenshot after the first
+    fix "worked". The engine reads `tipFor` on **`mouseover`** and paints **320ms later**, so the
+    `tipFor` wrapper can only refuse a tip it is asked about — and `pickRail` **repaints
+    `#skIcons`**, so a brand-new tile appeared under the resting pointer, fired a fresh
+    `mouseover` while `SK.grid` was still false, and armed a timer nothing could take back.
+    `skGrid(true)` now also calls **`tipHide()`**, which clears the pending timer as well as the
+    box, so the card is safe even if something else repaints the rail later.
+  - **The level-3 tile survives opening the grid**, so the sub-module you are in stays marked on
+    the rail while you browse for another one.
+  - ⚠️ **`.skgi.here` IS BACK, AND THE HISTORY IS WHY IT CAN BE TRUSTED.** It was built and removed
+    within the hour earlier the same day: while the tile still navigated, you had already left the
+    sub-module by the time the card painted, so the mark could never be true — **a probe caught
+    that, not the eye**. With the navigation gone the state it reads is true again, and it shares
+    `skTmp()` with the rail's temporary tile, so card and rail cannot disagree about where you are.
+- **Explorer's tile wears the hover fill while its card is open** (`.skib.gon`). The card is
+  anchored to that tile and nothing else on the rail said which one opened it. ⚠️ Not `.on`: that
+  is `--action` and means *this module's screen is open*, which pressing this tile no longer does.
+  ⚠️ **The class is toggled DIRECTLY (`skGridLit`), never through `skRailPaint`** — a repaint
+  destroys the node under the pointer and fires the very `mouseover` that caused the tooltip bug.
+- ⚠️ **THE EARLIER "CLICK, NOT HOVER" REVERSAL STANDS** (request the same day, undoing a
+  hover-opened version an hour old): the tile's `onclick` toggles the grid, hover on it does
+  **nothing** — no grid and no column peek — and every other tile still peeks. `skGridOver` /
+  `skGridT` / `skGridIn` are kept and unreferenced. A card you open by clicking must not close when
+  the pointer leaves it, so the grid has no mouse listeners of its own; click-away and a second
+  click close it.
+- Verified by a **41-assertion probe** — the placement against `#userPop`, the pin on all 11 tiles
+  in both states and its three consumers, the temporary tile's position/ring/lighting, its removal
+  on every route out, the one-at-a-time rule, the pinned-and-temporary exclusion, Geo Map, the
+  suppressed tooltip, and click-away — plus `lxbehave` **57/57 ×8** and `harness … query`
+  **77/77** on this file, both themes screenshotted.
+  ⚠️ **Two assertions failed on working code first, and both were the recorded stale-node trap in
+  the PROBE**: `pickRail` repaints `#skIcons`, so a tile captured before the first click is
+  detached and `elementFromPoint` on its zeroed rect clicks something else entirely. Re-query the
+  rail after anything that repaints it.
+
+### Iris moved from the head of the rail into its foot (Option 6, 8 Sep 2026)
+
+Request: *"the AI icon will show after health"*, corrected minutes later to **"before health"**.
+Both are recorded here; **the second is what shipped** — do not "restore" it under Health on the
+strength of the first. The foot is now **Iris · Health · Next steps · Approval · Notification ·
+avatar**.
+
+- **Why the foot is the right half of the rail for it.** Iris led the rail — the first tile under
+  the collapse control, above Dashboard — which put the assistant ahead of every place you can go.
+  This rail's head is destinations and its foot is what you **summon**: Next steps, notifications,
+  your profile. Iris opens a panel over the board and navigates nowhere, so it belongs with those.
+- ⚠️ **IT IS STATIC MARKUP NOW, not rendered by `skRailPaint`.** `#sbAI` is referenced by nothing
+  else in this file (grepped before moving it), so the move costs no lookup — and it takes the tile
+  out of the per-paint rebuild, which is the mechanism that put a fresh node under a resting
+  pointer and armed the tooltip that painted over Explorer's grid an hour earlier. It joins
+  `#sbHealth` / `#sbApproval` / `#sbBell` / `#sbUser`, which are static for the same class of
+  reason: the host finds them by id.
+- ⚠️ **ITS GLYPH IS PAINTED BY `skFootPaint`, NOT BY THE MARKUP.** `AI_SPARK` is the supplied
+  `OPS AI.svg` as a raw SVG string in a **later** script block, and markup cannot interpolate it —
+  so the tile ships an empty `<svg id="sbAIIc">` and the foot painter fills it. It is written in
+  directly rather than through `setIco` because it is not an `ICONS` entry, and it carries the same
+  one-shot `if (!e.innerHTML)` guard the other four foot glyphs use, so it is filled once and never
+  repainted. There is a probe assertion that the glyph survives two rail repaints.
+- The tile keeps `.airail`, so it keeps the AI accent (`--ai-2`) and its own hover wash against the
+  neutral tiles either side of it. Measured after the move: 32px tile, 18px glyph, one column with
+  the bell, an even 12px gap down all six.
+- ⚠️ **Option 6 only** — every other option renders its own rail, and Option 9 (the byte copy)
+  still leads with Iris.
+- Verified by a **20-assertion probe** (the foot's exact order, nothing left in the head, one
+  `#sbAI`, the painted glyph at 18px, the accent, tile parity with Health, the shared x, the even
+  gap, opening the AI panel without navigating, survival across a repaint, Health still lighting,
+  the Next-steps badge still painting, every tile on screen and hit-testing to itself in both
+  column states), plus `lxbehave` **57/57 ×9** and `harness … query` **77/77**; both themes
+  screenshotted.
+
+### Pinned dashboards reach this rail at last, before Explorer (Option 6, 9 Sep 2026)
+
+Request: *"when I pin any dashboard it will show before the Explorer icon"*.
+
+- ⚠️ **THEY WERE NOT ON THIS RAIL AT ALL.** `DASH_PINS` was never read anywhere in the `sk*` block,
+  so pinning a board from the list panel put nothing anywhere and the feature was **silently
+  absent** in Option 6 — it looked like a placement question and was a missing feature. The host's
+  `railDashPinsHTML` emits `.sitem` rows the host rail understands and this rail does not, hence
+  `skDashPinsHTML`, the tile version.
+- **They render before the Explorer tile, above its hairline** — the placement asked for.
+  ⚠️ The host's own rule is *"a pin sits directly under the rail row it belongs to"*, which would
+  put them under Dashboard. **This deliberately diverges**, recorded so the two are not confused.
+- ⚠️ **NOTHING IS FILTERED OUT.** The host's version drops the default board because `renderMenu`
+  **lifts** it to the top of the rail; this rail has no lift, so the same filter would simply hide
+  a pinned default board.
+- ⚠️ **THE GLYPH IS THE BOARD'S OWN TYPE ICON** (`MICON[t]` — System / Mine / Shared), not a second
+  `ico('dashboard')`. That is the 2 Sep rule: a pinned board and a pinned sub-module are one row
+  shape told apart by their mark, and every board wearing the Dashboard tile's own glyph would
+  render the band as identical grids stacked. ⚠️ `MICON` entries are raw `<svg viewBox=…>` with no
+  class, so `class="ic"` has to be injected or the glyph renders at natural size and blows the tile
+  apart.
+- ⚠️ **THE TOOLTIP SEPARATOR IS `" · "`, NOT TWO SPACES.** The tooltip engine renders a
+  double-space tail as a **keycap chip**, which would badge every pinned board with a shortcut that
+  does not exist. There is a probe assertion that no board tip contains a double space.
+- ⚠️ **`DASH_INDEX` / `MICON` / `DTYPE` ARE IN THE NEXT `<script>` BLOCK**, so they are in the
+  temporal dead zone while this block first paints. Every read is wrapped in try/catch, which makes
+  the fallback structural: no type icon, not a dead page. ⚠️ `typeof X !== 'undefined'` is **not**
+  a usable guard — on a `let`/`const` in TDZ, `typeof` itself throws.
+- ⚠️ **A HIDDEN EXPLORER MUST NOT TAKE THE BAND WITH IT.** The pins are emitted before Explorer's
+  tile, so with Explorer hidden there is no tile to sit before and a pinned board would be
+  unreachable from the rail. `dashOut` is the same idempotent flag the host's `pinsFor` uses, and a
+  tail fallback catches that case — probed both ways, including that the band is not rendered twice
+  when Explorer comes back.
+- **Module pins are untouched and still sit under Explorer**, so both bands can be on the rail at
+  once and read as what they are. Probed together.
+- Verified by a **22-assertion probe** (no band with nothing pinned, one tile per pin, before both
+  Explorer and the hairline, the full order, 32px tile with an 18px glyph, the type icon differing
+  from the Dashboard tile's, the tooltip and its lack of a keycap, a second pin, a hit-tested click
+  opening that board and lighting its tile, unpinning removing it, the hidden-Explorer guard, both
+  bands together, and survival across a repaint), plus `lxbehave` **57/57 ×9** and
+  `harness … query` **77/77**; both themes screenshotted.
+
+### The rail's shipped order is declared, and Explorer moved (Option 6, 8 Sep 2026)
+
+Asked for as *"the Explorer icon will show **before** the Setting module"* and reversed minutes
+later to *"**after** setting"*. The rail reads **Dashboard · Alert · SLO · Report · Setting ·
+Explorer** — Explorer is the **last tile**. It shipped above Report and passed through the
+between-Report-and-Setting position on the way.
+⚠️ **All three positions are recorded on purpose.** The middle one was live for minutes; the last
+is what shipped. Do not "restore" Explorer above Setting on the strength of the middle note.
+
+- ⚠️ **`RAIL` ITSELF WAS NOT REORDERED, AND MUST NEVER BE.** `activeRail` and `MOD_TO_RAIL` store
+  **indices** into that array, so moving a row there points every module at the wrong rail entry —
+  eleven of the sixteen modules resolve through `MOD_TO_RAIL` to Explorer alone. The order is
+  declared as **`RAIL_SEED`, a list of NAMES**, which is what `railOrder()` seeds `RAIL_ORDER`
+  from — the same record the Layout drawer's Sidebar tab writes when you drag a row, so the shipped
+  order and a user's own reordering use one mechanism.
+- ⚠️ **A NAME THE SEED DOES NOT MENTION STILL RENDERS**, appended in `RAIL`'s own order. A bare
+  literal would silently drop the next rail entry anybody adds and nothing would report it; there
+  is a probe assertion that a deliberately-truncated seed still renders all six.
+- **Explorer's pinned band and its level-3 tile followed it for free** — `skRailPaint` emits both
+  immediately after Explorer's own tile, so there was nothing to keep in step. With Explorer last,
+  both now render at the very bottom of the rail's head, above the foot. Probed: a pin made from
+  the grid lands after Setting, and the temporary tile is the last thing in the head.
+- **A HAIRLINE SITS ABOVE EXPLORER** (`.skrdiv`, request 8 Sep 2026: *"add divider between Explorer
+  & Setting"*), and it is the only rule on this rail. Explorer is not the same KIND of thing as the
+  five tiles above it: those open a screen, Explorer opens the level-3 grid and navigates nowhere.
+  - ⚠️ **IT IS NOT GROUP BANDING, and that is the point.** `RAIL[].group` would draw **three**
+    lines in the declared order — work→analyse at Report, analyse→admin at Setting, admin→analyse
+    at Explorer — because the order deliberately interleaves the groups. One of those is where the
+    line was asked for and two are not. `RAIL_DIV_BEFORE` names the entry instead, so the line is
+    exact rather than a coincidence of the grouping, and it moves with the entry.
+  - ⚠️ **`--track`, NOT `--border`, and it was measured.** On this rail's own `--card` surface
+    `--border` is **1.27** contrast in light and **1.25** in dark — invisible, exactly the finding
+    already recorded for the empty-group box. `--track` is **2.57 / 2.56**, the only token landing
+    in a findable hairline band in BOTH themes.
+  - ⚠️ **It is never the rail's first child.** A rule above nothing reads as a clipped edge, which
+    is what a hidden or reordered Explorer would otherwise produce — both are probed.
+  - 24px in a 64px rail, so it reads as a divider between tiles rather than an edge of the rail.
+    `.skicons` already puts 8px either side; the 2px margin takes the gap to **21px against the
+    ordinary 8px**, which is what separates it (measured, not eyeballed).
+- ⚠️ **Option 6 only.** Every other option has its own `RAIL` and its own rail renderer, and
+  Option 9 — the byte copy — still ships the old order.
+- Verified by a **17-assertion order probe** and a **17-assertion divider probe** (the rendered order, Explorer last and immediately after
+  Setting, `RAIL` unmoved, every `MOD_TO_RAIL` index still resolving, every sub-module still
+  pointing at Explorer, the truncated-seed guard, the grid still opening at `rail + 12` and still
+  navigating nowhere from the new slot, the temporary tile and a pin both still landing under
+  Explorer at the rail's end, all four ordinary tiles still navigating, the foot untouched, and
+  every tile still on screen), plus `lxbehave` **57/57 ×9** and `harness … query` **77/77**.
 
 ## Option 7 — one column, no rail (`dashboard-single-column.html`, 4 Sep 2026)
 
@@ -5014,6 +5438,29 @@ included; `#plOpen` stays the way back. Verified with Option 5's probes pointed 
 (**79** column assertions, incl. the tile label; **29** Next-steps assertions, with the peek
 checks swapped for this file's whole-sidebar collapse), `harness … query` **77/77**, screenshots.
 
+## Option 9 — a second card sidebar (`dashboard-card-sidebar-alt.html`, 8 Sep 2026)
+
+Made on request: *"option 6 copy and create new option 9"*. It is a **byte-for-byte copy of
+`dashboard-card-sidebar.html`** apart from its `<title>` and a banner at the head of its `sk*`
+block. Everything this file says about Option 6 is true of it until one of them is changed.
+
+- ⚠️ **IT KEEPS THE `sk*` NAMESPACE.** Each page here is self-contained, so there is no collision —
+  but `skPaint`, `skRowHTML`, `SK`, `SK_TOP`, `.skrow` and the rest now exist in TWO files and
+  **nothing syncs them**. A change meant for the card-sidebar pattern is a two-file change, and a
+  `grep` for any `sk*` name now returns two files' worth of hits. Same shape as Options 5 / 8's
+  shared `pl*`.
+- ⚠️ **THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT** — `-alt` because it is a second take on
+  the same sidebar. Rename it the moment it becomes something else; `_variants.js`,
+  `_verify/lxbehave.py`'s `FILES` and `_verify/dsconf.py` are the three places that must follow.
+- **Registered**: `_sync_variants.js` added it and its auto-label (`V9 · …`) was renamed **Option
+  9** by hand, so the switcher does not mix conventions; a re-run reports no changes. It takes the
+  **`9` shortcut** for free — the switcher gives the first nine a digit, which is now all of them.
+  `lxbehave.py`'s `FILES` gained it (that list is hardcoded — a new page must be added or the suite
+  silently tests the old set).
+- It carries every 8 Sep change Option 6 has: the Report column's button and its two folding
+  sections, the NOC View rows, Geo Map, the search-in-Setting-only rule, the 26px tiles, the foot's
+  Layout button.
+
 ## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
 
 Found while removing Option 8's rail search, and it was **live in every option**:
@@ -5397,7 +5844,7 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   entry point and prints the verdict **as text on stdout**. ⚠️ It is the one script with a
   **hardcoded `FILES` list** (line 18) rather than a `sys.argv` file — a new page has to be
   added to it or the script silently tests the old set and reports green. Option 4 was added
-  on 1 Sep 2026, so it now runs **four** files. **57 checks**,
+  on 1 Sep 2026 and Option 9 on 8 Sep, so it now runs **nine** files. **57 checks**,
   and all three files run all 57 — Option 1 skipped 5 of them while its log-sources panel was
   deleted, and the panel is back. Run it after any `lx*` change.
   ⚠️ **Two of its assertions were rewritten on 21 Aug 2026** because they encoded the OLD

@@ -21,7 +21,8 @@
     {"file":"dashboard-nav-column.html","label":"Option 5"},
     {"file":"dashboard-card-sidebar.html","label":"Option 6"},
     {"file":"dashboard-single-column.html","label":"Option 7"},
-    {"file":"dashboard-nav-column-alt.html","label":"Option 8"}
+    {"file":"dashboard-nav-column-alt.html","label":"Option 8"},
+    {"file":"dashboard-card-sidebar-alt.html","label":"Option 9"}
   ];
   /* VARIANTS:END */
 
