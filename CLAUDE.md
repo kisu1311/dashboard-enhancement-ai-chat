@@ -5574,9 +5574,9 @@ present in **BOTH** states and is the only door.
 |---|---|---|
 | hover the rail | expands it, with a re-arming collapse watchdog | **nothing** |
 | how it opens | hover, or the toggle to pin | **the toggle only** |
-| the toggle when collapsed | `display:none` — the logo is the way back | **on screen, centred, 32px** |
+| the toggle when collapsed | `display:none` — the logo is the way back | **in the row at 32px, its glyph revealed on hover** |
 | the header row | is itself a toggle | plain — only the button toggles |
-| collapsed brand row | the 24px mark | **the toggle** (the mark returns on expand) |
+| collapsed brand row | the 24px mark | **the 24px mark, swapping to the toggle on hover** |
 
 - ⚠️ **ONE EARLY `return` IN `sbHover` NEUTRALISES SIX CALLERS** — the `<aside>`'s
   `onmouseenter`/`onmouseleave`, the grid card's `onmouseleave`, `mfLater`'s partner and the rule-7
@@ -5584,11 +5584,253 @@ present in **BOTH** states and is the only door.
 - ⚠️ **THE BODY BELOW IT IS KEPT, NOT DELETED** (the request said so): the whole three-state
   behaviour, including the 200ms re-arming collapse watchdog, is still there as the record of the
   bug it was built for. `sbHoverT` is simply never armed.
-- ⚠️ **THE TOGGLE HAD TO BECOME VISIBLE COLLAPSED.** `pointer-events:none;display:none` was right
-  for Option 10, where hover opens the rail; with hover gone it would have stranded the rail shut.
+- ⚠️ **THE TOGGLE HAD TO BECOME REACHABLE COLLAPSED.** `pointer-events:none;display:none` was
+  right for Option 10, where hover opens the rail; with hover gone it would have stranded the rail
+  shut.
+- ⚠️ **COLLAPSED, THE ROW SHOWS THE LOGO AND SWAPS TO THE TOGGLE ON HOVER** (request, 10 Sep 2026).
+  It shipped as the toggle alone — Gemini's own shape — so the top of the rail only ever said
+  "open me" and never said which product you were in, and this row is the one place the mark lives.
+  - ⚠️ **THEY ARE STACKED, NOT SWAPPED IN AND OUT OF FLOW.** The button keeps its place at its full
+    32px and keeps the click; the mark is absolutely centred OVER it with `pointer-events:none`, so
+    the hover region and the hit region are the SAME box. A `display` swap would let a pointer sit
+    in the row, reveal the icon and click nothing. Probed with `elementFromPoint` at the logo's own
+    centre: it lands on `#collapseBtn`.
+  - ⚠️ **THE TRIGGER IS THE BUTTON, NOT THE ROW**, for that reason — the row is 53×56 and the
+    button 32×32, so a row-level hover would promise a target up to 12px from the pointer. 32px is
+    every `.sitem` tile's own box here, so the top row answers to the same aim as the ten under it.
+  - ⚠️ **CONSEQUENCE, STATED:** the ~10px of rail either side of the button is now dead — hovering
+    there leaves the logo up. Nothing is unreachable (the button is the same target size as every
+    row tile), but this rail no longer announces its own toggle at rest, which is the one Gemini
+    trait the request overrules.
+  - ⚠️ `:focus-visible` reveals it too, or a keyboard user tabs onto an invisible glyph.
+  - ⚠️ **`margin-left` IS CANCELLED** — `.strigger .brandmark` carries -1px for the EXPANDED row's
+    optical alignment against the labels below it; on a translate-centred box that is 1px of
+    decentring instead.
+  - ⚠️ **Measuring the swap needs transitions frozen.** Both halves carry `transition:opacity`, and
+    under `--virtual-time-budget` a transitioned property never leaves its START value — the probe
+    read `0`/`1` forever and reported three failures on correct CSS. The recorded trap, again.
 - ⚠️ **CONSEQUENCE, STATED:** the collapsed rail is icons + tooltips and nothing else — the flyout
   and Explorer's grid both gate on `.sidebar.open`, so they are reachable only once the toggle has
   opened it. That is Gemini's collapsed rail exactly, and a row still navigates on click.
+- ⚠️ **ITS FOOTER IS OPTION 11's, PORTED VERBATIM** (request, 10 Sep 2026: "the bottom will be
+  change like <Option 11>"). What's new leads as a full-width labelled row, then ONE compact icon
+  row — Approval · Health · Notifications · **avatar** — icon-only, names in `data-tip`. It
+  replaced the 3-up icon-above-label grid with What's new and a full identity row under it.
+  - ⚠️ **THE CSS AND THE MARKUP WERE SPLICED ACROSS, NOT RETYPED**, so the two footers agree by
+    construction rather than by two people editing them to look alike. Verified by dumping every
+    child's box in both files, open and collapsed, and diffing: identical.
+  - ⚠️ **`.sidebar.open .sfoot .sitem.uxnews{margin-top:2px}` WENT WITH IT.** It tightened What's
+    new against the quick links directly above it; What's new now LEADS the footer, so the thing
+    above it is the module list and the standard 10px is the right gap. Option 11 carries no such
+    rule, and it was the one measurable way the two still disagreed.
+  - ⚠️ **THE AVATAR IS A `.sitem` INSIDE `.squick`**, so `.sitem`'s own full-width row shape has to
+    be cancelled there — two row kinds in one container. Its disc stays 26px while the glyphs are
+    18px; shrinking it to match would make the initials unreadable.
+  - ⚠️ **`.sq.on` IS RESTATED, NOT ASSUMED.** `showView()` toggles it on `#sbApproval` /
+    `#sbHealth` by id, and if the selected look lived on a class these rows no longer carry the
+    footer would stop saying which screen is open — silently. The recorded `.nxq.on` trap.
+  - ⚠️ **THE ONE DELIBERATE DIVERGENCE: AN 8px GAP BETWEEN THE TWO BLOCKS** (request, 10 Sep 2026,
+    asked as 4px and raised to 8 minutes later — **8 is what shipped**). Measured first: What's new
+    ended at y=52 and the icon row started at y=52, i.e. the two were FLUSH, separated only by the
+    icon row's own internal padding. 8px is also the rail's own step — every `.sitem` sits at
+    `margin:0 8px` and the gaps between the rail's groups are 8.
+    ⚠️ `margin-top` is set on BOTH `.squick` and `.sidebar.open .sfoot > .squick`: the latter is
+    (0,4,0), declares `margin`, and would otherwise cancel the former in the only state the icon
+    row exists in — setting just the base rule looks right in the source and changes nothing on
+    screen. Move them together. **Option 11 still has the two flush** — one line each if the pair
+    should re-converge.
+  - ⚠️ **THE ICON ROW GROUPS LEFT, WITH THE AVATAR ALONE AT THE RIGHT EDGE** (request, 10 Sep
+    2026). Option 11 spreads all four with `justify-content:space-between`, so they read as four
+    unrelated controls at equal weight; here Approval · Health · Notifications are one cluster and
+    the avatar is the odd one out — which is what it is.
+    ⚠️ **A `gap` UNDER `space-between` IS ONLY A MINIMUM**, so this row's authored `gap:2px` had
+    never painted (the real gaps were ~32px, shared out by the browser). Grouping made it
+    load-bearing, i.e. a number had to be chosen rather than inherited: **8px**, the rail's own
+    step. The 2px stays on the base rule because it still governs the COLLAPSED state, where
+    `.squick` is a one-column grid and it is the ROW gap.
+    ⚠️ **ONE auto margin, never two.** `.sidebar.open .squick #sbUser{margin-left:auto}` pushes the
+    avatar out; a second auto margin anywhere in the row would let flexbox split the free space
+    between them and the three would drift apart again — the recorded `.mfkc`/`.mfpin`/`.mfdocs`
+    fault that put one column's chevrons at four different x.
+    ⚠️ **The selector is an ID (1,3,0) on purpose** — `.sidebar.open .squick .sitem` is (0,4,0) and
+    sets `margin:0`, so a class-weight rule would lose and the avatar would sit against the bell.
+    Scoped to `.sidebar.open`, because collapsed the avatar is centred in a 52px rail by
+    `.sidebar:not(.open) .sfoot .sitem{margin:10px auto 0}`.
+- ⚠️ **SETTING LEFT THE MODULE LIST FOR THE FOOTER, ABOVE WHAT'S NEW** (request, 10 Sep 2026).
+  The footer reads **Setting · What's new · the icon row**.
+  ⚠️ **IT SHIPPED FOR A FEW MINUTES INSIDE THE ICON ROW** — asked for as *"after What's new"*,
+  which the icon row is, and confirmed as the icon row over a labelled row when I offered both.
+  The follow-up minutes later was *"show BEFORE What's new"*. **Above the line is what shipped**;
+  both requests are recorded so neither is undone on the strength of the other.
+  ⚠️ **THE POSITION DECIDED THE SHAPE.** In the cluster it was a 32px `.sq` like its neighbours;
+  standing alone above a full-width row a lone tile reads as a fragment of a row that isn't there,
+  so it is a `.sitem` — the same labelled row it was in the module list, which is also what it is:
+  a module, not a utility toggle. That also means `.sitem.on` lights it, the rail rows' own
+  selected look, instead of borrowing Approval's and Health's `.sq.on`.
+  - ⚠️ **THE ENTRY STAYS IN `RAIL`, AT ITS INDEX, FLAGGED `foot:true`.** `activeRail` and
+    `MOD_TO_RAIL` store INDICES into that array, so splicing it out would silently repoint every
+    module mapping to a later index — the trap recorded for `RAIL_SEED`. `renderMenu` skips a
+    `foot` entry **before the group logic**, for the same reason a hidden row is skipped there:
+    `Setting` is the only member of the `admin` group, so leaving it to the group test emits a
+    divider introducing a band with nothing in it.
+  - ⚠️ **`railFootGo(name)` RESOLVES THE INDEX BY NAME, EVERY TIME.** `pickRail` takes an index and
+    markup cannot hold one; `pickRail(5)` in the button would be a second copy of the array's
+    order, and the next entry inserted above Setting would send the gear to Report. It also means
+    the button reuses the ROW's behaviour — first screen, `mfHide`, `renderMenu` — not a copy.
+  - ⚠️ **`railFootPaint()` IS THE HIGHLIGHT, AND IT HAD TO BE WRITTEN.** `renderMenu` marks the
+    open module by rebuilding the list, and this button is authored markup that rebuild never
+    touches — without it the rail stops saying you are in Settings, silently. The recorded
+    `.sq.on` / `.nxq.on` trap. It also honours `RAIL_HIDDEN`, because the Layout drawer's Sidebar
+    tab still lists Setting and can still switch it off.
+  - ⚠️ **It is a `.sq`, not a `.sitem`** — the row lays out two kinds of child and `.sitem` is the
+    full-width shape that has to be cancelled rule by rule.
+  - ⚠️ **Options 10 and 11 still carry Setting in the module list.**
+- ⚠️ **THE ASK-AI ROW: A BRAND-RAMP BORDER WITH A HOVER-ONLY TRAVELLING HIGHLIGHT, AND A MARK
+  THAT EMERGES AND ROTATES** (requests + two references, 10 Sep 2026 — 60fps.design's Chrome
+  *Gemini feature intro sheet* for the mark, Aceternity UI's `moving-border` for the edge).
+  - ⚠️ **THE GEMINI REFERENCE WAS READ FRAME BY FRAME**, not from its one-line description: the
+    shot's mp4 was pulled and decoded at 20fps. The motion is four beats — an arc sweeps out from
+    BEHIND the mark, the star appears small at its head, rotates as it travels and overshoots its
+    size, then the arc dissipates. All four are reproduced (`aisprkin` / `aisprktr`); Google's
+    blue is **not** — the arc takes `--ai-2`, per the standing rule about another product's hue.
+  - ⚠️ **THE TRAIL IS PAINTED ONTO THE RAIL'S MARK ALONE.** `aiSparkPaint` appends the circle only
+    for `.aisprk`; the same mark is authored in two other places and both are left alone.
+  - ⚠️ **`overflow:visible` ON THE SVG AND `transform-box:fill-box` ON ITS CHILDREN ARE BOTH
+    LOAD-BEARING.** An SVG root clips to its viewBox, and the arc is drawn at r=29 in 48-space —
+    outside the star, therefore outside the box. And an SVG child rotates about the USER SPACE
+    origin (the viewBox corner) unless told otherwise, so without `fill-box` the star swings
+    around its own corner instead of spinning in place.
+  - ⚠️ **THE ARC'S `fill` MUST BE SET IN CSS, NOT AS AN ATTRIBUTE.** `.ic{fill:currentColor}` sits
+    on the svg root and `fill` inherits, so `fill="none"` on the circle loses and it paints as a
+    solid disc over the row. The recorded attribute-vs-rule trap, in a new place.
+  - ⚠️ **LIVE STATE: THE FIRST FORM, RESTORED HOVER-ONLY** (11 Sep 2026, "add the first time I
+    applied"). `::before` is the static ramp ring, `::after` a conic head swept by an animated
+    `@property --aiorb`, and it runs only while hovered. **It was chosen on evidence**: of the
+    five forms, it is the one whose filmstrip actually showed the head at six distinct positions
+    round the border. Probe: 19/19, with `--aiorb` proved registered by INTERPOLATION (a sampled
+    `123.75deg` mid-animation is a value an unregistered property could not produce).
+    ⚠️ Hover-only rather than the `infinite` it first shipped as — "the border animation is only
+    hover effect" followed within the hour and was never retracted.
+  - ⚠️ **THE HISTORY BEHIND THAT CHOICE — it was removed twice before being restored.** Removed on "remove
+    all border animation", re-added on request with the component's demo still, then removed again
+    on "remove the border animation in option 12". The ramp ring stays each time; only the moving
+    layer goes. **Four genuinely different effects were built and none survives**, recorded so
+    none is rebuilt from half a memory: (1) `moving-border` GUESSED as a conic gradient with an
+    animated `@property <angle>` — a sharp head sweeping the ring; (2) `hover-border-gradient` — a
+    blurred glow hopping the four edges with the border flooding on hover; (3) `moving-border`
+    rebuilt from the real source once supplied — a round blob walking the perimeter at CONSTANT
+    SPEED, needing length-proportional keyframe times plus a second equal-quarter set for the
+    square collapsed tile; (4) the same with a hard white core, a `drop-shadow` bloom and a
+    retimed lap.
+  - ⚠️ **A FIFTH FORM WAS TRIED AND REMOVED TOO** — a `background-clip` border
+    (`border:1px solid transparent` over a `border-box` conic, `padding-box` layers covering the
+    interior, spun by a registered `@property <angle>`), from a CodePen after turbo.build. **That
+    technique is the right one** — it makes the border itself the moving thing, and this file
+    already ships it at `.aibtn`. **My build of it was invalid CSS**: a background-COLOUR is only
+    legal in the FINAL layer of the `background` shorthand, and I used `var(--sidebar) padding-box`
+    as a middle layer, so the whole declaration was dropped silently. `.aibtn` writes the opaque
+    layer as `linear-gradient(var(--header),var(--header)) padding-box` — copy that idiom.
+  - ⚠️ **AND MY PIXEL TEST "CONFIRMED" THAT BROKEN BUILD.** It sampled `--teal` and `--sidebar` —
+    neither in the ramp — and called it a spinning border, while four DOM assertions correctly
+    reported no `padding-box` layers and no conic. **When a pixel check and the DOM disagree, the
+    DOM is not automatically the wrong one**; the pixel check exists because DOM assertions can
+    pass on invisible output, not because it outranks them.
+  - ⚠️ **(1)-(4) NEVER PASSED THEIR PIXEL TEST**, and that is the honest reason to be wary of rebuilding
+    it: the blob must stay SMALLER than the row in both axes (or `background-position`'s range
+    goes negative and that axis travels backwards), capping it at ~0.63× the row's height where
+    the reference's blob is **1.25× its button's**. A light smaller than the thing it travels, on
+    a 32px row already wearing a full-saturation ramp, never separated from the ring — the final
+    measurement still read `L=+11 R=+13` for a glow parked at the top-LEFT.
+  - ⚠️ **`@property --aiorb` WENT WITH THEM**, and deliberately: a live registration for a deleted
+    animation is how a later reader concludes the feature is still there. `::after` is free again —
+    anything claiming it should know four animations have already used that slot.
+  - ⚠️ **`background:` IS A SHORTHAND AND RESETS EVERY `background-*` LONGHAND**, so it must come
+    BEFORE `background-size` / `-position` / `-repeat`. My verification probe had them the other
+    way round, measured a blob filling the whole box, and reported a confident "the glow does not
+    move" about CSS that was correct. A probe that reproduces the component's CSS by hand must
+    copy the declaration ORDER, not just the values.
+  - ⚠️ **THE MARK'S OWN ANIMATION IS NOT A BORDER ANIMATION AND SURVIVED.** `aisprkin` /
+    `aisprktr` is the Gemini reference and was a separate request; the removal was scoped to the
+    border and there is a probe assertion that both keyframe sets still exist.
+  - ⚠️ **WHAT THE ADAPTATIONS TAUGHT, worth keeping even though the code is gone:** Aceternity's
+    component runs a per-frame JS loop (`getPointAtLength` on an SVG rect), which a rail row must
+    not do — the `agClose()` rule about a timer outliving its element; animating
+    `background-position` between the four CORNERS traces a perimeter correctly, but CSS spends
+    equal time between keyframes, so constant speed needs length-proportional times; and CSS
+    cannot interpolate one gradient IMAGE into another, which is why a keyframed `background-image`
+    hops where framer-motion crossfades.
+  - ⚠️ **`box-sizing:border-box` IS DECLARED ON THE PSEUDOS THEMSELVES.** This sheet's reset is a
+    bare `*`, which does not match `::before`/`::after` — the recorded fault behind the AI card's
+    6px edge capsules. Without it, `inset:0` plus `padding:1px` paints a ring 2px oversized.
+  - ⚠️ **`@property` IS MANDATORY FOR THE ORBIT** — an unregistered custom property animates
+    DISCRETELY, so the head would jump rather than travel. **Proved by interpolation, not by a
+    registration probe**: a computed `conic-gradient(from 121.86deg …)` mid-animation is a value
+    an unregistered property could never produce. My first assertion tested for a re-registration
+    error message and failed on working CSS.
+- ⚠️ **THE COLLAPSED RAIL OPENS SUB-MENUS ON HOVER** (request, 10 Sep 2026: *"when the sidebar is
+  collapsed and I hover the icon then show the submodule popup, in every icon"*). Two guards were
+  removed from `mfOpen` — the general one and Explorer's — both of which read
+  `!sidebar.classList.contains('open')`.
+  - ⚠️ **THIS DOES NOT BREAK GEMINI'S RULE, and the distinction is the whole point.** The rule this
+    option exists to demonstrate is that **hovering never changes the rail's WIDTH** — one toggle
+    does. That still holds: `sbHover` is still neutralised, and the probe asserts the rail measures
+    53px before and after every hover and is still collapsed at the end. What hover now does is
+    open the module's menu *beside* the rail, which is a different affordance from expanding it.
+  - ⚠️ **THE OLD GUARD'S COMMENT WAS ALREADY STALE** — it read "hovering the collapsed rail expands
+    it and nothing else", which is Option 10's behaviour, not this one's. Here nothing expanded on
+    hover either, so the guard left the collapsed rail with icons and tooltips and no route to a
+    sub-module at all without toggling the whole sidebar open.
+  - ⚠️ **THE ANCHOR NEEDED NOTHING.** The menu is placed at `railWidth() + MF_GAP`, and
+    `railWidth()` reads the collapsed token, so it lands 8px off a 53px rail exactly as off a
+    240px one — measured (Alert 8, Explorer's grid 8, Report 8), not assumed.
+  - ⚠️ **`const sb0` WENT WITH THEM.** It was read only by those two guards, and a live binding
+    whose readers are deleted is how the next reader concludes the state still matters here.
+  - ⚠️ **`MF_NO_HOVER` STILL MUTES Dashboard AND SLO, IN BOTH STATES.** That came from its own
+    explicit request; applying one rule to both rail states was chosen over silently reversing it,
+    so "every icon" is literally every icon that has a hover menu when expanded. One line if those
+    two should open too.
+- ⚠️ **ONE GAP BETWEEN THE SIDEBAR AND EVERYTHING THAT OPENS OFF IT — 8px** (request, 10 Sep
+  2026: *"the sidebar and submodule sidebar use same spacing … in every popup margin is same 8px,
+  also my profile popup and notification popup open within 8px margin of sidebar"*). **Measured
+  first**, against a rail edge of 240: the module flyout and Explorer's grid sat at **4**, the
+  notification and profile cards at **10** — three numbers for one relationship.
+  - ⚠️ **`MF_GAP` IS THAT NUMBER AND `POP_GAP` IS DERIVED FROM IT**, not declared beside it.
+    Holding it twice is exactly how the flyout came to be 4px away while the cards were 10. The
+    `typeof` guard is for block order only — `MF_GAP` is in an earlier `<script>`.
+  - ⚠️ **8 IS THE RAIL'S OWN STEP**, not an arbitrary pick: every `.sitem` is `margin:0 8px`, the
+    rail's group gaps are 8, and the footer's two blocks are 8 apart.
+  - ⚠️ **THE GAP IS MEASURED TO THE POPUP'S OWN BOX**, which is what "margin from the sidebar"
+    means. `#mflyout` carries 6px of padding plus its border, so its inner `.mfcol` card sits 7px
+    further in again — a probe that measures the CARD reports 15 and looks like a miss.
+  - ⚠️ **STILL DIFFERENT, AND NOT TOUCHED: the row rhythm.** Measured, rail rows are 32px on a
+    **42px pitch** (10px gaps) while flyout rows are 32px on a **36px pitch** (4px gaps). The
+    request read as being about the popup margin throughout, so the flyout's own rhythm was left
+    alone; `.mfi{margin:0 4px 4px}` → `10` is the one-line change if the two should match.
+- ⚠️ **A POPOVER IS PLACED FROM THE CONTROL THAT OPENED IT** (`POP_TRIG` / `popPlace`, request
+  10 Sep 2026: *"when I hover the notification the popup will be show behind the notification
+  icon"*). `#notifPop` was parked at a hardcoded `bottom:56px` while the bell sits 10px off the
+  viewport floor, so the card opened **46px above its own trigger** and read as floating loose in
+  the page. Measured, not guessed: `.sfoot`'s padding is 10 and the icon row is its last block.
+  - ⚠️ **BOTTOM-ALIGNED, NOT CENTRED.** The card is up to `100vh - 70` tall and its control is at
+    the very bottom of the rail; centring would run most of it off screen.
+  - ⚠️ **THE HORIZONTAL READS `railWidth()`, NOT `sidebar.offsetWidth`** — the rail transitions its
+    width and this folder's oldest recorded trap is that a box measured mid-flight reports the old
+    number. Same value today; the point is that it stays right if the card is opened mid-toggle.
+  - ⚠️ **PLACED AFTER `renderNotifs()`**, which fills the body and so decides the height the
+    top-clamp is computed from. It is all synchronous, so no frame paints between `.on` landing
+    and the position being set — there is no flash needing the `visibility` dance `kbPopOpen` uses.
+  - ⚠️ **`#userPop` GOES THROUGH THE SAME ENGINE** and lands where it already did (the avatar's
+    bottom is the same 10px), so one rule serves both and neither can drift.
+  - ⚠️ **THE `‹` ARROW IS GONE** (same request). `.pop::before` is a 10px square rotated 45° with
+    only its left and bottom borders painted; `#userPop` had already killed it with `content:none`
+    and the pair now matches. It was **also pointing at nothing**: its `bottom:80px` was measured
+    against the old fixed position, so once the card follows the bell a hardcoded offset up its
+    edge lands wherever the card happens to be tall.
+  - ⚠️ **Option 11 and Option 10 still carry the fixed `bottom:56px` and the arrow.**
+  - ⚠️ **STILL DIFFERENT, AND STILL UNDECIDED:** the What's-new `data-tip`. Option 11 reads *"Read
+    the release notes ↗"*, Option 12 *"What's new in 10.0.1 ↗"* — which `tipRedundant()` suppresses
+    while the label is painted, so it speaks only on the collapsed rail. Not touched: the request
+    was the footer's shape, and HANDOFF already flags this pair as open.
 - ⚠️ **TWO GEMINI TRAITS DELIBERATELY NOT COPIED**, both appearance rather than behaviour: its
   **292px** expanded panel (this keeps 240, the UX-rule floor — one token if wanted), and its
   **borderless** boundary. Gemini's rail-to-content edge is a ~1.03:1 surface change; ours would be

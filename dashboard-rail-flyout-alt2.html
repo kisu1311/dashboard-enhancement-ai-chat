@@ -367,10 +367,36 @@ body.fs .exitfs{display:inline-flex}
    wordmark and no collapse button to lay out beside it. Only the MARK's size stopped changing.
    ⚠️ `flex` GOES WITH `width`, as everywhere else: `.brandmark` is sized by its basis. */
 .sidebar:not(.open) .strigger{height:56px;flex:0 0 56px;padding:0;gap:0;justify-content:center}
-/* ⚠️ COLLAPSED, THE BRAND ROW CARRIES THE TOGGLE AND NOT THE MARK (Gemini's own shape — its
-   collapsed rail shows the button where the wordmark sits when open). The mark is hidden rather
-   than removed, so `aiLogoPaint()` still fills it and it comes straight back on expand. */
-.sidebar:not(.open) .strigger .brandmark{display:none}
+/* ⚠️ COLLAPSED, THE BRAND ROW SHOWS THE LOGO AND REVEALS THE TOGGLE ON HOVER (request,
+   10 Sep 2026: "the expand icon need to change to the Logo — when I hover, change the expand
+   icon").
+   ⚠️ WHAT IT REPLACED, kept as the record: "COLLAPSED, THE BRAND ROW CARRIES THE TOGGLE AND NOT
+   THE MARK (Gemini's own shape — its collapsed rail shows the button where the wordmark sits when
+   open)." True to the reference, and the reason it was overruled is that the top of the rail then
+   only ever said "open me" and never said which product you were in — and this row is the one
+   place the mark lives.
+   ⚠️ THE TWO ARE STACKED, NOT SWAPPED IN AND OUT OF FLOW. The button keeps its place in the
+   row at its full 32px and keeps the click; the mark is absolutely centred OVER it with
+   `pointer-events:none`. That is what makes the hover region and the hit region the SAME box —
+   a `display` swap would let a pointer sit in the row, reveal the icon, and click nothing.
+   ⚠️ THE TRIGGER IS THE BUTTON, NOT THE ROW, for the same reason: the row is 53×56 and the
+   button 32×32, so a row-level hover would promise a target up to 12px from the pointer. 32px is
+   also every `.sitem` tile's own box in this rail, so the top row answers to the same aim as the
+   ten rows under it.
+   ⚠️ `:focus-visible` reveals it too, or a keyboard user tabs onto an invisible glyph.
+   ⚠️ `margin-left` IS CANCELLED. `.strigger .brandmark` carries -1px for the EXPANDED row's
+   optical alignment against the labels below it; on a translate-centred box that is simply 1px
+   of decentring.
+   ⚠️ The mark is still never removed from the DOM, so `aiLogoPaint()` fills it at load and it
+   comes straight back on expand. */
+.sidebar:not(.open) .strigger{position:relative}
+.sidebar:not(.open) .strigger .brandmark{position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);margin-left:0;pointer-events:none;transition:opacity .12s}
+.sidebar:not(.open) .strigger:has(.strcol:hover) .brandmark,
+.sidebar:not(.open) .strigger:has(.strcol:focus-visible) .brandmark{opacity:0}
+.sidebar:not(.open) .strcol .ic{opacity:0;transition:opacity .12s}
+.sidebar:not(.open) .strcol:hover .ic,
+.sidebar:not(.open) .strcol:focus-visible .ic{opacity:1}
 .sidebar:not(.open) .strigger .strcol{width:32px;height:32px;flex:0 0 32px}
 /* ⚠️ THE WORDMARK MUST LEAVE THE FLOW, NOT JUST FADE. `.strigger .brand` is `opacity:0` when
    collapsed but still `flex:0 1 auto`, so it kept taking room and shoved the 40px mark to
@@ -1826,6 +1852,154 @@ html[data-theme="light"] .sitem.tmp{outline-color:var(--teal-dim)}
 .sidebar.open .sitem .ic,
 .sidebar.open .sitem .iwrap{margin-left:0}
 .sitem.airail{color:var(--ai-2)}
+/* ══ THE AI MARK EMERGES AND ROTATES, WITH A TRAILING ARC ══════════════════════════════════
+   Request + reference, 10 Sep 2026 (60fps.design, Chrome's Gemini intro sheet). Beats read off
+   the shot's own frames: arc sweeps → star appears small and rotated → it turns upright and
+   overshoots its size → arc dissipates. Plays once on load (`.aiplay`, the reference is an
+   intro) and again on hover, which is the only repeatable trigger a rail row has.
+   ⚠️ `overflow:visible` ON THE SVG IS LOAD-BEARING. An SVG root clips to its viewBox by
+   default, and the arc is drawn at r=29 in 48-space — outside the star, therefore outside the
+   box. Without this the sweep is invisible and only the star animates.
+   ⚠️ `transform-box:fill-box` IS ALSO LOAD-BEARING. An SVG child transforms about the USER
+   SPACE origin (0,0 — the viewBox corner) unless it is told otherwise, so `rotate()` without
+   this swings the star around the corner of its own box instead of spinning in place.
+   ⚠️ THE ARC'S `fill` MUST BE SET IN CSS, NOT AS AN ATTRIBUTE. `.ic{fill:currentColor}` sits on
+   the svg root and `fill` INHERITS, so a `fill="none"` attribute on the circle would be beaten
+   by the inherited value and the arc would paint as a solid disc over the row. The recorded
+   attribute-vs-rule trap, in a new place.
+   ⚠️ STROKE 3.4 IN 48-SPACE IS 1.27px ON AN 18px ICON — the panel's own 1.25px on-screen icon
+   weight, derived rather than picked, so the arc reads as the same family as every other glyph.
+   ⚠️ REDUCED MOTION KILLS BOTH. This is decoration; it has no state to report. */
+.aisprk{overflow:visible}
+.aisprk path{transform-box:fill-box;transform-origin:50% 50%}
+.aisprk .aitrail{fill:none;stroke:var(--ai-2);stroke-width:3.4;stroke-linecap:round;opacity:0;
+  transform-box:fill-box;transform-origin:50% 50%}
+/* ⚠️ 1.4s, NOT .82s (request, 11 Sep 2026: "the AI icon animation is very fast, make it slow").
+   ⚠️ IT IS NOW CLOSER TO THE REFERENCE, NOT FURTHER FROM IT. The Gemini shot's own star sequence
+   runs about **1.2s** — measured off the mp4 at 20fps, frames 18-42 — so .82s was in fact faster
+   than the thing it was copied from. 1.4s is a shade slower again, which suits a 16px mark in a
+   rail: the reference plays its star at ~64px on a phone sheet, where the same motion reads in
+   less time simply because there is more of it to see.
+   ⚠️ BOTH KEYFRAME SETS MOVE TOGETHER. `aisprkin` (the star) and `aisprktr` (the arc sweeping
+   behind it) are one motion split across two elements — the arc exists to be the star's trail.
+   Change one duration and the trail detaches from the head it belongs to.
+   ⚠️ THE INTRO TIMER IS COUPLED TO THIS NUMBER. `aiSparkIntro` removes `.aiplay` on a timeout,
+   and that timeout MUST outlast the animation or the class is stripped mid-flight and the
+   on-load play is cut off part-way through. It is 1500ms for this 1.4s — see the note there. */
+#sbAI:hover .aisprk path,   .aisprk.aiplay path   {animation:aisprkin 1.4s cubic-bezier(.22,.9,.24,1) both}
+#sbAI:hover .aisprk .aitrail,.aisprk.aiplay .aitrail{animation:aisprktr 1.4s cubic-bezier(.22,.9,.24,1) both}
+@keyframes aisprkin{
+  0%  {transform:rotate(-160deg) scale(.12); opacity:0}
+  30% {opacity:1}
+  64% {transform:rotate(10deg) scale(1.16)}
+  100%{transform:rotate(0deg) scale(1); opacity:1}
+}
+/* ══ THE ASK-AI ROW WEARS THE BRAND RAMP AS A BORDER, WITH A HIGHLIGHT TRAVELLING ROUND IT ══
+   Request, 10 Sep 2026: the ramp supplied verbatim —
+   `linear-gradient(90deg, rgb(76,177,254) 0%, rgb(115,30,251) 55%, rgb(249,17,227) 100%)` —
+   The ring is permanent; the conic head sweeps it ON HOVER, looping at 3s a lap. See the note
+   at `@property --aiorb` for the five forms tried and why this one is the one restored.
+   ⚠️ WHAT ACETERNITY ACTUALLY DOES, so the adaptation is honest: its React component walks an
+   SVG `<rect>` with `getPointAtLength()` on every animation frame and drags a radial-gradient
+   blob around the perimeter. That needs framer-motion and a per-frame JS loop; this file has
+   neither and a rail row must not run one (the `agClose()` rule — a timer that outlives its
+   element). The CSS equivalent is a CONIC gradient whose start angle animates: the bright head
+   sweeps around the ring exactly the same way, with no script and nothing to clean up.
+   ⚠️ TWO RINGS, NOT ONE. `::before` is the static ramp — the border that was asked for — and
+   `::after` is the travelling highlight over it. One ring cannot be both: a conic gradient that
+   also had to read as the 90deg ramp would fight itself every frame.
+   ⚠️ THE MASKED-RING TECHNIQUE: a gradient box the size of the row, `padding:1px`, with a mask
+   that keeps the padding area and punches out the content box. This file had no other instance
+   of it, so it is written out here rather than borrowed.
+   ⚠️ `box-sizing:border-box` IS DECLARED ON THE PSEUDOS THEMSELVES. This stylesheet's reset is a
+   bare `*`, which DOES NOT MATCH `::before`/`::after` — the recorded fault that made the AI
+   card's edge capsules 6px while its corner arcs were 4px. Without it `inset:0` plus `padding:1px`
+   paints a ring 2px larger than the row.
+   ⚠️ `@property` IS MANDATORY FOR THE ORBIT. An unregistered custom property animates
+   DISCRETELY, so the head would jump rather than travel — the same rule the chromatic sweep
+   above records. Registered as an `<angle>`.
+   ⚠️ `pointer-events:none` ON BOTH, or the rings sit over the row and eat its clicks: they are
+   absolutely positioned, so they paint above the icon and label.
+   ⚠️ THE RAMP IS THE REQUEST'S OWN LITERAL, and it is already in this file three times (the
+   row's 10%/15% washes and the label's clip). It stays a literal for the same reason those do —
+   it is a supplied brand ramp, not a token this design system owns. */
+/* ══ THE BORDER ANIMATION IS THE FIRST ONE AGAIN: A CONIC HEAD SWEEPING THE RING ═══════════
+   Request, 11 Sep 2026: "add the first time I applied" — i.e. of the five forms this row's
+   border has been through, restore form (1).
+   ⚠️ WHY THIS ONE AND NOT THE OTHERS, since the choice is now evidence-based rather than taste:
+   (1) THIS — a conic gradient with an animated `@property <angle>`, masked to the ring. Its
+       filmstrip showed the head at six distinct positions round the border, so it is the one
+       form that was CONFIRMED VISIBLE.
+   (2) `hover-border-gradient`, a blurred glow hopping the four edges — never pixel-checked.
+   (3)/(4) `moving-border` as a blob walking the perimeter — FAILED their pixel tests, and
+       structurally: a light layered over a saturated ring must out-shine it, and
+       `background-position` caps that light at ~0.63x the row's height where the reference's is
+       1.25x its button's.
+   (5) a `background-clip` border — the soundest TECHNIQUE (the border becomes the moving thing;
+       `.aibtn` in this file already ships it) but my build was invalid CSS: a background-COLOUR
+       is only legal in the FINAL layer of the `background` shorthand and I used
+       `var(--sidebar) padding-box` as a middle one, so the whole declaration was dropped. If a
+       richer border animation is ever wanted, start there and copy `.aibtn`'s
+       `linear-gradient(var(--header),var(--header)) padding-box` idiom.
+   ⚠️ HOVER-ONLY AND LOOPING, AT 3s A LAP — see the note at `#sbAI::after`, which carries the
+   full sequence of speed/trigger changes. 3s is the reference pen's own duration.
+   ⚠️ `opacity:0` AT REST IS NOT DECORATION. Stopping the animation alone leaves the conic PAINTED
+   at whatever angle `--aiorb` last held — a bright head frozen on one edge, which reads as a
+   rendering fault rather than a resting state. The ramp ring is the whole of the resting border.
+   ⚠️ `@property` IS MANDATORY: an unregistered custom property animates DISCRETELY, so the head
+   would jump rather than travel. Proved by interpolation, not by a registration probe — a
+   computed `conic-gradient(from 123.75deg …)` mid-animation is a value an unregistered property
+   could never produce.
+   ⚠️ TWO RINGS, NOT ONE. `::before` is the static ramp (the border that was asked for
+   separately); `::after` is the head. One ring cannot be both — a conic that also had to read as
+   a 90deg ramp would fight itself every frame.
+   ⚠️ `box-sizing` IS DECLARED ON THE PSEUDOS: this sheet's reset is a bare `*`, which does not
+   match `::before`/`::after`, and without it `inset:0` plus `padding:1px` paints 2px oversized.
+   ⚠️ `pointer-events:none` on both, or the rings eat the row's clicks. */
+@property --aiorb{syntax:'<angle>';inherits:false;initial-value:0deg}
+#sbAI::before,#sbAI::after{content:'';position:absolute;inset:0;border-radius:inherit;
+  padding:1px;box-sizing:border-box;pointer-events:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude}
+#sbAI::before{background:linear-gradient(90deg,rgb(76,177,254) 0%,rgb(115,30,251) 55%,rgb(249,17,227) 100%)}
+/* ⚠️ HOVER-ONLY, LOOPING, AT 3s A LAP (request, 11 Sep 2026: "show only hover effect … the
+   border animation is working very slow … make it medium … and working loop", with the CodePen
+   as the reference). THREE SETTINGS IN ONE DAY, all recorded so the sequence is legible:
+   3.2s hover-only -> 8s always-on ("slow and infinite loop") -> this. Read the whole sequence
+   before changing it back to any earlier value.
+   ⚠️ **3s IS THE REFERENCE'S OWN NUMBER, NOT A GUESS AT "MEDIUM".** I opened the pen — the same
+   one supplied earlier for the `background-clip` technique — and its rule is
+   `animation: bg-spin 3s linear infinite`. So "medium" has a source, and it also lands within a
+   fifth of a second of the 3.2s this animation originally shipped at, which is the speed that
+   was never complained about.
+   ⚠️ THE REFERENCE PAUSES ON HOVER; WE ARE THE EXACT INVERSE. Its `&:hover{animation-play-state:
+   paused}` spins always and stops under the pointer. Here nothing moves until you point at the
+   row. That is a deliberate inversion, asked for twice, not a misreading of the pen.
+   ⚠️ 8s WAS TOO SLOW FOR A HOVER, WHICH IS WHY THE TWO SETTINGS MOVE TOGETHER. An always-on
+   animation wants to be calm; a hover animation has to get somewhere within the second or two a
+   pointer actually rests there. At 8s a hover showed roughly a quarter of one lap.
+   ⚠️ `opacity:0` AT REST IS BACK, AND IT IS NOT DECORATION. Stopping the animation alone leaves
+   the conic PAINTED at whatever angle `--aiorb` last held — a bright head frozen on one edge,
+   which reads as a rendering fault rather than a resting state. The ramp ring is the whole of
+   the row's resting border. */
+#sbAI::after{background:conic-gradient(from var(--aiorb),
+    #ffffff 0deg,rgb(249,17,227) 12deg,rgb(115,30,251) 26deg,rgba(76,177,254,0) 62deg,
+    rgba(76,177,254,0) 360deg);
+  opacity:0;transition:opacity .18s}
+#sbAI:hover::after{opacity:1;animation:aiorbit 3s linear infinite}
+@keyframes aiorbit{to{--aiorb:360deg}}
+@media (prefers-reduced-motion:reduce){ #sbAI:hover::after{animation:none;opacity:0} }
+@keyframes aisprktr{
+  0%  {transform:rotate(-150deg); opacity:0}
+  18% {opacity:.85}
+  60% {opacity:.55}
+  100%{transform:rotate(190deg); opacity:0}
+}
+@media (prefers-reduced-motion:reduce){
+  #sbAI:hover .aisprk path,   .aisprk.aiplay path,
+  #sbAI:hover .aisprk .aitrail,.aisprk.aiplay .aitrail{animation:none}
+}
 /* SUPERSEDED — `.stop #sbAI:hover` (1,1,0) owns this row's hover fill in both rail states
    since 10 Sep 2026. Kept for a revert to the untinted row. */
 .sitem.airail:hover{background:var(--ai-soft)}
@@ -1862,10 +2036,12 @@ html[data-theme="light"] .sitem.tmp{outline-color:var(--teal-dim)}
 /* the identity row IS the very last row again — 8px below the rule, matching the 8px of
    padding above it, so the hairline sits centred between the two blocks it separates */
 .sfoot .sitem{margin:10px 0 0;padding:0 7px}
-/* What's new is a 2px step off the quick links above it — see the note at `.uxnews`.
-   OPEN RAIL ONLY: `.sidebar:not(.open) .sfoot .sitem` ties at (0,3,0) and would lose on
-   source order, taking the collapsed tile out of that column's even 10px rhythm. */
-.sidebar.open .sfoot .sitem.uxnews{margin-top:2px}
+/* ⚠️ `.sidebar.open .sfoot .sitem.uxnews{margin-top:2px}` WAS HERE AND WENT WITH THE PORT
+   (10 Sep 2026). It existed because What's new sat DIRECTLY UNDER the quick links and wanted a
+   tighter step off them than the 10px every other footer row takes; it now LEADS the footer, so
+   the thing above it is the module list and the 10px is the gap that belongs there. Option 11
+   carries no such rule, and leaving it would have been the one measurable way the two footers
+   still disagreed. */
 /* utility section — header actions pinned at bottom of the rail */
 .sutil{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);margin:0 10px 0;padding:10px 0 0;position:relative;z-index:1}
 html[data-theme="light"] .sutil{border-top-color:var(--border)}
@@ -1921,6 +2097,32 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    would have drawn a second hairline 8px below `.sfoot::before`, which is the footer's own top
    rule; there is nothing above `.squick` any more to separate it from. The 4px side margin is
    unchanged, so the rule keeps the inset it always had. */
+/* ══ THE FOOTER IS ONE COMPACT ICON ROW — PORTED FROM OPTION 11 VERBATIM (request,
+   10 Sep 2026: "the bottom will be change like <Option 11>"). Every rule below is Option 11's
+   own, spliced across unchanged so the two footers agree BY CONSTRUCTION rather than by two
+   people editing them to look alike; the reasoning it arrived with is kept with it.
+   ⚠️ WHAT IT REPLACED HERE: a 3-up Approval / Health / Notifications GRID with a label under
+   each glyph, then What's new, then a full identity row (avatar + name). The notes below are
+   Option 11's account of retiring exactly that shape, and read there as well:
+   it was two stacked blocks — a 3-up Approval / Health / Notifications grid with labels under
+   each glyph, then a full identity row with an avatar, a name and an e-mail — costing roughly
+   a fifth of the sidebar's height for controls you reach occasionally.
+   ⚠️ ONLY THE EXISTING CONTROLS ARE IN IT (explicit, same request: "change only existing icon,
+   not add other icon; the image is only for reference"). The reference's plug, mortarboard,
+   moon and ⋯ are NOT copied — this is Approval, Health, Notifications, What's new and the
+   avatar, which is exactly what this footer already held. Nothing was invented and nothing was
+   moved into an overflow menu.
+   ⚠️ EVERY NAME SURVIVES AS A TOOLTIP. `data-tip` is already on all five, and `tipSeenText()`
+   suppresses a tip only while its text is READABLE on the element — with the labels
+   `display:none` they are not, so the tooltips speak here exactly as they do on the 64px rail.
+   ⚠️ `display:none`, NOT `opacity:0`, on the labels. This file records the fault twice: an
+   invisible label that still holds `flex:1` eats the row and pushes the glyph out of its tile.
+   ⚠️ THE BADGE IS UNTOUCHED — `#nbadge` is positioned against `.iwrap`, which is still there.
+   ⚠️ `.sq.on` STILL HAS TO EXIST. `showView()` toggles it on `#sbApproval` / `#sbHealth` by id,
+   and if the selected look moved to a class these rows no longer carry, the footer would stop
+   saying which screen is open — silently, because the class still lands and styles nothing.
+   That is the recorded `.nxq.on` trap, and it is why the rule below is restated rather than
+   assumed. */
 /* ⚠️ THE FOOTER'S HAIRLINES ARE GONE TOO (request, 10 Sep 2026, finishing the "remove line"
    pass that took the group dividers and the Ask AI row's underline). Two rules drew here: one
    ABOVE the footer (`.sfoot::before`, separating it from the module list) and one BETWEEN the
@@ -1938,12 +2140,87 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    ⚠️ THE MARGIN GOES TO 0 RATHER THAN TO 8. `.sfoot` already pays the 8px as padding; adding
    another 8 here would put it at 16. The rule the rail follows is "the footer's padding IS the
    column", and every child of `.sfoot` should inherit it rather than restate it. */
-.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:0;padding-bottom:10px}
-.sidebar.open .squick{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* ⚠️ `margin-top:8px` IS THE GAP BETWEEN THE TWO FOOTER BLOCKS (request, 10 Sep 2026: "add
+   8px in between What's new & my profile, health, approval and notification" — asked as 4px
+   first and raised to 8 minutes later; 8 is what shipped, don't halve it on the strength of the
+   earlier note). 8px is also the rail's own step: every `.sitem` sits at `margin:0 8px` and the
+   gaps between the rail's groups are 8. Measured before
+   the change: What's new ended at y=52 and this row started at y=52 — the two blocks were
+   FLUSH, and the only thing separating them was the icon row's own internal padding.
+   ⚠️ IT HAS TO BE SET TWICE. `.sidebar.open .sfoot > .squick` below is (0,4,0) against this
+   rule's (0,1,0) and declares `margin`, so a top margin here alone is cancelled the moment the
+   rail opens — which is the only state the row exists in. Both carry the 8px; move them
+   together. (`.sfoot` is a plain block, so this collapses against `.uxnews`'s 0 bottom margin
+   to exactly 8 rather than adding to anything.)
+   ⚠️ THIS IS THE ONE PLACE OPTION 12'S FOOTER NOW DIVERGES FROM OPTION 11'S, which the rest of
+   this block was ported from verbatim and which still has the two blocks flush. */
+/* ⚠️ `flex-start`, NOT `space-between` (request, 10 Sep 2026: "the profile icon will be show
+   bottom right and the health, approval & notification 3 icon will be show left side"). Spread
+   across the row, the four read as four unrelated controls at equal weight; grouped, the three
+   utility screens are one cluster and the avatar is the odd one out — which is what it is.
+   ⚠️ THE `gap` IS NOT TOUCHED HERE, and that is deliberate: under `space-between` a `gap` is only
+   a MINIMUM and the 2px never painted (the real gaps were ~32px, shared out by the browser), so
+   it has never been a considered value for this row. Left-grouped it becomes load-bearing, and
+   the row's real gap is set in `.sidebar.open .sfoot > .squick` below. This 2px still governs the
+   COLLAPSED state, where `.squick` is a one-column grid and this is its ROW gap — untouched. */
+.squick{display:flex;align-items:center;justify-content:flex-start;gap:2px;
+  margin:8px 0 0;padding-bottom:0}
+/* collapsed there is no room for a row — the rail is 64px, so they stack as they always did */
+.sidebar:not(.open) .squick{display:grid;grid-template-columns:1fr}
 .sq{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
   padding:6px 0 5px;border-radius:4px;color:var(--text-dim);font-size:10.5px;
   white-space:nowrap;cursor:pointer;min-width:0}
 .sq:hover{background:var(--hover-side);color:var(--text)}
+/* ── the row itself: five 32px icon buttons, evenly spread ─────────────────────────────── */
+.sidebar.open .squick .sq{flex:0 0 32px;width:32px;height:32px;padding:0;gap:0;
+  align-items:center;justify-content:center;border-radius:4px}
+.sidebar.open .squick .sq .lbl{display:none}
+.sidebar.open .squick .sq .ic{width:18px;height:18px}
+/* ⚠️ THE AVATAR IS A `.sitem` INSIDE `.squick`, so `.sitem`'s own full-width row shape has to be
+   cancelled here — `.sq` and `.sitem` are two different row kinds sharing one container. */
+.sidebar.open .squick .sitem{flex:0 0 32px;width:32px;height:32px;margin:0;padding:0;gap:0;
+  justify-content:center;border-radius:4px}
+.sidebar.open .squick .sitem .lbl{display:none}
+.sidebar.open .squick .sitem .ic{flex:0 0 18px;width:18px;height:18px;margin-left:0}
+/* ⚠️ `.sqrow` IS GONE — What's new is a full-width row again and the avatar moved into the icon
+   row, so the wrapper had nothing left to hold. Its rules are removed rather than parked,
+   because a live selector matching nothing is how a later reader concludes a feature exists. */
+/* ⚠️ THE AVATAR KEEPS ITS OWN DISC — it is the one mark in the row that is not a glyph, and
+   shrinking it to 18px like the others would make the initials unreadable. */
+/* ⚠️ `flex` MUST BE SET WITH `width` — the recorded trap, hit again and caught by measurement,
+   not by eye: `.miniav` is `flex:0 0 20px`, and a flex BASIS beats a `width`, so this rule
+   asked for 26 and the probe measured 20. `margin-left` goes too: `.miniav` carries 5px to sit
+   on the rail's icon column, which off-centres it inside a 32px button. */
+.sidebar.open .squick #sbUser .miniav{flex:0 0 26px;width:26px;height:26px;
+  font-size:10.5px;margin-left:0}
+/* ⚠️ ONE LINE, NOT TWO. The five controls live in two containers — `.squick` (the three the
+   host toggles `.on` by id) and `.sqrow` (What's new and the identity row) — and merging the
+   MARKUP would mean moving `#sbUser` and `.uxnews` inside `.squick`, whose own rules and
+   hairline are written for exactly three children. Laying the two containers out as flex
+   siblings gets one row with none of that risk: nothing moved, nothing re-parented, and each
+   container keeps the rules already written for it.
+   ⚠️ `.squick`'s HAIRLINE GOES IN THIS STATE. It separated the quick row from the identity row
+   BELOW it; side by side it would cut the row in half. `.sfoot::before` still rules the footer
+   off from the module list, which is the separation that is actually doing work. */
+/* ⚠️ THE FOOTER IS A COLUMN AGAIN — What's new is a full-width row above the icon row, so the
+   two cannot sit side by side. `.squick` keeps its flex ROW for the four icons inside it. */
+.sidebar.open .sfoot{padding:10px}
+.sidebar.open .sfoot > .squick{border-bottom:0;padding-bottom:0;margin:8px 0 0;gap:8px}
+/* ⚠️ 8px IS THE RAIL'S OWN STEP — every `.sitem` sits at `margin:0 8px`, the gaps between the
+   rail's module groups are 8, and the gap this footer's two blocks were just given is 8. The 2px
+   the base rule carries was never a real number for this row (see the note there), so grouping
+   the icons meant choosing one; this is the one the rest of the rail already uses.
+   ⚠️ `margin-left:auto` ON THE AVATAR is what puts it at the right edge — one auto margin, not
+   `space-between`, so the three before it stay a tight cluster. There must never be a SECOND
+   auto margin in this row: flexbox splits free space between them, and the three would drift
+   apart again (the recorded `.mfkc`/`.mfpin`/`.mfdocs` fault, which put one column's chevrons at
+   four different x).
+   ⚠️ IT IS AN ID SELECTOR (1,3,0) ON PURPOSE. `.sidebar.open .squick .sitem` above is (0,4,0) and
+   sets `margin:0`, so a class-weight rule here would lose and the avatar would sit against the
+   bell. ⚠️ SCOPED TO `.sidebar.open`: collapsed, `.squick` is a grid and the avatar is centred by
+   `.sidebar:not(.open) .sfoot .sitem{margin:10px auto 0}` — an auto LEFT margin there would
+   right-align it in a 52px rail. */
+.sidebar.open .squick #sbUser{margin-left:auto}
 /* ⚠️ `.on` HAD TO COME WITH THEM. `showView()` toggles it on `#sbApproval` / `#sbHealth` to mark
    the open screen, and that selected look lived on `.sitem.on` — which these three no longer are.
    Without this the rail would simply stop showing which of the two is open, silently, because
@@ -6274,7 +6551,16 @@ html[data-theme="light"] .tseg.on{background:#fff;box-shadow:0 1px 3px rgba(23,3
 
 /* notifications (live: "Alerts & Notifications", 600px, tabs Alerts / System Notification) — opens beside the sidebar */
 #notifPop{width:600px;left:74px;bottom:56px;max-height:min(620px,calc(100vh - 70px))}
-#notifPop::before{bottom:80px}
+/* ⚠️ NO ARROW ON THE NOTIFICATION CARD (request, 10 Sep 2026). `.pop::before` is a 10px square
+   rotated 45° with only its left and bottom borders painted, which renders as a small `‹` on the
+   card's left edge — `#userPop` already killed it with `content:none` and this now matches.
+   ⚠️ IT WAS ALSO POINTING AT NOTHING. Its `bottom:80px` was measured against a card parked at a
+   FIXED `bottom:56px`; now that the card is anchored to the bell (see `popPlace`), a hardcoded
+   offset up its edge lands wherever the card happens to be tall — the arrow would have had to be
+   positioned from the trigger too. Removing it is what was asked for and removes that coupling.
+   ⚠️ The rule is KEPT with `content:none` rather than deleted, so the shared
+   `#userPop::before,#notifPop::before` declaration above still reads as a matched pair. */
+#notifPop::before{bottom:80px;content:none}
 .nhead{padding:11px 14px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border)}
 .ntabs{display:flex;gap:20px;padding:0 14px;border-bottom:1px solid var(--border)}
 .ntab{padding:11px 2px;font-size:12.8px;font-weight:500;color:var(--text-dim);border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -8477,6 +8763,25 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
          ⚠️ EVERY LINK GOES SOMEWHERE REAL. Invite opens the product's own user management
          (`stOpen('User Settings')`); Support and Help are the two URLs already verified 200 for
          `AI_HELP` and the profile popover. Nothing here invents a destination. -->
+    <!-- ⚠️ SETTING SITS ABOVE WHAT'S NEW, AS A ROW (request, 10 Sep 2026). It shipped for a few
+         minutes as the first icon of the footer's cluster — asked for as "after What's new", and
+         the icon row is what follows that line — and the follow-up put it BEFORE instead. Both
+         requests are recorded; **above the What's-new line is what shipped.**
+         ⚠️ THE POSITION DECIDED THE SHAPE. In the icon row it was a 32px `.sq` like its
+         neighbours; standing alone above a full-width row, a lone 32px tile reads as a fragment
+         of a row that isn't there. As a `.sitem` it is the same labelled row it was in the module
+         list — which is also what it is: a module, not a utility toggle.
+         ⚠️ `.sitem.on` IS WHY THE HIGHLIGHT NEEDS NOTHING NEW. That is the rail rows' own
+         selected look, so `railFootPaint`'s `.on` paints exactly as it did upstairs; as a `.sq`
+         it was borrowing Approval's and Health's rule instead.
+         ⚠️ IT IS THE ROW'S BEHAVIOUR, NOT A SECOND IMPLEMENTATION: `railFootGo` calls `pickRail`
+         with the entry's own index, so the module's first screen, `mfHide()` and `renderMenu()`
+         all happen exactly as they did when the row was in the list above.
+         ⚠️ NO HOVER MENU — `Setting` is in `MF_NO_HOVER`, so the rail row opened none either.
+         `mfHide()` is what every footer control carries: it closes a module flyout still hanging
+         over the footer the pointer has moved into. -->
+    <div class="sitem" id="sbSetting" data-tip="Setting" onmouseenter="mfHide()" onclick="railFootGo('Setting')"><svg class="ic" viewBox="0 0 48 48" id="sbSettingIc"></svg><span class="lbl">Setting</span></div>
+    <div class="sitem uxnews" data-tip="What's new in 10.0.1 ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48"><path fill="currentColor" d="M27.28,17.94l-.58,3.46c-.1,.58-.03,1.18,.2,1.72,.23,.54,.61,1.01,1.09,1.34,.45,.33,.99,.52,1.55,.56,.56,.03,1.12-.1,1.61-.38l2.84-1.62,2.88,1.58c.48,.27,1.03,.41,1.58,.38,.55-.02,1.09-.21,1.54-.52,.47-.34,.84-.8,1.06-1.33,.22-.53,.29-1.12,.2-1.69l-.58-3.46,2.4-2.44c.4-.4,.67-.91,.8-1.46,.13-.55,.1-1.12-.07-1.66-.18-.54-.5-1.01-.92-1.38-.43-.37-.95-.61-1.51-.7l-3.24-.48-1.46-3.1c-.24-.52-.63-.96-1.11-1.26-.48-.31-1.04-.47-1.61-.47s-1.13,.16-1.61,.47-.87,.75-1.11,1.26l-1.46,3.1-3.24,.48c-.56,.09-1.08,.33-1.51,.7-.43,.37-.75,.85-.92,1.38-.18,.54-.2,1.11-.07,1.66,.13,.55,.41,1.05,.8,1.46l2.44,2.4Zm3.66-4.26c.49-.07,.95-.27,1.35-.56,.4-.3,.72-.69,.93-1.14l.78-1.66,.78,1.66c.21,.45,.53,.84,.93,1.14,.4,.3,.86,.5,1.35,.58l2,.28-1.46,1.48c-.34,.35-.59,.78-.74,1.24-.15,.47-.18,.96-.1,1.44l.32,2-1.58-.86c-.44-.25-.94-.37-1.44-.37s-1,.13-1.44,.37l-1.58,.86,.32-2c.08-.48,.04-.97-.1-1.43-.15-.46-.4-.88-.74-1.23l-1.46-1.5,1.88-.3Zm11.06,15.3c-.53,0-1.04,.21-1.41,.59-.38,.38-.59,.88-.59,1.41v6c0,.53-.21,1.04-.59,1.41-.38,.38-.88,.59-1.41,.59H10c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41V17.8l11.76,11.76c.55,.56,1.2,1,1.92,1.3,.72,.3,1.5,.46,2.28,.46h.54c.53-.05,1.02-.3,1.36-.7,.34-.4,.51-.93,.46-1.46-.02-.26-.1-.52-.22-.75-.12-.23-.29-.44-.49-.61-.2-.17-.44-.3-.69-.37-.25-.08-.52-.11-.78-.08-.28,.03-.57,0-.83-.1-.27-.1-.51-.25-.71-.46L10.82,14.98h7.18c.53,0,1.04-.21,1.41-.59,.38-.38,.59-.88,.59-1.41s-.21-1.04-.59-1.41-.88-.59-1.41-.59H10c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v20c0,1.59,.63,3.12,1.76,4.24s2.65,1.76,4.24,1.76h28c1.59,0,3.12-.63,4.24-1.76,1.13-1.13,1.76-2.65,1.76-4.24v-6c0-.53-.21-1.04-.59-1.41-.38-.38-.88-.59-1.41-.59Z"/></svg><span class="lbl">What's new<span class="uxtag">10.0.1</span><svg class="uxext" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
     <div class="squick">
       <div class="sq" id="sbApproval" data-tip="Approval" onmouseenter="mfHide()" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
       <!-- ⚠️ HEALTH OPENS NO SUB-MENU ON HOVER (request, 9 Sep 2026: "when I hover the Health
@@ -8494,9 +8799,18 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
            was their only call site, and the menu is one attribute away if it is wanted back. -->
       <div class="sq" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfHide()" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
       <div class="sq" id="sbBell" data-tip="Notification" onmouseenter="sbNotifOpen()" onmouseleave="sbNotifLater()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
+      <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onmouseenter="sbNotifOpen('userPop')" onmouseleave="sbNotifLater('userPop')" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
     </div>
-    <div class="sitem uxnews" data-tip="What's new in 10.0.1 ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48"><path fill="currentColor" d="M27.28,17.94l-.58,3.46c-.1,.58-.03,1.18,.2,1.72,.23,.54,.61,1.01,1.09,1.34,.45,.33,.99,.52,1.55,.56,.56,.03,1.12-.1,1.61-.38l2.84-1.62,2.88,1.58c.48,.27,1.03,.41,1.58,.38,.55-.02,1.09-.21,1.54-.52,.47-.34,.84-.8,1.06-1.33,.22-.53,.29-1.12,.2-1.69l-.58-3.46,2.4-2.44c.4-.4,.67-.91,.8-1.46,.13-.55,.1-1.12-.07-1.66-.18-.54-.5-1.01-.92-1.38-.43-.37-.95-.61-1.51-.7l-3.24-.48-1.46-3.1c-.24-.52-.63-.96-1.11-1.26-.48-.31-1.04-.47-1.61-.47s-1.13,.16-1.61,.47-.87,.75-1.11,1.26l-1.46,3.1-3.24,.48c-.56,.09-1.08,.33-1.51,.7-.43,.37-.75,.85-.92,1.38-.18,.54-.2,1.11-.07,1.66,.13,.55,.41,1.05,.8,1.46l2.44,2.4Zm3.66-4.26c.49-.07,.95-.27,1.35-.56,.4-.3,.72-.69,.93-1.14l.78-1.66,.78,1.66c.21,.45,.53,.84,.93,1.14,.4,.3,.86,.5,1.35,.58l2,.28-1.46,1.48c-.34,.35-.59,.78-.74,1.24-.15,.47-.18,.96-.1,1.44l.32,2-1.58-.86c-.44-.25-.94-.37-1.44-.37s-1,.13-1.44,.37l-1.58,.86,.32-2c.08-.48,.04-.97-.1-1.43-.15-.46-.4-.88-.74-1.23l-1.46-1.5,1.88-.3Zm11.06,15.3c-.53,0-1.04,.21-1.41,.59-.38,.38-.59,.88-.59,1.41v6c0,.53-.21,1.04-.59,1.41-.38,.38-.88,.59-1.41,.59H10c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41V17.8l11.76,11.76c.55,.56,1.2,1,1.92,1.3,.72,.3,1.5,.46,2.28,.46h.54c.53-.05,1.02-.3,1.36-.7,.34-.4,.51-.93,.46-1.46-.02-.26-.1-.52-.22-.75-.12-.23-.29-.44-.49-.61-.2-.17-.44-.3-.69-.37-.25-.08-.52-.11-.78-.08-.28,.03-.57,0-.83-.1-.27-.1-.51-.25-.71-.46L10.82,14.98h7.18c.53,0,1.04-.21,1.41-.59,.38-.38,.59-.88,.59-1.41s-.21-1.04-.59-1.41-.88-.59-1.41-.59H10c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v20c0,1.59,.63,3.12,1.76,4.24s2.65,1.76,4.24,1.76h28c1.59,0,3.12-.63,4.24-1.76,1.13-1.13,1.76-2.65,1.76-4.24v-6c0-.53-.21-1.04-.59-1.41-.38-.38-.88-.59-1.41-.59Z"/></svg><span class="lbl">What's new<span class="uxtag">10.0.1</span><svg class="uxext" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
-    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onmouseenter="sbNotifOpen('userPop')" onmouseleave="sbNotifLater('userPop')" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
+    <!-- ⚠️ WHAT'S NEW IS ITS OWN LABELLED LINE AGAIN, ABOVE THE ICON ROW (request, 10 Sep 2026:
+         "the what's new icon will be show in new line like <Option 10>"). It was folded into the
+         footer's icon row with the Magnific restyle; the label and the version chip are what make
+         it worth a line, and a 32px button reduced both to a tooltip.
+         ⚠️ THE ICON ROW SURVIVES — this is not a revert of that restyle. Approval, Health,
+         Notifications and the AVATAR stay as icons; only this one row came back out, which is
+         what was asked for. The avatar moved INTO `.squick` so the icon row is still one line.
+         ⚠️ ITS `data-tip` GOES BACK TO PLAIN TEXT. With the label and the chip both painted,
+         `tipRedundant()` would suppress a tip repeating them anyway — and the double-space form
+         only existed to draw the version as a chip when there was no room for the real one. -->
     <!-- ⚠️ `BUILD : 8.2.6` WAS HERE AND IS NOW IN THE PROFILE MENU (request, 2 Sep 2026:
          "remove this and show in other way"). A version string is reference information you
          look up once — it does not earn a permanent row in a rail whose every other line is
@@ -9785,7 +10099,16 @@ const RAIL = [
   { name:'SLO',       icon:'slo',             mod:'SLO',             group:'work', beta:true },
   { name:'Explorer',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
   { name:'Report',    icon:'report',          mod:'Reports',         group:'analyse' },
-  { name:'Setting',   icon:'settings',        mod:'Settings',        group:'admin' },
+  /* ⚠️ `foot:true` MOVES THE ROW TO THE FOOTER'S ICON CLUSTER — IT DOES NOT REMOVE IT (request,
+     10 Sep 2026: "the Setting icon will be moved to show after What's new"). Settings is a
+     utility screen like Approval, Health and Notifications, and the gear is the conventional
+     member of that cluster; in DOM order the icon row is the first thing after the What's new
+     line, which is where the request put it.
+     ⚠️ THE ENTRY MUST STAY IN `RAIL`, AT THIS INDEX. `activeRail` and `MOD_TO_RAIL` store
+     INDICES into this array — splicing it out would silently repoint every module that maps to a
+     later index, the trap this file's notes record for `RAIL_SEED`. `renderMenu` skips it, and
+     `railFootGo`/`railFootPaint` give the footer button the row's own behaviour and highlight. */
+  { name:'Setting',   icon:'settings',        mod:'Settings',        group:'admin', foot:true },
 ];
 let activeRail = 0;
 
@@ -10493,6 +10816,11 @@ function renderMenu(){
     /* ⚠️ A HIDDEN ENTRY IS SKIPPED BEFORE THE GROUP LOGIC, so hiding the last row of a group
        does not leave its divider behind pointing at nothing. */
     if (RAIL_HIDDEN.has(r.name)) return;
+    /* ⚠️ A FOOTER ENTRY IS SKIPPED HERE, NOT DELETED FROM `RAIL` — see the note at the entry.
+       It is tested BEFORE the group logic for the same reason a hidden row is: `Setting` is the
+       only member of the `admin` group, so leaving it to the group test would emit a divider
+       introducing a band with nothing in it. */
+    if (r.foot) return;
     if (i === homeIdx) return;                 /* already at the top */
     if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
     last = r.group;
@@ -10513,6 +10841,32 @@ function renderMenu(){
      already draw one. */
   if (!tmpOut && railTmp()) html += (pinsOut ? '' : '<div class="sgroup-gap"></div>') + railTmpHTML();
   document.getElementById('smenu').innerHTML = html;
+  railFootPaint();
+}
+/* ══ A RAIL ENTRY THAT LIVES IN THE FOOTER (`foot:true`) ═══════════════════════════════════
+   ⚠️ `railFootGo` RESOLVES THE INDEX BY NAME, EVERY TIME. `pickRail` takes an index into `RAIL`
+   and markup cannot hold one — writing `pickRail(5)` into the button would be a second copy of
+   the array's order, and the next entry inserted above Setting would silently send the gear to
+   Report. It also means the button reuses the row's whole behaviour (first screen, `mfHide`,
+   `renderMenu`, highlight) rather than reimplementing any of it. */
+function railFootGo(name){
+  const i = RAIL.findIndex(r => r.name === name);
+  if (i > -1) pickRail(i);
+}
+/* ⚠️ THE HIGHLIGHT HAD TO COME WITH IT. `renderMenu` marks the open module by rebuilding the
+   list, and this button is authored markup that rebuild never touches — so without this the rail
+   would simply stop saying you are in Settings, silently, exactly the recorded `.sq.on` /
+   `.nxq.on` trap. `.sq.on` already exists (Approval and Health use it), so nothing new is styled.
+   ⚠️ IT ALSO HONOURS `RAIL_HIDDEN`. The Layout drawer's Sidebar tab still lists Setting and can
+   still switch it off; the control it switches off now lives here, so hiding has to reach it or
+   the tab would report a state the rail does not have.
+   ⚠️ GUARDED ON THE NODE — Options 10 and 11 share this function's file lineage but not this
+   markup, and `renderMenu` runs on every navigation. */
+function railFootPaint(){
+  const b = document.getElementById('sbSetting'); if (!b) return;
+  const r = RAIL[activeRail];
+  b.classList.toggle('on', !!(r && r.name === 'Setting'));
+  b.style.display = RAIL_HIDDEN.has('Setting') ? 'none' : '';
 }
 /* ⚠️ THE FIRST ROW OF A MODULE'S OWN MENU, from the same data the flyout draws — a tree menu's
    `tree[0]`, or the first item of the first `SUBNAV` section. Returns null for a module that has
@@ -10615,11 +10969,22 @@ function selectModuleByName(n){
 
 /* ---- flyout ---------------------------------------------------------------- */
 let mfTimer = null, mfHoverIdx = -1, mfIn = false;   /* mfIn: pointer is inside the sub-menu */
-/* ⚠️ 4px OF AIR BETWEEN THE RAIL AND THE MENU (request, 10 Sep 2026). It was 0 — deliberately, on
-   9 Sep ("use lasse space and 0px") — and that made the menu an extension of the rail. Asked for
-   as a floating card now, so the gap, the left border, the full radius and a symmetric shadow all
-   arrive together; see `.mflyout`. Read by `mfOpen` / `mfOpenUtil` / `mfOpenPin`. */
-const MF_GAP = 4;
+/* ══ ONE GAP BETWEEN THE SIDEBAR AND EVERYTHING THAT OPENS OFF IT — 8px ═══════════════════
+   Request, 10 Sep 2026: "the sidebar and submodule sidebar use same spacing … in every popup
+   margin is same 8px, also my profile popup and notification popup open within 8px margin of
+   sidebar". MEASURED FIRST, and they were at three different values against a rail edge of 240:
+   the module flyout and Explorer's grid at **4**, the notification and profile cards at **10**.
+   Three numbers for one relationship — "how far does a thing that hangs off the rail sit from
+   it" — which is exactly the kind of drift a shared constant exists to stop.
+   ⚠️ THIS IS THE ONE NUMBER NOW. `POP_GAP` below is DERIVED from it rather than declared, so the
+   two cannot be edited apart; every popup in this file resolves through one or the other.
+   ⚠️ IT IS THE RAIL'S OWN STEP, so it is not an arbitrary pick: every `.sitem` sits at
+   `margin:0 8px`, the rail's group gaps are 8, and the footer's two blocks are 8 apart.
+   ⚠️ IT WAS 4px, AND BEFORE THAT 0 — deliberately, on 9 Sep ("use lasse space and 0px"), which
+   made the menu an extension of the rail rather than a card. The card treatment (a gap, the left
+   border, the full radius, a symmetric shadow) arrived together on 10 Sep and only the gap moves
+   here; see `.mflyout`. Read by `mfOpen` / `mfOpenUtil` / `mfOpenPin` / `mfGrid`. */
+const MF_GAP = 8;
 function railWidth(){
   const open = document.getElementById('sidebar').classList.contains('open');
   return parseInt(getComputedStyle(document.documentElement)
@@ -11310,14 +11675,20 @@ function mfGridAway(e){
 function mfOpen(i, el){
   clearTimeout(mfTimer);
   mfHoverIdx = i;
-  const sb0 = document.getElementById('sidebar');
+  /* ⚠️ `const sb0 = document.getElementById('sidebar')` WAS HERE AND IS GONE WITH THE TWO
+     COLLAPSED-RAIL GUARDS THAT READ IT (10 Sep 2026). Nothing else in this function asks whether
+     the rail is open any more — that is the point of the change — and a live binding whose only
+     readers were deleted is how the next reader concludes the state still matters here. */
   if (RAIL[i] && MF_NO_HOVER.indexOf(RAIL[i].name) > -1){ mfHide(); return; }
   /* ⚠️ EXPLORER TAKES THE GRID INSTEAD OF THE LIST (request, 9 Sep 2026). It is hooked HERE, in
      `mfOpen`, for the same reason `MF_NO_HOVER` is: two paths reach this menu — the row's own
      `mouseenter` and the hand-off after a collapsed rail expands — and a rule written into the
      markup would have to be repeated in both. */
   if (RAIL[i] && RAIL[i].name === 'Explorer'){
-    if(!sb0.classList.contains('open')){ mfHide(); return; }   /* the collapsed rail expands first */
+    /* ⚠️ EXPLORER'S GRID FOLLOWS THE SAME RULE (10 Sep 2026, "in every icon") — it is this
+       module's menu, so a collapsed rail that opened every other module's list but not this one
+       would be the odd row out. The card is placed from the row's own box, which exists in both
+       states. */
     if (mfGridMute) return;                 /* just navigated from it — see mfGridGo */
     mfHide(); mfGrid(true, el); return;
   }
@@ -11327,8 +11698,21 @@ function mfOpen(i, el){
      rail, both claiming to be the current one. Caught by a probe asserting the grid had closed;
      it does not show up in any single-module check. */
   mfGrid(false);
-  /* hovering the collapsed rail expands it and nothing else — sub-menus only once open */
-  if(!sb0.classList.contains('open')){ mfHide(); return; }
+  /* ══ THE COLLAPSED RAIL OPENS SUB-MENUS ON HOVER TOO (request, 10 Sep 2026: "when the
+     sidebar is collapsed and I hover the icon then show the submodule popup, in every icon")
+     ⚠️ THIS DOES NOT BREAK OPTION 12's RULE, and that is worth being precise about. Gemini's
+     rule — the thing this whole option exists to demonstrate — is that **hovering never changes
+     the rail's WIDTH**; one toggle does. It stays true: `sbHover` is still neutralised, the rail
+     is still 53px throughout, and nothing here touches it. What hover now does is open the
+     module's menu BESIDE the rail, which is a different affordance from expanding it.
+     ⚠️ WHAT IT REPLACED: `if(!sb0.classList.contains('open')){ mfHide(); return; }`, whose own
+     comment read "hovering the collapsed rail expands it and nothing else — sub-menus only once
+     open". That sentence was already stale here: in THIS option hovering does not expand it
+     either, so the guard left the collapsed rail with icons and tooltips and no way to reach a
+     sub-module at all without first toggling the whole sidebar open.
+     ⚠️ THE ANCHOR NEEDS NOTHING: the menu is placed at `railWidth() + MF_GAP`, and `railWidth()`
+     reads the collapsed token, so it lands 8px off a 53px rail exactly as it does off a 240px
+     one — measured, not assumed. */
   const r = RAIL[i], secs = SUBNAV[r.name], fly = document.getElementById('mflyout');
   if(!secs){ fly.classList.remove('on'); return; }
   /* ⚠️ Explorer is the one two-pane menu. Everything else still renders through `mfCol`,
@@ -12197,14 +12581,51 @@ function noteEdit(ev){
 }
 
 /* ================= Popover plumbing ================= */
+/* ══ A POPOVER IS PLACED FROM THE CONTROL THAT OPENED IT (request, 10 Sep 2026: "when I hover
+   the notification the popup will be show behind the notification icon") ═══════════════════
+   `#notifPop` was parked at a hardcoded `bottom:56px` while the bell it belongs to sits 10px off
+   the viewport floor — so the card opened 46px ABOVE its own trigger and read as floating loose
+   in the page rather than hanging off the icon. Measured, not guessed: the footer's padding is
+   10px and the icon row is its last block, so the bell's bottom edge is at 10.
+   ⚠️ BOTTOM-ALIGNED TO THE TRIGGER, not centred on it. The card is up to `100vh - 70` tall and
+   its control is at the very bottom of the rail; centring would run most of it off the screen.
+   ⚠️ THE HORIZONTAL READS `railWidth()`, NOT `sidebar.offsetWidth` — the rail TRANSITIONS its
+   width, and this file's oldest recorded trap is that a box measured mid-flight reports the old
+   number. `railWidth()` answers from the token, which is never transitioned. Same value today;
+   the point is that it stays right if the card is opened during the toggle.
+   ⚠️ PLACED AFTER `renderNotifs()`, because that fills the body and therefore decides the height
+   the top-clamp is computed from. Everything here is synchronous, so no frame is painted between
+   `.on` landing and the position being set — there is no flash to hide with `visibility`.
+   ⚠️ IT GUARDS FOR A TRIGGER THAT IS NOT RENDERED (`r.height` 0, e.g. a card opened from the
+   keyboard while the rail is mid-anything) and falls back to whatever the stylesheet authored,
+   rather than pinning the card to 0. */
+const POP_TRIG = {notifPop:'sbBell', userPop:'sbUser'};
+/* ⚠️ DERIVED, NOT DECLARED — see `MF_GAP`. These two are the same relationship (a thing that
+   hangs off the rail, and how far off it sits), and holding the number twice is how the flyout
+   came to be 4px away while these cards were 10. The guard is for block order only: `MF_GAP`
+   lives in an earlier script block, so it is bound by the time this runs. */
+const POP_GAP = (typeof MF_GAP === 'number') ? MF_GAP : 8;
+function popPlace(el, id){
+  const rail = (typeof railWidth === 'function') ? railWidth()
+             : (document.getElementById('sidebar')||{offsetWidth:64}).offsetWidth;
+  el.style.left = (rail + POP_GAP) + 'px';   // clear the rail even when it is expanded
+  const t = document.getElementById(POP_TRIG[id] || '');
+  if (!t) return;
+  const r = t.getBoundingClientRect();
+  if (!r.height) return;
+  const h = el.offsetHeight || 0;
+  let bottom = Math.round(window.innerHeight - r.bottom);
+  if (h) bottom = Math.min(bottom, window.innerHeight - h - POP_GAP);   // keep its top on screen
+  el.style.bottom = Math.max(POP_GAP, bottom) + 'px';
+}
 function togglePop(id, ev){
   ev && ev.stopPropagation();
   const el = document.getElementById(id), was = el.classList.contains('on');
   closePops();
   if (!was){
-    el.style.left = (document.getElementById('sidebar').offsetWidth + 10) + 'px';  // clear the rail even when it is expanded
     el.classList.add('on'); document.getElementById('scrim').classList.add('on');
     if(id==='notifPop') renderNotifs();
+    popPlace(el, id);
   }
 }
 /* ══ THE NOTIFICATION CARD OPENS ON HOVER (request, 9 Sep 2026) ════════════════════════════
@@ -14341,10 +14762,24 @@ const AI_SPARK = '<svg viewBox="0 0 48 48">' + AI_SPARK_PATH + '</svg>';
 /* ⚠️ FILLS EVERY MARKUP-AUTHORED COPY OF THE MARK. It sets the viewBox too — the ramp's
    transform is written in 48-space, so a copy left on another grid would paint the gradient
    off the star (see the `<defs>` note at the top of the body). */
+/* ⚠️ THE TRAILING ARC, AND IT IS PAINTED ONTO THE RAIL'S MARK ALONE (request + reference,
+   10 Sep 2026: 60fps.design's "Google Chrome Gemini Feature Intro Sheet Animation").
+   ⚠️ THE REFERENCE WAS READ FRAME BY FRAME, not from its description — the shot's mp4 was
+   pulled and decoded at 20fps, and the motion is: an arc sweeps out from BEHIND the Chrome
+   mark, the star appears small at the head of it, rotates as it travels, overshoots its size
+   slightly, settles upright, and the arc dissipates. All four beats are reproduced; what is
+   NOT copied is Google's blue — the arc takes `--ai-2`, this file's own AI accent, per the
+   standing rule that another product's brand hue must never enter the token block.
+   ⚠️ IT GOES BEFORE THE PATH so the star paints ON TOP of it — "emerges from behind" is the
+   half of the reference that a trail drawn over the mark would lose.
+   ⚠️ `.aisprk` IS THE RAIL ROW'S CLASS AND NOTHING ELSE CARRIES IT. The same mark is authored
+   in two other places (the dashboard toolbar's `Ask AI` pill and the AI panel), and they are
+   deliberately left alone — this is a navigation flourish, not a change to the mark. */
+const AI_SPARK_TRAIL = '<circle class="aitrail" cx="24" cy="24" r="29" pathLength="100" stroke-dasharray="26 100"/>';
 function aiSparkPaint(){
   document.querySelectorAll('svg[data-aispark]').forEach(el => {
     el.setAttribute('viewBox', '0 0 48 48');
-    el.innerHTML = AI_SPARK_PATH;
+    el.innerHTML = (el.classList.contains('aisprk') ? AI_SPARK_TRAIL : '') + AI_SPARK_PATH;
   });
 }
 /* parked, unreferenced — the 25 Aug `OPS AI.svg` speech-bubble mark */
@@ -15391,6 +15826,8 @@ document.addEventListener('keydown', e=>{
   setIco(document.getElementById('sbApprovalIc'),'ncm-approval');
   setIco(document.getElementById('sbHealthIc'),'health-monitoring');
   setIco(document.getElementById('sbBellIc'),'bell');
+  /* the same `settings` glyph its rail row drew — one registry, so the two cannot drift */
+  setIco(document.getElementById('sbSettingIc'),'settings');
   setIco(document.getElementById('sbSidebarIc'),'columns');
 
   setIco(document.getElementById('dashHeadIc'),'dashboard');
@@ -22559,6 +22996,18 @@ function aiKey(e){
 /* the product mark, into every `.brandmark` on the page */
 aiLogoPaint();
 aiSparkPaint();   /* the markup-authored AI marks — see AI_SPARK_PATH */
+/* ⚠️ IT PLAYS ONCE ON LOAD, WHICH IS WHAT THE REFERENCE IS — an intro. The class is then
+   REMOVED, and that is not tidying: `#sbAI:hover` sets the same two animations, so a `.aiplay`
+   left on the element would still be matching and the hover could never restart them. 900ms is
+   the .82s animation plus a frame's grace. */
+(function aiSparkIntro(){
+  const el = document.querySelector('#sbAI .aisprk'); if (!el) return;
+  el.classList.add('aiplay');
+  /* ⚠️ 1500ms, AND IT IS TIED TO THE ANIMATION'S DURATION — 1.4s plus a frame's grace. It must
+     OUTLAST the animation: strip `.aiplay` early and the on-load play is cut off part-way. It
+     was 900ms for the .82s version; if that duration moves again, move this with it. */
+  setTimeout(() => el.classList.remove('aiplay'), 1500);
+})();
 sbNotifBind();    /* the notification card's own hover grace period — see sbNotifOpen */
 </script>
 
