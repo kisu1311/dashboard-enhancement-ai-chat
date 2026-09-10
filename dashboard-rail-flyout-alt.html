@@ -190,9 +190,10 @@ body.sbhide .shell{padding-left:0}
   background:var(--card);color:var(--text-dim);cursor:pointer;padding:0}
 #sbOpen:hover{background:var(--hover-side);color:var(--text)}
 #sbOpen:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
-/* 24px, matching the rail's collapse control — the two are one control in two places. STROKED,
-   so the width is derived: 1.25 x 24 / 24 = 1.25 (it was 1.875 at 16px). */
-#sbOpen svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.25;
+/* 20px, matching the rail's collapse control — the two are one control in two places. STROKED,
+   so the width is DERIVED: 1.25 x 24 / 20 = 1.5 (1.25 at 24px, 1.875 at 16px). Change the size
+   and this has to be recomputed. */
+#sbOpen svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round}
 body.sbhide #sbOpen{display:flex}
 /* ══ THE LEFT EDGE BRINGS IT BACK ON HOVER (request, 10 Sep 2026: "when the sidebar is collapsed
@@ -234,13 +235,18 @@ body.fs .exitfs{display:inline-flex}
 .sidebar.open{width:var(--rail-w-open);box-shadow:var(--shadow)}
 /* ⚠️ THE COLLAPSE BUTTON IN THE BRAND ROW. `margin-left:auto` puts it at the rail's right
    edge beside the wordmark, which is where the reference has it.
-   ⚠️ IT IS HIDDEN WHILE THE RAIL IS COLLAPSED — at 64px the row is a 30px mark in 15px of
+   ⚠️ IT IS HIDDEN WHILE THE RAIL IS COLLAPSED — at 53px the row is a 24px mark in 15px of
    padding and there is no room; showing it there would either overlap the logo or force the
    mark off-centre. The `.strigger` row keeps its own toggle, so the logo is the way back. */
-/* ⚠️ THE WORDMARK HAS TO BE ABLE TO SHRINK, or it pushes the button out of the rail. Measured:
-   15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26 + 15 = 189 in a 170px rail, and the
-   button ended 4px PAST the edge. Exactly the same fault as the flyout's ragged chevrons — a
-   text element that cannot shrink shoves whatever follows it off the end. */
+/* ⚠️ THE WORDMARK HAS TO BE ABLE TO SHRINK, or it pushes the button out of the rail. That is not
+   hypothetical — measured once at 15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26 + 15
+   = 189 in a 170px rail, and the button ended 4px PAST the edge. Exactly the same fault as the
+   flyout's ragged chevrons: a text element that cannot shrink shoves whatever follows it off the
+   end.
+   ⚠️ TODAY'S SUM, for the next time one of these sizes moves — 14(mark, after its -1px margin)
+   + 24(mark) + 8(gap) + 85(wordmark) + 8(gap) + 32(button) + 15 = **186 in a 240px rail**, i.e.
+   54px of slack; the measured gap between wordmark and button is 61px. The button is 32px with a
+   20px glyph in it. */
 .strigger .brand{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .strcol{margin-left:auto;flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;
   border-radius:4px;color:var(--text-dim);cursor:pointer;opacity:0;
@@ -257,9 +263,9 @@ body.fs .exitfs{display:inline-flex}
    out of the collapsed rail — see `toggleSidebar`. */
 .sidebar:not(.open) .strcol{pointer-events:none;display:none}
 .strcol:hover{background:var(--hover-side);color:var(--text)}
-/* 24px, in the rail's own 32px control box — see the note at `.strcol`. A FILLED product
+/* 20px, in the rail's own 32px control box — see the note at `.strcol`. A FILLED product
    glyph, so there is no stroke-width to recompute. */
-.strcol .ic{width:24px;height:24px}
+.strcol .ic{width:20px;height:20px}
 /* ⚠️ `gap:6px`, NOT 9 — THE WORDMARK LINES UP WITH EVERY ROW LABEL BELOW IT (request,
    2 Sep 2026: "improve this sidebar, some alignment"). MEASURED across the whole rail:
    every `.sitem` label starts at x=51 (box 8 + inset 12 -> 20px icon ends at 40, + `gap:11`),
@@ -272,10 +278,15 @@ body.fs .exitfs{display:inline-flex}
    15 + 30 + 6 = 51.
    ⚠️ So this number is DERIVED — mark left + mark width + gap must equal `.sitem`'s label x.
    Change the mark's size or the rail's padding and it has to be recomputed. */
-/* ⚠️ 64px IN BOTH STATES (Option 10, 9 Sep 2026 — "the expand and collapse, I hover, the
-   alignment is change"). At 53px open and 64px collapsed the whole list below it started 11px
-   higher once the rail expanded, which is most of the 26px jump the first icon made. */
-.strigger{height:64px;flex:0 0 64px;display:flex;align-items:center;gap:6px;padding:0 15px;cursor:pointer;white-space:nowrap}
+/* ⚠️ THE SAME HEIGHT IN BOTH RAIL STATES — that is the rule; the value is 56px (request,
+   10 Sep 2026: "the sidebar top margin is 65px need to change 56px"; it was 64). The rule exists
+   because the two once disagreed — 53px open, 64px collapsed — and the whole list below started
+   11px higher the moment the rail expanded, which was most of the 26px jump the first icon made
+   (Option 10, 9 Sep 2026: "the expand and collapse, I hover, the alignment is change").
+   ⚠️ SO IT IS DECLARED TWICE AND MUST BE CHANGED TWICE — here and at
+   `.sidebar:not(.open) .strigger` below. 56px still clears its contents: the tallest thing in the
+   row is the 32px collapse button, and the mark is 24px. */
+.strigger{height:56px;flex:0 0 56px;display:flex;align-items:center;gap:6px;padding:0 15px;cursor:pointer;white-space:nowrap}
 /* ⚠️ the supplied Light.svg / Dark.svg mark. `--white` already flips per theme, so one
    SVG with `currentColor` covers both files — see AI_LOGO. */
 .brandmark{display:inline-grid;place-items:center;color:var(--white)}
@@ -401,7 +412,7 @@ body.fs .exitfs{display:inline-flex}
    ⚠️ THE ROW STILL RESHAPES — 64px tall, no padding, centred — because at 64px there is no
    wordmark and no collapse button to lay out beside it. Only the MARK's size stopped changing.
    ⚠️ `flex` GOES WITH `width`, as everywhere else: `.brandmark` is sized by its basis. */
-.sidebar:not(.open) .strigger{height:64px;flex:0 0 64px;padding:0;gap:0;justify-content:center}
+.sidebar:not(.open) .strigger{height:56px;flex:0 0 56px;padding:0;gap:0;justify-content:center}
 .sidebar:not(.open) .strigger .brandmark{width:24px;height:24px;flex:0 0 24px;margin-left:0}
 /* ⚠️ THE WORDMARK MUST LEAVE THE FLOW, NOT JUST FADE. `.strigger .brand` is `opacity:0` when
    collapsed but still `flex:0 1 auto`, so it kept taking room and shoved the 40px mark to
@@ -1058,7 +1069,7 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    from a `data-tip` tail on the very row whose inline keycap was just fixed. */
 .tipbox .tipk{margin-left:7px;display:inline-flex;align-items:center;justify-content:center;
   height:16px;min-width:22px;padding:0 5px;box-sizing:border-box;vertical-align:middle;
-  border-radius:4px;background:var(--chip);color:var(--text);
+  border-radius:4px;background:var(--chip);color:color-mix(in srgb, var(--text) 50%, var(--chip));
   font-size:11px;font-weight:600;line-height:1;letter-spacing:.02em}
 /* ⚠️ ONE ROW PITCH FOR BOTH STATES — 32px tall on an 8px gap, open or collapsed. It was
    34 + 2 = 36 when open against 32 + 8 = 40 when collapsed, so every icon slid 4px further up
@@ -1327,8 +1338,16 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,
 .mfsec .mfsp svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;
   stroke-linecap:round;stroke-linejoin:round;transform:rotate(45deg)}
 .mfsec .mfsp.pinned svg{fill:currentColor;stroke:currentColor}
-.mfsec .mfsp:hover{background:var(--action-h,var(--action))}
-.mfsec .mfsp:hover{background:var(--hover-side)}
+/* ⚠️ THE HALO IS THE FEEDBACK. `--action` -> `--action-h` is a ~1.13:1 change (measured
+   #1d2a3e -> #111c2c light, #cad3e2 -> #e3e8f2 dark), so on its own the hover was
+   imperceptible — pointing at the control looked like not pointing at it. The ring paints
+   a region that is not there at rest, and costs no layout. Kept identical on `.mfgpin`. */
+.mfsec .mfsp:hover{background:var(--action-h,var(--action));box-shadow:0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent)}
+/* ⚠️ A SECOND `.mfsec .mfsp:hover{background:var(--hover-side)}` USED TO SIT HERE and it was the
+   reported bug: same specificity, later in the sheet, so it won — hovering repainted the dark disc
+   with `--hover-side` (#eef2f8 light, 1.02:1 against this heading), i.e. the badge turned into the
+   surface behind it. It was the hover for the badge's FIRST shape, a bare glyph button, and it
+   outlived the block it belonged to. Do not reintroduce a second hover rule here. */
 /* the label gives up its slack to the DOCS chip so the pin stays against the title */
 .mfsec:has(.mfsp) .mfsl{flex:0 1 auto}
 .mfsec:has(.mfsp) .mfsd{margin-left:auto}
@@ -1862,11 +1881,25 @@ html[data-theme="light"] .sitem.tmp{outline-color:var(--teal-dim)}
    which is also this file's own rule — `.mono` is for NUMERICS.
    ⚠️ THE HEIGHT IS THE OTHER HALF, and it is not a guess: with `padding` only and no line-height,
    the line box decided the chip's height, so whatever those mixed metrics did was what you saw.
-   ⚠️ `--text`, NOT `--text-dim`: the dim pair measures **3.12:1** on `--chip` in light (4.35
-   dark), under 4.5 on the smallest text in the rail. `--text` is 10.58 / 7.73. */
+   ⚠️ THE INK IS 50% OF `--text` MIXED INTO THE CHIP — four inks today: `--text-dim`, then full
+   `--text` for legibility, then 75% ("the shortcut key text opacity will be make down"), then
+   **50%** ("use 50% opacity"). A MIX and not `opacity`, because `opacity` here would fade the
+   chip's background along with its ink.
+   ⚠️ MEASURED, AND STATED RATHER THAN SOFTENED: 50% is **3.16:1 dark / 2.72:1 light**, BELOW the
+   4.5 wanted for text this size (75% was 5.09 / 5.21). It is a shortcut hint beside a row that
+   already reads "Search", and it was asked for twice, so it stands — but it is one number to
+   raise if it turns out too quiet in use.
+   ⚠️ A CORRECTION: this note used to say the original `--text-dim` measured 3.12:1 in light. That
+   came from `#7186a8`, the `.aipanel`-SCOPED override of the token — not the value the rail sees.
+   At `:root` it is `#8a9ab0` dark / `#5b6b85` light, i.e. **4.07 / 4.55** on `--chip`: borderline
+   in dark, not failing. The contrast case for jumping to full `--text` was overstated; the height
+   and font half of that change stands on its own.
+   ⚠️ `color-mix()` SERIALISES AS `color(srgb r g b)`, not `rgb()` — a probe matching the string
+   shape fails on working CSS. Compare luminance. */
 .kbd{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
   height:16px;min-width:22px;padding:0 5px;box-sizing:border-box;vertical-align:middle;
-  font-size:11px;font-weight:600;line-height:1;letter-spacing:.02em;color:var(--text);
+  font-size:11px;font-weight:600;line-height:1;letter-spacing:.02em;
+  color:color-mix(in srgb, var(--text) 50%, var(--chip));
   background:var(--chip);border-radius:4px}
 /* the identity row IS the very last row again — 8px below the rule, matching the 8px of
    padding above it, so the hairline sits centred between the two blocks it separates */
@@ -2047,8 +2080,18 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
 .gtoggle .lbl{font-size:13px;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:8px;flex:1;justify-content:space-between}
 .sidebar.open .gtoggle .lbl{opacity:1}
 /* expand/collapse button — chevron flips with sidebar state */
+/* ⚠️ IT FLIPS ON `body.pinned`, NOT ON `.sidebar.open` — reported as "the expand & collapse icon
+   shows the same icon", and it did: `.sidebar:not(.open) .strcol{display:none}` hides this button
+   whenever the rail is not open, so `.sidebar.open` was TRUE every time the glyph was on screen
+   and the un-mirrored state was unreachable. `body.pinned` is the state the button actually
+   toggles (`toggleSidebar` flips `sbPinned`; the rail ALSO opens on hover, which this control does
+   not own), so: hover-opened but unpinned -> arrow right, press to dock; pinned -> arrow left,
+   press to collapse. That also makes the glyph agree with the `data-tip` the same function has
+   always written from `sbPinned`.
+   ⚠️ `sbPinned` and `body.pinned` must agree AT BOOT — Option 10 is `false` + `<body>`, Option 11
+   `true` + `<body class="pinned">`. Seed one without the other and this rule lies. */
 #collapseArrow{transition:transform .18s;transform-origin:28.5px 24px}
-.sidebar.open #collapseArrow{transform:scaleX(-1)}
+body.pinned #collapseArrow{transform:scaleX(-1)}
 
 /* ---------- Main / views ---------- */
 .main{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
@@ -8139,8 +8182,18 @@ html[data-theme="light"] #drawer-layout{
   background:linear-gradient(90deg,rgba(76,177,254,.1) 0%,rgba(115,30,251,.1) 55%,rgba(249,17,227,.1) 100%),var(--sidebar)}
 .stop #sbAI:hover{
   background:linear-gradient(90deg,rgba(76,177,254,.15) 0%,rgba(115,30,251,.15) 55%,rgba(249,17,227,.15) 100%),var(--sidebar)}
-.stop #sbAI .lbl{background:none;
-  -webkit-text-fill-color:var(--text);color:var(--text)}
+/* ⚠️ NO LABEL OVERRIDE HERE ANY MORE (request, 10 Sep 2026: "the Ask AI text use gradient
+   colour", the ramp supplied verbatim). This rule used to repaint the label — white while the
+   button's fill was opaque, then `--text` once it became a 10% wash — and deleting it hands the
+   label back to `#sbAI .lbl`, which clips the brand ramp into the glyphs.
+   ⚠️ Measured and accepted: the full ramp on a 10% wash of ITSELF is 2.04 / 5.10 / 2.76 in light
+   and 5.69 / 2.38 / 4.36 in dark at the three stops, i.e. under 4.5 at the blue and magenta ends.
+   That is the look chosen over the ratio, on two short words whose row also carries the mark and
+   a tooltip.
+   ⚠️ IF A LABEL COLOUR IS EVER SET HERE AGAIN it must set `-webkit-text-fill-color`, not just
+   `color`: with `background-clip:text` still applying, a bare `color` paints the glyphs solid ON
+   TOP of the gradient and only the computed text-fill shows it — the recorded `.aiagsay.live`
+   trap. */
 /* ⚠️ AND THE GLYPH LOSES ITS RAIL INDENT (request, 9 Sep 2026: "the search icon is not
    alignment"). `.sitem .ic` carries `margin-left:7.5px` — the value derived so the rail's
    glyphs sit at x=22.5 whether the rail is collapsed or open. Inside a 32px button,
@@ -8171,9 +8224,10 @@ html[data-theme="light"] #drawer-layout{
    what `color` cannot override.
    ⚠️ It is scoped to `#sbAI .lbl` (1,0,1), which clears `.sitem.airail`'s own `color` at
    (0,2,0) without touching any other row.
-   ⚠️ IT IS OVERRIDDEN ON THE EXPANDED RAIL, where the button carries the ramp as a 30% wash
-      and the label goes to `--text` — see `.sidebar.open .stop #sbAI .lbl` above.
-   ⚠️ COLLAPSED THE LABEL IS `display:none`, so this paints nothing at 64px — the tooltip is
+   ⚠️ IT APPLIES IN BOTH RAIL STATES AGAIN. A `.stop #sbAI .lbl` override repainted it for part
+      of 10 Sep 2026 — white over the opaque fill, then `--text` over the 10% wash — and was
+      deleted when the ramp was asked for back; the note where it stood records the measurement.
+   ⚠️ COLLAPSED THE LABEL IS `display:none`, so this paints nothing at 53px — the tooltip is
    what names the row there, and `tipSeenText()` skips hidden nodes, so it still speaks. */
 #sbAI .lbl{flex:0 0 auto;
   background:linear-gradient(90deg,rgb(76,177,254) 0%,rgb(115,30,251) 55%,rgb(249,17,227) 100%);
@@ -8296,7 +8350,9 @@ html[data-theme="light"] .mfgrid{box-shadow:0 10px 34px rgba(23,35,54,.16)}
 .mfgpin svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;
   stroke-linecap:round;stroke-linejoin:round;transform:rotate(45deg)}
 .mfgi:hover .mfgpin,.mfgi.pinned .mfgpin{opacity:1}
-.mfgpin:hover{opacity:1;background:var(--action-h,var(--action))}
+/* the same halo as `.mfsec .mfsp:hover` — see the note there for why the colour shift
+   alone was not feedback. These two badges are one object by request. */
+.mfgpin:hover{opacity:1;background:var(--action-h,var(--action));box-shadow:0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent)}
 /* filled = pinned. One glyph, two states — stated once here and once at `.mfpin`. */
 .mfgi.pinned .mfgpin svg{fill:currentColor;stroke:currentColor}
 .mfgcust:hover{background:var(--hover)}
