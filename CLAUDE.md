@@ -75,7 +75,7 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-⚠️ **THERE ARE ELEVEN OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026), each demonstrating a different sidebar over the
+⚠️ **THERE ARE TWELVE OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026, Option 12 on 10 Sep 2026), each demonstrating a different sidebar over the
 same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
 pattern"* is the map; in file order:
 
@@ -92,11 +92,12 @@ pattern"* is the map; in file order:
 | 9 | `dashboard-card-sidebar-alt.html` | Option 6's pattern, copied 8 Sep 2026 |
 | 10 | `dashboard-rail-flyout.html` | Option 1's rail + flyout, copied 9 Sep 2026 — then heavily diverged |
 | 11 | `dashboard-rail-flyout-alt.html` | Option 10's pattern, copied 10 Sep 2026; **boots EXPANDED and collapses to nothing** |
+| 12 | `dashboard-rail-flyout-alt2.html` | Option 10's pattern, copied 10 Sep 2026; **Gemini's rule — no hover expand, one toggle** |
 
 ⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's;
-**Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1** and **Option 11 a
-byte copy of Option 10**. A change meant for every option is an **eleven-file** change;
-⚠️ **OPTIONS 10 AND 11 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` WORK** with nothing syncing them,
+**Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1**, and **Options 11
+AND 12 are byte copies of Option 10**. A change meant for every option is a **twelve-file** change;
+⚠️ **OPTIONS 10, 11 AND 12 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` WORK** with nothing syncing them,
 the same trap Options 5/8 have with `pl*` and 6/9 with `sk*`. Option 10 carries a session's worth
 of things Option 1 does not — the Explorer module grid, per-tile pins, the temporary rail row, the
 pinned-row child menu, the gradient AI mark, the hover notification card — and all of it now exists
@@ -5470,11 +5471,13 @@ block. Everything this file says about Option 6 is true of it until one of them 
   sections, the NOC View rows, Geo Map, the search-in-Setting-only rule, the 26px tiles, the foot's
   Layout button.
 
-## Options 10 and 11 — the rail + flyout pair (9–10 Sep 2026)
+## Options 10, 11 and 12 — the rail + flyout family (9–10 Sep 2026)
 
 **Option 10** (`dashboard-rail-flyout.html`) began as a byte copy of Option 1 and is now the most
 diverged page in the folder. **Option 11** (`dashboard-rail-flyout-alt.html`) is a byte copy of
-Option 10 with one deliberate difference (below). ⚠️ **Nothing syncs them** — every item here now
+Option 10 with one deliberate difference (below), and **Option 12**
+(`dashboard-rail-flyout-alt2.html`) is a second byte copy with another (Gemini's rule — see its own
+section). ⚠️ **Nothing syncs the three** — every item here now
 exists in two files, and the `mf*` / `sbNotif*` / `RAIL_TMP` names return two files' worth of hits.
 
 ### What Option 10 has that Option 1 does not
@@ -5526,13 +5529,20 @@ as flex siblings rather than merged, so each keeps the rules written for it. `.s
 `showView()` toggles it by id and the selected look would otherwise style nothing, silently.
 `#sbUser` keeps its hidden `.lbl` for `stSeed()`. **Tips inside `.sfoot` open ABOVE their button.**
 
-### Its shortcut is a LETTER, and that is new
+### Their shortcuts are LETTERS, and that is new
 
-`_variants.js` ran out of digits at Option 10's `0`. `VS_LETTERS = ['x']` maps index 10 onward;
-`vsKey` and `vsIdx` are exact inverses and **must be edited together**. `x` was checked free in every
-option's own `KB` registry (`n w g e d o t f / s a`) — that handler runs on all eleven pages, so a
-letter has to be free in every one. Both cases match: unlike a digit, where Shift gives `!` and can
-never match, a letter with Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
+`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z']`** maps index 10
+onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026, by request) — and `vsKey` / `vsIdx` are
+exact inverses that **must be edited together**: a key shown on a row that does not switch, or a
+switch with no keycap, is worse than no shortcut. Only that array changes; both functions read it.
+⚠️ **EACH LETTER IS CHECKED AGAINST EVERY PAGE FIRST.** That handler runs on all twelve pages, so a
+letter has to be free in every one — each page's own `KB` registry is `n w g e d o t f / s a`, and
+neither `x` nor `z` is in any of them (nor in any other bare-key comparison in the folder).
+⚠️ **A MODIFIER BINDING IS NOT A CONFLICT**: ⌘Z / Ctrl+Z stays undo because the handler returns
+early on ctrl/meta/alt and claims only the bare key.
+⚠️ **BOTH CASES MATCH** — unlike a digit, where Shift gives `!` and can never match, a letter with
+Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
+⚠️ **A THIRTEENTH NEEDS A DELIBERATE CHOICE**, not the next letter along.
 
 ### Verification lessons from this pair
 
@@ -5550,6 +5560,119 @@ never match, a letter with Shift is still that letter. The footer hint stopped b
   undone the 2 Sep "Alert and Report read the same" work.
 - ⚠️ **Two background probe jobs sharing one generated `probe.html` is a race** — one run reported a
   different assertion count than its siblings because the other job rewrote the file mid-run.
+
+### Option 12 — Gemini's rule: no hover, one toggle (10 Sep 2026)
+
+`dashboard-rail-flyout-alt2.html`, a byte copy of Option 10 whose only differences are its
+`<title>`, a banner, its switcher entry — and the sidebar's **behaviour**, which was
+**driven and measured on gemini.google.com**, not guessed: that rail is **52px**, its
+`bard-sidenav` carries `transition:background-color .3s` and nothing that changes width, hovering
+it (icon or empty space) expands **nothing**, and the `Open sidebar` / `Close sidebar` button is
+present in **BOTH** states and is the only door.
+
+| | Option 10 | Option 12 |
+|---|---|---|
+| hover the rail | expands it, with a re-arming collapse watchdog | **nothing** |
+| how it opens | hover, or the toggle to pin | **the toggle only** |
+| the toggle when collapsed | `display:none` — the logo is the way back | **on screen, centred, 32px** |
+| the header row | is itself a toggle | plain — only the button toggles |
+| collapsed brand row | the 24px mark | **the toggle** (the mark returns on expand) |
+
+- ⚠️ **ONE EARLY `return` IN `sbHover` NEUTRALISES SIX CALLERS** — the `<aside>`'s
+  `onmouseenter`/`onmouseleave`, the grid card's `onmouseleave`, `mfLater`'s partner and the rule-7
+  `focusin`/`focusout` bindings. Picking them out would be six edits and a seventh next time.
+- ⚠️ **THE BODY BELOW IT IS KEPT, NOT DELETED** (the request said so): the whole three-state
+  behaviour, including the 200ms re-arming collapse watchdog, is still there as the record of the
+  bug it was built for. `sbHoverT` is simply never armed.
+- ⚠️ **THE TOGGLE HAD TO BECOME VISIBLE COLLAPSED.** `pointer-events:none;display:none` was right
+  for Option 10, where hover opens the rail; with hover gone it would have stranded the rail shut.
+- ⚠️ **CONSEQUENCE, STATED:** the collapsed rail is icons + tooltips and nothing else — the flyout
+  and Explorer's grid both gate on `.sidebar.open`, so they are reachable only once the toggle has
+  opened it. That is Gemini's collapsed rail exactly, and a row still navigates on click.
+- ⚠️ **TWO GEMINI TRAITS DELIBERATELY NOT COPIED**, both appearance rather than behaviour: its
+  **292px** expanded panel (this keeps 240, the UX-rule floor — one token if wanted), and its
+  **borderless** boundary. Gemini's rail-to-content edge is a ~1.03:1 surface change; ours would be
+  1.04:1 in light (`#F6F9FC` on `#ffffff`), and this folder has recorded two bugs caused by exactly
+  that, so the 1px border stays.
+- ⚠️ **THE TITLE SUFFIXES ARE OFFSET BY ONE**, pre-existing: `dashboard-rail-flyout.html` carries
+  "(alt)" because Option 10 was itself the alt of Option 1's rail, `-alt.html` carries "(alt 2)",
+  so `-alt2.html` is "(alt 3)".
+- ⚠️ **THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT** — `-alt2` because it is a third take on
+  the same sidebar. Rename it the moment it becomes something else; `_variants.js`,
+  `_verify/lxbehave.py`'s `FILES` and `_verify/dsconf.py` are the three places that must follow
+  (`dsconf.py` takes its target as an argument, so it needed nothing this time).
+- Verified: a **18-assertion** probe (no hover expand, no timer armed, the toggle on screen and
+  hit-testable, centred at 32px, the row not a toggle, open/close, the canvas yielding to 240px,
+  the mark and wordmark returning, focus not opening it) plus **Option 10 re-probed unchanged**;
+  the switcher at its real filename (12 rows, Option 12 marked current with a `Z` keycap, all 12
+  keys unique); **`Z` navigating for real in a real browser over http**; `harness … query`
+  **ALL 77 PASS**; `lxbehave` **ALL 57 PASS ×12**.
+  ⚠️ **`--dump-dom` CANNOT OBSERVE A NAVIGATION** — it never emits and the run has to be killed, so
+  the switcher key was tested with `python3 -m http.server` + the browser tools. And a probe copy is
+  written as `q-0.html`, so `location.pathname` says nothing about which option it is and
+  `_variants.js`'s `here` never matches: key off the page's **title**, and test `.vs-item.on` in a
+  sandbox that keeps the real filenames.
+
+### The 10 Sep 2026 pass — two dead CSS states, and the sizes
+
+All in Options 10 and 11. Two of these were rules that existed and could never take effect:
+
+- ⚠️ **THE COLLAPSE ARROW NEVER CHANGED.** `.sidebar.open #collapseArrow{transform:scaleX(-1)}` was
+  the wrong key: `.sidebar:not(.open) .strcol{display:none}` hides that button whenever the rail is
+  not open, so the selector was **true every time the glyph was on screen** and the un-mirrored
+  state was unreachable. It flips on **`body.pinned`** now — the state the button actually toggles,
+  since the rail also opens on hover — which also makes the glyph agree with the `data-tip`
+  `toggleSidebar` has written from `sbPinned` all along. Option 10's authored tip was the wrong half
+  of the pair from the first paint (it boots unpinned) and is corrected. ⚠️ **`sbPinned` and
+  `body.pinned` must agree at boot** — Option 10 `false` + `<body>`, Options 11/12 `true` +
+  `<body class="pinned">`. Option 11 needed no change: its button hides the sidebar outright, so
+  whenever it is visible the sidebar is pinned, and `#sbOpen` (a hamburger) is the way back.
+- ⚠️ **THE PIN BADGE VANISHED ON HOVER.** A second `.mfsec .mfsp:hover{background:var(--hover-side)}`
+  sat one line below the real hover rule at the **same specificity**, so source order handed it the
+  win: the dark disc was repainted `#eef2f8`, **1.02:1** against the heading — the badge turned into
+  the surface behind it. It was the hover for the badge's first shape (a bare glyph button) and
+  outlived the block it belonged to. ⚠️ **AN `!important` STAND-IN IS WHAT HID IT FROM MY OWN
+  PROBE** — it beat both rules and reported the intended colour. A hover probe must read the
+  CASCADE: enumerate every rule matching the selector and assert there is exactly one.
+  The colour shift alone was ~1.13:1, so both badges also gained a **3px halo at 22% of `--action`**.
+
+Sizes and colours, all measured:
+
+- the rail's **"has a list" chevron** — 18px, the rail's own icon size, on Alert · Explorer · Report
+  and on a pinned or temporary row **that has children** (`mfOpenPin` refuses a childless row, so an
+  arrow there would open nothing; those keep the pin mark). Alert renders through `mfTree`, not
+  `mfCol` — which is why it was 0/8 while Report was 10/10.
+- **the flyout's own row arrows were added and then removed again** the same day: the rail row says
+  the module has a list, so repeating it inside the list said it twice. `.mfgo` and `.mfkc.nav` are
+  parked; the reserved chevron box stays on every tree row.
+- **Ask AI** wears the brand ramp as a **10% wash (15% on hover)** in both rail states, and its
+  label is clipped from the **full** ramp again. Both measured and accepted: the full ramp on a 10%
+  wash of itself is 2.04 / 5.10 / 2.76 light and 5.69 / 2.38 / 4.36 dark — under 4.5 at the blue and
+  magenta stops. ⚠️ Any future colour on that label must set `-webkit-text-fill-color`, not just
+  `color`, or `background-clip:text` paints the glyphs solid on top of the gradient.
+- **Explorer's grid**: the icon box is **40px** (30 → 34 → 36 → 40 in one day), border-only at rest,
+  `--card` (`#ffffff` in light) **on hover** — 1.39:1 against the hovered tile where `--pop` was
+  1.11. The **pin badge** is tilted 45° and sits 2px inside the corner: the offset that centres an
+  18px badge on the *visible* corner is **-10**, not -9, because it resolves against the padding box
+  and `.mfgt` has a 1px border.
+- **the pinned row's mark is the arrow**, and the **pin moved into the popup's heading** as the grid
+  tile's own badge (filled = pinned, hollow = not, and it reflects `railPinned()` — it lied for a
+  temporary row until that was fixed). It closes the card only when the row it belongs to is gone.
+- **brand mark 24×24** with both anchors re-derived (centre 26, wordmark x=46, `.strigger`'s gap
+  5 → 8px); **brand row 56px** — ⚠️ declared **twice**, once for both rail states and once for the
+  collapsed one, and they must move together: when they last disagreed (53/64) the whole list below
+  shifted 11px as the rail expanded; **collapse/expand glyph 20px** in a 32px button (Option 11's
+  canvas-side expand button follows, and being stroked its width is derived: 1.25 × 24 / 20 = 1.5).
+- the **⌘K keycap** is a definite 16px `inline-flex` chip on the UI font, ink at **50% of `--text`
+  mixed into the chip**. ⚠️ Stated rather than softened: that is **3.16:1 dark / 2.72:1 light**,
+  below 4.5 for text this size, on a shortcut hint beside a row that already reads "Search".
+  ⚠️ **A CORRECTION**: the "3.12:1" once quoted for `--text-dim` there is the `.aipanel`-SCOPED
+  value of that token, not the rail's — at `:root` it is 4.07 / 4.55, borderline, not failing.
+  ⚠️ `color-mix()` serialises as `color(srgb 0..1)`, **not** `rgb(0..255)`: a probe dividing by 255
+  reported 1.79:1 and 17.66:1 on correct CSS.
+- **light `--sidebar` is `#F6F9FC` in all twelve options**, not `#ffffff`. It had been the same value
+  as `--bg` and `--card`, so the rail, the canvas and every widget were ONE surface with only a 1px
+  border between them — the cause of two bugs already recorded here.
 
 ## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
 
@@ -5934,8 +6057,9 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   entry point and prints the verdict **as text on stdout**. ⚠️ It is the one script with a
   **hardcoded `FILES` list** (line 18) rather than a `sys.argv` file — a new page has to be
   added to it or the script silently tests the old set and reports green. Option 4 was added
-  on 1 Sep 2026, Option 9 on 8 Sep, Option 10 on 9 Sep and Option 11 on 10 Sep, so it now runs
-  **eleven** files. **57 checks**,
+  on 1 Sep 2026, Option 9 on 8 Sep, Option 10 on 9 Sep, Option 11 and Option 12 both on
+  10 Sep, so it now runs **twelve** files — **ALL 57 PASS on all twelve** as of 10 Sep 2026 19:30.
+  **57 checks**,
   and all three files run all 57 — Option 1 skipped 5 of them while its log-sources panel was
   deleted, and the panel is back. Run it after any `lx*` change.
   ⚠️ **Two of its assertions were rewritten on 21 Aug 2026** because they encoded the OLD

@@ -19,7 +19,8 @@ FILES = ["index.html", "dashboard-grouped-sidebar.html", "dashboard-picker-advan
          "dashboard-labelled-rail.html", "dashboard-nav-column.html", "dashboard-card-sidebar.html",
          "dashboard-single-column.html",
          "dashboard-nav-column-alt.html", "dashboard-card-sidebar-alt.html",
-         "dashboard-rail-flyout.html", "dashboard-rail-flyout-alt.html"]
+         "dashboard-rail-flyout.html", "dashboard-rail-flyout-alt.html",
+         "dashboard-rail-flyout-alt2.html"]
 
 PROBE = r"""
 <script>
