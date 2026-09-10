@@ -75,7 +75,7 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-⚠️ **THERE ARE NINE OPTIONS NOW** (Option 9 added 8 Sep 2026), each demonstrating a different sidebar over the
+⚠️ **THERE ARE ELEVEN OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026), each demonstrating a different sidebar over the
 same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
 pattern"* is the map; in file order:
 
@@ -90,9 +90,18 @@ pattern"* is the map; in file order:
 | 7 | `dashboard-single-column.html` | **no rail at all** — one 270px column (Notion) |
 | 8 | `dashboard-nav-column-alt.html` | Option 5's pattern; collapse hides everything |
 | 9 | `dashboard-card-sidebar-alt.html` | Option 6's pattern, copied 8 Sep 2026 |
+| 10 | `dashboard-rail-flyout.html` | Option 1's rail + flyout, copied 9 Sep 2026 — then heavily diverged |
+| 11 | `dashboard-rail-flyout-alt.html` | Option 10's pattern, copied 10 Sep 2026; **boots EXPANDED and collapses to nothing** |
 
-⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's, and
-**Option 9 is a byte copy of Option 6**. A change meant for every option is a **nine-file** change;
+⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's;
+**Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1** and **Option 11 a
+byte copy of Option 10**. A change meant for every option is an **eleven-file** change;
+⚠️ **OPTIONS 10 AND 11 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` WORK** with nothing syncing them,
+the same trap Options 5/8 have with `pl*` and 6/9 with `sk*`. Option 10 carries a session's worth
+of things Option 1 does not — the Explorer module grid, per-tile pins, the temporary rail row, the
+pinned-row child menu, the gradient AI mark, the hover notification card — and all of it now exists
+twice. ⚠️ **Options 1, 10 and 11 all load `_settings-module.css` / `.js`**, so a change there lands
+in three pages whether or not that was meant — the one thing that IS synced, by accident of the copy;
 Options 5 and 8 share the `pl*` namespace and Options 6 and 9 share `sk*`, with **nothing syncing
 either pair**. Each option's own sidebar block is the only
 part that differs; everything below this line describes content they all carry.
@@ -5461,6 +5470,87 @@ block. Everything this file says about Option 6 is true of it until one of them 
   sections, the NOC View rows, Geo Map, the search-in-Setting-only rule, the 26px tiles, the foot's
   Layout button.
 
+## Options 10 and 11 — the rail + flyout pair (9–10 Sep 2026)
+
+**Option 10** (`dashboard-rail-flyout.html`) began as a byte copy of Option 1 and is now the most
+diverged page in the folder. **Option 11** (`dashboard-rail-flyout-alt.html`) is a byte copy of
+Option 10 with one deliberate difference (below). ⚠️ **Nothing syncs them** — every item here now
+exists in two files, and the `mf*` / `sbNotif*` / `RAIL_TMP` names return two files' worth of hits.
+
+### What Option 10 has that Option 1 does not
+
+| piece | what it is |
+|---|---|
+| **Explorer's module grid** (`mfGrid*`) | Explorer opens a 232px card of its ten sub-modules as icon tiles, flush to the rail (`left = railWidth()`, no gap, no left border/radius), over a **Customize navigation** button that opens the Layout drawer's Sidebar tab |
+| **a pin per tile** (`.mfgpin`) | the same `railPinToggle` the flyout and the rail band drive — one record, four surfaces |
+| **the temporary rail row** (`RAIL_TMP`) | picking a tile puts that sub-module on the rail until you leave it; a **dashed ring**, never the pin mark |
+| **the pinned-row child menu** (`mfOpenPin`) | hovering a pinned (or temporary) row lists that module's own children, from the same `kids` array the flyout's detail pane draws |
+| **five modules with children** | `Monitor` (18 types) · `Topology` (5 tabs) · `NCCM` (2) · `APM` (4) · `Flow` (3) — Topology/APM/Flow added 9 Sep from supplied tab bars, each corroborated against `_product-docs` |
+| **the gradient AI mark** | the supplied four-point star on the brand ramp, everywhere `AI_SPARK` reaches |
+| **the hover notification card** | the bell opens `#notifPop` on hover, with `kbPop`'s timing rules |
+| **`MF_NO_HOVER`** | `Dashboard`, `SLO` and `Setting` open no menu on hover — click navigates |
+
+⚠️ **THE ONE RULE THAT KEEPS COMING BACK: A MENU SHOWS EITHER PER-ROW `DOCS ↗` CHIPS OR ONE
+FOOTER, NEVER BOTH AND NEVER NEITHER.** `mfTree` asks `tree.some(x => x.doc)` and `mfOpen` asks the
+same question for the footer; they are exact complements. The structural test it replaced
+(`mfTreeFor(name) ? chips : footer`) was true only while every tree row had its own `doc` — Alert's
+never did, so it drew eight chips at the module's one page **and** no footer. The fallback to
+`MOD_DOCS[name]` survives *inside* a per-row-docs menu, because two of Settings' 19 categories have
+no page of their own and would otherwise be holes in the chip column.
+
+⚠️ **`.mfcards` IS SET BY `mfOpen`, NOT `:has(.mfdetail)`.** The two-card treatment used to be gated
+on "is this a tree menu", which was the same thing as "has no footer" right up until Alert became a
+tree menu that keeps its footer — and then the footer, a sibling of `.mfcols`, was stranded below
+the cards on the board. `mfOpenUtil` and `mfOpenPin` clear the class; both render one flat card.
+
+⚠️ **THE RAIL LANDS ON EACH MODULE'S FIRST SUB-PAGE** (`mfRailFirst`), derived from the same arrays
+the flyout draws — Alert on Metric, Report on Metric, SLO on the SLO list — skipping `plus` rows.
+`Dashboard` and `Setting` are exempt: both have a real screen, and Setting resets to `stOpen()`, the
+first screen *derived* from `ST_TREE[0]`. **Explorer opens its grid and navigates nowhere**: its
+`mod` is `Metric Explorer`, so the row was opening a different module's page under its own name.
+`MOD_SUB` names the sub-page on the placeholder, or the setting is invisible.
+
+### Option 11's one divergence
+
+**It boots EXPANDED (240px) and collapsing hides the sidebar entirely**, leaving `#sbOpen` fixed at
+the canvas's top-left as the only way back — Option 8's answer, ported. `<body class="pinned">` and
+`class="… open"` are in the MARKUP so the first paint is already expanded; state alone flashes the
+64px rail and fits the canvas twice. Hiding drops `open`/`pinned` (`mfOpen` gates on `.sidebar.open`
+and would read a hidden sidebar as open), closes the flyout and any popover, and `railWidth()`
+returns **0** so nothing anchors mid-board. `sbHover` is disarmed while hidden.
+
+⚠️ **Its footer is ONE compact icon row** (a Magnific reference, 10 Sep 2026) — Approval · Health ·
+Notifications · What's new · avatar, icon-only, names in `data-tip`. **Only existing controls**; the
+reference's plug/mortarboard/moon/⋯ were explicitly not copied. `.squick` and `.sqrow` are laid out
+as flex siblings rather than merged, so each keeps the rules written for it. `.sq.on` is restated —
+`showView()` toggles it by id and the selected look would otherwise style nothing, silently.
+`#sbUser` keeps its hidden `.lbl` for `stSeed()`. **Tips inside `.sfoot` open ABOVE their button.**
+
+### Its shortcut is a LETTER, and that is new
+
+`_variants.js` ran out of digits at Option 10's `0`. `VS_LETTERS = ['x']` maps index 10 onward;
+`vsKey` and `vsIdx` are exact inverses and **must be edited together**. `x` was checked free in every
+option's own `KB` registry (`n w g e d o t f / s a`) — that handler runs on all eleven pages, so a
+letter has to be free in every one. Both cases match: unlike a digit, where Shift gives `!` and can
+never match, a letter with Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
+
+### Verification lessons from this pair
+
+- ⚠️ **A HOVER BUG CANNOT BE CAUGHT BY DISPATCHING `mouseenter`.** The notification card blinked at
+  ~3Hz: `togglePop` raises `#scrim` (`inset:0`, `z-index:80`) over a rail at `z-index:60`, so the
+  pointer resting on the bell was over the scrim, the bell got a **real** `mouseleave`, the card
+  closed, the scrim went, the pointer was on the bell again… Synthetic events do not hit-test, so a
+  15/15 probe passed on a visibly broken control. **Assert with `elementFromPoint`.** The fix is that
+  hover mode opens without the scrim; the document click handler already closes any `.pop`.
+- ⚠️ **A flex BASIS beats a `width`** — recorded again: `.miniav` is `flex:0 0 20px`, so a rule
+  asking for 26px measured 20. Set `flex` and `width` together.
+- ⚠️ **`location.href` is not configurable**, so a probe that stubs it dies silently. Test the
+  switcher by REAL navigation inside an iframe.
+- ⚠️ **`.par` is the master-row WEIGHT, not a has-children flag.** Asserting its absence would have
+  undone the 2 Sep "Alert and Report read the same" work.
+- ⚠️ **Two background probe jobs sharing one generated `probe.html` is a race** — one run reported a
+  different assertion count than its siblings because the other job rewrote the file mid-run.
+
 ## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
 
 Found while removing Option 8's rail search, and it was **live in every option**:
@@ -5844,7 +5934,8 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   entry point and prints the verdict **as text on stdout**. ⚠️ It is the one script with a
   **hardcoded `FILES` list** (line 18) rather than a `sys.argv` file — a new page has to be
   added to it or the script silently tests the old set and reports green. Option 4 was added
-  on 1 Sep 2026 and Option 9 on 8 Sep, so it now runs **nine** files. **57 checks**,
+  on 1 Sep 2026, Option 9 on 8 Sep, Option 10 on 9 Sep and Option 11 on 10 Sep, so it now runs
+  **eleven** files. **57 checks**,
   and all three files run all 57 — Option 1 skipped 5 of them while its log-sources panel was
   deleted, and the panel is back. Run it after any `lx*` change.
   ⚠️ **Two of its assertions were rewritten on 21 Aug 2026** because they encoded the OLD

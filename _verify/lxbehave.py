@@ -18,7 +18,8 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 FILES = ["index.html", "dashboard-grouped-sidebar.html", "dashboard-picker-advanced.html",
          "dashboard-labelled-rail.html", "dashboard-nav-column.html", "dashboard-card-sidebar.html",
          "dashboard-single-column.html",
-         "dashboard-nav-column-alt.html", "dashboard-card-sidebar-alt.html"]
+         "dashboard-nav-column-alt.html", "dashboard-card-sidebar-alt.html",
+         "dashboard-rail-flyout.html", "dashboard-rail-flyout-alt.html"]
 
 PROBE = r"""
 <script>

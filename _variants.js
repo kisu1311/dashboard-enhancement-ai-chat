@@ -22,7 +22,9 @@
     {"file":"dashboard-card-sidebar.html","label":"Option 6"},
     {"file":"dashboard-single-column.html","label":"Option 7"},
     {"file":"dashboard-nav-column-alt.html","label":"Option 8"},
-    {"file":"dashboard-card-sidebar-alt.html","label":"Option 9"}
+    {"file":"dashboard-card-sidebar-alt.html","label":"Option 9"},
+    {"file":"dashboard-rail-flyout.html","label":"Option 10"},
+    {"file":"dashboard-rail-flyout-alt.html","label":"Option 11"}
   ];
   /* VARIANTS:END */
 
@@ -75,10 +77,48 @@
   var root = document.createElement('div');
   root.className = 'vs-switch';
 
+  /* ── which key addresses which option ───────────────────────────────────────
+     1–9 for the first nine, then **0 for the TENTH** (request, 9 Sep 2026). 0 is
+     where the digit row ends, and it is what every browser already uses for "the
+     last one" — a two-key chord like "10" is not a shortcut, it is a sequence, and
+     nothing here could tell "1" from the start of "10" without a timer.
+     ⚠️ AN ELEVENTH VARIANT GETS NO KEY. That is the same rule one step further on,
+     not an oversight: the digit row is used up. `vsKey` returning '' is what both
+     the keycap and the footer already test, so an 11th page needs no code change.
+     ⚠️ ONE PAIR OF FUNCTIONS, THREE CALLERS — the keycap on the row, the footer's
+     hint and the keydown handler. They disagreed the moment they were three
+     separate expressions, which is how the tenth row shipped with no key at all. */
+  /* ⚠️ THE DIGIT ROW RAN OUT AT OPTION 10, so Option 11 takes a LETTER — `X`, by request
+     (10 Sep 2026). `vsKey` and `vsIdx` are exact inverses and must be edited together; a key
+     shown on a row that does not switch, or a key that switches with no keycap on the row, is
+     worse than no shortcut.
+     ⚠️ `X` WAS CHECKED FREE IN EVERY OPTION FIRST. Each page's own single-key registry (`KB`) is
+     n w g e d o t f / s a — letters only, and none of them is x — so nothing was displaced.
+     Grep before binding another one; this handler runs on ALL eleven pages, so a letter has to
+     be free in every one of them, not just in the page it points at.
+     ⚠️ BOTH CASES MATCH. `e.key` is 'x' bare and 'X' with Shift, and unlike a digit — where
+     Shift produces '!' and can never match — a letter with Shift is still that letter. Refusing
+     the shifted form would make the shortcut fail for anyone with caps lock on.
+     ⚠️ A TWELFTH OPTION NEEDS A DELIBERATE CHOICE, not the next letter along: it has to be free
+     in every page's `KB` and not be a browser or OS binding. `vsKey` returning '' is still what
+     makes an unbound row render with no keycap and no footer entry. */
+  var VS_LETTERS = ['x'];                       /* index 10 onward, in order */
+  function vsKey(i) {
+    if (i < 9) return String(i + 1);
+    if (i === 9) return '0';
+    var L = VS_LETTERS[i - 10];
+    return L ? L.toUpperCase() : '';
+  }
+  function vsIdx(k) {
+    if (k === '0') return 9;
+    if (k >= '1' && k <= '9') return +k - 1;
+    var i = VS_LETTERS.indexOf(String(k).toLowerCase());
+    return i < 0 ? -1 : i + 10;
+  }
+
   var items = VARIANTS.map(function (v, i) {
     var on = v.file === here;
-    /* only the first nine get a digit — that is all the keyboard can address */
-    var kbd = i < 9 ? '<span class="vs-kbd">' + (i + 1) + '</span>' : '';
+    var kbd = vsKey(i) ? '<span class="vs-kbd">' + vsKey(i) + '</span>' : '';
     return '<a class="vs-item' + (on ? ' on' : '') + '" href="' + encodeURI(v.file) + '">' +
            '<span class="vs-tick">✓</span><span>' + v.label + '</span>' + kbd + '</a>';
   }).join('');
@@ -89,7 +129,7 @@
     '<span>' + (current ? current.label : 'Variants') + '</span>' +
     '<span class="vs-car">▲</span></div>' +
     '<div class="vs-menu"><div class="vs-head">Visualization variants</div>' + items +
-    '<div class="vs-foot">Press ' + VARIANTS.slice(0, 9).map(function (v, i) { return i + 1; }).join(' · ') +
+    '<div class="vs-foot">Press ' + VARIANTS.map(function (v, i) { return vsKey(i); }).filter(Boolean).join(' · ') +
     ' to switch</div></div>';
 
   root.querySelector('.vs-btn').addEventListener('click', function (e) {
@@ -116,10 +156,13 @@
   }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { root.classList.remove('open'); return; }
+    /* ⚠️ MODIFIERS ARE STILL LEFT ALONE, and 0 makes that matter more, not less:
+       ⌘0 / Ctrl+0 is the browser's "reset zoom" and Alt+0 belongs to the OS. */
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key < '1' || e.key > '9') return;
+    var idx = vsIdx(e.key);
+    if (idx < 0) return;
     if (vsTyping()) return;
-    var v = VARIANTS[+e.key - 1];
+    var v = VARIANTS[idx];
     if (!v || v.file === here) return;        /* already here — do nothing */
     e.preventDefault();
     location.href = encodeURI(v.file);

@@ -4700,6 +4700,60 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ PLAIN TEXT, not chips (annotation, 19 Aug 2026): four pills wrapped to two rows in a
    344–420px panel and looked like clickable filters. One muted line, dot-separated. */
 .aisumeta{margin:1px 0 9px;font-size:12px;line-height:1.55;color:var(--muted)}
+/* ══ EVERY ANSWER WRITES ITSELF IN — FADE + RISE, PER CHARACTER (`aitw*`, 9 Sep 2026) ═══
+   Third animation on this surface in one day, and this one is a SUPPLIED REFERENCE: a
+   standalone page handed over with `.word` / `.char`, `fadeSlideUp`, a 15ms per-character
+   stagger and a 100ms base delay. Its numbers are the numbers below.
+   It replaces the Gemini reveal (a flat 400ms ease-out opacity fade per WORD, measured off
+   gemini.google.com), which replaced the reactbits typewriter. Each was asked for by name;
+   read `git log` for the two earlier ones rather than reviving them from a parked rule.
+
+       .char { display:inline-block; opacity:0; transform:translateY(12px);
+               animation: fadeSlideUp .6s cubic-bezier(.175,.885,.32,1.275) forwards }
+       @keyframes fadeSlideUp { to { opacity:1; transform:translateY(0) } }
+
+   ⚠️ THE EASING OVERSHOOTS. `cubic-bezier(.175,.885,.32,1.275)` is easeOutBack — the fourth
+   control point is past 1, so each character rises slightly THROUGH its resting line and
+   settles back. That is the whole character of this animation; a "tidier" 0–1 curve makes
+   it an ordinary fade. Nothing that clips would work here either — checked before porting:
+   every container a typed card sits in (`.aians`, `.aiab`, `.aiagc`, `.aiagcb`, `.aiq`,
+   `.aidform`, `.aisumeta`) is `overflow:visible`, so the 12px rise is never cut off.
+   ⚠️ `display:inline-block` ON THE CHARACTER IS LOAD-BEARING — `transform` does nothing to a
+   plain inline box, so without it the rise silently disappears and only the fade survives.
+   ⚠️ AND THAT IS WHY THE WORD WRAPPER EXISTS. A line may break between two adjacent
+   inline-level boxes, so with inline-block characters a word would break mid-word; the
+   reference's `white-space:nowrap` on `.word` is what forbids it.
+   ⚠️ THE REFERENCE'S `margin-right:.25em` IS NOT PORTED, and must not be. It splits on
+   spaces and throws the space characters away, substituting a margin — which looks the same
+   and makes `innerText` read "Wordword". This panel's Copy and Export hand over exactly
+   `innerText` (`aiCopy`, `aiAgShareDo`), so the real whitespace is kept as text nodes
+   between the word spans and the margin is dropped. A space in Inter is ~.26em, so the two
+   are within a pixel of each other anyway.
+   ⚠️ THE PREFIX IS `aitw`, NOT `aity`. `.aityping` and `aiTypedPaint()` already mean "the
+   COMPOSER has text in it", 13,000 lines away — the flat-stylesheet collision this file's
+   own notes open with. `aitwx` was grepped free before naming.
+   ⚠️ EVERY RULE IS SCOPED UNDER `.aitw` so nothing can be stranded invisible or 12px low:
+   the class comes off the root when the reveal ends, and every pending character and staged
+   block stops applying with it — whatever state its own animation was in. */
+.aitw{--aitw-dur:.6s;--aitw-ease:cubic-bezier(.175,.885,.32,1.275)}
+.aitw .aitwh{display:none}
+.aitw .aitww{display:inline-block;white-space:nowrap}
+/* ⚠️ TWO PLACES ASK FOR LONG TOKENS TO BREAK — `.ailq` (the generated query expression) and
+   `.lxaipvq` (a builder row's value), both `word-break:break-word`. The wrapper's `nowrap`
+   would override exactly the thing those rules exist for and push a long expression out of
+   its own box, so inside them a word may break — between characters, which is what
+   `break-word` was already doing to it. */
+.aitw .ailq .aitww,.aitw .lxaipvq .aitww{white-space:normal}
+.aitw .aitwx{display:inline-block;opacity:0;transform:translateY(12px)}
+.aitw .aitwx.on{opacity:1;transform:none}
+/* `.new` is added only to a character crossing the threshold NOW — never to one restored
+   after a repaint, or every re-render would replay the whole answer (see aiTwPaint). */
+.aitw .aitwx.on.new{animation:aitwrise var(--aitw-dur) var(--aitw-ease) both}
+@keyframes aitwrise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* the furniture named by `AI_TW_SKIP` — the preview art, the chips, the feedback row, the
+   follow-ups — takes the SAME curve at its own place in the reveal, so the card speaks one
+   language. ⚠️ The var fallbacks matter: this class can outlive `.aitw` by one frame. */
+.aitwin{animation:aitwrise var(--aitw-dur,.6s) var(--aitw-ease,cubic-bezier(.175,.885,.32,1.275)) both}
 /* composer */
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
@@ -15878,8 +15932,13 @@ function aiDashHTML(d, i){
        (annotation, 15 Aug 2026). The board is created and left alone; this card hands over
        a LINK, so the user finishes reading the conversation before the canvas changes. */
     const nq = aiEsc(d.name).replace(/"/g, '&quot;');
+    /* ⚠️ A KEY PER STATE, not one flag per message: this card is the same thread entry as
+       the plan, rendered again, and "Dashboard created" is a new answer that has to write
+       itself. A bare `m.tw` would have let the plan type and landed this one instantly. */
+    const tw = aiTwOn(aiThread[i], 'done');
     return '<div class="aistep">Created</div>' +
-      '<div class="aians"><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
+      '<div class="aians' + (tw ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="done"' +
+        (tw ? ' onclick="aiTwSkip()"' : '') + '><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
         AI_IC.wand + '</svg></span>Dashboard created — “' + aiEsc(d.name) + '”</div>' +
       '<div class="aiab"><p>Your new dashboard <b>“' + aiEsc(d.name) + '”</b> has been created in <b>' +
         aiEsc(d.cat) + '</b>.</p>' +
@@ -15928,8 +15987,10 @@ function aiDashHTML(d, i){
       '</div>';
   }
   if (d.state === 'cancelled'){
+    const twc = aiTwOn(aiThread[i], 'cancel');
     return '<div class="aistep">Cancelled</div>' +
-      '<div class="aians"><div class="aiab"><p>Nothing was created.</p></div>' +
+      '<div class="aians' + (twc ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="cancel"' +
+        (twc ? ' onclick="aiTwSkip()"' : '') + '><div class="aiab"><p>Nothing was created.</p></div>' +
       '<div class="aiacts"><button class="aialt" onclick="aiDashSet(\'state\',\'plan\')">Show the plan again</button></div></div>';
   }
   const editing = d.state === 'edit';
@@ -15954,8 +16015,12 @@ function aiDashHTML(d, i){
 
   /* d.tk → the thinking trail above already reads "Planned a new dashboard". Created and
      Cancelled keep their own line, because they happen after the trail finished. */
+  /* ⚠️ `.aidform` is NOT furniture — the plan's own fields ARE the answer, so they write
+     themselves; their <input>/<select> land whole through `AI_TW_SKIP`'s element rules. */
+  const twp = aiTwOn(aiThread[i], 'plan');
   return (d.tk ? '' : '<div class="aistep">Planned a new dashboard</div>') +
-    '<div class="aians"><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
+    '<div class="aians' + (twp ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="plan"' +
+      (twp ? ' onclick="aiTwSkip()"' : '') + '><div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' +
       AI_IC.wand + '</svg></span>Plan · Create dashboard</div>' +
     '<div class="aiab"><ol class="aidsteps">' +
       '<li>Create a dashboard named <b>' + aiEsc(d.name) + '</b> in category <b>' + aiEsc(d.cat) + '</b></li>' +
@@ -16848,6 +16913,14 @@ function aiClarPaint(){
 }
 function aiPendPaint(){
   const el = document.getElementById('aiPend'); if (!el) return;
+  /* ⚠️ A PROPOSAL THAT IS STILL WRITING ITSELF CANNOT BE ACCEPTED YET (9 Sep 2026). Once
+     every answer began to type (`aiTw*`), this bar was the ONE control left offering a
+     decision over a card that had not finished saying what it was proposing — the answer's
+     own feedback row and follow-ups already wait, and the docked decision is the same kind
+     of thing. `aiRender` calls this again AFTER `aiTwBind`, so a reveal that has just
+     started clears the bar, and `aiTwDone` calls it once more to bring it back with the
+     finished card. */
+  if (AI_TW){ el.className = 'aipend'; el.innerHTML = ''; return; }
   /* ⚠️ EVERY pending decision docks here now (request, 20 Aug 2026: "when I create or any
      action performed in chat interface … every action approval will be same" as the widget
      build). The scan walks the thread from the END and shows the MOST RECENT undecided
@@ -18062,6 +18135,16 @@ function aiRender(){
      that needs the painted DOM belongs after the paint, not beside the early paints. */
   aiTkFadeBind();
   aiSayFade();
+  /* ⚠️ HERE for the same reason as the two calls above it: the node does not exist while
+     the markup is still a string, and rAF is starved under headless virtual time. This one
+     also has to run on EVERY render, because a repaint destroys the node it was writing
+     into — the bind is what picks the reveal back up (see aiTwStart). */
+  aiTwBind();
+  /* ⚠️ A SECOND TIME, and it has to be here rather than instead of the early call. The one
+     at the top runs before `b.innerHTML` and is what clears the bar when the thread empties;
+     this one runs after `aiTwBind` has decided whether a reveal is starting, which is the
+     only moment `AI_TW` can be read truthfully. Idempotent when nothing is typing. */
+  aiPendPaint();
 }
 /* ── the narration line's cross-fade ───────────────────────────────────────────────────
    ⚠️ IT RUNS FROM THE TAIL OF `aiRender()`, for the reason written above `aiTkFadeBind()`:
@@ -18091,11 +18174,249 @@ function aiSayFade(){
     if (e) e.textContent = now;              /* 38% of .5s — the trough */
   }, 190);
 }
+/* ══ EVERY ANSWER WRITES ITSELF IN — FADE + RISE, PER CHARACTER (`aiTw*`, 9 Sep 2026) ═══
+   Built to a SUPPLIED REFERENCE (a standalone page handed over with `.word` / `.char`,
+   `fadeSlideUp`, a 15ms per-character stagger, a 100ms base delay and a .6s easeOutBack).
+   Its numbers are `AI_TW_STEP` / `AI_TW_LEAD` / `AI_TW_FADE`; the curve is in the CSS.
+   It replaces the Gemini reveal (a 400ms ease-out opacity fade per WORD, measured off
+   gemini.google.com), which replaced the reactbits typewriter. Each was asked for by name.
+
+   What is the reference's, and what is this file's:
+   · THE UNIT, THE STAGGER, THE DURATION AND THE CURVE ARE THE REFERENCE'S, unchanged.
+   · THE CEILING IS OURS (`AI_TW_MAX`). At 15ms a character the dashboard summary would take
+     7.9s, which is not a reveal, it is a wait. ⚠️ ONLY THE STAGGER AND THE BLOCK BEAT ARE
+     COMPRESSED — the per-character duration and the curve are left exactly as supplied, so a
+     short card (a plan, a query) runs at the reference's own numbers and only a long one
+     speeds up. Scaling `AI_TW_FADE` instead would change how the animation LOOKS, which is
+     the one thing that was actually specified.
+   · THE BLOCK BEAT (`AI_TW_GAP`) is ours and predates both references — in a 420px panel it
+     is what stops five bullets arriving as one wall.
+   · REAL WHITESPACE IS KEPT between words rather than the reference's `margin-right:.25em`,
+     because Copy and Export in this panel hand over `innerText` verbatim. See the CSS.
+
+   The machinery below is unchanged across all three animations, and is this file's rather
+   than any reference's:
+   · `AI_TW_SKIP` names the furniture — card titles, the chart preview, the chips, the form's
+     controls, the feedback row, the follow-ups. Those subtrees are never revealed as text;
+     they are staged where they sit and take the same curve, so the card speaks one language.
+   · `aiRender()` REWRITES `#aiBody.innerHTML`, so any repaint destroys the spans. Progress
+     lives on the MESSAGE as elapsed ms (`m.twT`) and `aiTwBind` — called from the tail of
+     every render — RESUMES from it. ⚠️ A resumed character is shown WITHOUT its animation
+     (`S.first`), or every repaint would replay the whole answer from the top.
+   · rAF IS STARVED UNDER HEADLESS VIRTUAL TIME (recorded twice in this file), so the step is
+     a `setTimeout` loop reading the CLOCK rather than counting ticks.
+   ⚠️ THE REVEAL WRAPS EVERY CHARACTER IN A SPAN, i.e. it MUTATES the answer's DOM — a
+   600-character card becomes ~600 spans. That is affordable because it happens once per
+   answer, and `aiTwPaint` only touches the characters that crossed on THIS tick. */
+const AI_TW_STEP = 15;    /* ms between characters — the reference's stagger */
+const AI_TW_LEAD = 100;   /* ms before the first character — the reference's base delay */
+const AI_TW_FADE = 600;   /* ms per character — the reference's duration; NEVER scaled */
+const AI_TW_GAP  = 60;    /* ms between blocks — ours, see above */
+const AI_TW_MAX  = 4200;  /* a ceiling on the whole reveal, not a duration */
+/* ⚠️ `.aiat` / `.aiagch` are the card TITLES and are in here so they are readable from the
+   first frame — you should know what is arriving before it arrives.
+   ⚠️ `.aiq` and `.aidform` are deliberately NOT in here: the query rows and the plan's own
+   fields ARE the generated answer, so they reveal character by character; their
+   `input`/`select` land whole through the element rules below. */
+const AI_TW_SKIP = '.aiat,.aiagch,.aistep,.aifb,.aiful,.aifu,.aiacts,.aichips,.aiprev,' +
+                   '.aidashp,.aiagpl,button,input,select,textarea,svg,img';
+const AI_TW_BLK  = 'div,p,h1,h2,h3,h4,ul,ol,li,section,blockquote';
+let AI_TW = null;         /* the one reveal in flight — there is never more than one */
+
+function aiTwReduce(){
+  try { return matchMedia('(prefers-reduced-motion:reduce)').matches; } catch(e){ return false; }
+}
+/* the gate every renderer asks. ⚠️ Reduced motion answers false, so the card is emitted
+   without the class and renders whole — the thing being animated IS the answer, so the
+   honest fallback is to show all of it at once rather than to freeze it half-revealed. */
+function aiTwOn(m, k){ return !!m && !(m.tw && m.tw[k]) && !aiTwReduce(); }
+function aiTwMark(m, k){ if (!m) return; (m.tw = m.tw || {})[k] = 1; m.twT = 0; }
+
+/* one pass over the card, in document order: characters to reveal, blocks to stage, beats to
+   pause at. ⚠️ It REPLACES each text node with word spans of character spans — capture
+   `nextSibling` before the swap or the walk loses its place. */
+function aiTwWalk(node, c){
+  let nx;
+  for (let n = node.firstChild; n; n = nx){
+    nx = n.nextSibling;
+    if (n.nodeType === 3){
+      if (!n.nodeValue) continue;
+      const parts = n.nodeValue.split(/(\s+)/), f = document.createDocumentFragment();
+      for (let j = 0; j < parts.length; j++){
+        const p = parts[j];
+        if (!p) continue;
+        /* ⚠️ whitespace stays a TEXT NODE — that is what keeps wrapping, `white-space` in the
+           query box, and `innerText` identical to the un-animated card. The reference's
+           `margin-right` on the word is deliberately not ported; see the CSS. */
+        if (!/\S/.test(p)){ f.appendChild(document.createTextNode(p)); continue; }
+        const w = document.createElement('span');
+        w.className = 'aitww';
+        /* ⚠️ Array.from, not split('') — it walks CODE POINTS, so an emoji or any surrogate
+           pair stays one character instead of being torn into two broken halves. */
+        Array.from(p).forEach(ch => {
+          const s = document.createElement('span');
+          s.className = 'aitwx'; s.textContent = ch;
+          w.appendChild(s); c.chars.push(s);
+        });
+        f.appendChild(w);
+      }
+      n.parentNode.replaceChild(f, n);
+      continue;
+    }
+    if (n.nodeType !== 1) continue;
+    /* furniture — registered where it sits, never descended into */
+    if (n.matches(AI_TW_SKIP)){ c.hide.push({ e: n, at: c.chars.length, tx: 0 }); continue; }
+    if (!n.matches(AI_TW_BLK)){ aiTwWalk(n, c); continue; }   /* inline: <b>, <code>, <a> */
+    /* ⚠️ A BLOCK IS HIDDEN UNTIL THE FIRST CHARACTER INSIDE IT ARRIVES. Left in place and
+       merely transparent, five <li> would draw five bullet markers over blank rows — a
+       skeleton, which is the opposite of an answer arriving. Ancestors come free: an <li>
+       and its <ul> share a first index, so they reveal in the same step. */
+    const rec = { e: n, at: c.chars.length, tx: 0 };
+    c.hide.push(rec);
+    const mark = c.hide.length, n0 = c.chars.length;
+    aiTwWalk(n, c);
+    rec.tx = c.chars.length > n0;
+    /* ⚠️ A BEAT IS A LEAF BLOCK — one with characters of its own and no inner block that has
+       any. A <ul> starts at the same index as its first <li>, so counting both would schedule
+       a pause of zero length between them and spend one beat on nothing. */
+    if (rec.tx && !c.hide.slice(mark).some(h => h.tx)) c.cuts.push(rec.at);
+  }
+}
+/* the whole model, built once off the painted card(s) */
+function aiTwPrep(els){
+  const c = { chars: [], hide: [], cuts: [] };
+  for (let r = 0; r < els.length; r++) aiTwWalk(els[r], c);
+  if (!c.chars.length) return null;
+  const n = c.chars.length;
+  /* boundaries, made contiguous: block j runs to the start of block j+1, so any stray text
+     outside a leaf block is carried by the one before it rather than being left unscheduled */
+  c.cuts.sort((a, b) => a - b);
+  const bs = c.cuts.filter((v, j) => j === 0 || v !== c.cuts[j - 1]);
+  if (!bs.length || bs[0] !== 0) bs.unshift(0);
+  const blocks = bs.map((s, j) => ({ s: s, e: j + 1 < bs.length ? bs[j + 1] : n }));
+  let stp = AI_TW_STEP, gap = AI_TW_GAP;
+  /* ⚠️ THE CEILING COUNTS BOTH ENDS. The first character does not start until `AI_TW_LEAD`,
+     and the last one is still animating for `AI_TW_FADE` after the schedule is over — so the
+     run is not finished when the schedule is, and neither constant may be compressed. */
+  const room = AI_TW_MAX - AI_TW_LEAD - AI_TW_FADE;
+  const cur  = n * stp + (blocks.length - 1) * gap;
+  if (cur > room && cur > 0){ const f = room / cur; stp *= f; gap *= f; }
+  let tt = AI_TW_LEAD;
+  blocks.forEach((b, j) => {
+    b.t0 = tt; tt += (b.e - b.s) * stp; b.t1 = tt;
+    if (j < blocks.length - 1) tt += gap;
+  });
+  return { chars: c.chars, hide: c.hide, blocks: blocks, n: n,
+           stp: stp, dur: tt + AI_TW_FADE, tm: 0, first: 1, k0: 0 };
+}
+/* how many characters are due at t ms — the inverse of the schedule above */
+function aiTwAt(S, t){
+  if (t <= AI_TW_LEAD) return 0;
+  for (let j = 0; j < S.blocks.length; j++){
+    const b = S.blocks[j];
+    if (t < b.t1) return b.s + Math.floor((t - b.t0) / S.stp);
+    if (j === S.blocks.length - 1 || t < S.blocks[j + 1].t0) return b.e;   /* inside the beat */
+  }
+  return S.n;
+}
+function aiTwSet(S, j, on, quiet){
+  const c = S.chars[j];
+  if (!on){ c.classList.remove('on', 'new'); return; }
+  if (c.classList.contains('on')) return;
+  c.classList.add('on');
+  if (!quiet) c.classList.add('new');
+}
+function aiTwPaint(S, k){
+  /* ⚠️ ONLY THE CHARACTERS THAT CROSSED ON THIS TICK. A card can carry 600 spans and this
+     runs every 16ms; the full sweep is for the first paint (where a RESUMED run has to place
+     everything it already owed, quietly) and for the impossible case of k going backwards. */
+  if (S.first || k < S.k0)
+    for (let j = 0; j < S.n; j++) aiTwSet(S, j, j < k, !!S.first);
+  else
+    for (let j = S.k0; j < k && j < S.n; j++) aiTwSet(S, j, true, false);
+  S.k0 = k;
+  S.hide.forEach(h => {
+    /* ⚠️ A BLOCK opens on its first CHARACTER (`k > at`); FURNITURE opens once the text before
+       it is out (`k >= at`) — without that split a trailing button row, whose index IS the
+       total, could never reach its own threshold and would stay hidden for good. */
+    const hid = h.tx ? k <= h.at : k < h.at;
+    if (!hid && !h.tx && h.e.classList.contains('aitwh') && !S.first) h.e.classList.add('aitwin');
+    h.e.classList.toggle('aitwh', hid);
+  });
+  S.first = 0;
+  /* ⚠️ Pinned to the bottom as the card grows — `aiRender()` does this once and then never
+     runs again for the whole reveal. Guarded on the reader still BEING at the bottom, so
+     scrolling up to re-read an earlier answer is not yanked back down every 16ms. */
+  const b = document.getElementById('aiBody');
+  if (b && b.scrollHeight - b.scrollTop - b.clientHeight < 140) b.scrollTop = b.scrollHeight;
+}
+function aiTwStep(){
+  const S = AI_TW; if (!S) return;
+  /* a repaint replaced the nodes under us — `aiTwBind` has already restarted on the new ones */
+  if (!S.els[0].isConnected){ aiTwStop(); return; }
+  const t = Date.now() - S.t0, m = aiThread[S.i];
+  if (m) m.twT = t;
+  aiTwPaint(S, aiTwAt(S, t));
+  if (t >= S.dur){ aiTwDone(); return; }
+  S.tm = setTimeout(aiTwStep, 16);
+}
+function aiTwStart(els){
+  aiTwStop();
+  const i = +els[0].dataset.tw, k = els[0].dataset.twk || 'ans', m = aiThread[i];
+  const S = aiTwPrep(els);
+  if (!S){ els.forEach(e => e.classList.remove('aitw')); aiTwMark(m, k); return; }
+  S.els = els; S.i = i; S.k = k;
+  AI_TW = S;
+  S.t0 = Date.now() - ((m && m.twT) || 0);      /* resume where a repaint interrupted it */
+  aiTwStep();
+}
+function aiTwStop(){ if (AI_TW){ clearTimeout(AI_TW.tm); AI_TW = null; } }
+function aiTwDone(){
+  const S = AI_TW; if (!S) return;
+  clearTimeout(S.tm);
+  aiTwPaint(S, S.n);
+  /* ⚠️ `.aitwx` is scoped under `.aitw`, so dropping the class here is what makes every
+     character opaque and un-shifted whatever state its own animation was in — nothing can be
+     stranded invisible or 12px low. Cutting a curve short is safe only because `S.dur`
+     already carries `AI_TW_FADE`. */
+  S.els.forEach(e => { e.classList.remove('aitw'); e.removeAttribute('onclick'); });
+  aiTwMark(aiThread[S.i], S.k);
+  AI_TW = null;
+  aiPendPaint();                 /* the decision arrives with the finished proposal */
+  const b = document.getElementById('aiBody');
+  if (b && b.scrollHeight - b.scrollTop - b.clientHeight < 220) b.scrollTop = b.scrollHeight;
+}
+/* clicking the card finishes it — no reference has such a control, but a reader who has read
+   ahead should not have to wait for the machine to catch up.
+   ⚠️ A click that ENDS A SELECTION is someone highlighting the text, not asking it to hurry,
+   so it is left alone. */
+function aiTwSkip(){
+  if (!AI_TW) return;
+  const s = window.getSelection && window.getSelection();
+  if (s && !s.isCollapsed) return;
+  aiTwDone();
+}
+function aiTwBind(){
+  const all = document.querySelectorAll('#aiBody .aitw');
+  if (!all.length){ aiTwStop(); return; }
+  /* ⚠️ ONE MESSAGE'S ROOTS ONLY. Two undecided answers can be on screen at once (a card
+     still revealing while the next question's card lands), and merging them into one reveal
+     would run the newer answer on the older one's clock. */
+  const id = all[0].dataset.tw;
+  const els = Array.prototype.filter.call(all, e => e.dataset.tw === id);
+  if (AI_TW && AI_TW.els.length === els.length && AI_TW.els[0] === els[0]) return;
+  aiTwStart(els);
+}
 function aiAnswerHTML(m, i){
+  /* ⚠️ THE WHOLE CARD IS THE REVEAL ROOT (request, 9 Sep 2026: "apply it in every answer").
+     The title, the feedback row and the follow-ups are furniture (`AI_TW_SKIP`) and land
+     whole; what types is the body — which for a log-query answer IS the generated query. */
+  const tw = aiTwOn(m, 'ans');
   /* m.tk → a thinking trail is sitting above this answer and its collapsed line already
      carries this status text; printing it again would just say it twice */
   return (m.tk ? '' : '<div class="aistep">' + aiEsc(m.step) + '</div>') +
-    '<div class="aians">' +
+    '<div class="aians' + (tw ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="ans"' +
+      (tw ? ' onclick="aiTwSkip()"' : '') + '>' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + (AI_IC[m.ic] || AI_IC.info) + '</svg></span>' +
         aiEsc(m.title) + (m.sub || '') + '</div>' +
       '<div class="aiab">' + m.html + '</div>' +
@@ -18248,8 +18569,12 @@ function aiPreviewHTML(b, bi){
   const s = aiScope();
   if (b.dash) return aiPreviewDashHTML(b, bi, s);
   const name = b.name.charAt(0).toUpperCase() + b.name.slice(1);
+  /* ⚠️ The ART waits (`.aiprev` is furniture) and the SPEC writes itself: `.aimeta` then
+     the `.aiq` rows, which are what the clarifier's answers actually produced. */
+  const tw = aiTwOn(aiThread[bi], 'prev');
   return '<div class="aistep">Configured from your description</div>' +
-    '<div class="aians">' +
+    '<div class="aians' + (tw ? ' aitw' : '') + '" data-tw="' + bi + '" data-twk="prev"' +
+      (tw ? ' onclick="aiTwSkip()"' : '') + '>' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + AI_IC.wand + '</svg></span>' +
         'Here’s a preview — ' + aiEsc(name) + ' ' + aiEsc(b.group.toLowerCase()) + '</div>' +
       '<div class="aimeta">Availability · Count · ' + AI_CHARTS[b.chart] + ' chart</div>' +
@@ -18277,8 +18602,10 @@ function aiPreviewHTML(b, bi){
 }
 /* a whole-dashboard request: one card per widget it will create, added in one go */
 function aiPreviewDashHTML(b, bi, s){
+  const tw = aiTwOn(aiThread[bi], 'prev');
   return (b.tk ? '' : '<div class="aistep">Planned ' + b.items.length + ' widgets from your description</div>') +
-    '<div class="aians">' +
+    '<div class="aians' + (tw ? ' aitw' : '') + '" data-tw="' + bi + '" data-twk="prev"' +
+      (tw ? ' onclick="aiTwSkip()"' : '') + '>' +
       '<div class="aiat"><span class="sp"><svg viewBox="0 0 24 24" class="ln">' + AI_IC.wand + '</svg></span>' +
         'Here’s a preview — a dashboard with ' + b.items.length + ' widgets</div>' +
       '<div class="aimeta">' + b.items.map(aiEsc).join(' · ') + '</div>' +
@@ -19552,7 +19879,20 @@ function aiAgHTML(a, i){
          ⤴ — see the header below — so `shut` had nothing left to toggle it and the body is
          always rendered. `aiAgCard()` is untouched and still owns the WIDGET card's
          chevron, which is the only caller now. */
-      out.push('<div class="aiagc sum">' +
+      /* ⚠️ THE BODY WRITES ITSELF IN (request, 9 Sep 2026: the summary "will be show
+         instant — make to proper animation like text-type"). `a.typed` is the whole gate:
+         `aiTwDone` sets it, so a repaint mid-reveal RESUMES rather than restarting (the
+         elapsed clock lives on the agent as `a.twT`), and reopening this chat from history
+         renders the finished card instead of typing it a second time.
+         ⚠️ Reduced motion skips it outright rather than freezing it — the thing being
+         animated IS the text, so the honest fallback is to show all of it at once. */
+      const tw = aiTwOn(aiThread[i], 'sum');
+      /* ⚠️ TWO ROOTS. The card and the row of actions under it are SIBLINGS, not nested, so
+         both are marked with the same `data-tw` and `aiTwBind` runs the reveal across them
+         in document order — which is what keeps 👍/👎/⧉/⤴ and the follow-ups waiting for
+         the answer they belong to. */
+      out.push('<div class="aiagc sum' + (tw ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="sum"' +
+        (tw ? ' onclick="aiTwSkip()"' : '') + '>' +
         '<div class="aiagch">' +
           /* ⚠️ THE ✦, NOT THE PRODUCT LOGO — and this REVERSES the 19 Aug 2026 annotation
              that put the logo here (request, 24 Aug 2026: "in the summary of dashboard the
@@ -19590,7 +19930,8 @@ function aiAgHTML(a, i){
       '</div>' +
       /* ⤴ rides in `aiFbHTML`'s `extra` slot, which is what places it AFTER copy —
          the same slot Undo and the widget card's share use. */
-      '<div class="aiagblk">' + aiFbHTML(i, b.fb || 0, k,
+      '<div class="aiagblk' + (tw ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="sum">' +
+        aiFbHTML(i, b.fb || 0, k,
           '<button data-tip="Use this elsewhere" onclick="aiAgShare(event,' + i + ')">' +
           '<svg viewBox="0 0 24 24" class="ln"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/>' +
           '<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>') +
@@ -19602,10 +19943,15 @@ function aiAgHTML(a, i){
     }
     if (b.k === 'sum'){
       const nm = a.saved || a.title;
+      /* ⚠️ THIS is the widget flow's answer — the request named "create widget" — so it
+         writes itself like every other. The chart card above it has no prose to type; this
+         paragraph, the counter list and the closing line are what the flow actually says. */
+      const twa = aiTwOn(aiThread[i], 'wsum');
       /* the widget exists but is not on a board — say so plainly, then offer the one thing
          that changes it. ⚠️ The dashboard list lives HERE now, on the button that actually
          places it, rather than on the card that only saved a definition. */
-      out.push('<div class="aiagblk"><p class="aiagsay">The ' + aiEsc(a.fam) + ' ' + a.chartName +
+      out.push('<div class="aiagblk' + (twa ? ' aitw' : '') + '" data-tw="' + i + '" data-twk="wsum"' +
+        (twa ? ' onclick="aiTwSkip()"' : '') + '><p class="aiagsay">The ' + aiEsc(a.fam) + ' ' + a.chartName +
         ' widget is saved to your widget library as <b>' + aiEsc(nm) + '</b>' +
         (a.placed
           ? ', and added to your <b>' + aiEsc(a.placed) + '</b> dashboard.'
