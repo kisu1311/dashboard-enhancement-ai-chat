@@ -22,7 +22,7 @@
      then needed 15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26(button) + 15 = 189
      in a 170px rail — measured, and the wordmark was ellipsising to "ObserveO…". Shrinking the
      product's own name to make room for a chrome control is the wrong way round. */
-  --rail-w:64px; --rail-w-open:240px;   /* rule 1's floor for an expanded sidebar (was 190px, 8 Sep 2026) */   /* the flyout anchors off these, not off the animating box */
+  --rail-w:53px; --rail-w-open:240px;   /* rule 1's floor for an expanded sidebar (was 190px, 8 Sep 2026) */   /* the flyout anchors off these, not off the animating box */
     --ai:#8b5cf6; --ai-2:#a78bfa; --ai-3:#c4b5fd;
   --ai-soft:rgba(139,92,246,.13); --ai-line:rgba(139,92,246,.34);
   /* the chat panel's surface wash — 5% black at the FOOT of the panel, over --card
@@ -54,6 +54,7 @@
   /* the ported ac* chat panel names the AI accent --oa*, and needs --sel / --text-dim2 */
   --oa:#8b5cf6; --oa-2:#a78bfa; --oa-soft:rgba(139,92,246,.13); --oa-line:rgba(139,92,246,.34);
   --sel:#12233a; --text-dim2:#6a7fa0;
+  --sb-hover:var(--hover-side);   /* the sidebar's ONE hover fill — see the light block */
   --pill:#c9d4e4;            /* selected sidebar pill */
   --track:#485975;           /* timeline selection track (measured on live 8.2.6) */
   --teal:#14b8a6; --teal-dim:#0e8578;
@@ -83,7 +84,16 @@
   --scrim:rgba(4,10,20,.45);
 }
 html[data-theme="light"]{
-  --bg:#ffffff; --header:#ffffff; --sidebar:#ffffff; --sidebar-panel:#ffffff;
+  /* ⚠️ THE SIDEBAR IS #F6F9FC IN LIGHT, NOT WHITE (request, 10 Sep 2026: "in sidebar background
+     color use #F6F9FC in every sidebar"). It was `#ffffff` — the same value as `--bg` and
+     `--card` — so in light theme the rail, the canvas behind it and every widget on that canvas
+     were ONE surface, and the only thing separating the sidebar from the board was its 1px right
+     border. This folder has already recorded two bugs that were invisible for exactly that
+     reason (a hidden panel's shadow bleeding across the seam, and a 64px child painting over its
+     parent's 1px border). A distinct surface makes the boundary structural instead of hanging on
+     a hairline.
+     ⚠️ LIGHT ONLY. The dark value stays `#172336`; #F6F9FC on a dark canvas would be a slab. */
+  --bg:#ffffff; --header:#ffffff; --sidebar:#F6F9FC; --sidebar-panel:#ffffff;
   --card:#ffffff; --card-head:#f4f6fa; --panel:#f7f9fc; --panel-2:#eef2f8;
   --border:#dfe5ee; --border-soft:#e3e8f2; --hover:#f0f4f9; --hover-side:#eef2f8;   /* --border-soft is the widget edge */
   /* the composer's edge, measured off ClickUp's Brain² composer (20 Aug 2026): they carry
@@ -121,6 +131,7 @@ html[data-theme="light"]{
   --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
   --white:#16233a; --ink:#f4f7fb;
   --pill:#24344d; --track:#8fa3c2;
+  --sb-hover:#ecf1f9;              /* --left-menu-hover-bg, the product's own */
   --action:#1d2a3e; --action-fg:#ffffff; --action-h:#111c2c;
   --oa:#7c3aed; --oa-2:#8b5cf6; --oa-soft:rgba(124,58,237,.09); --oa-line:rgba(124,58,237,.26);
   --sel:#e0ebf5; --text-dim2:#516381;
@@ -145,7 +156,7 @@ svg{display:block}
 .ic{width:20px;height:20px;fill:currentColor}
 
 /* ============ Shell ============ */
-.shell{display:flex;flex-direction:column;height:100vh;padding-left:64px;
+.shell{display:flex;flex-direction:column;height:100vh;padding-left:var(--rail-w);
   transition:padding-left .18s ease,padding-right .22s ease}
 /* pinned sidebar pushes the page instead of covering it (hover-peek still overlays) */
 /* ⚠️ THE TOKEN, NOT A LITERAL. This was a hardcoded `170px` beside a `--rail-w-open` that
@@ -180,8 +191,8 @@ body.fs .exitfs{display:inline-flex}
    button ended 4px PAST the edge. Exactly the same fault as the flyout's ragged chevrons — a
    text element that cannot shrink shoves whatever follows it off the end. */
 .strigger .brand{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.strcol{margin-left:auto;flex:0 0 26px;width:26px;height:26px;display:grid;place-items:center;
-  border-radius:5px;color:var(--text-dim);cursor:pointer;opacity:0;
+.strcol{margin-left:auto;flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;
+  border-radius:4px;color:var(--text-dim);cursor:pointer;opacity:0;
   transition:opacity .15s,background .12s,color .12s}
 .sidebar.open .strcol{opacity:1}
 /* ⚠️ `display:none`, NOT just `pointer-events` (Option 10, 9 Sep 2026). It was hidden with
@@ -195,7 +206,9 @@ body.fs .exitfs{display:inline-flex}
    out of the collapsed rail — see `toggleSidebar`. */
 .sidebar:not(.open) .strcol{pointer-events:none;display:none}
 .strcol:hover{background:var(--hover-side);color:var(--text)}
-.strcol .ic{width:17px;height:17px}
+/* 24px, in the rail's own 32px control box — see the note at `.strcol`. A FILLED product
+   glyph, so there is no stroke-width to recompute. */
+.strcol .ic{width:24px;height:24px}
 /* ⚠️ `gap:6px`, NOT 9 — THE WORDMARK LINES UP WITH EVERY ROW LABEL BELOW IT (request,
    2 Sep 2026: "improve this sidebar, some alignment"). MEASURED across the whole rail:
    every `.sitem` label starts at x=51 (box 8 + inset 12 -> 20px icon ends at 40, + `gap:11`),
@@ -216,18 +229,50 @@ body.fs .exitfs{display:inline-flex}
    SVG with `currentColor` covers both files — see AI_LOGO. */
 .brandmark{display:inline-grid;place-items:center;color:var(--white)}
 .brandmark svg{display:block;width:100%;height:100%}
-.strigger .brandmark{width:40px;height:40px;flex:0 0 40px}
+/* ⚠️ THE MARK IS 24px AND SITS ON THE ICON COLUMN — measured, not copied. Three sizes in one
+   day: 40px, then 30px on "the logo is very big, make to name alignment", then **24×24** as
+   asked for outright ("change logo size 24*24"). What 40px put out is why the alignment is
+   derived rather than nudged:
+       mark 40px at x15 → centre 35, while the module icons centre on 26   (off by 9)
+       wordmark at x61, while every module label starts at x46             (off by 15)
+   ⚠️ TODAY'S TWO ANCHORS, both read off this rail's own rows (row x=10, glyph x=17 · 18px,
+   label x=46): the mark CENTRES ON 26 and the wordmark STARTS AT 46. At 24px the centre needs
+   `margin-left:-1px` (15 - 1 = 14, +12 = 26) and the wordmark then needs `14 + 24 + gap = 46`,
+   i.e. **gap:8px**. Change the size and BOTH of those have to be recomputed — that is the trap
+   this note exists for. The earlier 30px pair was `-4px` / `gap:5px` by the same arithmetic.
+   ⚠️ THE NUMBERS ARE THIS FILE'S OWN, not Option 1's — its icons are 20px at x20 on a rail with
+   no 10px inset, so its mark and gap are different values for the same rule. Copying them leaves
+   both columns off by a couple of pixels.
+   ⚠️ THE COLLAPSED MARK TAKES THE SIZE TOO and keeps `margin-left:0`. That quietly removed a
+   lean nothing had recorded: at 30px it centred on 30 in a 53px rail whose rows centre on 26.5;
+   at 24px it centres on 27.
+   ⚠️ `#collapseBtn` IS UNAFFECTED by the wider gap — `margin-left:auto` absorbs 3px less free
+   space, so it stays on the rail's right edge.
+   ⚠️ `flex` GOES WITH `width`. `.brandmark` is sized by a flex basis; setting `width` alone is the
+   trap this file has now hit twice in one session (`.miniav` measured 20 where the rule said 26). */
+/* 24px on the rail's icon column (centre 26) — see the note above; the gap carries the
+   wordmark back to the label column at x=46 */
+.strigger .brandmark{width:24px;height:24px;flex:0 0 24px;margin-left:-1px}
+.strigger{gap:8px}
 #npLogo{width:26px;height:26px;flex:0 0 26px}
 .strigger .brand{font-size:14px;font-weight:600;color:var(--text);opacity:0;transition:opacity .15s}
 .sidebar.open .strigger .brand{opacity:1}
-.smenu{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 0 8px;position:relative;z-index:1;scrollbar-width:thin}
+.smenu{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 0 10px;position:relative;z-index:1;scrollbar-width:thin}
 /* Datadog groups with a hairline only — no caption, no count, no chevron. The grouping is
    felt, not read, and every module stays one click away. */
 .sgroup-label{display:none}
 /* ⚠️ 10px, matching the collapsed override below: with the row's own 8px bottom margin
    collapsing against it, max(8,10) + 1 + 10 = 21 — the same break in both states. At 7 the
    open rail's divider came to 16 while the collapsed one came to 21. */
-.sidebar.grouped .sgroup-gap{display:block;height:1px;margin:10px 14px;background:var(--border)}
+/* ⚠️ THE GROUP DIVIDERS ARE SPACE, NOT LINES (request, 10 Sep 2026: "remove line"). The rail
+   drew a hairline wherever `RAIL[].group` changed — Datadog's own banding, which is where it came
+   from. With only six entries the gap alone groups them perfectly well, and three rules in a
+   short list read as more chrome than structure.
+   ⚠️ THE ELEMENT STAYS AND KEEPS ITS MARGIN. `renderMenu` emits `<div class="sgroup-gap">` at
+   every group change and the pinned bands are fenced by it; removing the element would collapse
+   the grouping entirely, and removing the margin would run the six rows together. Only the
+   `background` and the `height` went — it is a 10px spacer now. */
+.sidebar.grouped .sgroup-gap{display:block;height:0;margin:10px 14px}
 .sgroup-gap{display:none}
 /* ══ THE COLLAPSED RAIL IS AN ICON RAIL, NOT A ROW WITH ITS LABEL HIDDEN ═══════════════════
    Option 10, 9 Sep 2026. Request: "in this position in option 10 will be improve like option
@@ -259,11 +304,19 @@ body.fs .exitfs{display:inline-flex}
 .sidebar:not(.open) .stop .sitem,
 .sidebar:not(.open) .sutil .sitem,
 .sidebar:not(.open) .sfoot .sitem{width:32px;padding:0;gap:0;
-  justify-content:center;border-radius:8px}   /* height is shared now — see `.sitem` */
-.sidebar:not(.open) .smenu .sitem{margin:0 auto 8px}
-.sidebar:not(.open) .stop .sitem{margin:0 auto 8px}
+  /* ⚠️ 4px, THE SAME RADIUS AS THE EXPANDED ROW (request, 10 Sep 2026: "4px border-radius on the
+     active and hover background box in the expanded and collapse navigation block"). It was 8 —
+     inherited from the 9 Sep restyle, where the collapsed rail was modelled on Option 6's 32px
+     tiles and their radius came with them. `.sitem` already says 4, so the two states disagreed
+     about the shape of the same highlight and it visibly rounded off as the rail folded.
+     ⚠️ ONE VALUE, AND IT IS THE EXPANDED ROW'S. Every other tile-ish rule in this rail keeps its
+     own radius (the grid's 8px cards, the footer's 8px buttons); this one is the NAV row's
+     highlight in its other state, so it follows the nav row. */
+  justify-content:center;border-radius:4px}   /* height is shared now — see `.sitem` */
+.sidebar:not(.open) .smenu .sitem{margin:0 auto 10px}
+.sidebar:not(.open) .stop .sitem{margin:0 auto 10px}
 .sidebar:not(.open) .sutil .sitem{margin:0 auto 4px}
-.sidebar:not(.open) .sfoot .sitem{margin:8px auto 0}
+.sidebar:not(.open) .sfoot .sitem{margin:10px auto 0}
 /* ⚠️ THE LABEL MUST LEAVE THE FLOW, NOT JUST FADE — the third instance of this one mistake
    in this rail, after `.strigger .brand` and `.strcol`. `.sitem .lbl` is `opacity:0` when
    collapsed but still a flex item, and several carry `flex:1` (`.stop .sitem .lbl`,
@@ -286,10 +339,19 @@ body.fs .exitfs{display:inline-flex}
    + 1 + 6), which is what this rail already had and is the number the request was about; at
    10 it is max(8,10) + 1 + 10 = 21, Option 6's own measured divider gap. Option 6 needs no
    such arithmetic because its rail is a flex column, where margins never collapse. */
-.sidebar:not(.open).grouped .sgroup-gap{width:24px;margin:10px auto}
-/* the mark is the one thing that reads at 64px, so it gets Option 6's 40px rather than 30 */
+/* collapsed it was a 24px rule centred in the rail; same change, it is just the gap now */
+.sidebar:not(.open).grouped .sgroup-gap{width:24px;height:0;margin:10px auto}
+/* ⚠️ ONE MARK SIZE IN BOTH STATES (request, 10 Sep 2026: "same size of logo in sidebar with
+   expand and collapse"). The collapsed rail used to bump it to 40px on the argument that "the
+   mark is the one thing that reads at 64px" — that is now overruled, and deliberately: a brand
+   mark that changes size as the rail folds reads as two different logos, and the jump was
+   visible in the transition. It is 30px in both, which is also what the other NINE option files
+   have always done; these two were the only ones in the folder carrying a collapsed override.
+   ⚠️ THE ROW STILL RESHAPES — 64px tall, no padding, centred — because at 64px there is no
+   wordmark and no collapse button to lay out beside it. Only the MARK's size stopped changing.
+   ⚠️ `flex` GOES WITH `width`, as everywhere else: `.brandmark` is sized by its basis. */
 .sidebar:not(.open) .strigger{height:64px;flex:0 0 64px;padding:0;gap:0;justify-content:center}
-.sidebar:not(.open) .strigger .brandmark{width:40px;height:40px;flex:0 0 40px}
+.sidebar:not(.open) .strigger .brandmark{width:24px;height:24px;flex:0 0 24px;margin-left:0}
 /* ⚠️ THE WORDMARK MUST LEAVE THE FLOW, NOT JUST FADE. `.strigger .brand` is `opacity:0` when
    collapsed but still `flex:0 1 auto`, so it kept taking room and shoved the 40px mark to
    x=-1 — clipped against the rail's left edge. Measured, not spotted: the size assertion
@@ -941,8 +1003,12 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
   font-size:11.5px;font-weight:500;line-height:1.4;box-shadow:var(--pop-shadow);
   opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s}
 .tipbox.on{opacity:1;transform:none}
-.tipbox .tipk{margin-left:7px;padding:1px 5px;border-radius:3px;
-  background:var(--chip);color:var(--text-dim);font-size:10px;font-weight:600}
+/* the same keycap as `.kbd`, and it had the same two faults — see the note there. It renders
+   from a `data-tip` tail on the very row whose inline keycap was just fixed. */
+.tipbox .tipk{margin-left:7px;display:inline-flex;align-items:center;justify-content:center;
+  height:16px;min-width:22px;padding:0 5px;box-sizing:border-box;vertical-align:middle;
+  border-radius:4px;background:var(--chip);color:var(--text);
+  font-size:11px;font-weight:600;line-height:1;letter-spacing:.02em}
 /* ⚠️ ONE ROW PITCH FOR BOTH STATES — 32px tall on an 8px gap, open or collapsed. It was
    34 + 2 = 36 when open against 32 + 8 = 40 when collapsed, so every icon slid 4px further up
    than the one above it as the rail expanded: measured -26 -30 -34 -38 -42 -46 down the list.
@@ -953,7 +1019,15 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    and the two cannot be identical while only one of them is allowed to move. */
 .sitem{position:relative;display:flex;align-items:center;gap:11px;height:32px;margin:0 8px 8px;padding:0 7px;
   border-radius:4px;cursor:pointer;color:var(--text);white-space:nowrap}
-.sitem:hover{background:var(--hover-side)}
+.sitem:hover{background:var(--sb-hover)}
+/* ⚠️ THE 'THIS ROW HAS A LIST' MARK — see `railRowHTML` for why `MF_NO_HOVER` decides it.
+   `margin-left:auto` puts it at the row's right edge; `.lbl` already shrinks, so a long name
+   ellipsises rather than pushing it out. It goes with the label on the collapsed rail. */
+.sitem .smore{margin-left:auto;flex:0 0 18px;width:18px;height:18px;fill:currentColor;
+  color:var(--text-dim);opacity:.55}
+.sitem:hover .smore{opacity:1;color:var(--text)}
+.sitem.on .smore{color:var(--ink);opacity:.85}
+.sidebar:not(.open) .sitem .smore{display:none}
 .sitem.on{background:var(--pill);color:var(--ink)}
 /* ⚠️ ONE ICON GEOMETRY FOR BOTH RAIL STATES (Option 10, 9 Sep 2026 — reported by holding the
    two states side by side: "the alignment is different, make to verify and same alignment").
@@ -977,7 +1051,7 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    which would have rendered the row's icon as nothing at all. */
 .sitem .lbl{font-size:13px;font-weight:500;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:7px}
 .sidebar.open .sitem .lbl{opacity:1}
-.beta{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:3px;background:var(--chip);color:var(--text)}
+.beta{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 5px;border-radius:4px;background:var(--chip);color:var(--text)}
 /* ---------- module flyout (Datadog mega-menu): hovering a rail entry opens that module's
    own navigation, grouped under bold headings in columns. Measured on Datadog: flush to the
    rail, ~220px columns, 28px rows, 13px type. ---------- */
@@ -985,9 +1059,26 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    left corners are square (`border-radius:0 8px 8px 0`) — so a border on that edge drew a rule
    down the seam between the two, reading as a divider inside one surface rather than as the
    menu's own edge. The other three sides keep it; the shadow already separates this edge. */
-.mflyout{position:fixed;z-index:70;display:none;background:var(--pop);
-  border:1px solid var(--border);border-left:0;
-  border-radius:0 8px 8px 0;box-shadow:14px 0 40px rgba(0,0,0,.5);padding:14px 4px 14px 0;max-height:calc(100vh - 16px);overflow:auto}
+/* ⚠️ THE FLYOUT IS THE SIDEBAR'S SURFACE, NOT `--pop` (request, 10 Sep 2026: "the popup will be
+   same color as the main sidebar"). It hangs off the rail with no left border and a radius only
+   on its free side — it reads as the rail continuing — so painting it `--pop` (#ffffff) while the
+   rail is #F6F9FC drew a seam down the join. `--sidebar` is the token the rail itself uses, so
+   the two now match in BOTH themes by construction rather than by a second literal. */
+/* ⚠️ ONE RADIUS FOR THE WHOLE SIDEBAR: 4px (request, 10 Sep 2026: "the sidebar every popup and
+   box redius on 4 px same in every where"). Measured first, and the rail plus its popups were
+   carrying NINE different values — 3 (chips, keycaps) · 4 (rows, the popovers) · 5 (the collapse
+   button, the grid's pin) · 6 (profile rows, the theme segments) · 7 (Customize navigation) ·
+   8 (this card, the grid tiles, the icon boxes, the theme row, logout) · 9 (the NEW chip) ·
+   12 (the module grid) · 50% (avatars).
+   ⚠️ TWO THINGS ARE DELIBERATELY NOT 4px, because they are not boxes: the AVATARS (`.miniav`,
+   `.upavatar`) stay discs, and the BELL'S COUNT BADGE (`.ibadge`) stays a pill — a 4px corner on
+   an 18px counter reads as a square sticker, not a count. The scrollbar thumbs keep their 99px
+   for the same reason. `#toast` is the page's, not the sidebar's, and was left alone.
+   ⚠️ The two-card menu's SEAM still overrides this per corner (`4px 0 0 4px` / `0 4px 4px 0`) —
+   that is the join between master and pane, not a different radius. */
+.mflyout{position:fixed;z-index:70;display:none;background:var(--sidebar);
+  border:1px solid var(--border);
+  border-radius:4px;box-shadow:0 10px 34px rgba(0,0,0,.5);padding:6px;max-height:calc(100vh - 16px);overflow:auto}
 /* ⚠️ `calc(100vh - 16px)`, NOT `86vh` (request, 3 Sep 2026: "the last submodule i can't hover it"
    on the Setting menu). MEASURED: Setting's master column is 759px of content — 19 rows at the
    34px pitch, a heading, two paddings — and 86vh is 574px on a 667px viewport, 694px on 807. The
@@ -997,7 +1088,7 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
    44px away in the shadow gutter — and a pointer that cannot reach a row cannot open its pane.
    The pane had the same fault one step later: aligned to a row near the bottom, it ran past the
    box's edge and was cut off. 8px top and bottom is the same margin `mfClamp()` already keeps. */
-html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
+html[data-theme="light"] .mflyout{box-shadow:0 10px 34px rgba(23,35,54,.16)}
 /* column of [columns row] + [docs footer] — the footer is Datadog's mega-menu pattern */
 .mflyout.on{display:flex;flex-direction:column;gap:0}
 .mfcols{display:flex;gap:0}
@@ -1009,7 +1100,7 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    ⚠️ THE MASTER'S 288 IS WHAT WINS, not the 216: it was itself measured up from 236 on 2 Sep to
    stop Settings' longest labels truncating, so narrowing to 216 would reintroduce that. The two
    rules now hold one number between them — change `.mfcol` and `.mfcol.mfmaster` together. */
-.mfcol{width:288px;padding:0 14px;flex:0 0 auto}
+.mfcol{width:288px;padding:0;flex:0 0 auto}
 /* ⚠️ A COLUMN HOLDING A TWO-UP LIST SIZES TO ITS CONTENT. `.mfcol` is a fixed 216px, which
    is right for one list of labels and half of what a `.mflist.c2` grid needs — the grid
    tracks simply ran outside the column and out of the menu's own box. `:has()` keeps this
@@ -1054,14 +1145,14 @@ html[data-theme="light"] .mflyout{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    rather than as a list and the pane belonging to the row you are pointing at. */
 #mflyout.mfcards .mfcols{align-items:flex-start;gap:0}
 #mflyout.mfcards .mfcol{background:var(--pop);border:1px solid var(--border);
-  padding:12px 14px;box-shadow:10px 0 30px rgba(0,0,0,.38)}
-html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,35,54,.14)}
-#mflyout.mfcards .mfcol.mfmaster{border-left:0;border-radius:0 8px 8px 0}
+  padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.38)}
+html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,35,54,.14)}
+#mflyout.mfcards .mfcol.mfmaster{border-radius:4px}
 /* ⚠️ THE MASTER SQUARES ITS RIGHT CORNERS ONLY WHILE A PANE IS ACTUALLY OPEN. `:empty` hides the
    pane on a row with no children — Explorer has nine such rows — and a card left square on the
    side with nothing beside it reads as clipped rather than as joined. `:has()` is already how
    this whole block is scoped, so the condition costs nothing new. */
-#mflyout.mfcards:has(.mfdetail:not(:empty)) .mfcol.mfmaster{border-radius:0}
+#mflyout.mfcards:has(.mfdetail:not(:empty)) .mfcol.mfmaster{border-radius:4px 0 0 4px}
 /* ⚠️ THE MASTER LIST SCROLLS INSIDE ITS OWN CARD when the viewport is shorter than the menu — not
    the flyout around it. `mfClamp()` measures the room (viewport minus the flyout's and the card's
    own paddings and the heading, read from computed styles rather than retyped) and writes it as
@@ -1087,7 +1178,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    That is covered rather than clipped: `.mfdetail` is the later sibling and paints its opaque
    `--pop` over it, so the shadow only shows where the pane does not reach — above and below it,
    which is where it belongs. Nothing here relies on a z-index. */
-#mflyout.mfcards .mfcol.mfdetail{border-radius:0 8px 8px 0;border-left:0}
+#mflyout.mfcards .mfcol.mfdetail{border-radius:0 4px 4px 0;border-left:0}
 #mflyout.mfcards .mfcol.mfdetail:empty{display:none}
 /* ⚠️ PADDING-LEFT IS 10, NOT 8 — THE HEADING AND ITS ROWS SHARE ONE LEFT EDGE (request,
    2 Sep 2026: "the Explorer and the list of sub module will be line align").
@@ -1119,13 +1210,80 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    exactly this. Nothing new was invented for it.
    ⚠️ `letter-spacing` adds its space AFTER each glyph, so the left edge is unchanged and the
    214px alignment above survives. There is a probe assertion for both. */
-.mfsec{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-dim);padding:9px 8px 7px 10px}
+/* ══ THE DOCUMENTATION LINK LIVES IN THE HEADING (request, 10 Sep 2026: "the document link will
+   be show in title, everywhere in option 10") ═══════════════════════════════════════════════
+   It was a full-width `<Module> documentation ↗` row pinned under a hairline at the foot of the
+   menu — a whole line, plus a rule, for a link you take rarely, and it repeated the heading's own
+   word three inches above it ("ALERT" … "Alert documentation"). In the heading it costs no line
+   at all and reads as what it is: this section, and where its docs are.
+   ⚠️ THE HEADING BECOMES A FLEX ROW, and the label takes the slack (`flex:1 1 auto;min-width:0`)
+   so a long module name ellipsises instead of pushing the link out of the column — the ragged
+   chevron fault this file records twice.
+   ⚠️ IT IS AN `<a>` INSIDE A `<div>`, never inside the row buttons: the heading is not clickable,
+   so there is nothing to nest inside and nothing to stopPropagation from.
+   ⚠️ HOVER-REVEALED LIKE THE ROW CHIPS, and always shown on keyboard focus. At rest a heading
+   with a permanent ↗ reads as a link itself. */
+/* ⚠️ THE HEADING IS DATADOG'S, NOT A MICRO-LABEL (request + three reference shots, 10 Sep 2026:
+   "the title and document link will be improve like Datadog"). Measured off those: its section
+   headings are SENTENCE CASE, ~13px and semibold in the menu's own ink — "Universal Service
+   Monitoring", "Containers", "Processes" — a heading you read, not a 11px uppercase tracking
+   label you skim past. Ours was 11px/600/.06em/UPPERCASE in `--text-dim`, which is this file's
+   label idiom and the right thing for a group INSIDE a list; at the top of a menu card it was
+   quieter than the rows beneath it.
+   ⚠️ `text-transform` GOES, IT IS NOT OVERRIDDEN. The labels are already written title-case in
+   the data ("Alert", "Explorer", "Health Monitoring"), so removing the transform gives Datadog's
+   casing for free — forcing `capitalize` instead would break "NCCM" and "APM" into "Nccm"/"Apm".
+   ⚠️ THE DOCS CHIP MATCHES `.mfdocs`, the per-row one two rules down — same 8.5px/700/.07em
+   uppercase on `--chip`, same hover reveal. Datadog draws its `DOCS ↗` the same way whether it
+   is on a row or beside a title, and having two different doc affordances in one menu was the
+   thing that made the heading link read as a stray link rather than a control. */
+.mfsec{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
+  color:var(--text);padding:9px 8px 7px 14px}
+.mfsec .mfsl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ⚠️ SHOWN AT REST, NOT ON HOVER (request, 10 Sep 2026: "in submodule title document link is
+   show in hover, make to show by default"). A ROW's chip is one of ten and only matters while
+   you are on that row; the heading's is the menu's single documentation link, and hidden at rest
+   it was undiscoverable — you had to know it was there to hover for it.
+   ⚠️ .75, NOT FULL STRENGTH. The heading is the loudest thing on the card now (13px semibold);
+   a chip beside it at full contrast would compete with it. Hover still takes it to 1. */
+.mfsec .mfsd{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;height:20px;
+  padding:0 7px;border-radius:4px;background:var(--chip);
+  font-size:10px;font-weight:700;letter-spacing:0;color:var(--text-dim);
+  text-decoration:none;opacity:.75;transition:opacity .12s,color .12s,background .12s}
+.mfcol:hover .mfsec .mfsd,.mfsec .mfsd:focus-visible{opacity:.75}
+.mfsec .mfsd:hover{opacity:1;color:var(--text);background:var(--hover-side)}
+/* ⚠️ SIZED UP FROM 8.5px (request, 10 Sep 2026: "it is very small, make to medium size"). It had
+   been matched to `.mfdocs`, the per-ROW chip — but that one lives inside a 32px row among ten of
+   them and has to stay quiet; this is the menu's only documentation link, sitting beside a 13px
+   heading, and at 8.5px it read as a caption on the title rather than a control.
+   ⚠️ THE STROKE FOLLOWS THE GLYPH. This file's rule is 1.25px of stroke ON SCREEN, computed from
+   the rendered size: at 11px that is `1.25 x 24 / 11 = 2.7`. Changing the size without this makes
+   the arrow visibly thinner than the letters beside it — the trap the icon-weight note records. */
+.mfsec .mfsd svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.7;
+  stroke-linecap:round;stroke-linejoin:round}
 .mfsec.tight{padding-top:0}
 .mfsec.cont{visibility:hidden}          /* continuation column: keeps the box, drops the label */
+/* the pin in a pinned row's popup heading — see `mfSec`. Always shown and always filled:
+   there is one of them and it reports a state that is already true. */
+/* ⚠️ THE SAME BADGE AS THE GRID TILE'S `.mfgpin` — an `--action` disc with an `--action-fg`
+   glyph, tilted 45°. Every number here is copied from that rule rather than re-chosen (18px disc,
+   10px glyph, stroke 3), because the request was that the two look identical: change one and you
+   must change the other. The state pair is the badge's own — the disc is constant, the GLYPH is
+   filled when pinned and an outline when it is not. */
+.mfsec .mfsp{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;padding:0;
+  border:0;border-radius:50%;background:var(--action);color:var(--action-fg);cursor:pointer;
+  transition:background .12s}
+.mfsec .mfsp svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round;transform:rotate(45deg)}
+.mfsec .mfsp.pinned svg{fill:currentColor;stroke:currentColor}
+.mfsec .mfsp:hover{background:var(--action-h,var(--action))}
+.mfsec .mfsp:hover{background:var(--hover-side)}
+/* the label gives up its slack to the DOCS chip so the pin stays against the title */
+.mfsec:has(.mfsp) .mfsl{flex:0 1 auto}
+.mfsec:has(.mfsp) .mfsd{margin-left:auto}
 .mfbeta{margin-left:6px;font-size:8.5px;font-weight:700;letter-spacing:.05em;padding:1px 4px;
   border-radius:3px;background:rgba(20,184,166,.18);color:var(--teal)}
-.mffoot{display:flex;align-items:center;gap:8px;margin:6px 14px 0;padding:9px 8px 0;
+.mffoot{display:flex;align-items:center;gap:8px;margin:6px 4px 4px;padding:9px 10px 0;
   border-top:1px solid var(--pop-line,var(--border));font-size:12.2px;color:var(--text-dim)}
 .mffoot:hover{color:var(--teal)}
 .mffoot .ext{margin-left:auto;font-size:11px;opacity:.8}
@@ -1145,7 +1303,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    hover accent and `.mfmaster .mfi.open` depends on it. Only the rail it used to sit against is
    gone, so its `margin-left:-1px` (which pulled the row onto the rule) goes too, and its left
    corners round like its right ones now that there is no line for them to butt against. */
-.mflist{margin:0 0 8px}
+.mflist{margin:0}
 /* ⚠️ A SUB-MODULE THAT HAS CHILDREN sits OUTSIDE the rule and carries the weight of a
    heading without being one — it is still a row you can click. Its children then hang off
    their own short rule below it, so the line means "these belong to that". */
@@ -1174,9 +1332,9 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    ⚠️ THE SPACE IS A `margin-bottom`, NOT MORE `height`. Height would grow the hit target and
    the hover fill with it, which on a 19-row menu paints one continuous slab; the gap has to
    be OUTSIDE the fill for the rows to read as separate. */
-.mfi{display:flex;align-items:center;gap:7px;height:32px;margin-bottom:2px;padding:0 9px;
+.mfi{display:flex;align-items:center;gap:7px;height:32px;margin:0 4px 4px;padding:0 9px;
   border-left:1px solid transparent;
-  font-size:12.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:4px}
+  font-size:13px;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:4px}
 /* ⚠️ HOVER IS THE FILL ALONE — NO LEFT BAR (request, 9 Sep 2026: "in hover effect remove the
    line, show only hover effect"). A hovered row was saying the same thing twice: a fill AND a
    teal rule at its left edge, in a menu where nothing else carries a bar.
@@ -1189,7 +1347,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    ⚠️ CONSEQUENCE, and it is the intended one: in a FLAT menu — the pinned-row flyout, the
    Health menu, Report, Dashboard, SLO — no row can be `.open`, so no bar is drawn anywhere.
    That is the surface the request was pointing at. */
-.mfi:hover{background:var(--pop-item-hover);color:var(--text)}
+.mfi:hover{background:var(--sb-hover);color:var(--text)}
 .mfi.on{color:var(--teal)}
 /* ⚠️ THE ICON IS THE THING THAT MAKES A 31-ROW MENU READABLE. Without it every row is the
    same shape and the only cue is indentation, which does not survive being read down a
@@ -1208,6 +1366,21 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
 .mfi:has(.mfic){font-weight:600;color:var(--white)}
 .mfi:has(.mfic):hover{color:var(--white)}
 /* a tab's dropdown entries, indented under the tab they belong to */
+/* ⚠️ THE FLYOUT ROWS CARRY NO GLYPH (request, 10 Sep 2026: "remove the sub module popup icon in
+   every where"). This REVERSES the 2 Sep pass that gave every menu row a mark — the reasoning
+   then was that at 31 rows "indentation alone is not a strong enough cue"; the menus are shorter
+   now (Alert is 8 rows and flat, Explorer 10) and the request is explicit.
+   ⚠️ IT IS A DISPLAY RULE, NOT A RENDER CHANGE, and deliberately so. Three builders emit the
+   glyph — `mfCol`'s fifth slot, `mfTree`'s icon column and its `icons` gate, and the detail
+   pane's tile — and `mfTree` GATES THE WHOLE COLUMN on `tree.every(r => r.ic && ico(r.ic))`.
+   Editing the renderers would mean touching that gate and the fifth slot in every data array;
+   one rule keeps all of it intact, so restoring the glyphs is deleting this block.
+   ⚠️ `display:none`, NOT `visibility` or `opacity` — the row is a flex line with `gap:7px`, and a
+   hidden-but-present icon would leave its gap behind and indent every label by 22px for nothing.
+   ⚠️ THE DETAIL PANE'S IDENTITY TILE (`.mfdic`) IS LEFT ALONE. It is not a row glyph: it names
+   the module whose children the pane is showing, next to that module's name, and it is the only
+   thing on that card saying which module you opened. */
+.mfi .mfic{display:none}
 .mfi.sub{padding-left:24px;height:26px;font-size:12px;color:var(--muted)}
 .mfi.sub:hover{color:var(--text)}
 .mfi .plus{color:var(--teal);font-weight:700}
@@ -1331,7 +1504,54 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    still read heavier than the pages in the detail pane beside them, which is what the 23 Aug
    2026 request ("sub module will be highlighted") actually asked for. Alert and Setting carry
    no icons, so they now read like Report: one weight for one kind of row. */
-.mfmaster .mfi.par:has(.mfic){font-weight:600;color:var(--white)}
+/* ⚠️ THIS RULE STOPPED MEANING WHAT IT SAYS AND IS NOW SCOPED OUT (reported 10 Sep 2026: the
+   menu's title and its rows "look same, it's very difficult to understand").
+   It reads "a row with a module ICON is a module, so weight it" — written 23 Aug when only some
+   rows had one. The icons were hidden today with `display:none`, which leaves the element in the
+   DOM, so `:has(.mfic)` still matched EVERY row and painted them all 600 in `--white` — exactly
+   the heading's own weight and colour. Two things that were distinguishable became identical, and
+   nothing in either rule said so. `:has()` asks whether the element EXISTS, never whether it is
+   visible; that is the trap.
+   ⚠️ KEPT, NOT DELETED, and gated on the icons actually painting — restore them and the parent
+   weighting comes back with them, which is the behaviour the 23 Aug request asked for. */
+.mfsidebar-icons-on .mfmaster .mfi.par:has(.mfic){font-weight:600;color:var(--white)}
+/* ══ THE HEADING AND ITS ROWS ARE NOW CLEARLY DIFFERENT ═══════════════════════════════════
+   Three signals rather than one, so the hierarchy survives any one of them being missed:
+   WEIGHT (700 vs 500) · COLOUR (`--text` vs `--text-dim`) · SPACE (10px under the heading).
+   ⚠️ THE ROWS GOT LIGHTER, THE HEADING DID NOT GET LOUDER. Pushing the title up would have made
+   a 31-row menu shout at you; dropping the rows to 500/`--text-dim` keeps the card quiet and
+   lets the one thing you are meant to read first sit above it. It also restores `.mfi`'s own
+   authored colour, which the `:has()` rule had been overriding on every row.
+   ⚠️ HOVER AND THE OPEN ROW STILL BRIGHTEN to `--text`, so the row under the pointer is the
+   darkest thing in the list — the hierarchy is heading → hovered row → the rest. */
+/* ⚠️ THE TITLE IS THE QUIET ONE (request, 10 Sep 2026: "we need gray title and module name in
+   the dark — currently you did reverse... title font size little smaller than module title, it's
+   separate out with size and colour"). The previous pass had it the other way round: a bold dark
+   title over lighter rows.
+   ⚠️ THIS IS THE RIGHT WAY ROUND FOR THIS MENU, and worth saying why rather than just complying.
+   The rows are the DESTINATIONS — the whole reason the card opened — and the title only says
+   which module they belong to, which you already know because you just hovered it. Making the
+   thing you came for the darkest thing on the card is what a menu should do; the title earns its
+   place by being legible, not by being loud.
+   ⚠️ TWO SIGNALS, IN OPPOSITE DIRECTIONS, so the pair cannot read as one list:
+       title  11.5px · 600 · `--text-dim`   ← smaller AND greyer
+       rows   12.5px · 500 · `--text`       ← larger AND darker
+   Weight stays higher on the title so it still reads as a heading rather than as a dimmed row;
+   size and colour are what separate them, exactly as asked.
+   ⚠️ THE 10px OF SPACE BENEATH IT STAYS. With the title now quieter, that gap is doing more of
+   the work of marking where the list begins. */
+.mfsec{font-size:11px;font-weight:600;color:var(--text-dim);margin:4px 4px 0;padding:0 9px 10px 10px}
+.mfmaster .mfi,.mfcol .mfi{font-weight:500;color:var(--text)}
+/* the hovered row is the darkest thing in the list — heading → rows → hovered row */
+.mfi:hover,.mfmaster .mfi.open{color:var(--text);font-weight:600}
+/* ⚠️ THE ROW'S TRAILING CHEVRON — `margin-left:auto` puts it at the row's own right edge, and
+   the label already shrinks (`.mfl`), so a long name ellipsises rather than pushing it out.
+   ⚠️ 12px at the file's 1.25px on-screen stroke rule: 1.25 x 24 / 12 = 2.5. */
+/* PARKED — `.mfgo` was the 'this row opens a module' chevron on a flat menu's rows; removed
+   from `mfCol` on 10 Sep 2026 with `.mfkc.nav`, for the reason recorded there. */
+.mfi .mfgo{margin-left:auto;flex:0 0 12px;width:12px;height:12px;fill:currentColor;
+  color:var(--text-dim);opacity:.6}
+.mfi:hover .mfgo{opacity:1;color:var(--text)}
 /* ── the pin ───────────────────────────────────────────────────────────────────────────
    ⚠️ IT TAKES THE `margin-left:auto`, NOT THE CHEVRON. Two rows in this list carry both, and
    whichever came first would have eaten the slack and pushed the other off the edge. The pin
@@ -1374,6 +1594,10 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
    5px was really 12px and the widest row overflowed its column. */
 .mfend{margin-left:auto;display:inline-flex;align-items:center;gap:5px;flex:0 0 auto}
 .mfkc.ph{visibility:hidden}
+/* PARKED — `.nav` was the quieter chevron on a tree row that merely navigates. The mark moved
+   to the rail (`.sitem .smore`) on 10 Sep 2026 and `mfTree` emits `.ph` for those rows again. */
+.mfkc.nav{opacity:.45}
+.mfmaster .mfi:hover .mfkc.nav{opacity:.9}
 /* ⚠️ ONE SIZE AND ONE WEIGHT FOR THE PIN, ON ALL THREE SURFACES (request, 9 Sep 2026: "the pin
    icon is look like very small and look bad"). It was 12px on the rail, 13px in the flyout and
    12px in the grid — three numbers for one mark, none of them big enough to read as a tack.
@@ -1396,7 +1620,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
 .mfmaster .mfi.pinned .mfpin svg{fill:currentColor;stroke:currentColor}
 /* the chevron gives up its auto margin when a pin is present */
 .mfmaster .mfi .mfpin+.mfkc{margin-left:4px}
-.mfmaster .mfi.open{background:var(--pop-item-hover);border-left-color:var(--teal)}
+.mfmaster .mfi.open{background:var(--sb-hover);border-left-color:var(--teal)}
 .mfmaster .mfi.open .mfic,.mfmaster .mfi.open .mfkc{opacity:1}
 .mfflat{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:4px;
   font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
@@ -1417,9 +1641,10 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:10px 0 30px rgba(23,
 .sitem.on .beta{background:rgba(23,35,54,.16);color:var(--ink)}
 /* tooltip (collapsed rail only) */
 /* search pinned at top, under the logo */
-.stop{flex:0 0 auto;border-bottom:1px solid rgba(255,255,255,.08);margin:0 8px 4px;padding:0 0 6px}
-html[data-theme="light"] .stop{border-bottom-color:var(--border)}
-.stop .sitem{margin:0 0 8px}
+/* ⚠️ NO UNDERLINE UNDER THE Ask AI / SEARCH ROW (request, 10 Sep 2026, with the group dividers).
+   The padding stays — it is what holds the row off the module list; only the rule went. */
+.stop{flex:0 0 auto;margin:0 10px 0;padding:0}
+.stop .sitem{margin:0 0 10px}
 .stop .sitem .lbl{flex:1}
 /* the one violet row in the rail — AI is the only thing that is not product-teal */
 /* ── a pinned row on the rail ──────────────────────────────────────────────────────────
@@ -1481,18 +1706,126 @@ html[data-theme="light"] .stop{border-bottom-color:var(--border)}
    ⚠️ IT RENDERS `.on` — `railTmp()` only returns a row whose module is the OPEN one, so while
    it is there it IS the screen you are looking at. The ring is `--ink` on that fill for the
    same reason the pinned row's mark is: `--track` would sit on `--pill` and disappear. */
-.sitem.tmp{outline:1px dashed var(--track);outline-offset:-1px}
-.sitem.tmp.on{outline-color:color-mix(in srgb, var(--ink) 55%, transparent)}
+/* ⚠️ THE COLLAPSED TILE GETS ITS OWN FILL, BORDER AND BREATHING ROOM (request, 10 Sep 2026:
+   "improve the background colour and border colour will be different and add 2px margin"). At
+   64px the row is a 32px tile, and a dashed ring at `--track` on the same surface as every other
+   tile was the only thing marking it — it read as a tile with a slightly odd edge.
+   ⚠️ THE FILL IS `--chip` AND THE RING `--text-dim`: a surface the tile beside it does not have,
+   and a ring dark enough to be a border rather than a hairline. Neither is a new colour — both
+   are tokens this rail already uses, so it inverts with the theme.
+   ⚠️ `outline`, NOT `border`, still — a border would shrink the 32px box and push this one tile's
+   glyph a pixel off every other one's, which is the fault the ring exists to avoid.
+   ⚠️ THE 2px IS `outline-offset`, NOT `margin`. A margin would move the tile and break the even
+   8px rhythm the collapsed rail is built on; the offset pushes the ring OUT into space the row
+   already owns, so the tile stays where it is and the ring gets its gap. */
+.sitem.tmp{outline:1px dashed var(--teal);outline-offset:2px}
+html[data-theme="light"] .sitem.tmp{outline-color:var(--teal-dim)}
+/* ⚠️ THE ACTIVE TEMPORARY TILE KEEPS THE RAIL'S OWN ACTIVE FILL (request, 10 Sep 2026: "the
+   active box color is not visible — make to use same active color as dashboard active color").
+   It had been given `background:var(--chip)` on 10 Sep to make it "different from other modules";
+   that override BEAT `.sitem.on`'s fill, so the one row you are actually on rendered pale while
+   Dashboard's active row was dark. The tile is the module you are in — it should look active
+   first and temporary second.
+   ⚠️ THE DASHED RING IS WHAT MAKES IT TEMPORARY, and it is the only thing that does now. On the
+   active fill that ring is `--ink` — that fill's own contrast colour — and on an INACTIVE
+   temporary tile (which `railTmp()` cannot currently produce, but the rule should not assume it)
+   it stays `--text-dim` against the rail.
+   ⚠️ THIS SUPERSEDES BOTH EARLIER NOTES on this tile: the `--chip` background, and the "ring and
+   fill must not be the same colour" fix that followed from it. With the fill back to `--pill`,
+   `--ink` contrasts it properly and the clash that report described cannot occur. */
+/* ⚠️ NO PER-STATE COLOUR ANY MORE — the ring sits outside the row in both rail states, so it
+   is drawn on the same rail surface in both and takes one colour: see `.sitem.tmp`. */
+/* ⚠️ THE RING IS FULL STRENGTH ON THE LIT ROW (request, 10 Sep 2026: the temporary row "make to
+   show differences of other module like option 6"). It was `--ink` at 55%, which on the row's own
+   dark fill measured as a whisper — the row read as an ordinary active module. `--ink` IS that
+   fill's contrast colour, so at full opacity the dash is as legible as the label beside it, and
+   the row says "this one is here temporarily" at a glance, which is the whole point of it. */
+/* `.on` needs no ring colour of its own: the ring is outside the fill now, on the rail. */
+/* ⚠️ THE AI MARK IS 16px WHERE THE OTHERS ARE 18 — an OPTICAL correction, measured (request,
+   10 Sep 2026: "the icon size is big, make same small"). Every glyph in this rail sits in the
+   same 18px box, but they do not fill it equally:
+       Ask AI star   ART 18x18  = 100% of the box
+       Dashboard     ART 17x17  =  92%
+       Search        ART 15x15  =  84%
+       Alert         ART 13x16  =  72%
+   The star is drawn corner to corner in its 48 viewBox, so at an identical box size it paints
+   more ink than anything beside it and reads a size larger. A 16px box brings its art to 16px,
+   next to Dashboard's 17 — the same optical weight, not the same number.
+   ⚠️ THE MARGIN MOVES WITH IT. `.sitem .ic` carries `margin-left:7.5px`, which centres an 18px
+   glyph on the rail's icon column at x=32; a 16px glyph at the same margin would centre on 31.
+   8.5px puts it back on 32, so the column stays true — this is the same derivation the flyout's
+   own icon column uses.
+   ⚠️ NOTHING ELSE CHANGES — the glyph, the name and the row are untouched, which is what was
+   asked. Only the box it is drawn in got a pixel and a half smaller. */
+/* ⚠️ SCOPED TO THE OPEN RAIL, and that scoping is the whole fix. Written bare it also applied
+   at 64px, where the collapsed rail centres its glyphs with its own rule — so the AI mark sat at
+   x=36 collapsed and x=32 expanded and JUMPED 4px as the rail opened under the pointer. Measured:
+   every other icon held x=32 in both states; this was the only one that moved. Exactly the drift
+   the expand/collapse is supposed to have none of.
+   ⚠️ COLLAPSED IT KEEPS THE ROW'S OWN CENTRING — no margin override at all, so it inherits
+   whatever the 64px rail does and cannot drift from its neighbours again. Only its SIZE is
+   corrected there, which is what the optical fix was for. */
+/* ⚠️ 1px, DERIVED — and it has to be restated here because `#sbAI .ic` carries an id and beats
+   the `.sidebar.open .sitem .ic{margin-left:0}` reset above. The row now starts at 16 with 7px of
+   padding, so its content edge is 23; a 16px glyph centred on the icon column at x=32 needs
+   23 + m + 8 = 32, i.e. m = 1. At the old 8.5 it sat at 40 — measured, and the only icon in the
+   rail that was off the column after the margin change. */
+.sidebar.open #sbAI .ic{width:16px;height:16px;flex:0 0 16px;margin-left:1px}
+.sidebar:not(.open) #sbAI .ic{width:16px;height:16px;flex:0 0 16px}
+/* ⚠️ BOTH STATES USE A 10px MARGIN (requests, 10 Sep 2026: first "the expand and collapse margin
+   are use same, and active box can't change", then "currently there are 16px left and right side
+   spacing but we need 10px, and it should be the same on the expand and collapse view").
+   Two constraints, and together they fix every number here:
+       the box may not change  → the collapsed tile stays 32px
+       10px each side of it    → the collapsed rail must be 32 + 10 + 10 = 52px
+   So `--rail-w` went 64 → 52 rather than the tile growing. 52 is not a new number in this folder
+   — Option 8's rail is exactly that, and Option 5's is 44.
+   ⚠️ EVERYTHING THAT READS `railWidth()` FOLLOWS FOR FREE: `.shell`'s padding, the flyout's and
+   the grid's `left`, the popovers' offset and the Agentic AI drawer all derive from the token,
+   which is why it was made a token in the first place.
+   ⚠️ THE GLYPH'S OWN INDENT IS ZEROED, or the icons drift between the states. `.sitem .ic` carries
+   `margin-left:7.5px`, tuned when the row margin was 8; with the margin doing the insetting the
+   indent has to go, and the column falls out as 10 (margin) + 7 (padding) + 9 (half the glyph) =
+   **26** — the same in both states, because the collapsed tile is centred in a rail whose own
+   half-width is 26.
+   ⚠️ THE BRAND MARK AND THE WORDMARK FOLLOW THE COLUMN. A 30px mark centred on 26 starts at 11,
+   and the labels then start at 10 + 7 + 18 + 11 = 46, so the wordmark's gap is re-derived rather
+   than left at the value that suited x=32.
+   ⚠️ `.stop`'s rows carry their own margin and need the same treatment, or Ask AI and Search stay
+   at the old inset while every module row moves. */
+.sidebar.open .smenu .sitem{margin:0 10px 10px}
+.sidebar.open .stop{margin:0 10px 4px}
+.sidebar.open .sitem .ic,
+.sidebar.open .sitem .iwrap{margin-left:0}
 .sitem.airail{color:var(--ai-2)}
+/* SUPERSEDED — `.stop #sbAI:hover` (1,1,0) owns this row's hover fill in both rail states
+   since 10 Sep 2026. Kept for a revert to the untinted row. */
 .sitem.airail:hover{background:var(--ai-soft)}
 
-.kbd{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;color:var(--text-dim);
-  background:var(--chip);border-radius:3px;padding:1px 5px}
+/* ⚠️ NOT MONO, AND NOT A PADDED INLINE — see the note above. Measured advances at 600 10px:
+   JetBrains Mono renders `K` and `M` at **6.00** while `⌘` comes out at **6.03**, which is the
+   generic monospace fallback's advance for every glyph — i.e. the two characters of this chip
+   were being drawn by two different faces. (`document.fonts.check('⌘')` answers true and is NOT
+   evidence: it reports availability, not per-glyph coverage. The 0.03px advance is a small tell,
+   so this is stated as the likely cause rather than as proof.) The chip inherits the UI font now,
+   which is also this file's own rule — `.mono` is for NUMERICS.
+   ⚠️ THE HEIGHT IS THE OTHER HALF, and it is not a guess: with `padding` only and no line-height,
+   the line box decided the chip's height, so whatever those mixed metrics did was what you saw.
+   ⚠️ `--text`, NOT `--text-dim`: the dim pair measures **3.12:1** on `--chip` in light (4.35
+   dark), under 4.5 on the smallest text in the rail. `--text` is 10.58 / 7.73. */
+.kbd{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
+  height:16px;min-width:22px;padding:0 5px;box-sizing:border-box;vertical-align:middle;
+  font-size:11px;font-weight:600;line-height:1;letter-spacing:.02em;color:var(--text);
+  background:var(--chip);border-radius:4px}
 /* the identity row IS the very last row again — 8px below the rule, matching the 8px of
    padding above it, so the hairline sits centred between the two blocks it separates */
-.sfoot .sitem{margin:8px 0 0;padding:0 7px}
+.sfoot .sitem{margin:10px 0 0;padding:0 7px}
+/* What's new is a 2px step off the quick links above it — see the note at `.uxnews`.
+   OPEN RAIL ONLY: `.sidebar:not(.open) .sfoot .sitem` ties at (0,3,0) and would lose on
+   source order, taking the collapsed tile out of that column's even 10px rhythm. */
+.sidebar.open .sfoot .sitem.uxnews{margin-top:2px}
 /* utility section — header actions pinned at bottom of the rail */
-.sutil{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);margin:4px 8px 0;padding:7px 0 2px;position:relative;z-index:1}
+.sutil{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);margin:0 10px 0;padding:10px 0 0;position:relative;z-index:1}
 html[data-theme="light"] .sutil{border-top-color:var(--border)}
 .sutil .sitem{margin:0 0 4px}
 .sitem .iwrap{position:relative;flex:0 0 18px;width:18px;height:18px;margin-left:7.5px}
@@ -1512,14 +1845,28 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    `opacity:0` when the rail collapses, so nesting the name and the sub-line in it means both
    disappear together and there is no second collapse rule to keep in step. `.lbl` is a flex ROW
    by default — this is the one place it has to be a column. */
-.sfoot .sid{height:auto;padding-top:5px;padding-bottom:5px}
+.sfoot .sid{height:32px;padding-top:0;padding-bottom:0}
+/* the avatar takes the icon column's own 18px, so both columns line up with every other row */
+.sfoot .sid .miniav{flex:0 0 18px;width:18px;height:18px;margin-left:0;font-size:8px}
 .sfoot .sid .lbl{flex-direction:column;align-items:flex-start;gap:1px;line-height:1.25;min-width:0}
 .sfoot .sid .nm{font-size:13px;font-weight:500}
 /* ⚠️ THE E-MAIL TRUNCATES RATHER THAN WIDENING THE RAIL. An address is the one string in this
    footer whose length nobody controls, and the rail is a fixed 170px open — Datadog's own footer
    ellipsises it for the same reason (`dopid43323@ea…`). */
+/* ⚠️ THE IDENTITY ROW SHOWS THE NAME ONLY (request, 10 Sep 2026: "show only name, remove email
+   id"). The second line came from Datadog's rail footer on 2 Sep; it is the one row in the rail
+   carrying a value nobody reads twice.
+   ⚠️ IT IS SET **HERE**, IN THE RULE THAT WINS. A `.sid .lbl .sub{display:none}` written earlier
+   in the sheet is (0,3,0) — exactly the same weight as this one — so source order handed the
+   `display:block` below the win and the address kept painting. The probe measured `block` while
+   the new rule was plainly in the file; that is the equal-specificity trap this stylesheet opens
+   its own notes with, and the fix is to edit the winning rule rather than add a third.
+   ⚠️ HIDDEN, NOT DELETED: `refreshUser()` writes the saved address into `#sbUserSub` on every
+   profile save, and `stSeed()` reads `#sbUser .nm` first BECAUSE this line exists. Both keep
+   working against a hidden node; removing it would make the first a silent no-op on a null.
+   ⚠️ The rest of the rule stays so a revert is one word. */
 .sfoot .sid .sub{font-size:10.5px;font-weight:400;color:var(--text-dim);max-width:112px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none}
 /* Approval · Health · Notifications — three equal columns, icon above label, under a hairline.
    ⚠️ ONE COLUMN WHEN COLLAPSED, NOT `display:none`. These are the rail's three utility controls,
    so unlike a set of extra links they have to stay REACHABLE at 64px — hiding them would take
@@ -1532,10 +1879,25 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    would have drawn a second hairline 8px below `.sfoot::before`, which is the footer's own top
    rule; there is nothing above `.squick` any more to separate it from. The 4px side margin is
    unchanged, so the rule keeps the inset it always had. */
-.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:0 4px;padding-bottom:8px;
-  border-bottom:1px solid rgba(255,255,255,.08)}
+/* ⚠️ THE FOOTER'S HAIRLINES ARE GONE TOO (request, 10 Sep 2026, finishing the "remove line"
+   pass that took the group dividers and the Ask AI row's underline). Two rules drew here: one
+   ABOVE the footer (`.sfoot::before`, separating it from the module list) and one BETWEEN the
+   quick links and the identity row (`.squick`'s `border-bottom`). With the group dividers gone
+   these were the last horizontal rules in the rail, and two of them in the bottom 90px read as
+   more chrome than the four controls they were framing.
+   ⚠️ THE SPACING STAYS AND IS NOW DOING THE WHOLE JOB — `.sfoot`'s padding and `.squick`'s
+   `padding-bottom` are untouched, so the footer is still held off the list and the identity row
+   off the quick links. Only the paint went; nothing moved. */
+/* ⚠️ THE QUICK ROW SITS ON THE RAIL'S OWN COLUMN (request, 10 Sep 2026: "make proper margin and
+   padding, use sidebar rules"). Measured: every row in this rail runs x 8..231 — `.sitem` is
+   `margin:0 8px` inside a full-width `.smenu` — and the gaps between them are 8px. This block
+   carried `margin:0 4px` INSIDE `.sfoot`'s own 8px padding, so it started at 12 and ended at 227:
+   four pixels narrower than everything above it, on both sides.
+   ⚠️ THE MARGIN GOES TO 0 RATHER THAN TO 8. `.sfoot` already pays the 8px as padding; adding
+   another 8 here would put it at 16. The rule the rail follows is "the footer's padding IS the
+   column", and every child of `.sfoot` should inherit it rather than restate it. */
+.squick{display:grid;grid-template-columns:1fr;gap:2px;margin:0;padding-bottom:10px}
 .sidebar.open .squick{grid-template-columns:repeat(3,minmax(0,1fr))}
-html[data-theme="light"] .squick{border-bottom-color:var(--border)}
 .sq{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
   padding:6px 0 5px;border-radius:4px;color:var(--text-dim);font-size:10.5px;
   white-space:nowrap;cursor:pointer;min-width:0}
@@ -1568,10 +1930,8 @@ html[data-theme="light"] .squick{border-bottom-color:var(--border)}
    cut the rail's foot off from the module menu, and it went when its three rows moved into the
    footer. A `border-top` on `.sfoot` would span the full rail; this is inset the same 8px the
    old one was. */
-.sfoot{flex:0 0 auto;padding:8px 8px 12px;position:relative;z-index:1}
-.sfoot::before{content:'';position:absolute;left:8px;right:8px;top:0;height:1px;
-  background:rgba(255,255,255,.08)}
-html[data-theme="light"] .sfoot::before{background:var(--border)}
+.sfoot{flex:0 0 auto;padding:10px;position:relative;z-index:1}
+/* `.sfoot::before` drew the rule above the footer — removed with the rest, see above */
 /* ⚠️ THE COLLAPSE ROW IS NOW BUILT TO `.sitem`'s NUMBERS (gap 11, 20px glyph at margin-left
    5, 13px label). It had gap 9, an 18px glyph at margin-left 6 and a 12px label — so its icon
    sat 3px right of every other glyph and 2px smaller, and its label 1px left of every other
@@ -2008,7 +2368,7 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
   display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--panel);
   border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.34);
   transform:translateX(0);transition:transform .2s ease}
-html[data-theme="light"] .dpanel{box-shadow:6px 0 24px rgba(23,35,54,.12)}
+html[data-theme="light"] .dpanel:not(.hid){box-shadow:6px 0 24px rgba(23,35,54,.12)}
 .dpanel.hid{transform:translateX(-101%);box-shadow:none}
 /* chevron flips to point the way the panel will move */
 .dpchev svg{transition:transform .2s ease}
@@ -5832,10 +6192,10 @@ body.aidockr .aipanel.aifloat{opacity:.55}
   transform:rotate(45deg);border-left:1px solid var(--border);border-top:1px solid var(--border)}
 
 /* user menu (live: 320px, bg #1d2a3e, radius 4) — opens beside the sidebar */
-#userPop{width:320px;left:74px;bottom:10px}
+#userPop{width:320px;left:74px;bottom:10px;background:var(--sidebar)}
 #userPop::before,#notifPop::before{top:auto;left:-5px;right:auto;border:0;
   border-left:1px solid var(--border);border-bottom:1px solid var(--border)}
-#userPop::before{bottom:22px}
+#userPop::before{bottom:22px;content:none}
 /* profile popover — header, one clean list, theme segment, bordered logout */
 .uhead{display:flex;align-items:center;gap:14px;padding:18px 18px 16px}
 .upavatar{width:52px;height:52px;border-radius:50%;background:var(--chip);color:var(--text);
@@ -5843,20 +6203,20 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .uhead .nm{font-size:15.5px;font-weight:600}
 .uhead .rl{font-size:12.5px;color:var(--text-dim);margin-top:3px}
 .umenu{list-style:none;margin:0;padding:6px 12px 12px}
-.umenu li.item a{display:flex;align-items:center;gap:13px;padding:10px 8px;border-radius:6px;font-size:13.5px;font-weight:500}
+.umenu li.item a{display:flex;align-items:center;gap:13px;padding:10px 8px;border-radius:4px;font-size:13.5px;font-weight:500}
 .umenu li.item a:hover{background:var(--pop-item-hover)}
 .umenu .ic{width:19px;height:19px;color:var(--text-dim);flex:0 0 19px}
 .umenu li.div{height:1px;background:var(--pop-line);margin:8px -12px}
-.newchip{margin-left:auto;background:var(--chip);border:1px solid var(--border);color:var(--text);font-size:10px;font-weight:600;padding:2px 8px;border-radius:9px}
-.themerow{display:flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:4px;gap:4px;margin:6px 0}
+.newchip{margin-left:auto;background:var(--chip);border:1px solid var(--border);color:var(--text);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px}
+.themerow{display:flex;background:var(--panel-2);border:1px solid var(--border);border-radius:4px;padding:4px;gap:4px;margin:6px 0}
 html[data-theme="light"] .themerow{background:var(--panel-2)}
-.tseg{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:32px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text-dim)}
+.tseg{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:32px;border-radius:4px;font-size:13px;font-weight:500;color:var(--text-dim)}
 .tseg svg{width:15px;height:15px;fill:currentColor}
 .tseg:hover{color:var(--text)}
 .tseg.on{background:var(--pop);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 html[data-theme="light"] .tseg.on{background:#fff;box-shadow:0 1px 3px rgba(23,35,54,.14)}
 .umenu li.logout a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--pop-line);
-  border-radius:8px;color:var(--red);font-weight:600;font-size:13.5px}
+  border-radius:4px;color:var(--red);font-weight:600;font-size:13.5px}
 .umenu li.logout a:hover{background:rgba(242,80,75,.1);border-color:var(--red)}
 .umenu li.logout svg{width:15px;height:15px;fill:currentColor}
 
@@ -7589,7 +7949,13 @@ html[data-theme="light"] #drawer-layout{
    product's release notes (verified 200), the product's own `message-star` glyph, a small
    version tag; smaller and dimmer than the rows above it, as the rule asks */
 .sitem.uxnews{opacity:.85}
-.sitem.uxnews .uxtag{margin-left:6px;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--text-dim);background:var(--chip);border-radius:3px;padding:1px 5px}
+/* 4px between the chip and the ↗ — in the GAP, never as a margin on the mark: this row's
+   `.lbl` gap adds to a child's margin, which is how a 2px margin once measured 9px */
+.sitem.uxnews .lbl{flex:1;min-width:0;gap:4px}
+.sitem.uxnews .uxtag{margin-left:auto;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--text-dim);background:var(--chip);border-radius:4px;padding:1px 5px}
+.sitem.uxnews .uxext{flex:0 0 10px;width:10px;height:10px;fill:none;stroke:currentColor;
+  stroke-width:3;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim);opacity:.75}
+.sitem.uxnews:hover .uxext{opacity:1;color:var(--text)}
 /* ── SIDEBAR UX PASS, round 2 (8 Sep 2026) — the rail options, which round 1 touched least ──── */
 /* rule 9 · the EXPANDED rail is resizable — `--rail-w-open` is the one token the rail, the flyout's
    anchor and the pinned shell all read. The grip only exists while the rail is open; a grip on a
@@ -7605,7 +7971,12 @@ html[data-theme="light"] #drawer-layout{
    survives, so nothing about the affordance is lost.
    ⚠️ `.sitem` is border-box, so the outer boxes did not move; the glyphs gained the 1px each
    side the border was holding, and the row's own `gap:8px` is unchanged. */
-.sidebar.open #sbSearch{background:var(--panel-2);border:0;border-radius:6px}
+/* ⚠️ ONE RADIUS IN THE RAIL — 4px (10 Sep 2026). The Ask AI and Search rows were 6px, from the
+   pass that restyled them as a field; the request named the "navigation block", but two rows at
+   6 directly above six rows at 4, in one column, is the same inconsistency one row up. Found by
+   the radius sweep, not by the request — it reads every row in both states rather than checking
+   the active one, which is how the collapsed 8px had gone unnoticed. */
+.sidebar.open #sbSearch{background:var(--panel-2);border:0;border-radius:4px}
 .sidebar.open #sbSearch:hover{background:var(--hover-side)}
 /* ══ SEARCH AND IRIS SIT SIDE BY SIDE ONCE THE RAIL IS OPEN ════════════════════════════════
    Option 10, 9 Sep 2026, against a supplied reference: a wide field with a square icon button
@@ -7620,14 +7991,58 @@ html[data-theme="light"] #drawer-layout{
    ⚠️ `.stop .sitem .lbl{flex:1}` is what makes the search label fill the field and hold the
    ⌘K keycap out at its right edge; the row must therefore stay a flex ROW itself, so only the
    CONTAINER becomes a flex row here and the rows keep their own internal layout. */
-.sidebar.open .stop{display:flex;align-items:center;gap:8px}
-.sidebar.open .stop .sitem{margin:0}
 /* ⚠️ IRIS IS THE WIDE ONE (request, 9 Sep 2026), matching the supplied reference: an "ask"
    field with a compact search button beside it. It was the other way round for an hour. */
-.sidebar.open .stop #sbAI{flex:1 1 auto;min-width:0;
-  border:0;border-radius:6px;background:var(--panel-2)}
-.sidebar.open .stop #sbAI:hover{background:var(--ai-soft)}
-.sidebar.open .stop #sbSearch{flex:0 0 32px;width:32px;padding:0;gap:0;justify-content:center}
+/* ⚠️ Ask AI AND SEARCH ARE STACKED AGAIN, NOT SIDE BY SIDE (request, 10 Sep 2026: "the AI icon
+   and Search icon will be show not side by side, show as up down"). They were made a row on
+   9 Sep — a wide Ask AI field with a 32px search button beside it, from a supplied reference.
+   This reverses that: two full-width rows, each with its glyph, its label and (for Search) its
+   ⌘K keycap, which is what every other row in this rail looks like.
+   ⚠️ WHAT THE ROW LAYOUT HAD TO SUPPRESS COMES BACK WITH THEM — Search's label and its keycap
+   were `display:none` to fit 32px, and its glyph had `margin-left:0` to centre in that button.
+   Both are removed rather than overridden, so the rows inherit `.sitem`'s own geometry and the
+   glyphs land on the rail's icon column with every other row.
+   ⚠️ THE COLLAPSED RAIL IS UNAFFECTED — it always stacked them; only `.sidebar.open` changed. */
+/* ⚠️ THE ASK-AI BUTTON IS THE BRAND RAMP AS A 10% WASH (requests, 10 Sep 2026: the ramp supplied
+   verbatim — `rgb(76,177,254) 0% / rgb(115,30,251) 55% / rgb(249,17,227)` — then "change the
+   gradient opacity of use 30%"). It was `--panel-2`, a flat pale fill.
+   ⚠️ THE SECOND REQUEST EXPLAINS THE FIRST. The supplied ramp ended `rgb(249,17,227) 30%` — a
+   stop behind an earlier one, which CSS clamps to 55%, so it would have painted the right half
+   of the button flat magenta with a hard edge mid-row. It was an OPACITY, not a stop; the stops
+   are 0 / 55 / 100 as they are in all four places this file states them, and the opacity is
+   the separate dial below (10% at rest, 15% on hover, after two revisions).
+   ⚠️ THE CONTENT COLOUR IS MEASURED, NOT CHOSEN. This button was opaque for an hour with white
+   content, and on a wash white FAILS in light — **1.14 / 1.25 / 1.22** at the three stops, and
+   it gets worse the fainter the wash. `--text`, the rail's own row colour, clears 4.5:1 at
+   every stop in both themes: 8.77 / 10.03 / 9.78 dark · 11.02 / 10.07 / 10.27 light at rest,
+   7.95 / 9.70 / 9.31 · 10.56 / 9.24 / 9.50 on hover.
+   ⚠️ AND NOT THE CLIPPED RAMP EITHER, which is what this label wore from 9 Sep until the fill
+   arrived: the same hue at full strength over a wash of itself measures 2.04 / 5.10 / 2.76 in
+   light and 5.69 / 2.38 / 4.36 in dark — it fails at a different stop in each theme, so there
+   is no strength at which it works. `--text` is the only treatment that does.
+   ⚠️ `-webkit-text-fill-color` HAS TO BE RESET, not just `color`: `#sbAI .lbl` sets it to
+   `transparent` for the clip, and `color` alone cannot override it. The recorded `.aiagsay.live`
+   trap. It wins on classes, both selectors carrying the id — (1,4,0) against (1,1,0).
+   ⚠️ THE STAR KEEPS ITS OWN GRADIENT. A `fill:#ffffff!important` was needed while the ramp was
+   OPAQUE — `AI_SPARK_PATH` paints it `fill:url(#aisprkg)` inline, so a same-ramp star on a
+   same-ramp fill vanishes — and on a wash it is full strength over a 30% tint and reads in both
+   themes, where white would be 1.34 in light, the label's fault again.
+   ⚠️ `,var(--sidebar)` UNDER IT: the ramp is translucent, so it needs the rail's own surface
+   beneath rather than whatever is behind — exactly how `.aicta` layers over `--card`.
+   ⚠️ HOVER STRENGTHENS RATHER THAN DARKENS. The 12% black wash it carried while opaque muddies a
+   tint instead of lifting it; 10% -> 15% is the request's own pair, and it is the same ×1.5 step
+   the panel's `--ai-cta` / `--ai-cta-h` tokens take (.13 -> .19).
+   ⚠️ BOTH RAIL STATES (request, same day: "by default show same opacity", the collapsed tile
+   held against the open row). It was `.sidebar.open`-scoped while the fill was opaque, where a
+   full ramp across a 32px tile was a different object from the tiles around it; at 10% it is a
+   tint, so the scope was the only thing making the two states disagree. The 90deg ramp simply
+   runs its three stops across 32px there — same stops, same strength, one control. */
+.stop #sbAI{border:0;border-radius:4px;
+  background:linear-gradient(90deg,rgba(76,177,254,.1) 0%,rgba(115,30,251,.1) 55%,rgba(249,17,227,.1) 100%),var(--sidebar)}
+.stop #sbAI:hover{
+  background:linear-gradient(90deg,rgba(76,177,254,.15) 0%,rgba(115,30,251,.15) 55%,rgba(249,17,227,.15) 100%),var(--sidebar)}
+.stop #sbAI .lbl{background:none;
+  -webkit-text-fill-color:var(--text);color:var(--text)}
 /* ⚠️ AND THE GLYPH LOSES ITS RAIL INDENT (request, 9 Sep 2026: "the search icon is not
    alignment"). `.sitem .ic` carries `margin-left:7.5px` — the value derived so the rail's
    glyphs sit at x=22.5 whether the rail is collapsed or open. Inside a 32px button,
@@ -7635,11 +8050,9 @@ html[data-theme="light"] #drawer-layout{
    right of centre: a small, definite lean rather than anything obviously broken, which is why
    it reads as "not aligned" rather than as a bug.
    ⚠️ Scoped to this one button, so the rail's own alignment is untouched. */
-.sidebar.open .stop #sbSearch .ic{margin-left:0}
 /* ⚠️ THE ⌘K KEYCAP GOES WITH THE LABEL, and it is not lost — `data-tip="Search  ⌘K"` carries
    it, and the tooltip engine renders a double-space tail AS a keycap chip, so the shortcut is
    still shown on hover. That is the only place a 32px button has room for it. */
-.sidebar.open .stop #sbSearch .lbl{display:none}
 /* ══ "Ask AI" IS PAINTED WITH THE BRAND GRADIENT (request, 9 Sep 2026) ═════════════════════
    The same ramp the mark beside it now carries and the same one behind the panel's starter
    rows — `rgb(76,177,254) / rgb(115,30,251) 55% / rgb(249,17,227)`, i.e. `--ai-cta`'s stops at
@@ -7660,6 +8073,8 @@ html[data-theme="light"] #drawer-layout{
    what `color` cannot override.
    ⚠️ It is scoped to `#sbAI .lbl` (1,0,1), which clears `.sitem.airail`'s own `color` at
    (0,2,0) without touching any other row.
+   ⚠️ IT IS OVERRIDDEN ON THE EXPANDED RAIL, where the button carries the ramp as a 30% wash
+      and the label goes to `--text` — see `.sidebar.open .stop #sbAI .lbl` above.
    ⚠️ COLLAPSED THE LABEL IS `display:none`, so this paints nothing at 64px — the tooltip is
    what names the row there, and `tipSeenText()` skips hidden nodes, so it still speaks. */
 #sbAI .lbl{flex:0 0 auto;
@@ -7699,38 +8114,92 @@ html[data-theme="light"] #drawer-layout{
    ⚠️ THE 0px IS THE GAP, and with it the card is ATTACHED rather than floating — so it takes
    `.mflyout`'s own treatment for exactly this: no left border and no left radius, which is
    what stops a seam appearing where the two surfaces meet. See `mfGrid` for the left edge. */
-.mfgrid{position:fixed;z-index:80;width:232px;padding:10px;border-radius:0 12px 12px 0;
-  background:var(--pop);border:1px solid var(--border);border-left:0;
-  box-shadow:14px 0 40px rgba(0,0,0,.5);display:none}
-html[data-theme="light"] .mfgrid{box-shadow:14px 0 40px rgba(23,35,54,.16)}
+.mfgrid{position:fixed;z-index:80;width:232px;padding:10px;border-radius:4px;
+  background:var(--sidebar);border:1px solid var(--border);
+  box-shadow:0 10px 34px rgba(0,0,0,.5);display:none}
+html[data-theme="light"] .mfgrid{box-shadow:0 10px 34px rgba(23,35,54,.16)}
 .mfgrid.on{display:block;animation:uxfly .14s ease-out}
 .mfgi-w{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .mfgi{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;
-  padding:7px 2px;border:0;border-radius:8px;background:transparent;color:var(--text);
-  font-size:11px;font-weight:500;cursor:pointer;text-align:center;font-family:inherit}
-.mfgi:hover{background:var(--hover)}
+  padding:6px 2px;border:1px solid transparent;border-radius:4px;background:transparent;
+  color:var(--text);font-size:11px;font-weight:500;cursor:pointer;text-align:center;
+  font-family:inherit;transition:background .12s,border-color .12s,box-shadow .12s}
+.mfgi:hover{background:var(--sb-hover);border-color:transparent}
 .mfgi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
-.mfgt{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:var(--chip)}
-.mfgt .ic{width:18px;height:18px;fill:currentColor;color:var(--text)}
+/* ⚠️ THE ICON BOX IS 40px, BORDER-ONLY AT REST, AND FILLS ON HOVER (requests, 10 Sep 2026:
+   "the icon box color add #ffffff", then "the #ffffff colour will be show when i hover the icon,
+   and the icon box size will be add more 4px"). Three states in one day — `--chip` fill, then
+   border-only, then a resting `--pop`, now border-only again with the fill on hover. The reading
+   that survives all of them: the hairline is what DRAWS the box, the fill is what RESPONDS.
+   ⚠️ THE FILL IS `--card`, WHICH IS `#ffffff` IN LIGHT — the requested value exactly — and
+   `#0b1627` in dark. The token goes in rather than the literal: a hardcoded white punches a bright
+   hole in the dark theme, the rule recorded at the AI send button and at `--action-fg`.
+   ⚠️ `--pop` IS THE OTHER `#ffffff`-in-light TOKEN AND IT LOST ON MEASUREMENT. The box is judged
+   against the HOVERED tile (`--hover-side` #22314a), not against the card: `--pop` #1d2a3e is
+   **1.11:1** there — effectively invisible — while `--card` is **1.39:1**, a clear well. In light
+   both are the same #ffffff at 1.13 against #ecf1f9, so only dark separates them. The earlier
+   "lift in both themes" argument for `--pop` no longer applies now that the comparison surface is
+   the hover fill: against it, both tokens are darker in dark.
+   ⚠️ ITS EARLIER `--chip` FILL WAS 1.1 AGAINST THE CARD IN LIGHT, i.e. invisible — which is why
+   "show only border" was the right answer while the fill was that token.
+   ⚠️ THE 18px GLYPH NEVER MOVED — only the box around it. 30 -> 34 -> 36 -> **40**, i.e. the
+   clear space round the glyph went 5 -> 7 -> 8 -> **10px**; measured, not derived from the
+   declared width, because the box is border-box and 40 holds a 38px content area. The grid's
+   column is
+   (232 - 20 - 4) / 3 = 69.3px, so none of this costs anything horizontally; the card grows with
+   each step and `mfClamp` already bounds its height. */
+.mfgt{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:4px;
+  background:transparent;border:1px solid var(--border);transition:border-color .12s,background .12s}
+/* the fill arrives on the tile's hover — see the note above for why it is `--card` and not `--pop` */
+.mfgi:hover .mfgt{background:var(--card)}
+/* ⚠️ THE BOX CHANGES TOO, because on a white card a pale FILL cannot carry a hover — that is
+   the whole complaint: `--chip` and the old `--hover` were 1.03 apart. So the tile lifts (border
+   + shadow) and the box re-tints (`--sel`, the file's own selected wash, a different HUE from the
+   neutral grey rather than a lighter shade of it) with its hairline going to `--text-dim`. */
+/* ⚠️ THE BOX'S HOVER TOUCHES THE FILL ONLY. `border-color` is deliberately absent from
+   `.mfgi:hover .mfgt`, so the hairline is identical at rest and under the pointer — that is what
+   the "remove this border when I hover" / "don't remove the border" pair settled, and adding a
+   fill did not reopen it. Two things now change on hover: the TILE's fill and the BOX's. */
+.mfgt .ic{width:18px;height:18px;fill:currentColor;color:var(--text-dim)}
 /* ⚠️ the label must be able to shrink or "Container Orchestration" widens its own column and
    the three stop being equal — `1fr` tracks size to content otherwise. */
 .mfgl{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mfgcust{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:30px;
-  margin-top:8px;border:1px solid var(--border);border-radius:7px;background:transparent;
+  margin-top:8px;border:1px solid var(--border);border-radius:4px;background:transparent;
   color:var(--text);font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit}
 /* ⚠️ A PINNED PIN SHOWS AT REST; the others reveal on their tile's hover. A mark that only
    appears under the pointer cannot report a state, and "which of these am I already carrying"
    is the question this card is opened with. Same rule and same numbers as `.mfpin` in the
    flyout, so the two surfaces say it identically.
    ⚠️ It sits in the tile's top-right corner, `position:absolute`, so it takes no flow width —
-   the label underneath keeps the whole 76px track and does not reflow on hover. */
-.mfgpin{position:absolute;top:1px;right:1px;width:20px;height:20px;display:grid;place-items:center;
-  border-radius:5px;color:var(--text-dim);opacity:0;transition:opacity .12s,background .12s;cursor:pointer}
-.mfgpin svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.mfgi:hover .mfgpin,.mfgi.pinned .mfgpin{opacity:.75}
-.mfgpin:hover{opacity:1;color:var(--text);background:var(--hover-side)}
-.mfgi.pinned .mfgpin{color:var(--action)}
+   the label underneath keeps the whole 76px track and does not reflow on hover.
+   ⚠️ THE GLYPH IS ROTATED 45° AND THE BADGE IS CENTRED ON THE CORNER (request, 10 Sep 2026, with
+   ClickUp's own pinned tile supplied as the reference). `MF_PIN` is drawn upright — head at the
+   top, needle straight down — and every pushpin badge of this kind tilts it so the needle points
+   down-LEFT, into the thing it is pinning; clockwise is the right direction for this path, taking
+   the head to the upper right. And the offset centres the badge ON the corner point, where the
+   reference puts it; at `-6px` the centre was 3px INSIDE the box and two thirds of the circle lay
+   over the icon.
+   ⚠️ THE OFFSET IS `-8px`, WHICH PUTS THE CENTRE 2px INSIDE THE CORNER (request, same day: "the
+   pin icon will be show 2px inside"). The arithmetic is worth keeping because the obvious number
+   is wrong: an absolutely positioned box resolves against its containing block's PADDING box and
+   `.mfgt` carries a 1px border, so the offset that centres an 18px badge ON the visible corner is
+   **-10**, not -9 — `-9` measured 1px short on both axes. From -10, each 1px step in is one unit,
+   so 2px inside is `-8`. Three placements today: -6 (two thirds over the icon) -> -10 (centred)
+   -> -8. Same trap the floating card's resize grips record.
+   ⚠️ THE TRANSFORM IS ON THE SVG, NOT THE BADGE — the badge is the circle and the hit target, and
+   `border-radius:50%` makes rotating it invisible, so it would read as nothing happening.
+   ⚠️ IT REACHES 3px ABOVE THE TILE'S PADDING BOX, into `.mfgrid`'s 10px padding — which is part
+   of why that padding is what it is. Nothing clips it. */
+.mfgpin{position:absolute;top:-8px;right:-8px;width:18px;height:18px;display:grid;place-items:center;
+  border-radius:50%;background:var(--action);color:var(--action-fg);opacity:0;
+  transition:opacity .12s;cursor:pointer}
+/* the tilt is the reference's — see the note above; `MF_PIN` itself is drawn upright */
+.mfgpin svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round;transform:rotate(45deg)}
+.mfgi:hover .mfgpin,.mfgi.pinned .mfgpin{opacity:1}
+.mfgpin:hover{opacity:1;background:var(--action-h,var(--action))}
+/* filled = pinned. One glyph, two states — stated once here and once at `.mfpin`. */
 .mfgi.pinned .mfgpin svg{fill:currentColor;stroke:currentColor}
 .mfgcust:hover{background:var(--hover)}
 .mfgcust .ic{width:14px;height:14px;fill:currentColor;color:var(--text-dim)}
@@ -7757,6 +8226,19 @@ html[data-theme="light"] .mfgrid{box-shadow:14px 0 40px rgba(23,35,54,.16)}
    same kind of threshold. It costs the list 34px and gives it back where it is tightest.
    ⚠️ IT IS A HEIGHT QUERY, NOT A WIDTH ONE. The pressure is vertical: at 1920x1080 the list fits
    whatever the width, and at 720p it scrolls whatever the width. */
+/* ⚠️ WHAT'S NEW CARRIES A LIGHT FILL (request, 10 Sep 2026). `--panel-2` is the file's own
+   quiet surface — the same one the Ask AI and Search rows sit on — so the row reads as a card
+   without introducing a colour, and it inverts with the theme where a literal would not. */
+/* ⚠️ THE FILL IS IN BOTH RAIL STATES (request, 10 Sep 2026: "the sidebar expand shows the
+   background in What's new — also add the collapsed view"). It was scoped to `.sidebar.open`,
+   so collapsed the row lost the one thing marking it as not-a-destination and read as a seventh
+   module tile. Radius 4px, the number the nav rows themselves use in both states.
+   ⚠️ ITS HOVER IS `--chip`, NOT THE SIDEBAR'S `--sb-hover`. The old pair was `--panel-2` ->
+   `--hover-side`, and those are the SAME #eef2f8 in light — so hovering this row had never
+   done anything. `--chip` is the one neutral that steps AWAY from the resting fill in both
+   themes (darker in light, lighter in dark). */
+.uxnews{background:var(--panel-2);border-radius:4px}
+.uxnews:hover{background:var(--chip)}
 @media (max-height:780px){ .sidebar .uxnews{display:none} }
 @media (prefers-reduced-motion:reduce){.mflyout.on{animation:none}}
 /* rule 9 · adjustable width — drag the column's edge; a 4px bar appears on hover as the cue
@@ -7766,6 +8248,16 @@ html[data-theme="light"] .mfgrid{box-shadow:14px 0 40px rgba(23,35,54,.16)}
 .uxgrip{position:absolute;top:0;bottom:0;right:0;width:7px;cursor:ew-resize;z-index:6}
 .uxgrip::before{content:'';position:absolute;top:0;bottom:0;left:3px;width:4px;border-radius:2px;background:var(--track);opacity:0;transition:opacity .12s}
 .uxgrip:hover::before,.uxgrip.on::before{opacity:.9}
+/* ⚠️ THE GRIP DOES NOT LIGHT WHILE A MENU IS OPEN (reported 10 Sep 2026 as "the popup hover the
+   border color is glitch", with the strip boxed in red). It was not the flyout: `.uxgrip` is the
+   rail's 7px RESIZE handle, sitting at the sidebar's right edge — measured at x=236 with the rail
+   ending at 240 — so the pointer travelling from a row into the menu CROSSES it and flashes a 4px
+   `--track` bar in the join, every time. The menu is anchored flush to that same edge, which is
+   why it reads as the popup's border glitching.
+   ⚠️ ONLY THE HOVER REVEAL IS SUPPRESSED. `:not(.on)` keeps the bar visible for an ACTUAL drag —
+   `UX_DRAG` sets `.on`, and hiding the handle mid-resize would be the worse bug. */
+body:has(#mflyout.on) .uxgrip:not(.on):hover::before,
+body:has(#mfGridPop.on) .uxgrip:not(.on):hover::before{opacity:0}
 body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
@@ -7932,8 +8424,8 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
       <div class="sq" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfHide()" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
       <div class="sq" id="sbBell" data-tip="Notification" onmouseenter="sbNotifOpen()" onmouseleave="sbNotifLater()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
     </div>
-    <div class="sitem uxnews" data-tip="What's new in 10.0.1 ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48"><path fill="currentColor" d="M27.28,17.94l-.58,3.46c-.1,.58-.03,1.18,.2,1.72,.23,.54,.61,1.01,1.09,1.34,.45,.33,.99,.52,1.55,.56,.56,.03,1.12-.1,1.61-.38l2.84-1.62,2.88,1.58c.48,.27,1.03,.41,1.58,.38,.55-.02,1.09-.21,1.54-.52,.47-.34,.84-.8,1.06-1.33,.22-.53,.29-1.12,.2-1.69l-.58-3.46,2.4-2.44c.4-.4,.67-.91,.8-1.46,.13-.55,.1-1.12-.07-1.66-.18-.54-.5-1.01-.92-1.38-.43-.37-.95-.61-1.51-.7l-3.24-.48-1.46-3.1c-.24-.52-.63-.96-1.11-1.26-.48-.31-1.04-.47-1.61-.47s-1.13,.16-1.61,.47-.87,.75-1.11,1.26l-1.46,3.1-3.24,.48c-.56,.09-1.08,.33-1.51,.7-.43,.37-.75,.85-.92,1.38-.18,.54-.2,1.11-.07,1.66,.13,.55,.41,1.05,.8,1.46l2.44,2.4Zm3.66-4.26c.49-.07,.95-.27,1.35-.56,.4-.3,.72-.69,.93-1.14l.78-1.66,.78,1.66c.21,.45,.53,.84,.93,1.14,.4,.3,.86,.5,1.35,.58l2,.28-1.46,1.48c-.34,.35-.59,.78-.74,1.24-.15,.47-.18,.96-.1,1.44l.32,2-1.58-.86c-.44-.25-.94-.37-1.44-.37s-1,.13-1.44,.37l-1.58,.86,.32-2c.08-.48,.04-.97-.1-1.43-.15-.46-.4-.88-.74-1.23l-1.46-1.5,1.88-.3Zm11.06,15.3c-.53,0-1.04,.21-1.41,.59-.38,.38-.59,.88-.59,1.41v6c0,.53-.21,1.04-.59,1.41-.38,.38-.88,.59-1.41,.59H10c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41V17.8l11.76,11.76c.55,.56,1.2,1,1.92,1.3,.72,.3,1.5,.46,2.28,.46h.54c.53-.05,1.02-.3,1.36-.7,.34-.4,.51-.93,.46-1.46-.02-.26-.1-.52-.22-.75-.12-.23-.29-.44-.49-.61-.2-.17-.44-.3-.69-.37-.25-.08-.52-.11-.78-.08-.28,.03-.57,0-.83-.1-.27-.1-.51-.25-.71-.46L10.82,14.98h7.18c.53,0,1.04-.21,1.41-.59,.38-.38,.59-.88,.59-1.41s-.21-1.04-.59-1.41-.88-.59-1.41-.59H10c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v20c0,1.59,.63,3.12,1.76,4.24s2.65,1.76,4.24,1.76h28c1.59,0,3.12-.63,4.24-1.76,1.13-1.13,1.76-2.65,1.76-4.24v-6c0-.53-.21-1.04-.59-1.41-.38-.38-.88-.59-1.41-.59Z"/></svg><span class="lbl">What's new<span class="uxtag">10.0.1</span></span></div>
-    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
+    <div class="sitem uxnews" data-tip="What's new in 10.0.1 ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48"><path fill="currentColor" d="M27.28,17.94l-.58,3.46c-.1,.58-.03,1.18,.2,1.72,.23,.54,.61,1.01,1.09,1.34,.45,.33,.99,.52,1.55,.56,.56,.03,1.12-.1,1.61-.38l2.84-1.62,2.88,1.58c.48,.27,1.03,.41,1.58,.38,.55-.02,1.09-.21,1.54-.52,.47-.34,.84-.8,1.06-1.33,.22-.53,.29-1.12,.2-1.69l-.58-3.46,2.4-2.44c.4-.4,.67-.91,.8-1.46,.13-.55,.1-1.12-.07-1.66-.18-.54-.5-1.01-.92-1.38-.43-.37-.95-.61-1.51-.7l-3.24-.48-1.46-3.1c-.24-.52-.63-.96-1.11-1.26-.48-.31-1.04-.47-1.61-.47s-1.13,.16-1.61,.47-.87,.75-1.11,1.26l-1.46,3.1-3.24,.48c-.56,.09-1.08,.33-1.51,.7-.43,.37-.75,.85-.92,1.38-.18,.54-.2,1.11-.07,1.66,.13,.55,.41,1.05,.8,1.46l2.44,2.4Zm3.66-4.26c.49-.07,.95-.27,1.35-.56,.4-.3,.72-.69,.93-1.14l.78-1.66,.78,1.66c.21,.45,.53,.84,.93,1.14,.4,.3,.86,.5,1.35,.58l2,.28-1.46,1.48c-.34,.35-.59,.78-.74,1.24-.15,.47-.18,.96-.1,1.44l.32,2-1.58-.86c-.44-.25-.94-.37-1.44-.37s-1,.13-1.44,.37l-1.58,.86,.32-2c.08-.48,.04-.97-.1-1.43-.15-.46-.4-.88-.74-1.23l-1.46-1.5,1.88-.3Zm11.06,15.3c-.53,0-1.04,.21-1.41,.59-.38,.38-.59,.88-.59,1.41v6c0,.53-.21,1.04-.59,1.41-.38,.38-.88,.59-1.41,.59H10c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41V17.8l11.76,11.76c.55,.56,1.2,1,1.92,1.3,.72,.3,1.5,.46,2.28,.46h.54c.53-.05,1.02-.3,1.36-.7,.34-.4,.51-.93,.46-1.46-.02-.26-.1-.52-.22-.75-.12-.23-.29-.44-.49-.61-.2-.17-.44-.3-.69-.37-.25-.08-.52-.11-.78-.08-.28,.03-.57,0-.83-.1-.27-.1-.51-.25-.71-.46L10.82,14.98h7.18c.53,0,1.04-.21,1.41-.59,.38-.38,.59-.88,.59-1.41s-.21-1.04-.59-1.41-.88-.59-1.41-.59H10c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v20c0,1.59,.63,3.12,1.76,4.24s2.65,1.76,4.24,1.76h28c1.59,0,3.12-.63,4.24-1.76,1.13-1.13,1.76-2.65,1.76-4.24v-6c0-.53-.21-1.04-.59-1.41-.38-.38-.88-.59-1.41-.59Z"/></svg><span class="lbl">What's new<span class="uxtag">10.0.1</span><svg class="uxext" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onmouseenter="sbNotifOpen('userPop')" onmouseleave="sbNotifLater('userPop')" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
     <!-- ⚠️ `BUILD : 8.2.6` WAS HERE AND IS NOW IN THE PROFILE MENU (request, 2 Sep 2026:
          "remove this and show in other way"). A version string is reference information you
          look up once — it does not earn a permanent row in a rail whose every other line is
@@ -9709,8 +10201,7 @@ function railDashPinsHTML(only){
        rail and then gave you nothing up there saying why. The `!RAIL_HOME` guard is the same
        one the filter above uses — only one of the two records is ever set, and the mark has to
        agree with whichever it is. */
-    const hm = (!RAIL_HOME && DASH_DEFAULT === n)
-      ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+    const hm = '';   /* see `railRowHTML` — the home glyph is off the rail */
     /* ⚠️ THE BOARD'S OWN TYPE ICON, NOT A SECOND `dashboard` GLYPH (request, 2 Sep 2026: board
        pins and module pins must read as different things). Every pinned board wore `ico(
        'dashboard')` — the SAME mark as the Dashboard row directly above them — so the band
@@ -9755,10 +10246,12 @@ function railPinsHTML(only){
   return railPinsOrdered().filter(l => only ? l === only : l !== RAIL_HOME).map(l => {
     const r = railPinRow(l); if (!r) return '';
     const on = railPinActive() === l;
-    const hm = l === RAIL_HOME ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+    const hm = '';   /* see `railRowHTML` — the home glyph is off the rail */
     return `<div class="sitem pin${on?' on':''}" data-tip="${r.l}" onclick="pickPin(${mfAttr(l)})"` +
       ` onmouseenter="mfOpenPin(${mfAttr(l)},this)">` +
-      `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span><i class="pd">${MF_PIN}</i></span>${hm}</div>`;
+      `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span>${
+        (r.kids && r.kids.length) ? '' : `<i class="pd">${MF_PIN}</i>`}</span>${
+        (r.kids && r.kids.length) ? mfIco('chevron-right', 'smore') : ''}${hm}</div>`;
   }).join('');
 }
 /* ⚠️ ONE LABEL, AND ITS REMOVAL IS DERIVED — NEVER WIRED. `railTmp()` answers "is this still
@@ -9787,7 +10280,8 @@ function railTmpHTML(){
      as a KEYCAP CHIP, which would badge this row with a shortcut that does not exist. */
   return `<div class="sitem tmp on" data-tip="${r.l} · here until you leave" onclick="pickPin(${mfAttr(l)})"` +
     ` onmouseenter="mfOpenPin(${mfAttr(l)},this)">` +
-    `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span></span></div>`;
+    `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span></span>${
+      (r.kids && r.kids.length) ? mfIco('chevron-right', 'smore') : ''}</div>`;
 }
 function pickPin(l){
   const r = railPinRow(l); if (!r) return;
@@ -9832,13 +10326,21 @@ function railRowHTML(r, i){
      temporary row under it. Same rule `railPinActive()` already carries for a pinned row. */
   const lit = i === activeRail && !railPinActive() && !railTmp()
               && !(r.name === 'Dashboard' && railDashActive());
-  const hm = r.name === RAIL_HOME ? `<span class="hm" data-tip="Opens on sign-in">${sbmIcon('home')}</span>` : '';
+  /* ⚠️ THE HOME MARK IS NOT RENDERED (request, 10 Sep 2026: "remove the home icon"). It marked
+     whichever row opens on sign-in — real information, and `RAIL_HOME` still holds it and still
+     lifts that row to the top of the rail, which is the louder half of the same signal. What is
+     gone is the glyph sitting inside the row.
+     ⚠️ `sbmIcon('home')` AND EVERY CONSUMER STAY. The Layout drawer's Sidebar tab still shows and
+     sets the home mark in its HOME column — that is the surface for choosing it — so this is a
+     rail-only removal, and putting it back is one word. */
+  const hm = '';
   /* ⚠️ `data-rail` IS THE HANDLE FOR RE-READING THIS ROW AFTER A REPAINT — see `pickRail`'s
      Explorer branch. Index into `#smenu .sitem` is not safe: the pinned band, the temporary row
      and the dashboard pins are `.sitem`s too, so position in that list is not the rail index. */
   return `<div class="sitem${lit?' on':''}" data-rail="${i}" data-tip="${r.name}" onclick="pickRail(${i})"
       onmouseenter="mfOpen(${i},this)">
-    ${ico(r.icon)}<span class="lbl">${r.name}${r.beta?' <span class="beta">BETA</span>':''}</span>${hm}</div>`;
+    ${ico(r.icon)}<span class="lbl">${r.name}${r.beta?' <span class="beta">BETA</span>':''}</span>${
+      MF_NO_HOVER.indexOf(r.name) > -1 ? '' : mfIco('chevron-right', 'smore')}${hm}</div>`;
 }
 function renderMenu(){
   let html = '', last = null, pinsOut = false, dashOut = false, tmpOut = false;
@@ -10042,6 +10544,11 @@ function selectModuleByName(n){
 
 /* ---- flyout ---------------------------------------------------------------- */
 let mfTimer = null, mfHoverIdx = -1, mfIn = false;   /* mfIn: pointer is inside the sub-menu */
+/* ⚠️ 4px OF AIR BETWEEN THE RAIL AND THE MENU (request, 10 Sep 2026). It was 0 — deliberately, on
+   9 Sep ("use lasse space and 0px") — and that made the menu an extension of the rail. Asked for
+   as a floating card now, so the gap, the left border, the full radius and a symmetric shadow all
+   arrive together; see `.mflyout`. Read by `mfOpen` / `mfOpenUtil` / `mfOpenPin`. */
+const MF_GAP = 4;
 function railWidth(){
   const open = document.getElementById('sidebar').classList.contains('open');
   return parseInt(getComputedStyle(document.documentElement)
@@ -10080,11 +10587,26 @@ function mfIco(n, cls){
    ⚠️ Both are OPT-IN and every existing section omits them, so this renders every other
    menu byte-identically — which is what lets Options 2 and 3 keep their copy of `mfCol`
    unchanged while this one gains a feature they do not use. */
+/* the doc path for the heading of the menu being built — set by whoever opens it, read once by
+   `mfCol`'s first section. A module-level parameter would have to thread through every call. */
+let mfSecPath = null;
+/* the pinned module a heading offers a pin for — set by `mfOpenPin` only */
+let mfSecPin = null;
+/* ⚠️ THE HEADING SAYS WHAT THE RAIL ROW SAID. `SUBNAV`'s section names are the product's plurals
+   ("Reports", "Alerts", "Dashboards") while the rail was cut to singulars on 23 Aug 2026 — both
+   spellings are live in this file, ~20 lines apart, and CLAUDE.md records a real bug from exactly
+   that pair. It did not show while the heading was an 11px uppercase label; at 13px semibold,
+   clicking "Report" and being met by "Reports" reads as a different place.
+   ⚠️ FIRST SECTION ONLY, and only when a rail entry opened the menu — a GROUP heading inside the
+   list ("NOC View", "Scheduled Reports") still says its own name, which is what it is for. */
+let mfSecLabel = null;
 function mfCol(secs, width){
   return `<div class="mfcol"${width?` style="width:${width}px"`:''}>` + secs.map((s,si)=>
     /* h:'' is a continuation column — keep the heading's box so the two lists line up,
        but don't print a second heading for what is one list */
-    `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${s.h || '&nbsp;'}</div>` +
+    `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${
+       s.h ? mfSec(si===0 && mfSecLabel ? mfSecLabel : s.h, si===0 ? mfSecPath : null,
+                   si===0 ? mfSecPin : null) : '&nbsp;'}</div>` +
     (s.parent ? `<div class="mfi mfp" onclick="mfGo(${mfAttr(s.parent[1])},${mfAttr(s.parent[2])})">${
        s.parent[3] ? mfIco(s.parent[3], 'mfic') : ''}${s.parent[0]}</div>` : '') +
     /* ⚠️ the row count travels with the list, not the stylesheet — see `.mflist.c2` */
@@ -10265,7 +10787,8 @@ function mfTree(name){
      menu's documentation shape, and `mfOpen` asks it again for the footer — the two are exact
      complements, so a menu can never show both a chip column and a footer, nor neither. */
   const perRow = tree.some(x => x.doc);
-  return '<div class="mfcol mfmaster"><div class="mfsec tight">' + name + '</div><div class="mflist">' +
+  return '<div class="mfcol mfmaster"><div class="mfsec tight">' +
+    mfSec(name, MOD_DOCS[name] || null) + '</div><div class="mflist">' +
     tree.map((r, k) =>
       /* ⚠️ `.par` CARRIES THE PARENT WEIGHT, NOT `:has(.mfic)`. That rule reads "a row with a
          module icon is a module", which was true when only Explorer had a master column —
@@ -10334,7 +10857,8 @@ function mfTree(name){
            right on `Topology` than on `Monitor` — in a ten-row list the chips visibly stagger.
            `.ph` keeps the space and paints nothing, so the meaning is unchanged: a chevron still
            appears only where there is more behind the row. */
-        `<span class="mfkc${r.kids ? '' : ' ph'}"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>` +
+        `<span class="mfkc${r.kids ? '' : ' ph'}">${
+          mfIco('chevron-right') || '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>'}</span>` +
         '</span>' +
       '</div>').join('') +
     '</div></div>' +
@@ -10534,6 +11058,42 @@ function mfDocsTarget(){
   return (r && r.doc) ? { label: r.l, path: r.doc }
                       : { label: mfTreeName, path: MOD_DOCS[mfTreeName] };
 }
+/* ⚠️ ONE HEADING BUILDER, used by `mfCol` and `mfTree`, so the two menu shapes cannot end up
+   with the link in one and not the other. Returns the label alone when there is no doc path —
+   an empty `<a>` in the heading would draw a hover target over nothing. */
+function mfSec(label, path, pin){
+  /* ⚠️ FILLED = PINNED, HOLLOW = NOT — the flyout's own convention (`.mfpin`). `mfOpenPin` opens
+     for a pinned row AND for the TEMPORARY row, and the two are not the same state: a filled pin
+     on a temporary row claims something untrue and its press pins rather than unpins. */
+  const on = (typeof railPinned === 'function') ? railPinned(pin) : true;
+  const t = '<span class="mfsl">' + label + '</span>' +
+    (pin ? '<button type="button" class="mfsp' + (on ? ' pinned' : '') + '"'
+         + ' aria-pressed="' + on + '"'
+         + ' data-tip="' + (on ? 'Unpin from the sidebar' : 'Pin to the sidebar') + '"'
+         + ' aria-label="' + (on ? 'Unpin ' : 'Pin ') + label
+         + (on ? ' from the sidebar' : ' to the sidebar') + '"'
+         + ' onclick="event.stopPropagation();mfPinFromSec(' + mfAttr(pin) + ')">' + MF_PIN + '</button>' : '');
+  if (!path) return t;
+  return t + '<a class="mfsd" tabindex="-1" target="_blank" rel="noopener"' +
+    ' href="https://docs.motadata.com/motadata-aiops-docs/' + path + '"' +
+    ' data-tip="' + label + ' documentation">DOCS' +
+    '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>';
+}
+/* The heading pin. ⚠️ THE CARD ONLY CLOSES WHEN ITS ROW IS GONE — unpinning a pinned row takes
+   that row off the rail, so the card it is anchored to has to go with it; but this heading also
+   opens for the TEMPORARY row, and pinning that leaves a row on the rail, so the card stays and
+   its pin is repainted in place. `renderMenu` has already replaced the row node by then, which is
+   why the button is patched rather than the card re-opened. */
+function mfPinFromSec(l){
+  railPinToggle(l);
+  const on = railPinned(l);
+  if (!on && railTmp() !== l){ mfHide(); return; }
+  const b = document.querySelector('#mflyout .mfsec .mfsp');
+  if (!b) return;
+  b.classList.toggle('pinned', on);
+  b.setAttribute('aria-pressed', String(on));
+  b.setAttribute('data-tip', on ? 'Unpin from the sidebar' : 'Pin to the sidebar');
+}
 function mfDocs(name, path){
   const p = path || MOD_DOCS[name];
   if (!p) return '';
@@ -10587,13 +11147,13 @@ function mfGridHTML(){
          inside a button is invalid and eats the clicks (this file records it three times).
          Keyboard pinning lives on the Layout drawer's Sidebar tab, which is the complete
          surface for it; stated rather than softened. */
-      '<span class="mfgpin" role="button" aria-label="' +
-        (railPinned(t.l) ? 'Unpin ' : 'Pin ') + t.l + '" onclick="mfGridPin(event,' +
-        mfAttr(t.l) + ')">' + MF_PIN + '</span>' +
-      '<span class="mfgt">' + (ico(t.ic) || '') + '</span>' +
+      '<span class="mfgt">' + (ico(t.ic) || '') +
+        /* the badge lives INSIDE the icon box — see `.mfgpin` for why it cannot anchor to the tile */
+        '<span class="mfgpin" role="button" aria-label="' +
+          (railPinned(t.l) ? 'Unpin ' : 'Pin ') + t.l + '" onclick="mfGridPin(event,' +
+          mfAttr(t.l) + ')">' + MF_PIN + '</span></span>' +
       '<span class="mfgl">' + t.l + '</span></button>').join('') +
-    '</div><button class="mfgcust" onclick="mfGrid(false);layOpen();layTab(\'sidebar\')">' +
-      (ico('settings') || '') + '<span>Customize navigation</span></button>';
+    '</div>';
 }
 /* ⚠️ SET WHEN A TILE IS CHOSEN, CLEARED WHEN THE POINTER LEAVES THE RAIL (reported 9 Sep 2026:
    "when I go to explorer submodule the hover popup is not close"). Choosing a sub-module
@@ -10649,11 +11209,13 @@ function mfGrid(on, row){
   el.classList.add('on');
   const h = el.getBoundingClientRect().height;
   const r = row ? row.getBoundingClientRect() : { top: 120 };
-  /* ⚠️ FLUSH — `railWidth()`, not `railWidth() + 12` (request, 9 Sep 2026: "0px"). It is the
-     TOKEN, never the rail's box: that box is still animating from 64px while this opens, which
-     is this file's oldest recorded measuring trap. The card drops its left border and left
-     radius to match, so the two surfaces meet without a seam. */
-  el.style.left = railWidth() + 'px';
+  /* ⚠️ 4px OFF THE RAIL, from `MF_GAP` — the same constant the hover menu uses, so the rail's
+     two popups cannot drift apart (request, 10 Sep 2026: "the same thinking in Explorer submodule
+     popup"). It SUPERSEDES the 9 Sep "0px" request, and the card's full border, full radius and
+     symmetric shadow arrive with it — a detached card missing its left edge reads as clipped.
+     ⚠️ STILL THE TOKEN, never the rail's box: that box is animating from 53px while this opens,
+     which is this file's oldest recorded measuring trap. */
+  el.style.left = (railWidth() + MF_GAP) + 'px';
   el.style.top  = Math.max(8, Math.min(r.top - 8, innerHeight - h - 8)) + 'px';
   el.style.visibility = '';
   /* ⚠️ THE GRID MUST HOLD THE RAIL OPEN WHILE THE POINTER IS IN IT. Moving from the Explorer
@@ -10663,7 +11225,7 @@ function mfGrid(on, row){
      the flyout was built; the grid needs the same, and reusing THAT flag rather than a second
      one is what keeps the collapse logic in `sbHover(0)` working unchanged for both. */
   el.onmouseenter = () => { mfIn = true; clearTimeout(mfTimer); clearTimeout(sbHoverT); };
-  el.onmouseleave = () => { mfIn = false; mfLater(); };
+  el.onmouseleave = () => { mfIn = false; mfLater(); if (typeof sbHover === 'function') sbHover(0); };
   setTimeout(() => document.addEventListener('mousedown', mfGridAway), 0);
 }
 /* ⚠️ guards a non-Element target — the house pattern is a bare `e.target.closest(...)`, which
@@ -10700,6 +11262,10 @@ function mfOpen(i, el){
   if(!secs){ fly.classList.remove('on'); return; }
   /* ⚠️ Explorer is the one two-pane menu. Everything else still renders through `mfCol`,
      which is what keeps the other menus byte-identical with the copies in Options 2 and 3. */
+  /* ⚠️ THE HEADING'S DOC PATH IS SET BEFORE THE COLUMNS ARE BUILT, and cleared after, so it can
+     never leak into the next menu. `mfTree` reads `MOD_DOCS` itself; only `mfCol` needs telling. */
+  mfSecPath = MOD_DOCS[r.name] || null;
+  mfSecLabel = r.name;
   let cols;
   if (mfTreeFor(r.name)){
     mfSubIdx = -1; mfRowIdx = -1;        /* it opens as the parents, every time */
@@ -10738,17 +11304,20 @@ function mfOpen(i, el){
      flat menu their one footer, and needs no list of names to keep in step.
      ⚠️ A MENU STILL NEVER SHOWS BOTH. That was the original point of the fallback and it
      survives: the two conditions are exact complements. */
+  mfSecPath = null; mfSecLabel = null;
   const perRowDocs = (mfTreeFor(r.name) || []).some(x => x.doc);
   /* ⚠️ ONE VALUE DECIDES BOTH: whether the rows carry their own links, and therefore whether
      the menu is drawn as separate cards. A footer lives OUTSIDE `.mfcols`, so a menu that has
      one must stay a single card or the link is stranded on the board below it. */
   fly.classList.toggle('mfcards', perRowDocs);
-  fly.innerHTML = `<div class="mfcols">${cols}</div>` + (perRowDocs ? '' : mfDocs(r.name));
+  /* ⚠️ NO FOOTER ANY MORE — the link is in the heading (see `mfSec`). `mfDocs` is KEPT and
+     unreferenced, the house pattern: it is what a revert reads, and the `.mffoot` CSS with it. */
+  fly.innerHTML = `<div class="mfcols">${cols}</div>`;
   const sb = document.getElementById('sidebar'), b = el.getBoundingClientRect();
   /* Anchor to the rail's TARGET width, read from the custom property. Measuring the box
      instead would catch the width mid-transition and park the flyout at 64px, which is
      what put the menu underneath the expanding rail. */
-  fly.style.left = railWidth() + 'px';
+  fly.style.left = (railWidth() + MF_GAP) + 'px';
   fly.style.top = '';                    /* a fresh open starts from ITS anchor, not the last menu's top */
   fly.classList.add('on');
   mfAnchorTop = b.top - 12;
@@ -10784,9 +11353,11 @@ function mfOpenUtil(key, el){
   const fly = document.getElementById('mflyout');
   const secs = [{ h:'Health Monitoring',
                   items: HEALTH_TABS.map((t,i)=>[t, null, `showView('health');setHealthTab(${i})`, null, HEALTH_ICO[t]]) }];
-  fly.classList.remove('mfcards');   /* one flat card WITH a footer — see the `.mfcards` note */
-  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>` + mfDocs(key);   /* utility menus have no master column */
-  fly.style.left = railWidth() + 'px';
+  fly.classList.remove('mfcards');   /* one flat card — see the `.mfcards` note */
+  mfSecPath = MOD_DOCS[key] || null;
+  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>`;   /* utility menus have no master column */
+  mfSecPath = null;
+  fly.style.left = (railWidth() + MF_GAP) + 'px';
   fly.style.top = '';
   fly.classList.add('on');
   const b = el.getBoundingClientRect();
@@ -10828,9 +11399,12 @@ function mfOpenPin(l, el){
   mfTreeName = ''; mfSubIdx = -1; mfRowIdx = -1;
   /* one column, headed by the module — `mfCol`'s items are [label, module, action, kind, icon] */
   const secs = [{ h: r.l, items: r.kids.map(([label, mod, act]) => [label, mod, act || null, null, null]) }];
-  fly.classList.remove('mfcards');   /* one flat card WITH a footer — see the `.mfcards` note */
-  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>` + mfDocs(r.l, r.doc);
-  fly.style.left = railWidth() + 'px';
+  fly.classList.remove('mfcards');   /* one flat card — see the `.mfcards` note */
+  mfSecPath = r.doc || null;          /* the pinned row's OWN page, not the module's */
+  mfSecPin = l;                       /* the pin lives in this heading now — see `mfSec` */
+  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>`;
+  mfSecPath = null; mfSecPin = null;
+  fly.style.left = (railWidth() + MF_GAP) + 'px';
   fly.style.top = '';
   fly.classList.add('on');
   mfAnchorTop = el.getBoundingClientRect().top - 12;
@@ -10970,17 +11544,46 @@ function sbHover(on){
         if(el && sb.classList.contains('open')) mfOpen(mfHoverIdx, el);
       })();
     }, 70);
-  } else if(!document.querySelector('.pop.on')){
+  } else {
     /* Moving into the sub-menu fires the rail's mouseleave — collapsing right here
        shut the rail out from under the menu the pointer was heading for. Hold the
-       rail open while the pointer is in (or crossing to) the flyout. */
-    sbHoverT = setTimeout(()=>{
-      if (mfIn || document.getElementById('mflyout').matches(':hover')) return;
+       rail open while the pointer is in (or crossing to) the flyout.
+       ⚠️ IT IS A WATCHDOG THAT RE-ARMS, NOT A ONE-SHOT THAT BAILS (bug report, 10 Sep 2026:
+       "i hover the sidebar it will show expand but SOME TIME it is not collapse"). Three things
+       legitimately hold the rail open — the pointer being in the flyout, in the module grid, or
+       a popover anchored to a rail control being up — and the old code gave up on each of them
+       and never looked again: `.pop.on` at the BRANCH meant no timer was scheduled at all, and
+       `mfIn` / `:hover` inside the timer `return`ed without rescheduling. So any one of them
+       left the rail expanded for good — hover the bell (its popover opens on hover since
+       9 Sep), move away, and nothing in the page could collapse the rail again. That is the
+       "sometimes" in the report: it depends on what you touched last.
+       ⚠️ `mfIn` IS NO LONGER TRUSTED ON ITS OWN, and that was the second half of the bug. It is
+       a latch set by a card's `mouseenter` and cleared by its `mouseleave` — and `mfHide()`
+       takes that card to `display:none`, so the leave can never arrive and the flag stays true
+       forever. `sbHeld()` asks the DOM what the pointer is actually over instead, which a
+       hidden element cannot answer yes to. */
+    const tick = () => {
+      if (sbPinned || UX_DRAG) return;      /* pinned open, or a resize is in progress */
+      if (sbHeld()){ sbHoverT = setTimeout(tick, 200); return; }
       mfGridMute = false;                   /* left the rail — a fresh hover may open it again */
       mfHoverIdx = -1; mfHide();
       sb.classList.remove('open'); renderMenu();
-    }, 200);
+    };
+    sbHoverT = setTimeout(tick, 200);
   }
+}
+/* ⚠️ EVERY REASON THE RAIL MAY STAY EXPANDED, IN ONE PLACE — and every one of them is a
+   question about where the pointer IS, not a flag someone remembered to clear. A popover is
+   the exception: it is placed once from `railWidth()`, so collapsing the rail under an open
+   one would leave the card floating 190px from the control that opened it. */
+function sbHeld(){
+  const sb = document.getElementById('sidebar');
+  if (sb && sb.matches(':hover')) return true;                 /* the pointer came back */
+  const fly = document.getElementById('mflyout');
+  if (fly && fly.matches(':hover')) return true;
+  const grid = document.getElementById('mfGridPop');
+  if (grid && grid.classList.contains('on') && grid.matches(':hover')) return true;
+  return !!document.querySelector('.pop.on');
 }
 
 /* ================= Views ================= */
@@ -11514,15 +12117,24 @@ function togglePop(id, ev){
    working on it unchanged.
    ⚠️ IT MUST NOT RE-OPEN A CARD THE POINTER IS ALREADY IN: `sbNotifOpen` returns early when the
    card is on, or moving from the bell into the card would toggle it shut. */
-let sbNotifT = null, sbNotifIn = false;
-function sbNotifOpen(){
+/* ⚠️ ONE ENGINE, TWO CARDS (the profile row joined the bell on 10 Sep 2026: "when I hover my
+   profile to show the popup"). `sbNotifOpen`/`sbNotifLater` keep their names — they are called
+   from markup in both files — but they now take the pop's id, defaulting to the bell's so the
+   existing call sites are untouched. A second copy of the timing rules is how two hover cards
+   end up feeling different. */
+let sbNotifT = null, sbNotifIn = false, sbNotifId = 'notifPop';
+function sbNotifOpen(id){
+  const want = id || 'notifPop';
   clearTimeout(sbNotifT);
   sbNotifT = setTimeout(() => {
-    const el = document.getElementById('notifPop');
+    /* a different card was already up — close it before opening this one */
+    if (sbNotifId !== want) closePops();
+    sbNotifId = want;
+    const el = document.getElementById(want);
     if (!el || el.classList.contains('on')) return;
     /* the module flyout must not hang over it — the same call the bell's markup used to make */
     if (typeof mfHide === 'function') mfHide();
-    togglePop('notifPop');
+    togglePop(want);
     /* ⚠️ NO SCRIM IN HOVER MODE, AND THIS IS THE WHOLE BLINK FIX (reported 9 Sep 2026: "when I
        hover the notification icon the popup is blink").
        `togglePop` is built for CLICK, and part of what it does is raise `#scrim` —
@@ -11546,20 +12158,22 @@ function sbNotifOpen(){
     if (sc) sc.classList.remove('on');
   }, 140);
 }
-function sbNotifLater(){
+function sbNotifLater(id){
   clearTimeout(sbNotifT);
   sbNotifT = setTimeout(() => {
     if (sbNotifIn) return;
-    const el = document.getElementById('notifPop');
+    const el = document.getElementById(id || sbNotifId);
     if (el && el.classList.contains('on')) closePops();
   }, 200);
 }
 /* ⚠️ BOUND ONCE, ON THE CARD ITSELF — it is authored markup, not rebuilt by `renderNotifs()`
    (which fills its body), so one binding at load holds for the life of the page. */
 function sbNotifBind(){
-  const el = document.getElementById('notifPop'); if (!el) return;
-  el.addEventListener('mouseenter', () => { sbNotifIn = true; clearTimeout(sbNotifT); });
-  el.addEventListener('mouseleave', () => { sbNotifIn = false; sbNotifLater(); });
+  ['notifPop','userPop'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.addEventListener('mouseenter', () => { sbNotifIn = true; clearTimeout(sbNotifT); });
+    el.addEventListener('mouseleave', () => { sbNotifIn = false; sbNotifLater(id); });
+  });
 }
 function closePops(){
   document.querySelectorAll('.pop').forEach(p=>p.classList.remove('on'));
