@@ -5492,6 +5492,35 @@ exists in two files, and the `mf*` / `sbNotif*` / `RAIL_TMP` names return two fi
 | **the gradient AI mark** | the supplied four-point star on the brand ramp, everywhere `AI_SPARK` reaches |
 | **the hover notification card** | the bell opens `#notifPop` on hover, with `kbPop`'s timing rules |
 | **`MF_NO_HOVER`** | `Dashboard`, `SLO` and `Setting` open no menu on hover — click navigates |
+| **the Ask-AI drawing border** (`aidraw` / `aiturn`) | the border draws itself edge by edge on hover and the mark turns with it — see below |
+
+⚠️ **OPTION 10's ASK-AI ANIMATION IS A SELF-DRAWING BORDER, OPTION 12's IS A CONIC ORBIT, AND THAT
+IS THE POINT** (request, 11 Sep 2026, with an IconScout Lottie "border animations" gallery as the
+reference). Twelve options exist so each demonstrates a distinct idea; two wearing the same border
+treatment would waste one.
+- ⚠️ **THE REFERENCE IS A GALLERY AND MOST OF IT IS NOT WHAT IT SOUNDS LIKE.** Its results are ICON
+  assets named after CSS border PROPERTIES — `top-border`, `left-border`, `outer-border`,
+  `inside-border`, `none-border` — i.e. toolbar glyphs for a border picker, not decorative borders
+  for a button. What the family shares, and all that was taken, is that **the border draws itself**.
+- ⚠️ **IT NEEDS BOTH PSEUDOS, AND THAT IS WHY**: `border-color` cannot be a gradient and one box
+  cannot reveal its edges in sequence. `::before` pins TOP-LEFT and grows width → height (top edge,
+  then right); `::after` pins BOTTOM-RIGHT and does the same (bottom, then left). They meet at
+  opposite corners, so the border closes from both directions at once.
+- ⚠️ **THE TWO HALVES CARRY OPPOSITE ENDS OF THE BRAND RAMP** — blue from the top-left, magenta from
+  the bottom-right. That is how a two-colour ramp survives on a property that only takes flat
+  colours.
+- ⚠️ **THE LOOP FADES BEFORE REDRAWING.** Without the fade at 100% the border blinks from complete
+  back to nothing, which reads as a glitch rather than a redraw.
+- ⚠️ **ALL THREE ANIMATIONS SHARE THE 2.2s PERIOD** so the star's turn cannot drift from the draw it
+  is timed to; `linear` on the rotation, because easing a full turn stutters visibly at the wrap.
+- ⚠️ **IT REPLACED A SHEEN OF MINE FROM AN HOUR EARLIER** (`aishine` / `aiflare` — a `::after` bar
+  translated −120% → 120% with the mark flaring at 8%). Both pseudos are needed to draw four edges,
+  and a light sweeping ACROSS a row while a border draws AROUND it is two unrelated motions
+  competing for the same 32px. `#sbAI{overflow:hidden}` went with it — clipping that travelling bar
+  was its only reason. Both are in git history.
+- ⚠️ Hover-only, calm at rest, `prefers-reduced-motion` kills all three. Verified **16/16**, with
+  the draw order sampled from a paused lap rather than assumed: `w=0 h=0` → `w=219 h=0` →
+  `w=219 h=32` → opacity 0.07.
 
 ⚠️ **THE ONE RULE THAT KEEPS COMING BACK: A MENU SHOWS EITHER PER-ROW `DOCS ↗` CHIPS OR ONE
 FOOTER, NEVER BOTH AND NEVER NEITHER.** `mfTree` asks `tree.some(x => x.doc)` and `mfOpen` asks the
