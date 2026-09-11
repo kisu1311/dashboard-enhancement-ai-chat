@@ -11706,23 +11706,31 @@ function mfTreeFor(name){
     /* ⚠️ `ic` IS CARRIED THROUGH. It is the fifth slot on the source row and `mfTree` gates its
        whole icon column on `tree.every(r => r.ic && ico(r.ic))` — drop it here and the data is
        right while the menu silently renders without icons. */
-    /* ⚠️ THE `sub` ROWS ARE DROPPED, NOT ATTACHED (request, 9 Sep 2026: "in alert module show
-       the submodule is show but remove the child sub module"). Alert's menu is its eight tabs
-       and nothing behind them: hovering NetRoute, APM or Real User Monitoring used to open a
-       second card listing that tab's two views, so three of the eight rows behaved differently
-       from the other five for a payload of two links each.
-       ⚠️ WITH NO ROW CARRYING `kids`, THE WHOLE MENU GOES FLAT BY ITSELF — `mfTree` draws the
-       chevron, the count and the detail pane only for a row that has children, and
-       `#mflyout.mfcards:has(.mfdetail:not(:empty))` is what squares the master's right corners. So this
-       one line removes the pane, the three chevrons, the "2 VIEWS" counts and the second card,
-       with nothing else to keep in step.
-       ⚠️ THE DATA IS KEPT, NOT DELETED. Those six rows are the product's own tab dropdowns
-       (NetRoute -> Source To Destination / Hop To Hop, and the same shape for APM and RUM) and
-       they are still in `SUBNAV['Alerts']` for every other reader and for a revert — restoring
-       the pane is putting the `kids` branch back, not re-deriving the product's tab bar.
-       ⚠️ `kidsAs:'views'` GOES WITH THEM; it was only ever set on this branch. */
+    /* ⚠️ THE `sub` ROWS ARE ATTACHED AS `kids` AGAIN (request, 11 Sep 2026: "Alert's NetRoute,
+       APM and RUM have child sub-modules — show them like Explorer"). They are the product's own
+       tab dropdowns: NetRoute -> Source To Destination / Hop To Hop, APM -> Trace Metrics / Trace
+       Analytics, RUM -> RUM Metrics / RUM Analytics. A non-`sub` row is a tab; the `sub` rows
+       that FOLLOW it are that tab's dropdown, so position is the relationship — attach each to
+       `t[t.length-1]`, the tab it came after.
+       ⚠️ THIS REVERSES 9 Sep's "remove the child sub module" — AND THE REASON IT WAS RIGHT THEN
+       NO LONGER HOLDS. Back then a row with `kids` grew a chevron, a "2 VIEWS" count and a second
+       CARD on hover, so three of the eight rows behaved differently from the other five for two
+       links each. Option 13 has none of that: the chevron and count were removed with the
+       expand/collapse rule, `mfSub` is unreferenced, and children render INLINE beneath their
+       parent exactly as Explorer's do. Attaching them now adds six rows and no new behaviour.
+       ⚠️ NOTHING ELSE NEEDED CHANGING — the inline renderer in `mfTree` was never gated on
+       Explorer, it asks `r.kids && r.kids.length`. That is why this is a data change only.
+       ⚠️ `kidsAs:'views'` IS SET WITH THEM, restored from the branch this replaces. It names the
+       children for `mfSubtitle`; inert here (Alert rows are not pinnable — pinning resolves
+       through `EXPLORER_TREE`), and correct rather than absent if that ever changes.
+       ⚠️ THE COUNT STILL READS THE PARENTS. `mfSubtitle` counts tree rows, not kids, so Alert
+       stays "8 pages" — the same shape as Explorer's "9 sub-modules" above its 15 children. */
     SUBNAV['Alerts'].forEach(sec => (sec.items || []).forEach(([l, mod, act, kind, ic]) => {
-      if (kind === 'sub') return;
+      if (kind === 'sub'){
+        const p = t[t.length - 1];
+        if (p){ (p.kids = p.kids || []).push([l, mod, act || null]); p.kidsAs = 'views'; }
+        return;
+      }
       t.push({ l, mod, act, ic });
     }));
   }
