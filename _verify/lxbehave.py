@@ -20,7 +20,7 @@ FILES = ["index.html", "dashboard-grouped-sidebar.html", "dashboard-picker-advan
          "dashboard-single-column.html",
          "dashboard-nav-column-alt.html", "dashboard-card-sidebar-alt.html",
          "dashboard-rail-flyout.html", "dashboard-rail-flyout-alt.html",
-         "dashboard-rail-flyout-alt2.html"]
+         "dashboard-rail-flyout-alt2.html", "dashboard-rail-flyout-alt3.html"]
 
 PROBE = r"""
 <script>

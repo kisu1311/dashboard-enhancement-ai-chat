@@ -1,110 +1,145 @@
-# Handoff — 2026-09-10 19:30
+# Handoff — 2026-09-11
 
 ## Read first
 
-In `CLAUDE.md`, three sections carry everything this session touched:
+In `CLAUDE.md`, four sections carry everything this session touched:
 
-- **“Options 10, 11 and 12 — the rail + flyout family”** — the whole day's work, including
-  the new **“Option 12 — Gemini's rule”** and **“The 10 Sep 2026 pass”** subsections.
-- **“Pages (variants)”** — the option table is now **twelve** rows, and the lineage warning
-  (Options 10/11/12 share `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` with **nothing syncing
-  them**) is the thing most likely to bite next.
-- **“Their shortcuts are LETTERS”** — `VS_LETTERS = ['x', 'z']`, and the rule for adding a
-  thirteenth.
+- **"Options 10, 11 and 12 — the rail + flyout family"** — the family's whole record, now with
+  two new subsections: **"Option 12's Explorer menu became a plain list (11 Sep 2026)"** and
+  **"Option 13 — a byte copy of Option 12 (11 Sep 2026)"**.
+- **"Pages (variants)"** — the option table is now **thirteen** rows, and the lineage warning is
+  the thing most likely to bite next: **Option 13 is a copy of OPTION 12, not of Option 10**, so
+  `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` and the rail CSS now exist in **four** files with
+  nothing syncing them.
+- **"Their shortcuts are LETTERS"** — `VS_LETTERS = ['x', 'z', 'c']`, and the rule for adding a
+  fourteenth.
+- The Option 10 entries for the **self-drawing Ask-AI border** and the **Explorer grid's heading**.
 
-## What we worked on this session
+## What happened today
 
-Iterated Options 10 and 11 (`dashboard-rail-flyout.html`, `dashboard-rail-flyout-alt.html`)
-through ~20 small image-driven requests on the sidebar — marks, sizes, the Ask-AI ramp, the
-Explorer grid's tiles and pin badge — then created **Option 12** as a third copy of Option 10
-and gave its sidebar **Gemini's behaviour**. Two rounds were published to GitHub Pages.
+### Option 12 — the Explorer menu became a plain list
 
-## Completed
+Eleven narrow requests turned Explorer's flyout from a two-card master/detail **grid** into **one
+flat list in one card**, matching Alert's. In order: the grid interception removed from `mfOpen`
+and the click path → the chevron column removed → `MF_TREE_HIDE = { Explorer: ['Monitor'] }` →
+the child pane removed → the card repainted on `var(--sidebar)` → `.mfcards` dropped so the
+geometry matches Alert's → **each module's children rendered inline beneath it** as `.mfi.sub` →
+**the module glyph restored** on those rows only.
 
-- **Two commits pushed and verified live** on Pages (the deployed HTML was checked, not just
-  the URL): `a79344f` and `cb28e4b`.
-- **Options 10 + 11, in lockstep**: the rail's 18px “has a list” chevron on rows that really
-  have one; the flyout's own row arrows added and then removed again; Ask AI on the brand ramp
-  as a 10% wash (15% hover) with the label clipped from the full ramp; the Explorer grid's icon
-  box at 40px, border-only at rest and `--card` on hover; the pin badge tilted 45° and 2px
-  inside the corner; the pin moved into the popup heading as that same badge; brand mark 24×24;
-  brand row 56px; collapse glyph 20px in a 32px button; the ⌘K keycap rebuilt and its ink at
-  50%; What's new 2px under the quick links; light `--sidebar` `#F6F9FC` in all twelve options.
-- **Two bugs that were dead CSS states**, both found by measuring rather than looking: the
-  collapse arrow keyed off `.sidebar.open`, which is true whenever that button is visible, so
-  its second state was unreachable (now `body.pinned`); and a stale
-  `.mfsec .mfsp:hover{background:var(--hover-side)}` one line below the real rule at the same
-  specificity, which repainted the pin badge into the surface behind it (1.02:1).
-- **Option 12** — `dashboard-rail-flyout-alt2.html`, byte copy of Option 10, registered in
-  `_variants.js` (label **Option 12**, shortcut **Z**) and in `_verify/lxbehave.py`'s `FILES`.
-  Its sidebar follows Gemini: **no hover expand**, the toggle present and centred in **both**
-  states, the header row no longer a toggle.
-- **Verification**: ~15 headless probes this session, all green at the end; `harness … query`
-  **ALL 77 PASS** on Options 10, 11 and 12; `lxbehave` **ALL 57 PASS × 12 files**; `Z` proved by
-  real navigation in a real browser over `python3 -m http.server`.
+- **`Topology` went 5 tabs → 6.** A second supplied screenshot of the same tab bar shows `Custom`.
+  The 9 Sep comment in `EXPLORER_TREE` argues at length that `Custom View` is *not* a tab; the tab
+  bar wins, and the comment is kept as the record of why it looked otherwise.
+- **The inline children close a gap the child pane opened** — with the pane gone, Topology, NCCM,
+  APM and Flow had nowhere their children were listed. No caret, no count, no pin, no DOCS chip.
+- **The glyph is a scoped exception, not a reversal** of the 10 Sep *"remove the sub module popup
+  icon in every where"*: `MF_TREE_ICONS = ['Explorer']` sets `.mficons` on the master column, and
+  **Alert and Settings still emit eight resolvable `.mfic` each and paint none** — measured.
+- **The children had to re-indent with it**, 24px → **31** = 9 (row padding) + 15 (`.mfic`) + 7
+  (`.mfi`'s gap), or a child would have sat *left* of the module it belongs to.
+
+### Option 13 — a byte copy of Option 12
+
+`dashboard-rail-flyout-alt3.html`, title *"Rail & Flyout (alt 4)"*, switcher key **`C`**. Only the
+title, the identity banner and the switcher entry differ. Registered in `_variants.js` (label
+hand-set to **Option 13**; `node _sync_variants.js` would have called it `V13 · …`) and in
+`_verify/lxbehave.py`'s `FILES`. `_verify/dsconf.py` needed nothing — it takes its target as an
+argument.
+
+### Option 13 — every popup is Option 9's docked column
+
+Three requests converged on Option 9's column as the reference. Every card `#mflyout` draws
+(Alert, Explorer, Report, Health) is now **docked flush to the rail, full height, 296px**: a bold
+name over a derived count with a `DOCS ↗` chip, Plain-style rows, and — resting on the floor
+— the foot (rocket · `?` · layout), the *Next steps* card and the licence line. **No search field.**
+The **pinned Monitor** card is head + rows only, and so are **Alert, Explorer and Report** (`MF_NO_TAIL = ['Alert', 'Explorer', 'Report']` — each asked for explicitly, one card at a time). **Only Health still carries the tail.** **Every sub-module row is 13px/600**; Explorer's children are 12px/400. **Alert's and Report's rows paint no glyph** (`MF_NO_ICONS = ['Alert', 'Report']` → `.mfnoic` on the flyout, set by every opener); Explorer and Health keep theirs. Four per-menu tables now: `MF_TREE_HIDE`, `MF_TREE_ICONS`, `MF_NO_TAIL`, `MF_NO_ICONS`. The count line is **10px/600**, the pinned band is **split in two** — the shipped `Monitor` sits under Dashboard, what you pin yourself lands between Explorer and Report (`RAIL_PINS_HOME` / `PIN_UNDER` / `PIN_ADD_UNDER`; Options 10–12 keep one band under `Dashboard`) — and the card title, count and licence line all start on the rows' own left column (`.mfhd` pad 20 = 8+1+11). The **pinned-row card's title carries a pin** (that card only — it unpins in place and the card closes with its row), **except for a row Explorer does not list**: Monitor ships pinned and has no row to be pinned back from, so it gets none (`MF_TREE_HIDE.Explorer` is the gate). A **pinned rail row carries no pin mark** any more (the label spans the row instead; rows with children keep their chevron). When the rail **runs out of room**, the footer folds What's new · Approval · Health into one `#sbMore` control with a popover (`railFootFit`, triggered by overflow with explicit hysteresis). The list **fades at both ends while it scrolls** (`.mftop` / `.more`, offsets measured onto the card as `--mflt`/`--mflb`). The **rail is one 10px rhythm** (the utility block's 4px/6px group separation is gone, both states). The column's **two edges carry the same 20px inset**, its **left-hand shadow is clipped** (`clip-path`), **hovering the rail anywhere** reveals the expand glyph, and **clicking an Explorer sub-module** drops it on the rail between Explorer and Report until you leave (`railTmpGo` — the temporary row had been unreachable since the grid stood down), and the head's trailing control was replaced by the **`DOCS ↗` chip** — which matters, because with the foot gone from Alert / Explorer / Report the chip is their only documentation link. `Setting` still opens no
+column (`MF_NO_HOVER`). Details and the traps in CLAUDE.md under *"Option 13's popups are Option
+9's column"*.
+
+### Verification
+
+- Option 12's inline children: **13 assertions ALL PASS** — Topology lists six, 15 of 15 children
+  render under their own parent, none carries a pin, chip or glyph, a child navigates via `mfGo`.
+- The restored glyph: **14 assertions ALL PASS** — 9 of 9 visible at 15px on one column (x=269),
+  labels and all fifteen children on one column (x=291), the row box unmoved at 259, Alert and
+  Settings at **0 of 8** visible with their rows still at x=269.
+- Explorer vs Alert geometry re-measured **IDENTICAL** on all thirteen fields after the rows
+  were added.
+- Option 13: **16 assertions ALL PASS** over real http with real filenames, including **`C`
+  navigating for real** and **⌘C / Ctrl+C not navigating**.
+- Option 13's cards: **ALL 77 PASS at 857px and at 497px** — five docked columns' geometry, head,
+  rows, tail-on-the-floor (or none, for Monitor), list scrolling, and every control on a stub;
+  Options 10/11/12 untouched.
 
 ## In progress
 
-**Option 12 is not committed.** `git status` shows `?? dashboard-rail-flyout-alt2.html`,
-`M _variants.js`, `M _verify/lxbehave.py`, plus this handoff and `CLAUDE.md`. Everything is
-verified — it only needs `/publish`.
+**Nothing is committed.** `git status` shows `?? dashboard-rail-flyout-alt2.html`,
+`?? dashboard-rail-flyout-alt3.html`, `M dashboard-rail-flyout.html`, `M _variants.js`,
+`M _verify/lxbehave.py`, plus `CLAUDE.md` and this handoff. All of it is verified — it needs
+`/publish`.
+
+`lxbehave` across all thirteen pages: **ALL 57 PASS × 13**, Option 13 included.
 
 ## Next steps
 
-1. `/publish` — commit and push Option 12 (the new page, `_variants.js`, `lxbehave.py`,
-   `CLAUDE.md`, `HANDOFF.md`).
-2. Decide the two Gemini traits deliberately **not** copied into Option 12: its **292px**
-   expanded panel (ours is 240, the UX-rule floor — one token), and its **borderless**
-   rail-to-content edge (see the reason in the Option 12 section before changing it).
-3. Option 11's footer still orders What's new **first**, so its 2px top margin was left alone —
-   match it if you want the two files identical there.
-4. `#notifPop` is still the only popover on `--pop` (white) and still has its caret; the two
-   files carry different What's-new tooltips. Both flagged, neither decided.
-5. **Scrub before the next public push**: this folder still ships internal hostnames and
-   `172.16.x` addresses from before today (SNMP/cluster/NCCM tables, Option 1's AI starters).
-   Nothing new was added today.
-
-## Decisions made
-
-- **Option 12 changes BEHAVIOUR only.** Gemini's 292px width and borderless edge are
-  appearance; the width would eat canvas the harness is measured against, and dropping the
-  border would leave a 1.04:1 boundary in light — the exact fault this folder recorded twice.
-- **`sbHover` was neutralised with one early `return`, not by unpicking its six callers**, and
-  its whole body (including the collapse watchdog) was kept — the request said not to remove
-  any thinking, and it is the record of the bug it was built for.
-- **The collapse arrow flips on `body.pinned`, not `.sidebar.open`** — that is the state the
-  button actually toggles, and it makes the glyph agree with the tooltip it has always written.
-- **The ⌘K keycap's ink is 50% and that is below 4.5:1** (3.16 dark / 2.72 light). Requested
-  twice, on a shortcut hint beside a row that already reads “Search”; written down rather than
-  quietly softened.
-- **The Ask-AI label is the full ramp on a 10% wash of itself**, which is under 4.5 at two of
-  the three stops. Look chosen over ratio, deliberately, on two short words.
-- **A pinned or temporary rail row with no children keeps the pin, not the arrow** —
-  `mfOpenPin` refuses those rows, so an arrow would point at a menu that never opens.
+1. `/publish` — Options 10, 12 and the new 13, plus `_variants.js`, `lxbehave.py`, `CLAUDE.md`,
+   `HANDOFF.md`.
+2. **Option 13** — **`Setting` opens no column** even though two of the three reference
+   screenshots were Setting/Dashboard columns (both in `MF_NO_HOVER`); changing which rail items
+   open a card was never asked. **The tail was removed one card at a time** — Monitor, Alert,
+   Explorer, Report (`MF_NO_TAIL`); **Health is the last card still carrying it** — one more name
+   in that table. If it goes, `mfTail` and everything it builds (`MF_STEPS`, `MF_NS`, `.mfft`,
+   `.mfns`, `.mflic`) become kept-and-unreferenced.
+   The pinned **Monitor** card has no row glyphs (the 18 monitor
+   types have none in this file). Option 9's *section folds* were not ported — no card here has a
+   second section.
+3. **`.mfsidebar-icons-on` is still applied nowhere**, deliberately. Consequence, stated rather
+   than left to be discovered: in Option 12's Explorer list a **module row and a page under it now
+   share weight 500 and colour `rgb(202,211,226)`** — the glyph and 13px-vs-12px are the whole
+   difference. Re-arming that class would restore a 600/`--white` parent weight; it was not asked
+   for, and it reopens a title/row contrast settled on 10 Sep.
+4. **NCCM's child count** — flagged when Option 10's list was built and never chased: the supplied
+   reference shows `2 ›` on NCCM and the list shows no count. Decide whether counts belong at all
+   (the standing rule for this menu is "everything shown by default, no expand/collapse icon").
+5. **Option 10 was deliberately NOT given Option 12's list.** It still has the chevron column, the
+   Monitor row, the child pane, `.mfcards` and live collapsed-rail hover gates. That divergence is
+   intentional — do not "fix" it without being asked.
+6. Still open from 10 Sep, untouched: the two Gemini traits not copied (292px width, borderless
+   edge); Option 11's footer ordering What's new first; `#notifPop`'s caret and `--pop` white in
+   Options 10 and 11; the differing What's-new tooltips.
+7. **Scrub before the next public push**: this folder still ships internal hostnames and `172.16.x`
+   addresses from before today (SNMP/cluster/NCCM tables, Option 1's AI starters). Nothing new was
+   added today — but **Option 13 is a copy, so it carries its share**.
 
 ## Gotchas & notes
 
-- ⚠️ **`--dump-dom` cannot observe a navigation** — it never emits and the run must be killed.
-  Test the switcher key with `python3 -m http.server` + the browser tools. The browser tool also
-  **refuses `file://` URLs**, so http is the only route.
-- ⚠️ **A probe copy is written as `q-0.html`**, so `location.pathname` says nothing about which
-  option it is and `_variants.js`'s `here` never matches. Key off the page's **title**, and test
-  `.vs-item.on` in a sandbox that keeps the real filenames.
-- ⚠️ **A forced `:hover` stand-in with `!important` hides cascade bugs** — it beat both rules
-  and reported the intended colour while the badge was visibly wrong. Read the CASCADE:
-  enumerate every rule matching the selector and assert there is exactly one.
-- ⚠️ **`color-mix()` serialises as `color(srgb 0..1)`**, not `rgb(0..255)`. A probe dividing by
-  255 reported 1.79:1 and 17.66:1 on correct CSS.
-- ⚠️ **A token's value depends on where it is read.** `--text-dim` is `#7186a8` scoped to
-  `.aipanel` but `#5b6b85` at `:root` — I quoted the wrong one and overstated a contrast failure.
-  Resolve tokens on the element under test.
-- ⚠️ **A flex item's `inline-flex` is blockified to `flex`** — an assertion on the declared
-  value fails on correct CSS.
-- ⚠️ Several probes failed on working code by asserting a shared expectation across files whose
-  behaviour genuinely differs (Option 10 hides its collapse toggle on purpose; Option 11's button
-  hides the sidebar rather than unpinning). **Branch the probe on the file's own behaviour.**
-- `gh` is **not installed** on this machine and is not needed: the repo, remote, Pages workflow
-  and Pages source all exist, so a plain `git push` is the whole publish.
-- The Gemini reference was **driven and measured** at gemini.google.com (rail 52px,
-  `transition:background-color .3s`, hover expands nothing, one toggle in both states) — the
-  numbers in the Option 12 section come from that DOM, not from a screenshot.
+- ⚠️ **A selector scoped to a parent is a claim about where the element lives.** The DOCS chip
+  moved from `.mfsec` into `.mfhd`; every chip rule was `.mfsec .mfsd …`, so its `<svg>` painted
+  at 300×150 in black. The probe passed (the chip *was* present) — the screenshot caught it.
+  Assert the paint, not the presence.
+- ⚠️ **`sips --cropOffset 0 0` is treated as unset** and the crop falls back to centre. Use `1 1`.
+- ⚠️ **A probe that clicks the real `stOpen` / `layOpen` never finishes** under
+  `--virtual-time-budget` — `NO PROBE OUTPUT`, which reads like a broken page. Stub them.
+- ⚠️ **A stale DERIVED number with higher specificity does not linger — it wins.** The child indent
+  `31px` (9 + 15 + 7) survived the column's re-derivation to `40` (11 + 18 + 11); `.mficons`'s
+  (1,4,0) beat the new (1,2,0) and the two label columns sat 9px apart. Dump **every** rule that
+  matches, in sheet order, rather than reading the stylesheet.
+
+- ⚠️ **`--dump-dom` OVER `http://` HANGS ON THE AGENTATION LOADER.** On `file://` it 404s and the
+  run finishes; served over http the script really loads and virtual time never completes, so
+  **every assertion fails at once against an empty DOM** — which reads exactly like a broken page.
+  The switcher must be tested over http (its `here` is `location.pathname`), so the answer is a
+  directory of loader-stripped copies **under their real filenames**. `lxbehave.py` already strips
+  it; this was the same trap one layer out.
+- ⚠️ **`--dump-dom` cannot observe a navigation** — but it can observe the *result*: press the key,
+  let virtual time run, and dump whichever page you end up on. That is how `C` was proved, with no
+  browser tools involved.
+- ⚠️ **`:has(.mfic)` asks whether the element EXISTS, never whether it paints.** It matched
+  Explorer's rows the whole time they were `display:none`, so restoring them changed no weights at
+  all. The file already recorded this trap at `.mfsidebar-icons-on`; it caught nobody out twice.
+- ⚠️ **`.mfcards` was gated on the wrong question.** Explorer's card was 332px with
+  `padding:14px 44px 44px 0` against Alert's 302/6px — six measured differences from one class,
+  set on `perRowDocs` as a *proxy* for "is this a master/detail tree". Naming the single cause is
+  what turned "make it the same" into a one-line fix.
+- ⚠️ **`MF_TREE_HIDE` filters at the renderer, never in `EXPLORER_TREE`.** That array is the data:
+  `railPinRow('Monitor')` reads it to build the pinned rail tile and its hover card, and
+  `mfRailFirst` reads `tree[0]`. Delete the entry and the pin renders nothing, with no error.

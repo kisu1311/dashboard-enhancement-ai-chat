@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Motadata ObserveOps — Rail &amp; Flyout (alt 3)</title>
+<title>Motadata ObserveOps — Rail &amp; Flyout (alt 4)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -315,7 +315,10 @@ body.fs .exitfs{display:inline-flex}
    6 measures at its own divider, rather than this rail's 15.
    ⚠️ The active tile's FILL needed no change: measured rgb(201,212,228) here against Option
    6's rgb(202,211,226) — the same `--action` pair. Only the radius differed. */
-.sidebar:not(.open) .smenu{padding:6px 0 8px}
+/* ⚠️ NO TOP PADDING, FOR THE SAME REASON AND IN THE OTHER STATE. Collapsed, Search→Dashboard
+   measured **16** — the row's 10 plus this 6 — while every module gap was 10. The two states now
+   agree at 10. The 8 at the bottom is the rail's own tail room and is untouched. */
+.sidebar:not(.open) .smenu{padding:0 0 8px}
 .sidebar:not(.open) .smenu .sitem,
 .sidebar:not(.open) .stop .sitem,
 .sidebar:not(.open) .sutil .sitem,
@@ -392,10 +395,24 @@ body.fs .exitfs{display:inline-flex}
 .sidebar:not(.open) .strigger{position:relative}
 .sidebar:not(.open) .strigger .brandmark{position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);margin-left:0;pointer-events:none;transition:opacity .12s}
-.sidebar:not(.open) .strigger:has(.strcol:hover) .brandmark,
+/* ⚠️ THE WHOLE RAIL IS THE TRIGGER NOW (request, 11 Sep 2026: "when I hover [the] sidebar
+   ANYWHERE the sidebar expand icon will be shown"). It was the 32px button alone, argued three
+   notes up as "a row-level hover would promise a target up to 12px from the pointer" — that
+   reasoning was about the ROW, and the answer here is larger, not smaller: the rail is the
+   surface you are already pointing at when you want it open, and the glyph appearing as you
+   arrive is what says the rail can open at all. The previous rule made that discoverable only by
+   landing on the one 32px box that already looked like a logo.
+   ⚠️ THE HIT REGION IS UNCHANGED — still the 32px `.strcol`, still stacked under a
+   `pointer-events:none` mark. Only the REVEAL moved outward, so nothing new became clickable and
+   no pointer is promised a target it does not have: the glyph is a cue, and the row under it is
+   what you press.
+   ⚠️ `:hover` ON `.sidebar`, NOT ON `.strigger` — that was the version this replaces.
+   ⚠️ `:focus-visible` STILL REVEALS IT on its own, or a keyboard user tabs onto an invisible
+   glyph on a rail no pointer is over. That is why both selectors stay in each pair. */
+.sidebar:not(.open):hover .strigger .brandmark,
 .sidebar:not(.open) .strigger:has(.strcol:focus-visible) .brandmark{opacity:0}
 .sidebar:not(.open) .strcol .ic{opacity:0;transition:opacity .12s}
-.sidebar:not(.open) .strcol:hover .ic,
+.sidebar:not(.open):hover .strcol .ic,
 .sidebar:not(.open) .strcol:focus-visible .ic{opacity:1}
 .sidebar:not(.open) .strigger .strcol{width:32px;height:32px;flex:0 0 32px}
 /* ⚠️ THE WORDMARK MUST LEAVE THE FLOW, NOT JUST FADE. `.strigger .brand` is `opacity:0` when
@@ -1306,12 +1323,20 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,
    it was undiscoverable — you had to know it was there to hover for it.
    ⚠️ .75, NOT FULL STRENGTH. The heading is the loudest thing on the card now (13px semibold);
    a chip beside it at full contrast would compete with it. Hover still takes it to 1. */
-.mfsec .mfsd{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;height:20px;
+/* ⚠️ `.mfhd .mfsd` IS LISTED BESIDE `.mfsec .mfsd` ON EVERY CHIP RULE (Option 13, 11 Sep 2026). The
+   card title moved from `.mfsec` to `.mfhd` (see `.mfhd`) and took the chip with it — and every
+   rule below was scoped to the OLD parent, so the chip arrived in the new header with no size on
+   its arrow and no fill rule: the `<svg>` painted at the UA's 300×150 in solid black, a black
+   triangle under the word DOCS. Found in the screenshot, not the probe — the probe asserted the
+   chip was PRESENT in the header, which it was. A selector scoped to a parent is a claim about
+   where the element lives; move the element and the claim is silently false. */
+.mfsec .mfsd,.mfhd .mfsd{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;height:20px;
   padding:0 7px;border-radius:4px;background:var(--chip);
   font-size:10px;font-weight:700;letter-spacing:0;color:var(--text-dim);
   text-decoration:none;opacity:.75;transition:opacity .12s,color .12s,background .12s}
-.mfcol:hover .mfsec .mfsd,.mfsec .mfsd:focus-visible{opacity:.75}
-.mfsec .mfsd:hover{opacity:1;color:var(--text);background:var(--hover-side)}
+.mfcol:hover .mfsec .mfsd,.mfsec .mfsd:focus-visible,
+.mfcol:hover .mfhd .mfsd,.mfhd .mfsd:focus-visible{opacity:.75}
+.mfsec .mfsd:hover,.mfhd .mfsd:hover{opacity:1;color:var(--text);background:var(--hover-side)}
 /* ⚠️ SIZED UP FROM 8.5px (request, 10 Sep 2026: "it is very small, make to medium size"). It had
    been matched to `.mfdocs`, the per-ROW chip — but that one lives inside a 32px row among ten of
    them and has to stay quiet; this is the menu's only documentation link, sitting beside a 13px
@@ -1319,7 +1344,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,
    ⚠️ THE STROKE FOLLOWS THE GLYPH. This file's rule is 1.25px of stroke ON SCREEN, computed from
    the rendered size: at 11px that is `1.25 x 24 / 11 = 2.7`. Changing the size without this makes
    the arrow visibly thinner than the letters beside it — the trap the icon-weight note records. */
-.mfsec .mfsd svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.7;
+.mfsec .mfsd svg,.mfhd .mfsd svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.7;
   stroke-linecap:round;stroke-linejoin:round}
 .mfsec.tight{padding-top:0}
 .mfsec.cont{visibility:hidden}          /* continuation column: keeps the box, drops the label */
@@ -1480,7 +1505,352 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,
    belongs to — the hierarchy inverted. 31 = 9 (`.mfi` padding) + 15 (`.mfic`) + 7 (`.mfi` gap);
    recompute it if any of the three moves. Scoped to this column so no other menu's `.sub`
    rows shift. */
-#mflyout .mfmaster.mficons .mfi.sub{padding-left:31px}
+/* ⚠️ THE 31px CHILD INDENT THAT LIVED HERE IS GONE, AND IT IS WHY THE TWO LEVELS WERE 9px APART
+   (reported 11 Sep 2026, with the two label columns outlined: "the submodule text and child
+   submodule text will show [the] same alignment").
+   31 was DERIVED — 9 (row padding) + 15 (`.mfic`) + 7 (`.mfi`'s gap) — and correct for the
+   floating card it was written for. Option 13's column re-derived every one of those three:
+   11 + 18 + 11 = **40**, declared at `#mflyout .mfi.sub` below. Both rules matched every child
+   row, and THIS one won on specificity (1,4,0) over (1,2,0) even though the 40 comes later in the
+   sheet — so the parent's label sat at 102 and its children at 93. MEASURED, four rules deep.
+   ⚠️ THE LESSON, and this file has now recorded it twice in one day: A DERIVED NUMBER IS ONLY AS
+   GOOD AS THE THREE VALUES IT WAS DERIVED FROM. When the row's padding, glyph size or gap change,
+   every indent computed from them has to be re-derived or deleted — and a stale one with HIGHER
+   specificity does not just linger, it wins.
+   ⚠️ `.mficons` ITSELF STAYS — it is what `MF_TREE_ICONS` sets and what Option 12 reads; only the
+   indent it carried is gone, because the column now indents every child the same way. */
+/* ══ EVERY POPUP OPENS LIKE OPTION 6's COLUMN (request, 11 Sep 2026, Option 13: "the all
+   submodule popup will be open like [Option 6's Setting column] — this screenshot is only for
+   reference"). Three things from that reference, ported as SHAPE rather than copied as code:
+     a TITLE with a one-line COUNT under it  →  `.mfhd` / `.mfhtt`  (Option 6's `.skhd` / `.skhtt`)
+     a SEARCH FIELD under the title          →  `.uxsrch`, the file's own `uxSearchHTML()`
+     a GLYPH on every row                    →  `#mflyout .mfi > .mfic{display:block}`, below
+   ⚠️ THIS REVERSES THE 10 SEP "QUIET TITLE" FOR THE CARD TITLE ONLY. That decision (`.mfsec`,
+   ~330 lines down: "gray title and module name in the dark… title a little smaller") made the
+   title 11px/600/`--text-dim` UNDER rows at 12.5px/500/`--text`. The reference is the other way
+   round — a 14px/600/`--text` name over a 12px/`--text-dim` count, and the rows plain beneath —
+   and the request names it, so it wins HERE. `.mfsec` is untouched and still styles the
+   SECTION labels inside a card (Report's continuation columns, Dashboard's "Starred
+   dashboards"), which is what it was always for; the card TITLE is a different element now.
+   ⚠️ THE VALUES ARE OPTION 6's, MEASURED THERE: 14/20 title, 12/16 count with 2px between, and
+   the 8px gap before the trailing control. The insets are THIS card's: `margin:4px 4px 0` and a
+   10px left pad put the title's ink at x=+10 inside the row box — exactly where the rows' glyph
+   column starts — so the title, the search field's text and the glyphs share one left edge,
+   which is what the reference does.
+   ⚠️ `.mfhtt b` / `.mfhtt span`, NOT `.mfhd b` / `.mfhd span`: the DOCS chip sits in the same
+   header row and carries an `<svg>`; scoping to the text wrapper is what keeps a future `<span>`
+   in the chip from being styled as the count line. Same trap this folder records at `.agpfgt`.
+   ⚠️ OPTIONS 10, 11 AND 12 ARE NOT CHANGED. This is the fourth file carrying the flyout, and the
+   request named this one. */
+/* ⚠️ THE `padding` AND `margin` HERE ARE SUPERSEDED by the docked-column `.mfhd` rule further
+   down — same specificity, later in the sheet, so that one wins. Only `display:flex`, the
+   alignment and the gap still come from this line. Left as the record of the floating card. */
+#mflyout .mfhd{display:flex;align-items:center;gap:8px;margin:4px 4px 0;padding:6px 9px 10px 10px}
+#mflyout .mfhtt{flex:1 1 auto;min-width:0}
+/* the title and its pin share one line; the name truncates, the mark never shrinks */
+#mflyout .mfht{display:flex;align-items:center;gap:7px;min-width:0}
+#mflyout .mfht b{min-width:0}
+/* ⚠️ `.mfsp`'s OWN RULES ARE SCOPED `.mfsec .mfsp` — written when the heading WAS a `.mfsec`.
+   Re-stated for `.mfht` rather than re-scoped, so Option 12's `.mfsec` heading keeps its pin
+   untouched and the two cannot drift into each other. Same values, read off that rule. */
+#mflyout .mfht .mfsp{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;padding:0;
+  border:0;border-radius:50%;background:var(--action);color:var(--action-fg);cursor:pointer;
+  transition:background .12s}
+#mflyout .mfht .mfsp svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round;transform:rotate(45deg)}
+#mflyout .mfht .mfsp.pinned svg{fill:currentColor;stroke:currentColor}
+#mflyout .mfht .mfsp:hover{background:var(--action-h,var(--action));
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent)}
+#mflyout .mfhtt b{display:block;font-size:14px;font-weight:600;line-height:20px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ⚠️ 10px / 600, NOT Option 9's 12 / 400 (request, 11 Sep 2026, pointing at "18 monitor types":
+   "change the font size 10px semibold"). The count is the quietest thing on the card — it names
+   what the list holds, which the list itself then shows — so it drops below every row's 13 and
+   takes the weight back to stay legible at that size. Line-height follows it down (16 → 14) or
+   the 2px above it reads as 4.
+   ⚠️ THE TITLE IS UNTOUCHED at 14 / 600; the two are now separated by SIZE alone, which is what
+   the request asked for. */
+#mflyout .mfhtt span{display:block;font-size:10px;font-weight:600;line-height:14px;margin-top:2px;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ⚠️ `.uxsrch` HAD NO RULE IN THIS FILE. `uxSearchHTML()` and `uxSearchIco()` were ported with the
+   7 Sep UX pass but nothing here ever rendered the field, so its stylesheet never came with them —
+   the class was live in the script and dead in the sheet. These are Option 6's `.uxsrch` values
+   (30px, 6px radius, `--panel-2`, the ⌘K keycap on `--chip`), SCOPED TO THE FLYOUT so that if the
+   bare rule is ever ported too, the two cannot fight over the same box.
+   ⚠️ IT IS A DOOR TO THE SPOTLIGHT, NOT A FILTER. Option 6's field opens the same ⌘K search the
+   rail's own tile opens, and so does this one — a field that filtered the eight rows under it
+   would be a second search with different rules three inches from the first. `mfSearchHTML()`
+   closes the card first; the spotlight is a layer over the whole page.
+   ⚠️ WIDTH = THE ROW BOX. Rows are `margin:0 4px 4px`, so `margin:0 4px 8px` + `calc(100% - 8px)`
+   gives the field the rows' exact left and right edges; its 9px pad + 1px border put its text at
+   +10, on the title's and the glyphs' column. */
+#mflyout .uxsrch{display:flex;align-items:center;gap:8px;height:30px;margin:0 4px 8px;padding:0 9px;
+  width:calc(100% - 8px);flex:0 0 auto;border:1px solid var(--border);border-radius:6px;
+  background:var(--panel-2);color:var(--text-dim);font-family:inherit;font-size:12.5px;
+  text-align:left;cursor:pointer}
+#mflyout .uxsrch:hover{border-color:var(--track);color:var(--text)}
+#mflyout .uxsrch:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+#mflyout .uxsrch svg{width:14px;height:14px;flex:0 0 14px;fill:currentColor}
+#mflyout .uxsrch span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mflyout .uxsrch kbd{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;
+  color:var(--text-dim);background:var(--chip);border-radius:3px;padding:1px 5px}
+/* ⚠️ THE GLYPH PAINTS ON EVERY ROW OF EVERY CARD — the reference has one on each line. This
+   supersedes, IN THIS FILE, both the 10 Sep global hide (`.mfi .mfic{display:none}`) and the
+   11 Sep Explorer-only exception four rules up. `MF_TREE_ICONS` and `.mficons` are KEPT and still
+   set — they are what Option 12 reads — but no rule here needs them any more.
+   ⚠️ ALL-OR-NOTHING PER MENU STILL HOLDS, by the data rather than by a rule: Alert emits 8 of 8,
+   Report 10 of 10, Health 7 of 7, Explorer its 9 module rows (children none, by design) — and
+   the pinned Monitor card emits NONE, because the 18 monitor types have no glyph in this file.
+   That card gets the title, the count and the field, and plain rows. Stated, not hidden.
+   ⚠️ THE CHILD INDENT GENERALISES WITH IT: 31 = 9 + 15 + 7, see the `.mficons` note above. */
+#mflyout .mfi > .mfic{display:block}
+/* the child indent is declared ONCE, on the column's own geometry — see the deleted-31px note above */
+/* ⚠️ EXCEPT ON A CARD THAT IS NAMED IN `MF_NO_ICONS` (request, 11 Sep 2026, with Alert's glyph
+   column outlined: "the alert module submodule list will remove the icon"). The openers put
+   `.mfnoic` on the flyout itself for those names — one class on one element, set by every opener
+   the same way — so the rule needs no menu name and covers `mfTree` and `mfCol` cards alike.
+   ⚠️ THE MARKUP STILL CARRIES THE GLYPH. `mfIco` still emits it and `.mfi:has(.mfic)` still sees it;
+   only the paint is withheld, which is the same shape as the 10 Sep global hide. The row's text
+   moves into the glyph column (+11), where a glyph-less row's text has always started here. */
+#mflyout.mfnoic .mfi > .mfic{display:none}
+/* ══ THE WHOLE COLUMN, NOT JUST ITS HEAD (clarified 11 Sep 2026: "in my thinking the submodule
+   popups will open like OPTION 9"). The first pass ported the reference's head — name, count,
+   field, glyphs. Option 9's column is more than its head, and the picture the request came with
+   shows all of it: Plain-style ROWS (36px, an 18px glyph, radius 8, regular weight), a FOOT of
+   three chrome buttons (Next steps with its remaining-count · Documentation · Dashboard layout),
+   the docked "NEXT STEPS" card, and the LICENCE line. All of it is now in every card, from the
+   same values Option 9 measures at (`.skrow`, `.skfoot`, `.skfb`, `.skcnt`, `.skns`, `.skstep`,
+   `.sktrial`), scoped to `#mflyout`.
+   ⚠️ ONE LEFT EDGE MOVES FROM +10 TO +15. Option 9's row is `padding-left:11px` with an 18px
+   glyph and an 11px gap, so its text sits at +40; inside this card's 4px row margin the glyph
+   is at 4 + 11 = 15, and the title (15px pad) and the field's icon (4 + 1 + 10) follow it there.
+   The child indent is 40 = 11 + 18 + 11, Option 9's own number.
+   ⚠️ THE DOCS CHIP LEAVES THE HEADER. Option 9 has no chip on its title — its documentation
+   door is the `?` in the foot — so the header is name-over-count and nothing else, and the
+   module's doc path now feeds the foot button (`mfTail(path)`). `mfHead` still accepts a path
+   and `mfDocChip` still builds one; both callers pass `null`. This retires, in THIS file only,
+   the 10 Sep "show the title's doc link by default" — the link is still shown by default, one
+   row lower, as the reference has it.
+   ⚠️ THE NEXT-STEPS CARD IS STATE, NOT DECORATION. `MF_NS.done` fills as steps are VISITED (the
+   prototype cannot know a discovery ran), the rocket's badge counts what is left and hides at
+   zero, and ✕ dismisses the card until the rocket brings it back — Option 9's own rules, kept
+   in one object so every card agrees. Steps open through `stOpen`, the Settings module's own
+   door, from `_settings-module.js` — loaded by this file, checked.
+   ⚠️ THE ROCKET, `?` AND LAYOUT GLYPHS ARE `tour`, `help`, `columns` — the three Option 9 uses,
+   and the three that resolve in this file's `ICONS` (`rocket`, `question`, `layout` do NOT;
+   checked before binding, not after). The ✕, chevron and tick are inline paths (`MF_X`,
+   `MF_CHEV`, `MF_DONE`), Option 9's `SK_*` under this file's prefix, because none of the three
+   exists as a named icon here either.
+   ⚠️ THE LICENCE LINE IS COPY FROM OPTION 9, "renews in 23 days" INCLUDED — a prototype string,
+   not a computed one, there as here. `mfLicence` opens My Account › License, found by the same
+   `/licen/i` lookup Option 9 uses, so a renamed page still resolves.
+   ⚠️ TALLER CARDS, SAME CLAMP: `mfClamp` now subtracts EVERY sibling of the list — head, field,
+   foot, card, line — instead of "the heading", and bounds `mfCol` cards too, not only the
+   master column. A 1000px viewport holds the tallest (Monitor: 18 rows) with room; a short one
+   scrolls the list, which is what the clamp is for. */
+#mflyout .mfhd{padding:6px 9px 10px 15px}
+#mflyout .uxsrch{padding:0 10px}
+/* ⚠️ 12 RIGHT, 11 LEFT, AND THE PAIR IS DERIVED, NOT EYEBALLED. `.mflist` pads 8, and `.mfi`
+   carries a 1px transparent `border-left` (it reserves the `.open` bar — see `.mfi`'s own note),
+   so the left column is 8 + 1 + 11 = 20 and the right has no border to absorb: 8 + 12 = 20.
+   Re-derive both if the list padding or that border changes. */
+#mflyout .mfi{height:36px;gap:11px;padding:0 12px 0 11px;border-radius:8px;font-size:13px}
+/* ⚠️ 600, NOT 400 (request, 11 Sep 2026: "the font size of all the submodule list, make it 13px
+   semibold on Option 13"). Option 9's rows are 400; the request names this option and names the
+   weight, so every card's rows — Alert, Explorer's sub-modules, Report, Health, the pinned
+   Monitor's types — read at 13/600. Explorer's CHILDREN are the one exception, at 12/400 below:
+   the earlier request set the two levels apart and this one asked for the sub-module list, not
+   the pages under it. */
+#mflyout .mfmaster .mfi,#mflyout .mfcol .mfi{font-weight:600}
+#mflyout .mfi > .mfic{width:18px;height:18px;flex:0 0 18px;opacity:.85}
+#mflyout .mfi:hover > .mfic{opacity:1}
+#mflyout .mfi.sub{padding-left:40px}
+/* ⚠️ THE TWO LEVELS READ AT TWO SIZES (request, 11 Sep 2026, on Explorer's column: "the submodule
+   font size is 13px and semibold and the child submodule font size 12px"). Parents 13/600,
+   children 12 — the child keeps the 400 the column's rows share.
+   ⚠️ KEYED ON THE LIST HAVING CHILDREN, NOT ON THE MENU'S NAME. `:has(.mfi.sub)` is true of exactly
+   the list that renders a second level — Explorer's, today — so Alert's `.par` rows (the same
+   class, one level, from the same `mfTree`) stay at 400 and no name has to be kept in step. If
+   another menu ever renders children inline, its parents weight up with them, which is what the
+   request is about: a parent is heavier BECAUSE there is something under it.
+   ⚠️ (1,5,0) beats the column's `#mflyout .mfmaster .mfi{font-weight:400}` at (1,2,0); `:has()`
+   contributes its argument's specificity, which is what makes this win without an id or `!important`. */
+#mflyout .mflist:has(.mfi.sub) .mfi.par{font-size:13px;font-weight:600}
+#mflyout .mfi.sub{font-size:12px;font-weight:400}   /* the child level — see the 600 note above */
+/* the foot: three 32px chrome buttons, right-aligned, Option 9's `.skfoot` / `.skfb` / `.skcnt` */
+#mflyout .mfft{display:flex;justify-content:flex-end;gap:4px;margin:2px 4px 0;padding:8px 4px}
+#mflyout .mfftb{position:relative;width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;
+  border-radius:6px;border:0;background:transparent;color:var(--text);cursor:pointer}
+#mflyout .mfftb:hover{background:var(--hover)}
+#mflyout .mfftb svg{width:18px;height:18px;fill:currentColor}
+#mflyout .mfcnt{position:absolute;right:-2px;bottom:-1px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;
+  background:var(--green);color:var(--white);font-size:9.5px;font-weight:700;line-height:14px;text-align:center;
+  box-shadow:0 0 0 2px var(--sidebar)}
+/* the Next-steps card: Option 9's `.skns` — 1px ring, radius 10, 16px padding, a 17px/500 title */
+#mflyout .mfns{position:relative;margin:4px 4px 8px;padding:16px;background:var(--card);border:1px solid var(--border);
+  border-radius:10px}
+#mflyout .mfns h4{margin:0 0 6px;font-size:17px;font-weight:500;line-height:24px;color:var(--text)}
+#mflyout .mfnsx{position:absolute;top:7px;right:7px;width:24px;height:24px;display:grid;place-items:center;
+  border-radius:6px;border:0;background:transparent;color:var(--text);cursor:pointer}
+#mflyout .mfnsx:hover{background:var(--hover)}
+#mflyout .mfnsx svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#mflyout .mfstep{display:flex;align-items:center;gap:8px;width:calc(100% + 8px);margin:0 0 0 -8px;height:34px;padding:0 8px;
+  border-radius:6px;border:0;background:transparent;color:var(--text);font-family:inherit;font-size:12px;font-weight:600;
+  text-align:left;cursor:pointer;white-space:nowrap}
+#mflyout .mfstep:hover{background:var(--hover)}
+#mflyout .mfstep .mfic{display:block;flex:0 0 18px;width:18px;height:18px;fill:currentColor;color:var(--text-dim);opacity:1}
+#mflyout .mfstep .mfl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#mflyout .mfch{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:var(--text-dim);stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+#mflyout .mfstep.done{color:var(--text-dim)}
+#mflyout .mfstep.done .mfch{stroke:var(--green)}
+/* the licence line: Option 9's `.sktrial`, its text on the same +15 column */
+#mflyout .mflic{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 8px 8px 15px;
+  font-size:12px;line-height:16px;color:var(--text-dim);white-space:nowrap}
+#mflyout .mflic a{color:var(--text-dim);font-weight:600;text-decoration:underline;cursor:pointer}
+#mflyout .mflic a:hover{color:var(--text)}
+/* ══ THE FOOTER SHEDS THREE ROWS WHEN THE RAIL RUNS OUT OF ROOM (request, 11 Sep 2026 — see the
+   `#sbMore` markup and `railFootFit`) ══════════════════════════════════════════════════════════
+   ⚠️ `display:none`, NOT REMOVAL. `showView()` toggles `.on` on `#sbApproval` and `#sbHealth` BY
+   ID and the tooltip engine adopts their `data-tip` — taking them out of the DOM would break both
+   silently. Hidden, they are still there and still correct the moment the class comes off.
+   ⚠️ IT IS ON `<body>`, NOT THE RAIL, because the rail is what gets measured: a class on the
+   element whose height you are testing is how a measurement starts depending on its own answer.
+   `railFootFit` carries the hysteresis; this is only the paint. */
+body.sfootfit .sfoot .sitem.uxnews,
+body.sfootfit #sbApproval,
+body.sfootfit #sbHealth{display:none}
+#sbMore{display:none}
+body.sfootfit #sbMore{display:flex}
+/* ⚠️ THE GLYPH IS THE PRODUCT'S VERTICAL ELLIPSIS, TURNED A QUARTER — see `ellipsis-v` in `ICONS`
+   for why the Tabler dots went and what was measured.
+   ⚠️ HORIZONTAL IS THE ORIENTATION THAT IS FREE HERE. This page already spends the vertical ⋮ on
+   "actions on THIS item" — the widget kebab and the dashboard row's own More are both vertical —
+   while its other control labelled More, the AI panel's `#aiHelpBtn`, is horizontal. A rail
+   overflow is neither of those: it is "the rest of this bar", which is what ⋯ says wherever it
+   appears, and keeping it horizontal is what stops it reading as a kebab for the row above it.
+   ⚠️ IT IS A CSS TURN, NOT A SECOND PATH. The three dots sit on cx 24 at cy 10/24/38 — symmetric
+   about the box centre — so a quarter turn lands them on cy 24 at cx 38/24/10: the same radii, the
+   same spacing, and the artwork still byte-identical to the file it was pasted from. Retyping the
+   coordinates horizontally would be three chances to slip for nothing gained. Same idiom as the
+   floating card's corner arcs, which are one path rotated rather than four written out.
+   ⚠️ `transform` TAKES NO LAYOUT, so the 18px box and its `flex:0 0 18px` are untouched — and no
+   other rule transforms a rail icon, so there is nothing here to lose a tie with (grepped first).
+   ⚠️ SCOPED TO THE ID, NOT `.sq .ic`: the turn belongs to this call site, not to every rail glyph,
+   and `ICONS` must keep answering `ellipsis-v` with the vertical artwork its name promises. */
+#sbMoreIc{transform:rotate(90deg)}
+/* the popover keeps What's new's version chip, so nothing is lost in the move */
+#morePop .uxtag{margin-left:6px}
+/* ══ THE LIST ANNOUNCES BOTH CUT-OFFS (request, 11 Sep 2026, with Explorer scrolled: "when the
+   Explorer sidebar scrolls up and down, the top and bottom blur effect — apply top and bottom").
+   There was a BOTTOM fade only (`.mfcol.mfmaster.more::after`), written for the floating card, and
+   two things about it were wrong here:
+     · it ramped to `var(--pop)` — the floating card's surface. This column is `var(--card)`, so
+       the fade was ending on a colour the column does not paint.
+     · it was anchored `bottom:1px` on the CARD, which was the list's own bottom edge back when the
+       card was head + list. The column now has a foot, a Next-steps panel and a licence line below
+       the list, so on Health the fade would have washed over those instead of the rows.
+   ⚠️ THE OFFSETS ARE MEASURED, NOT GUESSED. `mfFadeCard` writes the list's own top and bottom onto
+   the card as `--mflt` / `--mflb`, so the two gradients sit exactly on the scrolling box whatever
+   is stacked around it — and a card that later grows another block needs no new number here.
+   ⚠️ THEY CANNOT LIVE ON `.mflist` ITSELF. It is the scroller, so its own `::before`/`::after`
+   would scroll away with the rows; they have to be painted by the card, which does not move.
+   ⚠️ EACH EDGE IS INDEPENDENT: `.mftop` only when there is something above, `.more` only when
+   there is something below — so a short list shows neither and a fully-scrolled one shows only the
+   top. A permanent pair of fades would be decoration, not a cue. */
+#mflyout .mfcol.mftop::before,
+#mflyout .mfcol.more::after{content:'';position:absolute;left:1px;right:1px;height:30px;
+  pointer-events:none;z-index:1;border-radius:0}
+#mflyout .mfcol.mftop::before{top:var(--mflt,0px);background:linear-gradient(180deg,var(--card),transparent)}
+#mflyout .mfcol.more::after{bottom:var(--mflb,0px);background:linear-gradient(0deg,var(--card),transparent)}
+/* ══ THE CARD IS A DOCKED, FULL-HEIGHT COLUMN — OPTION 9's `.sknav` (request, 11 Sep 2026, with
+   Option 9's DASHBOARD column as the picture: "the current all popup is [an] open popup, make [it]
+   Option 9 like"). The two passes above ported the column's PARTS into a floating card; this one
+   gives them Option 9's BOX: flush against the rail, top to bottom, 296px, `--card` on a right
+   border, the head at the top, the list taking the room, and the foot · Next-steps card · licence
+   line resting on the FLOOR with whatever space is left above them — which is the thing the
+   picture shows and a floating card cannot.
+   ⚠️ NO SEARCH FIELD (same request, and the Monitor request before it: "remove the search"). Option
+   9 puts the field on its Setting column ONLY, and Setting opens no column here (`MF_NO_HOVER`), so
+   no card carries one. `mfSearchHTML` and the `.uxsrch` rules are KEPT AND UNREFERENCED.
+   ⚠️ THE FLYOUT'S INLINE `left` AND `top` COME FROM THE OPENERS — `railWidth()` (flush, no
+   `MF_GAP`) and `0`. A stylesheet `left` cannot win against an inline one without `!important`,
+   so the JS was changed rather than the sheet made to fight it. `MF_GAP` still spaces the popovers.
+   ⚠️ THE LIST IS FLEX-SIZED, NOT CLAMPED. `flex:1 1 auto; min-height:0; overflow-y:auto` inside a
+   column that is exactly the viewport tall is the whole layout; `mfClamp` no longer computes a
+   `max-height` (see it), and `.mflist`'s own `min(52vh,308px)` is overridden here, or the list
+   would stop at 308px with the floor still 300px below it.
+   ⚠️ `--card`, NOT `--sidebar`. Option 12's "background like the main sidebar" was for a floating
+   card over the page; Option 9's column is `--card` beside a `--sidebar` rail — the one-step
+   surface change the reference shows between rail and column — and the reference wins here.
+   ⚠️ THE HEAD'S TRAILING CONTROL IS A CLOSE, in Option 9's collapse glyph (`MF_COL` = its `SK_COL`).
+   Option 9's button folds the column; this column closes when the pointer leaves it, so the same
+   slot does the one thing that means anything here. The silhouette is the reference's; the verb
+   is this menu's.
+   ⚠️ THE MONITOR CARD HAS NO TAIL (request, 11 Sep 2026, on the pinned Monitor row's popup: "remove
+   the search and also remove [the foot] [the Next steps card and licence line]"). `mfOpenPin`
+   passes `null` where the module openers pass `mfTail(...)`: the same column, head and rows only.
+   ⚠️ THE EMPTY DETAIL PANE IS `display:none` HERE, unconditionally. It used to hide only under
+   `.mfcards`; as a second flex column it would take half of a 296px panel for nothing. The node
+   stays in the DOM — `mfDetailAlign`, `mfClamp` and `mfFade` still reach for it. */
+/* ⚠️ THE SHADOW IS CLIPPED OFF THE LEFT EDGE (request, 11 Sep 2026, with the band down the rail
+   outlined: "remove the shadow on the sidebar sub-module sidebar left side"). `8px 0 28px` is
+   offset right but its 28px blur still spills ~20px LEFT, and the column docks flush against the
+   rail — so the rail wore a dark stripe down its whole height whenever a card was open.
+   ⚠️ `clip-path`, NOT A CHANGED OFFSET. Pushing the x-offset past the blur (`28px 0 28px`) would
+   drag the darkest part of the shadow 28px into the canvas and read as a hard edge; the shadow
+   that falls to the RIGHT is the one doing the work of lifting the column off the board, and it
+   is unchanged. `inset(0 -40px 0 0)` cuts exactly at the box's left edge and lets 40px through on
+   the right — more than the 8 + 28 the shadow can reach.
+   ⚠️ `overflow:hidden` DOES NOT DO THIS. It clips descendants, never the element's own box-shadow,
+   which paints outside the border box by definition. The two are not alternatives.
+   ⚠️ NOTHING INSIDE THIS COLUMN NEEDS TO PAINT OUTSIDE IT — the rail's tooltip is the delegated
+   `.tipbox` on `document.body`, not a child, and the detail pane is `display:none`. Check that
+   again before putting anything here that is meant to overhang. */
+.mflyout{top:0;bottom:0;height:100vh;max-height:none;width:296px;padding:0;border-radius:0;overflow:hidden;
+  clip-path:inset(0 -40px 0 0);
+  background:var(--card);border:0;border-right:1px solid var(--border);box-shadow:8px 0 28px rgba(0,0,0,.28)}
+html[data-theme="light"] .mflyout{box-shadow:8px 0 28px rgba(16,26,42,.14)}
+#mflyout .mfcols{height:100%;align-items:stretch;gap:0}
+#mflyout .mfcol,#mflyout .mfcol.mfmaster{width:100%;height:100%;display:flex;flex-direction:column;
+  padding:0;border:0;box-shadow:none;background:transparent;border-radius:0}
+#mflyout .mfcol.mfdetail{display:none}
+/* Option 9's `.skhd`: 16px above, 12px below, a 24px slot at the end.
+   ⚠️ THE LEFT PAD IS 20, NOT OPTION 9's 12, AND IT IS DERIVED (reported 11 Sep 2026, with the gap
+   between the title and the rows outlined: "the title text and list of sub-module will show [the]
+   same alignment"). Option 9's column pads its header 12 and its body 8, so its title sits 8px
+   LEFT of its rows — a difference this card has no reason to inherit.
+       20 = 8 (`.mflist`'s padding) + 1 (`.mfi`'s transparent `border-left`) + 11 (`.mfi`'s padding)
+   which is exactly where a row's text starts, glyph or no glyph. The licence line already carries
+   the same 20 for the same reason.
+   ⚠️ RE-DERIVE IT IF ANY OF THOSE THREE MOVES. This file spent a pass hunting a 9px misalignment
+   caused by a derived indent left behind when its inputs changed — see the deleted-31px note. */
+/* ⚠️ 20 ON BOTH SIDES (request, 11 Sep 2026, with the column's left and right edges outlined:
+   "the left side and right side [get the] same margin"). Measured before changing anything —
+   text/glyph at L+20, but the DOCS chip at R-9, a row's trailing edge at R-17 and the licence
+   link at R-13. Everything inside the column now starts and ends 20px from its PADDING box.
+   ⚠️ THE 1px `border-right` IS NOT PART OF THAT, and is why the right inset reads 21 from the
+   OUTER edge. It is the divider between the column and the canvas, the same thing the rail draws
+   on its own right edge — a border is the edge, not a margin inside it. */
+#mflyout .mfhd{flex:0 0 auto;margin:0;padding:16px 20px 12px 20px}
+/* ⚠️ `.mfhb` IS KEPT AND UNREFERENCED — the head's 24px control box, Option 9's `.skhb`. Nothing
+   renders it since the `DOCS ↗` chip took that slot (11 Sep 2026, see `mfHead`); it is one line
+   away if a control ever comes back, and re-deriving the box would be the fiddly half. */
+#mflyout .mfhb{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;border-radius:6px;border:0;
+  background:transparent;color:var(--text-dim);cursor:pointer}
+#mflyout .mfhb:hover{background:var(--hover);color:var(--text)}
+#mflyout .mfhb svg{width:16px;height:16px;fill:currentColor}
+/* Option 9's `.skbody` + `.skrow`: the list is the room, rows 8px in with 1px between them */
+#mflyout .mflist{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;margin:0;padding:0 8px 8px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#mflyout .mfi{margin:0 0 1px;width:100%}
+#mflyout .mfi > .mfic{color:var(--text-dim)}
+#mflyout .mfi:hover > .mfic{color:var(--text)}
+/* the tail rests on the floor: `margin-top:auto` on the first of its three blocks */
+#mflyout .mfft{flex:0 0 auto;margin:auto 0 0;padding:8px 20px 8px 8px}   /* right-aligned: its RIGHT pad is the one that shows */
+#mflyout #mfNs{flex:0 0 auto}
+#mflyout .mfns{margin:4px 20px 8px}   /* the panel sits on the same two edges as the text */
+#mflyout .mflic{flex:0 0 auto;margin:0 20px 20px}
 .mfi .plus{color:var(--teal);font-weight:700}
 /* the product's `plus` glyph in the icon slot of a "New …" row — teal, and NOT dimmed to the
    .72 the module marks rest at: it is the one row that creates rather than opens, and the
@@ -1892,7 +2262,15 @@ html[data-theme="light"] .sitem.tmp{outline-color:var(--teal-dim)}
    ⚠️ `.stop`'s rows carry their own margin and need the same treatment, or Ask AI and Search stay
    at the old inset while every module row moves. */
 .sidebar.open .smenu .sitem{margin:0 10px 10px}
-.sidebar.open .stop{margin:0 10px 4px}
+/* ⚠️ NO EXTRA BOTTOM MARGIN — SEARCH SITS ONE ROW-GAP ABOVE DASHBOARD (request, 11 Sep 2026:
+   "apply the same padding between the Search icon and the Dashboard icon, like [between the]
+   Dashboard icon and [the] Monitor icon"). MEASURED: every module-to-module gap is 10 (each
+   `.sitem`'s own `margin-bottom`), and Search→Dashboard was **14** — the row's 10 PLUS this
+   block's 4. The 4 was a group separation between the utility rows and the modules; the request
+   is that there be none, so the whole rail is one 10px rhythm.
+   ⚠️ THE HORIZONTAL 10 STAYS. It is the rail's inset, shared with `.sidebar.open .smenu .sitem`,
+   and the note above derives the icon column from it. */
+.sidebar.open .stop{margin:0 10px 0}
 .sidebar.open .sitem .ic,
 .sidebar.open .sitem .iwrap{margin-left:0}
 .sitem.airail{color:var(--ai-2)}
@@ -8827,6 +9205,11 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
     <div class="sitem" id="sbSetting" data-tip="Setting" onmouseenter="mfHide()" onclick="railFootGo('Setting')"><svg class="ic" viewBox="0 0 48 48" id="sbSettingIc"></svg><span class="lbl">Setting</span></div>
     <div class="sitem uxnews" data-tip="What's new in 10.0.1 ↗" onclick="window.open('https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview','_blank','noopener')"><svg class="ic" viewBox="0 0 48 48"><path fill="currentColor" d="M27.28,17.94l-.58,3.46c-.1,.58-.03,1.18,.2,1.72,.23,.54,.61,1.01,1.09,1.34,.45,.33,.99,.52,1.55,.56,.56,.03,1.12-.1,1.61-.38l2.84-1.62,2.88,1.58c.48,.27,1.03,.41,1.58,.38,.55-.02,1.09-.21,1.54-.52,.47-.34,.84-.8,1.06-1.33,.22-.53,.29-1.12,.2-1.69l-.58-3.46,2.4-2.44c.4-.4,.67-.91,.8-1.46,.13-.55,.1-1.12-.07-1.66-.18-.54-.5-1.01-.92-1.38-.43-.37-.95-.61-1.51-.7l-3.24-.48-1.46-3.1c-.24-.52-.63-.96-1.11-1.26-.48-.31-1.04-.47-1.61-.47s-1.13,.16-1.61,.47-.87,.75-1.11,1.26l-1.46,3.1-3.24,.48c-.56,.09-1.08,.33-1.51,.7-.43,.37-.75,.85-.92,1.38-.18,.54-.2,1.11-.07,1.66,.13,.55,.41,1.05,.8,1.46l2.44,2.4Zm3.66-4.26c.49-.07,.95-.27,1.35-.56,.4-.3,.72-.69,.93-1.14l.78-1.66,.78,1.66c.21,.45,.53,.84,.93,1.14,.4,.3,.86,.5,1.35,.58l2,.28-1.46,1.48c-.34,.35-.59,.78-.74,1.24-.15,.47-.18,.96-.1,1.44l.32,2-1.58-.86c-.44-.25-.94-.37-1.44-.37s-1,.13-1.44,.37l-1.58,.86,.32-2c.08-.48,.04-.97-.1-1.43-.15-.46-.4-.88-.74-1.23l-1.46-1.5,1.88-.3Zm11.06,15.3c-.53,0-1.04,.21-1.41,.59-.38,.38-.59,.88-.59,1.41v6c0,.53-.21,1.04-.59,1.41-.38,.38-.88,.59-1.41,.59H10c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41V17.8l11.76,11.76c.55,.56,1.2,1,1.92,1.3,.72,.3,1.5,.46,2.28,.46h.54c.53-.05,1.02-.3,1.36-.7,.34-.4,.51-.93,.46-1.46-.02-.26-.1-.52-.22-.75-.12-.23-.29-.44-.49-.61-.2-.17-.44-.3-.69-.37-.25-.08-.52-.11-.78-.08-.28,.03-.57,0-.83-.1-.27-.1-.51-.25-.71-.46L10.82,14.98h7.18c.53,0,1.04-.21,1.41-.59,.38-.38,.59-.88,.59-1.41s-.21-1.04-.59-1.41-.88-.59-1.41-.59H10c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v20c0,1.59,.63,3.12,1.76,4.24s2.65,1.76,4.24,1.76h28c1.59,0,3.12-.63,4.24-1.76,1.13-1.13,1.76-2.65,1.76-4.24v-6c0-.53-.21-1.04-.59-1.41-.38-.38-.88-.59-1.41-.59Z"/></svg><span class="lbl">What's new<span class="uxtag">10.0.1</span><svg class="uxext" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
     <div class="squick">
+      <!-- ⚠️ THE THREE UTILITY CONTROLS COLLAPSE INTO THIS ONE WHEN THE RAIL RUNS OUT OF ROOM
+           (request, 11 Sep 2026: pin every Explorer sub-module and "the sidebar is full and it
+           scrolls… the bottom 3 icons will be combined — Approval, What's new and Health").
+           It is `display:none` until `body.sfootfit` says otherwise — see `railFootFit`. -->
+      <div class="sq" id="sbMore" data-tip="More" aria-haspopup="true" onmouseenter="mfHide()" onclick="togglePop('morePop',event)"><svg class="ic" viewBox="0 0 48 48" id="sbMoreIc"></svg><span class="lbl">More</span></div>
       <div class="sq" id="sbApproval" data-tip="Approval" onmouseenter="mfHide()" onclick="showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="sbApprovalIc"></svg><span class="lbl">Approval</span></div>
       <!-- ⚠️ HEALTH OPENS NO SUB-MENU ON HOVER (request, 9 Sep 2026: "when I hover the Health
            remove the popup, and when I click the Health icon to open main screen"). It was the
@@ -9626,6 +10009,21 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 <!-- ============ Popovers ============ -->
 <div class="scrimlayer" id="scrim" onclick="closePops()"></div>
 
+<!-- ⚠️ THE THREE THAT LEFT THE FOOTER, IN THE ORDER THEY SAT IN IT — What's new, Approval,
+     Health. Same `.pop` / `.umenu` shell as the identity card, so it is placed by `popPlace`,
+     closed by `closePops` and dismissed by the scrim with no new machinery.
+     ⚠️ EACH ROW CALLS WHAT ITS ICON CALLED. Health's hover flyout (`mfOpenUtil`) does NOT come
+     with it: that opens a card beside the rail, and opening one from inside a popover the scrim
+     is holding up would stack two surfaces. Clicking still lands on the Health screen, which is
+     what the icon's own click did. Stated, not hidden. -->
+<div class="pop" id="morePop">
+  <ul class="umenu">
+    <li class="item"><a href="https://docs.motadata.com/motadata-aiops-docs/motadata-release-notes/overview" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 48 48" id="icMoreNews"></svg> What's new<span class="uxtag">10.0.1</span></a></li>
+    <li class="item"><a href="javascript:;" onclick="closePops();showView('approval')"><svg class="ic" viewBox="0 0 48 48" id="icMoreApproval"></svg> Approval</a></li>
+    <li class="item"><a href="javascript:;" onclick="closePops();showView('health')"><svg class="ic" viewBox="0 0 48 48" id="icMoreHealth"></svg> Health Monitoring</a></li>
+  </ul>
+</div>
+
 <div class="pop" id="userPop">
   <div class="uhead">
     <div class="upavatar">KP</div>
@@ -9919,6 +10317,27 @@ const ICONS = {
    "M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z"
   ],
   "from": "sidebar.html"
+ },
+ /* ⚠️ THE PRODUCT'S OWN `common/navigation-layout/ellipsis-v.svg`, pasted verbatim — three r=4
+   circles on the 48 grid, which is the construction every other glyph in this footer already has.
+   ⚠️ IT REPLACED TABLER'S `system/dots` (11 Sep 2026, "improve the more icon"), and the reason is
+   MEASURED rather than a preference. Tabler is a STROKE set: its dots are r=1 circles drawn to be
+   painted with a 2px stroke. `setIco` writes `fill` and no stroke, so each dot rendered at
+   `1/24 × 18px = 1.5px` — measured off a 3× capture at 1.33–1.67px wide, against a gear filling
+   16.7px of the same 18px box. Three sub-2px specks between two solid glyphs read as a separator,
+   not a control. The product's dot is r=4 on 48 = 3.0px at that same 18px: exactly double the ink,
+   at the same three-dot rhythm (centres 14 grid units apart in either set).
+   ⚠️ THE 24-GRID ENTRY WENT WITH IT rather than being parked. Every other record here is the
+   product's 48, and a lone 24 one is precisely what let a glyph render at half weight with nothing
+   reporting it. `setIco` takes the `viewBox` from the record, so no call site had to learn either.
+   ⚠️ IT IS THE VERTICAL ARTWORK AND THE KEY SAYS SO. Its one call site (`#sbMoreIc`) turns it 90
+   degrees in CSS to read horizontally — that rule carries why the rail's overflow is horizontal,
+   and why the turn is done there instead of by retyping coordinates here. */
+"ellipsis-v": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M24,14c2.2,0,4-1.8,4-4s-1.8-4-4-4-4,1.8-4,4,1.8,4,4,4Zm0,20c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Zm0-14c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Z"
+  ]
  },
  "search": {
   "viewBox": "0 0 48 48",
@@ -10518,6 +10937,24 @@ const MOD_TO_RAIL = {};
    ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
    else and the band renders empty — no error, just nothing on the rail. */
 let RAIL_PINS = ['Monitor'];
+/* ══ THE RAIL CARRIES TWO PINNED BANDS, AND THEY ANCHOR TO DIFFERENT ROWS ══════════════════
+   Two requests, minutes apart on 11 Sep 2026, and asking which was meant settled it as BOTH:
+     "when I pin ANY sub-module it will show in between [the] Explorer and Report icon"
+     "the MONITOR icon will show after [the] Dashboard icon"
+   Monitor is not something you pinned — it ships pinned — so it is a permanent shortcut sitting
+   with the rail's own rows, while the ones you pin yourself gather under the module they came
+   from. The two statements are only contradictory if "pinned row" is one thing; it is two.
+   ⚠️ IT IS MEMBERSHIP, NOT ORDER, AND NOT A SNAPSHOT OF STATE. A name listed here renders in the
+   Dashboard band WHENEVER it is pinned — so unpinning Monitor and pinning it again puts it back
+   where it started rather than moving it into the Explorer band, which is the only behaviour that
+   does not surprise. `RAIL_PINS` stays the single source of truth for WHAT is pinned; this only
+   says where a given name draws.
+   ⚠️ IT IS A LITERAL, NOT `RAIL_PINS.slice()`. Copying the array would make the answer depend on
+   when this line runs relative to anything that mutates `RAIL_PINS` — and the Layout drawer can
+   restore a saved set before the first paint. Written out, it means exactly what it says.
+   ⚠️ EMPTY IS A VALID VALUE: with nothing listed, every pin is an "added" one and the whole band
+   sits under Explorer — which is the state the previous request asked for, one edit away. */
+const RAIL_PINS_HOME = ['Monitor'];
 /* ⚠️ THESE TWO BELONG HERE, NOT BESIDE `dashItemVisible` WHERE THEY ARE DOCUMENTED. They
    were declared in the NEXT `<script>` block, and `init()` — which lives at the end of THIS
    one — calls `renderMenu()`, which reads them. A `let` in a block that has not been parsed
@@ -10693,15 +11130,38 @@ function pickDashPin(n){
 }
 /* ⚠️ `only` RENDERS JUST THAT PIN — the lift at the top of `renderMenu`. With no argument it
    renders the band and SKIPS whatever was lifted, so the rail never shows it twice. */
-function railPinsHTML(only){
-  return railPinsOrdered().filter(l => only ? l === only : l !== RAIL_HOME).map(l => {
+/* `band`: 'home' → the rows named in `RAIL_PINS_HOME`, 'added' → everything else, omitted → all.
+   `only` (a single label, for the home-row lift) still wins over both. */
+function railPinsHTML(only, band){
+  return railPinsOrdered().filter(l => {
+    if (only) return l === only;
+    if (l === RAIL_HOME) return false;         /* it is already lifted to the top */
+    if (band === 'home')  return RAIL_PINS_HOME.indexOf(l) > -1;
+    if (band === 'added') return RAIL_PINS_HOME.indexOf(l) < 0;
+    return true;
+  }).map(l => {
     const r = railPinRow(l); if (!r) return '';
     const on = railPinActive() === l;
     const hm = '';   /* see `railRowHTML` — the home glyph is off the rail */
     return `<div class="sitem pin${on?' on':''}" data-tip="${r.l}" onclick="pickPin(${mfAttr(l)})"` +
       ` onmouseenter="mfOpenPin(${mfAttr(l)},this)">` +
-      `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span>${
-        (r.kids && r.kids.length) ? '' : `<i class="pd">${MF_PIN}</i>`}</span>${
+      /* ⚠️ NO PIN MARK ON A PINNED ROW (request, 11 Sep 2026, with the five marks outlined: "when
+         I pin any Explorer sub-module it will show in the sidebar — remove the pin icon in the
+         sidebar, and move the sub-module title"). It only ever appeared on the rows with NO
+         children (the ones with children spend that slot on the chevron), so the band read as two
+         kinds of row: five with a navy pin and four with a grey arrow, for a difference — "does
+         this open a menu" — the arrow already states on its own.
+         ⚠️ THE TITLE MOVES BECAUSE THE MARK WAS INSIDE `.lbl`, not beside it: `.pd` carried
+         `margin-left:auto`, so it pushed itself to the row's right edge and the label ended
+         wherever its text ended. With it gone the label simply spans the row, which is the
+         "move the title" half of the request — one deletion, both halves.
+         ⚠️ NOTHING BECOMES UNPINNABLE. The mark was never a control — it is a `<i>`, it has no
+         handler, and the row's own click is `pickPin` (navigate). Unpinning is still the Explorer
+         column's per-row `.mfpin` and the Layout drawer's Sidebar tab, exactly as before.
+         ⚠️ `.pd`'s CSS AND `MF_PIN` ARE KEPT AND UNREFERENCED HERE — the house pattern; `MF_PIN`
+         is still the mark every other pin surface draws. What it looked like:
+             (r.kids && r.kids.length) ? '' : `<i class="pd">${MF_PIN}</i>`                    */
+      `${ico(r.ic)}<span class="lbl"><span class="t">${r.l}</span></span>${
         (r.kids && r.kids.length) ? mfIco('chevron-right', 'smore') : ''}${hm}</div>`;
   }).join('');
 }
@@ -10794,7 +11254,7 @@ function railRowHTML(r, i){
       MF_NO_HOVER.indexOf(r.name) > -1 ? '' : mfIco('chevron-right', 'smore')}${hm}</div>`;
 }
 function renderMenu(){
-  let html = '', last = null, pinsOut = false, dashOut = false, tmpOut = false;
+  let html = '', last = null, pinsOut = false, addOut = false, dashOut = false, tmpOut = false;
   /* ⚠️ THE DEFAULT MODULE LEADS THE RAIL (request, 27 Aug 2026: "when I set as default the
      module will be automatically show first in sidebar"). It used to render wherever it
      happened to sit — a pinned sub-module marked home appeared in the pinned band near the
@@ -10833,22 +11293,34 @@ function renderMenu(){
      hidden there is no row to sit under and the tail fallback below takes it, which is the
      right answer; if Explorer is the one lifted to the top as `RAIL_HOME` the loop skips it,
      so the lift block above emits the band itself. */
-  /* ⚠️ PINS SIT UNDER THE HOME ROW, THE TEMPORARY ROW STAYS WITH EXPLORER — TWO ANCHORS, AND
-     THEY ARE NOT THE SAME THING (request, 11 Sep 2026: "the Monitor icon shows AFTER the
-     Dashboard icon", correcting "before" from minutes earlier).
-     ⚠️ THIS IS THE FOURTH PLACEMENT THIS BAND HAS HAD — `PIN_AFTER` (a group boundary) →
-     `PIN_BEFORE` → `PIN_UNDER:'Explorer'` (the documented "a pin sits directly under the rail
-     row it belongs to") → above the whole rail → here, directly after the home row. Read the
-     sequence before moving it again; each step was asked for.
+  /* ⚠️ OPTION 13 SPLITS THE PINNED BAND IN TWO — see `RAIL_PINS_HOME` for the pair of requests
+     that produced it. The shipped pins follow Dashboard; the ones you pin follow Explorer, which
+     on a rail of Dashboard · Alert · SLO · Explorer · Report · Setting is exactly the gap that was
+     asked for. `pinsFor` emits the added band before the temporary row, so under Explorer the
+     order is pins → temporary → Report.
+     ⚠️ THIS IS THE FIFTH PLACEMENT THIS BAND HAS HAD — `PIN_AFTER` (a group boundary) →
+     `PIN_BEFORE` → `PIN_UNDER:'Explorer'` (the documented "a pin sits directly under the rail row
+     it belongs to") → above the whole rail → after the home row (10 Sep: "the Monitor icon shows
+     AFTER the Dashboard icon", correcting "before" from minutes earlier) → back under Explorer,
+     here. Read the sequence before moving it again; every step was asked for.
+     ⚠️ THIS RETURNS TO THE DOCUMENTED RULE RATHER THAN INVENTING A SIXTH: a pin sits directly
+     under the rail row it belongs to, and every pin in `RAIL_PINS` is an `EXPLORER_TREE` row —
+     `railPinRow` resolves them through it. The 10 Sep anchor on `Dashboard` was the one that did
+     not follow from that.
+     ⚠️ OPTIONS 10, 11 AND 12 STILL ANCHOR THEIR PINS TO `Dashboard` — the request named Option 13,
+     and the four files do not sync.
      ⚠️ IT IS EXPRESSED AS AN ANCHOR, NOT AS A BLOCK EMITTED BEFORE THE LOOP. `pinsFor` is called
      from BOTH places a row is written — the home lift and the loop — so naming the row the band
      follows makes it land correctly whether Dashboard is lifted to the top as `RAIL_HOME` or
      rendered in place, with no second code path to keep in step. An earlier version of this
      change prepended the band instead and only worked because Dashboard happens to be first.
-     ⚠️ `TMP_UNDER` IS SEPARATE ON PURPOSE. The temporary row is the sub-module you are looking
-     at right now and it disappears when you leave; a shortcut you chose and a row about to
-     vanish are not the same object, so the request that moved one did not move the other. */
-  const PIN_UNDER  = 'Dashboard';              /* RAIL_PINS follow the home row          */
+     ⚠️ `TMP_UNDER` IS STILL A SEPARATE CONSTANT even though both now read 'Explorer'. The
+     temporary row is the sub-module you are looking at right now and it vanishes when you leave;
+     a shortcut you chose and a row about to disappear are not the same object, and collapsing
+     them into one name would mean the next request that moves one silently moves the other.
+     They agree today by coincidence of the request, not by definition. */
+  const PIN_UNDER  = 'Dashboard';              /* the shipped pins — see `RAIL_PINS_HOME`   */
+  const PIN_ADD_UNDER = 'Explorer';            /* the ones you pin, i.e. between Explorer and Report */
   const TMP_UNDER  = 'Explorer';               /* the temporary row stays with its parent */
   const DASH_UNDER = 'Dashboard';              /* DASH_PINS are boards, i.e. Dashboard's */
   /* ⚠️ ONE RULE, BOTH BANDS — "a pin sits directly under the rail row it belongs to" is stated
@@ -10860,9 +11332,15 @@ function renderMenu(){
      "when i pin the dashboard it is explorer sub module so it will be show properly").
      ⚠️ `pinsOut` / `dashOut` make it idempotent, which is what lets the same call sit on both
      emit paths without a row's band ever being written twice. */
+  const homePins  = () => RAIL_PINS.filter(l => RAIL_PINS_HOME.indexOf(l) > -1 && l !== RAIL_HOME);
+  const addedPins = () => RAIL_PINS.filter(l => RAIL_PINS_HOME.indexOf(l) < 0 && l !== RAIL_HOME);
   const pinsFor = name => {
     let out = '';
-    if (!pinsOut && RAIL_PINS.length && name === PIN_UNDER){  out += railPinsHTML();     pinsOut = true; }
+    /* ⚠️ EACH BAND HAS ITS OWN FLAG AND ITS OWN EMPTINESS TEST. Sharing `pinsOut` would let the
+       first band emitted mark the second as done, and testing `RAIL_PINS.length` for both would
+       draw an empty band's hairline on a rail where only one kind of pin exists. */
+    if (!pinsOut && homePins().length  && name === PIN_UNDER){     out += railPinsHTML(null, 'home');  pinsOut = true; }
+    if (!addOut  && addedPins().length && name === PIN_ADD_UNDER){ out += railPinsHTML(null, 'added'); addOut  = true; }
     /* ⚠️ AFTER THE PINS, UNDER THE SAME PARENT — it is one of Explorer's children too, and it
        is the one that is going to disappear, so it belongs at the end of that band rather than
        shuffling the permanent rows down a line each time you open a sub-module.
@@ -10906,13 +11384,14 @@ function renderMenu(){
     html += railRowHTML(r, i) + pinsFor(r.name);
   });
   if (!dashOut && DASH_PINS.length) html += '<div class="sgroup-gap"></div>' + railDashPinsHTML();
-  if (!pinsOut && RAIL_PINS.length) html += '<div class="sgroup-gap"></div>' + railPinsHTML();
+  if (!pinsOut && homePins().length)  html += '<div class="sgroup-gap"></div>' + railPinsHTML(null, 'home');
+  if (!addOut  && addedPins().length) html += '<div class="sgroup-gap"></div>' + railPinsHTML(null, 'added');
   /* ⚠️ A HIDDEN EXPLORER MUST NOT TAKE THE ROW WITH IT. With no anchor row to sit under, the
      sub-module you just opened would have nothing on the rail saying where you are — and the
      grid is still reachable while Explorer is hidden, because `mfGrid` is opened from a row
      that may itself be a pin. The band's own hairline is only drawn when the pins did not
      already draw one. */
-  if (!tmpOut && railTmp()) html += (pinsOut ? '' : '<div class="sgroup-gap"></div>') + railTmpHTML();
+  if (!tmpOut && railTmp()) html += ((pinsOut || addOut) ? '' : '<div class="sgroup-gap"></div>') + railTmpHTML();
   document.getElementById('smenu').innerHTML = html;
   railFootPaint();
 }
@@ -10940,7 +11419,35 @@ function railFootPaint(){
   const r = RAIL[activeRail];
   b.classList.toggle('on', !!(r && r.name === 'Setting'));
   b.style.display = RAIL_HIDDEN.has('Setting') ? 'none' : '';
+  railFootFit();
 }
+/* ══ WHEN THE MODULE LIST NO LONGER FITS, THE FOOTER GIVES IT THREE ROWS ═══════════════════════
+   Request, 11 Sep 2026: pin every Explorer sub-module and "the sidebar is full and it scrolls…
+   the bottom 3 icons will be combined". MEASURED: one pin leaves `.smenu` at scrollHeight 458 in
+   a 458 box; all ten put it at **638 in 458**. Folding What's new, Approval and Health into
+   `#sbMore` hands ~98px of that back.
+   ⚠️ THE TRIGGER IS THE OVERFLOW, NOT A PIN COUNT. "All sub-modules pinned" is the case that was
+   reported, but it is a symptom — a short viewport, a longer rail or another module reaches the
+   same state with fewer pins, and counting pins would answer right for that one case and wrong
+   for the rest. What the request describes is the rail being full; that is what this asks.
+   ⚠️ THE HYSTERESIS IS THE WHOLE PROBLEM, AND IT IS EXPLICIT. Collapsing the footer makes `.smenu`
+   TALLER, which can make it fit, which would expand the footer, which makes it overflow again — a
+   rail that flickers between two states forever. So: if it overflows, collapse. If it does not and
+   we are already collapsed, actually TRY the full footer and measure again, putting it back if
+   that is what overflowed. Every branch reads the real box; nothing is predicted.
+   ⚠️ IT RUNS FROM `railFootPaint`, i.e. on every `renderMenu` — which every pin, unpin, navigation
+   and rail toggle already calls — plus `resize`, since the viewport is the other half of the
+   question. */
+function railFootFit(){
+  const m = document.getElementById('smenu'); if (!m) return;
+  const b = document.body;
+  const over = () => m.scrollHeight > m.clientHeight + 1;
+  if (over()){ b.classList.add('sfootfit'); return; }
+  if (!b.classList.contains('sfootfit')) return;
+  b.classList.remove('sfootfit');
+  if (over()) b.classList.add('sfootfit');
+}
+addEventListener('resize', () => railFootFit());
 /* ⚠️ THE FIRST ROW OF A MODULE'S OWN MENU, from the same data the flyout draws — a tree menu's
    `tree[0]`, or the first item of the first `SUBNAV` section. Returns null for a module that has
    a real screen of its own, and for one with no menu at all.
@@ -11108,13 +11615,17 @@ let mfSecPin = null;
    ⚠️ FIRST SECTION ONLY, and only when a rail entry opened the menu — a GROUP heading inside the
    list ("NOC View", "Scheduled Reports") still says its own name, which is what it is for. */
 let mfSecLabel = null;
-function mfCol(secs, width){
+function mfCol(secs, width, tail){   /* `tail`: Option 9's foot · card · licence, from the opener — see `mfTail` */
   return `<div class="mfcol"${width?` style="width:${width}px"`:''}>` + secs.map((s,si)=>
     /* h:'' is a continuation column — keep the heading's box so the two lists line up,
        but don't print a second heading for what is one list */
-    `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${
-       s.h ? mfSec(si===0 && mfSecLabel ? mfSecLabel : s.h, si===0 ? mfSecPath : null,
-                   si===0 ? mfSecPin : null) : '&nbsp;'}</div>` +
+    /* ⚠️ THE FIRST SECTION IS THE CARD'S TITLE (Option 13, 11 Sep 2026): `mfHead` + the search
+       field, as `mfTree` does. Later sections keep `mfSec` — they are labels INSIDE the card.
+       ⚠️ `mfSecPin` IS NO LONGER PASSED for `si===0`. Nothing sets it here (`mfSecPin = null` since
+       the 11 Sep "remove the pin icon" request) and `mfHead` has no pin slot; the variable is kept. */
+    (si===0 && s.h
+      ? `<div class="mfhd">${mfHead(mfSecLabel || s.h, mfSecSub, mfSecPath, mfSecPin)}</div>`   /* no field — see the docked-column note */
+      : `<div class="mfsec${si?'':' tight'}${s.h?'':' cont'}">${s.h ? mfSec(s.h, null, null) : '&nbsp;'}</div>`) +
     (s.parent ? `<div class="mfi mfp" onclick="mfGo(${mfAttr(s.parent[1])},${mfAttr(s.parent[2])})">${
        s.parent[3] ? mfIco(s.parent[3], 'mfic') : ''}${s.parent[0]}</div>` : '') +
     /* ⚠️ the row count travels with the list, not the stylesheet — see `.mflist.c2` */
@@ -11135,7 +11646,7 @@ function mfCol(secs, width){
         kind==='plus' ? (ic ? '' : '<span class="plus">＋</span>')+label.replace('＋ ','')
       : kind==='beta' ? label+'<span class="mfbeta">BETA</span>'
       : label}</div>`).join('') +
-    `</div>`).join('') + `</div>`;
+    `</div>`).join('') + (tail || '') + `</div>`;
 }
 /* ══ EVERY MENU WITH A SECOND LEVEL IS A TWO-PANE MENU ═════════════════════════════════
    Request, 27 Aug 2026: "it will be same flow in every module sidebar." Explorer proved the
@@ -11330,8 +11841,10 @@ function mfTree(name){
      menu's documentation shape, and `mfOpen` asks it again for the footer — the two are exact
      complements, so a menu can never show both a chip column and a footer, nor neither. */
   const perRow = tree.some(x => x.doc);
-  return `<div class="mfcol mfmaster${iconsOn ? ' mficons' : ''}"><div class="mfsec tight">` +
-    mfSec(name, MOD_DOCS[name] || null) + '</div><div class="mflist">' +
+  /* ⚠️ THE CARD TITLE IS `mfHead`, NOT `mfSec` (Option 13, 11 Sep 2026): name over count, then
+     the search field, then the list — the reference's order. `mfSec` still labels sections. */
+  return `<div class="mfcol mfmaster${iconsOn ? ' mficons' : ''}"><div class="mfhd">` +
+    mfHead(name, mfSubtitle(name), MOD_DOCS[name] || null) + '</div>' + '<div class="mflist">' +   /* no field — see the docked-column note */
     tree.map((r, k) =>
       /* ⚠️ `.par` CARRIES THE PARENT WEIGHT, NOT `:has(.mfic)`. That rule reads "a row with a
          module icon is a module", which was true when only Explorer had a master column —
@@ -11353,7 +11866,11 @@ function mfTree(name){
          menu. Clicking the row still opens that module's screen, and Monitor's 18 types remain
          one hover away on its pinned rail tile — but Topology, NCCM, APM and RUM lose the only
          place their children were listed. Say so before assuming this is purely cosmetic. */
-      `onclick="mfGo(${mfAttr(r.mod)},${mfAttr(r.act)})">` +
+      /* ⚠️ EXPLORER'S ROWS ARM THE TEMPORARY RAIL ROW, the other trees navigate plainly — the
+         gate is the MENU NAME, because `railTmpGo` resolves its label through `EXPLORER_TREE` and
+         only this menu's rows are in it. Children (`.mfi.sub`) keep plain `mfGo`: they are pages
+         inside a module, and `railPinRow` would resolve none of them. */
+      `onclick="${name === 'Explorer' ? `railTmpGo(${mfAttr(r.l)})` : `mfGo(${mfAttr(r.mod)},${mfAttr(r.act)})`}">` +
         /* ⚠️ THE LABEL IS A FLEX ITEM, NOT A BARE TEXT NODE (request, 2 Sep 2026, on the
            Settings menu's ragged chevron column). A raw text node cannot shrink, so a long
            category — "Network Config Settings" (229px of content in a 209px row), "Service
@@ -11452,7 +11969,7 @@ function mfTree(name){
         `<div class="mfi sub" onclick="mfGo(${mfAttr(cmod)},${mfAttr(cact || null)})">` +
           `<span class="mfl">${cl}</span></div>`).join('') : '')
       ).join('') +
-    '</div></div>' +
+    '</div>' + mfTailFor(name, MOD_DOCS[name] || null) + '</div>' +   /* the list, then Option 9's tail (unless `MF_NO_TAIL`), then the column closes */
     '<div class="mfcol mfdetail" id="mfDetail"></div>';
 }
 /* the detail pane — repainted on hover, emptied for a row that has no children */
@@ -11563,11 +12080,18 @@ function mfSub(k){
    replaced on every hover. */
 /* the bottom fade on a card whose list has more below the fold — the detail pane AND, since
    3 Sep 2026, the master column (see `mfClamp`). One helper, two cards, so they cannot differ. */
+/* ⚠️ IT PAINTS BOTH EDGES AND PUBLISHES THE LIST'S BOX (see the `.mftop` / `.more` rules). The
+   2px slack absorbs sub-pixel `scrollHeight`, which is why neither edge flickers at the ends. */
 function mfFadeCard(card){
   if (!card) return;
   const l = card.querySelector('.mflist');
-  if (!l){ card.classList.remove('more'); return; }
-  const paint = () => card.classList.toggle('more', l.scrollTop + l.clientHeight < l.scrollHeight - 2);
+  if (!l){ card.classList.remove('more'); card.classList.remove('mftop'); return; }
+  const paint = () => {
+    card.style.setProperty('--mflt', l.offsetTop + 'px');
+    card.style.setProperty('--mflb', (card.clientHeight - l.offsetTop - l.offsetHeight) + 'px');
+    card.classList.toggle('mftop', l.scrollTop > 2);
+    card.classList.toggle('more',  l.scrollTop + l.clientHeight < l.scrollHeight - 2);
+  };
   l.onscroll = paint;
   paint();
 }
@@ -11577,7 +12101,18 @@ function mfFade(){
 }
 /* one clamp, used by the initial open and by every pane change */
 let mfAnchorTop = 0;
+/* ⚠️ THE COLUMN IS THE VIEWPORT (Option 13, 11 Sep 2026 — see the docked-column note at
+   `.mflyout`). There is nothing to clamp: the box is `top:0; bottom:0` and its list is flex-sized.
+   This sets the one inline value the sheet cannot, clears the `max-height` the previous clamp
+   wrote, and still paints the cut-off cue. `mfClampBox` below is the floating-card computation it
+   replaced — KEPT AND UNREFERENCED, the house pattern, and what a revert calls. */
 function mfClamp(){
+  const fly = document.getElementById('mflyout'); if (!fly) return;
+  fly.style.top = '0px';
+  const list = fly.querySelector('.mflist');
+  if (list){ list.style.maxHeight = ''; mfFadeCard(list.closest('.mfcol')); }
+}
+function mfClampBox(){
   const fly = document.getElementById('mflyout'); if (!fly) return;
   /* ⚠️ BOUND THE MASTER LIST TO THE VIEWPORT FIRST, then place the box (3 Sep 2026 — see the
      note at `.mflyout`'s max-height). The room is the viewport less everything around the list
@@ -11585,13 +12120,20 @@ function mfClamp(){
      and the list's bottom margin — all READ from computed styles, so a padding changed in the
      sheet cannot leave a stale number here. On a tall viewport the result exceeds the list's
      content and the max-height is inert. `mfFade()` then paints the cut-off cue, if any. */
-  const list = fly.querySelector('.mfmaster .mflist');
+  /* ⚠️ EVERY CARD, AND EVERY SIBLING OF ITS LIST (Option 13, 11 Sep 2026). This read only the
+     master column and subtracted only "the heading"; the card now carries a head, a field, a
+     foot, the Next-steps card and a licence line around its list — and `mfCol` cards (Report,
+     the pinned row, Health) carry the same. Summing the list's siblings from the DOM means a
+     block added to the card later is subtracted without anyone remembering to come here. */
+  const list = fly.querySelector('.mfmaster .mflist') || fly.querySelector('.mfcol .mflist');
   if (list){
-    const card = list.closest('.mfmaster'), hd = card.querySelector('.mfsec');
+    const card = list.closest('.mfcol');
     const px = v => parseFloat(v) || 0, cf = getComputedStyle(fly), cc = getComputedStyle(card), cl = getComputedStyle(list);
+    const sibs = [...card.children].filter(c => c !== list).reduce((a, c) => {
+      const cs = getComputedStyle(c); return a + c.offsetHeight + px(cs.marginTop) + px(cs.marginBottom); }, 0);
     const over = px(cf.paddingTop) + px(cf.paddingBottom) + px(cc.paddingTop) + px(cc.paddingBottom)
                + px(cc.borderTopWidth) + px(cc.borderBottomWidth) + px(cl.marginTop) + px(cl.marginBottom)
-               + (hd ? hd.offsetHeight : 0);
+               + sibs;
     list.style.maxHeight = Math.max(120, innerHeight - 16 - over) + 'px';
     mfFadeCard(card);
   }
@@ -11652,6 +12194,155 @@ function mfDocsTarget(){
 /* ⚠️ ONE HEADING BUILDER, used by `mfCol` and `mfTree`, so the two menu shapes cannot end up
    with the link in one and not the other. Returns the label alone when there is no doc path —
    an empty `<a>` in the heading would draw a hover target over nothing. */
+/* ══ THE CARD HEADER: NAME OVER A COUNT (Option 13, 11 Sep 2026 — see `.mfhd`) ═══════════════
+   ⚠️ THE COUNT IS DERIVED FROM THE ROWS THE CARD ACTUALLY LISTS, never typed. Option 6's
+   `skSubtitle` is the model — "what the column holds, derived from the same data the rows come
+   from" — with one correction for this file: Explorer says **9 sub-modules**, not
+   `EXPLORER_TREE.length` (10), because `MF_TREE_HIDE` keeps Monitor off this list and a count that
+   disagrees with the rows under it is worse than no count.
+   ⚠️ THE NOUN COMES FROM THE DATA WHERE THE DATA NAMES IT: a pinned row's `kidsAs` ("monitor
+   types", "tabs", "pages"); Setting's `ST_TREE` are "categories"; everything else is "pages",
+   Option 6's own generic. `mfSecSub` is set by the three openers exactly as `mfSecPath` is —
+   before the columns build, cleared after — so a count can never leak into the next card. */
+let mfSecSub = null;
+function mfSubtitle(name){
+  const tree = (typeof mfTreeFor === 'function') ? mfTreeFor(name) : null;
+  if (tree){
+    const hide = (typeof MF_TREE_HIDE !== 'undefined' && MF_TREE_HIDE[name]) || [];
+    const n = tree.filter(r => hide.indexOf(r.l) < 0).length;
+    if (name === 'Explorer') return n + (n === 1 ? ' sub-module' : ' sub-modules');
+    if (name === 'Setting')  return n + (n === 1 ? ' category'   : ' categories');
+    return n + (n === 1 ? ' page' : ' pages');
+  }
+  const secs = ((typeof SUBNAV !== 'undefined' && SUBNAV[name]) || []).concat((typeof SUBNAV2 !== 'undefined' && SUBNAV2[name]) || []);
+  const n = secs.reduce((a, s) => a + (s.items || []).filter(it => it[3] !== 'plus' && it[3] !== 'sub').length, 0);
+  return n ? n + (n === 1 ? ' page' : ' pages') : 'Opens to its own screen';
+}
+/* the search field — `uxSearchHTML()` with the card closed first (see the `.uxsrch` note) */
+function mfSearchHTML(){
+  return `<button class="uxsrch" type="button" onclick="mfHide();openSearch()"><svg class="uxsi" viewBox="0 0 48 48"></svg><span>Search</span><kbd>${UX_KEY}</kbd></button>`;
+}
+/* the header row: the text wrapper, then the DOCS chip `mfSec` already builds. ⚠️ `mfSec` is
+   STILL the section-label builder and still used for every heading that is not the card's title
+   (`mfCol`'s `si > 0` sections) — only its DOCS chip is borrowed here, through `mfDocChip`. */
+/* ══ THE CARD'S TAIL — FOOT · NEXT STEPS · LICENCE (Option 13, 11 Sep 2026; see `.mfft`) ═══════
+   Option 9's static foot, its Next-steps card and its licence line, rendered INTO each card by
+   `mfTail(path)` — `mfTree` appends it to the master column and the three openers pass it into
+   `mfCol` as its third argument, so a continuation column (`SUBNAV2`) never grows a second foot.
+   ⚠️ THE FOUR STEPS ARE OPTION 9's, VERBATIM, and every one is a REAL DESTINATION — a category
+   of the harvested `ST_TREE`, opened through `stOpen`, its glyph the category's own. */
+const MF_STEPS = [
+  { l:'Discover your devices',  cat:'Discovery Settings' },
+  { l:'Create user',            cat:'User Settings' },
+  { l:'Connect an AI provider', cat:'Agentic AI' },
+  { l:'Set up alert policies',  cat:'Policy Settings' },
+];
+const MF_NS = { ns:true, done:new Set() };     /* the card is shown; nothing is done yet */
+const MF_X    = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+/* Option 9's `SK_COL`. ⚠️ KEPT AND UNREFERENCED — it was the head's trailing control until the
+   `DOCS ↗` chip took that slot (11 Sep 2026, see `mfHead`); `.mfhb`'s CSS is kept with it. */
+const MF_COL  = '<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm2 0v14h4V5H5Zm6 0v14h8V5h-8Z"/></svg>';
+const MF_CHEV = '<svg class="mfch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+const MF_DONE = '<svg class="mfch" viewBox="0 0 24 24"><path d="M5 12l4 4L19 7"/></svg>';
+function mfStIc(cat){ try { const c = ST_TREE.find(c => c.n === cat); return (c && c.ic) || ''; } catch (e) { return ''; } }
+function mfNsLeft(){ return MF_STEPS.filter(s => !MF_NS.done.has(s.cat)).length; }
+function mfNsHTML(){
+  if (!MF_NS.ns) return '';
+  return `<div class="mfns"><h4>Next steps</h4>` +
+    `<button type="button" class="mfnsx" data-tip="Dismiss" onclick="event.stopPropagation();mfNsTog()">${MF_X}</button>` +
+    MF_STEPS.map((s, i) => `<button type="button" class="mfstep${MF_NS.done.has(s.cat) ? ' done' : ''}" onclick="mfStep(${i})">` +
+      `${mfIco(mfStIc(s.cat), 'mfic')}<span class="mfl">${s.l}</span>${MF_NS.done.has(s.cat) ? MF_DONE : MF_CHEV}</button>`).join('') +
+    `</div>`;
+}
+function mfCntHTML(){ const n = mfNsLeft(); return n ? `<span class="mfcnt">${n}</span>` : ''; }
+function mfTourTip(){ const n = mfNsLeft(); return n ? 'Next steps · ' + n + ' remaining' : 'Next steps'; }
+/* ⚠️ CARDS THAT CARRY NO TAIL (request, 11 Sep 2026, on Alert's column with the foot, the
+   Next-steps card and the licence line outlined: "remove [this]"). A table beside `MF_TREE_HIDE`
+   and `MF_TREE_ICONS` for the same reason those are tables: the rule is per-menu and worth seeing.
+   ⚠️ ALERT, THEN EXPLORER, THEN REPORT — three requests minutes apart, each with that card's
+   column outlined the same way, each added when it was asked for and not before. That is every
+   RAIL module that opens a card; only Health (the utility, `mfOpenUtil`) still ends in the tail,
+   and the pinned Monitor card never had one (`mfOpenPin` passes `null` — that decision is the
+   pinned card's, not this table's). Dropping it from Health too is one more name here.
+   ⚠️ ONE GATE, `mfTailFor`, in every place a module card is built — `mfTree`, `mfOpen`'s `mfCol`
+   path and `mfOpenUtil` — so the table cannot be honoured by two of the three and missed by one. */
+const MF_NO_TAIL = ['Alert', 'Explorer', 'Report'];
+/* ⚠️ CARDS WHOSE ROWS PAINT NO GLYPH (request, 11 Sep 2026: Alert's list, its icon column
+   outlined — "remove the icon"), THEN REPORT (the next request, its icon column outlined the same
+   way). Each added when asked; Explorer and Health keep theirs, the pinned Monitor card never had
+   any. The openers set `.mfnoic` on `#mflyout` from this table — see `mfNoIcons`. */
+const MF_NO_ICONS = ['Alert', 'Report'];
+function mfNoIcons(name){ document.getElementById('mflyout').classList.toggle('mfnoic', MF_NO_ICONS.indexOf(name) > -1); }
+function mfTailFor(name, path){ return MF_NO_TAIL.indexOf(name) > -1 ? '' : mfTail(path); }
+function mfTail(path){
+  return `<div class="mfft">` +
+    `<button type="button" class="mfftb" id="mfTour" data-tip="${mfTourTip()}" onclick="mfNsTog()">${ico('tour')}${mfCntHTML()}</button>` +
+    `<button type="button" class="mfftb" data-tip="Documentation ↗" onclick="mfHelp(${mfAttr(path || '')})">${ico('help')}</button>` +
+    `<button type="button" class="mfftb" data-tip="Dashboard layout" onclick="mfHide();layOpen()">${ico('columns')}</button>` +
+    `</div><div id="mfNs">${mfNsHTML()}</div>` +
+    `<div class="mflic"><span>Licence renews in 23 days.</span><a onclick="mfLicence()">Manage licence</a></div>`;
+}
+/* repaint the card and the rocket's badge IN PLACE — the flyout stays open under the pointer */
+function mfNsPaint(){
+  const el = document.getElementById('mfNs'); if (el) el.innerHTML = mfNsHTML();
+  const t = document.getElementById('mfTour');
+  if (t){ const c = t.querySelector('.mfcnt'); if (c) c.remove(); t.insertAdjacentHTML('beforeend', mfCntHTML()); t.setAttribute('data-tip', mfTourTip()); }
+}
+function mfNsTog(){ MF_NS.ns = !MF_NS.ns; mfNsPaint(); }
+function mfStep(i){ const s = MF_STEPS[i]; MF_NS.done.add(s.cat); mfHide(); stOpen(s.cat); }
+function mfHelp(path){ window.open('https://docs.motadata.com/motadata-aiops-docs/' + (path || ''), '_blank', 'noopener'); }
+function mfLicence(){
+  mfHide();
+  try { const c = ST_TREE.find(c => c.n === 'My Account'); const p = (c.subs.find(s => /licen/i.test(s[0])) || [])[0];
+        return p ? stOpen('My Account', p) : stOpen('My Account'); }
+  catch (e) { selectModuleByName('Settings'); }
+}
+/* ⚠️ `pin` PUTS THE MARK BESIDE THE TITLE (request, 11 Sep 2026, with the NCCM card's head
+   circled: "when I pin the NCCM module the sidebar title will show a pin icon — behind the
+   title"). This RESTORES a control removed earlier the same day ("in the Monitor sub-module
+   popup remove the pin icon"), and only on the card that request was about: `mfCol` passes
+   `mfSecPin`, which ONLY `mfOpenPin` sets, so Alert, Explorer, Report and Health are unaffected.
+   ⚠️ IT REUSES `mfSecPin` / `mfPinFromSec` / `.mfsp` — kept and unreferenced since the removal,
+   exactly so this was one argument away rather than a rebuild. The only new thing is `.mfht`.
+   ⚠️ THE TITLE LINE HAD TO BECOME A FLEX ROW. `.mfhtt` is `flex:1 1 auto`, so a pin added as its
+   SIBLING would be shoved to the row's right edge next to the DOCS chip — "beside the title" is
+   what was asked, and that means inside the text block, on the title's own line.
+   ⚠️ `<b>` KEEPS THE ELLIPSIS AND THE PIN DOES NOT SHRINK: `.mfht b{min-width:0}` lets a long
+   name truncate, `.mfht .mfsp{flex:0 0 18px}` keeps the mark whole. Without the `min-width:0` a
+   flex item refuses to shrink below its content and the pin would be pushed out of the card. */
+function mfHead(label, sub, path, pin){
+  /* ⚠️ THE TRAILING SLOT IS THE `DOCS ↗` CHIP AGAIN (request, 11 Sep 2026, with the head's control
+     outlined and the chip supplied as the replacement: "remove the expand/collapse icon and add
+     [the] document link"). It had gone to the foot's `?` when the card became Option 9's column —
+     and then `MF_NO_TAIL` took the foot off Alert, Explorer and Report, so those three had **no**
+     documentation link at all. This puts one back on every card, which is where this menu kept it
+     before the column pass.
+     ⚠️ NOTHING IS STRANDED BY LOSING THE CONTROL. It closed the column, and the column already
+     closes on `mouseleave` and on any click that navigates — the same way every other flyout in
+     this rail has always closed. `MF_COL`, the `.mfhb` CSS and `mfHide` are untouched; the button
+     is KEPT AND UNREFERENCED as one line, the house pattern.
+     ⚠️ THE PATH COMES FROM THE CALLER, and each one already knows its own: `mfTree` reads
+     `MOD_DOCS[name]`, `mfCol` reads `mfSecPath` — which `mfOpenPin` sets to the PINNED ROW's own
+     page, so Monitor's chip goes to Monitor's docs and not Explorer's. `mfDocChip` is the single
+     builder the section labels use, so the two can never drift. */
+  const on = pin && ((typeof railPinned === 'function') ? railPinned(pin) : true);
+  const mark = pin
+    ? '<button type="button" class="mfsp' + (on ? ' pinned' : '') + '"'
+      + ' aria-pressed="' + on + '"'
+      + ' data-tip="' + (on ? 'Unpin from the sidebar' : 'Pin to the sidebar') + '"'
+      + ' aria-label="' + (on ? 'Unpin ' : 'Pin ') + label + (on ? ' from the sidebar' : ' to the sidebar') + '"'
+      + ' onclick="event.stopPropagation();mfPinFromSec(' + mfAttr(pin) + ')">' + MF_PIN + '</button>'
+    : '';
+  return '<div class="mfhtt"><div class="mfht"><b>' + label + '</b>' + mark + '</div>' +
+    (sub ? '<span>' + sub + '</span>' : '') + '</div>' + mfDocChip(label, path);
+}
+function mfDocChip(label, path){
+  if (!path) return '';
+  return '<a class="mfsd" tabindex="-1" target="_blank" rel="noopener"' +
+    ' href="https://docs.motadata.com/motadata-aiops-docs/' + path + '"' +
+    ' data-tip="' + label + ' documentation">DOCS' +
+    '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>';
+}
 function mfSec(label, path, pin){
   /* ⚠️ FILLED = PINNED, HOLLOW = NOT — the flyout's own convention (`.mfpin`). `mfOpenPin` opens
      for a pinned row AND for the TEMPORARY row, and the two are not the same state: a filled pin
@@ -11664,11 +12355,7 @@ function mfSec(label, path, pin){
          + ' aria-label="' + (on ? 'Unpin ' : 'Pin ') + label
          + (on ? ' from the sidebar' : ' to the sidebar') + '"'
          + ' onclick="event.stopPropagation();mfPinFromSec(' + mfAttr(pin) + ')">' + MF_PIN + '</button>' : '');
-  if (!path) return t;
-  return t + '<a class="mfsd" tabindex="-1" target="_blank" rel="noopener"' +
-    ' href="https://docs.motadata.com/motadata-aiops-docs/' + path + '"' +
-    ' data-tip="' + label + ' documentation">DOCS' +
-    '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>';
+  return t + mfDocChip(label, path);   /* one chip builder — `mfHead` uses the same one */
 }
 /* The heading pin. ⚠️ THE CARD ONLY CLOSES WHEN ITS ROW IS GONE — unpinning a pinned row takes
    that row off the rail, so the card it is anchored to has to go with it; but this heading also
@@ -11679,7 +12366,11 @@ function mfPinFromSec(l){
   railPinToggle(l);
   const on = railPinned(l);
   if (!on && railTmp() !== l){ mfHide(); return; }
-  const b = document.querySelector('#mflyout .mfsec .mfsp');
+  /* ⚠️ IT LOOKS IN BOTH HEADINGS. This read `.mfsec .mfsp` only — correct until Option 13's card
+     title became `.mfht` — so the press would have toggled the pin and left the mark showing the
+     OLD state, silently. `querySelector` takes the first that matches; a card carries one or the
+     other, never both. */
+  const b = document.querySelector('#mflyout .mfht .mfsp, #mflyout .mfsec .mfsp');
   if (!b) return;
   b.classList.toggle('pinned', on);
   b.setAttribute('aria-pressed', String(on));
@@ -11767,8 +12458,33 @@ function mfGridPin(ev, l){
   const el = document.getElementById('mfGridPop');
   if (el && el.classList.contains('on')) el.innerHTML = mfGridHTML();
 }
-function mfGridGo(l){
+/* ══ OPENING A SUB-MODULE PUTS IT ON THE RAIL UNTIL YOU LEAVE (request, 11 Sep 2026: "when I click
+   the Explorer sub-module WITHOUT PIN, the module will be added in between the Explorer and Report
+   icon") ═══════════════════════════════════════════════════════════════════════════════════════
+   ⚠️ THE TEMPORARY ROW ALREADY EXISTED AND HAD BEEN UNREACHABLE SINCE THE GRID STOOD DOWN.
+   `RAIL_TMP` was armed in exactly one place — `mfGridGo`, the icon grid's click path — and
+   Explorer stopped opening that grid on 11 Sep when its menu became the tree list. Everything
+   downstream still worked (`railTmp`, `railTmpHTML`, `TMP_UNDER`, the `.tmp` styling, the dashed
+   ring); nothing was ever calling it. A feature can die from having its one caller removed, with
+   no error and nothing in the DOM to notice.
+   ⚠️ ONE ARMING FUNCTION FOR BOTH DOORS. `mfGridGo` now calls this instead of repeating it, so the
+   grid — kept and unreferenced — cannot drift from the list if it ever comes back.
+   ⚠️ IT IS GATED TO EXPLORER'S ROWS IN THE RENDERER, not here: `railPinRow` resolves a label
+   through `EXPLORER_TREE`, so a label from Alert's or Settings' tree would find nothing and the row
+   would silently never appear. Failing in the renderer, where the menu name is known, is the
+   version somebody can debug. */
+function railTmpGo(l){
   const t = (typeof EXPLORER_TREE !== 'undefined') ? EXPLORER_TREE.find(x => x.l === l) : null;
+  if (!t) return;
+  /* ⚠️ SET BEFORE THE NAVIGATION — `mfGo` → `selectModuleByName` → `renderMenu` is what paints the
+     row; set it after and the rail repaints once without it, so the row appears a beat late.
+     ⚠️ A ROW WITH AN `act` GETS NONE: `mfGo` runs the action and returns before any module changes,
+     so the row would stand for a screen never opened, and `railTmp()` matches on `mod`. */
+  RAIL_TMP = t.act ? null : t.l;
+  mfGo(t.mod, t.act || null);
+  renderMenu();
+}
+function mfGridGo(l){
   mfGridMute = true;
   mfIn = false;
   mfGrid(false);
@@ -11779,9 +12495,7 @@ function mfGridGo(l){
      changes, so the row would stand for a screen that was never opened — and `railTmp()`, which
      matches on `mod`, could keep it alive on somebody else's screen. Nothing in this file's
      `EXPLORER_TREE` carries one today; the guard is what keeps that true if one is added. */
-  if (t) RAIL_TMP = t.act ? null : t.l;
-  if (t) mfGo(t.mod, t.act || null);
-  renderMenu();
+  railTmpGo(l);                      /* one arming path — see `railTmpGo` */
 }
 function mfGrid(on, row){
   const el = mfGridEl();
@@ -11885,13 +12599,14 @@ function mfOpen(i, el){
      never leak into the next menu. `mfTree` reads `MOD_DOCS` itself; only `mfCol` needs telling. */
   mfSecPath = MOD_DOCS[r.name] || null;
   mfSecLabel = r.name;
+  mfSecSub = mfSubtitle(r.name);      /* the count under the title — see `mfSubtitle` */
   let cols;
   if (mfTreeFor(r.name)){
     mfSubIdx = -1; mfRowIdx = -1;        /* it opens as the parents, every time */
     cols = mfTree(r.name);
   } else {
-    cols = mfCol(secs);
-    if (SUBNAV2[r.name]) cols += mfCol(SUBNAV2[r.name]);
+    cols = mfCol(secs, undefined, mfTailFor(r.name, mfSecPath));
+    if (SUBNAV2[r.name]) cols += mfCol(SUBNAV2[r.name]);   /* a continuation column carries no tail */
   }
   /* Dashboards gets Datadog's starred column, built from the prototype's real favourites */
   /* ⚠️ THE TEST IS THE RAIL'S NAME, WHICH IS `Dashboard` (SINGULAR). This read
@@ -11923,7 +12638,7 @@ function mfOpen(i, el){
      flat menu their one footer, and needs no list of names to keep in step.
      ⚠️ A MENU STILL NEVER SHOWS BOTH. That was the original point of the fallback and it
      survives: the two conditions are exact complements. */
-  mfSecPath = null; mfSecLabel = null;
+  mfSecPath = null; mfSecLabel = null; mfSecSub = null;
   const perRowDocs = (mfTreeFor(r.name) || []).some(x => x.doc);
   /* ⚠️ NO MENU IS DRAWN AS TWO CARDS ANY MORE (request, 11 Sep 2026: the Explorer popup's
      spacing and width should match Alert's). MEASURED before changing anything — the two menus
@@ -11944,6 +12659,7 @@ function mfOpen(i, el){
      half of it. The class is REMOVED rather than left toggling, so nothing silently re-applies
      it — `mfOpenUtil` and `mfOpenPin` already cleared it and now agree with `mfOpen`. */
   fly.classList.remove('mfcards');
+  mfNoIcons(r.name);                   /* `.mfnoic` for a card in `MF_NO_ICONS` — Alert */
   /* ⚠️ NO FOOTER ANY MORE — the link is in the heading (see `mfSec`). `mfDocs` is KEPT and
      unreferenced, the house pattern: it is what a revert reads, and the `.mffoot` CSS with it. */
   fly.innerHTML = `<div class="mfcols">${cols}</div>`;
@@ -11951,7 +12667,7 @@ function mfOpen(i, el){
   /* Anchor to the rail's TARGET width, read from the custom property. Measuring the box
      instead would catch the width mid-transition and park the flyout at 64px, which is
      what put the menu underneath the expanding rail. */
-  fly.style.left = (railWidth() + MF_GAP) + 'px';
+  fly.style.left = railWidth() + 'px';   /* flush: the column docks against the rail (Option 13) */
   fly.style.top = '';                    /* a fresh open starts from ITS anchor, not the last menu's top */
   fly.classList.add('on');
   mfAnchorTop = b.top - 12;
@@ -11988,10 +12704,12 @@ function mfOpenUtil(key, el){
   const secs = [{ h:'Health Monitoring',
                   items: HEALTH_TABS.map((t,i)=>[t, null, `showView('health');setHealthTab(${i})`, null, HEALTH_ICO[t]]) }];
   fly.classList.remove('mfcards');   /* one flat card — see the `.mfcards` note */
+  mfNoIcons(key);
   mfSecPath = MOD_DOCS[key] || null;
-  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>`;   /* utility menus have no master column */
-  mfSecPath = null;
-  fly.style.left = (railWidth() + MF_GAP) + 'px';
+  mfSecSub = HEALTH_TABS.length + (HEALTH_TABS.length === 1 ? ' page' : ' pages');
+  fly.innerHTML = `<div class="mfcols">${mfCol(secs, undefined, mfTailFor(key, mfSecPath))}</div>`;   /* utility menus have no master column */
+  mfSecPath = null; mfSecSub = null;
+  fly.style.left = railWidth() + 'px';   /* flush: the column docks against the rail (Option 13) */
   fly.style.top = '';
   fly.classList.add('on');
   const b = el.getBoundingClientRect();
@@ -12048,7 +12766,9 @@ function mfOpenPin(l, el){
   /* one column, headed by the module — `mfCol`'s items are [label, module, action, kind, icon] */
   const secs = [{ h: r.l, items: r.kids.map(([label, mod, act]) => [label, mod, act || null, null, null]) }];
   fly.classList.remove('mfcards');   /* one flat card — see the `.mfcards` note */
+  mfNoIcons(r.l);
   mfSecPath = r.doc || null;          /* the pinned row's OWN page, not the module's */
+  mfSecSub = r.kids.length + ' ' + (r.kidsAs || 'pages');   /* "18 monitor types" — the data's own noun */
   /* ⚠️ NO PIN IN THIS HEADING (request, 11 Sep 2026: "in the Monitor submodule popup remove the
      pin icon"). `mfSec`'s third argument is what renders it, so not passing one is the whole
      change — `mfSec(label, path)` returns the label and the DOCS chip alone.
@@ -12060,11 +12780,35 @@ function mfOpenPin(l, el){
      pattern. `mfSec` still honours a pin argument, so this is one word away if it comes back.
      ⚠️ THE HEADING'S OWN DOC PATH IS UNAFFECTED — `mfSecPath` is set just above and still points
      at the PINNED ROW's own page rather than the module's, which is why the card's DOCS chip
-     goes to Monitor's page and not Explorer's. */
-  mfSecPin = null;
-  fly.innerHTML = `<div class="mfcols">${mfCol(secs)}</div>`;
-  mfSecPath = null; mfSecPin = null;
-  fly.style.left = (railWidth() + MF_GAP) + 'px';
+     goes to Monitor's page and not Explorer's.
+     ⚠️ THE HEADING PIN IS BACK, ON THIS CARD ONLY (request, 11 Sep 2026, on the NCCM card) —
+     reversing the "remove the pin icon" of a few hours earlier for the one card that request was
+     about. `mfSecPin` is set here and nowhere else, so `mfCol`'s other callers still pass null and
+     Alert, Explorer, Report and Health stay bare. The note above, written when it was removed, is
+     kept as the record of why it went.
+     ⚠️ IT IS THE ROW'S LABEL, not the module name: `mfPinFromSec` hands it to `railPinToggle`,
+     which keys `RAIL_PINS` on `EXPLORER_TREE`'s `l`.
+     ⚠️ BUT ONLY FOR A ROW THE EXPLORER COLUMN ACTUALLY LISTS (request, 11 Sep 2026, on the Monitor
+     card: "Monitor is not part of Explorer, so don't show a pin icon in its title"). `Monitor` is
+     in `EXPLORER_TREE` — `railPinRow` needs it there to build this very card — but `MF_TREE_HIDE`
+     keeps it OFF the Explorer list, and it ships pinned via `RAIL_PINS_HOME`. So it is not a
+     sub-module you chose; it is part of the rail.
+     ⚠️ THE REAL REASON IS REVERSIBILITY, and it is worth stating rather than treating this as
+     cosmetic: the pin here UNPINS. For NCCM that is undoable one hover away, in the Explorer
+     column that lists it. For Monitor there is no row in that column to pin it back from, so the
+     press would have been a one-way door out of the Layout drawer.
+     ⚠️ THE GATE IS `MF_TREE_HIDE`, NOT the literal 'Monitor' and not `RAIL_PINS_HOME`. Both hold
+     the same one name today, but only `MF_TREE_HIDE` answers the question the request asks —
+     "does the Explorer column offer this row?" — which is the same question as "can this be put
+     back?". Hide another row there and its card loses the pin for the same reason, with no edit. */
+  const mfPinListed = !((typeof MF_TREE_HIDE !== 'undefined' && MF_TREE_HIDE.Explorer) || []).includes(r.l);
+  mfSecPin = mfPinListed ? r.l : null;
+  /* ⚠️ NO TAIL ON THIS CARD (request, 11 Sep 2026: the Monitor popup loses the field, the foot,
+     the Next-steps card and the licence line). Head and rows only — `null` where the module
+     openers pass `mfTail(...)`. */
+  fly.innerHTML = `<div class="mfcols">${mfCol(secs, undefined, null)}</div>`;
+  mfSecPath = null; mfSecPin = null; mfSecSub = null;
+  fly.style.left = railWidth() + 'px';   /* flush: the column docks against the rail (Option 13) */
   fly.style.top = '';
   fly.classList.add('on');
   mfAnchorTop = el.getBoundingClientRect().top - 12;
@@ -12161,23 +12905,34 @@ addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e
 
 uxGrip('.sidebar', '--rail-w-open', 240, 320, 'oo-w-rail1');   /* rule 9 — the expanded rail */
 
-/* ══ OPTION 12 — A THIRD TAKE ON THE RAIL + FLYOUT (10 Sep 2026) ═══════════════════════════
-   ⚠️ THIS FILE IS A BYTE COPY OF `dashboard-rail-flyout.html` (Option 10), made on request, with
-   only its `<title>`, this banner and its switcher entry different. Everything CLAUDE.md says
-   about Option 10 is true of it until one of them is changed.
-   ⚠️ NOTHING SYNCS THE THREE. `mf*`, `sbNotif*`, `RAIL_TMP`, `railPin*` and this rail's whole CSS
-   now exist in THREE files — Options 10, 11 and 12 — so a change meant for the pattern is a
-   three-file change, and a grep for any of those names returns three files' worth of hits. Same
-   trap Options 5/8 have with `pl*` and 6/9 with `sk*`.
-   ⚠️ ITS SWITCHER KEY IS `Z`, by request. The digit row ran out at Option 10 and Option 11 took
-   `X`; see `VS_LETTERS` in `_variants.js` for why a letter has to be checked against EVERY page's
-   own `KB` registry before it is bound.
-   ⚠️ THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT — `-alt2` because it is a third take on
+/* ══ OPTION 13 — A FOURTH TAKE ON THE RAIL + FLYOUT (11 Sep 2026) ══════════════════════════
+   ⚠️ THIS FILE IS A BYTE COPY OF `dashboard-rail-flyout-alt2.html` (Option 12), made on request,
+   with only its `<title>`, this banner and its switcher entry different. Everything CLAUDE.md
+   says about Option 12 is true of it until one of them is changed — INCLUDING the whole 11 Sep
+   Explorer pass it was copied after: the flat list, `MF_TREE_HIDE`'s hidden `Monitor`, the
+   children rendered inline under each module, and `MF_TREE_ICONS` painting the module glyph.
+   ⚠️ OPTION 12 IS ITSELF A COPY OF OPTION 10, so this is the FOURTH file carrying the same
+   `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` code and the same rail CSS — Options 10, 11, 12
+   and 13. NOTHING SYNCS THEM. A change meant for the PATTERN is now a four-file change, and a
+   grep for any of those names returns four files' worth of hits. Same trap Options 5/8 have
+   with `pl*` and 6/9 with `sk*`, one file worse.
+   ⚠️ EVERY OTHER COMMENT IN THIS FILE THAT SAYS "Option 12" DESCRIBES BEHAVIOUR THIS FILE
+   INHERITED, and is deliberately left as written: it is the record of where a decision was made
+   and why, not a claim about which file you are reading. Rewriting them all to say "Option 13"
+   would erase that history and make the two files diff as though they differed.
+   ⚠️ ITS SWITCHER KEY IS `C`, by request. The digit row ran out at Option 10, Option 11 took `X`
+   and Option 12 `Z`; `c` was checked free the way `VS_LETTERS` in `_variants.js` demands —
+   it is in no page's `KB` registry (all thirteen are `n w g e d o t f / s a`), in no `case` label
+   and in no other bare-key comparison in the folder. ⌘C / Ctrl+C IS UNTOUCHED, because that
+   handler returns early on ctrl/meta/alt and claims only the bare key — which matters more for
+   this letter than for `x` or `z`, since copy is the one shortcut everybody uses.
+   ⚠️ THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT — `-alt3` because it is a fourth take on
    the same sidebar. Rename it the moment it becomes something else; `_variants.js`,
-   `_verify/lxbehave.py`'s `FILES` and `_verify/dsconf.py` are the three places that must follow.
-   ⚠️ THE TITLE SUFFIXES ARE OFFSET BY ONE, pre-existing: the file with no suffix carries "(alt)"
-   (Option 10 was itself the alt of Option 1's rail) and `-alt` carries "(alt 2)", so this one is
-   "(alt 3)". */
+   `_verify/lxbehave.py`'s `FILES` and `_verify/dsconf.py` are the three places that must follow
+   (`dsconf.py` takes its target as an argument, so it needs nothing).
+   ⚠️ THE TITLE SUFFIXES ARE STILL OFFSET BY ONE, pre-existing: the file with no suffix carries
+   "(alt)" (Option 10 was itself the alt of Option 1's rail), `-alt` carries "(alt 2)" and
+   `-alt2` "(alt 3)", so this one is "(alt 4)". */
 let sbPinned = false, sbHoverT = null;
 function toggleSidebar(){
   sbPinned = !sbPinned;
@@ -12804,7 +13559,7 @@ function noteEdit(ev){
    ⚠️ IT GUARDS FOR A TRIGGER THAT IS NOT RENDERED (`r.height` 0, e.g. a card opened from the
    keyboard while the rail is mid-anything) and falls back to whatever the stylesheet authored,
    rather than pinning the card to 0. */
-const POP_TRIG = {notifPop:'sbBell', userPop:'sbUser'};
+const POP_TRIG = {notifPop:'sbBell', userPop:'sbUser', morePop:'sbMore'};
 /* ⚠️ DERIVED, NOT DECLARED — see `MF_GAP`. These two are the same relationship (a thing that
    hangs off the rail, and how far off it sits), and holding the number twice is how the flyout
    came to be 4px away while these cards were 10. The guard is for block order only: `MF_GAP`
@@ -16029,6 +16784,10 @@ document.addEventListener('keydown', e=>{
   // sidebar utility icons (former header actions)
   setIco(document.getElementById('sbSearchIc'),'search');
   setIco(document.getElementById('sbApprovalIc'),'ncm-approval');
+  setIco(document.getElementById('sbMoreIc'),'ellipsis-v');
+  setIco(document.getElementById('icMoreApproval'),'ncm-approval');
+  setIco(document.getElementById('icMoreHealth'),'health-monitoring');
+  setIco(document.getElementById('icMoreNews'),'upgrade');
   setIco(document.getElementById('sbHealthIc'),'health-monitoring');
   setIco(document.getElementById('sbBellIc'),'bell');
   /* the same `settings` glyph its rail row drew — one registry, so the two cannot drift */

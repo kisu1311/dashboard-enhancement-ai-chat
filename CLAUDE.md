@@ -75,7 +75,7 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-⚠️ **THERE ARE TWELVE OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026, Option 12 on 10 Sep 2026), each demonstrating a different sidebar over the
+⚠️ **THERE ARE THIRTEEN OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026, Option 12 on 10 Sep 2026, Option 13 on 11 Sep 2026), each demonstrating a different sidebar over the
 same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
 pattern"* is the map; in file order:
 
@@ -93,15 +93,19 @@ pattern"* is the map; in file order:
 | 10 | `dashboard-rail-flyout.html` | Option 1's rail + flyout, copied 9 Sep 2026 — then heavily diverged |
 | 11 | `dashboard-rail-flyout-alt.html` | Option 10's pattern, copied 10 Sep 2026; **boots EXPANDED and collapses to nothing** |
 | 12 | `dashboard-rail-flyout-alt2.html` | Option 10's pattern, copied 10 Sep 2026; **Gemini's rule — no hover expand, one toggle** |
+| 13 | `dashboard-rail-flyout-alt3.html` | **Option 12's** pattern, copied 11 Sep 2026 — so it inherits Gemini's rule AND the whole 11 Sep Explorer pass; nothing else differs yet |
 
 ⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's;
-**Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1**, and **Options 11
-AND 12 are byte copies of Option 10**. A change meant for every option is a **twelve-file** change;
-⚠️ **OPTIONS 10, 11 AND 12 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` WORK** with nothing syncing them,
+**Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1**, **Options 11
+AND 12 are byte copies of Option 10**, and **Option 13 is a byte copy of OPTION 12** — the first
+copy in this family taken from something that is not Option 10, so it is the only one that starts
+life with the 11 Sep Explorer pass already in it. A change meant for every option is a
+**thirteen-file** change;
+⚠️ **OPTIONS 10, 11, 12 AND 13 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` WORK** with nothing syncing them,
 the same trap Options 5/8 have with `pl*` and 6/9 with `sk*`. Option 10 carries a session's worth
 of things Option 1 does not — the Explorer module grid, per-tile pins, the temporary rail row, the
 pinned-row child menu, the gradient AI mark, the hover notification card — and all of it now exists
-twice. ⚠️ **Options 1, 10 and 11 all load `_settings-module.css` / `.js`**, so a change there lands
+**four times**. ⚠️ **Options 1, 10 and 11 all load `_settings-module.css` / `.js`**, so a change there lands
 in three pages whether or not that was meant — the one thing that IS synced, by accident of the copy;
 Options 5 and 8 share the `pl*` namespace and Options 6 and 9 share `sk*`, with **nothing syncing
 either pair**. Each option's own sidebar block is the only
@@ -5484,11 +5488,33 @@ exists in two files, and the `mf*` / `sbNotif*` / `RAIL_TMP` names return two fi
 
 | piece | what it is |
 |---|---|
-| **Explorer's module grid** (`mfGrid*`) | Explorer opens a 232px card of its ten sub-modules as icon tiles, flush to the rail (`left = railWidth()`, no gap, no left border/radius), over a **Customize navigation** button that opens the Layout drawer's Sidebar tab |
+| **Explorer's module grid** (`mfGrid*`) | Explorer opens a 232px card of its ten sub-modules as icon tiles, headed `Explorer … DOCS ↗` like every other menu |
+
+⚠️ **THE GRID HAS THE TREE MENUS' OWN HEADING** (request, 11 Sep 2026: "add the title like [the]
+alert submodule popup"). Explorer was the one module whose menu opened with no name on it — the
+one card that REPLACES a flyout was also the one that did not say what you were looking at.
+- ⚠️ **IT REUSES `mfSec`, NOT A LOOKALIKE** — the same function that builds every other menu's
+  heading, so the label, the `DOCS ↗` chip, its href and its tooltip cannot drift from the
+  flyouts. Passing a path is what emits the chip at all; `mfSec(label)` alone returns the label.
+- ⚠️ **THE PATH COMES FROM `MOD_DOCS`**, the table every other chip and footer reads, never a
+  literal — those slugs were verified 200 when it was built, and a hand-written one is a 404
+  nobody notices.
+- ⚠️ **NO PIN ARGUMENT.** `mfSec`'s third parameter adds the heading pin, which belongs to
+  `mfOpenPin`'s card where it means "unpin this row". Explorer is a rail ENTRY, not a pinned
+  sub-module. The grid already pins per TILE, which is the thing that can be pinned.
+- ⚠️ **`.mfgrid .mfsec` HAS TO DROP `.mfsec`'s OWN INSET.** That rule is written for the flyout's
+  288px column (`margin:4px 4px 0; padding:0 9px 10px 10px`), and this card supplies its own 10px
+  padding — the two stacked put the heading **14px right of the tile column** (measured: label
+  x=269 against tiles at 255). Its bottom padding is KEPT: it IS the 12px gap to the first row.
+
+⚠️ **CORRECTION — THIS TABLE CLAIMED A "Customize navigation" BUTTON AND OPTION 10 HAS NONE.**
+`.mfgcust` exists here as CSS only; nothing renders it. The button is **Option 6's** grid
+(`skGrid`), which is where that sentence belongs. Found by a probe asserting its presence and
+failing; the claim had been in this file since the grid was written.
 | **a pin per tile** (`.mfgpin`) | the same `railPinToggle` the flyout and the rail band drive — one record, four surfaces |
 | **the temporary rail row** (`RAIL_TMP`) | picking a tile puts that sub-module on the rail until you leave it; a **dashed ring**, never the pin mark |
 | **the pinned-row child menu** (`mfOpenPin`) | hovering a pinned (or temporary) row lists that module's own children, from the same `kids` array the flyout's detail pane draws |
-| **five modules with children** | `Monitor` (18 types) · `Topology` (5 tabs) · `NCCM` (2) · `APM` (4) · `Flow` (3) — Topology/APM/Flow added 9 Sep from supplied tab bars, each corroborated against `_product-docs` |
+| **five modules with children** | `Monitor` (18 types) · `Topology` (**6** tabs) · `NCCM` (2) · `APM` (4) · `Flow` (3) — Topology/APM/Flow added 9 Sep from supplied tab bars, each corroborated against `_product-docs`. ⚠️ **Topology went 5 → 6 on 11 Sep 2026**: a second supplied screenshot of the same tab bar shows `Custom` alongside Network · SDN · Cloud · Virtualization · HCI. The 9 Sep comment in `EXPLORER_TREE` argues at length that `Custom View` is NOT a tab (the docs describe it as a view you *create* from a root monitor) — **the tab bar is the tab bar and it wins**; the comment is kept as the record of why it looked otherwise |
 | **the gradient AI mark** | the supplied four-point star on the brand ramp, everywhere `AI_SPARK` reaches |
 | **the hover notification card** | the bell opens `#notifPop` on hover, with `kbPop`'s timing rules |
 | **`MF_NO_HOVER`** | `Dashboard`, `SLO` and `Setting` open no menu on hover — click navigates |
@@ -5560,18 +5586,23 @@ as flex siblings rather than merged, so each keeps the rules written for it. `.s
 
 ### Their shortcuts are LETTERS, and that is new
 
-`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z']`** maps index 10
-onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026, by request) — and `vsKey` / `vsIdx` are
-exact inverses that **must be edited together**: a key shown on a row that does not switch, or a
-switch with no keycap, is worse than no shortcut. Only that array changes; both functions read it.
-⚠️ **EACH LETTER IS CHECKED AGAINST EVERY PAGE FIRST.** That handler runs on all twelve pages, so a
-letter has to be free in every one — each page's own `KB` registry is `n w g e d o t f / s a`, and
-neither `x` nor `z` is in any of them (nor in any other bare-key comparison in the folder).
+`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z', 'c']`** maps index
+10 onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026), Option 13 = `C` (11 Sep 2026), each by
+request — and `vsKey` / `vsIdx` are exact inverses that **must be edited together**: a key shown on
+a row that does not switch, or a switch with no keycap, is worse than no shortcut. Only that array
+changes; both functions read it.
+⚠️ **EACH LETTER IS CHECKED AGAINST EVERY PAGE FIRST.** That handler runs on all thirteen pages, so
+a letter has to be free in every one — each page's own `KB` registry is `n w g e d o t f / s a`,
+and none of `x`, `z`, `c` is in any of them, in any `case` label, or in any other bare-key
+comparison in the folder.
 ⚠️ **A MODIFIER BINDING IS NOT A CONFLICT**: ⌘Z / Ctrl+Z stays undo because the handler returns
-early on ctrl/meta/alt and claims only the bare key.
+early on ctrl/meta/alt and claims only the bare key. ⚠️ **`C` MAKES THAT RULE LOAD-BEARING RATHER
+THAN THEORETICAL** — ⌘C / Ctrl+C is copy, the one shortcut everybody has muscle memory for.
+Deleting that early return would not merely add a conflict, it would break copy on thirteen pages
+at once. Verified by dispatching both modified forms and asserting the page did **not** navigate.
 ⚠️ **BOTH CASES MATCH** — unlike a digit, where Shift gives `!` and can never match, a letter with
 Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
-⚠️ **A THIRTEENTH NEEDS A DELIBERATE CHOICE**, not the next letter along.
+⚠️ **A FOURTEENTH NEEDS A DELIBERATE CHOICE**, not the next letter along.
 
 ### Verification lessons from this pair
 
@@ -5883,6 +5914,224 @@ present in **BOTH** states and is the only door.
   written as `q-0.html`, so `location.pathname` says nothing about which option it is and
   `_variants.js`'s `here` never matches: key off the page's **title**, and test `.vs-item.on` in a
   sandbox that keeps the real filenames.
+
+### Option 12's Explorer menu became a plain list (11 Sep 2026)
+
+Eleven narrow requests in one day turned Explorer's flyout from a two-card master/detail grid into
+**one flat list in one card**. Recorded together because each step removed a piece the next one
+depended on, and reading them in isolation makes several look arbitrary.
+
+| asked | done |
+|---|---|
+| *"replace the grid with the list like the alert submodule popup"* | the grid interception is gone from **both** `mfOpen` and the click path; Explorer falls through to `mfTree` like every other module |
+| *"show all sub-modules by default, remove the expand/collapse icon"* | the chevron span is gone from the row template |
+| *"remove the Monitor tab"* | **`MF_TREE_HIDE = { Explorer: ['Monitor'] }`**, filtered in `mfTree` |
+| *"remove the child popup"* | no `onmouseenter="mfSub(k)"`; `mfSubIdx` stays `-1` for the life of the menu |
+| *"background colour like the main sidebar"* | `#mflyout.mfcards .mfcol{background:var(--sidebar)}` |
+| *"width & inside margin same as the alert popup"* | one line: `fly.classList.remove('mfcards')` |
+| *"Topology's 6 children show inside the Topology row"* | every parent's `kids` render inline beneath it as `.mfi.sub` |
+| *"the main module will use the icon"* | `MF_TREE_ICONS` + `.mficons` on the master column |
+
+- ⚠️ **`MF_TREE_HIDE` FILTERS AT THE RENDERER, NEVER IN `EXPLORER_TREE`.** That array is the DATA:
+  `railPinRow('Monitor')` reads it to build the pinned rail tile, its tooltip and its hover card,
+  and `mfRailFirst` reads `tree[0]` to decide where Explorer's own rail click lands. Deleting the
+  entry makes the pin render **nothing** — no error, just a missing icon.
+- ⚠️ **THE `.mfcards` GATE WAS ASKING THE WRONG QUESTION.** Explorer's card was 332px wide with
+  `padding:14px 44px 44px 0` against Alert's 302/6px — six measured differences, all from one
+  class. `mfOpen` set it on `perRowDocs`, a *proxy* for "is this a master/detail tree"; that
+  stopped being true the moment Explorer's detail pane was removed. **Naming the single cause is
+  what turned a vague "make it the same" into a one-line fix** — measure first, then edit.
+- ⚠️ **THE EMPTY DETAIL PANE IS STILL RENDERED.** `mfDetailAlign`, `mfClamp` and `mfFade` all
+  reach for `#mfDetail`, and `#mflyout.mfcards .mfcol.mfdetail:empty` already hides it. Removing
+  the div is the tidier-looking change and the one that breaks the menu.
+- ⚠️ **THE INLINE CHILDREN CLOSE A GAP THE CHILD PANE OPENED.** With the pane gone, Topology,
+  NCCM, APM and Flow had **nowhere** their children were listed. They reuse `.mfi.sub` — the
+  indented child row Alert's own tree already uses — rather than inventing a `.mfchild`.
+  **No caret and no count**, because the standing rule for this menu is "all sub-modules shown by
+  default, remove the expand/collapse icon" and the supplied picture was described as *"only for
+  reference"*. **No pin either**: pinning is `EXPLORER_TREE`-level via `railPinRow`, so a pin on a
+  child would silently do nothing.
+- ⚠️ **THE MODULE GLYPH IS A SCOPED EXCEPTION, NOT A REVERSAL** (request, 11 Sep 2026: *"the
+  explorer submodule popup the main module will use the icon"*). The 10 Sep *"remove the sub
+  module popup icon in every where"* still stands everywhere else — measured: **Alert emits eight
+  resolvable `.mfic` of its own and paints none**, Settings the same.
+  - ⚠️ **THE HOOK IS A CLASS ON THE COLUMN** (`MF_TREE_ICONS` → `.mficons`), because `mfTree`
+    builds the master column for Explorer, Alert **and** Settings from one template and nothing on
+    `#mflyout` says which is open.
+  - ⚠️ **TWO SEPARATE QUESTIONS.** `icons` = "do all this menu's rows resolve a glyph" (decides
+    whether the markup is emitted); `iconsOn` = "is this the menu that shows them". Collapsing
+    them makes the `display:none` rule and the gate two half-answers in two languages.
+  - ⚠️ **THE CHILDREN HAD TO RE-INDENT WITH IT.** `.mfi.sub`'s 24px was measured against a label
+    at the row's own 9px padding; the module name now starts at **31** = 9 + 15 (`.mfic`) + 7
+    (`.mfi`'s gap), and a child left at 24 would have sat **left of the module it belongs to** —
+    the hierarchy inverted. Fixing that is part of the change, not scope creep.
+  - ⚠️ **`.mfsidebar-icons-on` IS STILL APPLIED NOWHERE.** Its own note says "restore the icons and
+    the parent weighting comes back with them" — it does **not**, and that is deliberate: re-arming
+    it is a second change to a title/row contrast settled on 10 Sep. **Consequence, stated:** a
+    module row and a page under it now share weight **500** and colour `rgb(202,211,226)`; the
+    glyph and 13px-vs-12px are the whole difference. Say so rather than let it be discovered.
+  - ⚠️ **NO WEIGHT CHANGED EITHER WAY.** `.mfi:has(.mfic)` asks whether the element **exists**,
+    never whether it paints, so it matched these rows while they were `display:none` and matches
+    them now. Same trap the file records at `.mfsidebar-icons-on`.
+- Verified by probe: Topology lists **6** children; **15 of 15** children render, each directly
+  under its own parent and indented past it; no child carries a pin, a DOCS chip or a glyph; a
+  child navigates through `mfGo`; **9 of 9** module glyphs visible at 15px on **one** column
+  (x=269) with labels and all fifteen children on **one** column (x=291); the row box unmoved at
+  259; and Alert / Settings still paint **0 of 8** glyphs with their rows at the original x=269.
+  Explorer's geometry against Alert's re-measured **IDENTICAL** on all thirteen fields after the
+  rows were added.
+
+### Option 13 — a byte copy of Option 12 (11 Sep 2026)
+
+`dashboard-rail-flyout-alt3.html`, title *"Rail & Flyout (alt 4)"*, switcher key **`C`**. Made on
+request with **only its `<title>`, its identity banner and its switcher entry different** —
+everything this file says about Option 12 is true of it until one of them is changed.
+
+- ⚠️ **IT IS THE FIRST COPY IN THIS FAMILY NOT TAKEN FROM OPTION 10.** Options 11 and 12 were both
+  forked from Option 10; Option 13 is forked from **Option 12**, so it starts life carrying
+  Gemini's rule (no hover expand, one toggle) **and** the entire 11 Sep Explorer pass — the flat
+  list, `MF_TREE_HIDE`, the inline children, `MF_TREE_ICONS`. Do not assume "it is like Option 10";
+  it is like Option 12, which is two sessions of divergence further on.
+- ⚠️ **THE `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` CODE NOW EXISTS FOUR TIMES**, with nothing
+  syncing it. A change meant for the *pattern* is a four-file change and a grep for any of those
+  names returns four files' worth of hits.
+- ⚠️ **EVERY "Option 12" COMMENT INSIDE THE NEW FILE IS LEFT AS WRITTEN.** They record where a
+  decision was made and why, not which file you are reading. Rewriting them to say "Option 13"
+  would erase that history and make the two files diff as though they differed.
+- ⚠️ **THREE PLACES HAD TO FOLLOW THE NEW FILENAME**, and they are named in the banner so the next
+  rename does not miss one: `_variants.js` (auto — `node _sync_variants.js` appends the row, but
+  it labels new pages `V13 · <title>`, so the label was hand-set to `Option 13` to match its
+  twelve siblings; the script preserves hand-tuned labels), `_verify/lxbehave.py`'s `FILES`
+  (manual), and `_verify/dsconf.py` (**nothing** — it takes its target as an argument).
+- ⚠️ **`--dump-dom` OVER `http://` HANGS ON THE AGENTATION LOADER.** On `file://` the loader 404s
+  and the run finishes; served over http the script actually loads and virtual time never
+  completes, so **every assertion failed at once with an empty DOM** — which reads exactly like a
+  broken page. The switcher has to be tested over http (its `here` comes from `location.pathname`,
+  so a probe copy named `q-0.html` matches nothing), so the fix is a `_probe13/` directory of
+  loader-stripped copies **under their real filenames**. `lxbehave.py` already strips it; this is
+  the same trap one layer out.
+- Verified: **16 assertions** over real http with real filenames — the page loads, the switcher
+  lists thirteen rows with Option 13 last and marked current, its keycap is `C`, all thirteen keys
+  are unique (`1 2 3 4 5 6 7 8 9 0 X Z C`), the footer hint ends with `C`, Option 12 still lists
+  thirteen and still shows itself current with `Z` — plus **`C` navigating for real** (pressed on
+  Option 12, the page that comes back is Option 13) and **⌘C / Ctrl+C NOT navigating**.
+
+### Option 13's popups are Option 9's column (11 Sep 2026)
+
+Three requests in one hour, each with a screenshot, converged on this: *"the all submodule popup
+will be open like [a Setting column]… only for reference"* → *"in my thinking… like **Option 9**"*
+→ *"[Option 9's Dashboard column is] the reference… the current all popup is [an] open popup, make
+[it] Option 9 like"* — plus, on the pinned Monitor row's popup, *"remove the search and also
+remove [the foot] [the Next-steps card and licence line]"*. The reference is Option 9's `.sknav`
+(Option 6's copy), and every card `#mflyout` draws is now that column:
+
+| Option 9's column | Option 13's card |
+|---|---|
+| docked flush to the rail, top to bottom, 296px, `--card` on a right border | `.mflyout{top:0;bottom:0;height:100vh;width:296px}`; the openers set `left = railWidth()` (no `MF_GAP`) and `mfClamp` sets `top = 0` |
+| a bold name over a derived count, a 24px control at the end | `.mfhd` › `.mfhtt` `<b>` + `<span>` by **`mfHead`**, the count by **`mfSubtitle`**; the trailing slot is the **`DOCS ↗` chip** (see below), not Option 9's control |
+| Plain rows — 36px, 18px glyph, radius 8, weight 400, 1px apart | `#mflyout .mfi` + `.mfic` overrides; children indent **40** = 11 + 18 + 11 |
+| the list takes the room; nothing else scrolls | `.mflist{flex:1 1 auto;min-height:0;overflow-y:auto}` — **no `max-height`, no clamp** |
+| foot (rocket · `?` · layout), *Next steps* card, licence line **on the floor** | **`mfTail(path)`**: `.mfft` (`margin-top:auto`), `#mfNs` › `.mfns`, `.mflic`; steps in **`MF_STEPS`**, state in **`MF_NS`** |
+| a search field on the Setting column only | **none** — Setting opens no column here (`MF_NO_HOVER`); `mfSearchHTML` / `.uxsrch` kept, unreferenced |
+| — | **the pinned Monitor card carries no tail** — head and rows only (`mfOpenPin` passes `null`) |
+| — | **the count line is 10px / 600** (request, 11 Sep 2026, pointing at *"18 monitor types"*) — Option 9's is 12 / 400. It is the quietest thing on the card (it names what the list below then shows), so it drops under every row's 13 and takes the weight back to stay legible; `line-height` follows 16 → 14 or the 2px above it reads as 4. The title stays 14 / 600, so the two are separated by size alone |
+| — | **the pinned band is SPLIT IN TWO** (`RAIL_PINS_HOME`). Two requests minutes apart — *"when I pin ANY sub-module it will show in between [the] Explorer and Report icon"* and *"the MONITOR icon will show after [the] Dashboard icon"* — read as contradictory only if "pinned row" is one thing. **Asked, and the answer was both**: Monitor ships pinned, so it is a permanent shortcut sitting with the rail's own rows (`PIN_UNDER = 'Dashboard'`), while what *you* pin gathers under the module it came from (`PIN_ADD_UNDER = 'Explorer'`, i.e. the Explorer–Report gap). ⚠️ **Membership, not a snapshot**: a name in `RAIL_PINS_HOME` draws in the Dashboard band *whenever* it is pinned, so unpin-and-repin returns it there instead of migrating it. ⚠️ **Each band has its own flag and its own emptiness test** — sharing `pinsOut` would let the first emitted mark the second done, and testing `RAIL_PINS.length` for both would draw an empty band's hairline. **Options 10, 11 and 12 keep one band under `Dashboard`** |
+| — | **the pinned-row card's title carries a pin** (request, 11 Sep 2026, with the NCCM card's head circled: *"the sidebar title will show a pin icon — behind the title"*) — restoring, **on that one card**, the control removed a few hours earlier by *"in the Monitor sub-module popup remove the pin icon"*. `mfSecPin` is set only by `mfOpenPin`, so Alert, Explorer, Report and Health stay bare. It reuses `mfSecPin` / `mfPinFromSec` / `.mfsp`, kept unreferenced since the removal precisely so this was **one argument**, not a rebuild. ⚠️ **The title line had to become a flex row** (`.mfht`): `.mfhtt` is `flex:1 1 auto`, so a pin added as its sibling lands next to the DOCS chip, not the name. ⚠️ **`mfPinFromSec` was reading `.mfsec .mfsp` only** — correct until the card title became `.mfht` — so a press would have toggled the pin and left the mark on the old state, silently |
+| — | **…but not for a row the Explorer column does not list** (request, 11 Sep 2026, on the Monitor card: *"Monitor is not part of Explorer, so don't show a pin icon in its title"*). Gated on **`MF_TREE_HIDE.Explorer`**, not on the literal `'Monitor'` and not on `RAIL_PINS_HOME` — all three hold the same one name today, but only `MF_TREE_HIDE` answers the question the request asks, *"does the Explorer column offer this row?"*, which is the same question as *"can it be put back?"*. ⚠️ **The real reason is reversibility, not tidiness**: that pin UNPINS, and for NCCM that is undoable one hover away in the column that lists it — for Monitor there is no such row, so the press would have been a one-way door out of the Layout drawer. Hide another row from Explorer and its card loses the pin for the same reason, with no edit |
+| — | **a pinned rail row carries no pin mark** (request, 11 Sep 2026, with the five marks outlined: *"remove the pin icon in the sidebar, and move the sub-module title"*). It only ever appeared on the rows with **no children** — the ones with children spend that slot on the chevron — so the band read as two kinds of row, five navy pins against four grey arrows, for a difference the arrow already states. ⚠️ **The title moves because the mark was INSIDE `.lbl`**: `.pd` carried `margin-left:auto` and pushed itself to the row edge, so the label ended where its text ended; with it gone the label spans the row. One deletion, both halves of the request. ⚠️ **Nothing becomes unpinnable** — the mark was an `<i>` with no handler; unpinning is still the Explorer column's per-row `.mfpin` and the Layout drawer. `.pd`'s CSS and `MF_PIN` are kept and unreferenced here |
+| — | **the footer folds three controls into one when the rail runs out of room** (request, 11 Sep 2026: pin every Explorer sub-module and *"the sidebar is full and it scrolls… the bottom 3 icons will be combined — Approval, What's new and Health"*). `#sbMore` (Tabler `system/dots`, from `free-icons/`, filled) opens `#morePop` listing the three in the order they sat in; **Notification and the avatar are untouched**. ⚠️ **The trigger is the OVERFLOW, not a pin count** — "all pinned" is the symptom; a short viewport or a longer rail reaches the same state with fewer pins. ⚠️ **The hysteresis is the whole problem and it is explicit**: collapsing makes `.smenu` taller, which can make it fit, which would expand the footer, which overflows again — so `railFootFit` collapses on overflow, and only expands by actually TRYING the full footer and measuring again. ⚠️ `display:none`, never removal: `showView()` toggles `.on` on `#sbApproval`/`#sbHealth` **by id** |
+| — | **the list fades at BOTH ends while it scrolls** (request, 11 Sep 2026: *"when the Explorer sidebar scrolls up and down, the top and bottom blur effect — apply top and bottom"*). There was a bottom fade only, and two things about it were wrong in the column: it ramped to **`var(--pop)`**, the floating card's surface, not the column's `--card`; and it was anchored `bottom:1px` on the CARD, which was the list's own edge back when a card was head + list — with a foot, a Next-steps panel and a licence line now below it, the fade would have washed over those. `mfFadeCard` publishes the list's measured box as **`--mflt` / `--mflb`** and toggles `.mftop` / `.more` independently, so each edge appears only when there is something past it and a card that later grows another block needs no new number. ⚠️ They cannot live on `.mflist` — it is the scroller, so its own pseudo-elements would scroll away with the rows |
+| — | **the rail is one 10px rhythm** (request, 11 Sep 2026: *"the same padding between the Search icon and the Dashboard icon, like [between] the Dashboard icon and [the] Monitor icon"*). MEASURED first: every module-to-module gap was 10 (each `.sitem`'s own `margin-bottom`) while Search→Dashboard was **14 expanded** (`.sidebar.open .stop{margin-bottom:4px}`) and **16 collapsed** (`.sidebar:not(.open) .smenu{padding-top:6px}`) — two different separations in two states, neither of them the row gap. Both zeroed; the horizontal 10 stays, since the note above derives the icon column from it |
+| — | **the column's two edges carry the same inset** (request, 11 Sep 2026, both edges outlined) — everything starts **L+20** and ends **R+20** from the column's PADDING box: title, count, DOCS chip, every row's content (`.mflist` 8 + `.mfi` 1px border + 11 / 12), the foot's last button, the licence line and the Next-steps panel. The 1px `border-right` is the divider, not an inset, which is why the right reads 21 from the OUTER edge |
+| — | **the left half of the drop shadow is clipped off** (request: *"remove the shadow on the sidebar sub-module sidebar left side"*). `8px 0 28px` is offset right but its blur still spilled ~20px left, striping the rail. **`clip-path:inset(0 -40px 0 0)`** — not a bigger x-offset, which would drag the darkest part into the canvas. ⚠️ `overflow:hidden` does **not** do this: it clips descendants, never the element's own shadow. Proven by sampling the rail pixels open-vs-closed: **0 of 60 differ** on the left, up to 25 on the right |
+| — | **hovering the rail ANYWHERE reveals the expand glyph** (request) — `.sidebar:not(.open):hover`, where it was `.strcol:hover`. The 32px hit region is unchanged; only the reveal moved outward, so nothing new became clickable. `:focus-visible` still reveals it on its own |
+| — | **clicking an Explorer sub-module puts it on the rail until you leave** (request: *"when I click the Explorer sub-module WITHOUT PIN, the module will be added in between the Explorer and Report icon"*) — **`railTmpGo`**. ⚠️ **The temporary row already existed and had been unreachable since the grid stood down**: `RAIL_TMP` was armed in exactly one place, `mfGridGo`, and Explorer stopped opening that grid on 11 Sep. Everything downstream still worked — a feature died from having its one caller removed, with no error and nothing in the DOM to notice. One arming function now serves both doors, gated to Explorer in the renderer where the menu name is known |
+| — | **the card title starts on the rows' own left column** (reported 11 Sep 2026: *"the title text and list of sub-module will show [the] same alignment"*). Option 9 pads its header 12 and its body 8, so its title sits 8px left of its rows — a difference this card had no reason to inherit. `.mfhd`'s left pad is **20 = 8 (`.mflist` padding) + 1 (`.mfi`'s transparent `border-left`) + 11 (`.mfi` padding)**, where a row's text starts with or without a glyph; the count and the licence line land there too. Derived — re-derive it if any of the three moves |
+| — | **the head's trailing slot is the `DOCS ↗` chip** (request, 11 Sep 2026, with the control outlined and the chip supplied as the replacement: *"remove the expand/collapse icon and add [the] document link"*). It had gone to the foot's `?` in the column pass — and then `MF_NO_TAIL` took the foot off Alert, Explorer and Report, so **those three had no documentation link at all**; this puts one on every card. The path comes from the caller, each of which already knows its own: `mfTree` reads `MOD_DOCS[name]`, `mfCol` reads `mfSecPath` — which `mfOpenPin` sets to the **pinned row's** page, so Monitor's chip goes to Monitor's docs, not Explorer's. `MF_COL` and `.mfhb` are **kept and unreferenced** |
+| — | **Alert's and Report's rows paint no glyph** (two requests, 11 Sep 2026, each with that card's icon column outlined: *"remove the icon"*) — **`MF_NO_ICONS = ['Alert', 'Report']`**; every opener calls `mfNoIcons(name)`, which toggles **`.mfnoic` on `#mflyout` itself**, and one rule (`#mflyout.mfnoic .mfi > .mfic{display:none}`) withholds the paint — the markup still carries the glyph, the same shape as the 10 Sep global hide. One class on one element, so `mfTree` and `mfCol` cards are covered alike and nothing leaks between cards. Explorer and Health keep theirs |
+| — | **every sub-module row is 13px / 600** (request, 11 Sep 2026: *"the font size of all the submodule list, make it 13px semibold on Option 13"*) — Option 9's rows are 400, the request names this option. `#mflyout .mfmaster .mfi,#mflyout .mfcol .mfi{font-weight:600}`; **Explorer's children stay 12px / 400** (`#mflyout .mfi.sub`), the one level the earlier request set apart. The `:has(.mfi.sub) .mfi.par` rule is now redundant and kept |
+| — | **Explorer's two levels read at two sizes** (request, 11 Sep 2026: *"the submodule font size is 13px and semibold and the child submodule font size 12px"*) — `#mflyout .mflist:has(.mfi.sub) .mfi.par{13px/600}` and `.mfi.sub{12px}`, **keyed on the list having children, not on the menu's name**: Alert's `.par` rows (same class, one level) stay 13/400, and any menu that ever renders children inline weights its parents up with them. `:has()` carries its argument's specificity, which is what lets (1,5,0) beat the column's 400 without an id |
+| — | **Alert, Explorer and Report carry no tail either** (three requests minutes apart, 11 Sep 2026, each with that card's foot · card · licence outlined: *"remove [this]"*) — **`MF_NO_TAIL = ['Alert', 'Explorer', 'Report']`**, honoured by one gate, `mfTailFor`, in all three builders (`mfTree`, `mfOpen`'s `mfCol` path, `mfOpenUtil`). That is every rail module that opens a card; **only Health** (the utility) still ends in the tail — one more name in that table if it goes too |
+
+- ⚠️ **THE COUNT IS DERIVED FROM THE ROWS THE CARD LISTS, never typed** — Option 9's `skSubtitle`
+  is the model. Explorer says **9 sub-modules** (not `EXPLORER_TREE.length`, 10 — `MF_TREE_HIDE`
+  keeps Monitor off the list); a pinned row uses its own `kidsAs` (**18 monitor types**); the rest
+  is Option 9's generic *"N pages"*. `mfSecSub` travels exactly as `mfSecPath` does.
+- ⚠️ **THE TAIL IS REAL, NOT DECORATION.** The four steps are Option 9's verbatim and every one is
+  a harvested `ST_TREE` category opened through `stOpen` (in `_settings-module.js`, which this
+  file loads — checked); `MF_NS.done` fills as steps are *visited*, the rocket's badge counts what
+  is left and hides at zero, ✕ dismisses until the rocket brings it back. `?` opens the module's
+  own `MOD_DOCS` page; layout opens `layOpen()`; *Manage licence* finds My Account › License by
+  the same `/licen/i` lookup Option 9 uses. Every one verified on a stub.
+- ⚠️ **THE GLYPHS ARE `tour`, `help`, `columns`** — the three Option 9 uses and the three that
+  resolve here (`rocket`, `question`, `layout` do **not**; checked before binding). ✕, chevron and
+  tick are inline paths (`MF_X`, `MF_CHEV`, `MF_DONE`).
+- ⚠️ **`getBoundingClientRect()` RETURNS THE TRANSFORMED BOX.** A probe read the heading pin's
+  glyph as 14px and called it a CSS failure; the rule says 10px and a 10px square rotated 45°
+  bounds at 10·√2 = 14.14. Assert `getComputedStyle().width` for anything carrying a `transform`.
+- ⚠️ **`mfHide()` DROPS `.on`; IT DOES NOT EMPTY THE CARD.** A probe queried the hidden card's DOM,
+  found a stale button and reported it as going stale — the card had in fact closed, correctly,
+  because the rail row it was anchored to had just been unpinned. Ask the card, not its children.
+- ⚠️ **A LAYOUT RULE THAT CHANGES WHAT IT MEASURES NEEDS STATED HYSTERESIS.** The footer's collapse
+  makes the list taller, which is the input to the decision to collapse. Written as one test it
+  oscillates forever. Written as "collapse on overflow; to expand, put the full footer back and
+  measure again" it settles — verified by running the fit eight times and asserting the class never
+  changes (`11111111` at 857px, `00000000` at 1157px).
+- ⚠️ **A FEATURE CAN DIE FROM LOSING ITS ONE CALLER.** `RAIL_TMP` had a renderer, a CSS class, a
+  dashed ring, an anchor constant and a derived teardown — and nothing had set it since the grid
+  stood down. Nothing errored and nothing was missing from the DOM; it simply never happened.
+  When a code path is removed, grep for what ONLY it called.
+- ⚠️ **WHEN TWO REQUESTS LOOK CONTRADICTORY, THE NOUN IS USUALLY DOING TWO JOBS.** "Pinned row"
+  meant both *the shortcut the rail ships with* and *the thing you just pinned*; asking which was
+  meant returned "both", and the answer was two bands rather than a sixth placement of one. Worth
+  one question — guessing would have silently reversed a request made minutes earlier.
+- ⚠️ **A DERIVED NUMBER IS ONLY AS GOOD AS THE THREE VALUES IT WAS DERIVED FROM.** The child
+  indent `31px` — `9 (row padding) + 15 (.mfic) + 7 (gap)`, correct for the floating card — was
+  left behind when the column re-derived all three as `11 + 18 + 11 = 40`. Both rules matched every
+  child row and **the stale one won on specificity** (`#mflyout .mfmaster.mficons .mfi.sub` at
+  (1,4,0) over `#mflyout .mfi.sub` at (1,2,0)), so parents' labels sat at 102 and children's at 93
+  — reported as *"the sub-module text and child sub-module text will show the same alignment"*.
+  Four rules deep, found by dumping every matching rule rather than by reading the sheet. A stale
+  derived value with higher specificity does not linger, **it wins**; delete it or re-derive it.
+- ⚠️ **NOTHING WAS STRANDED BY LOSING THE HEAD'S CONTROL.** It closed the column, and the column
+  already closes on `mouseleave` and on any click that navigates — the way every flyout in this
+  rail has always closed. Checked before removing it, not after.
+- ⚠️ **THREE RECORDED DECISIONS ARE REVERSED IN THIS FILE ONLY, by the reference:** the 10 Sep
+  "quiet title" (`.mfsec` untouched — the card title is a different element); the 11 Sep "8px off
+  the rail" (the column docks flush; `MF_GAP` still spaces the popovers); and Option 12's
+  "background like the main sidebar" (`--card` beside a `--sidebar` rail is the one-step surface
+  change the reference shows). The DOCS chip left the header for the foot's `?`, where Option 9
+  keeps it. **That lasted an hour**: with `MF_NO_TAIL` removing the foot from three of the five
+  cards, the chip came back to the head and both callers pass their real path again.
+- ⚠️ **`mfClamp` NO LONGER COMPUTES ANYTHING.** The column is the viewport and the list is
+  flex-sized; the old floating-card computation is **`mfClampBox`, kept and unreferenced**. The
+  first docked build kept the computed `max-height` and the user's own screenshot showed the foot
+  and card **painted over the list rows** — a `max-height` on a flex-sized list inside a
+  full-height column is exactly the wrong thing.
+- ⚠️ **`Setting` STILL OPENS NO COLUMN** (`MF_NO_HOVER`; it lives in the footer and navigates on
+  click). Flagged twice now — which rail items open a card was never the request.
+- ⚠️ **NO SECTION FOLDS.** Option 9's titled sections (Dashboard's *NOC View*, with a caret) fold;
+  none of the cards that open here has a second section, so there was nothing to port. If one
+  ever does, `.mfsec` is where it lands.
+- ⚠️ **A SELECTOR SCOPED TO A PARENT IS A CLAIM ABOUT WHERE THE ELEMENT LIVES.** When the chip
+  briefly moved into `.mfhd`, every one of its rules was `.mfsec .mfsd …` and its `<svg>` painted
+  at the UA's 300×150 in black. **The probe passed** (the chip *was* present); the screenshot
+  caught it. Assert the paint, never the presence.
+- ⚠️ **A PROBE THAT CLICKS THE REAL `stOpen` / `layOpen` NEVER FINISHES** under
+  `--virtual-time-budget` — those handlers arm timers virtual time waits on, and the run dies at
+  the wall clock with **`NO PROBE OUTPUT`**, which reads like a broken page. Stub them
+  (`window.stOpen = (c,p) => …`) and assert the wiring.
+- ⚠️ **`sips --cropOffset 0 0` IS TREATED AS UNSET** and the crop falls back to centre — two
+  "different" popup screenshots came back byte-identical. Use `1 1`.
+- Verified, after `MF_NO_TAIL`: **ALL 12 PASS** — Alert, Explorer and Report have no foot / card /
+  licence and their lists run to the floor (Explorer's still scrolls); Health still carries the
+  tail; Monitor still none; nothing leaks between cards. Before it: **ALL 77 PASS at 857px AND at 497px** — five cards × (flush at `railWidth()`, top 0,
+  full height, 296 wide; name / count; close control, no chip; no field; 36px/400 rows; glyphs at
+  18px; no inline `max-height`; foot · card · licence present with the foot's top **equal to** the
+  list's bottom and the licence 20px off the floor — or, for Monitor, none of the three; the list
+  scrolling when taller than its room), the column following the expanded rail to 240, close /
+  ✕ / rocket / `?` / step / licence / layout each doing its one thing on a stub, no error, the
+  count cleared. **Options 10, 11 and 12 untouched.**
 
 ### The 10 Sep 2026 pass — two dead CSS states, and the sizes
 

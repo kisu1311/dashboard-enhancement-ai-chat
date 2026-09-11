@@ -25,7 +25,8 @@
     {"file":"dashboard-card-sidebar-alt.html","label":"Option 9"},
     {"file":"dashboard-rail-flyout.html","label":"Option 10"},
     {"file":"dashboard-rail-flyout-alt.html","label":"Option 11"},
-    {"file":"dashboard-rail-flyout-alt2.html","label":"Option 12"}
+    {"file":"dashboard-rail-flyout-alt2.html","label":"Option 12"},
+    {"file":"dashboard-rail-flyout-alt3.html","label":"Option 13"}
   ];
   /* VARIANTS:END */
 
@@ -104,10 +105,18 @@
      demands: `z` appears in no page's `KB` (all twelve are `n w g e d o t f / s a`) and in no
      other bare-key comparison in the folder. ⌘Z / Ctrl+Z is untouched, because the handler
      below returns early on ctrl/meta/alt and only the bare key is claimed.
-     ⚠️ A THIRTEENTH STILL NEEDS A DELIBERATE CHOICE, not the next letter along: it has to be free
+     ⚠️ OPTION 13 TOOK `C`, by request (11 Sep 2026), and it was checked the same way: `c` is in
+     no page's `KB` (all thirteen are `n w g e d o t f / s a`), in no `case` label and in no other
+     bare-key comparison in the folder.
+     ⚠️ `C` LEANS HARDER ON THE MODIFIER RULE THAN `X` OR `Z` DID. ⌘C / Ctrl+C is copy — the one
+     shortcut every user has muscle memory for — and it stays copy because the handler below
+     returns early on ctrl/meta/alt and claims only the BARE key. Deleting that early return would
+     not just add a conflict, it would break copy on thirteen pages at once. The bare `c` itself is
+     also suppressed while typing, by `vsTyping()`, so it cannot be stolen from a text field.
+     ⚠️ A FOURTEENTH STILL NEEDS A DELIBERATE CHOICE, not the next letter along: it has to be free
      in every page's `KB` and not be a browser or OS binding. `vsKey` returning '' is still what
      makes an unbound row render with no keycap and no footer entry. */
-  var VS_LETTERS = ['x', 'z'];                  /* index 10 onward, in order — Option 11 = X, Option 12 = Z */
+  var VS_LETTERS = ['x', 'z', 'c'];             /* index 10 onward, in order — Option 11 = X, Option 12 = Z, Option 13 = C */
   function vsKey(i) {
     if (i < 9) return String(i + 1);
     if (i === 9) return '0';

@@ -8218,6 +8218,14 @@ html[data-theme="light"] #drawer-layout{
    ⚠️ THE 0px IS THE GAP, and with it the card is ATTACHED rather than floating — so it takes
    `.mflyout`'s own treatment for exactly this: no left border and no left radius, which is
    what stops a seam appearing where the two surfaces meet. See `mfGrid` for the left edge. */
+/* ⚠️ THE HEADING HAS TO GIVE UP `.mfsec`'s OWN INSET INSIDE THIS CARD. That rule is written for
+   the FLYOUT's 288px column, where the label is inset past a row's `border-left` and padding
+   (`margin:4px 4px 0; padding:0 9px 10px 10px`). This card supplies its own 10px padding, so the
+   two insets stacked and the heading sat **14px right of the tile column** — measured, label at
+   x=269 against tiles at 255, and the DOCS chip 14px short of the card's right padding.
+   ⚠️ THE BOTTOM PADDING IS KEPT: it IS the gap between the heading and the first row of tiles.
+   Zero it and the label sits directly on them. */
+.mfgrid .mfsec{margin:0;padding:0 0 10px}
 .mfgrid{position:fixed;z-index:80;width:232px;padding:10px;border-radius:4px;
   background:var(--sidebar);border:1px solid var(--border);
   box-shadow:0 10px 34px rgba(0,0,0,.5);display:none}
@@ -10172,7 +10180,17 @@ const MOD_TO_RAIL = {};
    spotlight. A second `activePin` variable would be a second source of truth for a fact the
    page already knows, and the two would disagree the first time something opened a module
    without going through the pin. */
-let RAIL_PINS = [];
+/* ⚠️ `Monitor` IS PINNED OUT OF THE BOX (request, 11 Sep 2026: "the Monitor module will be shown
+   before the Dashboard icon by default — Monitor icon set in sidebar"). It is the only seeded
+   pin; everything else still starts empty.
+   ⚠️ SEEDING THIS ARRAY IS SAFE, AND THE SISTER ARRAY IS NOT. `railPinsHTML` resolves each label
+   through `railPinRow` → `EXPLORER_TREE`, declared in THIS block above `init()`. `DASH_PINS` is
+   the one that must stay `[]` at init: its row builder reaches `DASH_INDEX` / `MICON` / `DTYPE`,
+   which live in the NEXT `<script>` block and are in TDZ when `init()` runs — this file's notes
+   record that aborting `init()` five times.
+   ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
+   else and the band renders empty — no error, just nothing on the rail. */
+let RAIL_PINS = ['Monitor'];
 /* ⚠️ THESE TWO BELONG HERE, NOT BESIDE `dashItemVisible` WHERE THEY ARE DOCUMENTED. They
    were declared in the NEXT `<script>` block, and `init()` — which lives at the end of THIS
    one — calls `renderMenu()`, which reads them. A `let` in a block that has not been parsed
@@ -10488,7 +10506,23 @@ function renderMenu(){
      hidden there is no row to sit under and the tail fallback below takes it, which is the
      right answer; if Explorer is the one lifted to the top as `RAIL_HOME` the loop skips it,
      so the lift block above emits the band itself. */
-  const PIN_UNDER  = 'Explorer';               /* RAIL_PINS are EXPLORER_TREE children  */
+  /* ⚠️ PINS SIT UNDER THE HOME ROW, THE TEMPORARY ROW STAYS WITH EXPLORER — TWO ANCHORS, AND
+     THEY ARE NOT THE SAME THING (request, 11 Sep 2026: "the Monitor icon shows AFTER the
+     Dashboard icon", correcting "before" from minutes earlier).
+     ⚠️ THIS IS THE FOURTH PLACEMENT THIS BAND HAS HAD — `PIN_AFTER` (a group boundary) →
+     `PIN_BEFORE` → `PIN_UNDER:'Explorer'` (the documented "a pin sits directly under the rail
+     row it belongs to") → above the whole rail → here, directly after the home row. Read the
+     sequence before moving it again; each step was asked for.
+     ⚠️ IT IS EXPRESSED AS AN ANCHOR, NOT AS A BLOCK EMITTED BEFORE THE LOOP. `pinsFor` is called
+     from BOTH places a row is written — the home lift and the loop — so naming the row the band
+     follows makes it land correctly whether Dashboard is lifted to the top as `RAIL_HOME` or
+     rendered in place, with no second code path to keep in step. An earlier version of this
+     change prepended the band instead and only worked because Dashboard happens to be first.
+     ⚠️ `TMP_UNDER` IS SEPARATE ON PURPOSE. The temporary row is the sub-module you are looking
+     at right now and it disappears when you leave; a shortcut you chose and a row about to
+     vanish are not the same object, so the request that moved one did not move the other. */
+  const PIN_UNDER  = 'Dashboard';              /* RAIL_PINS follow the home row          */
+  const TMP_UNDER  = 'Explorer';               /* the temporary row stays with its parent */
   const DASH_UNDER = 'Dashboard';              /* DASH_PINS are boards, i.e. Dashboard's */
   /* ⚠️ ONE RULE, BOTH BANDS — "a pin sits directly under the rail row it belongs to" is stated
      once here and used by the two places a row is emitted (the home lift above and the loop
@@ -10507,7 +10541,7 @@ function renderMenu(){
        shuffling the permanent rows down a line each time you open a sub-module.
        ⚠️ ITS OWN FLAG. `pinsOut` is only set when there ARE pins, so sharing it would emit the
        temporary row twice on a rail with nothing pinned — once here and once from the tail. */
-    if (!tmpOut && name === PIN_UNDER){ out += railTmpHTML(); tmpOut = true; }
+    if (!tmpOut && name === TMP_UNDER){ out += railTmpHTML(); tmpOut = true; }
     if (!dashOut && DASH_PINS.length && name === DASH_UNDER){ out += railDashPinsHTML(); dashOut = true; }
     return out;
   };
@@ -10600,12 +10634,12 @@ function pickRail(i){
      it — so the element is re-read here rather than reusing the node that was clicked, which is
      detached by now. That is this file's recorded stale-node trap, in the one place it would
      silently open the card at the wrong y. */
-  if (RAIL[i].name === 'Explorer'){
-    const row = document.querySelector('#smenu .sitem[data-rail="' + i + '"]') ||
-                document.querySelectorAll('#smenu .sitem')[i];
-    if (row && typeof mfGrid === 'function') mfGrid(true, row);
-    return;
-  }
+  /* ⚠️ AND THE CLICK GOES WITH IT. While Explorer opened the grid, its rail row deliberately
+     navigated NOWHERE — pressing a launcher and being taken somewhere before choosing was the
+     fault that fix addressed. With the tree list back, Explorer is an ordinary tree module
+     again and falls through to `mfRailFirst` below, which lands it on its own first sub-page
+     exactly as Alert and Report do. Kept as a comment rather than deleted so the grid's own
+     rule is still findable if the card returns. */
   /* ⚠️ THE RAIL LANDS ON THE MODULE'S FIRST SUB-PAGE (request, 9 Sep 2026). The row is the
      module's front door, and the first row of its own menu is what that door should open —
      Alert on Metric, Report on Metric, SLO on the SLO list. It is DERIVED from the same arrays
@@ -11246,7 +11280,25 @@ function mfGridEl(){
 }
 function mfGridHTML(){
   const tree = (typeof EXPLORER_TREE !== 'undefined') ? EXPLORER_TREE : [];
-  return '<div class="mfgi-w">' + tree.map(t =>
+  /* ⚠️ THE GRID CARRIES THE SAME HEADING THE TREE MENUS DO (request, 11 Sep 2026: "add the title
+     like [the] alert submodule popup"). Explorer was the one module whose menu opened with no
+     name on it — every other flyout leads with `<module> … DOCS ↗`, so the one card that replaces
+     a flyout was also the one that did not say what you were looking at.
+     ⚠️ IT REUSES `mfSec`, NOT A LOOKALIKE. That function is what builds every other menu's
+     heading — the label, the `DOCS ↗` chip and its href, the tooltip — so the grid cannot drift
+     from the flyouts in wording, spacing or link. Passing the path is what emits the chip at all;
+     `mfSec(label)` with no path returns the label alone.
+     ⚠️ THE PATH COMES FROM `MOD_DOCS`, the table every other menu's footer and chip already read,
+     rather than a literal. `MOD_DOCS['Explorer']` is an alias of `MOD_DOCS['Explorers']`, and the
+     slugs in that table were verified 200 when it was built — a hand-written one is a 404 nobody
+     notices.
+     ⚠️ NO PIN ARGUMENT. `mfSec`'s third parameter adds the heading pin, which belongs to
+     `mfOpenPin`'s card — a pinned ROW's menu, where the pin means "unpin this row". Explorer is a
+     rail entry, not a pinned sub-module; a pin here would claim a state it does not have. The
+     grid already pins per TILE, which is the thing that can be pinned. */
+  const head = '<div class="mfsec">' +
+    mfSec('Explorer', (typeof MOD_DOCS !== 'undefined' ? MOD_DOCS['Explorer'] : null)) + '</div>';
+  return head + '<div class="mfgi-w">' + tree.map(t =>
       '<button class="mfgi' + (railPinned(t.l) ? ' pinned' : '') +
         '" onclick="mfGridGo(' + mfAttr(t.l) + ')">' +
       /* ⚠️ A `<span role="button">` WITH NO `tabindex`, not a `<button>` — interactive content
@@ -11351,11 +11403,27 @@ function mfOpen(i, el){
      `mfOpen`, for the same reason `MF_NO_HOVER` is: two paths reach this menu — the row's own
      `mouseenter` and the hand-off after a collapsed rail expands — and a rule written into the
      markup would have to be repeated in both. */
-  if (RAIL[i] && RAIL[i].name === 'Explorer'){
-    if(!sb0.classList.contains('open')){ mfHide(); return; }   /* the collapsed rail expands first */
-    if (mfGridMute) return;                 /* just navigated from it — see mfGridGo */
-    mfHide(); mfGrid(true, el); return;
-  }
+  /* ⚠️ EXPLORER OPENS ITS TREE LIST, NOT THE ICON GRID (request, 11 Sep 2026: "change the
+     Explorer submodule popup visualization like [a list]"). The supplied reference is a column
+     of icon + label rows with a count and chevron where a module has children — which is
+     EXACTLY what `mfTree` already renders for this module, and what Explorer opened before the
+     grid was put in front of it on 9 Sep. So this is a stand-down, not a rebuild: dropping the
+     interception hands Explorer back to the same path Alert and Setting take.
+     ⚠️ IT ALSO SATISFIES THE HEADING REQUEST FOR FREE. The tree flyout already leads with
+     `Explorer … DOCS ↗` — the heading added to the grid card earlier the same day — so the list
+     arrives with the title, the docs chip, the per-row pins and the DOCS chip per sub-module,
+     none of which the grid had per row.
+     ⚠️ `mfGrid` / `mfGridHTML` / `mfGridGo` / `mfGridPin` AND ALL THE `.mfg*` CSS ARE KEPT AND
+     UNREFERENCED — the house pattern. The card is one `if` away if it is ever wanted back, and
+     rebuilding it would mean re-deriving the pin badge's -10px corner offset and the tile's
+     hover hairline. `mfGrid(false)` is still CALLED below, which is correct: it closes a card
+     that may still be open from before this changed.
+     ⚠️ THE TEMPORARY RAIL ROW IS UNAFFECTED — `RAIL_TMP` is set by `mfGo` from any menu row,
+     not by the grid, so picking a sub-module from the list still lands it on the rail. */
+  /* what the branch did, kept as the record rather than as a dead `if (false)`:
+       if (!sidebar.open) { mfHide(); return; }   // the collapsed rail expanded first
+       if (mfGridMute) return;                    // just navigated from it — see mfGridGo
+       mfHide(); mfGrid(true, el); return;        // the card instead of the list            */
   /* ⚠️ AND EVERY OTHER MODULE CLOSES IT. `mfOpen` does not call `mfHide()` on its way through —
      it just swaps the flyout's contents and leaves `.on` where it is — so hovering from Explorer
      onto Alert opened Alert's list with the grid still sitting on top of it. Two menus for one
