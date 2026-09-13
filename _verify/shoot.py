@@ -52,8 +52,7 @@ SCENES = {
 }
 
 # ⚠️ THE PROBE COPY LIVES IN `_out/`, SO EVERY RELATIVE ASSET IN THE PAGE WOULD 404 THERE.
-# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 1 Sep 2026) `_settings-module.js`
-# / `_settings-module.css` are all relative to the PROJECT folder. Without this, every scene
+# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 12 Sep 2026) `setting.js` are all relative to the PROJECT folder. Without this, every scene
 # here — and `harness.py`, which imports this builder — silently renders a page with no design
 # system and no Settings module, and still reports green because no assertion touches them.
 # One `<base>` fixes all of them; it has to sit immediately after `<head>`, ahead of anything

@@ -1635,7 +1635,7 @@ html[data-theme="light"] #mflyout.mfcards .mfcol{box-shadow:0 10px 30px rgba(23,
    prototype cannot know a discovery ran), the rocket's badge counts what is left and hides at
    zero, and ✕ dismisses the card until the rocket brings it back — Option 9's own rules, kept
    in one object so every card agrees. Steps open through `stOpen`, the Settings module's own
-   door, from `_settings-module.js` — loaded by this file, checked.
+   door, from `setting.js` — loaded by this file, checked.
    ⚠️ THE ROCKET, `?` AND LAYOUT GLYPHS ARE `tour`, `help`, `columns` — the three Option 9 uses,
    and the three that resolve in this file's `ICONS` (`rocket`, `question`, `layout` do NOT;
    checked before binding, not after). The ✕, chevron and tick are inline paths (`MF_X`,
@@ -8536,8 +8536,10 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 @media (max-width:1300px){ body.lxopen .lxpanel{flex:0 0 208px;width:208px} .lxfacets{flex:0 0 182px}
   .lxqb{grid-template-columns:repeat(3,1fr);row-gap:10px} .lxstamp{display:none} }
 /* ══ SETTINGS MODULE + COMPLIANCE SETTINGS CSS — MOVED OUT (1 Sep 2026) ═══════════════════
-   The `st*` and `stc*` stylesheets left this block for `_settings-module.css`, loaded by a
-   `<link>` placed immediately after this block's closing tag. ⚠️ THAT TAG IS NOT WRITTEN OUT
+   The `st*` and `stc*` stylesheets left this block for `setting.js`, which injects them as a
+   `<style>` appended to <head> — so they still land after this block in document order and still
+   win the ties they used to, exactly as the `<link>` that preceded them did (they were a separate
+   stylesheet from 1 Sep to 12 Sep 2026). ⚠️ THIS BLOCK'S CLOSING TAG IS NOT WRITTEN OUT
    ANYWHERE IN THIS COMMENT, and it must not be: the HTML parser leaves "in style" mode on the
    literal characters `</styl` + `e>` even inside a CSS comment, so writing the tag here ends
    the stylesheet and the rest of it renders as text down the page. It was written here once
@@ -8691,7 +8693,7 @@ html[data-theme="light"] #drawer-layout{
 
 /* ══ AGENTIC AI CSS — MOVED OUT (1 Sep 2026) ══════════════════════════════════════════════
    The `ag*` stylesheet, and the ObserveOps design-system token block scoped to
-   `#agPage,#agWiz` that it needs, are in `_settings-module.css`. ⚠️ THOSE TOKENS ARE SCOPED
+   `#agPage,#agWiz` that it needs, are in `setting.js`. ⚠️ THOSE TOKENS ARE SCOPED
    ON PURPOSE and must stay that way — the DS ships its LIGHT values on `:root`, which is the
    opposite of this prototype's convention, so linking the DS's own CSS would repaint the
    whole page. See `_ds/README.md`.
@@ -9035,7 +9037,6 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
-<link rel="stylesheet" href="_settings-module.css">
 </head>
 <body>
 <!-- ⚠️ THE AI MARK'S GRADIENT, DEFINED ONCE FOR THE WHOLE DOCUMENT (request, 9 Sep 2026: the
@@ -9492,7 +9493,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 
     <!-- ══════ SETTINGS MODULE — MOVED OUT (1 Sep 2026) ══════════════════════════════════
          `<section class="view" id="view-settings">` is injected here, in this exact
-         position (before `#view-manage`), by `_settings-module.js`. It is not authored in
+         position (before `#view-manage`), by `setting.js`. It is not authored in
          this file any more; see that file's header for the load-order contract. -->
 
     <!-- ══════ LOG EXPLORER MODULE — cloned from live 8.2.6 /log/ (17 Aug 2026) ══════
@@ -11482,7 +11483,7 @@ function pickRail(i){
      every deep link into Settings — `stOpen(cat, page)` calls `selectModuleByName` AFTER setting
      the page, so the module would immediately throw that page away and land on the first one.
      The flyout's category rows, the profile menu's My Profile and the AI panel all go that way.
-     ⚠️ GUARDED, because `stOpen` lives in `_settings-module.js` — a later file. At click time it
+     ⚠️ GUARDED, because `stOpen` lives in `setting.js` — a later file. At click time it
      is long since parsed; the guard costs nothing and keeps a missing module file from turning
      a rail click into a dead row. */
   if (RAIL[i].mod === 'Settings' && typeof stOpen === 'function'){ stOpen(); return; }
@@ -11580,7 +11581,7 @@ const mfAttr = v => JSON.stringify(v||'').replace(/"/g,'&quot;');
    ⚠️ `ST_ICO` VALUES ARE A BARE PATH `d`, not an `{viewBox, paths}` record like `ICONS`, and they
    are all authored on the same 48x48 grid — hence the hand-built `<svg>` rather than a second
    call into `ico()`.
-   ⚠️ `ST_ICO` IS DECLARED IN A LATER `<script>` (it is in `_settings-module.js`), so it does not
+   ⚠️ `ST_ICO` IS DECLARED IN A LATER `<script>` (it is in `setting.js`), so it does not
    exist while this block is parsing. That is safe ONLY because the flyout builds lazily on first
    hover — the same timing `mfTreeFor` already depends on for `ST_TREE` — and the try/catch makes
    it structural rather than a matter of luck. A bare `typeof` guard is NOT enough on a `const`
@@ -21475,10 +21476,10 @@ let AI_TW = null;         /* the one reveal in flight — there is never more th
    it directly, and 6/7/8/9 descend from 5. Its `ai*` panel, `lx*` Log Explorer, `st*` Settings, the
    Manage screen, the Layout drawer and the keyboard registry are in every one of them, with NOTHING
    SYNCING ANY OF IT. A change meant for that lineage is now an EIGHT-file change.
-   ⚠️ IT DOES NOT SHARE OPTION 1'S EXTERNAL FILES. `index.html` alone loads `_settings-module.css`
-   and `_settings-module.js` — this copy loads the SAME two files, so a change to them lands here
-   too, whether or not that was meant. That is the one part of this page that IS synced, and it is
-   synced by accident of the copy rather than by design.
+   ⚠️ THE SETTINGS MODULE IS THE ONE PART THAT IS SHARED. Every option loads the same
+   `setting.js`, so a change to it lands in all thirteen whether or not that was meant. Since
+   12 Sep 2026 that is true BY CONSTRUCTION rather than by accident of the copy — it is the
+   only thing in this folder with a single owner.
    ⚠️ THE FILENAME DESCRIBES THE SIDEBAR, NOT THE INTENT — Option 1's own `index.html` is a vestigial
    name it keeps only because GitHub Pages serves it at the root; the pattern is an icon rail with a
    hover mega-menu flyout, so that is what this one is called. The moment it becomes something else,
@@ -28313,7 +28314,7 @@ function lxLtPaint(){
 
 <!-- ══ SETTINGS MODULE — MOVED OUT (1 Sep 2026) ══════════════════════════════════════════
      The three `<script>` blocks that used to sit here — `st*` (My Profile), `stc*`
-     (Compliance Settings) and `ag*` (Agentic AI) — are in `_settings-module.js`, loaded a
+     (Compliance Settings) and `ag*` (Agentic AI) — are in `setting.js`, loaded a
      few lines below, immediately after the design-system bundle it depends on.
      ⚠️ THE POSITION IS THE CONTRACT, not a formatting choice. It is a plain parser-blocking
      `<script src>` so those blocks' top-level declarations still land in the same global
@@ -28333,7 +28334,18 @@ function lxLtPaint(){
      prototype's theme convention). Only the elements bundle is loaded. -->
 <script src="_ds/observeops-elements.umd.js"></script>
 
-<script src="_settings-module.js"></script>
+<!-- ⚠️ THE SETTINGS MODULE — ONE FILE, ONE TAG (12 Sep 2026). `setting.js` carries the whole
+     module: its stylesheet (which it injects into <head> itself, so there is no <link> to keep
+     in step), the `<section id="view-settings">` markup, and the `st*` (My Account › My
+     Profile), `stc*` (Compliance Settings) and `ag*` / `lic*` (Agentic AI, Product License)
+     blocks. It replaced the two files that preceded it, which are gone.
+     ⚠️ A PLAIN, PARSER-BLOCKING `<script src>` — no `defer`, no `async`, NOT `type=module`:
+     those blocks were classic inline scripts and their top-level declarations have to land in
+     the SAME global scope, which is the only reason this page’s `stInit()` / `stOpen()` /
+     `ST_TREE` / `ST_ICO` references still resolve. ⚠️ IT MUST LOAD AFTER the design-system
+     bundle above — the Agentic AI screen is built out of real `obs-*` custom elements.
+     See `setting.js`’s own header for the rest of the contract. -->
+<script src="setting.js"></script>
 
 <script src="_variants.js"></script>
 <!-- Agentation visual-feedback widget (DEV-ONLY: loads only on file:// / localhost;

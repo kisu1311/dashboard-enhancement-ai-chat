@@ -6920,8 +6920,10 @@ html[data-theme="light"] .lxhist rect{fill:var(--teal)}
 @media (max-width:1300px){ body.lxopen .lxpanel{flex:0 0 208px;width:208px} .lxfacets{flex:0 0 182px}
   .lxqb{grid-template-columns:repeat(3,1fr);row-gap:10px} .lxstamp{display:none} }
 /* ══ SETTINGS MODULE + COMPLIANCE SETTINGS CSS — MOVED OUT (1 Sep 2026) ═══════════════════
-   The `st*` and `stc*` stylesheets left this block for `_settings-module.css`, loaded by a
-   `<link>` placed immediately after this block's closing tag. ⚠️ THAT TAG IS NOT WRITTEN OUT
+   The `st*` and `stc*` stylesheets left this block for `setting.js`, which injects them as a
+   `<style>` appended to <head> — so they still land after this block in document order and still
+   win the ties they used to, exactly as the `<link>` that preceded them did (they were a separate
+   stylesheet from 1 Sep to 12 Sep 2026). ⚠️ THIS BLOCK'S CLOSING TAG IS NOT WRITTEN OUT
    ANYWHERE IN THIS COMMENT, and it must not be: the HTML parser leaves "in style" mode on the
    literal characters `</styl` + `e>` even inside a CSS comment, so writing the tag here ends
    the stylesheet and the rest of it renders as text down the page. It was written here once
@@ -7075,7 +7077,7 @@ html[data-theme="light"] #drawer-layout{
 
 /* ══ AGENTIC AI CSS — MOVED OUT (1 Sep 2026) ══════════════════════════════════════════════
    The `ag*` stylesheet, and the ObserveOps design-system token block scoped to
-   `#agPage,#agWiz` that it needs, are in `_settings-module.css`. ⚠️ THOSE TOKENS ARE SCOPED
+   `#agPage,#agWiz` that it needs, are in `setting.js`. ⚠️ THOSE TOKENS ARE SCOPED
    ON PURPOSE and must stay that way — the DS ships its LIGHT values on `:root`, which is the
    opposite of this prototype's convention, so linking the DS's own CSS would repaint the
    whole page. See `_ds/README.md`.
@@ -7461,7 +7463,6 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 </style>
-<link rel="stylesheet" href="_settings-module.css">
 </head>
 <!-- ⚠️ `skshut` IS THE BOOT STATE (5 Sep 2026) — see `SK.col` in the `sk*` block for why, and
      why the class and the flag must agree. -->
@@ -7788,7 +7789,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 
     <!-- ══════ SETTINGS MODULE — MOVED OUT (1 Sep 2026) ══════════════════════════════════
          `<section class="view" id="view-settings">` is injected here, in this exact
-         position (before `#view-manage`), by `_settings-module.js`. It is not authored in
+         position (before `#view-manage`), by `setting.js`. It is not authored in
          this file any more; see that file's header for the load-order contract. -->
 
     <!-- ══════ LOG EXPLORER MODULE — cloned from live 8.2.6 /log/ (17 Aug 2026) ══════
@@ -25045,7 +25046,7 @@ function lxLtPaint(){
 
 <!-- ══ SETTINGS MODULE — MOVED OUT (1 Sep 2026) ══════════════════════════════════════════
      The three `<script>` blocks that used to sit here — `st*` (My Profile), `stc*`
-     (Compliance Settings) and `ag*` (Agentic AI) — are in `_settings-module.js`, loaded a
+     (Compliance Settings) and `ag*` (Agentic AI) — are in `setting.js`, loaded a
      few lines below, immediately after the design-system bundle it depends on.
      ⚠️ THE POSITION IS THE CONTRACT, not a formatting choice. It is a plain parser-blocking
      `<script src>` so those blocks' top-level declarations still land in the same global
@@ -25065,7 +25066,18 @@ function lxLtPaint(){
      prototype's theme convention). Only the elements bundle is loaded. -->
 <script src="_ds/observeops-elements.umd.js"></script>
 
-<script src="_settings-module.js"></script>
+<!-- ⚠️ THE SETTINGS MODULE — ONE FILE, ONE TAG (12 Sep 2026). `setting.js` carries the whole
+     module: its stylesheet (which it injects into <head> itself, so there is no <link> to keep
+     in step), the `<section id="view-settings">` markup, and the `st*` (My Account › My
+     Profile), `stc*` (Compliance Settings) and `ag*` / `lic*` (Agentic AI, Product License)
+     blocks. It replaced the two files that preceded it, which are gone.
+     ⚠️ A PLAIN, PARSER-BLOCKING `<script src>` — no `defer`, no `async`, NOT `type=module`:
+     those blocks were classic inline scripts and their top-level declarations have to land in
+     the SAME global scope, which is the only reason this page’s `stInit()` / `stOpen()` /
+     `ST_TREE` / `ST_ICO` references still resolve. ⚠️ IT MUST LOAD AFTER the design-system
+     bundle above — the Agentic AI screen is built out of real `obs-*` custom elements.
+     See `setting.js`’s own header for the rest of the contract. -->
+<script src="setting.js"></script>
 
 <script src="_variants.js"></script>
 <!-- Agentation visual-feedback widget (DEV-ONLY: loads only on file:// / localhost;

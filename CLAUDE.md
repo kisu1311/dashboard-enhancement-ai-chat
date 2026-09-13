@@ -105,10 +105,12 @@ life with the 11 Sep Explorer pass already in it. A change meant for every optio
 the same trap Options 5/8 have with `pl*` and 6/9 with `sk*`. Option 10 carries a session's worth
 of things Option 1 does not — the Explorer module grid, per-tile pins, the temporary rail row, the
 pinned-row child menu, the gradient AI mark, the hover notification card — and all of it now exists
-**four times**. ⚠️ **Options 1, 10 and 11 all load `_settings-module.css` / `.js`**, so a change there lands
-in three pages whether or not that was meant — the one thing that IS synced, by accident of the copy;
-Options 5 and 8 share the `pl*` namespace and Options 6 and 9 share `sk*`, with **nothing syncing
-either pair**. Each option's own sidebar block is the only
+**four times**. ⚠️ **ALL THIRTEEN OPTIONS LOAD `setting.js`** (the last three inline copies went
+on 12 Sep 2026, and the two files merged into one later the same day), so a change to the Settings
+module lands in **every page** whether
+or not that was meant — the one thing that IS synced, and now by construction rather than by accident
+of the copy; Options 5 and 8 share the `pl*` namespace and Options 6 and 9 share `sk*`, with **nothing
+syncing either pair**. Each option's own sidebar block is the only
 part that differs; everything below this line describes content they all carry.
 
 Four pages are in the switcher, labelled **Option 1 / 2 / 3 / 4**. All of them carry the
@@ -151,6 +153,14 @@ made twice**, and that is the same cost the other options already carry.
   original AI prototypes the panel was ported from. **The only copies that exist**
   (their old `AI_Chat_Interface/` folder is gone). Kept out of the folder root so
   the variant sync ignores them. Reference only — do not delete.
+- **`setting.js`** — **the whole Settings module, in one file, loaded by all thirteen pages**
+  (12 Sep 2026). PART 1 is its stylesheet, which injects itself as a `<style>`; PART 2 is the
+  `#view-settings` markup plus the `st*` (My Profile), `stc*` (Compliance Settings) and
+  `ag*` / `lic*` (Agentic AI, Product License) blocks. One `<script src>` per page, placed
+  after the design-system bundle — there is no `<link>`. It replaced the pair
+  `_settings-module.css` + `_settings-module.js`, which are **deleted**.
+  ⚠️ **EVERY BACKTICK IN PART 1 IS WRITTEN `` \` ``** — the CSS lives in a template literal and
+  its comments are full of code names. `node --check setting.js` after editing there.
 - `Dashboard-Research-Notes.md` — the verified product research (see MANDATORY
   above). `_variants.js` + `_sync_variants.js` — variant switcher + auto-sync.
 
@@ -449,10 +459,12 @@ put a colour in the file no token owns — the send-button rule):
 > NOT on the instance. See *The 31 Aug 2026 pass*.
 
 ⚠️ **IN OPTION 1 THIS BLOCK NO LONGER LIVES IN THE PAGE** (1 Sep 2026) — its CSS is
-`_settings-module.css` and its markup + all three script blocks are `_settings-module.js`.
+`setting.js`'s PART 1 and its markup + all three script blocks are that same file's PART 2.
 Everything below still describes it exactly; only its address changed. See *"The Settings
-module lives in its own files now"* above for the load-order contract. Options 2, 3 and 4
-still carry it inline, so **the block is no longer byte-identical across the four files**.
+module lives in its own files now"* above for the load-order contract. ⚠️ **SINCE 12 Sep 2026
+EVERY OPTION READS IT FROM THOSE TWO FILES** — Options 2, 3 and 4 were the last three carrying
+their own inline copy and no longer do, so "the Settings block is one copy" is true by
+construction rather than by discipline. See *"Options 2, 3 and 4 share the Settings module too"*.
 
 Until 19 Aug 2026 the rail's **Settings** entry landed on the generic `#view-module`
 placeholder. It is **a real module screen now**, read off live build 8.2.7 at
@@ -461,8 +473,8 @@ component's own render template and vee-validate rules (pulled out of `__vue__`)
 state driven by hand — then rebuilt, not invented. Like the `lx*` module it is **one CSS
 block + one `<section id="view-settings">` + one `<script>` block, byte-identical in all
 three files** (md5-checked), so a change is a three-file change. ⚠️ **NOT ANY MORE IN
-OPTION 1** — since 1 Sep 2026 those three pieces are `_settings-module.css` and
-`_settings-module.js`; the other three options still hold them inline. Namespace `st` — `.st*`,
+OPTION 1, OR IN ANY OTHER** — since 12 Sep 2026 all three pieces are in `setting.js`, which every
+option loads (they were `_settings-module.css` + `_settings-module.js` from 1 Sep). Namespace `st` — `.st*`,
 `st*()`, `ST_*`; it borrows only `toast()`, `showView()`, `selectModuleByName()`,
 `closePops()` from the host. The build is scripted — the generator that assembles the blocks
 from the harvested JSON (`_verify/_out/live-settings-nav.json`, `live-settings-subs.json`,
@@ -535,6 +547,18 @@ it sets the category/page, expands it, clears the search, then routes through
 
 ## The Settings module lives in its own files now (`_settings-module.*`, 1 Sep 2026)
 
+> ⚠️ **SUPERSEDED 12 Sep 2026 — THE TWO FILES ARE ONE FILE, `setting.js`, AND BOTH ARE DELETED.**
+> Request: *"create new file the name is 'setting' and all setting related all will be in this
+> file"*. `_settings-module.css` became **PART 1** of `setting.js` (it injects itself as a
+> `<style>`) and `_settings-module.js` became **PART 2**, verbatim. Every page loads the one file
+> with one tag; there is no `<link>` any more.
+>
+> **Reading anything below, or anywhere later in this file: `_settings-module.css` and
+> `_settings-module.js` both mean `setting.js` now.** The dated entries are kept as written
+> because they record why each decision was made — only the address changed. See
+> *"One file called `setting.js`"* for what did change, including the one note this merge
+> directly reverses.
+
 Request: *"inside the setting module related all code will be copy and create setting module
 file and all setting code move in new file"*. **Option 1 only** — `index.html` went
 **2,024,257 → 1,700,157 bytes** (26,925 → 23,814 lines) and the module moved out whole:
@@ -544,9 +568,10 @@ file and all setting code move in new file"*. **Option 1 only** — `index.html`
 | **`_settings-module.css`** | the `st*` + `stc*` CSS (was lines 6784–7150) and the `ag*` CSS with its scoped DS token block (was 7294–8295) — 1,369 lines of that file's single `<style>` |
 | **`_settings-module.js`** | the `<section id="view-settings">` chrome (was 8576–8598) and the three `<script>` blocks — `st*` (My Profile), `stc*` (Compliance Settings), `ag*` (Agentic AI) — 1,744 lines |
 
-The page loads them with `<link rel="stylesheet" href="_settings-module.css">` immediately
+The page loaded them with `<link rel="stylesheet" href="_settings-module.css">` immediately
 after its inline stylesheet, and `<script src="_settings-module.js"></script>` immediately
-after the design-system bundle. **Nothing about the module's behaviour changed** — see
+after the design-system bundle. **Since 12 Sep 2026 it is one `<script src="setting.js">` after
+that bundle and no `<link>` at all** — the stylesheet injects itself. **Nothing about the module's behaviour changed** — see
 *"Proving it did not change"* below.
 
 ### The load-order contract, and why each half of it exists
@@ -634,14 +659,201 @@ of them. ⚠️ The `<base>` must sit ahead of anything it is meant to resolve, 
 opened over **http** rather than `file://` will now fail to load its assets — that is the tag
 doing its job, not a fault.
 
-### ⚠️ The other three options still carry their own copy
+### ⚠️ The other three options still carry their own copy — *resolved 12 Sep 2026*
 
-`dashboard-grouped-sidebar.html`, `dashboard-picker-advanced.html` and `dashboard-labelled-rail.html` keep the
-Settings module inline, so the block is **no longer byte-identical across the four files** —
-the property CLAUDE.md has asserted since 19 Aug 2026. Pointing them at these two files is one
-`<link>` and one `<script src>` each, plus deleting their copies, and it would make that
-property true by construction instead of by discipline. It was **not** done here: the request
-named `index.html`.
+`dashboard-grouped-sidebar.html`, `dashboard-picker-advanced.html` and `dashboard-labelled-rail.html` kept the
+Settings module inline, so the block was **no longer byte-identical across the four files** —
+the property CLAUDE.md had asserted since 19 Aug 2026. Pointing them at these two files was one
+`<link>` and one `<script src>` each, plus deleting their copies, and it makes that property
+true by construction instead of by discipline. It was **not** done on 1 Sep (the request named
+`index.html`); it **was** done on 12 Sep — see *"Options 2, 3 and 4 share the Settings module
+too"* below.
+
+## One file called `setting.js` (12 Sep 2026)
+
+Request: *"create new file the name is 'setting' and all setting related all will be in this
+file"*. `_settings-module.css` and `_settings-module.js` are **deleted**; `setting.js` holds the
+whole module and every one of the thirteen pages loads it with **one tag**:
+
+```html
+<script src="_ds/observeops-elements.umd.js"></script>
+<script src="setting.js"></script>
+```
+
+| | |
+|---|---|
+| **PART 1** | the stylesheet — `st*`, `stc*`, `ag*`/`lic*` and the scoped DS token block |
+| **PART 2** | `_settings-module.js` verbatim — the `#view-settings` markup it injects, then `st*`, `stc*`, `ag*`/`lic*` |
+
+476 KB, 4,963 lines. There is **no `<link>` any more** and nothing to keep in step: PART 1
+injects itself.
+
+### ⚠️ THIS REVERSES A RECORDED DECISION, AND THE REASON FOR IT IS STILL TRUE
+
+The 1 Sep entry *"Why the CSS is a `.css` file and not a string inside the `.js`"* argued against
+exactly this, and its own closing line admits **a single file is what was agreed up front**. So
+this is the original ask being carried out, not a new idea — but the hazard it named is real and
+is now live in the file:
+
+⚠️ **THE CSS LIVES IN A TEMPLATE LITERAL, SO EVERY BACKTICK IN PART 1 IS WRITTEN `` \` ``.**
+866 of them at the time of the merge (the 1 Sep note counted 218 — it grew). A template literal
+ends at the first unescaped backtick, and these comments are full of `--primary`-style code names,
+so a comment typed naturally is a syntax error hundreds of lines from where it looks like the
+problem is. **It bit within minutes**: writing this very entry's cross-reference into PART 1
+broke the file. `node --check setting.js` named the line in one second, which is why the file's
+own header says to run it.
+
+Nothing else needed escaping, and that was measured rather than assumed: the stylesheet contains
+**no backslashes and no `${`**, both asserted by the builder, so the escaped text round-trips to
+the original **byte for byte** — verified by running PART 1 under a stubbed `document` and
+comparing the captured 125,449 bytes against the deleted file.
+
+⚠️ **Three alternatives were considered and rejected**, so nobody re-derives them: a block-comment
+heredoc read back through `Function.prototype.toString()` dies because the CSS is full of `*/`;
+`fetch`ing a sibling file is blocked by CORS on `file://`, which these prototypes must open under;
+and rewriting the 866 backticks to another character would edit the documentation to suit the
+container.
+
+### ⚠️ The stylesheet is injected into `<head>`, and that is what preserves the cascade
+
+Each page is one flat stylesheet where source order decides every tie at equal specificity, and
+the `<link>` this replaces sat immediately after the page's inline `</style>`. `appendChild` on
+`<head>` puts the `<style>` in the same place in document order, so a rule still wins the ties it
+used to win. It runs at parse time of `setting.js`, not on `load`; there is no flash either way,
+because `#view-settings` is a `.view` section and is hidden until something opens it.
+⚠️ `textContent`, never `innerHTML` — a stylesheet is text.
+⚠️ The injector is idempotent (`if (document.getElementById('settings-css')) return;`).
+
+### What else had to follow the rename
+
+- **13 HTML pages** — the `<link>` removed, the script pointed at `setting.js`, **and 61 prose
+  cross-references fixed**. Those matter: a comment pointing at a file that no longer exists is
+  how the next reader loses an hour. Two of them were stale claims in their own right and were
+  rewritten rather than repointed — *"IT DOES NOT SHARE OPTION 1'S EXTERNAL FILES"* (4 pages) and
+  its Option 10 variant, both of which described the Settings module as synced *by accident of the
+  copy*. It is synced by construction now.
+- **`_verify/dsconf.py`** — the one script that reads the stylesheet **as text**, to lift the DS
+  token block out of it. It now reads `setting.js` and **unescapes the backticks** first.
+- **`_verify/stbehave.py`** — its auto-discovery marker.
+- **`behave.py` / `lxbehave.py` / `shoot.py`** — prose only; they name the assets their `<base>`
+  tag exists to resolve.
+- ⚠️ **Three headers inside `setting.js` still described the old world and were reconciled in
+  place** rather than deleted: the stylesheet's own title line, the *"why this is a `.css` file"*
+  note (now marked as the live caveat it has become), and *"Its stylesheet is the sibling
+  `_settings-module.css`"*.
+
+### Verification
+
+`stbehave` **ALL 21 PASS × 13 pages** · `lxbehave` **ALL 57 PASS × 13** · `harness … query`
+**ALL 77 PASS** on Options 1, 2 and 13 (all seven resolutions) · `node --check` clean · the
+extracted stylesheet brace-balanced and byte-identical to the deleted file · My Profile, License,
+Compliance Policy and Agentic AI screenshotted on three pages in **dark and light**.
+
+⚠️ **The deleted files are one command away** if this is ever unwound:
+`git checkout HEAD -- _settings-module.css _settings-module.js`.
+
+## Options 2, 3 and 4 share the Settings module too (12 Sep 2026)
+
+Request: *"in this file the 'setting' module will be move new Setting file"*. `index.html` was
+open, but its Settings module moved out on 1 Sep and it carries **zero** inline `st*` / `stc*` /
+`ag*` / `lic*` code — so the ask could only be about the three options that still had their own
+copy. Asked which, and whether to share the existing pair or give each page its own file;
+answered **all three, sharing `_settings-module.{css,js}`** — which those two files still were at
+that point in the day; they were merged into `setting.js` a few hours later, so read every
+`_settings-module.*` below as that one file.
+
+| | was | now | |
+|---|---|---|---|
+| `dashboard-grouped-sidebar.html` | 903,951 B / 11,496 lines | **506,111 B / 7,602** | −44% |
+| `dashboard-picker-advanced.html` | 972,532 B / 12,198 lines | **574,692 B / 8,304** | −41% |
+| `dashboard-labelled-rail.html` | 2,190,286 B / 28,932 lines | **1,813,829 B / 25,293** | −17% |
+
+Each page lost the same five regions `index.html` lost on 1 Sep — the `st*`+`stc*` CSS, the `ag*`
+CSS, the `<section id="view-settings">` markup and the three `<script>` blocks — and gained the
+same two tags in the same two places: the `<link>` immediately after its inline `</style>`, and
+the `<script src>` immediately after `_ds/observeops-elements.umd.js`.
+
+### ⚠️ IT IS NOT A PURE REFACTOR — the three pages were BEHIND, and they moved forward
+
+Their inline copies had drifted: **none of them had the License page at all** (`lic*`, built
+7 Sep — `licRadioSync` count 0 against the shared file's 3) and their Agentic AI block was older
+(`agTap` 7–9× against 17×). Option 4's was furthest behind, exactly as the 1 Sep note said: it
+had `.aggrid` / `.agkpi` / `.agcht` — hand-built KPI tiles and charts — where the shared module
+renders DS widgets inside `obs-table`'s shadow root. **So this change also gave all three the
+License page and the current Agentic AI screen.** That was accepted deliberately and is the
+point of sharing; it is recorded here because a reader diffing screenshots will see new screens
+that no request in this file asked for on those pages.
+
+### ⚠️ WHAT HAD TO STAY BEHIND: `.sdrawer` / `.dr-h` / `.dr-b` in Options 2 and 3
+
+Those five rules sit **inside** the `ag*` CSS region but are **generic page chrome, not `ag*`**.
+Option 1 declares them in its own stylesheet, so `_settings-module.css` does not carry them —
+and Options 2 and 3 have exactly one definition each, the one ported on 2 Sep so
+`agConfig` would have a drawer to open. Moving them out would have left `#drawer-agcfg` (which
+IS in the shared file) styling an element with no base rules: **Configure AI provider would
+have opened nothing, silently** — the same regression that port existed to prevent. They stay
+in the page at the point the settings CSS used to begin, i.e. still before the `<link>`, which
+is the same relative order `index.html` has. There is a comment at the rules saying so.
+⚠️ Option 4 needed no such carve-out — it is an Option 1 copy and declares `.sdrawer` natively,
+far outside the settings region.
+
+### ⚠️ Option 4 has TWO CSS regions, not one, and the `#drawer-layout` block sits between them
+
+Options 2 and 3 run `st*` → `stc*` → `ag*` as one contiguous block. Option 4 is an Option 1 copy,
+so it has the **original** arrangement `index.html` had: `st*`+`stc*`, then the *"ObserveOps
+DESIGN SYSTEM LAYER"* block (the Dashboard-layout drawer, `#drawer-layout`), then `ag*`. Cutting
+it as one region takes the Layout drawer with it. A first pass did exactly that **and** stopped
+its end anchor one line late, eating the DS LAYER banner's opening line; caught by the
+before/after selector diff, reverted from the backup and redone as two regions.
+
+### Two changes to the module (now `setting.js`), both of which make it more portable
+
+- **The injection anchor is tried in authored order.** It was `#view-manage` or else append.
+  Options 2 and 3 have **no `#view-manage`** — `#view-settings` was authored immediately before
+  `#view-logexp` there — so the fallback would have appended Settings at the END of `.main`, a
+  different sibling order from the one those pages shipped with. It is
+  `getElementById('view-manage') || getElementById('view-logexp')` now; Options 1 and 4 still
+  match the first, so nothing about them changed. There is a probe assertion that the injected
+  section's next sibling is one of those two on every page.
+- **`stcExport`'s CSV branch is guarded on `lxDownload`.** The shared `stcExport` writes a real
+  file using three Log Explorer helpers — `lxCsvCell`, `lxFileStamp`, `lxDownload` — that **only
+  Options 1 and 4 have**. Options 2 and 3 never gained a file-writing path at all (their own
+  `lxCsv()` is a toast too), and their inline `stcExport` was itself a toast stub, so without the
+  guard the shared one would have thrown where the page used to say plainly that it does not
+  write files. Same guard and same wording as `licHistCsv`, which already had one. ⚠️ The three
+  helpers always ship together, so testing one is enough — but that is a convention, not a
+  guarantee; if they ever separate, `licHistCsv` has the same single-test assumption.
+
+### ⚠️ The verification traps, three of them new
+
+- **A green probe on the page under test means nothing without a control.** The first run
+  reported `profile form rendered → FAIL` on all three edited pages — and on **`index.html`,
+  which was not touched**. The assertion was wrong (the form has no `#stFirst`; it has
+  `#stSaveBtn` and `#stAv`), not the pages. **Probe the untouched page alongside the edited
+  ones**; it is the only thing that separates "I broke it" from "I asserted the wrong thing".
+- **`--dump-dom` run from the project directory returns NOTHING on `dashboard-labelled-rail.html`**
+  — a 0-byte stdout, not a truncated one — and it does so on the **pre-change backup too**, so it
+  is the recorded large-page hang, not a regression. What works is `lxbehave.py`'s shape:
+  write the probe copy into `_verify/_out/` with a `<base href>`, and kill Chrome with
+  `perl -e 'alarm 60; exec @ARGV'` so `subprocess.run` still collects the buffered stdout. A
+  `communicate(timeout=…)` + `killpg` does **not** recover it — the buffer is lost with the process.
+- **`harness.py` prints `-> ok` when it has merely written a PNG.** The verdict is painted INTO
+  the image; read it by re-running the generated `_out/h-*-query.html` under `--dump-dom` and
+  taking the LAST `ALL n PASS` match. Reading the stdout is how a failing layout looks green.
+
+### `_verify/stbehave.py` — a new suite, because there was none for this module
+
+21 assertions per page — the section injected and in its authored position, `stInit`/`stOpen`,
+`ST_TREE`'s 19 categories, `ST_ICO`, all three `ST_PAGES` families, `obs-*` registered, the
+stylesheet actually applied (`.stnav` has a real width, not `auto`), then My Profile, License,
+Compliance Policy and Agentic AI each rendered for real, the list search narrowing and
+restoring, and no console errors. It **auto-discovers** every page containing
+`setting.js`, so a new option is covered without editing it — unlike `lxbehave.py`,
+whose `FILES` list is hardcoded and silently tests the old set when a page is added.
+
+**Verified:** `stbehave` **ALL 21 PASS × 13 pages** · `lxbehave` **ALL 57 PASS × 13** ·
+`behave` **ALL 63 PASS × 3** · `harness … query` **ALL 77 PASS × 3** (all seven resolutions) ·
+My Profile / License / Compliance / Agentic AI screenshotted on all three pages.
 
 ### ⚠️ A concurrent session began editing `_settings-module.js` minutes after it appeared
 
@@ -759,7 +971,7 @@ same way as the `st*` module: Kendo grid DOM + computed styles, the Vue componen
 templates and option lists (`AuditPolicyList` / `AuditPolicyForm` / `BenchmarkList` /
 `RulesList` / `RulesFom` out of `__vue__`), every drawer and picker driven by hand, and the
 two `(i)` help panes' full text. **One CSS block + one `<script>`, byte-identical in the
-three files** (md5-checked) — ⚠️ **in Option 1 both are in `_settings-module.*` now** —
+three files** (md5-checked) — ⚠️ **both are in `setting.js` now, in every option** —
 registered into the `st*` module via `ST_PAGES` — there is no
 new markup section; `#stMain` hosts everything. Namespace `stc*` / `STC_*`; borrows
 `stEsc` / `stA` / `stFullOpen` / `stFullClose` / `stMainPaint` / `toast` and the `st`
@@ -3388,11 +3600,14 @@ The Agentic AI screen was **deleted on request** ("clear all screen, today i wan
 new") and rebuilt from scratch, one supplied reference at a time, on the real `obs-*`
 elements. ⚠️ Where this section conflicts with *"The 31 Aug 2026 pass"*, this one is current.
 
-⚠️ **IT IS IN FOUR PLACES NOW, IN TWO SHAPES.** Option 1 reads it from `_settings-module.js`
-/ `.css`; Options 2, 3 and 4 still carry it inline. Every change below had to be made two or
-three times. **Option 4 was copied mid-session and is BEHIND** — it has `.aggrid` and the
-wizard but not the help card, the per-provider icons, the usage `obs-table`, `agSeed` or the
-three-provider rows.
+⚠️ **SUPERSEDED 12 Sep 2026 — IT IS IN ONE PLACE NOW.** Every option reads it from
+`setting.js`; a change below is a ONE-file change. This paragraph used to
+read *"it is in four places now, in two shapes"* and warned that **Option 4 was copied
+mid-session and was BEHIND** — it had `.aggrid` and the wizard but not the help card, the
+per-provider icons, the usage `obs-table`, `agSeed` or the three-provider rows. That drift is
+gone: Options 2, 3 and 4 dropped their own copies and took the shared one, which is also how
+they gained the **License** page they never had. Kept as the record of what the divergence was,
+because the screenshots in this file predate the merge.
 
 ### What the screen is
 
@@ -6276,7 +6491,8 @@ both surfaces are `#ffffff`, so that border is the only thing dividing the rail 
 
 ## Settings › My Account › License — Product License, on the design system (7 Sep 2026)
 
-**Option 1 only** (`_settings-module.js` / `.css`, registered as `ST_PAGES['My Account › License']`,
+**Every option** (in `setting.js`; built for Option 1 alone, and reaching the rest when they
+adopted the shared module on 12 Sep 2026), registered as `ST_PAGES['My Account › License']`,
 namespace `lic*` / `LIC_*` / `.lic*`, grepped free first). Built from **live build 10.0.1** at
 `/settings/my-account/license` — the DOM and computed styles, the Vue components read out of
 `__vue__` (`LicenseDetails` · `LicenseQuotaUsageTab` · `LicenseQuotaRow` · `LicenseHistoryModal`
@@ -6316,12 +6532,12 @@ and the only thing still drawn is the two line charts.
 |---|---|
 | header | `obs-page-header` — `heading`, the licence status as an `obs-tag` in the `title` slot, actions in the default slot, `no-divider` because the tab bar rules. Nothing else: the record lives in the overview widgets |
 | tabs | `obs-tabs` with `icon`s; the active key is read back through a **MutationObserver on the reflected `value` attribute** |
-| overview | **three DS widgets** (`obs-toolbar variant="widget"` header + body, the EPS tab's own tile): **Edition** (the name as page text, `obs-tag`s, the guide's line, `obs-key-value` for License Type · Account) · **Validity** (`obs-metric-list` for days left, coloured by a severity token at ≤ 90 / ≤ 30 days, and a one-row `obs-table` whose `bar` cell is the term elapsed) · **Support & renewal** (the License Guide's Support & Contact as `obs-link`s, one line on overages, an `obs-button` into the Activation Code modal). Below 1366px Edition spans the row and the other two share the next. ⚠️ **Two shapes were rejected the same day**: an `obs-key-value` card beside an `obs-metric-list` (*"very bad ui"* — two unrelated tables), then the header's detail-meta strip (*"also bad ui"* — a line of small labelled text is the RUM span header, not an overview). Don't try either a third time |
+| overview | **three DS widgets** (`obs-toolbar variant="widget"` header + body, the EPS tab’s own tile). ⚠️ **REBUILT 12 Sep 2026** — read *"The License page, re-audited against the DS"* below for the current shape and for why. As built on 7 Sep: **Edition** (the name as page text, `obs-tag`s, the guide’s line, `obs-key-value` for License Type · Account) · **Validity** (`obs-metric-list` for days left, coloured by a severity token at ≤ 90 / ≤ 30 days, and a one-row `obs-table` whose `bar` cell is the term elapsed) · **Support & renewal** (obs-links + a neutral obs-button). The edition display line and that one-row table are both gone: they were the two component **mis-selections** a 100/100 conformance score cannot detect. |
 | section heads | **`obs-toolbar`** (grid variant): the title in `start`, the hint and the control after it |
 | quota usage | **`obs-table expandable`** — `link` · text · `bar` · `sparkline` · `status` · `button` cells |
 | the expandable detail | **DS all the way down, inside the shadow root**: `obs-banner variant="info" title="Metered per"` for the guide's rule, `obs-key-value variant="plain" columns="2"` for the agentless/agent (or monolith/agent) split, and a **nested `obs-table`** whose `bar` cells carry the by-type share (7 rows for Monitored Devices). Nested custom elements written into the detail DO upgrade (measured) |
 | range | `obs-radio as-button size="small"` — the DS's own *time range 1h/24h/7d/30d* example. ⚠️ `segmented` / `variant="segmented"` render a plain radio list; **`as-button`** is the attribute the element actually reads. ⚠️ **Option values must be STRINGS and the selection is set as a PROPERTY** (`el.value = '30'`): it compares strictly, numeric options never match, and the `value` attribute alone does not select — the switch showed no selected segment for a day (`licRadioSync`) |
-| History | the **house drawer** (`stcDrOpen`): the token as an `obs-tag`, `obs-radio` range, **`obs-metric-list`** for the five figures, a line chart against the cap (gap), `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
+| History | the DS’s own **`obs-drawer`** (⚠️ **since 12 Sep 2026**; it was the house drawer, `stcDrOpen`, and the swap needed two documented work-arounds — see the re-audit section below): the token as an `obs-tag`, `obs-radio` range, **`obs-metric-list`** for the five figures, a line chart against the cap (gap), `obs-button` Close / Export as CSV — a real file via `lxDownload`, the live's own columns |
 | Upgrade Now | **`obs-modal`** "Activation Code" — a **read-only labelled `obs-input`** carrying the current code + an `obs-button` copy, an `obs-link` mailto, an `obs-input type="textarea" block` with its own label, Cancel · Activate License; the primary is disabled until a code is pasted and the hint says so; Activate replaces the licence (Annual Subscription, one year from today) and repaints |
 | EPS tab | two **widget tiles** (`obs-toolbar variant="widget"` header + `obs-metric-list` / `obs-key-value` body) · `obs-toolbar` section heads · `obs-table` with `bar` cells · a legend of **`obs-tag`s** · five widget tiles, each `obs-toolbar` (title + window / avg / peak / util as tags) over an `obs-metric-list` row (the live figure) over a line chart dashed at the allocation (gap) |
 
@@ -6421,6 +6637,208 @@ user is not looking at that window: `setTimeout` is throttled to once a minute, 
 screenshot fails with *"Script injection timed out"*. The 900 ms activation timer "never
 fired" and the page "froze" for an hour before this was measured. Sync JS probes still work
 there; anything timer-, animation- or screenshot-shaped goes headless.
+
+## The License page, re-audited against the DS (12 Sep 2026)
+
+Request: *"we need to change 'Product License' components in setting module … using the ObserveOps
+design system"*. **Measured first, and the page was already conformant** — the DS's own shipped
+Playwright checker scored it **100/100 on both tabs** (token / component / philosophy / layout),
+and `validate_render` found nothing. So the ask was put back as a question, and the answer was:
+the three overview cards, the History drawer, and the look.
+
+### ⚠️ THE CHECKER CANNOT SEE A MIS-SELECTED COMPONENT — it counts DS-ness, not fitness
+
+Two real faults survived a perfect score, and both were found by reading the components'
+**`decisionFlow` / `dont`** in the registry rather than by running anything:
+
+- **`Issued · Expires · Term elapsed` was a one-row `obs-table` with a `bar` cell.** Those are ONE
+  record's fields. `obs-key-value`'s decisionFlow: *"Label→value pairs describing ONE record? ->
+  Key-Value"*; `obs-table` is for *"rows of MANY records"*. The nested table also drew a header
+  (ISSUED | EXPIRES | TERM ELAPSED) over a single row, which out-weighed the **neighbouring**
+  card's key-value labels — so two adjacent cards spoke two languages for one job.
+- **The edition name was a raw `<div class="licedn">` at 24px** — the loudest thing on the page for
+  the least actionable fact on it. An edition NAME is a record field, not a KPI:
+  `obs-metric-list`'s own `dont` reads *"don't use for a record's key/value detail"*. It is the
+  first `obs-key-value` row now, and the header keeps its edition tag.
+
+The row now reads one way: **one KPI** (days left, severity-coloured) and **label→value facts**
+everywhere else. Score after the rebuild: still **100/100** — which is the point.
+
+⚠️ **THE TERM BAR IS THE ONE THING LOST, and it was weighed rather than dropped.** `Term elapsed`
+keeps the signal as a `--severity`-coloured value (warning ≥75%, critical ≥90%); the DS ships **no
+standalone meter or progress element** (searched — `bar` exists only as an `obs-table` cell type),
+and the days-left KPI directly above already carries the urgency.
+
+⚠️ **THE SUPPORT LINKS STAYED `obs-link` AND WERE NOT FOLDED INTO THE KEY-VALUE.** Doing so would
+have made the third card echo the other two, but `obs-key-value` renders text — the working
+`mailto:` would have stopped being clickable. A real loss for a cosmetic symmetry. The
+inconsistency worth fixing was *two components doing the SAME job*, not two jobs looking different.
+
+### The History drawer is `obs-drawer` now
+
+`drawer` is the DS's most-used overlay (158×) and its decisionFlow names exactly this content:
+*"Long content, a detail view, or a form contextual to a record? -> FlotoDrawer"*. The swap also
+buys the native `<dialog>` behaviours the house `.sdrawer` hand-rolls — top-layer render, focus
+trap, Esc.
+
+⚠️ **THE REGISTRY AND THE VENDORED BUNDLE DISAGREE, AND THE BUNDLE WINS.** `get_component(drawer)`
+now describes obs-drawer as FUNCTIONAL (*"✕ / Esc / [data-close] emit close then after-close"*);
+`_ds/` v0.1.166 **does not**. Re-measured in a headless probe rather than taken on trust:
+
+| | vendored 0.1.166 |
+|---|---|
+| `el.show()` / `el.hide()` | work |
+| the `open` **attribute** | opens it |
+| `title` / default / `actions` slots | all render |
+| **`close` / `after-close` events** | **never fire** |
+| **`el.open` / the host's `open` attribute** | **stay false throughout** |
+
+So the one signal every close path shares is the **inner `<dialog>`'s own `open` attribute** going
+false — which is what `licHistWatch` observes, with an `isConnected` guard so a teardown is not
+mistaken for a user close. Re-check if `_ds/` is upgraded; the workaround can go then.
+⚠️ The element is created **once** and lives on `<body>` — `#view-settings` is `display:none`
+whenever Settings is not the active view, and a fixed child of a hidden ancestor is hidden too,
+top layer or not. Only **inner** content is ever repainted, never a slotted node (the recorded
+`slotchange` trap).
+⚠️ The footer gap is on **our** slotted span, not the component's — registry F3: *"the .actions
+footer is justify-end with NO gap, so adjacent buttons touch"*.
+
+### ⚠️ AN OVERLAY IN THE TOP LAYER FALLS OUT OF A SCOPED TOKEN BLOCK — the dark-theme trap
+
+The swap shipped a **white drawer over a dark page**, with the metric values in dark-theme light
+grey on it: two themes in one overlay. The scoped DS token block is
+`#agPage,#licPage,#licHist,#licHistF{…}` — the slotted body `#licHist` was in that list, but the
+**drawer host was not**, so the panel's own chrome read the DS's defaults, which are LIGHT.
+
+⚠️ **EVERY PROBE PASSED AND THE CHECKER STILL SAID 100/100**, because both halves were legal DS
+tokens — just not the same set. **Only the dark screenshot found it.** The host `#licHistDr` is in
+all three rule openers now. Any future element that renders through `<dialog>`, a portal or the
+top layer needs adding to that list.
+
+### Product License · Option 2 — the hero card (12 Sep 2026)
+
+Request, with a supplied design: *"create 'Product License' new option — the current is option 1
+and new option is option 2 … this card only, using the ObserveOps design system"*. **Option 1 is
+untouched and is still the default.** `LIC.opt` picks between them and an `obs-radio as-button`
+sits in the page header beside Export.
+
+⚠️ **THE SWITCHER IS REVIEW CHROME**, like `Setting/`'s Scale switcher — it exists so the two
+designs can be compared in one build and goes when one is picked. ⚠️ **It repaints the page**,
+unlike the 7d/15d/30d control beside it which sets the grid's attributes in place: the two options
+render different markup above the table, and there is no open detail row to lose at the moment you
+change design.
+
+Option 2 replaces Option 1's three widgets with **one full-width card** and leaves the tabs, the
+quota table and the EPS tab exactly as they were. ⚠️ **THE CARD BELOW IS THE 12 Sep BUILD — the
+edition left, the record over a term bar, a days-left ring right. It was replaced on 13 Sep by the
+compact strip**; read *"Option 2, second design"* for what ships. Everything below still explains
+why each part was chosen, and the ring is kept and unreferenced.
+
+**What is a DS component, and what is not:**
+
+| part | built from |
+|---|---|
+| the record (License Type · Issue Date · Account · Status) | **`obs-key-value columns="2"`** — the catalogued `two-column` variant, *"a record has MANY fields"*. The **Status** pair passes the item's 4th field, so the value renders as an `obs-tag`: the registry's own `status` variant, which is exactly the green pill in the design |
+| the edition chip | `obs-tag` |
+| **the ring and the term bar** | ⚠️ **BOTH ARE DECLARED `list_gaps` GAPS** — see below |
+
+⚠️ **`obs-key-value`'s `status` FIELD REPLACES THE WORD, IT DOES NOT JUST COLOUR IT.** The design
+says *Activated*; passing `status:'running'` printed **"Running"** over a value that said
+"Activated", because the component renders the STATUS KEY's own label. The bundle's map has **48
+keys and no `activated`** (read out of `_ds/`), so the key is **`active`** — the DS's word for this
+state, and the thing that makes the tag green. An unknown key would have kept the design's word and
+lost the colour. Recorded as a declared divergence: the pill reads **Active**, not *Activated*.
+
+⚠️ **THE RING AND THE BAR ARE A STOP-AND-ASK THIS REPO HAS ALREADY ANSWERED.** `data-viz` routes
+*"a single value against a total"* to a gauge and the DS ships **no gauge, no meter and no progress
+element** — `search_components` returns only `widget-card` / `widget-grid` / `data-viz`, and `bar`
+exists solely as an `obs-table` CELL type. They are drawn the way the trend charts already are:
+hand-built, every colour a token, carrying a chart class so the checker resolves the archetype.
+**`_verify/ds-gaps.json` now declares `gauge` alongside `chart`.**
+
+⚠️ **THE RING IS A REAL ARC, NOT A PICTURE** — `stroke-dasharray` over the circumference, so the
+sweep IS the elapsed fraction and cannot disagree with the figure printed inside it. There are
+probe assertions that the arc length matches the percentage and that arc + gap = the circumference.
+
+⚠️ **THE ACCENT IS `--chart-indigo`, NOT THE DESIGN'S HEX.** The supplied card is violet while this
+page's `--primary` is the prototype's teal. `--chart-indigo` is a real DS chart-palette token
+(#8b5cf6 dark / #7c3aed light) that lands on that violet, and the DS's own rule for a figure like
+this is *"series colours are chart-palette tokens, never --primary"* — so the design's colour
+arrives through a token rather than as another product's brand hue in the file.
+
+⚠️ **THE TRACK IS THE SERIES COLOUR AT 18%, NOT `--neutral-lighter`.** That token is `#1d2a3e` in
+dark — the same value as `--border-color` — and the card sits on `--common-widget-bg` (`#172336`),
+so the first render had **an invisible ring track and the arc reading as a floating blob.** Only
+the screenshot showed it. Tinting the series colour is what the trend charts already do for their
+area fill.
+
+⚠️ **TWO OFF-SCALE VALUES COST `layout 85`** on the first conformance run — `padding:22px 26px` and
+the `border-radius:999px` pill. Both are on the DS scale now (`24px`, `--btn-radius`); a 6px bar at
+4px radius is still visually a pill. **100/100 on all three scenes after.**
+
+**Verified:** DS conformance **100/100 × 3 scenes** (Option 1 × 2 tabs, Option 2) · a 31-assertion
+probe (the default, the switcher, the hero's components, the two-column key-value, the nested
+status tag, the arc maths, the bar sized by `width` not `flex`, no colour literal, and switching
+both ways) · `stbehave` **ALL 21 PASS × 13 pages** · both themes screenshotted.
+⚠️ **A probe assertion failed on working code first:** `kv.shadowRoot.textContent` never contains
+a NESTED `obs-tag`'s text (it lives in that element's own shadow root) and does contain the shadow
+`<style>`. Pierce the nested root; the screenshot had already shown the pill rendering.
+
+#### Option 2, second design — the licence strip (13 Sep 2026)
+
+Supplied as a card, with the previous day's build beside it, and *"make it"*. Option 2's
+three-column hero became **one compact block, three stacked rows**: identity (mark · name · meta ·
+status), the term in words, and the term as a bar. **~150px → ~90px.** Option 1 is still untouched
+and still the default.
+
+⚠️ **THE FACTS DID NOT CHANGE, THEIR WEIGHT DID.** What went: the 34px display name, the 2×2
+`obs-key-value`, the 128px ring gauge and the EXPIRES block. What arrived: `ObserveOps Infinity`
+as a 15px title, the three grid facts as one meta line (`Unified Edition · Free license ·
+Motadata`), and `Issued …` / `1,435 days left · expires …` on one row above the bar.
+
+⚠️ **THERE IS NO `obs-key-value` HERE, AND THAT IS CORRECT.** There are no label→value pairs left
+— the meta line is a sentence, which is typography, not a component. Reaching for the component
+anyway, to keep a DS count up, would change the design that was asked for. What IS still DS: the
+status pill is an `obs-tag` (green, `tag-green`) and the mark an `obs-icon`.
+
+⚠️ **`licRingHTML` AND ITS THREE `.licring*` RULES ARE KEPT AND UNREFERENCED** — the house pattern
+— so the first design is one call away. The rest of that layout's CSS was deleted with it; the
+ring's own rules were deliberately put BACK after the sweep, because "one call away" is false if
+the function survives and its styling does not. `ds-gaps.json` still declares the `gauge` it
+renders.
+
+⚠️ **THE TERM LINE AND ITS BAR ARE ONE GROUP (8px), AGAINST THE CARD'S 16px.** They are the same
+fact in two forms, so the gap INSIDE the pair has to beat the gap to the identity row above it, or
+the bar reads as a third, unrelated row. The recorded `.aiab li` rule, in a new place — and there
+is a probe assertion comparing the two computed gaps rather than trusting the eye.
+
+⚠️ **`padding:20px` COST `layout 97`.** The DS structural scale is 8 / 12 / 16 / 24; 20 is not on
+it. `16px 24px` is, and it is closer to the supplied card than a uniform 24 would be. **100/100 on
+all three scenes after.**
+
+**Verified:** DS conformance **100/100 × 3 scenes** · a 30-assertion probe (the switcher, the
+identity row, the meta line's three facts, the green `obs-tag`, the grouped term pair and its
+measured gaps, the bar sized by `width` not `flex`, the ring NOT rendered, no colour literal,
+switching both ways) · Option 1's 31-assertion probe still green · `stbehave` **ALL 21 PASS × 13**
+· both themes screenshotted.
+
+### `_verify/licconf.py` — the License analogue of `dsconf.py`
+
+Same isolation trick, pointed at `#licPage`, with three scenes (both tabs, plus Option 2). ⚠️ **The scoped token
+block's selector still starts `#agPage`**, so a blanket rename of the script breaks its regexes —
+the isolation target and the token selector are different strings.
+
+### Verification
+
+DS conformance **100/100 × 2 scenes** · a 31-assertion License probe (the three cards' components,
+the Edition name surviving as a key-value row, the mailto still clickable, the drawer opening on
+`<body>`, its ✕ closing it, the observer clearing state, re-opening, one element only) ·
+`stbehave` **ALL 21 PASS × 13 pages** · cards and drawer screenshotted in **dark and light**.
+
+⚠️ **Two verification traps hit in this pass:** the backtick escape in PART 1 of `setting.js` bit
+**twice more** while writing these very notes (`node --check` named the line each time); and a
+shared `--user-data-dir` carried `setTheme('light')` into the next scene through localStorage, so
+both "dark" screenshots came out light — **give each themed scene its own Chrome profile.**
 
 ## The sidebar UX pass — UX Planet's twelve rules, applied to every option (7 Sep 2026)
 
@@ -6600,7 +7018,17 @@ python3 shoot.py   "index.html" query 1280 720 _out/s.png   # one plain screensh
   the tree, so filtering to one log type survives with or without the panel.
   ⚠️ It reads its result out of a `<pre id="__probe">` block, **not `<title>`** — the module
   emits `'<title>'` strings for its SVG tooltips, so a title-based read finds those instead.
-- All four strip the Agentation loader into a temp copy first (it hangs headless runs) and
+- **`stbehave.py`** — the same idea for the **Settings module** (added 12 Sep 2026): 21
+  assertions per page covering the injected section and its position, `ST_TREE` / `ST_ICO`, all
+  three `ST_PAGES` families, the stylesheet actually applying, and My Profile / License /
+  Compliance / Agentic AI each rendering. ⚠️ It **auto-discovers** every page that loads
+  `setting.js`, so a new option is covered without editing it — unlike `lxbehave.py`, whose
+  `FILES` list is hardcoded and silently tests the old set when a page is added.
+- **`licconf.py`** — the **Product License** analogue of `dsconf.py` (added 12 Sep 2026): the
+  same isolation trick pointed at `#licPage`, three scenes (Option 1's two tabs, Option 2).
+  ⚠️ The scoped DS token block's selector still starts `#agPage`, so a blanket rename of the
+  script breaks its regexes — the isolation target and the token selector are different strings.
+- All of them strip the Agentation loader into a temp copy first (it hangs headless runs) and
   wrap Chrome in `perl -e 'alarm N'`, since macOS has no `timeout` and these runs can hang.
 - ⚠️ `harness.py` needs `--allow-file-access-from-files` to read across the `file://`
   iframes; it already passes it.

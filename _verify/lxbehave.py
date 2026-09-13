@@ -170,8 +170,7 @@ window.addEventListener('load', function(){ setTimeout(function(){
 """
 
 # ⚠️ THE PROBE COPY LIVES IN `_out/`, SO EVERY RELATIVE ASSET IN THE PAGE WOULD 404 THERE.
-# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 1 Sep 2026) `_settings-module.js`
-# / `_settings-module.css` are all `src="…"` relative to the PROJECT folder. Without this the
+# `_ds/observeops-elements.umd.js`, `_variants.js` and (since 12 Sep 2026) `setting.js` are all `src="…"` relative to the PROJECT folder. Without this the
 # suite silently tests a page with no design system and no Settings module — and still reports
 # green, because none of its own assertions touch them. One `<base>` fixes all of them at once;
 # it has to sit immediately after `<head>`, before anything it is meant to resolve.

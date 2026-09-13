@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DS conformance for the Agentic AI screen — the ONE surface in this repo built from the real
+DS conformance for the Product License screen — the ONE surface in this repo built from the real
 `obs-*` components. Run from inside `_verify/`:
 
     python3 dsconf.py                      # all three scenes, Option 1
@@ -10,11 +10,11 @@ DS conformance for the Agentic AI screen — the ONE surface in this repo built 
    confident 49/100. These pages carry 16 views plus every drawer in ONE DOM and open on the
    Dashboard — which is hand-built from this file's own tokens, so the run measures
    `0 DS components · 276 raw controls` of chrome that was never claimed to be DS. This script
-   builds a throwaway copy per scene that isolates `#agPage` and hands THAT to the checker.
+   builds a throwaway copy per scene that isolates `#licPage` and hands THAT to the checker.
 
 Two adjustments the isolation makes, both of which are the difference between 49 and 100:
 
-  · THE SHELL IS NOT THE SCREEN. `#agPage`'s surviving ancestors are `.shell` (64px of
+  · THE SHELL IS NOT THE SCREEN. `#licPage`'s surviving ancestors are `.shell` (64px of
     icon-rail padding) and `.stmain` (20px) — the only two off-scale values the checker could
     find. They are host chrome, so their padding is zeroed.
   · THE THEME CONVENTION IS INVERTED. The DS ships light on `:root` and dark under
@@ -45,8 +45,13 @@ CHK  = ROOT / "node_modules/@mtdt/observeops-ds-spec/conformance/ds-conformance.
 #    as a tooling failure rather than "that state is not built yet". Add a row back the moment
 #    its state exists; the second field is just JS run after `stOpen`.
 SCENES = [
-    ("overview",  "",            "Overview"),
-    ("config",    "agConfig();", "Configure AI provider"),
+    ("usage", "", "Option 1 \u00b7 License & Quota Usage"),
+    ("eps",   "var t=document.getElementById('licTabs');if(t)t.setAttribute('value','eps');",
+              "Option 1 \u00b7 EPS Trend Breakdown"),
+    # ⚠️ Option 2 repaints the page, so the scene sets the state and re-opens rather than
+    #    poking the switcher — the isolation below runs after stOpen, and a repaint would
+    #    replace the very node it is about to strip siblings from.
+    ("opt2",  "LIC.opt='2';stMainPaint();", "Option 2 \u00b7 the hero card"),
 ]
 
 def block(s, sel_pat):
@@ -64,8 +69,8 @@ def block(s, sel_pat):
 
 def tokens_source(src_text):
     """The scoped DS token block. ⚠️ ITS SELECTOR IS A LIST NOW (7 Sep 2026): the Product
-    License page joined it as `#agPage,#licPage,#licHist,#licHistF{`, so the matches below
-    take `[^{]*` after `#agPage` — a bare `#agPage{` no longer occurs and `block()` would
+    License page joined it as `#licPage,#licPage,#licHist,#licHistF{`, so the matches below
+    take `[^{]*` after `#licPage` — a bare `#licPage{` no longer occurs and `block()` would
     have thrown on `m.start()`. ⚠️ IT MOVED TWICE. On 1 Sep 2026 the st/stc/ag stylesheet was
     extracted out of `index.html` into `_settings-module.css`, so the block was no longer in the
     HTML — and this script's guard read the HTML, decided there was no screen, and SILENTLY
@@ -89,24 +94,24 @@ def build(src_text, wiz, dest):
     light = block(tok, r'\nhtml\[data-theme="light"\] #agPage[^{]*\{')
     h = src_text.replace("s.src = 'agentation-embed.js';", "s.src = '';")   # the loader hangs headless runs
     adapter = ('<style id="__dsadapt">'
-      'html:not([data-theme="dark-theme"]) #agPage{' + light + '}'
-      'html[data-theme="dark-theme"] #agPage{' + dark + '}'
+      'html:not([data-theme="dark-theme"]) #licPage{' + light + '}'
+      'html[data-theme="dark-theme"] #licPage{' + dark + '}'
       'html:not([data-theme="dark-theme"]) body{background:#ffffff;color:#1d2a3e}'
       'html[data-theme="dark-theme"] body{background:#07101f;color:#cad3e2}'
       '</style>')
     # ⚠️ SYNCHRONOUS ON `load` — the checker waits ~800ms after networkidle and then measures.
     #    A timer chain like the screenshot probes use would be read before it had navigated.
-    # ⚠️ THE ISOLATION RETRIES INSTEAD OF ASSUMING `#agPage` IS THERE ON `load`. Since the
+    # ⚠️ THE ISOLATION RETRIES INSTEAD OF ASSUMING `#licPage` IS THERE ON `load`. Since the
     #    st/stc/ag script moved to `_settings-module.js`, the screen is not painted the instant
     #    `load` fires — the first attempt found nothing, the isolation bailed, and the checker
     #    happily scored THE WHOLE DASHBOARD (0 DS components, 242 raw controls, 57/100) as if
     #    that were the Agentic AI screen. A silent wrong answer, not an error.
     #    The retries fit inside the checker's own ~800ms post-networkidle wait.
     nav = ('<script>window.addEventListener("load",function(){var tries=0;(function go(){try{'
-           'stOpen("Agentic AI");' + wiz +
-           'var keep=document.getElementById("agPage");'
+           'stOpen("My Account","License");' + wiz +
+           'var keep=document.getElementById("licPage");'
            'if(!keep){ if(++tries<12) return setTimeout(go,50);'
-           'document.title="ERR no #agPage";return;}'
+           'document.title="ERR no #licPage";return;}'
            'var n=keep;while(n&&n!==document.body){var p=n.parentNode;'
            'Array.prototype.slice.call(p.children).forEach(function(s){'
            'if(s!==n&&s.tagName!=="STYLE"&&s.tagName!=="SCRIPT")s.remove();});n=p;}'
@@ -124,15 +129,15 @@ def main():
     src = SRC.read_text(encoding='utf-8')
     # ⚠️ SAY "NOT BUILT YET" RATHER THAN SCORE AN EMPTY PAGE. The Agentic AI screen was cleared
     #    on 1 Sep 2026 to be rebuilt; with nothing registered under ST_PAGES the isolation finds
-    #    no `#agPage` and the checker would happily score the placeholder instead — a number
+    #    no `#licPage` and the checker would happily score the placeholder instead — a number
     #    that looks like a verdict on a screen that does not exist.
     # ⚠️ TEST FOR THE TOKEN BLOCK, NOT THE ST_PAGES LINE. The cleared file leaves a comment
     #    saying "register the new screen as ST_PAGES['Agentic AI › Overview']" — which a naive
     #    substring test matches, so the guard never fired and `build()` threw on the missing
     #    rule instead. The scoped token block is what this script actually needs.
     if not re.search(r"\n#agPage[^{]*\{", tokens_source(src)):   # the selector is a list since 7 Sep 2026
-        print("no Agentic AI screen registered in %s — nothing to check yet." % SRC.name)
-        print("(register it as ST_PAGES['Agentic AI \u203a Overview'] = { html, after } and re-run)")
+        print("no Product License screen registered in %s — nothing to check yet." % SRC.name)
+        print("(register it as ST_PAGES['My Account \u203a License'] = { html, after } and re-run)")
         sys.exit(0)
     fails = []
     built = []
@@ -146,7 +151,7 @@ def main():
         #    script produced before 1 Sep 2026 was measuring inert markup.
         #    The `_` prefix keeps `_sync_variants.js` from picking these up; they are deleted
         #    in the `finally` below.
-        page = ROOT / ("_dsconf-%s.html" % key)
+        page = ROOT / ("_licconf-%s.html" % key)
         build(src, wiz, page)
         r = subprocess.run(["node", str(CHK), str(page), "--declared", str(HERE / "ds-gaps.json")],
                            capture_output=True, text=True)
