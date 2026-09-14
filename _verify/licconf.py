@@ -51,7 +51,10 @@ SCENES = [
     # ⚠️ Option 2 repaints the page, so the scene sets the state and re-opens rather than
     #    poking the switcher — the isolation below runs after stOpen, and a repaint would
     #    replace the very node it is about to strip siblings from.
-    ("opt2",  "LIC.opt='2';stMainPaint();", "Option 2 \u00b7 the hero card"),
+    ("opt2",  "LIC.opt='2';stMainPaint();", "Option 2 \u00b7 licence + six quota cards"),
+    ("opt4",  "LIC.opt='4';stMainPaint();", "Option 4 \u00b7 licence + head + devices + add-on cards"),
+    ("opt5",  "LIC.opt='5';stMainPaint();", "Option 5 \u00b7 licence + head + devices + add-on cards"),
+    ("opt5eps", "LIC.opt='5';LIC.tab='eps';stMainPaint();", "Option 5 \u00b7 EPS Trend Breakdown \u00b7 four stat cards"),
 ]
 
 def block(s, sel_pat):
