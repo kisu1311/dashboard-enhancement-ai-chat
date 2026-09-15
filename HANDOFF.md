@@ -30,6 +30,16 @@ supplied cards.
 
 ## Completed
 
+- **Agentic AI Option 1 / Option 2, 16 Sep** — ⚠️ not committed (`setting.js`): a header switcher; Option 2's overview is
+  one connected-provider panel (details + three trend charts, no grid/search); its Configure drawer is a 684px side panel with
+  a segmented provider picker, credentials, one terms checkbox + links, no rail/help/advanced/models/data terms; Enable AI
+  gates on test + terms. Option 1 unchanged. See CLAUDE.md › *Settings › Agentic AI — Option 1 / Option 2*.
+- **Option 13 pin intro, 15 Sep (night)** — ⚠️ not committed (`dashboard-rail-flyout-alt3.html` only): every Explorer
+  sub-module row shows a blinking teal DOT at rest (its pin, right after it, stays hover-only) until read (third build — a blinking pin, then a
+  dot replacing the pin, were both rejected; the dot then swapped from after the pin to before it); hovering or clicking a dot opens the *Pin a sub-module* picture card; the pin still
+  pins. Read = Got it or any pin press (localStorage `oo13-pin-intro-read`) — the dots go and the pins return to hover-only;
+  `mfPinIntroReset()` replays it. Probe 29/29, dark and light screenshots. See CLAUDE.md › *Option 13 — the pin, its blinking
+  dot and the picture intro*.
 - **Settings accent + License demo data + Option 4, 15 Sep (night)** — ⚠️ not committed: the whole Settings module's
   accent is **#cad3e2 dark / #1d2a3e light** instead of teal (one token override on its five roots; DS `--primary` →
   `--primary-alt`); the five add-ons show **10 used** on every option (shared `LIC_DATA`); Option 4 — licence card
@@ -196,6 +206,10 @@ supplied cards.
   module, auto-discovering) and `_verify/licconf.py` (DS conformance for `#licPage`, 3 scenes).
 
 ## In progress
+
+⚠️ **Unanswered, 15 Sep:** a truncated message — *"in option 2&3 the card border color is use #172336 and the"* —
+was applied to Option 4 only. Ask whether Option 2's cards should take `--widget-border-color` too (Option 3 no
+longer ships).
 
 Nothing mid-flight. Everything is verified green and self-consistent.
 

@@ -1294,6 +1294,31 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    four sides, and zeroing it would pull the title 8px LEFT — out of line with the description
    below it, which is indented from \`.aghead\` and does not move. */
 .aghead obs-page-header{display:block;--page-header-padding:8px 8px 0}
+/* the Option 1 / Option 2 switcher in the header's action slot (see AG_OPTS) — the License header's .lichact */
+.aghact{display:inline-flex;align-items:center;gap:8px}
+/* Option 2's Configure drawer: a 684px side panel with no rail and no help card, so the form pane pays its own right gutter */
+#drawer-agcfg.agcfgo2 .agcfgm{padding-right:24px}
+#drawer-agcfg.agcfgo2 .agff{padding-right:0}
+/* the footer on the panel's floor, like the product's form drawers: the body GROWS to the panel but never SHRINKS below its
+   content (flex:1 0 auto) — shrinking is the recorded .dr-b squash that stranded the full-width form's footer mid-panel */
+#drawer-agcfg.agcfgo2 .dr-b > .agcfg{flex:1 0 auto}
+.agfprov{display:grid;justify-items:start;gap:2px}
+.agfprov obs-radio{display:block}
+.agterms{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.55;color:var(--text-color-common-secondary)}
+.agterms obs-checkbox{flex:0 0 auto;margin-top:1px}
+.agterms obs-link{display:inline}
+/* Option 2's connected-provider panel (agConnHTML): header · key-value · metric row · the three trend widgets */
+.agpage obs-key-value,.agpage obs-metric-list{display:block}
+.agcon{display:grid;gap:16px;margin-top:16px}
+.agcon0{display:block;font-size:13px;color:var(--text-color-common-secondary)}
+.agcon0 b{color:var(--primary-alt);font-weight:600}
+.agconh{display:flex;align-items:center;gap:12px}
+.agconi{flex:0 0 40px;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--btn-radius);
+  background:var(--page-background-color);color:var(--chart-indigo)}   /* not --neutral-lightest: that IS the panel's #172336 in dark */
+.agcont{min-width:0}
+.agconn{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--primary-alt)}
+.agconn b{font-weight:600}
+.agcont p{margin:2px 0 0;font-size:12.5px;color:var(--text-color-common-secondary)}
 .aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
 /* ⚠️ 48px, NOT 42 — MEASURED, NOT ESTIMATED. The indent is meant to put the description under
    the TITLE rather than under the mark, and 42px was a guess at "30px mark + 12px gap". The
@@ -1976,7 +2001,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .lichact{display:inline-flex;align-items:center;gap:8px}
 .lictabs{margin:4px 0 0}
 .lictabs obs-tabs{display:block}
-.lictabs [slot]{display:block;padding-top:16px}
+/* \` > obs-tabs > \` on purpose (16 Sep 2026): as a bare descendant \`[slot]\` it also matched every obs-toolbar title carrying
+   slot="start" inside a pane, gave it 16px of top padding, and sat each section title ~8px below the text on its right
+   ("Dynamic EPS · allocation by signal" under "allocated vs live ingested"). Only the two tab PANES are meant here. */
+.lictabs > obs-tabs > [slot]{display:block;padding-top:16px}
 /* every DS host this page places is an unknown element to the browser, i.e. \`display:inline\`
    until told otherwise — the recorded \`obs-radio\` "phantom gap" lesson */
 .licpage obs-key-value,.licpage obs-metric-list,.licpage obs-table,.licpage obs-toolbar{display:block}
@@ -2000,7 +2028,7 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 
 /* ── section toolbars (Organisms/Toolbar, grid variant): title in \`start\`, hint + control after */
 .lictb{margin:20px 0 8px}
-.lictabs [slot] > .lictb:first-child{margin-top:0}   /* the pane's own 16px already separates it from the tab rule */
+.lictabs > obs-tabs > [slot] > .lictb:first-child{margin-top:0}   /* the pane's own 16px already separates it from the tab rule */
 .licwids + .lictb{margin-top:24px}
 
 /* ══ PRODUCT LICENSE · OPTION 2 — the licence card + the Monitored devices card ══════════════
@@ -2081,6 +2109,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
    every box in this module is 4px. ⚠️ White on the dark theme's #7aa2f7 end is ~2.4:1: that is what
    the live chip ships (--license-on-accent is #fff in both themes), recorded rather than "fixed". */
 .licx,.lic4:not(.lic5){--license-accent:#7aa2f7;--license-violet:#bb9af7;--license-on-accent:#fff}
+/* Option 4, DARK theme: the same two hues, 15 points darker in lightness (request, 16 Sep 2026: "make this gradient colour
+   darker"). The name still clears 4:1 on the card (4.01 / 4.04, where 3:1 is the bar for text this size), and white on the
+   chip rises from ~2.4:1 to ~4.5:1. Option 2 keeps the live values; light theme keeps #2563eb / #7c3aed, already deep. */
+.lic4:not(.lic5){--license-accent:#306ef3;--license-violet:#8c55f1}
 html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--license-accent:#2563eb;--license-violet:#7c3aed}
 /* Option 4's name row (see lic4HTML) — 8px under the eyebrow, where .lic4title's own margin put the name */
 .lic4nr{margin-top:0}   /* it leads the section since the eyebrow went (15 Sep 2026); it sat 8px under that */
@@ -2905,6 +2937,11 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
    .lic4 / .licm4 / .licg4c — the stat cards, the allocation card and the five trend cards. The fill matters in light only,
    where Option 5's borderless wash would sit inside a border on the white pane. Option 5 keeps its borderless cards. */
 .lice5.lice5o4 .lice5c{padding:10px;border-color:var(--widget-border-color);background:var(--common-widget-bg)}
+/* Option 4's allocation card: 14px between the title row and the first signal row (request, 16 Sep 2026 — asked as 10px,
+   then 14px). The card's flex
+   gap is 4px — \`.lice5c{gap:4px}\` comes later in the sheet than \`.lice5a{gap:16px}\` at the same weight, so that 16px never
+   applied — and the toolbar's 10px margin makes up the rest. */
+.lice5.lice5o4 .lice5a > .lice5tb{margin-bottom:10px}
 /* the stat cards' labels read in sentence case on Option 4 (request, 15 Sep 2026: "the title text will be small and [the]
    first letter capital") — the markup already is ("Hardware ceiling"); only the uppercase transform and its tracking go */
 .lice5.lice5o4 .lice5l{text-transform:none;letter-spacing:0}
@@ -4404,7 +4441,17 @@ ST_PAGES['Compliance Settings › Rules'] = { html: stcRuHTML };
 /* ⚠️ `conn` IS WHICH PROVIDER IS CONNECTED, and `active` merely whether ANY is — the grid's
    Active/Available column needs to know which row, not just that one exists. One provider at a
    time is the reference's own rule. */
-const AG = { active: true, conn: 'openai', q: '' };
+const AG = { active: true, conn: 'openai', q: '', opt: '1' };
+/* ══ AGENTIC AI · OPTION 1 / OPTION 2 (16 Sep 2026) ══════════════════════════════════════════════════════════════
+   Request: "create option 2 — the current design is option 1 — copy option 1 and paste it in option 2". A switcher in the
+   page header (the License page's own review chrome, same obs-radio as-button) picks between them, and it goes when one
+   design is chosen.
+   ⚠️ OPTION 2 IS A COPY BY CONSTRUCTION, NOT BY DUPLICATED CODE. Both options render through the SAME builders
+   (agOvHTML, agConfig and everything under them), so today they are pixel-identical and cannot drift by accident. A later
+   Option 2 request is made by branching on AG.opt === '2' at the part that changes (the License page's lic4HTML('5')
+   pattern) — never by pasting a second copy of these ~500 lines, which in this flat global scope would collide on every
+   function name. The page root carries data-agopt="1|2" so CSS can scope to one option without touching the other. */
+const AG_OPTS = [{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }];
 /* ⚠️ ⚠️ `obs-button` FIRES `onclick` TWICE FOR ONE REAL CLICK — v0.1.166, measured 1 Sep 2026.
    A pointer click targets the component's INNER `<button>` (in its shadow root). That event is
    `composed`, so it crosses the boundary and runs the host's `onclick` once — and the component
@@ -4489,15 +4536,10 @@ function agSearch(v){
   else stMainPaint();
 }
 
-/* the usage rows, as a function so the toolbar search can rebuild them without a repaint */
-function agUseRows(){
+/* the connected provider's three trend widgets — the usage grid's expanded row (Option 1) and Option 2's details panel
+   render the SAME markup, so the two options cannot disagree about a figure or a chart */
+function agUseWidgetsHTML(){
   const h = AG_DATA.health;
-  /* ⚠️ EVERY WIDGET IN ONE GRID INSIDE THE DETAIL. The charts live in the row's `detail`,
-     which `obs-table` inner-HTMLs into its SHADOW ROOT — so this stylesheet cannot reach them
-     and the layout has to be INLINE, with `var(--token)` values, which do inherit across the
-     boundary. That is the one place inline styles are correct here.
-     ⚠️ THE SVGs KEEP `class="agchart"` so the conformance checker still resolves them as the
-     declared `chart` gap, and carry their height inline for the same shadow-root reason. */
   /* ⚠️ THE TILE IS THE DS WIDGET (request, 3 Sep 2026: "replace this chart Using the ObserveOps
      design system"). Its header is `obs-toolbar variant="widget"` — the DS's own widget header
      (title 14px/500 + a time-range pill + actions), which draws a bordered, rounded-TOP frame
@@ -4539,6 +4581,20 @@ function agUseRows(){
       ${w('Error trend',    'Last 14 days', agChart('column', AG_DATA.errors,  '--chart-amber',  agFmtK),  h.errorRate + ' %', 'error rate', '−40%')}
     </div>`;
 
+  return widgets;
+}
+
+/* the usage rows, as a function so the toolbar search can rebuild them without a repaint */
+function agUseRows(){
+  const h = AG_DATA.health;
+  /* ⚠️ EVERY WIDGET IN ONE GRID INSIDE THE DETAIL. The charts live in the row's `detail`,
+     which `obs-table` inner-HTMLs into its SHADOW ROOT — so this stylesheet cannot reach them
+     and the layout has to be INLINE, with `var(--token)` values, which do inherit across the
+     boundary. That is the one place inline styles are correct here.
+     ⚠️ THE SVGs KEEP `class="agchart"` so the conformance checker still resolves them as the
+     declared `chart` gap, and carry their height inline for the same shadow-root reason. */
+  const widgets = agUseWidgetsHTML();
+
   /* ⚠️ ALL THREE PROVIDERS ARE ROWS (request, 1 Sep 2026). Only the CONNECTED one has usage —
      the others are listed so the page says what is available, and their figures are an em dash
      rather than a zero: nothing has been measured, which is not the same as measuring nothing.
@@ -4572,6 +4628,7 @@ function agOvHTML(){
     <obs-page-header heading="Agentic AI" no-divider>
       <span slot="before" class="aghmk">${agIc('sparkling-star', 30)}</span>
       <obs-tag slot="title" variant="${AG.active ? 'tag-green' : 'tag-primary'}">${AG.active ? 'Active' : 'Not configured'}</obs-tag>
+      <span class="aghact"><obs-radio id="agOpt" as-button size="small" options="${agJ(AG_OPTS)}" value="${AG.opt}"></obs-radio></span>
     </obs-page-header>
     <p class="aghsub">AI-powered observability runs on your own LLM provider keys. ObserveOps sends prompts and selected telemetry context to the provider you connect — nothing is stored in plain text. For more information:
       <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Agentic AI documentation${agIc('external-link', 12)}</obs-link></p>
@@ -4583,9 +4640,10 @@ function agOvHTML(){
      `_ds/README.md`). The slot works. */
   /* ⚠️ THE SEARCH FINALLY HAS SOMETHING TO SEARCH. It shipped over an empty page an hour ago;
      it filters this grid. */
+  const o2 = AG.opt === '2';
   const toolbar = `<obs-toolbar>
-      <obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
-        oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>
+      ${o2 ? '' : `<obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
+        oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>`}
       <obs-button variant="default" class="agexp" data-tip="Export as PDF"
         onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>
       <obs-button variant="primary" onclick="agTap(agConfig)">Configure AI provider</obs-button>
@@ -4599,11 +4657,14 @@ function agOvHTML(){
      (page-header → toolbar → table); a section label over a single table names something there
      is no second thing to distinguish it from. The heading also carried `margin:24px 0 12px`,
      so the toolbar↔table gap had to move onto the table itself — see `.agpage obs-table`. */
-  const usage = !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
+  /* ⚠️ OPTION 2 SHOWS NO GRID (request, 16 Sep 2026: "remove the grid and show only which AI I integrated, show details").
+     The three-row usage table — two of whose rows were em dashes — becomes ONE panel about the connected provider; the
+     toolbar search went with the grid it filtered (a search box over nothing would be a dead control). See agConnHTML. */
+  const usage = o2 ? agConnHTML() : !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
       header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
-  return `<div class="agpage" id="agPage">${head}${toolbar}${usage}</div>`;
+  return `<div class="agpage" id="agPage" data-agopt="${AG.opt}">${head}${toolbar}${usage}</div>`;
 }
 
 
@@ -4735,7 +4796,8 @@ AG.cfg = { pid:'openai', d:{}, run:0 };
 AG_DATA.providers.forEach(p => { AG.cfg.d[p.id] = {
   step:0, name:'', key:'', adv:false, endpoint:'', proxy:'',
   timeout:'30', retries:'2', rate:'120', test:'idle', stage:0,
-  model:p.models[0].id, perTask:false, routing:{}, consent:[false,false,false,false] }; });
+  model:p.models[0].id, perTask:false, routing:{}, consent:[false,false,false,false],
+  terms:false /* Option 2's single terms & conditions box — see agTermsHTML */ }; });
 
 /* ⚠️ THE CONNECTED PROVIDER OPENS ALREADY CONFIGURED (request, 1 Sep 2026: "add demo details").
    The page ships with `AG.active` true, so its detail has to describe a real connection —
@@ -4768,6 +4830,7 @@ function agSeed(){
      connected there and the usage table is unaffected. Checked before removing it.
      ⚠️ Option 4 has no `agSeed` at all, so it already behaved this way. */
   d.consent = [true, true, true, true];
+  d.terms = true;   /* Option 2's terms box: accepted when this connection was made */
   d.perTask = true;
   /* a routing worth showing: the routine tasks moved onto the cheap fast model, the analytical
      ones left on the default — which is exactly what the per-task toggle is FOR.
@@ -4806,7 +4869,11 @@ function agSeed(){
 function agCfgSize(){
   const d = document.getElementById('drawer-agcfg'); if (!d) return;
   if (typeof railWidth !== 'function') return;
-  d.style.width = Math.max(720, innerWidth - railWidth()) + 'px';
+  /* ⚠️ OPTION 2 IS A SIDE PANEL, NOT THE FULL WIDTH (request, 16 Sep 2026, with the product's Create User drawer as the size
+     reference): 684px — the product's own form-drawer width, the one the Compliance Policy drawer measured — and never
+     wider than the room beside the rail */
+  d.style.width = AG.opt === '2' ? Math.min(684, innerWidth - railWidth()) + 'px'
+                                 : Math.max(720, innerWidth - railWidth()) + 'px';
 }
 window.addEventListener('resize', () => {
   const d = document.getElementById('drawer-agcfg');
@@ -4816,6 +4883,12 @@ function agConfig(pid){
   if (pid && AG.cfg.d[pid]) AG.cfg.pid = pid;
   const d = document.getElementById('drawer-agcfg');
   if (!d) return;
+  /* ⚠️ THE BODY IS BUILT FOR ONE OPTION. agCfgPaint repaints only #agCfgMain once the body exists, so a drawer first opened
+     on Option 2 (no rail, no help card) and reopened on Option 1 kept Option 2's frame. Clearing a body built for the
+     other option sends agCfgPaint down its full-build branch. */
+  const bd = document.getElementById('agCfgBody');
+  if (bd && bd.dataset.agopt !== AG.opt) bd.innerHTML = '';
+  d.classList.toggle('agcfgo2', AG.opt === '2');
   agCfgPaint();
   agCfgSize();
   document.body.classList.add('agdrawer');
@@ -4945,13 +5018,14 @@ function agCfgHTML(){
   /* ⚠️ `.agcfgsp` is the drawer's 24px top gutter for the RAIL, in the side menu's own `logo`
      slot so the panel and its right rule stay full height while the rows start lower (3 Sep 2026:
      "the line is attached"). Sized only under `#drawer-agcfg` — see that rule in the CSS. */
+  const o2 = AG.opt === '2';
   return `<div class="agpage agcfg" id="agPage">
-    <div class="agcfgn">
+    ${o2 ? '' : `<div class="agcfgn">
       <obs-side-menu id="agCfgNav" mode="categories" search="false"
         active="${stEsc(p.name)}" items="${agJ(items)}"><div slot="logo" class="agcfgsp"></div></obs-side-menu>
-    </div>
+    </div>`}
     <div class="agcfgm" id="agCfgMain">${agCfgFormHTML()}</div>
-    ${agHelpHTML()}
+    ${/* ⚠️ OPTION 2 HAS NO HELP CARD (request, 16 Sep 2026) — the form column takes the width */ AG.opt === '2' ? '' : agHelpHTML()}
   </div>`;
 }
 
@@ -5005,7 +5079,11 @@ function agCfgFormHTML(){
      ⚠️ `agCfgGo` / `agCfgBack` / `agCfgNext` and `AG_FLOW` are KEPT AND UNREFERENCED (the house
      pattern) — the wizard is one `flow` line away if it is ever wanted back. `agCfgBind` still
      guards on `#agFlow` existing, so it is inert rather than broken. */
+  /* ⚠️ OPTION 2 IS CREDENTIALS ONLY (request, 16 Sep 2026: "remove Advanced settings, Model selection and the review of
+     data sharing terms"). The provider keeps its default model (d.model, the first listed), and the footer's gate drops
+     the consent half it can no longer show — see agFlowFootHTML. */
   const body = d.step > 2 ? agStepDone()
+             : AG.opt === '2' ? agProvPickHTML() + agStepCreds() + agTermsHTML() + agTestHTML()
              : agStepCreds() + agStepModels() + agStepConsent() + agTestHTML();
   /* ⚠️ `size` IS THE DEFAULT 32px, NOT `small` (annotation ×3, 1 Sep 2026: "improve this" on
      each of the three steps). It shipped as `size="small"`, and the registry's own `size`
@@ -5029,6 +5107,31 @@ function agCfgFormHTML(){
      bottom — which is what keeps the footer clear of the variant pill. */
   return `<div class="agform">${flow}<div class="agfbody">${body}</div></div>${agFlowFootHTML()}`;
 }
+
+/* ══ OPTION 2 · THE PROVIDER PICKER AND THE TERMS BOX (16 Sep 2026) ════════════════════════════════════════════════
+   The provider rail became a SEGMENTED control at the top of the form (request: "the sidebar will be shown like
+   [Browser Default | Light | Dark]") — obs-radio as-button, the same control the header's Option switch and the
+   License window switch use. It sits INSIDE #agCfgMain, so every pane paint rebuilds it: agCfgBind rebinds its custom
+   change event and sets its value PROPERTY as a string (obs-radio compares strictly — the recorded licRadioSync lesson).
+   Below the fields, ONE checkbox with terms & conditions text and links (request: "below all fields show a checkbox and
+   terms & condition related text with link"). It stands in for the four consent terms Option 2 removed, so it gates
+   Enable AI with the test (agFlowFootHTML). The text is a sibling of the obs-checkbox, not its label: a link inside the
+   component's <label> would tick the box when clicked. Ticking repaints the FOOTER only (the agCfgConsent discipline). */
+function agProvPickHTML(){
+  const opts = AG_DATA.providers.map(x => ({ value:x.id, label:x.name }));
+  return `<div class="agfprov"><span class="agflb">AI provider</span>
+    <obs-radio id="agCfgProv" as-button options="${agJ(opts)}" value="${stEsc(AG.cfg.pid)}"></obs-radio></div>`;
+}
+function agTermsHTML(){
+  const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  return `<div class="agterms">
+    <obs-checkbox id="agTerms"${d.terms ? ' checked' : ''} onchange="agCfgTerms(agDet(event))"></obs-checkbox>
+    <span>I have read and agree to the <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Terms &amp; Conditions${agIc('external-link', 12)}</obs-link>
+      and the <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link>,
+      and allow ObserveOps to send selected observability data to ${stEsc(p.name)}.</span>
+  </div>`;
+}
+function agCfgTerms(v){ AG.cfg.d[AG.cfg.pid].terms = !!v; agCfgFootPaint(); }
 
 /* ── 1 · credentials ───────────────────────────────────────────────────────────────────── */
 function agStepCreds(){
@@ -5147,7 +5250,7 @@ function agStepCreds(){
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
     </div>
-    ${adv}`;
+    ${AG.opt === '2' ? '' : adv}`;
 }
 /* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
    2 Sep 2026). It used to close `agStepCreds`, which was right while that was step 1 of a wizard
@@ -5163,7 +5266,7 @@ function agTestHTML(){
   const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
   if (st === 'idle') return '';
   if (st === 'ok') return `<obs-banner variant="success" class="agbanok">${
-    stEsc(p.name)} is reachable with this key. Continue to pick the models it should use.</obs-banner>`;
+    stEsc(p.name)} is reachable with this key.${AG.opt === '2' ? '' : ' Continue to pick the models it should use.'}</obs-banner>`;
   return `<div class="agtest">
       <div class="agth">${agIc('plug', 15)}<span class="t">Test connection</span>
         <obs-tag variant="tag-yellow">Testing</obs-tag></div>
@@ -5259,7 +5362,8 @@ function agStepDone(){
     { label:'Connection status', status:'Healthy' },
     { label:'Per-task routing',  value:d.perTask ? 'Enabled' : 'Default only' },
     { label:'Consent',           status:'Accepted' },
-  ];
+  ].filter(r => AG.opt !== '2' || (r.label !== 'Per-task routing' && r.label !== 'Consent'))   /* not on Option 2's form */
+   .concat(AG.opt === '2' ? [{ label:'Terms & conditions', status:'Accepted' }] : []);
   return `<div class="agdone">
     <span class="agdmk">${agIc('check-circle', 30)}</span>
     <h2 class="agdt">Setup completed successfully</h2>
@@ -5283,6 +5387,12 @@ function agFlowFootHTML(){
   const dis = ok => ok ? '' : ' disabled';
   const next = d.step > 2
     ? `<obs-button variant="primary" onclick="agTap(agCfgSave)">Start using AI features</obs-button>`
+    /* ⚠️ OPTION 2 GATES ON THE TEST ALONE and does not say "Accept": the consent terms are not on its form, so requiring
+       them would disable the button for every unseeded provider with nothing on screen to tick, and "Accept" would name
+       terms nobody was shown */
+    : AG.opt === '2'
+    ? `<obs-button variant="primary"${dis(d.test === 'ok' && d.terms)}
+         onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Enable AI</obs-button>`
     : `<obs-button variant="primary"${dis(d.test === 'ok' && d.consent.every(Boolean))}
          onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>`;
   /* ⚠️ THE KMS CAPTION IS THE CREDENTIALS STEP'S, NOT THE FLOW'S. It rendered on all four
@@ -5382,7 +5492,7 @@ function agCfgPaint(){
   const main = document.getElementById('agCfgMain');
   if (main){ main.innerHTML = agCfgFormHTML(); agCfgBind(); return; }
   const body = document.getElementById('agCfgBody');
-  if (body){ body.innerHTML = agCfgHTML(); agCfgAfter(); return; }
+  if (body){ body.innerHTML = agCfgHTML(); body.dataset.agopt = AG.opt; agCfgAfter(); return; }
   stMainPaint();
 }
 /* ⚠️ THE STEPPER IS REBOUND ON EVERY PAINT, and the rail is NOT. `obs-steps` lives inside the
@@ -5390,6 +5500,13 @@ function agCfgPaint(){
    would be lost; `obs-side-menu` lives outside it and is bound once in `agCfgAfter`. Both are
    CUSTOM events (`change` / `select`) — an `on<name>=` attribute for either is inert markup. */
 function agCfgBind(){
+  const pv = document.getElementById('agCfgProv');
+  if (pv && !pv._agBound){
+    pv._agBound = 1;
+    pv.addEventListener('change', e => { const v = String((e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail));
+      const x = agProv(v); if (x) agCfgPick(x.name); });
+  }
+  if (pv) pv.value = String(AG.cfg.pid);
   const st = document.getElementById('agFlow');
   if (st && !st._agBound){ st._agBound = 1; st.addEventListener('change', e => agCfgGo(agDet(e))); }
 }
@@ -5423,13 +5540,63 @@ function agCfgSave(){
   toast(p.name + ' connected — AI features are live');
 }
 
-/* ⚠️ NO `after` HOOK ANY MORE. It existed to `addEventListener` the provider grid's custom
+/* ⚠️ THE `after` HOOK IS BACK (16 Sep 2026) — for the Option 1 / Option 2 switcher only, agOvAfter below, defined BEFORE the
+   ST_PAGES line that names it. The history: it existed to `addEventListener` the provider grid's custom
    `cellaction` / `rowaction`; the usage grid is read-only and emits neither, so the hook went
    with it. Naming a function that no longer exists here is not a silent no-op — `stMainPaint`
    guards `pg.after`, but the object literal evaluates the identifier and throws a
    ReferenceError that aborts the whole block. Re-add both together or neither. */
+/* ══ OPTION 2 · THE CONNECTED PROVIDER, NOT A GRID (16 Sep 2026) ══════════════════════════════════════════════════
+   One panel: who is connected (the provider's glyph, name, tagline and a Connected tag), how it is connected
+   (obs-key-value — connection name, default model, endpoint, the masked key, last usage), how it is doing
+   (availability sits with the details) and the three 14-day trend widgets — requests, latency, errors — the grid's
+   expanded row carried (agUseWidgetsHTML, the same markup). Every figure comes from AG_DATA.health and AG.cfg, the
+   records Option 1 reads, so the two options cannot disagree.
+   ⚠️ NOTHING CONNECTED → A PLAIN LINE, not an empty panel of dashes: usage for a connection that does not exist would
+   be an invention (the rule the Overview has always followed). */
+function agConnHTML(){
+  const p = AG.active ? agProv(AG.conn) : null;
+  if (!p) return `<div class="agpanel agcon agcon0">No AI provider is connected yet. Use <b>Configure AI provider</b> to connect one — only one is active at a time.</div>`;
+  const d = AG.cfg.d[p.id] || {}, h = AG_DATA.health;
+  const model = (p.models.find(m => m.id === d.model) || p.models[0]).name;
+  const key = d.key ? '\u2022\u2022\u2022\u2022' + String(d.key).slice(-4) : '\u2014';
+  const facts = [
+    { label:'Connection name', value:d.name || p.name },
+    { label:'Default model',   value:model },
+    { label:'Endpoint',        value:d.endpoint || p.base },
+    { label:'API key',         value:key },
+    { label:'Availability',    value:h.availability + '%' },
+    { label:'Last usage',      value:h.lastUsed },
+  ];
+  /* ⚠️ NO obs-metric-list: it renders one figure PER ROW (its registry's vertical-value layout), which put four lines of
+     mostly empty width under the details — and three of the four (requests, latency, error rate) are already the headline
+     figure of the trend widget below. Availability, the one the widgets do not carry, moved into the key-value. */
+  return `<div class="agpanel agcon">
+    <div class="agconh">
+      <span class="agconi">${agIc(p.ic, 20)}</span>
+      <div class="agcont"><div class="agconn"><b>${stEsc(p.name)}</b><obs-tag variant="tag-green">Connected</obs-tag></div>
+        <p>${stEsc(p.tagline)}</p></div>
+    </div>
+    <obs-key-value columns="3" variant="plain" items="${agJ(facts)}"></obs-key-value>
+    ${agUseWidgetsHTML()}
+  </div>`;
+}
+
 agSeed();   /* see the note at `agSeed` — it must run after AG_TASKS is initialised */
-ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
+/* the Option 1 / Option 2 switcher — the only thing the hook binds (see AG_OPTS). It REPAINTS the page, like the License
+   page's switcher: the two options may render different markup, and nothing is mid-edit on the overview.
+   ⚠️ obs-radio compares values strictly and honours the value PROPERTY only as a string — set it after render
+   (the recorded licRadioSync lesson), or the selected segment does not show. */
+function agOvAfter(){
+  const op = document.getElementById('agOpt');
+  if (!op) return;
+  op.addEventListener('change', e => {
+    const v = String((e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail));
+    if (v && v !== AG.opt && AG_OPTS.some(o => o.value === v)){ AG.opt = v; stMainPaint(); }
+  });
+  op.value = String(AG.opt);
+}
+ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML, after: agOvAfter };
 
 
 /* ═══════════════════════════════════════════════════════════════════════════════════════

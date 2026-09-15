@@ -6355,6 +6355,51 @@ remove [the foot] [the Next-steps card and licence line]"*. The reference is Opt
   ✕ / rocket / `?` / step / licence / layout each doing its one thing on a stub, no error, the
   count cleared. **Options 10, 11 and 12 untouched.**
 
+### Option 13 — the pin, its blinking dot and the picture intro (15 Sep 2026)
+
+Request: in Explorer's column the pin only appears on hover, so nothing says a sub-module *can* be
+pinned. Wanted: shown **only the first time** the sidebar opens, a live "blink" mark in the *new*
+colour on the list, and hovering it opens a **picture introduction tooltip** explaining what pinning
+is, styled like a supplied *Condition Router* card (title, bold lead, How to use / Output / Example /
+Limitation down a connector rail, a badge).
+
+⚠️ **THREE BUILDS IN ONE NIGHT — THE THIRD SHIPS.** (1) a blinking **pin** on the first row only —
+*"you blink the pin icon, it is wrong, make it a dot … show all main sub-module"*; (2) a blinking
+**dot in place of the pin** on every row — *"don't remove the pin icon, the blink will show behind the
+pin icon"*; (3) **the pin, visible and unchanged, with the blinking dot beside it**, on every row — first
+after the pin, then swapped to **before** it minutes later (*"swap the pin icon and blink action"*), so a
+row reads **dot · pin · DOCS**. Then the last word: *"only the blink action is shown by default and the pin
+icon will show only on hover"* — **the pin is hover-only again**; only the dot shows at rest. Don't
+restore any earlier shape.
+
+| part | what |
+|---|---|
+| pin (`.mfpin`) | **untouched — hover-only**, as on every other visit, keeping its `data-tip` and its click. It keeps its box at opacity 0, so the dot does not move when the pin appears under the pointer. It does not blink |
+| dot (`.mfpinhot` › `.mfpindot`, `MF_PIN_DOT`) | **right before the pin**, on every main row (9; child rows never), an 8px teal dot (`.mftag.new`'s teal) in a 12×20 hotspot, blinking (`@keyframes mfpindot`) with a ripple (`::after`, `@keyframes mfpinlive`); off under reduced motion. **Its own `role="button"` span, not inside the pin's `<button>`** — hover, focus or click it and the card opens; it never pins |
+| card (`#mfPinIntro.mfpi`) | **360px** (reworked on request, *"improve this tooltip"*), on `<body>`, `position:fixed` at the column's right edge, top clamped, its arrow (`--mfpi-arrow`) on **whichever dot is hovered**. A **header** (the pin in a teal tile · *Pin a sub-module* at 13.5px/600 · one line of description) · a **two-panel picture of the real flow** — *In Explorer* (Topology hovered with its dot + pin, then three more rows) → the product's `long-arrow-right` (`MF_PI_ARROW`) → *On your sidebar* (Dashboard · Explorer · **Topology lit** · Report), four rows a side so the panels match · the four reference sections with **600-weight keys** and one-to-two-line copy (`text-wrap:pretty`, so no one-word last lines) · a hairline footer with the *9 sub-modules can be pinned* tag (tinted, no outline) and **Got it** |
+| "first time" | `localStorage['oo13-pin-intro-read']` (try/catch). **Got it or ANY pin press** marks it read; `mfPinIntroDone()` removes every dot in place (no repaint). `mfPinIntroReset()` replays it |
+
+- ⚠️ **A PINNED ROW GETS A DOT TOO** — its filled pin beside the dot still reports the state, and every
+  row keeps its pin and dot at one x.
+- ⚠️ **THE COLUMN'S `onmouseleave` CALLS `mfHide()` AT ONCE**, so crossing from a dot into a card that
+  lives on `<body>` would shut the column mid-journey. `mfPinIntroHolds(e)` checks the `relatedTarget`
+  first; the card's own `mouseenter` sets `mfIn` and clears `mfTimer`, and its `mouseleave` returns to
+  the column (closing only the card, after 200ms — unless the pointer lands on a dot) or closes both.
+- ⚠️ **`mfPinIntroDone()` RUNS BEFORE `railPinToggle`** in every pin's `onclick` — the toggle repaints
+  the column and asks `mfPinIntroOn()` again, so the order decides whether the dots come back.
+- ⚠️ **The dot carries no `data-tip`** — the tooltip engine would paint under the card (the kbPop rule).
+- ⚠️ **`.mfpin` transitions its opacity**, so a probe reading a pin's opacity right after Got it sees
+  the pre-transition value — freeze transitions first (it failed once on correct CSS).
+- ⚠️ **A flex `li` wrapped the bold label into its own column**; the bullet rows are blocks with an
+  absolutely placed dot. **`font: inherit 600 …` is an invalid shorthand** — `.mfpigot` uses longhands.
+- ⚠️ **Assumptions, stated:** teal because the ask said "like new"; "first time" = until read, per
+  browser. **Option 13 only.** Options 10–12 keep the plain hover-revealed pin.
+- Verified: a 43-assertion probe at 1920×1100 **and** 1280×720 (the card's header, both panels, the arrow, equal panel heights, the hovered row's dot + pin, the lit sidebar row between Explorer and Report, no clipped picture label, 600 keys, the footer, 360px, inside the viewport; 9 rows, 9 pins hidden at rest and revealed on row hover with the dot not moving, 9 dots before them and
+  none on children, pin and dot columns aligned and centred, no clipped label, card from any dot with
+  the arrow on it, clicking a dot opening the card without pinning, Got it removing every dot with the
+  pins still hover-only, a pinned row's filled pin + dot, a pin press pinning Log and reading the
+  intro) · dark and light screenshots.
+
 ### The 10 Sep 2026 pass — two dead CSS states, and the sizes
 
 All in Options 10 and 11. Two of these were rules that existed and could never take effect:
@@ -7715,6 +7760,21 @@ figures, and APM's split row on Option 4 has no rule above it.
 | Option 4's EPS tab: *"add the card border like the License & Quota Usage tab, and apply [its] card padding"* | `.lice5.lice5o4 .lice5c` — every EPS card (four stat cards, the allocation card, five trend cards) takes the usage cards' **1px `--widget-border-color`, 10px padding and `--common-widget-bg` fill**, so the two tabs match in both themes. The Drop policy banner is not a card and is unchanged. Option 5 keeps its borderless 16 / 24px cards |
 | Option 4's EPS stat cards: *"the title text small, first letter capital"* | `.lice5.lice5o4 .lice5l{text-transform:none;letter-spacing:0}` — *Hardware ceiling · Allocated · Ingested live · Drop status*; the markup was already sentence case. Size and weight unchanged. ⚠️ The Total trend card's *TOTAL · ALL TELEMETRY* is a different label and is still uppercase |
 
+- ⚠️ **SECTION TITLES SAT ~8px BELOW THE TEXT BESIDE THEM, on every option (fixed 16 Sep 2026)** — reported on Option 4's
+  *Dynamic EPS · allocation by signal* vs *allocated vs live ingested · over-quota shaded*. The cause was
+  `.lictabs [slot]{padding-top:16px}`: meant for the two tab PANES, but as a bare descendant selector it also matched every
+  `obs-toolbar` title carrying `slot="start"` inside them, and obs-toolbar centres a 36px padded span against a 17px hint.
+  It is `.lictabs > obs-tabs > [slot]` now, so it reaches the panes only — which also straightens *License & Quota Usage* and
+  *Calculated vs actual EPS* on Options 1, 2, 4 and 5. Consequence: each of those heads is ~16px shorter, so what follows it
+  moves up that much. Probed: every head's two sides share a centre line (±1.5px) on all four options, both panes keep 16px.
+- **Option 4's name gradient is darker in dark theme** (request, 16 Sep 2026: *"make this gradient colour darker"*) — the
+  *Infinity* text, the ∞ and the *Unified edition* chip all read `--license-accent` / `--license-violet`, now **#306ef3 /
+  #8c55f1** on `.lic4:not(.lic5)` (the same two hues, 15 points darker). Name contrast on the card 4.01 / 4.04 (3:1 is the bar
+  at that size); white on the chip rises from ~2.4:1 to ~4.5:1. **Option 2 keeps #7aa2f7 / #bb9af7; light theme keeps
+  #2563eb / #7c3aed** on both.
+- **Option 4's allocation card has 14px between its title row and the Log row** (request, 16 Sep 2026 — asked as 10px, then
+  14px) — the toolbar's `margin-bottom:10px` on top of the card's 4px flex gap. ⚠️ `.lice5a{gap:16px}` has never applied: `.lice5c{gap:4px}` sits
+  later in the sheet at the same weight, so every EPS card (Option 5's too) runs on 4px. Option 5 was left at 4px.
 - ⚠️ **The DS checker scores Option 4 at 96 now (philosophy 80)** — one element: the ∞ glyph in `--license-accent` #7aa2f7, the same declared "brand-navy" divergence Option 2 carries. Component went back to 100 when the Activation code hook was deleted.
 - ⚠️ **Probe traps hit this round:** a `setTimeout` callback that throws is OUTSIDE the probe's try, so the run printed `NO PROBE OUTPUT` and looked like a broken page — wrap the timer body too. And writing `\x60` from Python into PART 1 produced a real backtick that ended the CSS template literal; `node --check` named it at once.
 - ⚠️ **Stale probes, not regressions:** `o24b` / `opt24probe` / `m5`–`m8` still assert the pre-15-Sep designs (the toggle's left edge, "170 of 5,000", bordered record fields, the ring's tone on tile glyphs) and now also the old add-on figures (NCCM 1%, Flow 0). `stbehave` **21/21 × 13 pages** and conformance **100 × 4 scenes, 96 × 2** after this batch.
@@ -7737,6 +7797,38 @@ the Edition name surviving as a key-value row, the mailto still clickable, the d
 **twice more** while writing these very notes (`node --check` named the line each time); and a
 shared `--user-data-dir` carried `setTheme('light')` into the next scene through localStorage, so
 both "dark" screenshots came out light — **give each themed scene its own Chrome profile.**
+
+## Settings › Agentic AI — Option 1 / Option 2 (16 Sep 2026)
+
+Request: *"create option 2 — the current is option 1 — copy option 1 and paste it in option 2"*, then a run of Option 2
+changes the same day. A switcher (`AG.opt`, `AG_OPTS`, `obs-radio#agOpt as-button` in the page header's action slot, bound by
+`agOvAfter` — the `after` hook is back) picks between them; it is review chrome, like the License page's. **Option 1 is
+untouched and is still the default.**
+
+⚠️ **OPTION 2 IS A COPY BY CONSTRUCTION, NOT BY PASTED CODE.** Both options render through the same builders; Option 2
+differs only where a builder branches on `AG.opt === '2'`. Pasting ~500 lines of `ag*` a second time would collide on every
+function name in this flat scope. `#agPage` carries `data-agopt` for CSS scoping.
+
+| Option 2 | what |
+|---|---|
+| overview | **no grid and no search** (the search filtered the grid) — `agConnHTML()`: one `.agpanel` about the **connected** provider only — its glyph tile, name, **Connected** tag and tagline; an `obs-key-value columns="3"` of Connection name · Default model · Endpoint · API key (masked to the last four) · Availability · Last usage; and the three 14-day trend widgets (`agUseWidgetsHTML()`, extracted from the grid's expanded row so both options draw the same charts). Nothing connected → one plain line, no figures |
+| Configure drawer | a **684px side panel** (the product's form-drawer width; `agCfgSize`, `#drawer-agcfg.agcfgo2`) with the footer on its floor — **no provider rail, no help card, no Advanced settings, no Model selection, no data-sharing terms**. Top to bottom: **AI provider** as a segmented `obs-radio#agCfgProv as-button` · Enter credentials (name, API key) · **one terms checkbox** (`agTermsHTML`: *"I have read and agree to the Terms & Conditions and the <provider> privacy policy, and allow ObserveOps to send selected observability data to <provider>"*, two `obs-link`s) · the test output · footer (KMS caption · Run test · **Enable AI**) |
+| gate | **Enable AI needs a passing test AND the terms box** (`d.terms`, seeded true for the connected provider). It says *Enable*, not *Accept*, because the four consent terms are not on this form |
+| done summary | Provider · Default model · Connection status · **Terms & conditions: Accepted** (no routing / consent rows) |
+
+- ⚠️ **`obs-metric-list` WAS TRIED IN THE PANEL AND REMOVED** — it renders one figure per ROW (its registry's vertical-value
+  layout), and three of its four figures were already the trend widgets' headlines. Availability moved into the key-value.
+- ⚠️ **THE DRAWER BODY IS BUILT FOR ONE OPTION.** `agCfgPaint` repaints only `#agCfgMain` once `#agCfgBody` exists, so a
+  drawer first opened on Option 2 and reopened on Option 1 kept Option 2's frame (no rail, no help). `agConfig` now clears a
+  body whose `data-agopt` differs, which sends the paint down its full-build branch. Found by the probe, not by eye.
+- ⚠️ **The terms text is a SIBLING of `obs-checkbox`, not its label** — a link inside the component's `<label>` would tick
+  the box when clicked. Ticking repaints the footer only (the `agCfgConsent` discipline).
+- ⚠️ **The picker lives inside `#agCfgMain`**, so every pane paint rebuilds it: `agCfgBind` rebinds its `change` and sets
+  its `value` PROPERTY as a string (the recorded `licRadioSync` lesson).
+- ⚠️ **A default-size segmented control, three words** — no icons: `obs-radio` takes `{value,label}` only.
+- Verified: a 20-assertion probe (overview panel, 684px drawer, every removed section absent, picker at the top switching
+  provider by a real click, terms box below the fields with two links, the two-part gate, the done summary, reopening on
+  Option 1 restoring the rail and help card) · dark and light screenshots.
 
 ## Every box in the Settings module has 4px corners (14 Sep 2026)
 

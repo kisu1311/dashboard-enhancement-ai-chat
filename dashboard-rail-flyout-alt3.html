@@ -2086,6 +2086,73 @@ html[data-theme="light"] .mflyout{box-shadow:8px 0 28px rgba(16,26,42,.14)}
 /* filled = pinned. One glyph, two states — see `MF_PIN`. */
 .mfmaster .mfi.pinned .mfpin{color:var(--action)}
 .mfmaster .mfi.pinned .mfpin svg{fill:currentColor;stroke:currentColor}
+/* ── the pin intro (Option 13, 15 Sep 2026) — see the engine's note above mfTree ────────────────────────────────────
+   the pin: untouched — hover-only, as on every other visit. It does NOT blink.
+   the dot: before the pin, visible at rest, in .mftag.new's teal, blinking with a ripple — the hover target for the card. */
+.mfpinhot{position:relative;flex:0 0 12px;width:12px;height:20px;display:grid;place-items:center;border-radius:4px;cursor:help;color:var(--teal)}
+.mfpinhot:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.mfpindot{display:block;width:8px;height:8px;border-radius:50%;background:currentColor;animation:mfpindot 1.6s ease-in-out infinite}
+.mfpinhot::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;
+  border-radius:50%;background:var(--teal);opacity:0;pointer-events:none;animation:mfpinlive 1.6s ease-out infinite}
+@keyframes mfpindot{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes mfpinlive{0%{opacity:.5;transform:scale(1)}70%,100%{opacity:0;transform:scale(2.6)}}
+@media (prefers-reduced-motion:reduce){.mfpindot{animation:none}.mfpinhot::after{animation:none;opacity:0}}
+/* the card: a transparent 12px strip on its left edge meets the column exactly, then the card itself.
+   ⚠️ REWORKED 15 Sep 2026 ("improve this tooltip"): it was ~540px of evenly weighted text. Now a real header (pin tile ·
+   title · one-line description), a two-panel PICTURE of the actual flow (the Explorer row → the sidebar row it becomes),
+   the four reference sections tightened to one or two lines each with their keys set as keys, and a lighter footer.
+   360px card, so the copy stops orphaning single words. */
+.mfpi{position:fixed;left:0;top:0;z-index:120;width:372px;padding-left:12px;box-sizing:border-box;
+  visibility:hidden;opacity:0;transition:opacity .14s,visibility .14s}
+.mfpi.on{visibility:visible;opacity:1}
+.mfpic{position:relative;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--pop);box-shadow:var(--shadow);color:var(--text)}
+.mfpic::before{content:'';position:absolute;left:-6px;top:calc(var(--mfpi-arrow, 28px) - 6px);width:10px;height:10px;
+  background:var(--pop);border-left:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
+/* header: the pin in a teal tile, then the title over one line of description */
+.mfpih{display:flex;align-items:flex-start;gap:10px}
+.mfpii{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border-radius:var(--radius-sm);
+  background:rgba(20,184,166,.16);color:var(--teal)}
+.mfpii svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mfpiht{min-width:0}
+.mfpit{display:block;font-size:13.5px;font-weight:600;line-height:18px;color:var(--text)}
+.mfpil{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--text-dim);text-wrap:pretty}
+/* ⚠️ text-wrap:pretty is what stops a one-word last line ("unpin.", "into More.") — Chrome 117+; older engines just wrap */
+/* the picture: the Explorer row you act on → the sidebar row it becomes, from this file's own glyphs */
+.mfpipic{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);align-items:center;gap:6px;margin-top:12px}
+.mfpip{align-self:stretch;display:grid;align-content:start;gap:2px;padding:6px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--sidebar)}
+.mfpicap{padding:0 6px 4px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim)}
+.mfpir{display:flex;align-items:center;gap:6px;min-width:0;height:24px;padding:0 6px;border-radius:4px;font-size:11.5px;color:var(--text-dim)}
+.mfpir > span{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mfpir .ic{flex:0 0 13px;width:13px;height:13px;fill:currentColor}
+.mfpir.hov{background:var(--hover-side);color:var(--text)}
+.mfpir.pin{background:rgba(20,184,166,.14);color:var(--text);font-weight:600}
+.mfpir.pin .ic{color:var(--teal)}
+.mfpir .dot{flex:0 0 6px;width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.mfpir .pn{flex:0 0 12px;width:12px;height:12px;color:var(--teal);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.mfpiarr{width:16px;height:16px;color:var(--text-dim);fill:currentColor}
+/* the sections hang off one connector rail, each with its own short tick — the reference's tree */
+.mfpis{display:grid;gap:9px;margin:14px 0 0 2px;border-left:1px solid var(--pop-line)}
+.mfpisec{position:relative;padding-left:14px}
+.mfpisec::before{content:'';position:absolute;left:0;top:7px;width:9px;height:1px;background:var(--pop-line)}
+.mfpik{display:block;margin-bottom:2px;font-size:11px;font-weight:600;line-height:14px;color:var(--text-dim)}
+.mfpisec p{margin:0;font-size:12px;line-height:1.45;color:var(--text);text-wrap:pretty}
+.mfpisec p.ex{font-style:italic}
+.mfpisec ul{display:grid;gap:2px;margin:0;padding:0;list-style:none}
+/* ⚠️ A BLOCK, NOT A FLEX ROW — as flex the bold label and the text node were two items, and "Not pinned" wrapped inside its
+   own narrow column instead of the sentence flowing under it */
+.mfpisec li{position:relative;padding-left:12px;font-size:12px;line-height:1.45;color:var(--text);text-wrap:pretty}
+.mfpisec li::before{content:'';position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.mfpisec li.off::before{background:var(--text-dim)}
+.mfpisec li b{font-weight:600}
+/* footer: a hairline, the count as a quiet tag, and the one action */
+.mfpif{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--pop-line)}
+.mfpib{padding:2px 7px;border-radius:4px;background:rgba(20,184,166,.12);font-size:11px;font-weight:600;color:var(--teal)}
+.mfpigot{margin-left:auto;height:26px;padding:0 14px;border:0;border-radius:var(--radius-sm);background:var(--action);color:var(--action-fg);
+  font-family:inherit;font-size:12px;font-weight:600;line-height:26px;cursor:pointer}
+.mfpigot:hover{background:var(--action-h)}
+.mfpigot:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 /* the chevron gives up its auto margin when a pin is present */
 .mfmaster .mfi .mfpin+.mfkc{margin-left:4px}
 .mfmaster .mfi.open{background:var(--sb-hover);border-left-color:var(--teal)}
@@ -9251,7 +9318,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 <!-- module flyout: the module's own navigation, opened by hovering a rail entry -->
 <div class="mflyout" id="mflyout"
      onmouseenter="mfIn=true;clearTimeout(mfTimer);clearTimeout(sbHoverT)"
-     onmouseleave="mfIn=false;mfHide();sbHover(0)"></div>
+     onmouseleave="if(mfPinIntroHolds(event))return;mfIn=false;mfHide();sbHover(0)"></div>
 
 <!-- Add New Widget drawer — ported from Option 2 (3 tabs + searchable catalog),
      replacing Option 1's flat 8-tile library. -->
@@ -11828,6 +11895,111 @@ const MF_TREE_HIDE = { Explorer: ['Monitor'] };
    ("remove the sub module popup icon in every where") still stands for every menu but this one;
    adding 'Alert' here would silently reopen it. */
 const MF_TREE_ICONS = ['Explorer'];
+/* ══ THE PIN INTRO — Option 13 (15 Sep 2026) ═══════════════════════════════════════════════════════════════════
+   Request: the Explorer column's pin shows only on a row's hover, "otherwise I can't understand the module will be pin"; so
+   "by default, only the first time I open the sidebar", show a BLINKING "live" mark in the "new" colour — on every main
+   sub-module row, a blinking DOT right before its hover-only PIN (see the note at the row template for the two
+   builds before this one) — and on the dot's hover a
+   "picture introduction tooltip" explaining what pinning is — laid out like the supplied tooltip (title, lead sentence, then
+   How to use · Output · Example · Limitation down a connector rail, and a badge).
+   ⚠️ "FIRST TIME" = UNTIL IT IS READ, remembered in localStorage: the dots stay until "Got it" or any pin press. It is NOT
+   cleared by merely opening the column or hovering the beacon, or a glance you did not notice would lose it for good.
+   mfPinIntroReset() brings it back for a review.
+   ⚠️ THE CARD LIVES ON <body>, NOT IN #mflyout: the column is clip-path:inset(0 -40px 0 0), which would cut a 330px card to 40.
+   So the column's own mouseleave has to know about it (mfPinIntroHolds) — it calls mfHide() at once, and crossing from the
+   beacon into the card would otherwise close the column under the pointer. The card's transparent 12px left strip starts
+   exactly at the column's edge, so the pointer never crosses a gap that belongs to neither.
+   ⚠️ visibility, not display:none — the card is MEASURED to place it (the kbPopOpen lesson): measure, place, then reveal.
+   ⚠️ EVERY FACT IN THE CARD IS THIS OPTION'S BEHAVIOUR: pins land under Explorer (PIN_ADD_UNDER), an unpinned sub-module is on
+   the rail only while it is open (RAIL_TMP), and a full rail folds Approval · What's new · Health into More (railFootFit).
+   The picture is built from this file's own glyphs (ico / mfIco), not drawn. */
+const MF_PIN_INTRO_KEY = 'oo13-pin-intro-read';
+/* the live mark: a blinking dot BEFORE the pin — the pin says what the control is, the dot says "something new here, hover me".
+   Its own role="button" span, never a <button> inside the pin's <button> (interactive content inside a button eats the clicks). */
+const MF_PIN_DOT = '<span class="mfpinhot" role="button" tabindex="0" aria-label="What is pinning?" onmouseenter="mfPinIntroShow(this)" ' +
+  'onmouseleave="mfPinIntroLater(event)" onfocus="mfPinIntroShow(this)" onblur="mfPinIntroLater(event)" ' +
+  'onclick="event.stopPropagation();mfPinIntroOpen(this)"><i class="mfpindot"></i></span>';
+let mfPinIntroMem = false, mfPinIntroT = null;
+function mfPinIntroOn(){
+  if (mfPinIntroMem) return false;
+  try { return localStorage.getItem(MF_PIN_INTRO_KEY) !== '1'; } catch (e) { return true; }
+}
+function mfPinIntroDone(){
+  if (mfPinIntroMem) return;
+  mfPinIntroMem = true;
+  try { localStorage.setItem(MF_PIN_INTRO_KEY, '1'); } catch (e) {}
+  mfPinIntroClose();
+  /* the dots go, in place — no repaint, so the pointer's row keeps its hover */
+  document.querySelectorAll('#mflyout .mfpinhot').forEach(d => d.remove());
+}
+function mfPinIntroReset(){ mfPinIntroMem = false; try { localStorage.removeItem(MF_PIN_INTRO_KEY); } catch (e) {} }
+function mfPinIntroHolds(e){ const to = e && e.relatedTarget; return !!(to && to.closest && to.closest('#mfPinIntro')); }
+function mfPinIntroEl(){
+  let el = document.getElementById('mfPinIntro');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'mfPinIntro'; el.className = 'mfpi'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Pin a sub-module');
+  el.onmouseenter = () => { clearTimeout(mfPinIntroT); mfIn = true; clearTimeout(mfTimer); };
+  el.onmouseleave = e => {
+    const to = e.relatedTarget;
+    if (to && to.closest && to.closest('#mflyout')){ if (!to.closest('.mfpinhot')) mfPinIntroLater(); return; }
+    mfPinIntroClose(); mfIn = false; mfHide();
+  };
+  document.body.appendChild(el);
+  return el;
+}
+function mfPinIntroHTML(){
+  const hide = MF_TREE_HIDE.Explorer || [], rows = EXPLORER_TREE.filter(r => hide.indexOf(r.l) < 0), first = rows[0] || { l:'Topology', ic:'topology' };
+  const pn = MF_PIN.replace('<svg ', '<svg class="pn" ');
+  const row = (glyph, label, cls, tail) => `<div class="mfpir${cls ? ' ' + cls : ''}">${glyph}<span>${stEscMf(label)}</span>${tail || ''}</div>`;
+  const more = rows.slice(1, 4);   /* four rows a side, so the two panels are the same height */
+  return `<div class="mfpic">
+    <div class="mfpih"><span class="mfpii">${MF_PIN}</span>
+      <div class="mfpiht"><span class="mfpit">Pin a sub-module</span>
+      <p class="mfpil">Keep an Explorer sub-module on the sidebar, one click away from any screen.</p></div></div>
+    <div class="mfpipic" aria-hidden="true">
+      <div class="mfpip"><span class="mfpicap">In Explorer</span>
+        ${row(mfIco(first.ic, 'ic'), first.l, 'hov', '<i class="dot"></i>' + pn)}
+        ${more.map(r => row(mfIco(r.ic, 'ic'), r.l)).join('')}
+      </div>
+      ${MF_PI_ARROW}
+      <div class="mfpip"><span class="mfpicap">On your sidebar</span>
+        ${row(ico('dashboard', 'ic'), 'Dashboard')}
+        ${row(ico('metric-explorer', 'ic'), 'Explorer')}
+        ${row(mfIco(first.ic, 'ic'), first.l, 'pin')}
+        ${row(ico('report', 'ic'), 'Report')}
+      </div>
+    </div>
+    <div class="mfpis">
+      <div class="mfpisec"><span class="mfpik">How to use</span><p>Hover a sub-module and click its pin. Click it again to unpin.</p></div>
+      <div class="mfpisec"><span class="mfpik">Output</span><ul><li class="on"><b>Pinned</b> stays on the sidebar, under Explorer</li><li class="off"><b>Not pinned</b> is on the sidebar only while it’s open</li></ul></div>
+      <div class="mfpisec"><span class="mfpik">Example</span><p class="ex">Pin ${stEscMf(first.l)} to open it from any dashboard.</p></div>
+      <div class="mfpisec"><span class="mfpik">Limitation</span><p>A full sidebar folds Approval, What’s new and Health into one More button.</p></div>
+    </div>
+    <div class="mfpif"><span class="mfpib">${rows.length} sub-modules can be pinned</span><button type="button" class="mfpigot" onclick="mfPinIntroDone()">Got it</button></div>
+  </div>`;
+}
+/* the picture's arrow: the product's own long-arrow-right, verbatim from observeops-icons/common/arrows-direction/ */
+const MF_PI_ARROW = '<svg class="mfpiarr" viewBox="0 0 48 48"><path d="M40,24c0,.5-.2,1-.6,1.4l-12,12c-.8,.8-2,.8-2.8,0-.8-.8-.8-2,0-2.8l8.6-8.6H10c-1.1,0-2-.9-2-2s.9-2,2-2h23.2l-8.6-8.6c-.8-.8-.8-2,0-2.8,.8-.8,2-.8,2.8,0l12,12c.4,.4,.6,.9,.6,1.4Z"/></svg>';
+const stEscMf = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 120); }
+function mfPinIntroOpen(btn){
+  if (!btn || !btn.isConnected || !mfPinIntroOn()) return;
+  const fly = document.getElementById('mflyout');
+  if (!fly || !fly.classList.contains('on')) return;
+  const el = mfPinIntroEl();
+  el.classList.remove('on'); el.innerHTML = mfPinIntroHTML();
+  const f = fly.getBoundingClientRect(), b = btn.getBoundingClientRect(), h = el.offsetHeight, cy = (b.top + b.bottom) / 2;
+  const top = Math.max(8, Math.min(cy - 28, innerHeight - h - 8));
+  el.style.left = f.right + 'px'; el.style.top = top + 'px';
+  el.style.setProperty('--mfpi-arrow', Math.max(14, Math.min(cy - top, h - 14)) + 'px');
+  el.classList.add('on');
+}
+function mfPinIntroLater(e){
+  if (e && e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('#mfPinIntro')) return;
+  clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(mfPinIntroClose, 200);
+}
+function mfPinIntroClose(){ clearTimeout(mfPinIntroT); const el = document.getElementById('mfPinIntro'); if (el) el.classList.remove('on'); }
 function mfTree(name){
   const all = mfTreeFor(name); if (!all) return '';
   const hide = MF_TREE_HIDE[name] || [];
@@ -11899,8 +12071,24 @@ function mfTree(name){
            One `.mfend` with `margin-left:auto` makes the cluster a single unit flush to the
            row's right edge, with one gap inside it — so the three form a column down the list. */
         '<span class="mfend">' +
-        (name === 'Explorer' ? `<button class="mfpin" data-tip="${railPinned(r.l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" ` +
-          `aria-pressed="${railPinned(r.l)}" onclick="event.stopPropagation();railPinToggle(${mfAttr(r.l)})">${MF_PIN}</button>` : '') +
+        /* ⚠️ UNTIL THE PIN INTRO IS READ, EVERY MAIN ROW SHOWS A BLINKING DOT AT REST, RIGHT BEFORE ITS PIN (request,
+           15 Sep 2026: the pin only shows on hover, "otherwise I can't understand the module will be pin" — so, the first time the
+           column opens, a "live" mark in the NEW colour, with a picture tooltip explaining pinning on its hover). Three builds in
+           one night: a blinking PIN on the first row ("it is wrong, make it a dot … all main sub-module"), then a DOT in place of
+           the pin on every row ("don't remove the pin icon, the blink will show behind the pin icon"), then THIS — the pin stays
+           a pin, visible and unchanged, and the dot beside it is the thing that blinks. The dot sat AFTER the pin for a few
+           minutes and was then swapped to BEFORE it ("swap the pin icon and blink action"), so the row reads dot · pin · DOCS.
+           ⚠️ ONLY THE DOT SHOWS BY DEFAULT; THE PIN IS HOVER-ONLY, as it always was (request: "only the blink action is shown by
+           default and the pin icon will show only on hover"). The pin keeps its box at opacity 0, so the dot does not move when
+           the pin appears under the pointer.
+           ⚠️ THE DOT IS NOT A BUTTON INSIDE THE PIN: it is its own role="button" span, the hover / focus / click target for the
+           card, and it never pins. The pin keeps its own data-tip and its own click. A pin press reads the intro, and it is read
+           BEFORE railPinToggle, whose repaint asks mfPinIntroOn() again.
+           ⚠️ PINNED ROWS GET A DOT TOO — the filled pin beside it still reports the state, and every row in the column keeps
+           its pin at one x. */
+        (name === 'Explorer' ? (mfPinIntroOn() ? MF_PIN_DOT : '') +
+          `<button class="mfpin" data-tip="${railPinned(r.l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" ` +
+          `aria-pressed="${railPinned(r.l)}" onclick="event.stopPropagation();mfPinIntroDone();railPinToggle(${mfAttr(r.l)})">${MF_PIN}</button>` : '') +
         /* ⚠️ the chevron is the ONLY thing saying a row has more behind it. Without it the
            second pane appears on some rows and not others with nothing to predict which,
            which reads as the menu misbehaving rather than as a shape. */
@@ -12824,6 +13012,7 @@ function mfOpenPin(l, el){
   mfClamp();
 }
 function mfHide(){ document.getElementById('mflyout').classList.remove('on');
+  if (typeof mfPinIntroClose === 'function') mfPinIntroClose();
   /* the grid is the same menu for one module, so everything that closes one closes the other —
    `mfGo`, the rail's mouseleave grace period and every other caller get it for free */
   if (typeof mfGrid === 'function') mfGrid(false); }
