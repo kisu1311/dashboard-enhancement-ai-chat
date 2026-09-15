@@ -30,6 +30,41 @@ supplied cards.
 
 ## Completed
 
+- **Settings accent + License demo data + Option 4, 15 Sep (night)** — ⚠️ not committed: the whole Settings module's
+  accent is **#cad3e2 dark / #1d2a3e light** instead of teal (one token override on its five roots; DS `--primary` →
+  `--primary-alt`); the five add-ons show **10 used** on every option (shared `LIC_DATA`); Option 4 — licence card
+  columns 1.2fr / 1fr / 184px above a 1080px card, ring stroke 8, *In use* tiles wear `utilization`, no dot on Healthy
+  or Status, card borders `--widget-border-color`, no header Upgrade Now, APM's split flush under its tiles with amber /
+  aqua swatches; the 1280 sparkline clipping is fixed (chart hidden under a 300px tile). Later the same night: Option 4's
+  add-on buttons read "History"; the Activation Code dialog puts the paste box first; a RUM card with the ring in the header
+  (built on Option 4, moved to Option 5); Option 4's EPS tab is Option 5's (LIC_EPS5) with no swatches, top-right tags, a 24h time axis
+  with a visible timeline, signal-coloured allocation bars, and the usage tab's card border + 10px padding. Details in
+  CLAUDE.md *"The Settings accent, demo usage, and the last Option 4 batch"*.
+- **License · Option 4, 15 Sep (evening)** — ⚠️ not committed: add-on rings are the tiles' height (66px token) and
+  their pill sits beside the name reading *Healthy* only; the devices card lost its figure line and its tiles' "% of
+  used"; ring figures 20px semibold with totals in k (*of 5k*); tile titles semibold; Option 2's gradient name +
+  inline chip on the licence card, no eyebrow, sentence-case 12px labels, 15px semibold values, 57ch description,
+  a filled borderless *Activation code* button (the shadow-root restyle is gone), View history / Last N days icons
+  swapped, and the three licence sections share one top and bottom (ring 100px). See CLAUDE.md *"Option 4 — sixteen
+  more requests on the licence and quota cards"*.
+- **License, 15 Sep (latest batch)** — ⚠️ not committed: the tabs have **no icons** on every option;
+  Option 2's term line reads *1,432 days · Ends 17 Aug 2030*, its name and edition chip take the **live
+  product's license-hero gradient** (scoped `--license-*` tokens), and its term block + Activation code
+  button are **top-aligned** with the name row; Option 4's licence card lost its **term bar** and its
+  **Activation code** is a collapsed toggle under the description that opens the code row (no rule),
+  its **Monitored devices** card is a figure line over the add-on ring + three tiles (the change is a
+  *Last N days* tile) with a **left-aligned legend**, and **every Option 4 card is padded 10px**. DS
+  conformance: 100 × 4 scenes, **96 on Option 2** (the live blue fails the DS brand-navy rule) and **98 on
+  Option 4** (the restyled transparent button) — both declared, both what was asked. See CLAUDE.md
+  *"The tabs, Option 2's live colours, and six Option 4 changes"*.
+- **Options 2 and 4, 15 Sep (later)**: four Agentation notes on Option 4 (bordered record fields, a
+  smaller ring figure, a thicker ring, the add-on status pill top-right after View history) — resolved;
+  **History opens Option 5's centred modal on Options 2 and 4 too** (Option 1 keeps the drawer); Option 2's
+  licence card: the edition description added, the Activation code section replaced by an *Activation
+  code* button (opens the existing modal), the *ObserveOps edition* label row removed, *Expires* replaced
+  by a *Status* tile carrying *Activated*, and no % inside the ring. ⚠️ Not committed. DS conformance
+  **100/100 × 6 scenes** after these. See CLAUDE.md *"Options 2 and 4 — Agentation notes, the History modal, and a
+  trimmed Option 2 licence card"*.
 - **Option 5's EPS Trend Breakdown tab is four stat cards, a drop-policy note and the allocation
   card** — Hardware ceiling · Allocated · Ingested live · Drop status as individual borderless cards
   (from a supplied strip), the two drop-policy rules as an info `obs-banner`, then *Dynamic EPS ·
@@ -280,7 +315,7 @@ at it.
 
 ## Verification at the end of the session
 
-**Latest (15 Sep, after Option 5's EPS tab — stat cards, note, allocation card, Highcharts trends):** the Option 5 EPS probe **99/99** · DS conformance **100/100 × 6 scenes** (token 100 after the Highcharts subtitle/caption fix) · `stbehave` **21 × 13 pages** · earlier (14 Sep, after Option 5's Metric-Explorer history modal): the License probe **285/285** · DS conformance **100/100 × 5 scenes** · `stbehave` **21 × 13 pages** · earlier, after the 4px corners: a 39-assertion corner probe on Options 1 and 13 (every painted box, shadow roots included, on every Settings screen) · the License probe **255/255** (fewer than earlier: the removed card's and Option 3's assertions went with them) · DS conformance **100/100 × 6 scenes**
+**Latest (15 Sep, the tabs / Option 2 colours / Option 4 batch):** o24b probe **62/62** dark and light · the License probe **279/279** (updated to the new designs) · DS conformance **100 × 4, 96 (Option 2), 98 (Option 4)** · `stbehave` **ALL 21 PASS × 13 pages** · Option 2 and 4 screenshots in dark and light. **Before that (15 Sep, after Option 5's EPS tab — stat cards, note, allocation card, Highcharts trends):** the Option 5 EPS probe **99/99** · DS conformance **100/100 × 6 scenes** (token 100 after the Highcharts subtitle/caption fix) · `stbehave` **21 × 13 pages** · earlier (14 Sep, after Option 5's Metric-Explorer history modal): the License probe **285/285** · DS conformance **100/100 × 5 scenes** · `stbehave` **21 × 13 pages** · earlier, after the 4px corners: a 39-assertion corner probe on Options 1 and 13 (every painted box, shadow roots included, on every Settings screen) · the License probe **255/255** (fewer than earlier: the removed card's and Option 3's assertions went with them) · DS conformance **100/100 × 6 scenes**
 (`licconf.py`) · licprobe 31 · opt3probe 45 · detprobe 20 · `stbehave` **21 × 13 pages** · Options 2,
 3 and 4 screenshotted in dark, light and at 1280px. Committed and pushed to `main` on 15 Sep (publish requested).
 

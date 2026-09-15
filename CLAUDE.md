@@ -7592,10 +7592,137 @@ Ingested 212 · Dropped 0 · Allocated 314 inside the card, the crosshair, no he
 the *dropping* state; Options 1 and 4 still carrying the full tab) · DS conformance **100/100 × 6 scenes** (`licconf.py` gained
 `opt5eps`; token 100 on both Option 5 scenes after the subtitle fix) · dark, light and 1280px screenshots, plus the hovered tooltip in both themes.
 
+#### Options 2 and 4 — Agentation notes, the History modal, and a trimmed Option 2 licence card (15 Sep 2026)
+
+⚠️ **Where this conflicts with the Option 2 / Option 4 sections above, this is current.**
+
+| request | what changed |
+|---|---|
+| Agentation, Option 4 licence card: *"in this field add border individual"* | each record field (License type · Issue date · Account · Status) is its own bordered box — 1px `--border-color`, 4px corners, 12px/16px padding, 12px gaps (was an open grid at 24px) |
+| Agentation, Option 4 ring: *"make small font size"* · *"make the circle thickness"* | the days-left figure 27 → 22 (viewBox units) and both arcs 10 → 14 |
+| Agentation, Option 4 add-on cards: *"show top right behind View history"* | the *Healthy · N% used* pill left the tiles row for the header, 12px after View history on its centre line; the three tiles now sit centred on the ring |
+| *"the History centre popup — copy and apply in option 2 & 4"* | **`LIC_HIST_MD = ['2','4','5']`** is the one list both `licHTML` (renders `#licHistMd`) and `licHistOpen` (routes to it) read; Options 2 and 4 now open Option 5's Metric-Explorer modal. **Option 1 keeps the drawer** |
+| Option 2 card: *"add the text"* | the edition description (`.licxdesc`, the same `LIC_DATA.edition` sentence Option 4 prints) under the name row |
+| Option 2 card: *"remove the Activation code and show it as a button"* | the rule and the code block are gone; an **Activation code** `obs-button` (key icon) sits after the term and opens the SAME Activation Code modal Upgrade Now opens (`licActOpen`) — code, Copy and the support mailto all live there |
+| Option 2 card: *"remove ObserveOps edition"* · *"remove Expires, show Activated in that box"* | no eyebrow/label row; the status pill went onto the name row after *Unified edition* and, one request later, into the **fourth tile** (*Status*), replacing *Expires*, so it is shown once. The expiry still reads in the term line |
+| Option 2 card: *"remove the 4% in the donut chart"* | `licOvRing(pct, tone, bare)` — Option 2 passes `bare`, so no figure; the % stays in the aria-label and the term line |
+
+- ⚠️ **Scoped with `.lic4:not(.lic5)`** — Option 5 renders the same licence-card markup (its record is `display:contents`, its ring 100px) and was not in the notes.
+- ⚠️ **`.licxid` is `flex:1 1 320px`.** With the long description inside, the identity block's content width is the whole sentence and `.licxtop` wraps — the term and the new button dropped onto their own line at the left. The basis keeps them top-right and lets the sentence wrap (two lines at 1600, three at 1280).
+- ⚠️ **A throwing assertion hangs the License probe rather than failing it** — the Option 4 pill move left `querySelector('.licg4f obs-tag')` null, and the run never emitted (NO PROBE OUTPUT at the full timeout). Update the probe's selectors in the same change as the markup.
+- ⚠️ **Date-pinned assertions rot overnight** — the modal's window note was asserted as literal Aug 15 → Sep 14 and failed on Sep 15; it is derived from `licHistWindow()` now.
+- ⚠️ **One intermittent probe miss, not a user path**: closing the modal and opening another in the SAME tick occasionally leaves it closed. A click cannot do that; it passed on three reruns.
+
+**Verified:** Agentation probe 20/20 (and Option 5 untouched) · the License probe **282/282** after the Option 2 rework (modal on 2 and 4 with titles, Option 1 still on the drawer, the description, no label row, name row = title + edition tag, Status tile, button top-right opening `#licAct`, bare ring) · screenshots: Option 4 dark / light / 1280, the modal from Options 4 (dark) and 2 (light), Option 2's card dark / light / 1280 · DS conformance **100/100 × 6 scenes** (token 100) after all of them.
+
+#### The tabs, Option 2's live colours, and six Option 4 changes (15 Sep 2026, later)
+
+⚠️ **Where this conflicts with the Option 2 / Option 4 sections above, this is current** — in particular
+Option 4's term bar, its *Activation code* row, its devices card's meter and change tag, and 24px card
+padding are all gone.
+
+| request | what changed |
+|---|---|
+| Option 2: *"remove the 4% of term used, add Ends 12 Aug 2030"* | the term line reads **`1,432 days · Ends 17 Aug 2030`** (en-GB, from `T.expires`; *Ended* once expired). ⚠️ **17, not 12** — the licence's own expiry; the date is derived, so it cannot drift |
+| *"remove the icon in all option"* | the License tabs carry **no icons** — `licTabs()` / `LIC_TABS_EPS` lost their `icon` fields; obs-tabs draws a glyph only when an item has one |
+| Option 2: *"change the color using"* the live `license-hero-name` / `-infinity` / `-chip` | the name is a **100deg `--license-accent` → `--license-violet` gradient** clipped to text (`.licxname`), the ∞ the accent at .85 (`.licxinf`) — now **siblings**, so the gradient spans the name alone; the *Unified edition* chip is a **135deg gradient fill with white 600 text**, still an `obs-tag` (`.licxchip`), styled through the `attachShadow` hook (`:host(.licxchip) .tag`). Sizes unchanged |
+| Option 2: *"this 2 element make proper alignment"* (term block + Activation code button) | `.licxtop` is **`align-items:flex-start`** — the ring's top is the name row's top; inside `.licxterm` the ring, lines and button still share a centre |
+| Option 4: *"remove the progress bar"* | no Jul 2026 → Aug 2030 bar (`.lic4tl` rendered only for Option 5) |
+| Option 4: *"Activation code with an expand/collapse icon"*, then *"remove the line, the button at the end of the paragraph"* | an **`obs-button variant="transparent"` + `chevron-down`** directly under the edition description (`.lic4axw`, 12px below it) toggles **`LIC.act4`** (default **collapsed**); open, the bottom row (`.lic4act.lic4ax`) shows the code box + Copy + support line across the card, with **no rule and no heading**. `lic4ActTog` flips classes only — no repaint |
+| Option 4 devices: *"the progress bar like [the add-on ring]"* and *"15 in 30d as a card like Last 30 days"*, then *"change the alignment"* | the figure line (`170 of 5,000 used · 3.4% … 4,830 available`) runs across the card, then **the add-on cards' own row**: the 96px `lic4Ring` (entitlement tone) beside **three tiles** — Agentless · Agent-based · **Last N days** (`changeTile`, the add-on tile's markup, following the window switch). No meter, no orange tag. Tiles go 2-across under 1000px of card, 1 under 620px |
+| Option 4 devices: *"the bottom legend will align left"* | `.licm4:not(.licm5) .licm4lg{justify-content:flex-start}` — Option 5's stays centred |
+| Option 4: *"all card padding is 24px — change to 10px"* | `.lic4:not(.lic5), .licm4:not(.licm5), .licg4 > .licg4c{padding:10px}` — licence, devices and the five add-on cards. Inner tiles and record boxes keep 12/16px |
+
+- ⚠️ **TWO DECLARED DS DIVERGENCES, and the checker sees both.** DS conformance is **96** on Option 2
+  (philosophy 80: *"[brand-navy] off-token saturated blue — brand must be --primary navy"*, from
+  `--license-accent` #7aa2f7) and **98** on Option 4 (component 94: *"obs-button transparent renders
+  off-reference"*, from the hook that gives the toggle the heading's 13px/600 and 0 padding). Both are
+  what was asked for. The alternatives, if the score matters more: map the gradient to DS tokens (the
+  chart palette has **no blue** — only `--chart-indigo` for the violet end) and/or let the toggle render
+  as a stock transparent button (grey 400 text, 15px padding). **10px padding did NOT cost layout** (100).
+- ⚠️ **The live palette is scoped tokens, not literals:** `.licx{--license-accent:#7aa2f7;--license-violet:#bb9af7;--license-on-accent:#fff}`, light `#2563eb` / `#7c3aed` — the live product's own names and values (`/css/styles.293200e0.css`), declared once on the card. **White on #7aa2f7 is ~2.4:1** — what the live chip ships; recorded, not fixed. The live chip's **8px radius was not copied** (the 4px rule).
+- ⚠️ **A transform does nothing on an inline box** — `obs-icon` is inline by default, so the chevron's
+  `rotate(180deg)` measured `matrix(1,0,0,1,0,0)` until it was given `display:inline-flex`.
+- ⚠️ **The disclosure hides by class, not `[hidden]`** — `.lic4code` is `display:grid`, which beats the UA's `[hidden]` (the recorded `.stpt` trap).
+- ⚠️ **The figure line moved ABOVE the ring row** because beside the ring it centred the ring on
+  figure-line-plus-tiles, ~20px higher than the tiles, and started the tiles 60px lower than on the
+  add-on cards. **Consequence, stated:** the ring's centre (*170 of 5,000*) repeats the figure line
+  directly above it, as the add-on cards' ring repeats their *In use* tile.
+- ⚠️ **The stale-node trap in a probe again**: a padding assertion read `''` from the licence card node
+  `stMainPaint()` had already replaced. Re-query after any repaint.
+
+**Verified:** a 62-assertion probe (`o24b.py`, scratchpad) in **dark and light** — tab icons gone, gradient
+stops per theme, the chip's shadow fill, the hook leaving other tags alone, top alignment, the toggle's
+place / type / edge / chevron render and turn, open → one-line code row → repaint keeps it → close, no
+term bar, the ring arc at 3.4%, three tiles, the change tile following 15d, the left legend on the type
+bar's edge, 10px on all seven cards, and Option 5 unchanged — plus the License probe updated to the new
+designs **279/279** · DS conformance **100 × 4 scenes, 96 (Option 2), 98 (Option 4)** · screenshots
+Option 2 dark / light, Option 4 dark collapsed / open / light.
+
+#### Option 4 — sixteen more requests on the licence and quota cards (15 Sep 2026, evening)
+
+⚠️ **Where this conflicts with the section above, this is current** — in particular Option 4's *Activation code* is
+no longer a transparent button restyled as a heading, the devices card has no figure line, and the add-on pill has no %.
+
+| request | what changed |
+|---|---|
+| *"the circle small and the same height as the 'In use' card"* | one token, **`--licg4-h:66px`** on `.licg4b`: the tiles take it as `min-height` (content measured 65.4px), the ring as its box — equal by construction. Arc 9 → 8 units, text re-centred. The devices card's ring row is the same row and follows |
+| *"'Healthy · 0% used' behind 'Flow Sources'"*, then *"remove the '0% used'"* | the pill sits on the title line right after the name, reusing Option 5's parked **`.licg5tt`** (it already undoes `.licg4t span`), and reads **Healthy / Over limit** only. View history is alone at the header's edge |
+| devices card: *"remove '170 of 5,000 used · 3.4%' and '4,830 available'"* | no figure line on Option 4 — header · ring row · type bar. ⚠️ The 3.4% share and the 4,830 available are no longer written on the card (the ring's aria-label keeps the full figures) |
+| *"the '170' 26px → 20px semibold"*, then *"2px between '170' and 'of 5,000', and 5,000 as 5k"* | `.licg4rv` 20 viewBox units / 600 (~14px in the 66px ring); the two lines 3 units further apart (≈2px), still centred; totals ≥1,000 go through **`licK`** (5,000 → `5k`, 1,500 → `1.5k`), smaller totals unchanged. Every Option 4 ring shares the class |
+| *"Agentless · Agent-based · Last 30 days semibold"* | `.licm4kt b` 600 on Option 4's devices tiles **and** its add-on tiles (one shape); Option 5 keeps 500 |
+| *"remove '100% of used' / '0% of used'"* | Option 4's deployment tiles show the figure only; Option 5 keeps the share |
+| description *max-width 57ch* (set in devtools) | `.lic4:not(.lic5) .lic4desc{max-width:57ch}` — a cap, so a narrow column still wraps |
+| *"change [the Infinity + tag] and improve like [Option 2's]"* | Option 4 renders Option 2's name row: `.licxname` gradient, `.licxinf` accent ∞, the `.licxchip` gradient chip **inline** (`.lic4nr`). The `--license-*` tokens are declared on `.lic4:not(.lic5)` too. ⚠️ `.lic4s obs-tag{align-self:flex-start}` pinned the chip 3px high — `.lic4 .lic4nr obs-tag{align-self:center}` |
+| *"11px → 12px medium, 15px semibold, no letter-spacing, sentence case"* | every uppercase label on the licence card (one rule: License type · Issue date · Account · Status · Expires) is 12px/500, `letter-spacing:0`, `text-transform:none` — the markup was already sentence case; values 15px/600. The ring's own DAYS LEFT is SVG text and unchanged |
+| *"remove [ObserveOps edition]"* | no eyebrow on Option 4; the name row leads the section (`.lic4nr{margin-top:0}`). Option 5 keeps it |
+| *"Activation code as a button with background, no border"* | **`obs-button variant="neutral-lighter"`** — the History buttons' variant (border = fill). ⚠️ **The `:host(.lic4axb)` shadow-root restyle was DELETED**, which also removes the checker's "variant looks overridden" finding |
+| *"swap the View history and Last 30 days icons"* | View history wears **`history`** (the clock), the *Last N days* tile **`trending-up`** — add-on cards and the devices card's change tile. Option 5's View history keeps the trend |
+| *"Infinity + paragraph + button and the 4 boxes the same height, and the ring block too"* | `.lic4top{align-items:stretch}` (Option 4): the left section is a flex column with the button on its floor (`margin-top:auto` + 12px padding as the floor), the record's rows are `1fr` inside a flex column, the ring leads its column with Expires + date on the floor (8px padding floor). ⚠️ **The ring went 120 → 100px** so its block is not the tallest — otherwise it would set the row and stretch the boxes. DAYS LEFT 8.5 → 10 units. Measured: name / boxes / ring share top 185, button / boxes / date share bottom 344 at 1920. ⚠️ Under the 1080px container query the record drops to its own row, so only the left block and the ring align there |
+| *"'August 17, 2030' 16px semibold, 'Expires' medium"* | `.lic4date` 16px/600 on Option 4; Expires is 500 by the label rule |
+
+- ⚠️ **`margin-top:auto` cannot carry a minimum gap** (it resolves to 0 with no free space — the recorded `.aihelpl` trap), so both floors above are padding.
+- ⚠️ **Consequence, stated:** the brand-navy conformance finding that Option 2 carries now applies to Option 4 too (the live blue on its name and chip).
+- ⚠️ **Probe traps hit again:** a probe running headless Chrome while another used the same `--user-data-dir` returned `NO PROBE OUTPUT` — wait for the first to finish; and three probe failures after the equal-height change were stale expectations (the button 12px under the text, a 120px ring, the pill's "% used"), not regressions.
+
+#### The Settings accent, demo usage, and the last Option 4 batch (15 Sep 2026, night)
+
+⚠️ **Where this conflicts with anything above, this is current** — in particular **the Settings module is no longer
+teal** (the 8 Sep "the accent is teal across the whole DS scope" note), the add-ons no longer carry the live 0 / 0 / 1 / 0 / 2
+figures, and APM's split row on Option 4 has no rule above it.
+
+| request | what changed |
+|---|---|
+| *"in the setting module replace #14b8a6 with #CAD3E2"* | ONE token override on every root the module renders into — `#view-settings`, `.stcmenu`, `#stcDr`, `#stcCf`, `#drawer-agcfg` — sets `--teal` / `--teal-dim` to **#cad3e2 dark / #1d2a3e light**, plus `--st-accent-h` (hover) and `--st-on-accent` (the ink on the fill, replacing the teal-only `#04211d`). The DS scope's `--primary` reads **`var(--primary-alt)`**, which is that exact pair, so no hex is pasted there; the primary-button hover now mixes toward the page background (in dark `--page-text-color` IS #cad3e2, so mixing toward it did nothing). ⚠️ **Light is #1d2a3e, not #cad3e2** — #cad3e2 on white is 1.4:1. ⚠️ **Scoped to the module**: the rail, dashboard and Log Explorer keep their teal, and each page's `:root` `--teal` is untouched. The DS *chart-palette* tokens that happen to equal #14b8a6 (`--chart-vivid-teal`, `--bar-chart-color` …) are series colours, not the accent, and were left |
+| *"add demo data — Log will show 10 of 100 — in every card"* | the five add-ons in `LIC_DATA.quotas` are **`used:10`** (Flow · Log · NCCM of 100, APM of 52, RUM of 50) and APM's monolith split is **10 of 52** so the split still sums. ⚠️ **Shared data** — every option's cards, Option 1's grid and the History drawer/modal show it. Totals, deltas and Monitored Devices (170 of 5,000) are still the live figures |
+| Option 4: *"the spacing like this screenshot"* (Image #150) | the licence card's three sections are **`minmax(0,1.2fr) minmax(0,1fr) 184px`** with no padding between them, so the record boxes start ~48% across and the ring column sits snug at the right. ⚠️ **Inside `@container (width > 1080px)`** — bare, the (0,3,0) rules outranked the stacked layout's (0,1,0) rules in the 1080px query and a 929px card (the 1280 viewport) got three columns with the record spilling under them |
+| Option 4: *"stroke-width 8"* on the licence ring | `.lic4:not(.lic5) .licring circle{stroke-width:8}` — **8 viewBox units, ~6.3px** at the ring's 100px (8px on screen would be 10.24 units, i.e. the original 10) |
+| Option 4: *"change the 'In use' icon"* | the five add-on *In use* tiles wear **`utilization`** instead of `q.icon`, which repeated the card header's glyph 40px above. Render-checked: `gauge` / `usage` / `activity` / `meter` do not exist in the bundle; `utilization`, `tacho-meter`, `pie-chart` do |
+| Option 4: *"remove the dot in the health tag"* and *"in the Status card"* | the add-on *Healthy* pills and the licence card's *Status* tag carry no `.licovdot`. Option 5 renders the same markup and keeps both dots (`v === '5'`) |
+| Option 4: *"all card border colour #172336"* | licence, devices and the five add-on cards take **`--widget-border-color`** — the DS widget-border token, #172336 dark / #e3e8f2 light (the value light already had), so light is unchanged |
+| Option 4: *"remove [Upgrade Now] top right"* | `licHeadHTML` omits the header's primary on `LIC.opt === '4'`. Nothing is stranded: the licence card's own **Upgrade Now** opens the same Activation Code modal. Options 1, 2 and 5 keep it |
+| Option 4: *"remove the horizontal line and the gap"* above APM's split, then *"add 8px space"*, then *"8px — use 12px"* | no `obs-divider`, and `.licg4 > .licg4c > .licg4s{margin-top:-4px}` trims the card's 16px flex gap, so the legend sits **12px** under the tiles (it was 0, then 8) |
+| Option 4: *"a different colour for Applications and Agents"* | the swatches are **the card's amber** and **`--chart-aqua`**, the palette's farthest hue from it. ⚠️ Aqua is also the RUM card's tone directly below |
+| (open item from earlier) the "Last N days" sparkline clipping at 1280 | the chart gives way, not the label: `.licm4kt` is `flex:0 0 auto`, the chart `flex:1 1 120px; max-width:120px; min-width:0`, and **under a 300px tile it is not drawn** (`@container licm4k (max-width:300px)`, a NAMED container set only on tiles that carry a chart, so no other query in the card can answer to it). At 1280 the add-on tiles are 264px and show no chart; the devices tile (403px) keeps it |
+| Option 4: *"change 'View history' to 'History'"* | the five add-on buttons read **History**, like the devices card's. Option 5's footer button keeps *View history* |
+| *"swap the 'Upgradation code' & 'New license code'"* (the Activation Code dialog, every option) | the paste box and its hint lead, the current code + Copy + the email sentence follow. ⚠️ **The sentence was rewritten with the move** — *"Please email **this** activation code … paste it **above** to activate"* — left as it was it pointed the wrong way. `.licact` is one 12px grid gap, so nothing depended on the order. This diverges from live, which puts the current code first |
+| Option 4: *"duplicate the [RUM] card, remove the icon, use [the ring] in the icon position"*, then *"this card will be move in option 5"* | ⚠️ **IT LIVES ON OPTION 5 NOW; Option 4 is back to five add-on cards.** `lic4AddonHTML(q, '4', 'ring')` (class **`.licg4rh`**) puts the 66px ring where the header's icon tile was and the three tiles span the row; **`lic5RumRingHTML()`** renders it in its own one-column `.licg4` under Option 5's two-across grid. It was moved as it was — Option 4's border, 10px padding, *History* label and '-rh' sparkline id — so on Option 5 it is the one bordered card among borderless ones. A second design for one entitlement, not a second licence: same data, same History modal |
+| *"the Option 5 'EPS Trend Breakdown' tab — all data, copy and add in Option 4"* | **`LIC_EPS5 = ['4','5']`** — one list read by the EPS slot AND by `licAfter`'s Highcharts mount, so an option cannot get the markup without its charts. It is the same `lic5EpsHTML` builder, so the two tabs cannot drift. Options 1 and 2 keep `licEpsHTML` |
+| Option 4's EPS trend cards: *"remove the title box colour … and add top right [Last 24 hours · avg · peak · util]"* | no swatch before the title, and a **`.lice5ktg` row of four `obs-tag variant="tag-primary"`** on the title line at the card's right edge — Option 1's EPS tile tags verbatim. Keyed on `LIC.opt === '4'` inside `lic5TrendCard`, so Option 5 keeps its swatch and no tags. ⚠️ **The avg / peak / util row under each chart was NOT removed** (the request said add), so on Option 4 those figures now appear twice per card |
+| Option 4's EPS trend cards: *"remove [the avg / peak / util row] and add [a] 24 hour time range"* | the footer row is gone (the top-right tags carry the same figures) and the chart gains a **time axis**: Highcharts `xAxis` labels `HH:00` every 4h (every 2h on the full-width Total card), in `--neutral-light` 11px; the chart went 96 → **118px**. The SVG fallback carries the same hours as an HTML row (`lic5TimeAxis`), because its SVG stretches. `t.o4` is stamped on the stored model by `lic5TrendCard`, so the mount reads the option the card was painted for |
+| Option 4: *"show the ingested line on [the] timeline"* — asked; the answer was **a visible axis along the chart floor with a tick at each label** | `xAxis` `lineWidth:1`, `tickLength:5` in **`--field-border-color`** (#2b394f dark / #e3e8f2 light). ⚠️ **Not the DS fixture's `--bottom-line-color`** — #172336 in dark is ~1.1:1 on the #0B1627 card, so the timeline would not show. Option 5's axis stays bare |
+| Option 4's allocation card: *"remove the legend box, the colour will show in the progress bar"* | no swatch before Log / Flow / APM / RUM; each bar's **ingested fill is its signal's tone** (Option 5 keeps `--info-text`). ⚠️ The legend's *ingested* key became a **four-tone split swatch**, or it would still say ingested is blue. ⚠️ APM's amber fill now sits beside the yellow allocation marker — still distinct, but closer |
+| Option 4's EPS tab: *"add the card border like the License & Quota Usage tab, and apply [its] card padding"* | `.lice5.lice5o4 .lice5c` — every EPS card (four stat cards, the allocation card, five trend cards) takes the usage cards' **1px `--widget-border-color`, 10px padding and `--common-widget-bg` fill**, so the two tabs match in both themes. The Drop policy banner is not a card and is unchanged. Option 5 keeps its borderless 16 / 24px cards |
+| Option 4's EPS stat cards: *"the title text small, first letter capital"* | `.lice5.lice5o4 .lice5l{text-transform:none;letter-spacing:0}` — *Hardware ceiling · Allocated · Ingested live · Drop status*; the markup was already sentence case. Size and weight unchanged. ⚠️ The Total trend card's *TOTAL · ALL TELEMETRY* is a different label and is still uppercase |
+
+- ⚠️ **The DS checker scores Option 4 at 96 now (philosophy 80)** — one element: the ∞ glyph in `--license-accent` #7aa2f7, the same declared "brand-navy" divergence Option 2 carries. Component went back to 100 when the Activation code hook was deleted.
+- ⚠️ **Probe traps hit this round:** a `setTimeout` callback that throws is OUTSIDE the probe's try, so the run printed `NO PROBE OUTPUT` and looked like a broken page — wrap the timer body too. And writing `\x60` from Python into PART 1 produced a real backtick that ended the CSS template literal; `node --check` named it at once.
+- ⚠️ **Stale probes, not regressions:** `o24b` / `opt24probe` / `m5`–`m8` still assert the pre-15-Sep designs (the toggle's left edge, "170 of 5,000", bordered record fields, the ring's tone on tile glyphs) and now also the old add-on figures (NCCM 1%, Flow 0). `stbehave` **21/21 × 13 pages** and conformance **100 × 4 scenes, 96 × 2** after this batch.
+
 ### `_verify/licconf.py` — the License analogue of `dsconf.py`
 
 Same isolation trick, pointed at `#licPage`, with six scenes (both tabs, plus Options 2, 4 and 5 and Option 5's EPS tab — Option 3's scene went with Option 3) — **100/100 on all six** after the
-14 Sep cards. ⚠️ **The scoped token
+14 Sep cards; since the later 15 Sep batch **96 on Option 2 and 98 on Option 4**, both from declared divergences (see above). ⚠️ **The scoped token
 block's selector still starts `#agPage`**, so a blanket rename of the script breaks its regexes —
 the isolation target and the token selector are different strings.
 

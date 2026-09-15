@@ -100,6 +100,15 @@ var SETTINGS_CSS = `/* ═══════════════════
    selectModuleByName() from the host. Same block in all three options.
    ═══════════════════════════════════════════════════════════════════════════ */
 #view-settings{overflow:hidden}
+/* ⚠️ THE SETTINGS MODULE'S ACCENT IS #CAD3E2, NOT THE HOST TEAL (request, 15 Sep 2026: "in the setting module replace
+   #14b8a6 with #CAD3E2"). Every page declares \`--teal:#14b8a6\` on :root, so the module re-points the token ONCE, on
+   each root it renders into — the view, and the four things it appends to <body> (the stc popover, drawer and confirm,
+   and the Agentic AI config drawer) — rather than rewriting each rule. ⚠️ TWO VALUES, ONE PER THEME: #cad3e2 on white
+   is 1.4:1 and would vanish, so light takes #1d2a3e — the same pair the DS calls \`--primary-alt\` and the host calls
+   \`--action\`. \`--st-on-accent\` is the ink ON that fill (a tick, a primary label), which inverts with it; the old
+   #04211d was right only on teal. The rail, the dashboard and Log Explorer keep their teal. */
+#view-settings,.stcmenu,#stcDr,#stcCf,#drawer-agcfg{--teal:#cad3e2;--teal-dim:#cad3e2;--st-accent-h:#e3e8f2;--st-on-accent:#0b1627}
+html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[data-theme="light"] #stcDr,html[data-theme="light"] #stcCf,html[data-theme="light"] #drawer-agcfg{--teal:#1d2a3e;--teal-dim:#1d2a3e;--st-accent-h:#111c2c;--st-on-accent:#fff}
 .stwrap{flex:1;display:flex;min-height:0}
 /* the head's chevron collapses the left list, as live (the panel goes to 0 and the
    content takes the full width) — same control the Log Explorer head has */
@@ -232,8 +241,8 @@ var SETTINGS_CSS = `/* ═══════════════════
 .stbtn{height:34px;padding:0 15px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);
        font:inherit;font-size:12.8px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .stbtn:hover{border-color:var(--text-dim)}
-.stbtn.pri{background:var(--teal);border-color:var(--teal);color:#04211d;font-weight:600}
-.stbtn.pri:hover{background:#19cbb7}
+.stbtn.pri{background:var(--teal);border-color:var(--teal);color:var(--st-on-accent);font-weight:600}
+.stbtn.pri:hover{background:var(--st-accent-h);border-color:var(--st-accent-h)}
 .stbtn[disabled]{opacity:.65;cursor:default}
 .stspin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;
         animation:stspin .7s linear infinite}
@@ -300,7 +309,7 @@ var SETTINGS_CSS = `/* ═══════════════════
 .stcgrid td.wrap{white-space:normal}
 .stcused{display:inline-block;min-width:22px;height:22px;line-height:22px;padding:0 7px;border-radius:4px;background:var(--chip);color:var(--white);
          font-size:12px;font-weight:500;text-align:center}
-.stctag{display:inline-block;height:22px;line-height:22px;padding:0 7px;border-radius:4px;background:rgba(20,184,166,.16);color:var(--teal);
+.stctag{display:inline-block;height:22px;line-height:22px;padding:0 7px;border-radius:4px;background:color-mix(in srgb, var(--teal) 16%, transparent);color:var(--teal);
         font:12px/22px "JetBrains Mono",monospace;margin-right:6px;max-width:220px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}
 .stctag.more{cursor:default}
 .stcempty{padding:40px 0;text-align:center;color:var(--text-dim);font-size:12.5px}
@@ -339,7 +348,7 @@ var SETTINGS_CSS = `/* ═══════════════════
 .stcmi.ck{padding-left:12px}
 .stcmi .bx{width:14px;height:14px;border:1px solid var(--text-dim);border-radius:4px;flex:0 0 14px;display:grid;place-items:center}
 .stcmi.on .bx{background:var(--teal);border-color:var(--teal)}
-.stcmi .bx svg{width:10px;height:10px;color:#04211d}
+.stcmi .bx svg{width:10px;height:10px;color:var(--st-on-accent)}
 .stcmi.sep{height:1px;padding:0;margin:4px 0;background:var(--pop-line);cursor:default}
 .stcmi.hd{height:26px;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:default}
 .stcmi.hd:hover{background:transparent;color:var(--text-dim)}
@@ -358,7 +367,7 @@ var SETTINGS_CSS = `/* ═══════════════════
 .stcmenu.grid .stcgrid td{height:38px}
 .stcck{width:16px;height:16px;border:1px solid var(--text-dim);border-radius:4px;display:inline-grid;place-items:center;vertical-align:-3px;cursor:pointer;background:var(--bg)}
 .stcck.on{background:var(--teal);border-color:var(--teal)}
-.stcck svg{width:11px;height:11px;fill:currentColor;color:#04211d;display:none}
+.stcck svg{width:11px;height:11px;fill:currentColor;color:var(--st-on-accent);display:none}
 .stcck.on svg{display:block}
 .stcgtag{display:inline-block;height:20px;line-height:20px;padding:0 7px;border-radius:4px;background:var(--chip);color:var(--text);font-size:11.5px;margin-right:4px}
 /* ── drawer (40% / 684px, blurred backdrop) ──────────────────────────────────── */
@@ -1916,18 +1925,22 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    the AI accent, not an active/primary state, and the request named the primary colour only.
    ⚠️ THIS OVERRIDES the earlier "brand primary is navy, NOT teal" note on the Agentic AI screen —
    a direct, repeated request; the divergence is declared here rather than reverted. */
-#agPage,#licPage,#licHist,#licHistF,#licHistDr{--primary:#14b8a6;
+/* ⚠️ SUPERSEDED 15 Sep 2026 — THE ACCENT IS #CAD3E2 / #1D2A3E NOW (request: "replace #14b8a6 with #CAD3E2" across the
+   Settings module). \`--primary\` reads the DS's own \`--primary-alt\`, which is exactly that pair, so no hex is pasted; the
+   two notes above are the record of the teal it replaces. The hover mixes toward the page background, because in dark
+   \`--page-text-color\` IS #cad3e2 and mixing toward it changed nothing. */
+#agPage,#licPage,#licHist,#licHistF,#licHistDr{--primary:var(--primary-alt);
   /* obs-button's primary reads its OWN pair, not --primary (registry tokensUsed: --primary-button-bg /
      --primary-button-text) — measured: the buttons stayed white after --primary alone moved */
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
-  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-text-color));--primary-button-hover-text:var(--page-background-color);
+  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-background-color));--primary-button-hover-text:var(--page-background-color);
   --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
 /* ⚠️ THE LIGHT RULE REPEATS THE BUTTON AND RADIO PAIRS. The scoped token block declares them under
    \`html[data-theme="light"] #licPage\` (1,1,1), which outranks the (1,0,0) rule above — measured:
    with only \`--primary\` here, light-theme buttons stayed navy while dark went teal. */
-html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF{--primary:#0e8578;
+html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #licHistDr{--primary:var(--primary-alt);
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
-  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-text-color));--primary-button-hover-text:var(--page-background-color);
+  --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-background-color));--primary-button-hover-text:var(--page-background-color);
   --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
 /* ⚠️ THE TABLE'S BAR CELL PAINTS ITS FILL IN \`--primary-alt\` (measured in the bundle:
    \`background: var(--primary-alt)\`, \`--severity-major\` past 70%) — which is #cad3e2 in dark, the
@@ -2018,8 +2031,16 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .licxh obs-tag,.licqh obs-tag{flex:0 0 auto}
 /* the top row: identity on the left, the term on the right. ⚠️ \`flex-wrap\` so a narrow card
    drops the term under the identity instead of squeezing the title into an ellipsis. */
-.licxtop{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px 24px;min-width:0}
-.licxid{display:flex;flex-direction:column;gap:16px;min-width:0}
+.licxtop{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px 24px;min-width:0}
+/* ⚠️ \`flex-start\`, NOT \`center\` (request, 15 Sep 2026: "this 2 element make proper alignment in option 2",
+   pointing at the term block and the Activation code button). Centred, the right cluster floated
+   between the title and the description — its top 17px under the name row and its centre on neither
+   line. Top-aligned, the ring's top edge IS the name row's top edge, so the card has one top line
+   across both halves; inside .licxterm the ring, the two lines and the button still share a centre. */
+.licxid{display:flex;flex-direction:column;gap:16px;min-width:0;flex:1 1 320px}
+/* ⚠️ flex:1 1 320px — with the description in it the identity block's CONTENT width is the whole
+   sentence, and .licxtop wraps, so the term and the Activation code button dropped onto their own
+   line at the left. A 320px basis keeps both on the top row and lets the sentence wrap instead. */
 /* ⚠️ THE PILL SITS RIGHT AFTER THE LABEL — \`flex-start\`, not the \`space-between\` this row
    shared with the devices card's header, where the pill still belongs at the edge */
 .licxh{display:flex;align-items:center;gap:8px;min-width:0}
@@ -2033,12 +2054,44 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .licxtile{padding:12px;border-radius:var(--btn-radius);
   background:color-mix(in srgb, var(--page-text-color) 5%, transparent)}
 .licxterm{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.licxterm .licxact{flex:0 0 auto;margin-left:12px}
+.licxst obs-tag{align-self:flex-start;margin-top:2px}   /* 24px off the term text: a control, not part of the reading */
+.licxact obs-icon{margin-right:6px;vertical-align:-2px}
 .licxcode{display:flex;flex-direction:column;gap:8px;min-width:0}
 .licxct,.licqt{display:inline-flex;align-items:center;gap:8px;min-width:0;color:var(--neutral-regular)}
 .licxct b,.licqt b{font-size:14px;font-weight:600;color:var(--page-text-color);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .licxch obs-link obs-icon{margin-right:6px;vertical-align:-2px}
 .licxhelp{margin:0;font-size:12.5px;color:var(--text-color-common-secondary)}
+/* the edition description under the name (request, 15 Sep 2026) — the same sentence Option 4's card
+   carries, from LIC_DATA.edition, in that card's own type: 13px secondary with the phrase in bold */
+.licxdesc{margin:0;font-size:13px;line-height:1.6;color:var(--text-color-common-secondary)}
+.licxdesc b{font-weight:600;color:var(--page-text-color)}
+/* ⚠️ THE NAME AND THE EDITION CHIP TAKE THE LIVE PRODUCT'S LICENSE-HERO COLOURS (request, 15 Sep 2026:
+   "change the color using" the live \`license-hero-name\` / \`license-hero-infinity\` / \`license-hero-chip\`
+   elements). Read out of live build 10.0.x's own stylesheet (/css/styles.293200e0.css):
+     .license-hero-name     linear-gradient(100deg, --license-accent, --license-violet), text-clipped
+     .license-hero-infinity --license-accent at opacity .85
+     .license-hero-chip     linear-gradient(135deg, --license-accent, --license-violet), --license-on-accent text
+   ⚠️ A DECLARED DIVERGENCE FROM THE DS: these are the live product's \`--license-*\` tokens, NOT DS
+   tokens. The DS chart palette has no blue at all, so there is no DS pair that is this gradient —
+   the nearest, --chart-indigo, is only the violet end (and only in light). They are declared ONCE,
+   under the live product's own names, scoped to \`.licx\` so nothing else on the page can read them;
+   the sizes are unchanged (the request was the colour). The chip's 8px live radius is NOT copied —
+   every box in this module is 4px. ⚠️ White on the dark theme's #7aa2f7 end is ~2.4:1: that is what
+   the live chip ships (--license-on-accent is #fff in both themes), recorded rather than "fixed". */
+.licx,.lic4:not(.lic5){--license-accent:#7aa2f7;--license-violet:#bb9af7;--license-on-accent:#fff}
+html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--license-accent:#2563eb;--license-violet:#7c3aed}
+/* Option 4's name row (see lic4HTML) — 8px under the eyebrow, where .lic4title's own margin put the name */
+.lic4nr{margin-top:0}   /* it leads the section since the eyebrow went (15 Sep 2026); it sat 8px under that */
+/* ⚠️ \`.lic4s obs-tag{align-self:flex-start}\` (the stacked tag's rule, later in the sheet at equal weight) would pin
+   the chip 3px above the name's centre line — (0,2,1) puts it back on the row's centre */
+.lic4 .lic4nr obs-tag{align-self:center}
+/* ⚠️ \`-webkit-text-fill-color\` AS WELL AS \`color\` — without it background-clip:text paints the
+   glyphs solid over the gradient (the recorded Ask-AI label trap) */
+.licxname{background:linear-gradient(100deg,var(--license-accent),var(--license-violet));
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.licxinf{color:var(--license-accent);-webkit-text-fill-color:var(--license-accent);opacity:.85}
 .licxcf{display:flex;align-items:center;gap:8px;margin-top:4px}
 .licxcf obs-input{flex:1 1 auto;min-width:0}
 .licxcf obs-button{flex:0 0 auto}
@@ -2204,14 +2257,110 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
   white-space:nowrap;font:13px/20px "JetBrains Mono",ui-monospace,monospace;color:var(--page-text-color)}
 .lic4cp{display:grid;place-items:center;padding:0 4px;border-left:1px solid var(--border-color)}
 .lic4help{margin:0;font-size:13px;color:var(--text-color-common-secondary);white-space:nowrap}
+/* Option 4's folding Activation code (see lic4HTML). ⚠️ HIDDEN BY CLASS, NOT \`[hidden]\` — .lic4code is
+   \`display:grid\` and an author display rule beats the UA's [hidden] (the recorded .stpt trap). The
+   button's own padding and type are set inside its shadow root by the hook near the top of PART 2
+   (:host(.lic4axb)), so the label keeps the heading's 13px/600 and its left edge stays on the card's. */
+.lic4ax:not(.open) .lic4code,.lic4ax:not(.open) .lic4help{display:none}
+/* the toggle under the description, 12px below it; the bottom row loses its rule and its heading column,
+   and is not displayed at all while collapsed (the card's 24px flex gap would otherwise hang under it) */
+.lic4axw{margin-top:12px}
+.lic4act.lic4ax{grid-template-columns:minmax(0,1fr) auto;padding-top:0;border-top:0}
+.lic4act.lic4ax:not(.open){display:none}
+.lic4axb obs-icon{display:inline-flex;margin-left:2px;transition:transform .15s ease}   /* ⚠️ inline-flex — a transform does nothing on an inline box */
+.lic4axb.open obs-icon{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){ .lic4axb obs-icon{transition:none} }
 @container (max-width:1080px){
   .lic4top{grid-template-columns:minmax(0,1fr) 184px;row-gap:24px}
   .lic4ring{grid-column:2;grid-row:1}
   .lic4rec{grid-column:1 / -1;grid-row:2;padding:24px 0 0}
-  .lic4act{grid-template-columns:minmax(0,1fr);gap:12px}
+  .lic4act,.lic4act.lic4ax{grid-template-columns:minmax(0,1fr);gap:12px}
   .lic4help{white-space:normal}
 }
 .lic4 + .lictb{margin-top:24px}
+/* ── Option 4 only (Agentation notes, 15 Sep 2026) ─────────────────────────────────────────────
+   · "in this field add border individual" — each record field (License type · Issue date · Account ·
+     Status) is its own bordered box, at the tiles' 12px gap rather than the open grid's 24px.
+   · "make small font size" on the ring's figure, and "make the circle thickness" on the ring: the
+     days-left figure 27 -> 22 (viewBox units) and both arcs 10 -> 14. ⚠️ THE ARCS ARE 8 NOW (request, 15 Sep 2026:
+     "change the stroke-width to 8") — 8 viewBox units, ~6.3px at the ring's 100px, leaving the figure 50 units of
+     inner radius. (8px ON SCREEN would be 10.24 units, i.e. back to the original 10.)
+   ⚠️ :not(.lic5) — Option 5 renders the same markup (its record is display:contents and its ring
+   100px) and was not part of the notes. */
+.lic4:not(.lic5) .lic4meta{gap:12px}
+.lic4:not(.lic5) .lic4f{padding:12px 16px;border-radius:var(--btn-radius);
+  background:color-mix(in srgb, var(--page-text-color) 4%, transparent)}
+/* ⚠️ NO BORDER, A FILL (request, 15 Sep 2026: "this 4 box — remove border and add background colour"): the same 4% text
+   wash the quota tiles below use (.licm4k), so every box on Option 4 is one surface, in both themes. */
+.lic4:not(.lic5) .licringv{font-size:22px}
+.lic4:not(.lic5) .licring circle{stroke-width:8}
+/* ⚠️ OPTION 4's LABELS ARE SENTENCE CASE, 12px MEDIUM, NO TRACKING, AND ITS VALUES SEMIBOLD (request, 15 Sep 2026:
+   "the 11px to 12px with medium, the 15px with semibold, remove the letter spacing, and write the title in small —
+   only the first letter capital"). Every uppercase label on the licence card shares one rule — the eyebrow
+   (ObserveOps edition), License type · Issue date · Account · Status, and Expires under the ring — so all of them
+   change; the text is already sentence case in the markup and was only UPPERCASED by CSS. Option 5 keeps its
+   uppercase labels. ⚠️ The ring's own DAYS LEFT is SVG text in the ring's markup, not this rule — unchanged. */
+.lic4:not(.lic5) .lic4eb,.lic4:not(.lic5) .lic4f span{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none}
+.lic4:not(.lic5) .lic4f b{font-weight:600}
+/* ⚠️ OPTION 4's CARD ICONS ARE ONE NEUTRAL (request, 15 Sep 2026: "remove the icon colour — use #8e9fbc"). #8e9fbc is the DS's
+   own --neutral-light in dark (#6a7fa0 in light), so it is that token, not the hex: the add-on header tile, the
+   Monitored devices header tile, and — in the builders — every tile icon. The header tiles take the add-on header's 8%
+   text wash so both card kinds match. The entitlement tones stay on the rings' arcs and APM's split swatches. */
+.licg4c .licg4i,.licm4:not(.licm5) .licm4i{color:var(--neutral-light);background:color-mix(in srgb, var(--page-text-color) 8%, transparent)}
+/* ⚠️ THE THREE SECTIONS SHARE ONE TOP AND ONE BOTTOM (request, 15 Sep 2026: "the Infinity with the paragraph and button,
+   and the 4 boxes, will be the same height — and the top-right ring block the same height too"). The row stretches;
+   the name leads the left section and Activation code sits on its floor; the boxes fill theirs (1fr rows, so a taller
+   neighbour grows them evenly); the ring leads the right section with Expires + the date on its floor.
+   ⚠️ THE RING WENT 120 → 100px so its block (ring · Expires · date) is no taller than the boxes — otherwise IT would set
+   the row and everything else would stretch to it. The DAYS LEFT label went 8.5 → 10 viewBox units with it (~8px).
+   ⚠️ \`margin-top:auto\` cannot carry a minimum gap (it resolves to 0 with no free space — the recorded \`.aihelpl\` trap),
+   so the floors are padding: 12px above the button, 8px above Expires. */
+.lic4:not(.lic5) .lic4top{align-items:stretch}
+.lic4:not(.lic5) .lic4s:first-child{display:flex;flex-direction:column}
+.lic4:not(.lic5) .lic4axw{margin-top:auto;padding-top:12px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.lic4:not(.lic5) .lic4rec{display:flex;flex-direction:column}
+.lic4:not(.lic5) .lic4meta{flex:1 1 auto;grid-auto-rows:1fr}
+.lic4:not(.lic5) .lic4ring .licring{width:100px;height:100px}
+.lic4:not(.lic5) .lic4ring .lic4eb{margin-top:auto;padding-top:8px}
+.lic4:not(.lic5) .lic4date{margin-top:4px;font-size:16px;font-weight:600}   /* 16px semibold (request, 15 Sep 2026); "Expires" above is 500 by the label rule */
+.lic4:not(.lic5) .licringl{font-size:10px}
+/* ⚠️ EVERY OPTION 4 CARD IS PADDED 10px (request, 15 Sep 2026: "in option 4 all card padding is 24px — change
+   to 10px"): the licence card and Monitored devices (24px) and the five add-on cards (16px 24px). The
+   tiles and record boxes inside keep their own 12px / 16px. ⚠️ A DECLARED DIVERGENCE FROM THE DS
+   SPACING SCALE (8 · 12 · 16 · 24) — 10px is not on it, and the conformance checker's layout score
+   has read an off-scale padding before (\`padding:20px\` cost Option 2 layout 97). Asked for as a
+   number, so it is that number. (0,2,0) so each rule beats its card's own (0,1,0) declaration
+   wherever it sits in the sheet; Option 5's cards (\`.lic5\` / \`.licm5\` / \`.licg5c\`) keep theirs. */
+.lic4:not(.lic5),.licm4:not(.licm5),.licg4 > .licg4c{padding:10px}
+/* ⚠️ OPTION 4's CARD EDGES ARE --widget-border-color (request, 15 Sep 2026: "the option 4 all card border colour to use
+   #172336") — the DS's own widget-border token, #172336 in dark and #e3e8f2 in light (the value these cards already had
+   there), so light is unchanged and no hex is pasted. Licence, Monitored devices and the five add-on cards. */
+.lic4:not(.lic5),.licm4:not(.licm5),.licg4 > .licg4c{border-color:var(--widget-border-color)}
+/* the licence card's gap between its sections row and the Activation code row is 16px on Option 4 (request, 15 Sep 2026,
+   set in devtools: "gap 24px → 16px"); Option 5 keeps 24 */
+.lic4:not(.lic5){gap:16px}
+/* ⚠️ THE SECTIONS' SPACING FOLLOWS A SUPPLIED SCREENSHOT (request, 15 Sep 2026: "change the spacing like this screenshot"),
+   measured off it: the left block 1.2× the record block, the ring column 184px, and no padding between the three — the
+   boxes start where the left column ends and the ring centres in its own column. The description's 57ch cap is what keeps
+   the text off the boxes. Only the wide layout; under the 1080px container query the sections still stack. */
+/* ⚠️ INSIDE A WIDE-CARD QUERY, NOT BARE: at (0,3,0) these outrank the stacked layout's own rules in the 1080px query below
+   (0,1,0), and a bare copy gave a 929px card (the 1280 viewport) three columns with the record spilling under them. */
+@container (width > 1080px){
+  .lic4:not(.lic5) .lic4top{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 184px}
+  .lic4:not(.lic5) .lic4s{padding:0}
+}
+/* the "Last N days" sparkline sits between the label and the figure. ⚠️ THE CHART GIVES WAY, NOT THE LABEL: the label and
+   figure keep their width and the chart takes what is left (up to 120px). ⚠️ UNDER A 300px TILE IT IS NOT DRAWN — at a 1280
+   viewport the tile is ~265px and the chart would get ~28px while "Last 30 days" clipped to 40px (measured). The tile is a
+   NAMED container only when it carries a chart, so no other container query in the card can answer to it. */
+.licm4k:has(> .licq5sp){container:licm4k / inline-size}
+.licm4k:has(> .licq5sp) .licm4kt{flex:0 0 auto}
+.licm4k .licq5sp{flex:1 1 120px;max-width:120px;min-width:0;height:28px;margin-left:auto}
+@container licm4k (max-width:300px){ .licm4k .licq5sp{display:none} }
+/* the edition description runs to 57ch on Option 4 (request, 15 Sep 2026, set in devtools and supplied as
+   the picture): at 36ch it wrapped to four lines beside a record that needs two. A cap, not a width — a
+   narrower column still wraps it. Option 5 keeps 36ch. */
+.lic4:not(.lic5) .lic4desc{max-width:57ch}
 
 /* ══ PRODUCT LICENSE · OPTION 5 — the one-card licence, borderless (14 Sep 2026) ═══════════════
    From a second supplied page: Option 4's card with its edges taken out. SAME MARKUP — lic4HTML
@@ -2321,6 +2470,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
    edge came off, so on Option 2 the card reads as a sibling of the two above it; Option 5's
    Monitored devices card keeps its accent. */
 .licq5.licqbox{border:1px solid var(--border-color);background:var(--widget-background);box-shadow:none}
+/* ⚠️ OPTION 2's CARDS ARE PADDED 12px (request, 15 Sep 2026: "in option 2 the card margin is 24px — change to 12px"):
+   the licence card and the six quota cards, which is where the 24px was. Their inner gaps are untouched. The 24px
+   between the licence card and "License & Quota Usage" is a margin on the head, not the card, and stays. */
+.licx,.licq5.licqbox{padding:12px}
 /* ⚠️ OPTION 2's CARD IS A 4-COLUMN GRID (request, 14 Sep 2026: "the 100 remaining of 100 will be align
    of 0 of 100 exporters"). Columns: icon · title · figure · History. The header joins it through
    \`subgrid\` and its right cluster through \`display:contents\`, so the FIGURE owns column 3 — and the
@@ -2423,6 +2576,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
   color:var(--licm4-t);background:color-mix(in srgb, var(--licm4-t) 16%, transparent)}
 .licm4kt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
 .licm4kt b{font-size:13.5px;font-weight:500;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ⚠️ OPTION 4's TILE TITLES ARE SEMIBOLD (request, 15 Sep 2026: "Agentless · Agent-based · Last 30 days — make this font
+   semibold"). The add-on cards' In use · Available · Last N days tiles are the same markup and follow, so the two
+   card kinds on Option 4 keep one shape; Option 5's device tiles keep 500. */
+.licm4:not(.licm5) .licm4kt b,.licg4c .licm4kt b{font-weight:600}
 .licm4kt span{font-size:12px;color:var(--text-color-common-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .licm4kv{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
 .licm4kv b{font-size:20px;font-weight:600;line-height:1.1;color:var(--page-text-color)}
@@ -2430,8 +2587,19 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .licm4ty{display:grid;gap:12px}
 .licm4l{text-align:center;font-size:13px;color:var(--text-color-common-secondary)}
 .licm4lg{justify-content:center}
+/* ⚠️ OPTION 4's LEGEND STARTS AT THE LEFT (request, 15 Sep 2026: "the bottom legend will align left side"),
+   on the card's content edge under the type bar's start, where every other line of the card begins.
+   Option 5's stays centred. */
+.licm4:not(.licm5) .licm4lg{justify-content:flex-start}
 /* narrow pane: the two tiles stack */
 @container (max-width:620px){ .licm4ks{grid-template-columns:minmax(0,1fr)} }
+/* Option 4's ring body (see \`changeTile\` in lic4DevHTML): the figure line over a ring + three tiles row,
+   the add-on cards' own row — two tiles across under 1000px of card, one under 620px. \`.licm4c\` (the
+   column that briefly held the figure line beside the ring) is kept, unreferenced. */
+.licm4c{display:grid;gap:12px;min-width:0}
+.licm4ks.licm4k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@container (max-width:1000px){ .licm4ks.licm4k3{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@container (max-width:620px){ .licm4ks.licm4k3{grid-template-columns:minmax(0,1fr)} }
 
 /* ══ PRODUCT LICENSE · OPTION 5 — the supplied Monitored devices quota card (14 Sep 2026) ═══════════
    \`lic4DevHTML('5')\`: Option 4's markup with \`.licm5\`. What the page asked for that differs:
@@ -2505,11 +2673,25 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .licg4t b{font-size:15px;font-weight:600;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .licg4t span{font-size:12.5px;color:var(--text-color-common-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .licg4hist{flex:0 0 auto}
-.licg4b{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;column-gap:24px}
-.licg4r{width:96px;height:96px;display:block}
+/* the status pill sits top-right, after View history (Agentation note, 15 Sep 2026: "show top right
+   behind view history") — it left the tiles' row, where it spanned the grid above the three tiles */
+.licg4h obs-tag{flex:0 0 auto}
+/* ⚠️ THE RING IS THE TILES' HEIGHT (request, 15 Sep 2026: Option 4 "Flow Sources … the circle make small and
+   same height [as the] 'In use' card"). It was 96px beside 65px tiles, so it overhung the row by 15px each
+   side. ONE token sizes both: the tiles take it as a min-height (their content measured 65.4px) and the ring
+   as its box, so the two are equal by construction rather than by a number that happens to match today.
+   It is on \`.licg4b\`, so the Monitored devices card — whose ring row IS this row, on request — follows. */
+.licg4b{--licg4-h:66px;display:grid;grid-template-columns:var(--licg4-h) minmax(0,1fr);align-items:center;column-gap:24px}
+.licg4b .licm4k{min-height:var(--licg4-h)}
+.licg4r{width:var(--licg4-h);height:var(--licg4-h);display:block}
+/* the duplicate RUM card: the ring leads the header where the icon tile was (same 66px token, so it reads as the same ring),
+   and the tile row spans the card because nothing sits beside it */
+.licg4c.licg4rh .licg4h{--licg4-h:66px}
+.licg4c.licg4rh .licg4h > .licg4r{flex:0 0 var(--licg4-h)}
+.licg4c.licg4rh .licg4b{grid-template-columns:minmax(0,1fr)}
 .licg4rt{stroke:color-mix(in srgb, var(--page-text-color) 10%, transparent)}
-.licg4rv{font-size:22px;font-weight:600;fill:var(--page-text-color)}
-.licg4rl{font-size:10.5px;fill:var(--text-color-common-secondary)}
+.licg4rv{font-size:20px;font-weight:600;fill:var(--page-text-color)}   /* 20px semibold (request, 15 Sep 2026: "the '170' font size is 26px, make it 20px and semibold"); viewBox units, so it draws ~14px in the 66px ring. Every Option 4 ring — one class */
+.licg4rl{font-size:13px;fill:var(--text-color-common-secondary)}      /* ~9px; "of 5,000" still clears the arc */
 .licg4f{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px;row-gap:12px;align-items:start}
 .licg4f obs-tag{grid-column:1 / -1;justify-self:start}
 .licg4p{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -2522,6 +2704,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .licg4p b{font-size:14px;font-weight:500;line-height:1.2;color:var(--page-text-color);font-variant-numeric:tabular-nums;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .licg4s{display:flex;flex-wrap:wrap;gap:8px 24px}
+/* Option 4's APM split sits 12px under its tiles (requests, 15 Sep 2026: "remove the line and the gap", then "add 8px
+   space", then "8px — use 12px") — the -4px takes .licg4c's own 16px flex gap down to 12, the only space left once the
+   divider went */
+.licg4 > .licg4c > .licg4s{margin-top:-4px}
 .licg4k{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text-color-common-secondary)}
 .licg4k i{display:block;flex:0 0 8px;width:8px;height:8px;border-radius:2px;background:var(--licg4-a)}
 .licg4k b{font-weight:500;color:var(--page-text-color);font-variant-numeric:tabular-nums}
@@ -2686,10 +2872,18 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .lice5k.full{grid-column:1 / -1}   /* no top accent line — removed on request, 15 Sep 2026 */
 .lice5kh{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;line-height:16px;color:var(--page-text-color)}
 .lice5kh .lice5sw{background:var(--lice5-tone)}
+.lice5khr{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;min-width:0}
+.lice5ktg{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .lice5k.full .lice5kh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--lice5-tone)}
 .lice5kf{font-size:12px;color:var(--text-color-common-secondary);font-variant-numeric:tabular-nums;white-space:nowrap}
 .lice5kf b{margin-right:2px;font-size:22px;line-height:28px;font-weight:600;color:var(--page-text-color)}
 .lice5hc{height:96px;margin:4px 0;min-width:0}
+.lice5hc.lice5hct{height:118px}
+.lice5hct .lice5ch{height:96px}
+.lice5ax{position:relative;height:22px;font-size:11px;line-height:26px;color:var(--neutral-light);font-variant-numeric:tabular-nums;
+  border-top:1px solid var(--field-border-color)}
+.lice5ax span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.lice5ax span::before{content:'';position:absolute;left:50%;top:0;width:1px;height:5px;background:var(--field-border-color)}
 /* ⚠️ Highcharts writes overflow:hidden INLINE on its container, which would clip the tooltip at the
    chart's 96px; !important is the only thing that outranks an inline declaration */
 .lice5hc .highcharts-container{overflow:visible!important}
@@ -2706,6 +2900,14 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
 .lice5g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .lice5c{display:flex;flex-direction:column;gap:4px;min-width:0;padding:16px 24px;
   border:1px solid transparent;border-radius:var(--btn-radius);background:var(--lic5-surface)}
+/* ⚠️ OPTION 4's EPS CARDS ARE ITS USAGE-TAB CARDS (request, 15 Sep 2026: "add the card border like the License & Quota Usage
+   tab, and apply [its] card padding"): the same 1px --widget-border-color edge, 10px padding and --common-widget-bg fill as
+   .lic4 / .licm4 / .licg4c — the stat cards, the allocation card and the five trend cards. The fill matters in light only,
+   where Option 5's borderless wash would sit inside a border on the white pane. Option 5 keeps its borderless cards. */
+.lice5.lice5o4 .lice5c{padding:10px;border-color:var(--widget-border-color);background:var(--common-widget-bg)}
+/* the stat cards' labels read in sentence case on Option 4 (request, 15 Sep 2026: "the title text will be small and [the]
+   first letter capital") — the markup already is ("Hardware ceiling"); only the uppercase transform and its tracking go */
+.lice5.lice5o4 .lice5l{text-transform:none;letter-spacing:0}
 .lice5l{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-color-common-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lice5v{margin-top:4px;font:600 22px/28px var(--numeric-font-family);font-variant-numeric:tabular-nums;
@@ -2866,7 +3068,10 @@ html[data-theme="light"] #licPage{--common-widget-bg:var(--widget-background);
                      ':host(.lichmx) .head,:host(.lichmx) .foot{display:none}:host(.lichmx) .body{padding:0}',
     'obs-banner':    '.bn{border-radius:4px}',
     'obs-key-value': '.kv.v-card{border-radius:4px}',
-    'obs-tag':       '.rounded{border-radius:4px}',
+    'obs-tag':       '.rounded{border-radius:4px}' +
+                     /* Option 2's edition chip: the live license-hero-chip gradient (see .licxname) */
+                     ':host(.licxchip) .tag{background:linear-gradient(135deg,var(--license-accent),var(--license-violet));' +
+                     'color:var(--license-on-accent);font-weight:600}',
     'obs-severity':  '.chip{border-radius:4px}',
     'obs-checkbox':  '.box{border-radius:4px}',
     'obs-select':    '.val-pop,.t-badge,.pill,.pill-pop,.menu,.cbx{border-radius:4px}',
@@ -5298,7 +5503,7 @@ ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML };
    true of a plain STRING payload and would hand back its first character — obs-input's `input`
    detail is `[value]` today, but the guard costs nothing.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
-const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false, drw:null, opt:'1', ovDemo:null, ovAction:null };
+const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false, drw:null, opt:'1', ovDemo:null, ovAction:null, act4:false };
 /* the two design options for this screen. ⚠️ REVIEW CHROME, like `Setting/`'s Scale switcher —
    it exists so both designs can be compared in one build and goes when one is picked. */
 /* ⚠️ OPTION 3 IS OUT OF THE SWITCHER (request, 14 Sep 2026: "remove option 3"). The labels of the rest
@@ -5319,8 +5524,11 @@ function licRadioSync(id, v){ const el = document.getElementById(id); if (el) el
 /* ⚠️ THE FIRST TAB IS "License & Quota Usage" IN EVERY OPTION AGAIN (14 Sep 2026). It read
    "License" in Option 2 while that option carried no quota at all; its Monitored devices card
    puts quota usage back on the tab, so the full name is true there once more. */
-const LIC_TABS_EPS = { key:'eps', label:'EPS Trend Breakdown', icon:'heart-rate' };
-const licTabs = () => [{ key:'usage', icon:'tacho-meter', label:'License & Quota Usage' }, LIC_TABS_EPS];
+/* ⚠️ THE TABS CARRY NO ICONS, IN EVERY OPTION (request, 15 Sep 2026: "remove the icon in all option").
+   They were `tacho-meter` / `heart-rate`; obs-tabs renders a glyph only when an item has `icon`, so
+   dropping the field is the whole change. */
+const LIC_TABS_EPS = { key:'eps', label:'EPS Trend Breakdown' };
+const licTabs = () => [{ key:'usage', label:'License & Quota Usage' }, LIC_TABS_EPS];
 
 const LIC_DATA = {
   edition: { name:'Infinity', chip:'Unified Edition',
@@ -5329,7 +5537,10 @@ const LIC_DATA = {
   /* the instance's own licence: a Free edition issued 17 Jul 2026, expiring 17 Aug 2030 */
   license: { type:'Free', issued:'2026-07-17', expires:'2030-08-17', account:'Motadata',
     status:'active', code:'OBSV-INF-2026-7K2Q-M4XD-9RTA-B5CE-U8HW' },
-  /* the six entitlements, in the live order, with the live figures. `delta` is the change over
+  /* the six entitlements, in the live order. ⚠️ THE FIVE ADD-ONS CARRY DEMO USAGE, 10 EACH (request, 15 Sep 2026: "add demo
+     data like the Log card will show 10 of 100 in every card") — the instance reads 0 / 0 / 1 / 0 / 2, which left most
+     rings empty. Totals, deltas and Monitored Devices are still the live figures. This is shared data, so every option's
+     cards and the History drawer/modal show it. `delta` is the change over
      the 30-day window the live sparkline reported; `rule` is the License Guide's metering note;
      `trend` marks the two whose history the live plots WITHOUT a cap line (its `trendType`) */
   quotas: [
@@ -5341,20 +5552,20 @@ const LIC_DATA = {
               { label:'Network Devices', value:14 }, { label:'Virtualization', value:6 },
               { label:'HCI', value:2 }, { label:'Other', value:1 }, { label:'Database', value:1 }] },
     { key:'flow', title:'Flow Sources', token:'FSRC · add-on', icon:'flow', tok:'--chart-emerald-green',
-      used:0, total:100, unit:'exporters', delta:0, trend:true,
+      used:10, total:100, unit:'exporters', delta:0, trend:true,
       rule:'Per flow source — one license per unique flow exporter. Several flow protocols or interfaces from one exporter count as one source; metering is by exporter count, not flows per second or data volume.' },
     { key:'log', title:'Log Sources', token:'LSRC · add-on', icon:'log', tok:'--chart-neon-purple',
-      used:0, total:100, unit:'sources', delta:0, trend:true,
+      used:10, total:100, unit:'sources', delta:0, trend:true,
       rule:'Per log source — one license per unique log-emitting source (hostname, IP, agent id or application id). Several log types or files from one source count as one source; metering is by source count, not data volume.' },
     { key:'nccm', title:'NCCM Managed Devices', token:'NDEV · add-on', icon:'ncm', tok:'--chart-hot-pink',
-      used:1, total:100, unit:'devices', delta:0,
+      used:10, total:100, unit:'devices', delta:0,
       rule:'Per managed network device — one license per device under configuration and firmware management, counted independently of whether the device is also a monitored entity.' },
     { key:'apm', title:'APM Instrumented Units', token:'APP · AGT · add-on', icon:'apm', tok:'--chart-amber',
-      used:0, total:52, unit:'units', delta:0,
+      used:10, total:52, unit:'units', delta:0,
       rule:'Per instrumented application instance for a monolith, per APM agent for microservices — one agent covers every service on its node or cluster.',
-      sub:[{ label:'Applications (monolith)', value:0, of:52 }, { label:'Agents (microservices)', value:0, of:0 }] },
+      sub:[{ label:'Applications (monolith)', value:10, of:52 }, { label:'Agents (microservices)', value:0, of:0 }] },
     { key:'rum', title:'RUM Front-end Apps', token:'FEA · add-on', icon:'rum', tok:'--chart-aqua',
-      used:2, total:50, unit:'apps', delta:0,
+      used:10, total:50, unit:'apps', delta:0,
       rule:'Per instrumented front-end application — one license per unique instrumented web or mobile front-end application.' },
   ],
   /* the EPS tab. The hardware ceiling and the per-signal allocations are the instance's; the
@@ -5371,6 +5582,8 @@ const LIC_DATA = {
 /* ── helpers ────────────────────────────────────────────────────────────────────────────── */
 const licVal  = e => (e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail);
 const licFmt  = n => Number(n || 0).toLocaleString('en-US');
+/* a compact total for the small Option 4 rings: 5,000 → "5k", 1,500 → "1.5k"; under 1,000 unchanged */
+const licK    = n => { n = Number(n || 0); return n >= 1000 ? (Math.round(n / 100) / 10).toString().replace(/\.0$/, '') + 'k' : licFmt(n); };
 const licDate = (d, o) => d.toLocaleDateString('en-US', o);
 const licLong = d => licDate(d, { month:'long', day:'numeric', year:'numeric' });            /* August 17, 2030 */
 const licFull = d => licDate(d, { weekday:'short', month:'short', day:'2-digit', year:'numeric' }); /* Sat, Aug 08, 2026 */
@@ -5408,14 +5621,19 @@ function licStats(q, s){
 const licLevel = q => (q.total && q.used >= q.total) ? 'critical' : 'healthy';
 
 /* ── the page ───────────────────────────────────────────────────────────────────────────── */
+/* ⚠️ THE OPTIONS THAT RENDER OPTION 5's EPS TAB (request, 15 Sep 2026: "the Option 5 'EPS Trend Breakdown' tab — all data,
+   copy and add in Option 4"). One list read by the slot AND by the Highcharts mount, so a second option cannot get the
+   markup without its charts. It is the same builder, not a copy, so the two tabs cannot drift. Options 1 and 2 keep
+   licEpsHTML. */
+const LIC_EPS5 = ['4', '5'];
 function licHTML(){
   return `<div class="licpage" id="licPage">${licHeadHTML()}
     <div class="lictabs"><obs-tabs id="licTabs" tabs="${agJ(licTabs())}" value="${LIC.tab}">
       <div slot="usage">${licUsageHTML()}</div>
-      <div slot="eps">${LIC.opt === '5' ? lic5EpsHTML() : licEpsHTML()}</div>
+      <div slot="eps">${LIC_EPS5.includes(LIC.opt) ? lic5EpsHTML() : licEpsHTML()}</div>
     </obs-tabs></div>
     ${licActHTML()}
-    ${LIC.opt === '5' ? licHistMdHTML() : ''}
+    ${LIC_HIST_MD.includes(LIC.opt) ? licHistMdHTML() : ''}
   </div>`;
 }
 
@@ -5434,7 +5652,9 @@ function licHeadHTML(){
     <span class="lichact">
       <obs-radio id="licOpt" as-button size="small" options="${agJ(LIC_OPTS)}" value="${LIC.opt}"></obs-radio>
       <obs-button variant="default" onclick="agTap(licExport)">${agIc('download', 14)}Export</obs-button>
-      <obs-button variant="primary" onclick="agTap(licActOpen)">Upgrade Now</obs-button>
+      ${/* ⚠️ NOT ON OPTION 4 (request, 15 Sep 2026: "remove this in option 4, top right") — its licence card carries its
+         own Upgrade Now, which opens the same Activation Code modal, so nothing becomes unreachable */ ''}
+      ${LIC.opt === '4' ? '' : `<obs-button variant="primary" onclick="agTap(licActOpen)">Upgrade Now</obs-button>`}
     </span>
   </obs-page-header></div>`;
 }
@@ -5474,8 +5694,12 @@ function licMailHref(){
    rather than ellipsising when the card is narrow — its text styles live in its shadow root.
    ⚠️ THE "⋯" DRAWN OUTSIDE THE SUPPLIED CARD'S CORNER WAS NOT BUILT — it sat off the card and no
    menu was specified for it; inventing its actions would be inventing product. */
+/* ⚠️ OPTION 2's TERM LINE READS "N days · Ends 17 Aug 2030" (request, 15 Sep 2026: "remove 4% of term used
+   and add Ends … 2030"), day-month-year as written. Built here rather than in licTermModel, whose line2
+   the parked Option 3 overview still prints; "Ended" once the licence has run out. The request said
+   12 Aug — the licence's own expiry is 17 Aug, and the date comes from T.expires so it cannot drift. */
 function licHeroHTML(){
-  const T = licTermModel(), D = T.D, L = LIC_DATA.license;
+  const T = licTermModel(), D = T.D, L = LIC_DATA.license, E = LIC_DATA.edition;
   const tile = (k, v) => `<div class="licovp licxtile"><span>${stEsc(k)}</span><b>${stEsc(v)}</b></div>`;
   /* ⚠️ THE TERM SITS IN THE CARD'S TOP-RIGHT AND THE STATUS PILL FOLLOWS THE LABEL (request,
      14 Sep 2026). The ring and its two lines were a row of their own between two rules; they now
@@ -5485,35 +5709,38 @@ function licHeroHTML(){
   return `<section class="licx" aria-label="License">
     <div class="licxtop">
       <div class="licxid">
-        <div class="licxh">
-          <span class="licxl">${agIc('file-certificate', 15)}<span>ObserveOps edition</span></span>
-          <obs-tag variant="${T.st.tag}"><i class="licovdot"></i>${T.st.label}</obs-tag>
-        </div>
+        ${/* ⚠️ NO "ObserveOps edition" LABEL ROW (request, 15 Sep 2026). The status pill went onto the name
+           line after the edition tag, then into the fourth tile (next request); .licxh / .licxl are kept
+           and unreferenced. */ ''}
         <div class="licxt">
-          <span class="licovtitle">${stEsc(D.edition)} <span aria-hidden="true">∞</span></span>
-          <obs-tag variant="tag-purple">${agIc('check', 11)}${stEsc(licSentence(D.editionTag))}</obs-tag>
+          ${/* ⚠️ THE NAME AND THE ∞ ARE SIBLINGS, as the live name row has them: the gradient runs across
+             the NAME alone (a gradient over "Infinity ∞" would stop short of violet at the last letter),
+             and the ∞ takes the accent on its own. The chip keeps obs-tag; `licxchip` is the hook the
+             shadow-root sheet near the top of PART 2 styles (page CSS cannot reach inside obs-tag). */ ''}
+          <span class="licovtitle"><span class="licxname">${stEsc(D.edition)}</span> <span class="licxinf" aria-hidden="true">∞</span></span>
+          <obs-tag class="licxchip" variant="tag-purple">${agIc('check', 11)}${stEsc(licSentence(D.editionTag))}</obs-tag>
         </div>
+        <p class="licxdesc">${stEsc(E.blurb)} <b>Licensed by what you monitor</b> — ${stEsc(E.blurb2)}</p>
       </div>
       <div class="licxterm">
-        ${licOvRing(T.percentUsed, T.st.tone)}
-        <div class="licovtx"><b>${stEsc(T.line1)}</b><span>${stEsc(T.line2)}</span></div>
+        ${licOvRing(T.percentUsed, T.st.tone, true)}
+        <div class="licovtx"><b>${stEsc(T.line1)}</b><span>${stEsc(licPlural(Math.max(0, T.daysLeft), 'day'))} · ${T.daysLeft > 0 ? 'Ends' : 'Ended'} ${stEsc(T.expires.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }))}</span></div>
+        <obs-button class="licxact" variant="default" onclick="agTap(licActOpen)">${agIc('key', 14)}Activation code</obs-button>
       </div>
     </div>
     <div class="licxtiles">
-      ${tile('License type', D.licenseType)}${tile('Account', D.account)}${tile('Issue date', licMed(T.issued))}${tile('Expires', licMed(T.expires))}
+      ${tile('License type', D.licenseType)}${tile('Account', D.account)}${tile('Issue date', licMed(T.issued))}
+      ${/* ⚠️ THE FOURTH TILE IS STATUS, NOT EXPIRES (request, 15 Sep 2026: "remove Expires, and the Expires
+         box will show Activated"). The pill left the name row, where the previous request had put it,
+         so the status is shown once; the expiry still reads in the term line beside the ring. */ ''}
+      <div class="licovp licxtile licxst"><span>Status</span><obs-tag variant="${T.st.tag}"><i class="licovdot"></i>${T.st.label}</obs-tag></div>
     </div>
-    <obs-divider></obs-divider>
-    <div class="licxcode">
-      <div class="licxch">
-        <span class="licxct">${agIc('key', 15)}<b>Activation code</b></span>
-        <obs-link href="${stEsc(licMailHref())}">${agIc('email', 14)}Email support@motadata.com</obs-link>
-      </div>
-      <p class="licxhelp">Copy this code and email it to support to upgrade your edition. Keep it private — it identifies your installation.</p>
-      <div class="licxcf">
-        <obs-input id="licCodeCard" value="${stEsc(L.code)}" readonly block></obs-input>
-        <obs-button variant="default" onclick="agTap(licCopy)">${agIc('copy', 14)}Copy</obs-button>
-      </div>
-    </div>
+    ${/* ⚠️ THE ACTIVATION CODE SECTION LEFT THE CARD (request, 15 Sep 2026: "remove the Activation code
+       and it will be shown as a button in the ObserveOps edition card"). The rule and the code block
+       under the tiles are gone; an "Activation code" button sits top-right beside the term and opens
+       the SAME Activation Code modal Upgrade Now opens (licActOpen), which already carries the code,
+       Copy and the support mailto — so nothing the section did is lost. .licxcode / .licxch / .licxcf
+       / .licxhelp are kept and unreferenced. */ ''}
   </section>`;
 }
 /* ══ PRODUCT LICENSE · OPTION 2 — the Monitored devices card (14 Sep 2026, a supplied card) ═══
@@ -5647,7 +5874,9 @@ function licOvState(daysLeft, active){
 
 /* 52px, 5px stroke, the percentage inside. ⚠️ `role="img"` + an aria-label, per the spec —
    the figure is also printed, so the ring is never the only carrier. */
-function licOvRing(pct, tone){
+/* ⚠️ `bare` DROPS THE FIGURE (request, 15 Sep 2026: "remove the 4% in the donut chart", Option 2). The
+   percentage is still in the aria-label and in the "N% of term used" line printed beside the ring. */
+function licOvRing(pct, tone, bare){
   const R = 23.5, C = 2 * Math.PI * R, on = Math.max(0, Math.min(100, pct)) / 100 * C;
   return `<svg class="licchart licovring" viewBox="0 0 52 52" role="img"
       aria-label="${pct}% of license term used">
@@ -5655,7 +5884,7 @@ function licOvRing(pct, tone){
     <circle cx="26" cy="26" r="${R}" fill="none" stroke="var(${tone})" stroke-width="5"
       stroke-linecap="round" stroke-dasharray="${on.toFixed(1)} ${(C - on).toFixed(1)}"
       transform="rotate(-90 26 26)"/>
-    <text class="licovrt" x="26" y="29" text-anchor="middle">${pct}%</text>
+    ${bare ? '' : `<text class="licovrt" x="26" y="29" text-anchor="middle">${pct}%</text>`}
   </svg>`;
 }
 
@@ -5733,7 +5962,7 @@ const LIC5_PAL = ['--chart-aqua', '--chart-lime-green', '--chart-neon-purple', '
 /* a 120×28 area sparkline over the 30-day series, ending on a dot at today's figure. ⚠️ The
    gradient id carries the entitlement key — two cards on one tab would otherwise share an id and
    the second would paint with the first's gradient (the recorded `wsg<seed>` trap). */
-/* ⚠️ KEPT AND UNREFERENCED since 14 Sep 2026 — see licQuotaCardHTML */
+/* ⚠️ Unreferenced 14 Sep 2026 (see licQuotaCardHTML); drawn again since 15 Sep 2026 in Option 4's "Last N days" tiles */
 function lic5Spark(sr, tone, key){
   const W = 120, H = 28, mn = Math.min(...sr), mx = Math.max(...sr), span = (mx - mn) || 1;
   /* ⚠️ A FLAT SERIES RIDES THE TOP, as the supplied Flow Sources card draws it — on the floor its
@@ -5885,7 +6114,7 @@ function lic4DevHTML(v){
   /* Option 5's page draws a cloud-download for agentless and a chip for the agent: `download` / `cpu`
      are the rendered obs-icon names nearest those (`cloud` does not exist in the bundle) */
   const DEP = o5 ? [{ tone:'--chart-aqua', ic:'download' }, { tone:'--chart-lime-green', ic:'cpu' }]
-                 : [{ tone:'--chart-aqua', ic:'network' }, { tone:'--chart-lime-green', ic:'agent' }];
+                 : [{ tone:'--neutral-light', ic:'network' }, { tone:'--neutral-light', ic:'agent' }];   /* Option 4: neutral icons (15 Sep 2026, "#8e9fbc") */
   const deps = (q.sub || []).map((x, i) => {
     const m = /^(.*?)\s*\((.*)\)\s*$/.exec(x.label);
     return { name: m ? m[1] : x.label, note: x.note || (m ? m[2] : ''), value: x.value,
@@ -5918,7 +6147,9 @@ function lic4DevHTML(v){
     return `<div class="licm4k" style="--licm4-t:var(${d.tone})">
       <span class="licm4ki">${agIc(d.ic, 18)}</span>
       <span class="licm4kt"><b>${stEsc(d.name)}</b>${d.note ? `<span>${stEsc(d.note)}</span>` : ''}</span>
-      <span class="licm4kv"><b>${licFmt(d.value)}</b> <span>${sh}% of used</span></span>
+      ${/* no "N% of used" under the figure (request, 15 Sep 2026: Option 4 "remove '100% of used' and '0% of used'") —
+         the figure alone; the share stays in Option 5's tiles */ ''}
+      <span class="licm4kv"><b>${licFmt(d.value)}</b></span>
     </div>`;
   }).join('');
   const types = (q.deploy || []).map((t, i) => ({ ...t, c:LIC5_PAL[i % LIC5_PAL.length] }));
@@ -5928,6 +6159,19 @@ function lic4DevHTML(v){
   const legend = types.map(t =>
     `<span class="licq5k"><i style="background:var(${t.c})"></i>${stEsc(t.label)} <b>${licFmt(t.value)}</b> <em>${Math.round(t.value / tot * 100)}%</em></span>`).join('');
   const sr = licSeries(q, R), d = q.used - sr[0];
+  /* ⚠️ OPTION 4: THE METER IS A RING AND THE CHANGE IS A TILE (request, 15 Sep 2026: "the progress bar will
+     show like [the add-on card's ring] and '15 in 30d' will show as a card like 'Last 30 days'"). The
+     body is now the add-on cards' own shape — the 96px `lic4Ring` (used of total, the entitlement's
+     tone) beside the tiles — so the six cards on this option read as one set. The figure line stays
+     over the tiles; the change leaves its orange tag for the add-on cards' "Last N days" tile, same
+     markup, neutral tone, following the window switch. The two-tone deployment meter went with the bar:
+     the Agentless / Agent-based tiles right beside the ring still carry that split. Option 5 keeps both. */
+  const changeTile = `<div class="licm4k" style="--licm4-t:var(--neutral-light)">
+      <span class="licm4ki">${agIc('trending-up', 18)}</span>
+      <span class="licm4kt"><b>Last ${R} days</b><span>Change in use</span></span>
+      ${lic5Spark(sr, over ? '--severity-critical' : q.tok, '4-' + q.key)}
+      <span class="licm4kv"><b>${d > 0 ? '+' + licFmt(d) : d < 0 ? '−' + licFmt(-d) : '0'}</b> <span>${d > 0 ? 'added' : d < 0 ? 'removed' : 'No change'}</span></span>
+    </div>`;
   /* Option 5's page: a rise is a warning tag with a sign, anything else is ok; Option 4's picture: an
      orange tag with no sign, a neutral one when flat */
   const change = o5
@@ -5950,14 +6194,23 @@ function lic4DevHTML(v){
       <obs-button class="licm4hist" variant="neutral-lighter" data-tip="Open history and CSV export"
         onclick="agTap(LIC_HIST_GO.${q.key})">${agIc(o5 ? 'trending-up' : 'history', 14)}History</obs-button>
     </div>
-    <div class="licm4u">
+    ${o5 ? `<div class="licm4u">
       <div class="licm4m">
         <span class="licm4n"><b>${licFmt(q.used)}</b> <span>of ${licFmt(q.total)} used</span> <em>· ${share(pct)}</em></span>
         <span class="licm4r"><span>${licFmt(avail)} available</span> ${change}</span>
       </div>
       <span class="licm4bar licchart" role="img" aria-label="${share(pct)} of the ${stEsc(q.unit)} allotment used">${meter}</span>
     </div>
-    <div class="licm4ks">${tiles}</div>
+    <div class="licm4ks">${tiles}</div>`
+    : `${/* ⚠️ NO FIGURE LINE (request, 15 Sep 2026: Option 4 Monitored devices "remove '170 of 5,000 used · 3.4%' and
+         '4,830 available' — show simple and short"). It had moved above the ring row an hour earlier ("change the
+         alignment"); now the card is its header, the ring row and the type bar. The ring still reads 170 of 5,000
+         and carries the figures in its aria-label. ⚠️ CONSEQUENCE, stated: the 3.4% share and the 4,830 available
+         are no longer written anywhere on this card. Option 5's card keeps its figure line. */ ''}
+    <div class="licg4b licm4b">
+      ${lic4Ring(q, over ? '--severity-critical' : q.tok)}
+      <div class="licm4ks licm4k3">${tiles}${changeTile}</div>
+    </div>`}
     ${/* No rule and no "By device type" heading here, on either option (requests, 14 Sep 2026: Option 4
        "remove the 'By device type' and remove line", then the same for Option 5). The legend already
        names every type and the bar's aria-label still says what it is; the card's own gap separates
@@ -5983,11 +6236,16 @@ function lic4DevHTML(v){
 function lic4Ring(q, tone){
   const C = 2 * Math.PI * 40, f = q.total ? Math.min(1, q.used / q.total) : 0;
   return `<svg class="licg4r licchart" viewBox="0 0 96 96" role="img" aria-label="${licFmt(q.used)} of ${licFmt(q.total)} ${stEsc(q.unit)} in use">
-    <circle cx="48" cy="48" r="40" fill="none" stroke-width="9" class="licg4rt"/>
-    ${f > 0 ? `<circle cx="48" cy="48" r="40" fill="none" stroke-width="9" stroke="var(${tone})"
+    ${/* drawn at 66px since 15 Sep 2026 (the tiles' height): an 8-unit arc (~5.5px) and the two lines re-centred
+       for the larger type — see .licg4rv / .licg4rl */ ''}
+    <circle cx="48" cy="48" r="40" fill="none" stroke-width="8" class="licg4rt"/>
+    ${f > 0 ? `<circle cx="48" cy="48" r="40" fill="none" stroke-width="8" stroke="var(${tone})"
       stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}" transform="rotate(-90 48 48)"/>` : ''}
+    ${/* 4px more between the figure and "of …" (request, 15 Sep 2026 — asked as 2px, then 4px; 4 is what ships): the
+       baselines went 14 → 20 viewBox units apart (+6 units ≈ +4px at the ring's 66/96 scale), split evenly so the pair
+       stays centred on 56. The total reads in k from 1,000 ("of 5k"); the aria-label keeps the full number. */ ''}
     <text x="48" y="46" text-anchor="middle" class="licg4rv">${licFmt(q.used)}</text>
-    <text x="48" y="62" text-anchor="middle" class="licg4rl">of ${licFmt(q.total)}</text>
+    <text x="48" y="66" text-anchor="middle" class="licg4rl">of ${licK(q.total)}</text>
   </svg>`;
 }
 /* `v === '5'` IS OPTION 5's CARD, from a third supplied page ("Add-on licenses — option 2"; request,
@@ -5995,7 +6253,8 @@ function lic4Ring(q, tone){
    cards). Same data and the same parts, re-arranged on a 2-column grid: the status pill moves up BESIDE
    THE NAME, View history sits top-right, the facts take the left of the second row and the ring its
    right, and APM's split runs underneath with no rule. See the `.licg5` CSS header. */
-function lic4AddonHTML(q, v){
+/* `head` — 'ring' draws the ring in the header's icon slot instead of beside the tiles (Option 4's duplicate RUM card) */
+function lic4AddonHTML(q, v, head){
   const over = licLevel(q) === 'critical', avail = Math.max(q.total - q.used, 0);
   const tone = over ? '--severity-critical' : q.tok;
   const pct = q.total ? Math.round(q.used / q.total * 100) : 0;
@@ -6004,33 +6263,58 @@ function lic4AddonHTML(q, v){
   const last = d > 0 ? `+${licFmt(d)} added` : d < 0 ? `−${licFmt(-d)} removed` : 'No change';
   const fact = (k, v) => `<div class="licg4p"><span>${stEsc(k)}</span> <b>${stEsc(v)}</b></div>`;
   const codes = String(q.token).split('·').map(x => x.trim()).filter(x => x && !/add-on/i.test(x)).join(', ');
-  const splitRow = (q.sub || []).length ? `<div class="licg4s">${q.sub.map(x =>
-      `<span class="licg4k"><i></i>${stEsc(x.label)} <b>${licFmt(x.value)}${x.of != null ? ' of ' + licFmt(x.of) : ''}</b></span>`).join('')}</div>` : '';
-  const split = splitRow ? `<obs-divider></obs-divider>${splitRow}` : '';
-  const pill = `<obs-tag variant="${over ? 'tag-red' : 'tag-green'}"><i class="licovdot"></i>${over ? 'Over limit' : 'Healthy'} · ${pct}% used</obs-tag>`;
+  /* ⚠️ THE TWO HALVES OF APM's SPLIT ARE TWO COLOURS (request, 15 Sep 2026: "use a different colour for applications and
+     agents") — Applications keeps the card's tone (amber), Agents takes --chart-aqua, the palette's farthest hue from it. */
+  const SPLIT_T = ['var(--licg4-a)', 'var(--chart-aqua)'];
+  const splitRow = (q.sub || []).length ? `<div class="licg4s">${q.sub.map((x, i) =>
+      `<span class="licg4k"><i style="background:${SPLIT_T[i] || SPLIT_T[0]}"></i>${stEsc(x.label)} <b>${licFmt(x.value)}${x.of != null ? ' of ' + licFmt(x.of) : ''}</b></span>`).join('')}</div>` : '';
+  /* ⚠️ NO RULE AND NO GAP ABOVE IT (request, 15 Sep 2026: "remove the horizontal line and also remove the gap between the
+     3 cards and [the split]") — the obs-divider is gone, and .licg4s trims the card's 16px flex gap to 12px (see its rule). */
+  const split = splitRow;
+  /* ⚠️ THE PILL IS THE STATUS ONLY (request, 15 Sep 2026: Option 4 "remove the '0% used'"). The share is already the
+     "In use" tile's "N% of total" and the ring's arc; beside the name it was a third copy. */
+  /* ⚠️ NO DOT (request, 15 Sep 2026: "remove the dot in [the] health tag") — the tag's green already says Healthy, and the
+     Monitored devices card's pill beside these never carried one. Only this Option 4 pill; Option 5's cards keep theirs. */
+  const pill = `<obs-tag variant="${over ? 'tag-red' : 'tag-green'}">${over ? 'Over limit' : 'Healthy'}</obs-tag>`;
   /* ⚠️ OPTIONS 4 AND 5's HISTORY BUTTONS ARE FILLED AND BORDERLESS (request, 14 Sep 2026: "show as normal button
      like [Create Widget] without border"). `neutral-lighter` is the DS variant for exactly that: its
      fill is `--neutral-button-bg` (#2b394f dark / #e3e8f2 light) and its border is the SAME token, so
      no outline shows. Option 4's cards got the same button the next request ("in option 4 the history and
      view history will be show as normal button"), so both variants share it. */
   const hist = `<obs-button class="licg4hist" variant="neutral-lighter" data-tip="Open history and CSV export"
-        onclick="agTap(LIC_HIST_GO.${q.key})">${agIc('trending-up', 14)}View history</obs-button>`;
+        onclick="agTap(LIC_HIST_GO.${q.key})">${agIc(v === '5' ? 'trending-up' : 'history', 14)}${/* "History" on Option 4 (request,
+        15 Sep 2026: "change 'View history' to 'History'") — the devices card above already says History, so the two card
+        kinds now name the one action alike. Option 5's footer button keeps "View history". */ v === '5' ? 'View history' : 'History'}</obs-button>`;
   const facts = `${fact('In use', unit(q.used))}${fact('Available', unit(avail))}${fact('Last ' + R + ' days', last)}`;
   /* ⚠️ OPTION 4's FACTS ARE TILES (request, 14 Sep 2026: "In use, Available, Last 30 days — show like
      [the Agentless tile]"). They reuse the Monitored devices card's own `.licm4k` markup — icon tile ·
      label over the unit · figure over its share — so the two cards on this option speak one shape.
      Only "In use" carries the entitlement's tone; Available and the change are neutral, because a
      second and third hue on one card would read as series. Option 5 keeps its plain `fact` rows. */
-  const tile = (ic, t, k, sub, val, vsub) => `<div class="licm4k" style="--licm4-t:var(${t})">
+  const tile = (ic, t, k, sub, val, vsub, chart) => `<div class="licm4k" style="--licm4-t:var(${t})">
       <span class="licm4ki">${agIc(ic, 18)}</span>
       <span class="licm4kt"><b>${stEsc(k)}</b><span>${stEsc(sub)}</span></span>
+      ${chart || ''}
       <span class="licm4kv"><b>${stEsc(val)}</b> <span>${stEsc(vsub)}</span></span>
     </div>`;
   const aPct = q.total ? Math.round(avail / q.total * 100) : 0;
-  const tiles4 = tile(q.icon, '--licg4-a', 'In use', q.unit, licFmt(q.used), `${pct}% of total`)
+  /* ⚠️ EVERY TILE ICON IS --neutral-light (#8e9fbc in dark) since 15 Sep 2026 ("change the 'In use' icon", with the request
+     to use #8e9fbc for the icons) — In use joins Available and Last N days; the entitlement's tone stays on the ring's arc */
+  /* ⚠️ "In use" WEARS `utilization`, NOT q.icon (request, 15 Sep 2026: "change the icon of 'In use'") — q.icon is the
+     card header's own glyph, so the tile repeated the header 40px below it. `utilization` is the product's usage mark
+     (render-checked; `gauge` / `usage` / `activity` do not exist in the bundle). */
+  const tiles4 = tile('utilization', '--neutral-light', 'In use', q.unit, licFmt(q.used), `${pct}% of total`)
     + tile('check', '--neutral-light', 'Available', q.unit, licFmt(avail), `${aPct}% of total`)
-    + tile('history', '--neutral-light', 'Last ' + R + ' days', 'Change in use',
-        d > 0 ? '+' + licFmt(d) : d < 0 ? '−' + licFmt(-d) : '0', d > 0 ? 'added' : d < 0 ? 'removed' : 'No change');
+    /* ⚠️ THE ICONS ARE SWAPPED ON OPTION 4 (request, 15 Sep 2026: "the View history icon will be used in 'Last 30 days' and
+       the 'Last 30 days' icon in View history"): View history wears the clock (history), the change tile the trend line
+       (trending-up). The Monitored devices card's change tile follows, and its History button already wore the clock. */
+    + tile('trending-up', '--neutral-light', 'Last ' + R + ' days', 'Change in use',
+        d > 0 ? '+' + licFmt(d) : d < 0 ? '−' + licFmt(-d) : '0', d > 0 ? 'added' : d < 0 ? 'removed' : 'No change',
+        /* ⚠️ A SPARKLINE OF THE WINDOW (request, 15 Sep 2026: "add the chart in the 'Last 30 days' card") — the same
+           licSeries the History modal plots, in the entitlement's tone, so it follows the 7d/15d/30d switch. lic5Spark
+           (Option 5's parked quota sparkline) draws it; the gradient id carries '4-' + key so no two cards share one.
+           A flat window rides the top of the chart, which is how a 0-change add-on reads. */
+        lic5Spark(sr, tone, '4-' + q.key + (head === 'ring' ? '-rh' : '')));
   /* ⚠️ OPTION 5's ADD-ON CARD IS THE REFERENCE-CARD SHAPE (request, 14 Sep 2026: "make [it a] proper and
      user friendly card", with an SLO card and a NetRoute card as the reference). Both references read
      top to bottom: the name with its status at the top-right, label-over-value figures, one labelled
@@ -6060,18 +6344,24 @@ function lic4AddonHTML(q, v){
     <div class="licn5f"><span>Last ${R} days · <b>${change}</b></span>${hist}</div>
   </section>`;
   }
-  return `<section class="licg4c" aria-label="${stEsc(q.title)} license usage" style="--licg4-a:var(${tone})">
+  const rh = head === 'ring';
+  return `<section class="licg4c${rh ? ' licg4rh' : ''}" aria-label="${stEsc(q.title)} license usage" style="--licg4-a:var(${tone})">
     <div class="licg4h">
-      <span class="licg4i">${agIc(q.icon, 22)}</span>
-      <span class="licg4t"><b>${stEsc(q.title)}</b><span>Add-on license · ${stEsc(codes)}</span></span>
+      ${rh ? lic4Ring(q, tone) : `<span class="licg4i">${agIc(q.icon, 22)}</span>`}
+      ${/* ⚠️ THE PILL SITS RIGHT AFTER THE NAME (request, 15 Sep 2026: Option 4 "the 'Healthy · 0% used' will show
+         behind the 'Flow Sources'"), the Monitored devices card's own title row. It had moved to the header's
+         right edge after View history on 14 Sep; now the status reads as part of the name and View history is
+         alone at the edge. \`.licg5tt\` is the title row Option 5's earlier add-on card used for exactly this
+         (flex, 8px gap, wraps under the name when narrow) and it already carries the undo for \`.licg4t span\`,
+         which would otherwise clip the pill — reused rather than a second copy. */ ''}
+      <span class="licg4t"><span class="licg5tt"><b>${stEsc(q.title)}</b>${pill}</span><span>Add-on license · ${stEsc(codes)}</span></span>
       ${hist}
     </div>
     ${/* no rule under the header (request, 14 Sep 2026: "remove this line"); the card's 16px gap
-       separates it from the ring. APM's rule above its split row is a different line and stays. */ ''}
+       separates it from the ring. APM's rule above its split row went too, on 15 Sep 2026. */ ''}
     <div class="licg4b">
-      ${lic4Ring(q, tone)}
+      ${rh ? '' : lic4Ring(q, tone)}
       <div class="licg4f licg4ft">
-        ${pill}
         ${tiles4}
       </div>
     </div>
@@ -6079,6 +6369,14 @@ function lic4AddonHTML(q, v){
   </section>`;
 }
 const lic4AddonsHTML = v => `<div class="licg4${v === '5' ? ' licg5' : ''}">${LIC_DATA.quotas.filter(q => q.key !== 'device').map(q => lic4AddonHTML(q, v)).join('')}</div>`;
+/* ⚠️ THE RUM CARD WITH THE RING IN THE HEADER — built on Option 4 (request, 15 Sep 2026: "duplicate the card, remove the
+   [header] icon, and use [the ring] in the icon position") and MOVED TO OPTION 5 the same night ("this card will be move in
+   option 5"). Option 4 is back to five add-on cards. It is a second design for the RUM entitlement, not a second licence:
+   same data, same History door. It keeps Option 4's card shape and look (border, 10px padding, "History", the '-rh'
+   sparkline id) because it was moved as it was — so on Option 5 it is the one bordered card among borderless ones. It sits
+   in its own one-column .licg4 under Option 5's two-across grid, which is what gives it Option 4's card rules
+   (.licg4 > .licg4c) and the full row. */
+const lic5RumRingHTML = () => `<div class="licg4">${lic4AddonHTML(LIC_DATA.quotas.find(q => q.key === 'rum'), '4', 'ring')}</div>`;
 /* ══ PRODUCT LICENSE · OPTION 2 — the Flow Sources card (14 Sep 2026, a supplied card) ═══════
    Under the Monitored devices card. ⚠️ THE FIGURES ARE LIC_DATA's — the instance meters 0 of 100
    exporters with no change over 30 days, where the picture read 5 · 95 remaining; so the meter is
@@ -6102,20 +6400,48 @@ function lic4HTML(v){
   return `<article class="lic4${v === '5' ? ' lic5' : ''}" aria-label="ObserveOps license">
     <div class="lic4top">
       <section class="lic4s">
-        <div class="lic4eb">${agIc('file-certificate', 14)}ObserveOps edition</div>
-        <div class="lic4title">${stEsc(D.edition)} <span aria-hidden="true">∞</span></div>
-        <obs-tag variant="tag-purple">${agIc('check', 11)}${stEsc(licSentence(D.editionTag))}</obs-tag>
+        ${/* ⚠️ NO "ObserveOps edition" EYEBROW ON OPTION 4 (request, 15 Sep 2026: "remove this in option 4") — the name
+           row leads the card. Option 5 keeps it. */ ''}
+        ${v === '5' ? `<div class="lic4eb">${agIc('file-certificate', 14)}ObserveOps edition</div>` : ''}
+        ${/* ⚠️ OPTION 4's NAME AND CHIP ARE OPTION 2's (request, 15 Sep 2026: "change [this] and improve like [Option 2's
+           name row]"): the live license-hero gradient on the name, the ∞ in the accent, the gradient-filled chip —
+           and the chip INLINE after the name instead of on its own line. Same classes as Option 2, so the two cannot
+           drift; the eyebrow above stays (the picture was of the name row). Option 5 keeps its own title. */ ''}
+        ${v === '5' ? `<div class="lic4title">${stEsc(D.edition)} <span aria-hidden="true">∞</span></div>
+        <obs-tag variant="tag-purple">${agIc('check', 11)}${stEsc(licSentence(D.editionTag))}</obs-tag>`
+        : `<div class="licxt lic4nr"><span class="licovtitle"><span class="licxname">${stEsc(D.edition)}</span> <span class="licxinf" aria-hidden="true">∞</span></span>
+        <obs-tag class="licxchip" variant="tag-purple">${agIc('check', 11)}${stEsc(licSentence(D.editionTag))}</obs-tag></div>`}
         <p class="lic4desc">${stEsc(E.blurb)} <b>Licensed by what you monitor</b> — ${stEsc(E.blurb2)}</p>
+        ${/* ⚠️ THE ACTIVATION CODE TOGGLE SITS AT THE END OF THE DESCRIPTION (request, 15 Sep 2026: "remove the
+           line, and the Activation code button will show at the end of [the] paragraph"). It left the
+           card's bottom row, and the rule over that row went with it — so collapsed, the card is the three
+           sections and nothing under them. Opening it still shows the code row across the card's full
+           width at the bottom, which is the only place the code box has room. Option 5 is untouched. */ ''}
+        ${/* ⚠️ A FILLED BUTTON, NO BORDER (request, 15 Sep 2026: "Activation code will show as a button with background
+           colour, no border colour"). \`neutral-lighter\` is the DS variant History and View history already use on
+           this option: its fill is --neutral-button-bg and its border the same token, so no outline shows. It replaces
+           the transparent button restyled as a heading — the shadow-root hook that did that is gone, and with it the
+           conformance checker's "variant looks overridden" finding. */ ''}
+        ${/* Upgrade Now beside Activation code (request, 15 Sep 2026) — the page header's own primary, same handler (licActOpen,
+           the Activation Code modal), so the card's two licence actions sit together. ⚠️ It duplicates the header's Upgrade
+           Now, which stays. ⚠️ UPGRADE NOW LEADS: it was added after Activation code and swapped the same day ("swap this"). */ ''}
+        ${v === '5' ? '' : `<div class="lic4axw"><obs-button class="lic4up" variant="primary" onclick="agTap(licActOpen)">Upgrade Now</obs-button><obs-button class="lic4axb${LIC.act4 ? ' open' : ''}" variant="neutral-lighter"
+          aria-expanded="${LIC.act4 ? 'true' : 'false'}" data-tip="${LIC.act4 ? 'Hide' : 'Show'} the activation code"
+          onclick="agTap(lic4ActTog)">Activation code${agIc('chevron-down', 16)}</obs-button></div>`}
       </section>
       <section class="lic4s lic4rec">
         <div class="lic4meta">
           ${field('License type', `<b>${stEsc(D.licenseType)}</b>`)}${field('Issue date', `<b>${licLong(T.issued)}</b>`)}
-          ${field('Account', `<b>${stEsc(D.account)}</b>`)}${field('Status', `<obs-tag variant="${T.st.tag}"><i class="licovdot"></i>${T.st.label}</obs-tag>`)}
+          ${field('Account', `<b>${stEsc(D.account)}</b>`)}${/* no dot on Option 4 (request, 15 Sep 2026: "remove the dot in [the] Status card"), as its Healthy pills lost theirs;
+             Option 5 renders this same markup and keeps it */ ''}${field('Status', `<obs-tag variant="${T.st.tag}">${v === '5' ? '<i class="licovdot"></i>' : ''}${T.st.label}</obs-tag>`)}
         </div>
-        <div class="lic4tl"><span>${licMY(T.issued)}</span>
+        ${/* ⚠️ NO TERM BAR ON OPTION 4 (request, 15 Sep 2026: "in option 4 remove the progress bar"). The
+           Jul 2026 → Aug 2030 bar said, in a second shape, what the ring beside it already says in days
+           left and the date under it. Option 5 keeps its bar — the request named Option 4. */ ''}
+        ${v === '5' ? `<div class="lic4tl"><span>${licMY(T.issued)}</span>
           <span class="licbar licchart" role="img" aria-label="${T.percentUsed}% of the license term used"
             style="--licbar-tone:var(${T.st.tone})"><i style="width:${T.percentUsed}%"></i></span>
-          <span>${licMY(T.expires)}</span></div>
+          <span>${licMY(T.expires)}</span></div>` : ''}
       </section>
       <section class="lic4s lic4ring">
         ${licRingHTML(leftPct, left, T.st.tone)}
@@ -6123,8 +6449,18 @@ function lic4HTML(v){
         <b class="lic4date">${licLong(T.expires)}</b>
       </section>
     </div>
-    <section class="lic4act">
-      <b class="lic4acth">Activation code</b>
+    ${/* ⚠️ ON OPTION 4 THE ACTIVATION CODE FOLDS (request, 15 Sep 2026: "show the Activation code with an
+       expand / collapse icon, and when I click it show [the code row]"). The heading becomes the toggle —
+       an obs-button carrying the label and a chevron — and the code box and the support line show only
+       while it is open. Open, the row is exactly the one it was. It starts COLLAPSED: the code is
+       something you fetch once to email support, not something to read every visit. The state is
+       `LIC.act4`, so a repaint of the page keeps it; the toggle itself only flips a class (lic4ActTog),
+       so nothing under the pointer is rebuilt. ⚠️ Through agTap — obs-button fires its onclick twice,
+       and a toggle that fires twice never opens. Option 5 keeps its plain heading.
+       ⚠️ The toggle has since moved under the description (next request, see the first section); this row
+       is the code box and the support line only, with no heading and no rule. */ ''}
+    <section class="lic4act${v === '5' ? '' : ' lic4ax' + (LIC.act4 ? ' open' : '')}">
+      ${v === '5' ? `<b class="lic4acth">Activation code</b>` : ''}
       <div class="lic4code">
         <span class="lic4k">Upgradation code</span>
         <span class="lic4v">${stEsc(L.code)}</span>
@@ -6263,7 +6599,7 @@ const licQCardsHTML = () =>
     LIC.opt === '4' ? lic4DevHTML() + lic4AddonsHTML()
   /* ⚠️ Option 5's simplified devices card (`lic5DevHTML`, `.licd5`) was REMOVED (request, 14 Sep 2026:
      "remove this card in option 5") — kept and unreferenced, one call away. */
-  : LIC.opt === '5' ? lic4DevHTML('5') + lic4AddonsHTML('5')
+  : LIC.opt === '5' ? lic4DevHTML('5') + lic4AddonsHTML('5') + lic5RumRingHTML()
   : licAddonCardsHTML();
 const LIC_QHINT = 'History opens the trend and a CSV export';
 function licUsageHTML(){
@@ -6466,7 +6802,10 @@ function licHistEl(){
    on `<body>` and survives an option switch, so sharing `licHist` / `licHRange` would put two
    elements under one id the moment someone opened History on Option 1 and then on Option 5.
    ⚠️ obs-modal LEAVES `open` TRUE AFTER ITS OWN ✕ (recorded) — `licAfter` syncs it on close/cancel.
-   Options 1, 2 and 4 keep the drawer. */
+   ⚠️ OPTIONS 2 AND 4 USE IT TOO (request, 15 Sep 2026: "the History centre popup UI — copy and apply in
+   option 2 & 4"). LIC_HIST_MD is the one list both the render (licHTML) and the router (licHistOpen)
+   read, so the two cannot disagree. Option 1 keeps the drawer. */
+const LIC_HIST_MD = ['2', '4', '5'];
 /* ⚠️ …AND IT IS LAID OUT LIKE METRIC EXPLORER's CHART POPUP (request, 14 Sep 2026: "improve this popup
    [to be] like this", with Metric Explorer's full-width metric popup as the reference). One head row —
    the title at the left; the range, the window's two dates stacked, Export as CSV and ✕ at the right —
@@ -6550,7 +6889,7 @@ function licHistClose(){
 }
 function licHistOpen(key){
   const q = licQuota(key); if (!q) return;
-  if (LIC.opt === '5' && document.getElementById('licHistMd')) return licHistMdOpen(q);
+  if (LIC_HIST_MD.includes(LIC.opt) && document.getElementById('licHistMd')) return licHistMdOpen(q);
   LIC.hist = key; LIC.hrange = LIC.range;
   const d = licHistEl();
   d.setAttribute('title', q.title + ' · Historical Consumption');
@@ -6646,11 +6985,15 @@ function licActHTML(){
   const L = LIC_DATA.license, mail = licMailHref();
   return `<obs-modal id="licAct" title="Activation Code" width="720">
     <div class="licact">
-      <div class="liccode"><obs-input id="licCodeCur" label="Upgradation code" value="${stEsc(L.code)}" readonly block></obs-input>
-        <obs-button variant="neutral-lightest" aria-label="Copy activation code" onclick="agTap(licCopy)">${agIc('copy', 14)}</obs-button></div>
-      <p class="lichelp">Please email the above activation code to <obs-link href="${mail}">support@motadata.com</obs-link>. The new license code comes back by mail — paste it below to activate.</p>
+      ${/* ⚠️ THE PASTE BOX LEADS (request, 15 Sep 2026: "swap the 'Upgradation code' & 'New license code'"). The live modal
+         puts the current code first; here the field you act in comes first and the code you send sits under it. The help
+         sentence moved with its block, so "above"/"below" were rewritten — left as they were, it would point the wrong way.
+         .licact is a grid on one 12px gap, so no spacing depended on the order. */ ''}
       <obs-input id="licCode" type="textarea" block label="New license code" placeholder="Paste your code here..."></obs-input>
       <p class="lichelp2" id="licActHint">${licActHint()}</p>
+      <div class="liccode"><obs-input id="licCodeCur" label="Upgradation code" value="${stEsc(L.code)}" readonly block></obs-input>
+        <obs-button variant="neutral-lightest" aria-label="Copy activation code" onclick="agTap(licCopy)">${agIc('copy', 14)}</obs-button></div>
+      <p class="lichelp">Please email this activation code to <obs-link href="${mail}">support@motadata.com</obs-link>. The new license code comes back by mail — paste it above to activate.</p>
     </div>
     <span slot="footer" class="licactf">
       <obs-button variant="default" onclick="agTap(licActClose)">Cancel</obs-button>
@@ -6661,6 +7004,13 @@ function licActHTML(){
 /* the gate says WHY it is shut — a disabled primary with no reason beside it is the dead end
    the Designer's Guide forbids (the agConsText rule) */
 const licActHint = () => LIC.code.trim() ? 'Activating replaces the current license with the entitlements in this code.' : 'Activate License is enabled once a code is pasted.';
+/* Option 4's Activation code disclosure — flips a class and the button's state, never repaints */
+function lic4ActTog(){
+  LIC.act4 = !LIC.act4;
+  const sec = document.querySelector('#licPage .lic4ax'), b = document.querySelector('#licPage .lic4axb');
+  if (sec) sec.classList.toggle('open', LIC.act4);
+  if (b){ b.classList.toggle('open', LIC.act4); b.setAttribute('aria-expanded', LIC.act4 ? 'true' : 'false'); b.setAttribute('data-tip', (LIC.act4 ? 'Hide' : 'Show') + ' the activation code'); }
+}
 function licActOpen(){ const md = document.getElementById('licAct'); if (!md) return; md.open = true; licActPaint(); }
 function licActClose(){ const md = document.getElementById('licAct'); if (md) md.open = false; }
 function licActPaint(){
@@ -6745,7 +7095,7 @@ function lic5EpsHTML(){
       <span class="lice5l">${label}</span>
       <span class="lice5v"${tok ? ` style="color:var(${tok})"` : ''}>${value}</span>
       <span class="lice5s">${sub}</span></div>`;
-  return `<div class="lice5"><div class="lice5g">
+  return `<div class="lice5${LIC.opt === '4' ? ' lice5o4' : ''}"><div class="lice5g">
     ${card('Hardware ceiling', licFmt(E.ceiling), 'eps · auto-derived')}
     ${card('Allocated', licFmt(alloc), Math.round(alloc / E.ceiling * 100) + '% of ceiling', '--info-text')}
     ${card('Ingested live', licFmt(live), Math.round(live / alloc * 100) + '% utilization')}
@@ -6779,14 +7129,24 @@ function lic5TrendHTML(E, alloc, live){
   </div>`;
 }
 function lic5TrendCard(t){
+  t.o4 = LIC.opt === '4';   /* read again by lic5HcConfig / lic5TrendChart, which run off the stored model */
   LIC5_TREND[t.key] = t;
   const avg = Math.round(t.series.reduce((a, b) => a + b, 0) / t.series.length), peak = Math.max(...t.series);
   const util = t.alloc ? Math.round(t.live / t.alloc * 100) : 0;
+  /* ⚠️ OPTION 4's TREND CARDS: NO SWATCH, AND THE WINDOW + FIGURES AS TAGS AT THE TOP RIGHT (request, 15 Sep 2026: "remove
+     the title box colour … and add top right [Last 24 hours · avg · peak · util]"). The tags are Option 1's EPS tiles' own
+     obs-tag row, verbatim, so the two options say it one way. Option 5 renders this same card and keeps its swatch and no
+     tags. The avg / peak / util row under the chart is NOT removed — the request said add — so on Option 4 those three
+     figures now appear twice per card. */
+  const o4 = t.o4;
+  const tags = o4 ? `<span class="lice5ktg"><obs-tag variant="tag-primary">Last 24 hours</obs-tag><obs-tag variant="tag-primary">avg ${licFmt(avg)}</obs-tag><obs-tag variant="tag-primary">peak ${licFmt(peak)}</obs-tag><obs-tag variant="tag-primary">util ${util}%</obs-tag></span>` : '';
   return `<div class="lice5c lice5k${t.full ? ' full' : ''}" style="--lice5-tone:var(${t.tok})">
-    <span class="lice5kh"><i class="lice5sw"></i>${stEsc(t.label)}</span>
+    ${o4 ? `<div class="lice5khr"><span class="lice5kh">${stEsc(t.label)}</span>${tags}</div>` : `<span class="lice5kh"><i class="lice5sw"></i>${stEsc(t.label)}</span>`}
     <span class="lice5kf"><b>${licFmt(t.live)}</b> / ${licFmt(t.alloc)} eps</span>
-    <div class="lice5hc licchart" data-lic5k="${t.key}">${lic5TrendChart(t)}</div>
-    <span class="lice5kx"><span>avg <b>${licFmt(avg)}</b></span><span>peak <b>${licFmt(peak)}</b></span><span>util <b>${util}%</b></span></span>
+    <div class="lice5hc licchart${o4 ? ' lice5hct' : ''}" data-lic5k="${t.key}">${lic5TrendChart(t)}</div>
+    ${/* ⚠️ NO avg / peak / util ROW ON OPTION 4 (request, 15 Sep 2026: "remove this and add [a] 24 hour time range") — the
+       tags at the top right already carry all three, and the chart gains a time axis in the space instead */ o4 ? '' :
+    `<span class="lice5kx"><span>avg <b>${licFmt(avg)}</b></span><span>peak <b>${licFmt(peak)}</b></span><span>util <b>${util}%</b></span></span>`}
   </div>`;
 }
 /* ⚠️ A fixed viewBox that scales UNIFORMLY (the agChart rule), sized so a full-width and a half-width
@@ -6802,7 +7162,17 @@ function lic5TrendChart(t){
     <line x1="${L}" x2="${W - R}" y1="${ya}" y2="${ya}" stroke="var(--neutral-light)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
     ${line('var(--lice5-tone)')}
     <g clip-path="url(#${id})">${line('var(--secondary-red)')}</g>
-  </svg>`;
+  </svg>${t.o4 ? lic5TimeAxis(t) : ''}`;
+}
+/* Option 4's 24-hour time axis for the SVG fallback — the same hours the Highcharts axis labels (every 4h, every 2h on
+   the full-width card), placed by the point they belong to. The SVG stretches (preserveAspectRatio none), so the labels
+   are HTML, not SVG text. Highcharts replaces all of it when it mounts. */
+function lic5TimeAxis(t){
+  const hour = 36e5, end = Math.floor(Date.now() / hour) * hour, n = t.series.length, step = t.full ? 2 : 4;
+  const lab = [];
+  for (let i = 0; i < n; i++){ const d = new Date(end - (n - 1 - i) * hour); if (d.getHours() % step === 0)
+    lab.push(`<span style="left:${(i / (n - 1) * 100).toFixed(2)}%">${String(d.getHours()).padStart(2, '0')}:00</span>`); }
+  return `<div class="lice5ax" aria-hidden="true">${lab.join('')}</div>`;
 }
 /* Dynamic EPS · allocation by signal (request, 15 Sep 2026, from the live product's card, "using the
    ObserveOps design system"). The header is obs-toolbar (grid variant: title in start, the hint in the
@@ -6814,20 +7184,26 @@ function lic5TrendChart(t){
    ⚠️ "% of pool" is the signal's LIVE ingest as a share of the allocated pool — the live card read 0%
    on every row with nothing ingested, so it cannot be the allocation share Option 1's table prints. */
 function lic5AllocHTML(E, alloc){
+  /* ⚠️ OPTION 4: NO SWATCH BEFORE THE NAME, THE COLOUR IS IN THE BAR (request, 15 Sep 2026: "remove the legend box and the
+     colour will show in the progress bar"). The ingested fill takes the signal's tone, so each bar says which signal it
+     is; the legend's "ingested" key becomes a split swatch of the four tones, or it would still say "ingested is blue".
+     Option 5 keeps its swatches and the shared --info-text fill. */
+  const o4 = LIC.opt === '4';
   const scale = Math.max(...E.signals.map(s => Math.max(s.alloc, s.live))) * 1.05 || 1;
   const pc = v => (v / scale * 100).toFixed(2) + '%';
   const rows = E.signals.map(s => {
     const ing = Math.min(s.live, s.alloc), over = Math.max(0, s.live - s.alloc);
     return `<div class="lice5r">
-      <div class="lice5rh"><i class="lice5sw" style="background:var(${s.tok})"></i><b>${stEsc(s.label)}</b>
+      <div class="lice5rh">${o4 ? '' : `<i class="lice5sw" style="background:var(${s.tok})"></i>`}<b>${stEsc(s.label)}</b>
         <span class="lice5rs">${alloc ? Math.round(s.live / alloc * 100) : 0}% of pool</span>
         <span class="lice5rf"><b>${licFmt(s.live)}</b> / ${licFmt(s.alloc)} eps</span></div>
       <div class="lice5bar" role="img" aria-label="${stEsc(s.label)}: ${licFmt(s.live)} of ${licFmt(s.alloc)} eps ingested${over ? ', ' + licFmt(over) + ' over quota' : ''}">
-        <i class="al" style="width:${pc(s.alloc)}"></i>${ing ? `<i class="in" style="width:${pc(ing)}"></i>` : ''}${over ? `<i class="ov" style="left:${pc(s.alloc)};width:${pc(over)}"></i>` : ''}<i class="mk" style="left:${pc(s.alloc)}"></i>
+        <i class="al" style="width:${pc(s.alloc)}"></i>${ing ? `<i class="in" style="width:${pc(ing)}${o4 ? ';background:var(' + s.tok + ')' : ''}"></i>` : ''}${over ? `<i class="ov" style="left:${pc(s.alloc)};width:${pc(over)}"></i>` : ''}<i class="mk" style="left:${pc(s.alloc)}"></i>
       </div></div>`;
   }).join('');
+  const split = o4 ? ` style="background:linear-gradient(90deg,${E.signals.map((s, i, a) => `var(${s.tok}) ${(i / a.length * 100).toFixed(0)}% ${((i + 1) / a.length * 100).toFixed(0)}%`).join(',')})"` : '';
   const key = [['al', 'allocated'], ['in', 'ingested'], ['ov', 'over-quota']]
-    .map(([k, t]) => `<span><i class="${k}"></i>${t}</span>`).join('');
+    .map(([k, t]) => `<span><i class="${k}"${k === 'in' ? split : ''}></i>${t}</span>`).join('');
   return `<div class="lice5c lice5a">
     <obs-toolbar class="lice5tb"><span slot="start" class="lictbt">Dynamic EPS · allocation by signal</span><span class="lichint">allocated vs live ingested · over-quota shaded</span></obs-toolbar>
     <div class="lice5rows">${rows}</div>
@@ -6883,9 +7259,9 @@ function lic5HcConfig(t){
   const hour = 36e5, end = Math.floor(Date.now() / hour) * hour, n = t.series.length;
   const top = licNice(Math.max(t.alloc, ...t.series, 1) * 1.3);
   const at = i => end - (n - 1 - i) * hour;
-  const tip = 'var(--chart-font-family)';
+  const tip = 'var(--chart-font-family)', o4 = !!t.o4;
   return {
-    chart:{ type:'areaspline', height:96, backgroundColor:'transparent', plotBorderColor:'transparent',
+    chart:{ type:'areaspline', height:o4 ? 118 : 96, backgroundColor:'transparent', plotBorderColor:'transparent',
             spacing:[6, 0, 2, 0], animation:false, style:{ fontFamily:tip } },
     /* ⚠️ Highcharts creates EMPTY subtitle and caption <text> nodes even with no text, painted in its
        #666666 default — the DS checker counted all ten (token 99) — so both carry a token colour */
@@ -6896,9 +7272,16 @@ function lic5HcConfig(t){
     /* ⚠️ THE AXES ARE VISIBLE WITH EVERYTHING SWITCHED OFF, not visible:false — Highcharts skips an
        invisible axis's plot lines AND its crosshair, so the allocation rule and the hover line both
        vanished. Every axis colour is set, or its #cccccc / #ccd6eb defaults land in the SVG. */
-    xAxis:{ type:'datetime', labels:{ enabled:false, style:{ color:'var(--neutral-light)' } },
-            title:{ text:null, style:{ color:'var(--neutral-light)' } }, lineWidth:0, tickLength:0,
-            lineColor:'transparent', tickColor:'transparent', gridLineWidth:0, gridLineColor:'transparent',
+    /* ⚠️ OPTION 4 LABELS THE 24-HOUR AXIS (request, 15 Sep 2026: "add [a] 24 hour time range"): HH:00 every 4h, every 2h on
+       the full-width Total card, in the axis-label token; the chart is 22px taller for it. Option 5's axis stays bare. */
+    /* ⚠️ …AND DRAWS THE TIMELINE ITSELF (request, same day: "show the ingested line on [the] timeline" — asked, and the answer
+       was a visible axis along the floor with a tick at each time label). The line and ticks are --field-border-color, NOT
+       the DS fixture's --bottom-line-color: that is #172336 in dark, ~1.1:1 on this #0B1627 card, i.e. no timeline at all. */
+    xAxis:{ type:'datetime', tickInterval:o4 ? (t.full ? 2 : 4) * hour : undefined,
+            labels:{ enabled:o4, format:'{value:%H:%M}', y:18, style:{ color:'var(--neutral-light)', fontSize:'11px' } },
+            title:{ text:null, style:{ color:'var(--neutral-light)' } }, lineWidth:o4 ? 1 : 0, tickLength:o4 ? 5 : 0, tickWidth:o4 ? 1 : 0,
+            tickPosition:'outside', lineColor:o4 ? 'var(--field-border-color)' : 'transparent',
+            tickColor:o4 ? 'var(--field-border-color)' : 'transparent', gridLineWidth:0, gridLineColor:'transparent',
             crosshair:{ color:'var(--neutral-light)', width:1 } },
     yAxis:{ labels:{ enabled:false, style:{ color:'var(--neutral-light)' } }, title:{ text:null, style:{ color:'var(--neutral-light)' } },
             lineWidth:0, lineColor:'transparent', tickColor:'transparent',
@@ -6986,6 +7369,6 @@ function licAfter(){
   if (hm){ const shut = () => { hm.open = false; LIC.hist = null; }; hm.addEventListener('close', shut); hm.addEventListener('cancel', shut); }
   const ta = document.getElementById('licCode');
   if (ta) ta.addEventListener('input', e => { const v = licVal(e); LIC.code = v == null ? '' : String(v); licActPaint(); });
-  if (LIC.opt === '5') lic5TrendMount();
+  if (LIC_EPS5.includes(LIC.opt)) lic5TrendMount();
 }
 ST_PAGES['My Account › License'] = { html: licHTML, after: licAfter };
