@@ -7830,6 +7830,165 @@ function name in this flat scope. `#agPage` carries `data-agopt` for CSS scoping
   provider by a real click, terms box below the fields with two links, the two-part gate, the done summary, reopening on
   Option 1 restoring the rail and help card) · dark and light screenshots.
 
+#### Option 2's form — one rhythm, one link, a plainer footer (16 Sep 2026)
+
+Four narrow requests, all Option 2's Configure drawer. ⚠️ **Where they conflict with the section above, this is current** —
+in particular the terms line's two links and the footer's KMS caption are both gone.
+
+| request | what changed |
+|---|---|
+| *"make proper alignment"*, with the product's own **Create Credential Profile** / **Schedule Topology** drawers as the reference | one rhythm: **7px label→control on every row** — `obs-input`'s own number, which page CSS cannot change, so `.agfprov` matches it rather than the other way round — and **24px between rows** (`@padding-lg`, the step those drawers use), where the form ran on its 16px step. The heading's helper line still hugs it at 4px. Measured before: the provider row sat at 6px against the inputs' 7, and the rows ran 16 / 4 / 16 / 16 |
+| *"you have 2 links, make it a single link and improve the text"* | `agTermsHTML` carries **one** `obs-link` — the Terms & Conditions — and the provider's privacy policy is no longer on this form. ⚠️ **Stated, not hidden:** that link is gone from the drawer entirely; Option 1's four-term consent panel still carries its own |
+| *"the link will be shown in last"* | the sentence was rewritten so the link **ends** it: *"I agree to sending selected observability data to OpenAI under the Terms & Conditions."* It fits on one line at 684px, which is what lets the checkbox align to its own text |
+| *"remove the [KMS] text, and the Enable AI button will remove the icon and change the name to Save"* | the footer is **spacer · Run test · Save**. The caption went because Option 2's form already says it — *"Your key is encrypted server-side and never shown again in full"* sits under the Enter credentials heading, so the footer was repeating it under a button. The primary lost its `shield-check` and reads **Save**: the shield said "this is about security", which is the terms line's job two rows up, and *Enable AI* named a capability where the effect is to store this connection |
+
+- ⚠️ **THE EMPTY `.sp` SPAN STAYS** — `.agff .sp{margin-right:auto}` is what pushes the buttons to the right edge, and
+  dropping the span with its text slides them into the middle of the footer. The recorded lesson, avoided rather than hit.
+- ⚠️ **THE CHECKBOX IS CENTRED ON ITS FIRST TEXT LINE, not on the row.** `obs-checkbox` renders a 24px box against a 19px
+  line, so `flex-start` alone left the tick sitting low, and `align-items:center` would centre it across BOTH lines if the
+  text ever wraps. It is `flex-start` with a measured `-2px`.
+- ⚠️ **Option 1 is untouched by all four** — it keeps the KMS caption, *Accept & enable AI* with its shield, its 16px row
+  step and its own consent panel. Each request named Option 2's screen, and there are probe assertions for all four.
+- ⚠️ **`agSeed` DELIBERATELY ARRIVES UNTESTED**, so Save is disabled on open until Run test passes — a probe asserting the
+  button is enabled at rest fails on correct code (it did). The recorded 2 Sep decision; read it before "fixing" the gate.
+- ⚠️ **`agIc` renders an `<obs-icon>`, not a bare `<svg>`** — a probe checking a button's glyph with `querySelector('svg')`
+  reports "no icon" on a button that has one, and passes trivially on one that does not.
+- Verified: a **26-assertion** probe (one link reading Terms & Conditions and ending the sentence, no privacy link, the
+  text on one line, the box centred on it; the label→control gap equal to obs-input's own, every row 24px apart, one left
+  edge, equal input columns; no KMS caption with the spacer kept, *Save* with no glyph beside Run test, the buttons still
+  at the right edge, the gate disabled → enabled on a passing test → disabled again when the terms are unticked; and
+  Option 1 still carrying its caption, its shield, its rail and its help card) · `stbehave` **ALL 21 PASS × 13 pages** ·
+  dark and light screenshots.
+
+#### The same evening — a barer form, a 16px inset, and the grid back as two columns (16 Sep 2026)
+
+Five more requests on Option 2, in order. ⚠️ **Where they conflict with anything above, this is current.**
+
+| request | what changed |
+|---|---|
+| *"remove the line upper side [the] save button"* | `#drawer-agcfg.agcfgo2 .agff{border-top:0}`. **The 16px padding stays** — the border is what was asked for, and taking the space with it jams Save against the row above. The footer still sits on the drawer's floor, which is what separates it |
+| *"remove this"*, pointing at **Enter credentials** and *"Connecting OpenAI. Your key is encrypted server-side…"* | `agStepCreds` emits the heading and the helper line for Option 1 only. On a form of three things — pick a provider, name it, paste a key — a section heading names a section with no sibling to be told apart from, and the sentence restated the provider already selected in the segmented control directly above it |
+| *"the sidebar padding is 24px → 16px"* | `#drawer-agcfg.agcfgo2 .agcfgm{padding:16px 16px 56px}`. **Measured first**: the drawer's own header is padded `14px 16px`, so the form had been inset 8px further than the title above it — 16 puts every field on the header title's own left edge (probed, ±1.5px). ⚠️ **The 56px bottom is untouched**: it is not spacing, it holds the pinned footer clear of the fixed variant-switcher pill |
+| *"the AI provider field margin is 24px → 0px"* | `#drawer-agcfg.agcfgo2 .agfbody > :first-child{margin-top:0}`. ⚠️ **It needs the id.** `.agfbody > :first-child{margin-top:0}` already existed at (0,2,0) and **lost** to this block's own `#drawer-agcfg.agcfgo2 .agfbody > *` at (1,2,0) — which is why the picker carried 24px at all. The zero has to be written at the same weight |
+| *"remove [the connection panel] and show the grid — 2 columns: 1. AI provider  2. Status (up/down)"* | **`AG_GRID_COLS` / `agGridRows` / `agGridHTML`** — an `obs-table` of two columns, one row per provider, the status as a `status` cell |
+
+- ⚠️ **THE GRID REVERSES THE MORNING'S "remove the grid", AND DELIBERATELY — BUT IT IS NOT THE SAME GRID.**
+  What went was six columns of usage figures on three rows, two of them em dashes; what came back is the two the
+  request names. **Do not restore the six-column table on the strength of the older note, and do not restore the
+  panel on the strength of this one.** `agConnHTML` is kept and unreferenced, the house pattern — one call away.
+  ⚠️ **`agUseWidgetsHTML` is NOT unreferenced**: Option 1's expanded row still draws the same three charts.
+- ⚠️ **"DOWN" MEANS NOT CONNECTED HERE, and that is a reading rather than the product's word.** Only one provider is
+  active at a time, so the other two are unconfigured rather than unreachable. `up` / `down` are what was asked for and
+  are real keys in the DS status map (`up:tag-green`, `down:tag-red`, read out of the bundle, and the cell prints the
+  map's own words — *Up* / *Down*). A third *Not configured* state would be more honest and is one line in `agGridRows`.
+- ⚠️ **THE STATUS MAP IS APPLIED AS A CLASS INSIDE THE TAG'S OWN SHADOW ROOT, NOT AS THE HOST'S `variant`.** A probe
+  reading `variant` reports **`tag-primary` on every row** and fails on correct code (it did). Read the painted
+  `.tag` element's class and computed colour — the recorded "measure the shadow box, not the host" lesson.
+- ⚠️ **NO SEARCH BOX came back with the grid.** It went with the six-column one and was not asked back; three rows do
+  not need it, and the toolbar's own note records that a search over nothing is a dead control.
+- ⚠️ **CONSEQUENCE, STATED:** with the helper line gone AND the KMS caption removed an hour earlier, **Option 2's drawer
+  now says nothing at all about where the key goes.** Option 1 carries both. One line each if either should come back.
+- ⚠️ **The backtick trap bit again**, writing the footer-rule comment into PART 1 — `node --check` named the line in a
+  second. Every backtick in PART 1 is `` \` ``.
+
+#### The Status column: one Active provider, Config on the rest (16 Sep 2026)
+
+Request: *"the status column will be convert — I have 3 AI providers but at a time I use a single provider;
+when I switch to another the old AI provider will be removed … the column will show the active status and
+another show a Config button."* ⚠️ **This replaces the Up / Down reading from earlier the same day**, and it
+is a better one: nothing was ever *down* — the other two are simply not configured, which is exactly the
+honest third state the Up/Down note flagged. The button says so and offers the way to change it in the
+same cell.
+
+| | |
+|---|---|
+| the connected provider | an **Active** tag (`tags` cell, `tag-green`) |
+| the other two | a **Config** button that opens the drawer **on themselves** (`agConfig(d.id)`) |
+| connecting a new one | wipes the previous provider's draft — name, key, terms, test — so its row really becomes a Config button rather than a provider that quietly kept your key |
+
+- ⚠️ **IT IS ONE COLUMN, CALLED `Connection`** (request, same day: *"it will be show in same column and the
+  column name you suggest"* — an earlier build put the tag and the button in two adjacent columns). The name
+  is mine: it is not a *Status* column any more, since one cell says which provider **is** the connection and
+  the other two offer to make one. *Action* would name only half of it.
+- ⚠️ **ONE COLUMN MEANS ONE CELL TYPE, SO THE TAG IS A BUTTON IN DISGUISE — a stated compromise.**
+  `obs-table`'s cell types are `heat / bar / severity / dot / status / type / tags / sparkline / switch /
+  icon / link / button`; there is **no `html`**. So the column is `button` throughout, and the connected
+  row's cell is painted as the DS's own green tag and made inert (`pointer-events:none`, `cursor:default`).
+  It is still a `<button>` element underneath.
+- ⚠️ **THE PAINT MUST GO ON THE INNER `.btn`, NOT THE HOST — that is what "the Active will be overlap" was.**
+  obs-button renders `<button class="btn v-agactive s-small">` inside its **own** shadow root, and that
+  element carries the variant's background, border and min-height; a rule on the host from `obs-table`'s
+  sheet drew a green box *around* a default-styled button and both were visible. The rule lives in an
+  `obs-button` entry of the same hook, as `:host([variant="agactive"]) .btn`.
+- ⚠️ **`variant="agactive"` IS A NAME OF OURS**, not a DS variant — obs-button reflects whatever it is given
+  onto the host (probed), so the selector cannot reach any other button in the module.
+- ⚠️ **The button reads `Configure`, not `Config`** (request, same day).
+- ⚠️ **AN EMPTY CELL IS NOT BLANK, measured before the column was merged**: an empty `status` cell still
+  paints a blank grey chip and an empty `button` cell paints a **16×24 empty button** (Chrome's `:empty`
+  does match it — its two child nodes are empty text anchors). `tags` with `[]` is the only one of the three
+  that renders nothing. That is why the two-column build needed a hide rule, and why the merged one does not.
+- ⚠️ **`cellaction` IS A CUSTOM EVENT**, so `oncellaction=` in markup is inert — `agGridBind()` binds it with
+  `addEventListener` from `agOvAfter`, on every repaint, because the table is rebuilt each time.
+- ⚠️ **THE WIPE RUNS BEFORE `AG.conn` MOVES**, or it would clear the provider just connected.
+- ⚠️ **A PROBE MUST READ THE CELL, NOT obs-tag's SHADOW `.tag`** — the label is *slotted* from the tag's light
+  DOM, so the shadow element's `textContent` is empty and two assertions failed on a correct grid.
+- ⚠️ **UNRESOLVED, and worth asking about:** the request's *"this not will be show in sidebar on before all
+  field"* could not be parsed with any confidence. Nothing was built for it. The two readings that seem
+  plausible — the removed provider's details disappearing (already true: the grid is the only place details
+  live on Option 2) and something about the Configure drawer's provider picker — differ materially.
+#### The drawer states the one-at-a-time rule before you fill it in (16 Sep 2026)
+
+Request: *"show the message — at a time I config a single AI provider, and when I config another the old AI
+provider will remove — show as a note"*, under the fields. `agStepCreds` emits an
+**`obs-banner variant="info"` titled *One provider at a time*** between the fields and the terms line,
+Option 2 only.
+
+- ⚠️ **IT NAMES THE PROVIDER IT WOULD REPLACE** — *"Saving this connection replaces **OpenAI** — its
+  connection is removed and its key is not kept."* A generic sentence would not tell you which key you are
+  about to lose. Re-configuring the provider that is **already** active replaces nothing, so that case gets
+  the plain rule instead and names nobody.
+- ⚠️ The rule it states is the one `agCfgSave` enforces, which is why it belongs on the form rather than in a
+  toast afterwards. `title` carries the lead-in and the detail goes in the slot — obs-banner's own `do` rule.
+- ⚠️ **`const note` WAS ALREADY TAKEN** in `agStepCreds` (the test panel's) — `node --check` named it in a
+  second. The collision trap this file opens with, in a four-line function.
+- Verified by a **14-assertion** probe: the chip is one box at 22px with no border, inside its row and still
+  green; both other rows read *Configure*; the banner renders under the fields and above the terms, spans the
+  form, names OpenAI when another provider is active, and states the plain rule when it is not.
+
+- Verified by a **19-assertion** probe driven through the real buttons: two columns, OpenAI *Active* painted
+  green and inert with the others offering *Configure* in the same column on one left edge, no *Up* / *Down*
+  text anywhere, DeepSeek's Configure opening the drawer on DeepSeek, Save closing it, the old provider's
+  name / key / terms / test all cleared, the Active chip moving to DeepSeek with OpenAI now offering
+  Configure, exactly one Active row throughout, and re-opening OpenAI showing an empty form.
+
+#### Save commits and closes; the done step is Option 1's only (16 Sep 2026)
+
+Request: *"when I click Save [it shows the Setup completed page] — remove it; when I click Save, show the
+main grid screen before."* `agCfgDone` returns `agCfgSave()` on Option 2 instead of stepping to `step 3`.
+
+- **Why the step earns its place on Option 1 and not here.** It is a wizard ending: it recaps Provider /
+  Default model / Connection status / Terms, then asks for *Start using AI features* to actually commit.
+  Option 1's form carries model routing and four consent terms, so a recap before committing is worth the
+  press — and that step is where its own primary has always led. Option 2 is three fields and a button that
+  already says **Save**; the recap was a second commit for one decision, and every fact in it is on the grid
+  it hands you back to. ⚠️ **`agStepDone` is NOT unreferenced** — Option 1 still renders it.
+- ⚠️ **`agCfgSave` WAS CALLING `stFullClose`, AND THAT WAS A LIVE BUG ON BOTH OPTIONS.** This screen was a
+  full page until 2 Sep 2026 and has been a drawer ever since; `stFullClose` returns early unless `ST.full`
+  is set, so the final button committed the connection and **left the drawer standing open over the page it
+  had just changed**. It is `agCfgClose` now — panel, scrim, body class, and a repaint so the Overview shows
+  the new state. Found by writing the probe for the request above, not by looking.
+- Verified by a **13-assertion** probe driven through the real buttons (the inner `<button>` inside each
+  `obs-button`'s shadow root): Save closes the drawer and its scrim, never reaches step 3, commits the
+  provider, lands back on the grid with the new provider reading *Up* and the rest *Down* — and Option 1
+  still steps to the done screen, still holds the commit until *Start using AI features*, and now closes on it.
+
+- Verified: the 26-assertion drawer probe grew to **37** (the heading and helper line absent, the picker leading the
+  form, the fields the second row, no rule above the buttons with the padding kept, the 16px inset with the 56px
+  clearance intact, the fields on the header title's left edge, the first row flush at the top) and a **19-assertion**
+  grid probe (two columns titled *AI provider* / *Status*, three rows naming the providers, *Up* green on the connected
+  one and *Down* red on the other two, no panel, no charts, no search, not expandable — and Option 1 still carrying its
+  six-column table, its search box and its expand chevron). Both **ALL PASS** · dark and light screenshots.
+
 ## Every box in the Settings module has 4px corners (14 Sep 2026)
 
 Request: *"in all option of setting module we need to change the all box radius will be apply

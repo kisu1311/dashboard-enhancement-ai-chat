@@ -1298,14 +1298,39 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 .aghact{display:inline-flex;align-items:center;gap:8px}
 /* Option 2's Configure drawer: a 684px side panel with no rail and no help card, so the form pane pays its own right gutter */
 #drawer-agcfg.agcfgo2 .agcfgm{padding-right:24px}
-#drawer-agcfg.agcfgo2 .agff{padding-right:0}
+/* ⚠️ NO RULE ABOVE THE BUTTONS ON OPTION 2 (request, 16 Sep 2026: "remove the line upper side save
+   button"). The padding STAYS: the border is what was asked for, and taking the 16px with it would
+   jam Save against the field above it. The footer still sits on the drawer's floor, which is what
+   separates it — \`.agff\` keeps its \`margin-top:24px\` and the body flexes into the slack. */
+#drawer-agcfg.agcfgo2 .agff{padding-right:0;border-top:0}
 /* the footer on the panel's floor, like the product's form drawers: the body GROWS to the panel but never SHRINKS below its
    content (flex:1 0 auto) — shrinking is the recorded .dr-b squash that stranded the full-width form's footer mid-panel */
 #drawer-agcfg.agcfgo2 .dr-b > .agcfg{flex:1 0 auto}
-.agfprov{display:grid;justify-items:start;gap:2px}
+/* ⚠️ ONE RHYTHM FOR EVERY ROW (request, 16 Sep 2026: "make proper alignment", with the product's own Create Credential
+   Profile / Schedule Topology drawers as the reference). Measured before: the provider row's label sat 6px above its control
+   while obs-input's own shadow label sits 7px above its field, and the rows ran on the form's 16px step where the product's
+   form drawers run on 24px. Now: 7px label→control on EVERY row (the component's own number, which page CSS cannot change),
+   and 24px between rows — @padding-lg, the step those drawers use. Scoped to Option 2; Option 1's form is untouched. */
+.agfprov{display:grid;justify-items:start;gap:7px}
+.agfprov .agflb{margin-bottom:0}
 .agfprov obs-radio{display:block}
+/* ⚠️ OPTION 2's PANEL IS INSET 16px, NOT 24 (request, 16 Sep 2026), AND THE FIRST ROW SITS FLUSH
+   AT THE TOP ("the AI provider field margin is 24px → 0px"). Measured before changing it: the
+   drawer's own header is padded \`14px 16px\`, so the form was inset 8px further than the title
+   above it — 16px puts every field on the same left edge as "Configure AI provider".
+   ⚠️ THE 56px BOTTOM PADDING IS UNTOUCHED. It is not spacing: it holds the pinned footer clear of
+   the fixed variant-switcher pill, and its own note records the 103×7px overlap it exists to stop.
+   ⚠️ \`> :first-child\` NEEDS THE ID TOO. \`.agfbody > :first-child{margin-top:0}\` already exists at
+   (0,2,0) and LOSES to this block's own \`#drawer-agcfg.agcfgo2 .agfbody > *\` at (1,2,0) — which is
+   why the picker carried 24px in the first place. The zero has to be written at the same weight. */
+#drawer-agcfg.agcfgo2 .agcfgm{padding:16px 16px 56px}
+#drawer-agcfg.agcfgo2 .agfbody > :first-child{margin-top:0}
+#drawer-agcfg.agcfgo2 .agfbody > *{margin-top:24px}
+#drawer-agcfg.agcfgo2 .agfbody > .agcfgp{margin-top:4px}   /* the helper line still belongs to the heading above it */
 .agterms{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.55;color:var(--text-color-common-secondary)}
-.agterms obs-checkbox{flex:0 0 auto;margin-top:1px}
+/* ⚠️ THE BOX IS CENTRED ON ITS FIRST LINE, not on the row: obs-checkbox renders a 24px box against a 19px line, so
+   flex-start alone left the tick sitting low, and align-items:center would centre it across BOTH lines if the text ever wraps */
+.agterms obs-checkbox{flex:0 0 auto;margin-top:-2px}
 .agterms obs-link{display:inline}
 /* Option 2's connected-provider panel (agConnHTML): header · key-value · metric row · the three trend widgets */
 .agpage obs-key-value,.agpage obs-metric-list{display:block}
@@ -3113,7 +3138,37 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
     'obs-checkbox':  '.box{border-radius:4px}',
     'obs-select':    '.val-pop,.t-badge,.pill,.pill-pop,.menu,.cbx{border-radius:4px}',
     'obs-menu':      '.menu,:host([bordered]) .dots{border-radius:4px}',
-    'obs-table':     '.ppage,.psize{border-radius:4px}'
+    /* ⚠️ THE SECOND RULE IS THE AGENTIC AI GRID'S, NOT A RADIUS, AND IT IS A STATED COMPROMISE.
+       Its Connection column has to show a STATUS on one row and a BUTTON on the others, and an
+       `obs-table` column has exactly one cell type — there is no `html` type (the full list is
+       heat / bar / severity / dot / status / type / tags / sparkline / switch / icon / link /
+       button). So the column is `button` throughout and the connected row's cell is painted as the
+       DS's own green tag and made inert: `pointer-events:none` plus `cursor:default`, so it cannot
+       be pressed or hovered like its neighbours. It is still a `<button>` element underneath.
+       ⚠️ `variant="agactive"` IS A NAME OF OURS, not a DS variant — obs-button reflects whatever it
+       is given onto the host (probed), so this selector cannot collide with a real variant used by
+       any other table in the module. The values are `obs-tag`'s own, read from its shadow CSS. */
+    'obs-table':     '.ppage,.psize{border-radius:4px}' +
+      /* the host only has to stop behaving like a button; the PAINT is on the inner <button>,
+         in obs-button's own sheet below — see the note there */
+      '.cell-btn[variant="agactive"]{pointer-events:none;cursor:default}',
+    /* ⚠️ THIS IS THE AGENTIC AI GRID'S ACTIVE CELL, NOT A RADIUS, AND IT IS A STATED COMPROMISE.
+       Its Connection column has to show a STATUS on one row and a BUTTON on the others, and an
+       `obs-table` column has exactly one cell type — there is no `html` type (the full list is
+       heat / bar / severity / dot / status / type / tags / sparkline / switch / icon / link /
+       button). So the column is `button` throughout and the connected row's cell is painted as the
+       DS's own green tag and made inert. It is still a `<button>` element underneath.
+       ⚠️ IT MUST PAINT THE INNER `.btn`, NOT THE HOST — and getting that wrong is what put a second
+       box behind the chip (reported 16 Sep 2026 as "the Active will be overlap"). obs-button renders
+       `<button class="btn v-agactive s-small">` inside its OWN shadow root and that element carries
+       the variant's background, border and min-height; a rule on the host from obs-table's sheet
+       painted a green box *around* a default-styled button, so both were visible.
+       ⚠️ `variant="agactive"` IS A NAME OF OURS, not a DS variant — obs-button reflects whatever it
+       is given onto the host (probed), so `:host([variant="agactive"])` cannot touch any other
+       button in the module. The values are `obs-tag`'s own, read from its shadow CSS. */
+    'obs-button':    ':host([variant="agactive"]) .btn{border:0;min-height:0;height:22px;' +
+      'font-size:.7rem;font-weight:500;line-height:22px;padding:0 8px;border-radius:4px;box-shadow:none;' +
+      'color:var(--secondary-green,#14b053);background:var(--secondary-green-lightest,rgba(54,213,118,.2))}'
   };
   if (!window.ShadowRoot || !('adoptedStyleSheets' in ShadowRoot.prototype)) return;
   var orig = Element.prototype.attachShadow;
@@ -4660,7 +4715,7 @@ function agOvHTML(){
   /* ⚠️ OPTION 2 SHOWS NO GRID (request, 16 Sep 2026: "remove the grid and show only which AI I integrated, show details").
      The three-row usage table — two of whose rows were em dashes — becomes ONE panel about the connected provider; the
      toolbar search went with the grid it filtered (a search box over nothing would be a dead control). See agConnHTML. */
-  const usage = o2 ? agConnHTML() : !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
+  const usage = o2 ? agGridHTML() : !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
       header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
@@ -5124,11 +5179,13 @@ function agProvPickHTML(){
 }
 function agTermsHTML(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
+  /* ⚠️ ONE LINK, NOT TWO (request, 16 Sep 2026: "you have 2 links, make it a single link and improve the text"). It carried
+     both the Terms & Conditions and the provider's privacy policy, so a single sentence asked the reader to visit two places
+     before ticking one box. The sentence now says what ticking it DOES — data leaves for this provider — and the one link
+     is the terms that govern it. It also fits on one line at 684px, which is what lets the box align to its own text. */
   return `<div class="agterms">
     <obs-checkbox id="agTerms"${d.terms ? ' checked' : ''} onchange="agCfgTerms(agDet(event))"></obs-checkbox>
-    <span>I have read and agree to the <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Terms &amp; Conditions${agIc('external-link', 12)}</obs-link>
-      and the <obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link>,
-      and allow ObserveOps to send selected observability data to ${stEsc(p.name)}.</span>
+    <span>I agree to sending selected observability data to ${stEsc(p.name)} under the <obs-link external href="https://docs.motadata.com/motadata-aiops-docs/" onclick="return false">Terms &amp; Conditions${agIc('external-link', 12)}</obs-link>.</span>
   </div>`;
 }
 function agCfgTerms(v){ AG.cfg.d[AG.cfg.pid].terms = !!v; agCfgFootPaint(); }
@@ -5244,12 +5301,36 @@ function agStepCreds(){
      the result banner.
      ⚠️ `.agtn` is NOT dead: the footer's KMS caption still uses it (as `.sp agtn`). */
 
-  return `<h2 class="agcfgh">Enter credentials</h2>
-    <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>
+  /* ⚠️ OPTION 2 SHOWS NEITHER THE HEADING NOR THE HELPER LINE (request, 16 Sep 2026: "remove this").
+     On a form of three things — pick a provider, name it, paste a key — a section heading names a
+     section that has no sibling to be told apart from, and the sentence under it restated the
+     provider already selected in the segmented control directly above.
+     ⚠️ CONSEQUENCE, STATED: with this line gone AND the footer's KMS caption removed the hour
+     before, Option 2's drawer now says NOTHING about where the key goes. Option 1 carries both. */
+  const head = AG.opt === '2' ? '' : `<h2 class="agcfgh">Enter credentials</h2>
+    <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>`;
+  /* ⚠️ OPTION 2 STATES THE ONE-AT-A-TIME RULE UNDER THE FIELDS (request, 16 Sep 2026: "show the
+     message — at a time I config a single AI provider, and when I config another the old one will be
+     removed — show as a note"). It is the rule `agCfgSave` enforces, so the form has to say it
+     BEFORE you fill it in, not afterwards in a toast.
+     ⚠️ IT NAMES THE PROVIDER IT WILL REPLACE, because that is the part that costs you something —
+     a generic sentence would not tell you which key you are about to lose. Re-configuring the
+     provider that is already active replaces nothing, so it gets the plain rule instead.
+     ⚠️ `obs-banner variant="info"` IS THE DS's OWN INLINE HINT (its `usageRules.info`), and its
+     `title` carries the lead-in with the detail in the slot — the component's own `do` rule, which
+     the consent banner's note records being got wrong once already. */
+  const other = AG.active && AG.conn && AG.conn !== p.id ? agProv(AG.conn) : null;
+  const onlyOne = AG.opt !== '2' ? '' : `<obs-banner class="agnote" variant="info" title="One provider at a time">${
+    other
+      ? `Saving this connection replaces <b>${stEsc(other.name)}</b> — its connection is removed and its key is not kept.`
+      : `Only one AI provider is connected at a time. Configuring another later replaces this one.`
+  }</obs-banner>`;
+  return `${head}
     <div class="agrow2">
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
     </div>
+    ${onlyOne}
     ${AG.opt === '2' ? '' : adv}`;
 }
 /* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
@@ -5390,9 +5471,12 @@ function agFlowFootHTML(){
     /* ⚠️ OPTION 2 GATES ON THE TEST ALONE and does not say "Accept": the consent terms are not on its form, so requiring
        them would disable the button for every unseeded provider with nothing on screen to tick, and "Accept" would name
        terms nobody was shown */
+    /* ⚠️ NO GLYPH, AND IT READS "Save" (request, 16 Sep 2026). The shield said "this is about security", which is
+       the terms line's job two rows up; and "Enable AI" named a capability while the button's actual effect is to
+       store this provider's connection — which is what the Overview then shows. Option 1's own primary is untouched. */
     : AG.opt === '2'
     ? `<obs-button variant="primary"${dis(d.test === 'ok' && d.terms)}
-         onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Enable AI</obs-button>`
+         onclick="agTap(agCfgDone)">Save</obs-button>`
     : `<obs-button variant="primary"${dis(d.test === 'ok' && d.consent.every(Boolean))}
          onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>`;
   /* ⚠️ THE KMS CAPTION IS THE CREDENTIALS STEP'S, NOT THE FLOW'S. It rendered on all four
@@ -5400,7 +5484,12 @@ function agFlowFootHTML(){
      "Setup completed successfully" — a sentence about a field two steps back, on a screen with no
      field on it. The empty `.sp` stays because `.agff .sp{margin-right:auto}` is what pushes
      Back/Continue to the right edge; drop the span and the buttons slide to the left. */
-  const note = d.step === 0
+  /* ⚠️ OPTION 2 SHOWS NO KMS CAPTION (request, 16 Sep 2026: "remove the text"). Its form already says where the key
+     goes — "Your key is encrypted server-side and never shown again in full" sits under the Enter credentials heading —
+     so the footer was repeating it under a button. Option 1 keeps the caption; its form has no such line.
+     ⚠️ THE EMPTY `.sp` SPAN STAYS EITHER WAY: `.agff .sp{margin-right:auto}` is what pushes the buttons to the right
+     edge, and dropping the span slides them back to the middle of the footer. */
+  const note = d.step === 0 && AG.opt !== '2'
     ? `<span class="sp agtn">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>`
     : `<span class="sp"></span>`;
   /* ⚠️ THE TEST BUTTON IS IN THE FOOTER TOO (request, 2 Sep 2026: "add test button after
@@ -5436,7 +5525,20 @@ function agCfgFootPaint(){
 }
 
 /* the one place the flattened form advances: to the completion screen */
-function agCfgDone(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = 3; agCfgPaint(); }
+/* ⚠️ OPTION 2's SAVE COMMITS AND CLOSES — IT NEVER OPENS THE DONE STEP (request, 16 Sep 2026:
+   "when I click Save, remove [the Setup completed page] — show the main grid screen").
+   The done step is a wizard ending: it recaps Provider / Default model / Connection status /
+   Terms, then asks you to press "Start using AI features" to actually commit. On a three-field
+   form whose own button already says Save, that is a second commit for one decision, and every
+   fact it recaps is on the grid it hands you back to. So Save goes straight through `agCfgSave`,
+   which is the function that was doing the real work all along.
+   ⚠️ OPTION 1 STILL STEPS TO IT. Its form carries model routing and four consent terms, so a
+   recap before committing is worth the extra press — and the step is where its own primary
+   ("Accept & enable AI") has always led. `agStepDone` is NOT unreferenced. */
+function agCfgDone(){
+  if (AG.opt === '2') return agCfgSave();
+  const d = AG.cfg.d[AG.cfg.pid]; d.step = 3; agCfgPaint();
+}
 function agCfgNext(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.min(3, d.step + 1); agCfgPaint(); }
 function agCfgBack(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.max(0, d.step - 1); agCfgPaint(); }
 /* obs-steps `clickable` leaves future steps inert; this guards the same rule again */
@@ -5535,8 +5637,23 @@ function agCfgTest(){
 function agCfgSave(){
   const p = agProv(AG.cfg.pid);
   if (!AG.cfg.d[p.id].key.trim()) return toast('Enter an API key for ' + p.name + ' first');
+  /* ⚠️ SWITCHING PROVIDER REMOVES THE OLD CONNECTION (request, 16 Sep 2026: "at a time I use a
+     single provider — when I switch to another the old AI provider will be removed"). Only one is
+     active at a time, so the one being replaced is wiped back to an unconfigured draft: its name,
+     key, terms and test result go, which is what makes its grid row a Config button rather than a
+     provider that merely lost a badge while quietly keeping your key.
+     ⚠️ IT RUNS BEFORE `AG.conn` MOVES, or it would clear the provider just connected. */
+  if (AG.active && AG.conn && AG.conn !== p.id){
+    const old = AG.cfg.d[AG.conn];
+    if (old) Object.assign(old, { name:'', key:'', terms:false, test:'idle', stage:0, step:0 });
+  }
   AG.active = true; AG.conn = p.id; AG.cfg.run++;
-  stFullClose();
+  /* ⚠️ `agCfgClose`, NOT `stFullClose` — and that was a live bug, not a tidy-up. This screen was a
+     full page until 2 Sep 2026 and has been a drawer ever since; `stFullClose` returns early unless
+     `ST.full` is set, so on BOTH options pressing the final button committed the connection and left
+     the drawer standing open over the page it had just changed. `agCfgClose` drops the panel, its
+     scrim and the body class, and repaints the Overview so the grid shows the new state. */
+  agCfgClose();
   toast(p.name + ' connected — AI features are live');
 }
 
@@ -5554,6 +5671,72 @@ function agCfgSave(){
    records Option 1 reads, so the two options cannot disagree.
    ⚠️ NOTHING CONNECTED → A PLAIN LINE, not an empty panel of dashes: usage for a connection that does not exist would
    be an invention (the rule the Overview has always followed). */
+/* ⚠️ OPTION 2's OVERVIEW IS A TWO-COLUMN GRID (request, 16 Sep 2026: "remove [the connection panel]
+   and show the grid — 2 columns: 1. AI provider  2. Status (up/down)").
+   ⚠️ THIS REVERSES THE 16 Sep "remove the grid and show only which AI I integrated" — the SAME DAY,
+   and deliberately. What comes back is not what went: that grid was six columns of usage figures on
+   three rows, two of them em dashes; this is the two the request names. Do not restore the six-column
+   one on the strength of the older note, and do not restore the panel on the strength of this one.
+   ⚠️ `agConnHTML` (the panel) IS KEPT AND UNREFERENCED, the house pattern — one call away.
+   `agUseWidgetsHTML` is NOT unreferenced: Option 1's expanded row still draws the same three charts.
+   ⚠️ "DOWN" HERE MEANS NOT CONNECTED, and that is a reading of the request, not the product's own
+   word for it — only one provider is active at a time, so the other two are unconfigured rather than
+   unreachable. `up` / `down` are what was asked for and they are real keys in the DS status map
+   (`up:tag-green`, `down:tag-red`, read out of the bundle); a third "Not configured" state would be
+   more honest and is one entry in `agGridRows` away. Say so rather than let it be discovered.
+   ⚠️ NO SEARCH BOX. It went with the six-column grid and was not asked back; three rows do not
+   need one, and the toolbar's own note records that a search over nothing is a dead control. */
+/* ⚠️ ONE PROVIDER IS ACTIVE AT A TIME, SO THE COLUMN CARRIES TWO DIFFERENT THINGS (request,
+   16 Sep 2026: "the status column will be convert — at a time I use a single provider … the column
+   will show the active status and another show a Config button"). The connected provider gets an
+   **Active** tag; the other two get a **Config** button that opens the drawer on themselves.
+   ⚠️ THIS REPLACES Up / Down, the morning's own reading, and it is a better one: nothing was ever
+   *down* — the other two are simply not configured, which is what the earlier note flagged as the
+   honest third state. The button says so and gives you the way to change it in the same cell.
+   ⚠️ IT TAKES TWO COLUMNS BECAUSE A CELL HAS ONE TYPE. `obs-table`'s cell types are
+   heat / bar / severity / dot / status / type / tags / sparkline / switch / icon / link / button —
+   there is no `html`, so one column cannot be a tag on one row and a button on the next. The action
+   column carries no title, which is the product's own idiom for a trailing per-row control (the
+   License grid's History button does exactly this), so the two read as one region.
+   ⚠️ `tags`, NOT `status`, FOR THE TAG — measured, not assumed: an empty `status` cell still paints
+   a blank grey chip, while `tags` with `[]` renders nothing at all. An empty `button` cell paints a
+   16×24 empty button, which is why the sheet the corner-radius hook already adopts into obs-table
+   hides it (`.cell-btn:empty`); Chrome's `:empty` does match it (probed — its two child nodes are
+   empty text/comment anchors). */
+const AG_GRID_COLS = [
+  { key:'provider', title:'AI provider', width:'70%' },
+  /* ⚠️ THE COLUMN IS CALLED "Connection" (the name was left to me, 16 Sep 2026). It is not a
+     Status column any more: one cell says which provider IS the connection and the other two offer
+     to make one, so a word that covers both beats "Status" over a row of buttons. "Action" would
+     name only half of it. */
+  { key:'conn',     title:'Connection',  type:'button', width:'30%' },
+];
+const agGridRows = () => AG_DATA.providers.map(p => {
+  const on = AG.active && p.id === AG.conn;
+  return {
+    id: p.id,
+    provider: p.name,
+    conn: on ? { label:'Active', variant:'agactive' } : { label:'Configure', variant:'default' },
+  };
+});
+function agGridHTML(){
+  return `<obs-table id="agGrid" row-key="id" header-style="tinted" empty-text="No records available"
+    columns="${agJ(AG_GRID_COLS)}" rows="${agJ(agGridRows())}"></obs-table>`;
+}
+/* ⚠️ `cellaction` IS A CUSTOM EVENT NAME, so an inline `oncellaction=` is inert markup — it has to
+   be bound with addEventListener, from the page's `after` hook, on every repaint (the table is
+   rebuilt each time). The same contract the License grid's History button uses. */
+function agGridBind(){
+  const tb = document.getElementById('agGrid');
+  if (!tb) return;
+  tb.addEventListener('cellaction', e => {
+    const d = (e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail);
+    /* the Active cell is inert (pointer-events:none), so this cannot fire on it — the guard is
+       belt and braces, because a keyboard could still reach a <button> element */
+    if (d && d.key === 'conn' && d.id && d.id !== AG.conn) agConfig(d.id);
+  });
+}
+
 function agConnHTML(){
   const p = AG.active ? agProv(AG.conn) : null;
   if (!p) return `<div class="agpanel agcon agcon0">No AI provider is connected yet. Use <b>Configure AI provider</b> to connect one — only one is active at a time.</div>`;
@@ -5588,6 +5771,7 @@ agSeed();   /* see the note at `agSeed` — it must run after AG_TASKS is initia
    ⚠️ obs-radio compares values strictly and honours the value PROPERTY only as a string — set it after render
    (the recorded licRadioSync lesson), or the selected segment does not show. */
 function agOvAfter(){
+  agGridBind();   /* Option 2's grid; a no-op on Option 1, which renders no #agGrid */
   const op = document.getElementById('agOpt');
   if (!op) return;
   op.addEventListener('change', e => {
