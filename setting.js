@@ -3156,7 +3156,9 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
     'obs-table':     '.ppage,.psize{border-radius:4px}' +
       /* the host only has to stop behaving like a button; the PAINT is on the inner <button>,
          in obs-button's own sheet below — see the note there */
-      '.cell-btn[variant="agactive"]{pointer-events:none;cursor:default}',
+      '.cell-btn[variant="agactive"]{pointer-events:none;cursor:default}' +
+      /* the Agentic AI grid's header rule — see agGridHTML for why it is the only table scoped */
+      ':host(.aggridt) thead th{border-top:1px solid var(--border-color,#e3e8f2)}',
     /* ⚠️ THIS IS THE AGENTIC AI GRID'S ACTIVE CELL, NOT A RADIUS, AND IT IS A STATED COMPROMISE.
        Its Connection column has to show a STATUS on one row and a BUTTON on the others, and an
        `obs-table` column has exactly one cell type — there is no `html` type (the full list is
@@ -5746,8 +5748,16 @@ const agGridRows = () => AG_DATA.providers.map(p => {
     conn: on ? { label:'Active', variant:'agactive' } : { label:'Configure', variant:'default' },
   };
 });
+/* ⚠️ `header-style="default"`, NOT `tinted` (request, 16 Sep 2026: "remove the background colour and
+   show top and bottom border", with the product's own monitor grid as the reference). The DS's default
+   header IS that treatment — `.grid.hs-default th` is `background:transparent` with a `border-bottom`,
+   and uppercase 600 labels, which is what the reference shows too. Only the TOP rule had to be added,
+   in the sheet the corner-radius hook adopts into obs-table, scoped by the host class below.
+   ⚠️ THE CLASS IS WHAT KEEPS IT OFF EVERY OTHER TABLE. That adopted sheet is shared by every
+   `obs-table` in the module — the License page's quota grid and its nested breakdown included — so the
+   rule is `:host(.aggridt)`, not a bare `th`. */
 function agGridHTML(){
-  return `<obs-table id="agGrid" row-key="id" header-style="tinted" empty-text="No records available"
+  return `<obs-table id="agGrid" class="aggridt" row-key="id" header-style="default" empty-text="No records available"
     columns="${agJ(AG_GRID_COLS)}" rows="${agJ(agGridRows())}"></obs-table>`;
 }
 /* ⚠️ `cellaction` IS A CUSTOM EVENT NAME, so an inline `oncellaction=` is inert markup — it has to

@@ -7923,6 +7923,18 @@ same cell.
 - ⚠️ **`variant="agactive"` IS A NAME OF OURS**, not a DS variant — obs-button reflects whatever it is given
   onto the host (probed), so the selector cannot reach any other button in the module.
 - ⚠️ **The button reads `Configure`, not `Config`** (request, same day).
+- ⚠️ **THE HEADER HAS NO FILL — it is `header-style="default"` with a top rule added** (request, same day:
+  *"remove the background colour and show top and bottom border"*, with the product's own monitor grid as
+  the reference). The DS's default header **is** that treatment: `.grid.hs-default th` is
+  `background:transparent` with a `border-bottom`, in uppercase 600 — which is what the reference shows
+  too. Only the TOP rule was added, in the sheet the corner-radius hook adopts into `obs-table`.
+  ⚠️ **IT IS SCOPED BY A HOST CLASS (`:host(.aggridt)`), NOT A BARE `th`** — that sheet is shared by every
+  `obs-table` in the module, the License quota grid and its nested breakdown included.
+  ⚠️ **`hs-tinted` ONLY EVER PAINTS ON A STICKY TABLE**: the bundle's single rule is
+  `.box.sticky .grid.hs-tinted thead th`, and this grid's box is not sticky (probed). So the tint it used
+  to ask for was never the DS's — worth knowing before "restoring" it.
+  ⚠️ **`header-style` IS REFLECTED EVEN WHEN UNSET** — `#licTable` sets none in markup and its host still
+  reads `default`, which cost three tries at one probe assertion.
 - ⚠️ **AN EMPTY CELL IS NOT BLANK, measured before the column was merged**: an empty `status` cell still
   paints a blank grey chip and an empty `button` cell paints a **16×24 empty button** (Chrome's `:empty`
   does match it — its two child nodes are empty text anchors). `tags` with `[]` is the only one of the three
