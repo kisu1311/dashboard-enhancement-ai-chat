@@ -7947,13 +7947,29 @@ Option 2 only.
   connection is removed and its key is not kept."* A generic sentence would not tell you which key you are
   about to lose. Re-configuring the provider that is **already** active replaces nothing, so that case gets
   the plain rule instead and names nobody.
+- ⚠️ **IT IS BELOW THE TERMS LINE, NOT UNDER THE FIELDS** (request, same day: *"swap this"*). The form now
+  reads: what you are connecting → what you agree to → what it costs you. That is also why the note has its
+  own builder rather than living inside `agStepCreds`: the form's ORDER belongs in `agCfgFormHTML`'s one
+  line, not in two places.
+- ⚠️ **THE SAME NOTE STANDS ON THE OVERVIEW** (request, same day: *"this message will be show by default
+  [on] the main screen"*), between the toolbar and the grid — the rule is a property of the screen, and it
+  is the sentence that explains why two of the three rows only offer a button. **One builder, three
+  sentences** (`agOneNoteHTML(where)`): on the form it names the provider you are about to lose, on the
+  overview the one you already have, and with nothing connected both fall back to the plain rule — a second
+  copy on the page would be where the two disagree.
+- ⚠️ **`.agpage > .agnote` NEEDS ITS OWN 16px.** It is a direct child of `.agpage`, which has no gap of its
+  own, so it sat flush against the toolbar (measured 0px); the table's own `margin-top:16px` is the step it
+  now matches. Inside the drawer the same banner is spaced by `.agfbody > *`, so the rule is page-scoped.
 - ⚠️ The rule it states is the one `agCfgSave` enforces, which is why it belongs on the form rather than in a
   toast afterwards. `title` carries the lead-in and the detail goes in the slot — obs-banner's own `do` rule.
 - ⚠️ **`const note` WAS ALREADY TAKEN** in `agStepCreds` (the test panel's) — `node --check` named it in a
   second. The collision trap this file opens with, in a four-line function.
-- Verified by a **14-assertion** probe: the chip is one box at 22px with no border, inside its row and still
-  green; both other rows read *Configure*; the banner renders under the fields and above the terms, spans the
-  form, names OpenAI when another provider is active, and states the plain rule when it is not.
+- Verified by a **17-assertion** probe: the chip is one box at 22px with no border, inside its row and still
+  green; both other rows read *Configure*; the banner renders **below** the terms line and above the test
+  output, spans the form, names OpenAI when another provider is active, and states the plain rule when it is
+  not — plus an **11-assertion** probe for the overview copy (between the toolbar and the grid, painted and
+  spaced 16px from both, full width, naming the connected provider, the nothing-connected sentence, and
+  Option 1 growing no note at all).
 
 - Verified by a **19-assertion** probe driven through the real buttons: two columns, OpenAI *Active* painted
   green and inert with the others offering *Configure* in the same column on one left edge, no *Up* / *Down*

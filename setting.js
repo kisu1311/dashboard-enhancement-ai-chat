@@ -1699,6 +1699,11 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    \`@padding-md\` on the DS structural scale — the toolbar and its table are one unit in the
    \`list-view\` recipe, so this is a gap, not the 24px section break the heading used to draw. */
 .agpage obs-table{display:block;margin-top:16px}
+/* ⚠️ THE OVERVIEW'S "One provider at a time" NOTE TAKES THE SAME 16px the table takes, so the
+   toolbar → note → grid column runs on one step. It is a direct child of \`.agpage\`, which has no
+   gap of its own — without this it sat flush against the toolbar (measured 0px). Inside the drawer
+   the same banner is spaced by \`.agfbody > *\`, so this rule is scoped to the page. */
+.agpage > .agnote{display:block;margin-top:16px}
 
 
 
@@ -4719,7 +4724,7 @@ function agOvHTML(){
       header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
-  return `<div class="agpage" id="agPage" data-agopt="${AG.opt}">${head}${toolbar}${usage}</div>`;
+  return `<div class="agpage" id="agPage" data-agopt="${AG.opt}">${head}${toolbar}${agOneNoteHTML('overview')}${usage}</div>`;
 }
 
 
@@ -5138,7 +5143,7 @@ function agCfgFormHTML(){
      data sharing terms"). The provider keeps its default model (d.model, the first listed), and the footer's gate drops
      the consent half it can no longer show — see agFlowFootHTML. */
   const body = d.step > 2 ? agStepDone()
-             : AG.opt === '2' ? agProvPickHTML() + agStepCreds() + agTermsHTML() + agTestHTML()
+             : AG.opt === '2' ? agProvPickHTML() + agStepCreds() + agTermsHTML() + agOneNoteHTML() + agTestHTML()
              : agStepCreds() + agStepModels() + agStepConsent() + agTestHTML();
   /* ⚠️ `size` IS THE DEFAULT 32px, NOT `small` (annotation ×3, 1 Sep 2026: "improve this" on
      each of the three steps). It shipped as `size="small"`, and the registry's own `size`
@@ -5177,6 +5182,35 @@ function agProvPickHTML(){
   return `<div class="agfprov"><span class="agflb">AI provider</span>
     <obs-radio id="agCfgProv" as-button options="${agJ(opts)}" value="${stEsc(AG.cfg.pid)}"></obs-radio></div>`;
 }
+/* ⚠️ IT IS A SIBLING OF THE TERMS LINE, NOT PART OF THE FIELDS, WHICH IS WHY IT HAS ITS OWN
+   BUILDER. It began inside `agStepCreds` directly under the two inputs and was swapped below the
+   terms on request (16 Sep 2026) — the order now reads: what you are connecting, what you agree
+   to, then what it costs you. Keeping it in `agStepCreds` would have meant the form's ORDER was
+   decided in two places; `agCfgFormHTML`'s one line is where every other block's position lives. */
+/* ⚠️ THE SAME NOTE STANDS ON THE OVERVIEW TOO (request, 16 Sep 2026: "this message will be show by
+   default [on] the main screen"), which is why it takes `where`. The rule is a property of the SCREEN,
+   not of the form — the grid below it shows three providers and one Active chip, and this is the
+   sentence that explains why the other two are only offering a button.
+   ⚠️ ONE BUILDER, THREE SENTENCES, SO THEY CANNOT DRIFT: on the form it names the provider you are
+   about to lose; on the overview it names the one you already have; with nothing connected both fall
+   back to the plain rule. A second copy on the page would be the place they disagree. */
+function agOneNoteHTML(where){
+  if (AG.opt !== '2') return '';
+  const conn = AG.active && AG.conn ? agProv(AG.conn) : null;
+  let body;
+  if (where === 'overview'){
+    body = conn
+      ? `<b>${stEsc(conn.name)}</b> is the connected provider. Configuring another replaces it — its connection is removed and its key is not kept.`
+      : `Only one AI provider is connected at a time. Configure one to enable AI features.`;
+  } else {
+    const other = conn && conn.id !== AG.cfg.pid ? conn : null;
+    body = other
+      ? `Saving this connection replaces <b>${stEsc(other.name)}</b> — its connection is removed and its key is not kept.`
+      : `Only one AI provider is connected at a time. Configuring another later replaces this one.`;
+  }
+  return `<obs-banner class="agnote" variant="info" title="One provider at a time">${body}</obs-banner>`;
+}
+
 function agTermsHTML(){
   const p = agProv(AG.cfg.pid), d = AG.cfg.d[p.id];
   /* ⚠️ ONE LINK, NOT TWO (request, 16 Sep 2026: "you have 2 links, make it a single link and improve the text"). It carried
@@ -5319,18 +5353,11 @@ function agStepCreds(){
      ⚠️ `obs-banner variant="info"` IS THE DS's OWN INLINE HINT (its `usageRules.info`), and its
      `title` carries the lead-in with the detail in the slot — the component's own `do` rule, which
      the consent banner's note records being got wrong once already. */
-  const other = AG.active && AG.conn && AG.conn !== p.id ? agProv(AG.conn) : null;
-  const onlyOne = AG.opt !== '2' ? '' : `<obs-banner class="agnote" variant="info" title="One provider at a time">${
-    other
-      ? `Saving this connection replaces <b>${stEsc(other.name)}</b> — its connection is removed and its key is not kept.`
-      : `Only one AI provider is connected at a time. Configuring another later replaces this one.`
-  }</obs-banner>`;
   return `${head}
     <div class="agrow2">
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
     </div>
-    ${onlyOne}
     ${AG.opt === '2' ? '' : adv}`;
 }
 /* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
