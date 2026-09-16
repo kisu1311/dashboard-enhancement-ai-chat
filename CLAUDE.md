@@ -7964,8 +7964,10 @@ Option 2 only.
   own builder rather than living inside `agStepCreds`: the form's ORDER belongs in `agCfgFormHTML`'s one
   line, not in two places.
 - ⚠️ **THE SAME NOTE STANDS ON THE OVERVIEW** (request, same day: *"this message will be show by default
-  [on] the main screen"*), between the toolbar and the grid — the rule is a property of the screen, and it
-  is the sentence that explains why two of the three rows only offer a button. **One builder, three
+  [on] the main screen"*) — **under the grid** since a follow-up the same day (*"swap in grid and note"*),
+  so it reads as a footnote to the table rather than a preamble to it, which is the order the drawer
+  settled on too: the thing itself first, then the rule that governs it. It is the sentence that explains
+  why two of the three rows only offer a button. **One builder, three
   sentences** (`agOneNoteHTML(where)`): on the form it names the provider you are about to lose, on the
   overview the one you already have, and with nothing connected both fall back to the plain rule — a second
   copy on the page would be where the two disagree.
@@ -7988,6 +7990,61 @@ Option 2 only.
   text anywhere, DeepSeek's Configure opening the drawer on DeepSeek, Save closing it, the old provider's
   name / key / terms / test all cleared, the Active chip moving to DeepSeek with OpenAI now offering
   Configure, exactly one Active row throughout, and re-opening OpenAI showing an empty form.
+
+#### Option 3 — a copy of Option 1, and it cost one line (16 Sep 2026)
+
+Request: *"in agentic AI the option 1 copy and create option3"*. `AG_OPTS` gained a third entry and
+**nothing else changed**.
+
+- **It is a copy by construction, like Option 2.** Every branch in the block asks `AG.opt === '2'` or
+  `!== '2'`, so a third option falls into Option 1's path automatically: the same overview table with its
+  search, the same drawer with its provider rail and help card, the same KMS caption, the same
+  *Accept & enable AI* and the same done step. Nothing is duplicated, so the two cannot drift until
+  something is asked for — and that ask is an `AG.opt === '3'` branch at the part that changes.
+- ⚠️ **AN `=== '1'` TEST WOULD HAVE BROKEN IT, and there is none** — every branch was checked *before*
+  adding the option rather than after. A test written as *"is it Option 1"* rather than *"is it not
+  Option 2"* would drop Option 3 into neither path, silently. Keep that shape if a fourth is added.
+- ⚠️ **No CSS keys off `data-agopt`** either (only the note describing it), so the new value needed no
+  stylesheet change; the root now carries `1|2|3`.
+- Verified by a **14-assertion** probe built on a structural fingerprint of the page and of the drawer —
+  which parts exist, not their pixel values — asserting Option 3's fingerprint is Option 1's with only the
+  option number differing, plus the switcher listing three and Option 1 still being the default.
+
+#### Option 3 drops the table and shows provider cards (16 Sep 2026)
+
+Two requests, minutes apart: *"remove the grid"*, then *"add [a supplied card row] using the ObserveOps
+design system"*. Option 3 is now **header → toolbar → three provider cards**.
+
+| part | what |
+|---|---|
+| card | tinted 40px icon tile · status pill · name · tagline · action + a docs button |
+| status | **Active** (`tag-green`, with the reference's leading dot) on the connected provider, **Available** on the others |
+| action | **Manage** on the active one, **⟳ Switch** on the others — both open the drawer on their own provider |
+
+- ⚠️ **THE SEARCH WENT WITH THE TABLE**, exactly as it did when Option 2 dropped its grid: that box filters
+  the table and nothing else, so over a page with no table it is a control that cannot do anything. Stated
+  rather than assumed — the request said "remove the grid", and this is the neighbouring control it kills.
+- ⚠️ **THE CARD IS NOT A DS COMPONENT, AND THAT WAS CHECKED**: the shipped bundle registers **52** `obs-*`
+  elements and none is a card (`obs-layout-panels` is a layout region, not a surface). So the container is
+  this module's own `.agpanel` idiom — `--common-widget-bg` on `--border-color` at `--btn-radius` — and
+  everything inside it is a real DS part (`obs-icon`, `obs-tag`, `obs-button`).
+- ⚠️ **TILE COLOURS ARE CHART-PALETTE TOKENS, never a vendor's brand hue** — `resolve_logo` answers "do NOT
+  hand-draw a brand mark", and painting a tile in a provider's colour is the same rule.
+- ⚠️ **A `var()` ON A TOKEN THAT DOES NOT EXIST FAILS SILENTLY, and it shipped for one build.** The tile
+  read `--chart-emerald`; the real token is **`--chart-emerald-green`**. The colour fell back to inherit and
+  the whole `color-mix()` was dropped, so OpenAI's tile rendered untinted with no error — and **a grep for
+  the short name matched the long one**, so the check that was supposed to catch it confirmed the bug. The
+  probe's "three distinct tones" passed too, because an unstyled element still computes a distinct colour.
+  **The screenshot was the only thing that showed it.** There is now an assertion that each tile actually
+  paints, not merely that the three differ.
+- ⚠️ **`auto-fit` + `minmax(300px,1fr)`, not three fixed columns** — at 1280 the pane is ~920px and three
+  fit; narrower, they wrap rather than being squeezed. **`margin-top:auto` on the action row** is what puts
+  all three buttons on one line despite taglines of different lengths (probed).
+- Verified by a **19-assertion** probe: three cards naming the providers with their taglines, Active green
+  with its dot and Available neutral, Manage / Switch / Switch with the refresh glyph only on Switch, a
+  docs button with an accessible name on each, three real `obs-icon`s in three tones that genuinely paint,
+  no colour literal in the markup, one row of equal cards with their action rows on one line, no table and
+  no search — plus Switch opening the drawer on its own provider and Option 1 keeping its table.
 
 #### Save commits and closes; the done step is Option 1's only (16 Sep 2026)
 
@@ -8016,6 +8073,445 @@ main grid screen before."* `agCfgDone` returns `agCfgSave()` on Option 2 instead
   grid probe (two columns titled *AI provider* / *Status*, three rows naming the providers, *Up* green on the connected
   one and *Down* red on the other two, no panel, no charts, no search, not expandable — and Option 1 still carrying its
   six-column table, its search box and its expand chevron). Both **ALL PASS** · dark and light screenshots.
+
+### Option 3 — the providers' real marks, a barer drawer, and the product's own rail (16 Sep 2026)
+
+Five requests in a row, all Option 3. **Options 1 and 2 are untouched and Option 1 is still the default**; there is a
+probe assertion for each of the three drawer removals that Option 1 still has it.
+
+| request | what changed |
+|---|---|
+| *"the 3 card change the name 'manage' — when I don't configure any provider show 'configure', and when I configure show 'change API key'"* | the card button is `set ? 'Change API key' : 'Configure'`. The two labels name **what pressing it does**: the form offers nothing else to a provider that already has a key, so it says that rather than the vaguer *Manage* |
+| *"use provider real icon"* (Google image results for the three logos) | `AG_BRAND` — the three marks pasted verbatim from `free-icons/`: **Tabler** `brand/brand-openai`, **Hugeicons** `claude` and `deepseek`. Both sets MIT, so nothing needs visible attribution |
+| *"remove the help card"* + *"remove the advance setting and Model selection"* | Option 3's drawer is **rail + credentials + consent** — `agCfgHTML` skips `agHelpHTML()`, `agStepCreds` skips `adv`, and `agCfgFormHTML` gains an `AG.opt === '3'` branch that drops `agStepModels()` |
+| *"the ai provider selection option will be improve like"* APM › Application Registration | the rail is **titled** and re-shaped — `.agcfgnav` + an `obs-side-menu` entry in the shadow-sheet map |
+| *"the icon colour use #8e9fbc and the icon background is color-mix(in srgb, var(--page-text-color) 8%, transparent)"* | one **neutral** tile for all three; `AG_CARD_TONE` is kept and unreferenced |
+
+- ⚠️ **TWO ICON SETS IN ONE ROW, DELIBERATELY.** The repo rule is one set per prototype, and its stated reason is that
+  mixed **stroke weights** read as a bug. A brand mark's shape is decided by the brand, not by the set, and **no single
+  set carries all three** — so the weights are normalised instead: Tabler draws at 2 on a 24 grid and Hugeicons at 1.5,
+  which at 20px is 1.67px against 1.25px on screen. One `.agpci svg` rule gives all three 1.33px.
+  ⚠️ It has to reach `g` and `path` too — Hugeicons' DeepSeek carries `stroke-width` on its `<g>` as a **presentation
+  attribute**, which a rule on the `<svg>` root alone does not override.
+  ⚠️ Tabler's first path is its invisible 24×24 bounding box (`stroke:none;fill:none`) and is **dropped**, or the stroke
+  rules would paint a square frame round the mark.
+- ⚠️ **ANTHROPIC'S ENTRY IS THE CLAUDE MARK.** No set in the library carries an Anthropic corporate logo (all six
+  searched), and `resolve_logo` answers *"do NOT hand-draw a brand mark"*. The card's own tagline already reads
+  *"Claude family"*, so the glyph names what the provider gives you.
+- ⚠️ **THE DS LOGO LIBRARY HAS `docker` AND `kubernetes` — WHICH IS EXACTLY WHAT THE REFERENCE RAIL SHOWS — BUT NO AI
+  PROVIDER.** Read out of `_ds/`: `obs-logo` resolves `LOGOS` / `LINE_LOGOS` / `LOGO_ALIASES`, with a
+  `globalThis.__OBS_LOGOS__` runtime extension point and an `obs-logos-loaded` event. So the live rail's Docker and
+  Kubernetes marks are `obs-logo`, and ours cannot be.
+- ⚠️ **UNDOCUMENTED: `obs-side-menu` ITEMS TAKE A `logo` FIELD**, and it branches — a string matching
+  `/^(data:|https?:|\/|\.)/` renders `<img class="r-logo" src=…>` (20×20, `object-fit:contain`), anything else renders
+  `<obs-logo name=… size=20>`. Not in the registry and not in `search_components`; worth reporting upstream.
+  ⚠️ **THE RAIL STILL CARRIES THE PRODUCT GLYPHS, NOT THE BRAND MARKS, AND THAT IS A STATED TRADE-OFF.** The `logo`
+  branch would take a `data:` URI, but an `<img>` is an isolated document — `currentColor` inside it cannot reach the
+  row's colour, so the mark would have to bake a hex, and `--neutral-light` is `#8e9fbc` in dark against `#6a7fa0` in
+  light. One of the two themes would be wrong. Say so rather than let the rail and the cards disagree silently.
+- ⚠️ **THE RAIL'S NUMBERS WERE MEASURED OFF THE SUPPLIED SCREENSHOT, NOT THE LIVE DOM**, and that is worth saying
+  plainly: the live instance answers **200**, but its SPA **does not mount under browser automation** —
+  `document.body.textContent` came back **length 0** twice, which is this file's own recorded trap, made worse by an MCP
+  tab reporting `visibilityState:"hidden"` so its boot timers starve. Two attempts is the limit; fall back and label it.
+- ⚠️ **THE TITLE GOES IN `obs-side-menu`'s OWN `logo` SLOT**, which already held `.agcfgsp` (the drawer's 24px gutter),
+  so it costs no new element and sits above `.rows` — the one thing that scrolls.
+  ⚠️ `#drawer-agcfg .agcfgsp{height:24px}` is a **fixed** height, so a title inside it would be clipped and paint over
+  the first row. `:has(.agcfgnt)` swaps the height for padding and leaves Option 1's empty spacer at exactly 24px.
+  ⚠️ **IT NAMES THE CHOICE, NOT THE SCREEN.** The reference titles its column *Application Registration* because that
+  rail **is** the page; this one sits in a drawer whose header already reads *Configure AI provider*, so repeating it
+  would say the same thing twice 40px apart.
+- ⚠️ **`padding-left` IS NOT SET ON THE ROWS.** The component writes it **inline** per row from its own `q()` (28px for a
+  `categories` leaf) and an inline style beats any rule — that indent is its depth model, so only the vertical and
+  right padding are ours.
+  ⚠️ `.r-ic` is hardcoded to `--neutral-light`, so the selected row's glyph stayed dim while its label brightened — two
+  halves of one row disagreeing about being selected. `:host(.agcfgnav) .row.leaf.active .r-ic{color:inherit}`.
+- ⚠️ **`--neutral-light`, NOT THE PASTED `#8e9fbc`.** That is the token's exact dark value, and it carries `#6a7fa0` into
+  light where `#8e9fbc` would be **1.9:1** on a white card. The background is the expression as given, which is already
+  a token. ⚠️ **CONSEQUENCE, STATED:** colour no longer tells the three cards apart — the **mark** does, which is what
+  the real logos were for; a coloured tile behind a brand logo was also asserting a brand colour that is not the brand's.
+- ⚠️ **CONSEQUENCES OF THE THREE REMOVALS, STATED:** Option 3 keeps `d.model` (the first model listed) and per-task
+  routing stays off, so `agStepDone`'s **Per-task routing** row would have named a switch that is no longer on its form
+  — it is filtered to Option 1. The five Advanced fields keep their defaults. And **the form column is now much wider
+  than the 720px form it holds**, because `agCfgSize` still sizes the drawer to the viewport minus the sidebar: the
+  footer's rule runs to the drawer's edge while the fields stop at 720. Narrowing the drawer for Option 3 (rail 230 +
+  form 720 + gutters ≈ 1010px, the move Option 2 made at 684) is one line in `agCfgSize` — **not done, not asked for**.
+
+#### Two more, and both were asked for as "option 4" (16 Sep 2026)
+
+⚠️ **AGENTIC AI HAS THREE OPTIONS; THE LICENSE PAGE IS THE ONE WITH AN OPTION 4.** Both requests below name
+"option 4" and both screenshots are unmistakably **Option 3's** — the provider cards and the consent step.
+Read the picture, not the number, and say which you acted on.
+
+| request | what changed |
+|---|---|
+| *"'change API key' is a secondary button and 'configure' is a primary button, and the primary button colour is cad3e2"* | the card's `variant` follows its label — `set ? 'default' : 'primary'` |
+| *"remove all the checkbox with text, show only a single checkbox and 'I agree to sending selected observability data to OpenAI under the Terms & Conditions.'"* | Option 3's consent step confirms with **`agTermsHTML()`** — the same one line Option 2 uses — in place of *Confirm to continue*, its live count and its four boxes |
+
+- ⚠️ **#cad3e2 IS NOT PASTED — it is what `--primary-button-bg` ALREADY RESOLVES TO HERE.** The scoped DS
+  block sets `--primary-button-bg:var(--primary)` and `--primary:var(--primary-alt)`, and `--primary-alt` is
+  **#cad3e2 dark / #1d2a3e light** (the 15 Sep Settings-accent change). So `variant="primary"` paints exactly
+  the colour asked for **and** light theme gets the value that is legible there rather than #cad3e2 at 1.4:1
+  on white. Measured: the inner `.btn` computes `rgb(202, 211, 226)`, and there is a probe assertion that the
+  hex appears nowhere in the card markup.
+- ⚠️ **CONSEQUENCE OF THE VARIANT SPLIT, STATED:** with two providers unconfigured the row paints **two**
+  primaries, under the toolbar's own *Configure AI provider* primary — three on the screen. That follows from
+  the request plus Option 3's multi-provider rule (every card is independently actionable); the DS's
+  one-primary-per-view guidance would leave the toolbar's as the only one.
+- ⚠️ **THE SINGLE CHECKBOX REUSES `agTermsHTML()`, IT DOES NOT COPY IT** — so Options 2 and 3 cannot drift on
+  the wording of the one thing the reader agrees to.
+- ⚠️ **IT KEEPS ITS PLACE INSIDE `.agpf`**, the panel's hairline footer. That rule exists to separate the
+  EVIDENCE (the transmitted-data chips, the provider's privacy policy) from the DECISION, and the decision is
+  still the decision when it is one box — lifting it out would leave the hairline cutting off nothing.
+- ⚠️ **"Confirm to continue" AND THE LIVE COUNT WENT WITH THE FOUR BOXES.** The count existed only to explain a
+  disabled primary ("2 of 4 accepted"); over one box it can say nothing the box does not. `agConsText` /
+  `agConsPaint` are untouched and still serve Option 1 — `agConsPaint` already guards on `#agConsN` existing,
+  so it is simply inert here rather than needing a branch.
+- ⚠️ **THE PRIVACY POLICY IS NOT LOST.** Option 2 dropped that link when it went to one sentence; here the
+  panel directly above still carries it under the chips, where it explains the evidence rather than being a
+  second thing to agree to.
+- ⚠️ **THE GATE HAD TO MOVE WITH THE CONTROL.** `agFlowFootHTML`'s primary read `d.consent.every(Boolean)`,
+  which over a form with no consent boxes would sit **permanently disabled with nothing on screen to explain
+  it** — the dead end the Designer's Guide forbids. Option 3 reads `d.terms`; the test half and the
+  *Accept & enable AI* label are unchanged, and "Accept" still names what the box does.
+- ⚠️ **AND THE DONE SUMMARY WITH IT** — only Option 1 still asks four consent terms, so only Option 1's summary
+  may say **Consent**. Options 2 and 3 both report **Terms & conditions** instead. The filter reads
+  `label !== 'Consent' || AG.opt === '1'` rather than the old `AG.opt !== '2'`, which would have left Option 3
+  claiming a consent it no longer collects.
+- ⚠️ **`obs-key-value` RENDERS FROM ITS `items` ATTRIBUTE INTO ITS OWN SHADOW ROOT**, so the host's
+  `textContent` is **empty** — an assertion reading `.agsum`'s light DOM reported the summary as blank and
+  failed on correct code. Read the attribute (or pierce the root). The recorded trap, in a new place.
+- Verified: a **13-assertion** probe for the buttons (variants per state, the primary's measured
+  `rgb(202,211,226)` and its `v-primary` class, the secondary differing, no pasted hex, all three still opening
+  their own provider, a newly configured provider flipping to secondary while its neighbour stays primary) and
+  an **18-assertion** probe for the consent step (exactly one checkbox on the whole form and it is `#agTerms`,
+  the sentence verbatim, no *Confirm to continue* and no `#agConsN`, the chips / privacy link / warning banner
+  all surviving, a passing test alone NOT enabling the primary, the box enabling it, the test half still
+  biting, and the summary naming Terms & conditions with no Consent and no Per-task routing) — **both with
+  Option 1 as the control**: four consent checkboxes, its live count, no terms box, and no provider cards.
+
+#### The marks take their brand colours, and the consent step becomes one line (16 Sep 2026)
+
+| request | what changed |
+|---|---|
+| *"the 3 card use real colour logo"* | the mark paints its own brand colour: **OpenAI `#74aa9c` · Anthropic `#d97757` · DeepSeek `#4d6bfe`** |
+| *"remove [Review data sharing & processing terms], show only the checkbox and text"* | Option 3's form is **credentials + the one terms line + the test output**; `agStepConsent()` is no longer called there |
+
+- ⚠️ **THESE ARE THE ONLY PASTED HEXES ON THE SCREEN, AND THEY HAVE TO BE.** A brand colour is by definition
+  not a DS token — no `--chart-*` value **is** OpenAI's green — so the standing "prefer tokens over hexes"
+  rule cannot apply. They are declared **once**, as `--ag-openai` / `--ag-anthropic` / `--ag-deepseek` on
+  `.agpcw`, and reached by `.agpci[data-brand="…"]` — the same shape the License card uses for the live
+  product's `--license-accent` palette, rather than an inline `style` per span. There is a probe assertion
+  that no card span carries a colour inline.
+- ⚠️ **THE VALUES ARE FROM MEMORY, NOT SAMPLED FROM AN OFFICIAL ASSET**, and that is worth saying: the
+  library's SVGs are monochrome `currentColor`, the DS logo set has no AI provider, and the live instance
+  does not mount under automation. Easy to correct if exact hexes turn up.
+- ⚠️ **THEY DO NOT FLIP PER THEME.** A brand colour is absolute; re-tinting one for dark mode would be
+  inventing a colour the brand does not use. Measured against the two card surfaces (#0b1627 / #fff):
+  Anthropic **5.8 / 3.2**, DeepSeek **4.3 / 4.4**, OpenAI **7.2 / ⚠️ 2.6** — the one value under the 3:1 bar
+  for a graphical object, and in LIGHT theme only. Stated rather than "fixed": the fix is a darker green
+  that is no longer the brand's.
+  ⚠️ **OpenAI's CURRENT official mark is monochrome** (black on light, white on dark); `#74aa9c` is the green
+  the knot has been rendered in for years. `color:var(--page-text-color)` makes it monochrome and
+  theme-correct if that is preferred.
+- ⚠️ **THE TILE BEHIND THEM IS UNCHANGED** — the neutral 8% wash asked for two requests earlier. Tinting each
+  tile with its own brand colour is one `color-mix`, was not asked for, and would take the row back to the
+  per-provider colour the neutral tile deliberately replaced.
+- ⚠️ **REMOVING THE REVIEW SECTION TOOK THREE DISCLOSURES WITH IT, not just a heading** — all three were
+  content, and Option 3's form now carries none of them: the **warning banner** ("ObserveOps cannot control
+  how a third-party provider stores or processes that data"), the seven **`Data that may be transmitted`
+  chips** — so the reader is no longer shown WHAT is sent — and the provider's **privacy-policy link**, which
+  survived the previous change only because that panel carried it. What remains is the terms sentence, which
+  names the provider and links the Terms & Conditions. **Option 1 still carries the whole section**, and
+  there are probe assertions for each of the four parts.
+- ⚠️ **`agStepConsent()` IS NOT PARKED** — Option 1 still renders it in full, so nothing is unreferenced.
+- ⚠️ **THE GATE NEEDED NOTHING.** It had already moved to `d.terms` in the previous change, which is exactly
+  the one control still on screen — had it still read `d.consent.every(Boolean)` this edit would have left a
+  permanently disabled primary with nothing to tick.
+- ⚠️ **A VERIFICATION SUITE'S VERDICT ON THE PRE-CHANGE FILE IS WORTH NOTHING.** `stbehave` was mid-sweep
+  when these two landed; editing `setting.js` under it risks a page loading a half-written file, and its
+  answer would have described code that no longer existed either way. It was stopped and re-run afterwards —
+  the exit 144 in the log is that kill, not a failure.
+- Verified: a **24-assertion** probe — the three tiles naming their provider and computing
+  `rgb(116,170,156)` / `rgb(217,119,87)` / `rgb(77,107,254)` with the **stroke** following (the mark, not
+  just the box), three distinct colours none of them the old neutral, one shared tile background, no inline
+  hex; the heading, banner, chips and privacy link all absent with exactly one checkbox left carrying the
+  sentence verbatim after the fields; the two-part gate still biting — **and Option 1 still carrying the
+  heading, the banner, the chips, the privacy link, its four checkboxes and no brand-coloured tiles.**
+
+#### Anthropic gets its own wordmark, from a set the library did not have (16 Sep 2026)
+
+Request, with the **"A\"** mark supplied: *"the Anthropic change the real logo use [this]"*. The card was
+wearing Hugeicons' **`claude`** sunburst — the nearest thing the vendored library had, and the note here said
+so — but the card is titled **Anthropic**, so the company's own mark is the right one; the tagline still names
+Claude.
+
+- ⚠️ **IT WAS NOT HAND-DRAWN, AND IT COULD NOT BE.** `free-icons/` carries no Anthropic corporate logo (all
+  six sets searched) and `resolve_logo` answers *"do NOT hand-draw a brand mark"* — drawing an "A\" by eye
+  produces a subtly wrong trademark. It came through **the repo's own documented escape hatch**, which had
+  not been used in this folder before: `python3 ~/.claude/skills/icon-library/scripts/fetch_source.py
+  --search anthropic --out <dir>` searches **238 sets by tag** and returned 13 hits across ten sets.
+- ⚠️ **THE ONE TAKEN IS `simple-icons`, AND THE LICENCE IS WHY.** It is the canonical brand-mark set and
+  **CC0 1.0**, so it needs no visible attribution — unlike Streamline and Font Awesome, the two CC BY sets
+  the icon rule warns about. One path, `viewBox="0 0 24 24"`, `fill="currentColor"`, pasted verbatim.
+- ⚠️ **IT IS FILLED WHERE THE OTHER TWO ARE STROKED, AND THAT COSTS A RULE.** The shared
+  `fill:none;stroke:currentColor;stroke-width:1.6` renders a filled wordmark as a **hairline OUTLINE of the
+  letterform** — legible, and not the mark. `.agpci[data-brand="anthropic"]` cancels both, and it has to
+  mirror BOTH of the rules above it (the root, and `g`/`path`) or the per-path `stroke-width` still applies
+  and the glyph carries a 1.6 halo.
+  ⚠️ **A SOLID GLYPH AMONG OUTLINES IS THE "DIFFERENT FAMILY" FAULT** this file records at the composer's
+  send button. Here the brand's own treatment outranks the visual family — the same reasoning that already
+  let two icon sets share the row, because a brand mark's shape is decided by the brand.
+- ⚠️ **`simple-icons` ALSO HAS `openai` AND `deepseek`** (checked). Moving all three onto that one CC0 set
+  would retire the two-sets-in-a-row note AND the fill/stroke split in a single change — **not done, not
+  asked for**; only Anthropic was flagged.
+- ⚠️ **THE ICON WAS NOT ADDED TO `free-icons/`.** The root rule says to add what you find and re-run
+  `build_gallery.py` — that regenerates a 20,099-icon gallery in a **different git repo** (the root folder is
+  `variable_color`), which is well outside the ask. One command when wanted; stated rather than done quietly.
+- ⚠️ **The rail still shows the product glyphs** (`eye` / `book-open` / `thunder-bolt`), so Anthropic's row
+  and its card now disagree more visibly than before. The reason is unchanged and recorded above: an
+  `obs-side-menu` `logo` is an `<img>`, which cannot take the row's colour.
+- Verified by a **12-assertion** probe: the wordmark's own path present and the sunburst gone from the page,
+  filled in `rgb(217,119,87)` with `stroke:none` and `stroke-width:0`, one path, still 20px like its
+  neighbours — **and OpenAI and DeepSeek still stroked outlines at 1.6 (including DeepSeek's `<g>`)**, three
+  distinct colours, the card still titled Anthropic with its Claude tagline.
+
+#### Option 3 takes Option 2's drawer, and gains an Advanced configure screen (16 Sep 2026)
+
+| request | what changed |
+|---|---|
+| *"copy option 2 sidebar 'Configure AI provider' and paste in option 3"* — **asked**, because it forks: the whole drawer, or only its width? Answered **the whole drawer** | Option 3's Configure drawer IS Option 2's — fingerprinted and byte-identical: `684px · agcfgo2 · no rail · no help card · segmented picker · no credentials heading · no Advanced · no Model selection · one checkbox · no KMS caption · Save` |
+| *"remove this because I configure multiple AI providers at a time"* | the **One provider at a time** note is Option 2's again — see the bug below |
+| *"remove the button 'Configure AI provider' … the name is 'Advanced configure'"* | Option 3's toolbar primary is renamed |
+| *"when I click the button, open a sidebar like [APM › Application Registration]"* + a five-point spec | a **new drawer**, `agAdv*` |
+
+- ⚠️ **ONE PREDICATE, NOT TEN `|| AG.opt === '3'`s.** `agO2Form()` answers *"does this option use the compact
+  form drawer"* and is read by every branch that used to test `AG.opt === '2'` on the Configure screen — its
+  width, its `agcfgo2` class, the rail, the help card, the body, the provider picker, the credentials
+  heading, Advanced settings, the test banner's tail, the footer's caption, its primary and what that
+  primary does. **Twelve** places decide that drawer's shape; spelling the answer out at each is how two of
+  them end up disagreeing.
+  ⚠️ **IT IS ABOUT THE DRAWER ONLY.** The OVERVIEW still branches on the real option (Option 2 the grid,
+  Option 3 the cards), and `agCfgSave`'s wipe still tests `AG.opt !== '3'` because Option 3 is
+  multi-provider. That guard is **live now** rather than unreachable — Option 3 reaches `agCfgSave` through
+  Option 2's Save, which is what the earlier note said it never did.
+- ⚠️ **WHAT THE COPY DELETED:** Option 3's titled *AI provider* rail, built from Application Registration
+  hours earlier. A 230px rail plus a 720px form does not fit in 684px, which is why Option 2 never had one.
+  Its CSS (`.agcfgnav` / `.agcfgnt`, and the `obs-side-menu` entry in the shadow-sheet map) is **kept and
+  unreferenced** — one `o2` back.
+
+##### ⚠️ THE COPY SWEPT UP A GUARD THAT LOOKED THE SAME AND WASN'T
+
+`agOneNoteHTML`'s `if (AG.opt !== '2') return '';` is textually identical to a provider-picker guard, so it
+became `agO2Form()` with everything else — and the **One provider at a time** note then appeared on Option
+3's overview AND in its form, **stating a rule Option 3 does not follow**, since its cards let all three
+providers hold a key at once. `agO2Form()` asks *"does this option use the compact drawer"*; that note asks
+*"does this option replace one provider with another"*, and the two stopped being the same question the
+moment Option 3 became multi-provider. **A shared predicate is only safe where the question is the same.**
+
+⚠️ **MY OWN PROBE PASSED ON IT, AND THE REASON GENERALISES.** The assertion read the drawer's `textContent`
+for "One provider at a time" — but that string is `obs-banner`'s **`title` prop**, which the component
+renders inside its SHADOW ROOT, so the light DOM never contains it. A green assertion measuring the wrong
+tree. Assert on the banner **element** (`obs-banner.agnote`), never on page text — the replacement probe
+checks all three options on both surfaces.
+
+##### Advanced configure — a drawer of its own
+
+Built to the supplied **APM › Application Registration** reference: rail left, form middle, Save at the foot.
+
+| the spec | what it is |
+|---|---|
+| 1 · *"show all module name"* | the rail — the **16 modules `_product-docs/MOTADATA-PRODUCT-REFERENCE.md` §1 names**, in its order |
+| 2 · *"select 3 AI provider"* | three selectable tiles in the *Instrumentation Method* position, each with its tagline |
+| 3 · *"'agent' dropdown (agent1,2,3,4)"* | `Agent` — Agent 1–4 |
+| 4 · *"behind the agent show 'model'"* | `Model` — the **picked provider's own** models |
+| 5 · *"(high, medium, low, critical)"* | `Priority` — those four, verbatim |
+| *"in bottom show save button"* | a primary `Save` that commits and closes |
+
+- ⚠️ **IT DOES NOT REUSE `.sdrawer`, AND THAT IS THE POINT.** That chrome is declared in each **page's** own
+  stylesheet — natively in Options 1 and 4, hand-ported into 2 and 3 on 2 Sep — and `setting.js` is one file
+  shared by **thirteen** pages. Leaning on a page-level class is exactly how `#drawer-agcfg` once opened
+  **nothing, silently**, on the two options that had never had those rules. Everything this drawer needs is
+  in PART 1.
+- ⚠️ **IT IS CREATED ONCE AND LIVES ON `<body>`** — `#view-settings` is `display:none` whenever Settings is
+  not the active view, and a FIXED child of a hidden ancestor is hidden too. The License history drawer is
+  on `<body>` for the same reason.
+- ⚠️ **IT HAD TO BE ADDED TO EVERY OPENER OF THE SCOPED DS TOKEN BLOCK — there are FOUR, not one.** Added to
+  only the `--primary` re-point at first, the drawer got **none of the ~390 DS tokens**: no
+  `--page-background-color`, no `--border-color`, so it would have painted as an unstyled transparent panel.
+  The same trap the License history drawer hit in the top layer. There is a probe assertion that the drawer
+  paints a real surface rather than `rgba(0,0,0,0)`.
+- ⚠️ **THE MODULE LIST IS DECLARED HERE, NOT READ FROM THE PAGE'S `MODULES`.** That is a page-level `const`,
+  and this file is shared — reaching across would make the screen depend on which page it opens on.
+- ⚠️ **`agIc('cross')` WAS INVENTED AND RENDERED NOTHING.** `obs-icon` emits an empty comment for a name the
+  bundle lacks, with **no error**. It is `times` — the name already proven on the License modal's ✕ — and the
+  probe now asserts the glyph's shadow root actually contains an `<svg>`.
+  ⚠️ **THE RAIL CARRIES NO ICONS** for the same reason: sixteen unverified names is sixteen chances at an
+  invisible glyph, and the spec asked for module NAMES. Probe the names first if icons are ever wanted.
+- ⚠️ **"Priority" IS MY LABEL** — the spec gave four values and no field name. And the four are the spec's,
+  **not the product's five severities** (Critical · Major · Warning · Minor · Clear, same reference §1).
+- ⚠️ **SWITCHING PROVIDER RE-POINTS THE MODEL**, or the row would name a model that provider does not serve
+  — the rule the Configure form already follows. Each module holds its own record.
+- ⚠️ **THE TILES ARE NOT A DS COMPONENT, AND THAT WAS CHECKED** — 52 registered `obs-*` elements, none a
+  selectable card; `obs-radio as-button` takes `{value,label}` only and **escapes** the label, so it cannot
+  carry the tagline the reference's tiles carry. They are built from this screen's own card atoms.
+- ⚠️ **ESCAPE NEEDS ITS OWN CAPTURE-PHASE RUNG.** The host page's ladder matches `.sdrawer.on`, which this
+  drawer deliberately is not — without it the panel would never close on Escape and its scrim would be left
+  over the page, the exact bug `#drawer-agcfg` had on 3 Sep.
+- ⚠️ **STATED, NOT ACTED ON: the word "Advanced" now promises more than the button delivers.** Option 3's
+  *Configure* drawer became Option 2's compact form minutes earlier — no Advanced settings, no Model
+  selection — so the barest of the three sits behind a button named Advanced, while the genuinely advanced
+  screen is this separate one. Pointing the card buttons at Option 1's full form is one branch if that was
+  the intent.
+- Verified: a **17-assertion** probe for the copy (both drawers fingerprinted on twelve fields and equal,
+  Save committing and closing, Option 3 still keeping the other provider's key, and Option 1 keeping its
+  rail, help card, Advanced, Model selection, four consent boxes, KMS caption, *Accept & enable AI* and its
+  width) · an **11-assertion** probe for the note and the rename (no note on Options 1 and 3 in either
+  place, Option 2 keeping it with its title read off the banner element) · a **27-assertion** probe for
+  Advanced configure (the drawer on `<body>` with its scrim, title and a ✕ whose glyph really renders; 16
+  rail rows carrying the docs' names; three tiles with taglines and one selected; the field order AI
+  provider → Agent → Model → Priority; each dropdown's exact options; Save primary at the foot; a painted
+  surface; ≤1010px; picking a module moving the form and the rail; picking a provider re-pointing the model
+  to one it serves; per-module records; Save closing and clearing the scrim; one drawer, reused).
+
+#### Five more on Option 3, and the misalignment was a CLASS NAME (16 Sep 2026)
+
+| request | what changed |
+|---|---|
+| *"the list of module is not align … and use module icon"* | the rail's rows carry a glyph and every number in them is derived |
+| *"agent, model & priority … side by side in a single horizontal line"* | one ‘auto-fit’ grid; the drawer widened to pay for it |
+| *"when I select the agent show a note … how the agent works and where"* | a per-agent ‘obs-banner’ under the field row |
+| *"also show the breadcrumb"* (an Android settings trail as the reference) | ‘ObserveOps → … → AI features → Agent N’ inside that note |
+| *"remove the Connection name"* | Option 3 only — the key takes the row |
+| *"the 3 provider … and the 3 field … make the same space"* | both rows now paint a real 12px gap |
+
+##### ⚠️ THE RAIL WAS 15px LEFT OF THE DRAWER'S OWN HEADER, AND THE CAUSE WAS A SHARED CLASS NAME
+
+The reported misalignment was not spacing. `.agadvb` was **two different things**: this drawer's body row,
+and — ~200 lines further down — the Configure form's **Advanced settings** button, whose rule carries
+`margin:0 0 0 -15px` to cancel the DS button's own padding. The drawer's body wore the same class, so the
+rail and everything in it was dragged 15px left of the header title. **Nothing errored**; the two just
+shared a name, which is the trap this repo's own CLAUDE.md opens with. The body is `.agadvbody` now.
+⚠️ **IT WAS FOUND BY MEASURING, NOT BY READING THE SHEET.** A probe dumping every box reported the glyph
+column 15px from where the arithmetic said it should be; only then did a grep for the class find the
+second owner. **Grep the CSS CLASS before naming one, not only the JS name.**
+⚠️ **THE SECOND BORROWED NAME WAS `.ic`** — `index.html:154` declares a bare `.ic{width:20px;height:20px}`
+and all thirteen pages carry it. A scoped rule happened to outrank it; the name is still the page's, and
+borrowing it is how the next page-level edit reaches into this file. It is `.agadvic`.
+
+##### The rail: a glyph column, and every number derived from something
+
+- **The row's 8px padding sits inside the rail's own 8px, so each glyph starts where the header title
+  starts** — one left edge for the drawer's name and every module's mark, instead of the label sitting
+  4px past it. There is a probe assertion comparing the two rather than checking a typed number.
+- **The label then starts at 17 + 18 + 10 on EVERY row**, which is the column the icons exist to
+  establish: sixteen labels of different lengths had nothing lining them up but their own left edge.
+- **32px row + 2px gap = the 34px pitch `.sitem` and `.mfi` already share.** ⚠️ `line-height:18px` is what
+  pins it there — left at `normal` the 13px text makes a 19.5px line box and the row lands at 33.5.
+- ⚠️ **ALL SIXTEEN ICON NAMES WERE RENDER-CHECKED BEFORE BEING WRITTEN IN**, which is the whole reason the
+  earlier build shipped without them: `obs-icon` emits an empty comment for a name the bundle lacks —
+  **nothing, with no error** — so a guessed name is one invisible row among fifteen and nothing reports it.
+  A probe appended all 63 candidates and read each shadow root for an `<svg>`.
+  ⚠️ **THE PLURAL IS USUALLY THE WRONG ONE, AND ONE OF THEM CONTRADICTS THE PAGES.** `settings` renders and
+  **`setting` does not** — the opposite of the host pages' own `ICONS`, whose key is `setting`. `monitors` /
+  `alerts` / `reports` / `audits` / `nccm` / `flows` / `logs` / `metrics` / `trap` all render nothing while
+  `monitor` / `alert` / `report` / `audit` / `ncm` / `flow` / `log` / `metric-explorer` / `trap-viewer` do.
+  **Re-probe, never re-derive, if `_ds/` is upgraded.**
+- ⚠️ The glyph is quiet at rest and takes the row's colour when selected — the pair the Configure drawer's
+  rail already needed, where the DS side menu hardcodes `--neutral-light` on `.r-ic` and left a selected
+  row's glyph dim while its label brightened.
+
+##### Agent · Model · Priority on one line — and why the gaps disagreed
+
+⚠️ **THE TWO ROWS HAD THE SAME `gap:12px` AND STILL READ AS DIFFERENT SPACINGS.** Measured: 12px between
+the provider tiles, **31px** between the fields. `obs-select`'s shadow `.sel` is a hardcoded **240px**, so
+the tiles stretched to fill a 259px column while the selects sat at the left of theirs — 12 + 19px of dead
+space. Page CSS cannot reach inside the component, so `.sel` is given `width:100%` through the
+`attachShadow` hook, **scoped by a host class** (`:host(.agadvsel)`) so no other `obs-select` on any screen
+is touched — asserted, by measuring one elsewhere still at 240.
+⚠️ **`.agadvfld` HAD TO STOP BEING `justify-items:start`** or the select would keep its own width inside a
+stretched column and the fix would do nothing. The label keeps `justify-self:start`.
+⚠️ **THE DRAWER WENT 1010 → 1080px, AND THAT IS ARITHMETIC RATHER THAN TASTE.** Three 240px controls plus
+two 12px gaps need 744px of content; at 1010 the column offered **746**, i.e. 0.67px of slack per column,
+which any font or padding change would have silently collapsed to two rows. 1080 gives each column 259.
+⚠️ **`auto-fit`, NOT `repeat(3,…)`** — a forced third column on a narrow drawer would hang a 240px control
+over the edge (the same v0.1.166 defect). It wraps to two, then one.
+- The result is stronger than the request: each field now starts **exactly under its own provider tile**,
+  and both rows paint the same 12px gap. Probed on the painted shadow box, not the host.
+
+##### The agent note, and its breadcrumb
+
+- **`obs-banner variant="info"`, full width, immediately under the field row** — title *How Agent N works*,
+  body the how-line, then the trail.
+- ⚠️ **THE FOUR AGENT ROLES ARE MINE.** `Agent 1`–`Agent 4` are the spec's placeholders and the product
+  docs define no such thing, so a note repeating the number would have been the feature not working and one
+  quoting a product behaviour would have been inventing product. What each does is a plain reading of the
+  four ways an assistant can be triggered (scheduled · on demand · event driven · continuous), carries **no
+  invented numbers or intervals**, and is flagged at the constant. Replace it when the real ones are known.
+- ⚠️ **WHERE IT RUNS IS DERIVED, NOT WRITTEN** — the module, the provider and the model all come off the
+  record the form is editing, so the note cannot name a module you are not on or a model that provider does
+  not serve. That half of the sentence is true by construction.
+- ⚠️ **THE TRAIL IS DECLARED HERE, NOT READ FROM `EXPLORER_TREE`** — same rule as `AG_MODULES`: a page-level
+  `const` would make the note depend on which of the thirteen pages the drawer was opened from. The
+  grouping is the docs' §1 taxonomy. `AI features` is this screen's own wording (*Accept & enable AI*), not
+  a new noun.
+- ⚠️ **THE MODULE IS NAMED ONCE.** The sentence used to read *"scoped to **Dashboards**"* and the trail
+  would have said the same word 30px lower — the "every fact appears once" rule, with a probe assertion
+  counting the occurrences.
+- ⚠️ **THE SEPARATOR IS THE `→` CHARACTER, NOT A DRAWN GLYPH** — the reference is a text trail, and a real
+  character inherits the row's colour and size for free, so the icon rule is satisfied without loading a
+  mark for punctuation. Last crumb emphasised, separators quieter than the crumbs.
+- ⚠️ **THE NOTE REPAINTS ITSELF, AND THAT REPLACED A FULL-BODY REPAINT.** `agAdvSet` called `agAdvPaint()`,
+  which rewrites `#agAdvMain` — **destroying all three `obs-select`s, including the one just used, on every
+  pick**. Only the note reads agent/model, so only the note is rebuilt. The `agConsPaint` discipline; there
+  are assertions that the three selects survive a pick and are the SAME elements.
+
+##### Connection name is gone from Option 3's Configure drawer
+
+- **Scoped to Option 3 by name, NOT to `agO2Form()`** — Option 2 shares that whole drawer and was not
+  named. Probe assertions that Options 1 and 2 still have the field, and Option 1 its Advanced settings.
+- ⚠️ **THE RECORD WOULD OTHERWISE HAVE SAVED AN EMPTY NAME, AND THE PROBE CAUGHT IT.** `agSeed` names only
+  the provider that is already connected, so an unconfigured one had nothing but the field's PLACEHOLDER.
+  That placeholder is now the value (`<Provider> production`), so the four readers of `d.name` are
+  unchanged. **Removing a field is not finished until you know what still writes its value.**
+- The key takes the whole row (`.agrow2.agrow1`), keeping the form's own 16/24 rhythm — only the column
+  count changes — rather than sitting in the left half with dead space beside it.
+
+**Verified:** four probes, **87 assertions, all passing** — alignment and icons **30**, the note and its
+trail **27**, the Connection-name removal across all three options **16**, the matched gaps **14** — plus
+dark and light screenshots of the drawer.
+⚠️ **SIX OF THE FIRST-RUN FAILURES WERE THE PROBE'S OWN MODEL, ONE WAS REAL**, and telling them apart cost
+a re-read each time: the rail's rows are `230 - 1 (border) - 16`, not `230 - 16`; the glyph sits 17px in,
+not 16, for that same border; `obs-select` renders its value into its SHADOW root so the host's
+`textContent` is just the label; `.agadvfld` also wraps the *AI provider* heading, so walking the drawer's
+four instead of the grid's three compares the wrong pairs; each module keeps its OWN record, so switching
+module correctly shows that module's agent rather than the one just picked. The real one was the empty
+`d.name`. **Read a probe failure before believing it — and before "fixing" the code.**
+
+#### ⚠️ A PROBE FAILURE THAT WAS THE PROBE'S MODEL, NOT THE CODE — twice, on one assertion
+
+*"OPTION 2 still wipes the previous provider"* failed for a day and was **correct code both times**:
+
+1. **The timings were too tight.** It waited 400ms after `agCfgFootPaint()`; the drawer body did not yet exist, so the
+   footer was never repainted and the primary was **still `disabled`** when the click landed. The save never ran, and
+   nothing in the output said so — the assertion only printed the *other* provider's key.
+2. **The real one: on Option 3 the primary does NOT commit.** It is Option 1's *Accept & enable AI*, which runs
+   `agCfgDone` → `d.step = 3` → the completion screen; **`agCfgSave` is never reached on Option 3 at all.** So
+   configuring Anthropic there does not make it the connected provider — `AG.conn` was still `openai`, and Option 2's
+   Save wiped exactly that. The rule working, reported as a bug.
+   ⚠️ **It follows that the `AG.opt !== '3'` guard inside `agCfgSave` is unreachable today.** It is kept because it
+   states the rule at the one place that enforces it, and Option 3 would otherwise wipe the moment it gains a Save.
+   ⚠️ **Option 3's "configured" state lives in `d.key` alone** — which is what the card's `set` test reads, so the
+   cards are right — while `AG.active` / `AG.conn` are Options 1 and 2's overview state.
+   **The fix is to assert the RULE, not a name:** capture `AG.conn` before the save and assert *that* provider loses its
+   key. A hardcoded provider name in this assertion is what made a working rule look broken.
+- ⚠️ **A THIRD STALE ASSERTION IN THE SAME SUITE:** *"the tiles and taglines survive"* tested `.agpci obs-icon`, and the
+  tile holds a raw `<svg>` since the brand marks landed. Read a probe failure before believing it.
+- Verified: `ag15` **ALL PASS** (10) after the corrections, a new **27-assertion** probe for this pass — the three marks
+  different and 20px at one weight, the neutral tile's ink `rgb(142,159,188)` and one shared background, `fill:none` +
+  `stroke` + `1.6` reaching DeepSeek's `<g>`, the three removals, credentials and consent surviving with the two-part
+  gate intact, the titled rail, the un-clipped spacer, a real gap between rows, the rounded selection, the active
+  glyph's colour, the component's inline indent untouched — **and Option 1 still carrying its help card, its Advanced
+  settings, its Model selection and its plain rail** · `stbehave` **ALL 21 PASS × 13 pages** · dark and light shots.
 
 ## Every box in the Settings module has 4px corners (14 Sep 2026)
 

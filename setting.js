@@ -539,7 +539,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
    slotted body (\`#licHist\`, already in this list) correctly took the dark ones. Two themes in one
    overlay. Caught by shooting dark, not by any probe: every assertion passed and the conformance
    checker still said 100/100, because both halves were legal DS tokens — just not the same set. */
-#agPage,#licPage,#licHist,#licHistF,#licHistDr{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -932,7 +932,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --widget-type-selector-border-color:'transparent';
 }
 
-html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF{
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). \`obs-side-menu\` paints \`.row.leaf.active\` with
@@ -1238,7 +1238,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    The \`.ag*\` rules below (and the \`st\`/\`stc\` atoms this page still borrows for layout) are
    written against this prototype's token names; pointing them at the DS names above converts
    every one of them at once, and keeps the mapping auditable in one table. */
-#agPage,#licPage,#licHist,#licHistF,#licHistDr{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr{
   /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
   --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
@@ -1297,6 +1297,106 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 /* the Option 1 / Option 2 switcher in the header's action slot (see AG_OPTS) — the License header's .lichact */
 .aghact{display:inline-flex;align-items:center;gap:8px}
 /* Option 2's Configure drawer: a 684px side panel with no rail and no help card, so the form pane pays its own right gutter */
+/* ╔═ ADVANCED CONFIGURE — a drawer of its own (request, 16 Sep 2026) ════════════════════
+   Built to the product's own **APM › Application Registration** screen, supplied as the reference: a wide
+   drawer whose left rail picks WHAT you are configuring and whose middle column is that thing's form.
+   ⚠️ IT DOES NOT REUSE \`.sdrawer\`, AND THAT IS DELIBERATE. That chrome is declared in each PAGE's own
+   stylesheet — natively in Options 1 and 4, ported by hand into 2 and 3 on 2 Sep — and \`setting.js\` is one
+   file shared by THIRTEEN pages. Leaning on a page-level class is how \`#drawer-agcfg\` once opened nothing,
+   silently, on the two options that had never had those rules. Everything this drawer needs is here.
+   ⚠️ IT IS CREATED ONCE AND LIVES ON \`<body>\`, not inside \`#view-settings\` — that section is
+   \`display:none\` whenever Settings is not the active view, and a FIXED child of a hidden ancestor is hidden
+   too. The License history drawer is on \`<body>\` for exactly this reason.
+   ⚠️ THE WIDTH IS DERIVED FROM WHAT THE FORM HOLDS, not picked: rail 230 + a form column wide enough for
+   Agent · Model · Priority SIDE BY SIDE + gutters. \`obs-select\` paints a hardcoded 240px whatever its host
+   asks for (a recorded v0.1.166 defect), so three of them plus two 12px gaps need 744px of content — at the
+   original 1010 the column offered 746, i.e. **0.67px of slack per column**, which any font or padding
+   change would have silently collapsed to two rows. 1080 gives each column 259px. It is still not the
+   Configure drawer's viewport-minus-rail, which is what left that form's footer running 500px past its
+   fields. */
+#agAdvScrim{position:fixed;inset:0;z-index:89;background:rgba(3,8,18,.55);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .18s}
+#agAdvScrim.on{opacity:1;pointer-events:auto}
+.agadvdr{position:fixed;top:0;bottom:0;right:0;z-index:90;display:flex;flex-direction:column;
+  width:min(1080px,100vw);background:var(--page-background-color);border-left:1px solid var(--border-color);
+  transform:translateX(102%);transition:transform .2s ease;box-shadow:-8px 0 28px rgba(3,8,18,.35)}
+.agadvdr.on{transform:none}
+.agadvh{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-bottom:1px solid var(--border-color)}
+.agadvh .t{flex:1 1 auto;min-width:0;font-size:15px;font-weight:600;color:var(--primary-alt)}
+.agadvx{width:28px;height:28px;border:0;border-radius:4px;background:transparent;cursor:pointer;
+  color:var(--neutral-light);display:grid;place-items:center}
+.agadvx:hover{background:var(--nav-hover-bg)}
+/* ⚠️ \`.agadvbody\`, NOT \`.agadvb\` — THE NAME WAS ALREADY TAKEN, AND THAT WAS THE MISALIGNMENT.
+   \`.agadvb\` is the Configure form's **Advanced settings** button ~200 lines down, and its rule carries
+   \`margin:0 0 0 -15px\` to cancel the DS button's own padding. This drawer's body wore the same class, so
+   the rail — and everything in it — was dragged **15px left of the drawer's own header title**, which is
+   exactly what was reported. Nothing errored; the two just shared a name. The collision trap this repo's
+   CLAUDE.md opens with, hit again: grep the CSS CLASS, not only the JS name. */
+.agadvbody{flex:1 1 auto;min-height:0;display:flex}
+/* the rail — the reference's Host/VM · Docker · Kubernetes column, carrying the 16 modules.
+   ⚠️ EVERY NUMBER HERE IS DERIVED, WHICH IS WHAT "PROPER ALIGNMENT" MEANT (request, 16 Sep 2026). The row's
+   8px padding sits inside the rail's own 8px, so each **glyph starts 16px from the drawer's left edge —
+   exactly where the header title "Advanced configure" starts**, and the two share one left edge instead of
+   the label sitting 4px past it. The label then starts at 16 + 18 (glyph) + 10 (gap) = 44 on EVERY row,
+   which is the column the icons exist to establish: without them sixteen labels of different lengths had
+   nothing lining them up but their own left edge.
+   ⚠️ 32px ROW + 2px GAP = THE 34px PITCH \`.sitem\` AND \`.mfi\` ALREADY SHARE. \`line-height:18px\` is what
+   pins it there — left at \`normal\` the 13px text makes a 19.5px line box and the row lands at 33.5. */
+.agadvn{flex:0 0 230px;width:230px;min-width:0;overflow-y:auto;padding:8px;
+  border-right:1px solid var(--border-color);scrollbar-width:thin}
+.agadvr{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:0;border-radius:4px;
+  background:transparent;color:var(--page-text-color);font:inherit;font-size:13px;line-height:18px;
+  text-align:left;cursor:pointer;margin-bottom:2px}
+.agadvr:hover{background:var(--nav-hover-bg)}
+.agadvr.on{background:var(--code-tag-background-color);color:var(--primary);font-weight:500}
+/* ⚠️ \`.agadvic\`, NOT \`.ic\` — that one is a PAGE-level class (\`.ic{width:20px;height:20px}\`, declared in
+   all thirteen pages), and this file is shared by every one of them. A scoped rule happens to outrank it
+   today; the name is still the page's, and borrowing it is how the next page-level edit reaches in here.
+   ⚠️ THE GLYPH IS QUIET AT REST AND TAKES THE ROW'S OWN COLOUR WHEN SELECTED — the same pair the Configure
+   drawer's rail needed, where the DS side menu hardcodes \`--neutral-light\` on \`.r-ic\` and left a selected
+   row's glyph dim while its label brightened, i.e. two halves of one row disagreeing about being selected. */
+.agadvr .agadvic{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;color:var(--neutral-light)}
+.agadvr.on .agadvic{color:inherit}
+.agadvr .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agadvm{flex:1 1 auto;min-width:0;overflow-y:auto;padding:16px 24px 24px}
+.agadvm > *{margin-top:24px}
+.agadvm > :first-child{margin-top:0}
+.agadvm > .agcfgp{margin-top:4px}
+/* ⚠️ THE PROVIDER TILES ARE NOT A DS COMPONENT, AND THAT WAS CHECKED — the shipped bundle registers 52
+   \`obs-*\` elements and none is a selectable card (\`obs-radio as-button\` takes {value,label} only and
+   ESCAPES the label, so it cannot carry the tagline the reference's tiles carry). They are built from the
+   same atoms as this screen's own provider cards, so the addition reads as native rather than imported. */
+.agadvtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.agadvtile{display:flex;flex-direction:column;gap:4px;padding:12px;text-align:left;cursor:pointer;
+  border:1px solid var(--border-color);border-radius:var(--btn-radius);
+  background:var(--widget-background);color:var(--page-text-color);font:inherit}
+.agadvtile:hover{border-color:var(--neutral-light)}
+.agadvtile.on{border-color:var(--primary);background:var(--code-tag-background-color)}
+.agadvtile .h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.agadvtile .d{font-size:12px;line-height:1.5;color:var(--text-color-common-secondary)}
+.agadvfld{display:grid;justify-items:stretch;gap:7px}
+.agadvfld .agflb{justify-self:start}
+.agadvfld .agflb{margin-bottom:0}
+/* ⚠️ Agent · Model · Priority ON ONE LINE (request, 16 Sep 2026), and \`auto-fit\` rather than a fixed
+   \`repeat(3,…)\`: \`obs-select\`'s shadow \`.sel\` is a hardcoded 240px and PAINTS OUTSIDE ITS HOST when the
+   host is narrower, so a forced third column on a narrow drawer would hang the control over the edge. At
+   \`minmax(240px,1fr)\` a drawer with no room for three simply wraps to two, then one. */
+.agadvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:start}
+/* ⚠️ \`obs-banner\` MUST BE TOLD IT IS A BLOCK HERE. The screen's other banners are direct children of
+   \`.agpage\`, which has a rule for exactly that; this one is nested a level deeper, and an unknown element
+   defaults to \`display:inline\` — the fault that made \`obs-radio\` measure 341px inside a 720px form. */
+#agAdvNote .agnote{display:block}
+/* ⚠️ THE TRAIL IS A BLOCK ON ITS OWN LINE, and the last crumb is the emphasised one — the breadcrumb
+   convention (and the supplied reference's own shape: a path ending at the thing being located). The
+   separator is quieter than the crumbs so the eye reads names, not arrows. */
+.agadvcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;
+  font-size:12px;line-height:1.5;color:var(--text-color-common-secondary)}
+.agadvcrumb .sep{color:var(--neutral-light);opacity:.75}
+.agadvcrumb .cur{color:var(--page-text-color);font-weight:600}
+.agadvf{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 16px;
+  border-top:1px solid var(--border-color)}
+.agadvf .sp{margin-right:auto}
 #drawer-agcfg.agcfgo2 .agcfgm{padding-right:24px}
 /* ⚠️ NO RULE ABOVE THE BUTTONS ON OPTION 2 (request, 16 Sep 2026: "remove the line upper side save
    button"). The padding STAYS: the border is what was asked for, and taking the 16px with it would
@@ -1453,6 +1553,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    24px in \`.agff\` a real floor in both cases. */
 .agfbody{flex:1 0 auto}
 .agrow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
+.agrow2.agrow1{grid-template-columns:minmax(0,1fr)}
 .agrow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;margin-top:16px}
 .agcfgm obs-input{display:block}
 /* the Advanced settings disclosure — a real obs-button, so the one control here stays a DS
@@ -1560,6 +1661,85 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 .agflow{margin-bottom:24px}
 .agsub{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--neutral-regular);margin:0 0 12px}
+/* ⚠️ OPTION 3's PROVIDER CARDS — see \`agCardsHTML\` for why the CARD is not a DS component (the
+   bundle registers no card element) while everything inside it is. The surface is deliberately
+   \`.agpanel\`'s own, so a card here and a panel on Option 1 are the same object.
+   ⚠️ \`auto-fit\` + \`minmax\`, NOT three fixed columns: at 1280 the pane is ~920px and three 300px
+   cards fit; narrower, they wrap on their own rather than being clipped or squeezed. */
+.agpcw{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px}
+/* ⚠️ \`--widget-background\`, NOT A PASTED #0b1627 (request, 16 Sep 2026: "the card background colour
+   use #0b1627"). That hex IS this token's exact dark value; the token is also \`#fff\` in light, so the
+   card keeps a white surface there instead of a near-black one. The License page's cards landed on the
+   same token for the same request, which is the precedent. */
+.agpc{display:flex;flex-direction:column;padding:16px;border:1px solid var(--border-color);
+  border-radius:var(--btn-radius);background:var(--widget-background)}
+.agpch{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+/* ⚠️ ONE NEUTRAL TILE FOR ALL THREE, NOT A TINT PER PROVIDER (request, 16 Sep 2026: "the icon
+   colour use #8e9fbc and the icon background colour is color-mix(in srgb, var(--page-text-color)
+   8%, transparent)"). It was each provider's own \`--chart-*\` token at 16%.
+   ⚠️ \`--neutral-light\` IS #8e9fbc — the token, not the hex. That is this theme's exact value for
+   the colour asked for, and it carries #6a7fa0 into light, where #8e9fbc would be 1.9:1 on a white
+   card and effectively invisible. The background is the expression as given, which is already a
+   token: \`--page-text-color\` flips per theme, so an 8% wash of it works in both.
+   ⚠️ CONSEQUENCE, STATED: colour no longer tells the three cards apart — the MARK does, which is
+   what putting the providers' real logos on them was for. A coloured tile behind a brand logo was
+   also asserting a brand colour that is not the brand's. */
+.agpci{flex:0 0 40px;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--btn-radius);
+  color:var(--neutral-light);background:color-mix(in srgb, var(--page-text-color) 8%, transparent)}
+/* ⚠️ THE MARKS PAINT IN THEIR OWN BRAND COLOURS (request, 16 Sep 2026: "the 3 card use real colour logo").
+   ⚠️ THESE ARE THE ONLY PASTED HEXES ON THIS SCREEN, AND THEY HAVE TO BE. A brand colour is by definition
+   not a DS token — no \`--chart-*\` or \`--severity-*\` value IS OpenAI's green — so the standing "prefer
+   tokens over hexes" rule cannot apply. They are declared ONCE, here, as tokens of our own, exactly the way
+   the License card holds the live product's \`--license-accent\` palette rather than sprinkling literals
+   through the markup.
+   ⚠️ THEY DO NOT FLIP PER THEME. A brand colour is absolute — re-tinting one for dark mode would be
+   inventing a colour the brand does not use. Measured against the two card surfaces (#0b1627 dark, #fff
+   light): Anthropic 5.8 / 3.2, DeepSeek 4.3 / 4.4, OpenAI 7.2 / ⚠️ 2.6 — the one value that lands under
+   the 3:1 bar for a graphical object, and it does so in LIGHT theme only. Stated rather than "fixed": the
+   fix would be a darker green that is no longer the brand's.
+   ⚠️ OPENAI'S CURRENT OFFICIAL MARK IS MONOCHROME (black on light, white on dark); #74aa9c is the green
+   the knot has been rendered in for years and is what reads as "the OpenAI colour". One line
+   (\`color:var(--page-text-color)\`) makes it monochrome and theme-correct if that is preferred.
+   ⚠️ THE TILE BEHIND THEM IS UNCHANGED — the neutral 8% wash asked for two requests earlier. Tinting each
+   tile with its brand colour is one \`color-mix\` if wanted; it was not asked for, and three saturated tiles
+   would take the row back to the per-provider colour the neutral tile deliberately replaced. */
+.agpcw{--ag-openai:#74aa9c;--ag-anthropic:#d97757;--ag-deepseek:#4d6bfe}
+.agpci[data-brand="openai"]{color:var(--ag-openai)}
+.agpci[data-brand="anthropic"]{color:var(--ag-anthropic)}
+.agpci[data-brand="deepseek"]{color:var(--ag-deepseek)}
+/* ⚠️ ANTHROPIC'S MARK IS A FILLED WORDMARK, SO IT CANCELS THE STROKE RULES ABOVE. Painted with
+   \`fill:none;stroke:currentColor;stroke-width:1.6\` it renders as a hairline OUTLINE of the letterform — not
+   the logo. The two selectors have to mirror the two above them (root, and \`g\`/\`path\`), or the per-path
+   \`stroke-width\` still applies and the glyph carries a 1.6 halo. */
+.agpci[data-brand="anthropic"] svg{fill:currentColor;stroke:none}
+.agpci[data-brand="anthropic"] svg,.agpci[data-brand="anthropic"] svg g,
+.agpci[data-brand="anthropic"] svg path{stroke-width:0}
+/* ⚠️ THE PROVIDER'S OWN MARK, FROM THE ICON LIBRARY — NEVER DRAWN (request, 16 Sep 2026: "use
+   provider real icon", with Google image results for the three logos as the reference). All three
+   are already in \`free-icons/\`: OpenAI is Tabler's \`brand/brand-openai\` and Anthropic and DeepSeek
+   are Hugeicons' \`claude\` / \`deepseek\` — both sets MIT, so nothing needs visible attribution.
+   ⚠️ TWO SETS IN ONE ROW, DELIBERATELY. The repo rule is one set per prototype, and its stated
+   reason is that mixed STROKE WEIGHTS read as a bug — which this rule fixes below. A brand mark's
+   shape is decided by the brand, not by the set, and no single set carries all three.
+   ⚠️ THE STROKE-WIDTH IS SET HERE, NOT TAKEN FROM THE SOURCE. Tabler draws at 2 on a 24 grid and
+   Hugeicons at 1.5; at 20px that is 1.67px against 1.25px on screen — the exact spread the AI
+   panel's icon rule exists to stop. One declaration gives all three 1.33px.
+   ⚠️ IT HAS TO REACH \`g\` AND \`path\` TOO: Hugeicons' DeepSeek carries \`stroke-width\` on its \`<g>\`
+   as a presentation attribute, which a rule on the \`<svg>\` root alone does not override. */
+.agpci svg{width:20px;height:20px;display:block;overflow:visible;fill:none;stroke:currentColor}
+.agpci svg,.agpci svg g,.agpci svg path{stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+/* the reference's leading dot, and the one place the Active card differs from Available beyond its word */
+.agpcd{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.agpcn{font-size:14px;font-weight:600;color:var(--page-text-color)}
+.agpct{margin:4px 0 0;font-size:12.5px;line-height:1.55;color:var(--text-color-common-secondary)}
+/* ⚠️ \`margin-top:auto\` ON THE ACTION ROW is what makes three cards of unequal tagline length end
+   on one line — the grid stretches them to the tallest, and without this the buttons float. */
+/* ⚠️ THE DOCS BUTTON IS GONE (request, same day: "remove this icon"), so the row holds one control.
+   \`.agpcb\` keeps \`flex:1 1 auto\` — it stretches the HOST, not the painted button, which obs-button
+   sizes to its own label; the row reads the same as before minus its neighbour. \`p.docs\` is NOT
+   orphaned: Option 1's consent panel still links each provider's privacy page with it. */
+.agpca{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.agpcb{flex:1 1 auto}
 .agpanel{padding:16px;border:1px solid var(--border-color);border-radius:var(--btn-radius);
   background:var(--common-widget-bg)}
 .agpanel + .agpanel{margin-top:16px}
@@ -1823,6 +2003,22 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 #drawer-agcfg .aghelp{padding-top:24px;padding-right:24px}
 /* the rail and the form get the same treatment on their own outer edges */
 #drawer-agcfg .agcfgn{padding-left:8px}
+/* ⚠️ OPTION 3's RAIL IS TITLED (request, 16 Sep 2026) — see the \`obs-side-menu\` entry in the
+   shadow-sheet map for what the rest of that reference changed, and for why the numbers were
+   measured off the supplied screenshot rather than the live DOM.
+   ⚠️ IT IS SLOTTED LIGHT DOM, so this page rule reaches it — the rail's ROWS are in the
+   component's shadow root and cannot be styled from here, which is the whole reason that
+   entry in the map exists.
+   ⚠️ THE 24px SPACER BECOMES THE TITLE'S TOP MARGIN. \`#drawer-agcfg .agcfgsp{height:24px}\` is a
+   FIXED height, so a title inside it would be clipped to 24px and paint over the first row —
+   the height has to give way to the padding when there is something in the box. \`:has()\` is
+   what keeps Option 1's empty spacer at exactly 24px.
+   ⚠️ 12px OF LEFT INSET, NOT THE ROW'S 36. A \`categories\` leaf is indented 28px by the
+   component's own \`q()\`, written INLINE on the row, plus \`.rows\`' 8px — so the glyphs sit at
+   36. The reference puts its title LEFT of its icons, not over them, and a 36px indent in a
+   230px column reads as a hanging label. */
+#drawer-agcfg .agcfgsp:has(.agcfgnt){height:auto;padding:24px 12px 10px}
+.agcfgnt{font-size:13.5px;font-weight:600;color:var(--primary-alt);line-height:1.3}
 /* ⚠️ NO \`min-height:100%\` HERE — it stranded the footer. With it, \`.agcfg\` was pinned to the
    drawer body's height, so the tall flattened form overflowed WITHOUT the body scrolling
    (measured: \`.dr-b\` scrollHeight 756 === clientHeight 756 while content ran to y=1466) and
@@ -1984,7 +2180,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
    Settings module). \`--primary\` reads the DS's own \`--primary-alt\`, which is exactly that pair, so no hex is pasted; the
    two notes above are the record of the teal it replaces. The hover mixes toward the page background, because in dark
    \`--page-text-color\` IS #cad3e2 and mixing toward it changed nothing. */
-#agPage,#licPage,#licHist,#licHistF,#licHistDr{--primary:var(--primary-alt);
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr{--primary:var(--primary-alt);
   /* obs-button's primary reads its OWN pair, not --primary (registry tokensUsed: --primary-button-bg /
      --primary-button-text) — measured: the buttons stayed white after --primary alone moved */
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
@@ -1993,7 +2189,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-the
 /* ⚠️ THE LIGHT RULE REPEATS THE BUTTON AND RADIO PAIRS. The scoped token block declares them under
    \`html[data-theme="light"] #licPage\` (1,1,1), which outranks the (1,0,0) rule above — measured:
    with only \`--primary\` here, light-theme buttons stayed navy while dark went teal. */
-html[data-theme="light"] #agPage,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #licHistDr{--primary:var(--primary-alt);
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #licHistDr{--primary:var(--primary-alt);
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
   --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-background-color));--primary-button-hover-text:var(--page-background-color);
   --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
@@ -3139,9 +3335,41 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
                      /* Option 2's edition chip: the live license-hero-chip gradient (see .licxname) */
                      ':host(.licxchip) .tag{background:linear-gradient(135deg,var(--license-accent),var(--license-violet));' +
                      'color:var(--license-on-accent);font-weight:600}',
+    /* ⚠️ OPTION 3's PROVIDER RAIL, BUILT TO THE PRODUCT'S OWN APM ‣ APPLICATION REGISTRATION RAIL
+       (request, 16 Sep 2026, with that screen as the reference). ⚠️ MEASURED FROM THE SUPPLIED
+       SCREENSHOT, NOT FROM THE LIVE DOM: the instance answers 200 but its SPA does not mount under
+       browser automation — `document.body.textContent` came back EMPTY twice, which is the trap
+       this file already records, made worse by an MCP tab being `visibilityState:"hidden"` so its
+       boot timers starve. Say which, rather than let these numbers read as harvested.
+       ⚠️ SCOPED `:host(.agcfgnav)`, which ONLY Option 3's rail carries — Option 1's is untouched.
+       What the reference does that the shipped `m-categories` rail did not:
+         · the column is TITLED (`Application Registration`) — ours is in the `logo` slot, below;
+         · the rows breathe — a taller row and a real gap between them, not a 1px seam;
+         · the row's own inset is wider, so the glyph is not against the column's edge;
+         · the ACTIVE row's glyph takes the row's colour. `.r-ic` is hardcoded to
+           `--neutral-light`, so on the shipped rail the selected row's icon stayed dim while its
+           label brightened — two halves of one row disagreeing about being selected.
+       ⚠️ THE ROW PADDING HAS TO BEAT `.m-categories .row.leaf` (0,2,0); `:host(.agcfgnav)` plus
+       those two is (0,3,0), so it wins without `!important`.
+       ⚠️ `padding-left` IS NOT SET HERE. The component writes it INLINE per row from its own
+       `q()` (28px for a `categories` leaf), and an inline style beats any rule — the indent is
+       its depth model, so it is left alone and only the right/vertical padding is ours. */
+    'obs-side-menu': ':host(.agcfgnav) .m-categories .row.leaf{padding-top:9px;padding-bottom:9px;' +
+      'padding-right:12px;font-size:13px;border-radius:4px}' +
+      ':host(.agcfgnav) .rows{padding:0 8px;display:flex;flex-direction:column;gap:4px}' +
+      ':host(.agcfgnav) .row.leaf.active .r-ic{color:inherit}',
     'obs-severity':  '.chip{border-radius:4px}',
     'obs-checkbox':  '.box{border-radius:4px}',
-    'obs-select':    '.val-pop,.t-badge,.pill,.pill-pop,.menu,.cbx{border-radius:4px}',
+    /* ⚠️ THE SECOND RULE IS WHAT MAKES TWO ROWS SHARE ONE GAP (request, 16 Sep 2026: the three
+       provider tiles and Agent · Model · Priority "make the same space"). Both rows are grids with
+       the SAME `gap:12px`, and they still read as different spacings, because `obs-select`'s shadow
+       `.sel` is a hardcoded **240px**: the tiles stretch to fill a 259px column while the selects
+       sit at the left of theirs, so the eye sees 12px between tiles and 12 + 19 = 31px between
+       fields. Measured, not guessed. Letting `.sel` fill the host is the only way to close it —
+       page CSS cannot reach inside the component, and this hook is how every other shadow rule in
+       this file lands. Scoped by a host class so no other `obs-select` on any screen is touched. */
+    'obs-select':    '.val-pop,.t-badge,.pill,.pill-pop,.menu,.cbx{border-radius:4px}' +
+      ':host(.agadvsel),:host(.agadvsel) .sel{width:100%}',
     'obs-menu':      '.menu,:host([bordered]) .dots{border-radius:4px}',
     /* ⚠️ THE SECOND RULE IS THE AGENTIC AI GRID'S, NOT A RADIUS, AND IT IS A STATED COMPROMISE.
        Its Connection column has to show a STATUS on one row and a BUTTON on the others, and an
@@ -4512,8 +4740,16 @@ const AG = { active: true, conn: 'openai', q: '', opt: '1' };
    (agOvHTML, agConfig and everything under them), so today they are pixel-identical and cannot drift by accident. A later
    Option 2 request is made by branching on AG.opt === '2' at the part that changes (the License page's lic4HTML('5')
    pattern) — never by pasting a second copy of these ~500 lines, which in this flat global scope would collide on every
-   function name. The page root carries data-agopt="1|2" so CSS can scope to one option without touching the other. */
-const AG_OPTS = [{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }];
+   function name. The page root carries data-agopt="1|2|3" so CSS can scope to one option without touching the other.
+   ⚠️ OPTION 3 IS A COPY OF OPTION 1 (request, 16 Sep 2026: "in agentic AI the option 1 copy and create option3"), and
+   it needed ONE LINE — this array. Every branch in the block asks `AG.opt === '2'` or `!== '2'`, so a third option
+   falls into Option 1's path by construction: same overview table with its search, same drawer with its provider rail
+   and help card, same KMS caption, same "Accept & enable AI" and the same done step. Nothing is duplicated, so the two
+   cannot drift until something is asked for — and that ask is a `AG.opt === '3'` branch at the part that changes.
+   ⚠️ AN `=== '1'` TEST WOULD HAVE BROKEN IT, and there is none: every branch was checked before adding the option
+   rather than after. A test written as "is it Option 1" instead of "is it not Option 2" would silently drop Option 3
+   into neither path. Keep that shape if a fourth is ever added. */
+const AG_OPTS = [{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }, { value:'3', label:'Option 3' }];
 /* ⚠️ ⚠️ `obs-button` FIRES `onclick` TWICE FOR ONE REAL CLICK — v0.1.166, measured 1 Sep 2026.
    A pointer click targets the component's INNER `<button>` (in its shadow root). That event is
    `composed`, so it crosses the boundary and runs the host's `onclick` once — and the component
@@ -4703,12 +4939,34 @@ function agOvHTML(){
   /* ⚠️ THE SEARCH FINALLY HAS SOMETHING TO SEARCH. It shipped over an empty page an hour ago;
      it filters this grid. */
   const o2 = AG.opt === '2';
+  /* ⚠️ OPTION 3 SHOWS NO TABLE AT ALL (request, 16 Sep 2026: "remove the grid"), so its page is the
+     header and the toolbar. It was a copy of Option 1 from this morning; this is the first thing
+     that makes it its own design, and the branch is `=== '3'` at the one part that changes — the
+     pattern this block's header describes.
+     ⚠️ THE SEARCH GOES WITH IT, exactly as it did when Option 2 dropped its grid: that box filters
+     the table and nothing else, so over a page with no table it is a control that cannot do
+     anything. Stated rather than assumed — the request said "remove the grid", and this is the
+     neighbouring control the removal makes dead. */
+  const o3 = AG.opt === '3';
   const toolbar = `<obs-toolbar>
-      ${o2 ? '' : `<obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
+      ${o2 || o3 ? '' : `<obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
         oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>`}
       <obs-button variant="default" class="agexp" data-tip="Export as PDF"
         onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>
-      <obs-button variant="primary" onclick="agTap(agConfig)">Configure AI provider</obs-button>
+      ${/* ⚠️ OPTION 3 RENAMES THIS BUTTON (request, 16 Sep 2026: "remove the button 'Configure AI
+           provider' because this button is also provided in card, but add a new button in the replaced
+           button position — the name is 'Advanced configure'"). Every card already carries its own
+           Configure / Change API key, so a toolbar control repeating that word said the same thing a
+           fourth time on one screen.
+           ⚠️ IT IS A RENAME, NOT A NEW CONTROL — same slot, same `agConfig`, same drawer. The request
+           asked for a button in the removed one's position, which is what this is; nothing was added
+           beside it and nothing else moved.
+           ⚠️ STATED, NOT ACTED ON: the WORD now promises more than the button delivers. Option 3's drawer
+           became Option 2's compact form minutes earlier — no Advanced settings, no Model selection — so
+           "Advanced" names a form that is currently the barest of the three. Pointing it at Option 1's full
+           form instead is one branch in `agCfgHTML`, and would make the name true. */''}
+      <obs-button variant="primary" onclick="agTap(${o3 ? 'agAdvOpen' : 'agConfig'})">${
+        o3 ? 'Advanced configure' : 'Configure AI provider'}</obs-button>
     </obs-toolbar>`;
 
   /* ⚠️ THE DETAIL ONLY EXISTS ONCE A PROVIDER IS CONNECTED. Unconfigured, the page is header →
@@ -4722,11 +4980,14 @@ function agOvHTML(){
   /* ⚠️ OPTION 2 SHOWS NO GRID (request, 16 Sep 2026: "remove the grid and show only which AI I integrated, show details").
      The three-row usage table — two of whose rows were em dashes — becomes ONE panel about the connected provider; the
      toolbar search went with the grid it filtered (a search box over nothing would be a dead control). See agConnHTML. */
-  const usage = o2 ? agGridHTML() : !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
+  const usage = o2 ? agGridHTML() : o3 ? agCardsHTML() : !AG.active ? '' : `<obs-table id="agUse" row-key="id" sortable expandable
       header-style="tinted" empty-text="No records available"
       columns="${agJ(AG_USE_COLS)}" rows="${agJ(agUseRows())}"></obs-table>`;
 
-  return `<div class="agpage" id="agPage" data-agopt="${AG.opt}">${head}${toolbar}${agOneNoteHTML('overview')}${usage}</div>`;
+  /* ⚠️ THE NOTE FOLLOWS THE GRID (request, 16 Sep 2026: "swap in grid and note"). It reads as a
+     footnote to the table now rather than a preamble to it — which is also the order the drawer
+     settled on the same day: the thing itself first, then the rule that governs it. */
+  return `<div class="agpage" id="agPage" data-agopt="${AG.opt}">${head}${toolbar}${usage}${agOneNoteHTML('overview')}</div>`;
 }
 
 
@@ -4928,13 +5189,254 @@ function agSeed(){
    (`--rail-w-open`), and the shell's padding trusts it for the same question.
    ⚠️ GUARDED: this block also loads in pages whose rail engine differs, so a missing
    `railWidth` leaves the CSS fallback in place rather than throwing on open. */
+/* ⚠️ WHICH OPTIONS USE THE COMPACT FORM DRAWER — asked once, here, and read by every branch that used to
+   test `AG.opt === '2'` on the Configure screen (request, 16 Sep 2026: "copy option 2 sidebar 'Configure AI
+   provider' and paste in option 3", confirmed as the WHOLE drawer rather than only its width).
+   ⚠️ IT IS A PREDICATE, NOT NINE `|| AG.opt === '3'`s. Ten places decide this drawer's shape — its width,
+   its `agcfgo2` class, the rail, the help card, the body, the provider picker, the credentials heading,
+   Advanced settings, the test banner's tail, the footer's caption, its primary and what that primary does.
+   Spelling the answer out at each of them is how two of them end up disagreeing.
+   ⚠️ IT IS ABOUT THE DRAWER ONLY. The OVERVIEW still branches on the real option — Option 2 draws the
+   grid, Option 3 the provider cards — and `agCfgSave`'s one-at-a-time wipe still tests `AG.opt !== '3'`,
+   because Option 3 is multi-provider by an earlier request. Do not fold those into this.
+   ⚠️ WHAT THIS DELETED, STATED: Option 3's titled "AI provider" rail, built from the product's APM ›
+   Application Registration screen earlier the same day. The compact drawer is 684px — a 230px rail plus a
+   720px form does not fit in it, which is why Option 2 never had one. Its CSS (`.agcfgnav` / `.agcfgnt` and
+   the `obs-side-menu` entry in the shadow-sheet map) is KEPT AND UNREFERENCED, the house pattern, so the
+   rail is one `o2` back. */
+const agO2Form = () => AG.opt === '2' || AG.opt === '3';
+
+/* ══ ADVANCED CONFIGURE ════════════════════════════════════════════════════════════════════
+   Request, 16 Sep 2026, with the product's APM › Application Registration screen as the reference and a
+   five-point spec: (1) the rail lists all module names, (2) the middle column picks one of the three AI
+   providers, (3) below it an **Agent** dropdown of Agent 1–4, (4) then a **Model**, (5) then
+   High / Medium / Low / Critical — and a Save button at the bottom.
+
+   ⚠️ THE MODULE LIST IS THE PRODUCT'S OWN, NOT A GUESS. `_product-docs/MOTADATA-PRODUCT-REFERENCE.md`
+   §1 names sixteen: Dashboards · Monitors · Alerts · SLO (BETA) · Reports · Topology · NCCM · NetRoute ·
+   Metric Explorer · Log Explorer · APM Explorer · RUM Explorer · Flow Explorer · Trap Explorer · Audits ·
+   Settings. The repo rule is to read the digested docs before inventing anything, and this is what they say.
+   ⚠️ IT IS DECLARED HERE, NOT READ FROM THE PAGE'S `MODULES`. That array is a page-level `const` and this
+   file is shared by thirteen pages; reaching across would make the screen depend on which page it opens on.
+   ⚠️ THE RAIL CARRIES A GLYPH PER MODULE (request, 16 Sep 2026), and ALL SIXTEEN NAMES WERE RENDER-CHECKED
+   BEFORE BEING WRITTEN IN. `agIc` renders an `obs-icon`, and a name the bundle does not have emits an empty
+   comment — NOTHING, with no error — so a guessed name is one invisible row among fifteen and nothing
+   reports it. The probe appended all 63 candidates and read each shadow root for an `<svg>`.
+   ⚠️ THE PLURAL IS USUALLY THE WRONG ONE. `settings` renders and **`setting` does not** — which is the
+   opposite of the host pages' own `ICONS`, where the key is `setting`; and `monitors` / `alerts` / `reports`
+   / `audits` / `nccm` / `flows` / `logs` / `metrics` / `trap` all render nothing while their siblings
+   `monitor` / `alert` / `report` / `audit` / `ncm` / `flow` / `log` / `metric-explorer` / `trap-viewer` do.
+   Re-probe, never re-derive, if `_ds/` is upgraded.
+   ⚠️ "Priority" IS MY LABEL. The spec gave the four values and no name for the field. Say so rather than
+   let a made-up label read as the product's.
+   ⚠️ THE FOUR VALUES ARE THE SPEC'S, NOT THE PRODUCT'S FIVE SEVERITIES (Critical · Major · Warning · Minor ·
+   Clear, per the same reference §1). They were asked for verbatim, so they are used verbatim. */
+const AG_MODULES = ['Dashboards','Monitors','Alerts','SLO','Reports','Topology','NCCM','NetRoute',
+  'Metric Explorer','Log Explorer','APM Explorer','RUM Explorer','Flow Explorer','Trap Explorer',
+  'Audits','Settings'];
+const AG_MOD_IC = { 'Dashboards':'dashboard', 'Monitors':'monitor', 'Alerts':'alert', 'SLO':'slo',
+  'Reports':'report', 'Topology':'topology', 'NCCM':'ncm', 'NetRoute':'netroute',
+  'Metric Explorer':'metric-explorer', 'Log Explorer':'log', 'APM Explorer':'apm', 'RUM Explorer':'rum',
+  'Flow Explorer':'flow', 'Trap Explorer':'trap-viewer', 'Audits':'audit', 'Settings':'settings' };
+const AG_AGENTS = ['Agent 1','Agent 2','Agent 3','Agent 4'];
+const AG_PRIORITY = ['High','Medium','Low','Critical'];
+
+/* ⚠️ THE FOUR AGENT ROLES ARE MINE, AND THE SPEC GAVE ONLY FOUR NAMES. The request was for a note under the
+   Agent field saying "how the agent works and where it works"; `Agent 1`–`Agent 4` are placeholders — the
+   product docs define no such thing — so a note that merely repeated the number would have been the feature
+   not working, and one that quoted a product behaviour would have been inventing product. What each agent
+   DOES is therefore a plain reading of the four ways an assistant can be triggered, carries no invented
+   numbers or intervals, and is flagged here as ours. Replace it the moment the real ones are known.
+   ⚠️ WHERE IT RUNS IS DERIVED, NOT WRITTEN — the module, the provider and the model all come off the record
+   the form is editing, so the note cannot name a module you are not on or a model that provider does not
+   serve. That half of the sentence is the half that is true by construction. */
+const AG_AGENT_HOW = {
+  'Agent 1': "works through the module's own data on a fixed schedule and leaves what it finds on that module's screens",
+  'Agent 2': 'works only when someone asks it something from that module — nothing runs in the background',
+  'Agent 3': 'wakes when the module raises something — an alert, a breached threshold, a failed check — and works that one item',
+  'Agent 4': "watches the module's live stream and works items as they arrive"
+};
+
+/* ⚠️ THE TRAIL IS DECLARED HERE, NOT READ FROM THE PAGE'S `EXPLORER_TREE` — same rule as `AG_MODULES`:
+   that array is a page-level `const` and this file is shared by thirteen pages, so reaching across would
+   make the note depend on which page the drawer was opened from. The grouping is the docs' own §1
+   taxonomy (the six Explorers, plus Monitor / Topology / NCCM / NetRoute / Audit, all sit under Explorer;
+   Dashboards, Alert, SLO, Report and Settings are top level).
+   ⚠️ `AI features` IS THIS SCREEN'S OWN WORDING, not a new noun — it is what the Configure form's primary
+   has always said ("Accept & enable AI"), so the trail ends somewhere the product already names. */
+const AG_MOD_PATH = {
+  'Dashboards':['Dashboards'], 'Monitors':['Explorer','Monitor'], 'Alerts':['Alert'], 'SLO':['SLO'],
+  'Reports':['Report'], 'Topology':['Explorer','Topology'], 'NCCM':['Explorer','NCCM'],
+  'NetRoute':['Explorer','NetRoute'], 'Metric Explorer':['Explorer','Metric Explorer'],
+  'Log Explorer':['Explorer','Log Explorer'], 'APM Explorer':['Explorer','APM Explorer'],
+  'RUM Explorer':['Explorer','RUM Explorer'], 'Flow Explorer':['Explorer','Flow Explorer'],
+  'Trap Explorer':['Explorer','Trap Explorer'], 'Audits':['Explorer','Audit'], 'Settings':['Settings']
+};
+
+/* ⚠️ THE SEPARATOR IS THE CHARACTER, NOT A DRAWN GLYPH. The supplied reference is a text trail, `→` is a
+   real character rather than hand-drawn path data, and it inherits the row's colour and size for free —
+   so the icon rule ("never hand-draw one") is satisfied without loading a mark for punctuation. */
+function agAdvCrumbHTML(){
+  const trail = ['ObserveOps'].concat(AG_MOD_PATH[AG.adv.mod] || [AG.adv.mod], ['AI features', agAdvRec().agent]);
+  return `<span class="agadvcrumb">${trail.map((c, i) => (i ? '<span class="sep">\u2192</span>' : '') +
+    `<span class="c${i === trail.length - 1 ? ' cur' : ''}">${stEsc(c)}</span>`).join('')}</span>`;
+}
+
+function agAdvNoteHTML(){
+  const r = agAdvRec(), p = agProv(r.prov);
+  const mdl = (p.models.filter(m => m.id === r.model)[0] || p.models[0] || {}).name || r.model;
+  /* ⚠️ THE MODULE IS NAMED ONCE, NOW THE TRAIL NAMES IT. The sentence used to read "scoped to
+     <b>Dashboards</b>" and the breadcrumb under it would have said the same word 30px lower — the
+     "every fact appears once" rule this file already applies to the summary card. The sentence keeps
+     HOW and who does the reasoning; the trail is the WHERE, which is what it was added for. */
+  return `<obs-banner class="agnote" variant="info" title="How ${stEsc(r.agent)} works">
+      ${stEsc(r.agent)} ${AG_AGENT_HOW[r.agent] || 'works inside this module only'} — on the ObserveOps
+      server, reading nothing outside the module it is scoped to. The reasoning is done by
+      ${stEsc(p.name)} \u00b7 ${stEsc(mdl)}.
+      ${agAdvCrumbHTML()}
+    </obs-banner>`;
+}
+
+/* ⚠️ THE NOTE REPAINTS ON ITS OWN, AND THAT REPLACED A FULL-BODY REPAINT. \`agAdvSet\` used to call
+   \`agAdvPaint()\`, which rewrites \`#agAdvMain\` — destroying all three \`obs-select\`s, including the one
+   just used, on every pick. Only the note reads agent/model, so only the note is rebuilt; the record stays
+   the truth and a module switch still rebuilds the body from it. The \`agConsPaint\` discipline. */
+function agAdvNotePaint(){
+  const n = document.getElementById('agAdvNote');
+  if (n) n.innerHTML = agAdvNoteHTML();
+}
+
+/* one record per module, seeded so no dropdown ever opens on an empty value */
+const agAdvSeed = () => {
+  const o = {}, p0 = AG_DATA.providers[0];
+  AG_MODULES.forEach(m => { o[m] = { prov:p0.id, agent:AG_AGENTS[0], model:p0.models[0].id, pri:AG_PRIORITY[1] }; });
+  return o;
+};
+AG.adv = { mod:AG_MODULES[0], d:agAdvSeed() };
+
+const agAdvRec = () => AG.adv.d[AG.adv.mod];
+
+/* ⚠️ THE MODEL LIST BELONGS TO THE PICKED PROVIDER, so switching provider has to re-point the model or the
+   row would name a model that provider does not serve — the same rule the Configure form follows. */
+function agAdvProv(id){
+  const r = agAdvRec(); if (r.prov === id) return;
+  r.prov = id; r.model = (agProv(id).models[0] || {}).id;
+  agAdvPaint();
+}
+function agAdvSet(k, v){ agAdvRec()[k] = v; agAdvNotePaint(); }
+function agAdvPick(m){ if (AG.adv.d[m]){ AG.adv.mod = m; agAdvPaint(); } }
+
+function agAdvBodyHTML(){
+  const r = agAdvRec(), p = agProv(r.prov);
+  const sel = (id, label, opts, val, k) => `<div class="agadvfld">
+      <span class="agflb">${stEsc(label)}</span>
+      <obs-select class="agadvsel" id="${id}" options="${agJ(opts)}" value="${stEsc(val)}"
+        onchange="agAdvSet('${k}', agDet(event))"></obs-select></div>`;
+  return `<h2 class="agcfgh">${stEsc(AG.adv.mod)}</h2>
+    <p class="agcfgp">Choose the AI provider, agent and model this module's AI features use.</p>
+
+    <div class="agadvfld"><span class="agflb">AI provider</span></div>
+    <div class="agadvtiles" id="agAdvTiles">${AG_DATA.providers.map(x => `
+      <button type="button" class="agadvtile${x.id === r.prov ? ' on' : ''}" data-prov="${x.id}"
+        onclick="agAdvProv('${x.id}')">
+        <span class="h">${stEsc(x.name)}</span>
+        <span class="d">${stEsc(x.tagline)}</span>
+      </button>`).join('')}</div>
+
+    <div class="agadvgrid">
+      ${sel('agAdvAgent', 'Agent', AG_AGENTS.map(a => ({ value:a, label:a })), r.agent, 'agent')}
+      ${sel('agAdvModel', 'Model', p.models.map(m => ({ value:m.id, label:m.name })), r.model, 'model')}
+      ${sel('agAdvPri', 'Priority', AG_PRIORITY.map(x => ({ value:x, label:x })), r.pri, 'pri')}
+    </div>
+    <div id="agAdvNote">${agAdvNoteHTML()}</div>`;
+}
+
+function agAdvHTML(){
+  return `<div class="agadvh">
+      <span class="t">Advanced configure</span>
+      <button class="agadvx" type="button" aria-label="Close" onclick="agAdvClose()">${agIc('times', 14)}</button>
+    </div>
+    <div class="agadvbody">
+      <div class="agadvn" id="agAdvNav">${AG_MODULES.map(m => `
+        <button type="button" class="agadvr${m === AG.adv.mod ? ' on' : ''}" data-mod="${stEsc(m)}"
+          onclick="agAdvPick('${m.replace(/'/g, "\\'")}')"><span class="agadvic">${agIc(AG_MOD_IC[m], 18)}</span
+          ><span class="nm">${stEsc(m)}</span></button>`).join('')}
+      </div>
+      <div class="agadvm" id="agAdvMain">${agAdvBodyHTML()}</div>
+    </div>
+    <div class="agadvf">
+      <span class="sp"></span>
+      <obs-button variant="primary" onclick="agTap(agAdvSave)">Save</obs-button>
+    </div>`;
+}
+
+/* ⚠️ CREATED ONCE, ON `<body>` — see the CSS note. `#agPage` is what carries the scoped DS token block, so
+   the drawer's own `id` had to be added to that block's selector list or it would paint in the DS's LIGHT
+   defaults over a dark page — the exact trap the License history drawer hit when it moved to the top layer. */
+function agAdvEl(){
+  let d = document.getElementById('drawer-agadv');
+  if (d) return d;
+  const sc = document.createElement('div'); sc.id = 'agAdvScrim';
+  sc.addEventListener('click', agAdvClose);
+  document.body.appendChild(sc);
+  d = document.createElement('div'); d.id = 'drawer-agadv'; d.className = 'agadvdr agpage';
+  document.body.appendChild(d);
+  return d;
+}
+
+/* ⚠️ ONLY THE INNER COLUMNS REPAINT once the drawer exists. Rewriting the whole panel would replay its
+   slide-in on every keystroke and throw away the focus of the control just used — the discipline the
+   Configure form already follows, and the `slotchange` lesson behind it. */
+function agAdvPaint(){
+  const d = document.getElementById('drawer-agadv');
+  if (!d) return;
+  const nav = document.getElementById('agAdvNav'), main = document.getElementById('agAdvMain');
+  if (nav && main){
+    [].slice.call(nav.children).forEach(b => b.classList.toggle('on', b.dataset.mod === AG.adv.mod));
+    main.innerHTML = agAdvBodyHTML();
+    return;
+  }
+  d.innerHTML = agAdvHTML();
+}
+
+function agAdvOpen(){
+  const d = agAdvEl();
+  agAdvPaint();
+  document.body.classList.add('agdrawer');
+  document.getElementById('agAdvScrim').classList.add('on');
+  d.classList.add('on');
+}
+function agAdvClose(){
+  const d = document.getElementById('drawer-agadv');
+  if (d) d.classList.remove('on');
+  const sc = document.getElementById('agAdvScrim'); if (sc) sc.classList.remove('on');
+  document.body.classList.remove('agdrawer');
+}
+function agAdvSave(){
+  const r = agAdvRec(), p = agProv(r.prov);
+  const m = (p.models.find(x => x.id === r.model) || p.models[0]).name;
+  agAdvClose();
+  toast(`${AG.adv.mod} → ${p.name} · ${r.agent} · ${m} · ${r.pri}`);
+}
+
+/* ⚠️ ESCAPE, IN CAPTURE PHASE, AHEAD OF THE HOST'S OWN LADDER — the same reason `#drawer-agcfg` needs its
+   own: the page's handler matches `.sdrawer.on`, which this drawer deliberately is not, so it would never
+   close and its scrim would be left over the page. */
+document.addEventListener('keydown', function (e){
+  if (e.key !== 'Escape') return;
+  const d = document.getElementById('drawer-agadv');
+  if (!d || !d.classList.contains('on')) return;
+  e.stopPropagation();
+  agAdvClose();
+}, true);
+
 function agCfgSize(){
   const d = document.getElementById('drawer-agcfg'); if (!d) return;
   if (typeof railWidth !== 'function') return;
   /* ⚠️ OPTION 2 IS A SIDE PANEL, NOT THE FULL WIDTH (request, 16 Sep 2026, with the product's Create User drawer as the size
      reference): 684px — the product's own form-drawer width, the one the Compliance Policy drawer measured — and never
      wider than the room beside the rail */
-  d.style.width = AG.opt === '2' ? Math.min(684, innerWidth - railWidth()) + 'px'
+  d.style.width = agO2Form() ? Math.min(684, innerWidth - railWidth()) + 'px'
                                  : Math.max(720, innerWidth - railWidth()) + 'px';
 }
 window.addEventListener('resize', () => {
@@ -4950,7 +5452,7 @@ function agConfig(pid){
      other option sends agCfgPaint down its full-build branch. */
   const bd = document.getElementById('agCfgBody');
   if (bd && bd.dataset.agopt !== AG.opt) bd.innerHTML = '';
-  d.classList.toggle('agcfgo2', AG.opt === '2');
+  d.classList.toggle('agcfgo2', agO2Form());
   agCfgPaint();
   agCfgSize();
   document.body.classList.add('agdrawer');
@@ -5080,14 +5582,28 @@ function agCfgHTML(){
   /* ⚠️ `.agcfgsp` is the drawer's 24px top gutter for the RAIL, in the side menu's own `logo`
      slot so the panel and its right rule stay full height while the rows start lower (3 Sep 2026:
      "the line is attached"). Sized only under `#drawer-agcfg` — see that rule in the CSS. */
-  const o2 = AG.opt === '2';
+  const o2 = agO2Form();
   return `<div class="agpage agcfg" id="agPage">
     ${o2 ? '' : `<div class="agcfgn">
       <obs-side-menu id="agCfgNav" mode="categories" search="false"
-        active="${stEsc(p.name)}" items="${agJ(items)}"><div slot="logo" class="agcfgsp"></div></obs-side-menu>
+        active="${stEsc(p.name)}" items="${agJ(items)}"><div slot="logo" class="agcfgsp">${'' && `${
+          /* ⚠️ THE TITLE GOES IN `obs-side-menu`'s OWN `logo` SLOT, which is the component's
+             documented top-of-panel slot and already holds `.agcfgsp`, the drawer's 24px gutter.
+             So the heading costs no new element and sits above `.rows`, which is the one thing
+             that scrolls — it stays put while a long provider list moves under it.
+             ⚠️ IT NAMES THE CHOICE, NOT THE SCREEN. The reference titles its column with the page
+             ("Application Registration") because that rail IS the page; this rail sits inside a
+             drawer whose own header already reads "Configure AI provider", so repeating that
+             would say it twice 40px apart. "AI provider" is what the three rows are. */
+          ''}`}</div></obs-side-menu>
     </div>`}
     <div class="agcfgm" id="agCfgMain">${agCfgFormHTML()}</div>
-    ${/* ⚠️ OPTION 2 HAS NO HELP CARD (request, 16 Sep 2026) — the form column takes the width */ AG.opt === '2' ? '' : agHelpHTML()}
+    ${/* ⚠️ NEITHER OPTION 2 NOR OPTION 3 HAS A HELP CARD (two requests, 16 Sep 2026) — the form
+         column takes the width. ⚠️ ON OPTION 3 THAT LEAVES THE RAIL AND THE FORM IN A FULL-WIDTH
+         DRAWER: `agCfgSize` still sizes it to the viewport minus the sidebar, and `.agform` caps
+         at 720px, so the middle column is much wider than the fields in it. Stated rather than
+         acted on — narrowing the drawer for Option 3 is a second decision. */
+      o2 ? '' : agHelpHTML()}
   </div>`;
 }
 
@@ -5145,7 +5661,24 @@ function agCfgFormHTML(){
      data sharing terms"). The provider keeps its default model (d.model, the first listed), and the footer's gate drops
      the consent half it can no longer show — see agFlowFootHTML. */
   const body = d.step > 2 ? agStepDone()
-             : AG.opt === '2' ? agProvPickHTML() + agStepCreds() + agTermsHTML() + agOneNoteHTML() + agTestHTML()
+             /* ⚠️ `agOneNoteHTML()` SELF-GUARDS TO OPTION 2, AND THAT MATTERS NOW THE LINE IS SHARED: the
+                one-at-a-time rule is FALSE on Option 3, whose cards let all three providers hold a key at
+                once. It returns '' there rather than stating a rule the option does not follow. */
+             : agO2Form() ? agProvPickHTML() + agStepCreds() + agTermsHTML() + agOneNoteHTML() + agTestHTML()
+  /* ⚠️ OPTION 3 IS CREDENTIALS + THE ONE TERMS LINE (three requests, 16 Sep 2026, in this order:
+     drop Model selection -> replace the four consent boxes with one checkbox -> "remove [Review data
+     sharing & processing terms], show only the checkbox and text"). `agStepConsent()` is no longer
+     called here at all; it still renders in full for Option 1, so nothing is parked.
+     ⚠️ WHAT WENT WITH THE SECTION, STATED RATHER THAN QUIETLY DROPPED — all three were disclosures,
+     not decoration, and Option 3's form no longer carries any of them:
+       · the WARNING BANNER "ObserveOps cannot control how a third-party provider stores or processes
+         that data once it has been transmitted";
+       · the seven `Data that may be transmitted` chips — so the reader is no longer shown WHAT is sent;
+       · the provider's PRIVACY POLICY link, which two requests ago survived precisely because that panel
+         carried it. It is now absent from Option 3 entirely.
+     What remains saying anything about it is the terms sentence itself, which names the provider and
+     links the Terms & Conditions. Option 1 still carries the whole section.
+     ⚠️ THE GATE NEEDED NOTHING — it already read `d.terms`, which is exactly the control still on screen. */
              : agStepCreds() + agStepModels() + agStepConsent() + agTestHTML();
   /* ⚠️ `size` IS THE DEFAULT 32px, NOT `small` (annotation ×3, 1 Sep 2026: "improve this" on
      each of the three steps). It shipped as `size="small"`, and the registry's own `size`
@@ -5196,6 +5729,16 @@ function agProvPickHTML(){
    ⚠️ ONE BUILDER, THREE SENTENCES, SO THEY CANNOT DRIFT: on the form it names the provider you are
    about to lose; on the overview it names the one you already have; with nothing connected both fall
    back to the plain rule. A second copy on the page would be the place they disagree. */
+/* ⚠️ OPTION 2 ONLY, AND `agO2Form()` IS THE WRONG QUESTION HERE (reported 16 Sep 2026: "remove this
+   because I configure multiple AI providers at a time"). Giving Option 3 Option 2's DRAWER swept this guard
+   up with it, and the note then appeared on Option 3's overview and in its form — **stating a rule Option 3
+   does not follow**, since its cards let all three providers hold a key at once. `agO2Form()` answers "does
+   this option use the compact drawer"; this asks "does this option replace one provider with another", and
+   the two stopped being the same question the moment Option 3 became multi-provider.
+   ⚠️ MY OWN PROBE PASSED ON IT. The assertion read `textContent` of the drawer for "One provider at a
+   time" — but that string is `obs-banner`'s `title` PROP, which the component renders inside its SHADOW
+   ROOT, so the light DOM never contains it. A green assertion measuring the wrong tree, which is the
+   failure this file records more than any other. Assert on the rendered banner element, not on page text. */
 function agOneNoteHTML(where){
   if (AG.opt !== '2') return '';
   const conn = AG.active && AG.conn ? agProv(AG.conn) : null;
@@ -5343,7 +5886,7 @@ function agStepCreds(){
      provider already selected in the segmented control directly above.
      ⚠️ CONSEQUENCE, STATED: with this line gone AND the footer's KMS caption removed the hour
      before, Option 2's drawer now says NOTHING about where the key goes. Option 1 carries both. */
-  const head = AG.opt === '2' ? '' : `<h2 class="agcfgh">Enter credentials</h2>
+  const head = agO2Form() ? '' : `<h2 class="agcfgh">Enter credentials</h2>
     <p class="agcfgp">Connecting <b>${stEsc(p.name)}</b>. Your key is encrypted server-side and never shown again in full.</p>`;
   /* ⚠️ OPTION 2 STATES THE ONE-AT-A-TIME RULE UNDER THE FIELDS (request, 16 Sep 2026: "show the
      message — at a time I config a single AI provider, and when I config another the old one will be
@@ -5355,12 +5898,35 @@ function agStepCreds(){
      ⚠️ `obs-banner variant="info"` IS THE DS's OWN INLINE HINT (its `usageRules.info`), and its
      `title` carries the lead-in with the detail in the slot — the component's own `do` rule, which
      the consent banner's note records being got wrong once already. */
-  return `${head}
-    <div class="agrow2">
+  /* ⚠️ OPTION 3 HAS NO CONNECTION NAME FIELD (request, 16 Sep 2026: "remove the Connection name in
+       agentic ai in option 3"). Scoped to Option 3 by name, NOT to `agO2Form()` — Option 2 shares this
+       whole drawer and was not named, and there are probe assertions that it still has the field.
+     ⚠️ THE CONNECTION STILL HAS A NAME; only the way to edit it from this form is gone. `agSeed` sets
+       `<Provider> production` per provider, so `d.name` is never empty and the four places that read it
+       (the done summary, the overview panel, the grid, `agCfgSave`) are untouched. Say that rather than
+       let the next reader think the record lost a field.
+     ⚠️ THE KEY THEN TAKES THE WHOLE ROW rather than sitting in the left half of a two-column grid with
+       dead space beside it. It stays inside `.agrow2` so the row keeps the form's own 16/24 rhythm —
+       only the column count changes. */
+  /* ⚠️ AND THE RECORD IS GIVEN THAT NAME, or Option 3 would save one with an empty `name`. `agSeed`
+       only names the provider that is already connected, so an unconfigured one had nothing but the
+       field's PLACEHOLDER — which is what the removed field was offering. The placeholder becomes the
+       value; the four readers of `d.name` are unchanged, and Options 1 and 2 are untouched because
+       their field is still there to overwrite it. */
+  if (AG.opt === '3' && !d.name) d.name = p.name + ' production';
+  const creds = AG.opt === '3'
+    ? `<div class="agrow2 agrow1">${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}</div>`
+    : `<div class="agrow2">
       ${fld('name','Connection name',` placeholder="${stEsc(p.name)} production"`)}
       ${fld('key','API key',` required type="password" placeholder="${stEsc(p.keyHint)}"`)}
-    </div>
-    ${AG.opt === '2' ? '' : adv}`;
+    </div>`;
+  return `${head}
+    ${creds}
+    ${/* ⚠️ OPTION 3 DROPS ADVANCED SETTINGS TOO (request, 16 Sep 2026: "remove the advance
+         setting and Model selection"). Its five fields keep their defaults — a custom endpoint
+         and proxy stay empty, and the timeout / retries / rate limit are the seeded numbers — so
+         nothing about the connection changes, only the ability to override it from this form. */
+      agO2Form() ? '' : adv}`;
 }
 /* ⚠️ THE TEST OUTPUT RENDERS AT THE END OF THE FORM, NOT UNDER THE CREDENTIALS FIELDS (request,
    2 Sep 2026). It used to close `agStepCreds`, which was right while that was step 1 of a wizard
@@ -5376,7 +5942,7 @@ function agTestHTML(){
   const st = d.test === 'ok' ? 'ok' : d.test === 'busy' ? 'busy' : 'idle';
   if (st === 'idle') return '';
   if (st === 'ok') return `<obs-banner variant="success" class="agbanok">${
-    stEsc(p.name)} is reachable with this key.${AG.opt === '2' ? '' : ' Continue to pick the models it should use.'}</obs-banner>`;
+    stEsc(p.name)} is reachable with this key.${agO2Form() ? '' : ' Continue to pick the models it should use.'}</obs-banner>`;
   return `<div class="agtest">
       <div class="agth">${agIc('plug', 15)}<span class="t">Test connection</span>
         <obs-tag variant="tag-yellow">Testing</obs-tag></div>
@@ -5440,6 +6006,22 @@ function agStepConsent(){
      ⚠️ THE PRIVACY LINK LOST ITS OWN RULE (`.agpll`, not `.agpf`). It belongs to "what is
      transmitted" — it is where you go to read how the provider handles it — so a rule above it
      was separating it from the thing it explains, and left two hairlines in one short panel. */
+  /* ⚠️ OPTION 3 CONFIRMS WITH ONE CHECKBOX, NOT FOUR (request, 16 Sep 2026: "remove all the checkbox
+     with text, show only a single checkbox and [the Terms & Conditions sentence]"). It reuses
+     `agTermsHTML()` — Option 2's line, not a copy of it — so the two options cannot drift apart on the
+     wording of the one thing the reader agrees to.
+     ⚠️ IT KEEPS ITS PLACE INSIDE `.agpf`, the panel's hairline footer. That rule exists to separate the
+     EVIDENCE (what is transmitted, and the provider's privacy policy) from the DECISION, and the decision
+     is still the decision when it is one box — lifting it out would leave the hairline cutting off nothing.
+     ⚠️ "Confirm to continue" AND THE LIVE COUNT GO WITH THE FOUR BOXES. The count said "2 of 4 accepted"
+     to explain a disabled primary; over a single box it can only ever say "0 of 1" or "1 of 1", which is
+     what the box itself shows. `agConsText` / `agConsPaint` are untouched and still serve Option 1 —
+     `agConsPaint` already guards on `#agConsN` existing, so it is simply inert here.
+     ⚠️ THE PRIVACY POLICY IS NOT LOST WITH THE FOUR TERMS. Option 2 dropped that link when it went to one
+     sentence; here the panel directly above still carries it under the transmitted-data chips, which is
+     where it belongs — it explains the evidence rather than being a second thing to agree to.
+     ⚠️ THE GATE MOVED WITH THE CONTROL — see `agFlowFootHTML`: Option 3's primary now reads `d.terms`,
+     not `d.consent.every(Boolean)`, or it would wait forever on four boxes that are no longer on screen. */
   return `<h2 class="agcfgh">Review data sharing &amp; processing terms</h2>
     <obs-banner variant="warning" class="agbanwarn"
       title="Enabling AI sends observability data to ${stEsc(p.name)}">ObserveOps cannot control how a
@@ -5448,13 +6030,13 @@ function agStepConsent(){
       <div class="agpt">Data that may be transmitted</div>
       <div class="agchips" style="margin-top:12px">${AG_SHARED.map(x => `<obs-tag variant="tag-primary">${stEsc(x)}</obs-tag>`).join('')}</div>
       <div class="agpll"><obs-link external href="${stEsc(p.docs)}" onclick="return false">${stEsc(p.privacy)}${agIc('external-link', 12)}</obs-link></div>
-      <div class="agpf">
+      <div class="agpf">${`
         <div class="agpt">Confirm to continue</div>
         <div class="agpd" id="agConsN">${agConsText()}</div>
         <div class="agcons" style="margin-top:12px">${
         AG_CONSENT.map((c, i) => `<obs-checkbox${d.consent[i] ? ' checked' : ''}
           onchange="agCfgConsent(${i}, agDet(event))">${stEsc(c)}</obs-checkbox>`).join('')
-      }</div>
+      }</div>`}
       </div>
     </div>`;
 }
@@ -5472,8 +6054,14 @@ function agStepDone(){
     { label:'Connection status', status:'Healthy' },
     { label:'Per-task routing',  value:d.perTask ? 'Enabled' : 'Default only' },
     { label:'Consent',           status:'Accepted' },
-  ].filter(r => AG.opt !== '2' || (r.label !== 'Per-task routing' && r.label !== 'Consent'))   /* not on Option 2's form */
-   .concat(AG.opt === '2' ? [{ label:'Terms & conditions', status:'Accepted' }] : []);
+  /* ⚠️ A SUMMARY MAY ONLY NAME WHAT ITS OWN FORM ASKED. Option 2 has neither routing nor the four
+     consent terms; Option 3 has the terms but no model step, so `Per-task routing` would report a
+     switch that is not on its form. Fixing copy the change falsifies is part of the change. */
+  ].filter(r => r.label !== 'Per-task routing' || AG.opt === '1')
+   /* ⚠️ ONLY OPTION 1 STILL HAS FOUR CONSENT TERMS, so only Option 1's summary may say "Consent".
+      Options 2 and 3 both confirm with the single Terms & Conditions box and report that instead. */
+   .filter(r => r.label !== 'Consent' || AG.opt === '1')
+   .concat(AG.opt === '1' ? [] : [{ label:'Terms & conditions', status:'Accepted' }]);
   return `<div class="agdone">
     <span class="agdmk">${agIc('check-circle', 30)}</span>
     <h2 class="agdt">Setup completed successfully</h2>
@@ -5503,9 +6091,14 @@ function agFlowFootHTML(){
     /* ⚠️ NO GLYPH, AND IT READS "Save" (request, 16 Sep 2026). The shield said "this is about security", which is
        the terms line's job two rows up; and "Enable AI" named a capability while the button's actual effect is to
        store this provider's connection — which is what the Overview then shows. Option 1's own primary is untouched. */
-    : AG.opt === '2'
+    : agO2Form()
     ? `<obs-button variant="primary"${dis(d.test === 'ok' && d.terms)}
          onclick="agTap(agCfgDone)">Save</obs-button>`
+    /* ⚠️ OPTION 3 GATES ON THE ONE TERMS BOX (16 Sep 2026). Its consent step is a single checkbox now,
+       so `consent.every(Boolean)` would hold the primary shut on four controls the form no longer renders
+       — a permanently disabled button with nothing on screen to explain it, which is the dead end the
+       Designer's Guide forbids. The test half is unchanged, and so is the label: "Accept" still names what
+       the box does. Option 1 keeps all four. */
     : `<obs-button variant="primary"${dis(d.test === 'ok' && d.consent.every(Boolean))}
          onclick="agTap(agCfgDone)">${agIc('shield-check', 13)}Accept &amp; enable AI</obs-button>`;
   /* ⚠️ THE KMS CAPTION IS THE CREDENTIALS STEP'S, NOT THE FLOW'S. It rendered on all four
@@ -5518,7 +6111,7 @@ function agFlowFootHTML(){
      so the footer was repeating it under a button. Option 1 keeps the caption; its form has no such line.
      ⚠️ THE EMPTY `.sp` SPAN STAYS EITHER WAY: `.agff .sp{margin-right:auto}` is what pushes the buttons to the right
      edge, and dropping the span slides them back to the middle of the footer. */
-  const note = d.step === 0 && AG.opt !== '2'
+  const note = d.step === 0 && !agO2Form()
     ? `<span class="sp agtn">${agIc('lock-alt', 13)}Keys are encrypted with the deployment KMS · never sent to the browser</span>`
     : `<span class="sp"></span>`;
   /* ⚠️ THE TEST BUTTON IS IN THE FOOTER TOO (request, 2 Sep 2026: "add test button after
@@ -5565,7 +6158,7 @@ function agCfgFootPaint(){
    recap before committing is worth the extra press — and the step is where its own primary
    ("Accept & enable AI") has always led. `agStepDone` is NOT unreferenced. */
 function agCfgDone(){
-  if (AG.opt === '2') return agCfgSave();
+  if (agO2Form()) return agCfgSave();
   const d = AG.cfg.d[AG.cfg.pid]; d.step = 3; agCfgPaint();
 }
 function agCfgNext(){ const d = AG.cfg.d[AG.cfg.pid]; d.step = Math.min(3, d.step + 1); agCfgPaint(); }
@@ -5672,7 +6265,10 @@ function agCfgSave(){
      key, terms and test result go, which is what makes its grid row a Config button rather than a
      provider that merely lost a badge while quietly keeping your key.
      ⚠️ IT RUNS BEFORE `AG.conn` MOVES, or it would clear the provider just connected. */
-  if (AG.active && AG.conn && AG.conn !== p.id){
+  /* ⚠️ OPTION 3 IS EXEMPT — it configures several providers at once (see agCardsHTML), so wiping the
+     previous one would delete a connection the option exists to let you keep. Options 1 and 2 keep the
+     one-at-a-time rule their own screens state. */
+  if (AG.opt !== '3' && AG.active && AG.conn && AG.conn !== p.id){
     const old = AG.cfg.d[AG.conn];
     if (old) Object.assign(old, { name:'', key:'', terms:false, test:'idle', stage:0, step:0 });
   }
@@ -5756,6 +6352,114 @@ const agGridRows = () => AG_DATA.providers.map(p => {
    ⚠️ THE CLASS IS WHAT KEEPS IT OFF EVERY OTHER TABLE. That adopted sheet is shared by every
    `obs-table` in the module — the License page's quota grid and its nested breakdown included — so the
    rule is `:host(.aggridt)`, not a bare `th`. */
+/* ⚠️ OPTION 3's PROVIDER CARDS (request, 16 Sep 2026, with a supplied card row: "add [this] using the
+   ObserveOps design system"). One card per provider: a tinted icon tile, a status pill, the name and its
+   tagline, then the action and a link to that provider's own documentation.
+   ⚠️ THE CARD ITSELF IS NOT A DS COMPONENT, AND THAT IS CHECKED, NOT ASSUMED — the shipped bundle
+   registers 52 `obs-*` elements and not one of them is a card (`obs-layout-panels` is a layout region,
+   not a surface). So the container is this module's own `.agpanel` idiom, which is already the widget
+   surface everywhere else on this screen: `--common-widget-bg` on `--border-color` at `--btn-radius`.
+   Everything INSIDE it is a real DS part — `obs-icon`, `obs-tag`, `obs-button`.
+   ⚠️ THE TILE COLOURS ARE CHART-PALETTE TOKENS, one per provider, never a brand hue: `resolve_logo`
+   answers "do NOT hand-draw a brand mark", and the same rule covers painting a tile in a vendor's colour.
+   The glyphs are each provider's own `ic`, already on the record and already used by Option 1's rail.
+   ⚠️ THE ACTIVE CARD SAYS "Manage" AND THE OTHERS "Switch", which is the reference's own wording and is
+   honest here: switching really does replace the connection (see agCfgSave), where managing does not. */
+/* ⚠️ EVERY NAME HERE MUST BE A TOKEN THAT EXISTS — a `var()` on one that does not fails SILENTLY:
+   the colour falls back to inherit and the `color-mix()` drops entirely, so the tile renders with no
+   tint at all and nothing errors. This shipped for one build as `--chart-emerald`, which is only a
+   PREFIX of the real `--chart-emerald-green`; a grep for the short name matched the long one and the
+   screenshot was the only thing that showed it. The probe now asserts each tile actually paints. */
+/* ⚠️ THE THREE PROVIDER MARKS, PASTED VERBATIM FROM `free-icons/` (request, 16 Sep 2026).
+   OpenAI  = tabler/brand/brand-openai.svg           (MIT)
+   Anthropic = hugeicons/uncategorised/claude.svg    (MIT)
+   DeepSeek  = hugeicons/uncategorised/deepseek.svg  (MIT)
+   ⚠️ ANTHROPIC'S ENTRY IS THE **CLAUDE** MARK, and that is the honest nearest thing: no set in
+   the library carries an Anthropic corporate logo (searched all six). The card's own tagline
+   already reads "Claude family", so the glyph names what the provider gives you.
+   ⚠️ EVERY `width` / `height` / `stroke-width` / `fill` ATTRIBUTE IS STRIPPED on the way in, and
+   `class` with them. The CSS at `.agpci svg` owns all of it — an attribute left here would have
+   to be beaten rule by rule, and the two sets disagree about every one of them.
+   ⚠️ TABLER'S FIRST PATH IS ITS INVISIBLE 24×24 BOUNDING BOX (`stroke:none;fill:none`) and is
+   dropped: with the stroke rules below applied to every `path` it would paint a square frame.
+   ⚠️ DO NOT HAND-CORRECT THESE PATHS. `resolve_logo` answers "do NOT hand-draw a brand mark",
+   and the repo's icon rule says the same — a redrawn logo is the one thing that makes a
+   prototype look unlike the product AND misrepresents somebody's trademark. */
+const AG_BRAND = {
+  openai: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">' +
+    '<path d="M11.217 19.384a3.501 3.501 0 0 0 6.783 -1.217v-5.167l-6 -3.35"/>' +
+    '<path d="M5.214 15.014a3.501 3.501 0 0 0 4.446 5.266l4.34 -2.534v-6.946"/>' +
+    '<path d="M6 7.63c-1.391 -.236 -2.787 .395 -3.534 1.689a3.474 3.474 0 0 0 1.271 4.745l4.263 2.514l6 -3.348"/>' +
+    '<path d="M12.783 4.616a3.501 3.501 0 0 0 -6.783 1.217v5.067l6 3.45"/>' +
+    '<path d="M18.786 8.986a3.501 3.501 0 0 0 -4.446 -5.266l-4.34 2.534v6.946"/>' +
+    '<path d="M18 16.302c1.391 .236 2.787 -.395 3.534 -1.689a3.474 3.474 0 0 0 -1.271 -4.745l-4.308 -2.514l-5.955 3.42"/></svg>',
+  /* ⚠️ ANTHROPIC IS THE CORPORATE WORDMARK NOW, NOT CLAUDE'S SUNBURST (request, 16 Sep 2026, with the
+     "A\\" mark supplied: "the Anthropic change the real logo use [this]"). The earlier entry was Hugeicons'
+     `claude` — the nearest thing the vendored library had, and the note here said so — but the card is
+     titled *Anthropic*, so the company's own mark is the right one and the tagline still names Claude.
+     ⚠️ IT IS NOT HAND-DRAWN. `free-icons/` has no Anthropic corporate logo (all six sets searched) and
+     `resolve_logo` answers "do NOT hand-draw a brand mark" — so this came through the repo's own documented
+     escape hatch, `fetch_source.py --search anthropic`, which searches 238 sets by tag. It is
+     **simple-icons**' `anthropic`, pasted verbatim: the canonical brand-mark set, **CC0**, so it needs no
+     visible attribution (unlike the CC BY sets the icon rule warns about).
+     ⚠️ IT IS FILLED WHERE THE OTHER TWO ARE STROKED, and that costs a rule — see `.agpci` in PART 1. The
+     shared `fill:none;stroke:currentColor;stroke-width:1.6` would render this wordmark as a thin OUTLINE of
+     the letterform, which is not the mark. A solid glyph among outlines is the "different family" fault this
+     file records at the composer's send button; here the brand's own treatment outranks the visual family,
+     the same way its shape already does. */
+  anthropic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">' +
+    '<path d="M17.304 3.541h-3.672l6.696 16.918H24Zm-10.608 0L0 20.459h3.744l1.37-3.553h7.005l1.369 3.553h3.744L10.536 3.541Zm-.371 10.223L8.616 7.82l2.291 5.945Z"/></svg>',
+  deepseek: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g>' +
+    '<path d="M20.725 6.166a2.42 2.42 0 0 0-1.771.786c-.216-1.023-.859-1.324-1.593-1.665c-.465-.216-.659-.696-.722-1.043c-.024-.133-.133-.24-.268-.24c-.134 0-.262.055-.326.173c-.14.25-.354.8-.373 1.81c-.029 1.503 1.21 2.662 1.834 3.053c-.064.37-.29.942-.395 1.182a4.9 4.9 0 0 1-1.87-1.234c-.958-1.043-1.738-1.781-2.756-2.503s-.337-1.583.09-1.788s.103-.415-.962-.379c-.853.029-2.067.53-2.567.777c-.51-.162-1.572-.194-2.038-.19C2.425 4.905 1 8.98 1 11c0 6.086 4.873 9 8.373 9c3.958 0 5.345-1.614 5.345-1.614c.164.101.76.316 1.838.362c1.349.057 1.851-.324 1.89-.617s-.179-.4-.37-.49c-.19-.089-.49-.26-1.055-.445c-.453-.147-.657-.308-.702-.37c2.73-2.472 3.23-5.935 3.153-7.407c2.112-.082 2.943-1.488 3.217-2.2c.28-.726.454-1.716.164-1.94c-.232-.18-.426.036-.494.167c-.372.396-.644.719-1.635.719"/>' +
+    '<path d="M12 10.568s.876-.27 1.645.255c1.041.71 1.355 1.676 1.355 1.676m-1.5 4s-1.041-.507-2.604-2.539c-1.878-2.44-3.647-5.074-7.367-4.213c0 0-.029 5.25 4.971 6.752"/></g></svg>',
+};
+/* ⚠️ KEPT AND UNREFERENCED (the house pattern). Each card's tile was tinted with its provider's
+   own chart-palette token until 16 Sep 2026, when the tile went neutral — see `.agpci`. One
+   `style=` back on the span in `agCardsHTML` restores it. */
+const AG_CARD_TONE = { openai:'--chart-emerald-green', anthropic:'--chart-amber', deepseek:'--chart-indigo' };
+/* ⚠️ OPTION 3 CONFIGURES SEVERAL PROVIDERS AT ONCE (request, 16 Sep 2026: "the 3 AI provider will be
+   config at a time — config multiple provider"), which is the opposite of Options 1 and 2, where saving
+   one connection removes the one before it. So on this option `agCfgSave` keeps the others (see the guard
+   there) and a card's state is simply whether THAT provider holds a key — not whether it is `AG.conn`.
+   ⚠️ THE STATUS PILLS ARE GONE with the same request ("remove [Active] [Available]"). With several
+   providers configurable there is no single Active one for a pill to mark, so the pills would have been
+   labelling a rule the option no longer has.
+   ⚠️ "SWITCH" WENT WITH THEM, and that is part of the change rather than beyond it: the word promised a
+   replacement that no longer happens.
+   ⚠️ THE TWO LABELS NAME WHAT PRESSING THE BUTTON DOES (request, 16 Sep 2026): a provider with no key
+   reads **Configure**, one that has a key reads **Change API key** — which is the only thing the form
+   offers for a provider already connected, so the button says it rather than the vaguer "Manage".
+   ⚠️ AND THE VARIANT FOLLOWS THE LABEL (request, 16 Sep 2026: "'change API key' is a secondary button
+   and 'configure' is a primary button, and the primary button colour is cad3e2"). An unconfigured provider's
+   Configure IS the thing to do on that card, so it is `primary`; changing a key on a provider that already
+   works is a lesser errand, so it stays `default`. The two therefore cannot both be loud on one row.
+   ⚠️ #cad3e2 IS NOT PASTED — it is what `--primary-button-bg` already resolves to here. The scoped DS
+   block sets `--primary-button-bg:var(--primary)` and `--primary:var(--primary-alt)`, and `--primary-alt`
+   IS #cad3e2 in dark / #1d2a3e in light. So `variant="primary"` paints the requested colour by token, and
+   light theme gets the value that is legible there instead of #cad3e2 at 1.4:1 on white.
+   ⚠️ CONSEQUENCE, STATED: with two providers unconfigured this paints TWO primaries on the row, under
+   the toolbar's own `Configure AI provider` primary — three on the screen. That follows from the request
+   plus Option 3's multi-provider rule (every card is independently actionable); the DS's one-primary-per-view
+   guidance would make them `default` and leave the toolbar's the only primary. */
+function agCardsHTML(){
+  return `<div class="agpcw">${AG_DATA.providers.map(p => {
+    const set = !!(AG.cfg.d[p.id] && String(AG.cfg.d[p.id].key || '').trim());
+    const tone = AG_CARD_TONE[p.id] || '--chart-indigo';
+    return `<div class="agpc${set ? ' on' : ''}">
+      <div class="agpch">
+        <span class="agpci"${AG_BRAND[p.id] ? ` data-brand="${p.id}"` : ''}>${
+          AG_BRAND[p.id] || agIc(p.ic, 20)}</span>
+      </div>
+      <div class="agpcn">${stEsc(p.name)}</div>
+      <p class="agpct">${stEsc(p.tagline)}</p>
+      <div class="agpca">
+        <obs-button variant="${set ? 'default' : 'primary'}" class="agpcb" onclick="agTap(function(){agConfig('${p.id}')})">${
+          set ? 'Change API key' : 'Configure'}</obs-button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function agGridHTML(){
   return `<obs-table id="agGrid" class="aggridt" row-key="id" header-style="default" empty-text="No records available"
     columns="${agJ(AG_GRID_COLS)}" rows="${agJ(agGridRows())}"></obs-table>`;
