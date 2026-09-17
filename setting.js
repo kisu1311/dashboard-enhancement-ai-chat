@@ -538,8 +538,16 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
    values, which are LIGHT, and the drawer painted white-on-white text over a dark page while the
    slotted body (\`#licHist\`, already in this list) correctly took the dark ones. Two themes in one
    overlay. Caught by shooting dark, not by any probe: every assertion passed and the conformance
-   checker still said 100/100, because both halves were legal DS tokens — just not the same set. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp{
+   checker still said 100/100, because both halves were legal DS tokens — just not the same set.
+   ⚠️ \`#drawer-gedit\` IS THE DASHBOARD'S OWN Edit-group DRAWER, IN \`index.html\`, AND IT IS HERE
+   FOR ONE CONTROL (17 Sep 2026): its Header banner field is built from \`obs-button\`, and a DS
+   component outside this block reads the package's own DEFAULTS, which are LIGHT — the same trap
+   as \`#cwMdHelp\`, one section of the same page away.
+   ⚠️ IT IS DELIBERATELY NOT IN THE PROTOTYPE-TOKEN RE-POINT BELOW. That block re-binds
+   \`--card\` / \`--text\` / \`--border\` / \`--teal\` onto DS names, and the drawer's other three
+   fields (\`.ddin\`, the \`cwFtDD\` dropdown, \`.ddseg\`) are written against this prototype's own
+   values — taking the DS ones would repaint three fields nobody asked about. */
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#drawer-gedit{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -932,7 +940,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --widget-type-selector-border-color:'transparent';
 }
 
-html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp{
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). \`obs-side-menu\` paints \`.row.leaf.active\` with

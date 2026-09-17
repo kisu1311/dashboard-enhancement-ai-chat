@@ -523,7 +523,18 @@ body.rzing-body{user-select:none}
 .awcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   padding:16px 8px 13px;border:1px solid var(--border);
   border-radius:6px;background:var(--panel-2);cursor:pointer;font-size:12px;font-weight:500;text-align:center;color:var(--text)}
-.awcard:hover{border-color:var(--teal);background:var(--hover)}
+/* ⚠️ THE LABEL TURNS TEAL WITH THE BORDER (request, 17 Sep 2026: "when i hover to show
+   the color #14b8a6 to replace the #cad3e2"). `#cad3e2` IS `--text` in dark theme — the
+   tile's resting label — and `#14b8a6` is `--teal`, so the request landed on two tokens
+   rather than two literals and light theme follows for free. The border was already teal;
+   the label was the half of the hover that had not moved.
+   ⚠️ SCOPED TO `.awcard`, i.e. EVERY tile in the drawer, not only the three Empty group
+   ones the report pointed at — one hover rule for one grid of tiles. Narrow it to
+   `.awcard.awgopt:hover` if the Structure section is meant to behave differently.
+   ⚠️ The artwork is NOT repainted with it: `W_TILE_SVG` / `W_GROUP_SVG` bake their own
+   tokens and never read `currentColor`, which is the rule that keeps a full illustration
+   from being flattened to one colour. */
+.awcard:hover{border-color:var(--teal);background:var(--hover);color:var(--teal)}
 /* the harvested art is a full illustration, not a monochrome glyph — it paints itself
    from the tokens baked into W_TILE_SVG, so nothing here may set fill on it */
 .awcard .awart{width:100px;height:50px;display:block}
@@ -3156,6 +3167,63 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .gdrop svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
 .dgrid12.dropinto .gdrop{border-color:var(--teal);color:var(--text-dim)}
+/* ── Empty group · DESIGN OPTION 2 ONLY (request, 17 Sep 2026) ─────────────────
+   Option 2's empty band can be dragged taller and the board's widgets then give up the
+   room — see `gRzDown` and `fitCanvas`'s floor. Options 1 and 3 render the plain `.gdrop`
+   above and are byte-identical to what they were; so is every group the `G` shortcut,
+   `addGroup()` or Clone makes.
+   ⚠️ `position:relative` IS ON `.gdrs`, NOT ON `.gdrop`. Every empty group on every
+   other board would otherwise become a positioning context for a grip it never renders. */
+/* ⚠️ OPTION 2's BAND HAS NO DASHED OUTLINE (request, 17 Sep 2026: "in this group remove
+   the dot border"). The border is kept at 1px and merely made TRANSPARENT rather than removed:
+   it is what the two rules below repaint, so dropping it outright would take the drag-over
+   target and the resize feedback with it — and would resize the box by 2px the moment either
+   fired. Options 1 and 3 keep the dashed hairline, which is still the only thing marking an
+   empty group on those. */
+.gdrop.gdrs{position:relative;border-color:transparent}
+/* the grip is `.wrzS`'s own shape, offset and cursor, so the gesture reads as the same
+   gesture as a widget's bottom edge — see `gRzDown` for why it is NOT that engine */
+.gdrs-h{position:absolute;left:8px;right:8px;bottom:-2px;height:5px;z-index:4;border-radius:3px;
+  cursor:row-resize;opacity:0;transition:opacity .12s}
+.gdrop.gdrs:hover .gdrs-h{opacity:1;background:var(--track)}
+/* (0,3,0) and declared after the rule above, so pointing AT the grip wins without !important */
+.gdrop.gdrs .gdrs-h:hover{background:var(--teal)}
+.gdrop.gdrs.rzing{border-style:solid;border-color:var(--teal)}
+/* ⚠️ RESTATED AT (0,3,0) ON PURPOSE. `.dgrid12.dropinto .gdrop` is (0,2,0) and is declared
+   ABOVE `.gdrop.gdrs`, so at equal weight the transparent rule would win on source order and a
+   drag over an option-2 band would light nothing. */
+.dgrid12.dropinto .gdrop.gdrs{border-color:var(--teal)}
+/* ── Empty group · option 2 — a header BANNER (request, 17 Sep 2026) ────────────
+   `background-image` and its three sizing longhands are emitted INLINE by `gStyleCSS`, not
+   here, and that is not a style preference.
+   ⚠️ `background:<colour>` IS A SHORTHAND AND RESETS EVERY `background-*` LONGHAND. The
+   header's colour dropdown writes that shorthand inline, and an inline declaration beats a
+   class rule whatever the order — so a `background-size:cover` living in this sheet would be
+   reset to `auto` the moment a group had BOTH a colour and a banner, and the image would tile
+   at its natural size. Emitting the longhands after the shorthand, in the same inline string,
+   is the only order that survives both being set.
+   ⚠️ THE SCRIM IS A GRADIENT, NOT A FLAT WASH. A flat one legible enough for 13.5px text
+   over an arbitrary photo hides the photo, which is the thing being attached. This is opaque
+   where the title, the count and the grip are and clears to nothing by the right-hand end, so
+   the image reads AND the text does. */
+.ghead.gban::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(90deg,var(--card-head) 0%,
+    color-mix(in srgb,var(--card-head) 84%,transparent) 40%,
+    color-mix(in srgb,var(--card-head) 22%,transparent) 74%,transparent 100%)}
+/* ⚠️ WITHOUT THIS THE SCRIM PAINTS OVER THE TITLE. `.ghead` is already `position:sticky`,
+   so the pseudo anchors correctly — but its children are static and a later-painted
+   positioned sibling covers them. */
+.ghead.gban > *{position:relative;z-index:1}
+.gbanrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* ⚠️ THE ROW'S OWN GAP IS THE ONLY SPACING — `obs-button`'s footer/actions gap trap does not
+   apply here (that is `obs-drawer`'s slot), but the host element defaults to `display:inline`,
+   so it is pinned as a flex item rather than left to blockify. Its height comes from the
+   component (`@btn-height` 2.1rem ≈ 34px), which is `.ddin`'s height exactly — that is why the
+   DEFAULT size is used and not `small` (~24px), which would read as a different family beside
+   the drawer's own input and segmented control. */
+.gbanrow obs-button{flex:0 0 auto}
+.gbanprev{flex:0 0 auto;width:58px;height:26px;border-radius:4px;border:1px solid var(--border);
+  background-size:cover;background-position:center}
 .grpbtn .cr{font-size:9px;color:var(--text-dim);margin-left:1px}
 #grpMenu{min-width:230px}
 .gmi{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:7px 9px;border-radius:4px;
@@ -16612,7 +16680,7 @@ function renderCanvas(){
        each of those is draggable in its own right; a draggable ancestor would make the whole
        band the thing that lifts whenever a widget drag missed its grip. */
     const gsty = ungrouped ? '' : gStyleCSS(gi);
-    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}"${gsty?` style="${gsty}"`:''} draggable="true"
+    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}"${gsty?` style="${gsty}"`:''} draggable="true"
         ondragstart="gDragStart(event,${gi})" ondragend="gDragEnd()">
         <span class="ggrip" data-tip="Drag to move this group">⠿</span>
         <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">❯</span></button>
@@ -16659,7 +16727,11 @@ function renderCanvas(){
                         the one thing the text was really for is said by the box itself.
                         ⚠️ `.gdrop`'s svg/colour/font rules are left in place — they cost nothing
                         and are what a restored message would need. */
-                     : `<div class="gdrop"></div>`)
+                     /* ⚠️ OPTION 2's BAND IS THE SAME BOX PLUS A GRIP. `gRzOn` reads a
+                        capability stamped on the group, not an option NUMBER, and it is
+                        undefined for every group that already exists — so options 1 and 3,
+                        the `G` shortcut and every saved board render the line above unchanged. */
+                     : `<div class="gdrop${gRzOn(gi) ? ' gdrs' : ''}"${gRzH(gi) ? ` style="height:${gRzH(gi)}px"` : ''}>${gRzOn(gi) ? gRzGrip(gi) : ''}</div>`)
         + `</div>`);
     /* ⚠️ THE DROP ZONE IS THE WHOLE BAND, not the 37px header — an expanded group's headers
        are hundreds of pixels apart, and "anywhere" has to mean anywhere. Its own midpoint
@@ -16692,6 +16764,27 @@ function renderCanvas(){
    below the fold (V1 used to stop two-thirds down the screen). Total height is linear in
    the scale factor — gaps and the KPI row are fixed — so two probes solve it exactly.
    Only ever grows past the authored height, never shrinks below it. */
+/* ── Empty group · option 2 — the band's own height (request, 17 Sep 2026) ──────────
+   ⚠️ THE HEIGHT AND THE CAPABILITY LIVE ON `GRP_STYLE[gi]`, WHICH IS WHY THIS NEEDED NO
+   BOOKKEEPING AT ALL. That array is already spliced beside `TABS`/`WIDGETS` at all six sites,
+   already round-trips through `histState` as `y`, is already deep-copied by `gClone` and
+   restored by `boardLoad` — so undo, redo, clone, reorder, remove and switching boards carry
+   a dragged height and the option marker for free. A second parallel array is exactly the trap
+   this file records at `GRP_STYLE` itself, where a short one silently spliced at index 0. */
+const GRP_RZ_MIN = 96, GRP_RZ_MAX = 720;
+/* how far below its AUTHORED height a widget may be squeezed while a resizable band is on the
+   board — see the floor in `fitCanvas` */
+const GRP_RZ_GIVE = 0.5;
+const gRzOn = gi => !!(GRP_STYLE[gi] && GRP_STYLE[gi].rz);
+const gRzH  = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].h) || 0;
+const gBan  = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].banner) || '';
+const gRzGrip = gi => '<span class="gdrs-h" data-tip="Drag to set the band height · double-click to reset"'
+  + ` onmousedown="gRzDown(event,${gi})" ondblclick="gRzReset(event,${gi})"></span>`;
+/* stamp the drawer tile's capability on the group `awAddGroup` has just made (always `curG`) */
+function gRzStamp(opt){
+  const o = W_GROUP_OPT.find(x => x.opt === opt);
+  if (o && o.rz) gStyleMake(curG).rz = true;
+}
 function fitCanvas(){
   const g = document.getElementById('dashGrid'), pb = g.parentElement;
   /* KPI tiles carry data-h="0" (they size to their content). They were in this list, so
@@ -16705,9 +16798,19 @@ function fitCanvas(){
   const k2 = hMul*1.25; set(k2); const u2 = g.scrollHeight;
   const slope = (u2-u1)/(k2-hMul);
   let k = slope > 1 ? hMul + (avail-u1)/slope : hMul;
-  k = Math.max(hMul, Math.min(hMul*2.2, k));
+  /* ⚠️ THE FLOOR DROPS ONLY WHILE A RESIZABLE EMPTY BAND IS ON THE BOARD, and that gate is
+     the whole reason this change is safe: `document.querySelector` finds nothing on any other
+     board, on options 1 and 3, or on any group the `G` shortcut made, so every one of them
+     keeps `hMul` — the authored height — exactly as before. There is a probe assertion for it.
+     Without it the request cannot be met on a board that ALREADY overflows (the one in the
+     report does): `k` is pinned at its floor there, so dragging the band taller would move
+     nothing and "the widget will be auto adjust" would be a promise the board never keeps.
+     ⚠️ IT IS A FLOOR, NOT A LICENCE TO VANISH. Past `GRP_RZ_GIVE` the board scrolls instead
+     of squeezing the widgets into strips — stated rather than softened. */
+  const floor = g.querySelector('.gdrop.gdrs') ? hMul * GRP_RZ_GIVE : hMul;
+  k = Math.max(floor, Math.min(hMul*2.2, k));
   set(k);
-  if(g.scrollHeight > avail) set(Math.max(hMul, k*avail/g.scrollHeight));   // rounding guard
+  if(g.scrollHeight > avail) set(Math.max(floor, k*avail/g.scrollHeight));   // rounding guard
 }
 addEventListener('resize', ()=>{ if(!trashed) fitCanvas(); });
 /* The tab bar is gone, and the "Edited 12 min ago · v14" stamp it kept current was removed
@@ -16769,7 +16872,11 @@ function gStyleCSS(gi){
   const named = (GRP_BG.find(b => b[0] === st.bg) || [])[1];
   const bg = named || (String(st.bg || '')[0] === '#' ? st.bg : '');
   const sz = GRP_SIZE[st.size];
-  return (bg ? 'background:' + bg + ';' : '') + (sz && sz !== GRP_SIZE.M ? '--gh-size:' + sz + 'px;' : '');
+  /* ⚠️ THE THREE LONGHANDS MUST FOLLOW THE `background` SHORTHAND ABOVE — see the note at
+     `.ghead.gban::before` for why they cannot live in the stylesheet. */
+  return (bg ? 'background:' + bg + ';' : '') + (sz && sz !== GRP_SIZE.M ? '--gh-size:' + sz + 'px;' : '')
+    + (st.banner ? 'background-image:url(' + st.banner + ');background-size:cover;'
+                 + 'background-position:center;background-repeat:no-repeat;' : '');
 }
 function addGroup(){ histDo('New group');
   newTabN++; TABS.push('New group'+(newTabN>1?' '+newTabN:'')); WIDGETS.push([]); gStylePad(); curG=TABS.length-1;
@@ -16787,9 +16894,12 @@ function addGroup(){ histDo('New group');
    heading on the board that nobody wrote.
    ⚠️ An EMPTY flat board is renamed in place instead, or you would get an empty group
    sitting beside an empty group and neither would have anything in it. */
-function awAddGroup(){
+/* ⚠️ THE ARGUMENT IS THE DRAWER TILE'S OPTION NUMBER, and it is OPTIONAL. The `G`
+   shortcut and every other caller pass nothing, which resolves to no capability — so a
+   group made any other way behaves exactly as it did before this request. */
+function awAddGroup(opt){
   closeAwDrawer();
-  if (!ungrouped){ addGroup(); return; }        /* already grouped — the ordinary path */
+  if (!ungrouped){ addGroup(); gRzStamp(opt); renderCanvas(); return; }   /* already grouped */
   const el = document.getElementById('dashTitle');
   const board = (el ? el.textContent.trim() : '') || 'Dashboard';
   const had = (WIDGETS[0] || []).length;
@@ -16802,6 +16912,7 @@ function awAddGroup(){
   ungrouped = false;                            /* boardLoad re-derives this from TABS */
   curG = TABS.length - 1;
   GRP_SHUT.clear();
+  gRzStamp(opt);                                /* option 2's band is resizable */
   renderCanvas();
   toast(had
     ? 'Grouped — the widgets already here are now “' + board + '”, and “' + fresh + '” is empty'
@@ -16993,7 +17104,11 @@ const W_GROUP_SVG = '<svg viewBox="0 0 100 50" preserveAspectRatio="xMidYMid mee
    Structure section reads as the same tile drawn three times, i.e. as a bug. */
 const W_GROUP_OPT = [
   {opt:1, art:W_GROUP_SVG},
-  {opt:2, art:W_GROUP_SVG},
+  /* ⚠️ THIS ARRAY IS THE ONE PLACE THAT SAYS WHICH OPTION IS RESIZABLE (request, 17 Sep
+     2026). `awAddGroup` reads `rz` off the tile you pressed and stamps it on the group; nothing
+     downstream tests the option NUMBER, so renumbering the tiles or giving option 3 the same
+     capability is an edit here and nowhere else. */
+  {opt:2, art:W_GROUP_SVG, rz:true},
   {opt:3, art:W_GROUP_SVG},
 ];
 const W_TILE_SVG = {
@@ -17099,7 +17214,7 @@ function awRender(){
     const grpTile = grpHit
       ? '<div class="awgrp">Structure</div><div class="awgrid">' +
         W_GROUP_OPT.map(o =>
-          '<button class="awcard awgopt" onclick="awAddGroup()" ' +
+          '<button class="awcard awgopt" onclick="awAddGroup(' + o.opt + ')" ' +
             'data-tip="A titled band to organise widgets into — design option ' + o.opt + '">' +
             '<span class="awgn">' + o.opt + '</span>' +
             '<span class="awart">' + o.art + '</span><span>Empty group</span></button>').join('') +
@@ -17314,6 +17429,87 @@ function wRzCommit(el, span, h){
   renderCanvas();
   toast(span === null ? 'Widget size reset'
                       : `Widget resized \u2014 ${span}/12 columns \u00d7 ${Math.round(h)}px`);
+}
+
+/* ── Empty group · option 2 — drag the band, the board gives way ─────────────────
+   Request, 17 Sep 2026: "in this changes is only in 'empty group' 2 … i add empty group,
+   before i can resize the empty group then automatically the widget will be auto adjust."
+   So: the drawer's OPTION 2 tile makes a band you can drag taller, and the widgets already on
+   the board refit around it as you drag. Options 1 and 3 are untouched.
+
+   ⚠️ A BAND HAS A HEIGHT AND NO WIDTH TO SPEAK OF. It is `grid-column:span 12` inside its own
+   group, so the only dimension a drag can mean is the vertical one — which is also the only one
+   the board can answer, because vertical room is what `fitCanvas` divides up.
+
+   ⚠️ IT IS DELIBERATELY NOT THE WIDGET RESIZE ENGINE, and folding the two together would
+   break `wRzCommit`. That engine does `closest('.widget,.dwidget')`, flips the element's own
+   `draggable` (a widget move starts from the same box), snaps a width to the grid's columns, and
+   hands `wRzCommit` a `data-g`/`data-i` pair to write into `WIDGETS[g][i]`. A band is none of
+   those: no `data-i`, nothing to snap, it must stay undraggable here because its HEADER is the
+   drag handle, and its commit target is `GRP_STYLE`. What IS shared is the plumbing that would
+   be worth sharing — the same `.wrzbadge` element and `wRzBadge` binding, the same
+   `body.rzing-body`, and the same "record the before, commit only if it moved" discipline. */
+let gRz = null;
+function gRzDown(ev, gi){
+  ev.preventDefault(); ev.stopPropagation();
+  const el = ev.currentTarget.closest('.gdrop'); if (!el) return;
+  gRz = { el, gi, y0: ev.clientY, h0: el.offsetHeight, h: el.offsetHeight, before: histState() };
+  el.classList.add('rzing');
+  document.body.classList.add('rzing-body');
+  wRzBadge = document.createElement('div');       /* one badge binding, two drivers — a
+                                                     mousedown on one grip precludes the other */
+  wRzBadge.className = 'wrzbadge';
+  document.body.appendChild(wRzBadge);
+  addEventListener('mousemove', gRzMove);
+  addEventListener('mouseup', gRzUp);
+}
+function gRzMove(e){
+  const r = gRz; if (!r) return;
+  r.h = Math.max(GRP_RZ_MIN, Math.min(GRP_RZ_MAX, r.h0 + e.clientY - r.y0));
+  r.el.style.height = r.h + 'px';
+  /* ⚠️ `fitCanvas()` RUNS ON EVERY MOVE, NOT ON RELEASE — "automatically the widget will be
+     auto adjust" IS the request, and a board that only reflows once you let go never shows you
+     what you are choosing. It costs the two layout probes it already costs on every window
+     resize, and it reads the band's height off the DOM, so the model stays untouched until the
+     commit below.
+     ⚠️ DELIBERATELY NOT rAF-THROTTLED: rAF is starved under headless virtual time (recorded
+     twice in this file), so a probe driving this drag would never see a widget move. */
+  fitCanvas();
+  const b = r.el.getBoundingClientRect();
+  wRzBadge.textContent = Math.round(r.h) + 'px';
+  wRzBadge.style.left = Math.max(6, Math.min(b.right - 12, innerWidth - 150)) + 'px';
+  wRzBadge.style.top  = Math.max(6, Math.min(b.bottom + 8, innerHeight - 32)) + 'px';
+}
+function gRzUp(){
+  const r = gRz; if (!r) return;
+  removeEventListener('mousemove', gRzMove);
+  removeEventListener('mouseup', gRzUp);
+  r.el.classList.remove('rzing');
+  document.body.classList.remove('rzing-body');
+  if (wRzBadge){ wRzBadge.remove(); wRzBadge = null; }
+  gRz = null;
+  /* ⚠️ A PRESS THAT DID NOT MOVE COMMITS NOTHING. Without this a first press would write
+     the band's natural 96px into a record that had no height, and a grip you merely clicked
+     would land an entry on the undo stack — and the double-click reset below fires TWO
+     mousedowns before its own handler, so this is what keeps that gesture clean too. */
+  if (Math.round(r.h) === Math.round(r.h0)) return;
+  gRzCommit(r.gi, r.h, r.before);
+}
+/* double-click the grip: back to the band's natural height, the escape hatch `wRzReset` gives
+   a widget. It is the only way back — the Edit group drawer has no height field, which is why
+   its Reset deliberately leaves `h` alone. */
+function gRzReset(ev, gi){
+  ev.preventDefault(); ev.stopPropagation();
+  if (!gRzH(gi)) return;                          /* never dragged — nothing to undo */
+  gRzCommit(gi, 0, histState());
+}
+function gRzCommit(gi, h, before){
+  const st = gStyleMake(gi);
+  if (h) st.h = Math.round(h); else delete st.h;
+  if (histState() !== before) histWas(h ? 'Resize group' : 'Reset group height', before);
+  renderCanvas(); fitCanvas();
+  toast(h ? `Band set to ${Math.round(h)}px — widgets refitted around it`
+          : 'Band height reset');
 }
 
 function wDragStart(ev, g, i){
@@ -17599,13 +17795,127 @@ function gEditPaint(){
       Object.keys(GRP_SIZE).map(k =>
         '<button class="' + (st.size === k ? 'on' : '') + '" onclick="gEditSet(\'size\',\'' + k + '\')">' +
         ({S:'Small',M:'Medium',L:'Large'})[k] + '</button>').join('') +
-    '</div></div>';
+    '</div></div>' +
+    /* ⚠️ THE BANNER FIELD IS OPTION 2's ONLY (request, 17 Sep 2026: "we need to add new one
+       in 'empty group' option 2 only — in edit option add banner … when i attach any image the
+       image will be set in header as banner"). It is gated on the same capability the resize
+       grip is, so the drawer tells you which design a band came from rather than offering a
+       control that would do nothing on two of the three. */
+    /* ⚠️ THE ATTACH CONTROL IS BUILT FROM THE DESIGN SYSTEM (request, 17 Sep 2026: "the header
+       attach component is Using the ObserveOps design system"). What that could mean was asked of
+       the DS first, not assumed: `search_components('file upload / attach an image')` returns
+       NOTHING — the catalogue ships no upload, no dropzone and no image-picker element — and the
+       hard rule there is that a component may not be invented. So the field is COMPOSED from
+       catalogued parts (`obs-button` + `obs-icon`) over a native `<input type=file>`, which is
+       also the product's own answer to this job: Settings › My Profile attaches a picture exactly
+       this way (a labelled button over a hidden file input, then Change | Remove).
+       ⚠️ VARIANTS ARE THE REGISTRY'S OWN DECISION FLOW, not a guess — and they were MEASURED,
+       which changed the answer. Both are `default`: the registry's "secondary next to a primary",
+       which is what these are (this drawer's primary is Done, in its footer), and the most-used
+       variant in the product at 301×.
+       ⚠️ `neutral-lightest` WAS THE FIRST ANSWER AND IS UNREADABLE IN LIGHT THEME. The decision
+       flow routes a "quiet utility control" there, and it renders correctly in dark (#cad3e2 on
+       #172336, 10.5:1) — but in LIGHT every quiet variant paints its label `#7186a8` on its own
+       pale fill: neutral-lightest and neutral-lighter both **3.01:1**, transparent **3.51:1**,
+       all under the 4.5 bar for a control label. `default` is 14.45:1 light / 12.63:1 dark.
+       Measured off the painted pixels and then confirmed in the shadow root; recorded as a ninth
+       0.1.166 finding in `_ds/README.md`. **Don't "restore" the quiet variant on the strength of
+       the decision flow alone** — read the measurement.
+       ⚠️ REMOVE IS AN ICON-ONLY `squared-button`, WHICH IS WHAT KEEPS THE PAIR TELLABLE APART
+       once both are `default`. The registry blesses exactly this shape — "a recognizable repeated
+       space-tight icon action (row edit/delete, toolbar, modal close)" — and it sits beside the
+       preview it removes, the same relationship a row-delete has to its row. It carries the
+       required `aria-label`, and a `data-tip` as well, because the tooltip engine honours
+       `data-tip` on an `obs-*` element where it refuses to adopt its `title` (a component prop).
+       ⚠️ IT IS NOT `error`: the DS reserves red for destructive-with-a-confirm, and dropping a
+       banner is one ⌘Z and one re-attach away — the reasoning that took `--red` off the Manage
+       screen's Archive.
+       ⚠️ THE PREVIEW SWATCH IS NOT A COMPONENT AND IS LEFT ALONE — it is the attached image at
+       thumbnail size, and there is nothing in the catalogue that renders one.
+       ⚠️ `obs-button` FIRES A CONSUMER'S `onclick` TWICE (its inner shadow `<button>`'s click is
+       `composed` and crosses the boundary, and the component re-emits on the host), so both go
+       through `cwTap`. `gBanClear` is idempotent and `gBanOpen` would merely open the picker
+       twice, so this is belt and braces — but a silent double-fire is invisible until it lands on
+       something that toggles.
+       ⚠️ THE FIELD IS STILL OPTION 2's ONLY (request, 17 Sep 2026: "we need to add new one in
+       'empty group' option 2 only — in edit option add banner … when i attach any image the image
+       will be set in header as banner"). It is gated on the same capability the resize grip is, so
+       the drawer tells you which design a band came from rather than offering a control that would
+       do nothing on two of the three. */
+    (gRzOn(gi)
+      ? '<div class="ddfield"><span class="ddlbl">Header banner</span><div class="gbanrow">' +
+          (gBan(gi) ? '<span class="gbanprev" style="background-image:url(' + gBan(gi) + ')"></span>' : '') +
+          '<obs-button class="gbanbtn" variant="default" onclick="cwTap(&quot;gbanpick&quot;, gBanOpen)">' +
+            '<obs-icon name="image" size="14"></obs-icon>' +
+            (gBan(gi) ? 'Replace image' : 'Attach image') + '</obs-button>' +
+          (gBan(gi) ? '<obs-button class="gbanbtn squared-button" variant="default" ' +
+            'aria-label="Remove banner" data-tip="Remove banner" ' +
+            'onclick="cwTap(&quot;gbanclear&quot;, gBanClear)"><obs-icon name="delete" size="15"></obs-icon>' +
+            '</obs-button>' : '') +
+          '<input type="file" id="geBanFile" accept="image/jpeg,image/png,image/svg+xml,image/webp" ' +
+            'style="display:none" onchange="gBanPick(this)">' +
+        '</div><div class="ddnote">Sits behind the header title, across the whole strip.</div></div>'
+      : '');
+}
+/* the hidden file input is a sibling of the button, not its child — a native input inside a
+   custom element's light DOM would be slotted into the button's label */
+function gBanOpen(){ const el = document.getElementById('geBanFile'); if (el) el.click(); }
+/* ⚠️ THE PICKED IMAGE IS RASTERISED DOWN BEFORE IT IS STORED, and that is not a nicety.
+   `histState()` is `JSON.stringify` of the whole board — `GRP_STYLE` included — it runs on
+   every edit and TWICE on a resize commit (the "did it actually move" test), `HIST.cap` keeps
+   50 of those snapshots, and `boardSave` keeps another copy per board. A 4 MB photo stored raw
+   would be ~200 MB of strings in the undo stack alone, re-stringified on every keystroke in the
+   title field above. Every file therefore goes through a canvas and comes out a bounded JPEG:
+   the stored string is ~40-60 KB whatever is dropped in.
+   ⚠️ IT IS ALSO WHY THE INLINE STYLE STAYS SANE — `renderCanvas` writes `gStyleCSS` into an
+   HTML attribute, so the data URL is re-serialised into the markup on every board render. */
+const GRP_BAN_W = 1200, GRP_BAN_H = 200, GRP_BAN_Q = 0.72;
+function gBanPick(inp){
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  /* the Settings avatar picker's own set and its own wording — one convention per repo */
+  if (!/^image\/(jpeg|png|svg\+xml|webp)$/.test(f.type)){
+    toast('Unsupported file type — only JPEG, JPG, PNG, WebP and SVG files are allowed'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      /* ⚠️ AN SVG WITH NO INTRINSIC SIZE DECODES TO 0x0, and the cover maths below would then
+         divide by zero and draw nothing — a blank banner rather than an error. */
+      if (!img.width || !img.height){ toast('That image has no size to draw — try a PNG or JPEG'); return; }
+      const c = document.createElement('canvas');
+      c.width = GRP_BAN_W; c.height = GRP_BAN_H;
+      const k = Math.max(GRP_BAN_W / img.width, GRP_BAN_H / img.height);   /* cover, centre-cropped */
+      const w = img.width * k, h = img.height * k;
+      c.getContext('2d').drawImage(img, (GRP_BAN_W - w) / 2, (GRP_BAN_H - h) / 2, w, h);
+      let url = '';
+      try { url = c.toDataURL('image/jpeg', GRP_BAN_Q); } catch (err) { url = ''; }
+      if (!url || url.length < 64){ toast('That image could not be read'); return; }
+      gEditSet('banner', url);                       /* one `histDo` per drawer visit, as every field does */
+      toast('Banner set — ' + Math.round(url.length / 1024) + ' KB');
+    };
+    img.onerror = () => toast('That image could not be read');
+    img.src = e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function gBanClear(){
+  if (GE.gi < 0 || !gBan(GE.gi)) return;
+  gEditRec(); delete GRP_STYLE[GE.gi].banner;
+  gEditApply(); gEditPaint(); toast('Banner removed');
 }
 function gEditRec(){ if (!GE.rec){ histDo('Edit group'); GE.rec = true; } }
 /* write the header's inline style in place — see the note above on why this is not a render */
 function gEditApply(){
   const hd = document.querySelector('#grp-' + GE.gi + ' .ghead');
-  if (hd) hd.setAttribute('style', gStyleCSS(GE.gi));
+  if (!hd) return;
+  hd.setAttribute('style', gStyleCSS(GE.gi));
+  /* ⚠️ THE CLASS HAS TO MOVE WITH THE STYLE. This function exists so a colour change
+     repaints one 37px strip instead of rebuilding twelve widgets, and the scrim is a class —
+     set the style alone and a banner attached here paints with no scrim until the next real
+     render, i.e. the title sits unreadable on the photo for exactly as long as the drawer is
+     open, which is the only time anybody is looking at it. */
+  hd.classList.toggle('gban', !!gBan(GE.gi));
 }
 /* the dropdown's write path for this drawer — see `DD_OWN` */
 function gEditBg(v){ gEditSet('bg', v); }
@@ -17623,9 +17933,22 @@ function gEditTitle(v, commit){
   /* the outline, the Groups menu and the breadcrumb all print the name; they are cheap */
   if (commit) renderCanvas(); else renderOutline();
 }
+/* ⚠️ RESET OWNS THE TWO FIELDS THIS DRAWER EDITS, NOT THE WHOLE RECORD. It used to null
+   `GRP_STYLE[gi]`, which was right while a record held nothing but `bg`/`size` — it would now
+   also un-make an option-2 band (dropping `rz`) and forget a height it was dragged to, neither
+   of which this drawer has a control for. A group carrying neither is still nulled, so an
+   ordinary group resets byte-identically to before. The band's height has its own way back:
+   double-click its grip. */
 function gEditReset(){
   if (GE.gi < 0) return;
-  gEditRec(); GRP_STYLE[GE.gi] = null;
+  gEditRec();
+  const st = GRP_STYLE[GE.gi];
+  /* ⚠️ THE BANNER IS CLEARED AND THE HEIGHT IS NOT, and the split is the drawer's own: the
+     banner is one of the three things this drawer edits, so "Header style reset" owns it. The
+     height has no field here — it is dragged on the board and reset by double-clicking its
+     grip — so Reset must leave it alone. */
+  if (st && (st.rz || st.h != null)) { st.bg = 'Default'; st.size = 'M'; delete st.banner; }
+  else GRP_STYLE[GE.gi] = null;
   gEditApply(); gEditPaint();
   toast('Header style reset');
 }

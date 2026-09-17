@@ -7106,12 +7106,19 @@ options 2 and 3 shipping as **exact copies of option 1's artwork**. That is what
 for and is how every option in this folder has started: the License page's Option 2 was a byte
 copy of Option 1 for an afternoon before it diverged.
 
+⚠️ **SUPERSEDED IN PART — OPTION 2 HAS DIVERGED** (17–18 Sep 2026). It is resizable, it carries a
+Header banner field, and it draws no dashed box; options 1 and 3 are still byte copies of each
+other. Read *"Empty group OPTION 2"* below before treating the three as interchangeable — in
+particular "identical artwork" is still true and "identical behaviour" is not.
+
 ⚠️ **IT IS REVIEW CHROME**, like `Setting/`'s Scale switcher and the License page's option radio
 — three tiles for one action is not a product state, it is three designs on screen at once so one
 can be picked. When one is, the other two rows come out of the array and the corner chip goes
 with them; nothing else changes, because the render reads the array.
-⚠️ **THE CORNER CHIP IS WHAT KEEPS THEM TELLABLE APART** while they are identical — without it
-the Structure section reads as the same tile drawn three times, i.e. as a bug.
+⚠️ **THE CORNER CHIP IS WHAT KEEPS THEM TELLABLE APART** while their ARTWORK is identical —
+without it the Structure section reads as the same tile drawn three times, i.e. as a bug. It is
+still the only thing on the tile that says which design you are about to add, because option 2's
+divergence shows up on the BOARD rather than in the picture.
 ⚠️ **`position:relative` IS SCOPED TO `.awgopt`**, or every card in the drawer becomes a
 positioning context. Probed: the other tiles still compute `static`.
 Verified by a 15-assertion probe — three tiles, one row, the numbers, identical artwork, the
@@ -7396,6 +7403,191 @@ the header that exists to cap it.
   been sticky for months, but while it was a bare `--bg` row the leak read as canvas. Once it
   gained an opaque `--card-head` fill and a hairline it became a hard boundary with content
   leaking above it — which is the shape the report describes.
+
+#### Empty group OPTION 2 — a band you resize, a banner behind its title, and no dashed box (17–18 Sep 2026)
+
+Four requests in a row, **all scoped to the drawer's second Empty group tile** and none of them
+touching options 1 and 3. This is the first time the three tiles have diverged at all — the
+17 Sep note above still says they are "identical and waiting to diverge", and this is that.
+
+| request | what it is |
+|---|---|
+| *"i add empty group … before i can resize the empty group then the automaticely the widget will be auto adject"* | the band has a drag grip; dragging it refits the board's widgets around it |
+| *"in edit option add banner attech in header … when i attech any image the image will be set in headder as banner"* | a **Header banner** field in the Edit group drawer |
+| *"in this group remove the dot border"* | option 2's empty band draws no dashed outline at rest |
+| *"the header attach componete is Using the ObserveOps design system"* | that field's controls are `obs-button` / `obs-icon` |
+
+##### `W_GROUP_OPT` is the one place that says which option can do what
+
+    const W_GROUP_OPT = [ {opt:1, art:W_GROUP_SVG}, {opt:2, art:W_GROUP_SVG, rz:true}, {opt:3, …} ];
+
+The tile renders `awAddGroup(<its own opt>)`, `awAddGroup(opt)` takes the argument **optionally**,
+and `gRzStamp(opt)` writes `rz:true` onto the group it just made. So a capability is one field on
+one row, and the `G` shortcut — which calls `awAddGroup()` with nothing — is unchanged by
+construction rather than by a guard.
+
+⚠️ **EVERY FIELD ADDED TO `GRP_STYLE` GETS UNDO, REDO, CLONE, REORDER, REMOVE AND BOARD-SWITCH
+FOR FREE**, because it is the array parallel to `TABS`/`WIDGETS` that `histState()` serialises,
+`gClone` deep-copies and `boardLoad` restores. Both `rz` and `banner` live there for that reason.
+A second parallel array is the recorded trap — read the `GRP_STYLE` warning above before adding one.
+
+##### The resize is HEIGHT, and that is not a simplification
+
+A band is full-width by definition (`grid-column:span 12`), so "resize" can only mean height.
+`gRzDown` / `gRzMove` / `gRzUp` clamp to `GRP_RZ_MIN` 96 – `GRP_RZ_MAX` 720, write
+`el.style.height` live, show a badge, and commit through **`gRzCommit`**, which is also what the
+double-click reset calls — one committer, so the drag and the reset cannot disagree.
+
+- ⚠️ **`fitCanvas()` IS CALLED ON EVERY MOVE, NOT ON COMMIT**, because "the widget will be auto
+  adjust" is the request: the refit has to be the feedback, not the result. It is deliberately
+  **not** rAF-throttled — rAF is starved under headless virtual time, so a probe could never
+  observe it.
+- ⚠️ **A NO-MOVEMENT PRESS COMMITS NOTHING** (`gRzUp` bails when the rounded height is unchanged),
+  so a stray click does not fill the undo stack — the `histWas` rule the widget resize already uses.
+- ⚠️ **THE `fitCanvas` FLOOR HAD TO DROP, AND THE GATE IS WHAT MAKES THAT SAFE.** That function
+  clamps `Math.max(hMul, …)`, and on a board that already overflows — the one in the report —
+  `k` is pinned at that floor, so dragging the band taller would have moved **nothing** and the
+  promise would never have been kept. The floor is now `hMul * GRP_RZ_GIVE` (0.5) **only while
+  `g.querySelector('.gdrop.gdrs')` finds a resizable band on the open board**: every other board,
+  options 1 and 3, and any group the `G` shortcut made keep `hMul` exactly as before. There is a
+  probe assertion for each of those.
+- ⚠️ **IT IS A FLOOR, NOT A LICENCE TO VANISH** — past `GRP_RZ_GIVE` the board scrolls instead of
+  squeezing further, which is what stops "auto adjust" turning into "the widgets disappeared".
+- Measured through a real drag: the band **96 → 396px**, ten scaled widgets **131 → 82px** each,
+  their summed height **1767 → 1108**. `data-h="0"` widgets are untouched, as always.
+
+##### The band draws no dashed box, but still lights up as a drop target
+
+`.gdrop.gdrs{border-color:transparent}` — the outline is gone at rest. Nothing else went with it:
+
+- ⚠️ **`.dgrid12.dropinto .gdrop.gdrs` RESTATES THE TEAL DRAG-OVER BORDER, and it has to.** The
+  base drop-target rule is `.dgrid12.dropinto .gdrop` (0,2,0) and sits **above** `.gdrop.gdrs`
+  (0,2,0) in the sheet, so at equal weight source order would hand the tie to `transparent` and
+  the band would stop saying you can drop into it — the one thing an empty group is for.
+- ⚠️ **`.gdrop.gdrs.rzing` PUTS A SOLID TEAL EDGE ON IT WHILE YOU DRAG.** Removing the resting
+  outline removes the only thing that said where the band ends; during the gesture that is
+  exactly what you are setting.
+- ⚠️ **`position:relative` IS ON `.gdrs`, NOT ON `.gdrop`** — every empty group on every board is
+  a `.gdrop`, and making all of them positioning contexts to host one option's grip is the
+  `.awcard.awgopt` lesson in a second place.
+- ⚠️ **OPTION 1 STILL DRAWS ITS DASHED HAIRLINE**, and there is a probe assertion for it scoped to
+  that group's own id — a bare `querySelector('.gdrop')` takes the FIRST band on a board that may
+  still carry an option-2 one, which is how that assertion passed on the wrong element once.
+
+##### Header banner — a field on option 2's drawer only
+
+`gBanPick` → rasterise → `gEditSet('banner', …)` → `gStyleCSS` emits the longhands → `.ghead.gban`.
+
+- ⚠️ **THE IMAGE IS RASTERISED TO A BOUNDED JPEG BEFORE IT IS STORED** (`GRP_BAN_W` 1200 ×
+  `GRP_BAN_H` 200 at `GRP_BAN_Q` 0.72, cover-cropped on a canvas). `histState()` JSON-stringifies
+  the whole board and `HIST.cap` is 50, so anything in the model has to be size-bounded or fifty
+  snapshots of a 4 MB PNG is the undo stack. A real PNG comes out ~3 KB.
+- ⚠️ **`background:` IS A SHORTHAND AND RESETS EVERY `background-*` LONGHAND.** `gStyleCSS` emits
+  the colour first and then `background-image` / `-size` / `-position` / `-repeat`; written the
+  other way round the colour silently erases the banner. Both can be set at once, and there is an
+  assertion that they coexist.
+- ⚠️ **`gEditApply` MOVES THE CLASS WITH THE STYLE** (`hd.classList.toggle('gban', !!gBan(GE.gi))`).
+  It patches one header's attribute rather than re-rendering — a `renderCanvas()` here would throw
+  away the caret in the title field — so anything the banner needs beyond the inline style has to
+  be toggled in that same function or it lands only on the next full render.
+- ⚠️ **THE SCRIM OVER THE BANNER IS A `::before` AND THE TITLE IS LIFTED ABOVE IT**
+  (`.ghead.gban > *{position:relative;z-index:1}`). It is a gradient from `--card-head` to
+  transparent, so the name stays readable whatever was attached; there are assertions that the
+  title is still **hit-testable** over it, not merely visible.
+- ⚠️ **`gEditReset` KEEPS WHAT THE DRAWER DOES NOT OWN.** It clears `bg`, `size` and the banner but
+  leaves `rz` and `h` standing, because Reset means "put this header back to default", not "turn
+  this band back into an option-1 one". A blanket `GRP_STYLE[gi] = null` would have silently
+  removed the grip.
+- ⚠️ **ONE `histDo` PER DRAWER VISIT** still holds with the banner in it — `gEditRec` no-ops after
+  the first write — so attaching an image and renaming the group is one ⌘Z, not two.
+
+##### The attach control is the design system's (18 Sep 2026)
+
+⚠️ **WHAT "USE THE DESIGN SYSTEM" MEANT HERE WAS ASKED OF THE DS, NOT ASSUMED.**
+`search_components('file upload / attach an image')` returns **nothing** — the catalogue ships no
+upload, no dropzone and no image picker — and its hard rule is that a component may not be
+invented. So the field is **composed from catalogued parts** (`obs-button` + `obs-icon`) over a
+native `<input type="file">`, which is also the product's own answer to this job: Settings ›
+My Profile attaches a picture exactly this way.
+
+| control | what it is | why |
+|---|---|---|
+| Attach image / Replace image | `obs-button variant="default"` + `obs-icon name="image"` | the registry's *"secondary next to a primary"* — this drawer's primary is **Done**, in its footer — and the most-used variant in the product at 301× |
+| Remove | `obs-button variant="default" class="squared-button"` + `obs-icon name="delete"` | the registry's own icon-only shape for *"row edit/delete, toolbar, modal close"*, sitting beside the preview it removes. **Not `error`**: the DS reserves red for destructive-with-a-confirm, and a banner is one ⌘Z and one re-attach away — the reasoning that took `--red` off the Manage screen's Archive |
+
+⚠️ **`neutral-lightest` WAS THE FIRST ANSWER, AND MEASURING IT CHANGED THE DECISION.** The
+decision flow routes a "quiet utility control" there and it renders correctly in **dark**
+(`#cad3e2` on `#172336`, 10.47:1) — but in **light** every quiet variant paints the DS's own
+secondary-text colour on its own pale fill: `neutral-lightest` and `neutral-lighter` both
+**3.01:1**, `transparent` **3.51:1**, all under the 4.5 bar for a control *label*. `default` is
+**14.45:1** light / **12.63:1** dark. Recorded as a ninth 0.1.166 finding in `_ds/README.md`;
+**don't restore the quiet variant on the strength of the decision flow alone.**
+⚠️ **THE ICON-ONLY REMOVE IS WHAT KEEPS THE PAIR TELLABLE APART** once both are `default` —
+`squared-button` against a labelled button, rather than two identical boxes.
+⚠️ **A SLOTTED LABEL INHERITS FROM THE SHADOW `.btn`, NOT FROM THE HOST**, so a colour set on the
+element from the page cannot reach it: the flattened tree puts the `<slot>` inside `.btn` and the
+variant's `color` wins. That is why the answer was to pick a legible variant, not to paint over one.
+
+- ⚠️ **`#drawer-gedit` HAD TO JOIN `setting.js`'s SCOPED DS TOKEN BLOCK, DARK AND LIGHT.** A DS
+  component outside it reads the package's own defaults, which are **LIGHT** — so in dark theme the
+  button would have painted a pale slab on a dark drawer. Exactly the `#licHistDr` / `#cwMdHelp`
+  trap, in a third place. It is deliberately **not** in that file's prototype-token re-point: that
+  block re-binds `--card` / `--text` / `--border` / `--teal`, and the drawer's other three fields
+  are written against this prototype's own values.
+- ⚠️ **BOTH HANDLERS GO THROUGH `cwTap`.** `obs-button` fires a consumer's `onclick` **twice** —
+  its inner shadow `<button>`'s click is `composed` and crosses the boundary, and the component
+  re-emits on the host. Both of these happen to be harmless twice, so it is belt and braces — but
+  a silent double-fire is invisible until it lands on something that toggles.
+- ⚠️ **THE FILE INPUT IS A SIBLING OF THE BUTTON, NOT ITS CHILD** — a native input in a custom
+  element's light DOM is slotted into the button's own label. `gBanOpen()` exists so the markup
+  does not carry a `getElementById(...).click()` and so `cwTap` has a stable function to key on.
+- ⚠️ **THE DEFAULT SIZE, NOT `small`.** `@btn-height` is 2.1rem ≈ **34px**, which is `.ddin`'s
+  height exactly; `small` (~24px) would read as a different family beside the drawer's own input
+  and segmented control. Measured, not assumed.
+- ⚠️ **THE PREVIEW SWATCH IS LEFT ALONE** — it is the attached image at thumbnail size and the
+  catalogue has nothing that renders one.
+- ⚠️ **`class="squared-button"` REACHES THE SHADOW BUTTON** — Vue copies a host class inward,
+  which is the one thing that IS safe to forward (a host `style` attribute is not: it lands on the
+  inner element and broke `obs-banner`'s flex layout once). Probe-asserted on the rendered class list.
+- ⚠️ **THE HIDDEN COST, STATED:** `obs-button` carries the catalogue-wide **SF-001 / F3** gap — no
+  visible focus ring — so those two controls are now less keyboard-legible than the `.btn` they
+  replaced. A documented DS bug is not a spec; a `:focus-visible` ring is one rule if it matters.
+
+##### A drawer tile's label turns teal on hover (18 Sep 2026)
+
+Request: *"when i hover to show the color #14b8a6 to replace the #cad3e2"*. `#cad3e2` **is**
+`--text` in dark theme — the tile's resting label — and `#14b8a6` is `--teal`, so the request
+landed on two tokens rather than two literals and light theme follows for free. The border was
+already teal; the label was the half of the hover that had not moved.
+
+- ⚠️ **SCOPED TO `.awcard`, i.e. EVERY tile in the drawer**, not only the three Empty group ones the
+  screenshot pointed at — one hover rule for one grid of tiles. Narrow it to `.awcard.awgopt:hover`
+  if the Structure section is meant to behave differently.
+- ⚠️ **THE ARTWORK IS NOT REPAINTED WITH IT.** `W_TILE_SVG` / `W_GROUP_SVG` bake their own tokens
+  and never read `currentColor` — the rule that stops a full illustration being flattened to one
+  colour, recorded at `.awrow > svg`.
+
+##### Verifying all of it
+
+A **64-assertion** probe (`g2probe.js`, session scratch dir) covering the three tiles passing their
+own option number; options 1 and 3 and the `G` shortcut untouched; the grip's placement, cursor and
+hit-testability; a real drag growing the band 96 → 396 while ten widgets refit 131 → 82; the stated
+floor on this board and `hMul` on every other; commit / undo / redo; a no-movement press committing
+nothing; clone and reorder carrying both fields; the double-click reset; option 2's border
+transparent at rest but still lighting teal on drag-over while option 1 keeps its dashed hairline;
+the banner field appearing only on option 2; a real PNG driven through `gBanPick` and rasterised to
+3 KB; the header painting it `cover` / `no-repeat`; the scrim not covering the title; colour and
+banner coexisting; survival across a render and a clone; Reset clearing the banner but keeping the
+capability; Remove; and no console error. Plus a **38-assertion** DS probe (`dsban.py`) in **dark
+and light** — the elements registered, one button at rest on the right variant with a glyph that
+really renders, its shadow `<button>` painted at the DS 4px radius and at 34px, the fill's luminance
+belonging to *this* theme, a real click on the inner shadow button clearing the banner, `cwTap`
+swallowing the second fire, and the hover rule resolving to `#14b8a6`.
+
+⚠️ **THE DS PROBE COPY MUST BE WRITTEN BESIDE THE SOURCE.** Built in the scratchpad it 404s
+`_ds/observeops-elements.umd.js`, **no `obs-*` element registers at all**, and the field renders as
+inert markup — the recorded *"`_verify/` was silently testing a page with no design system"* trap.
+It cost one full run here, reported as five failures that looked like the feature being broken.
 
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 

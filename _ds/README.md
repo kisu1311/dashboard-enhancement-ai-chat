@@ -120,5 +120,29 @@ colours and no layout at all.
   `.body{padding:24px;overflow-y:auto;flex:1 1 auto}` and `.modal.scrollable .body{max-height:
   55vh}`. Re-check before adding the documented wrapper.
 
-All of these are worked around at the call site — the `ag*` block, and (for `obs-modal`) the
-`cwFt*` block of `index.html`.
+- **⚠️ EVERY QUIET `obs-button` VARIANT IS ~3:1 IN LIGHT THEME.** Measured 18 Sep 2026 off the
+  painted pixels and then confirmed in each button's shadow root, on this prototype's tokens:
+
+      variant             label ink    on fill      light      dark
+      neutral-lightest    #7186a8      #e3e8f2      3.01:1     10.47:1
+      neutral-lighter     #7186a8      #e3e8f2      3.01:1      7.73:1
+      transparent         #7186a8      (surface)    3.51:1     12.33:1
+      default             #1d2a3e      #ffffff     14.45:1     12.63:1
+      primary-alt         #ffffff      #1d2a3e     14.45:1     12.63:1
+
+  In DARK all five are fine; in LIGHT the three "quiet" variants paint the DS's own
+  secondary-text colour on their own pale fill and land **under the 4.5:1 bar for a control
+  label** — which is what they carry, not a hint. The registry lists no contrast finding for
+  the button (its a11y section names only SF-001, the missing focus ring), so this is a new one.
+  ⚠️ **IT BITES THE DECISION FLOW DIRECTLY**: `get_component('button')` routes "quiet utility in
+  toolbar/list/grid/filter" to `neutral-lightest`, which is the correct *role* and an unreadable
+  *render* in one of the two themes. The Edit-group drawer's Header banner field asked for it,
+  shipped it, and moved to `default` once it was measured — see the note at `gEditPaint`.
+  ⚠️ **A slotted label inherits from the shadow `.btn`, not from the host**, which is why the
+  page cannot simply set a colour on the element: the flattened tree puts the `<slot>` inside
+  `.btn`, so the variant's `color` wins. Overriding it means adopting a sheet into the shadow
+  root (the corner-radius hook's mechanism) — which the conformance checker then reports as the
+  variant "rendering off-reference", so the honest fix is to pick a variant that is legible.
+
+All of these are worked around at the call site — the `ag*` block, and (for `obs-modal` and
+`obs-button`) the `cwFt*` / `gEdit*` blocks of `index.html`.
