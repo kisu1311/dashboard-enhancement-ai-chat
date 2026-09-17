@@ -16,9 +16,14 @@ OUT  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_out")
 os.makedirs(OUT, exist_ok=True)
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
+# ⚠️ THE MARKER IS THE SCRIPT TAG, NOT THE SUBSTRING "setting.js" (17 Sep 2026).
+# A bare substring also matches a page that only MENTIONS the file in a comment —
+# `Global_ai.html` names it three times in prose and loads none of it, so discovery
+# pulled that page in and every one of the 21 assertions failed on it, on a page that
+# is correct. Matching the tag asks the question the suite actually means.
 ALL = [f for f in sorted(os.listdir(BASE))
        if f.endswith(".html") and not f.startswith("_")
-       and 'setting.js' in open(os.path.join(BASE, f), encoding="utf-8").read()]
+       and '<script src="setting.js"></script>' in open(os.path.join(BASE, f), encoding="utf-8").read()]
 FILES = sys.argv[1:] or ALL
 
 PROBE = r"""

@@ -75,13 +75,13 @@ dark/light design-token system; every page redeclares its own `:root` tokens.
 
 ## Pages (variants)
 
-⚠️ **THERE ARE THIRTEEN OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026, Option 12 on 10 Sep 2026, Option 13 on 11 Sep 2026), each demonstrating a different sidebar over the
+⚠️ **THERE ARE FOURTEEN OPTIONS NOW** (Option 10 added 9 Sep 2026, Option 11 on 10 Sep 2026, Option 12 on 10 Sep 2026, Option 13 on 11 Sep 2026, Option 14 on 17 Sep 2026), each demonstrating a different sidebar over the
 same Option 1 content. The table under *"Each option now demonstrates a DIFFERENT sidebar
 pattern"* is the map; in file order:
 
 | # | file | sidebar |
 |---|---|---|
-| 1 | `index.html` | icon rail + hover mega-menu (Datadog) |
+| 1 | `index.html` | **Option 13's sidebar since 17 Sep 2026** — Gemini's rule + a flush-docked column. Its original Datadog rail lives on in Option 14 |
 | 2 | `dashboard-grouped-sidebar.html` | icon rail + always-docked panel (ClickUp) |
 | 3 | `dashboard-picker-advanced.html` | Option 1's rail; the denser dashboard picker |
 | 4 | `dashboard-labelled-rail.html` | labelled rail + a panel you open (monday.com) |
@@ -94,24 +94,39 @@ pattern"* is the map; in file order:
 | 11 | `dashboard-rail-flyout-alt.html` | Option 10's pattern, copied 10 Sep 2026; **boots EXPANDED and collapses to nothing** |
 | 12 | `dashboard-rail-flyout-alt2.html` | Option 10's pattern, copied 10 Sep 2026; **Gemini's rule — no hover expand, one toggle** |
 | 13 | `dashboard-rail-flyout-alt3.html` | **Option 12's** pattern, copied 11 Sep 2026 — so it inherits Gemini's rule AND the whole 11 Sep Explorer pass; nothing else differs yet |
+| 14 | `dashboard-rail-flyout-alt4.html` | **the ORIGINAL Option 1 sidebar** — icon rail + hover mega-menu (Datadog). Copied 17 Sep 2026, and Option 1 then took Option 13's, so this is the only page still demonstrating it |
 
-⚠️ **THERE IS ALSO A FOURTEENTH PAGE THAT IS NOT AN OPTION** — **`Global_ai.html`** (16 Sep 2026),
+⚠️ **THERE IS ALSO A FIFTEENTH PAGE THAT IS NOT AN OPTION** — **`Global_ai.html`** (16 Sep 2026),
 the product's own AI assistant screen, built from a capture. It demonstrates no sidebar, carries none
-of the shared modules, and does **not** load `setting.js`, so it is outside every "all thirteen
+of the shared modules, and does **not** load `setting.js`, so it is outside every "all fourteen
 pages" statement below — including `stbehave.py`'s auto-discovery, which keys off that script tag.
 It IS in the switcher (key **`M`**) and on Option 1's rail. See *Global AI* below.
+⚠️ **IT IS STILL THE LAST ROW OF THE SWITCHER, and that took a hand edit.** `_sync_variants.js`
+APPENDS, so Option 14 landed after it and was moved back up; and `VS_LETTERS` gained `'v'` BEFORE
+`'m'` rather than after it, so Global AI keeps the initial it was chosen for. Any fifteenth OPTION
+needs the same two moves — see *"Their shortcuts are LETTERS"*.
+
+⚠️ **EVERY "thirteen pages" / "thirteen options" COUNT FURTHER DOWN THIS FILE PREDATES 17 Sep
+2026 AND MEANS FOURTEEN.** Those sit inside dated session entries and are deliberately left as
+written — they record what was true when the decision was made, the same rule the option files'
+own comments follow. Only the live claims above were updated.
 
 ⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's;
 **Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1**, **Options 11
-AND 12 are byte copies of Option 10**, and **Option 13 is a byte copy of OPTION 12** — the first
+AND 12 are byte copies of Option 10**, **Option 13 is a byte copy of OPTION 12** — the first
 copy in this family taken from something that is not Option 10, so it is the only one that starts
-life with the 11 Sep Explorer pass already in it. A change meant for every option is a
-**thirteen-file** change;
+life with the 11 Sep Explorer pass already in it — and **Option 14 is a byte copy of OPTION 1**,
+the second fork taken straight from it, which is why it carries none of 10–13's divergence at all.
+A change meant for every option is a **fourteen-file** change;
 ⚠️ **OPTIONS 10, 11, 12 AND 13 SHARE THE `mf*` / `sbNotif*` / `RAIL_TMP` / `railPin*` WORK** with nothing syncing them,
 the same trap Options 5/8 have with `pl*` and 6/9 with `sk*`. Option 10 carries a session's worth
 of things Option 1 does not — the Explorer module grid, per-tile pins, the temporary rail row, the
 pinned-row child menu, the gradient AI mark, the hover notification card — and all of it now exists
-**four times**. ⚠️ **ALL THIRTEEN OPTIONS LOAD `setting.js`** (the last three inline copies went
+**four times** — and Option 14 carries **none** of it, because it forked from Option 1 rather than
+from that family. ⚠️ **OPTION 1's OWN RAIL CODE NOW EXISTS TWICE** (`index.html` + Option 14),
+with nothing syncing the pair either: a change to `mf*` / `railPin*` / `renderMenu` / `SUBNAV` /
+`EXPLORER_TREE` meant for **that** pattern is a two-file change.
+⚠️ **ALL FOURTEEN OPTIONS LOAD `setting.js`** (the last three inline copies went
 on 12 Sep 2026, and the two files merged into one later the same day), so a change to the Settings
 module lands in **every page** whether
 or not that was meant — the one thing that IS synced, and now by construction rather than by accident
@@ -159,7 +174,7 @@ made twice**, and that is the same cost the other options already carry.
   original AI prototypes the panel was ported from. **The only copies that exist**
   (their old `AI_Chat_Interface/` folder is gone). Kept out of the folder root so
   the variant sync ignores them. Reference only — do not delete.
-- **`setting.js`** — **the whole Settings module, in one file, loaded by all thirteen pages**
+- **`setting.js`** — **the whole Settings module, in one file, loaded by all fourteen option pages**
   (12 Sep 2026). PART 1 is its stylesheet, which injects itself as a `<style>`; PART 2 is the
   `#view-settings` markup plus the `st*` (My Profile), `stc*` (Compliance Settings) and
   `ag*` / `lic*` (Agentic AI, Product License) blocks. One `<script src>` per page, placed
@@ -5807,10 +5822,10 @@ as flex siblings rather than merged, so each keeps the rules written for it. `.s
 
 ### Their shortcuts are LETTERS, and that is new
 
-`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z', 'c', 'm']`** maps
-index 10 onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026), Option 13 = `C` (11 Sep 2026), each
-by request, and the 14th entry **Global AI = `M`** (16 Sep 2026, chosen here — see *Global AI*
-below) — and `vsKey` / `vsIdx` are exact inverses that **must be edited together**: a key shown on
+`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z', 'c', 'v', 'm']`**
+maps index 10 onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026), Option 13 = `C`
+(11 Sep 2026), each by request, **Option 14 = `V`** (17 Sep 2026, chosen here) and **Global AI =
+`M`** (16 Sep 2026, chosen here — see *Global AI* below) — and `vsKey` / `vsIdx` are exact inverses that **must be edited together**: a key shown on
 a row that does not switch, or a switch with no keycap, is worse than no shortcut. Only that array
 changes; both functions read it.
 ⚠️ **EACH LETTER IS CHECKED AGAINST EVERY PAGE FIRST.** That handler runs on all thirteen pages, so
@@ -5829,9 +5844,19 @@ Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
 page in this folder compares was enumerated first, and there are only five — `e i k y z`, all of
 them either behind a modifier or the switcher's own. `m` is free in all fourteen, and it is the
 initial of the thing it opens, which none of `x` / `z` / `c` ever was.
-⚠️ **`VS_LETTERS` SITS OUTSIDE THE MANAGED BLOCK** (line 120, against `VARIANTS:BEGIN`(15) /
-`END`(32)), so `_sync_variants.js` never rewrites it — a new page gets its row automatically and
-its KEY by hand. **A FIFTEENTH STILL NEEDS ITS OWN CHOICE.**
+⚠️ **THE ARRAY IS POSITIONAL, SO A NEW OPTION IS INSERTED INTO IT, NOT APPENDED** (17 Sep
+2026). Index 10 + n is the key, so appending `'v'` after `'m'` would have slid Global AI to index 14
+and taken `m` — the initial it was chosen for — off it. `'v'` went in at index 3 instead, and
+Option 14's row was hand-moved above `Global_ai.html` in `VARIANTS` for the same reason: the sync
+appends, and Global AI is not an option. **Both moves are needed together**; doing one without the
+other puts a key on the wrong row, which `vsKey`/`vsIdx` will then honour in both directions.
+⚠️ **`V` WAS CHECKED FREE THE SAME WAY** — it is in no page's `KB` (all fourteen are
+`n w g e d o t f / s a`), in no `case` label and in no other bare-key comparison in the folder, and
+⌘V / Ctrl+V stays PASTE on the modifier rule above. It continues the bottom row the other three
+walk (x · z · c · v) — which is a mnemonic, not a licence to take `b` next without checking.
+⚠️ **`VS_LETTERS` SITS OUTSIDE THE MANAGED BLOCK** (against `VARIANTS:BEGIN` / `END`), so
+`_sync_variants.js` never rewrites it — a new page gets its row automatically and its KEY by hand.
+**A SIXTEENTH STILL NEEDS ITS OWN CHOICE.**
 
 ### Verification lessons from this pair
 
@@ -6474,6 +6499,903 @@ Sizes and colours, all measured:
 - **light `--sidebar` is `#F6F9FC` in all twelve options**, not `#ffffff`. It had been the same value
   as `--bg` and `--card`, so the rail, the canvas and every widget were ONE surface with only a 1px
   border between them — the cause of two bugs already recorded here.
+
+## Option 14 — a byte copy of OPTION 1 (`dashboard-rail-flyout-alt4.html`, 17 Sep 2026)
+
+Made on request: *"in the option 1 the sidebar only copy and create option 14"*. It is a
+**byte-for-byte copy of `index.html`** apart from its `<title>`, an identity banner above
+`let sbPinned`, and its switcher entry. Everything this file says about Option 1 is true of it
+until one of them is changed — the Datadog rail that expands on hover, the mega-menu flyout on
+every row, the `ai*` Iris panel, the Log Explorer, the Manage-dashboards screen, the Layout
+drawer, the Create/Edit Widget editor and the single-key `KB` registry.
+
+- ⚠️ **IT IS THE FIFTH FILE IN THE RAIL + FLYOUT FAMILY AND THE SECOND TAKEN FROM OPTION 1.**
+  Option 10 was the first; Options 11 and 12 are copies of 10 and Option 13 a copy of 12, and all
+  four have diverged a long way since. **This one carries NONE of that divergence** — no Explorer
+  module grid, no per-tile pins, no `RAIL_TMP` temporary rail row, no `MF_NO_HOVER`, no gradient
+  AI mark, no hover notification card, no Gemini rule (hover still expands the rail here), no
+  docked column, no split pinned band, no pin intro. It is Option 1, today. **Do not read "it is
+  like Option 10"** — it is like Option 1, which is where those four started.
+- ⚠️ **SO OPTION 1's OWN RAIL CODE NOW EXISTS TWICE, and nothing syncs the pair.** A change
+  meant for THIS pattern — `mf*`, `railPin*`, `renderMenu`, `SUBNAV`, `EXPLORER_TREE`, the rail
+  CSS — is a **two-file** change, and a grep for any of those names returns one more file's worth
+  of hits than it did before. Same trap Options 5/8 have with `pl*`, 6/9 with `sk*` and 10–13
+  with `mf*`, in a fourth place.
+- ⚠️ **EVERY COMMENT INSIDE THE NEW FILE THAT SAYS "Option 1" IS LEFT AS WRITTEN.** They record
+  where a decision was made and why, not which file you are reading; rewriting them would erase
+  that history and make the two files diff as though they differed.
+- ⚠️ **THE FILENAME DESCRIBES THE PATTERN, NOT THE INTENT** — `-alt4` because it is a fifth take
+  on the same sidebar. Rename it the moment it becomes something else; `_variants.js`,
+  `_verify/lxbehave.py`'s `FILES` and `_verify/dsconf.py` are the three places that must follow
+  (`dsconf.py` takes its target as an argument, so it needed nothing).
+- ⚠️ **THE TITLE SUFFIXES ARE STILL OFFSET BY ONE**, pre-existing: the file with no suffix carries
+  "(alt)" (Option 10 was itself the alt of Option 1's rail), `-alt` "(alt 2)", `-alt2` "(alt 3)"
+  and `-alt3` "(alt 4)", so this one is **"(alt 5)"**.
+- **Registered**: `node _sync_variants.js` added the row and injected nothing (the copy already
+  carried the switcher tag); its auto-label `V15 · …` was **hand-set to `Option 14`** and the row
+  **hand-moved above `Global_ai.html`**, because the sync appends and Global AI is not an option.
+  A re-run then reported no changes, which is what proves the hand edit stable.
+  `_verify/lxbehave.py`'s `FILES` gained it (that list is hardcoded — a new page must be added or
+  the suite silently tests the old set); `_verify/stbehave.py` auto-discovers it.
+- **Its switcher key is `V`** — see *"Their shortcuts are LETTERS"* for why `'v'` was inserted into
+  `VS_LETTERS` **before** `'m'` rather than appended after it.
+
+### ⚠️ `stbehave.py`'s AUTO-DISCOVERY WAS MATCHING A SUBSTRING, AND IT HAD BEEN WRONG SINCE 16 Sep
+
+Found while verifying this copy, and **pre-existing**: the suite discovered its pages with
+`'setting.js' in <the file's text>`, which also matches a page that merely **mentions** the file in
+a comment. `Global_ai.html` names it three times in prose and loads none of it, so from the day
+that page landed the suite pulled it in and every one of its 21 assertions failed — on a page that
+is correct, and for a reason that reads as a regression in whatever you touched last. It matches
+the real tag now (`<script src="setting.js"></script>`), which is the question the suite means, and
+discovery went 15 files → **14**, i.e. exactly the option pages. ⚠️ **A marker is an assertion
+too**: "the page loads X" and "the page contains the letters X" are different claims, and only one
+of them is what auto-discovery is for.
+
+**Verified:** `stbehave` **ALL 21 PASS × 2** (the new page and `index.html` as the control) ·
+`harness … query` **ALL 77 PASS** on the new page at all seven resolutions · `lxbehave`
+**ALL 57 PASS × 14** · and a **20-assertion switcher probe** driven by REAL navigation inside an
+iframe over loader-stripped copies under their real filenames: fifteen rows with Option 14 as the
+14th and Global AI still last, options 1–14 contiguous, keys `1–9 0 X Z C V M` all unique, the
+footer listing every one, ⌘V / Ctrl+V / ⌘⇧V **not** navigating, bare `v` navigating to Option 14
+for real, that page marking itself current with the alt-5 title and rendering `#sidebar` +
+`#mflyout`, `v` on Option 14 being a no-op, and **`m` still reaching Global AI** after the
+`VS_LETTERS` insertion.
+⚠️ **The probe copies live under their REAL filenames** — `_variants.js` reads
+`location.pathname`, so a probe written as `q-0.html` matches no row and every assertion about
+"which option am I on" fails on correct code.
+
+## Option 1 and Option 14 SWAPPED SIDEBARS (17 Sep 2026)
+
+Two requests, one move: *"in the option 1 the sidebar only copy and create option 14"*, then
+*"the option 13 sidebar only will copy and pest option 1"*. **Option 14 is the backup half** —
+it was made first, as a byte copy, so Option 1's Datadog rail + hover mega-menu is preserved
+there; **Option 1 then took Option 13's sidebar.** Nothing was lost and nothing was renamed.
+
+| | before | after |
+|---|---|---|
+| **Option 1** (`index.html`) | icon rail + hover mega-menu (Datadog) | **Option 13's** — Gemini's rule, a flush-docked 296px column, the flat Explorer list, the split pinned band, the pin intro, the overflow footer |
+| **Option 14** (`dashboard-rail-flyout-alt4.html`) | — | **the original Option 1 sidebar**, byte-identical to what Option 1 was |
+| **Option 13** | — | untouched |
+
+### ⚠️ "THE SIDEBAR ONLY" IS NOT WHAT THE DIFF LOOKS LIKE — how the transplant was done
+
+`index.html` ↔ `dashboard-rail-flyout-alt3.html` is **~4,000 diff lines over 166 hunks**, spread
+through one flat 2 MB stylesheet and script. Splicing that by hand is the recorded
+"replacing a CSS block silently takes unrelated rules with it" trap, several times over. What
+makes it unnecessary: **Option 13 descends from a BYTE COPY of Option 1** (Option 10, 9 Sep) and
+every divergence since has been sidebar work — so the whole file was taken and Option 1's own
+non-sidebar identity put back on top. Every hunk was classified first (112 of 166 name a sidebar
+identifier outright; the rest were read by hand), and exactly **four** things needed restoring:
+
+- the **`<title>`**;
+- the assistant is called **Iris** here — 13 user-facing strings, the rail row's label and
+  tooltip included. See the warning below;
+- **`.aihelpl`'s hairline** above Documentation / Support in the AI panel, removed on 9 Sep in
+  Option 10's line. That is an AI-panel decision, not a sidebar one;
+- the **Global AI rail row** (`#sbGlobalAI`, 16 Sep), which only this page ever had — re-inserted
+  after Search inside `.stop`, so `Global_ai.html` is still one click from the rail.
+
+### ⚠️ TWO THINGS CAME WITH THE SIDEBAR THAT ARE NOT STRICTLY SIDEBAR, AND WERE KEPT
+
+Stated rather than left to be discovered:
+
+- **the assistant's MARK is the gradient star now** (`AI_SPARK_PATH` / `aiSparkPaint`, 9 Sep),
+  not the `OPS AI.svg` speech bubble. The rail row's own intro animation (`.aisprk` /
+  `AI_SPARK_TRAIL` / `aiSparkIntro`) is built on it and every surface reads the one binding —
+  so keeping the bubble would have put **two marks on one page**, which is the drift these
+  notes exist to prevent. `AI_SPARK_BUBBLE` is parked and unreferenced.
+- **`html[data-theme="light"] .dpanel:not(.hid)`** — Option 13 carries the fix for the recorded
+  light-theme bug where a hidden dashboard panel still cast its shadow across the canvas. This
+  page had the broken rule and now has the fix. (Options 2, 4, 5, 7 and 8 still have it broken.)
+
+### ⚠️ OPTION 1 AND OPTIONS 10–13 NOW DISAGREE ABOUT THE ASSISTANT'S NAME, on purpose
+
+Option 13 carries a **9 Sep request — *"change the AI name & use Ask AI everywhere"*** — which
+reversed the 25 Aug Iris naming **in Option 10's line only**. Option 1 never received it, so the
+transplant deliberately did not take it: what the assistant is called is not the sidebar. So
+Option 1 says **Iris** and Options 10–13 say **Ask AI**.
+⚠️ **The inherited comment in `index.html` still ends "Nothing in the UI says Iris any more",
+and that sentence is now false on that page** — it is reconciled in place with a note rather than
+deleted, because it records a real request. If the 9 Sep rename was meant to be global, this page
+is the one to change; it is 13 strings, listed in the swap banner at `let sbPinned`.
+
+### ⚠️ THE SAME SIDEBAR NOW EXISTS IN TWO PAGES WITH NOTHING SYNCING THEM
+
+Option 1 and Option 13 demonstrate the same design. A change meant for that **pattern** is a
+two-file change (more, counting what Options 11 and 12 still share), and a grep for `mf*` /
+`railPin*` / `RAIL_TMP` returns one more file than before. Diff them before editing either.
+⚠️ **Option 14 is now the ONLY page demonstrating the Datadog rail + hover mega-menu.** Its
+filename still describes that pattern correctly; if Option 1's old sidebar is ever wanted back,
+Option 14 is the byte-accurate source.
+
+**Verified:** `stbehave` **ALL 21 PASS** · `lxbehave` **ALL 57 PASS** on the swapped page · the
+non-sidebar restorations asserted individually (title, 13 Iris strings, the hairline, the Global
+AI row present and inside `.stop`).
+
+## Free Text — the widget, and its create-time editor (Option 1, 17 Sep 2026)
+
+Request: *"understand the 'free text' flow … and in this free text flow will be add in option 1"*,
+with the live **Add New Widget → Text and Inserts** drawer and the live **Create Widget** editor
+supplied as references. Free Text was already a TILE in `W_CATALOG`; what did not exist was the
+flow behind it — the tile mapped to the generic `note` widget and the editor had no Free Text
+visualization at all, so picking it landed you in the query builder for a widget that has no data.
+
+| part | what it is |
+|---|---|
+| drawer | the tile now maps to `freetext`, not `text`, so it opens the real editor |
+| viz row | `CW_VIZ` gained **Free Text** — entry 11 of the docs' own twelve, appended so the ten data types keep the live order |
+| editor | `#cwModal.cwft` — a preview pane and **four fields**: `Text to display*` · `Font Size` · `Font Color` · `Text Align`, then the standard `Reset · Create Widget · Create & Add Widget` footer |
+| the widget | `{t:'freetext', text, size, color, align}`, rendered by `ftHTML` |
+
+- ⚠️ **ONE CLASS STANDS FOUR REGIONS DOWN.** `.cwft` hides the query builder, the source tabs,
+  the Widget Name / Description row and the style tabs — the live Free Text screen has none of
+  them. One class rather than four JS writes is what makes switching **back** to a Chart complete
+  by construction: there is no per-region state to forget to restore. There is a probe assertion
+  that a Chart still has its counter and its builder afterwards.
+- ⚠️ **THE PREVIEW AND THE BOARD SHARE ONE RENDERER (`ftHTML`).** A second, look-alike renderer
+  is how what you approve and what lands on the dashboard come to disagree. It takes the draft
+  (`CW.ft`) or the placed widget (`w`) unchanged, because both carry the same four fields.
+- ⚠️ **"Auto" IS A CONTAINER QUERY, NOT A FIXED SIZE** — `clamp(20px, 8cqw, 96px)` against a
+  `container-type:inline-size` wrapper. That is what makes the text FILL its widget the way the
+  live product's "CPU" banner does, and it keeps doing it after a resize **with no JS and no
+  timer**; a fixed px size would be right at exactly one width.
+- ⚠️ **THE HEADER BECOMES AN OVERLAY, IT IS NOT REMOVED.** The live Free Text widget shows no
+  title bar — but `.whead` is where `⋮` (Edit / Clone / Full screen / Share / Remove) and the AI
+  ✦ live, and both are already `opacity:0` until hover. Deleting it would strand the widget on
+  the board with no way to remove it. `.widget.wft .whead` is `position:absolute` instead.
+- ⚠️ **THE TEXT FIELD REPAINTS THE PREVIEW ONLY, NEVER THE PANEL.** `cwRender()` rewrites
+  `#cwBody`, which would destroy the input you are typing in and drop the caret on every
+  keystroke — the discipline `agConsPaint` and `stcPop` already follow. The other three controls
+  commit a single value, so they repaint in full. Probe-asserted by identity, not by eye.
+- ⚠️ **IT IS GATED ON ITS TEXT AND STILL DOES NOT OPEN IN AN ERROR STATE.** The standard test
+  is "at least one Counter", which Free Text can never satisfy — that would leave both create
+  buttons permanently dead with nothing on screen to fix, the dead end the Designer's Guide
+  forbids. The message is only emitted once you have typed and cleared the field, so a freshly
+  opened form is silent and the preview simply shows the live placeholder, **"Text to display"**.
+- ⚠️ **THE ALIGN GLYPHS ARE THE PRODUCT'S OWN**, pasted verbatim from
+  `observeops-icons/common/text-input-formatting/align-{left,center,right}.svg` — the icon rule's
+  first choice. The selected segment is `--chip`, **not** `--teal`: teal on this page means "a
+  thing you act on" (the create buttons are teal), and a segmented control reports a STATE.
+- ⚠️ **"Default" IS NOT A COLOUR** — it means "inherit the widget's text colour", which is what
+  keeps a Free Text widget legible in both themes. Every other entry is a token, never a literal.
+- ⚠️ **`awAdd` GAINED AN OPTIONAL THIRD ARGUMENT** (`ft`). Every other caller — the drawer's
+  tiles, the quick-add buttons, the AI panel — is unchanged and still passes two.
+
+### Two refinements from the live screens, the same day
+
+- ⚠️ **THE VISUALIZATION ROW IS HIDDEN IN FREE TEXT MODE** (request: *"the text show area"*,
+  with the live editor as the picture — its preview runs to the TOP of the modal body, with no
+  type row above it). That is not an omission on the product's part: you reach this screen by
+  picking **Free Text** in the Add New Widget drawer, so the type is already chosen, and on an
+  EDIT the whole row is disabled anyway (a widget's visualization cannot be changed after it is
+  created). A row that can only ever show one enabled item says nothing.
+  ⚠️ **HIDDEN, NOT UNRENDERED** — `cwRender` still builds it, so switching back to a Chart
+  brings it back with its state intact. There is a probe assertion for exactly that.
+- ⚠️ **THE RIGHT BOX FILLS; THE FIELDS INSIDE IT DO NOT** (request: *"the field box width
+  same"*, then two live screens to settle it). It shipped for an hour as `flex:0 0 280px` — a
+  narrow column shrink-wrapped to its fields — and **that was a misread**. Measured off the live
+  Edit Widget screen: its right box is **45% of the content width** (840 of 1876) while the
+  fields inside it are ~205px hugging its left edge. So the BOX keeps `.cwset`'s own
+  `flex:1 1 42%` and **`.cwftp` is capped at 232px** instead.
+  ⚠️ **THE CAP IS WHAT MAKES THE THREE FIELDS THE SAME WIDTH**, which is the half of the
+  request that was right all along: the input and both selects are sized from that one number,
+  so they share a left AND a right edge instead of each ending wherever its content does.
+  ⚠️ **THE TELL WAS A RATIO, NOT A PIXEL COUNT.** Two screenshots of "the same" screen
+  disagreed — one right box at 17% of the width, one at 45% — which is what identified the 17%
+  one as *my* build rather than the product's. Compare proportions when two references conflict.
+  ⚠️ **THE ALIGN CONTROL DELIBERATELY DOES NOT SPAN IT**, and that is the live screen's own
+  shape: three 38px cells hugging their content. Stretched to 252px it would put ~84px of dead
+  space around each glyph and read as three buttons rather than one control. "Same width" is
+  about the three text fields.
+
+### Free Text gains Datadog's Notes & Links features (17 Sep 2026)
+
+Request: *"the 'Notes & Links Editor' related flow & fea[t]ure will be add in 'free text'"*, with
+the live Datadog editor supplied and the dashboard itself linked. **What was actually read off
+that dashboard** (its own `/api/v1/dashboard/<id>` JSON, in the page, read-only):
+
+    { type:'free_text', text:'cpu details', color:'#000000', font_size:'auto', text_align:'left' }
+
+⚠️ **THAT IS EXACTLY MOTADATA'S FREE TEXT** — four fields, `auto` included. So the two products'
+free-text widgets are the same widget, and **Notes & Links is the richer sibling**: Datadog's
+`note` schema adds `content` (markdown), `background_color`, `vertical_align`, `has_padding`,
+`show_tick`, `tick_edge`. Those are what was added here, on top of the four that already existed.
+
+| added | what it is |
+|---|---|
+| **markdown + live preview** | the field is a textarea; the big left pane IS the preview, so no second preview box was needed |
+| **presets** | Default · Caption · Header · Annotation — four tiles that write a bundle |
+| **font size** | Datadog's **XXS … XXL** segmented scale, with the product's `Auto` kept as its first stop |
+| **background** | `CW_FT_BG`, token mixes; `None` is the default |
+| **vertical alignment** | top / middle / bottom, beside the existing horizontal row |
+| **padding** | a "No padding" checkbox (stored positively as `pad`, so the control is its inverse) |
+| **pointer** | "Show pointer" + a Left/Right/Top/Bottom position, disabled until ticked |
+
+- ⚠️ **`ftMd` ESCAPES FIRST AND FORMATS SECOND, ALWAYS.** Every `<` is neutralised before a
+  single tag is emitted, so a note can never inject markup into the board — the one rule that
+  matters in a renderer fed by a text field. Verified directly: `<img src=x onerror=…>` and a
+  `<script>` both come back as escaped text.
+  ⚠️ **A `javascript:` URL IS NOT LINKIFIED**, and that falls out of the design rather than
+  being patched on: both link rules match `https?://` only, so `[t](javascript:alert(1))` renders
+  as literal text. Keep that anchor if the regexes are ever widened.
+  ⚠️ Real links get `target="_blank" rel="noopener"` — these render inside a dashboard, and a
+  note must not be able to navigate the board away or reach back through `window.opener`.
+- ⚠️ **THE SUBSET IS DELIBERATE**: headings, bold, italic, inline code, links, bare URLs, both
+  list kinds, line breaks — exactly what the editor's own hint claims, and no more. A
+  half-working table or blockquote would be a promise the preview cannot keep.
+- ⚠️ **THE WIDGET'S NAME IS THE TEXT WITH ITS MARKUP STRIPPED.** Once the field took markdown,
+  a note headed `## CPU` would have been *named* "## CPU" in User Define and in the duplicate-name
+  test. It renders through `ftMd` and takes `textContent`, i.e. the string a reader sees.
+- ⚠️ **A PRESET IS A STARTING POINT, NOT A MODE** — it writes the fields once and every control
+  stays live, which is why nothing tracks "which preset am I in" afterwards. There is a probe
+  assertion that changing a control after a preset keeps both values.
+- ⚠️ **THE PRESET TILE ART IS CSS, NOT AN ICON** — a three-line miniature per tile drawn with
+  box-shadows, so it themes with the page and there is no asset to keep in step.
+- ⚠️ **THE SECTION HEADINGS ARE THE FILE'S OWN LABEL IDIOM** (11px/600/.06em/uppercase), not
+  the reference's numbered purple circles — that is another product's chrome, and the repo rule
+  is to build a new control out of what is already there.
+- ⚠️ **THE POINTER IS A BORDER TRIANGLE INHERITING the note's background**, so it cannot drift
+  from the fill it points away from. It sits inside the note's own edge, because `.widget.wft`
+  does not allow overflow — which is what the reference's sticky-note preset shows anyway.
+- ⚠️ **THE FOUR PRESET DEFINITIONS ARE A READING OF THEIR TILES, NOT A MEASUREMENT.** The modal
+  could not be opened without entering edit mode on a live dashboard, which was not worth the
+  risk; what IS measured is the field set they drive. The illustrations are unambiguous about
+  the shape (small left-aligned card / caption under artwork / one centred bold line / yellow
+  sticky note with a tail) and the bundles follow from that.
+- ⚠️ **NOT BUILT, AND SAID RATHER THAN FAKED**: the live tip's *"pasting a plain link to a
+  Dashboard or Dashboard List will create a rich link preview"*. That resolves the link
+  server-side to a title and thumbnail, which this prototype cannot do; a bare URL becomes an
+  ordinary link instead, which is the honest half of the feature.
+- ⚠️ **THE FOOTER IS STILL THE PRODUCT'S** (`Reset · Create Widget · Create & Add Widget`), not
+  the reference's `Cancel · Save to New Graph · Save`. The request was to add the Notes features
+  into Free Text, not to replace the editor Free Text lives in.
+
+### Then three corrections, each from a live screen (17 Sep 2026)
+
+The Notes & Links pass above was followed by three narrow requests, each supplying the live
+control beside mine. **Where they conflict with the section above, these are current.**
+
+| request | what changed |
+|---|---|
+| the Note Content block → the plain field | the markdown **textarea**, its `Markdown help ↗` link, the "NOTE CONTENT" heading and the hint line are gone; `Text to display` is a single-line `<input>` again |
+| Font Size → a searchable dropdown | the XXS…XXL segmented row is gone; it is the product's own dropdown, and its stops are **Auto · 16 · 24 · 36 · 56 · 72 · 88px** |
+| Font Color / Background → the same dropdown | both native `<select>`s are gone; the colour list is the product's **Default · Gray · Green · Blue · Yellow · Orange · Red** |
+
+- ⚠️ **TWO OF MY "READINGS" WERE REPLACED BY MEASUREMENTS, AND THAT IS THE LESSON.** The
+  earlier note flagged the Font Size ladder as *"a reading, not a measurement — the live select
+  shows only its current value"*. It was wrong in both directions: the stops are px, not named
+  sizes, and the control is a **searchable dropdown**, not a segmented row. The invented colour
+  set (White / Teal / Purple / Muted) went the same way. **Both invented lists are DELETED, not
+  kept beside the real ones** — two vocabularies in one control is exactly how they drift.
+  ⚠️ The colour list may continue below its fold: the reference is cut off at Red, so these are
+  the seven that are VISIBLE.
+- ⚠️ **ONE DROPDOWN FUNCTION, THREE CONTROLS** (`cwFtDD`). They differ only in their list,
+  whether the rows carry a swatch, and which field they write. Three near-identical dropdowns is
+  how the search box ends up behaving differently in one of them.
+  ⚠️ **SEVEN OPTIONS DO NOT NEED SEARCHING AND THE BOX IS STILL THERE** — it is the product's
+  control, not a control sized to this list. Typing filters; it is not decoration.
+  ⚠️ **THE PANEL IS INSIDE `.cwftdd`, NOT ON `<body>`**, so it moves with the scrolling column
+  and needs no reposition-on-scroll. `.cwsb` is the scroller; a fixed panel would detach from its
+  trigger the moment the column moved.
+  ⚠️ **FILTERING REPAINTS AND RESTORES THE CARET** — the `stcPop` / `aiHistFilter` lesson:
+  replacing the markup on `oninput` drops focus out of the search box on the first keystroke.
+  ⚠️ **THE Esc RUNG IS CAPTURE-PHASE AND STOPS PROPAGATION**, or Escape would close the whole
+  editor while a dropdown is open — innermost first, the recorded ladder rule.
+  ⚠️ **THE SELECTED ROW IS WEIGHT + `--sel`, NOT `--teal`.** Teal on this screen means "a thing
+  you act on" (the create buttons); a list row reports a state. The reference shows the same.
+- ⚠️ **THE MARKDOWN CAPABILITY SURVIVED THE FIELD REVERT, THE CHROME DID NOT.** `ftMd` still
+  renders the value, so `**bold**` typed into that one line still formats and every safety
+  property holds — nothing advertises it any more. **Say so if the field should render as
+  literal text instead**; that is one call site. `.cwftsec` / `.cwftmh` / `.cwftta` /
+  `.cwfthint` are kept and unreferenced, so the markdown block is one edit away.
+- ⚠️ **THE PRESETS HAD TO LEARN THE NEW VOCABULARY** — their bundles named `XS` / `LG` / `XXS`
+  and `Neutral`, none of which exist now. A preset naming a size that is not in the list fails
+  silently: the dropdown just shows the stale string.
+
+### Two more removals, and the two bugs they exposed (17 Sep 2026)
+
+- **The vertical alignment row is gone** (request: *"remove"*, pointing at top / middle / bottom).
+  ⚠️ **`valign` IS STILL IN THE MODEL**, still defaulted to `middle` and still honoured by
+  `ftHTML` — so every Free Text widget already on a board keeps the vertical position it was
+  saved with. Deleting the field as well would have silently re-laid-out those. `CW_FT_VALIGN`,
+  `cwFtVAlign` and `.cwftrow` are kept and unreferenced; the row is one line away.
+- **A hairline across the note is gone** (request: *"remove this line"*), and it was **a class
+  collision, not a rule of mine**. The placeholder span was `class="ftt ph"`, and `.cwprev .ph`
+  is the PREVIEW PANE'S OWN HEADER rule 200 lines up — `padding:7px 11px;
+  border-bottom:1px solid var(--border-soft); font-size:11px; color:var(--muted)`. The span
+  renders inside `.cwprev`, so at (0,2,0) that rule out-specified `.ftt` and painted its border
+  under the placeholder text.
+  ⚠️ **THE TEXT STILL LOOKED RIGHT, WHICH IS WHY IT SURVIVED THREE SCREENSHOTS**: `.ftt.auto`
+  and `.ftt.ph` both tie at (0,2,0) and are declared later, so they won the properties they
+  declare (size, opacity) — and `border-bottom`, which only `.cwprev .ph` declares, had no
+  competition. It is `ftph` now. **Grep the CSS CLASS before naming one, not just the JS name.**
+
+### The field grew, and a preset went (17 Sep 2026)
+
+- **`Text to display` is FULL WIDTH AND 100px TALL.** It is the one control on the panel that
+  is not capped to the field column, because it is the only one whose content is arbitrary — a
+  size or a colour is a word, and the text can be a paragraph.
+  ⚠️ **A `<textarea>`, NOT A TALL `<input>`.** An input is a single line whatever its height,
+  so a 100px one would float one line in the middle of an empty box and quietly swallow the
+  Enter key. `ftMd` already renders newlines, so the extra rows are real.
+  ⚠️ **THE 232px CAP MOVED OFF `.cwftp` ONTO THE INDIVIDUAL CONTROLS** — `.cwftdd`,
+  `.cwftseg`, `.cwftpre`, `select`, `.cwftck`. Listing them is what makes the exception
+  explicit; a negative-margin breakout on the textarea would have been invisible to the next
+  reader. **The trade: a NEW control in this panel is full width until it is added to that
+  list.** The labels are deliberately left uncapped — their text is short and a label has no
+  box to speak of.
+- **The Annotation preset is gone**, leaving Default · Caption · Header.
+  ⚠️ **NOTHING IS STRANDED BY IT**: the Yellow ground is still in the Background dropdown and
+  the tail is still the "Show pointer" checkbox, so the same note is two clicks by hand. Its
+  definition is **kept commented at the array**, because it was the only preset that ever set
+  `tick` — so it is also the worked example of what the pointer fields are for.
+  ⚠️ **THE GRID WAS A SECOND COPY OF THE PRESET COUNT.** `repeat(4,1fr)` left a dead fourth
+  column the moment one was removed; it is `grid-auto-flow:column` + `grid-auto-columns:1fr`
+  now, so the row re-divides itself whatever N is. A probe asserts the first and last tile are
+  the same width.
+
+### The editor opens on Default, and the tile says so (17 Sep 2026)
+
+Two requests: *"in free text will be set as default this [Default tile]"*, then *"the 'default'
+is set by default"* with the tile shown outlined.
+
+- **The opening state is seeded from `CW_FT_PRESET[0]`, not retyped** — so the tile and the
+  state it applies can never disagree, and editing that preset moves both at once. Only the
+  three fields no preset owns are written separately: the text, the colour and the pointer edge.
+  **`awAdd`'s drawer path seeds from the same place**, because two routes to one widget must
+  not produce two different widgets.
+- ⚠️ **CONSEQUENCE, STATED:** a Free Text widget created without touching anything is now
+  **16px, left-aligned, top, on a Gray ground** — not the Auto-sized centred banner it used to
+  be, which is the look that matched the live product's own "CPU" heading. That banner is one
+  click away (Font Size → Auto). If it should be the default again, change **the preset**
+  (`size:'Auto'`, and probably `align:'center'`), not the opening state — they are one thing now.
+- ⚠️ **THE LIT TILE IS DERIVED FROM THE VALUES, NOT REMEMBERED.** `cwFtPresetOn` compares only
+  the fields a preset DECLARES, so a tile is lit exactly while the draft still matches it and
+  goes out the moment you change a control it owns. **A remembered "last clicked" would stay
+  lit over settings it no longer describes**, which is a label that has stopped being true —
+  and it is why this panel deliberately had no selected state until it was asked for.
+  Measured through a sequence: open `[0]` → apply Header `[2]` → change one control `[none]` →
+  back to Default `[0]`.
+  ⚠️ **TWO PRESETS CAN NEVER BOTH LIGHT TODAY**, because no two declare the same values — but
+  nothing enforces it. A future colliding pair would light both, which is the honest rendering
+  of an ambiguous state rather than a bug to hide.
+- ⚠️ **THE SELECTED TILE IS A BRIGHTER BORDER, NOT A FILL.** Each tile's inner art already
+  carries a fill of its own (Caption is `--chip`), so a second one behind it would fight the
+  miniature the tile exists to show. It uses `--cwb`, so the lit tile and the footer's primary
+  agree — measured `rgb(227,232,242)`.
+
+### ⚠️ `stopPropagation` DOES NOT STOP A SIBLING LISTENER ON THE SAME TARGET
+
+The dropdown's Escape rung closed the dropdown **and the whole Create Widget modal with it**.
+Both handlers are capture-phase listeners on `window` — siblings on one target — and
+`stopPropagation` only stops the event travelling to the next NODE. Registration order saves
+nothing: it is `stopImmediatePropagation` or the outer rung fires too.
+
+⚠️ **A PROBE CAUGHT IT AND A CARELESS ONE WOULD NOT HAVE.** The dropdown *did* close, which is
+all an assertion like "Esc closes the dropdown" checks. The one that found it was the next line
+— *"...and leaves the editor open"*. **Assert what must NOT happen as well as what must.**
+
+**Two readings, flagged rather than guessed:**
+- ⚠️ **The Font Size list is a READING, not a measurement.** The live select shows only its
+  current value ("Auto") and the instance's renderer froze before the list could be opened (the
+  recorded hidden-tab throttle), so the ladder `Auto · 14 · 18 · 24 · 32 · 40 · 56 · 72 · 96` is
+  chosen. **Auto is the one that matters** and it is the product's own default.
+- ⚠️ **IFrame is still unwired.** The same drawer section offers it and it still maps to the
+  generic `note`; the request named Free Text. It is one `CW_VIZ` entry and one panel away.
+
+**Verified:** a **48-assertion probe**, all passing — the drawer tile opening the editor rather
+than adding blind; `.cwft` mode with all four regions measured `display:none`; the four fields in
+the live order with the required mark, the "Enter the text" placeholder, three align segments with
+their glyphs really rendering and centre lit; no error on open but the create buttons gated; the
+placeholder previewed and dimmed; typing updating the preview **without replacing the input**;
+each of align / size / colour committing and the swatch following; Create & Add placing a real
+`freetext` widget carrying all four fields; the board rendering through the same `.ftw > .ftt`
+markup as the preview; its header an overlay with the kebab still reachable; Edit round-tripping
+the saved text and align; and a Chart still working afterwards, with no console errors.
+
+### The later 17 Sep 2026 pass — the menu, the help dialog on the DS, and the group box
+
+Six narrow requests, all Option 1. ⚠️ Where they conflict with anything above, this is current.
+
+| request | what changed |
+|---|---|
+| *"this all action don't show share export & ai"*, on a placed Free Text widget's ⋮ | the menu is **type-dependent** — `wmAi` · its separator · `wmShare` · `wmCsv` are hidden when `WIDGETS[g][i].t === 'freetext'`, leaving **Edit Widget · Clone Widget · Full Screen · Remove Widget**. The header **✦ goes with them** |
+| *"the font color and background will be show side by side with proper alignment"*, then *"this 2 field using full width"* | `.cwftpair` — one two-column grid, each half `minmax(0,1fr)`, spanning the panel's **full width** |
+| *"the 'Formatting help' it will be highlight"* | `.cwftmh` is a chip — `--panel-2` on a `--border` hairline at 4px — not accent text |
+| *"IT WILL BE improve the 'Using the ObserveOps design system, build'"* | the Formatting help dialog is an **`obs-modal`** |
+| *"the box margin same becous i collapes the group the bottom margin is more"* | a collapsed group is symmetric again — measured **13/31 → 9/9** |
+| *"the header title background add like widget title"* | `.ghead` is a filled title strip, `.widget .whead`'s own three properties |
+| *"'empty group' is option 1 … copy this and create option 2, 3"* | three Empty group tiles in the drawer's Structure section |
+
+#### A Free Text widget's menu drops the three rows that have nothing to act on
+
+⚠️ **THE HEADER ✦ HAD TO GO WITH THE MENU ROW BECAUSE IT IS THE SAME ACTION.** Hiding *AI
+summary* and leaving `.wai` in the header would keep the feature reachable by the very control
+the request named. `waiFor()` builds its summary from the widget's own model — a `pie` reads its
+totals, a `stat` its delta — and a note has no counters to read; Export as CSV would export no
+rows. **The live product's own menu is type-dependent the same way** (8.2.7 drops Export as CSV
+on a Map), so this is the product's pattern rather than a new rule.
+
+⚠️ **THE SEPARATOR IS HIDDEN WITH THEM**, or the menu opens on a rule introducing nothing.
+⚠️ **HIDDEN, NOT REMOVED** — every other widget still has all three, so the ids are the hook and
+`openWMenu` is the one place that decides.
+Verified by a 15-assertion probe: the card on the canvas with no `.wai` and its kebab intact, a
+normal widget keeping its sparkle, exactly four rows left on the free-text menu, and all four
+back on the next widget's.
+
+#### The Formatting help dialog is an `obs-modal`
+
+The shell was a hand-built scrim + panel + header + ✕ + footer. It is now the DS's own overlay,
+and the component's `get_component` card names this exact shape — `scrollable` ("a long body
+that must scroll") with a footer carrying the way out.
+
+| part | built from |
+|---|---|
+| the dialog | `obs-modal title="Formatting help" width="680" scrollable` |
+| the copy control | `obs-button variant="transparent" size="small"` + `obs-icon` (`copy` ↔ `check`) |
+| the way out | the component's header ✕, plus an `obs-button variant="default">Close` in the `footer` slot |
+| the doc link | a plain `<a target="_blank" rel="noopener noreferrer">` — see below |
+| the rows | unchanged: the source cell, and `ftMd`'s own output beside it |
+
+- ⚠️ **THE Z-INDEX PAIR IS GONE, AND THAT IS THE POINT.** It used 200006/200007 to clear
+  `#cwModal` (200005). `obs-modal` opens a native `<dialog>` with `showModal()`, so it renders in
+  the **top layer** — above every z-index on the page by construction, with the UA's focus trap
+  and Escape. There is no number left to keep in step. Probed with `dlg.matches(':modal')`.
+- ⚠️ **`#cwMdHelp` HAD TO BE ADDED TO `setting.js`'s SCOPED DS TOKEN BLOCK** — both the dark
+  opener and its `html[data-theme="light"]` variant — or the component reads the DS's own LIGHT
+  defaults and paints a white dialog on a dark page. The recorded top-layer trap (`#licHistDr`),
+  hit again: a scoped block cannot reach a top-layer element through the DOM.
+  ⚠️ **IT IS DELIBERATELY NOT IN THAT FILE'S TWO OTHER SCOPED RULES** — the prototype-token
+  re-point and the Settings accent. Those re-bind `--text`, `--panel-2` and `--teal`, and the
+  rendered-Markdown column has to look **exactly** like the board, which is the whole reason the
+  help renders through `ftMd`. Added to all four openers first, then narrowed to the DS one.
+- ⚠️ **THE DOC LINK IS NOT `obs-link`, AND THE DS SAYS SO.** FlotoLink is a RouterLink —
+  internal-only — and the component's own `external-link` usage rule reads *"an external/help/doc
+  URL … must: plain `<a href target=_blank>` with `rel=noopener noreferrer` (FlotoLink/RouterLink
+  can't do external; SF-004)"*. `noreferrer` was missing and is added.
+- ⚠️ **`--cwb` NEVER RESOLVED IN THIS DIALOG.** That token is declared on `#cwModal` and the
+  dialog lives on `<body>`, so the footer link's colour had been invalid since it was written.
+  It is `--primary-alt` now, which the scoped DS block supplies.
+- ⚠️ **F3 IS ALREADY FIXED IN THE VENDORED 0.1.166 AND THE REGISTRY HAS NOT CAUGHT UP.**
+  Measured in the bundle: `.body{padding:24px;overflow-y:auto;flex:1 1 auto}` and
+  `.modal.scrollable .body{max-height:55vh}`. So the documented work-around (wrap the content in
+  `flex:1;min-height:0;overflow-y:auto`) is **not needed** — `.cwmdb` is a class hook and nothing
+  else. Re-check if `_ds/` is upgraded.
+- ⚠️ **`hide-footer` WAS THE OTHER OPTION AND THE FOOTER SLOT WON.** The registry suggests
+  `hide-footer` for view-only content, but its `do` list is equally explicit that a modal should
+  *"always include a footer Cancel (visible way out)"*, and the product's real modals keep BOTH
+  that and a header ✕. The slot carries the way out **and** the outbound link, pinned — which is
+  what the hand-built footer did.
+- ⚠️ **`title` ON AN `obs-*` ELEMENT IS SAFE HERE ONLY BECAUSE `tipFor()` SKIPS `OBS-*`.** On a
+  DS component `title` is a prop the component renders; the guard was added 2 Sep and is what
+  stops the tooltip engine eating the dialog's own heading.
+- ⚠️ **THE COPY TICK IS ONE ICON SWAP, NEVER A REPAINT** (`cwFtMdTicks`). Rebuilding the rows
+  would throw away the scroll position, and replacing a node the component has **slotted** fires
+  `slotchange`, which re-renders the whole component and replays its open animation with no
+  attribute changing — so a state-based probe passes while the dialog visibly blinks.
+
+##### ⚠️ AN EIGHTH DEFECT IN `obs-*` 0.1.166 — the modal opens exactly ONCE
+
+`hide()` does not settle the component's own state, so **every way out leaves it stuck**.
+Measured in isolation, on a bare page with nothing but the bundle:
+
+    show()   -> dialog.open true,  host.open true,  emits `show`
+    hide()   -> dialog.open false, host.open TRUE,  emits `close` and NO `hide`
+    show()   -> NOTHING AT ALL — no event, no error, the dialog stays shut
+    hide()   -> emits `close` AND `hide`, host.open false
+    show()   -> works again
+
+The native `close` event never reaches the component's own `onClose`, so its internal
+"is it open" flag stays set and the next `show()` early-returns. The header ✕ and Escape take
+the same path (`cancel` → `close` → `dialog.close()`), so it is not specific to `hide()`.
+**A second `hide()` clears it** — that call finds the dialog already closed and runs the cleanup
+branch directly. That is the whole work-around, and it sits in `cwFtMdOpen` rather than in the
+close listener: `hide()` emits `close`, and a settle inside that listener would call `hide()`
+again. Worth reporting upstream with the other seven.
+
+⚠️ **THE WORK-AROUND THEN CAUSED THE NEXT BUG, AND TWO ASSERTIONS NAMED IT.** The settle emits
+`close`, which runs the listener that clears `CW_FT_MD_OPEN` — so every re-open ran with the flag
+**false** while the dialog was plainly on screen. The Escape rung reads that flag, so it stopped
+firing and Escape fell through to the editor's own capture listener and **closed the whole widget
+editor behind the help dialog** — the exact fault `stopImmediatePropagation` was added for a few
+hours earlier. The flag is set *after* the settle now, and:
+
+⚠️ **THE ESCAPE RUNG ASKS THE `<dialog>`, NOT THE FLAG.** `CW_FT_MD_OPEN` is a mirror of a state
+the component owns through three doors we do not, so any moment the two disagree is a moment
+Escape reaches the editor. `dialog.open` **is** the state; there is nothing for it to drift from.
+
+⚠️ **`obs-button` FIRES A CONSUMER'S `onclick` TWICE** (recorded in the Settings module) — the
+inner shadow `<button>`'s click is `composed` and crosses the boundary, and the component
+re-emits on the host. `cwFtMdCopy` is idempotent, so `cwTap` is belt and braces — but the next
+handler put on a DS button here will not be. It is declared locally rather than reaching into
+`setting.js` for `agTap`.
+
+**Verified:** a **48-assertion probe** — the paired fields and the highlighted trigger measured;
+the modal's tag, its open `<dialog>`, `:modal`, the DS header and its ✕, no hand-built shell
+left, the component's blurred backdrop, **the dark DS surface rather than the light default**,
+the body's own scroll, nine rows, nine DS copy buttons whose icons really render, the result
+column equal to `ftMd`'s output, the anchor's `rel`, the footer's Close and the link left of it;
+copying ticking exactly one row without rebuilding them; **re-opening after Close, after the
+header ✕ and after Escape**, each time with the editor still open; and no console error.
+
+#### Font Colour and Background share a row, at full width
+
+They are the one pair on that panel genuinely read together — you pick ink against a fill — and
+stacked they pushed Alignment and the checkbox below the fold on a short editor.
+
+⚠️ **IT SHIPPED CAPPED AT 232px FOR MINUTES AND THAT WAS WRONG.** Sharing the cap every other
+control uses made all four fields line up on both edges, and halved it left each trigger about
+**111px** — a swatch, a name and a chevron in the room one of them used to have, with empty panel
+beside it. *"this 2 field using full width"* followed within the minute; each half is **299px**
+now. **This is a stated divergence from the "the field box width same" rule** that sized every
+other control here: Font Size and Alignment stop at 232 and this row runs past them. **Both were
+asked for; don't re-cap it on the strength of the older one.**
+
+⚠️ **TWO RULES WRITTEN FOR A ONE-CONTROL COLUMN HAD TO BE CANCELLED, and neither cancel is
+optional:** `#cwModal.cwft .cwftdd{max-width:232px}` is (1,2,0), so the override has to carry the
+extra class to reach (1,3,0); and `.cwftp .cwftl:not(:first-child){margin-top:16px}` stops
+matching inside a column, because each label **is** its column's first child — so the 16px that
+separates every other field from the one above it has to move onto the row itself. Probed: the
+row keeps the panel's 22px rhythm and shares the left edge of every other field.
+
+#### The Formatting help trigger is a chip
+
+As a borderless `--cwb` word at 10.5px it sat at the end of a label row and read as part of the
+label — the one control on that panel with nothing around it. It wears the panel's own field
+surface and hairline now, so it reads as something you press **at rest** rather than only under
+the pointer; the underline-on-hover went with the text treatment it replaces.
+
+#### A collapsed group's box is symmetric, and its header is a title strip
+
+⚠️ **MEASURED BEFORE TOUCHING IT: collapsed, the name sat 13px below the box's top edge and 31px
+above its bottom one** — two and a half times the space, on a box holding one row. The whole
+excess was `.ghead`'s own `padding-bottom:8` + `margin-bottom:10`, which exist to hold the widget
+grid off the title; with the grid not rendered they hold nothing off anything. The box's own
+padding was also 2px heavier at the foot than the head (`10px 12px 12px`), which is the other
+half of *"the box margin same"* and was invisible only because the 18px above it was louder.
+Both sides now measure **9 and 9**.
+
+⚠️ **THE HEADER TAKES `.widget .whead`'s THREE DEFINING PROPERTIES VERBATIM** — the `--card-head`
+fill, the 8px/12px padding and the `--border-soft` hairline — so a group's title and a widget's
+title read as one thing at two sizes, which is what *"like widget title"* asked for.
+
+⚠️ **IT IS FULL-BLEED, AND THE NEGATIVE MARGINS ARE WHAT MAKE IT SO.** A fill inset by the box's
+own 10/12px padding reads as a chip floating inside the group rather than as the group's title
+bar; `.widget`'s strip meets its card's edges, so this one meets the group box's. The radius is
+`calc(var(--radius) - 1px)` because the box draws a 1px border outside it.
+
+⚠️ **`overflow:hidden` ON `.dgroup` WOULD HAVE BEEN THE OBVIOUS WAY TO GET THOSE CORNERS AND IT
+SILENTLY KILLS THE STICKY HEADER** — any `overflow` other than `visible` makes the element a
+scroll container, so the header would stick to a box that never scrolls, i.e. not at all.
+Rounding the strip itself costs one declaration and keeps the behaviour. There is a probe
+assertion that `.dgroup` still computes `overflow:visible`.
+
+⚠️ **COLLAPSED, THE STRIP FILLS THE BOX** — `margin-bottom:-10px` cancels the box's own bottom
+padding, the hairline goes (there is nothing under it) and the radius closes on all four corners.
+⚠️ **`:has()` CARRIES ITS ARGUMENT'S SPECIFICITY**, which is the only reason the collapsed rules
+work without an id.
+⚠️ **IT IS THE GROUP CHROME, NOT THE EMPTY-GROUP TILE'S** — a collapsed group with eleven widgets
+in it is fixed by the same rules, which is where the report's second screenshot came from.
+Verified by a 13-assertion probe in both states.
+
+#### Three Empty group options in the drawer
+
+`W_GROUP_OPT` — three tiles in the Structure section, all calling one `awAddGroup()`, with
+options 2 and 3 shipping as **exact copies of option 1's artwork**. That is what *"copy"* asked
+for and is how every option in this folder has started: the License page's Option 2 was a byte
+copy of Option 1 for an afternoon before it diverged.
+
+⚠️ **IT IS REVIEW CHROME**, like `Setting/`'s Scale switcher and the License page's option radio
+— three tiles for one action is not a product state, it is three designs on screen at once so one
+can be picked. When one is, the other two rows come out of the array and the corner chip goes
+with them; nothing else changes, because the render reads the array.
+⚠️ **THE CORNER CHIP IS WHAT KEEPS THEM TELLABLE APART** while they are identical — without it
+the Structure section reads as the same tile drawn three times, i.e. as a bug.
+⚠️ **`position:relative` IS SCOPED TO `.awgopt`**, or every card in the drawer becomes a
+positioning context. Probed: the other tiles still compute `static`.
+Verified by a 15-assertion probe — three tiles, one row, the numbers, identical artwork, the
+search still keeping and dropping all three together, option 3 really adding a group, and ⌘Z
+putting the board back.
+
+#### The group header's own two controls, and what its ⋮ can do (17 Sep 2026)
+
+Request: *"the [＋] add widget button improve"*, and on the ⋮ menu *"add 'clone' the group and
+if any action will requirement add the action"*. Option 1 only.
+
+| | was | is |
+|---|---|---|
+| the two header buttons | the TEXT characters `＋` and `⋮` at 13px | the product's own **`plus`** and **`ellipsis-v`**, 14px, from this file's own `ICONS` |
+| the ＋ at rest | `opacity:0` until the group is hovered | **visible** |
+| the ⋮ at rest | `opacity:0` | unchanged — hover-revealed |
+| the ⋮ menu | Rename · Add widget · Collapse others │ Delete | **Rename · Clone · Add widget │ Move up · Move down · Collapse others │ Delete** |
+
+- ⚠️ **BOTH GLYPHS WERE ALREADY IN `ICONS` AND NEITHER WAS BEING USED BY THIS HEADER.** `plus`
+  and `ellipsis-v` are product SVGs pasted verbatim on 3 Sep for the flyout's fifth slot; the
+  group header went on drawing two typographic characters beside them. A text glyph carries its
+  font's own weight and optical centring, which is the "reads as a different family" fault the
+  icon rule opens with. `font-size` went with them. **Nothing was drawn.**
+  ⚠️ **14px, NOT `.ic`'s 20px** — `ico(name, cls)` takes a class for exactly this; these sit in
+  a 24px button. Both entries are FILL icons, so `ico()` paints `currentColor` and `.gact`'s own
+  colour reaches them with no override needed.
+  ⚠️ They took `data-tip` in place of `title`, so they stop relying on `tipFor()`'s adoption
+  and read like `.wdots` / `.wai` two rows below them.
+- ⚠️ **THE ＋ IS VISIBLE AT REST AND THE ⋮ IS NOT — the split is the point.** An EMPTY group is
+  its dashed border and nothing else (request, 2 Sep 2026: *"show only border on new group"*),
+  and the note that settled that argued the invitation was already covered because *"the group's
+  own ＋ sits in the header two lines above it"*. **It was not**: `.gact` rested at `opacity:0`,
+  so the ONE affordance an empty group has could not be seen until you pointed at the group. That
+  sentence is true now. The ⋮ stays hidden because it is secondary actions, which is what every
+  widget header's own ⋮ on the same board does — and Option 6's section header already carries
+  an always-visible `+` for the same reason, so there is precedent in the folder either way.
+  ⚠️ **`.gaddw{opacity:1}` MUST STAY BELOW `.gact{opacity:0}`** — both are (0,1,0) and source
+  order alone decides it.
+- ⚠️ **IT EXPOSED A DEAD SELECTOR THAT HAD BEEN WRONG ALL ALONG: `body.vhprev .gadd`.** The
+  version-history PREVIEW hides every widget control (⋮, the AI ✦, the drag grip, all three
+  resize grips, the add tile, the FAB) — and `.gadd` **matches nothing in this file**; the class
+  is `.gaddw`. So a read-only preview of an old version had a live *Add widget to this group*
+  and a live group ⋮ on it the whole time. It was merely invisible while `.gact` was
+  `opacity:0`. The rule is `body.vhprev .gact` now, which covers BOTH buttons — what the widget
+  half of that same list already does.
+
+**Clone group** (`gClone`) — the board already clones a DASHBOARD and a WIDGET; a group was the
+third container on it with no copy at all, so an arranged band had to be rebuilt widget by widget.
+
+- ⚠️ **THE COPY LANDS DIRECTLY UNDER ITS SOURCE**, not at the end of the board — a clone you
+  have to scroll to find reads as a new empty group rather than as a copy of the one you pressed.
+- ⚠️ **`GRP_SHUT` AND `curG` ARE INDICES**, so an insert shifts every index at or after it and
+  both are remapped. `gRemove` gets away with `GRP_SHUT = new Set()` because clearing is the safe
+  direction there; doing that here would **expand every collapsed group as a side effect of
+  cloning one**. There is a probe assertion that the group that was collapsed still is.
+- ⚠️ **THE WIDGETS ARE JSON-CLONED, NOT `{...w}`-SPREAD.** A shallow copy shares every nested
+  value by reference — `pal`, a series array — so editing the copy would reach back into the
+  original. `histState()` already round-trips the whole board through JSON, so every widget is
+  JSON-safe **by construction rather than by hope**. Probed by marking a widget on each side.
+- ⚠️ **NOTHING INSIDE IT HAS TO BE RENAMED.** `cwNameTaken` scopes to `WIDGETS[curG]` — names
+  are unique WITHIN a group, not across the board — and a clone's contents are already unique
+  among themselves. Only the group's own name is made free, on this file's own `Copy of …` /
+  `Copy of … (2)` convention (the same one `wDuplicate` and `ddClone` use).
+
+**Move group up / Move group down** (`gMove`) — the action nothing else could do. **Groups could
+not be reordered AT ALL**: `addGroup` and `awAddGroup` both append, and the canvas's
+drag-and-drop moves WIDGETS between bands, never the bands themselves, so the order a board's
+groups were created in was the order they kept forever.
+
+- ⚠️ **THE COLLAPSED SET IS INDICES, so the two groups swap their MEMBERSHIP too.** Without
+  that, moving a collapsed group folds whichever band lands in its old slot and leaves the one
+  you moved open — the collapse would follow the POSITION rather than the group.
+- Both go through `histDo`, so ⌘Z reverses a move and a clone like every other board edit.
+
+⚠️ **A ROW WITH NOWHERE TO GO IS HIDDEN, NOT LEFT TO NO-OP** — the `wmMove` rule (13 Aug 2026).
+All three middle rows need a SECOND group to mean anything, so on a one-group board they go **and
+their separator goes with them**, or the menu opens on a rule introducing nothing (the recorded
+`<hr>` lesson from the AI panel's ⋯ menu). Move up / Move down are hidden per POSITION as well:
+the first group cannot rise, the last cannot fall.
+⚠️ **DELETE GROUP DELIBERATELY STAYS on a one-group board** — it already refuses with the rule
+itself (*"a dashboard needs at least one group"*), and a stated rule is worth more than a missing
+row. That is the one place this menu chooses explaining over hiding.
+⚠️ **The display is set BEFORE `openCMenu`**, which measures `offsetHeight` to decide whether to
+flip the menu above the pointer; toggling rows afterwards places a menu of the wrong height.
+
+⚠️ **NOT ADDED, and why:** *Collapse this group* (the caret at the row's left already is it, and
+two ways to do one thing is what this menu keeps being trimmed for) and *Expand all groups* (it
+is in the `Groups ▾` menu). **Options 2–14 keep the old three-row menu and the text glyphs** —
+`#gMenu`, `.gact` and `renderCanvas`'s header are per file.
+
+**Verified:** a **44-assertion probe** — both buttons rendering a real `<svg>` with the expected
+path at 14px in `currentColor`, the ＋ at opacity 1 and the ⋮ at 0 with the hover rule still
+present exactly once, both `data-tip` and neither `title`; the menu's seven rows in order with
+Delete last and red; Move up hidden on the first group, Move down on the last, all three plus the
+separator hidden on a one-group board with Delete still offered; a clone landing under its source
+with the right name, the right widget count, `curG` following, a deep copy proved by marking both
+sides, the collapsed index remapped, a second clone taking `(2)`, and ⌘Z putting the board back;
+a move swapping the bands, carrying the collapse with the group, and undoing — plus **dark and
+light screenshots** of the header, the open menu, a board of collapsed strips each showing its ＋,
+and the version preview showing none.
+
+#### A group is DRAGGED by its header, anywhere on the board (17 Sep 2026)
+
+Request: *"when i click the group and esay move aney where"*. The ⋮ menu's **Move group up /
+down** had just shipped and moves a band **one slot per press**; on a six-group board putting the
+last one first is five presses, and nothing on the header said the band could be moved at all.
+
+| part | what |
+|---|---|
+| the handle | **`.ggrip`** (⠿) at the head of the strip, revealed on group hover, `cursor:grab`; the whole `.ghead` carries `draggable="true"` and the grab cursor, so the grip is the *affordance* and the strip is the target |
+| the drag | `gDragStart` / `gDragEnd` / `gDragOver` / `gDrop` on `.dgroup`, `effectAllowed:'move'` |
+| the indicator | `.gdropb` / `.gdropa` — a 3px `--teal` rule above or below the band you are over |
+| the model | one call into **`gReorder(from, at, label)`**, which `gMove` already uses |
+
+- ⚠️ **`gReorder` IS THE ONE MOVER, AND THAT IS WHY THE INDICES CANNOT DRIFT.** `GRP_SHUT` and
+  `curG` are INDICES, so any reorder has to remap them — and a multi-slot drag is not the
+  single swap `gMove` needed. The `shift` closure is the general case
+  (`i === from ? at : from < i && i <= at ? i-1 : at <= i && i < from ? i+1 : i`), derived by
+  hand for both directions and then asserted in the probe with a 0→3 drag and a collapsed group
+  travelling the whole distance. `gMove` now calls it too, so the menu and the drag can never
+  disagree about what a move does.
+- ⚠️ **THE DROP INDICATOR IS AN OUTSET `box-shadow`, NOT AN INSET RULE OR A PSEUDO.** `.ghead` is
+  `position:sticky` with an opaque full-bleed `--card-head` fill, so an inset rule on `.dgroup`
+  would be painted over by it. An outset shadow lands in the 16px inter-band margin and needs no
+  `position:relative`, no pseudo-element and no z-index.
+- ⚠️ **NO GUARD WAS NEEDED IN THE WIDGET DnD ENGINE, AND THAT WAS CHECKED RATHER THAN ASSUMED.**
+  Every one of `wDragOver` / `wDrop` / `wDragOverGroup` opens with `if(!wDrag) return`, and a
+  group drag never sets `wDrag` — so the two engines pass straight through each other. There are
+  probe assertions that a widget drag does not arm `gDrag` and that a band it crosses is not
+  marked.
+- ⚠️ **`gDragStart` REFUSES WHILE THE TITLE IS BEING RENAMED** (`#grp-N .gnm.ed`) and
+  `gNameEdit` clears the header's `draggable` for the duration — otherwise selecting text in the
+  rename field starts a drag of the whole band.
+- ⚠️ **`setDragImage` IS DELIBERATELY NOT USED.** The browser's own snapshot of the header strip
+  is the right drag image: it is what you grabbed. A custom canvas would be a second thing to
+  keep in step with the strip's fill, radius and title size.
+- ⚠️ **A SELF-DROP IS A NO-OP, NOT A RE-INSERT** — `to === from || to === from + 1` returns
+  before `histDo`, so dropping a band back where it started records nothing on the undo stack.
+
+#### Edit group — the header's colour, its title size, and the title itself (17 Sep 2026)
+
+Request: *"the group header color and font size is also edit option add and empty group title
+edit option add"*. The ⋮ menu's **Rename group** became **Edit group**, which opens
+`#drawer-gedit` — the house `.sdrawer` with `openDrawer` / `closeOverlays` / `scrim2`, built
+from the file's own `.ddlbl` / `.ddin` / `.ddseg` / `.ddfield` atoms.
+
+| field | what |
+|---|---|
+| Group title | a `.ddin` carrying the name — renames **live** as you type |
+| Header colour | seven `.gesw` swatches — `GRP_BG`: Default · Gray · Green · Blue · Yellow · Orange · Red |
+| Title size | a `.ddseg` of Small / Medium / Large — `GRP_SIZE` 12 / 13.5 / 16px |
+| footer | **Reset** (back to the defaults) · Done |
+
+- ⚠️ **THE COLOURS ARE TOKENS MIXED INTO `--card-head`, THE HEADER'S OWN SURFACE** — the same
+  recipe and the same seven-name list `CW_FT_BG` uses for Free Text, so a tinted header still
+  reads as a header rather than as a coloured slab, and **both themes are covered by
+  construction** rather than by a second palette.
+- ⚠️ **`M` IS THE SIZE THE HEADER ALREADY WAS** (13.5px), so `Default` + `M` emit **no inline
+  style at all** and an untouched group renders byte for byte as before. There is a probe
+  assertion that a group nobody has edited carries no `style` attribute.
+- ⚠️ **THE DRAWER WRITES THE HEADER'S INLINE STYLE, IT DOES NOT RE-RENDER THE BOARD.**
+  `gEditApply` sets one attribute on one `.ghead`; `renderCanvas()` would rebuild the canvas
+  under an open drawer and throw away the caret in the title field. Probe-asserted by node
+  identity — the header element is the SAME node after a colour change.
+- ⚠️ **ONE HISTORY ENTRY PER DRAWER VISIT.** `gEditRec()` calls `histDo('Edit group')` only on
+  the first change of a visit (`GE.rec`), so ⌘Z reverses **the whole visit** rather than
+  unpicking a colour, then a size, then each keystroke of a rename. An untouched visit records
+  nothing — probe-asserted by opening and closing the drawer and counting the stack.
+- ⚠️ **THE TITLE FIELD RENAMES LIVE AND RE-RENDERS ONLY ON COMMIT.** Typing writes `TABS[gi]`
+  and patches the header's own text node (`renderOutline()` follows); the full `renderCanvas()`
+  waits for blur. Writing it through the canvas on every keystroke would destroy the field.
+
+##### ⚠️ `GRP_STYLE` IS A PARALLEL ARRAY, AND TWO THINGS ABOUT IT BIT
+
+`GRP_STYLE` joins `TABS` ‖ `WIDGETS` and is spliced at the same six sites. Both faults below
+were found by a probe and neither produced an error:
+
+- ⚠️ **THE ARRAY CAN BE SHORTER THAN `TABS`, AND `splice` CLAMPS ITS INDEX TO THE ARRAY'S OWN
+  LENGTH.** A style is only recorded for a group somebody has edited, so a four-group board with
+  one styled header holds an array of length 1 — and `GRP_STYLE.splice(1, 0, sty)` on it
+  silently inserts at **0**. Moving group 0 to position 1 therefore left the colour on group 0.
+  **`gStylePad()`** keeps the array exactly `TABS.length` long and runs before every splice and
+  after every rebuild; the holes it leaves read as `undefined` (falsy, like the `null`s they
+  replace) and `JSON.stringify` writes them as `null`, so `histState` round-trips unchanged.
+- ⚠️ **A READER THAT WRITES UNDOES A RESET.** `gStyleOf` used to create the record it failed to
+  find, so `gEditPaint` — whose only job is to light the swatch matching the current value —
+  re-created the record `gEditReset` had just cleared, and Reset never stuck. It is a pure read
+  now; **`gStyleMake` is the write path and `gEditSet` is its only caller**. The same bug was
+  quietly filling `{Default,M}` into every group the drawer had merely LOOKED at.
+- ⚠️ **`gRename` IS KEPT AND UNREFERENCED** — the menu row it served became *Edit group*, whose
+  first field is the title. Clicking the title on the board still calls `gNameEdit` directly, so
+  the inline rename is very much alive.
+
+#### The drawer's labels are sentence case, and its colour control is the Free Text dropdown (17 Sep 2026)
+
+Two requests on the Edit-group drawer: *"in the all title will write in small only first [letter]
+capital"*, and — with the Free Text **Background** dropdown supplied as the picture — *"header
+color will show like this"*.
+
+| was | is |
+|---|---|
+| `GROUP TITLE` · `HEADER COLOUR` · `TITLE SIZE` | **Group title · Header colour · Title size** |
+| a row of seven bare swatch buttons | the **searchable dropdown**: trigger + swatch, a Search box, seven named rows, and a **Custom `#RRGGBB`** row |
+
+- ⚠️ **ONLY THE TRANSFORM HAD TO GO.** The markup has always read "Group title"; `.ddlbl` is
+  UPPERCASE because it was written for the Create Dashboard and Layout drawers. The override is
+  **scoped to `#drawer-gedit`** — that class is shared and the other two drawers were not named.
+- ⚠️ **THE DROPDOWN GAINED A FOURTH CONSUMER; IT WAS NOT COPIED.** `cwFtDD`'s own note says
+  *"three near-identical dropdowns is how the search box ends up behaving differently in one of
+  them"*, so the answer was to make it four: **`DD_OWN`** maps a control key to its repaint and
+  its setter, `ddPaint` / `ddSet` read it, and the three Free Text keys keep the default path.
+  The search box, the filter's caret restore, the swatches, the custom row, click-away and the
+  Esc rung are all the same code.
+  ⚠️ **THE OWNERS ARE RESOLVED BY NAME AT CALL TIME.** `gEditPaint` / `gEditBg` are declared in
+  an EARLIER `<script>` block than `cwFtDD`, so a table of direct references built at parse time
+  would depend on block order — and a top-level `function` declaration IS a window property, so
+  looking it up when the dropdown is used costs nothing and cannot break.
+  ⚠️ **`ddPaint` KEEPS THE FREE TEXT PATH'S `CW.open` GUARD**, which the click-away rung relied
+  on; the group drawer's own paint early-returns on `GE.gi < 0` for the same reason.
+- ⚠️ **`Default` IS PASSED TO THE DROPDOWN AS `transparent`, AND STORED AS `''`.** `gStyleCSS`
+  tests that emptiness to emit **no `background` at all**, which is what leaves the header on
+  `--card-head`; mapping it only for the swatch keeps the two facts apart — what the swatch
+  paints, and what the rule emits.
+- ⚠️ **A CUSTOM HEX HAD TO BE TAUGHT TO `gStyleCSS`.** It looked the name up in `GRP_BG` and
+  fell back to `''`, so a custom colour would have been stored and then **silently ignored**.
+  It now falls through to the value when it starts with `#` — and deliberately does **not**
+  re-test the hex: `cwFtCustom` is the only writer and has already validated it, and a second
+  regex in another script block is how the two come to disagree about what a colour is.
+- ⚠️ **`--cwa` IS DECLARED ON `#cwModal`**, so the custom field's focus ring resolved to nothing
+  the moment this dropdown was reused in a drawer. It carries `var(--cwa, var(--teal))` now.
+- ⚠️ **`.gesw` IS KEPT AND UNREFERENCED**, the house pattern.
+- ⚠️ **THE PROBE'S OWN ASSERTIONS WERE THE STALE ONES**, not the code: `gprobe` drove
+  `.gesw button` and had to be moved onto the dropdown. The recorded *"old probes encode old
+  behaviour — read the failure before fixing the code"* rule.
+
+#### Free Text: Font Size sits beside Alignment (17 Sep 2026)
+
+Request: *"the font size and alignment will also show side by side like font color and
+background"*. `.cwftpair` is reused verbatim, so the two paired rows cannot drift apart.
+
+- **They are the panel's other natural pair** — both describe how the text SITS — and pairing
+  them takes two more rows off a short editor, which is what the first pair was for.
+- ⚠️ **ALIGNMENT STILL HUGS ITS CONTENT rather than stretching to its half** (measured: 116px
+  inside a 320px column). Its three 38px cells are ONE control; spread across the full half they
+  would read as three buttons, which is the reason recorded when the live screen was matched.
+  Only Font Size fills its column.
+- ⚠️ **THE "HORIZONTAL ONLY" NOTE STAYED WHERE IT WAS** — it records why there is only one
+  alignment control, which is a different fact from where that control sits.
+
+#### The scrolled board's widgets no longer show above the group header (17 Sep 2026)
+
+Reported with a screenshot: *"when i add the group and in side the scroll the all widget is show
+outside the group"* — a sliver of widget cards painting between the time-slider strip and the
+stuck group header, i.e. outside the group's box.
+
+⚠️ **A SCROLL CONTAINER'S OWN TOP PADDING IS INSIDE ITS SCROLLPORT, AND A `position:sticky`
+HEADER PINS BELOW IT.** `.pagebody` carried `padding:12px 14px`, so `.ghead{top:0}` stuck **12px
+down** and every one of those 12 pixels was a band the scrolled content showed through — above
+the header that exists to cap it.
+
+- ⚠️ **MEASURED, AND ONLY PIXELS COULD SEE IT.** With the board scrolled, the header pinned at
+  y=102 against a scroller whose top edge is y=90; sampling the painted pixels of that band
+  returned **`--card` (11,22,39) with 5–8 distinct colours across the row** — widget cards. A
+  `getBoundingClientRect()` check cannot find this: the scroller clips the PAINT but the rects
+  still read as though the widgets were there, so a rect-based assertion reports the bug on a
+  healthy board and misses it on a broken one. Two of my own first assertions did exactly that.
+- **The fix is to give the scroller no top padding and let its content carry it** —
+  `.pagebody:has(> #dashGrid){padding-top:0}` + `#dashGrid{padding-top:var(--pb-pad)}`. The
+  scrollport's content edge is then its padding edge, `top:0` pins the header flush, and the
+  space at rest is unchanged because it merely moved from the scroller to the grid.
+- ⚠️ **ONE NUMBER, DECLARED ON `.pagebody` AND INHERITED.** `#dashGrid` is a descendant, so it
+  reads `--pb-pad` rather than repeating `12px` 4,000 lines away where the two would drift.
+- ⚠️ **SCOPED WITH `:has(> #dashGrid)`** — the other two `.pagebody` scrollers (the module
+  placeholder and Health) have no sticky header in them and keep their padding. Probe-asserted.
+- ⚠️ **`fitCanvas()` NEEDED NOTHING, and that was checked against the pre-change file rather
+  than reasoned about.** It computes `avail = pb.clientHeight - paddingTop - paddingBottom` and
+  compares it against `g.scrollHeight`; dropping 12px of scroller padding grows `avail` by 12
+  and adding it to the grid grows `scrollHeight` by 12, so the comparison is balanced by
+  construction. The control run reports **identical widget heights** on both files
+  (350,150,150,190,190,190,190,190,272,272,230) with both terms up by exactly 12.
+- ⚠️ **IT WAS ALWAYS THERE AND THE 17 Sep TITLE STRIP IS WHAT MADE IT VISIBLE.** The header has
+  been sticky for months, but while it was a bare `--bg` row the leak read as canvas. Once it
+  gained an opaque `--card-head` fill and a hairline it became a hard boundary with content
+  leaking above it — which is the shape the report describes.
 
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 

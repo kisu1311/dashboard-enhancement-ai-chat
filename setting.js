@@ -539,7 +539,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
    slotted body (\`#licHist\`, already in this list) correctly took the dark ones. Two themes in one
    overlay. Caught by shooting dark, not by any probe: every assertion passed and the conformance
    checker still said 100/100, because both halves were legal DS tokens — just not the same set. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -932,7 +932,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --widget-type-selector-border-color:'transparent';
 }
 
-html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF{
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). \`obs-side-menu\` paints \`.row.leaf.active\` with
@@ -1238,7 +1238,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    The \`.ag*\` rules below (and the \`st\`/\`stc\` atoms this page still borrows for layout) are
    written against this prototype's token names; pointing them at the DS names above converts
    every one of them at once, and keeps the mapping auditable in one table. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp{
   /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
   --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);

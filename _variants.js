@@ -27,6 +27,7 @@
     {"file":"dashboard-rail-flyout-alt.html","label":"Option 11"},
     {"file":"dashboard-rail-flyout-alt2.html","label":"Option 12"},
     {"file":"dashboard-rail-flyout-alt3.html","label":"Option 13"},
+    {"file":"dashboard-rail-flyout-alt4.html","label":"Option 14"},
     {"file":"Global_ai.html","label":"Global AI"}
   ];
   /* VARIANTS:END */
@@ -122,7 +123,16 @@
      written in: the only bare single letters any page compares are e / i / k / y / z, and each
      of those is either a modifier combo (⌘I, ⌘K) or the switcher's own. 'm' appears in no KB
      registry and no case label in any of the fourteen files. */
-  var VS_LETTERS = ['x', 'z', 'c', 'm'];        /* index 10 onward — 11 = X, 12 = Z, 13 = C, Global AI = M */
+  /* ⚠️ OPTION 14 TOOK `V` (17 Sep 2026), and it was checked the same way: `v` is in no page's
+     `KB` (all fifteen are `n w g e d o t f / s a`), in no `case` label and in no other bare-key
+     comparison in the folder. ⌘V / Ctrl+V stays PASTE, because the handler below returns early on
+     ctrl/meta/alt and claims only the bare key — the same rule `C` leans on. It continues the
+     bottom row the other three walk (x · z · c · v).
+     ⚠️ IT WAS INSERTED BEFORE 'm', NOT APPENDED AFTER IT. These letters are positional — index
+     10 + n — so appending would have slid Global AI to index 14 and taken `m`, the initial it was
+     chosen for, off it. Option 14's row sits before `Global_ai.html` in VARIANTS for the same
+     reason: Global AI is not an option and stays the last row. */
+  var VS_LETTERS = ['x', 'z', 'c', 'v', 'm'];   /* index 10 onward — 11 = X, 12 = Z, 13 = C, 14 = V, Global AI = M */
   function vsKey(i) {
     if (i < 9) return String(i + 1);
     if (i === 9) return '0';

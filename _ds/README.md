@@ -94,4 +94,31 @@ colours and no layout at all.
   "obs-toolbar `start` slot + obs-input"), so a toolbar search box in this build is a plain
   field. The Agentic AI toolbar leaves it plain rather than hand-drawing a magnifier.
 
-All of these are worked around in the `ag*` block and noted at the call site.
+- **⚠️ `obs-modal` OPENS EXACTLY ONCE — `hide()` does not settle its own state.** Measured
+  17 Sep 2026 in isolation, on a bare page with nothing but the bundle:
+
+      show()   ->  dialog.open true,  host.open true,   emits `show`
+      hide()   ->  dialog.open false, host.open TRUE,   emits `close` and NO `hide`
+      show()   ->  NOTHING AT ALL — no event, no error, the dialog stays shut
+      hide()   ->  emits `close` AND `hide`,  host.open false
+      show()   ->  works again
+
+  The native `close` event never reaches the component's own `onClose`, so its internal
+  "is it open" flag stays set and the next `show()` early-returns. The header ✕ and Escape
+  take the same path (`cancel` → `close` → `dialog.close()`), so **every way out leaves it
+  stuck** — it is not specific to `hide()`.
+  ⚠️ **A SECOND `hide()` CLEARS IT** — that call finds the dialog already closed and runs the
+  cleanup branch directly. That is the whole work-around; the widget editor's Formatting help
+  dialog does it in its own open path, because `hide()` emits `close` and a settle inside a
+  `close` listener would call `hide()` again.
+  ⚠️ This is the same family as the recorded "obs-modal leaves `open` true after its own ✕",
+  and it is worse than that note says: the stale flag is not cosmetic, it makes the component
+  un-reopenable.
+  ⚠️ **`.body` ALREADY HAS `overflow-y:auto`**, so the registry's known issue **F3** ("scrollable
+  sets a fixed-height body with NO overflow — wrap content in `flex:1;min-height:0;overflow-y:
+  auto`") is **fixed in this build and the registry has not caught up**. Measured in the bundle:
+  `.body{padding:24px;overflow-y:auto;flex:1 1 auto}` and `.modal.scrollable .body{max-height:
+  55vh}`. Re-check before adding the documented wrapper.
+
+All of these are worked around at the call site — the `ag*` block, and (for `obs-modal`) the
+`cwFt*` block of `index.html`.
