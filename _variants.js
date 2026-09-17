@@ -26,7 +26,8 @@
     {"file":"dashboard-rail-flyout.html","label":"Option 10"},
     {"file":"dashboard-rail-flyout-alt.html","label":"Option 11"},
     {"file":"dashboard-rail-flyout-alt2.html","label":"Option 12"},
-    {"file":"dashboard-rail-flyout-alt3.html","label":"Option 13"}
+    {"file":"dashboard-rail-flyout-alt3.html","label":"Option 13"},
+    {"file":"Global_ai.html","label":"Global AI"}
   ];
   /* VARIANTS:END */
 
@@ -116,7 +117,12 @@
      ⚠️ A FOURTEENTH STILL NEEDS A DELIBERATE CHOICE, not the next letter along: it has to be free
      in every page's `KB` and not be a browser or OS binding. `vsKey` returning '' is still what
      makes an unbound row render with no keycap and no footer entry. */
-  var VS_LETTERS = ['x', 'z', 'c'];             /* index 10 onward, in order — Option 11 = X, Option 12 = Z, Option 13 = C */
+  /* ⚠️ A FOURTEENTH ENTRY NEEDED A DELIBERATE LETTER, not the next one along — the standing
+     note in CLAUDE.md. 'm' is for Mota, and it was CHECKED FREE ON EVERY PAGE before being
+     written in: the only bare single letters any page compares are e / i / k / y / z, and each
+     of those is either a modifier combo (⌘I, ⌘K) or the switcher's own. 'm' appears in no KB
+     registry and no case label in any of the fourteen files. */
+  var VS_LETTERS = ['x', 'z', 'c', 'm'];        /* index 10 onward — 11 = X, 12 = Z, 13 = C, Global AI = M */
   function vsKey(i) {
     if (i < 9) return String(i + 1);
     if (i === 9) return '0';

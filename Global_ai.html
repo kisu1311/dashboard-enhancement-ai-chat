@@ -1,0 +1,1918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Global AI</title>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════════
+     GLOBAL AI — the product's own assistant, as a full page. 16 Sep 2026.
+
+     ⚠️ THE UI IS THE `ai*` "ASK IRIS" PANEL FROM `index.html`, NOT THE MOTA CAPTURE.
+     Rebuilt on request ("all component and visualization will be same as ask ai — in this
+     global_ai the ui is old"). Everything a reader sees is Ask Iris's: its scoped palette,
+     its product mark, its greeting, its gradient starter rows, its Documentation/Support
+     pair, its composer (context bar + prompt + control row) and its send behaviour.
+
+     ⚠️ WHAT THE EARLIER, CAPTURE-BUILT VERSION CONTRIBUTED, AND WHAT SURVIVED IT. That
+     build was measured off a 1644x898 screenshot of `/ai-assistant/mota` (the host was
+     unreachable, so there was no DOM to harvest — see the note at the foot). Its COLOUR
+     and GEOMETRY work is superseded here and deliberately not carried over: the warm
+     `#151515 / #20201f / #6d4434` palette, the serif greeting and the pixel-matched
+     paddings all described a different product's screen. What survives is the page's
+     SHAPE — a chat rail beside one centred column — and the chat titles it listed.
+
+     ⚠️ SO: THE COLOURS ARE NOT SAMPLED ANY MORE, THEY ARE TOKENS. Every value in the
+     block below is `index.html`'s own, copied from the `.aipanel` scope and the `:root`
+     it inherits. That is the point of the change — this page is now part of the same
+     system rather than a faithful copy of a screenshot.
+
+     ⚠️ TWO MARKS, AND THE RIGHT ONE IS THE ASSISTANT'S. `G_SPARK` is `AI_SPARK` from
+     `index.html` verbatim — the speech bubble with the four-point spark, which is what
+     Ask Iris wears in its empty state and on every answer. The coral `AI_LOGO` the old
+     build used is the PRODUCT's mark, not the assistant's; it is kept as `G_LOGO` and
+     unreferenced (the house pattern) so it is one call away. `index.html` records the
+     same distinction: the mark is used "where the panel speaks AS THE PRODUCT".
+
+     ⚠️ EVERY OTHER GLYPH IS LUCIDE, PASTED VERBATIM from `free-icons/` (ISC). One set,
+     one weight, nothing hand-drawn — the same family the `ai*` panel uses.
+
+     ⚠️ NAMESPACE IS `g*` / `.g*` / `G_*` throughout. This page is self-contained: it loads
+     no `setting.js`, no design system and no page CSS, so nothing here can collide.
+
+     ⚠️ EVERYTHING IS CANNED AND DETERMINISTIC, like every AI surface in this folder, and
+     it says so on screen. Nothing calls out. The point is that every STATE is reachable:
+     send really pushes a turn, the five starters each reach a DIFFERENT shaped answer,
+     @ really pins a module and really narrows the reply, the pickers really change the
+     model and the effort, and search really filters the rail.
+
+     ⚠️ PROVENANCE OF THE ORIGINAL CAPTURE, kept because it explains the page's shape:
+     the request named `https://192.0.2.186/ai-assistant/mota`; that host was DOWN (100%
+     packet loss, 443 and 80 both unreachable) and `192.0.2.100`, the address that does
+     answer, is a different build whose router sends that path to `/404` — the string
+     `ai-assistant` appears in NO chunk of it. So there was nothing to measure, and the
+     screenshot was the only source. (Both addresses are scrubbed to RFC 5737 per the repo
+     rule — this page publishes.) Re-measure if that host is ever reachable.
+     ════════════════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ── TOKENS ── every value is `index.html`'s: the `:root` set plus the `.aipanel` scope ──
+   ⚠️ THEY ARE DECLARED AT `:root` HERE, WHICH IS CORRECT ONLY BECAUSE THIS PAGE IS THE
+   CHAT. In `index.html` the same names MUST stay scoped to `.aipanel`, because `--ai*`
+   there also drives the toolbar pill, the Log Explorer's AI Query and the per-widget
+   drawer. Here there is no other surface to repaint. */
+:root{
+  --bg:#07101f; --sidebar:#172336; --card:#0b1627; --panel-2:#0c1728;
+  --border:#1d2a3e; --hover:#101d30; --hover-side:#22314a; --chip:#2b394f;
+  --text:#cad3e2; --text-dim:#8e9fbc; --muted:#6a7fa0; --white:#e3e8f2;
+  --teal:#14b8a6;
+  /* the AI accent — NOT violet. `index.html` moved it to #1D2A3E light / #CAD3E2 dark on
+     25 Aug 2026, and `--ai-fg` exists because that fill INVERTS between themes, so a rule
+     painting #fff on it would be invisible in one of them. */
+  --ai:#cad3e2; --ai-2:#cad3e2; --ai-3:#8e9fbc;
+  --ai-soft:rgba(202,211,226,.13); --ai-line:rgba(202,211,226,.34);
+  --ai-fg:#0b1627; --ai-h:#e3e8f2;
+  /* ⚠️ THE BRAND GRADIENT BEHIND THE STARTERS, SUPPLIED VERBATIM to `index.html`:
+     `90deg, rgb(76,177,254) 0%, rgb(115,30,251) 55%, rgb(249,17,227) 100%`. Only the hues
+     and stops are the spec — the ALPHA is ours, uniform so all three hues stay at equal
+     weight, and layered over `--card` so a row does not shade differently by how far down
+     the column it sits. It is the only chromatic thing on this page. */
+  --ai-cta:linear-gradient(90deg,rgba(76,177,254,.13) 0%,rgba(115,30,251,.13) 55%,rgba(249,17,227,.13) 100%);
+  --ai-cta-h:linear-gradient(90deg,rgba(76,177,254,.19) 0%,rgba(115,30,251,.19) 55%,rgba(249,17,227,.19) 100%);
+  /* the composer's edge, measured off ClickUp's Brain composer for `index.html`: radius 20
+     and a layered shadow. Ours keeps a hairline because this page is themed and a
+     shadow-only edge disappears on the dark canvas. `.018` in light is the floor. */
+  --ai-in-line:color-mix(in srgb,var(--border) 42%,transparent);
+  --ai-in-shadow:0 1px 3px rgba(0,0,0,.34);
+  --ai-in-shadow-h:0 4px 16px rgba(0,0,0,.5), 0 2px 6px -2px rgba(0,0,0,.4);
+  --ai-in-chip:rgba(255,255,255,.06);
+  --g-side-w:288px;
+  --g-col:640px;              /* ONE column width: the starters and the composer share it */
+  --g-sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  /* ⚠️ A SYSTEM STACK, NOT JetBrains Mono. The rest of the folder uses that face for numerics
+     and loads it from Google Fonts; this page loads NO webfont at all (the `--g-sans` stack is
+     system too), so naming a face nothing fetches would render as the browser's default while
+     claiming otherwise. It is the tool-name font in the thinking trail and the `code` chip. */
+  --g-mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+/* ⚠️ LIGHT IS DECLARED BUT HAS NO SWITCH ON THIS PAGE — it is reached by setting
+   `data-theme="light"` on <html>, which is how it was screenshotted. Every other page in
+   this folder declares both and this one must not be the exception; the values are
+   `index.html`'s own light block, so they are already proven rather than invented. */
+html[data-theme="light"]{
+  --bg:#ffffff; --sidebar:#F6F9FC; --card:#ffffff; --panel-2:#eef2f8;
+  --border:#e3e8f2; --hover:#f0f4f9; --hover-side:#eef2f8; --chip:#e3e8f2;
+  --text:#1d2a3e; --text-dim:#7186a8; --muted:#7186a8; --white:#111c2c;
+  --ai:#1d2a3e; --ai-2:#1d2a3e; --ai-3:#7186a8;
+  --ai-soft:rgba(29,42,62,.09); --ai-line:rgba(29,42,62,.26);
+  --ai-fg:#ffffff; --ai-h:#111c2c;
+  --ai-cta:linear-gradient(90deg,rgba(76,177,254,.075) 0%,rgba(115,30,251,.075) 55%,rgba(249,17,227,.075) 100%);
+  --ai-cta-h:linear-gradient(90deg,rgba(76,177,254,.11) 0%,rgba(115,30,251,.11) 55%,rgba(249,17,227,.11) 100%);
+  --ai-in-line:rgba(0,0,0,.018);
+  --ai-in-shadow:0 0 1px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.07);
+  --ai-in-shadow-h:0 0 1px rgba(0,0,0,.12), 0 4px 14px rgba(23,35,54,.13), 0 2px 5px -2px rgba(23,35,54,.10);
+  --ai-in-chip:rgba(0,0,0,.024);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.5 var(--g-sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+
+/* ── shell ───────────────────────────────────────────────────────────────────────────── */
+.gsh{display:flex;height:100vh;overflow:hidden}
+
+/* ── the chat rail ───────────────────────────────────────────────────────────────────── */
+.gside{flex:0 0 var(--g-side-w);width:var(--g-side-w);min-width:0;display:flex;flex-direction:column;
+  background:var(--sidebar);border-right:1px solid var(--border);overflow:hidden}
+body.gshut .gside{flex-basis:0;width:0;border-right:0}
+
+/* ── the column head — Option 13's `.aihshd`, at its numbers ─────────────────────────────
+   ⚠️ THE IRIS MARK AND THE NAME LEFT THIS ROW, and neither is lost from the page: the empty
+   state still leads with the same four-point star and its help line still reads "Ask Iris
+   about anything ObserveOps can see". The reference titles this column for what is IN it,
+   and a product name standing over a list of past conversations names the wrong thing. */
+.ghead{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:11px 10px 9px}
+.ghead b{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtog,.ghb{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;
+  border-radius:8px;color:var(--text-dim)}
+.gtog svg,.ghb svg{width:17px;height:17px;display:block}
+.gtog:hover,.ghb:hover{background:var(--hover-side);color:var(--text)}
+/* ⚠️ THE WAY BACK IN IS A ROW ITEM, NOT A FLOATING BUTTON (request, 16 Sep 2026: "proper
+   alignment"). It was `position:fixed; left:12px; top:12px` while the header row beneath it
+   starts at 18px — so with the column shut the two sat on top of each other and read as one
+   crowded control. In the row it takes the header's own 4px gap and the chat-name trigger
+   simply follows it, which is the reading the reference shows. */
+.ghb{display:none}
+body.gshut .ghb{display:grid}
+
+/* ── the search field — the reference's, including its own magnifier offset ──────────────
+   ⚠️ `margin-top:-4px` IS NOT A FUDGE: `.gsr` carries 9px of bottom padding, so `top:50%` of
+   its padded box lands ~4.5px below the input's own centre. Option 13's `.aihssr svg` carries
+   exactly this number for exactly this reason. */
+.gsr{flex:0 0 auto;position:relative;padding:0 10px 9px}
+.gsr .gsri{position:absolute;left:19px;top:50%;margin-top:-4px;transform:translateY(-50%);
+  width:13px;height:13px;color:var(--muted);pointer-events:none}
+.gsr .gsri svg{width:100%;height:100%;display:block}
+.gsr input{width:100%;height:30px;padding:0 9px 0 28px;border-radius:8px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  font:inherit;font-size:12.5px;outline:none}
+.gsr input:focus{border-color:var(--ai-line);box-shadow:0 0 0 3px var(--ai-soft)}
+.gsr input::placeholder{color:var(--muted)}
+
+/* ⚠️ `.gact` AND `.grow` ARE KEPT AND UNREFERENCED — the house pattern. They were the rail's
+   one nav row, "Search chats", which opened a `prompt()`; the field above replaced it and
+   nothing renders a `.grow` any more. They are what a second nav row would need. */
+.gact{flex:0 0 auto;padding:0 8px}
+.grow{display:flex;align-items:center;gap:10px;width:100%;height:34px;margin-bottom:2px;
+  padding:0 8px;border-radius:8px;font-size:13px;color:var(--text-dim);text-align:left}
+.grow .gi{flex:0 0 17px;width:17px;height:17px;display:grid;place-items:center;color:var(--muted)}
+.grow .gi svg{width:100%;height:100%;display:block}
+.grow:hover{background:var(--hover-side);color:var(--text)}
+.grow:hover .gi{color:var(--ai-2)}
+/* ── the header row over the column — Option 13's full-screen Iris, at its numbers ───────
+   `.aihd` is `padding:11px 12px 9px` and its full-screen rule widens the sides to 18px, so
+   that is what this row carries. The trigger itself is `.aihttl`: 28px tall, radius 8, a 4px
+   gap, and padding that is 4 on the glyph side against 7 on the caret side — the glyph is
+   optically inset by its own box, so an even padding reads as a left-heavy control. */
+.ghd{flex:0 0 auto;display:flex;align-items:center;gap:4px;padding:11px 18px 9px}
+/* ⚠️ IT NO LONGER INHERITS `.grow`. That class is the rail's row — `width:100%`, 34px, a 10px
+   gap — and in a header row it stretched the trigger across the whole column. The trigger
+   carries its own rule now and hugs its text, which is what lets the row stay otherwise empty
+   without a 1600px hit target sitting in it. */
+.gname{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:50%;
+  height:28px;padding:0 7px;border-radius:8px;
+  background:transparent;color:var(--white);font-size:13px;font-weight:600;
+  transition:background .13s}
+.gname:hover{background:var(--hover-side)}
+.gname .gi{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;color:var(--muted)}
+.gname .gi svg{width:100%;height:100%;display:block}
+.gname .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the caret is a real chevron rather than a glyph character — at 13px beside a 600-weight
+   label a typographic one sits high in the line box and reads as a stray comma */
+.gname .gcv{flex:0 0 13px;width:13px;height:13px;display:grid;place-items:center;
+  color:var(--muted)}
+.gname .gcv svg{width:100%;height:100%;display:block}
+/* it keeps its highlight while the menu is open, or moving the pointer into the menu drops
+   the hover and nothing says which control opened it */
+.gname.open{background:var(--hover-side)}
+/* ⚠️ THE ONE "RECENTS" LABEL BECAME DATE BANDS (request, 16 Sep 2026) — Option 13's
+   `.aihsb`, at its numbers. `.gsec` went with the element it styled, and so did the
+   "N results" count it printed while searching: the reference shows none, and a list that
+   visibly narrows already says how much is left. */
+.gband{padding:12px 6px 5px;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+.glist{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 6px 10px;scrollbar-width:thin}
+.glist::-webkit-scrollbar{width:8px}
+.glist::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+/* ⚠️ 14px / 600 (request, 17 Sep 2026) — Option 13's list rows took the same step for the
+   same reason, so the two pages agree. The AGE stays 11px and `--muted`: it is two or three
+   characters of context and the NAME is what you are reading down the column.
+   ⚠️ A heavier row costs label width — the name ellipsises a word or two earlier, which is
+   what `.ag`'s `flex:0 0 auto` is there to make sure it pays for rather than the age. */
+.gchat{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;
+  border-radius:7px;font-size:14px;font-weight:600;color:var(--text-dim);text-align:left}
+.gchat .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the age never shrinks — it is two or three characters and the NAME is what should
+   ellipsise; tabular figures so a column of them cannot jitter */
+.gchat .ag{flex:0 0 auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gchat:hover{background:var(--hover-side);color:var(--text)}
+.gchat:hover .ag{color:var(--text-dim)}
+/* the open chat wears the panel's own selected look — a soft accent wash, not a fill.
+   ⚠️ IT DECLARES NO WEIGHT any more: it carried `500` from when the base row was 12.5/400,
+   and against a 600 row that would have made the OPEN chat the lightest thing in the list. */
+.gchat.on{background:var(--ai-soft);color:var(--text)}
+.gempty{padding:14px 8px;font-size:12px;line-height:1.5;color:var(--muted)}
+
+/* ── the column ──────────────────────────────────────────────────────────────────────── */
+/* ⚠️ THE COLUMN'S WIDTH IS PAID BACK ON THE RIGHT WHILE IT IS OPEN (request, 17 Sep 2026:
+   "when i click the history icon the text area position will be fix it"). Measured first: the
+   composer and the greeting centre in whatever is left of the page, so collapsing the column
+   slid both **144px** to the left (centre 966 → 822) — the box you are typing in moved out
+   from under the cursor every time the history icon was pressed. With the column's own width
+   given back as padding, the content's axis is the VIEWPORT's centre in both states.
+   ⚠️ CONSEQUENCE, STATED: with the column open the composer now sits 144px left of the
+   visible area's own centre, i.e. there is more empty page to its right than its left. That is
+   the price of it not moving, and it is the opposite trade to the reference — Option 13's
+   full-screen Iris re-centres its thread with `padding-left:var(--aihs-w)` when its history
+   column opens. One rule to revert.
+   ⚠️ `.ghd` sits inside this box too, so the header row is padded as well; it is left-aligned
+   and otherwise empty, so nothing in it moves. */
+.gmain{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+body:not(.gshut) .gmain{padding-right:var(--g-side-w)}
+.gwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;
+  padding:4px 24px 20px;overflow-y:auto;scrollbar-width:none}
+.gwrap::-webkit-scrollbar{display:none}
+/* ⚠️ 20px, NOT the 12 it had: it is the gap the greeting and the last turn both keep off the
+   composer, and 20 is this page's own number for it — `.gcomp` carried `margin-top:20px` for
+   exactly this distance while it still sat inside the scroller.
+   ⚠️ `justify-content` IS GONE, and the greeting is pushed down by its own `margin-top:auto`
+   instead (see `.ghome`). `center` was what floated the whole empty state mid-column, and
+   `body.gthread .gwrap{justify-content:flex-start}` — the rule that used to cancel it — is
+   deleted rather than parked: flex-start is the default now, so it said nothing. */
+/* ⚠️ THE COMPOSER IS A SIBLING OF THE SCROLLER, NOT ITS LAST CHILD (request, 16 Sep 2026:
+   "it will be set in bottom"). Inside `.gwrap` it was centred WITH the greeting, so on a
+   tall screen the box you type in floated in the middle of the page with a third of the
+   column empty beneath it. This is Iris's own shape — `.aipanel` is header / body /
+   composer — and it is what makes the greeting centre in what is LEFT rather than in the
+   whole column, which is the reference's reading too. */
+.gfoot{flex:0 0 auto;display:flex;justify-content:center;padding:0 24px 26px}
+
+/* ── the empty state — Ask Iris's, part for part ─────────────────────────────────────── */
+/* ⚠️ `[hidden]` LOSES TO AN AUTHOR `display` RULE — an author declaration beats the UA
+   stylesheet whatever its specificity, so `gThreadPaint`'s `$('gHome').hidden = on` set the
+   attribute and changed NOTHING: the greeting went on painting UNDER every open thread.
+   Latent since the page was built, found by measuring rather than by looking. The recorded
+   `.stpt[hidden]` trap, in a new place — `.gthr` is safe only because its rule sets `flex`
+   (the grow/shrink shorthand) and never `display`. */
+/* ⚠️ THE EMPTY STATE SITS DIRECTLY ABOVE THE COMPOSER (request, 17 Sep 2026: "it will be set
+   upside the text area"), not centred in the column — the greeting introduces the box you are
+   about to type in, so it belongs against it.
+   ⚠️ `margin-top:auto` RATHER THAN `justify-content:flex-end` ON THE PARENT, and the reason is
+   the overflow: flex-end pins content to the bottom even when there is MORE of it than room,
+   and the part that overflows the start edge cannot be scrolled to. An auto margin resolves to
+   0 the moment there is no free space, so a short viewport simply falls back to ordinary
+   top-aligned flow — the one place this file's recorded `margin-top:auto` behaviour is the
+   feature rather than the trap. */
+.ghome{width:100%;max-width:var(--g-col);display:flex;flex-direction:column;text-align:center;
+  margin-top:auto}
+.ghome[hidden]{display:none}
+.gbig{display:grid;place-items:center;margin-bottom:14px}
+.gbig svg{width:30px;height:30px;fill:var(--ai-2)}
+.ghome h1{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
+.ghome p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
+/* ⚠️ NO ICON ON A STARTER. `index.html` removed them on 20 Aug 2026: four rows carried a
+   tinted glyph and two were the same mark the page already wears, so the column read as
+   decoration rather than as five different things you could ask. The label is the row. */
+/* ⚠️ `.gcta`, `.ghome > .gcta:last-of-type` and `.ghelp` below are KEPT AND UNREFERENCED
+   since the starters and the help pair were removed on 16 Sep 2026 — `gHomePaint` renders
+   neither. They are what putting either block back needs, so they are parked rather than
+   deleted; nothing else in this file uses those names (grepped). */
+.gcta{display:flex;align-items:center;width:100%;min-height:44px;padding:11px 14px;
+  margin-bottom:8px;border:0;border-radius:10px;cursor:pointer;text-align:left;
+  background:var(--ai-cta),var(--card);
+  color:var(--text);font:inherit;font-size:13px;font-weight:500;line-height:1.4;
+  transition:background .14s}
+.gcta:hover{background:var(--ai-cta-h),var(--card)}
+/* ⚠️ the guaranteed gap above the hairline. `.ghelp`'s `margin-top:auto` resolves to 0
+   when there is no free space and so cannot also carry a minimum — the recorded
+   `.aihelpl` trap. `:last-of-type` cannot match the two help buttons: they are nested
+   inside `.ghelp` and are not siblings at this level. */
+.ghome > .gcta:last-of-type{margin-bottom:6px}
+/* Documentation / Support — deliberately the quietest thing here: the five starters are
+   what the screen is for, and two help links that competed with them would invert that. */
+.ghelp{margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--border);display:flex;gap:8px}
+.ghelp button{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;
+  padding:9px 11px;border:0;border-radius:9px;background:var(--panel-2);cursor:pointer;
+  text-align:left;font:inherit;font-size:12.5px;color:var(--text-dim);
+  transition:background .12s,color .12s}
+.ghelp button:hover{background:var(--hover-side);color:var(--text)}
+.ghelp button .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghelp button svg{flex:0 0 15px;width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* ⚠️ the arrow keeps its BOX and loses only its paint — taking it out of flow would reflow
+   the label under the cursor. It repeats on both buttons, so at rest it is noise. */
+.ghelp button .ext{opacity:0;transition:opacity .12s}
+.ghelp button:hover .ext{opacity:.8}
+
+/* ── the composer ────────────────────────────────────────────────────────────────────── */
+.gcomp{position:relative;width:100%;max-width:var(--g-col);
+  display:flex;flex-direction:column;align-items:stretch;gap:15px;
+  min-height:128px;padding:16px;
+  border:1px solid var(--ai-in-line);border-radius:20px;
+  background:var(--card) padding-box;box-shadow:var(--ai-in-shadow);
+  transition:box-shadow .16s,border-color .14s}
+.gcomp:hover{box-shadow:var(--ai-in-shadow-h)}
+/* focus adds its ring ON TOP of whichever elevation is current — `box-shadow` is one
+   property, so writing only the ring here would discard the lift */
+.gcomp:focus-within{box-shadow:0 0 0 3px var(--ai-soft),var(--ai-in-shadow-h);
+  border-color:var(--ai-line)}
+/* ⚠️ THE BAR RESERVES ITS 24px EVEN WHEN EMPTY, AND THIS REVERSES THIS PAGE'S OWN EARLIER
+   DECISION (request, 17 Sep 2026, with the composer shown in both states: *"the text area —
+   the text — set as it is like screenshot"*). It was `:empty{display:none}`, on the reasoning
+   that with no floor chip the bar is empty in the RESTING state and reserving a row spends
+   the composer's top line on nothing. **Measured, that cost 25.5px of jump**: pinning a chip
+   moved the placeholder from 30.5px below the composer's top to 56, grew the box 128 → 140
+   and took the control row down 12px with it. Iris reserves the row for exactly that reason,
+   and its own note records the same finding — *"removing the last context chip collapsed 39px
+   and every row under it jumped"*. The text now sits at one height in both states, which is
+   what the two screenshots show side by side.
+   ⚠️ CONSEQUENCE, STATED: an empty composer carries a blank 24px row above the placeholder.
+   That is the price of the box never moving under the cursor, and it is the trade Iris makes. */
+.gctx{display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-height:24px}
+.gchip{position:relative;display:inline-flex;align-items:center;gap:4px;height:24px;
+  padding:0 8px;border-radius:999px;border:0;background:var(--ai-in-chip);
+  color:var(--text-dim);font-size:12px;max-width:190px}
+.gchip.rm{padding-right:22px}
+.gchip .tic{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;
+  stroke-width:2.31;stroke-linecap:round;stroke-linejoin:round}
+.gchip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ⚠️ the drop control is out of flow AND opaque: out of flow so nothing reflows on hover,
+   opaque so it MASKS the label it covers rather than letting it show through */
+.gchip button{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+  width:20px;height:18px;border:0;border-radius:4px;
+  background:linear-gradient(var(--ai-in-chip),var(--ai-in-chip)),var(--card);
+  color:var(--muted);cursor:pointer;font-size:10px;line-height:1;padding:0;
+  display:grid;place-items:center;opacity:0;transition:opacity .12s}
+.gchip:hover button,.gchip:focus-within button{opacity:1}
+.gchip button:hover{color:var(--text)}
+/* ⚠️ THE TEXT SITS AT THE LEFT-CENTRE OF THE COMPOSER (request, 16 Sep 2026), and that
+   needs a wrapper: a `<textarea>` cannot centre its own content vertically, so the row that
+   HOLDS it takes the slack and centres the field inside itself. With one line typed the
+   placeholder is level with the middle of the box instead of parked on its ceiling.
+   ⚠️ `flex:1 0 auto` — grow, never shrink. Shrinking is what would clip a field that has
+   grown past the free space, and `gGrow` sizes it to its own content up to 150px.
+   ⚠️ It takes the free space BEFORE `.gtools`'s `margin-top:auto` can, so that margin now
+   resolves to 0 and the 15px under the text is `.gcomp`'s own `gap` — which is exactly the
+   guarantee the note on `.gtools` describes. */
+.gtaw{flex:1 0 auto;min-width:0;display:flex;align-items:center}
+.gta{flex:0 0 auto;width:100%;min-width:0;background:transparent;border:0;outline:0;resize:none;
+  color:var(--text);font-family:inherit;font-size:14px;line-height:1.5;
+  max-height:150px;padding:1px 1px 0;display:block}
+.gta::placeholder{color:var(--muted);opacity:.62}
+/* ⚠️ THE CONTROL ROW SITS ON THE COMPOSER'S FLOOR (request, 16 Sep 2026), and it needs a
+   rule because `min-height:128px` is a FLOOR rather than a height: with no context chip the
+   three rows measure ~98px, so 30px of slack was left UNDER the controls and they read as
+   floating in the middle of an empty box. `margin-top:auto` hands that slack to the gap
+   above them instead.
+   ⚠️ IT IS SAFE HERE ONLY BECAUSE `.gcomp` CARRIES `gap:15px`. The recorded trap is that
+   `margin-top:auto` resolves to 0 when there is no free space and so cannot also carry a
+   minimum — the parent's gap is what guarantees the 15px, and the auto margin only ever
+   adds to it. Pin the row with a fixed margin instead and a composer grown past its floor
+   would lose that 15px. */
+.gtools{display:flex;align-items:center;gap:8px;margin-top:auto}
+/* the control row rests at .62 and comes to full strength on hover — it is chrome you
+   reach for, not the thing you are reading */
+.gat,.gpill,.gsend{opacity:.62;transition:opacity .14s,background .14s,color .14s}
+.gat:hover,.gpill:hover,.gsend:hover{opacity:1}
+.gat{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:transparent;
+  color:var(--text-dim);display:grid;place-items:center}
+.gat svg{width:16px;height:16px;display:block}
+.gat:hover{background:var(--hover-side);color:var(--ai-2)}
+.gat.on{opacity:1;background:var(--hover-side);color:var(--ai-2)}
+.gpill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 9px;
+  border-radius:999px;background:transparent;font-size:12.5px;font-weight:500;color:var(--muted)}
+.gpill:hover{background:var(--hover-side);color:var(--text)}
+.gpill .gi{flex:0 0 14px;width:14px;height:14px;display:grid;place-items:center}
+.gpill .gi svg{width:100%;height:100%;display:block}
+.gpill .gcv{flex:0 0 12px;width:12px;height:12px;display:grid;place-items:center;opacity:.7}
+.gpill .gcv svg{width:100%;height:100%;display:block}
+/* ⚠️ SEND IS ABSENT UNTIL YOU TYPE, then arrives accent-filled — `index.html`'s rule, and
+   it REVERSES this page's own earlier decision (the Mota capture showed a send button at
+   full strength on an empty box, so the first build kept one). With the button gone there
+   is no dead press to guard against at all; Enter still sends, and an empty Enter focuses
+   the field. `margin-left:auto` lives on send, so on an empty composer there is nothing
+   for it to apply to and `@ · model · effort` sit left — which is right. */
+.gsend{flex:0 0 30px;width:30px;height:30px;margin-left:auto;border-radius:9px;
+  display:none;align-items:center;justify-content:center;padding:0;
+  background:var(--chip);color:var(--text-dim)}
+.gsend svg{width:16px;height:16px;display:block}
+.gcomp.typed .gsend{display:inline-flex;background:var(--ai);color:var(--ai-fg);opacity:1}
+.gcomp.typed .gsend:hover{background:var(--ai-2)}
+.gsend:disabled{opacity:.45;cursor:default}
+
+/* ── the @ mention list ──────────────────────────────────────────────────────────────── */
+.gment{position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);z-index:12;
+  max-height:264px;overflow-y:auto;padding:6px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.gmi{display:flex;align-items:center;gap:9px;width:100%;height:32px;padding:0 9px;
+  border-radius:7px;font-size:13px;color:var(--text-dim);text-align:left}
+.gmi:hover,.gmi.hi{background:var(--hover-side);color:var(--text)}
+.gmi .tic{flex:0 0 14px;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round;color:var(--ai-2)}
+.gmi .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gmi .pin{flex:0 0 auto;font-size:11px;color:var(--muted)}
+.gmnone{padding:8px 9px;font-size:12.5px;color:var(--muted)}
+
+/* ── the thread ──────────────────────────────────────────────────────────────────────── */
+/* ⚠️ THE BAR IS HIDDEN, THE SCROLLING IS NOT (request, 17 Sep 2026: "remove the
+   scrollbar, remove the black line"). In dark theme the UA paints this scroller's thumb as a
+   near-black slab down the middle of the page — it reads as a rule drawn through the answer
+   rather than as chrome. `overflow-y:auto` STAYS: taking the bar away by taking the scrolling
+   away would make everything above the fold unreachable. The same pair `index.html` uses on
+   its own thinking trail.
+   ⚠️ BOTH SCROLLERS CARRY IT. `.gwrap` is `overflow-y:auto` as well and this column
+   nests inside it, so hiding one bar can simply hand the slab to the other.
+   ⚠️ The trade-off is the recorded one: nothing now announces that the area scrolls.
+   Accepted here because the thread pins itself to its own bottom on every paint, so the newest
+   turn is always the thing on screen. */
+.gthr{width:100%;max-width:var(--g-col);flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding-bottom:18px;scrollbar-width:none}
+.gthr::-webkit-scrollbar{display:none}
+.gturn{margin-bottom:22px}
+/* ⚠️ THE COPY CONTROL KEEPS ITS BOX AT REST AND ONLY ITS PAINT IS HIDDEN (request,
+   17 Sep 2026: "when i hover the prompt the show copy icon"). Taking it out of flow on
+   `opacity:0` would be the other recorded shape — right for a 180px chip where every pixel
+   of label matters. Here the bubble is RIGHT-ALIGNED against a wide column: revealing a
+   26px button in flow would shove the prompt left under the cursor at the moment you
+   reached for it, so the gutter is always there and only the glyph arrives. */
+.gq{display:flex;justify-content:flex-end;align-items:center;gap:6px}
+.gcopy{flex:0 0 26px;width:26px;height:26px;display:grid;place-items:center;border-radius:7px;
+  color:var(--text-dim);opacity:0;transition:opacity .13s,background .13s,color .13s}
+.gcopy svg{width:14px;height:14px;display:block}
+.gq:hover .gcopy,.gcopy:focus-visible,.gcopy.ok{opacity:1}
+.gcopy:hover{background:var(--hover-side);color:var(--text)}
+/* ⚠️ the confirmation is the GLYPH, not a toast: the thing you pressed is the thing that
+   answers, and this page has no toast of its own to borrow. */
+.gcopy.ok{color:var(--ai-2)}
+.gq span{max-width:82%;padding:10px 14px;border-radius:14px;background:var(--chip);
+  color:var(--text);font-size:14px;line-height:1.5}
+.ga{display:flex;gap:12px;margin-top:18px}
+.ga .gmk{flex:0 0 20px;width:20px;height:20px;margin-top:2px;color:var(--ai-2)}
+.ga .gmk svg{width:100%;height:100%;display:block;fill:currentColor}
+.gabody{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.65;color:var(--text)}
+.gabody b{color:var(--white);font-weight:600}
+/* ⚠️ THE GAP BETWEEN BULLETS BEATS THE LEADING INSIDE A WRAPPED ONE — the measured
+   `.aiab li` rule, which this file inherits rather than re-derives: at 1.65 a wrapped point
+   carries ~9px between its own lines, so a 5px margin makes one bullet read as two. */
+.gabody h4{margin:16px 0 6px;font-size:13px;font-weight:600;color:var(--white)}
+.gabody h4:first-child{margin-top:0}
+.gabody ul{margin:0;padding-left:17px;list-style:disc}
+.gabody li{margin-bottom:12px}
+.gabody li:last-child{margin-bottom:0}
+.gabody li ul{margin-top:8px}
+.gabody code{font-family:var(--g-mono);font-size:12.5px;background:var(--chip);
+  border-radius:4px;padding:1px 5px;color:var(--text)}
+.gmeta{margin-top:8px;font-size:12px;color:var(--muted)}
+
+/* ── the thinking trail ───────────────────────────────────────────────────────────────
+   Mota narrates a run as REASONING steps interleaved with the tool calls they order, and
+   folds the lot into one line once the answer lands. Both states live here. */
+.gtk{margin:0 0 14px}
+.gtkh{display:inline-flex;align-items:center;gap:8px;height:22px;padding:0 7px 0 4px;
+  margin-left:-4px;border-radius:7px;background:transparent;color:var(--text-dim);
+  font-size:12.5px;font-weight:500;transition:background .13s}
+.gtkh:hover{background:var(--hover-side);color:var(--text)}
+.gtkh .gcv{flex:0 0 12px;width:12px;height:12px;display:grid;place-items:center;
+  color:var(--muted);transition:transform .14s}
+.gtkh .gcv svg{width:100%;height:100%;display:block}
+.gtk.open .gtkh .gcv{transform:rotate(180deg)}
+/* ⚠️ THE RUNNING HEAD IS A ROW, NOT A PILL. `.gtkh` hugs its text because the FOLDED
+   head is a toggle you press; the running one carries a flexible label with a clock at its
+   end, so it spans the answer's width and drops the pill's hover fill and inset — it is a
+   `<div>` while it runs, with nothing to press. */
+.gtkh.run{display:flex;width:100%;height:auto;gap:9px;padding:0;margin-left:0;
+  background:transparent;cursor:default}
+.gtkh.run:hover{background:transparent}
+/* the running mark is the page's own three dots — one busy treatment, not a second */
+.gtkh .gdots{margin:0 2px 0 0}
+/* ⚠️ THE OPEN TRAIL IS THE CONSOLE'S STEP LIST IN ASK IRIS'S BOX (request, 17 Sep 2026,
+   with four crops of the live run beside Option 13's disclosure: "show this in step with deep
+   with chart … make this properly and the text type step will also like ask ai").
+   The CONTENT is the console's — a glyph per step kind, the tool named the way the product
+   writes it (`ObserveOps alerts`, not `observeops_alerts`), its real argument in mono, and the
+   `render_chart` step opening onto the chart it drew. The CONTAINER is Ask Iris's: the `Thought`
+   pill, the 28px indent with no rule, the 12.6px dim type, the derived stroke weight.
+   ⚠️ ONE ROW SHAPE, VARIED ONLY BY ITS MARK — the console's own rule: glyph · bold name
+   · quiet detail, for a tool and a thought alike. Two shapes would say the two kinds of beat
+   are different objects, which they are not.
+   ⚠️ THE LEFT RULE WENT WITH THE LABEL COLUMN. It was `TOOL` / `THOUGHT` in a 46px column
+   against a 1px border — a two-column table where both references draw a list, and the border
+   drew a second boundary the indent already draws. */
+.gtkb{margin:8px 0 0 28px;padding:0;border:0}
+.gtki{display:flex;align-items:flex-start;gap:9px;padding:4px 0;font-size:12.6px;
+  line-height:1.45;color:var(--text-dim)}
+.gtki .ic{flex:0 0 14px;width:14px;height:14px;margin-top:1px;display:grid;place-items:center}
+/* ⚠️ THE GLYPHS ARE STROKED, AND THE WIDTH IS DERIVED, NOT TYPED — the panel's rule is
+   1.25px on screen, which at 13px is `1.25 × 24 / 13 = 2.31`. Change the size and recompute.
+   The `fill:none` is what keeps a Lucide outline from painting as a blob: these paths carry
+   their own presentation attributes and a CSS rule beats every one of them. */
+.gtki .ic svg{width:13px;height:13px;fill:none;stroke:var(--ai-2);stroke-width:2.31;
+  stroke-linecap:round;stroke-linejoin:round}
+.gtki .tx{flex:1 1 auto;min-width:0}
+.gtki .nm{color:var(--text);font-weight:600}
+.gtki .ar{margin-left:7px;font-family:var(--g-mono);font-size:11.5px;color:var(--muted)}
+/* ══ THE CHART — A DS WIDGET IN THE ANSWER, NOT IN THE TRAIL (request, 17 Sep 2026) ════
+   A trail says what the assistant DID; the chart is what one of those calls PRODUCED, so it
+   sits in the answer, beside the figures it draws.
+
+   ══ IT IS BUILT ON THE OBSERVEOPS DESIGN SYSTEM (request, same day) ════════════════
+   The DS was asked rather than guessed. `data-viz` is a decision GUIDE, not a web component:
+   `list_gaps` declares charts a gap and the family's own `dont` is explicit — there is no
+   `obs-chart`, and a standalone chart is a STOP-AND-ASK. So what the DS DOES specify is what
+   is obeyed here, part for part:
+     · the TYPE comes from `decisionFlow` — "Change over TIME? -> trend-line (default), area
+       (volume)". Traffic over six hours is a volume trend, so AREA is the default and LINE is
+       one press away. COLUMN and BAR are the `bar-column` variant, offered because the live
+       console offers them on this very card.
+     · the SURFACE is the widget's five tokens, the family's own `tokensUsed` list:
+       `--common-widget-bg` on `--border-color`, text `--page-text-color`, axis labels
+       `--neutral-light`, gridlines `--neutral-lighter`.
+     · the SERIES come from the categorical palette IN ORDER (`do` #2), never the brand navy
+       (`dont` #2). `--chart-tangerine` / `--chart-aqua` are the pair nearest the console's own
+       orange/blue, so the reading survives and the colours are the product's.
+     · every series is LABELLED and carries a legend — the family's a11y rule is that colour
+       may never be the only encoding.
+   ⚠️ THE TOKENS ARE SCOPED TO `#gChart` AND MUST NOT MOVE TO `:root` — the `#agPage`
+   precedent. This page loads no `_ds/` bundle, so the values are re-declared here from
+   `_ds/observeops-ds.css` itself (light on `:root` there, dark under `[data-theme='dark-theme']`,
+   which is why the two halves below look inverted against this page's own blocks).
+   ⚠️ THE PLOT IS HAND-DRAWN SVG, AND THAT IS THE DS'S OWN ANSWER HERE, not a shortcut.
+   Its `knownIssues` say in as many words: "Highcharts is a COMMERCIALLY LICENSED engine — do
+   not vendor it into a standalone prototype". The License page fetches it at runtime because it
+   lives in `setting.js`, which thirteen pages load beside the DS bundle; THIS page loads nothing
+   at all, so there is no engine to reuse and nothing to fetch it alongside. Everything the DS
+   specifies about a chart is in the SVG; only the renderer differs, and it is stated.
+   ⚠️ `--chart-font-family` IS THE PAGE'S OWN MONO STACK, not the DS's `'JetBrains Mono'`:
+   this page loads no webfont (which is why `--g-mono` is a system stack), so naming a face that
+   is not there would silently fall back to whatever the OS offers. A stated divergence.
+   ⚠️ NOT BUILT, AND SAID RATHER THAN HIDDEN: the family's `states` (loading / empty /
+   error) and the `data-viz-tooltips` hover card. The data is canned and always present, so a
+   loading state here would be theatre; the tooltip is a real feature and was not asked for. */
+#gChart{
+  --common-widget-bg:#172336; --page-text-color:#cad3e2; --border-color:#1d2a3e;
+  --neutral-light:#8e9fbc; --neutral-lighter:#1d2a3e;
+  --chart-grid-line-color:rgba(23,35,54,.8); --chart-legend-color:rgba(255,255,255,.8);
+  --chart-tangerine:#fb923c; --chart-aqua:#06b6d4;
+  --chart-font-family:var(--g-mono)}
+html[data-theme="light"] #gChart{
+  --common-widget-bg:#fff; --page-text-color:#1d2a3e; --border-color:#e3e8f2;
+  --neutral-light:#6a7fa0; --neutral-lighter:#e3e8f2;
+  --chart-grid-line-color:rgba(236,241,249,.8); --chart-legend-color:rgba(54,70,88,.9);
+  --chart-tangerine:#ea580c; --chart-aqua:#0891b2}
+/* the tile is the DS widget's shape — `--common-widget-bg` on `--border-color`, two of the
+   five tokens the data-viz family lists as its own, at the DS's 4px `@btn-radius` and on its
+   structural spacing scale (8 · 12 · 16 · 24), never an eyeballed number.
+   ⚠️ THE HEADER IS NOT AN `obs-toolbar variant="widget"`, and it cannot be: that is a web
+   component from a bundle this page deliberately does not load. Same parts, same order —
+   title and subtitle at the start, the control cluster where the widget's time-range pill goes. */
+.gchtw{margin:16px 0 4px}
+.gcht{padding:12px;border-radius:4px;
+  border:1px solid var(--border-color);background:var(--common-widget-bg)}
+.gchth{display:flex;align-items:flex-start;gap:12px}
+.gchth .t{flex:1 1 auto;min-width:0}
+.gchtt{font-size:12.5px;font-weight:600;color:var(--page-text-color)}
+.gchts{margin-top:2px;font-size:11px;color:var(--neutral-light)}
+/* the chart-type switcher — Ask Iris's own behaviour, and the live console's own control:
+   picking one re-renders the ART IN PLACE rather than repainting the answer around it.
+   ⚠️ `.on` takes `--ai-2`, which in this page's tokens IS the DS `--primary` pair
+   (#cad3e2 dark / #1d2a3e light) — the product's own selected-chrome colour, not a new hue. */
+.gctt{flex:0 0 auto;display:flex;gap:2px}
+.gctb{width:26px;height:26px;display:grid;place-items:center;border-radius:4px;
+  color:var(--neutral-light);transition:background .13s,color .13s}
+.gctb svg{width:15px;height:15px;display:block;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.gctb:hover{background:var(--hover-side);color:var(--page-text-color)}
+.gctb.on{background:var(--hover-side);color:var(--ai-2)}
+.gctb:focus-visible{outline:2px solid var(--ai-2);outline-offset:1px}
+.gchtk{display:flex;gap:24px;margin:12px 0 2px;flex-wrap:wrap}
+.gchtk .l{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--neutral-light)}
+.gchtk .d{width:7px;height:7px;border-radius:50%}
+.gchtk .v{font-size:19px;font-weight:600;color:var(--page-text-color);
+  font-family:var(--chart-font-family);letter-spacing:-.02em}
+.gchtk .av{font-size:11px;color:var(--neutral-light);font-family:var(--chart-font-family)}
+/* the legend is not decoration — the family's a11y rule is that colour may never be the only
+   encoding, so every series is named here as well as coloured in the plot */
+.gchtl{display:flex;gap:16px;margin:8px 0 2px;font-size:11.5px;color:var(--chart-legend-color)}
+.gchtl span{display:flex;align-items:center;gap:6px}
+.gchtl i{width:14px;height:2px;border-radius:2px;display:block}
+/* ⚠️ THE PLOT BOX RESERVES ITS OWN HEIGHT. Switching type replaces the SVG inside it, and
+   without a floor the card would collapse for the frame between the two paints and jog the
+   whole answer under the pointer. 236 is the viewBox height every renderer draws at. */
+.gchtb{margin-top:8px;min-height:236px}
+.gchtb > svg{display:block;width:100%;height:auto;font-family:var(--g-sans)}
+/* a tool row names the call the way the product does — the MCP tool, then its argument */
+.gtki .tn{font-family:var(--g-mono);font-size:12px;color:var(--text)}
+.gtki .ta{color:var(--muted)}
+.gdots span{display:inline-block;width:5px;height:5px;margin-right:4px;border-radius:50%;
+  background:var(--ai-3);animation:gdot 1s infinite ease-in-out}
+.gdots span:nth-child(2){animation-delay:.16s}
+.gdots span:nth-child(3){animation-delay:.32s}
+@keyframes gdot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+/* ══ THE RUNNING ROW IS ASK IRIS'S, PART FOR PART (request, 17 Sep 2026) ══════════════════
+   Ported from `dashboard-rail-flyout-alt3.html` (Option 13) — its own `aiTkHTML` running
+   branch is mark + label + clock, and this is that row in the `g*` namespace: the Prism
+   Bloom dot matrix, the chromatic "Dia" label that writes itself in and then loops a colour
+   band through the text, and the live elapsed clock in mono tabular figures.
+   ⚠️ ONLY THE `think` LOADER CAME ACROSS. Option 13 carries three (Prism Bloom /
+   Core Spiral / Strobe Stack) chosen by what the assistant is doing, and picks between them
+   with `AI_LD_KIND`. This page has ONE recorded run and it is a thinking run, so the other
+   two would be ~100 lines of per-cell delays and keyframes that nothing here can select.
+   ⚠️ THE CELL MAP IS A COMPUTATION, NOT A STYLE. Which `gdpb<n>` timeline each of
+   the 25 dots takes is derived from the loader's four masks; change one and the timelines
+   have to be regenerated WITH it. Copied verbatim for that reason.
+   ⚠️ ONE SPEED DIAL — every duration is `calc(<base> * var(--gdot-speed))`, and
+   raising it must move any stagger with it or the head of a sweep runs away from its tail. */
+.gldm{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}
+.gdotm{--gdot-speed:1.8;
+  display:grid;grid-template-columns:repeat(5,2.6px);grid-auto-rows:2.6px;
+  gap:1.3px;line-height:0;flex:0 0 auto}
+/* ⚠️ `grid-auto-rows` AND `line-height:0` are BOTH required: an `<i>` is inline, and
+   although a grid item is blockified the ROW is still sized by the inherited line box —
+   measured at 11.75px instead of 2.6 before the two were set together. */
+.gdotm i{width:2.6px;height:2.6px;border-radius:999px;background:var(--ai-2);display:block}
+@keyframes gdpb0{0.000%{opacity:.08}16.667%{opacity:.08}33.333%{opacity:.08}43.922%{opacity:1}50.000%{opacity:1}60.588%{opacity:.08}66.667%{opacity:.08}77.255%{opacity:1}83.333%{opacity:1}93.922%{opacity:.08}100.000%{opacity:.08}}
+.gdpb i:nth-child(2),.gdpb i:nth-child(4),.gdpb i:nth-child(6),.gdpb i:nth-child(10),.gdpb i:nth-child(16),.gdpb i:nth-child(20),.gdpb i:nth-child(22),.gdpb i:nth-child(24){animation:gdpb0 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+@keyframes gdpb1{0.000%{opacity:.08}10.588%{opacity:1}16.667%{opacity:1}27.255%{opacity:.08}33.333%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:1}66.667%{opacity:1}77.255%{opacity:.08}83.333%{opacity:.08}100.000%{opacity:.08}}
+.gdpb i:nth-child(1),.gdpb i:nth-child(5),.gdpb i:nth-child(21),.gdpb i:nth-child(25){animation:gdpb1 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+@keyframes gdpb2{0.000%{opacity:1}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:1}33.333%{opacity:1}43.922%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:1}66.667%{opacity:1}77.255%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:1}100.000%{opacity:1}}
+.gdpb i:nth-child(3),.gdpb i:nth-child(11),.gdpb i:nth-child(15),.gdpb i:nth-child(23){animation:gdpb2 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+@keyframes gdpb3{0.000%{opacity:.52}10.588%{opacity:1}16.667%{opacity:1}27.255%{opacity:.52}33.333%{opacity:.52}43.922%{opacity:.08}50.000%{opacity:.08}60.588%{opacity:.52}66.667%{opacity:.52}77.255%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:.52}100.000%{opacity:.52}}
+.gdpb i:nth-child(7),.gdpb i:nth-child(9),.gdpb i:nth-child(17),.gdpb i:nth-child(19){animation:gdpb3 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+@keyframes gdpb4{0.000%{opacity:1}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:1}33.333%{opacity:1}43.922%{opacity:.52}50.000%{opacity:.52}60.588%{opacity:.08}66.667%{opacity:.08}77.255%{opacity:.52}83.333%{opacity:.52}93.922%{opacity:1}100.000%{opacity:1}}
+.gdpb i:nth-child(8),.gdpb i:nth-child(18){animation:gdpb4 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+@keyframes gdpb5{0.000%{opacity:.52}10.588%{opacity:.08}16.667%{opacity:.08}27.255%{opacity:.52}33.333%{opacity:.52}43.922%{opacity:.08}50.000%{opacity:.08}66.667%{opacity:.08}83.333%{opacity:.08}93.922%{opacity:.52}100.000%{opacity:.52}}
+.gdpb i:nth-child(12),.gdpb i:nth-child(14){animation:gdpb5 calc(1700ms * var(--gdot-speed,1)) linear infinite}
+.gdpb i:nth-child(13){opacity:.52}
+/* ⚠️ `@property` IS MANDATORY, NOT A NICETY. An unregistered custom property animates
+   DISCRETELY, so the band would jump end to end and the effect would not appear at all. */
+@property --gsweep{syntax:'<percentage>';inherits:false;initial-value:-14%}
+/* the write-in edge is a MASK, not a second background: the loop needs the text READABLE
+   ahead of the band and the write-in needs it ABSENT — one `background-image` cannot be
+   both, and it does not interpolate. 120% at rest, not 100%: at exactly 100% the last
+   glyph's antialiased edge clips. */
+@property --greveal{syntax:'<percentage>';inherits:false;initial-value:120%}
+.gldl{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  --gsweep:114%; --greveal:120%;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 var(--greveal),transparent var(--greveal));
+  mask-image:linear-gradient(90deg,#000 0,#000 var(--greveal),transparent var(--greveal));
+  background-image:linear-gradient(90deg,
+    var(--muted) 0%,
+    var(--muted) calc(var(--gsweep) - 14%),
+    rgb(76,177,254) calc(var(--gsweep) - 14%),
+    rgb(115,30,251) calc(var(--gsweep) + 1.4%),
+    rgb(249,17,227) calc(var(--gsweep) + 14%),
+    var(--muted) calc(var(--gsweep) + 14%),
+    var(--muted) 100%);
+  background-size:100% 100%;background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;font-size:13px;font-weight:500;
+  animation:gdia 2.4s linear infinite}
+/* ⚠️ THE MIDDLE STOP IS `+1.4%`, WHICH LOOKS WRONG AND IS NOT: the band spans
+   `sweep ± 14%` (28% wide) and this page's brand ramp puts its violet at 55%, so
+   `-14 + (0.55 × 28) = +1.4`. Centring it would quietly restate the ramp as 50/50.
+   ⚠️ `background-size` IS 100%, NOT 200%. The old shimmer SLID a double-width image;
+   this one never moves the image — the stops move inside it. At 200% every stop lands at
+   half its intended position.
+   ⚠️ THE ANIMATION IS ON `.fresh`, AND THE BASE RULE RESTS AT `--gsweep:114%` —
+   sweep already past, i.e. fully revealed. `gThreadPaint` rebuilds `#gThread` on every
+   render, so an animation on `.gldl` itself would replay on renders that changed no word;
+   and at the `-14%` initial value a NON-fresh label would be invisible while its beat was
+   still on screen.
+   ⚠️ `gdia`'s DELAY MUST EQUAL `gwrite`'s DURATION — it is the hand-off, and the
+   endpoints agree (114% is exactly what `gdia` renders at its own 0%), so there is no
+   colour jump at 2.2s. */
+.gldl.fresh{animation:gwrite 2.2s ease-in-out 1 forwards,
+                      gdiain .6s ease-out 1 forwards,
+                      gdia 2.4s linear 2.2s infinite}
+/* the mask edge runs 8% ahead of the band's centre, so the leading colours show at the
+   point of writing rather than being masked off with the text they belong to */
+@keyframes gwrite{
+  from{--gsweep:-14%; --greveal:-6%}
+  to{--gsweep:114%; --greveal:122%}}
+@keyframes gdia{from{--gsweep:-14%}to{--gsweep:114%}}
+@keyframes gdiain{
+  from{opacity:.56;filter:blur(6px);transform:translateY(5px)}
+  to{opacity:1;filter:blur(0px);transform:translateY(0px)}}
+/* ⚠️ THE CLOCK FOLLOWS THE LABEL, IT IS NOT PARKED AT THE ROW'S END — the one
+   measured divergence from Option 13, and the reason is the width. There `.aildl` is
+   `flex:1` inside a ~408px panel, so "fills the row" and "sits beside the label" are the
+   same thing; this column is ~640px, and `flex:1` left the clock 400px from the thing it
+   is timing, reading as an unrelated element at the far edge. `.gldl` hugs its text
+   (`flex:0 1 auto` + `min-width:0`, so a long beat still ellipsises) and the clock follows
+   it on the row's own 9px gap. */
+.gldt{flex:0 0 auto;font:400 12px/1 var(--g-mono);color:var(--muted);
+  font-variant-numeric:tabular-nums}
+/* reduced motion freezes the grid and the band — the CLOCK KEEPS TICKING, because it is
+   information rather than decoration */
+@media (prefers-reduced-motion:reduce){
+  .gdotm i{animation:none!important;opacity:.45}
+  .gldl,.gldl.fresh{animation:none;background:none;-webkit-background-clip:border-box;
+    background-clip:border-box;color:var(--text-dim);
+    -webkit-mask-image:none;mask-image:none}
+}
+
+/* ── the model / effort pickers ──────────────────────────────────────────────────────── */
+.gmenu{position:fixed;z-index:20;min-width:190px;padding:6px;border-radius:10px;
+  background:var(--card);border:1px solid var(--border);box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.gpi{display:flex;align-items:center;gap:8px;width:100%;height:30px;padding:0 8px;
+  border-radius:6px;font-size:13px;color:var(--text-dim);text-align:left}
+.gpi:hover{background:var(--hover-side);color:var(--text)}
+.gpi .gtick{flex:0 0 14px;width:14px;height:14px;color:var(--ai-2);opacity:0}
+.gpi .gtick svg{width:100%;height:100%;display:block}
+.gpi.on .gtick{opacity:1}
+.gpi.on{color:var(--text)}
+
+@media (max-width:820px){
+  :root{--g-side-w:240px}
+  .ghome h1{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  .gdots span{animation:none;opacity:.6}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<!-- ⚠️ THE STAR'S GRADIENT, AND IT MUST PARSE BEFORE ANYTHING THAT USES IT PAINTS — hence
+     the very top of the body. `AI_SPARK_PATH` in Option 13 paints itself `fill:url(#...)`
+     inline, so without this def the mark renders as nothing at all, with no error.
+     ⚠️ THE id IS NAMESPACED TO THIS PAGE (`gsprkg`, not Option 13's `aisprkg`). An SVG id
+     is global to the document, and this page has its own namespace.
+     ⚠️ EVERY CONSUMER MUST KEEP `viewBox="0 0 48 48"`. The gradient is in USER SPACE and
+     its transform is written in 48-space — rescale one copy onto a 24 grid and the gradient
+     slides off that star while every other copy stays right. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+  <radialGradient id="gsprkg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+    gradientTransform="translate(45.7817 23.9609) rotate(-165.676) scale(43.3694 27.715)">
+    <stop stop-color="#4CB1FE"/><stop offset="0.547969" stop-color="#731EFB"/>
+    <stop offset="0.907125" stop-color="#F911E3"/>
+  </radialGradient>
+</defs></svg>
+<div class="gsh">
+  <!-- ⚠️ THE RAIL IS OPTION 13's CHAT-HISTORY COLUMN NOW (request, 16 Sep 2026, with that
+       page's full-screen Iris as the named reference): a title, a real search FIELD, and a
+       list banded by date with each row's age at its right. What it replaced was a brand
+       row, a "Search chats" button that opened a `prompt()`, one RECENTS label and a flat
+       list — the same chats, with nothing on screen saying when any of them happened. -->
+  <aside class="gside" id="gSide">
+    <div class="ghead">
+      <b>Chat history</b>
+      <button class="gtog" id="gTog" aria-label="Hide chat history"
+        title="Hide chat history"></button>
+    </div>
+    <div class="gsr">
+      <span class="gsri" data-ic="search" aria-hidden="true"></span>
+      <input id="gQ" type="text" placeholder="Search&hellip;" aria-label="Search chats">
+    </div>
+    <div class="glist" id="gList"></div>
+  </aside>
+
+  <main class="gmain">
+    <!-- ⚠️ THE CHAT-NAME TRIGGER IS OUTSIDE THE RAIL (request, 16 Sep 2026), in a header row
+         over the column — which is exactly where Option 13's FULL-SCREEN Iris puts it, and
+         that page is the named reference. It is the chat you are in, so it belongs over the
+         chat rather than in the list of the other ones.
+         ⚠️ THE ROW IS EMPTY BUT FOR THE TRIGGER, ON PURPOSE. The reference carries ⋯ / layout
+         / ✕ at its right, and all three are PANEL controls: two layouts and a way to close an
+         overlay. This is a page — there is nothing to close and one layout — so importing them
+         would be three controls that cannot do anything. -->
+    <header class="ghd">
+      <button class="ghb" id="gOpen" aria-label="Show chat history"
+        title="Show chat history"></button>
+      <button class="gname" id="gName" title="Start a new chat"></button>
+    </header>
+    <div class="gwrap">
+      <div class="gthr" id="gThread" hidden></div>
+      <div class="ghome" id="gHome"></div>
+    </div>
+
+    <div class="gfoot">
+      <form class="gcomp" id="gComp" autocomplete="off">
+        <div class="gctx" id="gCtx"></div>
+        <div class="gtaw">
+          <textarea class="gta" id="gTa" rows="1"
+            placeholder="Ask, build and act &mdash; type @ to add context"></textarea>
+        </div>
+        <div class="gtools">
+          <button type="button" class="gat" id="gAt"
+            title="Mention a module to narrow the answer" aria-label="Add context"></button>
+          <button type="button" class="gpill" id="gModel"></button>
+          <button type="button" class="gpill" id="gEffort"></button>
+          <button type="submit" class="gsend" id="gSend" aria-label="Send"></button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ── icons: Lucide, pasted verbatim from free-icons/ (ISC). Nothing here is hand-drawn. ── */
+const G_IC = {
+  plus:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7v14"/></svg>',
+  search:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m21 21l-4.34-4.34"/><circle cx="11" cy="11" r="8"/></g></svg>',
+  panel:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18m7-6l-3-3l3-3"/></g></svg>',
+  chevron:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"/></svg>',
+  left:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-6-6l6-6"/></svg>',
+  up:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 12l7-7l7 7m-7 7V5"/></svg>',
+  brain:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4a4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></g></svg>',
+  spark:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg>',
+  hist:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5m4-1v5l4 2"/></g></svg>',
+  tick:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></svg>',
+  copy:'<svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></g></svg>',
+  /* the three below are `index.html`'s own — the @ is the glyph on its composer's leading
+     control, and doc / life / ext are `AI_MI.doc` / `.life` / `.ext` behind Documentation
+     and Support. Their stroke comes from CSS there, so it is written in here instead. */
+  at:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></g></svg>',
+  doc:'<svg viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+  life:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>',
+  ext:'<svg class="ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  /* the module chip's glyph — `AI_ENT_IC.dashboard` from index.html, the four-pane grid */
+  mod:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>'
+};
+
+/* ⚠️ THE ASSISTANT'S MARK IS OPTION 13'S — the four-point star on the brand ramp
+   (`AI_SPARK_PATH` in `dashboard-rail-flyout-alt3.html`), pasted verbatim, and with it the
+   assistant's name: this page's AI is **Iris**, the same one Option 13 asks.
+   ⚠️ IT PAINTS FROM `url(#gsprkg)`, DECLARED INLINE ON THE PATH — so the `<defs>` at the top
+   of the body is load-bearing: without it the star renders as NOTHING, with no error. That
+   inline fill also outranks any `fill:` a stylesheet sets, which is why `.gbig svg`'s
+   `fill:var(--ai-2)` is now only a floor for the case where the def ever goes missing.
+   ⚠️ `viewBox="0 0 48 48"` ON EVERY COPY. The gradient is in user space and its transform is
+   written in 48-space; a copy rescaled onto a 24 grid loses the ramp while the others keep it.
+   ⚠️ THE SPEECH BUBBLE IS KEPT AND UNREFERENCED as `G_SPARK_BUBBLE` — it is Option 1's
+   `AI_SPARK`, what this page wore before, and it is one name away. */
+const G_SPARK_PATH = '<path style="fill:url(#gsprkg)" d="M23.9609 0C24.463 0 24.9009 0.343385 25.0235 0.830769C25.3981 2.32146 25.8918 3.77968 26.4997 5.19138C28.0889 8.88369 30.2695 12.1152 33.038 14.8837C35.808 17.6529 39.0388 19.8336 42.7303 21.4228C44.1424 22.0305 45.6008 22.5241 47.0917 22.899C47.5791 23.0215 47.9217 23.4587 47.9217 23.9609C47.9217 24.463 47.5791 24.9009 47.091 25.0235C45.6003 25.3981 44.142 25.8918 42.7303 26.4997C39.038 28.0889 35.8073 30.2695 33.038 33.038C30.2695 35.808 28.0889 39.0388 26.4997 42.7303C25.8917 44.1423 25.3978 45.6008 25.0228 47.0917C24.9634 47.3285 24.8267 47.5388 24.6344 47.6891C24.442 47.8395 24.205 47.9213 23.9609 47.9217C23.4587 47.9217 23.0215 47.5791 22.899 47.091C22.5241 45.6003 22.0302 44.142 21.422 42.7303C19.8336 39.038 17.6537 35.8073 14.8837 33.038C12.1145 30.2695 8.88369 28.0889 5.19138 26.4997C3.77962 25.8917 2.32142 25.3978 0.830769 25.0228C0.593936 24.9636 0.383619 24.8271 0.233136 24.6349C0.0826532 24.4426 0.000608909 24.2057 0 23.9616C0 23.4594 0.343385 23.0223 0.830769 22.8997C2.32148 22.5248 3.7797 22.0309 5.19138 21.4228C8.88369 19.8343 12.1152 17.6537 14.8837 14.8844C17.6529 12.1159 19.8336 8.88443 21.4228 5.19212C22.0305 3.78034 22.5241 2.32213 22.899 0.831508C22.958 0.594415 23.0946 0.38384 23.287 0.233201C23.4793 0.082561 23.7165 0.000485916 23.9609 0Z"/>';
+const G_SPARK = '<svg viewBox="0 0 48 48">' + G_SPARK_PATH + '</svg>';
+const G_SPARK_BUBBLE = '<svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.00007 40.8894 3.82495 42.3574 5.29297C43.8254 6.76101 44.6504 8.75203 44.6504 10.8281V29.4785C44.6504 31.5546 43.8254 33.5456 42.3574 35.0137C40.8894 36.4817 38.8983 37.3066 36.8223 37.3066H23.2686L13.5439 44.5996C12.938 45.0541 12.1267 45.1277 11.4492 44.7891C10.7717 44.4503 10.3438 43.7575 10.3438 43V37.2607C8.57429 37.0711 6.91268 36.2838 5.64258 35.0137C4.17454 33.5456 3.34961 31.5547 3.34961 29.4785V10.8281C3.34963 8.75199 4.17452 6.76102 5.64258 5.29297C7.11063 3.82492 9.1016 3.00003 11.1777 3H36.8223ZM11.1777 7C10.1625 7.00003 9.18861 7.40319 8.4707 8.12109C7.75279 8.839 7.34963 9.81285 7.34961 10.8281V29.4785C7.34961 30.4938 7.75281 31.4676 8.4707 32.1855C9.18861 32.9035 10.1625 33.3066 11.1777 33.3066H12.3438C13.4482 33.3068 14.3437 34.2022 14.3438 35.3066V39L21.4014 33.707L21.5342 33.6152C21.8527 33.4143 22.2228 33.3066 22.6016 33.3066H36.8223C37.8375 33.3066 38.8114 32.9034 39.5293 32.1855C40.2471 31.4676 40.6504 30.4938 40.6504 29.4785V10.8281C40.6504 9.81289 40.2472 8.83899 39.5293 8.12109C38.8114 7.40323 37.8375 7.00007 36.8223 7H11.1777ZM24 11.1992C24.988 11.1992 25.8284 11.9208 25.9775 12.8975C26.4656 16.0928 28.9072 18.5345 32.1025 19.0225C33.0789 19.1718 33.7997 20.0113 33.7998 20.999C33.7998 21.9869 33.079 22.8273 32.1025 22.9766C28.9071 23.4645 26.4655 25.9062 25.9775 29.1016C25.8282 30.078 24.9879 30.7988 24 30.7988C23.0123 30.7987 22.1728 30.0779 22.0234 29.1016C21.5355 25.9062 19.0937 23.4646 15.8984 22.9766C14.9218 22.8274 14.2002 21.987 14.2002 20.999C14.2003 20.0111 14.9218 19.1716 15.8984 19.0225C19.0937 18.5345 21.5354 16.0928 22.0234 12.8975L22.0586 12.7168C22.2775 11.833 23.074 11.1993 24 11.1992ZM24 18.3887C23.28 19.3975 22.3985 20.279 21.3896 20.999C22.3983 21.7188 23.2801 22.5998 24 23.6084C24.7197 22.6001 25.601 21.7187 26.6094 20.999C25.6008 20.2791 24.7198 19.3973 24 18.3887Z"/></svg>';
+
+/* ⚠️ KEPT AND UNREFERENCED, the house pattern — the PRODUCT's mark (`AI_LOGO`), which the
+   capture-built version of this page wore. It is one call away if this screen should ever
+   speak as the product rather than as the assistant; index.html draws exactly that line. */
+const G_LOGO = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+  + '<path d="M13.9922 9.99629V0.167969C19.0183 1.00752 22.981 4.97021 23.8205 9.99629H13.9922Z" fill="#F37564"/>'
+  + '<path d="M23.9888 12.2574C23.8545 18.7612 18.5373 24 12 24C5.46269 24 0 18.6269 0 12C0 11.3172 0.0559702 10.6455 0.16791 9.99624C1.10821 4.41045 5.91045 0.123134 11.7426 0V4.95895C8.68656 5.0709 6.12314 7.15298 5.29478 9.98504C5.10448 10.6119 5.00373 11.2836 5.00373 11.9888C5.00373 15.8731 8.13808 19.0186 12 19.0186C12.694 19.0186 13.3657 18.9179 14.0038 18.7276C16.8134 17.8881 18.8843 15.3134 18.9962 12.2462H24L23.9888 12.2574Z" fill="currentColor"/></svg>';
+
+/* ⚠️ THE TITLES ARE THE CAPTURE'S, IN ITS ORDER — the one thing carried over from it. Four
+   were shown ellipsised there, so their full text is a READING, not something observed.
+   The nine repeats are plainly somebody's test spam and are faithful to the screen.
+   Nothing here carries an address or a name, so the repo's scrub rule caught nothing. */
+/* ⚠️ EVERY OFFSET IS RELATIVE TO LOAD, NOT A FIXED STAMP — `index.html`'s own rule for
+   `AI_CHATS`, and it is what keeps Today / Yesterday / the dated bands all populated
+   whenever this page is opened rather than only on the day it was written. The last two are
+   deliberately far enough back that the band which carries a YEAR is reachable at all.
+   ⚠️ THE ORDER AND THE TITLES ARE STILL THE CAPTURE'S; only the times are added, and they
+   are invented — the capture showed no timestamps, so nothing here was observed. */
+/* ⚠️ THE COLUMN SHIPS EMPTY (request, 17 Sep 2026: "in sidebar remove all chat"). The 22
+   seeded conversations are KEPT as `G_CHATS_SEED`, the house pattern — `const G_CHATS =
+   G_CHATS_SEED` is the one word that brings them back, and keeping them here is what keeps
+   the capture's own titles in the file the notes describe rather than only in git history. */
+const G_MIN = 60000, G_HR = 3600000, G_DAY = 86400000;
+const G_CHATS_SEED = [
+  ['Network Paths Status',                     6 * G_MIN],
+  ['How are our network paths doing today?',  34 * G_MIN],
+  ['Network Paths Status',                     2 * G_HR],
+  ['Network Path Health Today',                5 * G_HR],
+  ['tell me the coverage gap in this project', G_DAY + 2 * G_HR],
+  ['Network Paths Status',                     G_DAY + 7 * G_HR],
+  ['Motadata Observe Ops Overview',            3 * G_DAY],
+  ['Generate Incident Report',                 4 * G_DAY],
+  ['hi',                                       8 * G_DAY],
+  ['hello who are you',                       12 * G_DAY],
+  ['what is dscp in flow ?',                  19 * G_DAY],
+  ['what is flow ?',                          26 * G_DAY],
+  ['hii',                                     41 * G_DAY]
+].concat([55, 80, 96, 130, 160, 200, 240, 285, 320].map(
+  d => ['Reply with exactly the single word OK', d * G_DAY]
+)).map(([n, ago]) => ({ n, t: Date.now() - ago }));
+/* ⚠️ THE COLUMN SHIPS WITH ONE CHAT — the recorded run (request, 17 Sep 2026, asked twice:
+   "'How are our network paths doing today.' set in history"). It is the one conversation this
+   page can actually replay, so the column opens on something real rather than on its own empty
+   state, and the bands, ages, filter and `.on` mark are all reachable from the first frame.
+   ⚠️ ITS THREAD IS BUILT ON FIRST OPEN, NOT HERE. `G_NET_RUN` is declared ~400 lines
+   below this line, and a `const` read before its declaration is a TDZ ReferenceError that
+   aborts the whole script — the trap this folder records five times. `seedRun` is the marker;
+   the row's click builds the thread once and caches it on the record.
+   ⚠️ THE TIME IS RELATIVE TO LOAD, like the parked seeds, so the row always reads a live
+   age (`6m`) under a live band (`Today`) rather than a stamp that rots overnight. */
+const G_CHATS = [{ n:'How are our network paths doing today.', t:Date.now() - 6 * 60000, seedRun:true }];
+
+/* ⚠️ ONE BANDING FUNCTION, SHARED BY NOTHING ELSE ON THIS PAGE — which is the point of
+   Option 13's own note on `aiChatBand`: the moment two surfaces band the same chat their
+   own way, one conversation files itself under two different headings. Calendar days, not
+   elapsed hours, so a chat from 11pm last night reads "Yesterday" at 1am rather than "2h". */
+function gChatBand(t){
+  if (!t) return 'Earlier';
+  const d = new Date(t), n = new Date();
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(n) - day(d)) / 86400000);
+  if (diff <= 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return M[d.getMonth()] + ' ' + d.getDate()
+       + (d.getFullYear() === n.getFullYear() ? '' : ' ' + d.getFullYear());
+}
+/* the row's trailing age — two or three characters, so the NAME keeps the width */
+function gChatAge(t){
+  if (!t) return '';
+  const m = Math.max(0, Math.floor((Date.now() - t) / 60000));
+  if (m < 1) return 'now';
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m / 60); if (h < 24) return h + 'h';
+  const d = Math.floor(h / 24); if (d < 7)  return d + 'd';
+  const w = Math.floor(d / 7);  if (w < 52) return w + 'w';
+  return Math.floor(d / 365) + 'y';
+}
+
+const G_MODELS  = ['GPT-5','GPT-5 mini','Claude Sonnet 4','Llama 3.1 70B'];
+const G_EFFORTS = ['Low','Medium','High'];
+
+/* ⚠️ THE 16 MODULES ARE THE PRODUCT'S OWN, NOT A LIST OF MINE — the same array
+   `setting.js` uses for the Advanced-configure rail, which takes them from
+   `_product-docs/MOTADATA-PRODUCT-REFERENCE.md` section 1. They are what `@` offers, so a
+   pinned chip can never name something the product does not have. */
+const G_MODS = ['Dashboards','Monitors','Alerts','SLO','Reports','Topology','NCCM','NetRoute',
+  'Metric Explorer','Log Explorer','APM Explorer','RUM Explorer','Flow Explorer','Trap Explorer',
+  'Audits','Settings'];
+
+/* ⚠️ EVERY STARTER REACHES A DIFFERENT SHAPED ANSWER, and that is a rule rather than a
+   nicety — `index.html` records the same one for `AI_DASH_FU` ("every chip is sent
+   verbatim to the router, so each must route"). These five map one-to-one onto `gAnswer`'s
+   five branches, so none of them can fall through to the generic reply.
+   ⚠️ THEY ARE NOT `AI_CTA`'s FIVE. Iris's starters are the open DASHBOARD's ("Summarise
+   this dashboard", "Build a line chart…") and this page is not on one — offering to
+   summarise a board it cannot see would be the component working and the copy lying. The
+   ROW is Iris's; what it says is this screen's. */
+const G_CTA = [
+  'Summarise what needs attention right now',
+  'How are our network paths doing today?',
+  'What is DSCP in flow?',
+  'Generate an incident report',
+  'Who are you and what can you do?'
+];
+
+/* both URLs were checked 200 when index.html took them; www.motadata.com/support/ is a 404 */
+const G_HELP = [
+  { href:'https://docs.motadata.com/motadata-aiops-docs/', ic:'doc',  l:'Documentation' },
+  { href:'https://support.motadata.com/',                  ic:'life', l:'Support' }
+];
+
+/* ⚠️ THE SIGNED-IN NAME IS DECLARED HERE. Iris reads it off the rail's identity row
+   (`#sbUser .lbl`); this page has no rail to read, and inventing a lookup for a name that
+   is not on the screen would be worse than saying where it came from. */
+const G_WHO = 'Kishan';
+
+const G = { model:G_MODELS[0], effort:'Medium', q:'', open:null, thread:[], busy:false, t:null,
+            ctx:[], ment:null, mentHi:0, mentSeed:false,
+            /* the chart type is STATE, not a class on a button — `gThreadPaint` rebuilds the
+               whole thread, so anything held only in the DOM is lost on the next render */
+            ct:'area' };
+
+const gEsc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = id => document.getElementById(id);
+
+/* ── paint ───────────────────────────────────────────────────────────────────────────── */
+function gIcons(){
+  document.querySelectorAll('[data-ic]').forEach(el => { el.innerHTML = G_IC[el.dataset.ic] || ''; });
+  /* ⚠️ the column's own control is a LEFT CHEVRON and the way back in is the CLOCK (request,
+     16 Sep 2026) — one says "put this away", the other names what comes back, which is the
+     chat HISTORY. That glyph had been on the chat-name trigger, where it described the wrong
+     control; on this button it is literal. `G_IC.panel` is kept and unreferenced, the house
+     pattern, and `#gBrandM` went with the brand row it painted. */
+  $('gTog').innerHTML    = G_IC.left;
+  $('gOpen').innerHTML   = G_IC.hist;
+  $('gSend').innerHTML   = G_IC.up;
+  $('gAt').innerHTML     = G_IC.at;
+}
+
+/* ⚠️ KEPT AND UNREFERENCED. The capture-built page greeted by the clock ("Good evening,
+   admin"); Iris greets by name, and matching Iris is the whole point of this pass. */
+function gHello(){
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+/* the empty state, part for part: mark, greeting, one line of help, five starters, and the
+   two links under a hairline */
+function gHomePaint(){
+  $('gHome').innerHTML =
+    '<span class="gbig">' + G_SPARK + '</span>' +
+    '<h1>Hello ' + gEsc(G_WHO) + ', how can I help?</h1>' +
+    '<p>Ask Iris about anything ObserveOps can see &mdash; monitors, alerts, logs, flows ' +
+    'and topology &mdash; or type @ to narrow the answer to one module.</p>' +
+    '';
+  /* ⚠️ THE FIVE STARTERS AND THE Documentation / Support PAIR WERE REMOVED ON REQUEST
+     (16 Sep 2026), so the empty state is the mark, the greeting and one line of help.
+     `G_CTA` and `G_HELP` are KEPT AND UNREFERENCED, the house pattern, as are `.gcta` /
+     `.ghome > .gcta:last-of-type` / `.ghelp` in the stylesheet — putting either block back
+     is one `+` in the string above rather than a rebuild.
+     ⚠️ CONSEQUENCE, STATED: nothing on the screen now demonstrates what this assistant can
+     be asked. The help line carries that weight alone, which is why it names what the chat
+     can see rather than merely inviting a question. */
+}
+
+/* ⚠️ IT IS A BUTTON THAT STARTS A NEW CHAT — NOT A MENU, AND NOT THE CHAT'S NAME (request,
+   17 Sep 2026: "remove this [menu] and when i click the 'new chat' open"). Three things had to
+   move together, because leaving any one of them would make the control lie:
+     · the DROPDOWN is gone, so the chevron went with it — a caret promises a menu, which is
+       this file's own rule for why the row became a trigger in the first place;
+     · the LABEL is now constant. It used to read the open chat's name, and a button labelled
+       "Network Paths Status" that discards that chat and starts a new one is exactly the
+       control-that-does-not-do-what-it-says this page has been trimmed for twice;
+     · `aria-haspopup` / `aria-expanded` came off with the menu they described.
+   ⚠️ CONSEQUENCE, STATED: **Rename chat and Delete chat have no door on this page any more**,
+   and the header no longer names the chat you are in — the LIST still marks it (`.gchat.on`),
+   so that fact is on screen until the column is collapsed. `gNameMenu` is KEPT and
+   unreferenced, the house pattern, as are `.gname .gcv` / `.gname .gcv svg` / `.gname.open`
+   and the earlier `.gname .gi` pair; putting the menu back is one call in the listener.
+   ⚠️ The function is kept though its output is now constant: `gNewChat` / the row click /
+   rename / delete all call it, and a painter that stops being called is how a label goes
+   stale the day it becomes dynamic again. */
+function gNamePaint(){
+  $('gName').innerHTML = '<span class="nm">New chat</span>';
+}
+
+/* ⚠️ RENAME AND DELETE ARE HIDDEN WHILE NO CHAT IS OPEN, which is Iris's own rule: a brand
+   new chat is not in the list yet, so Delete would have nothing to remove and Rename would
+   title something that may never exist. The menu is then New chat alone. */
+function gNameMenu(){
+  const open = G.open !== null && G_CHATS[G.open] !== undefined;
+  const items = ['New chat'].concat(open ? ['Rename chat','Delete chat'] : []);
+  gMenu($('gName'), items, null, v => {
+    if (v === 'New chat')    return gNewChat();
+    if (v === 'Rename chat'){
+      const t = prompt('Rename chat', G_CHATS[G.open].n);
+      if (t === null || !t.trim()) return;
+      G_CHATS[G.open].n = t.trim();
+      /* the thread's first turn IS that title, so it has to move with the name */
+      if (G.thread.length) G.thread[0].q = t.trim();
+      gNamePaint(); gListPaint(); gThreadPaint(); return;
+    }
+    if (v === 'Delete chat'){
+      G_CHATS.splice(G.open, 1);
+      G.open = null; G.thread = [];
+      gNamePaint(); gListPaint(); gThreadPaint();
+    }
+  }, 'below');
+  $('gName').classList.add('open');
+  $('gName').setAttribute('aria-expanded','true');
+}
+
+function gNewChat(){
+  clearTimeout(G.t); G.busy = false;   /* abandon a run in flight — see `gRunTick` */
+  G.thread = []; G.open = null; G.q = ''; G.ctx = [];
+  $('gQ').value = '';              /* the filter is state AND a field — clear both */
+  $('gTa').value = ''; gGrow(); gCtxPaint(); gNamePaint(); gListPaint(); gThreadPaint();
+  $('gTa').focus();
+}
+
+function gPills(){
+  $('gModel').innerHTML  = '<span class="gi">' + G_IC.spark + '</span>' + gEsc(G.model)
+                         + '<span class="gcv">' + G_IC.chevron + '</span>';
+  $('gEffort').innerHTML = '<span class="gi">' + G_IC.brain + '</span>' + gEsc(G.effort)
+                         + '<span class="gcv">' + G_IC.chevron + '</span>';
+}
+
+/* ⚠️ THE "All modules" FLOOR CHIP WAS REMOVED ON REQUEST (16 Sep 2026). Iris keeps one so
+   its bar never empties; here the bar simply goes when nothing is pinned.
+   ⚠️ THAT REVERSES THE RESERVED HEIGHT, and the trade-off is the one index.html records:
+   a bar that collapses lets the rows under it move. It is taken deliberately — with no
+   floor the bar is empty in the resting state, so reserving 24px would spend the composer's
+   top row on nothing every time you open the page. The box moves only when you pin or drop
+   a chip, which is a deliberate act, and `min-height:128px` absorbs most of it. */
+function gCtxFloor(){ return G.ctx.length === 0; }
+function gCtxPaint(){
+  $('gCtx').innerHTML = gCtxFloor()
+    ? ''
+    : G.ctx.map((n, i) =>
+        '<span class="gchip rm" title="module: ' + gEsc(n) + '">' +
+          '<svg class="tic" viewBox="0 0 24 24" style="color:var(--teal)">' + G_IC.mod + '</svg>' +
+          '<span class="nm">' + gEsc(n) + '</span>' +
+          '<button type="button" data-drop="' + i + '" aria-label="Remove ' + gEsc(n) + '">&#10005;</button>' +
+        '</span>').join('');
+}
+
+/* ⚠️ ONLY `#gList` IS REPAINTED, and that is what lets the search field keep its own focus
+   and caret natively — the same reason `aiHsFilter` replaces its list rather than its
+   column. A repaint of the whole aside would drop the cursor on the first keystroke.
+   ⚠️ IT SORTS BEFORE IT BANDS. The array happens to be newest-first today, but a band is
+   emitted on CHANGE, so an out-of-order row would open a second "Today" further down. */
+function gListPaint(){
+  const q = G.q.trim().toLowerCase();
+  const rows = G_CHATS.map((c,i) => ({c,i}))
+    .filter(o => !q || o.c.n.toLowerCase().includes(q))
+    .sort((a,b) => b.c.t - a.c.t);
+  if (!rows.length){
+    $('gList').innerHTML = '<div class="gempty">' + (q
+      ? 'No chat matches &ldquo;' + gEsc(G.q.trim()) + '&rdquo;.'
+      /* ⚠️ IT PROMISES THE FILING AGAIN, because `gSend` really does it now (17 Sep 2026).
+         The line was cut back to "No chats yet." while nothing on this page touched `G_CHATS`
+         — with the seeds gone it was a promise the column could not keep. Fixing copy a change
+         falsifies runs both ways: the sentence is true again, so it says so again. */
+      : 'No chats yet. Ask something and it will be saved here.') + '</div>';
+    return;
+  }
+  let out = '', band = null;
+  rows.forEach(o => {
+    const b = gChatBand(o.c.t);
+    if (b !== band){ band = b; out += '<div class="gband">' + gEsc(b) + '</div>'; }
+    out += '<button class="gchat' + (G.open === o.i ? ' on' : '') + '" data-i="' + o.i
+      + '" title="' + gEsc(o.c.n) + '">'
+      + '<span class="nm">' + gEsc(o.c.n) + '</span>'
+      + '<span class="ag">' + gEsc(gChatAge(o.c.t)) + '</span></button>';
+  });
+  $('gList').innerHTML = out;
+}
+
+/* ⚠️ THE RUNNING MARK IS THE PAGE'S OWN THREE DOTS, not a second spinner — one busy
+   treatment on this screen. While a run is going the trail REPLACES the loose dots the
+   thread used to show; it would otherwise say "working" twice, 14px apart. */
+/* ⚠️ THE RUNNING ROW IS ASK IRIS'S (request, 17 Sep 2026: "this thinking step will be
+   same as ask ai", pointing at `dashboard-rail-flyout-alt3.html`). `gLdHTML` is Option 13's
+   `aiLdHTML` in this namespace: the dot-matrix mark, the chromatic label and the clock.
+   ⚠️ `.fresh` IS EMITTED ONLY WHEN THE BEAT'S TEXT REALLY CHANGED, and the
+   `querySelector` runs BEFORE the new markup is inserted — so it is asking "was a loader
+   already on screen?", which is what makes the FIRST beat of a new run animate even when its
+   text repeats the previous run's. Without the test the sweep replays on every repaint. */
+const G_LD_MARK = '<span class="gldm" aria-hidden="true"><span class="gdotm gdpb">'
+  + '<i></i>'.repeat(25) + '</span></span>';
+let gLdLast = '';
+function gLdHTML(label){
+  const fresh = !document.querySelector('.gldl') || label !== gLdLast;
+  gLdLast = label;
+  return G_LD_MARK + '<span class="gldl' + (fresh ? ' fresh' : '') + '">' + gEsc(label) + '</span>'
+    + '<span class="gldt" id="gLdClock">0.0s</span>';
+}
+function gLdFmt(ms){
+  const t = ms / 1000;
+  return t < 60 ? t.toFixed(1) + 's' : Math.floor(t / 60) + 'm ' + (t % 60).toFixed(1) + 's';
+}
+/* ⚠️ THE CLOCK WRITES ONE NODE'S `textContent` ON ITS OWN INTERVAL, never through
+   `gThreadPaint()`. Re-rendering the thread ten times a second would fight the running
+   animations and restart the sweep on every tick. It stops itself when the node goes away,
+   so an abandoned run cannot leave a timer behind (the recorded `agClose()` rule). */
+let gLdT = null;
+function gLdStop(){ if (gLdT){ clearInterval(gLdT); gLdT = null; } }
+function gLdStart(t0){
+  gLdStop();
+  if (!t0) return;
+  gLdT = setInterval(() => {
+    const el = $('gLdClock');
+    if (!el){ gLdStop(); return; }
+    el.textContent = gLdFmt(Date.now() - t0);
+  }, 100);
+}
+
+/* ══ THE CHART THAT ONE BEAT DREW ═════════════════════════════════════
+   Read off the live console's own render (request, 17 Sep 2026: "show this in step with deep
+   with chart"), which the earlier build could only describe in a footnote.
+   ⚠️ THE FIGURES ARE THE RUN'S; THE NINE SAMPLES ARE READ OFF ITS CURVE. The console
+   prints latest 35,030.56 / avg 15,214.86 in and latest 155.32 / avg 65.79 out over 9 points
+   between 15:11 and 16:08, and draws a high start, a floor at zero from ~15:15 to ~15:42 and a
+   climb back. The series below is that shape sampled at the console's own nine x labels, with
+   the first point solved so the MEAN IS EXACTLY THE PRINTED ONE (9 × 15,214.86 = 136,933.74,
+   and the three tail points sum to 104,830.56, so the first is 32,103.18). The same for out:
+   9 × 65.79 = 592.11. So the drawn line and the printed averages cannot disagree.
+   ⚠️ THE INTERFACE AND THE SWITCH ARE SCRUBBED — the console names a real machine; this
+   is `edge-switch-01`, the name the answer already uses, per the repo rule.
+   ⚠️ THE CONSOLE'S FOUR CHART-TYPE CONTROLS ARE BUILT NOW (request, 17 Sep 2026: "the
+   show change chart type like ask ai"). They were deliberately absent for a day, on the honest
+   reasoning that they would switch a rendering this page had one of — so the four renderers
+   came first and the buttons came with them. See `G_CT` / `gPlot`. */
+const G_NET_CHART = {
+  t:'edge-switch-01 Gi0/0/25 traffic — last 6h (sampled 5m)',
+  sub:'bits/s (bits/s) · 9 points · 15:11 – 16:08',
+  x:['15:11','15:15','15:29','15:38','15:41','15:42','15:48','15:58','16:08'],
+  max:35000,
+  s:[{ n:'Inbound (bits/s)', c:'var(--chart-tangerine)', last:'35,030.56bits/s', avg:'avg 15,214.86bits/s',
+       v:[32103.18, 0, 0, 0, 0, 0, 34800, 35000, 35030.56] },
+     { n:'Outbound (bits/s)', c:'var(--chart-aqua)', last:'155.32bits/s', avg:'avg 65.79bits/s',
+       v:[164.75, 0, 0, 0, 0, 0, 120.75, 151.29, 155.32] }]
+};
+/* the four types the DS's `decisionFlow` offers for this data, in the order it offers them:
+   a volume trend (area, the default), the plain trend (line), then the `bar-column` variant
+   both ways round — vertical for few categories, horizontal for many or long labels, which is
+   the family's own rule. The glyphs are Lucide, pasted verbatim from `free-icons/` (ISC), the
+   same set every other icon on this page comes from. Nothing is hand-drawn. */
+const G_CT = [
+  { k:'area', n:'Area', ic:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 11.207a.5.5 0 0 1 .146-.353l2-2a.5.5 0 0 1 .708 0l3.292 3.292a.5.5 0 0 0 .708 0l4.292-4.292a.5.5 0 0 1 .854.353V16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1z"/></g></svg>' },
+  { k:'line', n:'Line', ic:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9l-5 5l-4-4l-3 3"/></g></svg>' },
+  { k:'column', n:'Column', ic:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v16a2 2 0 0 0 2 2h16m-3-4V9m-5 8V5M8 17v-3"/></svg>' },
+  { k:'bar', n:'Bar', ic:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v16a2 2 0 0 0 2 2h16M7 16h8m-8-5h12M7 6h3"/></svg>' },
+];
+/* ⚠️ EVERY RENDERER DRAWS AT THE SAME viewBox, and that is load-bearing rather than tidy:
+   the SVG scales to the card's width, so a second box height would change the card's height on
+   every press and jog the answer under the pointer. `.gchtb`'s `min-height` is this number. */
+const G_CH_W = 680, G_CH_H = 236;
+const gN = v => Math.round(v).toLocaleString('en-US');
+const gF = n => n.toFixed(1);
+
+/* the plot is hand-drawn SVG — see the header comment above `#gChart` for why that is the DS's
+   own answer on this page rather than a shortcut. One frame, four bodies. */
+function gPlot(kind){
+  const C = G_NET_CHART;
+  const body = kind === 'bar' ? gPlotBar(C) : gPlotXY(C, kind);
+  /* the reading is in the label, not only in the picture — the family's own a11y rule */
+  const lb = C.t + ' — ' + (G_CT.find(t => t.k === kind) || G_CT[0]).n.toLowerCase() + ' chart. '
+    + C.s.map(se => se.n + ' latest ' + se.last + ', ' + se.avg).join('; ');
+  return '<svg viewBox="0 0 ' + G_CH_W + ' ' + G_CH_H + '" role="img" aria-label="' + gEsc(lb) + '">'
+    + body + '</svg>';
+}
+/* area · line · column — one frame: a 46px value gutter, a 22px time axis, and the y scale
+   pinned to the console's own 0–35,000 in 5,000 steps rather than fitted to the data, so the
+   four types and the console all read against one ruler.
+   ⚠️ THE VALUE LABELS CARRY NO UNIT, and they did for one build. `35,000bits/s` is ~62px of
+   text in a 54px gutter, so the SVG's own viewBox CLIPPED it — and it clipped it from the LEFT,
+   which reads as a number (`5,000bits/s` where the axis says 35,000) rather than as a defect.
+   Only the screenshot found it. The unit is on the subtitle and on both figures above the plot,
+   so it is said twice already; the gutter is 46px now, which is what the widest label needs. */
+function gPlotXY(C, kind){
+  const L = 46, R = 10, T = 8, B = 24, n = C.x.length;
+  const pw = G_CH_W - L - R, ph = G_CH_H - T - B;
+  const py = v => T + (1 - v / C.max) * ph;
+  let grid = '';
+  for (let g = 0; g <= C.max; g += 5000){
+    grid += '<line x1="' + L + '" y1="' + gF(py(g)) + '" x2="' + (G_CH_W - R) + '" y2="' + gF(py(g))
+      + '" stroke="var(--neutral-lighter)" stroke-width="1"/>'
+      + '<text x="' + (L - 8) + '" y="' + gF(py(g) + 3.5) + '" text-anchor="end"'
+      + ' fill="var(--neutral-light)" font-size="10">' + (g ? gN(g) : '0') + '</text>';
+  }
+  /* a column's category owns a BAND and sits in the middle of it; a line's point sits ON the
+     tick. Drawing both from one x would put the first and last columns half off the plot. */
+  const band = pw / n;
+  const px = j => kind === 'column' ? L + band * j + band / 2 : L + j * (pw / (n - 1));
+  const axis = C.x.map((lb, j) => '<text x="' + gF(px(j)) + '" y="' + (G_CH_H - 6)
+    + '" text-anchor="' + (kind === 'column' ? 'middle'
+        : j === 0 ? 'start' : j === n - 1 ? 'end' : 'middle')
+    + '" fill="var(--neutral-light)" font-size="10">' + gEsc(lb) + '</text>').join('');
+  if (kind === 'column'){
+    /* ⚠️ A ZERO IS EMITTED AS NOTHING, and a non-zero is floored at 2px. Outbound peaks at
+       164.75 against a 35,000 scale — under 1px — so without the floor the whole aqua series
+       would be invisible in this type; and without the zero test every empty sample would draw
+       a 2px stub claiming traffic that is not there. The recorded `min-width` lesson, both ways. */
+    const gw = Math.min(band * .64, 40), bw = gw / C.s.length;
+    const bars = C.s.map((se, k) => se.v.map((v, j) => {
+      if (!v) return '';
+      const h = Math.max(py(0) - py(v), 2), x = px(j) - gw / 2 + k * bw;
+      return '<rect x="' + gF(x) + '" y="' + gF(py(0) - h) + '" width="' + gF(bw - 1) + '" height="'
+        + gF(h) + '" fill="' + se.c + '" rx="1"/>';
+    }).join('')).join('');
+    return grid + bars + axis;
+  }
+  /* ⚠️ THE AREA IS EMITTED BEFORE THE LINE, so a fill can never paint over its own stroke; and
+     only the FIRST series carries one — two washes over each other read as a third colour that
+     is in neither legend, which is also the family's own `area.dontUse`. */
+  const paths = C.s.map((se, k) => {
+    const d = se.v.map((v, j) => (j ? 'L' : 'M') + gF(px(j)) + ' ' + gF(py(v))).join(' ');
+    const area = (kind === 'area' && k === 0)
+      ? '<path d="' + d + ' L' + gF(px(n - 1)) + ' ' + gF(py(0)) + ' L' + gF(px(0)) + ' ' + gF(py(0))
+        + ' Z" fill="url(#gchtfill)"/>' : '';
+    return area + '<path d="' + d + '" fill="none" stroke="' + se.c
+      + '" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>';
+  }).join('');
+  /* ⚠️ THE FILL IS A GRADIENT, 22% → 0%, WHICH IS THE DS FIXTURE'S OWN — not a flat alpha.
+     A flat wash under a 35,000-high curve paints a slab that reads as a second surface inside
+     the card; the fade says "this is the line's volume" and leaves the gridlines legible under
+     it. The stops are `color-mix()` strings for the same reason `lic5HcConfig`'s are: the
+     series colour is a `var()`, and an opacity applied to the whole path would take the stroke
+     with it. The id is namespaced because an SVG id is global to the document. */
+  const defs = kind === 'area'
+    ? '<defs><linearGradient id="gchtfill" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0" stop-color="color-mix(in srgb, ' + C.s[0].c + ' 22%, transparent)"/>'
+      + '<stop offset="1" stop-color="color-mix(in srgb, ' + C.s[0].c + ' 0%, transparent)"/>'
+      + '</linearGradient></defs>' : '';
+  return defs + grid + paths + axis;
+}
+/* horizontal bar — the axes swap, nothing else does: the nine times come down the left and the
+   value runs along the bottom, on the same 0–35,000 ruler.
+   ⚠️ THE VALUE LABELS CARRY NO UNIT, as on the vertical types and for the same reason —
+   eight of them across the foot collide with a suffix, and the unit is on the subtitle and on
+   both figures above the plot. */
+function gPlotBar(C){
+  const L = 52, R = 10, T = 8, B = 24, n = C.x.length;
+  const pw = G_CH_W - L - R, ph = G_CH_H - T - B;
+  const px = v => L + (v / C.max) * pw, band = ph / n;
+  let grid = '';
+  for (let g = 0; g <= C.max; g += 5000){
+    grid += '<line x1="' + gF(px(g)) + '" y1="' + T + '" x2="' + gF(px(g)) + '" y2="' + gF(T + ph)
+      + '" stroke="var(--neutral-lighter)" stroke-width="1"/>'
+      + '<text x="' + gF(px(g)) + '" y="' + (G_CH_H - 6) + '" text-anchor="'
+      + (g === 0 ? 'start' : g === C.max ? 'end' : 'middle')
+      + '" fill="var(--neutral-light)" font-size="10">' + (g ? gN(g) : '0') + '</text>';
+  }
+  const cats = C.x.map((lb, j) => '<text x="' + (L - 8) + '" y="' + gF(T + band * j + band / 2 + 3.5)
+    + '" text-anchor="end" fill="var(--neutral-light)" font-size="10">' + gEsc(lb) + '</text>').join('');
+  const gh = Math.min(band * .62, 14), bh = gh / C.s.length;
+  const bars = C.s.map((se, k) => se.v.map((v, j) => {
+    if (!v) return '';
+    const w = Math.max(px(v) - L, 2), y = T + band * j + band / 2 - gh / 2 + k * bh;
+    return '<rect x="' + L + '" y="' + gF(y) + '" width="' + gF(w) + '" height="' + gF(bh - 1)
+      + '" fill="' + se.c + '" rx="1"/>';
+  }).join('')).join('');
+  return grid + bars + cats;
+}
+/* the card: the DS widget's header (title · subtitle · the control cluster where its
+   time-range pill goes), the two figures, the legend, then the plot in its own reserved box. */
+function gChartHTML(){
+  const C = G_NET_CHART;
+  return '<div class="gcht">'
+    + '<div class="gchth"><div class="t">'
+      + '<div class="gchtt">' + gEsc(C.t) + '</div>'
+      + '<div class="gchts">' + gEsc(C.sub) + '</div></div>'
+      + '<div class="gctt" role="group" aria-label="Chart type">'
+      + G_CT.map(t => '<button type="button" class="gctb' + (t.k === G.ct ? ' on' : '')
+          + '" data-ct="' + t.k + '" title="' + t.n + ' chart" aria-label="' + t.n + ' chart"'
+          + ' aria-pressed="' + (t.k === G.ct) + '">' + t.ic + '</button>').join('')
+      + '</div></div>'
+    + '<div class="gchtk">' + C.s.map(se => '<div>'
+        + '<div class="l"><span class="d" style="background:' + se.c + '"></span>' + gEsc(se.n) + '</div>'
+        + '<div class="v">' + gEsc(se.last) + '</div>'
+        + '<div class="av">' + gEsc(se.avg) + '</div></div>').join('') + '</div>'
+    + '<div class="gchtl">' + C.s.map(se => '<span><i style="background:' + se.c + '"></i>'
+        + gEsc(se.n) + '</span>').join('') + '</div>'
+    + '<div class="gchtb" id="gChartPlot">' + gPlot(G.ct) + '</div>'
+    + '</div>';
+}
+/* ⚠️ FILLED FROM THE TAIL OF `gThreadPaint`, not built into the answer string. The answer
+   carries an empty `<div id="gChart">`; this fills it once the thread has been painted — the
+   same reason the loader's clock is started there: the element does not exist while the string
+   is still being built, and rAF is starved under headless virtual time. */
+function gChartPaint(){
+  const el = $('gChart');
+  if (el) el.innerHTML = gChartHTML();
+}
+function gTrailHTML(r, i){
+  const done = r.done, rows = r.steps.slice(0, r.i);
+  /* ⚠️ ONE ROW SHAPE: glyph · bold name · quiet detail. A tool names itself the way the
+     product writes it and carries its real argument in mono; a THOUGHT is the same row with
+     the brain mark, the word `Thought`, and the step's own title as its detail — which is
+     exactly how the console prints it, and how Ask Iris's text rows read. */
+  const body = '<div class="gtkb">' + rows.map(st => '<div class="gtki">'
+      + '<span class="ic">' + (st.k === 'tool' ? (G_STEP_IC[st.ic] || G_STEP_IC.query) : G_IC.brain) + '</span>'
+      + '<span class="tx"><span class="nm">' + (st.k === 'tool' ? gEsc(st.n) : 'Thought') + '</span>'
+      + '<span class="ar">' + gEsc(st.k === 'tool' ? (st.a || '') : st.n) + '</span></span></div>'
+      ).join('') + '</div>';
+  /* ⚠️ THE CHART IS NOT IN HERE (request, 17 Sep 2026: "the chart will be show in part of
+     and not the part of thinking"). A trail says what the assistant DID; the chart is what one
+     of those calls PRODUCED, which is part of the answer — and it was also the one thing in
+     the disclosure you had to unfold the reasoning to see. The `Render chart` row stays: the
+     call happened, and the row is the record of it. */
+  /* ⚠️ TWO DELIBERATE DIFFERENCES FROM OPTION 13's RUNNING ROW, both because this page
+     keeps its beats on screen while they arrive: it has NO Skip (Option 13's row ends in one;
+     the beats here are the demonstration, and a 7s run has little to skip), and the trail
+     STAYS OPEN under the row rather than collapsing to the loader alone. Everything the
+     screenshot points at — the mark, the label, the clock — is Option 13's. */
+  if (!done) return '<div class="gtk run open">'
+    + '<div class="gtkh run">'
+    + gLdHTML((r.steps[Math.min(r.i, r.steps.length - 1)] || {}).n || 'Working')
+    + '</div>' + body + '</div>';
+  /* ⚠️ THE FOLDED HEAD IS ALREADY-ESCAPED HTML, NOT A PLAIN STRING — it carries
+     `&middot;`, and running it through `gEsc` turned the `&` into `&amp;` so the head printed
+     the ENTITY as text ("Thought for 7s &middot; 12 steps"). It is literals and numbers, so
+     it needs no escaping; the running label above is the run's own data and IS escaped.
+     ⚠️ It keeps this page's own count rather than Option 13's bare constant `Thought`:
+     once the run is over, how long it took and how many steps it took are the only things the
+     folded line can still say. */
+  return '<div class="gtk' + (r.open ? ' open' : '') + '">'
+    /* ⚠️ THE LABEL IS THE CONSTANT `Thought`, and the run's own figures moved into the
+       TOOLTIP rather than being dropped. Option 13's rule: the label differed on every prompt
+       and changed length as it changed text, so the calmest chrome in the thread was the most
+       variable — but how long it took and how many steps it took are still facts the folded
+       line is the only place for, so `title` keeps them one hover away. */
+    + '<button type="button" class="gtkh" data-trail="' + i + '" aria-expanded="' + !!r.open + '"'
+    + ' title="Thought for ' + (r.secs || 1) + 's · ' + r.steps.length + ' steps">'
+    + '<span>Thought</span>'
+    + '<span class="gcv">' + G_IC.chevron + '</span></button>'
+    + (r.open ? body : '')
+    + '</div>';
+}
+
+/* ⚠️ `navigator.clipboard` IS UNDEFINED OVER `file://` — it needs a secure context, and
+   these prototypes must open from disk. The textarea + `execCommand` fallback is what makes
+   the control work at all there, so it is the path most sessions actually take.
+   ⚠️ The element is appended, selected, copied and removed inside one call — nothing is
+   left in the document, and `readonly` stops the keyboard opening on a touch device. */
+function gCopy(text, btn){
+  const done = () => {
+    btn.innerHTML = G_IC.tick; btn.classList.add('ok');
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.innerHTML = G_IC.copy; btn.classList.remove('ok'); }, 1200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, () => gCopyFallback(text, done));
+    return;
+  }
+  gCopyFallback(text, done);
+}
+function gCopyFallback(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) { /* nothing else to try */ }
+  document.body.removeChild(ta);
+  done();
+}
+
+function gThreadPaint(){
+  const on = G.thread.length > 0;
+  document.body.classList.toggle('gthread', on);
+  $('gThread').hidden = !on;
+  $('gHome').hidden   = on;
+  if (!on){ $('gThread').innerHTML = ''; gLdStop(); return; }
+  $('gThread').innerHTML = G.thread.map((t, i) =>
+    '<div class="gturn"><div class="gq">'
+    + '<button type="button" class="gcopy" data-copy="' + i + '" title="Copy prompt"'
+    + ' aria-label="Copy prompt">' + G_IC.copy + '</button>'
+    + '<span>' + gEsc(t.q) + '</span></div>'
+    + '<div class="ga"><span class="gmk">' + G_SPARK + '</span><div class="gabody">'
+    + (t.run ? gTrailHTML(t.run, i) : '')
+    + (t.a ? t.a : (t.run ? '' : '<span class="gdots"><span></span><span></span><span></span></span>'))
+    + (t.a ? '<div class="gmeta">' + gEsc(G.model) + ' &middot; ' + gEsc(G.effort) + ' effort'
+           + (t.scope ? ' &middot; ' + gEsc(t.scope) : '') + '</div>' : '')
+    + '</div></div></div>').join('');
+  $('gThread').scrollTop = $('gThread').scrollHeight;
+  /* ⚠️ STARTED FROM THE TAIL, AFTER THE PAINT — `#gLdClock` does not exist while the
+     string is still being built, and rAF is starved under headless virtual time. A run that
+     has finished (or a thread that has been cleared) stops it. */
+  const live = G.thread.filter(t => t.run && !t.run.done).pop();
+  gLdStart(live ? live.run.t0 : 0);
+  gChartPaint();
+}
+
+/* ── the composer ────────────────────────────────────────────────────────────────────── */
+function gGrow(){
+  const ta = $('gTa');
+  ta.style.height = 'auto';
+  /* ⚠️ THIS CAP MUST MATCH `.gta`'s OWN max-height (150px, Iris's number). Set the JS
+     lower and the box stops growing before the CSS would, hiding the last line under the
+     control row — the recorded `aiGrow` lesson. */
+  ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
+  gTypedPaint();
+}
+/* send exists only while there is something to send — `.typed` is the single gate, and
+   every path that changes the box runs through here */
+function gTypedPaint(){
+  $('gComp').classList.toggle('typed', !!$('gTa').value.trim());
+  $('gSend').disabled = G.busy;
+}
+
+/* ── @ mention — what makes the context chip mean something ──────────────────────────── */
+/* ⚠️ THE BUTTON SEEDS AN "@" INTO THE BOX RATHER THAN JUST OPENING THE LIST, and that is
+   the whole reason it keeps working. The list stays alive only while an @token sits before
+   the caret, so opening it with nothing typed LOOKS right and dies on the first keystroke
+   — the bug index.html records against its own Mention row. Seeding hands the interaction
+   back to the machinery that already filters. */
+function gAtTap(){
+  const ta = $('gTa');
+  if (G.ment){ gMentHide(); return; }
+  const v = ta.value, at = v && !/\s$/.test(v) ? ' @' : '@';
+  ta.value = v + at; G.mentSeed = true;
+  ta.focus(); gGrow(); gMentShow('');
+}
+/* the @token is bounded by the caret and must carry NO SPACE — a space means you carried
+   on writing and the token is yours, so it is left alone */
+function gMentTok(){
+  const ta = $('gTa'), upto = ta.value.slice(0, ta.selectionStart);
+  const m = upto.match(/@(\w*)$/);
+  return m ? { q:m[1], start:upto.length - m[0].length } : null;
+}
+function gMentShow(q){
+  const rows = G_MODS.filter(m => !q || m.toLowerCase().includes(q.toLowerCase()))
+                     .filter(m => G.ctx.indexOf(m) < 0);
+  G.ment = rows; G.mentHi = 0;
+  let el = $('gMent');
+  if (!el){ el = document.createElement('div'); el.className = 'gment'; el.id = 'gMent';
+            $('gComp').appendChild(el); }
+  el.innerHTML = rows.length
+    ? rows.map((m, i) => '<button type="button" class="gmi' + (i === 0 ? ' hi' : '') + '" data-m="' +
+        gEsc(m) + '"><svg class="tic" viewBox="0 0 24 24">' + G_IC.mod + '</svg>' +
+        '<span class="nm">' + gEsc(m) + '</span><span class="pin">pin</span></button>').join('')
+    : '<div class="gmnone">No module matches &ldquo;' + gEsc(q) + '&rdquo;</div>';
+}
+/* ⚠️ THE SEEDED "@" AND THE WORD TYPED INTO IT BOTH COME BACK on every dismissal, which is
+   why hiding runs through one function. Keeping the filter text read plainly wrong on
+   screen: dismissing twice left `why is cpu high@log@mon` in the box, ready to send. */
+function gMentHide(){
+  const el = $('gMent'); if (el) el.remove();
+  if (G.mentSeed){
+    const ta = $('gTa'), t = gMentTok();
+    if (t){ ta.value = ta.value.slice(0, t.start) + ta.value.slice(t.start + 1 + t.q.length);
+            ta.value = ta.value.replace(/\s+$/, ''); gGrow(); }
+  }
+  G.ment = null; G.mentSeed = false;
+}
+function gMentPick(name){
+  const ta = $('gTa'), t = gMentTok();
+  if (t) ta.value = (ta.value.slice(0, t.start) + ta.value.slice(t.start + 1 + t.q.length)).replace(/\s+$/, '');
+  G.mentSeed = false;
+  if (G.ctx.indexOf(name) < 0) G.ctx.push(name);
+  const el = $('gMent'); if (el) el.remove();
+  G.ment = null;
+  gCtxPaint(); gGrow(); ta.focus();
+}
+function gMentIn(){
+  const t = gMentTok();
+  if (!t){ if (G.ment){ const el = $('gMent'); if (el) el.remove(); G.ment = null; G.mentSeed = false; } return; }
+  gMentShow(t.q);
+}
+function gMentMove(d){
+  if (!G.ment || !G.ment.length) return;
+  G.mentHi = (G.mentHi + d + G.ment.length) % G.ment.length;
+  const el = $('gMent'); if (!el) return;
+  [].forEach.call(el.querySelectorAll('.gmi'), (b, i) => b.classList.toggle('hi', i === G.mentHi));
+  const hi = el.querySelector('.gmi.hi'); if (hi) hi.scrollIntoView({block:'nearest'});
+}
+
+/* ── the answers: canned, deterministic, and they say so ─────────────────────────────── */
+/* ══ ONE RECORDED RUN — "How are our network paths doing today" ═══════════════════════════
+   Read off the LIVE Mota console (build 10.0.0, `/ai-assistant/mota#/c/eb497ba3-…`) on
+   17 Sep 2026, out of its own `mota.activeChat` store rather than off the screen: the
+   conversation is two messages, and the assistant's is 19 parts — `tools-loaded`, five
+   `model-call`s, SEVEN `dynamic-tool`s, five `reasoning`s and one `text`.
+
+   ⚠️ THE ORDER IS THE STORE'S, and it is not the order you would guess. Four tool calls run
+   FIRST, in parallel (the reasoning that ordered them is emitted after their results), then
+   reasoning and tool alternate. The real run's last `reasoning` — "Crafting final message" —
+   is emitted AFTER the answer text; it is the last beat before the answer here, because a
+   trail that finishes after the thing it produced reads as a bug rather than as fidelity.
+   ⚠️ THE PACING IS OURS. The real run took **95.41s** over five gpt-5-mini calls (19.87 /
+   9.67 / 20.02 / 28.25 / 17.6, 151,410 tokens, $0.021 reported). A prototype that made you
+   wait 95 seconds to see one screen would be demonstrating nothing, so the twelve beats are
+   paced over ~7s and the summary line counts the STEPS rather than claiming the real clock.
+   ⚠️ EVERY IDENTIFIER IS SCRUBBED, per the repo rule: the switch, the two laptops (which
+   carried people's names) and the two `10.20.x` addresses. The figures, the interface, the
+   policy, the timestamps and the counter names are the instance's own. */
+/* ⚠️ THE STEP GLYPHS ARE THE CONSOLE'S KINDS, TAKEN FROM THE LIBRARY — Lucide, pasted
+   verbatim from `free-icons/` (bell · activity · list · chart-line · chart-bar), which is
+   the set this page's own `G_IC` is drawn from. Nothing here is hand-drawn: a path drawn by
+   eye has none of the optical centring a real set has resolved, and it shows at 13px.
+   ⚠️ A THOUGHT STEP REUSES `G_IC.brain`, which the effort picker already carries — one
+   definition, and it is the same mark the live console puts on its own Thought rows. */
+const G_STEP_IC = {
+  alerts:'<svg viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0m-10.47-5.674A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>',
+  query:'<svg viewBox="0 0 24 24"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>',
+  catalog:'<svg viewBox="0 0 24 24"><path d="M3 5h.01M3 12h.01M3 19h.01M8 5h13M8 12h13M8 19h13"/></svg>',
+  metric:'<svg viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9l-5 5l-4-4l-3 3"/></svg>',
+  chart:'<svg viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16M7 16h8m-8-5h12M7 6h3"/></svg>'
+};
+
+const G_NET_Q = 'how are our network paths doing today';
+const G_NET_RUN = {
+  /* `k` is the row's kind — `tool` names an MCP call the way the console does, `think` is a
+     reasoning step and carries that step's own title, verbatim. */
+  steps: [
+    { k:'tool', ic:'alerts',  n:'ObserveOps alerts',  a:'sort event.timestamp · limit 1000' },
+    { k:'tool', ic:'query',   n:'ObserveOps query',   a:'status_count' },
+    { k:'tool', ic:'query',   n:'ObserveOps query',   a:'unhealthy_monitors' },
+    { k:'tool', ic:'catalog', n:'ObserveOps catalog', a:'grep interface · limit 200' },
+    { k:'think', n:'Planning operational checks' },
+    { k:'tool', ic:'metric',  n:'ObserveOps metric',  a:'mode series · limit 50' },
+    { k:'think', n:'Summarizing network status' },
+    { k:'tool', ic:'query',   n:'ObserveOps query',   a:'statuses' },
+    { k:'think', n:'Analyzing traffic data' },
+    { k:'tool', ic:'chart',   n:'Render chart',       a:'interface traffic · 6h' },
+    { k:'think', n:'Clarifying network status' },
+    { k:'think', n:'Crafting final message' }
+  ],
+  ms: 560,
+  /* the answer, fact for fact, with its own headings and lists */
+  a: '<h4>Short answer</h4><ul><li>Mostly OK, but <b>three active problems right now</b>: two '
+   + 'hosts are DOWN and one switch interface is DOWN (an active Interface Availability alert). '
+   + 'I checked the live alert stream (all non-CLEAR severities, up to 1000 rows), the status '
+   + 'counts, and a 6-hour interface traffic series at 5m granularity.</li></ul>'
+   + '<h4>What I found</h4><ul>'
+   + '<li>Status counts, current: <b>UP 22</b>, <b>DOWN 2</b>, <b>UNKNOWN 5</b> '
+   + '(<code>status_count</code>).</li>'
+   + '<li>Newest active network alert &mdash; severity <b>DOWN</b>, policy <b>Interface '
+   + 'Availability</b>, monitor <b>edge-switch-01</b> (category Network), instance '
+   + '<code>GigabitEthernet0/0/25</code>, triggered <b>2026-09-16 16:13:05</b>, metric '
+   + '<code>interface~status</code>.</li>'
+   + '<li>Monitors reporting DOWN (<code>statuses(\'DOWN\')</code>): <b>elitebook-0482</b> '
+   + '&mdash; 192.0.2.82, and <b>latitude-0113</b> &mdash; 192.0.2.113.</li></ul>'
+   + '<h4>Interface traffic &mdash; edge-switch-01, Gi0/0/25</h4><ul>'
+   + '<li>Series over the last 6h, sampled 5m, for '
+   + '<code>interface~in.traffic.bits.per.sec</code> and '
+   + '<code>interface~out.traffic.bits.per.sec</code>.</li>'
+   + '<li>Inbound: latest <b>35,030.56</b> bits/s, max in window <b>35,030.56</b>, many samples '
+   + 'at 0. Outbound: latest <b>155.32</b>, max <b>~164.75</b>, many samples at 0.</li>'
+   + '<li>The bursts separated by zero samples, with the interface DOWN alert beside them, are '
+   + 'consistent with <b>the port flapping</b>, polling gaps, or the interface being '
+   + 'intermittently down.</li></ul>'
+   /* the chart the run's own `render_chart` call produced, in the section it is about.
+      `gChartPaint()` fills it from the tail of the thread paint — the element does not exist
+      while this string is still being built. */
+   + '<div id="gChart" class="gchtw"></div>'
+   + '<h4>What this means</h4><ul>'
+   + '<li>Gi0/0/25 on edge-switch-01 is down or unstable &mdash; a path-affecting fault.</li>'
+   + '<li>Two hosts are DOWN.</li>'
+   + '<li>The spike-and-zero traffic pattern suggests link instability or intermittent polling; '
+   + 'it may be the cause of the path problems or a symptom &mdash; cabling, an SFP or port '
+   + 'issue, or a config change.</li></ul>'
+   + '<h4>Recommended next steps</h4><ul>'
+   + '<li>Check the physical link on edge-switch-01: <code>show interface Gi0/0/25</code> for '
+   + 'link and error counters, the SFP, and the last-change time.</li>'
+   + '<li>Read the switch logs around 2026-09-16 16:13:05 for link flaps.</li>'
+   + '<li>For the two DOWN hosts, try reachability and confirm whether they are expected '
+   + 'offline or under maintenance.</li>'
+   + '<li>I can also acknowledge the alert, run ping/traceroute from ObserveOps, pull recent '
+   + 'syslog for the switch, or open an incident with these findings attached.</li></ul>'
+   /* ⚠️ THE FOOTNOTE IS GONE BECAUSE THE CHART IS REAL NOW. It read "the live run also
+      rendered the 6h traffic chart inline; this build prints its figures" — true while there
+      was no chart, and a thing to delete the moment there was one. */
+};
+/* the one prompt this run answers — matched on its words rather than on an exact string, so
+   the trailing full stop the console's own copy carries does not miss it */
+function gRunFor(q){
+  const s = q.trim().toLowerCase().replace(/[.?!]+$/, '');
+  return s === G_NET_Q || (/network path/.test(s) && /today/.test(s)) ? G_NET_RUN : null;
+}
+
+function gAnswer(q){
+  const s = q.trim().toLowerCase();
+  if (/summar|attention|what needs/.test(s))
+    return 'Nothing is critical right now. <b>3 of 24</b> monitored paths are slower than '
+         + 'their baseline, <b>7</b> alerts are open and none is unacknowledged, and the '
+         + 'busiest log source is steady against yesterday. The one worth a look is the '
+         + 'branch path, up <b>34 ms</b> on its 7-day median.';
+  if (/path|route|netroute/.test(s))
+    return 'Across the monitored paths, <b>3 of 24</b> are showing added latency against their '
+         + 'baseline and none is currently down. The largest mover is the branch path, up '
+         + '<b>34 ms</b> on its 7-day median.';
+  if (/flow|dscp/.test(s))
+    return 'Flow records are the per-conversation summaries your exporters send &mdash; source, '
+         + 'destination, port, protocol, byte and packet counts. <b>DSCP</b> is the 6-bit field '
+         + 'in the IP header that carries the QoS marking, so you can group flows by class.';
+  if (/incident|report/.test(s))
+    return 'I can draft an incident report from the open alerts and the affected monitors. '
+         + 'Tell me the window to cover and whether it should read for an engineer or for a '
+         + 'service owner.';
+  if (/who are you|what can you do|hello|^hi+$/.test(s))
+    return 'I am <b>Iris</b>, the assistant inside ObserveOps. I can read your dashboards, alerts, '
+         + 'logs, flows and topology, explain what is there, and draft the widget, query or '
+         + 'report you describe. Pin a module with <b>@</b> and I will answer within it.';
+  return 'This build is a <b>design prototype</b>, so the answer is canned rather than '
+       + 'generated &mdash; but every state of this screen is reachable, which is what it is for. '
+       + 'Ask about paths, flow, DSCP or an incident report to see a shaped reply.';
+}
+
+function gSend(e){
+  if (e) e.preventDefault();
+  if (G.ment) gMentHide();
+  const ta = $('gTa'), q = ta.value.trim();
+  if (G.busy) return;
+  if (!q){ ta.focus(); return; }   /* never a dead press */
+  /* the pinned chips are not decoration — they are stamped on the turn and printed under
+     the answer, so what the chat was reading is on the record with the reply */
+  const scope = gCtxFloor() ? '' : 'Scoped to ' + G.ctx.join(' + ');
+  G.thread.push({ q, a:'', scope });
+  ta.value = ''; G.busy = true; gGrow();
+  /* ⚠️ THE CHAT IS FILED ON ITS FIRST QUESTION (request, 17 Sep 2026: "How are our
+     network paths doing today." set in history). Iris's own rule: a chat enters the list once
+     it has been USED and is auto-named from the question that started it — so the column
+     cannot fill with empty conversations, and the row's name is a thing you would recognise.
+     ⚠️ ONLY THE FIRST TURN FILES. `G.open === null` IS the test for "this chat is not
+     in the list yet"; a later question in the same chat must not open a second row, and it
+     must not retitle the row either — the name is what the chat was ABOUT when it started.
+     ⚠️ THE ROW HOLDS THE THREAD BY REFERENCE, which is what makes reopening it show what
+     was actually said rather than a fresh answer to its title. `gNewChat` assigns a NEW array
+     rather than emptying this one, so the filed chat keeps its own. */
+  if (G.open === null){
+    G_CHATS.unshift({ n:q, t:Date.now(), thread:G.thread });
+    G.open = 0;
+    gListPaint();
+  }
+  const run = gRunFor(q);
+  if (run){
+    /* the turn owns its own run state, so a second ask does not reach into the first one's */
+    G.thread[G.thread.length - 1].run =
+      { steps: run.steps, i: 0, open: true, done: false, t0: Date.now(), a: run.a };
+    gThreadPaint();
+    clearTimeout(G.t);
+    gRunTick();
+    return;
+  }
+  gThreadPaint();
+  clearTimeout(G.t);
+  G.t = setTimeout(() => {
+    G.thread[G.thread.length - 1].a = gAnswer(q);
+    G.busy = false; gThreadPaint(); gGrow();
+  }, 620);
+}
+
+/* ⚠️ IT REVEALS ONE BEAT PER TICK AND FOLDS ITSELF WHEN THE ANSWER LANDS — the trail is open
+   while it is the only thing to read and collapsed once there is something better. `index.html`
+   settled on the same default after trying both.
+   ⚠️ `clearTimeout(G.t)` is what `gNewChat` already calls, so abandoning a run mid-flight
+   cannot land an answer into a thread that has been cleared — the recorded `agClose()` rule
+   about a timer outliving the thing it was drawing. */
+function gRunTick(){
+  const t = G.thread[G.thread.length - 1], r = t && t.run;
+  if (!r || r.done) return;
+  r.i++;
+  if (r.i >= r.steps.length){
+    r.done = true; r.open = false;
+    r.secs = Math.max(1, Math.round((Date.now() - r.t0) / 1000));
+    t.a = r.a; G.busy = false; gThreadPaint(); gGrow(); return;
+  }
+  gThreadPaint();
+  G.t = setTimeout(gRunTick, G_NET_RUN.ms);
+}
+
+/* ── the model / effort pickers ──────────────────────────────────────────────────────── */
+function gMenu(anchor, items, current, pick, place){
+  gMenuClose();
+  const m = document.createElement('div');
+  m.className = 'gmenu'; m.id = 'gMenu';
+  m.innerHTML = items.map(v =>
+    '<button class="gpi' + (v === current ? ' on' : '') + '" data-v="' + gEsc(v) + '">'
+    + '<span class="gtick">' + G_IC.tick + '</span>' + gEsc(v) + '</button>').join('');
+  document.body.appendChild(m);
+  /* measure, place, THEN show — a menu positioned before it has a box lands at the wrong
+     anchor, the recorded `kbPopOpen` lesson */
+  const r = anchor.getBoundingClientRect(), b = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(r.left, innerWidth - b.width - 8)) + 'px';
+  /* the pickers hang ABOVE their pill (they sit on the composer's floor); the name trigger
+     is at the top of the rail, so its menu drops BELOW it */
+  m.style.top = place === 'below'
+    ? Math.min(r.bottom + 6, innerHeight - b.height - 8) + 'px'
+    : Math.max(8, r.top - b.height - 6) + 'px';
+  m.addEventListener('click', ev => {
+    const it = ev.target.closest('.gpi'); if (!it) return;
+    pick(it.dataset.v); gMenuClose();
+  });
+}
+/* ⚠️ IT REMOVES THE ATTRIBUTE RATHER THAN SETTING IT FALSE. `#gName` is a plain New-chat
+   button now, and `aria-expanded="false"` advertises a collapsed menu that does not exist —
+   the tidy-up ran on every Esc and click-away, so the markup grew the promise back the moment
+   anything closed. `removeAttribute` is also correct if `gNameMenu` is ever pointed back:
+   `gMenu` sets the pair, this clears it. */
+function gMenuClose(){
+  const m = $('gMenu'); if (m) m.remove();
+  const n = $('gName');
+  if (n){ n.classList.remove('open'); n.removeAttribute('aria-expanded'); }
+}
+
+/* ── wiring ──────────────────────────────────────────────────────────────────────────── */
+function gInit(){
+  gIcons(); gHomePaint(); gPills(); gCtxPaint(); gNamePaint(); gListPaint(); gGrow();
+
+  $('gComp').addEventListener('submit', gSend);
+  $('gTa').addEventListener('input', () => { gGrow(); gMentIn(); });
+  $('gTa').addEventListener('keydown', e => {
+    if (G.ment){
+      if (e.key === 'ArrowDown'){ e.preventDefault(); return gMentMove(1); }
+      if (e.key === 'ArrowUp'){   e.preventDefault(); return gMentMove(-1); }
+      if (e.key === 'Enter' && G.ment.length){ e.preventDefault(); return gMentPick(G.ment[G.mentHi]); }
+      if (e.key === 'Escape'){    e.preventDefault(); return gMentHide(); }
+    }
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); gSend(); }
+  });
+
+  $('gAt').addEventListener('click', e => { e.stopPropagation(); gAtTap(); });
+
+  /* the mention list is inside the composer, so its own clicks must not reach the
+     document dismisser below */
+  $('gComp').addEventListener('click', e => {
+    const mi = e.target.closest('.gmi');
+    if (mi){ e.stopPropagation(); return gMentPick(mi.dataset.m); }
+    const drop = e.target.closest('[data-drop]');
+    if (drop){ G.ctx.splice(+drop.dataset.drop, 1); gCtxPaint(); }
+  });
+
+  /* the starters and the two help links — delegated, because gHomePaint rebuilds them */
+  $('gHome').addEventListener('click', e => {
+    const c = e.target.closest('[data-cta]');
+    if (c){ $('gTa').value = G_CTA[+c.dataset.cta]; gGrow(); return gSend(); }
+    const h = e.target.closest('[data-href]');
+    if (h) window.open(h.dataset.href, '_blank', 'noopener');
+  });
+
+  $('gModel').addEventListener('click', e => {
+    e.stopPropagation();
+    gMenu($('gModel'), G_MODELS, G.model, v => { G.model = v; gPills(); gThreadPaint(); });
+  });
+  $('gEffort').addEventListener('click', e => {
+    e.stopPropagation();
+    gMenu($('gEffort'), G_EFFORTS, G.effort, v => { G.effort = v; gPills(); gThreadPaint(); });
+  });
+
+  /* ⚠️ `gMenuClose()` FIRST: the model and effort pickers open from the composer and a press
+     up here must put whichever one is open away rather than leave it hanging over a thread
+     that has just been cleared. */
+  $('gName').addEventListener('click', e => {
+    e.stopPropagation();
+    gMenuClose();
+    gNewChat();
+  });
+
+  /* the field filters the list in place — one surface, not a second one. Esc clears it. */
+  $('gQ').addEventListener('input', e => { G.q = e.target.value; gListPaint(); });
+
+  /* the trail folds and unfolds — delegated, because `gThreadPaint` rebuilds the thread on
+     every tick and a bound handler would be thrown away with the node it was on */
+  $('gThread').addEventListener('click', e => {
+    const h = e.target.closest('[data-trail]'); if (!h) return;
+    const t = G.thread[+h.dataset.trail];
+    if (t && t.run){ t.run.open = !t.run.open; gThreadPaint(); }
+  });
+
+  /* ⚠️ ONE DELEGATED LISTENER PER THING, ON THE SAME REBUILT CONTAINER — `gThreadPaint`
+     replaces `#gThread`'s markup on every render, so a listener bound to a BUTTON would be
+     thrown away with it (and re-bound per paint would stack). */
+  $('gThread').addEventListener('click', e => {
+    const b = e.target.closest('.gcopy'); if (!b) return;
+    const turn = G.thread[+b.dataset.copy]; if (!turn) return;
+    gCopy(turn.q, b);
+  });
+
+  /* the chart type — Ask Iris's own behaviour: it re-renders the ART IN PLACE.
+     ⚠️ IT MUST NOT CALL `gThreadPaint()`. That rebuilds the whole thread, which would
+     destroy the button under the pointer mid-press AND scroll the thread back to its floor —
+     so pressing Bar would move the card you were looking at. Only the plot and the four
+     buttons' own state change; `G.ct` is what carries the choice through the next repaint. */
+  $('gThread').addEventListener('click', e => {
+    const b = e.target.closest('[data-ct]'); if (!b) return;
+    const k = b.dataset.ct;
+    if (k === G.ct) return;
+    G.ct = k;
+    const plot = $('gChartPlot'); if (plot) plot.innerHTML = gPlot(k);
+    b.closest('.gctt').querySelectorAll('.gctb').forEach(x => {
+      const on = x.dataset.ct === k;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-pressed', on);
+    });
+  });
+
+  $('gList').addEventListener('click', e => {
+    const row = e.target.closest('.gchat'); if (!row) return;
+    G.open = +row.dataset.i;
+    const c = G_CHATS[G.open];
+    /* ⚠️ A FILED CHAT REOPENS ITS OWN THREAD, and the shipped one BUILDS its thread the
+       first time it is opened — the recorded run, already folded and answered, cached on the
+       record so a second visit is the same conversation rather than a fresh one.
+       ⚠️ The title fallback is what a `G_CHATS_SEED` row needs — those carry names and
+       times, not conversations — so it stays for the day those are restored. */
+    if (!c.thread && c.seedRun) c.thread = [{ q:c.n, a:G_NET_RUN.a, scope:'',
+      run:{ steps:G_NET_RUN.steps, i:G_NET_RUN.steps.length, open:false, done:true,
+            secs:7, t0:Date.now() - 7000 } }];
+    G.thread = c.thread || [{ q:c.n, a:gAnswer(c.n), scope:'' }];
+    gNamePaint(); gListPaint(); gThreadPaint();
+  });
+
+  const tog = () => document.body.classList.toggle('gshut');
+  $('gTog').addEventListener('click', tog);
+  $('gOpen').addEventListener('click', tog);
+
+  document.addEventListener('click', () => { gMenuClose(); if (G.ment) gMentHide(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){
+      if ($('gMenu')) return gMenuClose();
+      if (G.ment) return gMentHide();
+      if (G.q){ G.q = ''; $('gQ').value = ''; gListPaint(); }
+    }
+  });
+
+  $('gTa').focus();
+}
+document.addEventListener('DOMContentLoaded', gInit);
+</script>
+
+<!-- Agentation: dev-only design-feedback widget (never loads for end users) -->
+<script>
+(function () {
+  var dev = location.protocol === 'file:' ||
+            location.hostname === 'localhost' ||
+            location.hostname === '127.0.0.1';
+  if (!dev) return;
+  var st = document.createElement('style');
+  st.id = 'agentation-stacking-fix';
+  st.textContent =
+    '[data-agentation-root] > *{z-index:2147483000 !important}' +
+    '[data-agentation-root] > [class*="markersLayer" i]{z-index:2147483001 !important}' +
+    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}';
+  document.head.appendChild(st);
+  var s = document.createElement('script');
+  s.src = 'agentation-embed.js';
+  s.defer = true;
+  document.body.appendChild(s);
+})();
+</script>
+<script src="_variants.js"></script>
+</body>
+</html>

@@ -95,6 +95,12 @@ pattern"* is the map; in file order:
 | 12 | `dashboard-rail-flyout-alt2.html` | Option 10's pattern, copied 10 Sep 2026; **Gemini's rule — no hover expand, one toggle** |
 | 13 | `dashboard-rail-flyout-alt3.html` | **Option 12's** pattern, copied 11 Sep 2026 — so it inherits Gemini's rule AND the whole 11 Sep Explorer pass; nothing else differs yet |
 
+⚠️ **THERE IS ALSO A FOURTEENTH PAGE THAT IS NOT AN OPTION** — **`Global_ai.html`** (16 Sep 2026),
+the product's own AI assistant screen, built from a capture. It demonstrates no sidebar, carries none
+of the shared modules, and does **not** load `setting.js`, so it is outside every "all thirteen
+pages" statement below — including `stbehave.py`'s auto-discovery, which keys off that script tag.
+It IS in the switcher (key **`M`**) and on Option 1's rail. See *Global AI* below.
+
 ⚠️ **OPTIONS 6, 7 AND 8 ALL DESCEND FROM OPTION 5's PAGE**, which descends from Option 1's;
 **Option 9 is a byte copy of Option 6**; **Option 10 is a byte copy of Option 1**, **Options 11
 AND 12 are byte copies of Option 10**, and **Option 13 is a byte copy of OPTION 12** — the first
@@ -5801,9 +5807,10 @@ as flex siblings rather than merged, so each keeps the rules written for it. `.s
 
 ### Their shortcuts are LETTERS, and that is new
 
-`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z', 'c']`** maps index
-10 onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026), Option 13 = `C` (11 Sep 2026), each by
-request — and `vsKey` / `vsIdx` are exact inverses that **must be edited together**: a key shown on
+`_variants.js` ran out of digits at Option 10's `0`. **`VS_LETTERS = ['x', 'z', 'c', 'm']`** maps
+index 10 onward — Option 11 = `X`, Option 12 = `Z` (10 Sep 2026), Option 13 = `C` (11 Sep 2026), each
+by request, and the 14th entry **Global AI = `M`** (16 Sep 2026, chosen here — see *Global AI*
+below) — and `vsKey` / `vsIdx` are exact inverses that **must be edited together**: a key shown on
 a row that does not switch, or a switch with no keycap, is worse than no shortcut. Only that array
 changes; both functions read it.
 ⚠️ **EACH LETTER IS CHECKED AGAINST EVERY PAGE FIRST.** That handler runs on all thirteen pages, so
@@ -5817,7 +5824,14 @@ Deleting that early return would not merely add a conflict, it would break copy 
 at once. Verified by dispatching both modified forms and asserting the page did **not** navigate.
 ⚠️ **BOTH CASES MATCH** — unlike a digit, where Shift gives `!` and can never match, a letter with
 Shift is still that letter. The footer hint stopped being `slice(0, 10)`.
-⚠️ **A FOURTEENTH NEEDS A DELIBERATE CHOICE**, not the next letter along.
+⚠️ **A FOURTEENTH NEEDED A DELIBERATE CHOICE, not the next letter along — and `m` is it**
+(16 Sep 2026, for `Global_ai.html`). Chosen the way the note asks: every bare single letter any
+page in this folder compares was enumerated first, and there are only five — `e i k y z`, all of
+them either behind a modifier or the switcher's own. `m` is free in all fourteen, and it is the
+initial of the thing it opens, which none of `x` / `z` / `c` ever was.
+⚠️ **`VS_LETTERS` SITS OUTSIDE THE MANAGED BLOCK** (line 120, against `VARIANTS:BEGIN`(15) /
+`END`(32)), so `_sync_variants.js` never rewrites it — a new page gets its row automatically and
+its KEY by hand. **A FIFTEENTH STILL NEEDS ITS OWN CHOICE.**
 
 ### Verification lessons from this pair
 
@@ -6460,6 +6474,748 @@ Sizes and colours, all measured:
 - **light `--sidebar` is `#F6F9FC` in all twelve options**, not `#ffffff`. It had been the same value
   as `--bg` and `--card`, so the rail, the canvas and every widget were ONE surface with only a 1px
   border between them — the cause of two bugs already recorded here.
+
+## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
+
+The **fourteenth page in the switcher and the first that is NOT an option**: it demonstrates no
+sidebar variant and carries no dashboard, no Log Explorer and no Settings module. One
+self-contained file (~53 KB), namespace `g*` / `.g*` / `G_*`, loading nothing but `_variants.js`
+and the Agentation loader. Switcher key **`M`**; a rail row in `index.html` opens it.
+
+### It was built from a capture, and then REBUILT on the Ask Iris design
+
+Two passes in one day, and the second supersedes the first's whole visual layer:
+
+1. **Built from a screenshot of `/ai-assistant/mota`.** The named host was unreachable (100%
+   packet loss, 443 and 80 both dead) and the address that *does* answer is a different build
+   whose router sends that path to `/404` — `ai-assistant` appears in **no chunk** of it. So
+   there was nothing to harvest. **Asked before building**; the precedent is Option 5, read off
+   a Mobbin still. Colour was **measured** (every token sampled from the capture's pixels with
+   PIL) and geometry corrected by pixel-diffing the render against the capture.
+2. **Rebuilt as Ask Iris** (request: *"all component and visualization will be same as ask ai —
+   in this global_ai the ui is old"*). Everything a reader sees is now `index.html`'s `ai*`
+   panel: its scoped palette, its greeting, its composer, its send behaviour.
+
+⚠️ **THE CAPTURE'S COLOUR AND GEOMETRY WORK IS GONE AND IS NOT COMING BACK** — the warm
+`#151515 / #20201f / #6d4434` palette, the serif greeting and the pixel-matched paddings all
+described a different product's screen. **What survived is the page's SHAPE** (a chat rail
+beside one centred column) and the chat titles. Recorded because the file's own header still
+explains the capture: that note is provenance for the shape, not a live spec for the paint.
+
+⚠️ **THE COLOURS ARE TOKENS NOW, NOT SAMPLES.** Every value is `index.html`'s own, copied from
+the `.aipanel` scope and the `:root` it inherits — which is the point of the change: the page
+is part of the system rather than a faithful copy of a screenshot.
+⚠️ **THEY ARE DECLARED AT `:root` HERE, AND THAT IS ONLY CORRECT BECAUSE THIS PAGE *IS* THE
+CHAT.** In `index.html` the same names MUST stay scoped to `.aipanel` — `--ai*` there also
+drives the toolbar pill, the Log Explorer's AI Query and the per-widget drawer.
+
+### The mark is Option 13's, and the assistant is Iris
+
+Request, 16 Sep 2026: *"change the logo — use option 13 logo and ai name"*.
+
+- **`G_SPARK` is Option 13's `AI_SPARK_PATH`** — the four-point star on the brand ramp, pasted
+  verbatim from `dashboard-rail-flyout-alt3.html`. It is **not** Option 1's speech bubble, which
+  is what this page wore for its first two hours and is **kept as `G_SPARK_BUBBLE`**, unreferenced.
+- **The assistant is named Iris** — the rail's brand, the help line (*"Ask Iris about anything
+  ObserveOps can see"*) and the identity answer all say so.
+- ⚠️ **THE STAR PAINTS FROM `url(#gsprkg)`, DECLARED INLINE ON THE PATH, so the `<defs>` at the
+  top of `<body>` is LOAD-BEARING: without it the mark renders as NOTHING, with no error.** That
+  inline fill also outranks any stylesheet `fill:`, so `.gbig svg{fill:var(--ai-2)}` is now only
+  a floor for the case where the def goes missing.
+- ⚠️ **THE id IS NAMESPACED `gsprkg`, NOT Option 13's `aisprkg`** — an SVG id is global to the
+  document and this page has its own namespace.
+- ⚠️ **EVERY COPY KEEPS `viewBox="0 0 48 48"`.** The gradient is in USER SPACE and its transform
+  is written in 48-space; rescale one copy onto a 24 grid and the ramp slides off that star while
+  every other copy stays right. The rail (22px), the empty state (30px) and each answer (20px)
+  are all sized in CSS for exactly this reason.
+- ⚠️ **IT DOES NOT FLIP PER THEME**, and that is correct — a brand ramp is absolute. Checked in
+  both: the star keeps blue→violet→magenta while the surfaces invert.
+- ⚠️ **The coral `AI_LOGO` is kept as `G_LOGO`, unreferenced.** It is the PRODUCT's mark, not the
+  assistant's, and `index.html` draws the same line: the logo is used "where the panel speaks AS
+  THE PRODUCT". One call away.
+- ⚠️ **The switcher row and Option 1's rail row still read "Global AI"** — that is the PAGE's
+  name, set on request; Iris is the assistant on it. One label each if they should match.
+
+### Two removals and two moves, all on request the same day
+
+| asked | what changed |
+|---|---|
+| *"remove this"* (a crop of the starter column **and** the help pair) | the **five gradient starter rows** and the **Documentation / Support** row went |
+| *"remove the"* (a crop of the chip) | the **"All modules" floor chip** went |
+| *"in this chat area it will be set in bottom"* (crops of the composer and of `@ · GPT-5 · Medium`) | the **control row is pinned to the composer's floor** |
+| two images, no words: `＋ New chat` → `🕒 New chat ⌄` | the `＋ New chat` row became the **chat-name trigger** — in the rail for an hour, then in a header row over the column |
+
+- ⚠️ **THE EMPTY STATE IS NOW MARK + GREETING + ONE LINE OF HELP.** `G_CTA` and `G_HELP` are
+  **kept and unreferenced**, as are `.gcta` / `.ghome > .gcta:last-of-type` / `.ghelp` in the
+  stylesheet — putting either block back is one `+` in `gHomePaint`'s string, not a rebuild.
+  ⚠️ **CONSEQUENCE, STATED:** nothing on screen now demonstrates what the assistant can be
+  asked. The help line carries that alone, which is why it names what the chat can SEE rather
+  than merely inviting a question.
+- ⚠️ **THE CONTEXT BAR WAS GONE UNTIL SOMETHING WAS PINNED** (`.gctx:empty{display:none}`),
+  which reversed Iris's reserved height on the reasoning that with no floor chip the bar is
+  empty in the RESTING state. **SUPERSEDED 17 Sep 2026** — it is reserved again, because the
+  jump it caused was measured at 25.5px. See *"the text — set as it is"* below.
+- ⚠️ **THE FIVE STARTERS WERE NEVER `AI_CTA`'s.** Iris's are the open DASHBOARD's ("Summarise
+  this dashboard") and this page is not on one — offering to summarise a board it cannot see is
+  the component working and the copy lying. The parked `G_CTA` is this screen's own five, each
+  mapped onto a DIFFERENT `gAnswer` branch so none could fall through to the generic reply.
+
+⚠️ **THE CONTROL ROW NEEDED A RULE, and `min-height` is why.** 128px is a FLOOR, not a height:
+with no context chip the composer's rows measure ~98px, so **30px of slack sat UNDER the
+controls** and they read as floating in the middle of an empty box. `.gtools{margin-top:auto}`
+hands that slack to the gap above them instead. Measured after: controls 17px off the floor
+(16px padding + the 1px border), prompt 17px from the top.
+⚠️ **IT IS SAFE ONLY BECAUSE `.gcomp` CARRIES `gap:15px`.** The recorded trap is that
+`margin-top:auto` resolves to 0 when there is no free space and so cannot *also* carry a
+minimum — the parent's gap guarantees the 15px and the auto margin only ever adds to it. Pin the
+row with a fixed margin instead and a composer grown past its floor loses that gap.
+
+### The header control, and where it ended up
+
+⚠️ **IT IS A `New chat` BUTTON AGAIN (request, 17 Sep 2026), and that closes a circle worth
+reading in order** — `＋ New chat` row → chat-name trigger with a clock and a menu → the clock
+off → **the menu off, the label constant, the click starting a chat**. What survives from the
+middle two steps is where it LIVES (a header row over the column, not in the rail) and its
+shape (Option 13's `.aihttl` box). Everything below describes the trigger it was; the three
+notes at the end of this list are what it is now.
+
+Asked with **two images and no words** — the old `＋ New chat` row, and Ask Iris's own
+`🕒 New chat ⌄`. That second control is Iris's **chat-name trigger**: the glyph, the OPEN
+CHAT'S NAME, and a chevron into Rename / Delete / Conversations. "New chat" is simply what an
+empty thread is called, which is why the label reads the same as the old button most of the time.
+
+- ⚠️ **A CHEVRON PROMISES A MENU, so the row opens one rather than acting on its own.** The menu
+  is **New chat · Rename chat · Delete chat**, and all three are real — Rename retitles the open
+  chat *and its first turn* (the turn IS the title, so it has to move with the name), Delete
+  splices it out of the list.
+- ⚠️ **RENAME AND DELETE ARE HIDDEN WHILE NO CHAT IS OPEN** — Iris's own rule: a brand-new chat
+  is not in the list yet, so Delete has nothing to remove and Rename would title something that
+  may never exist. The menu is then **New chat alone**, so the old button's job is still one
+  press away and nothing became unreachable.
+- ⚠️ **IT IS NOT IN THE RAIL — it is a header row OVER THE COLUMN** (request, 16 Sep 2026, with
+  Option 13's full-screen Iris as the named reference: *"this 'new chat' will be show outside the
+  sidebar like [that]"*). It led the rail for an hour. It is the chat you are IN, so it belongs
+  over the chat rather than in the list of the other ones — which is exactly where `.aihd` puts
+  it in the reference.
+  ⚠️ **IT STOPPED INHERITING `.grow`, AND THAT WAS THE WHOLE EDIT.** `.grow` is the rail's ROW —
+  `width:100%`, 34px, a 10px gap — so in a header row it stretched the trigger across the entire
+  column and left a 1600px hit target in an otherwise empty row. `.gname` carries Option 13's
+  `.aihttl` numbers instead (28px tall, radius 8, `gap:4px`, `padding:0 7px 0 4px`,
+  `max-width:50%`) and hugs its text.
+  ⚠️ **THE ROW IS OTHERWISE EMPTY, ON PURPOSE.** The reference carries ⋯ / layout / ✕ at its
+  right and all three are PANEL controls — two layouts and a way to close an overlay. This is a
+  page: there is nothing to close and one layout, so importing them would be three controls that
+  cannot do anything.
+  ⚠️ **`.gwrap`'s top padding went 24px → 4px** with it, or the centring double-counts the header.
+- ⚠️ **THE WAY BACK INTO A COLLAPSED COLUMN IS A ROW ITEM, NOT A FLOATING BUTTON** (request,
+  16 Sep 2026: *"proper alignment"*, with the two controls crowding each other). `#gOpen` was
+  `position:fixed; left:12px; top:12px` while this header starts at 18px — so with the column
+  shut the two sat ON TOP of each other. It is the header row's first child now (`.ghb`, shown
+  only under `body.gshut`), so the row reads `⊡ · New chat ⌄` on the header's own 4px gap.
+- ⚠️ **THE MENU DROPS BELOW THIS TRIGGER AND ABOVE THE PICKERS**, so `gMenu` gained a `place`
+  argument. The model and effort pills sit on the composer's floor and must open upward; the
+  trigger is at the top of the column and must open down. One engine, two placements — a second
+  menu function is how the two would drift.
+- ⚠️ **THE TRIGGER KEEPS ITS HIGHLIGHT WHILE THE MENU IS OPEN** (`.gname.open`), or moving the
+  pointer into the menu drops the hover and nothing says which control opened it. `gMenuClose`
+  clears it, so every exit — pick, second press, click-away, Esc — puts it out.
+- ⚠️ **THE CARET IS A REAL SVG CHEVRON, NOT A GLYPH CHARACTER.** At 13px beside a 600-weight
+  label a typographic one sits high in the line box and reads as a stray comma — the same
+  finding `index.html` records for its own name trigger.
+- ⚠️ **AND IT IS THE ONLY MARK ON THE TRIGGER** (request, 16 Sep 2026: *"remove this icon"*).
+  It carried Option 13's leading **clock**, copied with the rest of `.aihttl` — but a clock says
+  *history* while this control opens New chat / Rename / Delete and its label is the chat you
+  are IN. The caret is the whole affordance; a mark naming the wrong thing is worse than none.
+  ⚠️ **The 4px left padding went with it.** `0 7px 0 4px` is Option 13's number and the 4 is the
+  GLYPH's optical inset — with nothing in that slot it reads as a left-light pill, so the
+  padding is even. `G_IC.hist`, `.gname .gi` and `.gname .gi svg` are **kept and unreferenced**.
+- ⚠️ **THE CLOCK MOVED TO THE EXPAND CONTROL** (request, same day) — `#gOpen`, the button that
+  brings the column back, was the `panel` glyph. On that button the clock is literal: what comes
+  back IS the chat history. So the pair now reads `‹` to put it away, 🕘 to bring it back, and
+  the mark that described the wrong control describes the right one. `G_IC.panel` is kept and
+  unreferenced.
+- ⚠️ **THE MENU IS GONE AND THE CLICK STARTS A CHAT** (request, 17 Sep 2026: *"remove this
+  [menu] and when i click the 'new chat' open"*). Three things had to move together, because
+  leaving any one of them would have made the control lie: the **chevron** went with the
+  dropdown (a caret promises a menu — this file's own reason for making the row a trigger in
+  the first place); the **label became constant**, since a button reading *"Network Paths
+  Status"* that discards that chat and starts a new one is exactly the
+  control-that-does-not-say-what-it-does this page has been trimmed for twice; and
+  `aria-haspopup` / `aria-expanded` came off with the menu they described.
+  ⚠️ **CONSEQUENCE, STATED: Rename chat and Delete chat have no door on this page any more**,
+  and the header no longer names the chat you are in — the LIST still marks it (`.gchat.on`),
+  so that fact is on screen until the column is collapsed. `gNameMenu` is **kept and
+  unreferenced** with `.gname .gcv` / `.gname.open` and the parked `.gname .gi` pair; putting
+  the menu back is one call in the listener.
+  ⚠️ **`gMenuClose` HAD TO STOP RE-ADDING THE PROMISE.** It set `aria-expanded="false"` on
+  `#gName` and ran on every Esc and click-away, so a plain button kept advertising a collapsed
+  menu; it **removes** the attribute now, which is also right if `gNameMenu` is ever restored.
+  Caught by a probe assertion, not by looking.
+  ⚠️ The click calls `gMenuClose()` **first**: the model and effort pickers open from the
+  composer, and a press up here must put whichever is open away rather than leave it hanging
+  over a thread that has just been cleared.
+  ⚠️ `gNamePaint` is kept although its output is now constant — four call sites already run it,
+  and a painter that stops being called is how a label goes stale the day it becomes dynamic
+  again.
+- ⚠️ `aria-haspopup="menu"` and a live `aria-expanded`, since the row no longer does what it says.
+
+### The rail is Option 13's chat-history column (16 Sep 2026)
+
+Request: *"[the sidebar will be the] same as `dashboard-rail-flyout-alt3.html`"*, with that page's
+full-screen Iris beside this page's rail. It is **`.aihs*` part for part** — `aihshd` / `aihssr` /
+`aihsl` / `aihsb` / `aihsr` at their own numbers:
+
+| was | is |
+|---|---|
+| the Iris mark + the word **Iris** | a **Chat history** title (12.5px/600) with the collapse `‹` at its end |
+| a **Search chats** ROW that opened a `prompt()` | a real 30px **field** with the reference's own magnifier offset |
+| one **RECENTS** label over a flat list | **date bands** — Today · Yesterday · Sep 13 · … · Jun 28, the year appended only when it is not this one |
+| a 32px row carrying just a name | a row with the name flexing and its **age** (`6m` · `2h` · `1d` · `3w`) pinned at the end — **14px / 600** since a request on 17 Sep 2026, the step Option 13's own list rows took for the same reason, so the two pages agree |
+
+- ⚠️ **THE IRIS MARK AND NAME LEFT THE COLUMN AND ARE NOT LOST.** The empty state still leads
+  with the same four-point star and still reads *"Ask Iris about anything ObserveOps can see"*.
+  The reference titles this column for what is IN it, and a product name over a list of past
+  conversations names the wrong thing.
+- ⚠️ **THE COLUMN SHIPS EMPTY** (request, 17 Sep 2026: *"in sidebar remove all chat"*). The 22
+  conversations are **kept as `G_CHATS_SEED`**, the house pattern: `const G_CHATS =
+  G_CHATS_SEED` is the one word that brings them back, and keeping them in the file is what
+  keeps the capture's own titles where these notes describe them rather than only in git.
+  ⚠️ **THE EMPTY LINE STOPPED PROMISING SOMETHING THE PAGE DOES NOT DO.** It read *"No chats
+  yet. Ask something and it will be saved here."* — and **nothing on this page files a chat**:
+  `gSend` pushes a turn onto `G.thread` and never touches `G_CHATS`. With the seeds masking it
+  that sentence was merely unproven; with them gone it is a promise the column cannot keep, so
+  it reads **"No chats yet."** Fixing copy the change falsifies is part of the change.
+  ⚠️ **CONSEQUENCES, STATED:** the column stays empty for the whole session, so the search
+  field filters nothing and the date bands, the ages and the `.on` mark are all unreachable in
+  the shipped state. Filing on send is ~6 lines (`G_CHATS.unshift({n: q, t: Date.now()})` in
+  `gSend`, then `gListPaint`) and is **not built — it was not asked for**. The probe drives all
+  of that machinery on the parked seeds instead, so none of it is left untested.
+- ⚠️ **`G_CHATS` IS RECORDS NOW, NOT STRINGS** — `{n, t}`, so `G_CHATS[G.open].n` at four call
+  sites. **Every offset is relative to LOAD**, `index.html`'s own rule for `AI_CHATS`: that is
+  what keeps Today / Yesterday / the dated bands populated whenever the page is opened rather
+  than only on the day it was written, and the last two are far enough back that the band which
+  carries a **year** is reachable at all. The titles and their order are still the capture's;
+  **the times are invented and the capture showed none.**
+- ⚠️ **ONE BANDING FUNCTION** (`gChatBand`), Option 13's own, by CALENDAR day rather than elapsed
+  hours — so a chat from 11pm last night reads *Yesterday* at 1am rather than *2h*.
+- ⚠️ **`gListPaint` SORTS BEFORE IT BANDS.** A band is emitted on CHANGE, so one out-of-order row
+  opens a second *Today* further down. The array happens to be newest-first today; the sort is
+  what makes that not matter.
+- ⚠️ **ONLY `#gList` IS REPAINTED**, which is what lets the field keep its own focus and caret
+  natively — `aiHsFilter`'s reason, and the `prompt()` it replaced could never have been filtered
+  in place at all. `gNewChat` clears the field as well as `G.q`: the filter is state AND a field.
+- ⚠️ **THE "N results" COUNT WENT WITH THE RECENTS LABEL.** The reference shows none, and a list
+  that visibly narrows already says how much is left. `.gsec` is gone with the element it styled;
+  `.gact` / `.grow` are **kept and unreferenced**, the house pattern.
+- ⚠️ **THE AGE STAYS 11px AND `--muted` under the heavier row**, and the name pays for the
+  weight: it ellipsises a word or two earlier, which is exactly what `.ag`'s `flex:0 0 auto` is
+  there to guarantee.
+  ⚠️ **`.gchat.on` HAD TO DROP ITS `font-weight:500`** — it carried that from when the base row
+  was 12.5/400, and against a 600 row it would have made the OPEN chat the lightest thing in
+  the list. It keeps its accent wash and `--text` ink; there is a probe assertion that the
+  marked row is never lighter than its neighbours.
+- ⚠️ **THE COLUMN KEEPS `--sidebar`, NOT the reference's `--panel`.** Option 13's thread is
+  `--card`, so its column needs a recessed surface to sit behind; here the page IS `--bg` and
+  `--sidebar` already reads as the column. One token if the two should match exactly.
+
+### The composer is docked, and its text sits at the left-centre (16 Sep 2026)
+
+Two requests, minutes apart, and the second is what made the first correct.
+
+- *"the text area … position will be set in left center"* — a `<textarea>` cannot centre its own
+  content vertically, so the row that HOLDS it takes the slack: **`.gtaw{flex:1 0 auto;display:
+  flex;align-items:center}`** with the field still `flex:0 0 auto`. With one line typed the
+  placeholder is level with the middle of the box instead of parked on its ceiling.
+  ⚠️ **`1 0 auto` — grow, never shrink.** Shrinking is what would clip a field grown past the
+  free space, and `gGrow` sizes it to its own content up to 150px.
+  ⚠️ It takes the free space BEFORE `.gtools`'s `margin-top:auto` can, so that margin now
+  resolves to 0 and the 15px under the text is `.gcomp`'s own `gap` — exactly the guarantee the
+  note on `.gtools` describes.
+- *"it will be set in bottom"* (the whole empty state floating mid-page) — **the composer is a
+  sibling of the scroller now, not its last child.** Inside `.gwrap` it was centred WITH the
+  greeting, so on a tall screen the box you type in floated in the middle of the page with a
+  third of the column empty beneath it. `.gfoot` is Iris's own shape (`.aipanel` is header /
+  body / composer), and it is what makes the greeting centre in what is LEFT rather than in the
+  whole column — the reference's reading too.
+
+- *"it will be set upside the text area"* (17 Sep 2026, the empty state floating mid-column) —
+  the greeting introduces the box you are about to type in, so it sits **directly above the
+  composer** now: `.gwrap` dropped `justify-content:center` and `.ghome` took `margin-top:auto`.
+  ⚠️ **AN AUTO MARGIN RATHER THAN `justify-content:flex-end` ON THE PARENT, and the overflow is
+  why**: flex-end pins content to the bottom even when there is MORE of it than room, and the
+  part that overflows the start edge cannot be scrolled to. An auto margin resolves to 0 the
+  moment there is no free space, so a short viewport falls back to ordinary top-aligned flow —
+  the one place this file's recorded `margin-top:auto` behaviour is the feature, not the trap.
+  There is a probe assertion at a forced 360px column that nothing is clipped above.
+  ⚠️ `.gwrap`'s bottom padding went 12 → **20px**, the gap the greeting and the last turn both
+  keep off the composer — and 20 is this page's own number for it, the `margin-top` `.gcomp`
+  carried while it still sat inside the scroller. `body.gthread .gwrap{justify-content:flex-start}`
+  was **deleted rather than parked**: flex-start is the default now, so it said nothing.
+- *"the text area — the text — set as it is like [screenshot]"* (17 Sep 2026, the composer shown
+  with and without a context chip) — **the context row reserves its 24px even when empty**, so
+  the placeholder sits at one height in both states.
+  ⚠️ **THIS REVERSES THIS PAGE'S OWN `.gctx:empty{display:none}`**, whose note argued that with
+  no floor chip the bar is empty at rest and reserving a row spends the composer's top line on
+  nothing. **Measured, that cost 25.5px of jump**: pinning a chip moved the placeholder from
+  30.5px below the composer's top to 56, grew the box 128 → 140 and took the control row down
+  12px with it. Iris reserves the row for exactly this and records the same finding — *"removing
+  the last context chip collapsed 39px and every row under it jumped"*.
+  ⚠️ **CONSEQUENCE, STATED:** an empty composer carries a blank 24px row above the placeholder,
+  and — because the rows now fill the box exactly — `.gtaw`'s centring and `min-height:128px`
+  are both inert until something makes the box taller than its content. Both are kept: the
+  wrapper is what holds the field centred if that ever happens.
+- *"when i click the history icon the text area position will be fix it"* (17 Sep 2026) —
+  **`body:not(.gshut) .gmain{padding-right:var(--g-side-w)}`**. Measured first: the composer and
+  the greeting centre in whatever is left of the page, so collapsing the column slid both
+  **144px** left (centre 966 → 822) — the box you are typing in moved out from under the cursor
+  every time that icon was pressed. Giving the column's own width back as padding puts the
+  content's axis on the VIEWPORT's centre in both states.
+  ⚠️ **CONSEQUENCE, STATED:** with the column open the composer sits 144px left of the visible
+  area's own centre, so there is more empty page to its right than its left. That is the price
+  of it not moving, and it is the **opposite trade to the reference** — Option 13's full-screen
+  Iris re-centres its thread with `padding-left:var(--aihs-w)` when its history column opens.
+  One rule to revert.
+
+⚠️ **`[hidden]` LOSES TO AN AUTHOR `display` RULE, AND THAT WAS A REAL LATENT BUG HERE.**
+`.ghome` declares `display:flex`, and an author declaration beats the UA stylesheet whatever its
+specificity — so `gThreadPaint`'s `$('gHome').hidden = on` set the attribute and changed NOTHING:
+**the greeting went on painting under every open thread.** Latent since the page was built, and
+found by MEASURING the greeting's box rather than by looking at it. `.ghome[hidden]{display:none}`.
+⚠️ `.gthr` is safe only because its rule sets `flex` (the grow/shrink shorthand) and never
+`display` — the recorded `.stpt[hidden]` trap, in a new place.
+
+### What is in it
+
+`G_IC` (13 Lucide glyphs, verbatim) · `G_SPARK` (Option 13's star) · `G_CHATS` (22 titles, the
+capture's) · `G_MODELS` · `G_EFFORTS` · **`G_MODS`** · `gHomePaint` / `gCtxPaint` / `gNamePaint` / `gNameMenu` / `gListPaint` /
+`gThreadPaint` / `gGrow` / `gAtTap` / `gMent*` / `gAnswer` / `gSend` / `gMenu`.
+
+- **The composer is `.aiinbox`'s** — radius 20, 16px padding, a 15px gap between its three rows,
+  a 128px floor, the layered shadow with focus adding its ring ON TOP of the current elevation,
+  and Iris's own placeholder.
+- ⚠️ **SEND IS ABSENT UNTIL YOU TYPE**, then arrives accent-filled. This **reverses this page's
+  own earlier decision** — the capture showed a send button at full strength on an empty box, so
+  the first build kept one and removed the disabled state to avoid a dead control. With the
+  button gone there is no dead press to guard against at all. `margin-left:auto` lives on send,
+  so on an empty composer it has nothing to apply to and `@ · model · effort` sit left.
+- **`@` is real, and it is what fills the context bar.** It seeds an `@` into the box and opens a
+  filterable list of the **16 modules**; picking pins a chip, and the pinned scope is **stamped
+  on the turn and printed under the answer**, so a chip is never decoration.
+  ⚠️ **THE BUTTON SEEDS THE TOKEN RATHER THAN JUST OPENING THE LIST** — the list stays alive only
+  while an `@token` sits before the caret, so opening it with nothing typed LOOKS right and dies
+  on the first keystroke. That is the exact bug `index.html` records against its own Mention row.
+  ⚠️ **THE SEEDED `@` AND THE WORD TYPED INTO IT BOTH COME BACK on every dismissal**, which is why
+  hiding runs through one function; keeping the filter text left `why is cpu high@log@mon` in the
+  box, ready to send.
+  ⚠️ **THE 16 MODULES ARE THE PRODUCT'S OWN** — the same array `setting.js` uses for the
+  Advanced-configure rail, from `_product-docs` §1 — so a pinned chip cannot name something the
+  product does not have.
+  ⚠️ **A SUBSTRING MATCH IS HONEST AND LOOKS LIKE A BUG:** filtering on `log` returns **two** rows,
+  because `Topo**log**y` contains it. A probe asserting one failed on correct code.
+
+### One prompt replays a real Mota run (16 Sep 2026)
+
+Request: *"when i write the prompt “How are our network paths doing today” the thinking step and
+ans is [that conversation] in this site"*, pointing at a live conversation on the instance's own
+`/ai-assistant/mota` build. So this page has **one recorded answer**: typing that question runs the
+live run's own beats and lands the live run's own answer. Everything else still falls through to
+`gAnswer`.
+
+| part | what |
+|---|---|
+| `G_NET_RUN.steps` | the **12 beats**, in the live order — 7 tool calls (`observeops_alerts` · `observeops_query` status_count · `observeops_query` unhealthy_monitors · `observeops_catalog` · `observeops_metric` · `observeops_query` statuses DOWN · `render_chart`) and 5 reasoning steps under the live run's own titles (*Planning operational checks* · *Summarizing network status* · *Analyzing traffic data* · *Clarifying network status* · *Crafting final message*) |
+| `G_NET_RUN.a` | the answer, its four headings and its figures |
+| `gRunFor(q)` | the match — the exact sentence, or any sentence carrying *network path* and *today* |
+| `gRunTick` | reveals one beat every **560ms**, then folds the trail and lands the answer |
+| `gTrailHTML` | the trail: open while it runs with the head naming the beat in flight, `Thought for Ns · 12 steps` once it is done, `Tool` / `Thought` per row, the MCP call in mono and its arguments quiet beside it |
+
+- ⚠️ **THE LIVE PAGE RENDERS NOTHING UNDER AUTOMATION, AND THE CONVERSATION WAS READ OUT OF THE
+  APP'S OWN STORE INSTEAD.** The SPA booted with no console error and `innerText` came back
+  **0 length** — this file's own recorded trap, hit again. `textContent` still carried the data,
+  and the whole conversation was recovered from **`localStorage['mota.activeChat']`**, which is
+  where that build keeps it. **Read the store before concluding a live screen is empty.**
+- ⚠️ **ITS SHAPE IS A VERCEL-AI-SDK `UIMessage.parts` ARRAY**, which is worth knowing because it
+  is what makes a run reproducible at all: the assistant message is **19 parts** — one
+  `tools-loaded`, five `model-call`s, **seven `dynamic-tool`s**, five `reasoning`s (each with its
+  own `title`, which is what the trail's Thought rows print) and one `text`. The beats here are
+  that array with the `model-call`s dropped, since they say only *the model was asked again*.
+- ⚠️ **THE CHROME MCP CONTENT FILTER BLOCKS A LARGE RAW STRING RETURN.** Asking for the 47 KB
+  localStorage value — and later for a long concatenated reasoning dump — came back
+  `[BLOCKED: Cookie/query string data]`. Parse in the page and return small, named fields.
+- ⚠️ **EVERY IDENTIFIER WAS SCRUBBED BEFORE IT WAS WRITTEN IN**, per the repo rule: the hosts and
+  addresses in the answer are RFC 5737 (`192.0.2.82`, `192.0.2.113`) and neutral device names. The
+  counters, the severities, the alert policy, the interface and the timestamp are the run's own.
+  There is a probe assertion that nothing internal survived.
+- ⚠️ **THE STORE'S ORDER IS NOT THE ORDER YOU WOULD GUESS, and it is kept** — four tool calls
+  run FIRST, in parallel, and the reasoning that ordered them is emitted *after* their results;
+  only then do reasoning and tool alternate. **One beat is moved**: the real run's last
+  `reasoning`, *Crafting final message*, is emitted AFTER the answer text, and a trail that
+  finishes after the thing it produced reads as a bug rather than as fidelity, so it is the last
+  beat before the answer here.
+- ⚠️ **THREE MORE DELIBERATE DIVERGENCES**, so none is mistaken for the product: the real run
+  took **95.41s** over five gpt-5-mini calls (19.87 / 9.67 / 20.02 / 28.25 / 17.6s, 151,410
+  tokens) and the twelve beats are paced over **~7s** here, because a prototype that makes you
+  wait 95 seconds to see one screen demonstrates nothing; `Thought for Ns` is therefore measured
+  from **this** run's own clock and the head counts the STEPS rather than claiming the real one's;
+  and the live `render_chart` beat drew an inline 6h traffic chart, which this page cannot — it
+  is a **tool row like any other**, with a footnote under the answer saying the live run also
+  rendered it. Drawing a chart here would be inventing a component this page does not have.
+- ⚠️ **THE TRAIL REPLACES THE LOOSE DOTS, IT DOES NOT JOIN THEM.** `gThreadPaint` shows the
+  three dots only when a turn has no run; otherwise the trail's own head carries them. Two busy
+  marks 14px apart is what `index.html` spent three requests removing.
+- ⚠️ **IT IS OPEN WHILE IT RUNS AND FOLDS ITSELF WHEN THE ANSWER LANDS** — open is right while
+  the trail is the only thing to read, and collapsed is right once there is something better.
+  `index.html` settled on the same default after trying both. A delegated `#gThread` click handler
+  toggles `t.run.open`, so an unfolded trail is one press away.
+- ⚠️ **THE HEAD IS ALREADY-ESCAPED HTML AND MUST NOT GO THROUGH `gEsc`.** It carries `&middot;`,
+  and escaping turned the `&` into `&amp;` — so the folded trail printed the ENTITY as text:
+  *"Thought for 7s &middot; 12 steps"*. **The 91-assertion suite passed on it**; only the
+  screenshot found it. The done branch is literals and numbers and needs no escaping; the running
+  branch is the run's own data and is escaped at the point it is built. There is an assertion now
+  that the head matches `/^Thought for \d+s · 12 steps$/` and contains no `&`.
+- ⚠️ **`clearTimeout(G.t)` IS WHAT MAKES A RUN ABANDONABLE.** `gNewChat` already called it; a
+  tick landing an answer into a thread that has been cleared is the recorded `agClose()` rule.
+
+#### The running row is Ask Iris's, part for part (17 Sep 2026)
+
+Request, with a crop of the running head and `dashboard-rail-flyout-alt3.html` named: *"in this
+thinking step will be same as ask ai"*. The head was the page's own three dots, the beat's name as
+plain text, and a chevron. It is now **Option 13's `aiTkHTML` running row** in the `g*` namespace:
+
+| part | what |
+|---|---|
+| `G_LD_MARK` → `.gldm` › `.gdotm.gdpb` | the **Prism Bloom** dot matrix — 25 cells on five 2.6px tracks, seven timelines (`gdpb0`–`gdpb5` plus one static cell), one speed dial `--gdot-speed:1.8` |
+| `.gldl` | the **chromatic "Dia" label** — it writes itself in behind a mask, then loops a band of this file's own brand ramp through the text |
+| `.gldt` / `#gLdClock` | the **live elapsed clock**, mono tabular figures, ticking on its own 100ms interval |
+
+- ⚠️ **ONLY THE `think` LOADER CAME ACROSS.** Option 13 carries three (Prism Bloom · Core Spiral ·
+  Strobe Stack) and picks between them with `AI_LD_KIND` from what the assistant is doing. This
+  page has ONE recorded run and it is a thinking run, so the other two would be ~100 lines of
+  per-cell delays and keyframes that nothing here can select.
+- ⚠️ **THE CELL MAP IS A COMPUTATION, NOT A STYLE** — which of the seven timelines each of the 25
+  dots takes is derived from the loader's four masks. Copied verbatim for that reason; change one
+  and the timelines have to be regenerated WITH it.
+- ⚠️ **`@property` IS MANDATORY, NOT A NICETY.** An unregistered custom property animates
+  DISCRETELY, so the band would jump end to end and the effect would not appear at all. Both
+  `--gsweep` and `--greveal` are registered as `<percentage>`.
+  ⚠️ **The probe proves the registration WITHOUT sampling an animation** (which headless freezes):
+  a registered property reports its `initial-value` on an element that never sets it, where an
+  unregistered one reports an empty string — so `--gsweep` on `<body>` reading `-14%` is the test.
+- ⚠️ **THREE NUMBERS ARE LOAD-BEARING AND NONE IS ARBITRARY**, all carried over with their
+  reasoning: the middle stop sits at **`+1.4%`** because the band spans `sweep ± 14%` and the ramp
+  puts its violet at 55% (`-14 + 0.55 × 28`); **`background-size` is 100%, not 200%** — this one
+  never moves the image, the stops move inside it, and at 200% every stop lands at half its
+  intended position; and **`gdia`'s delay equals `gwrite`'s duration** (2.2s), which is the
+  hand-off, with the endpoints agreeing so no colour jump appears.
+- ⚠️ **THE WRITE-IN IS A MASK, NOT THE GRADIENT'S OWN `transparent` STOPS.** The loop needs the
+  text READABLE ahead of the band and the write-in needs it ABSENT; one `background-image` cannot
+  be both, and it does not interpolate. `--greveal` rests at **120%**, not 100% — at exactly 100%
+  the last glyph's antialiased edge clips.
+- ⚠️ **`.fresh` IS EMITTED ONLY WHEN THE BEAT'S TEXT CHANGED**, and `gLdHTML`'s `querySelector`
+  runs BEFORE the new markup is inserted — so it asks *"was a loader already on screen?"*, which
+  is what makes the first beat of a NEW run animate even when its text repeats the last run's.
+  The base rule therefore rests at `--gsweep:114%` (sweep already past, fully revealed), because
+  at the `-14%` initial value a non-fresh label would be **invisible** while its beat was still on
+  screen. `gThreadPaint` rebuilds the thread on every render, so this gate is what stops the sweep
+  replaying on a render that changed no word.
+- ⚠️ **THE CLOCK WRITES ONE NODE'S `textContent` ON ITS OWN INTERVAL**, never through
+  `gThreadPaint()` — re-rendering ten times a second would fight the animations and restart the
+  sweep on every tick. It is started from the **tail** of the paint (`#gLdClock` does not exist
+  while the string is still being built, and rAF is starved under headless virtual time), and it
+  stops itself when the node goes away, so an abandoned run cannot leave a timer behind.
+- ⚠️ **THE RUNNING HEAD IS A `<div>`, NOT A BUTTON**, and `.gtkh.run` drops the pill's hug, hover
+  fill and inset: the folded head is a toggle you press, the running one is a row carrying a
+  flexible label with a clock at its end.
+- ⚠️ **THE CLOCK FOLLOWS THE LABEL RATHER THAN THE ROW'S FAR EDGE — the one MEASURED divergence,
+  and the reason is the width.** There `.aildl` is `flex:1` inside a ~408px panel, so *"fills the
+  row"* and *"sits beside the label"* are the same thing; this column is ~640px, and `flex:1` left
+  the clock **400px** from the thing it is timing, reading as an unrelated element at the far edge.
+  `.gldl` hugs its text (`flex:0 1 auto` + `min-width:0`, so a long beat still ellipsises).
+- ⚠️ **TWO DELIBERATE DIFFERENCES FROM OPTION 13's ROW, both because this page keeps its beats on
+  screen while they arrive:** there is **no Skip** (Option 13's row ends in one — here the twelve
+  beats are the demonstration, and a ~7s run has little to skip), and **the trail stays open under
+  the row** rather than collapsing to the loader alone, which is this page's own recorded default.
+  Everything the request's crop points at — the mark, the label, the clock — is Option 13's.
+- ⚠️ **THE FOLDED HEAD KEEPS THIS PAGE'S OWN COUNT.** Option 13 collapses to the bare constant
+  `Thought`; here it stays `Thought for Ns · 12 steps`, because once the run is over how long it
+  took and how many steps it took are the only things that line can still say.
+- ⚠️ **SCREENSHOTTING IT NEEDS THE ANIMATION FROZEN AND THE PROPERTY SET BY HAND** — the recorded
+  rule. The shot script leaves `animation:none` injected and then sets `--gsweep:38%` on the label
+  and the 25 cells' own 0%-frame opacities, so the band is caught mid-sweep and the grid reads as a
+  wavefront rather than a solid block. That tests the RENDERING, which is the part that can be wrong.
+
+#### The open trail is the console's step list in Ask Iris's box (17 Sep 2026)
+
+Two requests and five pictures, in order: first Option 13's expanded disclosure (*"the thinking
+step will be show like this"*), then **four crops of the live Mota run itself** — its step list,
+the chart one of those steps drew, and its two closing Thought rows — with *"show this in step
+with deep with chart … make this properly and the text type step will also like ask ai"*.
+
+**The CONTENT is the console's; the CONTAINER is Ask Iris's.**
+
+| | was | is |
+|---|---|---|
+| folded head | `Thought for 7s · 12 steps` | **`Thought`** — Option 13's constant, with the run's figures moved into the `title` |
+| a row | a 46px `TOOL` / `THOUGHT` label column against a left rule | **glyph · bold name · quiet detail**, on the trail's 28px indent with no rule |
+| a tool | `observeops_alerts` · *6 severities · limit 1000 · newest first* | **`ObserveOps alerts`** · `sort event.timestamp · limit 1000` — the product's own casing and the run's own arguments, read off the console |
+| `render_chart` | a row that said the live run *also* drew a chart | **the chart**, inline under its own step |
+
+- ⚠️ **ONE ROW SHAPE, VARIED ONLY BY ITS MARK** — the console's own rule: a Thought is the same
+  row with the brain glyph, the word *Thought*, and the step's title as its detail, exactly as a
+  tool is its glyph, its name and its argument. Two shapes would say the two kinds of beat are
+  different objects, which they are not; it is also what *"the text type step will also like ask
+  ai"* asks for, since that is how Ask Iris's own text rows read.
+- ⚠️ **THE FIVE STEP GLYPHS COME FROM THE LIBRARY** — Lucide `bell` · `activity` · `list` ·
+  `chart-line` · `chart-bar`, pasted verbatim from `free-icons/`, the set this page's own `G_IC`
+  is drawn from. A **Thought reuses `G_IC.brain`**, which the effort picker already carries — one
+  definition, and it is the same mark the console puts on its own Thought rows.
+  ⚠️ Their `fill:none` is set in CSS, which is what stops a Lucide outline painting as a blob:
+  these paths carry their own presentation attributes and a rule beats every one of them. The
+  stroke width is DERIVED (`1.25 × 24 / 13 = 2.31`), not typed.
+- ⚠️ **THE ARGUMENTS ARE THE CONSOLE'S, NOT MY EARLIER READING OF THEM.** `sort event.timestamp ·
+  limit 1000`, `grep interface · limit 200`, `mode series · limit 50`, `statuses` — four of the
+  seven tool rows said something plausible and wrong before the crops arrived.
+- ⚠️ **THE CHART IS THE ONE THING THE RUN PRODUCED THAT A FOOTNOTE COULD NOT CARRY**, and it is
+  no longer in this trail at all — see *The chart leaves the trail* below. What survives here is
+  the DATA, which has not changed: **the figures are the run's and the nine samples are read off
+  its curve**, with the first point SOLVED so the drawn line's mean is exactly the printed average
+  (9 × 15,214.86 = 136,933.74, tail 104,830.56, so the first is 32,103.18; the same for out at
+  592.11). **The line and the average it prints cannot disagree** — there is a probe assertion that
+  recomputes both.
+  ⚠️ **THE INTERFACE AND THE SWITCH ARE SCRUBBED** — the console names a real machine; this is
+  `edge-switch-01`, the name the answer already uses. A probe asserts it.
+  ⚠️ The cost/token footer of the last crop is not copied; it was not what the request pointed at.
+- ⚠️ **THE LEFT RULE WENT WITH THE LABEL COLUMN** — both references draw a list, and the border
+  drew a second boundary the 28px indent already draws.
+
+#### The prompt carries a copy control (17 Sep 2026)
+
+Request: *"when i hover the prompt … show copy icon"*. A 26px `.gcopy` sits before the bubble in
+its flex row, revealed by `.gq:hover` and by its own `:focus-visible`.
+
+- ⚠️ **IT KEEPS ITS BOX AT REST AND ONLY ITS PAINT IS HIDDEN** — the opposite of the context
+  chip's ✕, and deliberately: that chip is ~180px and every pixel of label matters, so its ✕ is
+  out of flow. Here the bubble is RIGHT-ALIGNED in a wide column, so revealing a button in flow
+  would shove the prompt left under the cursor at the moment you reached for it.
+- ⚠️ **`navigator.clipboard` IS UNDEFINED OVER `file://`** — it needs a secure context, and these
+  prototypes must open from disk, so the textarea + `execCommand` fallback is the path most
+  sessions actually take. It appends, selects, copies and removes inside one call, leaving nothing
+  in the document (a probe asserts the child count is unchanged), and `readonly` stops a touch
+  keyboard opening.
+- ⚠️ **THE CONFIRMATION IS THE GLYPH, NOT A TOAST** — the thing you pressed answers, for 1.2s, and
+  this page has no toast of its own to borrow.
+- ⚠️ **THE LISTENER IS DELEGATED ON `#gThread`**, like the trail's: `gThreadPaint` replaces that
+  markup on every render, so a listener bound to the button would be thrown away with it and one
+  re-bound per paint would stack.
+
+#### Two more from the same day
+
+- **THE THREAD'S SCROLLBAR IS HIDDEN, THE SCROLLING IS NOT** (*"remove the scrollbar, remove the
+  black line"*). In dark theme the UA painted the thumb as a near-black slab down the middle of
+  the page — it read as a rule drawn through the answer rather than as chrome. `overflow-y:auto`
+  stays: taking the bar away by taking the scrolling away would put everything above the fold out
+  of reach. It takes **both** declarations (`scrollbar-width:none` and the `::-webkit-scrollbar`
+  rule) and **both scrollers** — `.gwrap` is `overflow-y:auto` as well and the thread nests inside
+  it, so hiding one bar simply hands the slab to the other.
+  ⚠️ The recorded trade-off applies: nothing now announces that the area scrolls. Accepted because
+  the thread pins itself to its own bottom on every paint.
+- **A CHAT IS FILED IN THE HISTORY COLUMN ON ITS FIRST QUESTION** (*"How are our network paths
+  doing today." set in history*) — Iris's own rule: a chat enters the list once it has been USED,
+  auto-named from the question that started it.
+  ⚠️ **ONLY THE FIRST TURN FILES.** `G.open === null` IS the test for *"this chat is not in the
+  list yet"*: a later question must not open a second row, and must not retitle the row either —
+  the name is what the chat was about when it started.
+  ⚠️ **THE ROW HOLDS THE THREAD BY REFERENCE**, which is what makes reopening it show what was
+  actually said rather than a fresh answer to its title. `gNewChat` assigns a NEW array rather
+  than emptying that one, so a filed chat keeps its own. The fabricated-from-the-title fallback
+  stays for a **seeded** row, since `G_CHATS_SEED` carries names and times, not conversations.
+  ⚠️ The empty line promises the filing again (*"No chats yet. Ask something and it will be saved
+  here."*) — it was cut back while nothing on this page touched `G_CHATS`. Fixing copy a change
+  falsifies runs both ways.
+
+#### The chart leaves the trail, and is rebuilt on the design system (17 Sep 2026)
+
+Request: *"the last prompt the chart will be show in part of and not the part of thinking and
+chart will be use 'Using the ObserveOps design system, build' and the show change chart type like
+ask ai"*. Three changes, and each one reverses something recorded above.
+
+**1 · It moved out of the thinking trail and into the ANSWER.** `chart:true` came off the
+`Render chart` step and `gTrailHTML` stopped calling the renderer; `G_NET_RUN.a` carries
+`<div id="gChart" class="gchtw">` after the Interface-traffic list, and the footnote that used to
+say *"the live run also rendered a chart"* is deleted with it.
+- ⚠️ **A TRAIL SAYS WHAT THE ASSISTANT DID; THE CHART IS WHAT ONE OF THOSE CALLS PRODUCED.**
+  That is the whole reasoning, and it is why the `render_chart` row is now an ordinary tool row
+  like the other six rather than the one beat that opens onto a picture.
+- ⚠️ **IT IS FILLED BY `gChartPaint()` FROM THE TAIL OF `gThreadPaint`, not built into the
+  answer string** — the element does not exist while that string is still being assembled, and
+  rAF is starved under headless virtual time. Same placement, same reason, as the loader's clock.
+
+**2 · The card is built on the ObserveOps design system.** The DS was asked, not guessed, and its
+answer is uncomfortable: `data-viz` is a decision GUIDE with no `obs-chart`, `list_gaps` declares
+charts a gap, and the family's own `dont` says a standalone chart is a **STOP-AND-ASK**. So what
+the DS *does* specify is obeyed part for part, and the one thing it forbids is not done.
+
+| what | the DS said | here |
+|---|---|---|
+| the TYPE | `decisionFlow`: *"Change over TIME? -> trend-line (default), area (volume)"* | **area** is the default, **line** one press away |
+| the SURFACE | the family's own `tokensUsed` — `--common-widget-bg` · `--page-text-color` · `--border-color` · `--neutral-light` · `--neutral-lighter` | all five, scoped to `#gChart` |
+| the SERIES | `do` #2 — the categorical palette IN ORDER; `dont` #2 — never the brand navy | `--chart-tangerine` → `--chart-aqua` |
+| the FRAME | `@btn-radius` 4px, the 8/12/16/24 structural scale | 4px, 12px padding |
+| a11y | *"colour-only encoding fails colour-blind users — always label series and provide a legend"* | both series named in the legend and in the SVG's `aria-label` |
+
+- ⚠️ **THE PLOT IS HAND-DRAWN SVG, AND THAT IS THE DS'S OWN ANSWER HERE, NOT A SHORTCUT.** Its
+  `knownIssues` say in as many words: *"Highcharts is a COMMERCIALLY LICENSED engine — do not
+  vendor it into a standalone prototype"*. The License page fetches it from jsDelivr because it
+  lives in `setting.js`, which thirteen pages load beside the `_ds/` bundle; **this page loads
+  nothing at all**, so there is no engine to reuse and nothing to fetch it alongside. Everything
+  the DS specifies about a chart is in the SVG; only the renderer differs, and it is stated.
+  **The plan to lazily mount Highcharts here was dropped for exactly this reason** — don't
+  rebuild it from a half-memory of the License precedent without re-reading the family's `dont`.
+- ⚠️ **`--g-in` / `--g-out` ARE GONE.** The console's orange/blue were this chart's colours for
+  an hour and the note above argued for them on the `--license-*` precedent; the palette rule
+  overrules it. `--chart-tangerine` / `--chart-aqua` are the DS pair nearest them, so the reading
+  survives and the colours are the product's — **and unlike the console's, they DO flip per
+  theme**, because they are real DS tokens with a value in each.
+  ⚠️ **THE VALUES CAME OUT OF `_ds/observeops-ds.css`, NOT FROM MEMORY**, and that caught one:
+  dark tangerine is **`#fb923c`**, not `#f97316` — that is the LIGHT value. The DS sheet declares
+  light on `:root` and dark under `[data-theme='dark-theme']`, which is the opposite way round
+  from this page, so every pair reads inverted when you lift it.
+- ⚠️ **THE TOKENS ARE SCOPED TO `#gChart` AND MUST NOT MOVE TO `:root`** — the `#agPage`
+  precedent; every one of those names has a job elsewhere in the system. There is a probe
+  assertion that `:root` resolves none of them.
+  ⚠️ **THE FIRST WRITE LANDED THEM INSIDE `:root{}`** and it very nearly shipped: CSS nesting
+  is relaxed enough that `#gChart{}` inside `:root{}` parses as `:root #gChart` and paints, while
+  `html[data-theme="light"] #gChart` becomes `:root html[...]` and matches **nothing** — so light
+  theme would have been silently wrong and dark would have looked fine.
+- ⚠️ **THE HEADER IS NOT AN `obs-toolbar variant="widget"`, and cannot be** — that is a web
+  component from a bundle this page deliberately does not load. Same parts, same order: title and
+  subtitle at the start, the control cluster where the widget's time-range pill goes.
+- ⚠️ **NOT BUILT, AND SAID RATHER THAN HIDDEN:** the family's `states` (loading / empty /
+  error) and the `data-viz-tooltips` hover card. The data is canned and always present, so a
+  loading state would be theatre; the tooltip is a real feature and was not asked for.
+
+**3 · Four chart types, switched in place — the console's own control, and Ask Iris's behaviour.**
+`G_CT` holds Area · Line · Column · Bar with four Lucide glyphs pasted verbatim from
+`free-icons/`; `gPlot(kind)` is one frame with four bodies.
+- ⚠️ **THIS REVERSES *"NOT COPIED: the console's four chart-type controls"*, WHICH WAS RIGHT
+  WHEN IT WAS WRITTEN** — they would have switched a rendering this page had one of. The four
+  renderers came first and the buttons came with them.
+- ⚠️ **PICKING ONE RE-RENDERS THE ART, NEVER THE THREAD.** The handler must not call
+  `gThreadPaint()`: that rebuilds `#gThread`, which would destroy the button under the pointer
+  mid-press **and** scroll the thread back to its floor — so pressing *Bar* would move the card you
+  were looking at. Only `#gChartPlot`'s markup and the four buttons' own state change.
+- ⚠️ **THE CHOICE IS STATE (`G.ct`), NOT A CLASS ON A BUTTON.** `gThreadPaint` rebuilds the whole
+  thread, so anything held only in the DOM is lost on the next render. A probe asserts a full
+  repaint keeps the chosen type.
+- ⚠️ **EVERY RENDERER DRAWS AT ONE viewBox (680×236), and that is load-bearing rather than
+  tidy** — the SVG scales to the card's width, so a second box height would change the card's
+  height on every press and jog the answer under the pointer. `.gchtb`'s `min-height` is that
+  number, so the box cannot collapse for the frame between the two paints either.
+- ⚠️ **A COLUMN'S CATEGORY OWNS A BAND; A LINE'S POINT SITS ON THE TICK.** Drawing both from one
+  x puts the first and last columns half off the plot.
+- ⚠️ **A ZERO IS EMITTED AS NOTHING AND A NON-ZERO IS FLOORED AT 2px — both halves of the
+  recorded `min-width` lesson, in one function.** Outbound peaks at 164.75 against a 35,000 scale
+  (under 1px), so without the floor the whole aqua series is invisible in the two bar types;
+  without the zero test, every empty sample draws a 2px stub claiming traffic that is not there.
+- ⚠️ **THE AREA FILL IS THE DS FIXTURE'S OWN GRADIENT (22% → 0%), not a flat alpha**, whose
+  stops are `color-mix()` strings for the same reason `lic5HcConfig`'s are: the series colour is a
+  `var()`, and an opacity on the whole path would take the stroke with it. Its `<defs>` id is
+  namespaced — an SVG id is global to the document.
+- ⚠️ **THE VALUE LABELS CARRY NO UNIT, AND THEY DID FOR ONE BUILD.** `35,000bits/s` is ~62px of
+  text in a 54px gutter, so **the SVG's own viewBox clipped it — from the LEFT**, which renders as
+  `5,000bits/s` on the row the axis says 35,000: a plausible number, not a visible defect. Every
+  DOM assertion passed; **only the screenshot found it**. The gutter is 46px now and there is a
+  probe assertion that every label's `getBBox()` is inside the box, in every type.
+
+**Two things this left stale and fixed with it:** the `--g-in`/`--g-out` token pair is deleted,
+and the probe's *"the column ships with no chats"* block — the column ships with the recorded
+chat now, so the list is 23 rows once the 22 parked seeds are pushed, not 22.
+
+### Verifying it
+
+A **180-assertion probe** — **ALL 180 PASS** — over the shipped column (one row, the recorded
+prompt, filed under Today, nothing open until it is picked, the 22 seeds parked rather than
+deleted, the field filtering it both ways) and then, driven on those seeds, the chat-history
+column (title, field, magnifier, 23 rows, the bands and their order, every age and the fact that they descend, the age
+pinned at the row end, typing filtering in place with the field keeping focus, the no-match line,
+Esc clearing both, a row opening its chat and being marked), the header row (the expand control
+in the row and not fixed, hidden while the column is open, appearing when it shuts, NOT
+overlapping the trigger and sitting on the header's own 4px gap, wearing the CLOCK and not the
+panel glyph at 17px, hit-testable, opening the column again; the trigger carrying its name and
+label ONLY — no glyph, no caret, no clock path, an even padding, reading *New chat* even while
+a chat is open, promising no menu, starting one on click and opening none; and the list's own
+type at 14px / 600 with its age still 11px and the marked row never lighter), and the composer (its centring row, real slack around the field, the text centred in it
+and in the composer, still at the left edge, docked in `.gfoot` and on the page floor, the
+greeting sitting 20px above the composer rather than centred and never clipped even at a forced
+360px column, the context row reserving its 24px with NOTHING in the composer moving when a chip
+is pinned, the axis identical — and equal to the viewport's centre — with the column open, shut
+and re-opened, the control row still on the floor with its 15px, a grown field
+unclipped, New chat clearing the search field, an open thread really hiding the greeting,
+and the composer still working through its new wrapper — typing revealing send at the row's end,
+`@` seeding its token and opening the module list ABOVE the box, Esc taking the token back),
+and then the recorded run end to end (the prompt opening a trail and NOT the loose dots; the running
+row being Ask Iris's — a `<div>` rather than the folded pill, with no loose dots of its own, a 25-cell
+dot matrix on five ~2.6px tracks, a label naming the beat in flight and painted THROUGH the text on
+the brand ramp, `.fresh` on the first beat, `--gsweep` proved registered, a live clock in mono, and
+the beats still on screen beneath it; the trail folding itself when the answer lands,
+the head reading `Thought for Ns · 12 steps` with no raw entity, the answer carrying the
+instance's own figures with nothing internal surviving the scrub, unfolding showing all 12 beats —
+seven Tool rows naming their MCP call and five Thought rows under the run's own titles — and the
+composer free again afterwards, with no console error),
+and then the chart on the design system (it is in the ANSWER and in neither `.gtk` nor `.gtkb`;
+the five widget tokens resolving on `#gChart` and on `:root` resolving none of them;
+`--common-widget-bg` painted at the DS 4px radius; the two series being the palette tokens and
+resolving to the DS's own `#fb923c` / `#06b6d4`; no colour literal in the card's markup; both
+series named in the legend; the header's title, subtitle and the switcher flush to its right
+edge; four buttons reading area,line,column,bar, each a real `<button>` with an accessible name
+and a stroked Lucide glyph, all four hit-testable, area lit at rest; the plot at one 680×236
+viewBox with 3 paths over 8 gridlines, the fixture's `color-mix` gradient, the figures in its
+`aria-label`, no unit on the value axis and **every label's `getBBox()` inside the box**;
+then a real click on Column giving exactly 8 rects — four non-zero samples × two series — none
+under 2px, with the card's height unchanged, the SAME node and the SAME buttons, the lamp moved
+and `G.ct` following; Bar swapping the axes to vertical gridlines with every label still inside;
+Line dropping the fill and keeping both series; a full `gThreadPaint()` keeping the chosen type;
+and the shipped row building its thread lazily on first open, landing all 12 beats folded, with
+the chart painted into its answer, its four controls live, and the thread cached on the row).
+**Screenshotted in dark and light at 1644×898 in three states: running, folded, unfolded, plus
+all four chart types.**
+⚠️ **The earlier 70-assertion probe of this page is now PARTLY STALE and was not re-run** — it
+asserts the rail's brand row, its `Search chats` button and the trigger inside the rail, all of
+which these requests removed. What it covered and this one does not: the palette, the star and its gradient def, the
+Iris naming, the empty state's three parts, the absent starters and help pair with their CSS
+still parked, the composer's geometry, the absent floor chip and the bar appearing only with a
+pin, send's typed gate, `@` end to end (seed → filter → pick → stamp → drop), the thread, the
+rail and the two pickers. Plus **dark and light screenshots** at 1644×898.
+
+⚠️ **LIGHT IS DECLARED BUT HAS NO SWITCH ON THIS PAGE** — it is reached by setting
+`data-theme="light"` on `<html>`, which is how it was shot. Every other page here declares both
+and this one must not be the exception; the values are `index.html`'s own light block, so they
+are proven rather than invented.
+
+⚠️ **A PROBE THAT DECLARES `function $()` NEVER RUNS ON THIS PAGE, AND IT LOOKS LIKE VIRTUAL
+TIME.** The page declares `const $ = id => …` at the top level of a classic script; a second
+classic script declaring `$` again is a **fatal redeclaration**, so the whole probe is discarded
+at parse time — no error in the dumped DOM, no output, an empty `<pre id="__probe">`. It read
+exactly like *"`DOMContentLoaded` never fired"*, and three fallback timers later it still did.
+**Wrap a probe in an IIFE** (and name nothing the page already names); the tell is that even a
+SYNCHRONOUS write at the top of the script never lands.
+
+⚠️ **TEN OF THE ELEVEN PROBE FAILURES ACROSS THIS PASS WERE THE PROBE'S OWN**, and each cost a
+re-read:
+- a colour grep over `innerHTML` matched the **header COMMENT**, which describes the superseded
+  warm palette — assert computed styles, never source text;
+- `margin-left:auto` computes to a **used pixel value**, so testing for the string `'auto'` fails
+  on correct CSS — measure the edge;
+- `getComputedStyle` at the probe's default **800px viewport** hit the page's own responsive rule
+  and reported an 18px greeting — pass `--window-size`;
+- `gListPaint` rebuilds the rail, so a row captured before the click is **detached** — the
+  recorded stale-node trap;
+- **`const G_CTA` IS NOT `window.G_CTA`** — a top-level `const` in a classic script binds in the
+  global LEXICAL environment, so the probe must use the bare identifier. The recorded `const MR`
+  lesson, in a new place;
+- and the `log` → Topology match above.
+**The one real failure** the first pass found was an empty `d.name`-style miss of my own making,
+fixed before it shipped.
 
 ## An init-aborting crash on Windows and Linux, in six files (5 Sep 2026)
 
