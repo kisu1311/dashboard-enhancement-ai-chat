@@ -2816,15 +2816,23 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
    ⚠️ THE FIX IS TO GIVE THE SCROLLER NO TOP PADDING AND LET ITS CONTENT CARRY IT, so the
    scrollport's content edge IS its padding edge and `top:0` pins the header flush. The space
    at rest is unchanged — it moved from the scroller to `#dashGrid`, one declaration each.
-   ⚠️ ONE NUMBER, DECLARED HERE AND INHERITED. `#dashGrid` is a descendant, so it reads
-   `--pb-pad` rather than repeating `12px` 4,000 lines away, where the two would drift.
+   ⚠️ ONE NUMBER, DECLARED ON `:root` AND INHERITED. `#dashGrid` reads `--pb-pad` rather than
+   repeating `12px` 4,000 lines away, where the two would drift.
+   ⚠️ THEY SIT ON `:root`, NOT ON `.pagebody`, BECAUSE `.gnav` HAS TO READ `--pb-x` TOO — the
+   navigator is a child of `.dwrap`, which is an ANCESTOR of this scroller, so a token declared
+   here could never reach it. Declared once above both, it still reaches every `.pagebody`
+   (the module placeholder and Health included) and the mark can size itself to the board's own
+   inset instead of carrying a second copy of 14px. The rule is theme-independent on purpose:
+   put these in the dark `:root` block alone and light theme drops the whole `padding`
+   declaration, because `var()` with no value makes the declaration invalid.
    ⚠️ SCOPED WITH `:has(> #dashGrid)` — the OTHER two `.pagebody` scrollers (the module
    placeholder and Health) have no sticky header in them and keep their padding.
    ⚠️ `fitCanvas()` NEEDED NOTHING, and that was checked rather than assumed: it computes
    `avail` as `pb.clientHeight - paddingTop - paddingBottom` and compares it against
    `g.scrollHeight`. Dropping 12px of scroller padding grows `avail` by 12 and adding it to the
    grid grows `scrollHeight` by 12 — the comparison is balanced by construction. */
-.pagebody{--pb-pad:12px;--pb-x:14px;flex:1;overflow:auto;padding:var(--pb-pad) var(--pb-x);min-height:0}
+:root{--pb-pad:12px;--pb-x:14px}
+.pagebody{flex:1;overflow:auto;padding:var(--pb-pad) var(--pb-x);min-height:0}
 .pagebody:has(> #dashGrid){padding-top:0}
 .card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
 .card .chead{padding:9px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);display:flex;align-items:center;gap:8px}
@@ -3033,25 +3041,37 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    so the pointer that revealed the list is still inside it — a list that opened CENTRED on the
    mark would slide out from under the cursor and close itself on the way. Same reasoning as the
    rail flyout's deferred close, solved by geometry instead of a timer. */
-.dwrap{--gnav-x:10px;--gnav-pad:7px;--gnav-bar:14px}
-.gnav{position:absolute;left:var(--gnav-x);top:50%;transform:translateY(-50%);z-index:39;display:none}
+.dwrap{--gnav-x:0px;--gnav-bar:4px;--gnav-pad:calc((var(--pb-x) - var(--gnav-bar)) / 2)}
+.gnav{position:absolute;right:calc(var(--gnav-x) + var(--pb-sb,0px));top:50%;transform:translateY(-50%);z-index:39;display:none}
 body:has(#view-dashboard.on) .gnav{display:block}
-/* ⚠️ THE BOARD GIVES UP A GUTTER SO THE MARK SITS OUTSIDE THE GROUP (request, 21 Sep 2026:
-   "it will be show out side of empty group"). The mark is `position:absolute` in `.dwrap` and the
-   only room to its left was `.pagebody`'s own 14px inset, so a 28px control painted ON the group
-   box — over its border, its header fill and the first letters of its name. There is nowhere
-   further left to move it (`.dwrap` begins at the rail), so the CANVAS moves right instead.
-   ⚠️ EVERY NUMBER IN IT IS A TOKEN, SO THERE IS NO SECOND COPY OF ANYTHING: `--gnav-x` + the
-   mark's own left padding + the bar width is where the bars END, and `--pb-x` after it is the
-   scroller's own horizontal inset — the gap every other thing on this board keeps. Move the mark,
-   resize a bar or change the board's inset and the gutter follows. Writing `45px` here would be a
-   copy of the mark's geometry, and writing `14px` a copy of `.pagebody`'s; both would drift.
-   ⚠️ `:has(#gNav)` IS THE GATE, AND IT IS EXACT: `gNavPaint` REMOVES the element below two
-   groups rather than hiding it, so a flat board, a one-group board and every other `.pagebody`
-   scroller on the page keep their 14px and nothing has to be kept in step.
-   ⚠️ IT OUTRANKS `.pagebody`'s OWN RULE BECAUSE `:has()` CARRIES ITS ARGUMENT'S SPECIFICITY
-   — an id inside it makes this (1,2,0), so it wins on weight rather than on source order. */
-.dwrap:has(#gNav) .pagebody{padding-left:calc(var(--gnav-x) + var(--gnav-pad) + var(--gnav-bar) + var(--pb-x))}
+/* ⚠️ THE MARK IS ON THE RIGHT AND THE BOARD GIVES UP NOTHING (request, 21 Sep 2026:
+   "[it] will be show right side and it is use exxtra space make minimal space").
+   ⚠️ THIS REVERSES THE GUTTER BUILT EARLIER THE SAME DAY, and the reason it existed is worth
+   keeping: the mark used to sit at `left:var(--gnav-x)`, where the only room was `.pagebody`'s
+   own 14px inset, so a 28px control painted ON the group box — over its border, its header fill
+   and the first letters of its name. The answer then was `.dwrap:has(#gNav) .pagebody{padding-left:
+   calc(--gnav-x + --gnav-pad + --gnav-bar + --pb-x)}`, a derived 45px gutter. It worked, and it
+   cost 45px of every multi-group board. **Do not re-add it**; the right edge is free, so anchoring
+   there answers the same "outside the group" complaint for nothing.
+   ⚠️ `right`, NOT `left:auto` PLUS A WIDTH — `.gnav` is sized by its content and its RIGHT edge
+   is what is pinned, so the mark and the (much wider) open list share that edge and the list grows
+   LEFTWARD from it. That is what keeps the pointer inside the card it just opened; anchored left,
+   the list would grow right, off the board.
+   ⚠️ `--pb-sb` IS THE SCROLLER'S OWN SCROLLBAR WIDTH, PUBLISHED BY `gNavPaint`, and it is what
+   stops the mark being painted ON the board's scrollbar where that bar takes layout space. It is
+   0 on macOS (overlay scrollbars reserve nothing) and ~15px on Windows/Linux, so it is MEASURED
+   rather than assumed — a hardcoded offset would be wrong on one of the two. The fallback in the
+   `var()` is 0, so the rule is correct before the first paint.
+   ⚠️ IT FITS THE BOARD'S OWN INSET EXACTLY, SO IT OVERLAPS NOTHING AND COSTS NOTHING.
+   `--gnav-pad` is `(--pb-x - --gnav-bar) / 2`, so the mark is exactly `--pb-x` wide — 14px today
+   — and sits in the band between the group box's right edge and the scroller's inner edge. The
+   overlap that "no gutter" seemed to imply was worth avoiding rather than accepting: the group
+   header's RIGHT end is where `.gact` puts the group's ＋ and ⋮, so a mark floating there would
+   cover CONTROLS, not merely paint over a name — the original complaint, reappearing on the other
+   side and worse. Nothing is retyped: change `--pb-x` and the mark still fills the inset.
+   ⚠️ THE COST IS THE HIT TARGET — 14x27 rather than the 28x23 it had in the gutter. It is a
+   hover control and the height carries it, but that is the number to raise (via `--gnav-pad`) if
+   it proves fiddly, and raising it starts the overlap above. */
 /* ⚠️ ONE BAR PER GROUP, AND THE BARS ARE THE WHOLE CONTROL (request, 21 Sep 2026: "make the
    minimal ui visualization and show the line how maney group show when 2 group then show only 2
    line"). It was FOUR FIXED BARS at alternating widths — a drawn "list" glyph — so a two-group
@@ -3061,13 +3081,16 @@ body:has(#view-dashboard.on) .gnav{display:block}
    group, a rhythm of two widths claims a per-group difference that does not exist. Uniform is the
    only honest width once the bars carry meaning.
    ⚠️ THE CARD IS GONE — no border, no fill, no shadow — which is the "minimal" half. THE PADDING
-   STAYS, and is doing two jobs: it is the only hit area a 2px bar has, and it holds the stack off
-   the group box's own edge. Take it out and the control becomes unclickable between the bars.
+   STAYS, and it is now the WHOLE hit area: at 4px square the bars are dots, so without it the
+   control is a few unclickable specks. 8px vertical and a DERIVED horizontal pad keep it 14x27.
+   ⚠️ ONE TOKEN DRIVES BOTH AXES — `--gnav-bar` is the width AND the height (request, 21 Sep
+   2026: "this X line width USE 4PX", answered as both). A second number for the thickness is
+   how a square stops being square the first time either one is tuned.
    ⚠️ NOTHING CAPS THE COUNT, deliberately — a cap is exactly the bug this request fixes, in the
-   other direction. At 2px + 3px the stack is 5px per group, so twelve groups is 60px; it grows
+   other direction. At 4px + 3px the stack is 7px per group, so twelve groups is 84px; it grows
    with the board because that is what it is for. */
 .gnavm{display:grid;gap:3px;padding:8px var(--gnav-pad);cursor:pointer}
-.gnavm i{display:block;width:var(--gnav-bar);height:2px;border-radius:2px;background:var(--text-dim)}
+.gnavm i{display:block;width:var(--gnav-bar);height:var(--gnav-bar);border-radius:2px;background:var(--text-dim)}
 .gnavl{display:none;flex-direction:column;gap:2px;padding:6px;border:1px solid var(--border-soft);
   border-radius:10px;background:var(--card);box-shadow:var(--pop-shadow);
   max-height:min(60vh,420px);overflow-y:auto;scrollbar-width:none}
@@ -3286,8 +3309,17 @@ body:has(#view-dashboard.on) .gnav{display:block}
    group, so it has to be seen. Measured against the canvas: `--border` is 1.32 contrast in
    dark and 1.27 in light (invisible, which is what started this), `--track` is 2.68 / 2.57 —
    a hairline you can find without it competing with the widgets in the groups around it. */
+/* ⚠️ THE FLOOR IS 56px, NOT 96 (request, 21 Sep 2026: "in the empty group the show scrollbar
+   … it is use exxtra space make minimal space"). MEASURED, not trimmed by eye: a group costs its
+   band + 65px of header and padding + a 16px margin, so at 96 the FIFTH empty group pushed the
+   board to 907px inside a 717px scroller and it grew a scrollbar — on a board with nothing on it.
+   At 56 five of them come to 697px and fit. It is still well above a 44px touch target, and the
+   band is an empty div (the `svg` / `color` / `font-size` rules below are vestigial), so there is
+   nothing inside it to clip.
+   ⚠️ THIS IS NOT `GRP_RZ_MIN`, which is 96 and clamps a DRAGGED option-2 group's own height.
+   The two are different numbers for different things and must not be folded together. */
 .gdrop{grid-column:span 12;display:flex;align-items:center;justify-content:center;gap:8px;
-  min-height:96px;padding:14px;border:1px dashed var(--track);border-radius:var(--radius);
+  min-height:56px;padding:14px;border:1px dashed var(--track);border-radius:var(--radius);
   color:var(--muted);font-size:12.4px;text-align:center}
 .gdrop svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
@@ -17508,6 +17540,13 @@ function gNavPaint(){
       const t = String(n || 'Group ' + (i + 1)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
       return '<button class="gnavi" data-g="' + i + '" title="' + t + '" onclick="gNavGo(' + i + ')">' + t + '</button>';
     }).join('') + '</div>';
+  /* ⚠️ MEASURED, NOT ASSUMED — `offsetWidth - clientWidth` is the width the scrollbar
+     actually takes in LAYOUT: 0 on macOS, where scrollbars overlay and reserve nothing, and
+     ~15px where they do not. The mark is anchored off it so it is never painted on top of
+     the bar it would otherwise block. Written on `.dwrap`, which is what `.gnav` positions
+     against, and re-read on every paint because a board can gain or lose its scrollbar. */
+  const pb = host.querySelector('.pagebody');
+  host.style.setProperty('--pb-sb', (pb ? pb.offsetWidth - pb.clientWidth : 0) + 'px');
   gNavBind(); gNavMark();
 }
 /* ⚠️ BOUND ONCE, NOT PER PAINT. `renderCanvas` runs on every add, drag, resize and undo;

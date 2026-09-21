@@ -77,9 +77,16 @@ the `data:` URI back from git.
 | *"remove the right alignment only"* / *"remove the 'Vertical alignment'"* | **picker-only** withdrawals |
 | the group navigator (ChatGPT's canvas reference) | `gNav*` + its CSS |
 | *"make the minimal ui visualization … when 2 group then show only 2 line"* | the mark **counts** now, and the card round it went |
-| *"it will be show out side of empty group"* | the board gives up a **derived** left gutter — see below |
+| *"it will be show out side of empty group"* | the board gives up a **derived** left gutter — **reversed hours later, see below** |
+| *"[it] will be show right side … make minimal space"* | the gutter is **deleted**; the mark fits the board's own 14px inset |
+| *"this X line width USE 4PX"* | one token drives both axes — the bars are 4×4 dots |
+| *"in the empty group the show scrollbar"* | the empty band's floor 96px → **56px**; five of them fit again |
 
 ### The navigator: the mark counts, and then the board made room for it
+
+> ⚠️ **THE SECOND HALF OF THIS WAS REVERSED THE SAME DAY.** The 45px gutter is gone and the
+> mark is on the RIGHT — see *"Then it moved right, and the board took the 31px back"*
+> below. What is kept here is why the left-hand placement needed a gutter at all.
 
 Two follow-ups, and the second is the one with a cost worth stating.
 
@@ -183,9 +190,54 @@ did not cause it** — the bug predates the alignment control.
 
 ## Verification
 
-    gedit21.py                ALL 92 PASS   (session scratch dir)
+### Then it moved right, and the board took the 31px back
+
+Three more asks in one message. **The gutter lasted about an hour.**
+
+    was                         is
+    left:var(--gnav-x)          right:calc(var(--gnav-x) + var(--pb-sb,0px))
+    45px of board given up      nothing - the :has(#gNav) rule is deleted
+    bars 14 x 2px               bars 4 x 4px, ONE token driving both axes
+    mark box 28 x 23            mark box 14 x 27 - exactly --pb-x wide
+    grid 1488px @1600           grid 1519px
+
+⚠️ **"NO GUTTER" DID NOT MEAN "LET IT OVERLAP", AND I NEARLY BUILT THE LITERAL VERSION.** An
+18px mark at `right:10px` spans 1572–1590 against a group box ending at **1586** — 14px on the
+box, i.e. the original complaint reappearing on the other side, and **worse there**: the group
+header's right end is where `.gact` puts the group's ＋ and ⋮, so the mark would cover
+**controls**, not just paint over a name. The mark is sized to the inset instead — probed at
+mark-left 1586 against box-right 1586, so it abuts and overlaps nothing.
+
+⚠️ **`--gnav-pad` IS `(var(--pb-x) - var(--gnav-bar)) / 2`**, so the mark is always exactly as
+wide as the board's own inset. That is what forced `--pb-pad` / `--pb-x` up to **`:root`**:
+`.gnav` is a child of `.dwrap`, an **ancestor** of `.pagebody`, so a token on the scroller could
+never reach the mark. It must be a **theme-independent** `:root` rule — in the dark block alone,
+light theme drops the whole `padding` declaration, because a `var()` with no value is invalid.
+
+⚠️ **`--pb-sb` IS MEASURED, NOT ASSUMED** — `gNavPaint` publishes `offsetWidth - clientWidth`
+on every paint. 0 on macOS (overlay scrollbars reserve nothing), ~15px where they take layout
+space. Without it the mark is painted on the scrollbar it would then block.
+
+⚠️ **THE COSTS, STATED:** the hit target went 28×23 → **14×27**, and at 4px the stack now reads
+as a vertical **⋮**, which in this very app means *more actions* (the widget and group kebabs).
+It is a hover control and the height carries the target, but both are worth knowing; `--gnav-pad`
+is the one dial, and raising it starts the overlap above.
+
+### The empty band's floor: 96px → 56px
+
+*"in the empty group the show scrollbar"* was its own defect. **Measured:** a group costs its band
++ 65px of header and padding + a 16px margin, so at 96 the **fifth** empty group pushed the board
+to **907px inside a 717px scroller** — a scrollbar on a board with nothing on it. At 56 five come
+to 697px and fit (probed 717 vs 717).
+
+⚠️ `.gdrop` is an **empty div** — its `svg` / `color` / `font-size` rules are vestigial — so
+nothing inside it is clipped. ⚠️ **It is not `GRP_RZ_MIN`**, which is also 96 and clamps a
+*dragged* option-2 group's height. Two numbers, two jobs; do not fold them.
+
+    gedit21.py                ALL 92 PASS   (session scratch dir) - re-run after BOTH navigator passes
+    navright.py               ALL 26 PASS   right-anchored · no gutter · 4px dots · 5 groups do not scroll
     navmin.py                 ALL 20 PASS   the mark counts · the card is gone
-    navout.py                 ALL 22 PASS   the mark is outside the group box, the gutter is derived
+    navout.py                 STALE         asserts the deleted gutter - superseded by navright.py
     </style>  substring 1  ·  line-start 1
     comment balance           2748 / 2753 — the SAME +5 as `git show HEAD:index.html`, i.e. pre-existing
     node --check              clean — index.html's main block and setting.js

@@ -8396,7 +8396,7 @@ widths inside a bordered card** — a drawn "list" glyph. On a two-group board i
 | | was | is |
 |---|---|---|
 | bars | four, hardcoded in the markup | **`TABS.length`**, one per group |
-| widths | 16 / 11 alternating | uniform 14px |
+| widths | 16 / 11 alternating | uniform — **4×4px since later the same day**, see below |
 | chrome | 1px border, `--card` fill, `--pop-shadow`, radius 8, 10/9 padding | none — 8/7 padding only |
 
 - ⚠️ **THE BARS READ THE SAME ARRAY THE LIST BELOW THEM MAPS**, so the collapsed count and the
@@ -8427,6 +8427,12 @@ widths inside a bordered card** — a drawn "list" glyph. On a two-group board i
 
 ##### The board gives up a gutter so the mark sits outside the group (21 Sep 2026)
 
+> ⚠️ **SUPERSEDED THE SAME DAY — THE GUTTER IS GONE AND THE MARK IS ON THE RIGHT.** Read
+> *"The mark moved to the right, and the board took its 31px back"* below. Everything here is
+> kept because it records what the left-hand placement cost and why the gutter had to be
+> derived — **do not re-add `.dwrap:has(#gNav) .pagebody{padding-left:…}`** on the strength
+> of it.
+
 Request: *"it will be show out side of empty group"*, with the two bars painted over a group's own
 header. Measured before touching it: the mark's box ran **70–91px** while the group box started at
 **68px** — the control was drawn on the box's border, its header fill and the first letters of its
@@ -8455,6 +8461,69 @@ name, on every board with more than one group.
 - ⚠️ **CONSEQUENCE, STATED:** a multi-group board is **31px narrower** than a flat one. At 1600
   the group box still measures 1488px and nothing overflows; it is the price of the mark having
   somewhere to stand, and it is paid only by the boards that have a navigator at all.
+
+##### The mark moved to the right, and the board took its 31px back (21 Sep 2026)
+
+Three asks in one message: *"in the empty group the show scrollbar"*, *"[it] will be show right side
+and it is use exxtra space make minimal space"*, and *"this X line width USE 4PX"*. The last two are
+what reversed the gutter above; the first is its own defect and is in the next subsection.
+
+| | was (the gutter) | is |
+|---|---|---|
+| anchor | `left:var(--gnav-x)` | **`right:calc(var(--gnav-x) + var(--pb-sb,0px))`** |
+| the board pays | **45px** of left padding | **nothing** — the rule is deleted |
+| the bar | 14×2px | **4×4px**, one token driving both axes |
+| the mark's box | 28×23 | **14×27** — exactly `--pb-x` wide |
+| grid width @1600 | 1488px | **1519px** |
+
+- ⚠️ **"NO GUTTER" DID NOT MEAN "LET IT OVERLAP", AND THE DIFFERENCE MATTERED.** Taken
+  literally, an 18px mark at `right:10px` spans 1572–1590 against a group box ending at 1586 —
+  **14px on the box**, which is the complaint that started all of this, reappearing on the other
+  side. Worse there than on the left: the group header's right end is where **`.gact`** puts the
+  group's ＋ and ⋮, so a mark floating at that height would cover **controls**, not merely paint
+  over a name. The mark is sized to fit the inset instead, and overlaps nothing (probed: mark left
+  1586, box right 1586).
+- ⚠️ **`--gnav-pad` IS DERIVED: `(var(--pb-x) - var(--gnav-bar)) / 2`.** That is what makes the
+  mark exactly as wide as the board's own inset — change either token and it still fills the band
+  rather than carrying a second copy of 14px.
+- ⚠️ **THAT IS WHY `--pb-pad` / `--pb-x` MOVED TO `:root`.** `.gnav` is a child of `.dwrap`,
+  which is an **ancestor** of `.pagebody`, so a token declared on the scroller could never reach
+  the mark. Declared once above both, it still reaches every `.pagebody` (the module placeholder
+  and Health included). ⚠️ **It must be a theme-independent `:root` rule**: put it in the dark
+  block alone and light theme drops the whole `padding` declaration, because a `var()` with no
+  value makes the declaration invalid.
+- ⚠️ **`--pb-sb` IS THE SCROLLER'S MEASURED SCROLLBAR WIDTH**, published by `gNavPaint` on
+  every paint (`offsetWidth - clientWidth`). It is **0 on macOS**, where scrollbars overlay and
+  reserve nothing, and ~15px where they take layout space — so it is measured, not assumed, and a
+  hardcoded offset would be wrong on one of the two platforms. Without it the mark is painted on
+  top of the bar it would then block. The `var()` fallback is 0, so the rule is right before the
+  first paint.
+- ⚠️ **`right`, NOT `left:auto` PLUS A WIDTH.** `.gnav` is sized by its content and its RIGHT
+  edge is pinned, so the mark and the much wider open list share that edge and the list grows
+  **leftward** from it — which is what keeps the pointer inside the card it just opened. Anchored
+  left, the list would grow right, off the board. Probed: list right 1600 = mark right 1600, list
+  left 1550.
+- ⚠️ **ONE TOKEN DRIVES BOTH AXES** — `.gnavm i` is `width:var(--gnav-bar);height:var(--gnav-bar)`.
+  A second number for the thickness is how a square stops being square the first time either is
+  tuned. At 4px the bars are dots, so **the padding is now the whole hit area**: 14×27.
+- ⚠️ **THE COST, STATED:** the hit target went 28×23 → 14×27. It is a hover control and the
+  height carries it; `--gnav-pad` is the dial if it proves fiddly, and raising it starts the
+  overlap above.
+
+##### The empty band's floor is 56px, because five of them grew a scrollbar (21 Sep 2026)
+
+Request: *"in the empty group the show scrollbar … it is use exxtra space make minimal space"*.
+**Measured rather than trimmed by eye:** a group costs its band + 65px of header and padding + a
+16px margin, so at a 96px floor the **fifth** empty group pushed the board to **907px inside a
+717px scroller** — a scrollbar on a board with nothing on it. At 56 five of them come to 697px and
+fit (probed: 717 vs 717, no scrollbar).
+
+- ⚠️ **THERE IS NOTHING INSIDE THE BAND TO CLIP.** `.gdrop` is an empty `<div>`; its `svg` /
+  `color` / `font-size` rules are vestigial, and the comment at its render site already said so.
+- ⚠️ **THIS IS NOT `GRP_RZ_MIN`,** which is also 96 and clamps a **dragged** option-2 group's
+  own height. Two different numbers for two different things — do not fold them together.
+- 56 is still well above a 44px touch target, and the band is a drop target you have to be able
+  to hit.
 
 #### Verification
 
