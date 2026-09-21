@@ -44,9 +44,21 @@ drag grips, "Title size", and what `No padding` does.
 ⚠️ **`setting.js` WAS NOT TOUCHED THIS SESSION.** It is dirty in the tree from two sessions ago
 (`#cwModal` in both scoped DS token openers). `node --check` is clean on it; that is not this work.
 
-⚠️ **NOT COMMITTED AND NOT PUSHED.** All four files are dirty and verified; no commit was made
-because none was asked for. `origin` is `dashboard-enhancement-ai-chat` and Pages deploys from
-`main` on push — say the word for either.
+⚠️ **COMMITTED AND PUSHED — `9ef647d`, 21 Sep 2026.** All four files went up together, including
+the `setting.js` change from two sessions ago (its diff is symmetric across the dark and light DS
+token openers and `node --check` is clean, but it was not reviewed here).
+
+⚠️ **THAT PUSH ALSO CARRIED `46dfacf`, WHICH HAD BEEN SITTING UNPUSHED** — the range was
+`63daf4a..9ef647d`, i.e. the remote was TWO commits behind, not one. *"Empty group option 2"* was
+committed locally in an earlier session and never pushed, so it went live with this work. **Check
+`git log origin/main..main` before assuming a local commit is published.**
+
+⚠️ **THE FORMATTING-HELP IMAGE ROW NOW HOTLINKS A SIGNED FACEBOOK CDN URL ON A PUBLIC SITE**
+(`index.html`, `CW_FT_MD`). It is not an internal identifier, so the RFC 5737 scrub rule does not
+catch it — but it carries a signature (`oh=`) and an expiry (`oe=`), it points at a personal photo
+asset, and it is now in public git history permanently. It was raised before the push and the push
+was reaffirmed. When it expires the row renders its alt text; swap in any reachable image, or put
+the `data:` URI back from git.
 
 ## The requests, and what each one actually cost
 
