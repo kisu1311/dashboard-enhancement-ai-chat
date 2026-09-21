@@ -7106,10 +7106,12 @@ options 2 and 3 shipping as **exact copies of option 1's artwork**. That is what
 for and is how every option in this folder has started: the License page's Option 2 was a byte
 copy of Option 1 for an afternoon before it diverged.
 
-⚠️ **SUPERSEDED IN PART — OPTION 2 HAS DIVERGED** (17–18 Sep 2026). It is resizable, it carries a
-Header banner field, and it draws no dashed box; options 1 and 3 are still byte copies of each
-other. Read *"Empty group OPTION 2"* below before treating the three as interchangeable — in
-particular "identical artwork" is still true and "identical behaviour" is not.
+⚠️ **SUPERSEDED IN PART — OPTION 2 HAS DIVERGED** (17–18 Sep 2026). **The whole GROUP is
+resizable in both axes** — height in pixels, width in grid columns, so two narrowed groups share a
+row — it carries a Header banner field, and it draws no dashed box; options 1 and 3 are still byte
+copies of each other. Read *"Empty group OPTION 2"* below before treating the three as
+interchangeable — in particular "identical artwork" is still true and "identical behaviour" is not,
+and the difference now shows up on the BOARD rather than in the tile's picture.
 
 ⚠️ **IT IS REVIEW CHROME**, like `Setting/`'s Scale switcher and the License page's option radio
 — three tiles for one action is not a product state, it is three designs on screen at once so one
@@ -7368,6 +7370,413 @@ background"*. `.cwftpair` is reused verbatim, so the two paired rows cannot drif
 - ⚠️ **THE "HORIZONTAL ONLY" NOTE STAYED WHERE IT WAS** — it records why there is only one
   alignment control, which is a different fact from where that control sits.
 
+### The 19 Sep 2026 Free Text pass — spacing, images, and a background that says what it does
+
+Four requests in a row, all the Free Text editor. ⚠️ **Where they conflict with the 17 Sep
+entries above, these are current** — in particular the panel is no longer inset twice, and the
+Background list no longer has a `Default`.
+
+| request | what changed |
+|---|---|
+| *"the free text widget remove 12 px padding"* | `#cwModal.cwft .cwsb{padding-left:0;padding-right:0}` — the shared settings scroller stops paying an inset the panel already pays |
+| *"in between Font Size and alignment add 24px margin"* | `.cwftpair` runs `row-gap:10px;column-gap:24px` — both pairs, one rhythm in both axes |
+| *"add image add like datadog"* | `ftMd` renders `![alt](url)`, the Formatting-help dialog gains a row, and `ftEsc` grew a fourth character |
+| *"add the background color transprent"* | the Background list's first entry is **`Transparent`**, not `Default` |
+
+⚠️ **THE 12px WAS A DOUBLED INSET, AND ONLY MEASURING FOUND WHICH ELEMENT OWNED IT.** Four rules
+on that screen declare a 12px padding and the crop could not say which. Measured: `.cwsb` — the
+**shared** settings scroller, which pads itself because the query builder has no panel of its own
+— sat outside `.cwftp`'s own 16px, so a field started **28px** from the pane's border. It is 16px
+(17 to the border) now. `.cwftp` is `.cwsb`'s only child in this mode (`cwFtPanelHTML` returns that
+one div and the gate message lives in the footer), so nothing else lost its inset, and the rule is
+scoped to `#cwModal.cwft` (1,1,0) so it beats **both** `.cwsb` rules — the base `13px 14px` and the
+responsive `10px 12px` — without depending on which is live. The query builder still measures
+`10/12/10/12`.
+⚠️ **LONGHANDS, NEVER THE `padding` SHORTHAND** — that would reset the 14px top this same rule
+sets in place of the tab strip's border.
+
+⚠️ **`column-gap`, NOT `gap`.** Each `.cwftpair` is one row *today*; the shorthand would also set
+the row gap, so a pair that ever wrapped would put 24px between its own two lines — the "the gap
+INSIDE a group must not beat the gap BETWEEN groups" rule, pre-empted rather than hit. The columns
+are `1fr` each, so the wider gutter takes 7px off each; Alignment still hugs its content and only
+starts 7px further right.
+
+#### Images — and the escaping hole the new rule exposed
+
+⚠️ **THE IMAGE RULE MUST RUN BEFORE THE LINK RULE.** `![alt](url)` **contains** `[alt](url)`, so
+the link rule matches its tail, emits an anchor and leaves a stray `!`. First match wins — order
+IS the rule, and there is a probe assertion that a plain link is still a link.
+⚠️ **THE SOURCE IS `https?://` OR `data:image/`, the same discipline the link rules use.** That
+keeps `javascript:` out (inert on an `<img>` today, but a hole in the DOM the next reader has to
+reason about), and `data:image/` is allowed because **an `<img>` never executes script in an SVG it
+loads** — which is what lets the help row demonstrate a real rendered image with no network.
+⚠️ **DIVERGENCE, STATED:** Datadog's own example is a RELATIVE path (`path/to/image.png`). An
+arbitrary string as `src` is not accepted here, so a relative path renders as its alt text.
+
+⚠️ **`ftEsc` NOW ESCAPES `"` TOO, AND THAT CLOSED A LATENT HOLE IN THE LINK RULE.** Until the
+image rule nothing here put source text into an ATTRIBUTE, so three characters were enough — but
+the link rule already did, quietly: its URL group is `[^\s)]+`, which permits a `"`, so
+`[x](https://a" onmouseover="alert(1))` closed the `href` and added an event handler. Escaping at
+the door fixes that rule, the image rule and every rule added later, which is the whole point of
+*escape first, format second*. In element content `&quot;` renders as `"`, so nothing else changes.
+There are probe assertions for **both** breakouts, and one that the parsed `<img>` carries no
+attribute starting `on`.
+
+⚠️ **THE IMAGE IS BOUNDED BY `.ftt`, NOT BY `.ftw`.** That one class is the text container on
+the board, in the editor's live preview AND in each help-result cell, so one rule covers all three
+and they cannot render an image three different sizes. `.ftw` does not scroll, so an unbounded
+`<img>` is simply clipped — a 2000px screenshot would show its top-left corner with nothing saying
+why. No radius and no border: rounding someone's screenshot is the chrome deciding what their
+image looks like.
+
+⚠️ **THE HELP ROW CARRIES A `data:` URI, and Datadog's carries a path.** Their row can load their
+logo; these prototypes open over `file://` with no network promised, and a row that teaches images
+by showing a broken-image icon teaches the opposite. The SVG is URL-encoded end to end (`%22`,
+`%20`, `%23`) so it carries no quote, space or `)` — a `)` would end the markdown link early.
+
+#### `Default` → `Transparent`, renamed rather than duplicated
+
+The Background list's first entry **already resolved to `transparent`**, so the honest change was
+to make the option say what it does rather than add a second row with the same value under a
+different name — which is how a list comes to have two names for one colour. "Default" named
+nothing a reader could see; the **preset** is what supplies a default, and the Default preset sets
+`bg:'Gray'`.
+⚠️ **NO MIGRATION WAS NEEDED, and that falls out of `cwFtVal` rather than being handled**: a board
+saved with `bg:'Default'` finds no entry and takes `cwFtBg`'s own `'transparent'` fallback — the
+same paint it had. Only the label moved, plus the two presets that named it.
+⚠️ **`CW_FT_COLOR`'s `Default` is NOT renamed** — there it means *inherit the widget's text
+colour*, a behaviour rather than a colour. The two lists say different things and should not be
+made to match. **`GRP_BG`'s `Default` is a different feature again** (the group header) and is
+untouched; there are probe assertions for both.
+
+#### A note is edited where it lives (19 Sep 2026)
+
+Request: *"the free text is editable"*, with a note on the board. The ⋮ menu's **Edit Widget**
+still opens the full editor; this is the shorter road for the thing you do most to a note, which
+is change its words. It is **`gNameEdit`'s pattern** — swap the rendered node for a field, commit
+on blur, cancel on Esc, go through `histDo` — with three deliberate differences, each because a
+note is not a one-line title:
+
+- ⚠️ **DOUBLE-CLICK, NOT CLICK.** Every other widget body on this board is inert to a click, so
+  one widget type opening an editor on a stray click is surprising — and a note can carry links
+  and images, where a click already means *follow this*.
+- ⚠️ **AN ANCHOR IS NEVER AN EDIT TARGET.** A double-click on a link has already fired a click
+  and navigated, so starting an edit underneath it would fight the navigation. One `closest('a')`
+  guard, with a probe assertion that double-clicking the link opens nothing and double-clicking
+  the text beside it still does.
+- ⚠️ **ENTER TYPES A NEWLINE; ⌘/Ctrl+Enter COMMITS.** The group title commits on Enter because
+  it cannot contain one. A note is markdown — headings, lists and paragraphs all need Enter — so
+  the commit moved to the modifier and to blur, the gesture that already commits everywhere here.
+
+⚠️ **IT EDITS THE SOURCE, NOT THE RENDERED HTML.** `contenteditable` on `.ftt` would edit
+`ftMd`'s output and need a parser to get markdown back; the field carries `w.text` verbatim.
+⚠️ **`gi` / `i` ARE HOW `ftHTML` KNOWS IT IS ON THE BOARD.** One renderer serves three surfaces
+— the board, the editor's live preview and every Formatting-help result cell — and only the board
+one may be edited: a preview that edited itself would be writing into the draft the panel beside
+it already owns, and a help cell is documentation. The other two call it with no indices and get
+exactly what they got before, which is why the hook needed no change at either call site.
+⚠️ **`.widget` IS `draggable`, AND A DRAGGABLE ANCESTOR STOPS A CHILD FIELD TAKING A SELECTION
+BY DRAGGING ACROSS IT** — the same fault `gNameEdit` records for the group header. It is cleared
+for the duration; `renderCanvas()` rebuilds the widget on every exit path, so nothing puts it back.
+⚠️ **THE FIELD INHERITS THE NOTE'S OWN SIZE, COLOUR AND ALIGNMENT** (copied from the span's
+COMPUTED style, not `font:inherit` — `.ftt.auto` sizes itself with a container query and an
+inherited `font-size` would resolve against the textarea). The words do not move when you start
+typing, which is the whole point of editing in place rather than in a modal.
+⚠️ **A NO-CHANGE EDIT RECORDS NOTHING** (the `histWas` discipline), so opening a note and
+pressing Escape does not fill the undo stack — asserted both ways.
+⚠️ **NO `data-tip`, AND THAT IS A DECISION.** It shipped with *"Double-click to edit"* for a few
+minutes: the tooltip engine fires 320ms after hover, so READING a note — the whole job of this
+widget — popped a card over the words. A hint that covers the content it is hinting about is
+worse than no hint. The affordance is `cursor:text`, and the ⋮ menu's *Edit Widget* is the
+discoverable path for anyone who never tries the gesture. There is a probe assertion that the
+note carries neither `data-tip` nor `title`.
+
+#### The colour dropdown is two panes with a real picker (19 Sep 2026)
+
+Request: *"improve this droupdown in every where"*, with the **product's own** colour picker as
+the reference — a named list on the left and a full canvas on the right (saturation square, hue
+and alpha sliders, Hex + R/G/B/A fields, a 16-swatch preset grid, Cancel / Apply).
+
+##### ⚠️ IT IS HAND-BUILT, AND THAT REVERSES THE 18 Sep "USE THE DESIGN SYSTEM" PICK — ASKED
+
+The catalogued `obs-color-picker` IS the right component on paper and is what shipped for a day.
+The **vendored v0.1.166 build simply does not render the control the request points at**, and that
+was measured rather than assumed — dumped from its live shadow root, since a minified bundle does
+not answer by grep:
+
+    div.pop > div.lbl · div.grid(16 × span.cell) · label.custom(input[type=color]) · div.hex
+
+Sixteen presets, a **native colour well** and a hex readout. No saturation canvas, no hue or alpha
+slider, no R/G/B/A fields, no Cancel/Apply. Its own changelog says why: *"custom-colour canvas
+(native colour input; **product uses vue-color Sketch**)"* — the shipped element is a simpler thing
+than the picker in the product screenshot. It also has **no inline mode** (states: `closed` /
+`open`, in a top-layer popover), so it cannot sit open beside the list however it is styled.
+**The fork was put to the user** — build it by hand, keep the DS control, or drop the named list —
+and the answer was build it. `obs-color-picker` is **kept and unreferenced**: if `_ds/` is ever
+upgraded to the product's Sketch canvas, this whole block should go back to it.
+
+##### The two panes store two different KINDS of value, on purpose
+
+⚠️ **THE NAMED LIST IS NOT REPLACED, IT IS THE OTHER HALF.** Those entries are not raw colours:
+`CW_FT_BG` / `CW_FT_COLOR` / `GRP_BG` map each name onto a `color-mix()` over a token, so they
+follow the theme, and `Transparent` / `Default` emit no fill at all. A hex can do neither. So the
+left pane stores a **NAME** and the right pane a flat **HEX** — which is the standing trade-off
+already recorded in HANDOFF: a board saved with a custom colour will not follow a theme change.
+There are probe assertions in both directions, including that a named pick still resolves to a
+`color-mix(…)`.
+
+⚠️ **THE TRIGGER CARRIES THE RESOLVED HEX** on a colour control: the name says which entry is
+picked, the value says what it actually paints — the one thing a themed `color-mix()` name cannot
+tell you by looking. It is omitted when the value already IS a hex (the label would be the same
+string twice), and `swatch`/`custom` gate it so Font Size never grows one.
+
+##### Four things that bit, three of them recorded traps
+
+- ⚠️ **`color-mix()` SERIALISES AS `color(srgb r g b / a)` WITH 0–1 CHANNELS, NOT `rgb()` WITH
+  0–255.** Every named colour first read back as **#000000**, because the 0–1 values rounded to
+  zero. A plain `var(--x)` resolving to a hex comes back as `rgb()`, so **both** forms reach the
+  reader and the scale has to be chosen, not assumed. The recorded trap, in a new place — and the
+  assertion that missed it only checked the string was hex-SHAPED, so `#000000` passed.
+- ⚠️ **SEED FROM THE RESOLVED VALUE, NEVER THE NAME.** `cwFtHexOf('Gray')` resolves the CSS
+  *keyword* `gray` (#808080), not this list's Gray — so the canvas opened on the wrong colour. The
+  resolved value rides on the element as `data-v` rather than through the `onclick`, because it is
+  a string like `color-mix(in srgb, var(--green) 18%, var(--card))`: commas, parens and percent
+  signs inside an HTML attribute inside a JS string literal. A data attribute needs no escaping.
+- ⚠️ **A NAMED COLOUR'S HEX CAN ONLY BE GOT BY ASKING THE BROWSER.** `cwFtHexOf` paints the
+  value onto a throwaway node and reads the computed colour back. **It must be in the document** —
+  a detached element inherits no custom properties, so every token would come back empty.
+  `transparent` returns `''` rather than black: "no fill" has no hex, and rendering it as #000000
+  would be a lie on the one entry that means nothing.
+- ⚠️ **THE PANE REPAINTS ITSELF, NEVER THE WHOLE DROPDOWN.** `ddPaint` rebuilds the panel, which
+  would destroy the element the pointer has **captured** mid-drag and drop every later move. The
+  `agConsPaint` discipline, load-bearing here rather than tidy — and the drag re-points at the new
+  node after each repaint, since the one it captured is gone.
+
+##### Smaller decisions worth keeping
+
+⚠️ **THE CANVAS IS THREE LAYERS AND THE ORDER IS LOAD-BEARING**: the hue flat, then
+white→clear left-to-right, then clear→black top-to-bottom. Put black first and it tints the white
+wash instead of covering it, and the bottom row stops being black.
+⚠️ **THE HANDLES ARE `pointer-events:none`.** They sit inside the track they report, so a press
+landing on one would never reach the track's own `pointerdown` — the drag would fail exactly when
+you grab the thing you are meant to grab.
+⚠️ **POINTER CAPTURE, and `touch-action:none`**: a fast drag that leaves the 270px canvas must
+keep updating (the resize-grip lesson, where running off the band is the normal case), and without
+`touch-action` a drag scrolls the panel on a touch screen instead.
+⚠️ **A FIELD THAT CANNOT BE PARSED IS IGNORED, NOT APPLIED** — typing over a hex passes through
+`F0`, `F04`… and painting those would strobe the canvas.
+⚠️ **GOING GREY KEEPS THE HUE.** At `s = 0` the hue is mathematically undefined and `cpToHsv`
+returns 0, so dragging a colour to black and back would silently reset a chosen hue to red.
+⚠️ **Cancel / Apply MEANS THE DRAFT LIVES IN `CP`, NOT IN THE MODEL** — which also fixes a
+recorded wart: the old custom control applied LIVE on every `input`, which is why it had to be
+documented as "does not close the dropdown". The gesture has an end now.
+⚠️ **THE 16 PRESETS ARE FLAT HEXES, and this is one of the two places a literal colour is right
+here** (the other is the providers' brand marks). A preset is an ABSOLUTE colour the reader is
+choosing, not a themed surface — resolving them from tokens would make one swatch mean two
+colours in two themes.
+⚠️ **THE SEARCH BOX MOVED INSIDE THE LEFT PANE and is dropped on colour lists.** Over the whole
+panel it would look like it filtered the presets too; and nine named entries beside a canvas do
+not need searching. **Font Size keeps its search and its single pane** — asserted.
+
+##### ⚠️ IT PASSED 52 ASSERTIONS WHILE THE PANEL HUNG OFF THE SCREEN
+
+The first build was structurally perfect and visibly broken, which is this folder's oldest
+recorded lesson in a new place: **every assertion was about what EXISTS, none about where it is
+painted.** `.cwftddp.two` released the panel's RIGHT edge and sized to content, so a 438px panel
+opened from the field's left edge and ran **97px past the viewport and 131px past `#cwBody`** —
+which is `overflow:auto` and duly clipped it. The screenshot lost G, B, A, half the preset grid
+and both buttons. Two fixes, both measured:
+
+- **It opens LEFTWARD** (`left:auto;right:0`), anchoring the panel's right edge to the field's.
+  The field always ends at its pane's right edge, so the panel lands inside the pane in both
+  places this is used. Measured at 1600, 1366 and 1280: 50px inside the viewport, 16px inside
+  `#cwBody`.
+- **It FLIPS ABOVE the field when there is no room below** (`ddPlace`). A 360px panel opening at
+  y=489 runs 81px past a 768-tall viewport — fine at 1600×950, broken at 1366×768, which is one
+  of the seven target resolutions. The height is **measured, not taken from a constant**: the
+  one-pane and two-pane panels differ and the list's height changes as you filter it. It needs no
+  visibility dance (unlike `kbPopOpen`) because it runs synchronously in the same task as the
+  paint that created the panel — no frame is laid out in between, so there is nothing to see jump.
+
+The probe now carries six **geometry** assertions — the panel inside the viewport both ways and
+inside the clipping pane, and Cancel/Apply, every field and the whole preset grid actually on
+screen. **Assert the paint, not the presence.**
+
+⚠️ **ANCHORING TO ONE EDGE ONLY MOVED THE BUG.** Opening leftward fixed the right-hand
+dropdown and then pushed the LEFT-column one (Font Color) **131px past `#cwBody`'s left edge**,
+where the pane's `overflow:auto` crushed the named list to a sliver. A dropdown cannot know which
+column it is in, so `ddPlace` measures it against **whatever actually clips it** — the
+intersection of the viewport with every scrollable ancestor — and shifts it back with a
+`transform` (not `left`, which would have to undo the per-variant anchoring). **The probe now
+checks BOTH columns**, which is the gap that let this through: the geometry assertions only ever
+opened `bg`.
+
+⚠️ **FOUR ASSERTIONS IN `ftimg` WERE UNREACHABLE, AND THE SUITE REPORTED A CLEAN COUNT ANYWAY.**
+When the image-bounding block was restructured for `img.decode().then(finish)`, a `return` went
+in ahead of the Formatting-help checks — so they never ran while the suite said "ALL 21 PASS" and
+that number was quoted as covering the help row. Moved inside `finish()`; the suite is **25** now.
+**A count is not coverage** — recorded twice in this file before today, and committed again here.
+When a probe grows an async branch, check what ended up after the `return`.
+
+⚠️ **AND THE NEXT SCREENSHOT FOUND A SECOND ONE THE SAME WAY: the canvas painted a FLAT hue.**
+`.cpsv` declares its two ramps as `background-image`, and the hue was applied inline as
+`background:` — **the shorthand, which resets every `background-*` longhand** — and an inline
+declaration beats the stylesheet. So the white→clear and clear→black layers were silently
+dropped and the square was one colour. It looked like a colour bug and was a cascade one. This
+file already records that exact trap for `gStyleCSS`'s banner **earlier in the same session**;
+`background-color` is the fix, and there are now two assertions — that the computed
+`backgroundImage` still holds **two** gradients, and that the hue arrives as a colour.
+
+##### Verifying it
+
+A **58-assertion** probe covering all four consumers: the maths (hex⇔rgb⇔hsv round-trip, short
+and 8-digit hex, alpha), a named token resolving to a real non-black hex and `transparent` to
+nothing; the two panes side by side with the list first, ticked, and no search; every part the
+reference shows, five fields, 16 presets, Cancel/Apply; the seed matching what the control paints;
+real `pointerdown`s on the canvas, hue and alpha; the fields driving it with a half-typed hex
+ignored and grey keeping its hue; a preset; Cancel changing nothing and Apply committing, closing
+and clearing the draft; the named row still storing a NAME that stays a `color-mix`; **Font Size
+untouched**; and the **group Edit drawer** opening the same two panes, seeding from its own
+colour, writing `GRP_STYLE[gi].bg` and really painting the header.
+⚠️ **TWO OF THE THREE FIRST FAILURES WERE THE PROBE'S OWN.** Setting r, g and b to 0 one at a
+time passes through real colours with real hues, so the hue legitimately moved — the guard is
+tested in ONE step now (olive → grey). And `gEditOpen()` takes **no argument**: it reads
+`gMenuIdx`, so the probe had to set it rather than pass an index.
+
+#### The editor's preview is editable too, and vertical alignment is back (19 Sep 2026)
+
+Two more requests. **Asked rather than guessed on the first** — *"i create the free text before the
+free text widget is editable"* read three ways (make the preview editable / a note made before the
+change won't edit / one render path drops the hook) and the answer was **make the preview
+editable**, so you can type where you see it before the widget exists.
+
+⚠️ **TWO DOORS ONTO ONE VALUE, AND THAT IS ONLY SAFE BECAUSE THEY ARE KEPT IDENTICAL.** The
+panel's *Text to display* field edits `CW.ft.text`; so does the preview. This file records the trap
+in two places — the clarifier's free row, the composer — that two places to answer one question is
+a trap, and the answer here is that they are **never allowed to show different text**: every
+keystroke in the preview writes `#cwFtText.value` too, and the field's own `oninput` already
+repaints the preview. There is no moment where one is stale.
+⚠️ **THE DRAFT PATH RECORDS NO HISTORY.** `histDo` snapshots the BOARD; a widget that does not
+exist yet has nothing to undo onto, and the editor's own Reset is the way back.
+⚠️ **`'draft'` IS THE THIRD MODE OF ONE RENDERER.** `ftHTML(ft, gi, i)` is the board,
+`ftHTML(ft, 'draft')` the preview, and neither the help dialog nor anything else passing no
+indices changed at all.
+⚠️ **`oninput` MUST NEVER CALL `cwPreview()`** — it rewrites `#cwPrev`, which is the very node
+the textarea lives in, so the field would be destroyed on the first keystroke. It writes the value,
+the panel's field and the gate; the markdown renders on commit.
+
+##### ⚠️ ESCAPE NEVER REACHED THE FIELD, AND THE PAINT THEN RE-ENTERED ITSELF
+
+The worst bug of the pass, and a **diagnostic found it, not a reading of the code**. The editor's
+own Escape rung is `addEventListener('keydown', …, true)` — **capture phase on `window`** — and it
+calls `stopPropagation()`, so the event never reached the textarea's own handler. The preview
+editor therefore could not be cancelled **and stayed open**; the next repaint of `#cwPrev` then
+removed a **focused** textarea, whose live `onblur` re-entered `cwPreview()` mid-mutation and threw
+*"The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event
+handler?"*. Two fixes, both structural:
+
+- **An Esc LADDER rung, innermost first** — an open preview editor cancels itself and the modal
+  stays open; only with no editor open does Escape close the editor. The board's own in-place
+  editor needs no rung: nothing eats Escape before it there.
+- **Teardown is split from commit.** `detach()` nulls the handlers, blurs and clears the flag and
+  **does not repaint**; `done()` is `detach()` plus the repaint. `cwPreview()` calls `detach()`
+  before writing `innerHTML`, so a paint can never run under a live field — and the two cannot
+  recurse, which they would if the paint called `done()`.
+
+⚠️ **THE FIRST FIX WAS WRONG AND THE PROBE SAID SO.** Blurring inside `done()` looked like the
+answer (the recorded `acNameDone` trap) and changed nothing, because `done()` was never running.
+**Read what the diagnostic says before believing a theory about it**; the instrumented probe named
+the step — *the editor is still open one assertion after Escape* — which pointed at the listener
+rather than at the teardown.
+
+##### Vertical alignment, restored
+
+Request: *"in free text add text alignment"*, with **this control's own `Align top` tooltip** in the
+picture — which is what identified it as the row removed on 17 Sep rather than a new control. The
+17 Sep note had said the row was one line away and that `valign` stayed in the model the whole
+time; that is exactly what restoring it cost. **It never existed in a commit** (built and removed
+inside one uncommitted session), so there was nothing to recover from git.
+
+⚠️ **STROKED TABLER BESIDE THE PRODUCT'S OWN FILLED ICONS — A STATED DIVERGENCE.**
+`observeops-icons/` carries `align-left/center/right` and **nothing vertical at all** (checked),
+and the rule is never to hand-draw one — so the trio is `free-icons/`'s Tabler
+`design/layout-align-{top,middle,bottom}`. **The weight matches by arithmetic**, which is why the
+mix is tolerable: Tabler draws at `stroke-width:2` on a 24 grid, and at `.cwftsg svg`'s 15px that
+is 2 × 15/24 = **1.25px on screen**, this file's own target weight. What differs is fill vs
+stroke, and the two controls carry separate labels rather than reading as one set.
+⚠️ **THE FIRST PICK WAS `text/align-box-center-*` AND IT WAS WRONG** (*"change the Vertical
+alignment icon use proper icon"*). Those draw a box **plus three short text lines** — five shapes
+inside 15px, which resolves to a smudge. The trio that shipped is two or three LARGE shapes each:
+a full-width rule at the top, the middle or the foot, with a rounded block sitting against it.
+**At this size, fewer and bigger is what reads.** There are probe assertions that every cell has
+between 2 and 3 paths and that Tabler's invisible bounding-box path was dropped — left in, the
+stroke rules paint a square frame round the glyph.
+⚠️ **THE TWO ALIGNMENT CONTROLS SHARE ONE PAIR COLUMN, IN EQUAL HALVES** (*"it will be show
+behind the alignment"*, then *"this 2 field on proper alignment"*). They are two halves of one
+idea — where the text sits — so a full-width row of its own a step below read as an afterthought.
+Each half is a `.cwftcol` at `flex:1 1 0`, so the labels share a baseline, the segments share a
+top edge, and the second starts at the column's midpoint rather than wherever the first happened
+to end. `min-width:0` is what lets them shrink instead of overflowing — a flex item's `min-width`
+defaults to `auto`, the recorded `.agrt .n` fault.
+⚠️ **`fill:none` GOES INLINE.** `.cwftsg svg{fill:currentColor}` is a RULE and beats a
+presentation attribute, so `fill="none"` on the element would lose and the outlines would paint as
+solid blobs — the `.dvic svg` trap, third time.
+⚠️ **ONE `seg` BUILDER CARRIES BOTH FAMILIES** (a `stroke` flag switches viewBox, paint and
+pipe-separated multi-path). Two builders would be two places for a segmented control to drift.
+⚠️ **THE LABEL IS "Vertical alignment", NOT "Text alignment"** — the row above is already called
+*Alignment* and means the horizontal one, so the new label has to name its axis rather than repeat
+a word that is taken.
+⚠️ **A SECOND HARDCODED EXPECTATION FAILED ON CORRECT CODE**: *"middle lit by default"*. The
+editor opens on `CW_FT_PRESET[0]`, whose `valign` is **`top`**. The assertion derives the lit cell
+from `CW.ft.valign` now — the same lesson as the overflow control earlier in this pass.
+
+#### A Transparent note drops the widget's card, not just its fill (19 Sep 2026)
+
+Request: *"when i select the background color transprtnt the don't show the widget background
+color"*. `.ftw` was already painting `transparent` — what the reader still saw was the **widget
+underneath it**, which every widget on this board has: `--card` plus a `--border-soft` hairline.
+Asking for no background and being given a card with no fill inside it is the request half-done,
+so the border goes with the fill; a hairline rectangle around nothing reads as a card either way.
+
+- ⚠️ **IT IS DERIVED, NOT A SECOND SETTING.** `renderCanvas` emits `wftbare` from
+  `cwFtBg(w.bg) === 'transparent'` — the same resolver `ftHTML` paints with — so the two can never
+  disagree about whether a note has a background, and a **custom hex** (which `cwFtVal` returns
+  as-is) correctly keeps its card. Probed: Transparent bare, Gray carded, `#123456` carded, and an
+  ordinary widget untouched.
+- ⚠️ **THE HOVER SHADOW GOES TOO.** `.widget:hover` lifts a card; over a bare note it drew a
+  rectangular shadow around content with no edge, which reads as a rendering fault rather than as
+  a hover. What still says *you are pointing at this* is the note's own chrome — the ⋮ overlay and
+  the three resize grips, all of which reveal on hover exactly as before.
+- ⚠️ **`border-color:transparent`, NOT `border:0`** — the 1px stays in the box, so a note does
+  not shift by a pixel, or grow by two, the moment its background is changed.
+
+#### Verifying it
+
+A **21-assertion** probe: the syntax rendering an `<img>` and not an anchor, src and alt, an empty
+alt, a plain link still a link, `data:image/` accepted, `javascript:` and a relative path both
+refused, **both** attribute breakouts closed with the parsed element carrying no `on*` attribute,
+markup still neutralised, the board rendering it, the image bounded to its container once decoded,
+`Transparent` in place with the old key still painting transparent, and Font Color's and the group
+header's own `Default`s untouched — a **14-assertion** spacing probe (the single 16px inset, both
+pairs measuring a 24px gutter with the row gap still 10, Alignment not stretched, no horizontal
+overflow, the query builder's padding untouched) — and a **37-assertion** editing probe (the
+double-click opening a field on the source, focused with the caret at the end; the widget
+un-draggable for the duration and draggable again after; a second double-click a no-op; the field
+keeping the note's size; Escape cancelling and ⌘Enter and blur both committing; undo AND redo; the
+link guard both ways; an EMPTY note still editable, which is the case that matters most; the whole
+`wftbare` table) — which grew to **56** with the preview editor and the restored row (the preview
+marked `'draft'`, typing writing BOTH the draft and the panel field without destroying the field
+under the caret, ⌘Enter rendering the markdown and ungating the create buttons, Escape restoring
+both, the panel field still driving the preview the other way, the Vertical alignment row with its
+three labelled cells and exactly one lit — derived from `CW.ft.valign`, not hardcoded — its glyph
+stroked while the horizontal trio stays filled, and a help cell still NOT editable).
+⚠️ **ONE FAILURE WAS THE PROBE'S OWN, AND A CONTROL IS WHAT PROVED IT.** *"it did not overflow
+the widget box"* read `1519 vs 1517`; a free-text widget with **no image** on the same board
+measures the same 2px (the widget's own borders). The assertion compares against that control now.
+⚠️ **AN `<img>` HAS A ZERO-WIDTH BOX UNTIL ITS SOURCE LOADS** — including a `data:` URI, under
+virtual time. The first run reported the image as `0 in 1489` and called it bounded, which is a
+pass for the wrong reason. Measure after `img.decode()`.
+
 #### The scrolled board's widgets no longer show above the group header (17 Sep 2026)
 
 Reported with a screenshot: *"when i add the group and in side the scroll the all widget is show
@@ -7410,6 +7819,12 @@ Four requests in a row, **all scoped to the drawer's second Empty group tile** a
 touching options 1 and 3. This is the first time the three tiles have diverged at all — the
 17 Sep note above still says they are "identical and waiting to diverge", and this is that.
 
+⚠️ **TWO MORE FOLLOWED THE SAME DAY and are documented in their own subsections below** — the
+band gained the widget's **three grips** (*"Three grips…"*), and then the marker moved off the band
+onto the **group** (*"The whole group carries the handle…"*), which is what makes the resize
+survive the first widget. The heading's "a band you resize" is the shape it had for a few hours;
+read those two before editing anything in this section.
+
 | request | what it is |
 |---|---|
 | *"i add empty group … before i can resize the empty group then the automaticely the widget will be auto adject"* | the band has a drag grip; dragging it refits the board's widgets around it |
@@ -7432,6 +7847,12 @@ FOR FREE**, because it is the array parallel to `TABS`/`WIDGETS` that `histState
 A second parallel array is the recorded trap — read the `GRP_STYLE` warning above before adding one.
 
 ##### The resize is HEIGHT, and that is not a simplification
+
+> ⚠️ **SUPERSEDED 18 Sep 2026 — THE BAND RESIZES IN BOTH AXES NOW.** Read *"Three grips, and the
+> band is full width only until you say otherwise"* below. Everything in this subsection is still
+> true of the HEIGHT half — the clamp, the live `fitCanvas`, the no-movement gate and the
+> `hMul` floor were all untouched by that change — and the sentence it opens with is the one
+> thing the request reversed.
 
 A band is full-width by definition (`grid-column:span 12`), so "resize" can only mean height.
 `gRzDown` / `gRzMove` / `gRzUp` clamp to `GRP_RZ_MIN` 96 – `GRP_RZ_MAX` 720, write
@@ -7456,20 +7877,179 @@ double-click reset calls — one committer, so the drag and the reset cannot dis
 - Measured through a real drag: the band **96 → 396px**, ten scaled widgets **131 → 82px** each,
   their summed height **1767 → 1108**. `data-h="0"` widgets are untouched, as always.
 
+##### Three grips, and the band is full width only until you say otherwise (18 Sep 2026)
+
+> ⚠️ **SUPERSEDED IN PART, LATER THE SAME DAY — THE GRIPS ARE ON THE GROUP, NOT THE BAND.**
+> Everything below about the three grips' **geometry, axes, arithmetic and badge is unchanged**;
+> what moved is the element they hang off, because the band is rendered only while the group is
+> EMPTY. Read *"The whole group carries the handle"* below before touching any of it, and read
+> every "band" in this subsection as "group".
+
+Request, with Datadog's group beside it: *"add the this the group hight and width will be ajected
+like datadog … the widget resize handel only option 2 empty group"*. The band had one grip and one
+axis; it now carries **the widget's own three**, and they are the widget's geometry rather than a
+second set that merely looks similar.
+
+| grip | where | axis | mirrors |
+|---|---|---|---|
+| `.gdrs-h` | bottom edge, `left:8px right:18px`, 5px, `row-resize` | height in px | `.wrzS` |
+| `.gdrs-e` | right edge, `top:8px bottom:18px`, 5px, `col-resize` | width in **grid columns** | `.wrzE` |
+| `.gdrs-c` | bottom-right, 18×18, `nwse-resize`, a two-border `::after` chevron | **both** | `.wrz` |
+
+- ⚠️ **THE BOTTOM EDGE'S RIGHT END MOVED 8 → 18px, AND THAT IS NOT COSMETIC** — it is exactly
+  where the corner starts, so the two never overlap and a press near the corner can only mean the
+  corner. `.wrzS` reserves the same 18px for the same reason; the edges and the corner are one
+  family or they are three controls that fight each other.
+- ⚠️ **WIDTH IS COLUMNS, HEIGHT IS PIXELS, and mixing them would break the grid.** A band lives
+  in `.dgrid12`, so a px width would put it off the twelve-column rhythm every widget on the board
+  sits on; `gRzW(gi)` reads the span off the **same `GRP_STYLE[gi]` record** the height uses, so it
+  inherits undo, redo, clone, reorder and board-switch for free — a second parallel array is the
+  recorded trap.
+- ⚠️ **ONE COLUMN'S WIDTH IS SOLVED FROM THE GRID, NEVER ASSUMED** (`gRzCols`): `.dgrid12`
+  carries its gap **inline**, because the Layout drawer drives it, so a hardcoded column width
+  would be wrong the moment that drawer moved the gap and wrong again at another viewport.
+- ⚠️ **EACH GRIP OWNS ITS AXIS BY MEMBERSHIP (`mode.includes('s')` / `('e')`), NOT BY AN
+  EQUALITY CHAIN** — the shape the AI card's grips settled on. The corner is simply the two edges
+  it is made of, and a bottom-edge drag *cannot* drift the width because nothing in that branch
+  touches it. There are probe assertions in both directions.
+- ⚠️ **THE SPAN IS DERIVED FROM THE TARGET WIDTH, NOT ACCUMULATED PER STEP.** Adding a column
+  every N pixels lets rounding drift over a long drag and the band ends a column off where the
+  pointer is; `Math.round((px + gap) / (colW + gap))` is stateless, which is how `wRzMove` avoids
+  the same fault.
+- ⚠️ **THE RENDER EMITS `grid-column` ONLY WHEN THE SPAN IS UNDER 12**, so options 1 and 3, the
+  `G` shortcut's groups and every board that already exists keep a band with **no inline style at
+  all**. Probe-asserted on an option-1 band.
+- The badge reads `N/12 columns × Hpx` — the widget badge's own wording, so one readout serves
+  both engines and they cannot describe a drag differently.
+- ⚠️ **`gRzCommit` TOOK `span` AS AN OPTIONAL FOURTH ARGUMENT**, so the two existing
+  two-argument calls still mean what they meant: passing nothing leaves the width exactly as it
+  was, which is what a bottom-edge drag wants. The double-click reset passes `12` and clears both.
+- Measured through real drags: the corner takes the band **96 → 276px** and **1484 → 986px**
+  (span 8) while the ten scaled widgets refit **2024 → 1012px** of summed height *during* the
+  gesture; the right edge then takes it **986 → 1235px** (span 10) with the height unmoved; the
+  bottom edge leaves the span at 10; one ⌘Z reverses a whole gesture, and a double-click puts the
+  band back to 1484 with its record clean.
+
+⚠️ **ALL THREE OF THE PROBE'S FIRST FAILURES WERE ITS OWN MODEL, and each is a recorded trap:**
+an absolutely positioned box lays out against its ancestor's **padding** box, so `right:18px`
+measures **19** from the border-box edge the rect reports (subtract `borderRightWidth`); a
+"before" width read off a **live node** at assert time is the value **after** the drag, so capture
+it as a number (the height assertion did, and passed); and the band's grid is its own
+`.dgrid12` parent, **not `#dashGrid`**, which is the scroller's child and 26px wider. Read a probe
+failure before believing it — nothing in the code changed.
+
+##### The whole group carries the handle, and two groups can share a row (18 Sep 2026)
+
+Request: *"the 'empty group' the hoal group will be resize handle like widght"* — the GROUP should
+carry the resize handle the way a widget does, rather than the inner empty band.
+
+⚠️ **THIS WAS A REAL DEFECT, NOT A PREFERENCE.** `.gdrop` is rendered **only while the group is
+empty**, so every grip hung off it **disappeared the moment the first widget was dropped in** —
+and the size stored on `GRP_STYLE[gi]` stopped being applied to anything, because the element it
+was applied to no longer existed. The grips had been attached to the one node on the screen that
+is guaranteed to go away.
+
+The marker, the inline size and the three grips all moved to the **`<section class="dgroup">`**,
+which is permanent:
+
+    .dgroup.gdrs{position:relative;display:flex;flex-direction:column}
+    .dgroup.gdrs > .dgrid12{flex:1 1 auto;min-height:0;align-content:start}
+    .dgroup.gdrs > .dgrid12:has(> .gdrop){align-content:stretch}
+
+- ⚠️ **`align-content` IS THE WHOLE TRICK, AND IT IS TWO DIFFERENT ANSWERS.** `stretch` grows a
+  single auto row to the grid's definite height, which is what makes the empty band fill a group
+  you have dragged taller; `start` is what stops a group that **holds widgets** spreading its rows
+  apart to fill the same height. Give both cases `stretch` and a two-widget group renders with a
+  canyon down the middle of it.
+- ⚠️ **NEVER PUT `overflow:hidden` ON `.dgroup`.** It is the obvious way to keep a resized group's
+  content inside its box and it silently kills the **sticky header** — any `overflow` other than
+  `visible` makes the element a scroll container, so `.ghead{position:sticky}` sticks to a box that
+  never scrolls, i.e. not at all. There is a probe assertion that `.dgroup` still computes
+  `overflow:visible`.
+
+**A narrower group now shares its row, because `#dashGrid` is a twelve-column grid.** Asked rather
+than guessed — the fork was what a group narrower than the board should do, and the answer was
+side by side:
+
+    #dashGrid{display:grid;grid-template-columns:repeat(12,1fr);
+      column-gap:var(--lay-hgap,10px);row-gap:0;align-items:start;padding-top:var(--pb-pad)}
+    #dashGrid > *{grid-column:1/-1}
+
+- ⚠️ **`#dashGrid > *{grid-column:1/-1}` IS WHAT KEEPS EVERY EXISTING BOARD BYTE-IDENTICAL.** Span
+  12 is the CSS default, so an untouched group emits **no inline style and no class** and lays out
+  exactly as it did when the board was `display:block`; an inline `grid-column` always wins over
+  it. That is the same rule the render already followed for the height, and it is why options 1
+  and 3 needed no change at all.
+- ⚠️ **`row-gap:0`, because `.dgroup` ALREADY CARRIES `margin-bottom:16px`.** A row gap here would
+  add to that margin and every board would silently grow 16px between its groups — the recorded
+  "a flex/grid `gap` falls between every pair of children, so it ADDS to every margin" finding, in
+  a second place.
+- ⚠️ **`align-items:start`, or a short group beside a tall one is stretched to the tall one's
+  height** — which would undo the height you just dragged, on the group you did not touch.
+- ⚠️ **`gRzCols(el)` READS `el.parentElement`, so it now solves against the BOARD's twelve columns
+  rather than the group's.** The arithmetic did not change one character; only which grid it asks.
+  That is exactly why it was written to solve the column width from the live grid instead of
+  assuming a number.
+
+**The band's own 96px floor is lifted only once a height is actually driven** — `.gdrsh`:
+
+    .dgroup.gdrs .gdrop{border-color:transparent}
+    .dgroup.gdrs.gdrsh .gdrop{min-height:0}
+
+⚠️ **BOTH HALVES OF THAT WERE GOT WRONG ONCE, AND THE PROBE CAUGHT IT.** Leaving
+`min-height:96px` standing means a group dragged to `GRP_RZ_MIN` (96) **cannot reach it** — 96
+would have to cover a 37px header and 22px of padding, so the band spills past the section's
+bottom border while the badge reads 96. Dropping it unconditionally means a group **nobody has
+dragged** loses it too, so a freshly added option 2 renders a 30px strip where every other option
+renders 96. `renderCanvas` emits `gdrsh` from the **same test** as the inline `height`
+(`grz && gRzH(gi)`), so the class and the style cannot disagree about whether a height is driven.
+
+- ⚠️ **`fitCanvas`'s LOWERED FLOOR IS NOW PERMANENT ON A BOARD THAT HAS ONE.** The gate is
+  `g.querySelector('.dgroup.gdrs') ? hMul * GRP_RZ_GIVE : hMul`, and it used to come and go with
+  the empty band — a group is permanent, so a board carrying an option-2 group keeps the lowered
+  floor for good. It only bites when the board overflows, and it is precisely what keeps "the
+  widgets refit around it" true **after** the first drop, which is the thing this change exists
+  for. Stated rather than left to be discovered.
+- The three grips' tooltips and `gRzCommit`'s toast say **group** now, not band — the control acts
+  on the group, and copy the change falsifies is part of the change.
+
+##### ⚠️ THREE PROBE SUITES ENCODED THE OLD HOST, AND ONE OF THEM ABORTED AT ASSERTION 14
+
+`g2probe`, `cnrprobe` and `gripprobe` all queried `.gdrop.gdrs` and hung their geometry off the
+band. After the move that returns **null**: `cnrprobe` and `gripprobe` failed outright and
+`g2probe` threw at its 14th of 64 assertions, so **50 assertions never ran and the suite still
+reported a number**. A count is not coverage — read what a failing suite actually got to.
+
+The fix was one selector each, because every measurement in all three is **host-relative** (each
+already subtracts its host's own border, the recorded padding-box rule). Two further failures were
+the same trap twice: **`elementFromPoint` answers about the VIEWPORT**, so a grip that now sits
+lower on the board reported "not hit-testable" at coordinates below the fold — on a working grip.
+Scroll the **container** first (never `scrollIntoView`, which scrolls the window too), and print
+the y in the assertion's detail so the next reader sees it.
+
 ##### The band draws no dashed box, but still lights up as a drop target
 
-`.gdrop.gdrs{border-color:transparent}` — the outline is gone at rest. Nothing else went with it:
+⚠️ **THE SELECTORS BELOW ARE WRITTEN AS THEY WERE WHEN THE MARKER WAS ON THE BAND. Since the
+whole-group move they are `.dgroup.gdrs .gdrop`, `.dgroup.gdrs .dgrid12.dropinto .gdrop` and
+`.dgroup.gdrs.rzing`** — the reasoning is unchanged and is kept as written, because each note
+records why the rule exists rather than where it sits.
 
-- ⚠️ **`.dgrid12.dropinto .gdrop.gdrs` RESTATES THE TEAL DRAG-OVER BORDER, and it has to.** The
-  base drop-target rule is `.dgrid12.dropinto .gdrop` (0,2,0) and sits **above** `.gdrop.gdrs`
-  (0,2,0) in the sheet, so at equal weight source order would hand the tie to `transparent` and
-  the band would stop saying you can drop into it — the one thing an empty group is for.
-- ⚠️ **`.gdrop.gdrs.rzing` PUTS A SOLID TEAL EDGE ON IT WHILE YOU DRAG.** Removing the resting
-  outline removes the only thing that said where the band ends; during the gesture that is
-  exactly what you are setting.
-- ⚠️ **`position:relative` IS ON `.gdrs`, NOT ON `.gdrop`** — every empty group on every board is
-  a `.gdrop`, and making all of them positioning contexts to host one option's grip is the
-  `.awcard.awgopt` lesson in a second place.
+`.dgroup.gdrs .gdrop{border-color:transparent}` — the outline is gone at rest. Nothing else went
+with it:
+
+- ⚠️ **`.dgroup.gdrs .dgrid12.dropinto .gdrop` RESTATES THE TEAL DRAG-OVER BORDER, and it has
+  to.** The base drop-target rule sits **above** the transparent one in the sheet, so at equal
+  weight source order would hand the tie to `transparent` and the band would stop saying you can
+  drop into it — the one thing an empty group is for. (The move RAISED that rule's weight to
+  (0,4,0) against (0,3,0), so it now wins on specificity as well; the source order is still what
+  it was written for and must not be relied on less.)
+- ⚠️ **`.dgroup.gdrs.rzing` PUTS A SOLID TEAL EDGE ON THE GROUP WHILE YOU DRAG.** Removing the
+  resting outline removes the only thing that said where the group ends; during the gesture that
+  is exactly what you are setting.
+- ⚠️ **`position:relative` IS ON `.dgroup.gdrs`, NOT ON `.dgroup`** — every group on every board
+  is a `.dgroup`, and making all of them positioning contexts to host one option's grips is the
+  `.awcard.awgopt` lesson in a second place. (It was on `.gdrs` when `.gdrs` was the band; the
+  rule is the same one, on the element that now carries the marker.)
 - ⚠️ **OPTION 1 STILL DRAWS ITS DASHED HAIRLINE**, and there is a probe assertion for it scoped to
   that group's own id — a bare `querySelector('.gdrop')` takes the FIRST band on a board that may
   still carry an option-2 one, which is how that assertion passed on the wrong element once.
@@ -7578,7 +8158,7 @@ transparent at rest but still lighting teal on drag-over while option 1 keeps it
 the banner field appearing only on option 2; a real PNG driven through `gBanPick` and rasterised to
 3 KB; the header painting it `cover` / `no-repeat`; the scrim not covering the title; colour and
 banner coexisting; survival across a render and a clone; Reset clearing the banner but keeping the
-capability; Remove; and no console error. Plus a **38-assertion** DS probe (`dsban.py`) in **dark
+capability; Remove; and no console error. Plus a **42-assertion** DS probe (`dsban.py`) in **dark
 and light** — the elements registered, one button at rest on the right variant with a glyph that
 really renders, its shadow `<button>` painted at the DS 4px radius and at 34px, the fill's luminance
 belonging to *this* theme, a real click on the inner shadow button clearing the banner, `cwTap`
@@ -7588,6 +8168,314 @@ swallowing the second fire, and the hover rule resolving to `#14b8a6`.
 `_ds/observeops-elements.umd.js`, **no `obs-*` element registers at all**, and the field renders as
 inert markup — the recorded *"`_verify/` was silently testing a page with no design system"* trap.
 It cost one full run here, reported as five failures that looked like the feature being broken.
+
+**After the whole-group move**: a new **50-assertion** suite (`grpprobe.js`) for the group as the
+host — the marker, the inline size, `align-content` in both cases, the `.gdrsh` gate lifting the
+band’s 96px floor only when a height is driven, `#dashGrid`’s twelve columns with an untouched
+group emitting **no** inline style, two groups sharing a row, and `gRzCols` solving against the
+board — plus `g2probe` **64**, `cnrprobe` **23**, `gripprobe` **20** and `lxbehave` **57 × 14**.
+
+⚠️ **`gripprobe` WAS STRENGTHENED RATHER THAN THE CLAIM WEAKENED.** The rule above says never put
+`overflow:hidden` on `.dgroup`, and **no probe asserted it**: the suite tested `auto|scroll|overlay`,
+which **permits `hidden`** — the one value that actually kills the sticky header. It now asserts the
+group computes `overflow:visible` on both axes and that its `.ghead` is still `sticky`. A claim in
+this file with no assertion behind it is worth strengthening the probe for, not softening the claim.
+
+⚠️ **A SCREENSHOT SCRIPT CAN FAIL COMPLETELY AND STILL REPORT `ok` — twice, here.** The capture
+succeeds whatever the injected scene did, so six “successful” shots came out as the **stock
+Application Performance board**. First: **`TABS` / `WIDGETS` / `GRP_STYLE` are `const`**, so
+`TABS=[…]` threw *Assignment to constant variable* and the scene was abandoned at its first
+statement — mutate in place (`TABS.length=0; TABS.push(…)`), as every probe here already does.
+Second: **900ms was too early** — the dashboard panel’s own script calls `boardLoad(dashState.cur)`
++ `renderCanvas()` **after** `init()`, so a scene that rewrites the board before that is simply
+overwritten (2200ms now; the probe runners use 1500). The fix for both is the same discipline:
+**put the scene’s own measurement in the title** (`groups=<TABS.length>`, the grip count, the two
+groups’ left edges) so the shot says whether it is a picture of the thing you asked for.
+
+⚠️ **AND THAT TITLE IMMEDIATELY EARNED ITS KEEP.** With the scenes finally applying, one
+`side-light` capture came out with **`#drawer-agcfg` painting 1127px across the board** — computed
+`right:-420px`, which is index.html’s own `.sdrawer` value, instead of the `-100%` its id rule in
+`setting.js` gives it, with `#agCfgScrim` at opacity 1 — while **that same run’s title read
+`A=67 B=832 sameRow=true`**, i.e. the model was right and only the picture was wrong. It **did not
+reproduce** (a diagnostic read `right:-1600px`, `L=1653`, scrim opacity 0 and `elementFromPoint`
+landing on `.pagebody` in both themes, and dumped both rules as present), so no cause is claimed —
+`.sdrawer` at (0,1,0) cannot outrank `#drawer-agcfg` at (1,0,0). What is certain is that it is a
+**transient**, and a transitioned property shot under virtual time is this folder’s oldest trap:
+the shot script injects `*,*::before,*::after{transition:none!important}` alongside its forced grip
+reveal now. **Freeze transitions when you SHOOT, not only when you measure.**
+
+### The 21 Sep 2026 pass — a note's actions, the group header, and the Edit-group drawer
+
+Nine narrow requests in one sitting, all **Option 1**. ⚠️ Where they conflict with the
+17–19 Sep entries above, this section is current — in particular the widget and group drag
+grips, "Title size", and what `No padding` does.
+
+| request | what changed |
+|---|---|
+| *"add edit option in free text widget"* | **the ⋮ on a note is reachable again** — it had never been (see below) |
+| *"remove edit icon because the edit option is already in 3 dot"* | the pencil built an hour earlier is gone; `.wedit` and `ICONS.pencil` are **kept and unreferenced** |
+| *"remove only icon don't remove functionality"* (the ⠿ drag grip) | both grips lose their glyph; `.ghead` / `.whead` carry `cursor:grab` instead |
+| *"it will be show side by side with proper alignment"* | Transparent + No padding are one `.gepair` row |
+| *"when i apply No padding … the border will be remove"* | No padding takes the group's hairline, the strip's full-bleed margins **and** the strip's own inset |
+| *"remove header below line when i select the Transparent & No padding"* | both together also drop `.ghead`'s `border-bottom` |
+| *"ADD TEXT ALIGNMENT LIKE FREE TEXT"* | an **Alignment** trio beside Vertical alignment, aligning the group's TITLE |
+| *"THE TEXT size will be improve like free text"* | Title size is the searchable `cwFtDD` over **`CW_FT_SIZE`** |
+| *"the down arrow & header text will be align"* | the caret is the product's `chevron-right`, not the character `❯` |
+| *"option 3 empty group remove option3 only in Add New Widget"* | `W_GROUP_OPT` is two entries |
+
+#### ⚠️ `font-size:0` ON THE FREE-TEXT OVERLAY HAD EATEN THE ⋮ — the bug behind the request
+
+`.widget.wft .whead` sets `font-size:0` to hide the widget TITLE, which is a bare text node in
+that header. **`.wdots` is the text character `⋮` and declares no size of its own**, so on every
+Free Text widget it rendered as a zero-width, invisible span: Edit Widget / Clone / Full screen /
+Remove were all unreachable, and had been since the overlay was written on 17 Sep. The fix is
+`.widget.wft .whead .wdots{font-size:14px}`.
+
+- ⚠️ **THE HEADER'S OTHER CHILDREN SURVIVED BECAUSE EACH DECLARES ITS OWN SIZE** — `.wgrip` 11px,
+  `.wremove` 11px, `.wtime` 10px, `.wai` an 18px box. That is exactly why it read as *"a note has
+  no actions"* rather than as a CSS fault: the corner still painted a grip and a time chip, so
+  nothing looked broken. The 17 Sep comment claiming the overlay "keeps every one of those
+  reachable" was false the day it was written.
+- ⚠️ **GIVE A CONTROL A SIZE; NEVER LIFT THE 0.** The title still has to be hidden. Any future
+  child of that header that is a GLYPH rather than a BOX needs the same line.
+- ⚠️ **THE PENCIL WAS THE WRONG FIX AND THE PROBE COULD NOT HAVE TOLD ME.** A visible edit button
+  was built first, passed 12 assertions, and was removed within the hour once the ⋮ worked —
+  *"the edit option is already in 3 dot"*. Fixing the affordance that was **supposed** to exist
+  beat adding a second one. `.wedit`'s CSS and the `pencil` record in `ICONS` are parked.
+
+#### The ⠿ grips: the glyph goes, and then the span goes too
+
+Asked as *"remove only icon don't remove functionality"*. It took two passes, and the second is
+the one worth remembering:
+
+1. Both reveal rules were **deleted** so the span rests at `opacity:0` in every state, keeping its
+   box, its `cursor:grab` and its tooltip. Nothing was lost, because `draggable` + `ondragstart`
+   sit on the WIDGET and on `.ghead`, never on the span.
+2. ⚠️ **THEN THE GLYPH WAS REMOVED FROM `WGRIP` AND THE BOX WENT WITH IT — a probe caught it.**
+   `flex:0 0 auto` on an EMPTY span measures **0 wide**, so the box I had said I was keeping was
+   already gone and with it the grab cursor it existed to carry. An invisible 0px element is not
+   a handle; it is a leftover. Both grips are `display:none` now and **`cursor:grab` moved onto
+   `.whead`** (`.ghead` already had it), which is where the group's handle has always been.
+- ⚠️ **AND ITS `data-tip` WENT** — a tooltip over an invisible mark pops up when the pointer
+  crosses empty header and names a control the reader cannot see. It appeared in a user
+  screenshot before this was spotted.
+- ⚠️ **REMOVING THE GROUP GRIP RE-ALIGNED THE HEADER**, which is half of *"make the proper
+  alignment"*: invisible but still 8px wide plus the row's 9px gap, it was pushing the caret and
+  the title 19px in from the strip's edge with nothing to show for it.
+
+#### The caret is a glyph, not a character
+
+`.gcar` was `❯` at `font-size:9px`. A text glyph sits where its own font's line box puts it, which
+is not where the 13.5px title beside it sits — so the caret rode high and no padding fixed it
+without a magic offset. It is the product's own `common/arrows-direction/chevron-right.svg` in a
+12px `place-items:center` box now, centred by `.ghead`'s own `align-items:center`. Same finding,
+same fix, as the AI panel's chat-name caret and Option 7's row chevron.
+⚠️ **`ST_ICO` ALREADY HELD THE IDENTICAL PATH**, so `mfIco`'s three flyout call sites now resolve
+`chevron-right` from `ICONS` instead — checked, and byte-identical output either way.
+
+#### `No padding` is four declarations, not one
+
+Each was found by the next screenshot, and every one of them is a value that was hardcoded where
+the padding's own value lives:
+
+| what | why it had to follow |
+|---|---|
+| `--gv-pad:0` | the box's padding — the original control |
+| `--gv-line:transparent` | with no padding the box's outline sits hard against the strip and the widgets, and reads as a clipped card |
+| `--gv-hm:0 0 10px` | ⚠️ **`.ghead`'s `margin:-10px -12px 10px` IS THE INVERSE OF THAT PADDING.** At `--gv-pad:0` it stops cancelling anything and starts pulling the strip **12px past the group's own edges** on each side and 10px above it |
+| `--gv-hpad:8px 0` | the strip's own inset, so the caret comes back to the edge (*"the arrow will be set no left margin"*) |
+
+- ⚠️ **NONE OF THEM IS `border:0` OR A REMOVED MARGIN** — every one keeps its 1px or its box, so
+  ticking a checkbox never also moves the group's widgets by a pixel. The `.widget.wft.wftbare`
+  wording, four more times.
+- ⚠️ **THE HEADER'S OWN `border-bottom` GOES ONLY WITH `Transparent` AS WELL** — a title strip is a
+  fill plus a rule, and with the fill gone the rule is the last thing drawing it; with the box's
+  border gone too it is a line ruled across the canvas belonging to nothing. With a box still
+  around it, it is still a divider, so it stays. Both conditions, deliberately.
+- ⚠️ **THE VERTICAL PADDING STAYS** — it is the strip's height, not space around the group.
+
+#### Alignment, and Title size
+
+- **Alignment** aligns the group's **TITLE**, not its widgets, and that is what "text alignment"
+  names here: a group's only text is its name, and an empty one has nothing else on it at all.
+  ⚠️ **IT OFFERS TWO OF THE THREE, AND VERTICAL ALIGNMENT IS GONE** — both by request later the
+  same day ("remove the right alignment only", "remove the Vertical alignment"). Both removals
+  are **filters on the PICKER, not on the model**: `gAlign`/`gStyleCSS` still honour `right`,
+  `GRP_VALIGN`/`gValign` still emit `--gv-align`, so a group styled before either withdrawal
+  keeps the position it was given. Conflating "stop offering it" with "remove it" is how a saved
+  board changes under you. `GRP_ALIGN_OK` names the two that are offered.
+  ⚠️ **THE ROW IS STILL A `.gepair` WITH ONE CELL IN IT** — a two-column grid puts that cell in
+  column 1, which keeps Alignment on the left edge Header colour and Transparent already sit on;
+  a bare `.ddfield` would span the drawer and read as a different kind of field.
+  ⚠️ **`CW_FT_ALIGN` IS THE SINGLE SOURCE**, as `CW_FT_VALIGN` already is for the vertical trio;
+  there is deliberately no `GRP_ALIGN`.
+  ⚠️ **`.galgn` IS WHAT TURNS THE LAYOUT ON, AND ONLY FOR CENTRE AND RIGHT.** `.gnm` hugs its text
+  at rest; made flexible unconditionally, EVERY group on the board reflows and the count chip
+  slides across to the buttons on a board nobody has touched.
+  ⚠️ **`.gsp` MUST COLLAPSE WITH IT** — two `flex:1` siblings SPLIT the free space, so a
+  right-aligned title would stop halfway across the strip.
+  ⚠️ **`.gnm`'s OWN `max-width:340px` IS WHY CENTRE DID NOT LOOK CENTRED, and a green assertion
+  hid it.** The title's box measured 340px and my probe asked whether it was "wide enough" — it
+  was 340 because it had hit its CAP, not because it had taken the slack, so on a 1400px header
+  the words were centred inside the leftmost 340px, i.e. barely moved (reported: *"the header
+  text is not set in center"*). The cap is lifted under `.galgn`; measured after, the box takes
+  **1316 of 1517px**. **Assert against the container, never against a number.**
+  ⚠️ **CONSEQUENCE, STATED:** the count chip and the two buttons still sit to the right, so
+  "centre" lands **~62px (4%) left of the header's true middle**. Exact centring needs the title
+  absolutely positioned across the strip, which moves the count chip and puts a full-width box
+  under the ＋ — not done for 4%.
+- **Title size** is the Free Text **Font Size** dropdown — Auto · 16 · 24 · 36 · 56 · 72 · 88px,
+  reading `CW_FT_SIZE` itself. `GRP_SIZE` {S,M,L} is kept and unreferenced.
+  ⚠️ **"Auto" IS NOT FREE TEXT'S AUTO.** There it is a container query that fills the widget; here
+  it means "whatever the board's title size is" — emit no token and let `.gnm`'s own default
+  stand. 0 (the ladder's value for Auto) is the "emit nothing" test, so an unknown or legacy key
+  degrades the same way.
+  ⚠️ **THE SEED IS PART OF THE CHANGE, AND MISSING IT COST AN HOUR.** `gStyleOf`/`gStyleMake`
+  still defaulted to `size:'M'`, so the field showed a bare **"M"** while the board looked right —
+  `gSizePx` degrades an unknown key to 0 either way. **A default has to be a value the CONTROL can
+  render, not just one the renderer understands.** `gEditReset` wrote `'M'` too.
+  ⚠️ It is registered in `DD_OWN` under its own key (`gsz`), not `size`: sharing the Free Text
+  key would have one control repainting the other's screen.
+- ⚠️ **`.cwftck` CARRIES ITS OWN 12px `margin-top`**, which inside a `.gepair` is a second gap in a
+  grid row — it spaces each cell against nothing and only pushes the pair further from the row
+  above. `.gechk > .cwftck{margin-top:0}`.
+
+#### A transparent header cannot be sticky
+
+Reported with two screenshots: *"when i select the center text alignment ... the scroll time the
+header is fix"* — the group's name painted straight across a row of donut widgets while the board
+scrolled under it.
+
+⚠️ **`position:sticky` WORKS BECAUSE THE STRIP'S OWN FILL HIDES WHAT PASSES UNDER IT.** With
+`background:transparent` there is nothing to hide it, so a stuck header is just floating text over
+moving content. `gStyleCSS`'s `transp` branch emits `position:relative;top:auto;` — the same one
+test that removes the fill removes the stickiness, so the two cannot disagree.
+- ⚠️ **CENTRING IS WHAT MADE IT OBVIOUS, NOT WHAT CAUSED IT.** A left-aligned transparent title
+  overlapped the first widget's corner; a centred one lands in the middle of the board. The bug
+  predates the alignment control.
+- ⚠️ **`relative`, NOT `static`** — `.ghead.gban::before` is an absolutely positioned scrim and
+  needs a positioned ancestor.
+- A header WITH a fill still sticks, which is what it was built for.
+
+#### The group navigator (`gNav*`)
+
+Request, with ChatGPT's canvas section navigator as the reference: a floating jump list at the
+canvas's left edge — a small stack-of-lines mark that expands on hover into the board's groups,
+with the one in view highlighted. **Only when the board has more than one group.**
+
+- ⚠️ **IT IS NOT RENDERED BELOW TWO GROUPS, NOT MERELY HIDDEN.** A jump list with one destination
+  is a control that cannot do anything — the same rule that hides Move group up/down and Collapse
+  others on a one-group board.
+- ⚠️ **`position:absolute` INSIDE `.dwrap`, NOT `fixed`.** That wrapper already begins after the
+  rail and is `position:relative`, so the nav needs no `--rail-w` arithmetic and cannot drift while
+  the sidebar animates its width — this folder's oldest recorded trap. It sits OUTSIDE `.pagebody`,
+  so it does not scroll with the board, and `.dwrap`'s `overflow:hidden` does not clip it because
+  it is inside the box rather than past it.
+- ⚠️ **ITS z-index IS BELOW `.dpanel`'s**, so an open dashboard list simply covers it — one rule
+  fewer than hiding it.
+- ⚠️ **THE MARK AND THE LIST ARE SIBLINGS SHARING `.gnav`'s TOP-LEFT CORNER.** A list that opened
+  CENTRED on the mark would slide out from under the cursor that revealed it and close itself on
+  the way — the rail-flyout fault, solved by geometry instead of a timer.
+- ⚠️ **THE HIGHLIGHT IS DERIVED FROM WHERE THE BOARD IS**, not remembered from the last click, so
+  scrolling by hand moves it too — which is the point of the reference.
+- ⚠️ **IT SCROLLS THE CONTAINER, NEVER `scrollIntoView()`** (that scrolls every ancestor including
+  the window), and the delta comes from two rects rather than `offsetTop`, which would depend on
+  which ancestor happens to be positioned.
+- ⚠️ **THE LISTENER IS BOUND ONCE (`gNavOn`), NOT PER PAINT.** `renderCanvas` runs on every add,
+  drag, resize and undo; a listener added there would stack one per edit and never be removed.
+- ⚠️ **`awAdd` SCROLLS THE CANVAS TO ITS END**, so "at rest" right after adding widgets is the
+  BOTTOM of the board and the mark is correctly on the LAST group. A probe assertion that assumed
+  scrollTop 0 reported the navigator working as a failure.
+
+##### The mark counts the groups, and the card around it is gone (21 Sep 2026)
+
+Request: *"make the minimal ui visualization and show the line how maney group show when 2 group
+then show only 2 line"*. The collapsed mark was **four fixed `<i>` bars at alternating 16/11px
+widths inside a bordered card** — a drawn "list" glyph. On a two-group board it said four.
+
+| | was | is |
+|---|---|---|
+| bars | four, hardcoded in the markup | **`TABS.length`**, one per group |
+| widths | 16 / 11 alternating | uniform 14px |
+| chrome | 1px border, `--card` fill, `--pop-shadow`, radius 8, 10/9 padding | none — 8/7 padding only |
+
+- ⚠️ **THE BARS READ THE SAME ARRAY THE LIST BELOW THEM MAPS**, so the collapsed count and the
+  open rows cannot drift apart, and every path that already repaints the nav — add, clone,
+  reorder, remove, undo — moves the bars for free. There is no second source and nothing to keep
+  in step.
+- ⚠️ **THE ALTERNATING WIDTHS HAD TO GO WITH THE COUNT, and that is not tidying.** Once a bar IS
+  a group, two different widths claim a per-group difference that does not exist. Uniform is the
+  only honest width once the bars carry meaning rather than draw a glyph.
+- ⚠️ **THE PADDING STAYS THOUGH THE CARD GOES, and it is load-bearing twice over**: it is the
+  only hit area a 2px bar has (the probe hit-tests the mark's centre, which falls in a *gap*
+  between bars), and it holds the stack off the group box's own edge. "Minimal" removed the
+  border, the fill and the shadow — not the box.
+- ⚠️ **NOTHING CAPS THE COUNT, deliberately** — a cap is the same bug this request fixes, in the
+  other direction. At 2px + 3px the stack is 5px per group, so twelve groups is 60px; it grows
+  with the board because that is what it is for.
+- ⚠️ **A ONE-BAR MARK IS UNREACHABLE BY CONSTRUCTION, not by a guard.** `gNavPaint`'s early
+  return drops the whole element below two groups, so the "a single dash does not read as a
+  stack" case cannot occur — there is deliberately no second test for it inside the renderer.
+- ⚠️ **CONSEQUENCE, STATED:** with the fill gone the bars sit directly on whatever is behind
+  them. At `left:10px` inside `.dwrap` that is the group box's own `--bg`, which is why it reads
+  — checked in both themes at two and five groups. A board whose first group were dragged
+  narrow enough to put a WIDGET card under that strip would put `--text-dim` bars on `--card`;
+  they survive it (both are mid-tones against each other) but it is the case to look at first if
+  legibility is ever reported.
+- ⚠️ **The current group is NOT marked on the bars** — only in the open list. Now that a bar is
+  a group that is one `classList.toggle` in `gNavMark` away, and it was not asked for.
+
+##### The board gives up a gutter so the mark sits outside the group (21 Sep 2026)
+
+Request: *"it will be show out side of empty group"*, with the two bars painted over a group's own
+header. Measured before touching it: the mark's box ran **70–91px** while the group box started at
+**68px** — the control was drawn on the box's border, its header fill and the first letters of its
+name, on every board with more than one group.
+
+- ⚠️ **THE MARK COULD NOT MOVE, SO THE CANVAS DID.** `.gnav` is `position:absolute` inside
+  `.dwrap`, which begins at the rail — the only room to its left was `.pagebody`'s own 14px inset,
+  and the control is 28px wide. A negative `left` would put it under the rail or under the
+  dashboard list panel. `.pagebody`'s **left** padding grows instead, and the group box starts
+  after the bars.
+- ⚠️ **EVERY NUMBER IN THE GUTTER IS A TOKEN, so there is no second copy of anything.**
+  `--gnav-x` · `--gnav-pad` · `--gnav-bar` are declared on `.dwrap` and read by BOTH the mark and
+  the padding; `--pb-x` is `.pagebody`'s own horizontal inset, which that rule now reads instead
+  of repeating `14px`. `calc(x + pad + bar + pb-x)` is **45px** today, and it follows a moved mark,
+  a resized bar or a changed board inset on its own. Writing `45px` would be a copy of the mark's
+  geometry and `14px` a copy of `.pagebody`'s — both are how the two come to disagree.
+- ⚠️ **`.dwrap:has(#gNav)` IS THE GATE, AND IT IS EXACT** because `gNavPaint` **removes** the
+  element below two groups rather than hiding it. So a flat board, a one-group board and the other
+  two `.pagebody` scrollers on the page keep their 14px with no second test — probed both ways,
+  including going back to two groups.
+- ⚠️ **IT WINS ON WEIGHT, NOT ON SOURCE ORDER**: `:has()` carries its argument's specificity, so
+  an id inside it makes the selector **(1,2,0)** against `.pagebody`'s own (0,1,0).
+- ⚠️ **`fitCanvas` NEEDED NOTHING, AND THAT WAS CHECKED RATHER THAN ASSUMED** — it reads
+  `clientHeight` minus the **vertical** paddings, so a horizontal change cannot reach it. The
+  `padding-top:0` split (the scroller's top inset living on `#dashGrid`) is untouched.
+- ⚠️ **CONSEQUENCE, STATED:** a multi-group board is **31px narrower** than a flat one. At 1600
+  the group box still measures 1488px and nothing overflows; it is the price of the mark having
+  somewhere to stand, and it is paid only by the boards that have a navigator at all.
+
+#### Verification
+
+One probe, **ALL 92 PASS** (`gedit21.py`, session scratch dir) — the note's ⋮ and its four menu
+rows, the absent pencil, both grips out of flow with the headers carrying the cursor, the caret's
+svg and its centre line, the three paired drawer rows on two shared columns, Alignment's two
+buttons end to end (with the model still honouring the withdrawn `right`), Vertical alignment
+absent from the body, the size dropdown's stops and a 24px title, all four `No padding` tokens
+with the strip inside its box, the header rule's two-condition removal, two Empty group tiles, the
+transparent header's `position:relative`, and the navigator end to end — absent on one group and on
+a flat board, one row per group, the mark following both a click and a hand scroll, and one element
+and one listener after three renders.
+
+⚠️ **SIX OF THE TEN FAILURES ACROSS THE RUNS WERE THE PROBE'S OWN MODEL**, each a recorded trap:
+the seeded board is FLAT, so `ungrouped` stays true and no `.ghead` renders at all unless the probe
+sets it; `getBoundingClientRect()` on the section INCLUDES its 1px border, so every "starts at the
+edge" expectation was off by exactly 1; `.gtog` adds 4px of its own padding in front of the caret;
+and two assertions were written against the pencil and the grip's box minutes before both were
+deliberately removed. **Read a probe failure before believing it** — but two were real: the `WGRIP`
+box above, and the 340px cap, which **no failure reported at all** because the assertion written
+for it was satisfied by the cap itself.
 
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 

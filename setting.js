@@ -547,7 +547,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
    \`--card\` / \`--text\` / \`--border\` / \`--teal\` onto DS names, and the drawer's other three
    fields (\`.ddin\`, the \`cwFtDD\` dropdown, \`.ddseg\`) are written against this prototype's own
    values — taking the DS ones would repaint three fields nobody asked about. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#drawer-gedit{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#drawer-gedit,#cwModal{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -940,7 +940,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --widget-type-selector-border-color:'transparent';
 }
 
-html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit{
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). \`obs-side-menu\` paints \`.row.leaf.active\` with

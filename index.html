@@ -479,12 +479,27 @@ body.rzing-body{user-select:none}
 .wrzbadge{position:fixed;z-index:2147482100;pointer-events:none;padding:3px 8px;border-radius:4px;
   background:var(--pop);border:1px solid var(--teal);color:var(--text);font-size:11px;font-weight:600;
   font-family:"JetBrains Mono",monospace;box-shadow:var(--pop-shadow);white-space:nowrap}
-/* move grip — the affordance that was missing; the whole widget still drags */
-.wgrip{cursor:grab;color:var(--faint);font-size:11px;letter-spacing:.5px;line-height:1;
+/* ⚠️ IT IS OUT OF THE FLOW TOO, IN THE END — and a probe is what settled it. The glyph was
+   removed from `WGRIP` on 21 Sep 2026, which left an EMPTY span: `flex:0 0 auto` on no content
+   measures **0 wide**, so the box I had said I was keeping was already gone and with it the
+   grab cursor it existed to carry. An invisible 0px element is not a handle; it is a leftover.
+   ⚠️ WHAT REPLACES IT IS `cursor:grab` ON `.whead` ITSELF, which is where the group's own
+   handle has always been (`.ghead`). The widget is `draggable` as a whole, so the header was
+   already a drag target — it simply never said so without the grip. Both headers now say it
+   the same way, and neither needs a mark to do it. */
+.wgrip{display:none;cursor:grab;color:var(--faint);font-size:11px;letter-spacing:.5px;line-height:1;
   opacity:0;transition:opacity .12s,color .12s;flex:0 0 auto;margin-right:1px}
-.widget:hover .wgrip,.dwidget:hover .wgrip{opacity:.75}
-.wgrip:hover{opacity:1;color:var(--teal)}
+/* ⚠️ THE ⠿ GLYPH IS GONE AND THE HANDLE IS NOT (request, 21 Sep 2026: "remove only icon
+   don't remove functionality"). Its two reveal rules were DELETED rather than set to 0, so the
+   sheet does not claim a hover that no longer paints — the span rests at `opacity:0` in every
+   state and keeps its box, its `cursor:grab` and its tooltip.
+   ⚠️ NOTHING WAS LOST WITH IT, and that is measurable rather than hoped: `draggable="true"`
+   and `ondragstart` sit on the WIDGET (see `dnd` in `renderCanvas`), never on this span, so the
+   grip was pure affordance. Same treatment, same request, as the group's resize grips.
+   ⚠️ `:active` MOVED TO THE HEADERS WITH THE CURSOR. A rule on a `display:none` element is
+   not kept "just in case" — it is a rule that reads as live and does nothing. */
 .wgrip:active{cursor:grabbing}
+.widget .whead:active,.ghead:active{cursor:grabbing}
 .widget.dragging,.dwidget.dragging{opacity:.35}
 .dwidget.dropbefore{box-shadow:inset 3px 0 0 var(--teal)}
 
@@ -2809,7 +2824,7 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
    `avail` as `pb.clientHeight - paddingTop - paddingBottom` and compares it against
    `g.scrollHeight`. Dropping 12px of scroller padding grows `avail` by 12 and adding it to the
    grid grows `scrollHeight` by 12 — the comparison is balanced by construction. */
-.pagebody{--pb-pad:12px;flex:1;overflow:auto;padding:var(--pb-pad) 14px;min-height:0}
+.pagebody{--pb-pad:12px;--pb-x:14px;flex:1;overflow:auto;padding:var(--pb-pad) var(--pb-x);min-height:0}
 .pagebody:has(> #dashGrid){padding-top:0}
 .card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
 .card .chead{padding:9px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);display:flex;align-items:center;gap:8px}
@@ -2888,7 +2903,7 @@ tr:hover td{background:var(--hover)}
 .widget:hover{border-color:var(--border);box-shadow:0 3px 12px rgba(0,0,0,.24)}
 html[data-theme="light"] .widget:hover,
 html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
-.widget .whead{flex:0 0 auto;padding:8px 12px;font-weight:600;font-size:var(--lay-title,12.5px);background:var(--card-head);
+.widget .whead{cursor:grab;flex:0 0 auto;padding:8px 12px;font-weight:600;font-size:var(--lay-title,12.5px);background:var(--card-head);
   display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border-soft)}
 .widget .wbody{flex:1;min-height:0;padding:10px 12px;overflow:hidden;display:flex;flex-direction:column}
 .nodata{display:grid;place-items:center;min-height:150px;color:var(--text-dim);font-size:14px}
@@ -3013,8 +3028,68 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    ⚠️ The header keeps `position:sticky` and its own `--bg` fill: inside a bordered box it now
    sticks to the top of that box rather than the page, which is the behaviour the box implies. */
 .dgroup{margin-bottom:16px}
-.dgroup:has(.ghead){border:1px solid var(--border-soft);border-radius:var(--radius);
-  padding:10px 12px;background:var(--bg)}
+/* ── the group navigator — see `gNavPaint` for why it exists and where it lives ─────
+   ⚠️ THE MARK AND THE LIST ARE SIBLINGS THAT SWAP, and they share `.gnav`'s top-left corner,
+   so the pointer that revealed the list is still inside it — a list that opened CENTRED on the
+   mark would slide out from under the cursor and close itself on the way. Same reasoning as the
+   rail flyout's deferred close, solved by geometry instead of a timer. */
+.dwrap{--gnav-x:10px;--gnav-pad:7px;--gnav-bar:14px}
+.gnav{position:absolute;left:var(--gnav-x);top:50%;transform:translateY(-50%);z-index:39;display:none}
+body:has(#view-dashboard.on) .gnav{display:block}
+/* ⚠️ THE BOARD GIVES UP A GUTTER SO THE MARK SITS OUTSIDE THE GROUP (request, 21 Sep 2026:
+   "it will be show out side of empty group"). The mark is `position:absolute` in `.dwrap` and the
+   only room to its left was `.pagebody`'s own 14px inset, so a 28px control painted ON the group
+   box — over its border, its header fill and the first letters of its name. There is nowhere
+   further left to move it (`.dwrap` begins at the rail), so the CANVAS moves right instead.
+   ⚠️ EVERY NUMBER IN IT IS A TOKEN, SO THERE IS NO SECOND COPY OF ANYTHING: `--gnav-x` + the
+   mark's own left padding + the bar width is where the bars END, and `--pb-x` after it is the
+   scroller's own horizontal inset — the gap every other thing on this board keeps. Move the mark,
+   resize a bar or change the board's inset and the gutter follows. Writing `45px` here would be a
+   copy of the mark's geometry, and writing `14px` a copy of `.pagebody`'s; both would drift.
+   ⚠️ `:has(#gNav)` IS THE GATE, AND IT IS EXACT: `gNavPaint` REMOVES the element below two
+   groups rather than hiding it, so a flat board, a one-group board and every other `.pagebody`
+   scroller on the page keep their 14px and nothing has to be kept in step.
+   ⚠️ IT OUTRANKS `.pagebody`'s OWN RULE BECAUSE `:has()` CARRIES ITS ARGUMENT'S SPECIFICITY
+   — an id inside it makes this (1,2,0), so it wins on weight rather than on source order. */
+.dwrap:has(#gNav) .pagebody{padding-left:calc(var(--gnav-x) + var(--gnav-pad) + var(--gnav-bar) + var(--pb-x))}
+/* ⚠️ ONE BAR PER GROUP, AND THE BARS ARE THE WHOLE CONTROL (request, 21 Sep 2026: "make the
+   minimal ui visualization and show the line how maney group show when 2 group then show only 2
+   line"). It was FOUR FIXED BARS at alternating widths — a drawn "list" glyph — so a two-group
+   board's mark said four. `gNavPaint` emits `TABS.length` of them now, so the mark COUNTS instead
+   of decorating and cannot disagree with the list it opens.
+   ⚠️ THE ALTERNATING 16/11 WIDTHS WENT WITH THE COUNT, and that is not tidying: once a bar IS a
+   group, a rhythm of two widths claims a per-group difference that does not exist. Uniform is the
+   only honest width once the bars carry meaning.
+   ⚠️ THE CARD IS GONE — no border, no fill, no shadow — which is the "minimal" half. THE PADDING
+   STAYS, and is doing two jobs: it is the only hit area a 2px bar has, and it holds the stack off
+   the group box's own edge. Take it out and the control becomes unclickable between the bars.
+   ⚠️ NOTHING CAPS THE COUNT, deliberately — a cap is exactly the bug this request fixes, in the
+   other direction. At 2px + 3px the stack is 5px per group, so twelve groups is 60px; it grows
+   with the board because that is what it is for. */
+.gnavm{display:grid;gap:3px;padding:8px var(--gnav-pad);cursor:pointer}
+.gnavm i{display:block;width:var(--gnav-bar);height:2px;border-radius:2px;background:var(--text-dim)}
+.gnavl{display:none;flex-direction:column;gap:2px;padding:6px;border:1px solid var(--border-soft);
+  border-radius:10px;background:var(--card);box-shadow:var(--pop-shadow);
+  max-height:min(60vh,420px);overflow-y:auto;scrollbar-width:none}
+.gnavl::-webkit-scrollbar{display:none}
+.gnav:hover .gnavm,.gnav:focus-within .gnavm{display:none}
+.gnav:hover .gnavl,.gnav:focus-within .gnavl{display:flex}
+/* ⚠️ `max-width` AND ELLIPSIS, because a group's name is whatever somebody typed — a long
+   one would otherwise push this card across the board it is meant to be navigating. */
+.gnavi{text-align:left;padding:6px 10px;border-radius:6px;font-size:12px;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;cursor:pointer}
+.gnavi:hover{background:var(--hover);color:var(--text)}
+.gnavi.on{background:var(--sel);color:var(--text);font-weight:600}
+.gnavi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+/* ⚠️ "No padding" TAKES THE HAIRLINE WITH IT (request, 21 Sep 2026: "when i apply No padding
+   in empty group the border will be remove"). With the padding at 0 the box's outline sits hard
+   against the header strip on three sides and against the widgets on the fourth, which reads as
+   a clipped card rather than as a group — the two are one decision, so one test drives both.
+   ⚠️ `--gv-line:transparent`, NOT `border:0` — the 1px stays in the box, so ticking the
+   checkbox does not ALSO move every widget in the group a pixel in each direction on top of
+   removing the padding. Same reasoning, same wording, as `.widget.wft.wftbare`. */
+.dgroup:has(.ghead){border:1px solid var(--gv-line,var(--border-soft));border-radius:var(--radius);
+  padding:var(--gv-pad,10px 12px);background:var(--bg)}
 /* ⚠️ THE HEADER IS A TITLE STRIP, LIKE A WIDGET'S OWN (request, 17 Sep 2026: "the header
    title background add like widget title"). It takes `.widget .whead`'s three defining
    properties verbatim — the `--card-head` fill, the 8px/12px padding and the `--border-soft`
@@ -3028,8 +3103,25 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    AND IT SILENTLY KILLS THE STICKY HEADER — any `overflow` other than `visible` makes the
    element a scroll container, so the header would stick to a box that never scrolls, i.e. not
    at all. Rounding the strip itself costs one declaration and keeps the behaviour. */
-.ghead{cursor:grab;display:flex;align-items:center;gap:9px;padding:8px 12px;position:sticky;top:0;z-index:3;
-  background:var(--card-head);margin:-10px -12px 10px;
+/* ⚠️ THE STRIP'S OWN INSET IS A TOKEN, BECAUSE "No padding" MEANS THIS ONE TOO (request,
+   21 Sep 2026: "when i select the No padding the arrow will be set no left margin"). The box's
+   padding and the strip's are two different declarations that happen to say the same thing at
+   rest, so the checkbox has to name both or the caret keeps a 12px inset inside a group with
+   none. The VERTICAL padding stays — it is the strip's height, not space around the group.
+   ⚠️ THE CARET IS THEN 4px IN, NOT 0, AND THAT IS `.gtog`'s OWN PADDING — the button's hit
+   area and the box its hover fill paints. Pulling it out with a negative margin would hang
+   that fill over the group's edge, which is the `.agadvb` trap; 4px of a control's own padding
+   is not a margin on the group. */
+.ghead{cursor:grab;display:flex;align-items:center;gap:9px;padding:var(--gv-hpad,8px 12px);position:sticky;top:0;z-index:3;
+  /* ⚠️ THESE NEGATIVE MARGINS ARE THE INVERSE OF THE BOX'S PADDING, so they have to move
+     with it. At `--gv-pad:0` a hardcoded `-10px -12px` stops cancelling anything and starts
+     pulling the strip 12px PAST the group's own edges on each side and 10px above it — which
+     is what "No padding" looked like until 21 Sep 2026, and why the comment at
+     `.dgroup:has(.ghead)` claiming the strip "keeps meeting the box's edges when the padding
+     goes" was wrong. One token, written beside `--gv-pad` and never on its own.
+     ⚠️ THE 10px UNDER IT SURVIVES EITHER WAY — that is the gap between the title and the
+     widgets, not padding around the group, and it is what the collapsed rule below removes. */
+  background:var(--card-head);margin:var(--gv-hm,-10px -12px 10px);
   border-bottom:1px solid var(--border-soft);
   border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0}
 /* ⚠️ A COLLAPSED GROUP DROPS THE 18px THAT SEPARATED ITS HEADER FROM ITS WIDGETS (request,
@@ -3057,24 +3149,38 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    the grip alone — the request was "click the group and easily move anywhere". The controls
    inside it keep their own cursor: `button{cursor:pointer}` is global and `.gnm` is `text`, so
    what is left grabbable is the count chip, the spacer and the strip's own padding — most of
-   its width. `.ggrip` is the visible affordance and follows `.wgrip` exactly: hover-revealed,
-   but KEEPING ITS BOX so nothing in the row reflows under the pointer.
+   its width. `.ggrip` WAS the visible affordance and followed `.wgrip` exactly; both are gone
+   as of 21 Sep 2026 and the strip's own `cursor:grab` is what is left saying so — see below.
    ⚠️ THE DROP INDICATOR IS AN **OUTSET** SHADOW, NOT AN INSET ONE. `.ghead` is
    `position:sticky` with an opaque `--card-head` fill running the full bleed of the box, so an
    inset rule on `.dgroup`'s top edge would be painted UNDER its own header and never seen. An
    outset shadow paints outside the border box, in the 16px margin between bands, where no
    sibling can cover it — and it needs no `position:relative`, no pseudo-element and no z-index,
    so `.dgroup` does not become a containing block for anything already absolute inside it. */
-.ggrip{cursor:grab;color:var(--faint);font-size:11px;letter-spacing:.5px;line-height:1;
+/* ⚠️ AND IT LEAVES THE FLOW, WHERE `.wgrip` ONLY STOPS PAINTING (request, 21 Sep 2026:
+   "make the proper alignment"). Invisible but still 8px wide plus the header's 9px gap, it was
+   pushing the caret and the title 19px in from the strip's edge with nothing to show for it.
+   ⚠️ THIS ONE GENUINELY COST NOTHING: `.ghead` ALREADY declares `cursor:grab` and carries
+   `draggable` + `ondragstart` itself, so the span contributed no cursor, no hit region and no
+   behaviour — only the glyph. `.wgrip` went the same way an hour later, once a probe showed its
+   box had collapsed with its text; `.whead` took the cursor so both headers now say it. */
+.ggrip{display:none;cursor:grab;color:var(--faint);font-size:11px;letter-spacing:.5px;line-height:1;
   opacity:0;transition:opacity .12s,color .12s;flex:0 0 auto;margin-right:2px}
-.dgroup:hover .ggrip{opacity:.75}
-.ggrip:hover{opacity:1;color:var(--teal)}
+/* ⚠️ ITS GLYPH IS GONE TOO, and it had to go with `.wgrip`'s — they are one mark doing one
+   job at two scales, and leaving either would put the drag affordance on half the board. The
+   comment above still describes the handle correctly: `.ghead` is what carries `draggable` and
+   the grab cursor, so the strip drags exactly as before. */
 .dgroup.gdragsrc{opacity:.35}
 .dgroup.gdropb{box-shadow:0 -3px 0 var(--teal)}
 .dgroup.gdropa{box-shadow:0 3px 0 var(--teal)}
 .gtog{display:flex;align-items:center;padding:3px 4px;border-radius:5px;color:var(--text);flex:0 0 auto}
 .gtog:hover{background:var(--hover)}
-.gcar{font-size:9px;color:var(--muted);width:10px;flex:0 0 10px;transition:transform .15s;transform:rotate(90deg)}
+/* ⚠️ A BOX, NOT A CHARACTER — see `chevron-right` in `ICONS` for why. `place-items:center`
+   plus `.ghead`'s own `align-items:center` is what puts the caret on the title's centre line
+   with no offset to tune; the rotation stays on the span so `.closed` still turns it. */
+.gcar{display:grid;place-items:center;width:12px;height:12px;flex:0 0 12px;color:var(--muted);
+  transition:transform .15s;transform:rotate(90deg)}
+.gcar .gcari{width:12px;height:12px;display:block;fill:currentColor}
 .ghead.closed .gcar{transform:rotate(0)}
 /* ⚠️ THE SIZE IS A TOKEN WITH THE OLD LITERAL AS ITS FALLBACK (request, 17 Sep 2026), set
    per band as an inline `--gh-size` on `.ghead`. A group with no style set renders byte for
@@ -3082,6 +3188,25 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    the title swaps in for editing — which is the one thing that rule already existed to stop. */
 .gnm{font-size:var(--gh-size,13.5px);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   margin-left:-3px;padding:3px 6px;border-radius:5px;cursor:text;max-width:340px}
+/* ⚠️ THE TITLE ONLY GETS A BOX WHEN IT IS ACTUALLY ALIGNED (`.galgn`, emitted by
+   `renderCanvas`/`gEditApply` only for centre and right). At rest `.gnm` hugs its text and
+   `.gsp` takes the slack, which is what keeps "Notes  2 widgets" tight on the left; make the
+   title flexible unconditionally and EVERY group on the board reflows — the count chip would
+   slide across to the buttons on a board nobody has touched.
+   ⚠️ `.gsp` HAS TO COLLAPSE WITH IT, and that is the whole trick: two `flex:1` siblings
+   SPLIT the free space, so a right-aligned title would stop halfway across the strip. With the
+   spacer at 0 the title owns all of it and `text-align` puts the words where the picker says.
+   ⚠️ CONSEQUENCE, STATED: the count chip then sits beside the ➕, so "centre" centres the
+   title between the caret and that chip rather than in the header's true middle. That is the
+   price of not reordering a header four other things already read. */
+/* ⚠️ `max-width:340px` IS THE REASON CENTRE DID NOT LOOK CENTRED, and a green assertion hid
+   it: the title's box measured 340px, my probe asked whether it was "wide enough" — and it was
+   340 because it had hit its CAP, not because it had taken the slack. On a 1400px header that
+   centres the words inside the leftmost 340px, i.e. barely moves them (reported 21 Sep 2026:
+   "the header text is not set in center"). The cap exists so a long name cannot swallow a
+   resting header; an aligned one is asking for exactly that space, so it is lifted here. */
+.ghead.galgn .gnm{flex:1 1 auto;min-width:0;max-width:none;text-align:var(--gv-talign,left)}
+.ghead.galgn .gsp{flex:0 0 0}
 .gnm:hover{background:var(--hover)}
 .gnm:focus-visible{outline:none;box-shadow:0 0 0 2px var(--teal)}
 /* ⚠️ inherits the title's own type so the row does not jump by a pixel when it swaps in */
@@ -3168,11 +3293,12 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
   stroke-linecap:round;stroke-linejoin:round}
 .dgrid12.dropinto .gdrop{border-color:var(--teal);color:var(--text-dim)}
 /* ── Empty group · DESIGN OPTION 2 ONLY (request, 17 Sep 2026) ─────────────────
-   Option 2's empty band can be dragged taller and the board's widgets then give up the
-   room — see `gRzDown` and `fitCanvas`'s floor. Options 1 and 3 render the plain `.gdrop`
-   above and are byte-identical to what they were; so is every group the `G` shortcut,
+   An option 2 GROUP can be dragged taller and narrower — in pixels and in grid columns, the
+   widget's own two axes — and the board's widgets then give up the room (see `gRzDown` and
+   `fitCanvas`'s floor). Options 1 and 3 render the plain `.gdrop` above inside an unmarked
+   section and are byte-identical to what they were; so is every group the `G` shortcut,
    `addGroup()` or Clone makes.
-   ⚠️ `position:relative` IS ON `.gdrs`, NOT ON `.gdrop`. Every empty group on every
+   ⚠️ `position:relative` IS ON `.dgroup.gdrs`, NOT ON `.dgroup`. Every group on every
    other board would otherwise become a positioning context for a grip it never renders. */
 /* ⚠️ OPTION 2's BAND HAS NO DASHED OUTLINE (request, 17 Sep 2026: "in this group remove
    the dot border"). The border is kept at 1px and merely made TRANSPARENT rather than removed:
@@ -3180,19 +3306,93 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    target and the resize feedback with it — and would resize the box by 2px the moment either
    fired. Options 1 and 3 keep the dashed hairline, which is still the only thing marking an
    empty group on those. */
-.gdrop.gdrs{position:relative;border-color:transparent}
+/* ⚠️ THE MARKER IS ON THE `<section>`, NOT ON THE EMPTY BAND (request, 18 Sep 2026: "the
+   empty group — the whole group will be resize handle like widget"). It was on `.gdrop`, which
+   is rendered ONLY while the group is empty — so the grips, and the stored size with them,
+   disappeared the moment you dropped the first widget in, and a size you had set stopped being
+   applied to anything. One class on the group drives the grips, the borderless band, the
+   drag-over repaint and the resize feedback, so none of them can disagree about which groups
+   are option 2's. */
+.dgroup.gdrs{position:relative;display:flex;flex-direction:column}
+/* ⚠️ THE HEIGHT IS THE GROUP'S NOW, so the grid inside has to take what is left of it —
+   otherwise a group dragged taller just draws empty section below a content-sized grid. */
+/* ⚠️ `--gv-align` IS THE GROUP'S OWN VERTICAL ALIGNMENT, defaulting to `start`. It only has
+   anything to distribute when the group is TALLER THAN ITS CONTENT — i.e. a group whose height
+   has been dragged — which is why the control is honest but inert on an auto-height group. */
+.dgroup.gdrs > .dgrid12{flex:1 1 auto;min-height:0;align-content:var(--gv-align,start)}
+/* ⚠️ AND ON A PLAIN GROUP TOO — the drawer offers the control on every group, so the rule
+   cannot live only on `.gdrs`. The fallback is `normal`, NOT `start`: a group with no driven
+   height sizes its rows to content, where the two are equivalent, and `normal` is what every
+   board already lays out with. Only an explicit choice changes anything. */
+.dgroup > .dgrid12{align-content:var(--gv-align,normal)}
+/* ⚠️ ...and an EMPTY group's band has to fill that room rather than sit at its own
+   `min-height` with dead space under it. `align-content:stretch` grows the single auto row to
+   the grid's definite height; `start` above is what keeps a group that HAS widgets from
+   spreading its rows apart, putting the slack at the foot where the next widget lands. */
+.dgroup.gdrs > .dgrid12:has(> .gdrop){align-content:stretch}
+/* the borderless band the comment two blocks up describes — it is selected THROUGH the group
+   now, because `.gdrs` is no longer on the band itself. */
+.dgroup.gdrs .gdrop{border-color:transparent}
+/* ⚠️ THE BAND'S OWN 96px FLOOR IS LIFTED ONLY ONCE THE GROUP'S HEIGHT IS DRIVEN, and the
+   `.gdrsh` class is what says so — `renderCanvas` adds it exactly when it emits an inline
+   `height`. Both halves were got wrong once and the probe caught it:
+     • leave `min-height:96px` standing and a group dragged to `GRP_RZ_MIN` (96) cannot reach
+       it — 96 would have to cover a 37px header and 22px of padding and box as well, so the
+       band would spill past the section's own bottom border while the badge read 96;
+     • drop it unconditionally and a group NOBODY has dragged loses it too, so a freshly
+       added option 2 renders a 30px strip where every other option renders 96. Measured. */
+.dgroup.gdrs.gdrsh .gdrop{min-height:0}
 /* the grip is `.wrzS`'s own shape, offset and cursor, so the gesture reads as the same
    gesture as a widget's bottom edge — see `gRzDown` for why it is NOT that engine */
-.gdrs-h{position:absolute;left:8px;right:8px;bottom:-2px;height:5px;z-index:4;border-radius:3px;
-  cursor:row-resize;opacity:0;transition:opacity .12s}
-.gdrop.gdrs:hover .gdrs-h{opacity:1;background:var(--track)}
-/* (0,3,0) and declared after the rule above, so pointing AT the grip wins without !important */
-.gdrop.gdrs .gdrs-h:hover{background:var(--teal)}
-.gdrop.gdrs.rzing{border-style:solid;border-color:var(--teal)}
-/* ⚠️ RESTATED AT (0,3,0) ON PURPOSE. `.dgrid12.dropinto .gdrop` is (0,2,0) and is declared
-   ABOVE `.gdrop.gdrs`, so at equal weight the transparent rule would win on source order and a
-   drag over an option-2 band would light nothing. */
-.dgrid12.dropinto .gdrop.gdrs{border-color:var(--teal)}
+/* ⚠️ THE BAND CARRIES THE WIDGET'S OWN THREE GRIPS (request, 18 Sep 2026: "the group height
+   and width will be adjusted like datadog — the widget resize handle, only option 2 empty
+   group"). Datadog resizes a group from a bottom-right CORNER, and this file's widgets already
+   ship exactly that set — corner (both axes), right edge (width), bottom edge (height) — so the
+   band borrows their geometry, offsets and cursors verbatim rather than inventing a fourth
+   resize idiom on one board. `.gdrs-h` lost 10px of its right end (8 → 18) for the same reason
+   `.wrzS` stops at 18: that is where the corner grip begins, and two grips must not overlap.
+   ⚠️ READ "THE BAND" ABOVE AS "THE GROUP" — the three offsets below are unchanged, but since
+   the marker moved they resolve against the SECTION's padding box, not the band's. A section
+   carries its own border, so `getBoundingClientRect` (a BORDER box) reports these 1px further
+   in than they read: subtract `borderRightWidth` / `borderBottomWidth` before comparing. That
+   is the recorded absolutely-positioned-box lesson, and it cost three probe assertions. */
+.gdrs-h,.gdrs-e,.gdrs-c{position:absolute;z-index:4;opacity:0;transition:opacity .12s}
+.gdrs-h{left:8px;right:18px;bottom:-2px;height:5px;border-radius:3px;cursor:row-resize}
+.gdrs-e{top:8px;right:-2px;width:5px;bottom:18px;border-radius:3px;cursor:col-resize}
+.gdrs-c{right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize}
+.gdrs-c::after{content:'';position:absolute;right:4px;bottom:4px;width:8px;height:8px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);border-radius:0 0 3px 0}
+.gdrs-c:hover::after{border-color:var(--teal)}
+/* ⚠️ GROUP HOVER REVEALS THE HIT REGION, IT PAINTS NOTHING (request, 18 Sep 2026:
+   "remove the scroll bar"). It used to add `background:var(--track)` here, which put a 5px
+   capsule inset 8px at the band's bottom edge on every hover — full width, mid-grey, rounded,
+   i.e. indistinguishable from a horizontal scrollbar, and it was reported as one. `.wrzS`, the
+   widget bottom-edge grip this is copied from, has NEVER painted on widget hover: it is a
+   transparent box that fills only when the pointer is on the grip itself. Matching it is what
+   the comment above already claimed, so this is the divergence being removed rather than a new
+   rule. ⚠️ CONSEQUENCE, STATED: nothing visible now says the band can be dragged — the
+   `row-resize` cursor is the affordance, exactly as it is for every widget on the same board. */
+/* ⚠️ THE GRIPS ARE INVISIBLE, AND THE RESIZE IS UNTOUCHED (request, 19 Sep 2026: "remove
+   move/adjust icon only — NO REMOVE adjust resize functionality"). They are still 5px bands
+   and an 18px corner with their own `row-resize` / `col-resize` / `nwse-resize` cursors, and
+   `gRzDown` is bound exactly as before — **an element at `opacity:0` still receives pointer
+   events**, which is what lets the paint go without the behaviour going with it. Only the
+   hover reveal and the teal fill are removed; the drag, the badge, the commit, the
+   double-click reset and `fitCanvas` all work as they did.
+   ⚠️ CONSEQUENCE, STATED: nothing visible says the group can be resized — the CURSOR is the
+   whole affordance now, which is the same bargain every widget's own grips already make on
+   this board. The two rules are kept below, commented, because "make the grips visible again"
+   is otherwise a rediscovery rather than an edit.
+   .dgroup.gdrs:hover .gdrs-h,.dgroup.gdrs:hover .gdrs-e,.dgroup.gdrs:hover .gdrs-c{opacity:1}
+   .dgroup.gdrs .gdrs-h:hover,.dgroup.gdrs .gdrs-e:hover{background:var(--teal)} */
+/* ⚠️ THE WHOLE GROUP LIGHTS WHILE IT IS BEING DRAGGED, which is what it now is — the band's
+   own `border-style:solid` went with the marker. (0,3,0) beats `.dgroup:has(.ghead)`'s (0,2,0)
+   border, so the group's own hairline turns teal without !important. */
+.dgroup.gdrs.rzing{border-color:var(--teal)}
+/* ⚠️ RESTATED AT (0,4,0) ON PURPOSE. `.dgrid12.dropinto .gdrop` is (0,2,0) and is declared
+   ABOVE `.dgroup.gdrs .gdrop`, so at equal weight the transparent rule would win on source
+   order and a drag over an option-2 band would light nothing. */
+.dgroup.gdrs .dgrid12.dropinto .gdrop{border-color:var(--teal)}
 /* ── Empty group · option 2 — a header BANNER (request, 17 Sep 2026) ────────────
    `background-image` and its three sizing longhands are emitted INLINE by `gStyleCSS`, not
    here, and that is not a style preference.
@@ -7044,7 +7244,21 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    renders exactly as before. */
 .dgrid12{display:grid;grid-template-columns:repeat(12,1fr);
   gap:var(--lay-vgap,10px) var(--lay-hgap,10px)}
-#dashGrid{display:block;padding-top:var(--pb-pad)}   /* groups stack; each group holds its own 12-col grid.
+/* ⚠️ THE BOARD IS A 12-COLUMN GRID NOW, so a GROUP can snap to columns exactly as a widget
+   does inside one (request, 18 Sep 2026: "the empty group — the whole group will be resize
+   handle like widget"). It was `display:block`, i.e. groups stacked one per row and a narrowed
+   group could only ever leave dead canvas beside it.
+   ⚠️ `#dashGrid > *{grid-column:1/-1}` IS WHAT KEEPS EVERY EXISTING BOARD BYTE-IDENTICAL —
+   every group, and the end-of-board add tile, spans all twelve unless something sets an inline
+   `grid-column`, and an inline style always wins. Nothing gains a span until a grip is dragged.
+   ⚠️ `row-gap:0`, because `.dgroup` already carries `margin-bottom:16px`. A row gap would be
+   ADDED to it and every board would grow 16px between each pair of groups.
+   ⚠️ `align-items:start`, NOT the default stretch: two groups sharing a row would otherwise
+   both take the taller one's height, so a one-widget group beside a three-widget group would
+   silently grow. A group's height stays its own content's until a grip says otherwise. */
+#dashGrid{display:grid;grid-template-columns:repeat(12,1fr);
+  column-gap:var(--lay-hgap,10px);row-gap:0;align-items:start;padding-top:var(--pb-pad)}
+#dashGrid > *{grid-column:1/-1}   /* full width by default; each group holds its own 12-col grid.
    ⚠️ THE TOP PADDING IS THE SCROLLER'S, MOVED DOWN HERE — see `.pagebody`. It must scroll
       away with the content; left on the scroller it is a band the widgets show through. */
 .widget .whead .wdots{color:var(--muted);opacity:0;transition:opacity .12s;cursor:pointer}
@@ -7056,6 +7270,31 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .widget:hover .whead .wai{opacity:.85}
 .widget .whead .wai:hover{opacity:1;background:var(--ai-soft,rgba(139,92,246,.13))}
 .widget .whead .wai svg{width:13px;height:13px;fill:currentColor}
+/* ── KEPT AND UNREFERENCED — the Free Text note's own edit button ─────
+   ⚠️ NOTHING RENDERS `.wedit`. It was built on 21 Sep 2026 ("add edit option in free text
+   widget") and removed the same day once the ⋮ was reachable again ("remove edit icon because
+   the edit option is already in 3 dot"). The rules stay because they are what a revert needs
+   and because they cost nothing; do not read them as a live control. The reasoning below is
+   why it was placed where it was, and still applies if it comes back.
+   ⚠️ IT IS VISIBLE AT REST AND THE ⋮ IS NOT — the split is the point, and it is the group
+   header's own (`.gaddw` rests visible beside a hover-revealed `.gact`). A note is text on a
+   board with no title bar and no chrome of its own; with every control hidden until hover,
+   nothing on screen said the words could be changed at all. Editing is the one thing you come
+   to a note to do, so it gets the resting mark and Clone / Full screen / Remove stay in the ⋮
+   where every other widget keeps them.
+   ⚠️ IT TAKES THE ✦'s SLOT, IT IS NOT AN EXTRA CONTROL. A Free Text widget has no counters,
+   so the AI summary was hidden on 17 Sep and left an 18px hole in the one header that has
+   nothing else in it — same box, same place, same size, so the note's overlay is no busier
+   than any other widget's.
+   ⚠️ `--text-dim` AT .55, NOT `--teal`. Teal on this board means "a thing you act on to
+   create something" (the FAB, the create buttons); this edits what is already there, and a
+   saturated mark painted permanently over a note's top-right corner competes with the note. */
+.widget .whead .wedit{display:grid;place-items:center;width:18px;height:18px;border-radius:4px;
+  color:var(--text-dim);opacity:.55;transition:opacity .12s,background .12s,color .12s;
+  cursor:pointer;flex:0 0 18px}
+.widget:hover .whead .wedit{opacity:1}
+.widget .whead .wedit:hover{color:var(--teal);background:var(--hover)}
+.widget .whead .wedit svg{width:13px;height:13px;fill:currentColor}
 /* per-widget time-range badge (live 8.2.6 reveals this on widget hover) */
 .wtime{margin-left:auto;background:var(--chip);color:var(--text-dim);border-radius:3px;
   font-size:10px;font-weight:600;padding:0 5px;line-height:16px;opacity:0;transition:opacity .12s;white-space:nowrap}
@@ -8215,12 +8454,38 @@ html[data-theme="light"] #cwModal{--cwa:#1d2a3e}
    Two classes settle it wherever either rule moves. */
 .cwftin.cwftbig{height:100px;min-height:100px;width:100%;padding:13px 14px;line-height:1.5;
   resize:vertical;font-family:inherit;display:block}
-#cwModal.cwft .cwsb{padding-top:14px;border-top:0}
-.cwftp{display:flex;flex-direction:column;gap:6px}
+/* ⚠️ THE SCROLL BODY CONTRIBUTES NO SIDE PADDING IN FREE TEXT MODE (request, 19 Sep 2026:
+   "the free text widget remove 12 px padding"). `.cwsb` is the SHARED settings scroller — it
+   pads itself for the query builder, which has no panel of its own — while Free Text puts a
+   `.cwftp` inside it that already carries 16px on every side. The two stacked measured
+   12 + 16 = 28px from the pane's border to "Text to display", i.e. the inset was being paid
+   for twice. `.cwftp` is `.cwsb`'s ONLY child here (`cwFtPanelHTML` returns that one div, and
+   the gate message lives in the footer), so nothing else loses its inset.
+   ⚠️ LONGHANDS, NEVER THE `padding` SHORTHAND — that would reset the 14px top this same rule
+   sets in place of the tab strip's border, and the 10px bottom `.cwsb` has at this width.
+   ⚠️ SCOPED TO `#cwModal.cwft` (1,1,0), so it beats BOTH `.cwsb` rules — the base 13/14 and
+   the responsive 10/12 — without depending on which one is live, and the query builder keeps
+   its own padding untouched. */
+#cwModal.cwft .cwsb{padding-top:14px;padding-left:0;padding-right:0;border-top:0}
+/* ⚠️ 24px BETWEEN FIELDS, 16px OF PADDING (request, 18 Sep 2026: "in this all field in
+   free text the 24px margin in between and 16px padding"). The padding is read as the PANEL's
+   — it is the container the fields sit in — and the 24 is the field-to-field step below.
+   ⚠️ STATED: if the 16 was meant as the INPUTS' own padding instead, it is `.cwftin,.cwftsel`
+   (`0 9px` today), not this rule. */
+.cwftp{display:flex;flex-direction:column;gap:0;padding:16px}
+/* ⚠️ THE PANEL'S OWN FLEX `gap` IS 0, AND THE 6px MOVED ONTO THE LABEL. It used to be
+   `gap:6px`, which is the label→control gap — but a flex gap falls between EVERY pair of
+   children, so a 24px field margin rendered as a 30px step and "24px margin in between"
+   measured 30. Measured before the change: 6, 16, 30, 30, 18 — five children, four different
+   steps, and only two of them were the field rule at all. With the gap structural instead, 24
+   is both what the rule says and what you measure.
+   ⚠️ SCOPED WITH `>`: a label inside `.cwftcol` (the paired rows) is its column's FIRST
+   child and that column carries its own 6px gap, so a descendant rule would double it. */
+.cwftp > .cwftl{margin-bottom:6px}
 /* ⚠️ 16px ABOVE A LABEL, 6px BELOW IT — the gap BETWEEN fields must beat the gap INSIDE
    one, or a label reads as belonging to the control above it. The rule this file has now
    recorded at `.aiab li`, `.aichips`, `.mfsec` and the Agentic AI form. */
-.cwftp .cwftl:not(:first-child){margin-top:16px}
+.cwftp > .cwftl:not(:first-child){margin-top:24px}
 .cwftl{font-size:11.5px;color:var(--text-dim);font-weight:500}
 .cwftl i{color:var(--red);font-style:normal;margin-left:2px}
 .cwftin,.cwftsel{width:100%;box-sizing:border-box;height:32px;padding:0 9px;border-radius:4px;
@@ -8265,13 +8530,82 @@ html[data-theme="light"] .cwftsel{color-scheme:light}
    reads as pure text; deleting it would strand the widget on the board with no way to remove it. */
 .widget.wft .whead{position:absolute;top:0;right:0;left:auto;z-index:2;
   background:transparent;border-bottom:0;padding:6px 8px;font-size:0}
+/* ⚠️ THAT `font-size:0` HAD EATEN THE ⋮, AND WITH IT EVERY ACTION ON A NOTE (found
+   21 Sep 2026, reported as "there is no edit option in free text widget"). It is there to hide
+   the widget TITLE, which is a bare text node in this header — but `.wdots` is the text
+   CHARACTER `⋮` and declares no size of its own, so on every Free Text widget it rendered as a
+   zero-width, invisible span and Edit / Clone / Full screen / Remove were unreachable.
+   ⚠️ THE HEADER'S OTHER CHILDREN SURVIVED BECAUSE EACH DECLARES ITS OWN SIZE — `.wgrip` 11px,
+   `.wremove` 11px, `.wtime` 10px, `.wai`/`.wedit` an 18px box — which is exactly why this read
+   as "a note has no actions" rather than as a CSS fault: the corner still painted a grip and a
+   time chip, so nothing looked broken. The comment above claimed the overlay "keeps every one
+   of those reachable"; it did not, and had not since the overlay was written on 17 Sep.
+   ⚠️ GIVE A CONTROL A SIZE, NEVER LIFT THE 0 — the title has to stay hidden, and any future
+   child of this header that is a glyph rather than a box needs the same line. */
+.widget.wft .whead .wdots{font-size:14px;line-height:1}
 .widget.wft{position:relative}
+/* ⚠️ A TRANSPARENT NOTE DROPS THE CARD, NOT JUST ITS FILL (19 Sep 2026: "when i select the
+   background color transprtnt the don't show the widget background color"). `.ftw` was already
+   painting `transparent` — what the reader still saw was the WIDGET underneath it, which every
+   widget on this board has: `--card` plus a `--border-soft` hairline. Asking for no background
+   and being given a card with no fill inside it is the request half-done, so the border goes
+   with the fill; a hairline rectangle around nothing reads as a card either way.
+   ⚠️ IT IS DERIVED, NOT A SECOND SETTING. `renderCanvas` emits `wftbare` from
+   `cwFtBg(w.bg) === 'transparent'`, the same resolver `ftHTML` paints with — so the two can
+   never disagree about whether a note has a background, and a CUSTOM HEX (which `cwFtVal`
+   returns as-is) correctly keeps its card.
+   ⚠️ THE HOVER SHADOW GOES TOO. `.widget:hover` lifts a card; over a bare note it drew a
+   rectangular shadow around content with no edge, which reads as a rendering fault rather than
+   as a hover. What still says "you are pointing at this" is the note's own chrome — the ⋮
+   overlay and the three resize grips, all of which reveal on hover exactly as before.
+   ⚠️ `border-color:transparent`, NOT `border:0` — the 1px stays in the box so a note does not
+   shift by a pixel, or grow by two, the moment its background is changed. */
+.widget.wft.wftbare{background:transparent;border-color:transparent}
+.widget.wft.wftbare:hover{border-color:transparent;box-shadow:none}
+html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 .widget.wft .wbody{padding:0}
 /* ⚠️ `container-type:inline-size` IS WHAT MAKES "Auto" WORK — `cqw` in `.ftt.auto` resolves
    against THIS box, so the text re-fits on every resize with no JS and no timer. */
 .ftw{width:100%;height:100%;display:flex;align-items:center;padding:10px 14px;box-sizing:border-box;
   container-type:inline-size;overflow:hidden}
 .ftw > .ftt{display:block;width:100%;font-weight:700;line-height:1.15;word-break:break-word}
+/* ⚠️ AN IMAGE IS BOUNDED BY THE WIDGET, NOT BY ITS OWN PIXELS (19 Sep 2026). `.ftw` does not
+   scroll, so an unbounded `<img>` is simply clipped — a 2000px screenshot pasted into a note
+   would show its top-left corner and nothing would say why. `height:auto` keeps the aspect
+   ratio while `max-width` does the work, and `max-height` bounds the other axis for a tall
+   image in a short widget.
+   ⚠️ IT IS KEYED ON `.ftt`, NOT `.ftw` — that one class is the text container on the board,
+   in the editor's live preview AND in each Formatting-help result cell, so one rule covers all
+   three and they cannot render an image three different sizes.
+   ⚠️ NO RADIUS AND NO BORDER: this is the reader's own content, and rounding someone's
+   screenshot is the chrome deciding what their image looks like. */
+.ftt img{max-width:100%;max-height:100%;height:auto;vertical-align:middle}
+/* ⚠️ THE EDITABLE NOTE SAYS SO WITH A CARET, and only on the BOARD — `.fted` is emitted by
+   `ftHTML` just when it has widget indices, so the editor's live preview and every
+   Formatting-help result cell keep the default cursor and cannot be typed into. */
+.ftt.fted{cursor:text}
+/* ⚠️ THE FIELD IS THE NOTE, NOT A FORM CONTROL. It takes the span's box, so the words do
+   not move when the editor opens; `font:inherit` is deliberately NOT used — `ftEdit` copies
+   the computed size, weight, line-height, colour and alignment inline, because `.ftt.auto`
+   sizes itself with a container query and an inherited `font-size` would resolve against the
+   textarea instead. `resize:none` because the note's own grips are what size it, and a second
+   resize affordance inside the first is two ways to do one thing. */
+/* ⚠️ `min-height:100%` ON THE FIELD DID NOTHING, AND THAT IS WHY EDITING GAVE A TWO-LINE
+   WINDOW. A percentage height resolves against the parent's height, and `.ftt` is an auto-height
+   span — so the percentage is simply dropped and the textarea fell back to its default `rows=2`.
+   Measured on an 8-line note in a 110px widget: the field was **37px tall with a scrollHeight of
+   148**. The fix is to give it a definite height to resolve against: `.ftw` stretches while
+   editing, `.ftt` fills it, and the field fills that. */
+.ftta{display:block;width:100%;height:100%;box-sizing:border-box;margin:0;padding:0;
+  border:0;outline:0;background:transparent;font-family:inherit;letter-spacing:inherit;
+  resize:none;overflow:auto;scrollbar-width:thin}
+/* ⚠️ THE ROW STRETCHES ONLY WHILE EDITING. `.ftw`'s `align-items` IS the note's vertical
+   alignment (top / middle / bottom), so it cannot simply be `stretch` — that would ignore the
+   setting whenever the note is merely being read. `fting` is added for the duration and removed
+   by the same teardown that removes the field. */
+.ftw.fting{align-items:stretch}
+.ftw.fting > .ftt{height:100%;min-height:0}
+.ftta::placeholder{color:var(--muted)}
 /* clamped at both ends: below 20px the "banner" stops reading as one, and past 96px a short
    word in a wide widget overflows its own box. */
 .ftt.auto{font-size:clamp(20px,8cqw,96px)}
@@ -8305,8 +8639,20 @@ html[data-theme="light"] .cwftsel{color-scheme:light}
    `.cwftp .cwftl:not(:first-child){margin-top:16px}` stops matching inside a column, because
    each label IS its column's first child, so the 16px that separates every other field from
    the one above it has to move onto the row itself. */
-.cwftpair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;
-  align-items:start;margin-top:16px}
+/* ⚠️ 24px BETWEEN THE TWO COLUMNS (request, 19 Sep 2026: "in between Font Size and
+   alignment add 24px margin", with the gutter marked across BOTH rows). It is the same 24 the
+   panel already steps by vertically (`.cwftp > .cwftl:not(:first-child){margin-top:24px}`), so
+   the pair now reads on one rhythm in both axes instead of 10 across and 24 down.
+   ⚠️ `column-gap`, NOT the `gap` SHORTHAND — that sets the ROW gap too, and each `.cwftpair`
+   is one row today only because nothing has wrapped yet; a wrapped pair would silently inherit
+   24px between its own lines, which is the "the gap INSIDE a group must not beat the gap
+   BETWEEN groups" rule this file records in five places.
+   ⚠️ ONE RULE, BOTH PAIRS — Font Size/Alignment and Font Color/Background share it, which is
+   what the marked gutter spans and what keeps the two rows from drifting apart. The columns are
+   `1fr` each, so the wider gutter takes 7px off each column; Alignment still hugs its content
+   (`.cwftseg{width:max-content}`) and only starts 7px further right. */
+.cwftpair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  row-gap:10px;column-gap:24px;align-items:start;margin-top:24px}
 .cwftpair .cwftcol{display:flex;flex-direction:column;gap:6px;min-width:0}
 #cwModal.cwft .cwftpair .cwftdd{max-width:none}
 /* ⚠️ TWO ROWS USE THIS GRID NOW — Font Size + Alignment, then Font Color + Background. The
@@ -8416,9 +8762,47 @@ html[data-theme="light"] .cwftsel{color-scheme:light}
   box-shadow:0 6px 0 var(--text-dim),0 12px 0 var(--text-dim)}
 /* ── the two alignment segments sit on one row ─────────────────────────── */
 .cwftrow{display:flex;gap:8px;flex-wrap:wrap}
+/* ⚠️ THE TWO ALIGNMENT CONTROLS SIT SIDE BY SIDE IN ONE PAIR COLUMN (19 Sep 2026). Each
+   half is a `.cwftcol`, so both inherit the panel's own label-over-control 6px step and the
+   labels share a baseline while the segments share a top edge — that is what "proper
+   alignment" is here, rather than a second full-width row a step below.
+   ⚠️ `align-items:flex-start` MATTERS: the labels are different lengths ("Alignment" against
+   "Vertical alignment") and at a narrow width the longer one wraps to two lines. Stretched,
+   that would drag its segment down out of line with its neighbour; started, the two segments
+   stay level and only the label grows.
+   ⚠️ IT WRAPS RATHER THAN OVERFLOWING. 114 + 16 + 114 = 244px in a ~290px column today, but
+   the panel is a size container and the pair collapses to one column on a narrow editor — at
+   which point these two stack instead of running past the edge. */
+.cwftvrow{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+/* ⚠️ EQUAL HALVES, so the two controls read as a two-column split rather than as one
+   control and whatever happened to fit after it ("this 2 field on proper alignment",
+   19 Sep 2026). Hugging their content put the second label wherever the first segment
+   ended — a content-dependent x that lines up with nothing above or below it. At `1 1 0`
+   each half is half the pair column, so Alignment starts at its left edge and Vertical
+   alignment at the midpoint, on the same rhythm as every other row in the panel.
+   ⚠️ `min-width:0` OR THE HALVES CANNOT SHRINK BELOW THEIR CONTENT — a flex item's
+   `min-width` defaults to `auto`, which is what makes a "1fr" column overflow instead of
+   wrapping. The recorded `.agrt .n` fault. */
+.cwftvrow > .cwftcol{flex:1 1 0;min-width:0}
+/* the Edit-group drawer's two checkboxes: the panel's own control, on the drawer's row step */
+.gechk{margin-top:14px}
+/* ⚠️ `.cwftck` CARRIES ITS OWN 12px, WHICH IS A SECOND GAP INSIDE A GRID ROW. It is written
+   for the Free Text panel, where the checkboxes are stacked siblings; here they are two cells
+   of one row, so the margin spaces each cell against nothing and only pushes the pair further
+   from the row above. The row's own 14px is the gap. */
+/* ⚠️ ONE RHYTHM FOR THE DRAWER'S THREE PAIRED ROWS, and it was uneven until it was measured
+   off a screenshot: a row's cell carries 18px under it (`.ddfield`'s own) and the row after it
+   adds `.gechk`'s 14 — 32px between rows. The checkbox labels had NO bottom margin and the
+   alignment row had NO top one, so Header colour→Transparent was 32px while
+   Transparent→Alignment was 0, and the last row read as belonging to the checkboxes. */
+.gechk > .cwftck{margin-top:0;margin-bottom:18px}
+.gepair.gealgn{margin-top:14px}
 /* the size scale is 8 stops in a 232px column, so its cells shrink and carry text not glyphs */
 .cwftseg .cwftsg b{font-size:9px;font-weight:700;letter-spacing:.01em}
 .cwftp > .cwftseg{width:100%}
+/* ⚠️ THE PRESET ROW AND THE CHECKBOX ARE FIELDS TOO, and neither was on the field step —
+   they carried their own 10px and 12px, which is where the 16px and 18px gaps came from. */
+.cwftp > .cwftpre,.cwftp > .cwftck{margin-top:24px}
 .cwftp > .cwftseg .cwftsg{flex:1 1 0;width:auto;min-width:0;padding:0}
 .cwftck{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-dim);
   cursor:pointer;margin-top:12px}
@@ -8432,6 +8816,19 @@ html[data-theme="light"] .cwftsel{color-scheme:light}
    always read "Group title" / "Header colour" / "Title size", so only the transform had to go.
    ⚠️ SCOPED TO THIS DRAWER — `.ddlbl` is shared, and the other two drawers were not named. */
 #drawer-gedit .ddlbl{text-transform:none;letter-spacing:0}
+/* ⚠️ `align-items:start` — the two fields are different heights (a 32px dropdown against a
+   segmented control) and without it the shorter one stretches to the taller. The 24px is the
+   COLUMN gap; each child keeps its own `.ddfield` bottom margin, so what follows the pair is
+   spaced exactly as every other field is. */
+.gepair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+/* ⚠️ 628px, NOT `.sdrawer`'s 400 (request, 18 Sep 2026: "the 'edit group' sidebar width 628").
+   ⚠️ AND IT NEEDS ITS OWN PARKED `right` AND ITS OWN `.on` — the recorded `#drawer-layout`
+   trap: `#drawer-gedit{right:-648px}` is (1,0,0) and beats `.sdrawer.on{right:0}` at (0,2,0), so
+   without the second rule the drawer would open in state and never move on screen; and without
+   the parked offset 228px of it would sit on the board while closed. Parked = width + 20, the
+   same clearance `.sdrawer` and `#drawer-layout` both use for their shadow. */
+#drawer-gedit{width:628px;right:-648px}
+#drawer-gedit.on{right:0}
 /* ⚠️ `--cwa` IS DECLARED ON `#cwModal`, so the custom-colour field's focus ring resolved to
    nothing once this dropdown was reused in a drawer. The fallback is the page accent. */
 .cwftdd{position:relative}
@@ -8450,6 +8847,75 @@ html[data-theme="light"] .cwftsel{color-scheme:light}
   background:var(--pop);border:1px solid var(--border);border-radius:4px;
   box-shadow:0 10px 30px rgba(0,0,0,.45);padding:7px;overflow:hidden}
 html[data-theme="light"] .cwftddp{box-shadow:0 10px 30px rgba(23,35,54,.16)}
+/* ══ THE TWO-PANE COLOUR DROPDOWN (19 Sep 2026) ═════════════════════════════════════════
+   ⚠️ `.two` IS WIDER THAN ITS TRIGGER, AND THAT IS WHY `right` IS RELEASED. The base panel is
+   pinned `left:0;right:0` so it matches the field; a canvas cannot live in 232px, so the
+   colour variant drops the right pin and sizes to its content. It opens to the RIGHT of the
+   field, which is where there is room in both places it is used. */
+/* ⚠️ IT OPENS LEFTWARD — `right:0`, NOT `left:0`. The base panel is pinned to BOTH edges so
+   it matches the field; a canvas cannot live in 232px, so this variant releases one edge and
+   sizes to its content. Releasing the RIGHT one (the first build) pushes a 438px panel out
+   from the field's left edge — measured at **97px past the viewport and 131px past `#cwBody`**,
+   which is `overflow:auto` and duly clipped it: the screenshot lost G, B, A, half the preset
+   grid and both buttons while every structural assertion still passed. Anchoring the panel's
+   RIGHT edge to the field's puts it inside the pane in both places this is used, because the
+   field always ends at the pane's own right edge. */
+.cwftddp.two{left:auto;right:0;width:max-content;display:flex;gap:0;padding:0}
+/* the flip — see `ddPlace`. `top:auto` is required: the base rule sets `top`, and a `bottom`
+   alone would leave both edges pinned and stretch the panel instead of moving it. */
+.cwftddp.up{top:auto;bottom:calc(100% + 4px)}
+.cwftddp.two .cwftddc{width:150px;flex:0 0 150px;padding:7px;border-right:1px solid var(--border);
+  box-sizing:border-box}
+.cwftddp.two .cwftddl{max-height:238px}
+/* the tick on the picked row — the list is the other half of the control, so it has to say
+   which entry is live even while the canvas is showing something else */
+.cwftdck{width:13px;height:13px;margin-left:auto;flex:0 0 13px;fill:none;
+  stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.cppane{width:286px;padding:10px;box-sizing:border-box;display:flex;flex-direction:column;gap:9px}
+/* ⚠️ THE CANVAS IS THREE LAYERS AND THE ORDER IS LOAD-BEARING: the hue is the element's own
+   background, then white→clear left-to-right, then clear→black top-to-bottom. Put black
+   first and it tints the white wash instead of covering it, and the bottom row stops being
+   black. `touch-action:none` or a drag scrolls the panel on a touch screen instead. */
+.cpsv{position:relative;height:150px;border-radius:4px;cursor:crosshair;touch-action:none;
+  background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent)}
+.cpsl{display:flex;align-items:center;gap:10px}
+.cpbars{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:9px}
+.cphue{position:relative;height:11px;border-radius:999px;cursor:pointer;touch-action:none;
+  background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+/* the checkerboard is what makes an alpha slider legible — without it the left end is just
+   the panel showing through and reads as "no slider here" */
+.cpalpha{position:relative;height:11px;border-radius:999px;cursor:pointer;touch-action:none;
+  background-image:linear-gradient(45deg,var(--border) 25%,transparent 25%,transparent 75%,var(--border) 75%),
+    linear-gradient(45deg,var(--border) 25%,transparent 25%,transparent 75%,var(--border) 75%);
+  background-size:8px 8px;background-position:0 0,4px 4px}
+.cpalpha > span{position:absolute;inset:0;border-radius:999px}
+.cpnow{flex:0 0 31px;width:31px;height:31px;border-radius:4px;border:1px solid var(--border)}
+/* ⚠️ THE HANDLE IS `pointer-events:none`. It sits inside the track it reports, so a press that
+   lands on it would otherwise never reach the track's own `pointerdown` and the drag would
+   not start — exactly when you grab the thing you are meant to grab. */
+.cpdot{position:absolute;width:13px;height:13px;margin:-7px 0 0 -7px;border-radius:50%;
+  border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);pointer-events:none}
+.cpdot.sm{top:50%;width:13px;height:13px;margin-top:-6.5px}
+.cpfields{display:flex;gap:5px}
+.cpf{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cpf:first-child{flex:1 1 auto;min-width:0}
+.cpf input{width:100%;min-width:0;box-sizing:border-box;height:26px;padding:0 6px;text-align:center;
+  border:1px solid var(--border);border-radius:4px;background:var(--panel-2);color:var(--text);
+  font:inherit;font-size:11.5px;font-family:"JetBrains Mono",monospace}
+.cpf:not(:first-child) input{width:38px}
+.cpf input:focus{outline:none;border-color:var(--cwa,var(--teal))}
+.cpf span{font-size:10px;color:var(--muted)}
+.cpgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.cpcell{height:22px;border:0;border-radius:4px;cursor:pointer;padding:0}
+.cpcell:hover{outline:2px solid var(--text-dim);outline-offset:1px}
+.cpact{display:flex;justify-content:flex-end;gap:7px}
+.cpbtn{height:28px;padding:0 13px;border:1px solid var(--border);border-radius:4px;
+  background:var(--panel-2);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.cpbtn:hover{border-color:var(--text-dim)}
+.cpbtn.pri{background:var(--cwb,var(--text));color:var(--bg);border-color:transparent;font-weight:600}
+/* the resolved value on the trigger — quiet, mono, and pushed to the chevron */
+.cwftddv{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:11px;
+  font-weight:400;color:var(--muted);letter-spacing:.02em}
 .cwftdds{display:flex;align-items:center;gap:7px;height:30px;padding:0 9px;margin-bottom:5px;
   border:1px solid var(--border);border-radius:4px;background:var(--panel-2)}
 .cwftdds svg{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;
@@ -8479,6 +8945,12 @@ html[data-theme="light"] .cwftddp{box-shadow:0 10px 30px rgba(23,35,54,.16)}
    Chrome gives the well a default border and inset; `::-webkit-color-swatch-wrapper` is the
    only way to reach the inner square, so the well reads as one flat chip like the list's own
    swatches rather than a control from a different toolkit. */
+/* ⚠️ AN UNKNOWN ELEMENT DEFAULTS TO `display:inline`, and this file has the recorded
+   `obs-radio` / `obs-input` fault from exactly that — an inline host measures and lays out
+   nothing like the control it paints. */
+.cwftdcp{display:inline-flex;flex:0 0 auto}
+/* ⚠️ `.cwftdcw` / `.cwftdch` ARE KEPT AND UNREFERENCED (the house pattern) — they styled
+   the native colour well and the #RRGGBB field that `obs-color-picker` replaced on 18 Sep 2026. */
 .cwftdcw{flex:0 0 26px;width:26px;height:24px;padding:0;border:1px solid var(--border);
   border-radius:4px;background:none;cursor:pointer}
 .cwftdcw::-webkit-color-swatch-wrapper{padding:2px}
@@ -10600,13 +11072,22 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 
 <!-- group ⋮ menu -->
 <div class="cmenu" id="gMenu">
+  <!-- ⚠️ THREE ROWS REMOVED (request, 19 Sep 2026: "remove some action 'add widget to
+       group', 'move group down', 'collapse other group'"). Each had another door, which is
+       why removing them costs nothing:
+       • Add widget to group — the header's own ⬚ is visible AT REST since 17 Sep, so this was
+         a second entry point to the control sitting two centimetres away.
+       • Move group down — and **Move group up went with it**, stated rather than inferred: one
+         direction alone is incoherent, and on a first group only "down" is ever shown, which
+         is why only that one was named. Reordering is the HEADER DRAG built on 17 Sep.
+       • Collapse other groups — the caret on each header collapses one, and `Groups ▾` has
+         Expand all.
+       ⚠️ `gAddWidget`, `gMove`, `gCollapseOthers` AND `gReorder` ARE ALL STILL LIVE — the drag
+       calls `gReorder`, and the other two are kept and unreferenced, the house pattern. The
+       `#gmUp` / `#gmDn` / `#gmOth` / `#gmArrSep` ids go with the rows; `openGMenu` no longer
+       has per-position rows to show or hide. -->
   <div class="cmi" onclick="gEditOpen()">Edit group</div>
   <div class="cmi" onclick="gClone()">Clone group</div>
-  <div class="cmi" onclick="gAddWidget()">Add widget to group</div>
-  <div class="cmsep" id="gmArrSep"></div>
-  <div class="cmi" id="gmUp" onclick="gMove(-1)">Move group up</div>
-  <div class="cmi" id="gmDn" onclick="gMove(1)">Move group down</div>
-  <div class="cmi" id="gmOth" onclick="gCollapseOthers()">Collapse other groups</div>
   <div class="cmsep"></div>
   <div class="cmi danger" onclick="gRemove()">Delete group</div>
 </div>
@@ -11019,6 +11500,33 @@ const ICONS = {
   "viewBox": "0 0 48 48",
   "paths": [
    "M24,14c2.2,0,4-1.8,4-4s-1.8-4-4-4-4,1.8-4,4,1.8,4,4,4Zm0,20c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Zm0-14c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Z"
+  ]
+ },
+ /* ⚠️ THE PRODUCT'S OWN `common/actions-edit/pencil.svg`, pasted verbatim — one path on the
+   48 grid, `fill="currentColor"` already, so it needs no paint of its own and takes the row's
+   colour like every other record here.
+   ⚠️ THIS FILE ALREADY CARRIED TWO HAND-DRAWN `edit` GLYPHS (a 24-grid path in the Manage
+   screen's action map and another in the dashboard icon map) and NEITHER was reused: both are
+   drawn by hand, which is the one thing the icon rule forbids, and a third copy of a mark this
+   product ships is how three edit buttons come to look like three different features. Point
+   those two here if they are ever touched. */
+ /* ⚠️ THE PRODUCT'S OWN `common/arrows-direction/chevron-right.svg`, pasted verbatim. It
+   replaced the TEXT CHARACTER `❯` in the group header's collapse control (request, 21 Sep
+   2026: "the down arrow & header text will be align") — a glyph at `font-size:9px` sits where
+   its own font's line box puts it, which is not where the 13.5px title beside it sits, so the
+   caret rode high and no amount of padding fixed it without a magic offset. An svg in a
+   `place-items:center` box is centred by the flex row itself, so the alignment is structural.
+   Same finding, same fix, as the AI panel's chat-name caret and Option 7's row chevron. */
+ "chevron-right": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"
+  ]
+ },
+ "pencil": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z"
   ]
  },
  "search": {
@@ -15341,7 +15849,18 @@ function aicdRun(gi, i){
    live editor shows "Text to display" until you type, and so does this. It is dimmed so it
    cannot be mistaken for content, and a widget can never ship holding it — `cwValid` will not
    let an empty Free Text widget be created. */
-function ftHTML(ft){
+/* ⚠️ `gi` / `i` ARE HOW THIS KNOWS IT IS ON THE BOARD (19 Sep 2026: "the free text is
+   editable"). ONE renderer serves three surfaces — the board, the editor's live preview and
+   every Formatting-help result cell — and only the board one may be edited in place: a
+   preview that edited itself would be writing into the draft the panel beside it already owns,
+   and a help cell is documentation. They call `ftHTML(ft)` with no indices and get exactly
+   what they got before, which is also why the editable hook could be added without touching
+   either call site. */
+function ftHTML(ft, gi, i){
+  /* `'draft'` is the editor's live preview — editable, but writing into `CW.ft` rather than
+     into a board widget. A Formatting-help cell passes neither and stays documentation. */
+  const live = gi === 'draft' || (typeof gi === 'number' && typeof i === 'number');
+  const ref  = gi === 'draft' ? "'draft'" : gi + ',' + i;
   const raw  = String(ft.text || '').trim();
   const ph   = !raw;
   const col  = cwFtVal(CW_FT_COLOR, ft.color || 'Default', CW_FT_COLOR[0][1]);
@@ -15349,7 +15868,7 @@ function ftHTML(ft){
   const px   = cwFtSizePx(size);
   const st   = px ? 'font-size:' + px + 'px;' : '';
   const va   = {top:'flex-start', middle:'center', bottom:'flex-end'}[ft.valign || 'middle'] || 'center';
-  const bg   = cwFtBg(ft.bg || 'Default');
+  const bg   = cwFtBg(ft.bg || 'Transparent');
   const pad  = (ft.pad === false) ? '0' : '10px 14px';
   const tick = ft.tick ? ' tick tick-' + String(ft.tickEdge || 'Left').toLowerCase() : '';
   const body = ph ? ftEsc('Text to display') : ftMd(raw);
@@ -15364,16 +15883,147 @@ function ftHTML(ft){
             it declares, which is why the TEXT still looked right and only the line was wrong.
             The trap this file opens with: grep the CSS CLASS before naming one, not just the
             JS name. */
-         '<span class="ftt' + (px ? '' : ' auto') + (ph ? ' ftph' : '') + '" ' +
-         'style="' + st + 'color:' + col + '">' + body + '</span></div>';
+         '<span class="ftt' + (px ? '' : ' auto') + (ph ? ' ftph' : '') +
+         (live ? ' fted' : '') + '"' +
+         /* ⚠️ NO `data-tip`, AND THAT IS A DECISION RATHER THAN AN OMISSION. It shipped with
+            "Double-click to edit" for a few minutes: the tooltip engine fires 320ms after
+            hover, so READING a note — which is the whole job of this widget — popped a card
+            over the words. A hint that covers the content it is hinting about is worse than
+            no hint. The affordance is `cursor:text`, which is the universal signal for
+            editable text, and the ⋮ menu's *Edit Widget* is the discoverable path for anyone
+            who never tries the gesture. */
+         (live ? ' ondblclick="ftEdit(event,' + ref + ')"' : '') +
+         ' style="' + st + 'color:' + col + '">' + body + '</span></div>';
 }
-function ftEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* ══ EDIT A NOTE WHERE IT LIVES (19 Sep 2026: "the free text is editable") ═══════════
+   The ⋮ menu's *Edit Widget* still opens the full editor; this is the shorter road for the
+   thing you do most to a note, which is change its words. It is `gNameEdit`'s pattern — swap
+   the rendered node for a field, commit on blur, cancel on Esc, go through `histDo` — with
+   three deliberate differences, each because a note is not a one-line title:
+
+   ⚠️ **DOUBLE-CLICK, NOT CLICK.** Every other widget body on this board is inert to a click,
+   so one widget type opening an editor on a stray click is surprising — and a note can carry
+   links and images, where a click already means "follow this". Double-click is the canvas
+   idiom for editing text in place, and `cursor:text` on the rendered span is what says so.
+   ⚠️ **AN ANCHOR IS NEVER AN EDIT TARGET.** A double-click on a link has already fired a
+   click and navigated, so starting an edit underneath it would fight the navigation.
+   ⚠️ **ENTER TYPES A NEWLINE; ⌘/Ctrl+Enter COMMITS.** The group title commits on Enter
+   because it cannot contain one. A note is markdown — headings, lists and paragraphs all need
+   Enter — so the commit moved to the modifier and to blur, which is the gesture that already
+   commits everywhere else here.
+   ⚠️ IT EDITS THE **SOURCE**, NOT THE RENDERED HTML. `contenteditable` on `.ftt` would edit
+   `ftMd`'s output and need a parser to get markdown back; the field carries `w.text` verbatim,
+   so what you type is what was stored.
+   ⚠️ `.widget` IS `draggable`, AND A DRAGGABLE ANCESTOR STOPS A CHILD FIELD TAKING A
+   SELECTION BY DRAGGING ACROSS IT — the same fault `gNameEdit` records for the group header.
+   It is cleared for the duration; `renderCanvas()` rebuilds the widget on every exit path, so
+   nothing has to put it back.
+   ⚠️ THE FIELD INHERITS THE NOTE'S OWN SIZE, COLOUR AND ALIGNMENT, so the words do not jump
+   when you start typing — which is the whole point of editing in place rather than in a modal.
+   ⚠️ A NO-CHANGE EDIT RECORDS NOTHING (the `histWas` discipline), so opening a note and
+   pressing Escape does not fill the undo stack. */
+let FT_ED = null;                    /* the open editor, so a second double-click is a no-op */
+function ftEdit(ev, gi, i){
+  if (ev){
+    /* a link has already navigated on the first click of the double — never edit under it */
+    if (ev.target && ev.target.closest && ev.target.closest('a')) return;
+    ev.preventDefault(); ev.stopPropagation();
+  }
+  /* ⚠️ TWO DOORS ONTO ONE VALUE, AND THAT IS ONLY SAFE BECAUSE THEY ARE KEPT IDENTICAL
+     (request, 19 Sep 2026: the preview should be editable before the widget exists). The
+     panel's own "Text to display" field edits `CW.ft.text`; so does this. This file records
+     the trap — the clarifier's free row, the composer — that two places to answer one question
+     is a trap, and the answer here is that they are never allowed to show different text:
+     every keystroke in the preview writes `#cwFtText.value` as well, and the field's own
+     `oninput` already repaints the preview. Nothing shows a stale value at any point.
+     ⚠️ THE DRAFT PATH RECORDS NO HISTORY. `histDo` snapshots the BOARD; a widget that does
+     not exist yet has nothing to undo onto, and the editor's own Reset is the way back. */
+  const draft = gi === 'draft';
+  const w = draft ? (typeof CW !== 'undefined' && CW.ft) : (WIDGETS[gi] || [])[i];
+  if (!w || (!draft && w.t !== 'freetext')) return;
+  const host = draft ? document.querySelector('#cwPrev .ftt')
+                     : document.querySelector('.widget[data-g="' + gi + '"][data-i="' + i + '"] .ftt');
+  if (!host || host.dataset.ed) return;
+  const cur = String(w.text || '');
+  host.dataset.ed = '1';
+  const wid = host.closest('.widget'); if (wid) wid.draggable = false;
+  const row = host.closest('.ftw'); if (row) row.classList.add('fting');
+
+  const cs = getComputedStyle(host);
+  const ta = document.createElement('textarea');
+  ta.className = 'ftta';
+  ta.value = cur;
+  /* match the note, not the form: size, weight, colour and alignment all come off the span it
+     replaces, so the text does not move at the moment you start editing it */
+  ta.style.cssText = 'font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight +
+                     ';line-height:' + cs.lineHeight + ';color:' + cs.color +
+                     ';text-align:' + cs.textAlign;
+  host.textContent = '';
+  host.appendChild(ta);
+
+  const fld = () => document.getElementById('cwFtText');
+  /* ⚠️ TEARDOWN IS SEPARATE FROM COMMIT, and that split is what makes a repaint safe.
+     Anything that rewrites the surface this field lives in — `cwPreview()` on a control
+     click, `cwClose()`, `renderCanvas()` — must be able to make the field INERT without
+     triggering another paint, or it recurses. `detach` does that and nothing else; `done`
+     is `detach` plus the repaint. */
+  const detach = () => {
+    ta.onblur = null; ta.onkeydown = null; ta.oninput = null;
+    if (document.activeElement === ta) ta.blur();
+    if (row) row.classList.remove('fting');
+    delete host.dataset.ed; FT_ED = null;
+  };
+  const done = keep => {
+    if (!host.dataset.ed) return;   /* blur can fire twice — once from the key, once from focus */
+    detach();
+    const v = ta.value;
+    if (draft){
+      /* ⚠️ `oninput` has been writing `w.text` all along, so a cancel has to put the ORIGINAL
+         back — `cur` is the only copy of it. */
+      w.text = keep ? v : cur;
+      if (!keep && !w.text) CW.ft.touched = false;
+      const f = fld(); if (f) f.value = w.text;
+      cwPreview(); cwValid();       /* the preview renders the markdown; the gate follows */
+      return;
+    }
+    if (keep && v !== cur){
+      histDo('Edit text'); w.text = v; renderCanvas();
+      toast(v.trim() ? 'Text updated' : 'Text cleared');
+    } else renderCanvas();          /* the re-render puts the rendered note back */
+  };
+  ta.onkeydown = e => {
+    e.stopPropagation();            /* the board's single-key shortcuts must not fire */
+    if (e.key === 'Escape'){ e.preventDefault(); done(false); }
+    else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); done(true); }
+  };
+  ta.onblur = () => done(true);
+  if (draft) ta.oninput = () => {
+    /* ⚠️ NEVER `cwPreview()` HERE — it rewrites `#cwPrev`, which is the very node this
+       textarea lives in, so the field would be destroyed on the first keystroke. Only the
+       value, the panel's field and the gate are touched; the markdown renders on commit. */
+    w.text = ta.value; CW.ft.touched = true;
+    const f = fld(); if (f) f.value = ta.value;
+    cwValid();
+  };
+  FT_ED = { gi, i, done, detach };
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);   /* caret at the end, nothing selected */
+}
+/* ⚠️ `"` IS ESCAPED TOO, AND IT CLOSED A LATENT HOLE IN THE LINK RULE (19 Sep 2026).
+   Until the image rule below there was nothing here that put source text into an ATTRIBUTE, so
+   three characters were enough. The link rule already did, quietly: its URL group is
+   `[^\s)]+`, which permits a `"` — so `[x](https://a" onmouseover="alert(1))` closed the
+   `href` and added an event handler. Escaping at the door fixes that rule, the image rule, and
+   every rule added later, which is the whole point of "escape first, format second". In element
+   content `&quot;` renders as `"`, so nothing else changes. */
+function ftEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                                   .replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 /* ══ THE MARKDOWN THE NOTES & LINKS EDITOR PROMISES (17 Sep 2026) ══════════════════════════
    ⚠️ IT ESCAPES FIRST AND FORMATS SECOND, ALWAYS. Every `<` in the source is neutralised
    before a single tag is emitted, so a note can never inject markup into the board — the one
    rule that matters in a renderer fed by a text field. Nothing here un-escapes.
    ⚠️ IT IS A SMALL SUBSET, DELIBERATELY: headings, bold, italic, inline code, links, bare
-   URLs, bullet and numbered lists, and line breaks. That is what the editor's own hint claims
+   URLs, IMAGES, bullet and numbered lists, and line breaks. That is what the editor's own hint claims
    and no more — a half-built table or blockquote would be a promise the preview cannot keep.
    ⚠️ A LINK OPENS IN A NEW TAB WITH `rel="noopener"` — these render inside a dashboard, and a
    note should never be able to navigate the board away or reach back through `window.opener`.
@@ -15389,6 +16039,21 @@ function ftMd(src){
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
     .replace(/(^|[^*])\*([^*]+)\*/g, '$1<i>$2</i>')
+    /* ⚠️ THE IMAGE RULE MUST RUN BEFORE THE LINK RULE (request, 19 Sep 2026: "add image
+       add like datadog", with their Formatting-help row for `![alt text](path/to/image.png)`).
+       `![alt](url)` contains `[alt](url)`, so the link rule below would match the tail of it,
+       emit an anchor and leave a stray `!` in front. First match wins — order IS the rule.
+       ⚠️ THE SOURCE IS `https?://` OR `data:image/`, THE SAME DISCIPLINE THE LINK RULES USE.
+       That is what keeps `javascript:` out (inert on an `<img>` today, but a hole in the DOM
+       the next reader has to reason about), and `data:image/` is allowed because an `<img>`
+       never executes script in an SVG it loads — which is what lets the Formatting-help row
+       demonstrate a real rendered image with no network. ⚠️ DIVERGENCE, STATED: Datadog's own
+       example is a RELATIVE path (`path/to/image.png`); an arbitrary string as `src` is not
+       accepted here, so a relative path renders as its alt text.
+       ⚠️ The alt is `[^\]]*`, not `+` — `![](url)` is valid markdown and a decorative image
+       with no alt should not silently fall through to the link rule. */
+    .replace(/!\[([^\]]*)\]\(((?:https?:\/\/|data:image\/)[^\s)]+)\)/g,
+             '<img src="$2" alt="$1">')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
              '<a href="$2" target="_blank" rel="noopener">$1</a>')
     /* a bare URL, only where one is not already inside an href we just wrote */
@@ -15424,7 +16089,7 @@ function wBody(w, gi, i){
   if(w.t==='gauge') return `<div style="flex:1;min-height:0;display:grid;place-items:center">${wGauge(w.seed)}</div>`;
   if(w.t==='table') return `<div style="flex:1;min-height:0;overflow:auto">${w.html}</div>`;
   if(w.t==='note')  return `<div style="font-size:12px;color:var(--text-dim)">${w.html}</div>`;
-  if(w.t==='freetext') return ftHTML(w);
+  if(w.t==='freetext') return ftHTML(w, gi, i);
   return '';
 }
 /* Groups, not pages. A dashboard is one scrolling canvas; each group is a collapsible
@@ -16680,10 +17345,10 @@ function renderCanvas(){
        each of those is draggable in its own right; a draggable ancestor would make the whole
        band the thing that lifts whenever a widget drag missed its grip. */
     const gsty = ungrouped ? '' : gStyleCSS(gi);
-    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}"${gsty?` style="${gsty}"`:''} draggable="true"
+    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}${gAlign(gi)?' galgn':''}"${gsty?` style="${gsty}"`:''} draggable="true"
         ondragstart="gDragStart(event,${gi})" ondragend="gDragEnd()">
         <span class="ggrip" data-tip="Drag to move this group">⠿</span>
-        <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">❯</span></button>
+        <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">${ico('chevron-right','gcari')}</span></button>
         <span class="gnm" role="button" tabindex="0" data-tip="Rename group" onclick="gNameEdit(${gi})"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();gNameEdit(${gi})}">${name}</span>
         <span class="gcnt">${ws.length} widget${ws.length===1?'':'s'}</span>
@@ -16696,8 +17361,22 @@ function renderCanvas(){
           /* ⚠️ THE HEADER ✦ IS THE SAME ACTION AS THE MENU'S "AI summary" ROW, so it has to
              go with it on a Free Text widget (request, 17 Sep 2026) — hiding the row and
              leaving the button would keep the feature reachable by the very control the
-             request named. */
-          const dots = (w.t==='freetext' ? '' : `<span class="wai" data-tip="AI summary" onclick="event.stopPropagation();openWAI(${gi},${i})">${waiIcon()}</span>`) +
+             request named.
+             ⚠️ A NOTE'S EDIT DOOR IS THE ⋮, AND THE REAL BUG WAS THAT THE ⋮ WAS INVISIBLE.
+             Reported 21 Sep 2026 as "there is no edit option in free text widget": the overlay
+             header's `font-size:0` had been eating `.wdots`, which is the text character `⋮`
+             and declares no size of its own — so Edit / Clone / Full screen / Remove were all
+             unreachable on every Free Text widget. That is fixed in the CSS, one line.
+             ⚠️ A PENCIL IN THIS SLOT WAS BUILT AND REMOVED THE SAME DAY. With the ⋮ reachable
+             again the menu's own "Edit Widget" row is one click away, and the follow-up was
+             explicit — "remove edit icon because the edit option is already in 3 dot". So a
+             Free Text widget's header is the ⋮ and nothing else. `.wedit`'s CSS and the
+             `pencil` record in `ICONS` are KEPT AND UNREFERENCED, the house pattern, so the
+             button is one expression away if it is ever wanted back.
+             ⚠️ The note is also edited by double-clicking its text (`ftEdit`), which changes
+             the words in place; the ⋮ opens the full editor. */
+          const dots = (w.t==='freetext' ? ''
+              : `<span class="wai" data-tip="AI summary" onclick="event.stopPropagation();openWAI(${gi},${i})">${waiIcon()}</span>`) +
             `<span class="wdots" data-tip="Widget actions" onclick="openWMenu(event,${gi},${i})">⋮</span>` +
             (editMode?`<span class="wremove" title="Remove" onclick="event.stopPropagation();curG=${gi};curW=${i};wRemove()">✕</span>`:'');
           const extra = w.t==='honey'? `<span class="wcount">${w.n} monitors</span>`:'';
@@ -16712,7 +17391,7 @@ function renderCanvas(){
           /* ⚠️ `wft` DOES NOT REMOVE THE HEADER, IT MAKES IT AN OVERLAY — see the CSS. The
              header is where `⋮` and the AI ✦ live, so deleting it for a Free Text widget
              would take Edit / Clone / Remove with it and strand the widget on the board. */
-          return `<div class="widget${w.t==='freetext'?' wft':''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
+          return `<div class="widget${w.t==='freetext'?' wft'+(cwFtBg(w.bg||'Transparent')==='transparent'?' wftbare':''):''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
         }).join('') + `</div>`
       : `<div class="dgrid12" style="gap:${gap}px" ondragover="wDragOverGroup(event,${gi})" ondrop="wDrop(event,${gi},-1)" ondragleave="wDragLeave(event)">`
         /* ⚠️ a flat board's empty state is the board's, and keeps the big add tile; an empty
@@ -16727,11 +17406,12 @@ function renderCanvas(){
                         the one thing the text was really for is said by the box itself.
                         ⚠️ `.gdrop`'s svg/colour/font rules are left in place — they cost nothing
                         and are what a restored message would need. */
-                     /* ⚠️ OPTION 2's BAND IS THE SAME BOX PLUS A GRIP. `gRzOn` reads a
-                        capability stamped on the group, not an option NUMBER, and it is
-                        undefined for every group that already exists — so options 1 and 3,
-                        the `G` shortcut and every saved board render the line above unchanged. */
-                     : `<div class="gdrop${gRzOn(gi) ? ' gdrs' : ''}"${gRzH(gi) ? ` style="height:${gRzH(gi)}px"` : ''}>${gRzOn(gi) ? gRzGrip(gi) : ''}</div>`)
+                     /* ⚠️ THE BAND IS THE PLAIN BOX ON EVERY OPTION AGAIN. It used to carry
+                        the `gdrs` marker, the inline size and the three grips — and it is
+                        rendered only while the group is EMPTY, so all three vanished on the
+                        first drop. They are on the `<section>` below now; what makes option 2's
+                        band look different is `.dgroup.gdrs .gdrop`, i.e. its group. */
+                     : `<div class="gdrop"></div>`)
         + `</div>`);
     /* ⚠️ THE DROP ZONE IS THE WHOLE BAND, not the 37px header — an expanded group's headers
        are hundreds of pixels apart, and "anywhere" has to mean anywhere. Its own midpoint
@@ -16740,7 +17420,35 @@ function renderCanvas(){
        `wDragOverGroup` opens with `if(!wDrag) return`, and a GROUP drag never sets `wDrag` — so
        they hand the event straight up to this section instead of claiming it. */
     const gdnd = ungrouped ? '' : ` ondragover="gDragOver(event,${gi})" ondrop="gDrop(event,${gi})"`;
-    return `<section class="dgroup" id="grp-${gi}"${gdnd}>${head}${body}</section>`;
+    /* ⚠️ THE GROUP IS WHAT RESIZES (request, 18 Sep 2026). `gRzOn` reads a capability
+       stamped on the group, not an option NUMBER, and it is undefined for every group that
+       already exists — so options 1 and 3, the `G` shortcut and every saved board emit no
+       class, no inline style and no grips, and render exactly as they did.
+       ⚠️ NO INLINE STYLE UNTIL A GRIP IS DRAGGED: a span of 12 and a height of 0 are the
+       defaults `#dashGrid > *` and the content already paint, so an untouched group carries no
+       `style` attribute at all — the same rule the band followed, moved up one element. */
+    const grz = gRzOn(gi);
+    /* ⚠️ VERTICAL ALIGNMENT RIDES ON THE SECTION AS A CUSTOM PROPERTY (request, 19 Sep
+       2026), not as a class — the grid that has to read it is a CHILD (`.dgrid12`), and a
+       custom property inherits where a class would have to be put on the right element by the
+       renderer. `start` is the default and is emitted as NOTHING, so an untouched group still
+       carries no `style` attribute at all. */
+    /* ⚠️ THE ALIGNMENT IS NOT GATED ON `grz`, AND THAT WAS A REAL GAP THE PROBE CAUGHT. The
+       height and the column span only exist on a resizable group, but the drawer offers
+       vertical alignment on EVERY group — gating the whole style attribute on `grz` meant the
+       control wrote the model and the board never moved. */
+    const gva = gValign(gi);
+    /* ⚠️ `--gv-pad` IS EMITTED ONLY WHEN IT IS OFF, so an untouched group still carries no
+       inline style — the same rule the height, the span and the alignment all follow. The
+       header strip is full-bleed by its own negative margins, so it keeps meeting the box's
+       edges when the padding goes. */
+    const gpd = gStyleOf(gi).pad === false ? '--gv-pad:0;--gv-line:transparent;--gv-hm:0 0 10px;--gv-hpad:8px 0;' : '';
+    const gdim = grz ? `${gRzH(gi) ? `height:${gRzH(gi)}px;` : ''}${gRzW(gi) < 12 ? `grid-column:span ${gRzW(gi)};` : ''}` : '';
+    const gsz = (gdim || gva || gpd) ? ` style="${gdim}${gpd}${gva ? `--gv-align:${gva}` : ''}"` : '';
+    /* ⚠️ `.gdrsh` MARKS "this group's height is driven", and it is emitted from the same
+       test as the inline `height` so the two can never disagree — see the band's floor in CSS. */
+    const gcl = 'dgroup' + (grz ? ' gdrs' : '') + (grz && gRzH(gi) ? ' gdrsh' : '');
+    return `<section class="${gcl}" id="grp-${gi}"${gdnd}${gsz}>${head}${body}${grz ? gRzGrip(gi) : ''}</section>`;
   }).join('') +
   /* The single end-of-board add tile — skipped only when the board is empty, because the
      board's own empty state above is already showing its (bigger) one.
@@ -16759,6 +17467,83 @@ function renderCanvas(){
      the same function. */
   '';
   renderOutline();
+  gNavPaint();
+}
+/* ── the group navigator (request, 21 Sep 2026: "when i add empty group the scroll will be
+   show like [ChatGPT's canvas section navigator] … only multipal empty group") ─────
+   ⚠️ IT EXISTS ONLY WHEN THERE IS SOMETHING TO NAVIGATE — two groups or more. On a flat board
+   or a one-group board it is not hidden, it is not RENDERED: a jump list with one destination
+   is a control that cannot do anything, and this canvas already has three of those removed for
+   the same reason (Move group up/down, Collapse others).
+   ⚠️ `position:absolute` INSIDE `.dwrap`, NOT `fixed`. `.dwrap` already begins after the rail
+   and is `position:relative`, so the nav needs no `--rail-w` arithmetic and cannot drift when
+   the sidebar animates its width — this folder's oldest recorded trap. It sits OUTSIDE
+   `.pagebody`, so it does not scroll with the board.
+   ⚠️ AND BELOW `.dpanel`'s z-index, SO AN OPEN DASHBOARD LIST SIMPLY COVERS IT. That is one
+   rule fewer than hiding it, and it is what the panel's own shadow already implies.
+   ⚠️ `.dwrap{overflow:hidden}` DOES NOT CLIP IT — it is inside the box, not past it. Worth
+   stating because the same overflow is exactly what a fixed child would have been safe from
+   and an absolute one would not, had it been placed outside. */
+let gNavOn = false;
+function gNavPaint(){
+  const host = document.querySelector('#view-dashboard .dwrap') || document.querySelector('.dwrap');
+  if (!host) return;
+  let el = document.getElementById('gNav');
+  if (ungrouped || TABS.length < 2){ if (el) el.remove(); return; }
+  if (!el){
+    el = document.createElement('div'); el.id = 'gNav'; el.className = 'gnav';
+    el.setAttribute('aria-label', 'Groups on this dashboard');
+    host.appendChild(el);
+  }
+  el.innerHTML =
+    /* ⚠️ ONE BAR PER GROUP — `TABS.length`, never a fixed stack (request, 21 Sep 2026). The
+       mark reads the SAME array the list below it maps, so the count in the collapsed state and
+       the rows in the open one cannot drift apart, and every path that already repaints the nav
+       (add, clone, reorder, remove, undo) moves the bars for free.
+       ⚠️ IT IS ONLY EVER REACHED WITH `TABS.length >= 2` — the early return above drops the whole
+       element below that — so a one-bar mark, which would read as a dash rather than a stack, is
+       unreachable by construction rather than by a guard here. */
+    '<div class="gnavm" aria-hidden="true">' + TABS.map(() => '<i></i>').join('') + '</div>' +
+    '<div class="gnavl">' + TABS.map((n, i) => {
+      const t = String(n || 'Group ' + (i + 1)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+      return '<button class="gnavi" data-g="' + i + '" title="' + t + '" onclick="gNavGo(' + i + ')">' + t + '</button>';
+    }).join('') + '</div>';
+  gNavBind(); gNavMark();
+}
+/* ⚠️ BOUND ONCE, NOT PER PAINT. `renderCanvas` runs on every add, drag, resize and undo;
+   a listener added here each time would stack one per edit and never be removed. `.pagebody`
+   itself is never replaced, so one binding outlives every repaint of the nav inside it. */
+function gNavBind(){
+  if (gNavOn) return;
+  const pb = document.querySelector('#view-dashboard .dwrap .pagebody');
+  if (!pb) return;
+  pb.addEventListener('scroll', gNavMark, { passive:true });
+  gNavOn = true;
+}
+/* ⚠️ THE MARK IS DERIVED FROM WHERE THE BOARD ACTUALLY IS, not remembered from the last
+   click — scrolling by hand has to move it too, which is the whole point of the reference. */
+function gNavMark(){
+  const el = document.getElementById('gNav');
+  const pb = document.querySelector('#view-dashboard .dwrap .pagebody');
+  if (!el || !pb) return;
+  const top = pb.getBoundingClientRect().top;
+  let cur = 0;
+  TABS.forEach((n, i) => {
+    const sec = document.getElementById('grp-' + i);
+    if (sec && sec.getBoundingClientRect().top - top <= 12) cur = i;
+  });
+  el.querySelectorAll('.gnavi').forEach(b => b.classList.toggle('on', +b.dataset.g === cur));
+}
+/* ⚠️ IT SCROLLS THE CONTAINER, NEVER `scrollIntoView()` — that scrolls EVERY ancestor
+   scroller including the window, which is the recorded fault that nudged a whole article under
+   a sticky tab strip. The delta is read from the two rects rather than from `offsetTop`, which
+   would depend on which ancestor happens to be positioned. */
+function gNavGo(i){
+  const pb = document.querySelector('#view-dashboard .dwrap .pagebody');
+  const sec = document.getElementById('grp-' + i);
+  if (!pb || !sec) return;
+  pb.scrollTop += sec.getBoundingClientRect().top - pb.getBoundingClientRect().top - 6;
+  gNavMark();
 }
 /* Grow the widget rows so the canvas fills the viewport instead of leaving dead space
    below the fold (V1 used to stop two-thirds down the screen). Total height is linear in
@@ -16771,15 +17556,32 @@ function renderCanvas(){
    restored by `boardLoad` — so undo, redo, clone, reorder, remove and switching boards carry
    a dragged height and the option marker for free. A second parallel array is exactly the trap
    this file records at `GRP_STYLE` itself, where a short one silently spliced at index 0. */
+/* ⚠️ THESE BOUND THE WHOLE GROUP SINCE 18 Sep 2026, not the empty band inside it — so 96
+   now has to cover the header and the section's own padding as well. It is left at 96 rather
+   than raised: `.dgroup.gdrs .gdrop{min-height:0}` lets the band shrink with the group, so the
+   number the badge prints is the number the box measures, which is the only property worth
+   protecting here. A group squeezed to 96 is a header and a sliver — legal, and visibly the
+   floor. */
 const GRP_RZ_MIN = 96, GRP_RZ_MAX = 720;
 /* how far below its AUTHORED height a widget may be squeezed while a resizable band is on the
    board — see the floor in `fitCanvas` */
 const GRP_RZ_GIVE = 0.5;
 const gRzOn = gi => !!(GRP_STYLE[gi] && GRP_STYLE[gi].rz);
 const gRzH  = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].h) || 0;
+/* ⚠️ THE WIDTH IS COLUMNS, NOT PIXELS, and it rides the SAME `GRP_STYLE[gi]` record the
+   height does — so undo, redo, clone, reorder and switching boards carry it for free, exactly
+   as the note above `GRP_RZ_MIN` says. A group that has never been dragged sideways has no `w`
+   and falls back to 12, which is what `#dashGrid > *{grid-column:1/-1}` already paints, so
+   nothing about options 1 and 3 changes and no existing board gains an inline style. */
+const gRzW  = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].w) || 12;
 const gBan  = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].banner) || '';
-const gRzGrip = gi => '<span class="gdrs-h" data-tip="Drag to set the band height · double-click to reset"'
-  + ` onmousedown="gRzDown(event,${gi})" ondblclick="gRzReset(event,${gi})"></span>`;
+const gRzGrip = gi =>
+    `<span class="gdrs-h" data-tip="Drag to set the group height · double-click to reset"`
+  + ` onmousedown="gRzDown(event,${gi},'s')" ondblclick="gRzReset(event,${gi})"></span>`
+  + `<span class="gdrs-e" data-tip="Drag to set the group width · double-click to reset"`
+  + ` onmousedown="gRzDown(event,${gi},'e')" ondblclick="gRzReset(event,${gi})"></span>`
+  + `<span class="gdrs-c" data-tip="Drag to size the group · double-click to reset"`
+  + ` onmousedown="gRzDown(event,${gi},'se')" ondblclick="gRzReset(event,${gi})"></span>`;
 /* stamp the drawer tile's capability on the group `awAddGroup` has just made (always `curG`) */
 function gRzStamp(opt){
   const o = W_GROUP_OPT.find(x => x.opt === opt);
@@ -16798,16 +17600,22 @@ function fitCanvas(){
   const k2 = hMul*1.25; set(k2); const u2 = g.scrollHeight;
   const slope = (u2-u1)/(k2-hMul);
   let k = slope > 1 ? hMul + (avail-u1)/slope : hMul;
-  /* ⚠️ THE FLOOR DROPS ONLY WHILE A RESIZABLE EMPTY BAND IS ON THE BOARD, and that gate is
+  /* ⚠️ THE FLOOR DROPS ONLY WHILE A RESIZABLE GROUP IS ON THE BOARD, and that gate is
      the whole reason this change is safe: `document.querySelector` finds nothing on any other
      board, on options 1 and 3, or on any group the `G` shortcut made, so every one of them
      keeps `hMul` — the authored height — exactly as before. There is a probe assertion for it.
+     ⚠️ CONSEQUENCE OF MOVING THE MARKER TO THE GROUP (18 Sep 2026), STATED: this gate used to
+     be the EMPTY band, so it went away again as soon as the group was filled and the floor
+     returned to `hMul`. A group is permanent, so a board carrying one keeps the lowered floor
+     for good. It only ever matters when the board OVERFLOWS — `k` is still clamped to
+     `hMul*2.2` above and only falls to the floor when there is not enough room — and it is
+     what keeps "the widgets refit around it" true after the first widget is dropped in.
      Without it the request cannot be met on a board that ALREADY overflows (the one in the
      report does): `k` is pinned at its floor there, so dragging the band taller would move
      nothing and "the widget will be auto adjust" would be a promise the board never keeps.
      ⚠️ IT IS A FLOOR, NOT A LICENCE TO VANISH. Past `GRP_RZ_GIVE` the board scrolls instead
      of squeezing the widgets into strips — stated rather than softened. */
-  const floor = g.querySelector('.gdrop.gdrs') ? hMul * GRP_RZ_GIVE : hMul;
+  const floor = g.querySelector('.dgroup.gdrs') ? hMul * GRP_RZ_GIVE : hMul;
   k = Math.max(floor, Math.min(hMul*2.2, k));
   set(k);
   if(g.scrollHeight > avail) set(Math.max(floor, k*avail/g.scrollHeight));   // rounding guard
@@ -16837,13 +17645,44 @@ function pickSubTab(i){ curG=i; renderCanvas(); }
    header rather than as a coloured slab, and both themes are covered by construction.
    ⚠️ `M` IS THE SIZE THE HEADER ALREADY WAS (13.5px), so `Default` and `M` are the same
    thing and an untouched group renders identically. */
-const GRP_BG = [['Default',''], ['Gray','var(--panel-2)'],
-                ['Green','color-mix(in srgb, var(--green) 16%, var(--card-head))'],
-                ['Blue','color-mix(in srgb, var(--blue) 16%, var(--card-head))'],
-                ['Yellow','color-mix(in srgb, var(--yellow) 20%, var(--card-head))'],
-                ['Orange','color-mix(in srgb, var(--orange) 18%, var(--card-head))'],
-                ['Red','color-mix(in srgb, var(--red) 16%, var(--card-head))']];
+/* ⚠️ `Transparent` IS A NEW OPTION, NOT A RENAME (request, 19 Sep 2026: "in empty group add
+   transptron background color"). Free Text's list COULD be renamed in place because its first
+   entry already resolved to `transparent`; this one cannot — `Default` here means the header
+   keeps `--card-head`, the filled title strip every group has, which is a real and different
+   thing from no fill at all. So both entries stand, and they mean different things.
+   ⚠️ `gStyleCSS` TESTS EMPTINESS TO EMIT NOTHING, so the value has to be the literal
+   `transparent` rather than `''` — an empty value is exactly how `Default` says "emit no
+   background" and the two would be indistinguishable. */
+const GRP_BG = [/* ⚠️ DEFAULT'S SWATCH IS `--card-head`, THE STRIP IT ACTUALLY PAINTS. Left
+                   without one it fell through to the mapped `'transparent'` and Default and
+                   Transparent drew the SAME empty chip while meaning opposite things. */
+                ['Default', '', 'var(--card-head)'],
+                /* ⚠️ `Transparent` IS NOT A ROW HERE ANY MORE (request, 19 Sep 2026: "the
+                   transparent will be add as check box with text outside of header colour").
+                   In a 150px list beside a canvas the word truncated to "Transpar…", and it is
+                   not really a COLOUR anyway — it is the absence of one, which is a different
+                   kind of choice from "which colour". It is `gTransp` below, a checkbox that
+                   OVERRIDES whatever colour is picked, so the colour you chose is still there
+                   when you untick it. */
+                ['Gray','var(--panel-2)','var(--track)'],
+                ['Green','color-mix(in srgb, var(--green) 16%, var(--card-head))','var(--green)'],
+                ['Blue','color-mix(in srgb, var(--blue) 16%, var(--card-head))','var(--blue)'],
+                ['Yellow','color-mix(in srgb, var(--yellow) 20%, var(--card-head))','var(--yellow)'],
+                ['Orange','color-mix(in srgb, var(--orange) 18%, var(--card-head))','var(--orange)'],
+                ['Red','color-mix(in srgb, var(--red) 16%, var(--card-head))','var(--red)']];
+/* ⚠️ KEPT AND UNREFERENCED. Title size was a Small / Medium / Large segmented control until
+   21 Sep 2026 ("THE TEXT size will be improve like free text", with that panel's Font Size
+   dropdown as the picture); it reads `CW_FT_SIZE` now — Auto · 16 · 24 · 36 · 56 · 72 · 88px,
+   the product's own stops — through the same searchable `cwFtDD` the note uses. Three values
+   are what a revert needs, and `gSizePx` still degrades a stored 'S'/'M'/'L' to the default
+   rather than to nothing, so a group styled before the change simply reads Auto. */
 const GRP_SIZE = { S:12, M:13.5, L:16 };
+/* ⚠️ "Auto" IS NOT FREE TEXT'S AUTO. There it is a container query that fills the widget;
+   here it means "whatever the board's title size is" — i.e. emit no token at all and let
+   `.gnm`'s own default stand. That is the honest reading of the word on a header strip, and it
+   is why 0 (the ladder's own value for Auto) is the "emit nothing" test rather than a special
+   case: an unknown or legacy key resolves to 0 too, so it degrades the same way. */
+const gSizePx = k => (typeof cwFtSizePx === 'function' ? cwFtSizePx(k || 'Auto') : 0);
 const GRP_STYLE = [];
 /* ⚠️ THE ARRAY MUST BE EXACTLY AS LONG AS `TABS`, AND NOTHING ELSE KEEPS IT THAT WAY.
    A style is only ever recorded for a group somebody has edited, so on a four-group board
@@ -16860,8 +17699,59 @@ const gStylePad = () => { if (GRP_STYLE.length !== TABS.length) GRP_STYLE.length
    re-create the record `gEditReset` had just cleared, so Reset never stuck and every group
    the drawer had merely LOOKED at carried a junk `{Default,M}`. `gStyleMake` is the write
    path, and `gEditSet` is the only caller. */
-const gStyleOf = gi => GRP_STYLE[gi] || { bg:'Default', size:'M' };
-const gStyleMake = gi => { gStylePad(); return GRP_STYLE[gi] || (GRP_STYLE[gi] = { bg:'Default', size:'M' }); };
+/* ⚠️ `start` IS THE DEFAULT AND RETURNS '' — the render tests this to decide whether the
+   section needs an inline style at all, so "top" must be indistinguishable from "unset". */
+const GRP_VALIGN = [['top','Align top','start'], ['middle','Align middle','center'],
+                    ['bottom','Align bottom','end']];
+/* ⚠️ ONE GLYPH BUILDER FOR BOTH PICKERS. The Free Text panel renders this trio through
+   `seg`'s `stroke` branch and the group drawer builds its own row; without a shared builder the
+   two would drift the moment the artwork changed — which it just did, when the block became
+   filled. `CW_FT_VALIGN` stays the single source of the paths. */
+function gValignSVG(key){
+  const e = CW_FT_VALIGN.find(a => a[0] === key) || ['', '', '', ''];
+  return '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    String(e[2] || '').split('|').filter(Boolean).map(d => '<path d="' + d + '"/>').join('') +
+    String(e[3] || '').split('|').filter(Boolean).map(d =>
+      '<path d="' + d + '" style="fill:currentColor" stroke="none"/>').join('') + '</svg>';
+}
+/* ── the group title's own alignment (request, 21 Sep 2026: "IN EMPTY GROUP ADD TEXT
+   ALIGNMENT LIKE FREE TEXT") ─────
+   ⚠️ IT ALIGNS THE TITLE, AND THAT IS WHAT "TEXT ALIGNMENT" NAMES HERE. A group's only text
+   is its name — an empty one has nothing else on it at all — and Free Text's own `Alignment`
+   is the text-align of its words, which is the control the request points at. Its neighbour,
+   Vertical alignment, governs the group's CONTENT (`align-content` on the widget grid), so the
+   pair reads as a pair without being one thing: said here rather than left to be discovered.
+   ⚠️ `CW_FT_ALIGN` IS THE SINGLE SOURCE, exactly as `CW_FT_VALIGN` is for the vertical trio.
+   There is deliberately no `GRP_ALIGN` array: a second copy of three values and three paths is
+   how the two pickers in this file come to disagree about what "centre" looks like.
+   ⚠️ THESE PATHS ARE FILLED, where the vertical trio is stroked — hence a builder of its own
+   rather than a fourth argument on `gValignSVG`. Both are the product's own artwork. */
+function gAlignSVG(key){
+  const e = CW_FT_ALIGN.find(a => a[0] === key) || ['', '', ''];
+  return '<svg viewBox="0 0 48 48" fill="currentColor"><path d="' + (e[2] || '') + '"/></svg>';
+}
+/* '' for the default, so an untouched group's header emits no token and no class and does not
+   move by a pixel — the same rule the height, the span, the padding and `gValign` all follow. */
+const gAlign = gi => { const v = gStyleOf(gi).align || 'left'; return v === 'left' ? '' : v; };
+/* ⚠️ THE CONTROL OFFERS TWO OF THE THREE (request, 21 Sep 2026: "in empty group remove the
+   right alignment only"). Free Text keeps all three — this is a filter on the PICKER, not a
+   second list: `CW_FT_ALIGN` is still the source, so the labels, the glyphs and the values
+   cannot drift from the note's own control.
+   ⚠️ THE RENDERER IS LEFT GENERAL ON PURPOSE. `gAlign`/`gStyleCSS` still honour 'right', so a
+   group styled before this (or by a future control) keeps the alignment it was given rather
+   than silently snapping back to left. Withdrawing an option from a picker is not the same as
+   removing it from the model, and conflating the two is how a saved board changes under you. */
+const GRP_ALIGN_OK = ['left', 'center'];
+const gValign = gi => { const e = GRP_VALIGN.find(v => v[0] === (gStyleOf(gi).valign || 'top'));
+                        return (e && e[2] !== 'start') ? e[2] : ''; };
+/* ⚠️ THE DEFAULT SIZE IS `'Auto'`, NOT `'M'` — and the seed is the reason the field showed
+   a bare "M" for an hour after Title size became a dropdown. A default has to be a value the
+   CONTROL can render, not just one the renderer understands: `gSizePx` degrades an unknown key
+   to 0 either way, so the board looked right while the drawer read a key from a list that no
+   longer exists. Both seeds move together or the two disagree about an untouched group. */
+const gStyleOf = gi => GRP_STYLE[gi] || { bg:'Default', size:'Auto' };
+const gStyleMake = gi => { gStylePad(); return GRP_STYLE[gi] || (GRP_STYLE[gi] = { bg:'Default', size:'Auto' }); };
 /* the inline style a header carries — empty for a group nobody has touched */
 function gStyleCSS(gi){
   const st = GRP_STYLE[gi]; if (!st) return '';
@@ -16869,12 +17759,43 @@ function gStyleCSS(gi){
      through to the value when it starts with `#`. The hex was already VALIDATED by
      `cwFtCustom`, which is the only writer, so there is no second regex here; duplicating
      one across script blocks is how the two come to disagree about what a colour is. */
+  /* ⚠️ THE CHECKBOX OVERRIDES THE COLOUR, IT DOES NOT REPLACE IT. `st.bg` is left exactly
+     as it was, so unticking Transparent brings back the colour that was chosen rather than
+     dropping the reader on Default. */
+  /* ⚠️ COMPUTED BEFORE THE `transp` EARLY RETURN AND APPENDED TO BOTH BRANCHES. That return
+     is a complete answer for a transparent header, so a token added only to the tail below
+     would silently do nothing on exactly the groups the checkbox is ticked for. */
+  const ta = gAlign(gi) ? '--gv-talign:' + gAlign(gi) + ';' : '';
+  const szp = gSizePx(st.size);
+  /* ⚠️ TRANSPARENT **AND** NO PADDING TAKES THE HEADER'S OWN HAIRLINE TOO (request, 21 Sep
+     2026: "remove header below line when i select the Transparent & No padding"). A title
+     strip is a fill plus a rule; with the fill gone the rule is the last thing drawing it, and
+     with the box's border gone as well it is a line ruled across the canvas belonging to
+     nothing. It takes BOTH, deliberately: with a box still around it the rule still divides a
+     title from the widgets under it, which is what a divider is for.
+     ⚠️ `border-bottom-color`, NOT `border-bottom:0` — the 1px stays in the box so ticking a
+     checkbox does not also move every widget in the group up a pixel. Same reasoning, same
+     wording, as `--gv-line` and `.widget.wft.wftbare`. */
+  /* ⚠️ A TRANSPARENT HEADER CANNOT BE STICKY, AND THAT IS A REAL BUG, NOT A PREFERENCE
+     (reported 21 Sep 2026 with two screenshots: "when i select the center text alignment ... the
+     scroll time the header is fix"). `position:sticky` works because the strip's own fill hides
+     whatever passes under it; with `background:transparent` there is nothing to hide it, so on a
+     scrolled board the title paints straight over the widgets — the group's name sitting across
+     a row of donuts. Centring is what made it obvious rather than what caused it: a left-aligned
+     title overlapped the first widget's corner, a centred one lands in the middle of the board.
+     ⚠️ `relative`, NOT `static` — `.ghead.gban::before` is an absolutely positioned scrim and
+     needs a positioned ancestor; `static` would send it to the nearest one further up.
+     ⚠️ IT IS EMITTED HERE, NOT AS A RULE, so the one test that already decides the fill decides
+     this too. A `.dgroup:has(...)` rule would be a second place to keep in step. */
+  if (st.transp) return 'background:transparent;position:relative;top:auto;' + ta
+    + (st.pad === false ? 'border-bottom-color:transparent;' : '')
+    + (szp ? '--gh-size:' + szp + 'px;' : '');
   const named = (GRP_BG.find(b => b[0] === st.bg) || [])[1];
   const bg = named || (String(st.bg || '')[0] === '#' ? st.bg : '');
-  const sz = GRP_SIZE[st.size];
+
   /* ⚠️ THE THREE LONGHANDS MUST FOLLOW THE `background` SHORTHAND ABOVE — see the note at
      `.ghead.gban::before` for why they cannot live in the stylesheet. */
-  return (bg ? 'background:' + bg + ';' : '') + (sz && sz !== GRP_SIZE.M ? '--gh-size:' + sz + 'px;' : '')
+  return (bg ? 'background:' + bg + ';' : '') + ta + (szp ? '--gh-size:' + szp + 'px;' : '')
     + (st.banner ? 'background-image:url(' + st.banner + ');background-size:cover;'
                  + 'background-position:center;background-repeat:no-repeat;' : '');
 }
@@ -17109,7 +18030,13 @@ const W_GROUP_OPT = [
      downstream tests the option NUMBER, so renumbering the tiles or giving option 3 the same
      capability is an edit here and nowhere else. */
   {opt:2, art:W_GROUP_SVG, rz:true},
-  {opt:3, art:W_GROUP_SVG},
+  /* ⚠️ OPTION 3 WAS REMOVED ON 21 SEP 2026 ("option 3 empty group remove option3 only in Add
+     New Widget"), which is this array doing exactly what it was built for: the drawer is the
+     only place an option exists, so a design is withdrawn by deleting one line. It was a byte
+     copy of option 1 — `{opt:3, art:W_GROUP_SVG}`, no `rz` — so nothing else knew about it.
+     ⚠️ THE CORNER CHIP STAYS while two remain: their artwork is identical and option 2's
+     difference shows on the BOARD, so without the number the section reads as one tile drawn
+     twice. It goes when one design is finally picked, and so does `.awgopt`'s rule. */
 ];
 const W_TILE_SVG = {
   "Chart": "<svg viewBox=\"0 0 100 50\" preserveAspectRatio=\"xMidYMid meet\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><g clip-path=\"url(#wi_chart_0)\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M9.95 50v-5.36H-.63v-.6H9.95v-8.33H-.63v-.6H9.95v-8.33H-.63v-.6H9.95v-8.33H-.63v-.6H9.95V8.92H-.63v-.6H9.95V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58V0h.76v8.33h10.58v.6H90.09v8.33h10.58v.6H90.09v8.33h10.58v.6H90.09v8.33h10.58v.6H90.09v8.33h10.58v.6H90.09v5.36h-.76v-5.36H78.75v5.36h-.76v-5.36H67.41v5.36h-.76v-5.36H56.07v5.36h-.76v-5.36H44.73v5.36h-.76v-5.36H33.39v5.36h-.76v-5.36H22.05v5.36h-.76v-5.36H10.71v5.36h-.76V50zm79.35-5.95v-8.33H78.72v8.33H89.3zm0-8.93v-8.33H78.72v8.33H89.3zm0-8.93v-8.33H78.72v8.33H89.3zm0-8.93V8.93H78.72v8.33H89.3zM67.38 8.93h10.58v8.33H67.38V8.93zm0 8.93h10.58v8.33H67.38v-8.33zm0 8.93h10.58v8.33H67.38v-8.33zm0 8.92h10.58v8.33H67.38v-8.33zm-.76 8.34v-8.33H56.04v8.33h10.58zm0-8.93v-8.33H56.04v8.33h10.58zm0-8.93v-8.33H56.04v8.33h10.58zm0-8.93V8.93H56.04v8.33h10.58zM44.71 8.93h10.58v8.33H44.71V8.93zm0 8.93h10.58v8.33H44.71v-8.33zm0 8.93h10.58v8.33H44.71v-8.33zm0 8.92h10.58v8.33H44.71v-8.33zm-.76 8.34v-8.33H33.37v8.33h10.58zm0-8.93v-8.33H33.37v8.33h10.58zm0-8.93v-8.33H33.37v8.33h10.58zm0-8.93V8.93H33.37v8.33h10.58zM22.04 8.93h10.58v8.33H22.04V8.93zm0 8.93h10.58v8.33H22.04v-8.33zm0 8.93h10.58v8.33H22.04v-8.33zm0 8.92h10.58v8.33H22.04v-8.33zm-.76 8.34v-8.33H10.7v8.33h10.58zm0-8.93v-8.33H10.7v8.33h10.58zm0-8.93v-8.33H10.7v8.33h10.58zm0-8.93V8.93H10.7v8.33h10.58z\" fill=\"url(#wi_chart_1)\"></path><path d=\"M29.11 38.84l-4.37-4.13V45h51.43V18.57l-7.64 8.57-5.56-5.71-7.61 11.19-6.56-6.35-7.38 11.59-5.88-5.24-6.43 6.22z\" fill=\"var(--track)\"></path><path d=\"M30.3 29.48h-.06a.922.922 0 01-.7-.41l-4.83-7.37a.906.906 0 01.26-1.26c.42-.27.98-.16 1.26.26l4.17 6.37 4.77-5.52c.16-.18.39-.3.63-.31.24-.02.48.07.67.23l4.77 4.29 6.37-9.82c.15-.23.4-.38.67-.41.28-.03.55.07.74.27l5.43 5.58 6.62-11.18c.15-.26.43-.43.73-.44.32-.02.59.11.78.35l5.86 7.58L74.6 7.4a.91.91 0 011.56.94l-6.84 11.43c-.15.26-.43.42-.73.44-.3.02-.59-.11-.77-.35l-5.86-7.57-6.54 11.05a.896.896 0 01-1.08.391.937.937 0 01-.35-.221l-5.46-5.61-6.33 9.76a.93.93 0 01-.64.41.935.935 0 01-.73-.23l-4.87-4.38-4.95 5.73c-.17.2-.42.31-.69.31l-.02-.02z\" fill=\"var(--text-dim2)\"></path><path d=\"M75.91 45.91H25.52c-1.29 0-2.34-1.05-2.34-2.34V5c0-.5.41-.91.91-.91S25 4.5 25 5v38.57c0 .29.23.52.52.52h50.39c.5 0 .91.41.91.91s-.41.91-.91.91z\" fill=\"var(--text-dim2)\"></path></g><defs><radialGradient id=\"wi_chart_1\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"matrix(0 25.005 -50.65 0 50.02 25.005)\"><stop offset=\".769\" stop-color=\"var(--chip)\"></stop><stop offset=\"1\" stop-color=\"var(--ink)\" stop-opacity=\"0\"></stop></radialGradient><clipPath id=\"wi_chart_0\"><path fill=\"var(--white)\" d=\"M0 0h100v50H0z\"></path></clipPath></defs></svg>",
@@ -17344,7 +18271,11 @@ let wDrag = null;
    on the element and only writes back to the model on mouseup, via the
    page-specific wRzCommit() below. -------------------------------------- */
 /* grips: a header handle to move, corner + edges to resize */
-const WGRIP  = '<span class="wgrip" data-tip="Drag to move">\u283f</span>';
+/* ⚠️ NO `data-tip` — the glyph was removed on 21 Sep 2026 and a tooltip over an invisible
+   mark is a label for nothing: it pops up when the pointer crosses 8px of empty header and
+   names a control the reader cannot see. The span stays for its box and its `cursor:grab`,
+   which is the affordance a widget has no other source for. */
+const WGRIP  = '<span class="wgrip"></span>';
 const WGRIPS = '<span class="wrzE" data-tip="Drag to set width" onmousedown="wRzDown(event,\'e\')" ondblclick="wRzReset(event)"></span>'
              + '<span class="wrzS" data-tip="Drag to set height" onmousedown="wRzDown(event,\'s\')" ondblclick="wRzReset(event)"></span>'
              + '<span class="wrz" data-tip="Drag to resize \u00b7 double-click to reset" onmousedown="wRzDown(event,\'se\')" ondblclick="wRzReset(event)"></span>';
@@ -17431,29 +18362,55 @@ function wRzCommit(el, span, h){
                       : `Widget resized \u2014 ${span}/12 columns \u00d7 ${Math.round(h)}px`);
 }
 
-/* ── Empty group · option 2 — drag the band, the board gives way ─────────────────
+/* ── Empty group · option 2 — drag the GROUP, the board gives way ────────────────
    Request, 17 Sep 2026: "in this changes is only in 'empty group' 2 … i add empty group,
    before i can resize the empty group then automatically the widget will be auto adjust."
-   So: the drawer's OPTION 2 tile makes a band you can drag taller, and the widgets already on
+   So: the drawer's OPTION 2 tile makes a group you can drag, and the widgets already on
    the board refit around it as you drag. Options 1 and 3 are untouched.
 
-   ⚠️ A BAND HAS A HEIGHT AND NO WIDTH TO SPEAK OF. It is `grid-column:span 12` inside its own
-   group, so the only dimension a drag can mean is the vertical one — which is also the only one
-   the board can answer, because vertical room is what `fitCanvas` divides up.
+   ⚠️ WHAT IS DRAGGED IS THE `<section>`, SINCE 18 Sep 2026 ("the empty group — the whole
+   group will be resize handle like widget"). It was the empty `.gdrop` band inside the group,
+   which is rendered ONLY while the group has no widgets — so the grips disappeared on the first
+   drop and the size stopped being applied, and a narrowed band left the group itself full width
+   with dead space inside it. The group is the box a reader sees, so the group is what resizes.
+
+   ⚠️ THE TWO AXES ARE A WIDGET'S OWN: width in GRID COLUMNS, height in pixels. The columns
+   are the BOARD's twelve — `#dashGrid` is a 12-column grid now — so two half-width groups share
+   a row exactly as two half-width widgets do inside one. Height stays pixels because vertical
+   room is what `fitCanvas` divides up.
 
    ⚠️ IT IS DELIBERATELY NOT THE WIDGET RESIZE ENGINE, and folding the two together would
    break `wRzCommit`. That engine does `closest('.widget,.dwidget')`, flips the element's own
    `draggable` (a widget move starts from the same box), snaps a width to the grid's columns, and
-   hands `wRzCommit` a `data-g`/`data-i` pair to write into `WIDGETS[g][i]`. A band is none of
-   those: no `data-i`, nothing to snap, it must stay undraggable here because its HEADER is the
-   drag handle, and its commit target is `GRP_STYLE`. What IS shared is the plumbing that would
+   hands `wRzCommit` a `data-g`/`data-i` pair to write into `WIDGETS[g][i]`. A group is none of
+   those: no `data-i`, its columns are the BOARD's rather than its own group's, it must stay
+   undraggable here because its HEADER is the drag handle, and its commit target is `GRP_STYLE`. What IS shared is the plumbing that would
    be worth sharing — the same `.wrzbadge` element and `wRzBadge` binding, the same
    `body.rzing-body`, and the same "record the before, commit only if it moved" discipline. */
 let gRz = null;
-function gRzDown(ev, gi){
+/* ⚠️ ONE COLUMN'S WIDTH IS DERIVED FROM THE GRID, NEVER ASSUMED — twelve columns and eleven
+   gaps solved from the parent's own measured width. A hardcoded column width would be wrong the
+   moment the Layout drawer moved the gap, and wrong again at another viewport.
+   ⚠️ THE PARENT IS `#dashGrid` NOW, not `.dgrid12`: the element being sized is the group
+   `<section>`, and its columns are the BOARD's twelve, which is what makes two half-width groups
+   share a row. The arithmetic did not have to change — only which grid it reads. */
+function gRzCols(el){
+  const grid = el.parentElement;
+  if (!grid) return { colW: 0, gap: 0 };
+  const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+  return { colW: (grid.getBoundingClientRect().width - gap * 11) / 12, gap };
+}
+function gRzDown(ev, gi, mode){
   ev.preventDefault(); ev.stopPropagation();
-  const el = ev.currentTarget.closest('.gdrop'); if (!el) return;
-  gRz = { el, gi, y0: ev.clientY, h0: el.offsetHeight, h: el.offsetHeight, before: histState() };
+  /* ⚠️ THE TARGET IS THE `<section>`, NOT THE EMPTY BAND. The grips are the group's own
+     children now, so this resolves to the group whether or not it holds widgets — which is the
+     whole point of the change: `.gdrop` only exists while the group is empty. */
+  const el = ev.currentTarget.closest('.dgroup'); if (!el) return;
+  const m = mode || 's';
+  gRz = { el, gi, mode: m, y0: ev.clientY, x0: ev.clientX,
+          h0: el.offsetHeight, h: el.offsetHeight,
+          w0: el.offsetWidth, span0: gRzW(gi), span: gRzW(gi),
+          grid: gRzCols(el), before: histState() };
   el.classList.add('rzing');
   document.body.classList.add('rzing-body');
   wRzBadge = document.createElement('div');       /* one badge binding, two drivers — a
@@ -17465,8 +18422,23 @@ function gRzDown(ev, gi){
 }
 function gRzMove(e){
   const r = gRz; if (!r) return;
-  r.h = Math.max(GRP_RZ_MIN, Math.min(GRP_RZ_MAX, r.h0 + e.clientY - r.y0));
-  r.el.style.height = r.h + 'px';
+  /* ⚠️ EACH GRIP OWNS ITS OWN AXIS, and the corner is simply both — the same
+     `M.includes(...)` shape the AI card's grips settled on, rather than an equality chain that
+     has to name every combination. A bottom-edge drag must NOT drift the width and a
+     right-edge drag must not change the height; testing membership is what guarantees it. */
+  if (r.mode.includes('s')){
+    r.h = Math.max(GRP_RZ_MIN, Math.min(GRP_RZ_MAX, r.h0 + e.clientY - r.y0));
+    r.el.style.height = r.h + 'px';
+  }
+  if (r.mode.includes('e')){
+    const { colW, gap } = r.grid;
+    /* ⚠️ SNAP TO A COLUMN, and derive the span from the TARGET WIDTH rather than adding
+       a column per N pixels dragged — accumulating steps lets rounding drift over a long drag,
+       which is the fault `wRzMove` avoids the same way. */
+    const px = Math.max(colW, r.w0 + e.clientX - r.x0);
+    r.span = colW > 0 ? Math.max(1, Math.min(12, Math.round((px + gap) / (colW + gap)))) : 12;
+    r.el.style.gridColumn = 'span ' + r.span;
+  }
   /* ⚠️ `fitCanvas()` RUNS ON EVERY MOVE, NOT ON RELEASE — "automatically the widget will be
      auto adjust" IS the request, and a board that only reflows once you let go never shows you
      what you are choosing. It costs the two layout probes it already costs on every window
@@ -17476,7 +18448,10 @@ function gRzMove(e){
      twice in this file), so a probe driving this drag would never see a widget move. */
   fitCanvas();
   const b = r.el.getBoundingClientRect();
-  wRzBadge.textContent = Math.round(r.h) + 'px';
+  /* the widget badge's own wording, so one readout serves both engines */
+  wRzBadge.textContent = (r.mode.includes('e') ? r.span + '/12 columns' : '')
+    + (r.mode === 'se' ? ' \u00d7 ' : '')
+    + (r.mode.includes('s') ? Math.round(r.h) + 'px' : '');
   wRzBadge.style.left = Math.max(6, Math.min(b.right - 12, innerWidth - 150)) + 'px';
   wRzBadge.style.top  = Math.max(6, Math.min(b.bottom + 8, innerHeight - 32)) + 'px';
 }
@@ -17492,24 +18467,31 @@ function gRzUp(){
      the band's natural 96px into a record that had no height, and a grip you merely clicked
      would land an entry on the undo stack — and the double-click reset below fires TWO
      mousedowns before its own handler, so this is what keeps that gesture clean too. */
-  if (Math.round(r.h) === Math.round(r.h0)) return;
-  gRzCommit(r.gi, r.h, r.before);
+  if (Math.round(r.h) === Math.round(r.h0) && r.span === r.span0) return;
+  gRzCommit(r.gi, r.h, r.before, r.span);
 }
-/* double-click the grip: back to the band's natural height, the escape hatch `wRzReset` gives
-   a widget. It is the only way back — the Edit group drawer has no height field, which is why
-   its Reset deliberately leaves `h` alone. */
+/* double-click the grip: back to the group's natural height and full width, the escape hatch
+   `wRzReset` gives a widget. It is the only way back — the Edit group drawer has no size field,
+   which is why its Reset deliberately leaves `h`, `w` and `rz` alone. */
 function gRzReset(ev, gi){
   ev.preventDefault(); ev.stopPropagation();
-  if (!gRzH(gi)) return;                          /* never dragged — nothing to undo */
-  gRzCommit(gi, 0, histState());
+  if (!gRzH(gi) && gRzW(gi) === 12) return;       /* never dragged — nothing to undo */
+  gRzCommit(gi, 0, histState(), 12);
 }
-function gRzCommit(gi, h, before){
+/* ⚠️ `span` IS OPTIONAL SO THE OLD TWO-ARGUMENT CALLS STILL MEAN WHAT THEY MEANT — passing
+   nothing leaves the width exactly as it was, which is what a bottom-edge drag wants. */
+function gRzCommit(gi, h, before, span){
   const st = gStyleMake(gi);
   if (h) st.h = Math.round(h); else delete st.h;
-  if (histState() !== before) histWas(h ? 'Resize group' : 'Reset group height', before);
+  if (span !== undefined){ if (span && span < 12) st.w = span; else delete st.w; }
+  const changed = histState() !== before;
+  if (changed) histWas(h || (span && span < 12) ? 'Resize group' : 'Reset group size', before);
   renderCanvas(); fitCanvas();
-  toast(h ? `Band set to ${Math.round(h)}px — widgets refitted around it`
-          : 'Band height reset');
+  const bits = [];
+  if (span !== undefined && span < 12) bits.push(`${span}/12 columns`);
+  if (h) bits.push(`${Math.round(h)}px`);
+  toast(bits.length ? `Group set to ${bits.join(' \u00d7 ')} — widgets refitted around it`
+                    : 'Group size reset');
 }
 
 function wDragStart(ev, g, i){
@@ -17686,21 +18668,17 @@ let gMenuIdx = -1;
 /* ⚠️ A ROW WITH NOWHERE TO GO IS HIDDEN, NOT LEFT TO NO-OP — the `wmMove` rule (13 Aug
    2026). All three middle rows need a SECOND group to mean anything, so on a one-group board
    they go AND THEIR SEPARATOR GOES WITH THEM, or the menu opens on a rule introducing nothing
-   (the recorded `<hr>` lesson from the AI panel's ⋯ menu). Move up / Move down are hidden per
-   POSITION as well: the first group cannot rise and the last cannot fall.
+   ⚠️ SUPERSEDED 19 Sep 2026 — THERE ARE NO POSITION-DEPENDENT ROWS LEFT. Move up / Move
+   down and Collapse other groups were removed on request, so nothing here needs showing or
+   hiding any more and the per-position gating is gone with them. The rule it recorded is kept
+   because it still applies to anything added later: a row with nowhere to go is HIDDEN, not
+   left to no-op, and its separator goes with it or the menu opens on a rule introducing
+   nothing (the `<hr>` lesson from the AI panel's ⋯ menu).
    ⚠️ DELETE GROUP DELIBERATELY STAYS on a one-group board. It already refuses with the rule
    itself — "a dashboard needs at least one group" — and a stated rule is worth more than a
-   missing row. That is the one place this menu chooses explaining over hiding.
-   ⚠️ The display is set BEFORE `openCMenu`, which measures `offsetHeight` to decide whether
-   to flip the menu above the pointer; toggling rows afterwards would place a menu of the
-   wrong height. */
+   missing row. That is the one place this menu chooses explaining over hiding. */
 function openGMenu(ev, gi){
   gMenuIdx = gi; curG = gi;
-  const many = TABS.length > 1;
-  const set = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? '' : 'none'; };
-  set('gmArrSep', many); set('gmOth', many);
-  set('gmUp', many && gi > 0);
-  set('gmDn', many && gi < TABS.length - 1);
   openCMenu(ev,'gMenu');
 }
 /* ── rename a group from its own title (annotation, 19 Aug 2026) ──────────────────────
@@ -17788,14 +18766,81 @@ function gEditPaint(){
        empty string, because `gStyleCSS` tests that emptiness to emit no `background` at all —
        so the header keeps `--card-head`. Mapping it here keeps the two facts apart: what the
        swatch paints, and what the rule emits. */
-    '<div class="ddfield"><span class="ddlbl">Header colour</span>' +
-      cwFtDD('gbg', GRP_BG.map(c => [c[0], c[1] || 'transparent']), st.bg, true, true) +
+    /* ⚠️ HEADER COLOUR AND TITLE SIZE SHARE A ROW, 24px APART (request, 18 Sep 2026).
+       They are the two fields that describe the same thing — how the header LOOKS — so pairing
+       them is the `.cwftpair` reading the Free Text editor already uses, and it is what the
+       drawer's new 628px width is for: at `.sdrawer`'s old 400 there was no room for two. */
+    '<div class="gepair">' +
+      '<div class="ddfield"><span class="ddlbl">Header colour</span>' +
+        cwFtDD('gbg', GRP_BG.map(c => [c[0], c[1] || 'transparent', c[2]]), st.bg, true, true) +
+      '</div>' +
+      /* ⚠️ THE SAME SEARCHABLE DROPDOWN THE NOTE USES, reading `CW_FT_SIZE` itself — not a
+         lookalike and not a copy of its stops. It is registered in `DD_OWN` under its own key
+         so `ddPaint` repaints THIS drawer rather than the Free Text panel's; sharing `size`
+         with the note would have one control painting the other's screen.
+         ⚠️ THE LABEL STAYS "Title size". "Font Size" is the note's word for its own body text;
+         here the thing being sized is the group's title, and the field beside it is the
+         header's colour. */
+      '<div class="ddfield"><span class="ddlbl">Title size</span>' +
+        cwFtDD('gsz', CW_FT_SIZE, st.size || 'Auto', false) +
+      '</div>' +
     '</div>' +
-    '<div class="ddfield"><span class="ddlbl">Title size</span><div class="ddseg">' +
-      Object.keys(GRP_SIZE).map(k =>
-        '<button class="' + (st.size === k ? 'on' : '') + '" onclick="gEditSet(\'size\',\'' + k + '\')">' +
-        ({S:'Small',M:'Medium',L:'Large'})[k] + '</button>').join('') +
-    '</div></div>' +
+    /* ⚠️ VERTICAL ALIGNMENT (request, 19 Sep 2026: "in empty group add vertical alignment",
+       with the Free Text control as the picture). It is the SAME trio, same labels, same
+       Tabler glyphs — `GRP_VALIGN` carries the CSS value as its fourth column so the drawer and
+       the renderer cannot disagree about what "middle" means.
+       ⚠️ IT GOVERNS THE GROUP'S CONTENT, NOT ITS TITLE — `align-content` on the widget grid, so
+       it only has anything to distribute when the group is TALLER THAN ITS CONTENT, which means
+       a group whose height has been dragged. On an auto-height group it is honest but inert;
+       that is why it sits with the other layout controls rather than being gated away.
+       ⚠️ THE MARKUP IS `.cwftseg` / `.cwftsg`, NOT `.ddseg` — the row above is a WORD segmented
+       control (Small / Medium / Large) and this one is icons; reusing the Free Text control is
+       what keeps the two vertical-alignment pickers in this file identical rather than similar. */
+    /* ⚠️ TWO CHECKBOXES, IN THE FREE TEXT PANEL'S OWN `.cwftck` SHAPE — same control, same
+       label position, so the two editors in this file agree about what a checkbox looks like.
+       ⚠️ THEY ARE STORED POSITIVELY AND READ NEGATIVELY where that is what the words mean:
+       `transp` is true when the header has no fill, and `pad` is true when the group HAS
+       padding — so "No padding" is its inverse, exactly as Free Text stores it. A field whose
+       name is the opposite of its label is how a later reader inverts it by accident. */
+    /* ⚠️ THEY SIT SIDE BY SIDE IN `.gepair`, THE ROW ABOVE THEM (request, 21 Sep 2026: "it
+       will be show side by side with proper alignment"). Reusing that grid rather than writing
+       a second two-column rule is what makes the alignment exact rather than approximate:
+       Transparent starts on Header colour's left edge and No padding on Title size's, because
+       they are literally the same two columns at the same 24px gap. Stacked, the pair spent two
+       rows of a short drawer on two words each.
+       ⚠️ `.gechk`'s TOP MARGIN MOVED ONTO THE WRAPPER — left on both labels it would have
+       spaced the two columns against each other, which in a grid row means nothing at all. */
+    '<div class="gepair gechk">' +
+      '<label class="cwftck"><input type="checkbox"' + (st.transp ? ' checked' : '') +
+        ' onchange="gEditSet(\'transp\', this.checked)" /><span>Transparent</span></label>' +
+      '<label class="cwftck"><input type="checkbox"' + (st.pad === false ? ' checked' : '') +
+        ' onchange="gEditSet(\'pad\', !this.checked)" /><span>No padding</span></label>' +
+    '</div>' +
+    /* ⚠️ THE TWO ALIGNMENTS ARE ONE ROW, WHICH IS HOW FREE TEXT DRAWS THEM (request,
+       21 Sep 2026, with that panel as the picture). It is the drawer's own `.gepair`, so the
+       pair sits on the same two columns as Header colour / Title size and the checkbox row
+       above — three rows, one grid, nothing measured twice.
+       ⚠️ LEFT IS THE DEFAULT AND IS LIT AS SUCH, so the control opens describing the group in
+       front of you rather than with nothing pressed. */
+    '<div class="gepair gealgn">' +
+    '<div class="ddfield"><span class="ddlbl">Alignment</span>' +
+      '<div class="cwftseg">' + CW_FT_ALIGN.filter(a => GRP_ALIGN_OK.indexOf(a[0]) > -1).map(a =>
+        '<button class="cwftsg' + ((st.align || 'left') === a[0] ? ' on' : '') + '" ' +
+        'data-tip="' + a[1] + '" aria-label="' + a[1] + '" ' +
+        'aria-pressed="' + ((st.align || 'left') === a[0]) + '" ' +
+        'onclick="gEditSet(\'align\',\'' + a[0] + '\')">' +
+        gAlignSVG(a[0]) + '</button>').join('') +
+      '</div></div>' +
+    /* ⚠️ VERTICAL ALIGNMENT WAS REMOVED ON 21 SEP 2026 ("in empty group remove the Vertical
+       alignment"), and only the CONTROL was: `GRP_VALIGN`, `gValignSVG`, `gValign` and the
+       `--gv-align` the renderer emits are all still live, so a group already set to middle or
+       bottom keeps the position it was given. Withdrawing a picker is not the same as changing
+       every board that used it — the same split the `right` alignment took an hour earlier.
+       ⚠️ THE ROW STAYS A `.gepair` WITH ONE CELL IN IT. A grid of two columns puts that cell in
+       column 1, which is the whole point: Alignment keeps the left edge Header colour and
+       Transparent sit on, where a bare `.ddfield` would simply span the drawer and read as a
+       different kind of field from the three rows above it. */
+    '</div>' +
     /* ⚠️ THE BANNER FIELD IS OPTION 2's ONLY (request, 17 Sep 2026: "we need to add new one
        in 'empty group' option 2 only — in edit option add banner … when i attach any image the
        image will be set in header as banner"). It is gated on the same capability the resize
@@ -17916,9 +18961,36 @@ function gEditApply(){
      render, i.e. the title sits unreadable on the photo for exactly as long as the drawer is
      open, which is the only time anybody is looking at it. */
   hd.classList.toggle('gban', !!gBan(GE.gi));
+  /* ⚠️ SAME REASON FOR THE ALIGNMENT CLASS — `--gv-talign` rides in on the style attribute
+     above, but the token alone does nothing until `.galgn` gives the title a box to align in. */
+  hd.classList.toggle('galgn', !!gAlign(GE.gi));
+  /* ⚠️ THE VERTICAL ALIGNMENT IS ON THE SECTION, NOT THE HEADER, so it has to be patched
+     separately — this function's whole point is to avoid a full render, and without this line
+     the drawer's alignment buttons would light up while the group did not move until something
+     else happened to re-render it. It is written as a PROPERTY, not by rebuilding the style
+     attribute, because the section also carries its dragged height and column span. */
+  const sec = document.getElementById('grp-' + GE.gi);
+  if (sec){
+    sec.style.setProperty('--gv-align', gValign(GE.gi) || 'start');
+    /* the padding is on the SECTION too, so it patches here rather than waiting for a render */
+    if (gStyleOf(GE.gi).pad === false){
+      sec.style.setProperty('--gv-pad', '0');
+      /* ⚠️ THE HAIRLINE GOES WITH THE PADDING HERE TOO, or the drawer and the next full
+         render would disagree about the same checkbox — see `.dgroup:has(.ghead)`. */
+      sec.style.setProperty('--gv-line', 'transparent');
+      sec.style.setProperty('--gv-hm', '0 0 10px');
+      sec.style.setProperty('--gv-hpad', '8px 0');
+    } else {
+      sec.style.removeProperty('--gv-pad');
+      sec.style.removeProperty('--gv-line');
+      sec.style.removeProperty('--gv-hm');
+      sec.style.removeProperty('--gv-hpad');
+    }
+  }
 }
 /* the dropdown's write path for this drawer — see `DD_OWN` */
 function gEditBg(v){ gEditSet('bg', v); }
+function gEditSize(v){ gEditSet('size', v); }
 function gEditSet(k, v){
   if (GE.gi < 0) return;
   gEditRec(); gStyleMake(GE.gi)[k] = v;
@@ -17947,7 +19019,12 @@ function gEditReset(){
      banner is one of the three things this drawer edits, so "Header style reset" owns it. The
      height has no field here — it is dragged on the board and reset by double-clicking its
      grip — so Reset must leave it alone. */
-  if (st && (st.rz || st.h != null)) { st.bg = 'Default'; st.size = 'M'; delete st.banner; }
+  /* ⚠️ `'Auto'` IS THE DEFAULT SIZE NOW, NOT `'M'` — a stale key here would leave Reset
+     writing a value the dropdown cannot show, so the field would read blank on a group that
+     had just been reset. `align` is cleared with it because the TITLE's alignment is header
+     style, which is what this branch resets; `valign` is not, because it positions the
+     group's CONTENT and has no field in the half being put back. */
+  if (st && (st.rz || st.h != null)) { st.bg = 'Default'; st.size = 'Auto'; delete st.align; delete st.banner; }
   else GRP_STYLE[GE.gi] = null;
   gEditApply(); gEditPaint();
   toast('Header style reset');
@@ -27433,13 +28510,57 @@ const CW_FT_COLOR = [['Default','var(--text)'], ['Gray','var(--text-dim)'], ['Gr
    Font Color so the two dropdowns share one vocabulary; `Default` is the transparent one,
    and every other entry is that colour mixed into the card rather than the flat token, which
    is what keeps text on it readable in both themes. */
-const CW_FT_BG = [['Default','transparent'], ['Gray','var(--panel-2)'],
-                  ['Green','color-mix(in srgb, var(--green) 18%, var(--card))'],
-                  ['Blue','color-mix(in srgb, var(--blue) 18%, var(--card))'],
-                  ['Yellow','color-mix(in srgb, var(--yellow) 22%, var(--card))'],
-                  ['Orange','color-mix(in srgb, var(--orange) 20%, var(--card))'],
-                  ['Red','color-mix(in srgb, var(--red) 18%, var(--card))']];
-const CW_FT_VALIGN = [['top','Align top'], ['middle','Align middle'], ['bottom','Align bottom']];
+/* ⚠️ THE FIRST ENTRY IS NAMED `Transparent`, NOT `Default` (request, 19 Sep 2026: "in free
+   text add the background color transprent"). It ALREADY resolved to `transparent` — so the
+   honest change is to make the option say what it does rather than add a second row with the
+   same value under a different name, which is how a list comes to have two names for one
+   colour. "Default" named nothing a reader could see; the preset is what supplies a default,
+   and the Default preset sets `bg:'Gray'`.
+   ⚠️ NO MIGRATION IS NEEDED, and that falls out of `cwFtVal` rather than being handled: a
+   board saved with `bg:'Default'` finds no entry and takes `cwFtBg`'s own `'transparent'`
+   fallback — the same paint it had. Only the LABEL moved.
+   ⚠️ `CW_FT_COLOR`'s `Default` is NOT renamed. There it means "inherit the widget's text
+   colour", which is a real behaviour and not a colour — the two lists say different things and
+   should not be made to match. */
+const CW_FT_BG = [['Transparent','transparent'], ['Gray','var(--panel-2)','var(--track)'],
+                  ['Green','color-mix(in srgb, var(--green) 18%, var(--card))','var(--green)'],
+                  ['Blue','color-mix(in srgb, var(--blue) 18%, var(--card))','var(--blue)'],
+                  ['Yellow','color-mix(in srgb, var(--yellow) 22%, var(--card))','var(--yellow)'],
+                  ['Orange','color-mix(in srgb, var(--orange) 20%, var(--card))','var(--orange)'],
+                  ['Red','color-mix(in srgb, var(--red) 18%, var(--card))','var(--red)']];
+/* ⚠️ STROKED TABLER, BESIDE THE PRODUCT'S OWN FILLED ALIGN ICONS — A STATED DIVERGENCE
+   (restored 19 Sep 2026: "in free text add text alignment", with this control's own
+   "Align top" tooltip in the picture). `observeops-icons/` carries `align-left/center/right`
+   and **nothing vertical at all** (checked), and the rule is never to hand-draw one — so the
+   trio comes from `free-icons/`: Tabler's `design/layout-align-{top,middle,bottom}`.
+   ⚠️ IT SHIPPED FOR AN HOUR AS `text/align-box-center-*` AND THAT WAS THE WRONG PICK
+   ("change the Vertical alignment icon use proper icon"). Those draw a box PLUS three short
+   text lines — five shapes inside 15px, which resolves to a smudge. This trio is two or three
+   LARGE shapes each: a full-width rule at the top, the middle or the foot, with a rounded
+   block sitting against it. **At this size, fewer and bigger is what reads** — and it is a
+   designed trio from ONE Tabler folder, so the three cannot drift apart.
+   ⚠️ THE WEIGHT MATCHES BY ARITHMETIC, WHICH IS WHY THE MIX IS TOLERABLE. Tabler draws at
+   `stroke-width:2` on a 24 grid; at `.cwftsg svg`'s 15px that is 2 × 15/24 = **1.25px on
+   screen**, this file's own target weight. The difference left is fill vs stroke, and the two
+   controls carry separate labels rather than reading as one set.
+   ⚠️ `fill:none` MUST BE SET — `.cwftsg svg{fill:currentColor}` would paint these outlines
+   as solid blobs, the trap recorded at `.dvic svg` and again for the `sliders` stroke icon. */
+const CW_FT_VALIGN = [
+  /* ⚠️ THE BLOCK IS FILLED, THE RULE IS STROKED — a fourth column ("improve this icon",
+     19 Sep 2026). Drawn entirely in outline, the trio was a hairline bar over a hairline
+     rounded rect: at 15px that is four thin edges competing with one, and it read as a smudge.
+     A SOLID shape against a single line is unmistakable at any size, and it is the same Tabler
+     geometry — only the block's paint changed, so the set still reads as one family. */
+  ['top',   'Align top',
+   'M4 4l16 0',
+   'M9 10a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -8'],
+  ['middle','Align middle',
+   'M4 12l5 0|M15 12l5 0',
+   'M9 8a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -8'],
+  ['bottom','Align bottom',
+   'M4 20l16 0',
+   'M9 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -8'],
+];
 const CW_FT_EDGE   = ['Left', 'Right', 'Top', 'Bottom'];
 /* ⚠️ THE FOUR PRESETS ARE A READING OF THEIR TILES, NOT A MEASUREMENT. The live editor shows
    each as a small illustration — a bordered card of small left-aligned text (Default), grey
@@ -27451,8 +28572,8 @@ const CW_FT_EDGE   = ['Left', 'Right', 'Top', 'Bottom'];
    stays live afterwards, which is why nothing tracks "which preset am I in" after a change. */
 const CW_FT_PRESET = [
   ['Default',    {size:'16px', align:'left',   valign:'top',    bg:'Gray', pad:true,  tick:false}],
-  ['Caption',    {size:'16px', align:'left',   valign:'bottom', bg:'Default', pad:false, tick:false}],
-  ['Header',     {size:'36px', align:'center', valign:'middle', bg:'Default', pad:true,  tick:false}],
+  ['Caption',    {size:'16px', align:'left',   valign:'bottom', bg:'Transparent', pad:false, tick:false}],
+  ['Header',     {size:'36px', align:'center', valign:'middle', bg:'Transparent', pad:true,  tick:false}],
   /* ⚠️ ANNOTATION WAS REMOVED ON REQUEST (17 Sep 2026) and is kept here, commented, because
      it is the only preset that ever set `tick` — so it is also the worked example of what the
      pointer fields are for. Nothing is stranded by its going: the Yellow ground is still in the
@@ -27771,11 +28892,31 @@ function cwPanelHTML(viz){
 function cwFtPanelHTML(){
   const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const F = CW.ft;
-  const seg = (list, cur, fn, get, lab) => '<div class="cwftseg">' + list.map(a => {
+  /* ⚠️ `stroke` IS WHAT LETS ONE BUILDER CARRY TWO ICON FAMILIES. The horizontal Alignment
+     trio is the product's own — one FILLED path on a 48 grid; the vertical trio is Tabler's —
+     several STROKED paths on a 24 grid, pipe-separated in the entry. Two builders would be two
+     places for a segmented control to drift.
+     ⚠️ `fill:none` GOES INLINE, NOT IN THE ATTRIBUTE. `.cwftsg svg{fill:currentColor}` is a
+     RULE, and a rule beats a presentation attribute — so `fill="none"` on the element would
+     lose and the outlines would paint as solid blobs. The recorded `.dvic svg` trap. */
+  const seg = (list, cur, fn, get, lab, stroke) => '<div class="cwftseg">' + list.map(a => {
     const k = get(a);
+    const art = !a[2] ? '<b>' + k + '</b>'
+      : stroke
+        ? '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" ' +
+          'stroke-linecap="round" stroke-linejoin="round">' +
+          a[2].split('|').map(d => '<path d="' + d + '"/>').join('') +
+          /* ⚠️ THE FILLED PATHS CARRY `stroke:none` INLINE. The root's `stroke` attribute is
+             INHERITED by every child, so a filled block would otherwise also be outlined —
+             2px of stroke straddling its own edge, which fattens it by a pixel each side and
+             loses the rounded corners. */
+          (a[3] ? a[3].split('|').map(d =>
+            '<path d="' + d + '" style="fill:currentColor" stroke="none"/>').join('') : '') +
+          '</svg>'
+        : '<svg viewBox="0 0 48 48"><path d="' + a[2] + '"/></svg>';
     return '<button class="cwftsg' + (k===cur?' on':'') + '" data-tip="' + lab(a) + '" ' +
       'aria-label="' + lab(a) + '" aria-pressed="' + (k===cur) + '" onclick="' + fn + '(\'' + k + '\')">' +
-      (a[2] ? '<svg viewBox="0 0 48 48"><path d="' + a[2] + '"/></svg>' : '<b>' + k + '</b>') + '</button>';
+      art + '</button>';
   }).join('') + '</div>';
 
   return '<div class="cwftp">' +
@@ -27834,8 +28975,21 @@ function cwFtPanelHTML(){
     '<div class="cwftpair">' +
       '<div class="cwftcol"><label class="cwftl">Font Size</label>' +
         cwFtDD('size', CW_FT_SIZE, F.size, false) + '</div>' +
-      '<div class="cwftcol"><label class="cwftl">Alignment</label>' +
-        seg(CW_FT_ALIGN, F.align, 'cwFtAlign', a => a[0], a => a[1]) + '</div>' +
+      /* ⚠️ BOTH ALIGNMENT CONTROLS SHARE THIS COLUMN (request, 19 Sep 2026: vertical
+         alignment "will be show behind the alignment with proper alignment"). They are two
+         halves of one idea — where the text sits — so they read as a pair rather than as a
+         field and an afterthought a row apart, and "proper alignment" falls out of the two
+         `.cwftcol`s: each is label-over-control on the same 6px step, so the labels share a
+         baseline and the segments share a top edge.
+         ⚠️ IT FITS, MEASURED: the pair column is ~290px and each segment is 3 × 38 = 114px,
+         so 114 + 16 + 114 = 244 with ~46px spare. If a fourth cell is ever added to either
+         control, re-measure before assuming it still does. */
+      '<div class="cwftcol"><div class="cwftvrow">' +
+        '<div class="cwftcol"><label class="cwftl">Alignment</label>' +
+          seg(CW_FT_ALIGN, F.align, 'cwFtAlign', a => a[0], a => a[1]) + '</div>' +
+        '<div class="cwftcol"><label class="cwftl">Vertical alignment</label>' +
+          seg(CW_FT_VALIGN, F.valign || 'middle', 'cwFtVAlign', a => a[0], a => a[1], true) + '</div>' +
+      '</div></div>' +
     '</div>' +
     /* ⚠️ FONT COLOUR AND BACKGROUND SHARE ONE ROW (request, 17 Sep 2026). They are the
        one pair on this panel that is genuinely read together — you pick ink against a fill —
@@ -27849,15 +29003,12 @@ function cwFtPanelHTML(){
       '<div class="cwftcol"><label class="cwftl">Background</label>' +
         cwFtDD('bg', CW_FT_BG, F.bg, true, true) + '</div>' +
     '</div>' +
-    /* ⚠️ HORIZONTAL ONLY (request, 17 Sep 2026: remove the top / middle / bottom row). The
-       vertical control is gone from the panel; **`valign` is still in the model, still
-       defaulted to `middle` and still honoured by `ftHTML`**, so every widget already on a
-       board keeps the vertical position it was saved with — removing the field as well would
-       have silently re-laid-out those. `CW_FT_VALIGN`, `cwFtVAlign` and `.cwftrow` are kept
-       and unreferenced, the house pattern, so the second row is one line away.
-       ⚠️ THE CONTROL ITSELF MOVED INTO THE Font Size ROW ABOVE — this note stays here because
-       it records why there is only ONE alignment control, which is a different fact from where
-       it sits. */
+    /* ⚠️ SUPERSEDED 19 Sep 2026 — THE VERTICAL CONTROL IS BACK, in the Alignment column above.
+       The 17 Sep request ("remove the top / middle / bottom row") is kept as written because it
+       records the decision that made the restoration cheap: **`valign` stayed in the model,
+       still defaulted to `middle` and still honoured by `ftHTML`**, so every widget already on
+       a board kept the vertical position it was saved with, and bringing the row back cost a
+       renderer rather than a migration. `.cwftrow` is still kept and unreferenced. */
     '<label class="cwftck"><input type="checkbox"' + (F.pad ? '' : ' checked') +
       ' onchange="cwFtSet(\'pad\', !this.checked)" /><span>No padding</span></label>' +
     /* ⚠️ THE POINTER CONTROLS ARE GONE (request, 17 Sep 2026: remove "Show pointer" and
@@ -27894,68 +29045,401 @@ function cwFtPanelHTML(){
    an EARLIER `<script>` block than this one, and a `const` table built at parse time here would
    be fine today — but a top-level `function` declaration IS a window property, so resolving it
    when the dropdown is actually used costs nothing and cannot be broken by block order. */
-const DD_OWN = { gbg: { paint:'gEditPaint', set:'gEditBg' } };
+const DD_OWN = { gbg: { paint:'gEditPaint', set:'gEditBg' },
+                 gsz: { paint:'gEditPaint', set:'gEditSize' } };
 function ddPaint(key){
   const o = DD_OWN[key];
-  if (o){ const f = window[o.paint]; if (f) f(); return; }
+  if (o){ const f = window[o.paint]; if (f) f(); ddBindPicker(); ddPlace(); return; }
   if (CW.open) cwRender();          /* the Free Text path — its own open guard */
+  ddBindPicker();
+  ddPlace();
+}
+/* ⚠️ THE PANEL FLIPS ABOVE THE FIELD WHEN THERE IS NO ROOM BELOW. A 360px two-pane panel
+   opening at y=489 runs 81px past a 768-tall viewport — measured at 1366×768, one of the seven
+   target resolutions, and invisible at 1600×950 where it happens to fit. `overflow:auto` on the
+   pane then clips whatever hangs out, so the buttons are simply not there.
+   ⚠️ MEASURED, NOT ASSUMED FROM A CONSTANT. The one-pane and two-pane panels are different
+   heights and the list's own height changes as you filter it, so a hardcoded 360 would be a
+   second copy of a number that moves.
+   ⚠️ NO VISIBILITY DANCE IS NEEDED, unlike `kbPopOpen`: this runs synchronously in the same
+   task as the paint that created the panel, so the browser has not laid out or painted a frame
+   in between and there is nothing to see jump. */
+function ddPlace(){
+  const p = document.querySelector('.cwftdd.open .cwftddp');
+  if (!p) return;
+  p.classList.remove('up');
+  p.style.transform = '';
+  const r = p.getBoundingClientRect();
+  if (r.bottom > innerHeight - 8 && r.top - r.height > 8) p.classList.add('up');
+  /* ⚠️ AND CLAMPED SIDEWAYS, BECAUSE ANCHORING TO ONE EDGE ONLY MOVES THE BUG. Opening
+     rightward pushed the panel 97px off the viewport; opening leftward then pushed the
+     LEFT-column dropdown (Font Color) 131px past `#cwBody`'s left edge — measured, and the
+     pane's `overflow:auto` crushed the named list to a sliver. A dropdown cannot know which
+     column it is in, so it is measured against whatever actually clips it and shifted back.
+     ⚠️ `transform`, NOT `left` — the CSS already anchors the panel (both edges on the plain
+     variant, the right edge on the two-pane one) and writing `left` would have to undo that
+     per variant. A translate moves whatever the cascade produced, so one line covers both.
+     ⚠️ THE BOUND IS THE NEAREST CLIPPING ANCESTOR, not the viewport: `#cwBody` scrolls, so a
+     panel inside the viewport can still be cut in half by the pane. */
+  const clip = ddClipBox(p);
+  const r2 = p.getBoundingClientRect();
+  let dx = 0;
+  if (r2.right > clip.right - 4) dx = clip.right - 4 - r2.right;
+  if (r2.left + dx < clip.left + 4) dx = clip.left + 4 - r2.left;
+  if (dx) p.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+}
+/* the intersection of the viewport with every scrollable ancestor — what will actually be
+   visible, rather than what is merely positioned */
+function ddClipBox(el){
+  let L = 0, R = innerWidth;
+  for (let n = el.parentElement; n && n !== document.body; n = n.parentElement){
+    const o = getComputedStyle(n).overflow + getComputedStyle(n).overflowX;
+    if (/auto|scroll|hidden/.test(o)){
+      const b = n.getBoundingClientRect();
+      L = Math.max(L, b.left); R = Math.min(R, b.right);
+    }
+  }
+  return { left: L, right: R };
+}
+/* ⚠️ `change` / `show` / `hide` ARE THE COMPONENT'S OWN EVENTS AND ARE BOUND, NOT WRITTEN
+   AS ATTRIBUTES. `onshow` / `onhide` are not event-handler content attributes at all (so they
+   would be inert markup, the recorded `oncellaction` trap), and every paint rebuilds the row,
+   so the binding has to be re-applied rather than done once.
+   ⚠️ THE PAYLOAD IS ARRAY-WRAPPED (`detail: [colour]`, per the registry) AND A NATIVE
+   `change` CAN STILL REACH THE HOST from the component's internal input, where `detail` is 0.
+   `ddPickVal` therefore accepts only a real string and ignores everything else — the recorded
+   `agDet` fault, which tests `detail.length` and so returns the FIRST CHARACTER of a string. */
+function ddPickVal(ev){
+  let d = ev && ev.detail;
+  if (Array.isArray(d)) d = d[0];
+  return (typeof d === 'string' && d) ? d : null;
+}
+function ddBindPicker(){
+  document.querySelectorAll('.cwftdcp').forEach(el => {
+    if (el.__ddBound) return;
+    el.__ddBound = 1;
+    const key = el.closest('.cwftdd') && el.closest('.cwftdd').dataset.k;
+    el.addEventListener('show', () => { CW_FT_CP = true; });
+    el.addEventListener('hide', () => { CW_FT_CP = false; });
+    el.addEventListener('change', ev => {
+      const v = ddPickVal(ev);
+      if (v && key) cwFtCustom(key, v);
+    });
+  });
 }
 function ddSet(key, val){
   const o = DD_OWN[key];
   if (o){ const f = window[o.set]; if (f) f(val); return; }
   cwFtSet(key, val);
 }
-let CW_FT_DD = null, CW_FT_DDQ = '';
+/* ══ THE COLOUR PICKER (19 Sep 2026: "improve this droupdown in every where") ═══════════
+   ⚠️ IT IS HAND-BUILT, AND THAT REVERSES THE 18 Sep "use the ObserveOps design system" PICK —
+   ASKED, NOT ASSUMED. The catalogued `obs-color-picker` IS the right component on paper and
+   was what shipped for a day; the vendored v0.1.166 build simply does not render the control
+   the request points at. Dumped from its live shadow root rather than guessed:
+
+       div.pop > div.lbl · div.grid(16 × span.cell) · label.custom(input[type=color]) · div.hex
+
+   — sixteen presets, a NATIVE colour well and a hex readout. No saturation canvas, no hue or
+   alpha slider, no R/G/B/A fields, no Cancel/Apply. Its own changelog says why: "custom-colour
+   canvas (native colour input; product uses vue-color Sketch)" — the shipped element is a
+   simpler thing than the product's picker, which is what the reference screenshot shows. It
+   also has no inline mode (states: `closed` / `open`, in a TOP-LAYER popover), so it cannot sit
+   open beside the list however it is styled.
+   ⚠️ SO THIS IS A DECLARED DIVERGENCE, the same shape as the charts: the DS names the need and
+   the vendored build cannot meet it. `obs-color-picker` is KEPT AND UNREFERENCED — if `_ds/` is
+   ever upgraded to the product's Sketch canvas, this whole block should go back to it.
+
+   ⚠️ THE NAMED LIST IS NOT REPLACED, IT IS THE OTHER HALF. Those entries are NOT raw colours:
+   `CW_FT_BG` / `CW_FT_COLOR` / `GRP_BG` map each name onto a `color-mix()` over a token, so
+   they follow the theme, and `Transparent` / `Default` emit no fill at all. A hex cannot do
+   either. The two panes therefore store two DIFFERENT KINDS of value on purpose — a NAME from
+   the left, a flat HEX from the right — which is the standing trade-off recorded in HANDOFF:
+   a board saved with a custom colour will not follow a theme change. */
+const CP_PRESETS = [
+  /* ⚠️ FLAT HEXES ARE CORRECT HERE, and this is one of the two places in the file where a
+     literal colour is right (the other is the providers' brand marks). A preset in a colour
+     picker is an ABSOLUTE colour the reader is choosing, not a themed surface — resolving
+     these from tokens would make "the same swatch" mean two colours in two themes. */
+  '#4dd0b1', '#f0a04e', '#9b7ef0', '#a3d13f', '#f06fa0', '#4eb8f0', '#f0c84e', '#f08a6f',
+  '#3fbf8f', '#c96ff0', '#f0d34e', '#7e8ef0', '#f0824e', '#4ed6c8', '#e8577a', '#b7e84e',
+];
+/* ── colour maths: hex ⇄ rgb ⇄ hsv. No library; these four are the whole dependency. ──
+   ⚠️ `cpHex` ALWAYS EMITS 6 OR 8 DIGITS, never 3 — `cwFtIsHex` accepts a short form but the
+   R/G/B fields round-trip through this, and `#f00` would lose the exact value a drag set. */
+function cpRgb(hex){
+  let h = String(hex || '').replace('#', '');
+  if (h.length === 3 || h.length === 4) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h.slice(0, 6), 16);
+  const a = h.length >= 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1;
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: isNaN(a) ? 1 : a };
+}
+function cpHex(r, g, b, a){
+  const two = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+  return '#' + two(r) + two(g) + two(b) + (a >= 1 ? '' : two(a * 255));
+}
+function cpToHsv(r, g, b){
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d){
+    if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0));
+    else if (mx === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+  }
+  return { h, s: mx ? d / mx : 0, v: mx };
+}
+function cpToRgb(h, s, v){
+  h = ((h % 360) + 360) % 360;
+  const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+  const t = h < 60 ? [c,x,0] : h < 120 ? [x,c,0] : h < 180 ? [0,c,x]
+          : h < 240 ? [0,x,c] : h < 300 ? [x,0,c] : [c,0,x];
+  return { r: (t[0] + m) * 255, g: (t[1] + m) * 255, b: (t[2] + m) * 255 };
+}
+/* ⚠️ THE DRAFT LIVES HERE, NOT IN THE MODEL — the reference has Cancel and Apply, so nothing
+   the canvas does may reach the widget until Apply. That also fixes a recorded wart: the old
+   custom control applied LIVE on every `input`, which is why it had to be documented as "does
+   not close the dropdown". Now the gesture has an end. */
+let CP = null;   /* { key, h, s, v, a } while a picker is open */
+function cpCur(){ return CP ? cpHex(cpToRgb(CP.h, CP.s, CP.v).r, cpToRgb(CP.h, CP.s, CP.v).g,
+                                   cpToRgb(CP.h, CP.s, CP.v).b, CP.a) : '#000000'; }
+function cpSeed(hex){
+  const c = cpRgb(cwFtIsHex(hex) ? hex : '#cad3e2');
+  const h = cpToHsv(c.r, c.g, c.b);
+  return { h: h.h, s: h.s, v: h.v, a: c.a };
+}
+/* ── the right pane: canvas, sliders, fields, presets, Cancel/Apply ─────────────────────
+   ⚠️ EVERY HANDLE IS POSITIONED IN %, NOT PX, so the pane can be resized or themed without
+   the maths knowing. The canvas reads s from x and v from 1 - y, which is why the handle's
+   `top` is `(1 - v)`.
+   ⚠️ THE CANVAS IS TWO GRADIENTS OVER A HUE, in this order: the hue flat, then white→clear
+   left-to-right, then clear→black top-to-bottom. Swap the last two and the black wash tints
+   the white one instead of covering it, and the bottom row stops being black. */
+function cpPaneHTML(key){
+  if (!CP) return '';
+  const rgb = cpToRgb(CP.h, CP.s, CP.v);
+  const hex = cpHex(rgb.r, rgb.g, rgb.b, CP.a);
+  const solid = cpHex(rgb.r, rgb.g, rgb.b, 1);
+  const hue = cpHex(cpToRgb(CP.h, 1, 1).r, cpToRgb(CP.h, 1, 1).g, cpToRgb(CP.h, 1, 1).b, 1);
+  const f = (lab, id, val) => '<label class="cpf"><input id="cpf-' + id + '" value="' + val +
+    '" onmousedown="event.stopPropagation()" oninput="cpField(\'' + id + '\',this.value)" />' +
+    '<span>' + lab + '</span></label>';
+  return '<div class="cppane" onmousedown="event.stopPropagation()">' +
+    /* ⚠️ `background-COLOR`, NEVER THE `background` SHORTHAND. The shorthand resets every
+       `background-*` longhand — including the two gradients `.cpsv` declares — and an inline
+       one beats the stylesheet, so the canvas painted a FLAT hue with no white ramp and no
+       black ramp at all. It looked like a colour bug and was a cascade one. The same trap this
+       file already records for `gStyleCSS`'s banner, hit again in the same session. */
+    '<div class="cpsv" style="background-color:' + hue + '" onpointerdown="cpDown(event,\'sv\')">' +
+      '<i class="cpdot" style="left:' + (CP.s * 100) + '%;top:' + ((1 - CP.v) * 100) + '%"></i></div>' +
+    '<div class="cpsl">' +
+      '<div class="cpbars">' +
+        '<div class="cphue" onpointerdown="cpDown(event,\'h\')">' +
+          '<i class="cpdot sm" style="left:' + (CP.h / 360 * 100) + '%"></i></div>' +
+        '<div class="cpalpha" onpointerdown="cpDown(event,\'a\')">' +
+          '<span style="background:linear-gradient(90deg,transparent,' + solid + ')"></span>' +
+          '<i class="cpdot sm" style="left:' + (CP.a * 100) + '%"></i></div>' +
+      '</div>' +
+      '<i class="cpnow" style="background:' + hex + '"></i>' +
+    '</div>' +
+    '<div class="cpfields">' +
+      f('Hex', 'hex', hex.replace('#', '').toUpperCase()) +
+      f('R', 'r', Math.round(rgb.r)) + f('G', 'g', Math.round(rgb.g)) +
+      f('B', 'b', Math.round(rgb.b)) + f('A', 'a', Math.round(CP.a * 100) / 100) +
+    '</div>' +
+    /* ⚠️ THE 16-SWATCH PRESET GRID IS GONE (request, 19 Sep 2026: "remove the extra
+       color"). The reference carries one and it was built to match; on this panel it was two
+       rows of colours that belong to no palette this product uses — the named list beside it
+       is where an on-brand choice comes from, and the canvas is where a free one does. A grid
+       of arbitrary swatches between them answered neither question.
+       ⚠️ `CP_PRESETS` AND `cpPreset` ARE KEPT AND UNREFERENCED, the house pattern — one line
+       restores the row. `.cpgrid` / `.cpcell` stay in the sheet with them. */
+    '<div class="cpact">' +
+      '<button class="cpbtn" onclick="cpCancel()">Cancel</button>' +
+      '<button class="cpbtn pri" onclick="cpApply(\'' + key + '\')">Apply</button>' +
+    '</div>' +
+  '</div>';
+}
+/* ⚠️ ONE POINTER ENGINE FOR ALL THREE, and it uses POINTER CAPTURE. Without it a fast drag
+   that leaves the 270px canvas stops updating — the recorded resize-grip lesson, where the
+   pointer running off the band mid-drag is the normal case rather than the edge one. */
+let CP_DRAG = null;
+function cpDown(e, what){
+  e.preventDefault(); e.stopPropagation();
+  CP_DRAG = { what, el: e.currentTarget };
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_){}
+  cpMove(e);
+}
+function cpMove(e){
+  if (!CP_DRAG || !CP) return;
+  const r = CP_DRAG.el.getBoundingClientRect();
+  const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  const y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+  if (CP_DRAG.what === 'sv'){ CP.s = x; CP.v = 1 - y; }
+  else if (CP_DRAG.what === 'h') CP.h = x * 360;
+  else CP.a = Math.round(x * 100) / 100;
+  cpRepaint();
+}
+addEventListener('pointermove', cpMove);
+addEventListener('pointerup', () => { CP_DRAG = null; });
+/* ⚠️ THE PANE REPAINTS ITSELF, NEVER THE WHOLE DROPDOWN. `ddPaint` rebuilds the panel, which
+   would destroy the element the pointer has captured mid-drag and drop every later move —
+   the `agConsPaint` / `cwFtSet` discipline, and here it is load-bearing rather than tidy. */
+function cpRepaint(){
+  const host = document.querySelector('.cwftdd.open .cppane');
+  if (!host || !CP) return;
+  const key = host.closest('.cwftdd').dataset.k;
+  host.outerHTML = cpPaneHTML(key);
+  if (CP_DRAG){
+    const sel = CP_DRAG.what === 'sv' ? '.cpsv' : CP_DRAG.what === 'h' ? '.cphue' : '.cpalpha';
+    const el = document.querySelector('.cwftdd.open ' + sel);
+    if (el) CP_DRAG.el = el;   /* the node was replaced — re-point the drag at the live one */
+  }
+}
+/* ⚠️ A FIELD THAT CANNOT BE PARSED IS IGNORED, NOT APPLIED — typing over a hex passes through
+   half-finished strings ("F0", "F04") on the way, and painting those would strobe the canvas. */
+function cpField(which, v){
+  if (!CP) return;
+  v = String(v).trim();
+  if (which === 'hex'){
+    const h = v[0] === '#' ? v : '#' + v;
+    if (!cwFtIsHex(h)) return;
+    Object.assign(CP, cpSeed(h));
+  } else {
+    const rgb = cpToRgb(CP.h, CP.s, CP.v);
+    const n = parseFloat(v); if (isNaN(n)) return;
+    if (which === 'a'){ CP.a = Math.max(0, Math.min(1, n)); }
+    else {
+      const c = { r: rgb.r, g: rgb.g, b: rgb.b };
+      c[which] = Math.max(0, Math.min(255, n));
+      const hsv = cpToHsv(c.r, c.g, c.b);
+      /* ⚠️ KEEP THE OLD HUE WHEN THE COLOUR IS GREY. At s=0 the hue is mathematically
+         undefined and `cpToHsv` returns 0, so dragging a value to black and back would
+         silently reset a chosen hue to red. */
+      CP.h = hsv.s ? hsv.h : CP.h; CP.s = hsv.s; CP.v = hsv.v;
+    }
+  }
+  cpRepaint();
+}
+function cpPreset(hex){ if (!CP) return; Object.assign(CP, cpSeed(hex)); cpRepaint(); }
+function cpCancel(){ const k = CW_FT_DD; CP = null; CW_FT_DD = null; CW_FT_DDQ = ''; ddPaint(k); }
+function cpApply(key){
+  if (!CP) return;
+  const rgb = cpToRgb(CP.h, CP.s, CP.v);
+  const hex = cpHex(rgb.r, rgb.g, rgb.b, CP.a);
+  CP = null; CW_FT_DD = null; CW_FT_DDQ = '';
+  ddSet(key, hex);
+}
+let CW_FT_DD = null, CW_FT_DDQ = '', CW_FT_CP = false;
+/* ⚠️ A NAMED COLOUR IS A `color-mix()` OVER A TOKEN, so the only way to know what it paints
+   is to ASK THE BROWSER. This paints the value onto a throwaway node and reads the computed
+   colour back — `getComputedStyle` resolves the mix and the token for us, which no amount of
+   string parsing here could.
+   ⚠️ IT MUST BE IN THE DOCUMENT to resolve: a detached element inherits no custom properties,
+   so the tokens would come back empty and every swatch would read #000000.
+   ⚠️ `transparent` HAS NO HEX and must not be rendered as black — it returns '' and the
+   trigger simply shows no value, which is the honest answer for "no fill". */
+function cwFtHexOf(v){
+  if (cwFtIsHex(v)) return String(v).toUpperCase();
+  if (!v || v === 'transparent') return '';
+  const el = document.createElement('i');
+  el.style.cssText = 'position:absolute;width:0;height:0;color:' + v;
+  document.body.appendChild(el);
+  const c = getComputedStyle(el).color;
+  el.remove();
+  /* ⚠️ `color-mix()` SERIALISES AS `color(srgb r g b / a)` WITH 0–1 CHANNELS, NOT `rgb()`
+     WITH 0–255 — the recorded trap, and it is why every named colour first read back as
+     #000000: the 0–1 values rounded to zero. A plain `var(--x)` resolving to a hex comes back
+     as `rgb()`, so BOTH forms reach here and the scale has to be chosen, not assumed. */
+  const m = c.match(/-?[\d.]+/g);
+  if (!m || m.length < 3) return '';
+  const k = /^color\(/.test(c) ? 255 : 1;
+  return cpHex(+m[0] * k, +m[1] * k, +m[2] * k, 1).toUpperCase();
+}
 function cwFtDD(key, list, cur, swatch, custom){
   const open = CW_FT_DD === key;
   const rows = list.filter(a => !CW_FT_DDQ || a[0].toLowerCase().indexOf(CW_FT_DDQ.toLowerCase()) >= 0);
-  const sw = v => swatch ? '<i class="cwftsw2" style="background:' + v + '"></i>' : '';
+  /* ⚠️ THE SWATCH IS THE OPTION'S IDENTITY, NOT ITS PAINT (request, 19 Sep 2026: "the
+     background field all color are use dark color"). A background is deliberately a SUBTLE
+     tint — `color-mix(var(--green) 18%, var(--card))` — which is right on a note and
+     unreadable in a 13px chip: in dark theme all six rendered as near-black and the list could
+     not be told apart. The third element of an entry is the colour to SHOW, the base token at
+     full strength; the second is still what the widget paints.
+     ⚠️ THE LIST AND THE TRIGGER READ THE SAME FIELD, so the two can never disagree about what
+     a row looks like — and the trigger's HEX still reports what it actually resolves to, which
+     is the honest half. An entry with no third element (Font Size, Font Color, Transparent)
+     falls back to its value exactly as before. */
+  const sw = a => swatch ? '<i class="cwftsw2" style="background:' +
+    (Array.isArray(a) ? (a[2] || a[1]) : a) + '"></i>' : '';
   /* ⚠️ A CUSTOM VALUE IS ITS OWN LABEL — the trigger shows the hex itself rather than the
      word "Custom", because the hex IS the name of that colour and is what you would retype. */
   const isHex = cwFtIsHex(cur);
-  const curV = isHex ? cur : (list.find(a => a[0] === cur) || list[0])[1];
-  return '<div class="cwftdd' + (open ? ' open' : '') + '" data-k="' + key + '">' +
+  const curE = list.find(a => a[0] === cur) || list[0];
+  const curV = isHex ? cur : curE[1];
+  const curSw = isHex ? cur : (curE[2] || curE[1]);
+  /* ⚠️ THE RESOLVED VALUE RIDES ON THE ELEMENT, NOT THROUGH THE onclick. `curV` is a CSS
+     value like `color-mix(in srgb, var(--green) 18%, var(--card))` — commas, parens and
+     percent signs inside an HTML attribute inside a JS string literal. A data attribute is
+     read back with no escaping at all, and the toggle takes it off the element it was
+     clicked on.
+     ⚠️ IT MUST BE THE RESOLVED VALUE AND NOT THE NAME: `cwFtHexOf('Gray')` would resolve the
+     CSS *keyword* `gray` (#808080) rather than this list's Gray, and the canvas would open on
+     the wrong colour — which is exactly what the first build did. */
+  return '<div class="cwftdd' + (open ? ' open' : '') + '" data-k="' + key + '"' +
+    ' data-v="' + String(curV).replace(/"/g, '&quot;') + '">' +
     '<button class="cwftddt" aria-haspopup="listbox" aria-expanded="' + open + '" ' +
-      'onclick="cwFtDDTog(event,\'' + key + '\')">' + sw(curV) +
-      '<span>' + cur + '</span>' +
+      'onclick="cwFtDDTog(event,\'' + key + '\',' + (custom ? 'true' : 'false') + ')">' + sw(curSw) +
+      '<span>' + (isHex ? cur.toUpperCase() : cur) + '</span>' +
+      /* ⚠️ THE TRIGGER CARRIES THE HEX ON A COLOUR CONTROL (reference, 19 Sep 2026): the
+         NAME says which entry is picked and the VALUE says what it actually resolves to, which
+         is the one thing a themed `color-mix()` name cannot tell you by looking. It is omitted
+         when the value IS a hex — the label would then be the same string twice — and on a
+         non-colour list (Font Size) there is nothing to resolve, so `swatch` gates it. */
+      (custom && !isHex ? '<b class="cwftddv">' + cwFtHexOf(curV) + '</b>' : '') +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
-    (open ? '<div class="cwftddp" role="listbox">' +
-      '<div class="cwftdds"><svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>' +
-        '<input id="cwFtDDQ" placeholder="Search" value="' + CW_FT_DDQ.replace(/"/g,'&quot;') + '" ' +
-        'oninput="cwFtDDFilter(this.value)" onmousedown="event.stopPropagation()" /></div>' +
-      '<div class="cwftddl">' + (rows.length ? rows.map(a =>
-        '<button class="cwftddo' + (a[0]===cur?' on':'') + '" role="option" ' +
-        'aria-selected="' + (a[0]===cur) + '" onclick="cwFtDDPick(\'' + key + '\',\'' + a[0] + '\')">' +
-        sw(a[1]) + '<span>' + a[0] + '</span></button>').join('')
-        : '<div class="cwftddn">Nothing matches “' + CW_FT_DDQ + '”</div>') + '</div>' +
-      /* ⚠️ THE CUSTOM ROW IS ALWAYS VISIBLE, NOT A SECOND PANEL BEHIND A "Custom…" ENTRY.
-         One state instead of two, and it answers all three ways the request put it in a single
-         row: the WELL opens the operating system's own colour palette (and its eyedropper where
-         the platform has one), the FIELD takes a colour code, and either one sets it.
-         ⚠️ IT SITS BELOW THE LIST AND OUTSIDE ITS SCROLLER, so it stays reachable however far
-         the options scroll — the same reason the search box sits above it. */
-      (custom ? '<div class="cwftdc">' +
-        '<label class="cwftdcl">Custom</label>' +
-        '<input class="cwftdcw" type="color" aria-label="Pick a colour" ' +
-          'value="' + (isHex ? cur : '#cad3e2') + '" ' +
-          'oninput="cwFtCustom(\'' + key + '\', this.value)" ' +
-          'onmousedown="event.stopPropagation()" />' +
-        '<input class="cwftdch" aria-label="Colour code" placeholder="#RRGGBB" maxlength="9" ' +
-          'value="' + (isHex ? cur : '') + '" ' +
-          'onmousedown="event.stopPropagation()" ' +
-          'onchange="cwFtCustom(\'' + key + '\', this.value)" ' +
-          'onkeydown="if(event.key===\'Enter\'){event.preventDefault();cwFtCustom(\'' + key + '\', this.value);}" />' +
-      '</div>' : '') +
+    (open ? '<div class="cwftddp' + (custom ? ' two' : '') + '" role="listbox">' +
+      /* ⚠️ THE LIST IS THE LEFT PANE AND THE PICKER THE RIGHT ONE (request, 19 Sep 2026:
+         "improve this droupdown in every where", with the product's own picker as the
+         reference). They were a list with a `Custom` row under it whose control opened a
+         SECOND popover in the top layer; side by side there is one surface, and the canvas is
+         visible without a further click.
+         ⚠️ THE SEARCH BOX IS THE LIST'S, SO IT MOVED INSIDE THE LEFT PANE. Over the whole
+         panel it would have looked like it filtered the presets too. */
+      '<div class="cwftddc">' +
+        (custom ? '' :
+        '<div class="cwftdds"><svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>' +
+          '<input id="cwFtDDQ" placeholder="Search" value="' + CW_FT_DDQ.replace(/"/g,'&quot;') + '" ' +
+          'oninput="cwFtDDFilter(this.value)" onmousedown="event.stopPropagation()" /></div>') +
+        '<div class="cwftddl">' + (rows.length ? rows.map(a =>
+          '<button class="cwftddo' + (a[0]===cur?' on':'') + '" role="option" ' +
+          'aria-selected="' + (a[0]===cur) + '" onclick="cwFtDDPick(\'' + key + '\',\'' + a[0] + '\')">' +
+          sw(a) + '<span>' + a[0] + '</span>' +
+          (a[0]===cur ? '<svg class="cwftdck" viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path d="M5 13l4 4L19 7"/></svg>' : '') + '</button>').join('')
+          : '<div class="cwftddn">Nothing matches \u201c' + CW_FT_DDQ + '\u201d</div>') + '</div>' +
+      '</div>' +
+      (custom ? cpPaneHTML(key) : '') +
     '</div>' : '') + '</div>';
 }
-function cwFtDDTog(e, key){
+function cwFtDDTog(e, key, custom){
+  const host = e && e.currentTarget && e.currentTarget.closest('.cwftdd');
+  const cur = host ? (host.dataset.v || '') : '';
   if (e) e.stopPropagation();
   CW_FT_DD = (CW_FT_DD === key) ? null : key;
   CW_FT_DDQ = '';
+  /* ⚠️ THE DRAFT IS SEEDED FROM WHAT THE CONTROL CURRENTLY PAINTS, not from the raw value —
+     a named entry is a `color-mix()` over a token, so `cwFtHexOf` asks the browser what it
+     resolves to and the canvas opens ON that colour rather than on an arbitrary default. That
+     is what makes "pick Red, then nudge it" work.
+     ⚠️ AND IT IS CLEARED ON CLOSE. A stale `CP` would have the next dropdown open on the
+     last one's colour. */
+  CP = (CW_FT_DD && custom) ? cpSeed(cwFtHexOf(cur)) : null;
   ddPaint(key);
   /* ⚠️ FOCUS GOES TO THE SEARCH BOX, SYNCHRONOUSLY — a probe reading `activeElement` right
-     after the click sees nothing focused otherwise, and so would a screen reader. */
+     after the click sees nothing focused otherwise, and so would a screen reader. A colour
+     dropdown has no search box (nine named entries beside a canvas), so this is a no-op there. */
   if (CW_FT_DD){ const q = document.getElementById('cwFtDDQ'); if (q) q.focus(); }
 }
 /* ⚠️ FILTERING REPAINTS AND RESTORES THE CARET — the `stcPop` / `aiHistFilter` lesson:
@@ -27965,7 +29449,7 @@ function cwFtDDFilter(v){
   const q = document.getElementById('cwFtDDQ');
   if (q){ q.focus(); q.setSelectionRange(v.length, v.length); }
 }
-function cwFtDDPick(key, val){ CW_FT_DD = null; CW_FT_DDQ = ''; ddSet(key, val); }
+function cwFtDDPick(key, val){ CW_FT_DD = null; CW_FT_DDQ = ''; CP = null; ddSet(key, val); }
 /* ⚠️ `cwFtCustom` DOES NOT CLOSE THE DROPDOWN. Dragging round the OS colour well fires
    `input` continuously, and closing on the first one would shut the panel out from under the
    picker after a single pixel of movement. A named row commits-and-closes because one click IS
@@ -27984,9 +29468,10 @@ function cwFtCustom(key, v){
    editor while a dropdown is open — the recorded Esc-ladder rule, innermost first. */
 addEventListener('mousedown', e => {
   if (!CW_FT_DD) return;
+  if (CW_FT_CP) return;   /* the DS picker's popover is in the TOP LAYER — see `cwFtDD` */
   const t = e.target;
   if (t && t.nodeType === 1 && t.closest && t.closest('.cwftdd')) return;
-  const k = CW_FT_DD; CW_FT_DD = null; CW_FT_DDQ = ''; ddPaint(k);
+  const k = CW_FT_DD; CW_FT_DD = null; CW_FT_DDQ = ''; CP = null; ddPaint(k);
 });
 addEventListener('keydown', e => {
   /* ⚠️ `stopImmediatePropagation`, NOT `stopPropagation` — and the difference is the whole
@@ -28045,6 +29530,17 @@ const CW_FT_MD = [
   ['1. apple\n2. pear\n3. mango', 'a numbered list'],
   ['[link text](https://example.com)', 'a link'],
   ['https://example.com',      'a bare URL becomes a link too'],
+  /* ⚠️ A SUPPLIED URL, NOT THE data: URI IT REPLACES (request, 19 Sep 2026). The encoded
+     SVG rendered offline, which is why it was chosen — but it filled the source cell with ~180
+     characters of `%22`-escaped markup, so the row taught the syntax by burying it. A real URL
+     is what a reader would actually copy and edit.
+     ⚠️ TWO CONSEQUENCES, STATED RATHER THAN DISCOVERED: the result cell now needs the NETWORK
+     — offline, or on a machine that cannot reach this host, it renders the alt text instead of
+     a picture; and the URL carries an **expiry token** (`oe=`), so it will stop resolving on its
+     own. When it does, the row is not broken — swap in any reachable image, or put the data URI
+     back from git. It is not scrubbed to RFC 5737 because it is not an internal identifier. */
+  ['![alt text](https://scontent.famd4-1.fna.fbcdn.net/v/t39.30808-6/680242294_1571335054994701_8211866912454627833_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x2048&ctp=s2048x2048&_nc_cat=104&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=3nxJHwJfzLAQ7kNvwH_g2K6&_nc_oc=Ado0imIWDuii3A7FaORkyG4crqG6Y00bLgVH8_ozo5XjuN7hoIv2fof-_3NTohoaGKk&_nc_zt=23&_nc_ht=scontent.famd4-1.fna&_nc_gid=KY3sZCohq8Yvt0NwMNbWNQ&_nc_ss=7b289&oh=00_AQKKAu0E4y3W6AHiKjyExwQZFXEMtoFCF9hWVmvnAT8FZQ&oe=6AB4B315)',
+   'an image'],
 ];
 let CW_FT_MD_OPEN = false, CW_FT_MD_COPIED = -1;
 /* ⚠️ `obs-button` FIRES A CONSUMER'S `onclick` TWICE — a pointer click hits the component's
@@ -28218,7 +29714,20 @@ function cwFtColor(){ return cwFtVal(CW_FT_COLOR, CW.ft.color, 'var(--text)'); }
    other controls commit a single value, so they can repaint in full. */
 function cwFtSet(k, v){
   CW.ft[k] = v;
-  if (k === 'text'){ cwPreview(); cwValid(); return; }
+  if (k === 'text'){
+    /* ⚠️ THE FIELD IS SYNCED HERE, WHICH MAKES "the two doors never disagree" STRUCTURAL
+       RATHER THAN CONVENTIONAL (19 Sep 2026). Today the only caller passing `'text'` is the
+       field's own `oninput`, so this is a no-op on every real path — but the preview editor
+       is a second writer now, and the next one will not know it has to update the field.
+       The screenshot that prompted this had the field reading "Enter the text" beside a
+       preview full of words; that was a script calling `cwFtSet` directly rather than a user
+       path, and it is exactly what a later caller would do.
+       ⚠️ GUARDED ON INEQUALITY. Writing an identical string back does not move the caret in
+       Chrome, but a value assignment during typing is not something to do for no reason. */
+    const f = document.getElementById('cwFtText');
+    if (f && f.value !== v) f.value = v;
+    cwPreview(); cwValid(); return;
+  }
   cwRender();
 }
 function cwStyle(k, v){ CW.style[k] = v; cwRender(); }
@@ -28279,7 +29788,15 @@ function cwPreview(){
      broken rather than as empty. */
   if (cwFtOn()){
     const host0 = document.getElementById('cwPrev');
-    if (host0) host0.innerHTML = ftHTML(CW.ft);
+    /* ⚠️ THE PREVIEW IS EDITABLE TOO (request, 19 Sep 2026) — `'draft'` is what tells
+       `ftHTML` so. See `ftEdit`'s draft branch for why two doors onto one value is safe here.
+       ⚠️ MAKE AN OPEN FIELD INERT FIRST. This line replaces the subtree the field lives in,
+       and removing a FOCUSED textarea fires `blur` synchronously DURING the mutation — a live
+       `onblur` would re-enter this very function and throw. `detach` is deliberately the
+       teardown WITHOUT a repaint, or the two would recurse. The text is safe either way:
+       the field writes `CW.ft.text` on every keystroke. */
+    if (FT_ED && FT_ED.gi === 'draft') FT_ED.detach();
+    if (host0) host0.innerHTML = ftHTML(CW.ft, 'draft');
     return;
   }
   const viz = cwVizOf(CW.viz), src = cwSrcOf(CW.src), c = src.c;
@@ -28475,7 +29992,17 @@ function cwSave(place){
 /* Esc closes the editor before anything else, and it owns the keyboard while open
    (kbBusy() already covers it via the #cwModal.on selector added to that list). */
 addEventListener('keydown', e => {
-  if (e.key === 'Escape' && CW.open){ cwClose(); e.stopPropagation(); }
+  if (e.key !== 'Escape' || !CW.open) return;
+  /* ⚠️ INNERMOST FIRST — AND THIS RUNG IS WHY THE PREVIEW EDITOR NEEDED ONE AT ALL. This
+     listener is CAPTURE PHASE on `window`, so it runs BEFORE the event reaches its target and
+     `stopPropagation()` there means the field's own `onkeydown` never sees Escape. The preview
+     editor therefore could not be cancelled and, worse, stayed open: the next repaint of
+     `#cwPrev` then removed a FOCUSED textarea, whose live `onblur` re-entered the paint and
+     threw "The node to be removed is no longer a child of this node". A diagnostic found it —
+     the editor was still open one step after Escape — not a reading of the code.
+     The board's own editor needs no rung: nothing eats Escape before it there. */
+  if (FT_ED && FT_ED.gi === 'draft'){ FT_ED.done(false); e.stopPropagation(); return; }
+  cwClose(); e.stopPropagation();
 }, true);
 </script>
 
