@@ -2953,6 +2953,41 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
   white-space:nowrap;padding-left:7px;border-left:1px solid var(--border)}
 .timechip .tcsub .arw{opacity:.7;padding:0 1px}
 .timechip.on .caret{color:var(--teal)}
+/* ── the segmented time bar (22 Sep 2026): ‹ | chip | › | ⟳ 30s ── */
+.trseg{display:inline-flex;align-items:stretch;height:30px;border:1px solid var(--border);border-radius:6px;
+  background:var(--sidebar);overflow:hidden}
+.trseg > *{border-left:1px solid var(--border)}
+.trseg > :first-child{border-left:0}
+.trseg .timechip{height:auto;border:0;border-left:1px solid var(--border);border-radius:0;background:transparent;padding:0 10px;gap:6px}
+.trseg .timechip:hover,.trseg .timechip.on{background:var(--hover-side)}
+.trseg .timechip.on{box-shadow:inset 0 -2px 0 var(--teal)}
+.trseg .timechip .clock svg,.trseg .timechip .caret svg,.trnav svg,.trrf svg{fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.trseg .timechip .clock svg{width:14px;height:14px}
+.trseg .timechip .caret{display:flex}
+.trseg .timechip .caret svg{width:13px;height:13px}
+.trseg .timechip .tcmain{font-size:13px}
+.trseg .timechip .tcsub{font-family:inherit;font-size:12px;color:var(--text-dim);padding-left:0;border-left:0}
+.trnav,.trrf{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:transparent;border-top:0;border-right:0;border-bottom:0;
+  color:var(--text-dim);cursor:pointer;padding:0;font:inherit}
+.trnav{width:30px}
+.trnav svg{width:14px;height:14px}
+.trrf{padding:0 10px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.trrf svg{width:14px;height:14px}
+.trnav:hover:not(:disabled),.trrf:hover,.trrf.on{background:var(--hover-side);color:var(--text)}
+.trnav:disabled{opacity:.35;cursor:default}
+.trrf.spin svg{animation:trspin .6s linear}
+@keyframes trspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.trrf.spin svg{animation:none}}
+.rfpop{position:fixed;display:none;z-index:1200;min-width:170px;padding:4px;background:var(--pop);border:1px solid var(--pop-line,var(--border));
+  border-radius:6px;box-shadow:var(--pop-shadow,0 8px 24px rgba(0,0,0,.3))}
+.rfpop.on{display:block}
+.rfpop button{display:flex;align-items:center;width:100%;height:30px;padding:0 10px;border:0;border-radius:4px;background:transparent;
+  color:var(--text);font:inherit;font-size:12.5px;cursor:pointer;text-align:left}
+.rfpop button:hover{background:var(--hover-side)}
+.rfpop button.sel{font-weight:600;background:var(--sel,var(--hover-side))}
+.rfpop hr{border:0;border-top:1px solid var(--pop-line,var(--border));margin:4px 0}
+.rfpop .h{padding:6px 10px 4px;font-size:11px;font-weight:600;color:var(--text-dim)}
 /* icon-only header button */
 .btn.ico{padding:0;width:28px;justify-content:center}
 /* ⚠️ THE HEAD'S ICON BUTTONS ARE FILLED, NOT OUTLINED (request, 22 Sep 2026: "in header
@@ -2966,6 +3001,8 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    ⚠️ SCOPED TO `.pagehead`, so the same class on the widget editor, the drawers and the
    Manage screen keeps the outline it was designed with. */
 .pagehead .btn.ico{background:var(--chip);border-color:transparent}
+/* the header gap is 9px; these three sit 10px from the time bar and from each other (request, 22 Sep 2026) */
+.pagehead .btn.ico{margin-left:1px}
 /* HOVER — the fill moves AWAY from the header, never toward it (request, 22 Sep 2026:
    "in header the icon hover color is bad", with the ObserveOps palette library named).
    ⚠️ IT WAS `--hover`, AND THAT TOKEN IS FOR A *TRANSPARENT ROW*, NOT A FILLED CHIP.
@@ -7565,7 +7602,24 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .pagehead{overflow:hidden}
 .pagehead .crumbs{flex:0 1 auto;min-width:0}
 .pagehead .crumbs .cur{overflow:hidden;text-overflow:ellipsis}
-@media(max-width:1700px){.pagehead .crumbs a,.pagehead .crumbs .csep{display:none}}
+@media(max-width:1280px){.pagehead .crumbs > a,.pagehead .crumbs .crmore,.pagehead .crumbs > .csep:not(:last-child){display:none}}
+/* ── the 22 Sep breadcrumb: `Dashboards › ⋯ › <name> › (Public) ☆` ── */
+#dashHeadIc{display:none}
+.pagehead .crumbs{gap:8px;font-size:13.5px}
+.pagehead .crumbs .cur{font-size:16px;font-weight:700}
+.crumbs .csep{display:inline-flex;align-items:center}
+.crumbs .csv{width:14px;height:14px;fill:none;stroke:var(--text-dim);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.crmore{flex:0 0 auto;display:inline-grid;place-items:center;width:28px;height:24px;border-radius:6px;
+  border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;padding:0}
+.crmore:hover{background:var(--hover-side);color:var(--text)}
+.crmore svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.pagehead .vbadge{flex:0 0 auto;gap:5px;font-size:12px;font-weight:600;line-height:22px;padding:0 10px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--green) 35%,transparent);background:color-mix(in srgb,var(--green) 12%,transparent)}
+.pagehead .vbadge svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pagehead .favstar:not(.faved){color:var(--text-dim)}
+.pagehead .favstar{flex:0 0 auto;display:inline-grid;place-items:center;width:24px;height:24px;margin-left:2px}
+.pagehead .favstar svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.pagehead .favstar.faved svg{fill:currentColor}
 @media(max-width:1560px){.pagehead .tstamp{display:none}}
 @media(max-width:1360px){.pagehead .btn{padding:0 8px}}
 @media(max-width:1240px){.tabs.inhead .tab:not(.on):not(.tplus){display:none}}
@@ -10759,13 +10813,20 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              trade undo and redo took. Nothing on screen announces it. -->
         <span class="hsep"></span>
         <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
+        <!-- ⚠️ THE BREADCRUMB IS `Dashboards › ⋯ › <name> › (Public) ☆` (request, 22 Sep 2026,
+             with a reference). The CATEGORY collapses into the `⋯` chip — `#crumbCat` is still
+             in the DOM (hidden) because seven readers take the category from its textContent;
+             the chip reads it for its tooltip and opens that category, as the link did.
+             Separators are Tabler `chevron-right`, the pill carries Tabler `world`, the star is
+             Tabler's outline `star` (filled when favourited). The grid glyph `#dashHeadIc` is
+             hidden, not removed: `setIco` still writes into it. -->
         <span class="crumbs">
-          <a onclick="openDPanel()" title="Browse all dashboards">Dashboards</a><span class="csep">/</span>
-          <a onclick="openDPanel(document.getElementById('crumbCat').textContent)" title="Browse this category" id="crumbCat">PMG</a><span class="csep">/</span>
-          <span class="cur" id="dashTitle">Application Performance</span>
+          <a onclick="openDPanel()" title="Browse all dashboards">Dashboards</a><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
+          <button class="crmore" type="button" onclick="openDPanel(document.getElementById('crumbCat').textContent)" onmouseenter="this.dataset.tip='Category: '+document.getElementById('crumbCat').textContent" aria-label="Browse this category"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg></button><a id="crumbCat" hidden>PMG</a><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
+          <span class="cur" id="dashTitle">Application Performance</span><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
         </span>
-        <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()">★</span>
-        <span class="vbadge" title="Visible to the whole org">Public</span>
+        <span class="vbadge" title="Visible to the whole org"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg>Public</span>
+        <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span>
         <!-- ⚠️ THIS DIVIDER IS THE GROUPS BUTTON’S, AND HIDES WITH IT (request,
              22 Sep 2026: "remove the no need divider line"). It separates the breadcrumb from
              the board-editing controls, and `renderCanvas` hides `#grpBtn` on a FLAT board — so
@@ -10773,7 +10834,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              of the crumb. It became visible the moment undo and redo left the row.
              ⚠️ IT IS HIDDEN BESIDE `#grpBtn`, ON THE SAME LINE OF `renderCanvas`, rather than
              by a `:has()` rule " one test, one place, and the two cannot disagree. -->
-        <span class="hdiv" id="grpDiv"></span>
+        <!-- ⚠️ BOTH DIVIDERS AFTER THE STAR WERE REMOVED (request, 22 Sep 2026: "remove the line behind the favorite icon and this line"). renderCanvas still looks up grpDiv and guards for its absence. -->
         <!-- ⚠️ UNDO / REDO WERE REMOVED FROM THE TOOLBAR (request, 22 Sep 2026: "we need to
              change the header overall — remove the 'undu & redu' option"). THE FEATURE IS NOT
              GONE: ⌘Z / Ctrl+Z and ⇧⌘Z / Ctrl+Y still run `histUndo` / `histRedo`, both are
@@ -10785,18 +10846,27 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              ⚠️ THEIR `KB` ENTRIES CARRY NO `sel` and never did, so no keycap was orphaned.
              ⚠️ CONSEQUENCE, STATED: undo is now keyboard-only on this page. Nothing on screen
              says the board can be undone, and the `?` sheet is where that is written. -->
-        <span class="hdiv"></span>
         <button class="btn grpbtn" id="grpBtn" title="Jump to a group" onclick="openGroupMenu(event)">
           <svg viewBox="0 0 24 24"><path d="M3 4h8v6H3V4Zm10 0h8v6h-8V4ZM3 14h8v6H3v-6Zm10 0h8v6h-8v-6Z"/></svg>Groups<span class="cr">▾</span></button>
 
         <span class="spacer" style="flex:1"></span>
         <span style="position:relative">
-          <button class="timechip" onclick="trToggle(event)" title="Time range">
-            <span class="clock"><svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm-1 3h2v5.6l4 2.3-1 1.7-5-2.9V7Z"/></svg></span>
-            <span class="tcmain" id="tcLabel">Today</span>
-            <span class="tcsub" id="tcStamp"></span>
-            <span class="caret">▾</span>
-          </button>
+          <!-- ⚠️ THE TIME CONTROL IS ONE SEGMENTED BAR (request, 22 Sep 2026, with a reference):
+               ‹ step back · the range chip · › step forward · ⟳ refresh + auto-refresh interval.
+               The chip keeps `.timechip` / `#tcLabel` / `#tcStamp`, which trPlace, the `T`
+               shortcut and the widget editor all read. Glyphs are Tabler, from free-icons/. -->
+          <span class="trseg" id="trSeg">
+            <button class="trnav" id="trPrev" type="button" onclick="trShift(-1)" data-tip="Previous range" aria-label="Previous range"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg></button>
+            <button class="timechip" onclick="trToggle(event)" title="Time range">
+              <span class="clock"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/></svg></span>
+              <span class="tcmain" id="tcLabel">Today</span>
+              <span class="tcsub" id="tcStamp"></span>
+              <span class="caret"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg></span>
+            </button>
+            <button class="trnav" id="trNext" type="button" onclick="trShift(1)" data-tip="Next range" aria-label="Next range"><svg viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6"/></svg></button>
+            <button class="trrf" id="trRf" type="button" onclick="rfToggle(event)" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="rfLabel">30s</span></button>
+          </span>
+          <div class="rfpop" id="rfPop" onclick="event.stopPropagation()"></div>
           <div class="trpop" id="trPop">
             <div class="trcustom" onclick="event.stopPropagation()">
               <h4>Absolute time range</h4>
@@ -15784,8 +15854,81 @@ function trSync(){                                                 // reflect tl
 }
 function trStamp(){                                                // from → to stamps beside the chip (live header row)
   const el = document.getElementById('tcStamp');
-  if(el) el.innerHTML = trFmtShort(tlA)+' <span class="arw">→</span> '+trFmtShort(tlB);
+  if(el) el.textContent = trFmtSpan(tlA, tlB);
+  trNavPaint();
 }
+/* "Jul 11 · 00:00 – 20:46" on one day, "Jul 10 18:00 – Jul 11 20:46" across days */
+function trFmtSpan(a, b){
+  const da = new Date(a), db = new Date(b);
+  const day = d => d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+  const hm  = d => trP2(d.getHours())+':'+trP2(d.getMinutes());
+  return day(da) === day(db) && da.getFullYear() === db.getFullYear()
+    ? day(da)+' · '+hm(da)+' – '+hm(db) : day(da)+' '+hm(da)+' – '+day(db)+' '+hm(db);
+}
+/* ‹ / › step the window by its own length. › cannot pass "now"; stepping back to a window
+   that ends at now restores the preset label it was stepped from. */
+let trStepIdx = -1;
+function trNavPaint(){ const n = document.getElementById('trNext'); if (n) n.disabled = tlB >= TL_NOW; }
+function trShift(dir){
+  if (tlA == null) return;
+  if (trSelIdx >= 0) trStepIdx = trSelIdx;
+  const span = tlB - tlA;
+  let a = tlA + dir*span, b = tlB + dir*span;
+  if (b >= TL_NOW){ b = TL_NOW; a = b - span; }
+  if (a === tlA && b === tlB) return;
+  tlA = a; tlB = b;
+  const home = b === TL_NOW && trStepIdx >= 0;
+  trSelIdx = home ? trStepIdx : -1;
+  document.getElementById('tcLabel').textContent = home ? TR_PRESETS[trStepIdx][0] : 'Custom';
+  trSync(); trRenderPop(); trRefresh();
+}
+/* ⟳ opens refresh: now, or an auto-refresh interval. The interval only fires while the
+   dashboard is in front and nothing is open over it, so a re-render never lands under a
+   drawer, a menu, a drag or a hidden tab. */
+const RF_OPTS = [['Off',0],['10s',1e4],['30s',3e4],['1m',6e4],['5m',3e5],['15m',9e5]];
+let rfMs = 3e4;
+function rfPaint(){
+  const l = document.getElementById('rfLabel'), b = document.getElementById('trRf');
+  const o = RF_OPTS.find(x => x[1] === rfMs);
+  if (l) l.textContent = rfMs ? o[0] : '';
+  if (b) b.dataset.tip = rfMs ? 'Auto-refresh every ' + o[0] : 'Refresh';
+}
+function rfArm(){
+  if (refTimer) clearInterval(refTimer);
+  refTimer = rfMs ? setInterval(() => {
+    if (document.hidden || !document.querySelector('#view-dashboard.on')) return;
+    if (typeof kbBusy === 'function' && kbBusy()) return;
+    if (document.querySelector('#trPop.on,#rfPop.on') || (typeof tsDrag !== 'undefined' && tsDrag)) return;
+    const ae = document.activeElement;   /* an in-place rename / note edit would be destroyed */
+    if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || (ae && ae.isContentEditable)) return;
+    if (document.body.classList.contains('dragging') || document.querySelector('.widget.dragging,.dgroup.rzing')) return;
+    trRefresh();
+  }, rfMs) : null;
+}
+function rfNow(){
+  const b = document.getElementById('trRf');
+  if (b){ b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); }
+  trRefresh(); rfClose(); toast('Dashboard refreshed');
+}
+function rfSet(ms){ rfMs = ms; rfPaint(); rfArm(); rfClose();
+  toast(ms ? 'Auto-refresh every ' + RF_OPTS.find(x => x[1] === ms)[0] : 'Auto-refresh off'); }
+function rfClose(){ const p = document.getElementById('rfPop'), b = document.getElementById('trRf');
+  if (p) p.classList.remove('on'); if (b) b.classList.remove('on'); }
+function rfToggle(e){
+  e.stopPropagation();
+  const p = document.getElementById('rfPop'), b = document.getElementById('trRf');
+  if (p.classList.contains('on')){ rfClose(); return; }
+  trClose();
+  p.innerHTML = '<button onclick="rfNow()">Refresh now</button><hr><div class="h">Auto-refresh</div>'
+    + RF_OPTS.map(([n, ms]) => `<button class="${ms === rfMs ? 'sel' : ''}" onclick="rfSet(${ms})">${n}</button>`).join('');
+  p.classList.add('on'); b.classList.add('on');
+  const r = b.getBoundingClientRect(), w = p.offsetWidth;
+  p.style.left = Math.round(Math.max(8, Math.min(r.right - w, innerWidth - w - 8))) + 'px';
+  p.style.top  = Math.round(r.bottom + 6) + 'px';
+}
+document.addEventListener('click', e => { const p = document.getElementById('rfPop');
+  if (p && p.classList.contains('on') && !p.contains(e.target)) rfClose(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') rfClose(); });
 function trSet(i){                                                 // apply preset i
   const [label,key] = TR_PRESETS[i];
   trSelIdx = i; tlB = TL_NOW; tlA = trStart(key);
@@ -15822,11 +15965,12 @@ function trPaint(on){
   const c = document.querySelector('.timechip'); if (c) c.classList.toggle('on', !!on);
 }
 function trClose(){ trPaint(false); }
+function trCloseRf(){ if (typeof rfClose === 'function') rfClose(); }
 /* ⚠️ MEASURED AFTER `.on`, IN THE SAME SYNCHRONOUS BLOCK. The popover is `display:none`
    until then, so its width and height are 0 and every clamp would resolve against nothing —
    the `kbPopOpen` lesson. Nothing paints between the two statements, so there is no flash. */
 function trPlace(){
-  const p = document.getElementById('trPop'), c = document.querySelector('.timechip');
+  const p = document.getElementById('trPop'), c = document.getElementById('trSeg') || document.querySelector('.timechip');
   if (!p || !c) return;
   const b = c.getBoundingClientRect(), w = p.offsetWidth || 430, h = p.offsetHeight || 330;
   p.style.left = Math.round(Math.max(8, Math.min(b.right - w, innerWidth - w - 8))) + 'px';
@@ -15836,7 +15980,7 @@ function trToggle(e){ e.stopPropagation();
   const p = document.getElementById('trPop');
   const on = !p.classList.contains('on');
   trPaint(on);
-  if(on){ trSync(); trPlace(); } }
+  if(on){ trCloseRf(); trSync(); trPlace(); } }
 /* a resize can strand a fixed popover away from the chip it belongs to */
 addEventListener('resize', () => { const p = document.getElementById('trPop');
   if (p && p.classList.contains('on')) trPlace(); });
@@ -20304,6 +20448,7 @@ document.addEventListener('keydown', e=>{
   renderHealthBody();
   renderNotifs();
   trSet(8);
+  rfPaint(); rfArm();
   applyTheme((()=>{ try{ return localStorage.getItem('oo-theme')||'dark'; }catch(e){ return 'dark'; } })());
   if(!/Mac|iP(hone|ad)/.test(navigator.platform||'')){
     /* ⚠️ GUARDED (5 Sep 2026) — AND IT WAS AN INIT-ABORTING CRASH, not a tidy-up. Neither node
@@ -29730,8 +29875,8 @@ function cwRender(){
   /* the widget inherits the dashboard's range — read it off the page head */
   const tl = document.getElementById('tcLabel'), ts = document.getElementById('tcStamp');
   document.getElementById('cwTLabel').textContent = tl ? tl.textContent.trim() : 'Today';
-  document.getElementById('cwStamp').innerHTML = (ts && ts.textContent.trim())
-    ? ts.textContent.trim().replace(/\s+–\s+/, '<br>') : '';
+  document.getElementById('cwStamp').innerHTML = (typeof tlA === 'number')
+    ? trFmtShort(tlA) + '<br>' + trFmtShort(tlB) : '';
 
   /* visualization row — every type except the current one is disabled while editing */
   document.getElementById('cwViz').innerHTML = CW_VIZ.map(v => {
