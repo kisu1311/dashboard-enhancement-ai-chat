@@ -45,7 +45,10 @@ CHK  = ROOT / "node_modules/@mtdt/observeops-ds-spec/conformance/ds-conformance.
 #    as a tooling failure rather than "that state is not built yet". Add a row back the moment
 #    its state exists; the second field is just JS run after `stOpen`.
 SCENES = [
-    ("overview",  "",            "Overview"),
+    # ⚠️ THE KEY STAYS `overview` — it is this script's own scene id and it names the output
+    #    files; the LABEL is what the report prints, so that is what follows the page's rename
+    #    (Overview → AI Provider, 21 Sep 2026).
+    ("overview",  "",            "AI Provider"),
     ("config",    "agConfig();", "Configure AI provider"),
 ]
 
@@ -128,11 +131,13 @@ def main():
     #    that looks like a verdict on a screen that does not exist.
     # ⚠️ TEST FOR THE TOKEN BLOCK, NOT THE ST_PAGES LINE. The cleared file leaves a comment
     #    saying "register the new screen as ST_PAGES['Agentic AI › Overview']" — which a naive
+    #    (that quote is the 1 Sep 2026 file's own wording; the page was renamed to `AI Provider`
+    #     on 21 Sep 2026, so a cleared file today would quote the new key — the trap is the same)
     #    substring test matches, so the guard never fired and `build()` threw on the missing
     #    rule instead. The scoped token block is what this script actually needs.
     if not re.search(r"\n#agPage[^{]*\{", tokens_source(src)):   # the selector is a list since 7 Sep 2026
         print("no Agentic AI screen registered in %s — nothing to check yet." % SRC.name)
-        print("(register it as ST_PAGES['Agentic AI \u203a Overview'] = { html, after } and re-run)")
+        print("(register it as ST_PAGES['Agentic AI \u203a AI Provider'] = { html, after } and re-run)")
         sys.exit(0)
     fails = []
     built = []

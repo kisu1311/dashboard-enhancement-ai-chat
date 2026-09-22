@@ -504,7 +504,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
 .stcwzrow .stin{margin-top:0}
 @media (max-width:1366px){ .stcsearch{width:260px;flex-basis:260px} .stcsteps{width:260px;flex-basis:260px} }
 
-/* ══ AGENTIC AI (\`ag*\`) — Settings › Agentic AI › Overview ════════════════════════════════
+/* ══ AGENTIC AI (\`ag*\`) — Settings › Agentic AI › AI Provider ════════════════════════════════
    Rebuilt 1 Sep 2026. The previous build was cleared on request; this is the new screen,
    growing from a supplied reference one piece at a time. FIRST PIECE: the page header.
 
@@ -1353,11 +1353,32 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    pins it there — left at \`normal\` the 13px text makes a 19.5px line box and the row lands at 33.5. */
 .agadvn{flex:0 0 230px;width:230px;min-width:0;overflow-y:auto;padding:8px;
   border-right:1px solid var(--border-color);scrollbar-width:thin}
-.agadvr{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border:0;border-radius:4px;
-  background:transparent;color:var(--page-text-color);font:inherit;font-size:13px;line-height:18px;
-  text-align:left;cursor:pointer;margin-bottom:2px}
-.agadvr:hover{background:var(--nav-hover-bg)}
-.agadvr.on{background:var(--code-tag-background-color);color:var(--primary);font-weight:500}
+/* ⚠️ EACH MODULE IS A BOX (request, 21 Sep 2026: "in this sidebar the each module box", with
+   the product's own Application Registration rail supplied and its deployment-menu-item inspected:
+   background #172336, padding 16px 12px, margin 0 0 8px, rounded).
+   ⚠️ THE BOX IS A STATE, NOT THE RESTING LOOK (a follow-up the same day: "the box effect is
+   show only hover and active time"). It shipped boxed at rest for an hour and sixteen filled,
+   bordered cards stacked down a 230px rail read as sixteen things rather than as one list.
+   ⚠️ THE BORDER IS KEPT AT transparent, NEVER DROPPED TO border:0. A border that appears on
+   hover would move the row's content 1px and re-wrap its label under the cursor — the same reason
+   the flyout reserves its chevron box rather than emitting it conditionally.
+   ⚠️ THE MEASURED #172336 IS A TOKEN HERE, NOT A HEX — it is --common-widget-bg's own dark
+   value, so light theme gets the value that works there instead of a dark slab on a white drawer.
+   ⚠️ THE CORNERS ARE 4px, NOT the reference's rounded-lg: every box in this module is 4px
+   (14 Sep 2026) and a lone 8px row would be the one thing on the screen off that rule.
+   ⚠️ CONSEQUENCE, STATED: sixteen 52px rows on an 8px gap is ~960px of rail, so it SCROLLS
+   where the 34px-pitch list used to fit. .agadvn was already overflow-y:auto, so nothing had to
+   change for that — but the rail is a scrolling column now, which the 3-item reference is not. */
+.agadvr{display:flex;align-items:center;gap:10px;width:100%;padding:16px 12px;
+  border:1px solid transparent;border-radius:4px;
+  background:transparent;color:var(--page-text-color);font:inherit;font-size:13px;
+  line-height:18px;text-align:left;cursor:pointer;margin-bottom:8px}
+/* the last row pays no gap, or the rail ends on 8px of nothing above its own padding */
+.agadvr:last-child{margin-bottom:0}
+/* hover and active are the two states that draw the box */
+.agadvr:hover{background:var(--common-widget-bg);border-color:var(--border-color)}
+.agadvr.on{background:var(--code-tag-background-color);border-color:var(--border-color);
+  color:var(--primary);font-weight:500}
 /* ⚠️ \`.agadvic\`, NOT \`.ic\` — that one is a PAGE-level class (\`.ic{width:20px;height:20px}\`, declared in
    all thirteen pages), and this file is shared by every one of them. A scoped rule happens to outrank it
    today; the name is still the page's, and borrowing it is how the next page-level edit reaches in here.
@@ -1452,7 +1473,16 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
 .agconn{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--primary-alt)}
 .agconn b{font-weight:600}
 .agcont p{margin:2px 0 0;font-size:12.5px;color:var(--text-color-common-secondary)}
-.aghmk{display:grid;place-items:center;width:30px;height:30px;color:var(--chart-indigo)}
+/* ⚠️ 45x45 AND IT CARRIES THE ASK-AI GRADIENT STAR, not the flat sparkling-star glyph
+   (request, 21 Sep 2026: "the header ai icon will be use ask ai logo with 45*45 ps"), with the
+   product's own Integration header (Motadata ServiceOps) supplied as the proportion reference:
+   a mark that spans the title AND the sentence under it, rather than sitting beside one line.
+   ⚠️ THE SIZE IS SET ON THE BOX AND THE ART FILLS IT — the star is a 48-unit viewBox, so it
+   scales with no path arithmetic; rescaling a viewBox by hand is what puts artwork out of family.
+   ⚠️ THE color IS A FALLBACK ONLY. The star paints from its own gradient (see AG_SPARK); this
+   is what it would take if that def ever went missing, so it fails to violet rather than black. */
+.aghmk{display:grid;place-items:center;width:45px;height:45px;color:var(--chart-indigo)}
+.aghmk svg{width:100%;height:100%;display:block}
 /* ⚠️ 48px, NOT 42 — MEASURED, NOT ESTIMATED. The indent is meant to put the description under
    the TITLE rather than under the mark, and 42px was a guess at "30px mark + 12px gap". The
    real offset is the component's own 8px left inset + the 30px mark + its 10px gap = 48px; at
@@ -1465,7 +1495,12 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    page description that should simply use the width it has.
    ⚠️ It keeps its 48px left indent, which is what aligns it under the page title rather than
    under the mark beside it. */
-.aghsub{margin:2px 0 12px 48px;font-size:12.8px;line-height:1.55;
+/* ⚠️ THE INDENT IS DERIVED FROM THE MARK, NOT TYPED: 8px of the header's own left padding
+   (--page-header-padding) + the 45px mark + the component's own 10px .left gap = 63. It was 48
+   for a 30px mark. Re-derive it if either number moves, or the sentence stops starting under the
+   title — which is the whole point of the reference's arrangement.
+   ⚠️ 13px ON REQUEST (21 Sep 2026), up from 12.8. */
+.aghsub{margin:2px 0 12px 63px;font-size:13px;line-height:1.55;
   color:var(--text-color-common-secondary)}
 .aghsub obs-link{margin-left:2px}
 /* ⚠️ \`obs-link\`'s \`external\` PROP DOES NOT DRAW THE ↗ — it only marks the link as external.
@@ -1711,7 +1746,10 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    ⚠️ THE TILE BEHIND THEM IS UNCHANGED — the neutral 8% wash asked for two requests earlier. Tinting each
    tile with its brand colour is one \`color-mix\` if wanted; it was not asked for, and three saturated tiles
    would take the row back to the per-provider colour the neutral tile deliberately replaced. */
-.agpcw{--ag-openai:#74aa9c;--ag-anthropic:#d97757;--ag-deepseek:#4d6bfe}
+/* ⚠️ ONE DECLARATION, TWO HOSTS. The Advanced-configure drawer is a separate element on
+   <body>, so it inherits nothing declared on the cards' own wrapper — and a second copy of three
+   brand hexes is how the two surfaces come to disagree about a provider's colour. */
+.agpcw,.agadvtiles{--ag-openai:#74aa9c;--ag-anthropic:#d97757;--ag-deepseek:#4d6bfe}
 .agpci[data-brand="openai"]{color:var(--ag-openai)}
 .agpci[data-brand="anthropic"]{color:var(--ag-anthropic)}
 .agpci[data-brand="deepseek"]{color:var(--ag-deepseek)}
@@ -1736,6 +1774,18 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    as a presentation attribute, which a rule on the \`<svg>\` root alone does not override. */
 .agpci svg{width:20px;height:20px;display:block;overflow:visible;fill:none;stroke:currentColor}
 .agpci svg,.agpci svg g,.agpci svg path{stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+/* ⚠️ THE DRAWER'S TILE REUSES .agpci AND ONLY RESIZES IT (request, 21 Sep 2026: "add icon" on
+   the Advanced-configure AI provider tiles, which carried a name and a sentence and no mark).
+   Every brand rule above — the three colours, Anthropic's filled-not-stroked exception — reaches
+   it by construction, so a provider cannot be one colour on a card and another in the drawer.
+   ⚠️ AND THE MARK IS BARE HERE: no tile behind it (a second request the same day, with the
+   product's own Instrumentation Method tiles supplied — there the glyph sits directly before the
+   title at the title's own size, with nothing boxed around it).
+   ⚠️ THE BRAND COLOUR IS KEPT. The reference paints its glyph in the row's own ink, but "use
+   the provider's real colour logo" was an explicit request of its own hours earlier, and the two
+   do not conflict: what the reference shows here is the TREATMENT, which is what changed. */
+.agpci.sm{flex:0 0 16px;width:16px;height:16px;background:none;border-radius:0}
+.agpci.sm svg{width:16px;height:16px}
 /* the reference's leading dot, and the one place the Active card differs from Available beyond its word */
 .agpcd{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
 .agpcn{font-size:14px;font-weight:600;color:var(--page-text-color)}
@@ -1747,7 +1797,12 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    sizes to its own label; the row reads the same as before minus its neighbour. \`p.docs\` is NOT
    orphaned: Option 1's consent panel still links each provider's privacy page with it. */
 .agpca{display:flex;gap:8px;margin-top:auto;padding-top:16px}
-.agpcb{flex:1 1 auto}
+/* ⚠️ THE BUTTON HUGS ITS LABEL — it was flex:1 1 auto, which was invisible while the row held
+   ONE button (the host grew, the inner .btn stayed content-sized and left-aligned inside it, so the
+   card looked right) and wrong the moment Remove arrived: the two hosts split the row in half and
+   the labels ended up ~90px apart with the 8px gap doing nothing. A flex basis on a wrapper whose
+   child does not stretch is a latent bug that only shows when a sibling appears. */
+.agpcb{flex:0 0 auto}
 .agpanel{padding:16px;border:1px solid var(--border-color);border-radius:var(--btn-radius);
   background:var(--common-widget-bg)}
 .agpanel + .agpanel{margin-top:16px}
@@ -3366,6 +3421,12 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
       'padding-right:12px;font-size:13px;border-radius:4px}' +
       ':host(.agcfgnav) .rows{padding:0 8px;display:flex;flex-direction:column;gap:4px}' +
       ':host(.agcfgnav) .row.leaf.active .r-ic{color:inherit}',
+    /* ⚠️ obs-page-header EXPOSES NO ::part AND NO SIZE HOOK — its .title is hardcoded
+       16px/500 in its own shadow CSS, and --page-header-padding is the only documented lever.
+       So a 24px/600 heading (request, 21 Sep 2026) can only be reached from inside the root.
+       ⚠️ SCOPED BY A HOST CLASS. The License page draws its own obs-page-header and must keep
+       the component's own size; :host(.aghph) cannot reach it. */
+    'obs-page-header': ':host(.aghph) .title{font-size:24px;font-weight:600;line-height:1.3}',
     'obs-severity':  '.chip{border-radius:4px}',
     'obs-checkbox':  '.box{border-radius:4px}',
     /* ⚠️ THE SECOND RULE IS WHAT MAKES TWO ROWS SHARE ONE GAP (request, 16 Sep 2026: the three
@@ -3447,7 +3508,7 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
 
      · `st*`  — Settings › My Account › My Profile, cloned from live 8.2.7
      · `stc*` — Compliance Settings: Compliance Policy · Benchmark · Rules
-     · `ag*`  — Settings › Agentic AI › Overview, built on the real ObserveOps design system
+     · `ag*`  — Settings › Agentic AI › AI Provider, built on the real ObserveOps design system
 
    Its stylesheet is PART 1 of this same file (it was the sibling `_settings-module.css` until
    12 Sep 2026).
@@ -3624,17 +3685,27 @@ const ST_TREE = [
      create new sub module name is Agentic AI"). Everything above it is the harvested live list
      in the live order, so this is APPENDED rather than slotted in beside Dependency Mapper —
      the other `/settings/ai/` area — which would have shifted the harvest's own positions.
-     ⚠️ ITS ONE PAGE IS `Overview`, which is the name the supplied Agentic AI reference gives
-     its own single routed screen (that prototype's nav shows Overview and nothing else; its
-     Data-&-privacy / Governance / Usage screens exist in its source but are not routed, so
-     they are not built here either). It is served by the `ag*` block through `ST_PAGES`.
+     ⚠️ ITS ONE PAGE IS `AI Provider` — renamed from `Overview` on request (21 Sep 2026).
+     `Overview` was the supplied Agentic AI reference's own name for its single routed screen, and
+     it named nothing: what the page lists IS the three AI providers and their connection state,
+     and its primary action is `Configure AI provider`. The singular also matches this rail's own
+     convention (SLO Profile, Integration Profile, Ping) and the Configure form's own first field,
+     which the product labels `AI provider`.
+     ⚠️ THE PAGE NAME AND THE `ST_PAGES` KEY MUST MOVE TOGETHER — `stMainPaint` looks the page
+     up as `ST.cat + ' › ' + ST.page`, so a key left on the old name falls through to the stub
+     placeholder ("only My Account › My Profile is built in this prototype") with NO error.
+     ⚠️ THE ROUTE IS DELIBERATELY UNCHANGED: `/settings/ai/agentic-ai` is the shape a route
+     would take, not a label, and it is what the CATEGORY — not this page — is called.
+     (That reference prototype's Data-&-privacy / Governance / Usage screens exist in its source
+     but are not routed, so they are not built here either.) It is served by the `ag*` block
+     through `ST_PAGES`.
      ⚠️ A CATEGORY CANNOT CARRY ZERO PAGES — `stOpen()` and `stStubHTML()` both dereference
      `subs[0]` — so adding a second page here is one array entry plus one `ST_PAGES` key.
      ⚠️ THE ROUTE IS THE SHAPE ONE WOULD TAKE, not a harvested one. `/settings/ai/` is the
      namespace Dependency Mapper already sits in on the instance.
      ⚠️ The flyout picks this up for free — `mfTree('Setting')` maps `ST_TREE`, it does not
      hold its own copy. */
-  {n:"Agentic AI", ic:"sparkling-star", subs:[["Overview","/settings/ai/agentic-ai"]]}
+  {n:"Agentic AI", ic:"sparkling-star", subs:[["AI Provider","/settings/ai/agentic-ai"]]}
 ];
 
 /* the instance's password policy, read off the component (passwordPolicyContext.policies) */
@@ -4723,7 +4794,7 @@ ST_PAGES['Compliance Settings › Rules'] = { html: stcRuHTML };
 /* ══════════════════════════════════════════════════════════════════════════════════════════
    BLOCK 3 of 3 — `ag*` · Agentic AI
    ══════════════════════════════════════════════════════════════════════════════════════════ */
-/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › Overview ════════════════════════════════
+/* ══ AGENTIC AI (`ag*`) — Settings › Agentic AI › AI Provider ════════════════════════════════
    Rebuilt 1 Sep 2026 on the ObserveOps design system, from supplied references, one piece at
    a time. So far: the integration header, and the toolbar beneath it.
 
@@ -4924,6 +4995,28 @@ function agUseRows(){
   return q ? rows.filter(r => r.provider.toLowerCase().includes(q)) : rows;
 }
 
+/* ══ THE ASK-AI MARK (request, 21 Sep 2026: "the header ai icon will be use ask ai logo") ══
+   The assistant's own four-point star on the brand ramp, pasted verbatim from index.html's
+   `AI_SPARK_PATH` and its `aisprkg` gradient.
+   ⚠️ IT IS DECLARED HERE, NOT READ FROM THE PAGE. `AI_SPARK_PATH` is a page-level const and
+   only SOME of the fourteen pages have it — index.html took the gradient star on 17 Sep, Option 14
+   still carries the speech bubble, Options 2 and 3 their own. `setting.js` is one file shared by
+   all of them, so reaching across would make this header depend on which page it opened on — the
+   same rule `AG_MODULES` follows.
+   ⚠️ THE GRADIENT LIVES INSIDE THIS SAME <svg>, so the mark is self-contained and needs no
+   body-level <defs> on any of the fourteen pages.
+   ⚠️ THE id IS NAMESPACED `agsprkg`. An SVG id is GLOBAL to the document and index.html already
+   declares `aisprkg` — two defs under one name and whichever parses last wins for both.
+   ⚠️ THE FILL IS AN INLINE STYLE, NOT A `fill=` ATTRIBUTE. A CSS rule beats a presentation
+   attribute, so an attribute would let any `svg{fill:...}` in a host page flatten the ramp.
+   ⚠️ viewBox STAYS 48 — the art was drawn in it and every consumer sizes the <svg> in CSS. */
+const AG_SPARK = '<svg viewBox="0 0 48 48" aria-hidden="true">'
+  + '<defs><radialGradient id="agsprkg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"'
+  + ' gradientTransform="translate(45.7817 23.9609) rotate(-165.676) scale(43.3694 27.715)">'
+  + '<stop stop-color="#4CB1FE"/><stop offset="0.547969" stop-color="#731EFB"/>'
+  + '<stop offset="0.907125" stop-color="#F911E3"/></radialGradient></defs>'
+  + '<path style="fill:url(#agsprkg)" d="M23.9609 0C24.463 0 24.9009 0.343385 25.0235 0.830769C25.3981 2.32146 25.8918 3.77968 26.4997 5.19138C28.0889 8.88369 30.2695 12.1152 33.038 14.8837C35.808 17.6529 39.0388 19.8336 42.7303 21.4228C44.1424 22.0305 45.6008 22.5241 47.0917 22.899C47.5791 23.0215 47.9217 23.4587 47.9217 23.9609C47.9217 24.463 47.5791 24.9009 47.091 25.0235C45.6003 25.3981 44.142 25.8918 42.7303 26.4997C39.038 28.0889 35.8073 30.2695 33.038 33.038C30.2695 35.808 28.0889 39.0388 26.4997 42.7303C25.8917 44.1423 25.3978 45.6008 25.0228 47.0917C24.9634 47.3285 24.8267 47.5388 24.6344 47.6891C24.442 47.8395 24.205 47.9213 23.9609 47.9217C23.4587 47.9217 23.0215 47.5791 22.899 47.091C22.5241 45.6003 22.0302 44.142 21.422 42.7303C19.8336 39.038 17.6537 35.8073 14.8837 33.038C12.1145 30.2695 8.88369 28.0889 5.19138 26.4997C3.77962 25.8917 2.32142 25.3978 0.830769 25.0228C0.593936 24.9636 0.383619 24.8271 0.233136 24.6349C0.0826532 24.4426 0.000608909 24.2057 0 23.9616C0 23.4594 0.343385 23.0223 0.830769 22.8997C2.32148 22.5248 3.7797 22.0309 5.19138 21.4228C8.88369 19.8343 12.1152 17.6537 14.8837 14.8844C17.6529 12.1159 19.8336 8.88443 21.4228 5.19212C22.0305 3.78034 22.5241 2.32213 22.899 0.831508C22.958 0.594415 23.0946 0.38384 23.287 0.233201C23.4793 0.082561 23.7165 0.000485916 23.9609 0Z"/></svg>';
+
 function agOvHTML(){
   /* Organisms/PageHeader. `heading`, not `title` — `title` would set a native tooltip.
      ⚠️ `heading` AND the `title` SLOT COEXIST (measured): the slot APPENDS after the heading,
@@ -4931,9 +5024,19 @@ function agOvHTML(){
      at full size. `tag-green` is the DS's own answer for the status string "active" (Tag's
      statusMap); `tag-primary` is its neutral chip, which is what "not configured" is. */
   const head = `<div class="aghead">
-    <obs-page-header heading="Agentic AI" no-divider>
-      <span slot="before" class="aghmk">${agIc('sparkling-star', 30)}</span>
-      <obs-tag slot="title" variant="${AG.active ? 'tag-green' : 'tag-primary'}">${AG.active ? 'Active' : 'Not configured'}</obs-tag>
+    <obs-page-header class="aghph" heading="Agentic AI" no-divider>
+      <span slot="before" class="aghmk">${AG_SPARK}</span>
+      ${/* ⚠️ NO STATUS TAG ON OPTION 3 (request, 21 Sep 2026: "in this screen remove the
+           active tag in header", with Option 3 on screen).
+           ⚠️ SCOPED TO OPTION 3, not removed outright. Options 1 and 2 are single-provider
+           screens whose whole subject is the ONE connection, and this tag is where each says
+           whether it has one — taking it from them would strip a real state with nothing else
+           reporting it.
+           ⚠️ CONSEQUENCE, STATED: Option 3's header now says nothing about state. That is
+           defensible there and nowhere else — it is the multi-provider screen, so "Active" was
+           describing one of three cards without saying which, and the cards are where a
+           provider's own state belongs. */''}
+      ${AG.opt === '3' ? '' : `<obs-tag slot="title" variant="${AG.active ? 'tag-green' : 'tag-primary'}">${AG.active ? 'Active' : 'Not configured'}</obs-tag>`}
       <span class="aghact"><obs-radio id="agOpt" as-button size="small" options="${agJ(AG_OPTS)}" value="${AG.opt}"></obs-radio></span>
     </obs-page-header>
     <p class="aghsub">AI-powered observability runs on your own LLM provider keys. ObserveOps sends prompts and selected telemetry context to the provider you connect — nothing is stored in plain text. For more information:
@@ -4959,8 +5062,12 @@ function agOvHTML(){
   const toolbar = `<obs-toolbar>
       ${o2 || o3 ? '' : `<obs-input slot="start" class="agsrch" placeholder="Search" value="${AG.q.replace(/"/g,'&quot;')}"
         oninput="agSearch(agDet(event))">${agIc('search', 14).replace('<obs-icon', '<obs-icon slot="prefix"')}</obs-input>`}
-      <obs-button variant="default" class="agexp" data-tip="Export as PDF"
-        onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>
+      ${/* ⚠️ NO EXPORT ON OPTION 3 (request, 21 Sep 2026: "in agentic ai the option 3 remove
+           export as pdf"). Options 1 and 2 keep it and `agExportPdf` is untouched — this is the
+           button, not the feature. Option 3 has no usage table and no connection panel, so the
+           PDF it would print is three provider cards. */''}
+      ${o3 ? '' : `<obs-button variant="default" class="agexp" data-tip="Export as PDF"
+        onclick="agTap(agExportPdf)">${agIc('export-pdf', 15)}</obs-button>`}
       ${/* ⚠️ OPTION 3 RENAMES THIS BUTTON (request, 16 Sep 2026: "remove the button 'Configure AI
            provider' because this button is also provided in card, but add a new button in the replaced
            button position — the name is 'Advanced configure'"). Every card already carries its own
@@ -5326,6 +5433,24 @@ const agAdvRec = () => AG.adv.d[AG.adv.mod];
 
 /* ⚠️ THE MODEL LIST BELONGS TO THE PICKED PROVIDER, so switching provider has to re-point the model or the
    row would name a model that provider does not serve — the same rule the Configure form follows. */
+/* ⚠️ RESET IS SCOPED TO THE MODULE ON SCREEN, NOT THE WHOLE DRAWER. Each module keeps its own
+   record (that is what makes the rail worth having), and a Reset sitting under one module's form
+   that silently cleared the other fifteen would be a one-way door nothing on screen warned about.
+   ⚠️ IT RE-SEEDS THE RECORD AND DOES NOT WRITE THE DEFAULTS BY HAND. `agAdvSeed` is the one
+   place that knows what a default IS (first provider, first agent, that provider's first model, the
+   middle priority); re-deriving them here would be a second copy of that answer, free to drift.
+   ⚠️ DELETING WAS THE FIRST ATTEMPT AND WOULD HAVE BROKEN THE DRAWER: `agAdvRec()` dereferences
+   `AG.adv.d[mod]` with no guard, and `agAdvPick` refuses a module whose record is missing — so a
+   reset module would have rendered `undefined` and then become unreachable from the rail.
+   ⚠️ IT REPAINTS THE PANE, NOT THE DRAWER BODY: replacing a slotted child fires slotchange and
+   re-renders the component, and the rail is not what changed. */
+function agAdvReset(){
+  const m = AG.adv && AG.adv.mod; if (!m || !AG.adv.d) return;
+  AG.adv.d[m] = agAdvSeed()[m];
+  agAdvPaint();
+  toast(m + ' reset to defaults');
+}
+
 function agAdvProv(id){
   const r = agAdvRec(); if (r.prov === id) return;
   r.prov = id; r.model = (agProv(id).models[0] || {}).id;
@@ -5347,7 +5472,8 @@ function agAdvBodyHTML(){
     <div class="agadvtiles" id="agAdvTiles">${AG_DATA.providers.map(x => `
       <button type="button" class="agadvtile${x.id === r.prov ? ' on' : ''}" data-prov="${x.id}"
         onclick="agAdvProv('${x.id}')">
-        <span class="h">${stEsc(x.name)}</span>
+        <span class="h"><span class="agpci sm"${AG_BRAND[x.id] ? ` data-brand="${x.id}"` : ''}>${
+          AG_BRAND[x.id] || agIc(x.ic, 14)}</span>${stEsc(x.name)}</span>
         <span class="d">${stEsc(x.tagline)}</span>
       </button>`).join('')}</div>
 
@@ -5374,6 +5500,18 @@ function agAdvHTML(){
     </div>
     <div class="agadvf">
       <span class="sp"></span>
+      ${/* ⚠️ RESET IS AN ICON-ONLY DS BUTTON BEFORE SAVE (request, 21 Sep 2026: "the sidebar
+           show reset icon behind the save button, using the ObserveOps design system").
+           ⚠️ THE VARIANT IS `default` AND THE SHAPE IS `squared-button`, both from the registry:
+           usageRules.default is "the secondary next to a primary: Cancel/RESET/Clear/Back", and
+           squared-button is its own answer for "a recognisable repeated space-tight icon action" —
+           the 365x icon form. Its `must` is an aria-label, which is why this carries one.
+           ⚠️ IT ALSO CARRIES data-tip. An icon-only control says nothing at rest, and this page's
+           tooltip engine honours data-tip on an obs-* element (it only refuses to ADOPT their
+           `title`, which on a DS component is a rendered prop). */''}
+      <obs-button variant="default" class="squared-button" aria-label="Reset"
+        data-tip="Reset this module to its defaults"
+        onclick="agTap(function(){agAdvReset()})">${agIc('reset', 15)}</obs-button>
       <obs-button variant="primary" onclick="agTap(agAdvSave)">Save</obs-button>
     </div>`;
 }
@@ -6463,9 +6601,47 @@ function agCardsHTML(){
       <div class="agpca">
         <obs-button variant="${set ? 'default' : 'primary'}" class="agpcb" onclick="agTap(function(){agConfig('${p.id}')})">${
           set ? 'Change API key' : 'Configure'}</obs-button>
+        ${/* ⚠️ REMOVE IS `error`, WHICH IS THE DS's OWN ANSWER AND IS NEITHER PRIMARY NOR
+             SECONDARY (request, 21 Sep 2026: "behind the Change API key button add remove button and
+             it is not primary or secondary button, using the ObserveOps design system"). obs-button's
+             decision flow reads "Destructive (delete/remove/abort)? -> variant=error + confirm", and
+             its own usageRules put `default` on "the secondary next to a primary" and `primary` on
+             "the ONE most-important action" — so error is the one variant that is both correct here
+             and neither of the two the request rules out.
+             ⚠️ NOT `danger`. Its own rule says "Avoid in new work — a rare (3x) light/ghost style,
+             NOT solid red (F2); the ghost rendering under-signals danger."
+             ⚠️ IT ONLY EXISTS ON A CONFIGURED PROVIDER. There is nothing to remove from a card that
+             offers Configure, and a permanently dead red button is the dead end the guide forbids.
+             ⚠️ AND IT CONFIRMS, which is the other half of the DS's sentence — see agCardRemove. */''}
+        ${set ? `<obs-button variant="error" class="agpcb" onclick="agTap(function(){agCardRemove('${p.id}')})">Remove</obs-button>` : ''}
       </div>
     </div>`;
   }).join('')}</div>`;
+}
+
+/* ⚠️ THE CONFIRM IS THE DS's REQUIREMENT, NOT AN EXTRA. obs-button's own rule for `error` is
+   "destructive: delete/remove/abort/discard, WITH A CONFIRM" — the variant and the question are one
+   decision, so shipping the red button without it would be following half the guidance.
+   ⚠️ IT REUSES `stcConfirm`, the module's own confirm card, rather than a native confirm():
+   nothing in this file uses a system dialog, and one over a dark page reads as a crash.
+   ⚠️ IT CLEARS EVERY FIELD OF THE DRAFT, NOT JUST THE KEY. `set` is tested on the key alone, so
+   a record left holding a name, a passed test and an accepted terms box would offer `Configure` over
+   a form that was already half-filled and already `tested` — i.e. the gate would open on a provider
+   with no key. Removing means removing.
+   ⚠️ IT STANDS THE PAGE'S OWN STATE DOWN TOO when the provider being removed is the connected
+   one, or the header keeps a green `Active` tag for a connection that no longer exists. */
+function agCardRemove(id){
+  const p = (AG_DATA.providers || []).filter(x => x.id === id)[0]; if (!p) return;
+  stcConfirm('Remove ' + p.name + '?',
+    'Its API key is deleted and ObserveOps stops sending anything to ' + stEsc(p.name) +
+    '. This cannot be undone \u2014 you would have to paste a new key to connect it again.',
+    'Remove', function(){
+      const d = AG.cfg && AG.cfg.d && AG.cfg.d[id];
+      if (d){ d.key = ''; d.name = ''; d.tested = false; d.terms = false; d.step = 0; }
+      if (AG.conn === id){ AG.conn = null; AG.active = false; }
+      stMainPaint();
+      toast(p.name + ' removed');
+    });
 }
 
 function agGridHTML(){
@@ -6529,7 +6705,7 @@ function agOvAfter(){
   });
   op.value = String(AG.opt);
 }
-ST_PAGES['Agentic AI › Overview'] = { html: agOvHTML, after: agOvAfter };
+ST_PAGES['Agentic AI › AI Provider'] = { html: agOvHTML, after: agOvAfter };
 
 
 /* ═══════════════════════════════════════════════════════════════════════════════════════

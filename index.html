@@ -8499,6 +8499,26 @@ html[data-theme="light"] #cwModal{--cwa:#1d2a3e}
    the responsive 10/12 — without depending on which one is live, and the query builder keeps
    its own padding untouched. */
 #cwModal.cwft .cwsb{padding-top:14px;padding-left:0;padding-right:0;border-top:0}
+/* ⚠️ NO TIME RANGE IN FREE TEXT (request, 21 Sep 2026: "remove the date selection in free
+   text"). The chip and its stamps say "the widget inherits the dashboard time range", which is
+   true of every OTHER visualization and meaningless here — a Free Text widget reads no data and
+   `awAdd`'s freetext entry has no counter, no source and no range. A header control describing a
+   relationship this type does not have is a small lie the reader has to work out.
+   ⚠️ HIDDEN, NOT UNRENDERED. `cwRender` writes into `#cwTLabel` and `#cwStamp` BY ID on every
+   render; removing the nodes would throw there, and hiding them costs nothing because switching
+   back to a Chart drops `.cwft` and the chip returns with its values already up to date. */
+#cwModal.cwft .cwtime,#cwModal.cwft .cwstamp{display:none}
+/* ⚠️ THE TWO PANES ARE EQUAL HALVES IN FREE TEXT (request, 21 Sep 2026: "in this 2 box width is
+   same", measured at 946.56 against ~690). The 58/42 split is right for a CHART, whose preview is
+   the artwork and whose settings column is a query builder read top to bottom; here the right
+   pane is the form you work in and the left is a live preview of one block of text, so neither
+   earns more room than the other.
+   ⚠️ IT IS SCOPED TO `.cwft`. Every other visualization keeps 58/42 — this is not a change to the
+   editor's proportions, only to the one mode whose two halves do equal work.
+   ⚠️ `flex-basis:0` WITH `flex-grow:1` ON BOTH, not `50%`. A percentage basis is measured before
+   the 12px gap is taken out, so two 50% siblings plus a gap overflow their row and the browser
+   then shrinks them unevenly; `0` lets the gap come off the top and splits what is left exactly. */
+#cwModal.cwft .cwprev,#cwModal.cwft .cwset{flex:1 1 0;min-width:0}
 /* ⚠️ 24px BETWEEN FIELDS, 16px OF PADDING (request, 18 Sep 2026: "in this all field in
    free text the 24px margin in between and 16px padding"). The padding is read as the PANEL's
    — it is the container the fields sit in — and the 24 is the field-to-field step below.
@@ -8518,7 +8538,10 @@ html[data-theme="light"] #cwModal{--cwa:#1d2a3e}
    one, or a label reads as belonging to the control above it. The rule this file has now
    recorded at `.aiab li`, `.aichips`, `.mfsec` and the Agentic AI form. */
 .cwftp > .cwftl:not(:first-child){margin-top:24px}
-.cwftl{font-size:11.5px;color:var(--text-dim);font-weight:500}
+/* ⚠️ 13px/600 (request, 21 Sep 2026: "the title font size is 13px and semi bold"). It was
+   11.5px/500 — the size this editor uses for its own quiet chrome, which made the field names
+   read as hints rather than as the labels of the controls under them. */
+.cwftl{font-size:13px;color:var(--text-dim);font-weight:600}
 .cwftl i{color:var(--red);font-style:normal;margin-left:2px}
 .cwftin,.cwftsel{width:100%;box-sizing:border-box;height:32px;padding:0 9px;border-radius:4px;
   border:1px solid var(--border);background:var(--panel-2);color:var(--text);
@@ -8598,8 +8621,24 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 .widget.wft .wbody{padding:0}
 /* ⚠️ `container-type:inline-size` IS WHAT MAKES "Auto" WORK — `cqw` in `.ftt.auto` resolves
    against THIS box, so the text re-fits on every resize with no JS and no timer. */
+/* ⚠️ `container-type:size`, NOT `inline-size` (request, 21 Sep 2026: "when i add image the image
+   auto adjust the width and height, the image is using widget height and width like datadog").
+   An image was bounded on WIDTH only — `.ftt img{max-height:100%}` could never resolve, because
+   a percentage max-height needs a DEFINITE parent height and `.ftt` is sized BY its content.
+   Measured before the change: a 600x900 image rendered 704px tall inside a 118px widget and was
+   simply clipped by the `overflow:hidden` below.
+   ⚠️ THE FIX IS A CONTAINER-QUERY UNIT BECAUSE OF THE `<p>` IN BETWEEN. `ftMd` wraps an image in
+   a paragraph, so the img's parent chain is `.ftt > p > img` — making `.ftt` a definite-height
+   flex box would still leave the `<p>` indefinite. `cqh` resolves against THIS element whatever
+   sits between, so the intermediate markup stops mattering.
+   ⚠️ SIZE CONTAINMENT IS SAFE HERE ONLY BECAUSE BOTH AXES ARE ALREADY DEFINITE (`width:100%`,
+   `height:100%`, both resolving off the widget body). A `container-type:size` element whose
+   height is auto collapses to ZERO — if this box is ever allowed to size to its content, this
+   declaration has to go back to `inline-size` and the image bound another way.
+   ⚠️ `cqw` STILL WORKS — `size` covers both axes, so `.ftt.auto`'s `clamp(20px,8cqw,96px)` is
+   unaffected. */
 .ftw{width:100%;height:100%;display:flex;align-items:center;padding:10px 14px;box-sizing:border-box;
-  container-type:inline-size;overflow:hidden}
+  container-type:size;overflow:hidden}
 .ftw > .ftt{display:block;width:100%;font-weight:700;line-height:1.15;word-break:break-word}
 /* ⚠️ AN IMAGE IS BOUNDED BY THE WIDGET, NOT BY ITS OWN PIXELS (19 Sep 2026). `.ftw` does not
    scroll, so an unbounded `<img>` is simply clipped — a 2000px screenshot pasted into a note
@@ -8612,6 +8651,14 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    ⚠️ NO RADIUS AND NO BORDER: this is the reader's own content, and rounding someone's
    screenshot is the chrome deciding what their image looks like. */
 .ftt img{max-width:100%;max-height:100%;height:auto;vertical-align:middle}
+/* ⚠️ SCOPED TO `.ftw`, AND THAT SCOPE IS LOAD-BEARING. `cqh` with no query container in the
+   ancestor chain falls back to the VIEWPORT, and the Formatting-help dialog renders `.ftt`
+   cells outside any `.ftw` — unscoped, its image row would be bounded by the window height
+   instead of by its own cell. Those cells keep the `max-height:100%` above.
+   ⚠️ NO `object-fit` IS NEEDED. That only applies once BOTH width and height are set; here the
+   two max constraints plus `width:auto`/`height:auto` let the browser keep the aspect ratio by
+   itself — whichever axis binds first wins and the other follows. */
+.ftw .ftt img{max-height:100cqh;width:auto}
 /* ⚠️ THE EDITABLE NOTE SAYS SO WITH A CARET, and only on the BOARD — `.fted` is emitted by
    `ftHTML` just when it has widget indices, so the editor's live preview and every
    Formatting-help result cell keep the default cursor and cannot be typed into. */
@@ -8660,10 +8707,16 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    label — the one control on this panel with nothing around it. It now wears the panel's own
    field surface and hairline, so it reads as something you press at rest rather than only
    under the pointer, and the underline-on-hover goes with the text treatment it replaces. */
-.cwftmh{margin-left:auto;font:inherit;font-size:11px;font-weight:500;line-height:1;
+/* ⚠️ inline-flex, NOT inline — the glyph and the label have to share one centre line, and a
+   12px svg on an 11px text baseline sits low without it. The 5px gap is the same step the
+   segmented cells use between their own icon and their box. */
+.cwftmh{display:inline-flex;align-items:center;gap:5px;
+  margin-left:auto;font:inherit;font-size:11px;font-weight:500;line-height:1;
   color:var(--text);background:var(--panel-2);border:1px solid var(--border);
   border-radius:4px;padding:5px 9px;cursor:pointer;transition:background .12s,border-color .12s}
 .cwftmh:hover{background:var(--hover);border-color:var(--text-dim)}
+.cwftmh svg{flex:0 0 12px;width:12px;height:12px;display:block;color:var(--text-dim)}
+.cwftmh:hover svg{color:inherit}
 .cwftmh:focus-visible{outline:2px solid var(--cwa);outline-offset:1px}
 /* ⚠️ THE PAIR CANCELS TWO RULES WRITTEN FOR A ONE-CONTROL COLUMN, and neither cancel is
    optional: `#cwModal.cwft .cwftdd{max-width:232px}` (1,2,0) would cap EACH half at 232 and
@@ -8764,28 +8817,57 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    rather than `repeat(4,1fr)`, which was a second copy of `CW_FT_PRESET.length` and left a
    dead fourth column the moment Annotation was removed. Add or drop a preset and the row
    re-divides itself. */
-.cwftpre{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;max-width:232px;
+.cwftpre{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;max-width:232px;
   /* the 10px the removed "Presets" heading used to carry — `.cwftp`'s own 6px gap makes 16,
      which is the step every other group in this panel sits on. */
   margin-top:10px}
-.cwftpr{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px;
+/* ══ THE PRESET TILES, ON THE DESIGN SYSTEM (request, 21 Sep 2026: "improve this using the
+   ObserveOps design system") ═══════════════════════════════════════════════════════════════
+   ⚠️ THEY CANNOT BE A DS COMPONENT, AND THAT WAS CHECKED RATHER THAN ASSUMED.
+   `search_components('selectable option card')` returns no card and no option tile; the nearest
+   is `radio`, whose decisionFlow sends a compact 2-5 set to `segmented (as-button)` — and
+   `obs-radio` takes `{value,label}` only and ESCAPES the label, so it cannot carry the artwork
+   that IS the point of these tiles. What the DS supplies here is its LANGUAGE, not an element.
+   ⚠️ SPACING IS ON THE DS STRUCTURAL SCALE (8/12/16/24). It was `6px 3px` with a 4px gap —
+   three values, none of them on it.
+   ⚠️ 11px IS THE SMALLEST SIZE THE DS DOCUMENTS ANYWHERE; the label was 9.5px, below its whole
+   scale, which is what made it read as a caption on the artwork rather than as the tile's name.
+   ⚠️ A VISIBLE FOCUS RING, WHICH THE DS ITSELF DOES NOT SHIP. SF-001 is a catalogue-wide a11y
+   gap ("no visible focus indicator (WCAG 2.4.7)") recorded against Button and Radio alike, and
+   a documented bug is not a spec — this repo's standing position since 27 Aug 2026. */
+.cwftpr{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px;
   border:1px solid var(--border);border-radius:4px;background:var(--panel-2);cursor:pointer;
-  color:var(--text-dim);font:inherit}
-.cwftpr:hover{border-color:var(--cwb);color:var(--text)}
+  color:var(--text-dim);font:inherit;transition:border-color .12s,color .12s}
+.cwftpr:focus-visible{outline:2px solid var(--cwb);outline-offset:2px}
+/* ⚠️ HOVER IS A QUIETER EDGE THAN SELECTED, AND THAT WAS A REAL DEFECT: both rules were exactly
+   `border-color:var(--cwb);color:var(--text)`, so a hovered tile was indistinguishable from the
+   chosen one. `radio`'s own states table separates them, and since 21 Sep one preset is ALWAYS
+   selected — so there is always a lit tile for a hover to be confused with. */
+.cwftpr:hover{border-color:var(--text-dim);color:var(--text)}
 /* ⚠️ THE SELECTED TILE IS A BRIGHTER BORDER, NOT A FILL — each tile's inner art already
-   carries a fill of its own (Caption is `--chip`), so a second one behind it would fight the
-   miniature the tile exists to show. `--cwb` is this editor's own action colour, so the lit
-   tile and the footer's primary agree. */
+   carries a fill of its own, so a second one behind it would fight the miniature the tile
+   exists to show. `--cwb` is this editor's own action colour (and its `--primary` equivalent:
+   #e3e8f2 dark / #1d2a3e light), so the lit tile and the footer's primary agree.
+   ⚠️ ITS EXAMPLE WENT STALE ON 21 Sep 2026 — the rule was written when Caption's art was
+   `--chip`, the one tile with a fill strong enough to be fought. Both remaining tiles draw on
+   `--card`, so a `--sel` wash behind them would now be tolerable; the rule is KEPT anyway,
+   because the defect it was paired with (hover and selected being one rule) is fixed above by
+   making HOVER quieter rather than SELECTED louder. Re-read both notes before adding a fill. */
 .cwftpr.on{border-color:var(--cwb);color:var(--text)}
-.cwftpr em{font-style:normal;font-size:9.5px;font-weight:600;letter-spacing:.02em}
+.cwftpr em{font-style:normal;font-size:11px;font-weight:600}
 /* ⚠️ THE TILE ART IS CSS, NOT AN ICON — each is a 3-line miniature of the preset it applies,
    drawn with `repeating-linear-gradient` "text" lines, so it changes with the theme and there
    is no asset to keep in step. The reference uses small raster illustrations. */
-.cwftprv{width:100%;height:26px;border-radius:2px;background:var(--card);
+/* ⚠️ 4px, NOT 2. The DS theme is explicit that there is no `@border-radius-base` and that
+   `@btn-radius` — 4px — is the radius for ALL general boxes; a 2px inner corner inside a 4px
+   tile was the one value on this control off that rule. */
+.cwftprv{width:100%;height:26px;border-radius:4px;background:var(--card);
   border:1px solid var(--border-soft);position:relative;overflow:hidden}
 .cwftprv::after{content:'';position:absolute;background:var(--text-dim);opacity:.5}
 .cwftprv.default::after{left:3px;right:3px;top:5px;height:3px;
   box-shadow:0 6px 0 var(--text-dim),0 12px 0 var(--text-dim)}
+/* ⚠️ KEPT AND UNREFERENCED — the Caption preset was removed on 21 Sep 2026 and its entry is
+   parked in `CW_FT_PRESET`; this is the tile art that entry needs if it is ever restored. */
 .cwftprv.caption{background:var(--chip)}
 .cwftprv.caption::after{left:3px;right:8px;bottom:4px;height:3px;box-shadow:0 -5px 0 var(--text-dim)}
 .cwftprv.header::after{left:20%;right:20%;top:11px;height:5px}
@@ -8805,17 +8887,40 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    ⚠️ IT WRAPS RATHER THAN OVERFLOWING. 114 + 16 + 114 = 244px in a ~290px column today, but
    the panel is a size container and the pair collapses to one column on a narrow editor — at
    which point these two stack instead of running past the edge. */
-.cwftvrow{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
-/* ⚠️ EQUAL HALVES, so the two controls read as a two-column split rather than as one
-   control and whatever happened to fit after it ("this 2 field on proper alignment",
-   19 Sep 2026). Hugging their content put the second label wherever the first segment
-   ended — a content-dependent x that lines up with nothing above or below it. At `1 1 0`
-   each half is half the pair column, so Alignment starts at its left edge and Vertical
-   alignment at the midpoint, on the same rhythm as every other row in the panel.
-   ⚠️ `min-width:0` OR THE HALVES CANNOT SHRINK BELOW THEIR CONTENT — a flex item's
-   `min-width` defaults to `auto`, which is what makes a "1fr" column overflow instead of
-   wrapping. The recorded `.agrt .n` fault. */
-.cwftvrow > .cwftcol{flex:1 1 0;min-width:0}
+/* ⚠️ THE THREE CONTROLS WERE BEING SHRUNK BELOW THEIR OWN CONTENT (request, 21 Sep 2026:
+   "Alignment / Vertical alignment / No padding will be alignment properly"). MEASURED: the row
+   is 351px, so three flex children on a 16px gap were sized (351-32)/3 = 106px each — while a
+   three-cell segment is 116px. Each control overflowed its column by 10px, which ate the gap:
+   the real distance between Alignment's last cell and Vertical alignment's label was SIX pixels,
+   not sixteen. That is what read as "not aligned".
+   ⚠️ `flex:0 0 auto` IS THE FIX, not a bigger gap — each column takes the width of the widest
+   thing in it (its label or its segment) and nothing is compressed.
+   ⚠️ `space-between` THEN SPENDS THE LEFTOVER ON THE GAPS, which also lands No padding's cell on
+   the pane's own right edge — the same edge the Background field below it ends at. Before this,
+   the row stopped 66px short of it, which is the other half of the report.
+   ⚠️ `gap` STAYS AS THE FLOOR. Under `space-between` a gap is a MINIMUM, not the spacing — so if
+   the labels ever grow enough to use the whole row, the controls still keep 16px apart and wrap
+   rather than touching. */
+.cwftvrow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+/* ⚠️ EQUAL FRACTIONS WERE RIGHT FOR TWO CONTROLS AND ARE IMPOSSIBLE FOR THREE. This rule was
+   `flex:1 1 0;min-width:0` — written 19 Sep 2026 ("this 2 field on proper alignment") when the
+   row held Alignment and Vertical alignment only, where two 116px segments fit two 167px halves
+   comfortably. No padding made it three, and the arithmetic stopped working: the row is 351px,
+   so equal thirds on a 16px gap is (351-32)/3 = 106px per column against a 116px segment.
+   ⚠️ SO EVERY CONTROL WAS OVERFLOWING ITS OWN COLUMN BY 10px, and `min-width:0` is what ALLOWED
+   that rather than wrapping — the real gap between Alignment's last cell and Vertical
+   alignment's label measured SIX pixels, not sixteen. That is what read as "not aligned
+   properly" (21 Sep 2026); the labels were evenly spaced the whole time, and the controls under
+   them were not.
+   ⚠️ `flex:0 0 auto` — each column is now as wide as the widest thing in it and nothing is
+   compressed; `space-between` on the row spends the 79px of slack on the two gaps, which also
+   lands No padding's cell on the pane's own right edge, the same edge the Background field below
+   it ends at. Before this the row stopped 66px short of it.
+   ⚠️ `min-width:0` IS DROPPED WITH IT, deliberately. It existed to let a fractional column
+   shrink; with content-sized columns there is nothing to shrink, and keeping it would let a long
+   label collapse again. A label that outgrows the row now WRAPS (the row is `flex-wrap:wrap`),
+   which is the honest failure — the gap stays a 16px floor under `space-between`. */
+.cwftvrow > .cwftcol{flex:0 0 auto}
 /* the Edit-group drawer's two checkboxes: the panel's own control, on the drawer's row step */
 .gechk{margin-top:14px}
 /* ⚠️ `.cwftck` CARRIES ITS OWN 12px, WHICH IS A SECOND GAP INSIDE A GRID ROW. It is written
@@ -11120,6 +11225,13 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
        has per-position rows to show or hide. -->
   <div class="cmi" onclick="gEditOpen()">Edit group</div>
   <div class="cmi" onclick="gClone()">Clone group</div>
+  <!-- ⚠️ UNGROUP IS NOT `danger`, AND THAT IS THE POINT OF HAVING IT BESIDE DELETE (request,
+       21 Sep 2026). Delete takes the group AND its widgets; Ungroup keeps every widget and
+       only dissolves the band around them. Two actions one row apart whose outcomes differ
+       that much must not look the same — the red is reserved for the one that loses work.
+       ⚠️ IT SITS ABOVE THE SEPARATOR, with Edit and Clone: those three all leave the board's
+       content intact, and the rule below is what marks the boundary to the one that does not. -->
+  <div class="cmi" onclick="gUngroup()">Ungroup</div>
   <div class="cmsep"></div>
   <div class="cmi danger" onclick="gRemove()">Delete group</div>
 </div>
@@ -17911,6 +18023,16 @@ function histLoad(s){
   GRP_STYLE.length = 0; GRP_STYLE.push(...(o.y || [])); gStylePad();
   GRP_SHUT = new Set(o.s);
   curG = Math.max(0, Math.min(o.g, TABS.length - 1));
+  /* ⚠️ `ungrouped` IS DERIVED FROM THE RESTORED MODEL, and it was NOT — a pre-existing bug
+     found while adding Ungroup (21 Sep 2026), latent since groups became optional.
+     `histState` serialises TABS but not this flag, and only `boardLoad` ever re-derived it —
+     so undoing a flat→grouped conversion put `TABS` back to `['']` while `ungrouped` stayed
+     `false`, and the canvas went on drawing a group header for a band that no longer existed.
+     Ungroup made it reachable from the other direction too (undo a flatten and the flag stayed
+     `true` over a named group), which is how it surfaced.
+     ⚠️ IT IS DERIVED, NOT SERIALISED, so it cannot disagree with `TABS` whatever wrote the
+     snapshot — the same expression and the same reasoning as `boardLoad`'s own derivation. */
+  ungrouped = (TABS.length === 1 && TABS[0] === '');
   renderCanvas();
   if (!trashed) fitCanvas();
 }
@@ -19209,6 +19331,53 @@ function gRemove(){
   /* deleting is undoable rather than confirmed — say so where the loss happens */
   toast('Group “'+n+'” deleted with its widgets — '+KMOD+'Z brings it back');
 }
+/* ══ UNGROUP — dissolve the band, keep every widget (request, 21 Sep 2026) ═══════════════
+   ⚠️ IT IS THE EXACT INVERSE OF `awAddGroup`'s CONVERSION, and it had to be written as one:
+   that function turns a flat board (`TABS=['']`) into a named group plus an empty one, and
+   sets `ungrouped=false` by hand because `boardLoad` is the only other place that derives it.
+   Ungrouping the LAST group has to set it back the same way, or the flag and the model
+   disagree — `TABS` would say flat while `ungrouped` said grouped, which is the exact
+   breakage the comment at `boardLoad`'s own derivation records from the other direction.
+   ⚠️ WITH OTHER GROUPS ON THE BOARD THERE IS NOWHERE "LOOSE" TO PUT THE WIDGETS. This model
+   has no free canvas: every widget lives in some `WIDGETS[gi]`. So the band's contents merge
+   into its NEIGHBOUR — the one above, or the one below when it is the first group, which is
+   the only direction that exists there.
+   ⚠️ THE MERGE ORDER PRESERVES READING ORDER. Merging up appends (the dissolved band's
+   widgets follow the ones already above them); merging down PREPENDS, because the dissolved
+   band was above the target and its widgets should stay above.
+   ⚠️ `GRP_SHUT` IS REMAPPED, NOT CLEARED. `gRemove` clears it, which is the safe direction
+   for a delete; here it would expand every collapsed group as a side effect of ungrouping a
+   different one — the trap recorded at `gClone`. Indices at or past the removed one shift.
+   ⚠️ IT GOES THROUGH `histDo`, so ⌘Z puts the band back with its name and its styling. */
+function gUngroup(){
+  closeOverlays(); if (gMenuIdx < 0) return;
+  const gi = gMenuIdx, name = TABS[gi] || 'this group', n = (WIDGETS[gi] || []).length;
+  histDo('Ungroup');
+  gStylePad();
+
+  if (TABS.length < 2){
+    TABS[0] = ''; GRP_STYLE[0] = null; GRP_SHUT.clear(); curG = 0;
+    ungrouped = true;                         /* boardLoad re-derives this from TABS */
+    renderCanvas();
+    toast('Ungrouped — “' + name + '” is gone and its ' + n + ' widget' +
+          (n === 1 ? '' : 's') + ' sit on the board — ' + KMOD + 'Z brings the group back');
+    return;
+  }
+
+  const up   = gi > 0;
+  const into = up ? gi - 1 : 1;
+  WIDGETS[into] = up ? WIDGETS[into].concat(WIDGETS[gi])
+                     : WIDGETS[gi].concat(WIDGETS[into]);
+  TABS.splice(gi, 1); WIDGETS.splice(gi, 1); GRP_STYLE.splice(gi, 1);
+  const shut = new Set();
+  GRP_SHUT.forEach(k => { if (k !== gi) shut.add(k > gi ? k - 1 : k); });
+  GRP_SHUT = shut;
+  curG = up ? gi - 1 : 0;
+  renderCanvas();
+  toast('Ungrouped — ' + n + ' widget' + (n === 1 ? '' : 's') + ' moved into “' +
+        (TABS[curG] || 'the board') + '” — ' + KMOD + 'Z undoes it');
+}
+
 function openWMenu(ev,g,i){ curG=g; curW=i;
   /* "Move to next group" has nowhere to go unless the board has a SECOND group: an
      ungrouped board is TABS=[''], so wMove()'s (curG+1)%TABS.length landed the widget
@@ -28532,6 +28701,39 @@ const CW_FT_ALIGN = [
    named ladder is GONE rather than kept beside it — two size vocabularies in one control is
    exactly how the two drift.
    ⚠️ `Auto` LEADS AND IS THE DEFAULT, as it is live; it is the container query, not a size. */
+/* ⚠️ "No padding" IS A ONE-CELL SEGMENTED TOGGLE (request, 21 Sep 2026: "the no padding it
+   will be set as a icon behind the vertical alignment"). It was a checkbox on a row of its own.
+   ⚠️ IT IS A LIST SO THAT `seg()` CAN BUILD IT — the same builder as Alignment and Vertical
+   alignment, so the cell's box, border, lit state and icon weight are its neighbours' BY
+   CONSTRUCTION rather than by three rules written to match. A hand-rolled button beside two
+   segmented controls is exactly how the three come to disagree after the next tweak.
+   ⚠️ THE GLYPH IS TABLER `design/box-padding`, pasted verbatim from `free-icons/` minus its
+   first path — that one is Tabler's invisible 24x24 bounding box (`stroke:none;fill:none`), and
+   left in, the stroke rules paint a square frame around the icon. The recorded rule.
+   ⚠️ IT IS THE SAME FAMILY AS THE VERTICAL TRIO (Tabler, stroked, 24 grid), which is why it
+   goes through `seg()`'s `stroke` branch; the horizontal Alignment trio is the product's own
+   filled set, and the builder already carries both. */
+/* ⚠️ THE FORMATTING-HELP BUTTON LEADS WITH A GLYPH (request, 21 Sep 2026: "the Formatting
+   help improve it show icon with text"). Tabler `system/help`, pasted verbatim minus its first
+   path — that one is Tabler's invisible 24x24 bounding box, and left in, the stroke rules paint
+   a square frame round the mark. Same set, same 24 grid and same 2px stroke as the panel's other
+   two icon controls, so the three read as one family.
+   ⚠️ `fill:none` IS INLINE. `.cwftsg svg{fill:currentColor}` is a rule and a rule beats a
+   presentation attribute, so `fill="none"` on the element would lose — this button is not a
+   `.cwftsg`, but the same trap has bitten three times in this file and the inline form is the
+   one that cannot be reached by a later descendant rule either. */
+const CW_FT_HELP_IC =
+  '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 17l0 .01"/>' +
+  '<path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></svg>';
+
+const CW_FT_PAD = [['none', 'No padding',
+  'M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12|' +
+  'M8 16v.01|M8 12v.01|M8 8v.01|M16 16v.01|M16 12v.01|M16 8v.01|M12 8v.01|M12 16v.01']];
+/* the toggle — `seg` hands back the cell's key, which this ignores: one cell, two states */
+function cwFtPadTog(){ cwFtSet('pad', !CW.ft.pad); }
+
 const CW_FT_SIZE = [['Auto',0], ['16px',16], ['24px',24], ['36px',36], ['56px',56], ['72px',72], ['88px',88]];
 /* ⚠️ THE COLOUR SET IS THE PRODUCT'S OWN, read off its Font Color dropdown (17 Sep 2026):
    Default · Gray · Green · Blue · Yellow · Orange · Red. It replaces an invented ten — White,
@@ -28609,10 +28811,44 @@ const CW_FT_EDGE   = ['Left', 'Right', 'Top', 'Bottom'];
    own `font_size` / `text_align` / `vertical_align` / `has_padding` / `show_tick` / `tick_edge`.
    ⚠️ A PRESET IS A STARTING POINT, NOT A MODE — it writes the fields once and every control
    stays live afterwards, which is why nothing tracks "which preset am I in" after a change. */
+/* ⚠️ A PRESET NOW CARRIES THE WIDTH IT LANDS AT (request, 21 Sep 2026: "when i select the
+   default option the widget will be add 1/3", with a third-width board widget as the reference;
+   and, the same day, that Header adds full width).
+   ⚠️ `span` IS IN COLUMNS OF THE 12-COLUMN CANVAS — 4 is the 1/3 the reference shows, 12 the
+   full width. It is the same unit every other widget in `awAdd`'s map uses, so a Free Text
+   widget sits on the board's own grid rather than on a width of its own.
+   ⚠️ EVERY PRESET DECLARES ONE, and that rule outlived the preset it was written for. It was
+   added because Caption (removed 21 Sep 2026, parked below) had no width specified: leaving the
+   field UNDECLARED would have made it keep whatever the previously-pressed preset set, so that
+   tile's width would have depended on what you happened to click before it. The same trap waits
+   for the next preset added here — declare a span or it inherits one by accident.
+   ⚠️ IT IS DELIBERATELY NOT PART OF THE TILE-MATCH TEST — see `cwFtPresetOn`. */
 const CW_FT_PRESET = [
-  ['Default',    {size:'16px', align:'left',   valign:'top',    bg:'Gray', pad:true,  tick:false}],
-  ['Caption',    {size:'16px', align:'left',   valign:'bottom', bg:'Transparent', pad:false, tick:false}],
-  ['Header',     {size:'36px', align:'center', valign:'middle', bg:'Transparent', pad:true,  tick:false}],
+  ['Default',    {size:'16px', align:'left',   valign:'top',    bg:'Gray', pad:true,  tick:false, span:4}],
+  /* ⚠️ CAPTION WAS REMOVED ON REQUEST (21 Sep 2026) and is kept here, commented, exactly as
+     Annotation is below it — two of the four shapes the Notes & Links reference shipped with are
+     now parked rather than deleted, so the set can be restored without re-deriving either.
+     ⚠️ NOTHING IS STRANDED BY ITS GOING: every field it set is still a live control on the
+     panel, so the same note is three clicks by hand — Transparent background, No padding on,
+     bottom vertical alignment.
+     ⚠️ NO INDEX MOVED THAT ANYTHING READS. `CW_FT_PRESET[0]` is Default and is the only
+     hardcoded position (the editor's opening state, `awAdd`'s seed and `cwFtSpan`'s fallback all
+     use it); `cwFtPreset(i)` is called with the index the tile grid mapped, so the two cannot
+     disagree. Header simply became the second tile.
+     ['Caption', {size:'16px', align:'left', valign:'bottom', bg:'Transparent', pad:false, tick:false, span:4}],
+     ⚠️ `.cwftprv.caption`'s tile art is kept and unreferenced with it. */
+  /* ⚠️ HEADER SIZES ITSELF (request, 21 Sep 2026: "i select the header, the font size is set
+     auto"). It was a fixed 36px, which is a HEADER at one widget size and small or clipped at every
+     other — `Auto` is the container query (`clamp(20px, 8cqw, 96px)`), so the words fill whatever
+     box the widget is dragged to. That is also what the live product's own "CPU" banner does.
+     ⚠️ THIS IS THE CHANGE THE 17 Sep NOTE AT `cwFtPreset` POINTED AT. When the editor started
+     seeding its opening state from `CW_FT_PRESET[0]`, that note recorded that the Auto-sized
+     centred banner was now one click away and that if it should come back, the PRESET is what to
+     change, not the opening state. This is that edit; nothing else had to move.
+     ⚠️ `Auto` MAPS TO 0 IN `CW_FT_SIZE`, and 0 is the "emit no font-size at all" test in
+     `ftHTML` — so the preset stays a plain value in the same vocabulary as every other size and
+     needs no special case anywhere. */
+  ['Header',     {size:'Auto', align:'center', valign:'middle', bg:'Transparent', pad:true,  tick:false, span:12}],
   /* ⚠️ ANNOTATION WAS REMOVED ON REQUEST (17 Sep 2026) and is kept here, commented, because
      it is the only preset that ever set `tick` — so it is also the worked example of what the
      pointer fields are for. Nothing is stranded by its going: the Yellow ground is still in the
@@ -28622,6 +28858,12 @@ const CW_FT_PRESET = [
      ⚠️ `.cwftprv.annotation`'s tile art is kept and unreferenced with it. */
 ];
 function cwFtOn(){ return CW.viz === 'freetext'; }
+/* the width a new Free Text widget lands at — the pressed preset's, or Default's if a draft
+   somehow carries none (an edit-seeded draft has no span; that path never reaches create) */
+function cwFtSpan(){
+  const n = Number(CW.ft && CW.ft.span);
+  return n >= 1 && n <= 12 ? n : CW_FT_PRESET[0][1].span;
+}
 function cwFtSizePx(k){ const e = CW_FT_SIZE.find(x => x[0] === k); return e ? e[1] : 0; }
 /* ⚠️ A COLOUR FIELD NOW HOLDS EITHER A TOKEN NAME OR A LITERAL HEX (request, 17 Sep 2026:
    *"add custom colour option — the user will add a colour code, or pick any colour, or set any
@@ -28727,6 +28969,7 @@ function cwOpen(gi, i){
      background it used to be. That auto-sized banner is what matched the live product's own
      "CPU" heading, so it is one click away (Font Size → Auto) rather than the default. */
   CW.ft = Object.assign({ text:'', color:'Default', tickEdge:'Left' }, CW_FT_PRESET[0][1]);
+  CW.ft.preset = CW_FT_PRESET[0][0];
   CW.style = { shape:0, rotation:0, legend:false, xt:false, yt:false, zt:false, lw:2, points:false,
                sort:'Descending', limit:10, markers:false, range:'Follow dashboard', mk:90 };
   CW.tab = 'Style';
@@ -28735,6 +28978,10 @@ function cwOpen(gi, i){
      frame — it does not open in an error state. Same on create and on edit. */
   CW.rows[0].ctr = cwSrcOf(CW.src).ctr[0];
   if (CW.ftLoad){ CW.ft = CW.ftLoad; CW.ftLoad = null; }
+  /* ⚠️ DERIVED HERE, FOR BOTH PATHS. A widget being edited carries no `preset` of its own
+     (it is not persisted), so the tile it lights comes from the style it was saved with — and a
+     style matching none of them falls back to the first, which is what keeps one always lit. */
+  CW.ft.preset = cwFtPresetKey(CW.ft);
   CW.open = true;
   document.getElementById('cwScrim').classList.add('on');
   document.getElementById('cwModal').classList.add('on');
@@ -28977,7 +29224,8 @@ function cwFtPanelHTML(){
        which is what was asked for. Same place, because that is where the reference puts it and
        there is nowhere else on this panel for it to belong. */
     '<label class="cwftl">Text to display<i>*</i>' +
-      '<button class="cwftmh" onclick="cwFtMdOpen()">Formatting help</button></label>' +
+      '<button class="cwftmh" onclick="cwFtMdOpen()">' + CW_FT_HELP_IC +
+        '<span>Formatting help</span></button></label>' +
     /* ⚠️ FULL WIDTH AND 100px TALL (request, 17 Sep 2026) — it is the one control on this
        panel that is NOT capped to the field column, because it is the only one whose content
        is arbitrary: a size or a colour is a word, and the text can be a paragraph.
@@ -28995,7 +29243,7 @@ function cwFtPanelHTML(){
        carried is preserved as `.cwftpre`'s own top margin, or the tiles would jump up against
        the text box. `.cwftsec` and its two spacing rules are kept and unreferenced. */
     '<div class="cwftpre">' + CW_FT_PRESET.map((pr, i) => {
-      const on = cwFtPresetOn(pr[1]);
+      const on = cwFtPresetOn(pr);
       return '<button class="cwftpr' + (on ? ' on' : '') + '" aria-pressed="' + on + '" ' +
       'data-tip="' + pr[0] + ' — a starting point; every control stays editable" ' +
       'onclick="cwFtPreset(' + i + ')"><span class="cwftprv ' + pr[0].toLowerCase() + '"></span>' +
@@ -29028,6 +29276,11 @@ function cwFtPanelHTML(){
           seg(CW_FT_ALIGN, F.align, 'cwFtAlign', a => a[0], a => a[1]) + '</div>' +
         '<div class="cwftcol"><label class="cwftl">Vertical alignment</label>' +
           seg(CW_FT_VALIGN, F.valign || 'middle', 'cwFtVAlign', a => a[0], a => a[1], true) + '</div>' +
+        /* ⚠️ THE LABEL STAYS "No padding", NOT "Padding". The cell is LIT when the state is
+           active, which is what `.on` means on the two controls beside it — so a cell labelled
+           "Padding" and lit to mean *none* would invert the row's own language. */
+        '<div class="cwftcol"><label class="cwftl">No padding</label>' +
+          seg(CW_FT_PAD, F.pad ? '' : 'none', 'cwFtPadTog', a => a[0], a => a[1], true) + '</div>' +
       '</div></div>' +
     '</div>' +
     /* ⚠️ FONT COLOUR AND BACKGROUND SHARE ONE ROW (request, 17 Sep 2026). They are the
@@ -29048,8 +29301,10 @@ function cwFtPanelHTML(){
        still defaulted to `middle` and still honoured by `ftHTML`**, so every widget already on
        a board kept the vertical position it was saved with, and bringing the row back cost a
        renderer rather than a migration. `.cwftrow` is still kept and unreferenced. */
-    '<label class="cwftck"><input type="checkbox"' + (F.pad ? '' : ' checked') +
-      ' onchange="cwFtSet(\'pad\', !this.checked)" /><span>No padding</span></label>' +
+    /* ⚠️ THE CHECKBOX THAT USED TO BE HERE IS NOW THE THIRD CELL OF THE ALIGNMENT ROW above.
+       ⚠️ `.cwftck` IS NOT PARKED — it is still LIVE in the group-edit drawer (`gEditHTML`
+       renders two of them), so its CSS stays in use. What no longer matches is the pair of rules
+       scoping it INSIDE `.cwftp`; those are harmless and still serve `.cwftpre`. */
     /* ⚠️ THE POINTER CONTROLS ARE GONE (request, 17 Sep 2026: remove "Show pointer" and
        "Pointer position"). `tick` / `tickEdge` STAY in the model, default false, and
        `ftHTML` still draws the tail — so a Free Text widget already saved with one keeps it.
@@ -29535,7 +29790,30 @@ addEventListener('keydown', e => {
    ⚠️ TWO PRESETS CAN NEVER BOTH LIGHT TODAY, because no two declare the same values — but
    nothing enforces it. If a future pair collides both will light, which is the honest
    rendering of an ambiguous state rather than a bug to hide. */
-function cwFtPresetOn(pr){ return Object.keys(pr).every(k => CW.ft[k] === pr[k]); }
+/* ⚠️ ONE PRESET IS ALWAYS SELECTED (request, 21 Sep 2026: "by default the default or header
+   is always any one selected"). THIS REVERSES THE 17 Sep DECISION, which derived the lit tile
+   from the VALUES on every render so that a tile went out the moment you changed a control it
+   owned — the reasoning then was that a remembered tile "would stay lit over settings it no
+   longer describes". That is still true and is the cost of this change; it is stated here rather
+   than hidden, because the request is explicit and the condition it fixes is real: with only two
+   presets left, "neither lit" is most of the states the panel can be in, and it reads as a
+   control that has stopped working rather than as a truthful absence.
+   ⚠️ WHAT THE LIT TILE MEANS NOW is "the preset you started from", not "the settings still
+   match this preset". `data-tip` already says "a starting point", which is exactly that.
+   ⚠️ IT IS DERIVED ON OPEN AND REMEMBERED AFTER. `cwFtPresetKey` runs when the panel is
+   seeded — so editing a widget lights the preset its saved style actually matches — and a press
+   then pins it until another is pressed.
+   ⚠️ IT IS NOT PERSISTED ON THE WIDGET. Nothing new is written to a saved Free Text widget,
+   so a board made before this change still lights the right tile when reopened; the key is
+   re-derived from the style every time. */
+function cwFtPresetOn(pr){ return CW.ft.preset === pr[0]; }
+/* the preset a style matches — `span` is excluded because it is not a control on this panel
+   and the EDIT path's draft deliberately carries none (so updating cannot undo a resize) */
+function cwFtPresetKey(ft){
+  const hit = CW_FT_PRESET.find(pr =>
+    Object.keys(pr[1]).every(k => k === 'span' || ft[k] === pr[1][k]));
+  return hit ? hit[0] : CW_FT_PRESET[0][0];
+}
 
 /* ══ FORMATTING HELP — the reference's own dialog, over THIS renderer (17 Sep 2026) ════
    ⚠️ IT IS CALLED "Formatting help", NOT "Markdown help" (request, 17 Sep 2026: *"change the
@@ -29740,6 +30018,7 @@ addEventListener('keydown', e => {
 function cwFtPreset(i){
   const pr = CW_FT_PRESET[i]; if (!pr) return;
   Object.assign(CW.ft, pr[1]);
+  CW.ft.preset = pr[0];   /* pin it — see cwFtPresetOn for why this is remembered, not derived */
   cwRender();
   toast('Preset “' + pr[0] + '” applied — every option is still editable');
 }
@@ -29991,6 +30270,8 @@ function cwSave(place){
     const plain = (function(t){ const d = document.createElement('div');
                                 d.innerHTML = ftMd(t); return (d.textContent || '').trim(); })(CW.ft.text);
     const ftName = CW.name.trim() || plain.slice(0, 60) || 'Free Text';
+    /* ⚠️ `preset` IS DELIBERATELY NOT IN THE DRAFT — it is editor state, not widget state, and
+       it is re-derived from the style on every open (see `cwFtPresetKey`). */
     const draft  = {text:CW.ft.text.trim(), size:CW.ft.size, color:CW.ft.color, align:CW.ft.align,
                     valign:CW.ft.valign, bg:CW.ft.bg, pad:CW.ft.pad,
                     tick:CW.ft.tick, tickEdge:CW.ft.tickEdge};
@@ -30003,7 +30284,11 @@ function cwSave(place){
     }
     if (!W_USER.some(u => u[0] === ftName)) W_USER.unshift([ftName, 'freetext']);
     cwClose();
-    if (place) awAdd(ftName, 'freetext', draft);
+    /* ⚠️ THE WIDTH IS PASSED ONLY HERE, ON CREATE. `draft` above is what an EDIT writes back
+       with `Object.assign(w0, draft)`, and it omits `span` on purpose: a widget the user has
+       dragged wider must not snap back to its preset's width just because they reopened the
+       editor to fix a typo. Adding span to `draft` would do exactly that, silently. */
+    if (place) awAdd(ftName, 'freetext', Object.assign({}, draft, {span:cwFtSpan()}));
     else toast('\u2713 "' + ftName + '" saved to User Define \u2014 add it from Add New Widget when you need it');
     return;
   }

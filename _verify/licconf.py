@@ -135,7 +135,7 @@ def main():
     #    no `#licPage` and the checker would happily score the placeholder instead — a number
     #    that looks like a verdict on a screen that does not exist.
     # ⚠️ TEST FOR THE TOKEN BLOCK, NOT THE ST_PAGES LINE. The cleared file leaves a comment
-    #    saying "register the new screen as ST_PAGES['Agentic AI › Overview']" — which a naive
+    #    saying "register the new screen as ST_PAGES['Agentic AI › AI Provider']" — which a naive
     #    substring test matches, so the guard never fired and `build()` threw on the missing
     #    rule instead. The scoped token block is what this script actually needs.
     if not re.search(r"\n#agPage[^{]*\{", tokens_source(src)):   # the selector is a list since 7 Sep 2026

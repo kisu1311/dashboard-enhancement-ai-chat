@@ -44,7 +44,12 @@ PROBE = r"""
         typeof ST_TREE!=='undefined'?ST_TREE.length:'undefined');
     ok('ST_ICO populated', typeof ST_ICO!=='undefined'&&Object.keys(ST_ICO).length>20);
     ok('ST_PAGES: License registered', !!ST_PAGES['My Account › License']);
-    ok('ST_PAGES: Agentic AI registered', !!ST_PAGES['Agentic AI › Overview']);
+    /* derived from ST_TREE, not typed — stMainPaint looks a page up as "<cat> › <page>",
+       so a hardcoded name here goes stale the moment the page is renamed and reports a
+       working module as broken (it did, on the Overview → AI Provider rename). */
+    var agCat = ST_TREE.filter(function(c){return c.n==='Agentic AI'})[0];
+    var agPg  = agCat && agCat.subs[0][0];
+    ok('ST_PAGES: Agentic AI registered', !!agPg && !!ST_PAGES['Agentic AI › '+agPg], agPg);
     ok('ST_PAGES: 3 Compliance pages', ['Compliance Policy','Benchmark','Rules']
         .every(function(p){return !!ST_PAGES['Compliance Settings › '+p]}));
     ok('obs-* elements registered', !!customElements.get('obs-table'));
@@ -63,7 +68,7 @@ PROBE = r"""
     ok('License tabs rendered', !!document.querySelector('#licPage obs-tabs'));
     stOpen('Compliance Settings','Compliance Policy');
     ok('Compliance grid rendered', !!document.querySelector('#stMain .stcgrid'));
-    stOpen('Agentic AI','Overview');
+    stOpen('Agentic AI', agPg);
     ok('Agentic AI page rendered', !!document.getElementById('agPage'));
     ok('Agentic AI usage table', !!document.querySelector('#agPage obs-table'));
     /* the list search still works (it is the module's own, not the host's) */

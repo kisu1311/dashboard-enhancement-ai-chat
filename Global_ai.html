@@ -89,6 +89,12 @@
   --g-side-w:288px;
   --g-col:640px;              /* ONE column width: the starters and the composer share it */
   --g-sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  /* ⚠️ THE GREETING IS SET IN A SERIF (request, 21 Sep 2026: "this font style use like claude",
+     with Claude's own "Evening, Ronak" supplied). It is a SYSTEM STACK, not Claude's face — that
+     is a licensed webfont, and this page deliberately loads none at all. `ui-serif` resolves to
+     the platform's own reading serif on macOS and iOS; Georgia is the fallback everywhere else
+     and is the one web-safe serif with a large enough x-height to sit beside this UI at 20px. */
+  --g-serif:ui-serif,Georgia,'Times New Roman',Times,serif;
   /* ⚠️ A SYSTEM STACK, NOT JetBrains Mono. The rest of the folder uses that face for numerics
      and loads it from Google Fonts; this page loads NO webfont at all (the `--g-sans` stack is
      system too), so naming a face nothing fetches would render as the browser's default while
@@ -120,12 +126,32 @@ body{margin:0;background:var(--bg);color:var(--text);
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 
 /* ── shell ───────────────────────────────────────────────────────────────────────────── */
-.gsh{display:flex;height:100vh;overflow:hidden}
+.gsh{position:relative;display:flex;height:100vh;overflow:hidden}
 
 /* ── the chat rail ───────────────────────────────────────────────────────────────────── */
 .gside{flex:0 0 var(--g-side-w);width:var(--g-side-w);min-width:0;display:flex;flex-direction:column;
   background:var(--sidebar);border-right:1px solid var(--border);overflow:hidden}
 body.gshut .gside{flex-basis:0;width:0;border-right:0}
+/* ⚠️ HOVERING THE HISTORY BUTTON PEEKS THE LIST (request, 21 Sep 2026: "when i hover the
+   history icon the show history list").
+   ⚠️ IT FLOATS OVER THE PAGE, IT DOES NOT DOCK. Docking on hover would shift the whole column
+   under the pointer every time you brushed past a 28px button — the peek is out of flow, so
+   nothing reflows and leaving puts it back. Clicking still docks it for real.
+   ⚠️ IT MUST COME AFTER THE `gshut` RULE. Both are (0,2,0), so source order alone is what lets
+   the peek win back the width `gshut` took away. */
+body.gpeek .gside{position:absolute;left:10px;top:46px;bottom:16px;z-index:40;
+  flex-basis:var(--g-side-w);width:var(--g-side-w);
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.45)}
+/* ⚠️ THE PEEK DROPS FROM THE BUTTON, IT DOES NOT COVER IT — `top:46px` clears the header row.
+   Anchored at `top:0` like the docked column it painted straight over `#gOpen`, so the control
+   you hovered to open it could never then be CLICKED to dock it. A probe caught that; it is the
+   same class as this folder's recorded notification-card bug, where a scrim raised over the bell
+   took the pointer off the very control that had opened the card.
+   ⚠️ ITS OWN "Chat history" HEADER IS HIDDEN. The button you are pointing at is the title, and a
+   second one 8px below the first reads as two panels. The collapse control in it would also mean
+   nothing here — there is no docked column to collapse yet. */
+body.gpeek .gside .ghead{display:none}
 
 /* ── the column head — Option 13's `.aihshd`, at its numbers ─────────────────────────────
    ⚠️ THE IRIS MARK AND THE NAME LEFT THIS ROW, and neither is lost from the page: the empty
@@ -135,10 +161,12 @@ body.gshut .gside{flex-basis:0;width:0;border-right:0}
 .ghead{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:11px 10px 9px}
 .ghead b{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gtog,.ghb{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;
+/* the close control shares the header button's box; .gsp is what pushes it to the far edge */
+.gsp{flex:1 1 auto}
+.gtog,.ghb,.ghb2{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;
   border-radius:8px;color:var(--text-dim)}
-.gtog svg,.ghb svg{width:17px;height:17px;display:block}
-.gtog:hover,.ghb:hover{background:var(--hover-side);color:var(--text)}
+.gtog svg,.ghb svg,.ghb2 svg{width:17px;height:17px;display:block}
+.gtog:hover,.ghb:hover,.ghb2:hover{background:var(--hover-side);color:var(--text)}
 /* ⚠️ THE WAY BACK IN IS A ROW ITEM, NOT A FLOATING BUTTON (request, 16 Sep 2026: "proper
    alignment"). It was `position:fixed; left:12px; top:12px` while the header row beneath it
    starts at 18px — so with the column shut the two sat on top of each other and read as one
@@ -241,6 +269,13 @@ body.gshut .ghb{display:grid}
    and otherwise empty, so nothing in it moves. */
 .gmain{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;overflow:hidden}
 body:not(.gshut) .gmain{padding-right:var(--g-side-w)}
+/* ⚠️ THE HEADER DOES NOT PAY THE CENTRING PADDING. That padding exists so the greeting and the
+   composer keep their axis on the VIEWPORT's centre when the history column is docked (17 Sep) —
+   it is about CONTENT. The header is a row of chrome, and inheriting it left the close control
+   288px short of the corner, floating in the middle of the page with nothing to its right.
+   ⚠️ IT CANNOT OVERLAP THE COLUMN: `.gside` is a SIBLING of `.gmain` in the `.gsh` flex row, so
+   this only gives the header back space that is already inside the main area. */
+body:not(.gshut) .ghd{margin-right:calc(-1 * var(--g-side-w))}
 .gwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;
   padding:4px 24px 20px;overflow-y:auto;scrollbar-width:none}
 .gwrap::-webkit-scrollbar{display:none}
@@ -258,6 +293,22 @@ body:not(.gshut) .gmain{padding-right:var(--g-side-w)}
    composer — and it is what makes the greeting centre in what is LEFT rather than in the
    whole column, which is the reference's reading too. */
 .gfoot{flex:0 0 auto;display:flex;justify-content:center;padding:0 24px 26px}
+/* ⚠️ ON AN EMPTY CHAT THE GREETING AND THE COMPOSER CENTRE AS ONE PAIR (request, 21 Sep 2026:
+   "the input box and the Hello Kishan text will be set like claude code", with Claude's own start
+   screen supplied). THIS REVERSES the 16 Sep "it will be set in bottom" and the 17 Sep "it will be
+   set upside the text area" — both of which pushed this block to the floor. Read all three before
+   moving it again.
+   ⚠️ IT IS TWO AUTO MARGINS, NOT `justify-content:center` ON THE COLUMN. `.gsh`'s column also
+   holds the header, so centring its children as a group would float the header down the page too.
+   An auto margin above `.gwrap` and another below `.gfoot` splits the free space either side of
+   the PAIR and leaves everything before the first auto margin — the header — pinned at the top.
+   ⚠️ AND IT IS SCOPED TO THE EMPTY STATE. Once there is a thread the composer must stay docked
+   at the floor, which is exactly why it was moved out of the scroller in the first place; a long
+   thread would otherwise scroll the box you type in off the screen.
+   ⚠️ `.gwrap` KEEPS `flex:0 1 auto`, not `0 0 auto`: it must still be able to shrink and scroll
+   on a short viewport, or a greeting taller than the room is simply unreachable. */
+body:not(.gthread) .gwrap{flex:0 1 auto;margin-top:auto}
+body:not(.gthread) .gfoot{margin-bottom:auto;padding-bottom:0}
 
 /* ── the empty state — Ask Iris's, part for part ─────────────────────────────────────── */
 /* ⚠️ `[hidden]` LOSES TO AN AUTHOR `display` RULE — an author declaration beats the UA
@@ -280,7 +331,20 @@ body:not(.gshut) .gmain{padding-right:var(--g-side-w)}
 .ghome[hidden]{display:none}
 .gbig{display:grid;place-items:center;margin-bottom:14px}
 .gbig svg{width:30px;height:30px;fill:var(--ai-2)}
-.ghome h1{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
+/* ⚠️ THE MARK AND THE GREETING ARE ONE LINE (request, 21 Sep 2026: "the ai icon and text show
+   behand"), which is what the Claude reference shows — mark, gap, words, on one baseline.
+   ⚠️ IT IS A FLEX ROW, NOT AN INLINE MARK. An inline <svg> sits on the text baseline and needs a
+   hand-tuned `vertical-align` that is wrong again the moment the size or the family changes;
+   `align-items:center` centres the two optically with no magic number.
+   ⚠️ THE SIZE IS UNCHANGED AT 20px. Only the family, the weight and the mark's placement were
+   asked for — and a serif with Georgia's x-height reads at the same optical size as the sans it
+   replaces, so nothing else had to move.
+   ⚠️ THE MARK IS 26px, NOT 30. Stacked above the words it was the whole top of the empty state;
+   on one line with them it is beside a 20px cap-height and 30px made the words look small. */
+.ghome h1{margin:0;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em;
+  font-family:var(--g-serif);display:flex;align-items:center;justify-content:center;gap:12px}
+.ghome h1 .gbig{margin:0}
+.ghome h1 .gbig svg{width:26px;height:26px}
 .ghome p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
 /* ⚠️ NO ICON ON A STARTER. `index.html` removed them on 20 Aug 2026: four rows carried a
    tinted glyph and two were the same mark the page already wears, so the column read as
@@ -794,6 +858,18 @@ html[data-theme="light"] #gChart{
       <button class="ghb" id="gOpen" aria-label="Show chat history"
         title="Show chat history"></button>
       <button class="gname" id="gName" title="Start a new chat"></button>
+      <!-- ⚠️ A CLOSE CONTROL, AS AN ICON (request, 21 Sep 2026: "in this screen add close button
+           as icon"). THIS REVERSES the note two lines up, which argued the header row should stay
+           empty because "this is a page — there is nothing to close". It is still a page; what
+           the control does is LEAVE it, which is the one thing a full-screen assistant needs and
+           had no affordance for.
+           ⚠️ IT GOES BACK, IT DOES NOT NAVIGATE SOMEWHERE FIXED. This screen is reached from
+           Option 1's rail, from the variant switcher and by opening the file directly, so a
+           hardcoded destination would be wrong two times in three. `history.back()` returns you
+           where you came from; `index.html` is the fallback for a page opened cold, because that
+           is the one option whose rail carries the row that opens this. -->
+      <span class="gsp"></span>
+      <button class="ghb2" id="gClose" aria-label="Close" title="Close"></button>
     </header>
     <div class="gwrap">
       <div class="gthr" id="gThread" hidden></div>
@@ -830,6 +906,9 @@ const G_IC = {
   up:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 12l7-7l7 7m-7 7V5"/></svg>',
   brain:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4a4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></g></svg>',
   spark:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg>',
+  /* Lucide `x`, pasted verbatim from free-icons/ and rewritten into this file's own G_IC shape
+     (24 viewBox, currentColor, 2px round caps) so it reads as one family with its neighbours. */
+  close:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/></svg>',
   hist:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5m4-1v5l4 2"/></g></svg>',
   tick:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></svg>',
   copy:'<svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></g></svg>',
@@ -994,6 +1073,7 @@ function gIcons(){
      pattern, and `#gBrandM` went with the brand row it painted. */
   $('gTog').innerHTML    = G_IC.left;
   $('gOpen').innerHTML   = G_IC.hist;
+  $('gClose').innerHTML  = G_IC.close;
   $('gSend').innerHTML   = G_IC.up;
   $('gAt').innerHTML     = G_IC.at;
 }
@@ -1009,12 +1089,16 @@ function gHello(){
    two links under a hairline */
 function gHomePaint(){
   $('gHome').innerHTML =
-    '<span class="gbig">' + G_SPARK + '</span>' +
-    '<h1>Hello ' + gEsc(G_WHO) + ', how can I help?</h1>' +
-    '<p>Ask Iris about anything ObserveOps can see &mdash; monitors, alerts, logs, flows ' +
-    'and topology &mdash; or type @ to narrow the answer to one module.</p>' +
-    '';
-  /* ⚠️ THE FIVE STARTERS AND THE Documentation / Support PAIR WERE REMOVED ON REQUEST
+    '<h1><span class="gbig">' + G_SPARK + '</span>Hello ' + gEsc(G_WHO) + ', how can I help?</h1>';
+  /* ⚠️ THE HELP LINE WENT TOO (request, 21 Sep 2026), so the empty state is now the mark and
+     the greeting on ONE line — which is what the Claude reference supplied with the next request
+     shows, and why the mark moved inside the <h1> rather than sitting above it.
+     ⚠️ `.ghome p` IS KEPT AND UNREFERENCED in the stylesheet, like `.gcta` and `.ghelp` below.
+     ⚠️ CONSEQUENCE, STATED, AND IT IS NOW THE WHOLE OF IT: nothing on this screen says what the
+     assistant can be asked or that `@` narrows it. The composer's own placeholder ("Ask, build and
+     act — type @ to add context") is the only thing left carrying either, and it is grey
+     placeholder text inside the box rather than a line you read on the way in.
+     ⚠️ THE FIVE STARTERS AND THE Documentation / Support PAIR WERE REMOVED ON REQUEST
      (16 Sep 2026), so the empty state is the mark, the greeting and one line of help.
      `G_CTA` and `G_HELP` are KEPT AND UNREFERENCED, the house pattern, as are `.gcta` /
      `.ghome > .gcta:last-of-type` / `.ghelp` in the stylesheet — putting either block back
@@ -1427,6 +1511,19 @@ function gCopyFallback(text, done){
   try { document.execCommand('copy'); } catch (e) { /* nothing else to try */ }
   document.body.removeChild(ta);
   done();
+}
+
+/* the hover peek's timers — see the binding below for why both delays exist */
+let gPeekT = null, gPeekIn = false;
+function gPeekCancel(){ clearTimeout(gPeekT); gPeekT = null; }
+function gPeekOpen(){
+  gPeekCancel();
+  if (!document.body.classList.contains('gshut')) return;
+  gPeekT = setTimeout(() => document.body.classList.add('gpeek'), 140);
+}
+function gPeekClose(){
+  gPeekCancel();
+  gPeekT = setTimeout(() => { if (!gPeekIn) document.body.classList.remove('gpeek'); }, 200);
 }
 
 function gThreadPaint(){
@@ -1875,9 +1972,33 @@ function gInit(){
     gNamePaint(); gListPaint(); gThreadPaint();
   });
 
-  const tog = () => document.body.classList.toggle('gshut');
+  /* ⚠️ DOCKING ALWAYS CLEARS THE PEEK. They are two ways to show the same column, and a peek
+     left standing over a docked column is a floating copy of what is already in flow. */
+  const tog = () => { document.body.classList.remove('gpeek'); gPeekCancel();
+                      document.body.classList.toggle('gshut'); };
   $('gTog').addEventListener('click', tog);
   $('gOpen').addEventListener('click', tog);
+
+  $('gClose').addEventListener('click', () => {
+    if (history.length > 1) history.back(); else location.href = 'index.html';
+  });
+
+  /* ══ THE HOVER PEEK (request, 21 Sep 2026) ═════════════════════════════════
+     ⚠️ OPENING IS DELAYED AND CLOSING IS DEFERRED, which is this folder's own kbPop rule and it
+     is load-bearing in both directions: without the 140ms, sweeping the header flashes a 288px
+     column; without the 200ms, the pointer cannot cross the gap from the button to the list it
+     just opened — the recorded rail-flyout bug. The list's own mouseenter cancels the close.
+     ⚠️ IT ONLY ARMS WHILE THE COLUMN IS HIDDEN. `#gOpen` is `display:none` unless `body.gshut`,
+     so this can never fire over a docked column, but the guard states it rather than relying on
+     a CSS rule to enforce a JS precondition.
+     ⚠️ ANY CLICK INSIDE THE COLUMN ENDS THE PEEK. Picking a chat paints a thread behind a
+     floating list that is no longer about anything; `gTog` is handled by `tog` above, which
+     removes the class itself, so clearing it here is safe for that path too. */
+  $('gSide').addEventListener('mouseenter', () => { gPeekIn = true; gPeekCancel(); });
+  $('gSide').addEventListener('mouseleave', () => { gPeekIn = false; gPeekClose(); });
+  $('gSide').addEventListener('click', () => document.body.classList.remove('gpeek'));
+  $('gOpen').addEventListener('mouseenter', gPeekOpen);
+  $('gOpen').addEventListener('mouseleave', gPeekClose);
 
   document.addEventListener('click', () => { gMenuClose(); if (G.ment) gMentHide(); });
   document.addEventListener('keydown', e => {
