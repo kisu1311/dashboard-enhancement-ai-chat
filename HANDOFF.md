@@ -1,274 +1,174 @@
-# Handoff — 2026-09-21 (latest)
+# Handoff — 2026-09-22 (latest)
+
+## Latest — the header icons' hover was pointing the wrong way
+
+Request: *"in header the icon hover color is bad make to improve using the ObserveOps design
+system & using [the] color palette library"*. **One rule and one token pair**, Option 1 only.
+Full reasoning in `CLAUDE.md` → *"The header icons' hover moves AWAY from the header"*.
+
+⚠️ **`--hover` IS THE ROW-HOVER TOKEN AND THESE ARE FILLED CHIPS.** It is this file's copy of
+the product's `--left-menu-hover-bg`: it takes a row with **no fill** to a faint mark. On an
+already-filled chip it sends the fill back toward the page, so the button **faded out at exactly
+the moment you pointed at it** — in **both** themes, measured against `--header`:
+
+    dark    rest #2b394f 1.63:1  →  was #101d30 1.12:1   (93% of the way back to the header)
+    light   rest #e7ecf4 1.19:1  →  was #f0f4f9 1.10:1
+    now     dark 1.63 → 2.68     light 1.19 → 1.27
+
+⚠️ **THE DS COULD NOT ANSWER IT — AN ELEVENTH 0.1.166 DEFECT, now in `_ds/README.md`.**
+`get_component('button')` routes this control exactly (*"quiet utility in toolbar →
+neutral-lightest"*, *"icon-only → icon button"*) and documents the hover as *"bg darkens"*, but
+the shipped bundle defines `.v-neutral-lighter:hover` and `.v-neutral-lightest:hover` **nowhere**
+(0 each) and never references `--neutral-button-hover-bg` — so the catalogue's most-used variant
+(**320×**) has **no pointer feedback at all**. That unreferenced token is `rgb(70,70,70)` in dark,
+an off-ramp grey in an all-navy theme, and *lighter* than its own resting fill in light.
+
+⚠️ **SO THE VALUE IS THE PRODUCT'S OWN NEXT RAMP STEP**, and one token carries it in both
+themes — **`--pan-btn-border`**, the pan buttons being the product's own small icon-only overlay
+controls whose fill `--pan-btn-bg` is already `#2b394f`, i.e. what this chip rests at:
+
+    --chip-hover    dark #485975    light #dee5ed
+
+one step FURTHER from the page than `--tag-bg-color` in each theme. **A new pair was honest, not
+lazy**: nothing already here is one step away in both (`--track` is right in dark and a slab in
+light), and one `color-mix` percentage cannot serve both, because the light chip starts far
+closer to its page than the dark chip does to its own.
+
+⚠️ **LIGHT'S STEP IS THE SMALL ONE AND IT IS THE THEME, NOT THE PICK** — ~0.17 of luminance
+between `--chip` and white to work in. Side by side it reads against its resting neighbours at
+1.07:1, confirmed from the painted pixels. `--chip-hover` is the one dial.
+
+**Verified:** a **22-assertion probe that reads the CASCADE** (exactly one rule sets this hover,
+it names `--chip-hover`, no stale `--hover`, `.btn:hover` still less specific), with the hover
+forced by a stand-in class at **equal specificity** so source order decides as `:hover` would —
+**ALL 22 PASS**; screenshots dark/light × old/new with the middle button hovered.
+⚠️ **Two of its first failures were the probe's own:** `.pagehead` paints **no fill**, so
+`backgroundColor` is `rgba(0,0,0,0)` and every ratio was measured against **black**. Walk up to
+the first opaque ancestor before computing a contrast against "the background".
 
 ## Read first
 
-**Sixteen narrow requests in one sitting, all Option 1 (`index.html`)** — a carried-over Free Text
-task plus fifteen screenshot-driven follow-ups, almost all of them about the **empty-group / Edit
-group drawer** and the **Free Text widget**.
+**Thirteen requests in one sitting, all Option 1 (`index.html`)** — the Edit-group drawer, the
+group ⋮ menu, Ungroup, a new Header pattern feature, and a broad clean-out of the dashboard
+header. Everything is in `CLAUDE.md` under **"The 22 Sep 2026 pass (later)"**, and every change
+site carries its own comment.
 
-⚠️ **THE FIRST ONE WAS A LATENT BUG, NOT A MISSING FEATURE, AND IT IS THE THING TO CARRY FORWARD.**
-The task was *"add edit option in free text widget"*. There was nothing to add: **the ⋮ was already
-there and had been unreachable since the overlay was written on 17 Sep.**
+⚠️ **TWO RECORDED DECISIONS WERE REVERSED ON REQUEST, and both old notes are rewritten in place
+with a warning rather than deleted:**
 
-    .widget.wft .whead{ … font-size:0 }      /* to hide the title, which is a bare text node */
-    .wdots                                   /* IS the text character ⋮ — it declares no size */
+- **Transparent is a row of the Header colour list again** (it was pulled out into a checkbox on
+  19 Sep). The cost is real and is the price of the move: a checkbox OVERRODE the colour, so
+  unticking brought back what you had picked; a row REPLACES it.
+- **Layout settings is a row of the ⋮ actions menu again** (it became a toolbar button on
+  27 Aug). Its `dmAct('layout')` branch had been kept unreferenced against exactly this — and the
+  row is BETTER than the button was, because it opens the drawer on a NAMED board.
 
-So on every Free Text widget the kebab rendered as a **zero-width, invisible span**: Edit Widget,
-Clone, Full screen and Remove were all unreachable. The fix is one rule
-(`index.html:8517`). **The header's other children survived because each declares its own size** —
-`.wgrip` 11px, `.wremove` 11px, `.wtime` 10px, `.wai` an 18px box — which is exactly why it read as
-*"a note has no actions"* rather than as a CSS fault: the corner still painted a grip and a time
-chip, so nothing looked broken.
+## What changed
 
-**The rule: give a control a size; never lift the 0.** Any future child of that header that is a
-GLYPH rather than a BOX needs the same line.
-
-⚠️ **I BUILT A PENCIL BUTTON AS THE FIX FIRST, AND IT WAS THE WRONG FIX.** It passed 12 assertions
-and was removed within the hour — *"remove edit icon because the edit option is already in '3 dot'"*.
-**Fixing the affordance that was supposed to exist beat adding a second one.** `.wedit` and
-`ICONS.pencil` are parked and unreferenced.
-
-Everything is in `CLAUDE.md` under **"The 21 Sep 2026 pass — a note's actions, the group header, and
-the Edit-group drawer"**. It supersedes parts of the 17–19 Sep entries above it: the widget and group
-drag grips, "Title size", and what `No padding` does.
-
-## What this session changed
-
-    index.html    the .wdots rule; both grips out of flow with the cursor on the headers; the
-                  caret as a real glyph; four `No padding` tokens; Alignment + Title size in the
-                  Edit group drawer; the transparent-header sticky fix; the group navigator;
-                  W_GROUP_OPT down to two tiles
-    CLAUDE.md     the new "21 Sep 2026 pass" section
+    index.html    the drawer (banner out, Transparent in the colour list, one hugging row of
+                  No padding | Alignment | Share, a masked Header pattern, Reset | Save);
+                  four product glyphs on the group menu; gUngroup; six controls off the
+                  toolbar with Share and Layout settings into the menu; 50px head; an
+                  ellipsising crumb; the board flush under the time strip; three Group-tab seeds
+    index.html    (later) --chip-hover in both theme blocks; .pagehead .btn.ico:hover
+    _ds/README.md (later) the eleventh 0.1.166 defect, with its measurements
+    CLAUDE.md     two new sections
     HANDOFF.md    this file
 
-⚠️ **`setting.js` WAS NOT TOUCHED THIS SESSION.** It is dirty in the tree from two sessions ago
-(`#cwModal` in both scoped DS token openers). `node --check` is clean on it; that is not this work.
+**Options 2—14 are untouched** and keep the old toolbar, the old drawer and a menu of bare text.
 
-⚠️ **COMMITTED AND PUSHED — `9ef647d`, 21 Sep 2026.** All four files went up together, including
-the `setting.js` change from two sessions ago (its diff is symmetric across the dark and light DS
-token openers and `node --check` is clean, but it was not reviewed here).
+## The two things worth carrying forward
 
-⚠️ **THAT PUSH ALSO CARRIED `46dfacf`, WHICH HAD BEEN SITTING UNPUSHED** — the range was
-`63daf4a..9ef647d`, i.e. the remote was TWO commits behind, not one. *"Empty group option 2"* was
-committed locally in an earlier session and never pushed, so it went live with this work. **Check
-`git log origin/main..main` before assuming a local commit is published.**
+### Ungroup — the report was about what it LOOKED like, and it was measured first
 
-⚠️ **THE FORMATTING-HELP IMAGE ROW NOW HOTLINKS A SIGNED FACEBOOK CDN URL ON A PUBLIC SITE**
-(`index.html`, `CW_FT_MD`). It is not an internal identifier, so the RFC 5737 scrub rule does not
-catch it — but it carries a signature (`oh=`) and an expiry (`oe=`), it points at a personal photo
-asset, and it is now in public git history permanently. It was raised before the push and the push
-was reaffirmed. When it expires the row renders its alt text; swap in any reachable image, or put
-the `data:` URI back from git.
+        ['Application Performance'(11), 'New group'(0)]  ungroup the first
+        click 1  —>  TABS=['New group'] widgets=[11]     one header still on screen
+        click 2  —>  TABS=[''] ungrouped=true            flat
 
-## The requests, and what each one actually cost
+The band WAS dissolved on the first click — its widgets merged into the neighbour, which is what
+Ungroup has always meant here. The neighbour was **empty**, so the reader saw the same eleven
+widgets under one header with a different name.
 
-| asked | what it took |
-|---|---|
-| the ⠿ grips: *"remove only icon don't remove functionality"* | **two passes** — see below |
-| Transparent + No padding *"side by side"* | one `.gepair` row on the drawer's existing two columns |
-| *"when i apply No padding … the border will be remove"* | **four declarations**, not one |
-| *"remove headder below line when i select the 'Transparent' & 'No padding'"* | a fifth, gated on **both** |
-| *"ADD TEXT ALIGNMENT LIKE 'FREE TEXT'"* | aligns the group's **TITLE** — `CW_FT_ALIGN` reused, no second list |
-| *"THE TEXT size will be improve like free text"* | the searchable `cwFtDD` over `CW_FT_SIZE`; **the seed had to move too** |
-| *"the 'down' arow & hadder text will be align"* | the caret became a real glyph |
-| *"the text is show left … the center text alignment the text will be set on center"* | a `max-width` cap, and a green assertion that hid it |
-| *"the arrow will be set no left margin"* | the fourth `No padding` token |
-| *"option 3 empty group remove option3 only in 'Add New Widget'"* | one line of `W_GROUP_OPT` |
-| *"remove the right alignment only"* / *"remove the 'Vertical alignment'"* | **picker-only** withdrawals |
-| the group navigator (ChatGPT's canvas reference) | `gNav*` + its CSS |
-| *"make the minimal ui visualization … when 2 group then show only 2 line"* | the mark **counts** now, and the card round it went |
-| *"it will be show out side of empty group"* | the board gives up a **derived** left gutter — **reversed hours later, see below** |
-| *"[it] will be show right side … make minimal space"* | the gutter is **deleted**; the mark fits the board's own 14px inset |
-| *"this X line width USE 4PX"* | one token drives both axes — the bars are 4×4 dots |
-| *"in the empty group the show scrollbar"* | the empty band's floor 96px → **56px**; five of them fit again |
+⚠️ **AN EMPTY BAND CANNOT BE WHAT KEEPS A BOARD GROUPED.** If every other band holds nothing they
+are drop areas, not content, so dissolving the one band with widgets flattens the board. A board
+with widgets in two bands is untouched. **Cost, stated:** the empty bands go with it, one undo away.
 
-### The navigator: the mark counts, and then the board made room for it
+### The header pattern is a MASK
 
-> ⚠️ **THE SECOND HALF OF THIS WAS REVERSED THE SAME DAY.** The 45px gutter is gone and the
-> mark is on the RIGHT — see *"Then it moved right, and the board took the 31px back"*
-> below. What is kept here is why the left-hand placement needed a gutter at all.
+⚠️ **A `background-image` CANNOT BE TINTED.** A data-URI pattern would carry baked-in ink and be
+wrong in one theme. `.ghead.gpat::after` masks with `--gp` and paints `--gp-ink` (white dark /
+black light), so the theme is the cascade's job and there is no JS. The path inside the URI is
+`#000` at full alpha **because a mask reads alpha** — that is not the pattern's colour.
+⚠️ **`encodeURIComponent` ON THE WHOLE SVG.** One string has to be safe inside a CSS `url(...)`
+AND inside an HTML `style="..."`; a partial escape breaks one of the two silently.
+⚠️ **THE 14px SWATCH IS A PREVIEW OF THE SHAPE, NOT THE INK** — a chip is a `background` and
+cannot be masked, so its path is a neutral `#888`.
 
-Two follow-ups, and the second is the one with a cost worth stating.
+## Measured, and it did NOT reproduce
 
-**It counts.** The collapsed mark was **four fixed bars at alternating 16/11px widths inside a
-bordered card** — a drawn "list" glyph — so a two-group board's mark said four. `gNavPaint` emits
-`TABS.length` of them now, reading the **same array** the list below it maps, so the collapsed
-count and the open rows cannot drift and every path that already repaints the nav moves the bars
-for free. The alternating widths went with the count and **that is not tidying**: once a bar IS a
-group, two widths claim a per-group difference that does not exist. The card's border, fill and
-shadow went too — the **padding stayed**, because it is the only hit area a 2px bar has.
+⚠️ **THE TRANSPARENT HEADER IS STICKY AGAIN — A SECOND REPORT ASKED FOR IT.** The first
+read as *"it is fixed and widgets show through it"* and did not reproduce (below); the second
+said plainly *"the header position fix in scroll time ... and don't overlay the header on
+inside widget"*. Both are met by painting `--bg` instead of `transparent` and leaving `sticky`
+alone — the canvas colour is what shows through a transparent strip at rest anyway, so it
+looks the same standing still and hides the widgets once stuck. **`background:transparent` is
+the one value that makes the two requests contradict each other.**
 
-**Then it had to get out of the group's way.** Measured: the mark ran **70–91px** while the group
-box started at **68** — it was painted on the box's border, its header fill and the first letters
-of its name, on every board with more than one group.
+⚠️ **THE ORIGINAL MEASUREMENT, KEPT:** Reported as *"when i select transparent with no
+padding the header title will be set fix when i scroll"*. At 1600×900 scrolled 420px, every
+combination: plain header `sticky` with 3 widgets hidden behind its own fill (which is what sticky
+is for); **Transparent, Transparent-as-a-colour, Transparent + No padding and the option-2 band all
+`position:relative` with ZERO widgets overlapping.** That early return is gone now; what replaced it is above.
 
-⚠️ **THE MARK COULD NOT MOVE, SO THE CANVAS DID.** `.gnav` is absolute inside `.dwrap`, which
-begins at the rail; the only room to its left was `.pagebody`'s 14px inset and the control is
-28px wide. `.pagebody`'s **left padding** grows instead — and **every number in it is a token**:
-`--gnav-x` + `--gnav-pad` + `--gnav-bar` (the three the mark itself reads) + `--pb-x`, which is
-`.pagebody`'s own horizontal inset rather than a second `14px`. 45px today, and it follows a moved
-mark, a resized bar or a changed board inset on its own.
-
-⚠️ **`.dwrap:has(#gNav)` is exact**, because `gNavPaint` REMOVES the element below two groups
-rather than hiding it — so a flat board, a one-group board and the page's other two `.pagebody`
-scrollers keep their 14px with no second test. It wins on **weight**, not source order: `:has()`
-carries its argument's specificity, so the id inside makes it (1,2,0).
-
-⚠️ **CONSEQUENCE, STATED:** a multi-group board is now **31px narrower** than a flat one. At
-1600 the group box still measures 1488px and nothing overflows — it is the price of the mark
-having somewhere to stand, and only boards with a navigator pay it.
-
-### The grips took two passes, and the second is the one worth remembering
-
-Pass one deleted both reveal rules, so the span rested at `opacity:0` **keeping its box, its
-`cursor:grab` and its tooltip**. Pass two removed the glyph from `WGRIP` — and **the box went with
-it**:
-
-⚠️ **`flex:0 0 auto` ON AN EMPTY SPAN MEASURES 0 WIDE.** The box I had said I was keeping was
-already gone, and the grab cursor it existed to carry with it. An invisible 0px element is not a
-handle, it is a leftover. **A probe assertion caught this** — nothing on screen could have.
-Both grips are `display:none` now and **`cursor:grab` moved onto `.whead`** (`.ghead` already had
-it), which is where the group's handle has always been. Its `data-tip` went too: a tooltip over an
-invisible mark pops up when the pointer crosses empty header and names a control nobody can see.
-
-⚠️ Removing the group grip also **re-aligned the header**, which is half of *"make the proper
-alignment"*: invisible but still 8px wide plus the row's 9px gap, it was pushing the caret and the
-title 19px in from the strip's edge with nothing to show for it.
-
-### `No padding` is four declarations, and each was found by the next screenshot
-
-    --gv-pad:0                 the box's padding — the original control
-    --gv-line:transparent      with no padding the outline sits hard against the strip
-    --gv-hm:0 0 10px           ⚠️ `.ghead`'s margin is the INVERSE of that padding
-    --gv-hpad:8px 0            the strip's own inset, so the caret reaches the edge
-
-⚠️ **`.ghead`'s `margin:-10px -12px 10px` IS THE INVERSE OF THE BOX'S PADDING.** At `--gv-pad:0` it
-stops cancelling anything and starts pulling the strip **12px past the group's own edges**.
-
-⚠️ **NONE OF THEM IS `border:0` OR A REMOVED MARGIN** — every one keeps its 1px or its box, so
-ticking a checkbox never also moves the group's widgets by a pixel.
-
-The header's own `border-bottom` goes **only with Transparent as well**: a title strip is a fill
-plus a rule, and with the fill gone the rule is the last thing drawing it; with the box's border
-gone too it is a line ruled across the canvas belonging to nothing.
-
-### A transparent header cannot be sticky — a real bug, found on the way
-
-Reported as *"the scroll time the header is fix"*, with the group's name painting straight across a
-row of donut widgets.
-
-⚠️ **`position:sticky` WORKS BECAUSE THE STRIP'S OWN FILL HIDES WHAT PASSES UNDER IT.** With
-`background:transparent` there is nothing to hide it, so a stuck header is just floating text over
-moving content. `gStyleCSS`'s `transp` branch emits `position:relative;top:auto;` — **the same one
-test that removes the fill removes the stickiness**, so the two cannot disagree. `relative`, not
-`static`, because `.ghead.gban::before` needs a positioned ancestor. **Centring made it obvious; it
-did not cause it** — the bug predates the alignment control.
-
-## Two consequences, stated rather than quietly absorbed
-
-- ⚠️ **CENTRE LANDS ~62px (4%) LEFT OF THE HEADER'S TRUE MIDDLE.** The title takes 1316 of 1517px;
-  the count chip and the ＋/⋮ still sit to the right. Exact centring needs the title absolutely
-  positioned across the strip, which moves the count chip and puts a full-width box under the ＋ —
-  **not done for 4%**.
-- ⚠️ **`right` ALIGNMENT AND `Vertical alignment` WERE WITHDRAWN FROM THE PICKER, NOT THE MODEL.**
-  `gAlign`/`gStyleCSS` still honour `right`; `GRP_VALIGN`/`gValign` still emit `--gv-align`. A group
-  styled before either withdrawal **keeps the position it was given**. Conflating "stop offering it"
-  with "remove it" is how a saved board changes under its owner. `GRP_ALIGN_OK` names the two that
-  are offered.
-
-## The two things a probe could not have told me
-
-- ⚠️ **`.gnm`'s OWN `max-width:340px` IS WHY CENTRE DID NOT LOOK CENTRED — and my assertion PASSED
-  on it.** The title's box measured 340px and the probe asked whether it was *"wide enough"*. It was
-  340 because it had hit its **cap**, not because it had taken the slack, so on a 1400px header the
-  words were centred inside the leftmost 340px. **Assert against the container, never against a
-  number.** No failure ever reported this; the user's screenshot did.
-- ⚠️ **A DEFAULT HAS TO BE A VALUE THE CONTROL CAN RENDER**, not just one the renderer understands.
-  Title size showed a bare **"M"** for an hour: `gStyleOf`/`gStyleMake`/`gEditReset` still seeded
-  `size:'M'` while the control now reads `CW_FT_SIZE`, and `gSizePx` degrades an unknown key to 0 —
-  so the board looked right and the field was wrong. Seeding is part of swapping a control.
+⚠️ **ONE THING THE SAME RUN FOUND AND IS UNEXPLAINED:** with **No padding and a FILL**, a hit test
+at the sticky strip's left and right ends lands on a widget's `svg` and on a `.wrzE` grip rather
+than on `.ghead`; the padded control returns `ghead` at all three samples. The boxes are identical
+(68..1585 against a section of 67..1586), so it is paint order, not geometry. Not chased.
 
 ## Verification
 
-### Then it moved right, and the board took the 31px back
+    grpdrawer.py   ALL 48 PASS
+    hdprobe.py     ALL 33 PASS
+    seedprobe.py   ALL 15 PASS
+    lxbehave       ALL 57 PASS
+    ungprobe.py    measured — one click flattens; the three-band case unchanged
+    stickprobe.py  measured — the table above
+    node --check   clean
+    harness query  ALL 77 PASS × 16 pages, all seven resolutions — see the note below
+    hovprobe.py    ALL 22 PASS — the header hover, read through the cascade
 
-Three more asks in one message. **The gutter lasted about an hour.**
+Screenshots in the scratchpad's `shots22/`, dark and light, each painting its own measurement into
+a badge: Mesh over Blue, Dots, Waves over Transparent, the drawer, the ⋮ menu, the Group tab, the
+scrolled board with no gap.
 
-    was                         is
-    left:var(--gnav-x)          right:calc(var(--gnav-x) + var(--pb-sb,0px))
-    45px of board given up      nothing - the :has(#gNav) rule is deleted
-    bars 14 x 2px               bars 4 x 4px, ONE token driving both axes
-    mark box 28 x 23            mark box 14 x 27 - exactly --pb-x wide
-    grid 1488px @1600           grid 1519px
+## Open — carried forward
 
-⚠️ **"NO GUTTER" DID NOT MEAN "LET IT OVERLAP", AND I NEARLY BUILT THE LITERAL VERSION.** An
-18px mark at `right:10px` spans 1572–1590 against a group box ending at **1586** — 14px on the
-box, i.e. the original complaint reappearing on the other side, and **worse there**: the group
-header's right end is where `.gact` puts the group's ＋ and ⋮, so the mark would cover
-**controls**, not just paint over a name. The mark is sized to the inset instead — probed at
-mark-left 1586 against box-right 1586, so it abuts and overlaps nothing.
+- ⚠️ **THE LAYOUT HARNESS PASSED, AND IT WAS RUN OVER EVERY PAGE RATHER THAN ONE.**
+  `harness.py ... query` reports **ALL 77 PASS** on `index.html` and on the other fifteen pages
+  — the 50px header and the board's new 14px scroller MARGIN change vertical geometry at all
+  seven resolutions, so the whole set was checked rather than the one file that moved.
+  ⚠️ **Read the verdict out of `_out/h-<file>-query.html` under `--dump-dom`** and take the LAST
+  `ALL n PASS` match; the script's own stdout only says a PNG was written.
 
-⚠️ **`--gnav-pad` IS `(var(--pb-x) - var(--gnav-bar)) / 2`**, so the mark is always exactly as
-wide as the board's own inset. That is what forced `--pb-pad` / `--pb-x` up to **`:root`**:
-`.gnav` is a child of `.dwrap`, an **ancestor** of `.pagebody`, so a token on the scroller could
-never reach the mark. It must be a **theme-independent** `:root` rule — in the dark block alone,
-light theme drops the whole `padding` declaration, because a `var()` with no value is invalid.
-
-⚠️ **`--pb-sb` IS MEASURED, NOT ASSUMED** — `gNavPaint` publishes `offsetWidth - clientWidth`
-on every paint. 0 on macOS (overlay scrollbars reserve nothing), ~15px where they take layout
-space. Without it the mark is painted on the scrollbar it would then block.
-
-⚠️ **THE COSTS, STATED:** the hit target went 28×23 → **14×27**, and at 4px the stack now reads
-as a vertical **⋮**, which in this very app means *more actions* (the widget and group kebabs).
-It is a hover control and the height carries the target, but both are worth knowing; `--gnav-pad`
-is the one dial, and raising it starts the overlap above.
-
-### The empty band's floor: 96px → 56px
-
-*"in the empty group the show scrollbar"* was its own defect. **Measured:** a group costs its band
-+ 65px of header and padding + a 16px margin, so at 96 the **fifth** empty group pushed the board
-to **907px inside a 717px scroller** — a scrollbar on a board with nothing on it. At 56 five come
-to 697px and fit (probed 717 vs 717).
-
-⚠️ `.gdrop` is an **empty div** — its `svg` / `color` / `font-size` rules are vestigial — so
-nothing inside it is clipped. ⚠️ **It is not `GRP_RZ_MIN`**, which is also 96 and clamps a
-*dragged* option-2 group's height. Two numbers, two jobs; do not fold them.
-
-    gedit21.py                ALL 92 PASS   (session scratch dir) - re-run after BOTH navigator passes
-    navright.py               ALL 26 PASS   right-anchored · no gutter · 4px dots · 5 groups do not scroll
-    navmin.py                 ALL 20 PASS   the mark counts · the card is gone
-    navout.py                 STALE         asserts the deleted gutter - superseded by navright.py
-    </style>  substring 1  ·  line-start 1
-    comment balance           2748 / 2753 — the SAME +5 as `git show HEAD:index.html`, i.e. pre-existing
-    node --check              clean — index.html's main block and setting.js
-    screenshots               drawer · centred header · No padding · navigator (shut + open), both themes
-
-⚠️ **SIX OF THE TEN FAILURES ACROSS THE RUNS WERE THE PROBE'S OWN MODEL**, each a recorded trap: the
-seeded board is FLAT so `ungrouped` stays true and **no `.ghead` renders at all** unless the probe
-sets it; `getBoundingClientRect()` on the section **includes its 1px border**, so every "starts at
-the edge" expectation was off by exactly 1; `.gtog` adds 4px of its own padding in front of the
-caret; two assertions were written against the pencil and the grip's box minutes before both were
-deliberately removed; and **`awAdd` scrolls the canvas to its end**, so "at rest" after adding
-widgets is the BOTTOM of the board and the navigator's mark is correctly on the LAST group.
-**Read a probe failure before believing it.** Two were real, and both are above.
-
-## Open — carried forward, and what I would do next
-
-- ⚠️ **A NOTE STILL DRAWS THE `today` TIME CHIP** although a Free Text widget has no time range.
-  Not asked for, easy to drop — one test in the header builder.
-- ⚠️ **ALL OF THIS IS OPTION 1 ONLY.** Options 2–14 keep the old three-row group ⋮ menu, the text
-  glyphs, no drag, no Edit group, both dashed Empty group tiles and **the invisible ⋮ on every Free
-  Text widget** — that bug is still live in every other page that has the overlay.
-- ⚠️ **Options 1 and 3's Empty group tiles were byte copies; option 3 is now GONE** (21 Sep). Two
-  tiles remain with **identical artwork**, so the corner chip is the only thing saying which design
-  you are adding — option 2's difference shows on the BOARD, not in the picture. The chip and
-  `.awgopt`'s rule both go when one design is picked.
-- ⚠️ **`#licHistDr` IS IN `setting.js`'s DARK TOKEN OPENER AND NOT THE LIGHT ONE** — measured two
-  sessions ago, still not fixed, still out of scope (License page). Confirm first whether that
-  screen has been reviewed in light with the dark panel showing; fixing it changes how it has looked.
-- ⚠️ **The named colours and the DS picker store different things** — a name (theme-aware
-  `color-mix`) against a flat hex. A board saved with a custom colour will not follow a theme change.
-- ⚠️ **The Free Text panel's `Font Size` / `Alignment` pair is capped at 232px while the colour pair
-  runs full width** — both were explicit requests, recorded rather than reconciled.
-- ⚠️ **`behave.py` (the `ac*` chat panel) still has no fresh verdict** — nothing in the last three
-  sessions touched that panel.
+- ⚠️ **UNDO AND THE OUTLINE ARE KEYBOARD-ONLY ON THIS PAGE NOW.** Nothing on screen announces
+  either; the `?` sheet is where they are written.
+- ⚠️ **THE ⋮ MENU HAS GLYPHS AND THE WIDGET ⋮ MENU DOES NOT.** They are on the same board. Its
+  seven rows need seven more glyphs, three of which the product set has no name for.
+- ⚠️ **`layer-group` ON Ungroup IS A STATED READING** — the product set has no ungroup mark, so
+  that row names the OBJECT where the other three name their verb. Lucide's `shapes/ungroup` is
+  the swap if a stroke glyph beside three fills is acceptable.
+- ⚠️ **The board's top gap is 14px and does NOT scroll** — it is a margin on `.pagebody`, i.e.
+  outside the scroll container. `#dashGrid`'s padding and `.pagebody`'s own must both stay 0, or
+  the 17 Sep sticky-header fix is undone.
+- ⚠️ **The drawer footer is `Reset ⋮ Save`** — the primary sits LEFT of the secondary, the
+  opposite of this file's convention everywhere else. Asked for twice in one message.
+- ⚠️ **Title size is alone in its row now**, so it shares a WIDTH with the Share switch but not
+  a right edge. The request named the width.
+- ⚠️ **The Group tab's three rows are SEEDS on other boards** and the registry is still
+  session-level — a reload restores exactly those three.
+- ⚠️ **Nothing here is committed or pushed.** The pin-tooltip, Ungroup and shared-group work from
+  the previous sessions is also still uncommitted (`git status`: M CLAUDE.md, M HANDOFF.md,
+  M dashboard-rail-flyout-alt3.html, M index.html).
+- ⚠️ Still standing from before: `#licHistDr` is in `setting.js`'s dark token opener and not the
+  light one; a note still draws the `today` time chip; named colours and the picker store different
+  things (a name is theme-aware, a hex is not).

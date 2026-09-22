@@ -144,5 +144,30 @@ colours and no layout at all.
   root (the corner-radius hook's mechanism) — which the conformance checker then reports as the
   variant "rendering off-reference", so the honest fix is to pick a variant that is legible.
 
+- **⚠️ THE TWO MOST-USED QUIET VARIANTS HAVE NO `:hover` RULE AT ALL, AND THE TOKEN THAT
+  EXISTS FOR IT IS DEAD CODE.** Measured 22 Sep 2026 by counting occurrences in the bundle:
+
+      .v-neutral-lighter:hover     0 occurrences
+      .v-neutral-lightest:hover    0 occurrences
+      --neutral-button-hover-bg    0 occurrences   (never referenced by the shipped CSS)
+
+  So `neutral-lightest` (**320×**, the catalogue's most-used variant) and `neutral-lighter`
+  (17×) render with **no pointer feedback whatsoever**, while `get_component('button')`
+  documents the hover state as *"bg darkens"* and routes every *"quiet utility in
+  toolbar/list/grid/filter"* to exactly those two. The variants that DO define a hover are
+  `.v-primary` (+ the navy-fallback family) and `.v-default`.
+  ⚠️ **AND THE UNREFERENCED TOKEN IS OFF-RAMP IN DARK.** `--neutral-button-hover-bg` resolves
+  to `#ecf1f9` light and **`rgb(70, 70, 70)`** dark — a raw grey it shares only with
+  `--grid-header-solid-bg` and `--neutral-shadow-light`, in a theme whose every other surface
+  is navy. Its light value is also *lighter* than the `#e3e8f2` it is the hover for, i.e. it
+  moves a filled chip TOWARD a white page — the opposite of the documented "bg darkens".
+  ⚠️ **Consequence for anything built here:** the DS cannot hand you a hover for a filled
+  neutral control, so derive one from the palette's own ramp instead. The header's three icon
+  buttons in `index.html` use `--chip-hover`, declared per theme as the product's **own next
+  ramp step either side of `--tag-bg-color`** — `#485975` dark / `#dee5ed` light, which is one
+  product token, `--pan-btn-border` (the pan buttons being the product's own small icon-only
+  overlay controls, whose fill `--pan-btn-bg` is already `#2b394f`). See the comment at
+  `.pagehead .btn.ico:hover`.
+
 All of these are worked around at the call site — the `ag*` block, and (for `obs-modal` and
 `obs-button`) the `cwFt*` / `gEdit*` blocks of `index.html`.

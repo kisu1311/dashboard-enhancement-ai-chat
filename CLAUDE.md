@@ -8546,6 +8546,637 @@ deliberately removed. **Read a probe failure before believing it** — but two w
 box above, and the 340px cap, which **no failure reported at all** because the assertion written
 for it was satisfied by the cap itself.
 
+## The 22 Sep 2026 pass (later) — the group drawer, the group menu, and the dashboard header
+
+Thirteen narrow requests in one sitting, all **Option 1** (`index.html`). ⚠️ Where they conflict
+with the 17—21 Sep entries above, this section is current — in particular the Header banner field,
+the Transparent checkbox, the toolbar's undo/redo, its ✦ Iris pill, Share, Layout settings,
+Create-new-dashboard and the outline toggle are all gone.
+
+| request | what changed |
+|---|---|
+| *"remove 'header banner' option in empty group option 2"* | the field went; the renderer stayed |
+| *"the 'Transparent' will be set in 'header color'"* | Transparent is a row of the colour list again |
+| *"no padding and alignment will be set in single div"*, *"share will be show in alignment behind"* | one hugging flex row: **No padding ⋮ Alignment ⋮ Share group** |
+| *"the all action add icon"* (the group ⋮ menu) | four product glyphs, one per row |
+| *"when i click 'ungroup' the first time [it does] not remove"* | one click flattens when every other band is empty |
+| *"add new header pattern"* (five banner references) | a masked **Header pattern** dropdown, option 2 only |
+| *"show 3 pattern and no pattern option"*, *"beside the header colour dropdown"* | three patterns; the field pairs with Header colour |
+| *"remove the 'undu & redu'"*, *"remove the 'AI' button"*, *"remove the 'create new dashboard'"*, *"remove the 'toggle dashboard outline'"* | four controls left the toolbar |
+| *"share will be move inside the '3 dot action'"*, *"the layout setting will be move '3 dot action'"* | two rows joined `openDashMenu` |
+| *"the header height is 50px"*, *"improve the breadcome"*, *"remove the no need divider line"* | 50px, an ellipsising crumb, and a separator that hides with its button |
+| *"in header top right 3 icon will be show background color remove the border"* | filled chips |
+| *"the gap is always show dont do this"* (timeline —> widgets) | `#dashGrid`'s top padding is 0 |
+| *"in add new widget the set 3-4 show for demo"* | three seeded rows in the Group tab |
+| *"reset button will be show behand the done button"*, *"'done' will be change as 'save'"* | the drawer footer is **Reset ⋮ Save** |
+
+### ⚠️ THE TWO REVERSALS, AND WHY NEITHER IS A MISTAKE BEING REPEATED
+
+- **Transparent went back into the Header colour list**, reversing the 19 Sep request that pulled
+  it out into a checkbox. The 19 Sep argument was that *"the absence of a colour is a different
+  KIND of choice"*; what beats it is that the two are **mutually exclusive** — a header is filled
+  or it is not — and a list is how this drawer already asks every other either/or question about
+  that strip. **The cost is real and is the price of the move:** as a checkbox it OVERRODE the
+  colour, so unticking brought back what you had picked; as a row it REPLACES it.
+- **Layout settings went back into the ⋮ menu**, reversing the 27 Aug move that made it a toolbar
+  button. Its row's `dmAct('layout')` branch had been kept and unreferenced against exactly this,
+  and its own note said so — so the move is one row, not a rebuild. The row is also **better than
+  the button was**: it opens the drawer on a NAMED board (`if (dashState.cur !== n) pickDash(n)`),
+  which the toolbar control could never do.
+
+### Ungroup — one click, and the report was about what it LOOKED like
+
+⚠️ **IT WAS MEASURED BEFORE IT WAS TOUCHED**, on the board in the report:
+
+        ['Application Performance'(11), 'New group'(0)]  ungroup the first
+        click 1  —>  TABS=['New group'] widgets=[11]    one header still on screen
+        click 2  —>  TABS=[''] ungrouped=true           flat
+
+The band WAS dissolved on the first click — its widgets merged into the neighbour, which is what
+Ungroup has always meant here. But the neighbour was **empty**, so what the reader saw was the same
+eleven widgets under one header with a different name: indistinguishable from nothing happening.
+
+⚠️ **THE FIX IS THAT AN EMPTY BAND CANNOT BE WHAT KEEPS A BOARD GROUPED.** If every OTHER band
+holds nothing, they are drop areas rather than content, so dissolving the one band with widgets in
+it flattens the board — the second click's result, delivered on the first. A board with widgets in
+two bands is untouched (measured: `['One'(2),'Two'(3),'Three'(4)]` ungroup `'Two'` —>
+`['One'(5),'Three'(4)]`).
+⚠️ **THE COST, STATED:** the empty bands go with it. Ungrouping the only band that holds anything
+discards a `New group` you had made and not yet filled — one undo away, and the toast says so.
+
+### The header pattern is a MASK, and that is the whole design
+
+⚠️ **A `background-image` CANNOT BE TINTED**, so a data-URI pattern would carry whatever ink was
+baked into it and be wrong in one of the two themes — and re-baking it per theme means re-rendering
+every header when the theme flips. `.ghead.gpat::after` masks with `--gp` and paints `--gp-ink`,
+so the ink is a token (`#ffffff` dark / `#000000` light) and the cascade handles the theme with no
+JS at all. The path inside the URI is `#000` at full alpha **because a mask reads alpha**; its
+colour is not the pattern's colour.
+
+- ⚠️ **EVERY PATTERN IS ONE `<path>`**, which the request asked for and which is not decoration: a
+  tile repeats hundreds of times across a 1500px strip.
+- ⚠️ **`encodeURIComponent` ON THE WHOLE SVG**, not a hand-written escape list — it leaves no
+  quote, space, `<`, `>`, `#` or `)` behind, which is what makes one string safe BOTH inside a CSS
+  `url(...)` and inside an HTML `style="..."` attribute. The swatch needs the second, the header
+  the first. A partial escape is how one of the two breaks silently.
+- ⚠️ **THE 14px SWATCH IS A PREVIEW OF THE SHAPE, NOT OF THE INK.** A chip is a `background`,
+  which cannot be masked, so its path carries a neutral `#888`. Say so rather than let the two be
+  compared and read as a bug.
+- ⚠️ **`t` IS THE TILE SIZE ON SCREEN, NOT THE viewBox** — the lattice is drawn on 40 and shown at
+  36 so its lines land near 1px. The pair has to be re-judged together.
+- ⚠️ **IT IS `::after`, BECAUSE `::before` IS THE BANNER SCRIM** — both can be on at once.
+- ⚠️ **BOTH `-webkit-mask-*` AND `mask-*`.** There is no build step here to add the prefix, and
+  without it the pattern is invisible in Safari.
+- ⚠️ **COMPUTED BEFORE `gStyleCSS`'s `transp` EARLY RETURN AND APPENDED TO BOTH BRANCHES**, the
+  rule `--gv-talign` already follows: a transparent header can carry a pattern, and that is the one
+  case where the pattern IS the header.
+
+### The toolbar lost six controls, and every one of them kept a door
+
+Undo, redo, ✦ Iris, Share, Layout settings, Create-new-dashboard and the outline toggle all left
+`.pagehead`. **Nothing became unreachable**, which is the check every removal in this file gets
+before it happens: ⌘Z / Ctrl+Z still undo, `A` still opens Iris and so do the rail row and Log
+Explorer's own ✦ Ask Iris, `S` and the ⋮ menu open Share, `N` and the list panel's own ＋ New
+Dashboard still create one, and `O` still toggles the outline.
+⚠️ **CONSEQUENCE, STATED:** undo and the outline are keyboard-only on this page now. Nothing on
+screen announces either; the `?` sheet is where they are written.
+⚠️ **`histRender()` ALREADY GUARDED FOR ITS TWO BUTTONS** (`if (!u || !r) return;`), which is the
+only reason removing them was a markup-only change — it is called from `histDo`, `histUndo`,
+`histRedo` and `histLoad`.
+⚠️ **THE `KB` ENTRIES KEEP `sel`s THAT NOW MATCH NOTHING.** `kbTag` guards for that, so the sheet
+still lists every key.
+
+### Three smaller things, each with a measurement behind it
+
+- ⚠️ **THE DANGLING SEPARATOR WAS THE GROUPS BUTTON'S.** `renderCanvas` hides `#grpBtn` on a FLAT
+  board, so on a board with no groups the `.hdiv` before it was a rule with nothing after it. It
+  became visible the moment undo and redo left the row. It is `#grpDiv` now and hides on the same
+  line as the button — one test, one place.
+- ⚠️ **THE BREADCRUMB'S CURRENT NAME NOW ELLIPSISES.** `.cur` was `nowrap` with nothing to shrink
+  it while `.crumbs` carried `min-width:0` for exactly that — so a long dashboard name grew the
+  crumb past its share and shoved the time chip along with it. `min-width:0` has to be on the NAME
+  as well as its parent (the recorded `.agrt .n` fault). It is the name that gives way, not
+  `Dashboards / PMG`: those are short and fixed.
+- ⚠️ **`#dashGrid`'s TOP PADDING IS 0, AND THE 17 Sep SPLIT IS STILL LOAD-BEARING.** That 12px moved
+  from `.pagebody` to the grid on 17 Sep so the sticky group header would pin flush; it fixed the
+  pin and left a band that, being the scroller's first content, never goes away whatever you scroll.
+  At 0 the first header meets the strip. **`.pagebody` keeps `padding-top:0`** — put it back and the
+  header pins 12px down again with widgets painting above it.
+
+### The Group tab ships with three seeded rows
+
+⚠️ **EVERY SEED IS ON A DIFFERENT BOARD, AND THAT IS STRUCTURAL.** `gPubSync()` rebuilds the OPEN
+board's entries on every render and prunes anything of that board's that is no longer shared, so a
+seed named after the open board would be deleted by the first paint. On another board's name it is
+exactly what the tab says it is: the last snapshot taken while that board was open. Their `at` is
+relative to load (the `AI_CHATS` rule), their ids are **negative** so a real share can never collide
+with `++gPubSeq`, and their `w` arrays are real widget objects — a seed carrying a count and no
+widgets would add an empty group and look like the feature failing.
+
+### ⚠️ THE TRANSPARENT HEADER IS STICKY AGAIN, AND THE MEASUREMENT BELOW IS WHY IT COULD BE
+
+Two reports, hours apart, that read as opposites until the second one said what it wanted:
+
+1. *"when i select the transparent with no padding the header title will be set fix when i scroll
+   ... and the [widgets] will be show in title header"* — measured, and it did NOT reproduce (the
+   table below): every transparent combination was already `position:relative` with ZERO widgets
+   overlapping, because of the 21 Sep early return.
+2. *"i select the no padding with transparent header color, the dashboard header position fix in
+   scroll time, the only scroll inside the widget and don't overlay the header on inside widget"*
+   — i.e. **keep it pinned, and stop the widgets showing through it.**
+
+⚠️ **BOTH ARE SATISFIED BY CHANGING WHAT IS PAINTED, NOT WHETHER IT STICKS.** `gStyleCSS`'s
+transparent branch emits **`background:var(--bg)`** and no `position` override at all: `--bg` is
+the canvas the group box sits on, which is exactly what shows through a transparent strip at rest,
+so the header looks identical standing still AND hides the widgets once it is stuck.
+⚠️ **`background:transparent` IS THE ONE VALUE THAT MAKES THE TWO REQUESTS CONTRADICT EACH
+OTHER** — don't put it back. And **`--bg`, not `--card-head`**: the latter IS the filled strip
+Transparent exists to turn off.
+⚠️ THIS REVERSES the 21 Sep `position:relative;top:auto`, whose own reasoning is still correct
+and is quoted at the branch: a see-through strip pinned over a scrolling board puts the group's
+name across a row of widgets. That is a fact about `transparent`, not about `sticky`.
+
+### The board's top gap is a MARGIN — three properties, and only one does what was asked
+
+Asked in two halves on 22 Sep: *"add top 14px gap"* and *"when i scroll the dashboard widget the
+gap is fix"*. Those halves rule out both earlier answers:
+
+| where the gap lived | what happens when you scroll |
+|---|---|
+| `padding` on `.pagebody` (before 17 Sep) | it is INSIDE the scrollport, so widgets scroll up through it |
+| `padding-top` on `#dashGrid` (17—22 Sep) | it is the scroller's first CONTENT — empty, but it never goes away, which is what *"the gap is always show, dont do this"* was about |
+| **`margin-top` on `.pagebody`** | OUTSIDE the scroll container: nothing can paint in it, ever, and it cannot scroll away because it is not scrollable area |
+
+⚠️ **`#dashGrid` KEEPS `padding-top:0` AND `.pagebody` ITS OWN 0.** The 17 Sep split exists so the
+sticky group header pins flush against the scrollport rather than 12px down; a padding here undoes
+it and puts widgets back in the band above the pinned header.
+⚠️ Scoped `:has(> #dashGrid)` — the module placeholder and Health use `.pagebody` too and have no
+strip above them to be held off.
+
+### The drawer's last four moves
+
+- **Alignment leads the layout row**, then No padding, then Share group (*"swap the field"*, with
+  the Free Text panel's own `Alignment ⋮ Vertical alignment ⋮ No padding` order as the picture).
+- **The Share cell is `calc(50% - 12px)`** — `.gepair`'s own column measure, written that way so
+  it follows the drawer's width and the row's gap rather than a pixel number. It is `flex:0 0`,
+  NOT `1 1 auto`: taking the slack made it wider than the field it is being matched to.
+  ⚠️ **CONSEQUENCE, STATED:** Title size now sits ALONE in the row under Header colour, i.e. in
+  the LEFT column, so the two share a WIDTH but not a right edge. The request named the width.
+- **Every `.ddlbl` in this drawer is 13px/600, sentence case** — scoped, because that class is
+  11px/700/uppercase for the Create Dashboard and Layout drawers, which were not named.
+- **The footer is `Reset ⋮ Save`** (*"the reset button will be show behand the done button"*,
+  *"the 'done' button name will be change as 'save'"*). ⚠️ That puts the primary LEFT of the
+  secondary, which is the opposite of this file's convention everywhere else; it is what was asked
+  for, twice, in one message.
+
+### What was measured and did NOT reproduce
+
+⚠️ **THE TRANSPARENT HEADER IS NOT STICKY, AND EVERY COMBINATION WAS CHECKED.** Reported as *"when
+i select the transparent with no padding the header title will be set fix when i scroll"*. Measured
+at 1600×900, board scrolled 420px, all seven cases:
+
+| case | position | widgets overlapping the header band |
+|---|---|---|
+| plain header (control) | `sticky` | 3 — hidden by its own opaque fill, which is what sticky is for |
+| Transparent (legacy flag) | **`relative`** | **0** |
+| Transparent (as a colour) | **`relative`** | **0** |
+| Transparent + No padding | **`relative`** | **0** |
+| option 2 band, Transparent + No padding | **`relative`** | **0** |
+
+The mechanism the report names is already correct in the code — the early return in `gStyleCSS`
+emits `position:relative;top:auto` for exactly this. **It is not fixed because it did not
+reproduce**, and the measurement is recorded here so the next reader does not re-derive it.
+⚠️ One thing the same run DID find and is **not** explained: with **No padding and a FILL**, a hit
+test at the sticky strip's left and right ends lands on a widget's `svg` and on a `.wrzE` grip
+rather than on `.ghead`, where the padded control returns `ghead` at all three samples. The boxes
+are identical (68..1585 against a section of 67..1586), so it is paint order, not geometry. Not
+chased; recorded.
+
+### Verification
+
+    grpdrawer.py   ALL 48 PASS   the drawer's seven fields and their order, the hugging row,
+                                 Transparent as a colour, the pattern end to end, Reset, the menu glyphs
+    hdprobe.py     ALL 33 PASS   the six removed controls, the two absorbed rows opening for real,
+                                 50px, the chips, the separator, the crumb
+    seedprobe.py   ALL 15 PASS   the three seeds, the tab, adding one, and undo
+    ungprobe.py    measured      one click flattens; the three-band case unchanged
+    stickprobe.py  measured      the table above
+    node --check   clean         every inline script block
+    harness query  ALL 77 PASS   index.html AND the other fifteen pages, all seven resolutions
+
+Screenshots (scratchpad `shots22/`): Mesh over Blue, Dots, Waves over Transparent, the drawer, the
+⋮ menu and the Group tab — dark and light — each painting its own measurement into a badge.
+
+## Shared groups, and the Edit-group drawer's last three rows (22 Sep 2026)
+
+Four requests in one sitting, **Option 1 only** (`index.html`) — every other option keeps a
+three-tab Add New Widget drawer and an Edit-group drawer with no visibility control.
+
+| request | what changed |
+|---|---|
+| *"in empty group the add share group 'public/private' option — when i select the public the list of all group will be show in 'add new widget' show as tab 'group' and show list of all public group"* | a **Share group** switch, a board-independent **`GRP_PUBLIC`** registry, and a fourth tab |
+| *"the 'Share group' it will be show minimal ui and the note will be show tooltip"* (the product's own `URL Time Out` field as the picture) | the control takes ONE grid column and its `.ddnote` becomes an `(i)` |
+| *"the 'No padding' show as icon like free text and the 'alignment' will be show behind the 'no padding'"* | No padding is Free Text's icon segment, on Alignment's row, ahead of it |
+| *"the share group will be show last"* | it moved from the second field to the last |
+
+### ⚠️ THE REGISTRY CANNOT LIVE IN `GRP_STYLE`, AND THAT IS THE WHOLE DESIGN PROBLEM
+
+That array is **per board** — `histState()` serialises it and `boardSave()` files a copy under
+`BOARDS[name]` — so a group published on one board would be invisible from every other, which is
+the one thing this feature exists to do. `GRP_PUBLIC` sits beside `W_USER` instead: session-level
+and board-independent, exactly like a saved widget definition.
+
+⚠️ **`share` ITSELF STILL LIVES ON THE GROUP**, because it is a property OF the group and has to
+travel with it — undo, clone, reorder, board switch and the JSON snapshot all come free that way,
+with no second parallel array and nothing to keep in step. The registry is **derived** from it and
+never the other way round, so there is one answer to *"is this group shared"*.
+
+⚠️ **AN ENTRY IS A DEEP SNAPSHOT, NOT A POINTER.** A `{board, index}` reference goes stale the
+moment a band is reordered, removed or ungrouped, and it cannot be read at all while its board is
+not the open one — `WIDGETS` holds only the board you are looking at. Same discipline `gClone`
+follows, for the same reason.
+
+⚠️ **THE LOOKUP MATCHES ON THE TWO FIELDS, NOT ON A KEY BUILT FROM THEM.** A board and a group may
+each be named anything a person can type, so any printable separator could be typed **into** one of
+the halves and collide two entries. `gPubFind(board, name)` asks the question directly.
+
+### `gPubSync()` — re-derived on every render, which is what keeps it honest
+
+The **open** board's entries are rebuilt from its live model each time, so a shared group that is
+renamed, emptied, unshared, deleted or ungrouped cannot leave a stale row behind offering widgets
+that are no longer there — and a row's count is what the board actually holds rather than what it
+held when the switch was flipped. Entries belonging to **other** boards are left alone: their model
+is not loaded, so the last snapshot taken while they were open is all there is to show.
+
+⚠️ **THE COST IS ONE ALREADY PAID ELSEWHERE.** It stringifies the widgets of the shared groups on
+ONE board, where `histState()` stringifies the WHOLE board on every edit; and `renderCanvas` runs
+per **edit**, not per frame (a widget drag and both resize engines drive `fitCanvas`). So it is
+cheaper than something this file already does routinely.
+
+⚠️ **`at` AND `id` SURVIVE A RE-SYNC.** Restamping `at` would make every row read *shared just now*
+on the next render, and a fresh `id` would break the row the pointer is already on.
+
+⚠️ **UNDO WORKS WITH NO EXTRA CODE, AND THAT FALLS OUT OF THE SAME DERIVATION.** `histLoad` ends in
+`renderCanvas()`, which re-derives the registry — so undoing a share prunes the row and undoing an
+unshare puts it back, without the history system knowing the feature exists.
+
+### The switch, and why its note is an `(i)`
+
+⚠️ **IT IS `.ddseg`, THE CREATE DASHBOARD DRAWER'S OWN Public/Private SWITCH**, so the two places
+this product asks that question ask it in the same shape — built from what is already here rather
+than invented, which is the rule for a new control in this file.
+
+⚠️ **ITS DEFAULT IS THE OPPOSITE HALF FROM THAT DRAWER'S, deliberately:** a dashboard is public
+until you restrict it, and a group is private until you share it. `share` is simply **absent** until
+the switch is pressed, so every board that already exists reads Private with no migration and no
+stored value.
+
+⚠️ **THE NOTE BECAME THE `(i)`.** A two-line `.ddnote` under a two-word switch was the loudest block
+in the drawer for the one field whose explanation you read once; behind the mark it is a hover away
+and the row is the same height as every other. The glyph is the product's own
+`common/status-severity-health/info-circle.svg`, pasted verbatim.
+
+⚠️ **AND THE CONTROL TOOK ONE GRID COLUMN WITH IT.** It spanned all 628px while Header colour and
+Title size sit in two, so at rest the drawer read as one full-bleed slab above a tidy grid. Wrapped
+in `.gepair` it lands on the same column and the same width as everything else, which is the whole
+of what *"minimal"* asks for here.
+
+⚠️ **`.ddlbl` IS ALREADY A FLEX ROW (`gap:5px`), SO THE MARK NEEDED NO LABEL RULE** — it takes
+`.req`'s own slot, which is why a required asterisk and this sit identically.
+
+⚠️ **THE TIP IS PLAIN TEXT, AND IT MUST CONTAIN NO DOUBLE SPACE.** `tipShow` renders through
+`tipEsc`, so the `<b>Group</b>` the note carried is simply the word; and two or more spaces in a row
+are the engine's own *"label then keycap"* split, which would render the tail as a shortcut chip.
+`gShareTip(gi)` is the one place both states are written.
+
+⚠️ **THE TIP IS NOT SUPPRESSED, and that is worth knowing rather than assuming.** `tipRedundant`
+silences a tip whose text is already readable ON the element; the `(i)` carries no text, so it
+always speaks.
+
+⚠️ **`gShareSet` DOES NOT GO THROUGH `gEditSet`.** That ends in `gEditApply()`, which rewrites the
+header's inline style — sharing changes nothing about the paint, and calling it would claim it does
+— and it does not touch the registry, which has to follow the switch immediately rather than at
+whatever render happens next. It still opens with `gEditRec()`, so a share and every other edit in
+the same visit are **one `histDo`**, exactly as every other field here is. Pressing the lit half
+records nothing at all.
+
+⚠️ **IT DELETES THE KEY RATHER THAN STORING `false`.** `gStyleCSS` and `histState` both walk that
+record, and a group nobody has shared should serialise as though the feature did not exist.
+
+### No padding is an icon, Alignment follows it, and Share group is last
+
+⚠️ **NO PADDING IS FREE TEXT'S OWN CONTROL, NOT A SECOND ONE THAT LOOKS LIKE IT.** `gPadSVG()`
+reads `CW_FT_PAD[0][2]` — a second copy of nine path strings is exactly how the two would come to
+disagree about what *"no padding"* looks like. It is built the way `seg`'s stroke branch builds it
+(`fill:none` inline plus a 2px round-capped stroke), because `.cwftsg svg` sets `fill:currentColor`
+and a **rule beats a presentation attribute**: `fill="none"` on the element would lose and the
+outline would paint as a solid blob. The recorded `.dvic svg` trap.
+
+⚠️ **THE ORDER IS THE REQUEST'S, AND IT IS ALSO THE ORDER THE DRAWER ALREADY READ IN.** *"behind"*
+in these requests has consistently meant *after* (the 20 Sep Free Text one put No padding after
+Vertical alignment), and No padding was already above Alignment when they were two rows — so
+collapsing them this way moves nothing you had learned the position of.
+
+⚠️ **TRANSPARENT KEEPS ITS CHECKBOX AND IS NOW ALONE IN ITS ROW.** It was not named, and a checkbox
+is the right shape for it: it has no second state worth drawing, where No padding and Alignment are
+both *"pick how it sits"* controls. A `.gepair` with one cell keeps it on the same left column
+— the shape the Alignment row itself used to have.
+
+⚠️ **`pad` IS STILL STORED POSITIVELY.** True means the group HAS padding, so the icon lit means
+`pad === false` and `gPadTog()` flips it — the same inversion the checkbox carried and the same
+one `cwFtPadTog` performs in Free Text. A field whose name is the opposite of its label is how a
+later reader inverts it by accident.
+
+⚠️ **SHARE GROUP SHIPPED SECOND FOR AN HOUR AND IS LAST NOW.** The first reading was that what a
+group **is** belongs above how its header **looks**; the request overrules it, and the order it asks
+for is defensible on its own terms — every field above it acts on the group in front of you, and
+this one is the only one whose effect is on a different screen. **Don't move it back up on the
+strength of the paragraph it replaced**, which is still quoted in the code comment.
+
+### The Group tab
+
+⚠️ **ONE ROW PER SHARED GROUP, IN THE SHAPE Predefined AND User Define ALREADY USE** — art, name,
+a trailing cluster revealed on hover. What differs is the middle: a group is the only thing in this
+drawer that belongs to a **dashboard**, so the board it came from is named on the row (`.used`, the
+pill this list already has) rather than left to be guessed.
+
+⚠️ **THE ARTWORK IS `W_GROUP_SVG`, THE Empty group TILE'S OWN, EMITTED DIRECTLY** rather than
+through `wArt()`. That function exists to namespace the `<defs>` ids the harvested widget artwork
+carries, and this drawing has none — so repeating it down a list is safe, which is the same reason
+the Structure tile emits it raw.
+
+⚠️ **NAMES ARE ESCAPED, AND THEY ARE THE FIRST STRINGS IN THIS DRAWER THAT NEED IT.** Every other
+list here prints a constant out of `W_CATALOG` / `W_PREDEF`; these two are a board name and a group
+title, both of which a person types, so a stray quote or angle bracket would otherwise reach the
+markup.
+
+⚠️ **THE PLACEHOLDER FOLLOWS THE TAB.** One search box serves all four, and three of them hold
+widgets while the fourth holds groups — left at *"Search widgets…"* the control would name the
+wrong thing on exactly the tab this change added. It filters on the group name **and** on the board.
+
+⚠️ **THE EMPTY STATE NAMES THE DOOR THAT FILLS THE TAB** (a group's ⋮ menu › Edit group ›
+Share group), and it is a different sentence from *"no shared groups match …"* — a tab that is
+empty because nothing has been shared and one that is empty because you typed something are not the
+same state.
+
+### Adding a shared group back
+
+⚠️ **IT CONVERTS A FLAT BOARD, exactly as `awAddGroup` does and for the same reason:** a flat board
+is `TABS = ['']`, one unnamed band, so the widgets already there need a name before a second band can
+mean anything. They take the **dashboard's** name — that is what they are — and an **empty** flat
+board is filled in place instead, or you would get the shared group sitting beside an empty band
+nobody asked for.
+
+⚠️ **THE COPY IS NEVER ITSELF SHARED.** `share` rides on the style, so a straight copy would
+re-publish the group under the **new** board's name the moment the canvas rendered — two rows in the
+tab for one act of sharing, and a second source of truth for the same group. A copy is a copy;
+sharing it again is a decision for whoever made it.
+
+⚠️ **THE WIDGETS ARE JSON-CLONED OUT OF THE REGISTRY, NOT SPREAD.** A shallow copy shares every
+nested value by reference — `pal`, a series array — so editing the added group would reach back into
+the stored snapshot and into every board that added it afterwards.
+
+⚠️ **A TAKEN NAME IS SUFFIXED, NOT OVERWRITTEN** (` (2)`, ` (3)` …), and the name is **kept** when
+it is free — unlike `gClone`, which always says *Copy of …* because it clones in place. Widget names
+need no such treatment: `cwNameTaken` scopes to `WIDGETS[curG]`, and a fresh group's contents are
+already unique among themselves.
+
+### Consequences, stated rather than left to be discovered
+
+- **A group shared from another board shows the snapshot taken while that board was last open.**
+  There is no cross-board live read, because there is no cross-board model to read: `WIDGETS` holds
+  one board at a time. Re-open that board and the row is current again.
+- **The registry is session-level.** Nothing persists it — reloading the page empties it, exactly as
+  it empties `W_USER`. That matches every other store in this prototype.
+- **Sharing is not reachable on a flat board**, because the control lives in the Edit group drawer
+  and a flat board draws no group header to open it from. Group the board first (the drawer's
+  *Empty group* tile), then share.
+- **Two groups on one board with the same name collapse to one registry entry.** `TABS` does not
+  enforce unique names (`gEditTitle` does not check; only `gClone` avoids collisions), so the second
+  one is simply not listed separately. One entry is a better answer than two rows that cannot be
+  told apart.
+
+### Verifying it
+
+An **85-assertion** probe (`shareprobe.py`, session scratch dir), **ALL PASS**, every press
+hit-tested: the field's position (last), shape, labels, default half and `aria-pressed`; no
+`.ddnote` left, the `(i)`'s glyph, its 13px-on-14px box, both tip states, no markup and no double
+space in either, and the tooltip actually painting; the control on one grid column, the same width
+as Header colour; the checkbox row holding Transparent alone; No padding as a nine-path stroked icon
+cell ahead of Alignment on one row, dark and lit, toggling `pad` both ways with Alignment's own two
+buttons intact; a real click writing `share` on the group, creating exactly one entry with the right
+name, board and a deep copy of its widgets, ONE `histDo` for a visit carrying three edits, and the
+lit half and tip following; pressing the lit half recording nothing; four tabs with Group last; the
+tab lighting, its placeholder, its row's name, board pill, count and artwork; search on both fields
+and the two distinct empty states; a real click adding the group with a uniquified name and a deep
+copy that does not reach back into the registry, not re-published, with undo putting the board back;
+a rename moving the entry; two boards each keeping their own; unsharing and ungrouping pruning only
+their own board's; both flat-board conversions; and the other three tabs untouched.
+
+Plus `lxbehave` **ALL 57 PASS**, `behave` and `harness › query` green on this page, and dark and
+light screenshots of the drawer, the tooltip and the tab.
+
+⚠️ **THE FIRST RUN FAILED TWELVE ASSERTIONS ON CORRECT CODE, ALL ONE CAUSE** — the recorded trap:
+an automation-driven tab never advances a CSS transition, so `#drawer-gedit` was still parked at
+`right:-648px` when `elementFromPoint` ran and every click landed on the board behind it. Inject
+`*,*::before,*::after{transition:none!important}` before hit-testing anything in a drawer.
+
+⚠️ **AND ONE LATER FAILURE WAS THE PROBE'S OWN MODEL, WHICH IS THE FEATURE WORKING.** *"ONE histDo
+for the drawer visit"* read 0 once the padding toggles were added ahead of it — `gEditRec()` is a
+per-visit latch, so the share press correctly recorded nothing more. The assertion counts the whole
+visit now, which is the rule it was meant to be testing.
+
+⚠️ **A `\u0000` SEPARATOR COST A REPAIR, WHICH IS WHY THERE IS NO KEY STRING.** The first build
+joined board and name with a NUL; written through a tool whose JSON layer decodes escapes it arrived
+as a **real** control character and took the rest of the line with it, leaving `board + 'const gPubOn
+…` — valid-looking code that would have failed at parse. Two lessons: a shell/heredoc path rejects
+text containing an escape that decodes to a control character, so write such a patch through a file;
+and a lookup that needs a separator nobody can type is a lookup that should not be joining strings
+at all.
+
+## The colour dropdown names every state, and Custom is one of them (22 Sep 2026)
+
+Request: *"in free text the default color is set as current color name and the set new 'custom'
+color in last & when i select any color then in color plated i change the opecity or any other
+color the automaticaly move the 'custom' color"*. It lands on `cwFtDD`, so it reaches **all four
+consumers at once** — Free Text's Font Color and Background, and the Edit-group drawer's Header
+colour (Font Size has no canvas and is untouched).
+
+| was | is |
+|---|---|
+| the trigger printed the raw hex when the value was custom | it prints **`Custom`**, with the hex in the value chip |
+| the value chip appeared only for a NAMED colour | it appears in both states — it is now the only place the hex is written |
+| the named list showed **nothing ticked** once the canvas produced a colour no row describes | a **Custom** row, last, lit whenever that is true |
+| the list never reacted to the canvas | touching the canvas, a slider or a field **moves the tick to Custom live**, before Apply |
+
+### ⚠️ THE TRIGGER ALWAYS SHOWS A NAME, AND THAT REVERSES A RECORDED DECISION
+
+It showed the raw hex, on the reasoning that *"a custom value is its own label — the hex IS the
+name of that colour and is what you would retype"*. That is true of the STRING and false of the
+CONTROL: every other state of this trigger is a word out of the list beside it, so one state
+reading `#3A7BD5` was the only one you could not match against a row. The hex did not go anywhere
+— it moved into the value chip, which is where every named state already carries what it resolves
+to. **Don't put the hex back as the label on the strength of the note this replaced**; the note is
+rewritten in place rather than deleted.
+
+### The Custom row is a REPORT as much as a choice
+
+⚠️ **THE TWO PANES NEVER SAID WHAT EACH OTHER WERE DOING.** The canvas could always produce a
+colour no named row describes, and until now the list simply showed nothing ticked while that was
+true. The row closes that: it is lit when the stored value is a hex, **and** while this dropdown's
+own draft has been touched in this visit.
+
+⚠️ **WHAT IS LIT IS DERIVED, NEVER REMEMBERED.** `sel` is computed in `cwFtDD` from
+`cwFtIsHex(cur)` and `CP.touched`, keyed on `CW_FT_DD === key` — `CP` belongs to whichever dropdown
+is open and all four render through one function. `CP.touched` is set by **`cpRepaint`**, which only
+ever runs from a real gesture (a drag, a field, a preset), so there is no separate flag to set at
+each call site and none to forget.
+
+⚠️ **THE LIVE MOVE IS A PATCH, NOT A RE-RENDER, AND THAT IS THE WHOLE REASON IT LIVES IN
+`cpMarkCustom`.** `ddPaint` rebuilds the panel, which would destroy the canvas the pointer has
+**captured** and drop every later move of the drag — the `agConsPaint` discipline, load-bearing here
+rather than tidy. So moving the tick is a handful of attribute writes on nodes that already exist:
+the rows' `.on` / `aria-selected` / tick, the Custom row's swatch, and the trigger's swatch, label
+and chip. `data-o` on each row is what lets it find them without knowing the list.
+
+⚠️ **CLICKING Custom SELECTS; IT DOES NOT COMMIT.** Apply is the commit, and a second control that
+also committed would be the two-doors-to-one-action trap this file keeps being trimmed for. What
+the row does is **convert** a named pick into a custom one and leave the canvas open to edit it —
+which is a state change, so it is not a dead control either.
+
+⚠️ **ITS SWATCH IS THE LIVE DRAFT** (`cpCur()`) while a picker is open, and the stored value
+otherwise, so it tracks the canvas rather than reporting yesterday's colour. `transparent` has no
+hex, so it keeps an inset hairline instead of painting nothing and reading as a missing element.
+
+⚠️ **`CP_TICK` IS WRITTEN ONCE.** The list's rows and `cpMarkCustom`'s patch both emit it, and two
+copies of a path is how the two come to disagree.
+
+### ⚠️ AND THE PROBE FOUND A REAL, PRE-EXISTING DEFECT: Cancel and Apply were unreachable
+
+A hit test on **Cancel** landed on **`.cwfoot`**, the Create Widget modal's own footer. `.cwsb` is
+`overflow-y:auto`, so a panel can sit comfortably inside the window and still hang past the PANE:
+measured at an 857px viewport, Font Color's panel put Cancel and Apply at **y=767** against a
+scroller ending at ~745, where they were clipped away and could not be pressed at all.
+
+`ddPlace`'s flip tested `r.bottom > innerHeight - 8` — the **viewport**, which says that is fine.
+Two lines fix it, and the cause is worth keeping:
+
+- **`ddClipBox` read `overflow + overflowX` and returned a HORIZONTAL box only.** It was written for
+  the sideways clamp, and `overflow-y:auto` alone — which is exactly what `.cwsb` and the group
+  drawer's `.dr-b` both declare — never appeared in that string. It measures both axes now.
+- **The flip, and the room ABOVE it, are both tested against that box**, so a panel that does not
+  fit below cannot flip to a position that does not fit above either. When neither fits it stays
+  down, which is what it has always done.
+
+⚠️ **IT WAS INVISIBLE AT 1600×950 AND FATAL AT 1600×1000**, because the footer's position is what
+decides it, not the panel's — which is why a control that had been driven by hand for days still
+had this in it. **Hit-test a control at the size where the thing above it bites**, not at the one
+that happens to fit.
+
+### Verifying it
+
+A **48-assertion** probe (`cpprobe.py`, session scratch dir), **ALL PASS**, over all four
+consumers: the row's position, count, hairline and swatch; a named colour lit and the trigger
+naming it with its resolved hex; a real pointer drag on the alpha slider moving the tick, the
+trigger and the chip **live**, with the dropdown still open and nothing committed; Cancel reverting;
+a canvas drag then Apply committing the exact colour the canvas showed, with the closed trigger
+reading `Custom` and the hex in the chip; re-opening on a stored hex lighting Custom and seeding the
+canvas ON it; a named row committing and clearing Custom; the Custom row selecting without closing
+or committing; the hex and alpha FIELDS moving it too; Background carrying the row and drawing no
+empty chip for `transparent`; **Font Size carrying neither a canvas nor a Custom row, and keeping
+its search box**; and the group drawer's Header colour doing all of it and writing the hex onto the
+group, with the header really painting it.
+
+⚠️ **TWELVE OF THE FIRST RUN'S FAILURES WERE ONE CAUSE AND IT WAS THE CODE** (the clipped
+Cancel above); the rest were the probe's own **stale nodes** — `cwRender` rebuilds `#cwBody` on
+every `ddPaint`, so a `.cwftdd` captured once is detached by the next open. Re-query by label.
+
+## The header icons' hover moves AWAY from the header (22 Sep 2026)
+
+Request: *"in header the icon hover color is bad make to improve using the ObserveOps design
+system & using [the] color palette library"*, with `kisu1311.github.io/ObserveOps_-library/
+color-palette.html` named — which is the published copy of `observeops-icons/color-palette.html`,
+the live product's tokens harvested per theme (319 light / 300 dark). **Option 1 only**; the three
+buttons are Full screen, the shortcut sheet and the ⋮ menu, the survivors of the toolbar clean-out
+earlier the same day.
+
+⚠️ **`--hover` IS THE ROW-HOVER TOKEN, NOT A CHIP'S, AND THAT IS THE WHOLE BUG.** It is this
+file's copy of the product's `--left-menu-hover-bg` / `--nav-hover-bg`: it takes a row with **no
+fill** to a faint mark on its surface. Applied to a chip that is **already filled** it sends the
+fill back toward the page, so the button **faded out at exactly the moment you pointed at it** —
+in **both** themes, which is why it read as simply wrong rather than as a dark-mode slip.
+Measured against `--header`, the surface the buttons sit on:
+
+    dark    header #07101f    rest #2b394f 1.63:1  →  was #101d30 1.12:1   (93% back to the header)
+    light   header #ffffff    rest #e7ecf4 1.19:1  →  was #f0f4f9 1.10:1
+    now     dark 1.63 → 2.68    light 1.19 → 1.27
+
+### ⚠️ THE DESIGN SYSTEM COULD NOT ANSWER IT — an eleventh 0.1.166 defect
+
+`get_component('button')` routes this control exactly — *"quiet utility in toolbar/list/grid/
+filter? → neutral-lightest"*, *"icon-only / space-tight? → icon button"* — and documents the hover
+state as **"bg darkens"**. The shipped bundle does not implement it:
+
+    .v-neutral-lighter:hover     0 occurrences
+    .v-neutral-lightest:hover    0 occurrences
+    --neutral-button-hover-bg    0 occurrences   (never referenced by the shipped CSS)
+
+So the catalogue's **most-used variant (320×)** and its sibling (17×) render with **no pointer
+feedback at all**. And the token that exists for the job is `#ecf1f9` light / **`rgb(70,70,70)`**
+dark — a raw grey shared only with `--grid-header-solid-bg` and `--neutral-shadow-light`, in a
+theme whose every other surface is navy; its light value is *lighter* than the `#e3e8f2` it is
+the hover for, i.e. it moves a filled chip toward a white page, the opposite of its own doc.
+Recorded in `_ds/README.md` with the measurements.
+
+### The value is the product's own next ramp step, and ONE token carries it in both themes
+
+**`--chip-hover`**, declared beside `--chip` in each theme block:
+
+| | value | what the product calls it |
+|---|---|---|
+| dark | `#485975` | `--pan-btn-border` · `--slider-tracker` · `--grid-header-bg` · `--checkbox-checked-border-color` |
+| light | `#dee5ed` | `--pan-btn-border` · `--gauge-base-color` · `--border-color-opacity` |
+
+- ⚠️ **`--pan-btn-border` IS ONE TOKEN SPANNING BOTH**, and its provenance is the point: the
+  **pan buttons are the product's own small icon-only overlay controls**, and their fill
+  `--pan-btn-bg` is `#2b394f` — exactly what this chip already rests at, because `--chip` here is
+  `--tag-bg-color` = `--neutral-button-bg`. So the resting state was already the product's neutral
+  icon button; only its hover was invented.
+- ⚠️ **IT IS THE RAMP STEP EITHER SIDE OF `--tag-bg-color`**, read off the palette by luminance:
+  dark `#1d2a3e` · **`#2b394f`** · `#485975`; light `#ecf1f9` · **`#e3e8f2`** · `#dee5ed`. One step
+  FURTHER from the page in each theme — which is the rule a filled control needs and the one
+  `--hover` breaks.
+- ⚠️ **LIGHT'S STEP IS THE SMALL ONE, AND IT IS THE THEME RATHER THAN THE PICK.** There is only
+  ~0.17 of luminance between `--chip` and white to work in, against ~0.09 above a near-black
+  header in dark. Side by side the hovered button reads against its two resting neighbours at
+  1.07:1, which at 28px is legible — confirmed from the painted pixels, not from the ratio.
+  `--chip-hover` is the one dial if it should bite harder.
+- ⚠️ **A NEW TOKEN PAIR WAS THE HONEST ANSWER, NOT A REUSE.** Nothing already in the file is one
+  step away in **both** themes: `--track` is `#485975` dark (right) but `#8fa3c2` light (a slab),
+  `--hover-side` goes the wrong way in dark, `--pop-item-hover` equals `--chip` in dark. A single
+  `color-mix` percentage cannot serve both either, because the light chip starts far closer to its
+  page than the dark chip does to its own.
+- ⚠️ **THE RESTING FILL AND THE REMOVED BORDER ARE UNTOUCHED** — the 22 Sep request that made
+  these three filled and borderless still holds, and the rule stays scoped to `.pagehead` so the
+  same class in the widget editor, the drawers and the Manage screen keeps its outline.
+
+### Verification
+
+A **22-assertion probe that reads the CASCADE, not the declaration** — the recorded rule that a
+hover check must enumerate every matching rule: exactly one sets this background, it names
+`--chip-hover`, no stale `--hover` survives, and the less specific `.btn:hover` still declares
+`--hover-side`. Then, with the hover forced by a stand-in class at **equal specificity** (0,3,0)
+so source order decides as `:hover` would: both themes resolve the token, paint it, move away
+from the real surface, beat the old value, and step visibly against the resting fill — plus all
+three buttons hit-testing to themselves, the fill still `--chip` and the border still transparent.
+**ALL 22 PASS.** Screenshots dark and light, old and new, the middle button hovered between two
+resting ones.
+
+⚠️ **TWO OF ITS FIRST FAILURES WERE THE PROBE'S OWN MODEL:** `.pagehead` paints **no fill of its
+own**, so `getComputedStyle(...).backgroundColor` returns `rgba(0,0,0,0)` and every ratio was
+computed against **black** — which pointed the right way in dark by accident and inverted in
+light. Walk up to the first opaque ancestor before measuring a contrast against "the background".
+
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 
 The **fourteenth page in the switcher and the first that is NOT an option**: it demonstrates no

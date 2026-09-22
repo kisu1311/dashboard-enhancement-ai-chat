@@ -13,7 +13,7 @@
   --bg:#07101f; --header:#07101f; --sidebar:#172336; --sidebar-panel:#172336;
   --card:#0b1627; --card-head:#0f1c30; --panel:#0a1322; --panel-2:#0c1728;
   --border:#1d2a3e; --border-soft:#131f31; --hover:#101d30; --hover-side:#22314a;
-  --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f;
+  --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f; --chip-hover:#485975;
   --pop-line:#2b394f;        /* dividers INSIDE a popover — --border is the same colour as --pop here,
                                 so .dmdiv, the flyout column rule and the docs footer drew nothing */
   --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
@@ -127,7 +127,7 @@ html[data-theme="light"]{
      and not the outline. Focus still adds its ring ON TOP of whichever of these is current. */
   --ai-in-shadow-h:0 0 1px rgba(0,0,0,.12), 0 4px 14px rgba(23,35,54,.13), 0 2px 5px -2px rgba(23,35,54,.10);
   --ai-in-chip:rgba(0,0,0,.024);
-  --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4; --pop-line:#dfe5ee;
+  --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4; --chip-hover:#dee5ed; --pop-line:#dfe5ee;
   --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
   --white:#16233a; --ink:#f4f7fb;
   --pill:#24344d; --track:#8fa3c2;
@@ -2801,7 +2801,12 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
 .main{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
 .view{flex:1;display:none;flex-direction:column;min-height:0}
 .view.on{display:flex}
-.pagehead{height:44px;flex:0 0 44px;display:flex;align-items:center;gap:9px;padding:0 14px;border-bottom:1px solid var(--border-soft)}
+/* ⚠️ 50px, NOT 44 (request, 22 Sep 2026: "the header height is 50px"). Both numbers move
+   together — `height` AND the flex basis — or the row lays out at one and paints at the other.
+   ⚠️ IT STAYS `overflow:hidden` AT THE NEW HEIGHT, which is why `.trpop` is `position:fixed`
+   and placed by `trPlace()`: a 330px time-range popover inside this row is clipped at any
+   height. That is a recorded trap, not a thing the extra 6px fixes. */
+.pagehead{height:50px;flex:0 0 50px;display:flex;align-items:center;gap:9px;padding:0 14px;border-bottom:1px solid var(--border-soft)}
 .pagehead .ttl{font-size:15px;font-weight:600;color:var(--text)}
 .pagehead .ic{width:18px;height:18px}
 /* ⚠️ A SCROLL CONTAINER'S OWN TOP PADDING IS INSIDE ITS SCROLLPORT, AND A `position:sticky`
@@ -2833,6 +2838,23 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
    grid grows `scrollHeight` by 12 — the comparison is balanced by construction. */
 :root{--pb-pad:12px;--pb-x:14px}
 .pagebody{flex:1;overflow:auto;padding:var(--pb-pad) var(--pb-x);min-height:0}
+/* ⚠️ THE BOARD'S TOP GAP IS A MARGIN ON THE SCROLLER, NOT PADDING INSIDE IT (request,
+   22 Sep 2026: "add top 14px gap" + "when i scroll the dashboard widget the gap is fix").
+   Those two halves are what decides the property, and they rule out both earlier answers:
+     — `padding` on `.pagebody` (before 17 Sep) is INSIDE the scrollport, so widgets scroll
+       up through it and the gap fills with content;
+     — `padding-top` on `#dashGrid` (17 Sep — 22 Sep) is the scroller's first CONTENT, so the
+       band is empty but never goes away and reads as a permanent hole, which is what the
+       earlier "the gap is always show, dont do this" report was about.
+   A MARGIN puts the band OUTSIDE the scroll container: nothing can paint in it, ever, and it
+   cannot scroll away because it is not scrollable area at all. That is what "the gap is fix"
+   asks for, and it is the only one of the three properties that does it.
+   ⚠️ `#dashGrid` KEEPS `padding-top:0` AND `.pagebody` ITS OWN 0. The 17 Sep split exists so
+   the sticky group header pins flush against the scrollport rather than 12px down; a padding
+   here would undo it and put widgets back in the band above the pinned header.
+   ⚠️ SCOPED TO THE DASHBOARD'S SCROLLER. The module placeholder and Health use `.pagebody`
+   too and have no strip above them to be held off. */
+.pagebody:has(> #dashGrid){margin-top:14px}
 .pagebody:has(> #dashGrid){padding-top:0}
 .card{background:var(--card);border:1px solid var(--border-soft);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
 .card .chead{padding:9px 12px;font-weight:600;font-size:12.5px;background:var(--card-head);display:flex;align-items:center;gap:8px}
@@ -2933,6 +2955,47 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .timechip.on .caret{color:var(--teal)}
 /* icon-only header button */
 .btn.ico{padding:0;width:28px;justify-content:center}
+/* ⚠️ THE HEAD'S ICON BUTTONS ARE FILLED, NOT OUTLINED (request, 22 Sep 2026: "in header
+   top right 3 icon will be show background color, remove the border"). Full screen, the
+   shortcut sheet and the ⋮ menu are the three left in that cluster after undo/redo, the
+   ✦ pill, Share, Layout settings and Create-new-dashboard were removed — and three bare
+   outlines against a dark row read as empty slots rather than as controls.
+   ⚠️ `--chip` IS THE FILL AND THE BORDER GOES WITH IT, not merely to transparent: a 1px
+   transparent border keeps the box, so the chip would be 2px larger than the fill it shows.
+   The height is unchanged because `.btn` sets it explicitly.
+   ⚠️ SCOPED TO `.pagehead`, so the same class on the widget editor, the drawers and the
+   Manage screen keeps the outline it was designed with. */
+.pagehead .btn.ico{background:var(--chip);border-color:transparent}
+/* HOVER — the fill moves AWAY from the header, never toward it (request, 22 Sep 2026:
+   "in header the icon hover color is bad", with the ObserveOps palette library named).
+   ⚠️ IT WAS `--hover`, AND THAT TOKEN IS FOR A *TRANSPARENT ROW*, NOT A FILLED CHIP.
+   `--hover` is this file's copy of the product's `--left-menu-hover-bg` / `--nav-hover-bg`:
+   it takes a row with NO fill to a faint mark on its surface. Applied to a chip that is
+   already filled it sends the fill back toward the page, so the button FADED OUT at exactly
+   the moment you pointed at it. Measured against `--header` — dark `#07101f`, light `#ffffff`:
+     dark   rest #2b394f 1.63:1  →  was #101d30 1.12:1   (93% of the way back to the header)
+     light  rest #e7ecf4 1.19:1  →  was #f0f4f9 1.10:1
+   Both themes got quieter on hover. Now: dark 1.63 → 2.68, light 1.19 → 1.27.
+   ⚠️ THE DESIGN SYSTEM CANNOT ANSWER THIS DIRECTLY, AND THAT IS AN ELEVENTH 0.1.166 DEFECT.
+   `get_component(button)` routes this control exactly — "quiet utility in toolbar? →
+   neutral-lightest", "icon-only / space-tight? → icon button" — and its documented hover
+   state is "bg darkens". But the SHIPPED bundle defines `.v-neutral-lighter:hover` and
+   `.v-neutral-lightest:hover` NOWHERE (0 occurrences each), and never references
+   `--neutral-button-hover-bg` at all: the catalogue's two most-used quiet variants (320x +
+   17x) render with no hover feedback whatsoever. And that unreferenced token is, in dark,
+   a raw `rgb(70,70,70)` — an off-ramp grey it shares only with `--grid-header-solid-bg` and
+   `--neutral-shadow-light`, in a theme whose every other surface is navy.
+   ⚠️ SO THE VALUE IS THE PRODUCT'S OWN NEXT RAMP STEP, AND ONE TOKEN CARRIES IT IN BOTH
+   THEMES: `--pan-btn-border` — the pan buttons are the product's own small icon-only overlay
+   controls, and their fill `--pan-btn-bg` is already `#2b394f`, i.e. what this chip rests at.
+     dark   #485975  (also --slider-tracker, --grid-header-bg, --checkbox-checked-border-color)
+     light  #dee5ed  (also --gauge-base-color, --border-color-opacity)
+   Read off the palette library the request named, one step further from the page than
+   `--tag-bg-color` in each theme — which is what `--chip` already is in both.
+   ⚠️ LIGHT'S STEP IS THE SMALL ONE AND IT IS THE THEME, NOT THE PICK: there is only ~0.17
+   of luminance between `--chip` and white to work in, against ~0.09 above a near-black
+   header in dark. `--chip-hover` is the one dial if it should bite harder. */
+.pagehead .btn.ico:hover{background:var(--chip-hover)}
 .timechip .clock{display:flex;color:var(--text-dim)}
 .timechip .caret{color:var(--text-dim);font-size:9px}
 .timechip .pill,.range-item .pill{background:var(--chip);color:var(--text);font-weight:600;font-size:11.5px;line-height:17px;padding:0 4px;border-radius:4px}
@@ -2967,7 +3030,18 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .crumbs{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);min-width:0}
 .crumbs a{color:var(--text-dim);cursor:pointer}
 .crumbs a:hover{color:var(--teal)}
-.crumbs .cur{color:var(--text);font-weight:700;font-size:14.5px;white-space:nowrap}
+/* ⚠️ THE CURRENT BOARD'S NAME ELLIPSISES INSTEAD OF PUSHING THE ROW (request, 22 Sep 2026:
+   "improve the breadcrumb"). It was `nowrap` with nothing to shrink it, and `.crumbs` carries
+   `min-width:0` for exactly this — so a long dashboard name grew the crumb past its share and
+   shoved the time chip and the right-hand cluster along with it. `min-width:0` has to be on the
+   NAME as well as on its parent: a flex item defaults to `min-width:auto`, i.e. its own content,
+   which is the recorded `.agrt .n` fault.
+   ⚠️ IT IS THE NAME THAT GIVES WAY, NOT `Dashboards / PMG`. Those two are short and fixed;
+   the one with arbitrary length is the one that can be truncated, and its full text is on the
+   element's own `title`. */
+.crumbs .cur{color:var(--text);font-weight:700;font-size:14.5px;white-space:nowrap;
+  min-width:0;overflow:hidden;text-overflow:ellipsis}
+.crumbs a{flex:0 0 auto}
 .crumbs .csep{color:var(--faint)}
 .favstar{color:var(--faint);font-size:15px;cursor:pointer}
 .favstar.on,.favstar.faved{color:var(--yellow)}   /* .faved is what the ported panel toggles */
@@ -3445,7 +3519,30 @@ body:has(#view-dashboard.on) .gnav{display:block}
 /* ⚠️ WITHOUT THIS THE SCRIM PAINTS OVER THE TITLE. `.ghead` is already `position:sticky`,
    so the pseudo anchors correctly — but its children are static and a later-painted
    positioned sibling covers them. */
-.ghead.gban > *{position:relative;z-index:1}
+/* ⚠️ THE HEADER PATTERN IS A MASK, NOT AN IMAGE, AND THAT IS THE WHOLE DESIGN (request,
+   22 Sep 2026: "the header colour dropdown — add new header pattern — the pattern is single
+   path and the colour is fix black and white — the pattern colour is fix theme wise black and
+   white, the header colour is change"). A `background-image` CANNOT BE TINTED, so a data-URI
+   pattern would carry whatever ink was baked into it and be wrong in one of the two themes —
+   and re-baking it per theme means re-rendering every header when the theme flips, which is a
+   thing to forget. Masking paints `--gp-ink` THROUGH the shape, so the ink is a token and the
+   theme is handled by the cascade with no JS at all.
+   ⚠️ `--gp` IS THE MASK AND `--gp-sz` THE TILE, both emitted by `gStyleCSS`. The path inside
+   the data URI is painted `#000` at full alpha because a mask reads ALPHA by default
+   (`mask-mode:match-source` on an image) — its colour is irrelevant and must not be mistaken
+   for the pattern's colour, which is `--gp-ink`.
+   ⚠️ BOTH PREFIXES. `-webkit-mask-*` is still what Safari answers to and this file has no
+   build step to add it. Write the pair or the pattern is invisible there.
+   ⚠️ IT IS `::after`, BECAUSE `::before` IS THE BANNER SCRIM. The two can be on at once — a
+   pattern over a photo — and they must not fight for the same pseudo-element. */
+.ghead.gpat::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  -webkit-mask-image:var(--gp);mask-image:var(--gp);
+  -webkit-mask-repeat:repeat;mask-repeat:repeat;
+  -webkit-mask-size:var(--gp-sz,36px);mask-size:var(--gp-sz,36px);
+  background:var(--gp-ink);opacity:var(--gp-op)}
+/* ⚠️ THE CONTENT LIFT COVERS BOTH, and it has to: a positioned pseudo painted later covers
+   static siblings, so without this the title would sit UNDER the pattern. */
+.ghead.gban > *,.ghead.gpat > *{position:relative;z-index:1}
 .gbanrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* ⚠️ THE ROW'S OWN GAP IS THE ONLY SPACING — `obs-button`'s footer/actions gap trap does not
    apply here (that is `obs-drawer`'s slot), but the host element defaults to `display:inline`,
@@ -7289,7 +7386,20 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    both take the taller one's height, so a one-widget group beside a three-widget group would
    silently grow. A group's height stays its own content's until a grip says otherwise. */
 #dashGrid{display:grid;grid-template-columns:repeat(12,1fr);
-  column-gap:var(--lay-hgap,10px);row-gap:0;align-items:start;padding-top:var(--pb-pad)}
+  column-gap:var(--lay-hgap,10px);row-gap:0;align-items:start;
+  /* ⚠️ NO TOP PADDING (request, 22 Sep 2026: "when i scroll anywhere the timeline and all
+     widget in between the gap is always show, don't do this"). It was `var(--pb-pad)` — 12px
+     moved here from `.pagebody` on 17 Sep so the sticky group header would pin flush instead of
+     12px down. That fixed the pin and left the band: the strip above ends, 12px of canvas shows,
+     and the board begins — and because it is the SCROLLER's first content it never goes away,
+     whatever you scroll. At 0 the first group's header meets the strip and the gap cannot be on
+     screen at all.
+     ⚠️ THE 17 Sep SPLIT IS STILL LOAD-BEARING and must not be undone with it: `.pagebody`
+     keeps `padding-top:0` (see its `:has(> #dashGrid)` rule), or the header pins 12px down again
+     and widgets paint in the band above it. Only the grid's own inset went.
+     ⚠️ THE SIDE AND BOTTOM INSETS ARE UNTOUCHED — `--pb-x` still holds the board off the rail
+     and the group navigator's mark still sits in it. */
+  padding-top:0}
 #dashGrid > *{grid-column:1/-1}   /* full width by default; each group holds its own 12-col grid.
    ⚠️ THE TOP PADDING IS THE SCROLLER'S, MOVED DOWN HERE — see `.pagebody`. It must scroll
       away with the content; left on the scroller it is a band the widgets show through. */
@@ -7425,6 +7535,13 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .cmenu.on{display:block}
 .cmi{display:flex;align-items:center;gap:9px;height:28px;padding:0 9px;border-radius:4px;font-size:12.5px;cursor:pointer;color:var(--text)}
 .cmi:hover{background:var(--pop-item-hover)}
+/* ⚠️ THE ICON SLOT IS RESERVED ON EVERY ROW OF A MENU THAT HAS ONE, not only on the rows
+   that resolve a glyph — a missing one would pull that row's label 23px left of its neighbours'
+   and read as a broken list. `.cmi` is already a flex row with a 9px gap, so the span is all the
+   layout this needs. 14px in a 28px row, and the glyph inherits the row's colour, which is what
+   turns Delete's trash can red on `.cmi.danger` with no second rule. */
+.cmi > .cmii{flex:0 0 14px;width:14px;height:14px;display:grid;place-items:center}
+.cmi > .cmii .cmiic{width:14px;height:14px;display:block;fill:currentColor}
 .cmi.danger{color:var(--red)}
 .cmsep{height:1px;background:var(--border-soft);margin:4px 6px}
 .vrow{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:12px}
@@ -8933,7 +9050,46 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    alignment row had NO top one, so Header colour→Transparent was 32px while
    Transparent→Alignment was 0, and the last row read as belonging to the checkboxes. */
 .gechk > .cwftck{margin-top:0;margin-bottom:18px}
-.gepair.gealgn{margin-top:14px}
+/* ⚠️ NO PADDING AND ALIGNMENT ARE ONE FLEX ROW, NOT TWO GRID COLUMNS (request,
+   22 Sep 2026: "the no padding and alignment will be set in single div and behind [them] the
+   share group like free text", with the Free Text panel's own
+   `Font Size | Alignment | Vertical alignment | No padding` row supplied as the picture).
+   ⚠️ THE GRID IS WHAT PUT THEM APART. `.gepair` is two `1fr` columns at a 24px gap, so in a
+   628px drawer Alignment started at the column midpoint — ~300px from a control that is 38px
+   wide, with nothing between them. Two icon segments that answer one question ("how does this
+   group sit") read as two unrelated fields at that distance. In the reference every one of
+   those controls hugs its own content and they sit adjacent.
+   ⚠️ `flex:0 0 auto` ON THE CELLS IS THE HALF THAT MATTERS — a flex item defaults to
+   `flex-shrink:1` and `.ddfield` is a block, so without it the two would stretch and the grid's
+   own fault would come back through a different property.
+   ⚠️ THE 24px GAP IS `.gepair`'s OWN, kept deliberately: it is the step every other pair in
+   this drawer is separated by, so the row reads as part of the same rhythm rather than as a
+   tighter cluster. `align-items:flex-start` keeps the two labels on one baseline when one
+   control is taller than the other.
+   ⚠️ THE REFERENCE PUTS No padding LAST and this row puts it FIRST. That is the 22 Sep
+   request one message earlier ("the 'alignment' will be show behind the 'no padding'"), which
+   this one does not revisit — it asks for the LAYOUT, not the order. Swapping them is one
+   move if the reference's order is what was meant. */
+.gepair.gealgn{display:flex;gap:24px;align-items:flex-start;margin-top:14px}
+.gepair.gealgn > .ddfield{flex:0 0 auto}
+/* ⚠️ THE SHARE CELL IS THE ONE THAT DOES NOT HUG. `.ddseg` is a two-word switch and needs
+   a real measure; at `flex:0 0 auto` it would be sized to the words "Public" and "Private",
+   which is narrower than either half of that control has ever been. `min-width:0` with it,
+   or the item cannot shrink below its content on a narrow drawer (the recorded `.agrt .n`
+   fault). Its own class is `geshf`, NOT `gesh` — that one is already on the `.ddseg` INSIDE
+   it, and two elements one level apart answering to the same name is the collision trap this
+   file opens with. */
+/* ⚠️ THE SHARE CELL IS THE SAME MEASURE AS Title size (request, 22 Sep 2026: "the share
+   group will be align the width size 'title size'"). `.gepair` is two `1fr` columns at a 24px
+   gap, so a column is `calc(50% - 12px)` — written that way rather than as a pixel number so it
+   follows the drawer's width and the row's own gap. Being the LAST cell of a full-width flex
+   row, it ends where Title size ends, so the two share a right edge as well as a width.
+   ⚠️ `flex:0 0` — it must NOT take the slack: at `1 1 auto` the switch grew to whatever was
+   left after Alignment and No padding and was wider than the field it is being matched to.
+   ⚠️ Its class is `geshf`, NOT `gesh` — that one is on the `.ddseg` INSIDE it, and two
+   elements one level apart answering to the same name is the collision trap this file opens
+   with. */
+.gepair.gealgn > .ddfield.geshf{flex:0 0 calc(50% - 12px);min-width:0;margin-left:auto}
 /* the size scale is 8 stops in a 232px column, so its cells shrink and carry text not glyphs */
 .cwftseg .cwftsg b{font-size:9px;font-weight:700;letter-spacing:.01em}
 .cwftp > .cwftseg{width:100%}
@@ -8952,11 +9108,44 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    Create Dashboard and Layout drawers, which is where it was written; the markup here has
    always read "Group title" / "Header colour" / "Title size", so only the transform had to go.
    ⚠️ SCOPED TO THIS DRAWER — `.ddlbl` is shared, and the other two drawers were not named. */
-#drawer-gedit .ddlbl{text-transform:none;letter-spacing:0}
+/* ⚠️ 13px, SENTENCE CASE, IN THIS DRAWER ONLY (requests, 21 and 22 Sep 2026: "in the all
+   title will write in small only first letter capital", then "all input field title font size
+   is 13px"). `.ddlbl` is 11px/700/uppercase because it was written for the Create Dashboard and
+   Layout drawers, and those were not named — the override stays scoped so they are untouched.
+   ⚠️ THE WEIGHT COMES DOWN WITH THE SIZE. 13px at 700 beside a 13px control label reads as
+   a heading rather than a field name; 600 is this file's own weight for a label that sits over
+   its input. */
+#drawer-gedit .ddlbl{font-size:13px;font-weight:600;text-transform:none;letter-spacing:0}
+/* ⚠️ THE NOTE BECAME THE `(i)` (request, 22 Sep 2026: "the 'Share group' it will be show
+   minimal ui and the note will be show tooltip", with the product's own URL-Time-Out field as the
+   picture). A two-line `.ddnote` under a two-word switch was the loudest block in the drawer for
+   the one field whose explanation you read once; behind the mark it is a hover away and the row
+   is the same height as every other. The glyph is the product's own `info-circle`.
+   ⚠️ AND THE CONTROL TOOK THE LEFT COLUMN WITH IT. It spanned all 628px while Header
+   colour and Title size sit in two — so at rest the drawer read as one full-bleed slab above a
+   tidy grid. Wrapped in `.gepair` it lands on the same column and the same width as everything
+   else, which is the whole of what "minimal" asks for here. `.gepair` with ONE cell is the shape
+   the Alignment row already uses for the same reason.
+   ⚠️ `.ddlbl` IS ALREADY A FLEX ROW (`gap:5px`), so the mark needed no label rule — it is
+   `.req`'s own slot, which is why a required asterisk and this sit identically. */
+.gehi{flex:0 0 14px;width:14px;height:14px;display:inline-flex;align-items:center;
+  justify-content:center;padding:0;border:0;background:transparent;color:var(--text-dim);
+  cursor:help;border-radius:50%}
+.gehi:hover,.gehi:focus-visible{color:var(--text)}
+.gehi svg{width:13px;height:13px;display:block;fill:currentColor}
 /* ⚠️ `align-items:start` — the two fields are different heights (a 32px dropdown against a
    segmented control) and without it the shorter one stretches to the taller. The 24px is the
    COLUMN gap; each child keeps its own `.ddfield` bottom margin, so what follows the pair is
    spaced exactly as every other field is. */
+/* ⚠️ THE PATTERN'S INK IS BLACK OR WHITE AND NOTHING ELSE, by request. It is declared
+   here rather than at `:root` with the rest because it belongs to one component, and it is a
+   LITERAL rather than a token on purpose: `--white` and `--text` both carry a tint in this
+   system, and the ask was the two absolutes.
+   ⚠️ THE OPACITY IS PART OF THE COLOUR. At full strength a black lattice over a coloured
+   strip is a texture you cannot read a title through; light theme takes a tint far more
+   strongly than the dark canvas, which is the same split the AI card's wash records. */
+:root{--gp-ink:#ffffff;--gp-op:.11}
+html[data-theme="light"]{--gp-ink:#000000;--gp-op:.085}
 .gepair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
 /* ⚠️ 628px, NOT `.sdrawer`'s 400 (request, 18 Sep 2026: "the 'edit group' sidebar width 628").
    ⚠️ AND IT NEEDS ITS OWN PARKED `right` AND ITS OWN `.on` — the recorded `#drawer-layout`
@@ -8969,6 +9158,17 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 /* ⚠️ `--cwa` IS DECLARED ON `#cwModal`, so the custom-colour field's focus ring resolved to
    nothing once this dropdown was reused in a drawer. The fallback is the page accent. */
 .cwftdd{position:relative}
+/* ⚠️ THE CUSTOM ROW IS THE LIST'S LAST, AND IT IS SEPARATED BY A HAIRLINE. Every row above
+   it names a colour this product owns; this one names whatever the canvas is showing, so the rule
+   is the same one the AI panel's — menus draw between a list and the action under it. No new
+   colour and no new shape: it is a `.cwftddo` with a border. */
+/* ⚠️ `--pop-line`, NOT `--border`. The panel's own background IS `--pop`, and in dark theme
+   `--border` is the SAME colour as it — the recorded reason that token exists. The rule was
+   drawn and invisible until it was screenshotted. */
+.cwftddcu{margin-top:4px;border-top:1px solid var(--pop-line)!important;border-radius:0 0 4px 4px}
+/* a draft with no colour yet (Transparent) would paint nothing at all, so the swatch keeps an
+   edge of its own rather than reading as a missing element */
+.cwftddcu .cwftsw2{box-shadow:inset 0 0 0 1px var(--border)}
 .cwftddt{display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 9px;
   border:1px solid var(--border);border-radius:4px;background:var(--panel-2);color:var(--text);
   font:inherit;font-size:12.5px;cursor:pointer;text-align:left}
@@ -10527,6 +10727,10 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
     <button class="awtab on" id="awtC" onclick="awTab('create')">Create Widget</button>
     <button class="awtab" id="awtP" onclick="awTab('predef')">Predefined</button>
     <button class="awtab" id="awtU" onclick="awTab('user')">User Define</button>
+    <!-- the tab the shared groups land in (request, 22 Sep 2026). Its label is the request's
+         own word; the rows are built from GRP_PUBLIC, which is derived from each board's own
+         `share` flag — see `gPubSync`. -->
+    <button class="awtab" id="awtG" onclick="awTab('group')">Group</button>
   </div>
   <div style="padding:10px 16px 0">
     <label class="dsearch" style="margin:0"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z"/></svg><input id="awSearch" placeholder="Search widgets…" oninput="awRender()" /></label>
@@ -10546,7 +10750,13 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
         <button class="icobtn dpchev" id="dpanelBtn" title="Hide dashboard list" onclick="toggleDPanel()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>
         </button>
-        <button class="icobtn" id="olBtn" title="Toggle dashboard outline" onclick="toggleOutline()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h2v2H3V5Zm4 0h14v2H7V5ZM3 11h2v2H3v-2Zm4 0h14v2H7v-2ZM3 17h2v2H3v-2Zm4 0h14v2H7v-2Z"/></svg></button>
+        <!-- ⚠️ TOGGLE DASHBOARD OUTLINE WAS REMOVED FROM THE HEADER (request, 22 Sep 2026:
+             "in header remove the 'toggle dashboard outline'"). THE OUTLINE IS NOT GONE: the `O`
+             shortcut still calls `toggleOutline()`, it is still in the `KB` registry and still
+             listed in the `?` sheet, and `#outline` and its CSS are untouched — only the button
+             went. Its `KB` entry keeps a `sel` that now matches nothing; `kbTag` guards for that.
+             ⚠️ CONSEQUENCE, STATED: the outline is keyboard-only on this page now, the same
+             trade undo and redo took. Nothing on screen announces it. -->
         <span class="hsep"></span>
         <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
         <span class="crumbs">
@@ -10556,13 +10766,25 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
         </span>
         <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()">★</span>
         <span class="vbadge" title="Visible to the whole org">Public</span>
-        <span class="hdiv"></span>
-        
-        <!-- Undo / redo sit with the board-editing controls, left of Groups. They name the
-             edit they will revert in their tooltip, and dim rather than disable so the
-             tooltip can still say why nothing happens. -->
-        <button class="icobtn off" id="undoBtn" data-tip="Nothing to undo" aria-disabled="true" onclick="histUndo()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8Z"/></svg></button>
-        <button class="icobtn off" id="redoBtn" data-tip="Nothing to redo" aria-disabled="true" onclick="histRedo()"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6Z"/></svg></button>
+        <!-- ⚠️ THIS DIVIDER IS THE GROUPS BUTTON’S, AND HIDES WITH IT (request,
+             22 Sep 2026: "remove the no need divider line"). It separates the breadcrumb from
+             the board-editing controls, and `renderCanvas` hides `#grpBtn` on a FLAT board — so
+             on a board with no groups it was a rule with nothing after it, hanging off the end
+             of the crumb. It became visible the moment undo and redo left the row.
+             ⚠️ IT IS HIDDEN BESIDE `#grpBtn`, ON THE SAME LINE OF `renderCanvas`, rather than
+             by a `:has()` rule " one test, one place, and the two cannot disagree. -->
+        <span class="hdiv" id="grpDiv"></span>
+        <!-- ⚠️ UNDO / REDO WERE REMOVED FROM THE TOOLBAR (request, 22 Sep 2026: "we need to
+             change the header overall — remove the 'undu & redu' option"). THE FEATURE IS NOT
+             GONE: ⌘Z / Ctrl+Z and ⇧⌘Z / Ctrl+Y still run `histUndo` / `histRedo`, both are
+             still in the `KB` registry and still listed in the `?` sheet, and every board edit
+             still snapshots through `histDo`. Only the two buttons went.
+             ⚠️ `histRender()` ALREADY GUARDED FOR THEM (`if (!u || !r) return;`), which is the
+             only reason this is a markup-only change — it is called from `histDo`, `histUndo`,
+             `histRedo` and `histLoad`, so an unguarded lookup would have thrown on every edit.
+             ⚠️ THEIR `KB` ENTRIES CARRY NO `sel` and never did, so no keycap was orphaned.
+             ⚠️ CONSEQUENCE, STATED: undo is now keyboard-only on this page. Nothing on screen
+             says the board can be undone, and the `?` sheet is where that is written. -->
         <span class="hdiv"></span>
         <button class="btn grpbtn" id="grpBtn" title="Jump to a group" onclick="openGroupMenu(event)">
           <svg viewBox="0 0 24 24"><path d="M3 4h8v6H3V4Zm10 0h8v6h-8V4ZM3 14h8v6H3v-6Zm10 0h8v6h-8v-6Z"/></svg>Groups<span class="cr">▾</span></button>
@@ -10588,8 +10810,16 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
             </div>
           </div>
         </span>
-        <button class="btn ico" id="shareBtn" data-tip="Share" onclick="openDrawer('drawer-share')"><svg viewBox="0 0 24 24"><path d="M18 8a3 3 0 1 0-2.8-4H15a3 3 0 0 0 .2 1.2L8.9 8.8a3 3 0 1 0 0 6.4l6.3 3.6A3 3 0 1 0 16 17l-6.3-3.6a3 3 0 0 0 0-.8L16 9a3 3 0 0 0 2 .9V8Z"/></svg></button>
-        <button class="aibtn" title="Ask Iris about this dashboard" onclick="aiOpen()"><svg data-aispark viewBox="0 0 48 48"></svg>Iris</button>
+        <!-- ⚠️ SHARE MOVED INTO THE ⋮ ACTIONS MENU (request, 22 Sep 2026: "share will be move
+             inside the '3 dot action'"). It is a row of `openDashMenu` now, beside Clone / Edit /
+             Version history — which is where the board's other verbs already live, and it opens
+             the same `#drawer-share`. The `S` shortcut is unchanged and still opens it. -->
+        <!-- ⚠️ THE ✦ IRIS PILL WAS REMOVED (request, 22 Sep 2026: "remove the 'AI' button").
+             THE ASSISTANT IS NOT GONE and this is the third entry point to lose rather than the
+             feature: the rail's own Iris row opens it, so does the `A` shortcut, and so does
+             Log Explorer's ✦ Ask Iris. `.aibtn`'s CSS stays — Options 2 and 3 still render it,
+             and it is what a revert needs. The `A` entry in `KB` keeps its `sel`, which now
+             matches nothing; `kbTag` guards for that, so the sheet still lists the key. -->
         <!-- ⚠️ The "✦ AI Chat" button was REMOVED (annotation, 15 Aug 2026). It opened the
              shared ac* chat and sat immediately beside "Ask AI", which opens this page's own
              panel — two violet sparkle pills side by side, indistinguishable at a glance.
@@ -10608,7 +10838,18 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
      live 8.2.7 icon set (`custom-dashboard` minus its pencil, plus `plus`), so it
      reads as "a new dashboard" rather than "add". Stays icon-only: the full
      "＋ Create New Dashboard" label ran ~180px and dominated the toolbar. -->
-        <button class="btn pri ico" id="newDashBtn" data-tip="Create a new dashboard" aria-label="Create a new dashboard" onclick="dashNew()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M19.28,26.41H3.58c-1,0-1.8.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8ZM17.48,42.11H5.28v-12.2h12.2v12.2ZM19.28,1.71H3.58c-1,0-1.8.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.51c0-1-.8-1.8-1.8-1.8ZM17.48,17.41H5.28V5.21h12.2v12.2ZM28.28,21.01h15.7c1,0,1.8-.8,1.8-1.8V3.51c0-1-.8-1.8-1.8-1.8h-15.7c-1,0-1.8.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8ZM29.98,5.21h12.2v12.2h-12.2V5.21Z"/><g transform="translate(36.15 36.05) scale(.74) translate(-24 -24)"><path fill="currentColor" d="M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"/></g></svg></button>
+        <!-- ⚠️ ＋ CREATE NEW DASHBOARD WAS REMOVED FROM THE TOOLBAR (request, 22 Sep
+             2026: "in header remove the 'create new dashboard'"), with undo / redo, the ✦ Iris
+             pill, Share and Layout settings — the last two into the ⋮ actions menu.
+             ⚠️ NOTHING IS STRANDED, which is the check every removal in this file gets before it
+             happens: the dashboard list panel's own ＋ New Dashboard row, the Manage-dashboards
+             screen's primary and the `N` shortcut all still create one. `N`'s `KB` entry keeps
+             its `sel`, which now matches nothing; `kbTag` guards for that, so the `?` sheet
+             still lists the key.
+             ⚠️ ITS GLYPH TOOK TWO GOES TO GET RIGHT (13 Aug 2026 — a bare ＋ read as "add
+             something" beside the canvas and group ＋ affordances, so it became the product's own
+             dashboard grid with the product's own plus in the free quadrant). That composition
+             is in git history; don't redraw it if the button ever comes back. -->
         <!-- Full screen and More carry the SHARE button's treatment (.btn.ico — bordered
              28px box, 13px glyph), not the naked .icobtn, so the right-hand action cluster
              reads as one set (annotation, 13 Aug 2026). -->
@@ -10635,14 +10876,17 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              ⚠️ It still has to differ from ＋ Create New Dashboard two buttons away, whose
              glyph is the product dashboard grid with a plus — a framed split pane and a
              grid-plus are different silhouettes, not the same mark with a detail moved. -->
-        <button class="btn ico" id="layBtn" data-tip="Layout settings" aria-label="Layout settings"
-          onclick="layOpen()"><!-- ⚠️ LUCIDE `sliders-horizontal`, PASTED VERBATIM from the reference build
-               (zenichakalasiya.github.io/ServiceOps_Dashboard_v2 → ⋮ Actions → Layout settings),
-               read out of that page's DOM rather than guessed — the vertical variant is a
-               different glyph and this one had already been picked. Supplied 27 Aug 2026.
-               ⚠️ IT IS STROKED, and `.btn svg` sets `fill:currentColor`, so `#layBtn svg` has
-               to cancel that or the nine open paths render as nine filled slivers. --><svg viewBox="0 0 24 24"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg></button>
-        <button class="btn ico" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
+        <!-- ⚠️ LAYOUT SETTINGS MOVED INTO THE ⋮ ACTIONS MENU (request, 22 Sep 2026: "the
+             layout setting will be move '3 dot action'"), WHICH IS WHERE IT STARTED. It was a row
+             of `openDashMenu` until 27 Aug 2026, when it became this toolbar button; the row's
+             `dmAct('layout')` branch was kept and unreferenced against exactly this, and its own
+             note said so. So the move is one row back, not a rebuild.
+             ⚠️ THE ROW IS BETTER THAN THE BUTTON WAS, and that is worth keeping: `dmAct('layout')`
+             opens the drawer ON A NAMED BOARD (`if (dashState.cur !== n) pickDash(n)`), which the
+             toolbar button could not do — it only ever knew about the open one.
+             ⚠️ `#layBtn` AND ITS `fill:none` CANCEL ARE KEPT IN THE STYLESHEET. The glyph is a
+             stroked Lucide `sliders-horizontal` and `.btn svg` fills, so a revert needs both. -->
+<button class="btn ico" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
         <!-- Keyboard shortcuts. Hover shows every key in a popover, click opens the full
              sheet. It sits with Full Screen and More because it is chrome about the page
              rather than an action on the dashboard, and it is LAST because it is the one
@@ -11223,17 +11467,17 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
        calls `gReorder`, and the other two are kept and unreferenced, the house pattern. The
        `#gmUp` / `#gmDn` / `#gmOth` / `#gmArrSep` ids go with the rows; `openGMenu` no longer
        has per-position rows to show or hide. -->
-  <div class="cmi" onclick="gEditOpen()">Edit group</div>
-  <div class="cmi" onclick="gClone()">Clone group</div>
+  <div class="cmi" onclick="gEditOpen()"><span class="cmii"></span>Edit group</div>
+  <div class="cmi" onclick="gClone()"><span class="cmii"></span>Clone group</div>
   <!-- ⚠️ UNGROUP IS NOT `danger`, AND THAT IS THE POINT OF HAVING IT BESIDE DELETE (request,
        21 Sep 2026). Delete takes the group AND its widgets; Ungroup keeps every widget and
        only dissolves the band around them. Two actions one row apart whose outcomes differ
        that much must not look the same — the red is reserved for the one that loses work.
        ⚠️ IT SITS ABOVE THE SEPARATOR, with Edit and Clone: those three all leave the board's
        content intact, and the rule below is what marks the boundary to the one that does not. -->
-  <div class="cmi" onclick="gUngroup()">Ungroup</div>
+  <div class="cmi" onclick="gUngroup()"><span class="cmii"></span>Ungroup</div>
   <div class="cmsep"></div>
-  <div class="cmi danger" onclick="gRemove()">Delete group</div>
+  <div class="cmi danger" onclick="gRemove()"><span class="cmii"></span>Delete group</div>
 </div>
 
 <!-- Edit group — the title, the header's colour and its size (request, 17 Sep 2026).
@@ -11248,8 +11492,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
   <div class="dr-f">
     <button class="btn" id="geReset" data-tip="Put the colour and the size back to their defaults"
       onclick="gEditReset()">Reset</button>
-    <span style="flex:1"></span>
-    <button class="btn pri" onclick="closeOverlays()">Done</button>
+    <button class="btn pri" onclick="closeOverlays()">Save</button>
   </div>
 </div>
 
@@ -11624,6 +11867,27 @@ const ICONS = {
    "M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z"
   ],
   "from": "sidebar.html"
+ },
+ /* the product's own `clone` glyph, verbatim from `observeops-icons/common/actions-edit/` */
+ "clone": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M4,8c0-2.2,1.8-4,4-4H28c2.2,0,4,1.8,4,4v8h8c2.2,0,4,1.8,4,4v20c0,2.2-1.8,4-4,4H20c-2.2,0-4-1.8-4-4v-8H8c-2.2,0-4-1.8-4-4V8Zm16,24v8h20V20h-8v8c0,2.2-1.8,4-4,4h-8Zm8-4V8H8V28H28Z"
+  ]
+ },
+ /* the product's own `delete` glyph (the trash can), verbatim from `observeops-icons/common/actions-edit/` */
+ "delete": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M42,12h-3.98s-.02,0-.04,0h-3.98v-4c0-2.21-1.79-4-4-4h-12c-2.21,0-4,1.79-4,4v4h-3.98s-.02,0-.04,0h-3.98c-1.1,0-2,.9-2,2s.9,2,2,2h2.14l1.73,24.28c.15,2.09,1.89,3.72,3.99,3.72h20.28c2.1,0,3.84-1.62,3.99-3.72l1.73-24.28h2.14c1.1,0,2-.9,2-2s-.9-2-2-2Zm-24-4h12v4h-12v-4Zm16.14,32H13.86l-1.71-24h23.7l-1.71,24Zm-14.14-4c1.1,0,2-.9,2-2v-12c0-1.1-.9-2-2-2s-2,.9-2,2v12c0,1.1,.9,2,2,2Zm8,0c1.1,0,2-.9,2-2v-12c0-1.1-.9-2-2-2s-2,.9-2,2v12c0,1.1,.9,2,2,2Z"
+  ]
+ },
+ /* the product's own `layer-group` glyph, verbatim from `observeops-icons/common/navigation-layout/` — stacked isometric layers, i.e. a GROUP */
+ "layer-group": {
+  "viewBox": "0 0 48 48",
+  "paths": [
+   "M5,17.7l18,10.4c.3,.2,.6,.3,1,.3s.7,0,1-.3l18-10.4c.3-.2,.6-.4,.7-.7,.2-.3,.3-.6,.3-1,0-.4,0-.7-.3-1-.2-.3-.4-.6-.7-.7L25,3.9c-.3-.2-.6-.3-1-.3s-.7,0-1,.3L5,14.3c-.3,.2-.6,.4-.7,.7-.2,.3-.3,.7-.3,1,0,.3,0,.7,.3,1,.2,.3,.4,.6,.7,.7ZM24,8l14,8-14,8-14-8,14-8Zm17,14.3l-17,9.7L7,22.3c-.2-.1-.5-.2-.7-.3-.3,0-.5,0-.8,0-.3,0-.5,.2-.7,.3-.2,.2-.4,.4-.5,.6-.3,.5-.3,1-.2,1.5s.5,.9,.9,1.2l18,10.4c.3,.2,.6,.3,1,.3s.7,0,1-.3l18-10.4c.5-.3,.8-.7,.9-1.2,.1-.5,0-1.1-.2-1.5-.1-.2-.3-.4-.5-.6-.2-.2-.4-.3-.7-.3-.3,0-.5,0-.8,0-.3,0-.5,.1-.7,.3h0Zm0,8.1l-17,9.7L7,30.3c-.2-.1-.5-.2-.7-.3-.3,0-.5,0-.8,0-.3,0-.5,.2-.7,.3-.2,.2-.4,.4-.5,.6-.3,.5-.3,1-.2,1.5s.5,.9,.9,1.2l18,10.4c.3,.2,.6,.3,1,.3s.7,0,1-.3l18-10.4c.5-.3,.8-.7,.9-1.2,.1-.5,0-1.1-.2-1.5-.1-.2-.3-.4-.5-.6-.2-.2-.4-.3-.7-.3-.3,0-.5,0-.8,0-.3,0-.5,.1-.7,.3h0Z"
+  ]
  },
  /* ⚠️ THE PRODUCT'S OWN `common/navigation-layout/ellipsis-v.svg`, pasted verbatim — three r=4
    circles on the 48 grid, which is the construction every other glyph in this footer already has.
@@ -13182,7 +13446,16 @@ const MF_TREE_ICONS = ['Explorer'];
 const MF_PIN_INTRO_KEY = 'oo13-pin-intro-read';
 /* the live mark: a blinking dot BEFORE the pin — the pin says what the control is, the dot says "something new here, hover me".
    Its own role="button" span, never a <button> inside the pin's <button> (interactive content inside a button eats the clicks). */
-const MF_PIN_DOT = '<span class="mfpinhot" role="button" tabindex="0" aria-label="What is pinning?" onmouseenter="mfPinIntroShow(this)" ' +
+/* ⚠️ THE DOT CARRIES A `data-tip` NOW (request, 22 Sep 2026: the blinking dot should show a
+   tooltip on hover). It deliberately had none, and the recorded reason was real: the tooltip
+   engine paints 320ms after `mouseover`, the intro card used to open at 120ms, so the label
+   arrived SECOND and landed underneath a 360px panel.
+   ⚠️ THE FIX IS ORDERING, NOT SUPPRESSION — see `mfPinIntroShow`: the card's dwell moved out
+   past the engine's, so a quick hover gets the label and a deliberate one gets the card, and
+   the card calls `tipHide()` as it opens so the two are never on screen together.
+   ⚠️ THE TIP AND THE `aria-label` ARE THE SAME STRING. A control whose hover label and
+   accessible name disagree describes itself two ways. */
+const MF_PIN_DOT = '<span class="mfpinhot" role="button" tabindex="0" aria-label="What is pinning?" data-tip="What is pinning?" onmouseenter="mfPinIntroShow(this)" ' +
   'onmouseleave="mfPinIntroLater(event)" onfocus="mfPinIntroShow(this)" onblur="mfPinIntroLater(event)" ' +
   'onclick="event.stopPropagation();mfPinIntroOpen(this)"><i class="mfpindot"></i></span>';
 let mfPinIntroMem = false, mfPinIntroT = null;
@@ -13248,7 +13521,13 @@ function mfPinIntroHTML(){
 /* the picture's arrow: the product's own long-arrow-right, verbatim from observeops-icons/common/arrows-direction/ */
 const MF_PI_ARROW = '<svg class="mfpiarr" viewBox="0 0 48 48"><path d="M40,24c0,.5-.2,1-.6,1.4l-12,12c-.8,.8-2,.8-2.8,0-.8-.8-.8-2,0-2.8l8.6-8.6H10c-1.1,0-2-.9-2-2s.9-2,2-2h23.2l-8.6-8.6c-.8-.8-.8-2,0-2.8,.8-.8,2-.8,2.8,0l12,12c.4,.4,.6,.9,.6,1.4Z"/></svg>';
 const stEscMf = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 120); }
+/* ⚠️ 650ms, AND IT USED TO BE 120. The dot now has its own `data-tip`, and this file's
+   tooltip engine paints at 320ms — at 120 the card opened first and the label appeared behind
+   it a fifth of a second later. Past the engine's delay, the two become a sequence instead of a
+   collision: brush the dot and you get "What is pinning?", dwell on it and the card takes over.
+   ⚠️ A CLICK STILL OPENS IT AT ONCE (`mfPinIntroOpen` straight from `onclick`), so the longer
+   dwell costs nobody the card — it only stops it ambushing a pointer passing through. */
+function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 650); }
 function mfPinIntroOpen(btn){
   if (!btn || !btn.isConnected || !mfPinIntroOn()) return;
   const fly = document.getElementById('mflyout');
@@ -13259,6 +13538,10 @@ function mfPinIntroOpen(btn){
   const top = Math.max(8, Math.min(cy - 28, innerHeight - h - 8));
   el.style.left = f.right + 'px'; el.style.top = top + 'px';
   el.style.setProperty('--mfpi-arrow', Math.max(14, Math.min(cy - top, h - 14)) + 'px');
+  /* ⚠️ THE LABEL COMES DOWN AS THE CARD GOES UP. `tipHide()` clears the pending timer AS WELL
+     as the box, so a tip that has not painted yet cannot arrive on top of the card a moment
+     later — the same call, for the same reason, that Option 6's module grid makes. */
+  if (typeof tipHide === 'function') tipHide();
   el.classList.add('on');
 }
 function mfPinIntroLater(e){
@@ -17470,6 +17753,8 @@ const AI_SPARK_BUBBLE = '<svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.
 function waiIcon(){ return AI_SPARK; }
 
 function renderCanvas(){
+  /* the shared-group registry is derived from this board's own model — see `gPubSync` */
+  gPubSync();
   layVars();                       /* tokens first — the grid below is measured after this */
   const g = document.getElementById('dashGrid');
   g.classList.toggle('editing', editMode);
@@ -17483,13 +17768,15 @@ function renderCanvas(){
   const tb  = `<span class="wtime" title="Widget time range — follows the dashboard">${trSelIdx>=0?TR_PRESETS[trSelIdx][1]:'custom'}</span>`;
   /* an ungrouped board has nothing to jump between */
   const gb = document.getElementById('grpBtn'); if (gb) gb.style.display = ungrouped ? 'none' : '';
+  /* ⚠️ THE SEPARATOR BEFORE IT GOES TOO — see its note in the markup. */
+  const gd = document.getElementById('grpDiv'); if (gd) gd.style.display = ungrouped ? 'none' : '';
   g.innerHTML = TABS.map((name, gi) => {
     const ws = WIDGETS[gi] || [], shut = !ungrouped && GRP_SHUT.has(gi);
     /* ⚠️ `draggable` IS ON THE HEADER, NOT ON `.dgroup` — the section holds every widget, and
        each of those is draggable in its own right; a draggable ancestor would make the whole
        band the thing that lifts whenever a widget drag missed its grip. */
     const gsty = ungrouped ? '' : gStyleCSS(gi);
-    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}${gAlign(gi)?' galgn':''}"${gsty?` style="${gsty}"`:''} draggable="true"
+    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}${gPat(gi)?' gpat':''}${gAlign(gi)?' galgn':''}"${gsty?` style="${gsty}"`:''} draggable="true"
         ondragstart="gDragStart(event,${gi})" ondragend="gDragEnd()">
         <span class="ggrip" data-tip="Drag to move this group">⠿</span>
         <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">${ico('chevron-right','gcari')}</span></button>
@@ -17808,19 +18095,79 @@ const GRP_BG = [/* ⚠️ DEFAULT'S SWATCH IS `--card-head`, THE STRIP IT ACTUAL
                    without one it fell through to the mapped `'transparent'` and Default and
                    Transparent drew the SAME empty chip while meaning opposite things. */
                 ['Default', '', 'var(--card-head)'],
-                /* ⚠️ `Transparent` IS NOT A ROW HERE ANY MORE (request, 19 Sep 2026: "the
-                   transparent will be add as check box with text outside of header colour").
-                   In a 150px list beside a canvas the word truncated to "Transpar…", and it is
-                   not really a COLOUR anyway — it is the absence of one, which is a different
-                   kind of choice from "which colour". It is `gTransp` below, a checkbox that
-                   OVERRIDES whatever colour is picked, so the colour you chose is still there
-                   when you untick it. */
+                /* ⚠️ `Transparent` IS A ROW AGAIN (request, 22 Sep 2026: "in empty group
+                   the 'Transparent' will be set in 'header color'"), REVERSING the 19 Sep
+                   request that pulled it out into a checkbox beside the list. Both readings
+                   are recorded on purpose — don't move it back out on the strength of the
+                   paragraph this replaces. What made the 19 Sep argument ("the absence of a
+                   colour is a different KIND of choice") lose is that the two are mutually
+                   exclusive: a header is filled or it is not, and a list is how this drawer
+                   already asks every other either/or question about that strip.
+                   ⚠️ THE COST IS REAL AND IS THE PRICE OF THE MOVE. As a checkbox it OVERRODE
+                   the colour, so unticking brought back the colour you had picked; as a row it
+                   REPLACES it — choosing Transparent forgets Blue, exactly as choosing Green
+                   would. That is what a list means, and it is why the checkbox existed.
+                   ⚠️ ITS VALUE IS THE LITERAL `transparent`, NOT `''` — see the note above this
+                   array: `gStyleCSS` tests emptiness to emit no background at all, which is
+                   how `Default` says "keep `--card-head`". The two would be indistinguishable.
+                   ⚠️ ITS SWATCH IS DELIBERATELY EMPTY, so the picker draws the hairline ring it
+                   already draws for a colourless draft rather than painting a chip that claims
+                   a fill. Default's swatch is `--card-head` for exactly the same reason. */
+                ['Transparent', 'transparent', ''],
                 ['Gray','var(--panel-2)','var(--track)'],
                 ['Green','color-mix(in srgb, var(--green) 16%, var(--card-head))','var(--green)'],
                 ['Blue','color-mix(in srgb, var(--blue) 16%, var(--card-head))','var(--blue)'],
                 ['Yellow','color-mix(in srgb, var(--yellow) 20%, var(--card-head))','var(--yellow)'],
                 ['Orange','color-mix(in srgb, var(--orange) 18%, var(--card-head))','var(--orange)'],
                 ['Red','color-mix(in srgb, var(--red) 16%, var(--card-head))','var(--red)']];
+/* ⚠️ HEADER PATTERNS — OPTION 2 ONLY (request, 22 Sep 2026, with five abstract
+   banner references supplied: a low-poly network lattice, halftone dots, flowing lines).
+   ⚠️ EVERY PATTERN IS ONE `<path>`, which the request asked for in as many words, and that
+   is not decoration: a tile is repeated hundreds of times across a 1500px strip, and one path
+   per tile is what keeps it a single rasterised image rather than a stack of elements.
+   ⚠️ THE INK IS NOT STORED WITH THE PATTERN. The path is painted `#000` here because the
+   URI is used as a MASK (`.ghead.gpat::after`), which reads alpha — so the visible colour is
+   `--gp-ink`, black or white per theme, exactly as asked. Baking a colour in would make it
+   wrong in one theme and would have to be re-rendered when the theme flips.
+   ⚠️ `t` IS THE TILE SIZE ON SCREEN, not the viewBox. The lattice is drawn on 40 and shown
+   at 36 so its lines land near 1px; the dots are drawn on 20 and shown at 18. Change one and
+   the other has to be re-judged — they are a pair, not two numbers.
+   ⚠️ A STROKE PATTERN MUST SET `fill="none"`, or every closed subpath fills solid and the
+   lattice renders as a black tile. `s:1` is what switches the paint. */
+const GRP_PAT = [
+  ['No pattern', null],
+  ['Mesh',     {w:40,h:40,t:36,s:1,d:'M0 0l20 20L40 0M0 40l20-20 20 20M20 0v40M0 20h40'}],
+  ['Dots',     {w:20,h:20,t:18,s:0,d:'M4 4a1.7 1.7 0 1 0 .01 0zM14 8a1.1 1.1 0 1 0 .01 0z'
+                                     +'M7 15a2.1 2.1 0 1 0 .01 0zM17 17a1.3 1.3 0 1 0 .01 0z'}],
+  /* ⚠️ `Diagonal` WAS THE FOURTH AND WAS WITHDRAWN (request, 22 Sep 2026: "show 3 pattern
+     and no pattern option"). It is the one of the four that answered to none of the five
+     references supplied — those were a low-poly lattice, halftone dots and flowing lines,
+     which are Mesh, Dots and Waves. Kept, commented, because it is a one-line restore and
+     because the hatch is the cheapest tile of the set:
+       ['Diagonal', {w:10,h:10,t:9, s:1,d:'M-1 1L1 -1M0 10L10 0M9 11L11 9'}], */
+  ['Waves',    {w:40,h:20,t:26,s:1,d:'M0 4q10-7 20 0t20 0M0 12q10-7 20 0t20 0M0 20q10-7 20 0t20 0'}]
+];
+const gPatOf = n => (GRP_PAT.find(a => a[0] === n) || [])[1] || null;
+/* ⚠️ `encodeURIComponent` ON THE WHOLE SVG, not a hand-written escape list. It leaves no
+   quote, space, `<`, `>`, `#` or `)` behind, which is what makes the result safe BOTH inside a
+   CSS `url(...)` and inside an HTML `style="..."` attribute — the swatch below needs the second
+   and the header needs the first. A partial escape is how one of the two breaks silently. */
+function gPatUrl(name, ink){
+  const q = gPatOf(name); if (!q) return '';
+  const paint = q.s ? 'fill="none" stroke="' + ink + '" stroke-width="1.2" stroke-linecap="round"'
+                    : 'fill="' + ink + '"';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + q.w + '" height="' + q.h +
+              '" viewBox="0 0 ' + q.w + ' ' + q.h + '"><path ' + paint + ' d="' + q.d + '"/></svg>';
+  return 'url(data:image/svg+xml,' + encodeURIComponent(svg) + ')';
+}
+const gPat = gi => (GRP_STYLE[gi] && GRP_STYLE[gi].pat) || '';
+/* ⚠️ THE SWATCH IS A 14px PREVIEW OF THE SHAPE, NOT OF THE INK, and the difference is
+   deliberate. A chip is a `background`, which cannot be masked, so its path carries a neutral
+   `#888` that reads against both themes; the header itself is masked and is true black or white.
+   Say so rather than let the two be compared and read as a bug. */
+const gPatSw = n => gPatOf(n) ? 'var(--card-head) ' + gPatUrl(n, '#888') + ' 0 0/12px repeat'
+                              : 'var(--card-head)';
+function gEditPat(v){ gEditSet('pat', v === 'No pattern' ? '' : v); }
 /* ⚠️ KEPT AND UNREFERENCED. Title size was a Small / Medium / Large segmented control until
    21 Sep 2026 ("THE TEXT size will be improve like free text", with that panel's Font Size
    dropdown as the picture); it reads `CW_FT_SIZE` now — Auto · 16 · 24 · 36 · 56 · 72 · 88px,
@@ -17903,6 +18250,180 @@ const gValign = gi => { const e = GRP_VALIGN.find(v => v[0] === (gStyleOf(gi).va
    longer exists. Both seeds move together or the two disagree about an untouched group. */
 const gStyleOf = gi => GRP_STYLE[gi] || { bg:'Default', size:'Auto' };
 const gStyleMake = gi => { gStylePad(); return GRP_STYLE[gi] || (GRP_STYLE[gi] = { bg:'Default', size:'Auto' }); };
+/* ── Shared groups: "public" lists a group in the Add New Widget drawer ──────────────
+   Request, 22 Sep 2026: *"in empty group the add share group 'public/private' option — when
+   i select the public the list of all group will be show in 'add new widget' show as tab
+   'group' and show list of all public group"*.
+
+   ⚠️ THE REGISTRY CANNOT LIVE IN `GRP_STYLE`, AND THAT IS THE WHOLE DESIGN PROBLEM. That array
+   is PER BOARD — `histState()` serialises it and `boardSave()` files a copy under
+   `BOARDS[name]` — so a group published on one board would be invisible from every other,
+   which is the one thing this feature exists to do. `GRP_PUBLIC` sits beside `W_USER` instead:
+   session-level and board-independent, exactly like a saved widget definition.
+   ⚠️ `share` ITSELF STILL LIVES ON `GRP_STYLE[gi]`, because it is a property OF THE GROUP and
+   has to travel with it — undo, clone, reorder, board switch and the JSON snapshot all come
+   free that way. The registry is DERIVED from it and never the other way round, so there is one
+   source of truth for "is this group shared" and nothing to keep in step.
+   ⚠️ AN ENTRY IS A DEEP SNAPSHOT, NOT A POINTER. A `{board, index}` reference goes stale the
+   moment a band is reordered, removed or ungrouped, and it cannot be read at all while its
+   board is not the open one — `WIDGETS` holds only the board you are looking at. This is the
+   same discipline `gClone` follows, for exactly the same reason. */
+/* the product's own `common/status-severity-health/info-circle.svg`, pasted verbatim (48 grid,
+   `fill="currentColor"`, so it takes the row's colour and needs no override). It is the mark
+   the live product puts beside a field whose explanation is a hover away — which is exactly what
+   the Share group note became. */
+const GE_INFO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M24,22c-.6,0-1.1,.2-1.4,.6s-.6,.9-.6,1.4v8c0,.6,.2,1.1,.6,1.4s.9,.6,1.4,.6,1.1-.2,1.4-.6,.6-.9,.6-1.4v-8c0-.6-.2-1.1-.6-1.4s-.9-.6-1.4-.6Zm.8-7.8c-.5-.2-1.1-.2-1.5,0-.3,0-.5,.2-.7,.4s-.3,.4-.4,.7c0,.2-.2,.5-.2,.8s0,.6,.2,.8c0,.3,.3,.5,.5,.7s.4,.3,.7,.4c.3,0,.7,.2,1,0,.3,0,.7-.2,1-.3,.3-.2,.5-.4,.7-.8,.2-.3,.2-.6,.3-1,0-.6-.2-1.1-.6-1.4-.2-.2-.4-.3-.7-.4h-.2Zm17.8,2.3c-1.1-2.4-2.5-4.7-4.4-6.5-1.9-1.9-4.1-3.3-6.5-4.4s-5.1-1.5-7.6-1.5c-4,0-7.8,1.1-11.2,3.3s-5.8,5.3-7.4,9-1.9,7.7-1.1,11.6c.8,3.9,2.7,7.4,5.4,10.3,2.8,2.8,6.4,4.7,10.3,5.4,3.9,.8,7.9,.4,11.6-1.1,3.6-1.5,6.8-4.1,9-7.4,2.2-3.3,3.3-7.2,3.3-11.2s-.5-5.3-1.5-7.6h0Zm-7.2,19.1c-3.1,3.1-7.1,4.7-11.4,4.7s-6.3-1-8.9-2.7c-2.7-1.7-4.7-4.3-5.9-7.2-1.2-3-1.5-6.1-1-9.3,.6-3.2,2.1-6,4.4-8.2s5.1-3.7,8.2-4.4c3.2-.6,6.3-.3,9.3,1,3,1.2,5.4,3.2,7.2,5.9s2.7,5.7,2.7,8.9-1.7,8.3-4.7,11.4h0Z"/></svg>';
+/* ⚠️ THE REGISTRY SHIPS WITH THREE SEEDED ROWS (request, 22 Sep 2026: "in add new widget
+   the set 3-4 show for demo"). The Group tab could only ever list what THIS session had shared,
+   so on a fresh load it was one row or none — which demonstrates the row but not the list, and
+   the tab exists to show a list you choose from.
+   ⚠️ EVERY SEED IS ON A DIFFERENT BOARD, AND THAT IS STRUCTURAL RATHER THAN FLAVOUR.
+   `gPubSync()` rebuilds the OPEN board's entries from its live model on every render and prunes
+   anything of that board's that is no longer shared — so a seed named after the open board
+   would be deleted by the first paint. On another board's name it is exactly what the tab says
+   it is: the last snapshot taken while that board was open.
+   ⚠️ THE BOARD NAMES ARE `DASH_GROUPS`' OWN, so the pill on each row names a dashboard that
+   really exists in the list panel. They are NOT read from that array — it is declared in a
+   later script block and would be in the temporal dead zone here.
+   ⚠️ `at` IS RELATIVE TO LOAD, the `AI_CHATS` rule: a fixed stamp reads as stale the day
+   after it is written, and the tab sorts and can date these rows.
+   ⚠️ THE WIDGETS ARE REAL WIDGET OBJECTS, not counts. A row's `N widgets` is `w.length`, and
+   adding one really splices them onto the board — a seed carrying a number and no widgets
+   would add an empty group and look like the feature failing. */
+const GRP_PUBLIC = [
+  { board:'Network NOC Wall', name:'Edge Link Health', id:-1, at:Date.now() - 36e5 * 5,
+    y:{ bg:'Blue' },
+    w:[{t:'stat',title:'WAN throughput',v:'8.4 Gb/s',d:'+4%',span:3,h:150},
+       {t:'spark',title:'Edge latency',span:5,h:150,seed:41,color:'#14b8a6',max:80,u:'ms'},
+       {t:'bars',title:'Top links by drops',span:4,h:150,seed:7}] },
+  { board:'Server Capacity', name:'Capacity Headroom', id:-2, at:Date.now() - 36e5 * 26,
+    y:null,
+    w:[{t:'gauge',title:'CPU headroom',span:3,h:150,seed:12},
+       {t:'gauge',title:'Memory headroom',span:3,h:150,seed:19},
+       {t:'table',title:'Hosts nearing limit',span:6,h:150,seed:3}] },
+  { board:'Virtualization Overview', name:'Cluster Health', id:-3, at:Date.now() - 36e5 * 74,
+    y:{ bg:'Green' },
+    w:[{t:'stat',title:'Clusters up',v:'12 / 12',span:3,h:150},
+       {t:'pie',title:'VMs by state',span:4,h:190,seed:22},
+       {t:'spark',title:'Datastore usage',span:5,h:190,seed:33,color:'#14b8a6',max:100,u:'%'},
+       {t:'bars',title:'Top hosts by alerts',span:12,h:170,seed:9}] }
+];
+/* ⚠️ THE SEEDS TAKE NEGATIVE IDS so a real share can never collide with one: `gPubSync`
+   hands out `++gPubSeq` from 0 upward. */
+let   gPubSeq = 0;
+/* is this group listed in the drawer's Group tab? */
+const gPubOn  = gi => gStyleOf(gi).share === 'public';
+/* the registry's own lookup. It matches on the two FIELDS rather than on a key built
+   from them: a board and a group may each be named anything a person can type, so any
+   printable separator could be typed INTO one of the halves and collide two entries. */
+const gPubFind = (board, name) =>
+  GRP_PUBLIC.find(p => p.board === board && p.name === name);
+/* the board's own name, read where every other caller reads it */
+const gBoardName = () => { const el = document.getElementById('dashTitle');
+                           return (el ? el.textContent.trim() : '') || 'Dashboard'; };
+/* ⚠️ RE-DERIVED ON EVERY RENDER, AND THAT IS WHAT KEEPS IT HONEST. The OPEN board's entries are
+   rebuilt from its live model each time, so a shared group that is renamed, emptied, unshared,
+   deleted or ungrouped cannot leave a stale row behind offering widgets that are no longer
+   there — and a row's count is what the board actually holds rather than what it held when the
+   switch was flipped. Entries belonging to OTHER boards are left alone: their model is not
+   loaded, so the last snapshot taken while they were open is all there is to show.
+   ⚠️ THE COST IS ONE ALREADY PAID ELSEWHERE. This stringifies the widgets of the shared groups
+   on ONE board, where `histState()` stringifies the WHOLE board on every edit; and
+   `renderCanvas` runs per EDIT, not per frame (a widget drag and both resize engines drive
+   `fitCanvas`), so it is cheaper than something this file already does routinely.
+   ⚠️ `at` AND `id` SURVIVE A RE-SYNC. Restamping `at` would make every row read "shared just
+   now" on the next render, and a fresh `id` would break the row the pointer is already on. */
+function gPubSync(){
+  const board = gBoardName(), seen = new Set();
+  gStylePad();
+  TABS.forEach((nm, gi) => {
+    if (!gPubOn(gi)) return;
+    const name = nm || 'Group', prev = gPubFind(board, name);
+    const rec = { board, name,
+                  w: JSON.parse(JSON.stringify(WIDGETS[gi] || [])),
+                  y: GRP_STYLE[gi] ? Object.assign({}, GRP_STYLE[gi]) : null,
+                  id: prev ? prev.id : ++gPubSeq,
+                  at: prev ? prev.at : Date.now() };
+    seen.add(name);
+    if (prev) Object.assign(prev, rec); else GRP_PUBLIC.push(rec);
+  });
+  for (let i = GRP_PUBLIC.length - 1; i >= 0; i--)
+    if (GRP_PUBLIC[i].board === board && !seen.has(GRP_PUBLIC[i].name)) GRP_PUBLIC.splice(i, 1);
+}
+/* the drawer's Share group control — see `gEditPaint` */
+/* ⚠️ NOT THROUGH `gEditSet`. That ends in `gEditApply()`, which rewrites the header's inline
+   style — sharing changes nothing about the paint, and calling it would claim it does — and it
+   does not touch the registry, which has to follow the switch immediately rather than at
+   whatever render happens next. It still opens with `gEditRec()`, so a share and the rename
+   beside it are ONE `histDo` per drawer visit, exactly as every other field here is.
+   ⚠️ IT DELETES THE KEY RATHER THAN STORING `false`. `gStyleCSS` and `histState` both walk this
+   record, and a group nobody has shared should serialise as though the feature did not exist. */
+/* ⚠️ ONE SENTENCE, TWO STATES, AND IT IS PLAIN TEXT. `tipShow` renders through `tipEsc`,
+   so markup in a `data-tip` prints as markup — the `<b>Group</b>` the note used to carry is
+   simply the word. And it must contain NO DOUBLE SPACE: two or more in a row are the engine's
+   own "label then keycap" split, which would render the tail as a shortcut chip. */
+function gShareTip(gi){
+  const n = (WIDGETS[gi] || []).length;
+  return gPubOn(gi)
+    ? 'Listed under Group in Add New Widget, so any dashboard can add a copy of it — with its '
+      + n + ' widget' + (n === 1 ? '' : 's') + '.'
+    : 'Only this dashboard. Public lists it under Group in Add New Widget, where any dashboard '
+      + 'can add a copy of it.';
+}
+function gShareSet(v){
+  const gi = GE.gi; if (gi < 0) return;
+  const on = v === 'public';
+  if (gPubOn(gi) === on) return;              /* pressing the lit half is a no-op, not an edit */
+  gEditRec();
+  const st = gStyleMake(gi);
+  if (on) st.share = 'public'; else delete st.share;
+  gPubSync();
+  gEditPaint();
+  const nm = TABS[gi] || 'Group', n = (WIDGETS[gi] || []).length;
+  toast(on ? '“' + nm + '” shared — it is in Add New Widget › Group with its '
+             + n + ' widget' + (n === 1 ? '' : 's')
+           : '“' + nm + '” is private again — removed from Add New Widget › Group');
+}
+/* ── Add a shared group to the open board (the drawer's Group tab) ──────────────────────
+   ⚠️ IT HAS TO CONVERT A FLAT BOARD, exactly as `awAddGroup` does and for the same reason: a
+   flat board is `TABS = ['']`, one unnamed band, so the widgets already there need a name
+   before a second band can mean anything. They take the DASHBOARD's name — that is what they
+   are — and an EMPTY flat board is filled in place instead, or you would get the shared group
+   sitting beside an empty band nobody asked for.
+   ⚠️ THE COPY IS NEVER ITSELF PUBLISHED. `share` rides on the style, so a straight copy would
+   re-publish this group under the NEW board's name the moment the canvas rendered — two rows in
+   the tab for one act of sharing, and a second source of truth for the same group. A copy is a
+   copy; sharing it again is a decision for whoever made it.
+   ⚠️ THE WIDGETS ARE JSON-CLONED OUT OF THE REGISTRY, not spread. A shallow copy shares every
+   nested value by reference — `pal`, a series array — so editing the added group would reach
+   back into the stored snapshot and into every board that added it afterwards. */
+function gPubAdd(id){
+  const p = GRP_PUBLIC.find(x => x.id === id); if (!p) return;
+  closeAwDrawer();
+  let name = p.name, n = 2;
+  while (TABS.includes(name)) name = p.name + ' (' + (n++) + ')';
+  const ws  = JSON.parse(JSON.stringify(p.w || []));
+  const sty = p.y ? Object.assign({}, p.y) : null;
+  if (sty) delete sty.share;
+  histDo('Add shared group');
+  gStylePad();
+  if (ungrouped){
+    if ((WIDGETS[0] || []).length){            /* name what is already here, then append */
+      TABS[0] = gBoardName(); GRP_STYLE.length = 0;
+      TABS.push(name); WIDGETS.push(ws);
+    } else { TABS[0] = name; WIDGETS[0] = ws; }  /* an empty flat board is filled in place */
+    ungrouped = false;                           /* boardLoad re-derives this from TABS */
+    GRP_SHUT.clear();
+  } else { TABS.push(name); WIDGETS.push(ws); }
+  gStylePad();
+  const gi = TABS.length - 1;
+  GRP_STYLE[gi] = sty;
+  GRP_SHUT.delete(gi);
+  curG = gi;
+  renderCanvas();
+  toast('Added “' + name + '” from “' + p.board + '” — ' + ws.length
+        + ' widget' + (ws.length === 1 ? '' : 's'));
+}
 /* the inline style a header carries — empty for a group nobody has touched */
 function gStyleCSS(gi){
   const st = GRP_STYLE[gi]; if (!st) return '';
@@ -17918,6 +18439,14 @@ function gStyleCSS(gi){
      would silently do nothing on exactly the groups the checkbox is ticked for. */
   const ta = gAlign(gi) ? '--gv-talign:' + gAlign(gi) + ';' : '';
   const szp = gSizePx(st.size);
+  /* ⚠️ COMPUTED BEFORE THE `transp` EARLY RETURN AND APPENDED TO BOTH BRANCHES, the same
+     rule `ta` already follows: a transparent header can carry a pattern (that is the one
+     case where the pattern IS the header), so a token added only to the tail below would
+     silently do nothing on exactly the groups most likely to want one.
+     ⚠️ THE PATH IS PAINTED `#000` AND THAT IS NOT THE PATTERN'S COLOUR — the URI is used
+     as a mask, which reads alpha. See `.ghead.gpat::after`. */
+  const pn  = gPat(gi), pq = pn ? gPatOf(pn) : null;
+  const pat = pq ? '--gp:' + gPatUrl(pn, '#000') + ';--gp-sz:' + pq.t + 'px;' : '';
   /* ⚠️ TRANSPARENT **AND** NO PADDING TAKES THE HEADER'S OWN HAIRLINE TOO (request, 21 Sep
      2026: "remove header below line when i select the Transparent & No padding"). A title
      strip is a fill plus a rule; with the fill gone the rule is the last thing drawing it, and
@@ -17938,7 +18467,28 @@ function gStyleCSS(gi){
      needs a positioned ancestor; `static` would send it to the nearest one further up.
      ⚠️ IT IS EMITTED HERE, NOT AS A RULE, so the one test that already decides the fill decides
      this too. A `.dgroup:has(...)` rule would be a second place to keep in step. */
-  if (st.transp) return 'background:transparent;position:relative;top:auto;' + ta
+  /* ⚠️ TRANSPARENT IS A COLOUR NOW, AND THE OLD FLAG IS STILL HONOURED (22 Sep 2026).
+     `st.bg === 'Transparent'` is what the Header colour list writes; `st.transp` is what the
+     checkbox that list replaced wrote, and a group styled before the change has to keep the
+     header it was given — the `valign` rule, in a third place. Deriving it here rather than
+     migrating the stored value means there is nothing to run once and nothing to forget.
+     ⚠️ IT CANNOT BE LEFT TO THE `named` LOOKUP BELOW, which would find `'transparent'` and
+     emit `background:transparent` AND NOTHING ELSE — so the header would lose its fill and
+     KEEP `position:sticky`, which is the exact bug this early return exists to prevent. */
+  /* ⚠️ A TRANSPARENT HEADER IS STICKY AGAIN, AND PAINTS THE CANVAS (request, 22 Sep 2026:
+     "i select the no padding with transparent header color — the dashboard header position fix
+     in scroll time, the only scroll inside the widget and don't overlay the header on inside
+     widget"). THIS REVERSES the 21 Sep `position:relative;top:auto`, and the reason that rule
+     existed is still true: `position:sticky` only works because the strip's own fill hides what
+     passes under it, so a see-through strip pinned over a scrolling board puts the group's name
+     across a row of widgets. Both requests are satisfied by changing WHAT IS PAINTED rather than
+     whether it sticks — `--bg` is the board's own background, which is exactly what shows
+     through a transparent strip at rest, so the header looks identical standing still AND hides
+     the widgets when it is stuck. **Don't put `background:transparent` back**: it is the one
+     value that makes the two requests contradict each other.
+     ⚠️ `--bg`, NOT `--card-head`. The latter IS the filled strip Transparent exists to turn
+     off; the former is the canvas the group box sits on, so at rest there is nothing to see. */
+  if (st.transp || st.bg === 'Transparent') return 'background:var(--bg);' + ta + pat
     + (st.pad === false ? 'border-bottom-color:transparent;' : '')
     + (szp ? '--gh-size:' + szp + 'px;' : '');
   const named = (GRP_BG.find(b => b[0] === st.bg) || [])[1];
@@ -17946,7 +18496,7 @@ function gStyleCSS(gi){
 
   /* ⚠️ THE THREE LONGHANDS MUST FOLLOW THE `background` SHORTHAND ABOVE — see the note at
      `.ghead.gban::before` for why they cannot live in the stylesheet. */
-  return (bg ? 'background:' + bg + ';' : '') + ta + (szp ? '--gh-size:' + szp + 'px;' : '')
+  return (bg ? 'background:' + bg + ';' : '') + ta + pat + (szp ? '--gh-size:' + szp + 'px;' : '')
     + (st.banner ? 'background-image:url(' + st.banner + ');background-size:cover;'
                  + 'background-position:center;background-repeat:no-repeat;' : '');
 }
@@ -18260,6 +18810,12 @@ function awTab(m){
   document.getElementById('awtC').classList.toggle('on', m==='create');
   document.getElementById('awtP').classList.toggle('on', m==='predef');
   document.getElementById('awtU').classList.toggle('on', m==='user');
+  document.getElementById('awtG').classList.toggle('on', m==='group');
+  /* ⚠️ THE PLACEHOLDER FOLLOWS THE TAB. One box searches all four, and three of them hold
+     widgets while the fourth holds groups — leaving it at "Search widgets" would have the
+     control name the wrong thing on exactly the tab this change added. */
+  const sb = document.getElementById('awSearch');
+  if (sb) sb.placeholder = m === 'group' ? 'Search shared groups…' : 'Search widgets…';
   awRender();
 }
 /* Every row and tile paints the PRODUCT's own artwork. The harvested SVGs carry
@@ -18333,6 +18889,39 @@ function awRender(){
           awActBtn('clone', `awAdd('Copy of ${esc(t[0])}','${t[2]}')`) +
         `</span></div>`).join('')
       || `<div class="dempty">No predefined widgets match “${q}”.</div>`;
+  } else if (awMode==='group'){
+    /* ⚠️ ONE ROW PER SHARED GROUP, IN THE SHAPE PREDEFINED AND USER DEFINE ALREADY USE —
+       art, name, a trailing cluster revealed on hover. What differs is the middle: a group is
+       the only thing in this drawer that belongs to a DASHBOARD, so the board it came from is
+       named on the row (`.used`, the pill this list already has) rather than left to be guessed.
+       ⚠️ THE ARTWORK IS `W_GROUP_SVG`, THE Empty group TILE'S OWN, and it is emitted
+       DIRECTLY rather than through `wArt()`. That function exists to namespace the `<defs>` ids
+       the harvested widget artwork carries, and this drawing has none — so repeating it down a
+       list is safe, which is the same reason the Structure tile emits it raw.
+       ⚠️ THE COUNT IS THE SNAPSHOT'S, not the source group's. For the board you are on
+       they are the same thing by construction (`gPubSync` re-derives on every render); for a
+       group shared from another board it is what was there when you last had that board open.
+       ⚠️ NAMES ARE ESCAPED. Every other list in this drawer prints a constant from
+       `W_CATALOG` / `W_PREDEF`; these two strings are a board name and a group title, both of
+       which a person types, so a stray quote or angle bracket would otherwise reach the markup. */
+    const hx = t => String(t).replace(/[&<>"]/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+    const items = GRP_PUBLIC.filter(p => !q ||
+      p.name.toLowerCase().includes(q) || p.board.toLowerCase().includes(q));
+    b.innerHTML = items.map(p => {
+      const n = (p.w || []).length;
+      return `<div class="awrow" onclick="gPubAdd(${p.id})">` +
+        `<span class="awrart">${W_GROUP_SVG}</span>` +
+        `<span class="nm2">${hx(p.name)}</span>` +
+        `<span class="used" title="Shared from this dashboard">${hx(p.board)}</span>` +
+        `<span class="awacts"><span class="awcnt" title="${n} widget${n===1?'':'s'}">${n}</span>` +
+          awActBtn('add', `gPubAdd(${p.id})`) +
+        `</span></div>`;
+    }).join('')
+      || `<div class="dempty">${GRP_PUBLIC.length
+            ? `No shared groups match “${hx(q)}”.`
+            : 'Nothing shared yet. Open a group’s ⋮ menu › <b>Edit group</b> and set ' +
+              '<b>Share group</b> to Public, and it will be listed here for every dashboard.'}</div>`;
   } else {
     const items = W_USER.filter(t=>!q || t[0].toLowerCase().includes(q));
     b.innerHTML = items.map((t, i)=>
@@ -18838,8 +19427,34 @@ let gMenuIdx = -1;
    ⚠️ DELETE GROUP DELIBERATELY STAYS on a one-group board. It already refuses with the rule
    itself — "a dashboard needs at least one group" — and a stated rule is worth more than a
    missing row. That is the one place this menu chooses explaining over hiding. */
+/* ⚠️ EVERY ROW OF THE GROUP MENU CARRIES A GLYPH (request, 22 Sep 2026: "in empty group
+   the all action add icon"). Four rows of bare text sat under a header whose own two controls
+   are product glyphs, so the menu read as a different kind of object from the thing it hangs off.
+   ⚠️ ALL FOUR ARE THE PRODUCT'S OWN, from `observeops-icons/`, and none was drawn: `pencil`
+   was already in `ICONS`, and `clone` / `delete` / `layer-group` were pasted verbatim beside it.
+   One family, one fill, one weight — the icon rule's first choice, and the reason no Lucide
+   outline was used for the one concept the product has no glyph for.
+   ⚠️ `layer-group` ON Ungroup IS A STATED READING. The product set has no ungroup mark (all of
+   `actions-edit` and `navigation-layout` were listed), so this one names the OBJECT the row
+   dissolves where the other three name their verb. Lucide's `shapes/ungroup` exists in
+   `free-icons/` and is the swap if a stroke glyph beside three fills is acceptable — it is not
+   here, because a solid mark among outlines (or the reverse) is what the icon rule calls a
+   different family at any size.
+   ⚠️ THEY ARE PAINTED, NOT WRITTEN INTO THE MARKUP. `ICONS` entries are raw SVG strings in a
+   LATER script block than this markup, and markup cannot interpolate one — the same reason the
+   rail's own glyphs go through `setIco`. Each row ships an empty `.cmii` span and `gMenuIcons()`
+   fills it once, guarded on `innerHTML` so reopening the menu does not repaint four glyphs.
+   ⚠️ THE WIDGET MENU (`#wMenu`) STILL HAS NONE, and the two are on the same board. Its seven
+   rows need seven more glyphs, three of which the product set does not carry under those names;
+   the request named the group's actions. Say so rather than let the pair be discovered. */
+const G_MENU_ICO = ['pencil', 'clone', 'layer-group', 'delete'];
+function gMenuIcons(){
+  const sp = document.querySelectorAll('#gMenu .cmii');
+  sp.forEach((el, n) => { if (!el.innerHTML) el.innerHTML = ico(G_MENU_ICO[n] || '', 'cmiic'); });
+}
 function openGMenu(ev, gi){
   gMenuIdx = gi; curG = gi;
+  gMenuIcons();
   openCMenu(ev,'gMenu');
 }
 /* ── rename a group from its own title (annotation, 19 Aug 2026) ──────────────────────
@@ -18931,10 +19546,17 @@ function gEditPaint(){
        They are the two fields that describe the same thing — how the header LOOKS — so pairing
        them is the `.cwftpair` reading the Free Text editor already uses, and it is what the
        drawer's new 628px width is for: at `.sdrawer`'s old 400 there was no room for two. */
-    '<div class="gepair">' +
-      '<div class="ddfield"><span class="ddlbl">Header colour</span>' +
+    /* ⚠️ HEADER PATTERN SITS BESIDE HEADER COLOUR, AND TITLE SIZE TAKES THE ROW UNDER IT
+       (request, 22 Sep 2026: "the header pattern will be set beside the header colour dropdown").
+       The two controls that decide what the STRIP looks like are now one row; the one that sizes
+       its TEXT is its own. That is also why the pair is built from cells rather than written
+       twice: on an option 1 or 3 band there is no pattern field, so Title size simply takes the
+       slot back and the drawer reads exactly as it did — one assembly, two shapes, nothing to
+       keep in step. */
+    (() => {
+      const cColour = '<div class="ddfield"><span class="ddlbl">Header colour</span>' +
         cwFtDD('gbg', GRP_BG.map(c => [c[0], c[1] || 'transparent', c[2]]), st.bg, true, true) +
-      '</div>' +
+      '</div>';
       /* ⚠️ THE SAME SEARCHABLE DROPDOWN THE NOTE USES, reading `CW_FT_SIZE` itself — not a
          lookalike and not a copy of its stops. It is registered in `DD_OWN` under its own key
          so `ddPaint` repaints THIS drawer rather than the Free Text panel's; sharing `size`
@@ -18942,10 +19564,32 @@ function gEditPaint(){
          ⚠️ THE LABEL STAYS "Title size". "Font Size" is the note's word for its own body text;
          here the thing being sized is the group's title, and the field beside it is the
          header's colour. */
-      '<div class="ddfield"><span class="ddlbl">Title size</span>' +
+      const cSize = '<div class="ddfield"><span class="ddlbl">Title size</span>' +
         cwFtDD('gsz', CW_FT_SIZE, st.size || 'Auto', false) +
-      '</div>' +
-    '</div>' +
+      '</div>';
+      /* ⚠️ THE PATTERN IS OPTION 2's ONLY — gated on the same capability the resize grip is,
+         exactly as the banner field was, so the drawer still tells you which design a band came
+         from rather than offering a control that would do nothing on two of the three tiles.
+         ⚠️ IT IS ITS OWN FIELD, NOT A THIRD PANE INSIDE THE COLOUR PICKER. `cwFtDD` is shared
+         by FOUR controls and its second pane is the colour canvas, so bolting a pattern list into
+         it would reach Free Text's Font Color and Background as well. This is the same dropdown
+         machinery with its own list and its own `DD_OWN` owner, sitting beside Header colour.
+         ⚠️ THE COLOUR AND THE PATTERN COMPOSE, which is the rest of the request: the colour
+         paints the strip and the pattern is masked over it in `--gp-ink`, black or white per
+         theme. A Blue header with a Mesh pattern is one header, not a choice between two.
+         ⚠️ "No pattern" IS A ROW, NOT AN EMPTY STATE — it is the default and it has to be
+         reachable: a list you can enter and not leave is the dead end this file keeps removing. */
+      const cPat = gRzOn(gi)
+        ? '<div class="ddfield"><span class="ddlbl">Header pattern</span>' +
+            cwFtDD('gpat', GRP_PAT.map(a => [a[0], '', gPatSw(a[0])]),
+                   gPat(gi) || 'No pattern', true, false) +
+          '</div>'
+        : '';
+      return cPat
+        ? '<div class="gepair">' + cColour + cPat + '</div>' +
+          '<div class="gepair">' + cSize + '</div>'
+        : '<div class="gepair">' + cColour + cSize + '</div>';
+    })() +
     /* ⚠️ VERTICAL ALIGNMENT (request, 19 Sep 2026: "in empty group add vertical alignment",
        with the Free Text control as the picture). It is the SAME trio, same labels, same
        Tabler glyphs — `GRP_VALIGN` carries the CSS value as its fourth column so the drawer and
@@ -18957,32 +19601,32 @@ function gEditPaint(){
        ⚠️ THE MARKUP IS `.cwftseg` / `.cwftsg`, NOT `.ddseg` — the row above is a WORD segmented
        control (Small / Medium / Large) and this one is icons; reusing the Free Text control is
        what keeps the two vertical-alignment pickers in this file identical rather than similar. */
-    /* ⚠️ TWO CHECKBOXES, IN THE FREE TEXT PANEL'S OWN `.cwftck` SHAPE — same control, same
-       label position, so the two editors in this file agree about what a checkbox looks like.
-       ⚠️ THEY ARE STORED POSITIVELY AND READ NEGATIVELY where that is what the words mean:
-       `transp` is true when the header has no fill, and `pad` is true when the group HAS
-       padding — so "No padding" is its inverse, exactly as Free Text stores it. A field whose
-       name is the opposite of its label is how a later reader inverts it by accident. */
-    /* ⚠️ THEY SIT SIDE BY SIDE IN `.gepair`, THE ROW ABOVE THEM (request, 21 Sep 2026: "it
-       will be show side by side with proper alignment"). Reusing that grid rather than writing
-       a second two-column rule is what makes the alignment exact rather than approximate:
-       Transparent starts on Header colour's left edge and No padding on Title size's, because
-       they are literally the same two columns at the same 24px gap. Stacked, the pair spent two
-       rows of a short drawer on two words each.
-       ⚠️ `.gechk`'s TOP MARGIN MOVED ONTO THE WRAPPER — left on both labels it would have
-       spaced the two columns against each other, which in a grid row means nothing at all. */
-    '<div class="gepair gechk">' +
-      '<label class="cwftck"><input type="checkbox"' + (st.transp ? ' checked' : '') +
-        ' onchange="gEditSet(\'transp\', this.checked)" /><span>Transparent</span></label>' +
-      '<label class="cwftck"><input type="checkbox"' + (st.pad === false ? ' checked' : '') +
-        ' onchange="gEditSet(\'pad\', !this.checked)" /><span>No padding</span></label>' +
-    '</div>' +
+    /* ⚠️ THE TRANSPARENT CHECKBOX IS GONE — IT IS A ROW OF THE HEADER COLOUR LIST
+       (request, 22 Sep 2026: "in empty group the 'Transparent' will be set in 'header color'").
+       See `GRP_BG` for why, and for what the move costs. `.gepair.gechk`, its `.cwftck` margin
+       cancel and `gEditSet('transp', …)` are all kept and unreferenced, the house pattern;
+       `gStyleCSS` still honours a stored `st.transp`, so a group that carried one before the
+       change paints exactly as it did. */
     /* ⚠️ THE TWO ALIGNMENTS ARE ONE ROW, WHICH IS HOW FREE TEXT DRAWS THEM (request,
        21 Sep 2026, with that panel as the picture). It is the drawer's own `.gepair`, so the
        pair sits on the same two columns as Header colour / Title size and the checkbox row
        above — three rows, one grid, nothing measured twice.
        ⚠️ LEFT IS THE DEFAULT AND IS LIT AS SUCH, so the control opens describing the group in
        front of you rather than with nothing pressed. */
+    /* ⚠️ NO PADDING IS AN ICON NOW, AND ALIGNMENT SITS AFTER IT ON ONE ROW (request,
+       22 Sep 2026: "the 'No padding' show as icon like free text and the 'alignment' will be show
+       behind the 'no padding'"). It was a checkbox paired with Transparent, one row above a
+       single-cell Alignment row — two rows for two controls that both answer "how does this
+       group sit". Free Text already draws exactly this pair as icon segments, so this is that
+       panel's control rather than a second one that looks like it.
+       ⚠️ THE ORDER IS THE REQUEST'S, AND IT IS ALSO THE ORDER THE DRAWER ALREADY READ IN:
+       No padding was above Alignment when they were two rows, so collapsing them this way moves
+       nothing you had learned the position of.
+       ⚠️ THE GLYPH IS `CW_FT_PAD`'s OWN, not a copy of its nine paths — see `gPadSVG`.
+       ⚠️ TRANSPARENT KEEPS THE CHECKBOX AND IS NOW ALONE IN ITS ROW. It was not named, and a
+       checkbox is the right shape for it: it has no second state worth drawing, where No padding
+       and Alignment are both "pick how it sits" controls. A `.gepair` with one cell keeps it on
+       the same left column as everything else — the shape the Alignment row itself used to have. */
     '<div class="gepair gealgn">' +
     '<div class="ddfield"><span class="ddlbl">Alignment</span>' +
       '<div class="cwftseg">' + CW_FT_ALIGN.filter(a => GRP_ALIGN_OK.indexOf(a[0]) > -1).map(a =>
@@ -18992,77 +19636,90 @@ function gEditPaint(){
         'onclick="gEditSet(\'align\',\'' + a[0] + '\')">' +
         gAlignSVG(a[0]) + '</button>').join('') +
       '</div></div>' +
+    '<div class="ddfield"><span class="ddlbl">No padding</span>' +
+      '<div class="cwftseg"><button class="cwftsg' + (st.pad === false ? ' on' : '') + '" ' +
+        'data-tip="No padding" aria-label="No padding" ' +
+        'aria-pressed="' + (st.pad === false) + '" onclick="gPadTog()">' + gPadSVG() +
+      '</button></div></div>' +
     /* ⚠️ VERTICAL ALIGNMENT WAS REMOVED ON 21 SEP 2026 ("in empty group remove the Vertical
        alignment"), and only the CONTROL was: `GRP_VALIGN`, `gValignSVG`, `gValign` and the
        `--gv-align` the renderer emits are all still live, so a group already set to middle or
        bottom keeps the position it was given. Withdrawing a picker is not the same as changing
        every board that used it — the same split the `right` alignment took an hour earlier.
-       ⚠️ THE ROW STAYS A `.gepair` WITH ONE CELL IN IT. A grid of two columns puts that cell in
-       column 1, which is the whole point: Alignment keeps the left edge Header colour and
-       Transparent sit on, where a bare `.ddfield` would simply span the drawer and read as a
-       different kind of field from the three rows above it. */
-    '</div>' +
-    /* ⚠️ THE BANNER FIELD IS OPTION 2's ONLY (request, 17 Sep 2026: "we need to add new one
-       in 'empty group' option 2 only — in edit option add banner … when i attach any image the
-       image will be set in header as banner"). It is gated on the same capability the resize
-       grip is, so the drawer tells you which design a band came from rather than offering a
-       control that would do nothing on two of the three. */
-    /* ⚠️ THE ATTACH CONTROL IS BUILT FROM THE DESIGN SYSTEM (request, 17 Sep 2026: "the header
-       attach component is Using the ObserveOps design system"). What that could mean was asked of
-       the DS first, not assumed: `search_components('file upload / attach an image')` returns
-       NOTHING — the catalogue ships no upload, no dropzone and no image-picker element — and the
-       hard rule there is that a component may not be invented. So the field is COMPOSED from
-       catalogued parts (`obs-button` + `obs-icon`) over a native `<input type=file>`, which is
-       also the product's own answer to this job: Settings › My Profile attaches a picture exactly
-       this way (a labelled button over a hidden file input, then Change | Remove).
-       ⚠️ VARIANTS ARE THE REGISTRY'S OWN DECISION FLOW, not a guess — and they were MEASURED,
-       which changed the answer. Both are `default`: the registry's "secondary next to a primary",
-       which is what these are (this drawer's primary is Done, in its footer), and the most-used
-       variant in the product at 301×.
-       ⚠️ `neutral-lightest` WAS THE FIRST ANSWER AND IS UNREADABLE IN LIGHT THEME. The decision
-       flow routes a "quiet utility control" there, and it renders correctly in dark (#cad3e2 on
-       #172336, 10.5:1) — but in LIGHT every quiet variant paints its label `#7186a8` on its own
-       pale fill: neutral-lightest and neutral-lighter both **3.01:1**, transparent **3.51:1**,
-       all under the 4.5 bar for a control label. `default` is 14.45:1 light / 12.63:1 dark.
-       Measured off the painted pixels and then confirmed in the shadow root; recorded as a ninth
-       0.1.166 finding in `_ds/README.md`. **Don't "restore" the quiet variant on the strength of
-       the decision flow alone** — read the measurement.
-       ⚠️ REMOVE IS AN ICON-ONLY `squared-button`, WHICH IS WHAT KEEPS THE PAIR TELLABLE APART
-       once both are `default`. The registry blesses exactly this shape — "a recognizable repeated
-       space-tight icon action (row edit/delete, toolbar, modal close)" — and it sits beside the
-       preview it removes, the same relationship a row-delete has to its row. It carries the
-       required `aria-label`, and a `data-tip` as well, because the tooltip engine honours
-       `data-tip` on an `obs-*` element where it refuses to adopt its `title` (a component prop).
-       ⚠️ IT IS NOT `error`: the DS reserves red for destructive-with-a-confirm, and dropping a
-       banner is one ⌘Z and one re-attach away — the reasoning that took `--red` off the Manage
-       screen's Archive.
-       ⚠️ THE PREVIEW SWATCH IS NOT A COMPONENT AND IS LEFT ALONE — it is the attached image at
-       thumbnail size, and there is nothing in the catalogue that renders one.
-       ⚠️ `obs-button` FIRES A CONSUMER'S `onclick` TWICE (its inner shadow `<button>`'s click is
-       `composed` and crosses the boundary, and the component re-emits on the host), so both go
-       through `cwTap`. `gBanClear` is idempotent and `gBanOpen` would merely open the picker
-       twice, so this is belt and braces — but a silent double-fire is invisible until it lands on
-       something that toggles.
-       ⚠️ THE FIELD IS STILL OPTION 2's ONLY (request, 17 Sep 2026: "we need to add new one in
-       'empty group' option 2 only — in edit option add banner … when i attach any image the image
-       will be set in header as banner"). It is gated on the same capability the resize grip is, so
-       the drawer tells you which design a band came from rather than offering a control that would
-       do nothing on two of the three. */
-    (gRzOn(gi)
-      ? '<div class="ddfield"><span class="ddlbl">Header banner</span><div class="gbanrow">' +
-          (gBan(gi) ? '<span class="gbanprev" style="background-image:url(' + gBan(gi) + ')"></span>' : '') +
-          '<obs-button class="gbanbtn" variant="default" onclick="cwTap(&quot;gbanpick&quot;, gBanOpen)">' +
-            '<obs-icon name="image" size="14"></obs-icon>' +
-            (gBan(gi) ? 'Replace image' : 'Attach image') + '</obs-button>' +
-          (gBan(gi) ? '<obs-button class="gbanbtn squared-button" variant="default" ' +
-            'aria-label="Remove banner" data-tip="Remove banner" ' +
-            'onclick="cwTap(&quot;gbanclear&quot;, gBanClear)"><obs-icon name="delete" size="15"></obs-icon>' +
-            '</obs-button>' : '') +
-          '<input type="file" id="geBanFile" accept="image/jpeg,image/png,image/svg+xml,image/webp" ' +
-            'style="display:none" onchange="gBanPick(this)">' +
-        '</div><div class="ddnote">Sits behind the header title, across the whole strip.</div></div>'
-      : '');
+       ⚠️ THE ROW CARRIES TWO CELLS AGAIN (22 Sep 2026). It was a `.gepair` with ONE in it,
+       so that Alignment kept the left edge Header colour and Transparent sit on rather than
+       spanning the drawer; No padding now takes that column and Alignment the second. The rule
+       behind both shapes is the same: a field in this drawer is one grid column wide. */
+    /* ⚠️ `.gealgn` IS NOT CLOSED HERE ANY MORE — Share is its third cell since 22 Sep 2026,
+       so the row closes at the end of that field. */
+    /* ⚠️ THE HEADER BANNER FIELD WAS REMOVED (request, 22 Sep 2026: "we need to remove
+       'header banner' option in empty group option 2"). It was the drawer's only option-2-gated
+       field, so every group's drawer now carries the same rows whichever tile made the band —
+       and dropping the row that sat between Alignment and Share group is also what the same
+       message's second half asks for: **No padding | Alignment, then Share group last.**
+       ⚠️ THE MODEL AND THE RENDERER ARE KEPT; ONLY THE CONTROL IS GONE. `gStyleCSS` still
+       emits the four background longhands, `renderCanvas` and `gEditApply` still toggle `.gban`,
+       and `gBan` / `gBanOpen` / `gBanPick` / `gBanClear` / `GRP_BAN_*` / the whole `.gbanrow`
+       CSS block are kept and unreferenced (the house pattern) — so a group that already carries
+       a banner still paints it, and putting the field back is this one block. Deleting the
+       renderer with the field would silently re-lay-out any group that had one, which is the
+       `valign` rule from the Free Text panel in a second place.
+       ⚠️ CONSEQUENCE, STATED: with no field there is no way to attach a banner OR to take one
+       off. `gEditReset` still clears it, so Reset is the only door left — and `#drawer-gedit`
+       stays in `setting.js`'s scoped DS token block, because it is what a revert would need. */
+    /* ⚠️ SHARE GROUP IS THE LAST FIELD IN THE DRAWER (request, 22 Sep 2026: "the share group
+       will be show last"). It shipped for an hour directly under the title, on the reading that
+       what a group IS belongs above how its header LOOKS; the request overrules it, and the
+       order it asks for is defensible on its own terms — every field above acts on the group in
+       front of you, and this one is the only one whose effect is on a different screen. **Do not
+       move it back up on the strength of the paragraph this replaced.**
+       ⚠️ THE CONTROL IS `.ddseg`, THE CREATE DASHBOARD DRAWER'S OWN Public/Private SWITCH,
+       so the two places this product asks that question ask it in the same shape. It is built
+       from what is already here rather than invented, which is the rule for a new control in
+       this file.
+       ⚠️ ITS DEFAULT IS THE OPPOSITE HALF FROM THAT DRAWER'S, deliberately: a dashboard is
+       public until you restrict it, and a group is private until you share it. `share` is simply
+       absent until the switch is pressed, so every board that already exists reads Private with
+       no migration and no stored value.
+       ⚠️ THE NOTE UNDER IT NAMES THE DOOR THE SWITCH OPENS. A visibility control whose
+       effect is on a different screen says nothing on its own — and the count is there because
+       what travels is the group AND its widgets, which is the part worth knowing before you
+       share it. */
+    /* ⚠️ SHARE JOINS THE LAYOUT ROW RATHER THAN TAKING ONE OF ITS OWN (request, 22 Sep 2026:
+       "the share will be show in alignment behind"). `.gealgn` is already a hugging flex row, so
+       the field simply becomes its third cell and lands after Alignment — and because the two
+       before it are 38px and 76px wide, the drawer goes from three rows to one.
+       ⚠️ IT IS THE ONE CELL THAT DOES NOT HUG. `.ddseg` is a two-word switch and needs a
+       real measure, so it takes the slack (`flex:1 1 auto`) while No padding and Alignment stay
+       at `flex:0 0 auto`. A third hugging cell would size the switch to the words "Public" and
+       "Private", which is narrower than either half of it has ever been. */
+    '<div class="ddfield geshf">' +
+      '<span class="ddlbl">Share group' +
+        '<button type="button" class="gehi" aria-label="About sharing this group" ' +
+        'data-tip="' + gShareTip(gi).replace(/"/g, '&quot;') + '">' + GE_INFO + '</button>' +
+      '</span>' +
+      '<div class="ddseg gesh">' +
+        '<button class="' + (gPubOn(gi) ? 'on' : '') + '" aria-pressed="' + gPubOn(gi) + '" ' +
+          'onclick="gShareSet(\'public\')">Public</button>' +
+        '<button class="' + (gPubOn(gi) ? '' : 'on') + '" aria-pressed="' + !gPubOn(gi) + '" ' +
+          'onclick="gShareSet(\'private\')">Private</button>' +
+      '</div></div></div>';
 }
+/* ⚠️ THE GLYPH IS FREE TEXT'S OWN PATH DATA, READ OUT OF `CW_FT_PAD`, not pasted. That panel
+   and this drawer draw the same control now, and a second copy of nine path strings is exactly how
+   the two would come to disagree about what "no padding" looks like.
+   ⚠️ IT IS BUILT THE WAY `seg`'s STROKE BRANCH BUILDS IT — `fill:none` inline on the root plus
+   a 2px round-capped stroke — because `.cwftsg svg` sets `fill:currentColor`, and a RULE beats a
+   presentation attribute: `fill="none"` on the element would lose and the outline would paint as
+   a solid blob. The recorded `.dvic svg` trap. */
+const gPadSVG = () =>
+  '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round">' +
+  CW_FT_PAD[0][2].split('|').map(d => '<path d="' + d + '"/>').join('') + '</svg>';
+/* ⚠️ ONE CELL, TWO STATES, AND THE FIELD IS STORED POSITIVELY. `pad` is true when the group
+   HAS padding, so the control lit means `pad === false` and pressing it flips that — the same
+   inversion the checkbox carried, and the same one `cwFtPadTog` performs in Free Text. */
+function gPadTog(){ gEditSet('pad', gStyleOf(GE.gi).pad === false); }
 /* the hidden file input is a sibling of the button, not its child — a native input inside a
    custom element's light DOM would be slotted into the button's label */
 function gBanOpen(){ const el = document.getElementById('geBanFile'); if (el) el.click(); }
@@ -19122,6 +19779,11 @@ function gEditApply(){
      render, i.e. the title sits unreadable on the photo for exactly as long as the drawer is
      open, which is the only time anybody is looking at it. */
   hd.classList.toggle('gban', !!gBan(GE.gi));
+  /* ⚠️ AND THE PATTERN'S CLASS, FOR THE SAME REASON — `--gp` rides in on the style
+     attribute above, but the token alone paints nothing until `.gpat` gives it a pseudo
+     to mask. Without this line the dropdown would light up while the strip did not change
+     until something else happened to re-render it. */
+  hd.classList.toggle('gpat', !!gPat(GE.gi));
   /* ⚠️ SAME REASON FOR THE ALIGNMENT CLASS — `--gv-talign` rides in on the style attribute
      above, but the token alone does nothing until `.galgn` gives the title a box to align in. */
   hd.classList.toggle('galgn', !!gAlign(GE.gi));
@@ -19176,16 +19838,25 @@ function gEditReset(){
   if (GE.gi < 0) return;
   gEditRec();
   const st = GRP_STYLE[GE.gi];
-  /* ⚠️ THE BANNER IS CLEARED AND THE HEIGHT IS NOT, and the split is the drawer's own: the
-     banner is one of the three things this drawer edits, so "Header style reset" owns it. The
-     height has no field here — it is dragged on the board and reset by double-clicking its
-     grip — so Reset must leave it alone. */
+  /* ⚠️ THE BANNER IS CLEARED AND THE HEIGHT IS NOT, and the split is the drawer's own:
+     the banner is header STYLE, which is what this button puts back. The height has no field
+     here — it is dragged on the board and reset by double-clicking its grip — so Reset must
+     leave it alone.
+     ⚠️ SINCE 22 Sep 2026 THIS IS THE ONLY DOOR TO A BANNER AT ALL. The Header banner field
+     was removed from the drawer (see `gEditPaint`) while the renderer was kept, so nothing
+     can attach one any more and this line is what takes one off a group that already has it.
+     It must not be dropped as "dead" on the strength of the missing field. */
   /* ⚠️ `'Auto'` IS THE DEFAULT SIZE NOW, NOT `'M'` — a stale key here would leave Reset
      writing a value the dropdown cannot show, so the field would read blank on a group that
      had just been reset. `align` is cleared with it because the TITLE's alignment is header
      style, which is what this branch resets; `valign` is not, because it positions the
      group's CONTENT and has no field in the half being put back. */
-  if (st && (st.rz || st.h != null)) { st.bg = 'Default'; st.size = 'Auto'; delete st.align; delete st.banner; }
+  /* ⚠️ `transp` IS CLEARED HERE NOW, AND IT HAS TO BE (22 Sep 2026). While it had a
+     checkbox, leaving it alone was harmless — you could untick it. With Transparent moved
+     into the Header colour list there is no control that writes it, so a stored flag would
+     survive Reset and hold the header transparent while the list read `Default`: the drawer
+     and the board disagreeing, with nothing on screen able to settle it. */
+  if (st && (st.rz || st.h != null)) { st.bg = 'Default'; st.size = 'Auto'; delete st.align; delete st.banner; delete st.transp; delete st.pat; }
   else GRP_STYLE[GE.gi] = null;
   gEditApply(); gEditPaint();
   toast('Header style reset');
@@ -19355,12 +20026,43 @@ function gUngroup(){
   histDo('Ungroup');
   gStylePad();
 
-  if (TABS.length < 2){
-    TABS[0] = ''; GRP_STYLE[0] = null; GRP_SHUT.clear(); curG = 0;
+  /* ⚠️ ONE CLICK HAS TO REMOVE THE BAND, AND ON A BOARD WHOSE OTHER BANDS ARE EMPTY IT
+     DID NOT LOOK AS THOUGH IT HAD (reported 22 Sep 2026: "when i click the 'ungroup' the first
+     time [it does] not remove [it]; when i click the second time then it will work"). MEASURED
+     before it was touched, on the board in the report — `['Application Performance'(11),
+     'New group'(0)]`, ungroup the first:
+         click 1  —> TABS=['New group'] widgets=[11]   one header still on screen
+         click 2  —> TABS=[''] ungrouped=true          flat
+     The band WAS dissolved on the first click — its widgets merged into the neighbour, which
+     is what Ungroup has always meant here. But the neighbour was EMPTY, so what the reader saw
+     was the same eleven widgets under one header with a different name: indistinguishable from
+     nothing happening, and from a rename.
+     ⚠️ THE FIX IS THAT AN EMPTY BAND CANNOT BE WHAT KEEPS A BOARD GROUPED. If every OTHER
+     band holds nothing, they are drop areas rather than content, so dissolving the one band with
+     widgets in it flattens the board — which is exactly the second click's result, delivered on
+     the first. A board with widgets in two bands is untouched: ungrouping one still merges it
+     into its neighbour and the band visibly goes (measured: ['One'(2),'Two'(3),'Three'(4)]
+     ungroup 'Two' —> ['One'(5),'Three'(4)]).
+     ⚠️ THE COST, STATED: the empty bands go with it. Ungrouping the only band that holds
+     anything discards a `New group` you had made and not yet filled. That is one ⌘/Ctrl+Z away and
+     the toast says so; the alternative — leaving an empty band standing — is the report.
+     ⚠️ EVERY BAND'S WIDGETS ARE CONCATENATED IN BOARD ORDER, not just this one's. On a
+     single-band board that reduce is a no-op, which is why the two cases are one branch rather
+     than two that have to be kept in step. */
+  const lone = TABS.every((_, i) => i === gi || !(WIDGETS[i] || []).length);
+  if (TABS.length < 2 || lone){
+    const gone = TABS.length - 1;
+    const all  = WIDGETS.reduce((a, w) => a.concat(w || []), []);
+    TABS.length = 0; TABS.push('');
+    WIDGETS.length = 0; WIDGETS.push(all);
+    GRP_STYLE.length = 0; GRP_STYLE.push(null);
+    GRP_SHUT.clear(); curG = 0;
     ungrouped = true;                         /* boardLoad re-derives this from TABS */
     renderCanvas();
     toast('Ungrouped — “' + name + '” is gone and its ' + n + ' widget' +
-          (n === 1 ? '' : 's') + ' sit on the board — ' + KMOD + 'Z brings the group back');
+          (n === 1 ? '' : 's') + ' sit on the board' +
+          (gone ? ' — ' + gone + ' empty group' + (gone === 1 ? '' : 's') + ' went with it' : '') +
+          ' — ' + KMOD + 'Z brings the group back');
     return;
   }
 
@@ -20303,6 +21005,12 @@ function newFlatBoard(name, cat){
    default landing, visibility, PDF export, schedule) — kebab ⋮ on rows + page header ====== */
 let DASH_DEFAULT = null;
 const DMI = {
+  /* ⚠️ THE PRODUCT'S OWN `share-alt`, VERBATIM from `observeops-icons/common/actions-edit/`
+     (22 Sep 2026, when Share moved off the toolbar into this menu). Its viewBox is 48 where
+     every other entry here is 24, and that is correct rather than sloppy: each `<svg>` carries
+     its own box and the menu's CSS sizes the element, so rescaling a harvested path by hand —
+     which is the one thing the icon rule forbids — would buy nothing. */
+  share: '<svg viewBox="0 0 48 48"><path d="M36,28c-1.2,0-2.3,.3-3.4,.8-1.1,.5-2,1.3-2.7,2.2l-10.2-4.7c.5-1.5,.5-3.1,0-4.5l10.2-4.7c1.2,1.5,2.9,2.4,4.7,2.8,1.9,.3,3.8,0,5.4-.9,1.6-.9,2.9-2.4,3.5-4.2,.6-1.8,.6-3.7,0-5.5-.6-1.8-1.9-3.3-3.5-4.2-1.6-.9-3.5-1.3-5.4-.9-1.9,.3-3.5,1.3-4.7,2.8-1.2,1.5-1.9,3.3-1.8,5.2,0,.5,0,1,.1,1.4l-10.6,4.9c-1.1-1.1-2.6-1.8-4.1-2.1-1.5-.3-3.1-.1-4.6,.5-1.5,.6-2.7,1.6-3.6,2.9-.9,1.3-1.3,2.9-1.3,4.4s.5,3.1,1.3,4.4c.9,1.3,2.1,2.3,3.6,2.9,1.5,.6,3,.8,4.6,.5,1.5-.3,3-1,4.1-2.1l10.6,4.9c0,.5-.1,.9-.1,1.4,0,1.6,.5,3.1,1.3,4.4,.9,1.3,2.1,2.3,3.6,2.9,1.5,.6,3.1,.8,4.6,.5,1.6-.3,3-1.1,4.1-2.2,1.1-1.1,1.9-2.5,2.2-4.1,.3-1.6,.2-3.2-.5-4.6-.6-1.5-1.6-2.7-2.9-3.6-1.3-.9-2.9-1.3-4.4-1.3Zm0-20c.8,0,1.6,.2,2.2,.7,.7,.4,1.2,1.1,1.5,1.8,.3,.7,.4,1.5,.2,2.3s-.5,1.5-1.1,2c-.6,.6-1.3,.9-2,1.1s-1.6,0-2.3-.2c-.7-.3-1.4-.8-1.8-1.5-.4-.7-.7-1.4-.7-2.2s.4-2.1,1.2-2.8c.7-.7,1.8-1.2,2.8-1.2ZM12,28c-.8,0-1.6-.2-2.2-.7-.7-.4-1.2-1.1-1.5-1.8-.3-.7-.4-1.5-.2-2.3,.2-.8,.5-1.5,1.1-2,.6-.6,1.3-.9,2-1.1,.8-.2,1.6,0,2.3,.2,.7,.3,1.4,.8,1.8,1.5,.4,.7,.7,1.4,.7,2.2s-.4,2.1-1.2,2.8-1.8,1.2-2.8,1.2Zm24,12c-.8,0-1.6-.2-2.2-.7-.7-.4-1.2-1.1-1.5-1.8-.3-.7-.4-1.5-.2-2.3,.2-.8,.5-1.5,1.1-2s1.3-.9,2-1.1c.8-.2,1.6,0,2.3,.2,.7,.3,1.4,.8,1.8,1.5,.4,.7,.7,1.4,.7,2.2s-.4,2.1-1.2,2.8c-.7,.7-1.8,1.2-2.8,1.2Z"/></svg>',
   /* the grid glyph for Layout settings — filled, like every other icon in this menu */
   layout:'<svg viewBox="0 0 24 24"><path d="M3 3h8v6H3V3Zm2 2v2h4V5H5Zm8-2h8v6h-8V3Zm2 2v2h4V5h-4ZM3 11h8v10H3V11Zm2 2v6h4v-6H5Zm8-2h8v10h-8V11Zm2 2v6h4v-6h-4Z"/></svg>',
   open:  '<svg viewBox="0 0 24 24"><path d="M5 5h6v2H7v10h10v-4h2v6H5V5Zm9 0h5v5h-2V8.4l-6.3 6.3-1.4-1.4L15.6 7H14V5Z"/></svg>',
@@ -20329,12 +21037,19 @@ function openDashMenu(ev, n){
     <button class="dmi" onclick="dmAct('clone','${k}')">${DMI.clone}<span class="dmtx">Clone<i>Copies every widget and its configuration</i></span></button>
     <button class="dmi" onclick="dmAct('edit','${k}')">${DMI.edit}<span class="dmtx">Edit<i>Name, category, visibility, layout</i></span></button>
     <button class="dmi" onclick="dmAct('history','${k}')">${DMI.hist}<span class="dmtx">Version history<i>Every change, with who and when — restore any version</i></span></button>
-    <!-- Layout settings WAS HERE and is now the toolbar button (27 Aug 2026). The
-         dmAct('layout') branch is KEPT and unreferenced — it opens the drawer ON a named
-         board, which the toolbar button cannot do, so pointing a row menu back at it is one
-         line. NOTE: no backticks in this comment — it lives inside a template literal and a
-         backtick here closes the template, which is exactly how it broke the first time. -->
+    <!-- Layout settings IS A ROW AGAIN (22 Sep 2026), which is where it was until 27 Aug 2026
+         when it became a toolbar button. The dmAct('layout') branch was kept and unreferenced
+         against exactly this, and it is BETTER than the button was: it opens the drawer on a
+         NAMED board, which the toolbar control could not do. It closes the first block because
+         Clone / Edit / Version history / Layout settings are all things you do TO the board.
+         NOTE: no backticks in this comment - it lives inside a template literal and a backtick
+         here closes the template, which is exactly how it broke the first time. -->
+    <button class="dmi" onclick="dmAct('layout','${k}')">${DMI.layout}<span class="dmtx">Layout settings<i>Title size, gaps and row height for this board</i></span></button>
     <div class="dmdiv"></div>
+    <!-- Share leads the second block on purpose: that block is WHO SEES THIS BOARD and where it
+         lands, which is the same question Make public / Make private answers two rows down. It
+         opens the same drawer the toolbar button did. -->
+    <button class="dmi" onclick="dmAct('share','${k}')">${DMI.share}<span class="dmtx">Share<i>Send a link, or export this board</i></span></button>
     <button class="dmi" onclick="dmAct('default','${k}')">${DMI.home}${DASH_DEFAULT===n?'Remove default landing':'Set as default landing'}${DASH_DEFAULT===n?'<span class="dmst on">Current</span>':''}</button>
     <button class="dmi" onclick="dmAct('vis','${k}')">${it.p?DMI.pub+'Make public':DMI.locki+'Make private'}<span class="dmst">${it.p?'Private now':'Public now'}</span></button>
     <div class="dmdiv"></div>
@@ -20354,6 +21069,10 @@ function dmAct(a, n){
      `dashState.cur`, so acting on a row that is not the open board would edit one board
      while describing another. */
   else if (a==='layout'){ if (dashState.cur !== n) pickDash(n); layOpen(); }
+  /* ⚠️ SAME RULE AS `layout` ABOVE — the share drawer describes `dashState.cur`, so acting
+     on a row that is not the open board would offer a link to one board while showing
+     another's name. Opening it first is what makes the row honest from the list panel. */
+  else if (a==='share'){ if (dashState.cur !== n) pickDash(n); openDrawer('drawer-share'); }
   else if (a==='fav'){
     favDash({stopPropagation(){}}, n);
     toast(DASH_FAVS.has(n) ? `★ "${n}" added to favorites` : `"${n}" removed from favorites`);
@@ -29339,8 +30058,9 @@ function cwFtPanelHTML(){
    an EARLIER `<script>` block than this one, and a `const` table built at parse time here would
    be fine today — but a top-level `function` declaration IS a window property, so resolving it
    when the dropdown is actually used costs nothing and cannot be broken by block order. */
-const DD_OWN = { gbg: { paint:'gEditPaint', set:'gEditBg' },
-                 gsz: { paint:'gEditPaint', set:'gEditSize' } };
+const DD_OWN = { gbg:  { paint:'gEditPaint', set:'gEditBg' },
+                 gsz:  { paint:'gEditPaint', set:'gEditSize' },
+                 gpat: { paint:'gEditPaint', set:'gEditPat' } };
 function ddPaint(key){
   const o = DD_OWN[key];
   if (o){ const f = window[o.paint]; if (f) f(); ddBindPicker(); ddPlace(); return; }
@@ -29363,8 +30083,18 @@ function ddPlace(){
   if (!p) return;
   p.classList.remove('up');
   p.style.transform = '';
+  /* ⚠️ THE FLIP IS TESTED AGAINST THE SCROLLER, NOT THE VIEWPORT, and that was a real
+     defect this control shipped with (found 22 Sep 2026 by a probe whose hit test on Cancel
+     landed on `.cwfoot`). `.cwsb` is `overflow-y:auto`, so a panel can sit comfortably inside
+     the window and still hang past the PANE — measured at a 857px viewport, Font Color's
+     panel put Cancel and Apply at y=767 against a scroller ending at ~745, where they were
+     clipped away and could not be pressed at all. Testing `innerHeight` says that is fine.
+     ⚠️ AND THE UPWARD ROOM IS TESTED AGAINST THE SAME BOX, or a panel that does not fit
+     below would flip to a position that does not fit above either. When neither fits it stays
+     down, which is what it has always done. */
+  const clip = ddClipBox(p);
   const r = p.getBoundingClientRect();
-  if (r.bottom > innerHeight - 8 && r.top - r.height > 8) p.classList.add('up');
+  if (r.bottom > clip.bottom - 8 && r.top - r.height > clip.top + 8) p.classList.add('up');
   /* ⚠️ AND CLAMPED SIDEWAYS, BECAUSE ANCHORING TO ONE EDGE ONLY MOVES THE BUG. Opening
      rightward pushed the panel 97px off the viewport; opening leftward then pushed the
      LEFT-column dropdown (Font Color) 131px past `#cwBody`'s left edge — measured, and the
@@ -29375,7 +30105,6 @@ function ddPlace(){
      per variant. A translate moves whatever the cascade produced, so one line covers both.
      ⚠️ THE BOUND IS THE NEAREST CLIPPING ANCESTOR, not the viewport: `#cwBody` scrolls, so a
      panel inside the viewport can still be cut in half by the pane. */
-  const clip = ddClipBox(p);
   const r2 = p.getBoundingClientRect();
   let dx = 0;
   if (r2.right > clip.right - 4) dx = clip.right - 4 - r2.right;
@@ -29385,15 +30114,21 @@ function ddPlace(){
 /* the intersection of the viewport with every scrollable ancestor — what will actually be
    visible, rather than what is merely positioned */
 function ddClipBox(el){
-  let L = 0, R = innerWidth;
+  let L = 0, R = innerWidth, T = 0, B = innerHeight;
   for (let n = el.parentElement; n && n !== document.body; n = n.parentElement){
-    const o = getComputedStyle(n).overflow + getComputedStyle(n).overflowX;
-    if (/auto|scroll|hidden/.test(o)){
+    const cs = getComputedStyle(n);
+    /* ⚠️ BOTH AXES. It read `overflow + overflowX` and returned a horizontal box only, which
+       is all the sideways clamp needed — and is why the vertical flip had nothing to test
+       against but the viewport. A scroller clips in whichever axis it is set on, and
+       `overflow-y:auto` alone (which is what `.cwsb` and `.dr-b` both declare) never appeared in
+       that string at all. */
+    if (/auto|scroll|hidden/.test(cs.overflow + cs.overflowX + cs.overflowY)){
       const b = n.getBoundingClientRect();
       L = Math.max(L, b.left); R = Math.min(R, b.right);
+      T = Math.max(T, b.top);  B = Math.min(B, b.bottom);
     }
   }
-  return { left: L, right: R };
+  return { left: L, right: R, top: T, bottom: B };
 }
 /* ⚠️ `change` / `show` / `hide` ARE THE COMPONENT'S OWN EVENTS AND ARE BOUND, NOT WRITTEN
    AS ATTRIBUTES. `onshow` / `onhide` are not event-handler content attributes at all (so they
@@ -29580,11 +30315,40 @@ addEventListener('pointerup', () => { CP_DRAG = null; });
 /* ⚠️ THE PANE REPAINTS ITSELF, NEVER THE WHOLE DROPDOWN. `ddPaint` rebuilds the panel, which
    would destroy the element the pointer has captured mid-drag and drop every later move —
    the `agConsPaint` / `cwFtSet` discipline, and here it is load-bearing rather than tidy. */
+/* ⚠️ THE LEFT LIST IS PATCHED, NOT RE-RENDERED, AND THAT IS THE WHOLE POINT OF DOING IT
+   HERE. `ddPaint` rebuilds the panel, which would destroy the canvas the pointer has CAPTURED
+   and drop every later move of the drag — so moving the tick to Custom has to be four attribute
+   writes on nodes that already exist. It touches the rows' `.on` / `aria-selected` / tick, the
+   Custom row's swatch, and the trigger, so the control reads Custom BEFORE you press Apply.
+   ⚠️ `CP.touched` IS WHAT MAKES IT SURVIVE A REAL REPAINT (a filter, a `ddPaint` from anywhere
+   else) — `cwFtDD` reads it back when it next renders the list. */
+function cpMarkCustom(){
+  const dd = document.querySelector('.cwftdd.open');
+  if (!dd || !CP) return;
+  const hex = cpCur();
+  dd.querySelectorAll('.cwftddo').forEach(b => {
+    const on = b.dataset.o === 'Custom';
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on);
+    const tick = b.querySelector('.cwftdck');
+    if (on && !tick) b.insertAdjacentHTML('beforeend', CP_TICK);
+    if (!on && tick) tick.remove();
+    if (on){ const sw = b.querySelector('.cwftsw2'); if (sw) sw.style.background = hex; }
+  });
+  const t = dd.querySelector('.cwftddt');
+  if (t){
+    const sw = t.querySelector('.cwftsw2'); if (sw) sw.style.background = hex;
+    const lb = t.querySelector('span');     if (lb) lb.textContent = 'Custom';
+    const v  = t.querySelector('.cwftddv'); if (v)  v.textContent = hex.toUpperCase();
+  }
+}
 function cpRepaint(){
   const host = document.querySelector('.cwftdd.open .cppane');
   if (!host || !CP) return;
+  CP.touched = true;            /* a repaint only ever follows a gesture — see `cwFtDD`'s `sel` */
   const key = host.closest('.cwftdd').dataset.k;
   host.outerHTML = cpPaneHTML(key);
+  cpMarkCustom();
   if (CP_DRAG){
     const sel = CP_DRAG.what === 'sv' ? '.cpsv' : CP_DRAG.what === 'h' ? '.cphue' : '.cpalpha';
     const el = document.querySelector('.cwftdd.open ' + sel);
@@ -29651,6 +30415,30 @@ function cwFtHexOf(v){
   const k = /^color\(/.test(c) ? 255 : 1;
   return cpHex(+m[0] * k, +m[1] * k, +m[2] * k, 1).toUpperCase();
 }
+/* the tick, written once: the list's rows and `cpMarkCustom`'s live patch both emit it, and
+   two copies of a path is how the two come to disagree. */
+const CP_TICK = '<svg class="cwftdck" viewBox="0 0 24 24" aria-hidden="true">' +
+  '<path d="M5 13l4 4L19 7"/></svg>';
+/* the hex the trigger reports — the stored one when it is already a hex, otherwise whatever the
+   named value resolves to. '' for `transparent`, which has no hex and must not read as black. */
+function cwFtDDHex(cur, curV){
+  return cwFtIsHex(cur) ? String(cur).toUpperCase() : cwFtHexOf(curV);
+}
+/* the Custom row's swatch: the LIVE draft while a picker is open, else whatever is stored */
+function cwFtDDCustomSw(cur, curV){
+  if (CP) return cpCur();
+  return cwFtDDHex(cur, curV) || 'transparent';
+}
+/* ⚠️ IT SELECTS, IT DOES NOT COMMIT — see the row's own note. Seeding `CP` if it is somehow
+   absent keeps the row from being a dead control on a dropdown opened without a canvas. */
+function cpPickCustom(key){
+  if (!CP){
+    const dd = document.querySelector('.cwftdd.open');
+    CP = cpSeed(cwFtHexOf(dd ? (dd.dataset.v || '') : ''));
+  }
+  CP.touched = true;
+  ddPaint(key);
+}
 function cwFtDD(key, list, cur, swatch, custom){
   const open = CW_FT_DD === key;
   const rows = list.filter(a => !CW_FT_DDQ || a[0].toLowerCase().indexOf(CW_FT_DDQ.toLowerCase()) >= 0);
@@ -29666,9 +30454,21 @@ function cwFtDD(key, list, cur, swatch, custom){
      falls back to its value exactly as before. */
   const sw = a => swatch ? '<i class="cwftsw2" style="background:' +
     (Array.isArray(a) ? (a[2] || a[1]) : a) + '"></i>' : '';
-  /* ⚠️ A CUSTOM VALUE IS ITS OWN LABEL — the trigger shows the hex itself rather than the
-     word "Custom", because the hex IS the name of that colour and is what you would retype. */
+  /* ⚠️ THE TRIGGER ALWAYS SHOWS A NAME, AND A CUSTOM COLOUR'S NAME IS "Custom" (request,
+     22 Sep 2026: "the default color is set as current color name and the set new 'custom' color in
+     last"). It showed the raw hex, on the reading that a hex IS the name of that colour — which
+     is true of the STRING and false of the CONTROL: every other state of this trigger is a word
+     out of the list beside it, so one state reading `#3A7BD5` was the only one you could not
+     match against a row. The hex did not go anywhere — it is the value chip, which is where
+     every named state already carries what it resolves to. **Don't put the hex back as the label
+     on the strength of the note this replaced.** */
   const isHex = cwFtIsHex(cur);
+  /* ⚠️ WHAT IS LIT IS DERIVED, NEVER REMEMBERED. `Custom` wins when the stored value is a
+     hex, and also while this dropdown's own draft has been touched — `CP.touched` is set by
+     `cpRepaint`, which only ever runs from a real gesture (a drag, a field, a preset). Keyed on
+     `CW_FT_DD === key` because `CP` belongs to whichever dropdown is open, and all three render
+     through this one function. */
+  const sel = (isHex || (CP && CP.touched && CW_FT_DD === key)) ? 'Custom' : cur;
   const curE = list.find(a => a[0] === cur) || list[0];
   const curV = isHex ? cur : curE[1];
   const curSw = isHex ? cur : (curE[2] || curE[1]);
@@ -29684,13 +30484,18 @@ function cwFtDD(key, list, cur, swatch, custom){
     ' data-v="' + String(curV).replace(/"/g, '&quot;') + '">' +
     '<button class="cwftddt" aria-haspopup="listbox" aria-expanded="' + open + '" ' +
       'onclick="cwFtDDTog(event,\'' + key + '\',' + (custom ? 'true' : 'false') + ')">' + sw(curSw) +
-      '<span>' + (isHex ? cur.toUpperCase() : cur) + '</span>' +
+      '<span>' + (isHex ? 'Custom' : cur) + '</span>' +
       /* ⚠️ THE TRIGGER CARRIES THE HEX ON A COLOUR CONTROL (reference, 19 Sep 2026): the
          NAME says which entry is picked and the VALUE says what it actually resolves to, which
          is the one thing a themed `color-mix()` name cannot tell you by looking. It is omitted
          when the value IS a hex — the label would then be the same string twice — and on a
          non-colour list (Font Size) there is nothing to resolve, so `swatch` gates it. */
-      (custom && !isHex ? '<b class="cwftddv">' + cwFtHexOf(curV) + '</b>' : '') +
+      /* ⚠️ AND NOW IT CARRIES THE HEX IN BOTH STATES. It was emitted only for a NAMED
+         value, because a hex label plus a hex chip was the same string twice; with the label a
+         word, the chip is the only place the actual colour is written. It is still omitted when
+         there is nothing to resolve — `transparent` has no hex, and `cwFtHexOf` returns '' for
+         it rather than black, so an empty chip is never drawn. */
+      (custom && cwFtDDHex(cur, curV) ? '<b class="cwftddv">' + cwFtDDHex(cur, curV) + '</b>' : '') +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
     (open ? '<div class="cwftddp' + (custom ? ' two' : '') + '" role="listbox">' +
       /* ⚠️ THE LIST IS THE LEFT PANE AND THE PICKER THE RIGHT ONE (request, 19 Sep 2026:
@@ -29706,13 +30511,31 @@ function cwFtDD(key, list, cur, swatch, custom){
           '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>' +
           '<input id="cwFtDDQ" placeholder="Search" value="' + CW_FT_DDQ.replace(/"/g,'&quot;') + '" ' +
           'oninput="cwFtDDFilter(this.value)" onmousedown="event.stopPropagation()" /></div>') +
+        /* ⚠️ "Custom" IS THE LAST ROW OF THE LIST, AND IT IS A REPORT AS WELL AS A CHOICE
+           (request, 22 Sep 2026). The canvas beside it could always produce a colour no named row
+           describes; until now the list simply showed NOTHING ticked while that was true, so the
+           one pane never said what the other was doing. The row is lit whenever the value is a
+           hex — or whenever the canvas has been touched in this visit, which is the second half
+           of the same request: "when i ... change the opecity or any other color the automaticaly
+           move the 'custom' color".
+           ⚠️ ITS SWATCH IS THE LIVE DRAFT, not the stored value, so it tracks the canvas.
+           ⚠️ CLICKING IT SELECTS, IT DOES NOT COMMIT. Apply is the commit, and a second control
+           that also committed would be the two-doors-to-one-action trap this file keeps being
+           trimmed for; what this does is CONVERT a named pick into a custom one, leaving the
+           canvas open to edit it. `data-o` is what lets `cpMarkCustom` find the rows without
+           re-rendering the panel mid-drag. */
         '<div class="cwftddl">' + (rows.length ? rows.map(a =>
-          '<button class="cwftddo' + (a[0]===cur?' on':'') + '" role="option" ' +
-          'aria-selected="' + (a[0]===cur) + '" onclick="cwFtDDPick(\'' + key + '\',\'' + a[0] + '\')">' +
+          '<button class="cwftddo' + (a[0]===sel?' on':'') + '" role="option" data-o="' + a[0] + '" ' +
+          'aria-selected="' + (a[0]===sel) + '" onclick="cwFtDDPick(\'' + key + '\',\'' + a[0] + '\')">' +
           sw(a) + '<span>' + a[0] + '</span>' +
-          (a[0]===cur ? '<svg class="cwftdck" viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M5 13l4 4L19 7"/></svg>' : '') + '</button>').join('')
-          : '<div class="cwftddn">Nothing matches \u201c' + CW_FT_DDQ + '\u201d</div>') + '</div>' +
+          (a[0]===sel ? CP_TICK : '') + '</button>').join('')
+          : '<div class="cwftddn">Nothing matches \u201c' + CW_FT_DDQ + '\u201d</div>') +
+          (custom ?
+            '<button class="cwftddo cwftddcu' + (sel==='Custom'?' on':'') + '" role="option" ' +
+            'data-o="Custom" aria-selected="' + (sel==='Custom') + '" ' +
+            'onclick="cpPickCustom(\'' + key + '\')">' +
+            '<i class="cwftsw2" style="background:' + cwFtDDCustomSw(cur, curV) + '"></i>' +
+            '<span>Custom</span>' + (sel==='Custom' ? CP_TICK : '') + '</button>' : '') + '</div>' +
       '</div>' +
       (custom ? cpPaneHTML(key) : '') +
     '</div>' : '') + '</div>';
