@@ -166,9 +166,18 @@ scrolled board with no gap.
   a right edge. The request named the width.
 - ⚠️ **The Group tab's three rows are SEEDS on other boards** and the registry is still
   session-level — a reload restores exactly those three.
-- ⚠️ **Nothing here is committed or pushed.** The pin-tooltip, Ungroup and shared-group work from
-  the previous sessions is also still uncommitted (`git status`: M CLAUDE.md, M HANDOFF.md,
-  M dashboard-rail-flyout-alt3.html, M index.html).
+- ⚠️ **COMMITTED AND PUSHED — `1984c04` on `main`, and it is LIVE.** That one commit carries
+  everything that had accumulated uncommitted across the last three sessions: the header hover,
+  the Edit-group drawer, shared groups, the colour dropdown's Custom row, Free Text, Ungroup, the
+  toolbar clean-out and Option 13's pin-tooltip. Verified after the deploy: the served
+  `index.html` is **byte-identical** to local (`md5 f2413478d9876e3a6be35d46ed7f258d`), the rule
+  is live, `_ds/` and `setting.js` load, and `agentation-embed.js` 404s as it should.
+  ⚠️ **The push is what publishes** — Pages deploys from `main`, so there is no branch to merge
+  and the first fetch after a push can still serve the PREVIOUS build for ~12s. Poll until the
+  content changes, not until the URL returns 200.
+  ⚠️ **A 2.4 MB response streamed straight into `grep` came back EMPTY twice** on a file that
+  plainly contains the match. Download it to a file and grep that — which is also what proved
+  the md5.
 - ⚠️ Still standing from before: `#licHistDr` is in `setting.js`'s dark token opener and not the
   light one; a note still draws the `today` time chip; named colours and the picker store different
   things (a name is theme-aware, a hex is not).
