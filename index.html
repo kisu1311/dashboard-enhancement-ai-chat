@@ -25671,7 +25671,11 @@ function aiDragStart(e){
      never change the size" below: it happens once, at mousedown, and the drag then pins it as usual. */
   /* armed here, applied on the FIRST REAL MOVE (aiRzMove) — a plain click on the header must not shrink it */
   aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h,
-             cp: AIF.h >= aiFMaxH() - 2 };
+             /* ⚠️ ANY header drag compacts a card taller than its content (request, 23 Sep 2026: "when I click
+                the header and move it down, the size will minimise like monday.com") — not only from the
+                full-height dock: a card resized to 884×843 kept that height and never shrank. Height only;
+                the width you set is kept, and a card already shorter than its content is left alone. */
+             cp: AIF.h > aiCompactH() + 2 };
   /* ⚠️ MOVE ONLY — the edge grips want their own resize cursors, so this cannot go in
      `aiRzBind`, which every drag goes through. Cleared in `aiRzEnd` with the edge flags. */
   document.body.classList.add('aidragmv');
@@ -25706,7 +25710,7 @@ function aiRzMove(e){
     return;
   }
   if (aiDrag.m === 'move'){
-    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){ aiDrag.cp = false; aiDrag.h = aiCompactH(); }
+    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){ aiDrag.cp = false; aiDrag.h = Math.min(aiDrag.h, aiCompactH()); }
     AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy;
     AIF.w = aiDrag.w; AIF.h = aiDrag.h;   /* clamp against the (possibly compact) size, or it pins to the old full height */
     /* ⚠️ A MOVE MAY NEVER CHANGE THE SIZE — reported twice (21 Aug 2026: "when I move the
