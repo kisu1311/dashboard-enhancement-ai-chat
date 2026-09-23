@@ -584,6 +584,10 @@ body.rzing-body{user-select:none}
    (the artwork paints itself from tokens; nothing may set fill on it). */
 .awrow > svg{width:15px;height:15px;fill:var(--text-dim);flex:0 0 15px}
 .awrow .nm2{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.awgcnt{margin-left:auto;flex:0 0 auto;background:var(--chip);border-radius:9px;padding:1px 9px;
+  font-size:11px;font-weight:600;color:var(--text-dim);white-space:nowrap;cursor:default}
+.awgcnt:hover{color:var(--text)}
+.awgcnt + .awacts{margin-left:6px}
 .awrow .used{background:var(--chip);border-radius:9px;padding:1px 8px;font-size:10px;font-weight:600;color:var(--text-dim);white-space:nowrap}
 .awfoot{padding:11px 16px;border-top:1px solid var(--border);font-size:11.4px;color:var(--text-dim);flex:0 0 auto}
 .awfoot a{color:var(--teal);text-decoration:underline}
@@ -1099,6 +1103,10 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
   font-size:11.5px;font-weight:500;line-height:1.4;box-shadow:var(--pop-shadow);
   opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s}
 .tipbox.on{opacity:1;transform:none}
+/* list mode — the reference's shape: one row per item, hairline between, no bullets */
+.tipbox.tiplist{padding:4px;max-width:320px;display:flex;flex-direction:column}
+.tipbox .tipli{padding:7px 10px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tipbox .tipli + .tipli{border-top:1px solid var(--border)}
 /* the same keycap as `.kbd`, and it had the same two faults — see the note there. It renders
    from a `data-tip` tail on the very row whose inline keycap was just fixed. */
 .tipbox .tipk{margin-left:7px;display:inline-flex;align-items:center;justify-content:center;
@@ -3001,8 +3009,6 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
    ⚠️ SCOPED TO `.pagehead`, so the same class on the widget editor, the drawers and the
    Manage screen keeps the outline it was designed with. */
 .pagehead .btn.ico{background:var(--chip);border-color:transparent}
-/* the header gap is 9px; these three sit 10px from the time bar and from each other (request, 22 Sep 2026) */
-.pagehead .btn.ico{margin-left:1px}
 /* HOVER — the fill moves AWAY from the header, never toward it (request, 22 Sep 2026:
    "in header the icon hover color is bad", with the ObserveOps palette library named).
    ⚠️ IT WAS `--hover`, AND THAT TOKEN IS FOR A *TRANSPARENT ROW*, NOT A FILLED CHIP.
@@ -3341,7 +3347,18 @@ body:has(#view-dashboard.on) .gnav{display:block}
    resting header; an aligned one is asking for exactly that space, so it is lifted here. */
 .ghead.galgn .gnm{flex:1 1 auto;min-width:0;max-width:none;text-align:var(--gv-talign,left)}
 .ghead.galgn .gsp{flex:0 0 0}
-.gnm:hover{background:var(--hover)}
+/* ⚠️ CENTRED MEANS CENTRED ON THE STRIP (23 Sep 2026: "the header will be set in center"). In
+   flow, the title was centred in the space BETWEEN the caret and the ＋ / ⋮ pair — which are not
+   the same width — so it sat 25px left of the strip's middle and off the widgets below. Taken out
+   of flow and centred on the header itself; the spacer takes the slack so ＋ / ⋮ stay right.
+   Capped so a long name ellipsises before it reaches the controls either side. */
+.ghead.galgnc{position:sticky}
+.ghead.galgnc .gnm{position:absolute;left:50%;transform:translateX(-50%);max-width:calc(100% - 160px);flex:none}
+.ghead.galgnc .gsp{flex:1 1 auto}
+/* ⚠️ #FFFFFF AT 10% (request, 23 Sep 2026: "the hover colour is dark, use ffffff with 10% opacity").
+   `--hover` is a dark fill, so on the solid Green/Blue/Red strips it read as a black slab behind
+   the title. A white wash lightens whatever it sits on, so it works on every fill in dark theme. */
+.gnm:hover{background:rgb(255 255 255 / .1)}
 .gnm:focus-visible{outline:none;box-shadow:0 0 0 2px var(--teal)}
 /* ⚠️ inherits the title's own type so the row does not jump by a pixel when it swaps in */
 .gnmin{width:100%;min-width:120px;background:var(--panel-2);border:1px solid var(--teal);
@@ -3382,8 +3399,12 @@ body:has(#view-dashboard.on) .gnav{display:block}
    invisible until you pointed at the group. That reasoning is true now. The ⋮ stays
    hover-revealed like every widget header's own ⋮ on the same board — secondary actions, not
    the way in. Option 6's section header carries an always-visible `+` for the same reason.
-   ⚠️ THIS RULE MUST STAY BELOW `.gact`: both are (0,1,0) and source order alone decides it. */
-.gaddw{opacity:1}
+   ⚠️ THIS RULE MUST STAY BELOW `.gact`: both are (0,1,0) and source order alone decides it.
+   ⚠️ REVERSED 23 Sep 2026 ("the + icon will show when I hover the group"): the ＋ is
+   hover-revealed like the ⋮ again. The argument above no longer holds its ground — an EMPTY
+   group now draws its own Add-widget tile in the body, so the header ＋ is not its only way in.
+   Kept as `opacity:0` rather than deleted, so the history above still reads against a rule. */
+.gaddw{opacity:0}
 /* ---- widget bodies copied from the live Alert Summary board ----------------------
    ring cluster · pie + legend · labelled horizontal bars ------------------------- */
 .wdon{flex:1;min-height:0;display:flex;align-items:center;justify-content:space-around;gap:4px;padding:2px 4px}
@@ -4171,6 +4192,10 @@ body.vhprev #vspill,body.vhprev .vspill{opacity:.25}
   border-radius:9px;padding:1px 7px;white-space:nowrap}
 .dmst.on{color:var(--teal);background:rgba(20,184,166,.15)}
 #dpRowMenu{padding:5px}
+/* ⚠️ NO ARROW ON THE ⋮ MENU (request, 23 Sep 2026: "remove the arrow in the popup"). The shared
+   `.pop::before` notch is switched off for this card only, as `#userPop` / `#notifPop` already are;
+   every other `.pop` keeps it. The same card is the list rows' ⋮ menu, so it goes there too. */
+#dpRowMenu::before{content:none}
 #dpRowMenu .dmi{gap:11px;padding:8px 9px}
 .homeb{width:16px;height:16px;flex:0 0 16px;display:grid;place-items:center}
 .homeb svg{width:12px;height:12px;fill:var(--teal)}
@@ -7410,6 +7435,77 @@ body.aidockr .aipanel.aifloat{opacity:.55}
    renders exactly as before. */
 .dgrid12{display:grid;grid-template-columns:repeat(12,1fr);
   gap:var(--lay-vgap,10px) var(--lay-hgap,10px)}
+/* `vbars` — labelled vertical bars (Payment board). Axis | plot, then a label row under the plot.
+   Gridlines are a repeating gradient at the four tick steps, so they sit exactly on the ticks. */
+.wvb{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;
+  gap:4px 6px;font-size:10px;color:var(--text-dim);padding:2px 4px 0 0}
+.wvbax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
+  margin:-6px 0;line-height:12px}
+.wvbpl{display:flex;align-items:flex-end;gap:5%;padding:0 4%;border-left:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--border) calc(25% - 1px),var(--border) 25%)}
+.wvbpl i{flex:1;border-radius:2px 2px 0 0;min-height:0}
+.wvbl{display:flex;gap:5%;padding:0 4%}
+.wvbl span{flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── the five ui_pmg forms (23 Sep 2026) — surfaces, ink and hairlines are this file's tokens ── */
+.wtm{flex:1;min-height:0;position:relative;margin:2px}
+.wtmc{position:absolute;box-sizing:border-box;border:2px solid var(--card);border-radius:6px;padding:6px 8px;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;color:var(--text)}
+.wtmc b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wtmc span{font-size:10.5px;color:color-mix(in srgb, var(--text) 78%, transparent);white-space:nowrap}
+.wtmc:hover{outline:2px solid var(--text);outline-offset:-2px}
+.wsk{flex:1;min-height:0;display:flex;flex-direction:column;gap:9px;font-size:11px;overflow:auto}
+.wskl{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--text-dim);font-size:11px}
+.wskl span{display:inline-flex;align-items:center;gap:6px}
+.wskl i{width:9px;height:9px;border-radius:2px}
+.wskr{display:grid;grid-template-columns:130px 1fr 48px;align-items:center;gap:10px}
+.wskn{color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wskb{display:flex;gap:2px;height:14px}
+.wskb i{min-width:0;border-radius:2px}
+.wskb i:first-child{border-radius:4px 2px 2px 4px}.wskb i:last-child{border-radius:2px 4px 4px 2px}
+.wskb i:hover{filter:brightness(1.18)}
+.wskv{text-align:right;color:var(--text)}
+.wth{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;font-size:10px;color:var(--text-dim)}
+.wthg{flex:1;min-height:0;display:grid;grid-template-columns:30px repeat(24,1fr);gap:2px;align-content:stretch}
+.wthg i{border-radius:2px;min-height:10px}
+.wthg i:hover{outline:2px solid var(--text);outline-offset:-1px}
+.wthd{align-self:center}
+.wthh{font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.wthk{display:flex;align-items:center;gap:3px;justify-content:center}
+.wthk i{width:18px;height:9px;border-radius:2px}
+.wthk span{margin:0 4px}
+.wbl{flex:1;min-height:0;display:flex;flex-direction:column;gap:11px;font-size:11px;overflow:auto}
+.wblk{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--text-dim)}
+.wblk span{display:inline-flex;align-items:center;gap:6px}
+.wblk i{width:12px;height:4px;border-radius:2px}
+.wblk b{width:2px;height:11px;border-radius:1px}
+/* ⚠️ LEGENDS SIT AT THE BOTTOM, CENTRED, IN EVERY ONE OF THESE FORMS (request, 23 Sep 2026: "the
+   legend will show bottom centre in every widget"). Markup order is unchanged — `order` moves the
+   key after the rows and `margin-top:auto` pins it to the widget's foot, so a short list does not
+   leave the legend floating mid-card. Heatmap's scale (`.wthk`) is centred the same way. */
+.wskl,.wblk{order:99;margin-top:auto;justify-content:center;padding-top:4px}
+.wblr{display:grid;grid-template-columns:minmax(130px,34%) 1fr 42px;align-items:center;gap:10px}
+.wbln{color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wblt{position:relative;height:14px;border-radius:3px;background:var(--chip);overflow:visible}
+.wblz{position:absolute;top:0;bottom:0;left:0;background:color-mix(in srgb, var(--text) 6%, transparent);border-radius:3px 0 0 3px}
+.wblz.z2{background:color-mix(in srgb, var(--text) 11%, transparent);border-radius:0}
+.wblt i{position:absolute;left:0;top:4px;height:6px;border-radius:0 4px 4px 0;background:var(--text)}
+.wblt b{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;border-radius:1px}
+.wblv{text-align:right;color:var(--text)}
+.wld{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto}
+.wldr{display:grid;grid-template-columns:18px minmax(0,1.4fr) minmax(0,1fr) max-content 46px;align-items:center;gap:10px;
+  padding:6px 2px;border-bottom:1px solid var(--border);font-size:11.5px}
+.wldr:last-child{border-bottom:0}
+.wldr:hover{background:color-mix(in srgb, var(--text) 5%, transparent)}
+.wldi{color:var(--muted);text-align:right}
+.wldn{display:flex;flex-direction:column;min-width:0}
+.wldn b{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wldn small{font-size:10px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wldm{height:6px;border-radius:3px;background:var(--chip);overflow:hidden}
+.wldm i{display:block;height:100%;border-radius:0 3px 3px 0;background:var(--teal)}
+.wldv{text-align:right;color:var(--text);white-space:nowrap;min-width:36px}
+.wldd{text-align:right;color:var(--text-dim);font-size:10.5px}
+.wldd.up{color:var(--red)}.wldd.dn{color:var(--green)}
 /* ⚠️ THE BOARD IS A 12-COLUMN GRID NOW, so a GROUP can snap to columns exactly as a widget
    does inside one (request, 18 Sep 2026: "the empty group — the whole group will be resize
    handle like widget"). It was `display:block`, i.e. groups stacked one per row and a narrowed
@@ -7604,7 +7700,8 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .pagehead .crumbs .cur{overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1280px){.pagehead .crumbs > a,.pagehead .crumbs .crmore,.pagehead .crumbs > .csep:not(:last-child){display:none}}
 /* ── the 22 Sep breadcrumb: `Dashboards › ⋯ › <name> › (Public) ☆` ── */
-#dashHeadIc{display:none}
+/* 23 Sep: the crumb is gone, so the dashboard glyph leads the title again */
+#dashHeadIc{flex:0 0 auto;color:var(--text-dim)}
 .pagehead .crumbs{gap:8px;font-size:13.5px}
 .pagehead .crumbs .cur{font-size:16px;font-weight:700}
 .crumbs .csep{display:inline-flex;align-items:center}
@@ -8889,6 +8986,23 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 .cwftmh svg{flex:0 0 12px;width:12px;height:12px;display:block;color:var(--text-dim)}
 .cwftmh:hover svg{color:inherit}
 .cwftmh:focus-visible{outline:2px solid var(--cwa);outline-offset:1px}
+/* ⚠️ DS SMALL BUTTON GEOMETRY (request, 23 Sep 2026: "improve the alignment using the
+   ObserveOps design system"). `get_component('button')`: size=small is ~24px tall, radius
+   `@btn-radius` 4px, Ant's 7px side padding, weight 400, and an icon+label button is inline-flex
+   with a 6px gap. A fixed HEIGHT, not vertical padding, is what centres the glyph and the label
+   on one line whatever the font's metrics. And the label row centres its children rather than
+   sharing a baseline: a 24px box on the text baseline hangs below "Text to display". */
+.cwftl:has(> .cwftmh){align-items:center}
+.cwftmh{height:24px;padding:0 7px;gap:6px;font-size:12px;font-weight:400;border-radius:4px;box-sizing:border-box}
+/* ⚠️ OPTICALLY EQUAL, NOT NUMERICALLY (request, 23 Sep 2026: "the button margin and the gap between
+   icon and text should be the same"). Measured from the painted ink at 4x: with a symmetric 7px the
+   visible spaces were 9 | 8.75 | 7.75 — the Tabler circle sits 1.75px inside its 14px box and the
+   text's last glyph has almost no side bearing, so the left read wider than the gap and the right
+   narrower. These paddings bring all three to 8.75–9px (sub-pixel placement moves the read by a
+   quarter pixel either way). Change the icon or the font size and re-measure. */
+.cwftmh{padding:0 8px 0 6.75px}
+.cwftmh svg{flex:0 0 14px;width:14px;height:14px}
+.cwftmh span{display:block;line-height:1}
 /* ⚠️ THE PAIR CANCELS TWO RULES WRITTEN FOR A ONE-CONTROL COLUMN, and neither cancel is
    optional: `#cwModal.cwft .cwftdd{max-width:232px}` (1,2,0) would cap EACH half at 232 and
    the row would overflow — the override has to carry the extra class to reach (1,3,0); and
@@ -8945,7 +9059,7 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    `.modal.scrollable .body{max-height:55vh}`. So the documented work-around (wrap the content
    in `flex:1;min-height:0;overflow-y:auto`) is NOT needed here; `.cwmdb` is a class hook and
    nothing else. Re-check if `_ds/` is upgraded. */
-.cwmdb{min-width:0}
+.cwmdb{min-width:0;padding-bottom:16px} /* 23 Sep: no footer below it any more, so the last row needs its own breathing room */
 /* source | result, on one grid so every row's divider lines up */
 .cwmdr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;
   align-items:center;padding:10px 0;border-bottom:1px solid var(--border-soft)}
@@ -9144,6 +9258,14 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    elements one level apart answering to the same name is the collision trap this file opens
    with. */
 .gepair.gealgn > .ddfield.geshf{flex:0 0 calc(50% - 12px);min-width:0;margin-left:auto}
+/* ⚠️ SHARE GROUP IS A COMPACT SWITCH NOW (request, 23 Sep 2026, with a reference: "public &
+   private field like view" — a hugging `Public | Private` pair, the lit half a light fill with
+   dark ink). The FIELD keeps its column so the label still lines up under Title size; only
+   the switch stops stretching across it. Scoped to `.gesh`, so `.ddseg` in the Create
+   Dashboard drawer is untouched. */
+.ddseg.gesh{display:inline-flex;align-self:flex-start;padding:2px;gap:2px;border-radius:4px}
+.ddseg.gesh button{flex:0 0 auto;height:28px;padding:0 12px;font-size:13px;font-weight:400;border-radius:3px}
+.ddseg.gesh button.on{background:color-mix(in srgb, var(--text) 82%, var(--bg));color:var(--bg);font-weight:500}
 /* the size scale is 8 stops in a 232px column, so its cells shrink and carry text not glyphs */
 .cwftseg .cwftsg b{font-size:9px;font-weight:700;letter-spacing:.01em}
 .cwftp > .cwftseg{width:100%}
@@ -10813,17 +10935,15 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              trade undo and redo took. Nothing on screen announces it. -->
         <span class="hsep"></span>
         <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
-        <!-- ⚠️ THE BREADCRUMB IS `Dashboards › ⋯ › <name> › (Public) ☆` (request, 22 Sep 2026,
-             with a reference). The CATEGORY collapses into the `⋯` chip — `#crumbCat` is still
-             in the DOM (hidden) because seven readers take the category from its textContent;
-             the chip reads it for its tooltip and opens that category, as the link did.
-             Separators are Tabler `chevron-right`, the pill carries Tabler `world`, the star is
-             Tabler's outline `star` (filled when favourited). The grid glyph `#dashHeadIc` is
-             hidden, not removed: `setIco` still writes into it. -->
+        <!-- ⚠️ THE BREADCRUMB WAS REMOVED (request, 23 Sep 2026: "remove the breadcrumb and show
+             only dashboard icon, dashboard name & tag or favorite icon"). The row is now
+             `[icon] <name> (Public) ☆`. `Dashboards`, the `⋯` category chip and every `›` went;
+             the ‹ chevron before this still opens the dashboard list, so browsing is not lost.
+             `#crumbCat` STAYS in the DOM (hidden) because seven readers take the category from
+             its textContent. `#dashHeadIc` is shown again — `setIco` already fills it. -->
         <span class="crumbs">
-          <a onclick="openDPanel()" title="Browse all dashboards">Dashboards</a><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
-          <button class="crmore" type="button" onclick="openDPanel(document.getElementById('crumbCat').textContent)" onmouseenter="this.dataset.tip='Category: '+document.getElementById('crumbCat').textContent" aria-label="Browse this category"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg></button><a id="crumbCat" hidden>PMG</a><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
-          <span class="cur" id="dashTitle">Application Performance</span><span class="csep"><svg class="csv" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></span>
+          <a id="crumbCat" hidden>PMG</a>
+          <span class="cur" id="dashTitle">Application Performance</span>
         </span>
         <span class="vbadge" title="Visible to the whole org"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg>Public</span>
         <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span>
@@ -10834,7 +10954,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              of the crumb. It became visible the moment undo and redo left the row.
              ⚠️ IT IS HIDDEN BESIDE `#grpBtn`, ON THE SAME LINE OF `renderCanvas`, rather than
              by a `:has()` rule " one test, one place, and the two cannot disagree. -->
-        <!-- ⚠️ BOTH DIVIDERS AFTER THE STAR WERE REMOVED (request, 22 Sep 2026: "remove the line behind the favorite icon and this line"). renderCanvas still looks up grpDiv and guards for its absence. -->
+        <span class="hdiv" id="grpDiv"></span>
         <!-- ⚠️ UNDO / REDO WERE REMOVED FROM THE TOOLBAR (request, 22 Sep 2026: "we need to
              change the header overall — remove the 'undu & redu' option"). THE FEATURE IS NOT
              GONE: ⌘Z / Ctrl+Z and ⇧⌘Z / Ctrl+Y still run `histUndo` / `histRedo`, both are
@@ -10846,6 +10966,11 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              ⚠️ THEIR `KB` ENTRIES CARRY NO `sel` and never did, so no keycap was orphaned.
              ⚠️ CONSEQUENCE, STATED: undo is now keyboard-only on this page. Nothing on screen
              says the board can be undone, and the `?` sheet is where that is written. -->
+        <!-- ⚠️ THE SECOND DIVIDER THAT STOOD HERE WAS REMOVED (request, 23 Sep 2026: "remove the line
+             in header — only show when Groups is added"). It was undo/redo's, left behind when they
+             went, and it never hid — so a flat board drew a rule after the ☆ with nothing beyond
+             it, and a grouped board drew TWO. `#grpDiv` above is now the only one, and
+             `renderCanvas` shows it exactly when `#grpBtn` shows. -->
         <button class="btn grpbtn" id="grpBtn" title="Jump to a group" onclick="openGroupMenu(event)">
           <svg viewBox="0 0 24 24"><path d="M3 4h8v6H3V4Zm10 0h8v6h-8V4ZM3 14h8v6H3v-6Zm10 0h8v6h-8v-6Z"/></svg>Groups<span class="cr">▾</span></button>
 
@@ -15611,6 +15736,21 @@ function tipFor(el){
 }
 function tipShow(t){
   const raw = t.getAttribute('data-tip');
+  /* ⚠️ `data-tip-list` (23 Sep 2026): '|'-separated rows rendered as a list card — the Group tab's
+     "3 widgets" chip names its widgets this way. Checked BEFORE `tipRedundant`, because the chip's
+     own text is exactly its `data-tip` and would otherwise suppress the list. */
+  const lst = t.getAttribute('data-tip-list');
+  if (lst){
+    const b = tipBox(); b.classList.add('tiplist');
+    b.innerHTML = lst.split('|').map(x => '<span class="tipli">' + tipEsc(x) + '</span>').join('');
+    b.classList.add('on');
+    const r = t.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+    const y = (r.bottom + 6 + bh < innerHeight) ? r.bottom + 6 : r.top - 6 - bh;
+    b.style.left = Math.max(6, Math.min(r.right - bw, innerWidth - bw - 6)) + 'px';
+    b.style.top  = Math.max(6, y) + 'px';
+    return;
+  }
+  if (tipBox().classList.contains('tiplist')) tipBox().classList.remove('tiplist');
   if (!raw || tipRedundant(t, raw)) return;
   const b = tipBox();
   /* "Search  ⌘K" → label + keycap, the same shape the rail already used */
@@ -16091,13 +16231,129 @@ function wHoney(seed,n,pal){
       <div style="display:grid;grid-template-columns:repeat(14,19px);gap:5px;justify-content:center">${o}</div></div>
     <div class="wlegend">${P.map((x,k)=>`<span><i style="background:${x[1]}"></i>${x[2]} ${c[k]}</span>`).join('')}</div>`;
 }
-function wGauge(seed){ const r=rng(seed+wShift), v=.25+r()*.65, a=Math.PI*(1-v);
+/* ══ FIVE NEW WIDGET FORMS (request, 23 Sep 2026: "in ui_pmg create 4–5 new, different widgets
+   using the ObserveOps design system — don't reuse existing ones") ══════════════════════════
+   ⚠️ THE DS HAS NO CHART PALETTE — `resolve_token('chart series colors')` returns no match and
+   charts are a catalogued gap. So colour comes from what this file already declares for charts:
+   `PIE_C` in its FIXED order for identity, one token hue light→dark for magnitude, and
+   `--green / --yellow / --red` only where they mean status. Text never wears a series colour.
+   Every mark carries a `title` — the same hover tooltip the rest of the board uses — and every
+   multi-series form carries a legend.
+     treemap   — share of a whole with many parts (memory by process)
+     stack100  — composition per row, 100% stacked (used / cached / buffers / free per host)
+     theat     — hour × weekday heat (CPU load pattern), one hue, sequential
+     bmeter    — bullet meters: value against warning / critical thresholds
+     topproc   — ranked list: rank · name · meter · value · change since last period */
+
+/* treemap — items = [[label, value], …]. Slice-and-dice on the longer side, which keeps cells
+   near-square for a short list. One hue (teal) stepped by share: the biggest part is darkest. */
+function wTreemap(items){
+  const tot = items.reduce((a, i) => a + i[1], 0) || 1, mx = Math.max(...items.map(i => i[1]));
+  const cells = [];
+  (function lay(list, x, y, w, h){
+    if (!list.length) return;
+    if (list.length === 1){ cells.push([list[0], x, y, w, h]); return; }
+    const sum = list.reduce((a, i) => a + i[1], 0);
+    let acc = 0, k = 0; while (k < list.length - 1 && (acc + list[k][1]) <= sum / 2){ acc += list[k][1]; k++; }
+    if (k === 0){ acc = list[0][1]; k = 1; }
+    const f = acc / sum, a = list.slice(0, k), b = list.slice(k);
+    if (w >= h){ lay(a, x, y, w * f, h); lay(b, x + w * f, y, w * (1 - f), h); }
+    else       { lay(a, x, y, w, h * f); lay(b, x, y + h * f, w, h * (1 - f)); }
+  })(items.slice().sort((p, q) => q[1] - p[1]), 0, 0, 100, 100);
+  return '<div class="wtm">' + cells.map(([it, x, y, w, h]) => {
+    const pct = (it[1] / tot * 100).toFixed(1);
+    /* 18–58% of teal over the card: the darkest step still carries light ink (measured by eye in
+       both themes — a 90% cell put white text on #14b8a6, which is ~2.5:1) */
+    const mix = Math.round(18 + 40 * it[1] / mx);
+    const small = w < 12 || h < 18;
+    return `<div class="wtmc" title="${it[0]}: ${it[1]} MB (${pct}%)" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%;` +
+      `background:color-mix(in srgb, var(--teal) ${mix}%, var(--card))">` +
+      (small ? '' : `<b>${it[0]}</b><span class="mono">${it[1] >= 1024 ? (it[1] / 1024).toFixed(1) + ' GB' : it[1] + ' MB'} · ${pct}%</span>`) + '</div>';
+  }).join('') + '</div>';
+}
+
+/* 100% stacked composition — items = [[row, [v1, v2, …]], …]; keys = [[name, colour], …] */
+function wStack(items, keys){
+  return '<div class="wsk"><div class="wskl">' + keys.map(k =>
+      `<span><i style="background:${k[1]}"></i>${k[0]}</span>`).join('') + '</div>' +
+    items.map(([row, vs]) => {
+      const t = vs.reduce((a, v) => a + v, 0) || 1;
+      return `<div class="wskr"><span class="wskn mono" title="${row}">${row}</span><span class="wskb">` +
+        vs.map((v, j) => v ? `<i style="flex:0 0 ${(v / t * 100).toFixed(2)}%;background:${keys[j][1]}" ` +
+          `title="${row} · ${keys[j][0]}: ${v} GB (${(v / t * 100).toFixed(0)}%)"></i>` : '').join('') +
+        `</span><span class="wskv mono">${t.toFixed(0)} GB</span></div>`;
+    }).join('') + '</div>';
+}
+
+/* hour × weekday heat — seeded, shaped like a real week (business-hours peak, quiet nights and
+   weekend). One hue, five steps; the legend is the scale itself. */
+function wTimeHeat(seed, hue){
+  const r = rng(seed + wShift), days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const step = v => Math.min(4, Math.floor(v / 20));
+  const tone = k => `color-mix(in srgb, ${hue} ${[14, 32, 52, 74, 96][k]}%, var(--card))`;
+  let rows = '';
+  days.forEach((d, di) => {
+    rows += `<span class="wthd">${d}</span>`;
+    for (let h = 0; h < 24; h++){
+      const work = h >= 9 && h <= 19, wk = di >= 5;
+      const v = Math.max(3, Math.min(99, Math.round((work ? (wk ? 34 : 68) : (wk ? 12 : 22)) + (r() - .5) * 34)));
+      rows += `<i title="${d} ${String(h).padStart(2, '0')}:00 · CPU ${v}%" style="background:${tone(step(v))}"></i>`;
+    }
+  });
+  const hrs = '<span></span>' + Array.from({length:24}, (_, h) => `<span class="wthh">${h % 6 ? '' : String(h).padStart(2, '0')}</span>`).join('');
+  return `<div class="wth"><div class="wthg">${rows}${hrs}</div>
+    <div class="wthk"><span>0%</span>${[0,1,2,3,4].map(k => `<i style="background:${tone(k)}"></i>`).join('')}<span>100%</span></div></div>`;
+}
+
+/* bullet meters — items = [[label, value%], …]; thresholds from w.warn / w.crit. The value bar is
+   neutral ink; only the two threshold ticks carry status colour, each labelled in the key. */
+function wBullet(items, w){
+  const warn = w.warn || 75, crit = w.crit || 90;
+  return '<div class="wbl"><div class="wblk"><span><i style="background:var(--text)"></i>Current</span>' +
+    `<span><b style="background:var(--yellow)"></b>Warning ${warn}%</span><span><b style="background:var(--red)"></b>Critical ${crit}%</span></div>` +
+    items.map(([l, v]) => {
+      const st = v >= crit ? 'Critical' : v >= warn ? 'Warning' : 'Normal';
+      return `<div class="wblr" title="${l}: ${v}% · ${st}"><span class="wbln mono">${l}</span>` +
+        `<span class="wblt"><span class="wblz" style="width:${warn}%"></span><span class="wblz z2" style="left:${warn}%;width:${crit - warn}%"></span>` +
+        `<i style="width:${v}%"></i><b style="left:${warn}%;background:var(--yellow)"></b><b style="left:${crit}%;background:var(--red)"></b></span>` +
+        `<span class="wblv mono">${v}%</span></div>`;
+    }).join('') + '</div>';
+}
+
+/* ranked list — items = [[name, host, value, delta], …]. Delta is text + an arrow, so the change
+   never rests on colour alone; up (worse, for CPU) is red, down is green. */
+function wLeader(items, w){
+  const mx = Math.max(...items.map(i => i[2])) || 1, u = w.u || '%';
+  return '<div class="wld">' + items.map(([n, h, v, d], i) =>
+    `<div class="wldr" title="${n} on ${h}: ${v}${u} (${d > 0 ? '+' : ''}${d}${u} vs last hour)">` +
+      `<span class="wldi mono">${i + 1}</span><span class="wldn"><b>${n}</b><small class="mono">${h}</small></span>` +
+      `<span class="wldm"><i style="width:${(v / mx * 100).toFixed(1)}%"></i></span>` +
+      `<span class="wldv mono">${v}${u}</span>` +
+      `<span class="wldd mono ${d > 0 ? 'up' : d < 0 ? 'dn' : ''}">${d > 0 ? '▲' : d < 0 ? '▼' : '–'} ${Math.abs(d)}</span></div>`).join('') + '</div>';
+}
+/* ── labelled vertical bars (23 Sep 2026, the Payment board) ─────────────────────────────
+   items = [[label, value, colour], …]. `bars` has no category axis; every chart in the
+   finance reference is "CM / IB / MB / RB", so this is the one renderer that board added.
+   The axis steps to a round ceiling so the ticks read as numbers, not fractions of a max. */
+function wVBars(items, w){
+  if (!items.length) return wEmpty('No data');
+  const top = Math.max(...items.map(i => i[1])) || 1;
+  const p = Math.pow(10, Math.floor(Math.log10(top))), mx = Math.ceil(top / p) * p;
+  const ticks = [4,3,2,1,0].map(k => (mx * k / 4));
+  const f = v => v >= 100 ? Math.round(v) : v.toFixed(v % 1 ? 1 : 0);
+  return `<div class="wvb"><div class="wvbax mono">${ticks.map(t => `<span>${f(t)}</span>`).join('')}</div>
+    <div class="wvbpl">${items.map(([l, v, c]) =>
+      `<i style="height:${Math.max(1.5, v / mx * 100).toFixed(1)}%;background:${c || 'var(--teal)'}" title="${l}: ${v}"></i>`).join('')}</div>
+    <span></span><div class="wvbl">${items.map(([l]) => `<span>${l}</span>`).join('')}</div></div>`;
+}
+/* `fixed` (0–1) pins the value — the Payment board's BD tile is a real 2.11%, not a seed */
+function wGauge(seed, fixed){ const r=rng(seed+wShift), v=fixed != null ? fixed : .25+r()*.65, a=Math.PI*(1-v);
   const x=(60+52*Math.cos(a)).toFixed(1), y=(64-52*Math.sin(a)).toFixed(1);
   const col=v>.8?'var(--red)':v>.6?'var(--orange)':'var(--teal)';
   return `<svg viewBox="0 0 120 70" style="width:100%;height:100%;max-height:90px;margin:auto">
     <path d="M8 64a52 52 0 0 1 104 0" fill="none" stroke="var(--chip)" stroke-width="10" stroke-linecap="round"/>
     <path d="M8 64A52 52 0 0 1 ${x} ${y}" fill="none" stroke="${col}" stroke-width="10" stroke-linecap="round"/>
-    <text x="60" y="58" text-anchor="middle" font-size="17" font-weight="700" fill="var(--text)" font-family="JetBrains Mono,monospace">${Math.round(v*100)}%</text></svg>`;
+    <text x="60" y="58" text-anchor="middle" font-size="17" font-weight="700" fill="var(--text)" font-family="JetBrains Mono,monospace">${fixed != null && v < .1 ? (v*100).toFixed(2) : Math.round(v*100)}%</text></svg>`;
 }
 /* ---- three renderers the live Alert Summary board needs --------------------------
    Ring cluster (Monitor Availability / Alert Count), pie + legend (the five "Top … by
@@ -16434,7 +16690,9 @@ function ftHTML(ft, gi, i){
   const ref  = gi === 'draft' ? "'draft'" : gi + ',' + i;
   const raw  = String(ft.text || '').trim();
   const ph   = !raw;
-  const col  = cwFtVal(CW_FT_COLOR, ft.color || 'Default', CW_FT_COLOR[0][1]);
+  /* `Default` ink follows a solid background (23 Sep 2026) — see `CW_FT_BG` */
+  const ink  = (ft.color || 'Default') === 'Default' ? cwFtInk(ft.bg || 'Transparent') : '';
+  const col  = ink || cwFtVal(CW_FT_COLOR, ft.color || 'Default', CW_FT_COLOR[0][1]);
   const size = ft.size || 'Auto';
   const px   = cwFtSizePx(size);
   const st   = px ? 'font-size:' + px + 'px;' : '';
@@ -16442,7 +16700,18 @@ function ftHTML(ft, gi, i){
   const bg   = cwFtBg(ft.bg || 'Transparent');
   const pad  = (ft.pad === false) ? '0' : '10px 14px';
   const tick = ft.tick ? ' tick tick-' + String(ft.tickEdge || 'Left').toLowerCase() : '';
-  const body = ph ? ftEsc('Text to display') : ftMd(raw);
+  /* ⚠️ HEADER MODE IS PLAIN TEXT (request, 23 Sep 2026: "when I select Header, no one can add
+     formatting"). A header is one line of type, so Markdown is not parsed — `**` and `#` print as
+     typed. `hdr` is saved on the widget; the editor's draft carries `preset` instead. */
+  const hdr  = !!(ft.hdr || ft.preset === 'Header');
+  const body = ph ? ftEsc('Text to display') : (hdr ? ftEsc(raw) : ftMd(raw));
+  /* vertical text — the Header-only "Font style" (see `CW_FT_ORIENT`). Reads top to bottom. */
+  /* `.ftt` is `width:100%`, and a vertical-rl box fills from its RIGHT edge — so the column sat
+     against the right side whatever Alignment said. Shrink it to its column and let Alignment
+     place it with margins; text-align then positions the words along the column. */
+  const vm = {left:'0 auto 0 0', right:'0 0 0 auto'}[ft.align] || '0 auto';
+  const vert = hdr && ft.orient === 'v'
+    ? 'writing-mode:vertical-rl;text-orientation:mixed;width:auto;margin:' + vm + ';' : '';
   return '<div class="ftw' + tick + '" style="text-align:' + (ft.align || 'center') +
          ';align-items:' + va + ';background:' + bg + ';padding:' + pad + '">' +
          /* ⚠️ THE PLACEHOLDER CLASS IS `ftph`, NOT `ph` — and it WAS `ph` for a few hours,
@@ -16464,7 +16733,7 @@ function ftHTML(ft, gi, i){
             editable text, and the ⋮ menu's *Edit Widget* is the discoverable path for anyone
             who never tries the gesture. */
          (live ? ' ondblclick="ftEdit(event,' + ref + ')"' : '') +
-         ' style="' + st + 'color:' + col + '">' + body + '</span></div>';
+         ' style="' + st + vert + 'color:' + col + '">' + body + '</span></div>';
 }
 /* ══ EDIT A NOTE WHERE IT LIVES (19 Sep 2026: "the free text is editable") ═══════════
    The ⋮ menu's *Edit Widget* still opens the full editor; this is the shorter road for the
@@ -16657,7 +16926,13 @@ function wBody(w, gi, i){
   if(w.t==='donuts')return wDonuts(w.items);
   if(w.t==='pie')   return wPie(w.items);
   if(w.t==='hbars') return wHBars(w.items,w.max,w.color);
-  if(w.t==='gauge') return `<div style="flex:1;min-height:0;display:grid;place-items:center">${wGauge(w.seed)}</div>`;
+  if(w.t==='gauge') return `<div style="flex:1;min-height:0;display:grid;place-items:center">${wGauge(w.seed, w.v)}</div>`;
+  if(w.t==='vbars') return wVBars(w.items || [], w);
+  if(w.t==='treemap')  return wTreemap(w.items || []);
+  if(w.t==='stack100') return wStack(w.items || [], w.keys || []);
+  if(w.t==='theat')    return wTimeHeat(w.seed || 1, w.color || 'var(--blue)');
+  if(w.t==='bmeter')   return wBullet(w.items || [], w);
+  if(w.t==='topproc')  return wLeader(w.items || [], w);
   if(w.t==='table') return `<div style="flex:1;min-height:0;overflow:auto">${w.html}</div>`;
   if(w.t==='note')  return `<div style="font-size:12px;color:var(--text-dim)">${w.html}</div>`;
   if(w.t==='freetext') return ftHTML(w, gi, i);
@@ -16749,6 +17024,318 @@ BOARDS['Application Performance'] = { tabs: [''], widgets: [[
 
   { t:'table', title:'Alert Stream', span:12, h:230, html:AS_STREAM },
 ]] };
+/* ── "Payment Business Dashboard" — built from the widgets this page already has ─────────
+   (request, 23 Sep 2026: "create a new dashboard using free text, empty group and other
+   widgets", with a finance board as the reference — NEFT / RTGS bands, KPI tiles, bar charts.)
+   ⚠️ IT IS MADE OF THE SAME PARTS A USER WOULD USE, so it demonstrates them:
+     · the two bands are EMPTY GROUPS with a solid Yellow header, centred, 16px title;
+     · every section title and every KPI tile is a FREE TEXT widget — Gray/No padding for the
+       titles, solid Blue/Green/Red for the tiles, whose ink `ftHTML` flips automatically;
+     · "Failure Report" is a Free Text markdown link, right-aligned on a Transparent fill;
+     · BD is the gauge widget (now takes a fixed `v`), TD / the empty tile the `empty` state.
+   ⚠️ THE ONE NEW RENDERER IS `vbars` — labelled vertical bars. The existing `bars` draws 14
+   seeded bars with no category axis, and every chart in the reference is "CM / IB / MB / RB".
+   ⚠️ LAYOUT RELIES ON PLAIN AUTO-PLACEMENT, not `dense`: row 1 is three 1-col tiles, the
+   Total Requests chart (4 cols × 3 rows) and Successful (5 cols × 2 rows); rows 2–3 then fill
+   the columns those two leave free, in source order. Reorder these and the picture breaks.
+   ⚠️ Business figures only — no hosts, IPs or names — so nothing here needs scrubbing. */
+const PB_C = { blue:'color-mix(in srgb, var(--blue) 72%, #000)', gray:'color-mix(in srgb, var(--text) 78%, transparent)',
+               green:'color-mix(in srgb, var(--green) 55%, #000)', pink:'color-mix(in srgb, #ec4899 68%, #000)',
+               red:'color-mix(in srgb, var(--red) 70%, #000)' };
+const pbFt = (text, o) => Object.assign({ t:'freetext', title:'', text, size:'Auto', align:'center',
+  valign:'middle', bg:'Gray', color:'Default', pad:false, tick:false, tickEdge:'Left', span:1, h:70 }, o);
+const pbExc = rows => `<table style="width:100%;font-size:11.5px;border-collapse:collapse">
+  <thead><tr><th style="text-align:left;color:var(--muted);font-weight:600;padding:0 8px 5px 0;border-bottom:1px solid var(--border)">Exception_Type</th>
+  <th style="text-align:right;color:var(--muted);font-weight:600;padding:0 0 5px;border-bottom:1px solid var(--border)">No_of_Exceptions</th></tr></thead>
+  <tbody>${rows.map(r => `<tr><td style="padding:5px 8px 0 0">${r[0]}</td><td class="mono" style="text-align:right;padding-top:5px">${r[1]}</td></tr>`).join('')}</tbody></table>`;
+function pbBand(k, d){
+  return [
+    pbFt('**Overall Performance Details**', { span:3, h:40, size:'16px' }),
+    pbFt('**Total Request Trend**',         { span:4, h:40, size:'16px' }),
+    pbFt('**Top ' + k + ' Payment Source**', { span:5, h:40, size:'16px' }),
+    /* row 1 — label then a heading-sized figure; `AVG_ResponseTime` is the long label and
+       drops to 12px, as it does in the reference */
+    pbFt('Total Request\n\n# ' + d.req,  { bg:'Blue',  align:'left', valign:'top', pad:true, size:'14px', h:96 }),
+    pbFt('AVG_ResponseTime (ms)\n\n# ' + d.avg, { bg:'Green', align:'left', valign:'top', pad:true, size:'12px', h:96 }),
+    pbFt('Total Success\n\n# ' + d.ok,   { bg:'Green', align:'left', valign:'top', pad:true, size:'14px', h:96 }),
+    { t:'vbars', title:'Total Requests', span:4, rows:3, items:d.trend },
+    { t:'vbars', title:'Successful Requests', span:5, rows:2, items:d.succ },
+    /* row 2 */
+    pbFt('Total Failed\n\n# ' + d.fail,  { bg:'Red', align:'left', valign:'top', pad:true, h:110, size:'14px' }),
+    d.bd == null ? { t:'empty', title:'BD', span:1, h:110, msg:'No data' }
+                 : { t:'gauge', title:'BD', span:1, h:110, seed:1, v:d.bd },
+    { t:'empty', title:'TD', span:1, h:110, msg:'No data' },
+    /* row 3 */
+    { t:'table', title:'Exceptions', span:3, h:130, html:pbExc(d.exc) },
+    { t:'vbars', title:'Failed Requests', span:5, h:130, items:d.failed },
+    pbFt('[⚠ Failure Report](https://example.com/failure-report)',
+         { span:12, h:34, bg:'Transparent', align:'right', color:'Blue', size:'14px' }),
+  ];
+}
+/* ── "ui_pmg" — a memory board in ONE empty group (request, 23 Sep 2026: "create a new
+   dashboard named ui_pmg … memory-related widgets like [the Alert Summary board], all inside
+   the empty group, header colour green"). Same eight widgets, same shape and order as
+   'Application Performance' — heatmap, two ring clusters, five Top-N pies — each re-pointed at
+   memory. The group header is solid Green (white ink via GRP_BG's fourth field).
+   ⚠️ Hosts reuse the scrubbed names of the board above — RFC 5737 + example.com only. */
+/* ⚠️ A SECOND GROUP, "CPU" (request, 23 Sep 2026, later: "these widgets are CPU related, inside
+   an empty group, header colour blue, font size 24px") — the Top Policy / Top Monitor bars and
+   the Alert Stream of the reference board, re-pointed at CPU. `size:'24px'` is the Title size
+   list's own 24px entry. The stream is built the way `AS_STREAM` is, scrubbed the same way. */
+const PMG_CPU_STREAM = `<table style="width:100%;font-size:11px">
+  <thead><tr>${['POLICY','POLICY TYPE','METRIC','SEVERITY','MONITOR','START TIME']
+    .map(h=>`<th style="text-align:left;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.04em;padding:0 8px 6px 0;white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+  <tbody>${[
+    ['CPU Critical','Metric Threshold','system.cpu.percent','Critical','192.0.2.162','Aug 12, 2026 04:10:29 PM'],
+    ['CPU Load High','Metric Threshold','system.load.avg.5m','Major','n149.example.com','Aug 12, 2026 04:10:29 PM'],
+    ['Forecast CPU','Forecast','system.cpu.percent','Warning','esxi15.example.com','Aug 12, 2026 04:09:29 PM'],
+    ['HyperV CPU Utilization','Metric Threshold','hyperv.cpu.percent','Critical','win-node1','Aug 12, 2026 04:09:29 PM'],
+    ['CPU Critical','Metric Threshold','system.cpu.percent','Critical','203.0.113.219','Aug 12, 2026 04:08:29 PM'],
+    ['CPU Anomaly','Anomaly','system.cpu.user.percent','Major','sles-11','Aug 12, 2026 04:08:29 PM'],
+  ].map(r=>{ const c = r[3]==='Critical' ? 'var(--red)' : r[3]==='Major' ? 'var(--orange)' : 'var(--yellow)';
+    return `<tr>
+      <td style="padding:5px 8px 5px 0;white-space:nowrap"><span style="color:${c}">◯</span> ${r[0]}</td>
+      <td style="padding:5px 8px 5px 0;color:var(--text-dim);white-space:nowrap">${r[1]}</td>
+      <td style="padding:5px 8px 5px 0" class="mono">${r[2]}</td>
+      <td style="padding:5px 8px 5px 0;white-space:nowrap;color:${c}">${r[3]}</td>
+      <td style="padding:5px 8px 5px 0" class="mono">${r[4]}</td>
+      <td style="padding:5px 0;color:var(--text-dim);white-space:nowrap">${r[5]}</td></tr>`; }).join('')}</tbody></table>`;
+/* ⚠️ TWO FREE TEXT NOTES CLOSE THE MEMORY GROUP (request, 23 Sep 2026: "add 2 free text widgets
+   … show an image or link or note or bullet points for a demo"). Between them they exercise every
+   thing the Free Text renderer draws: heading, bold, bullets, numbered list, inline code, a link and
+   an image.
+   ⚠️ THE IMAGE IS TABLER `devices/cpu` AS A BASE64 DATA URI — `ftMd` accepts only `https://` or
+   `data:image/` sources, and a plain SVG string would break its URL match on the first space or
+   parenthesis; base64 has neither. Width/height are set on the root so the <img> has an intrinsic
+   size (a viewBox alone renders at 300×150). Its stroke is the Yellow note's own dark ink. */
+const PMG_NOTE_IMG = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1a1405" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -12"/><path d="M9 9h6v6h-6l0 -6"/><path d="M3 10h2"/><path d="M3 14h2"/><path d="M10 3v2"/><path d="M14 3v2"/><path d="M21 10h-2"/><path d="M21 14h-2"/><path d="M14 21v-2"/><path d="M10 21v-2"/></svg>');
+/* ⚠️ A THIRD GROUP, "Network" — THE CPU GROUP CLONED (request, 23 Sep 2026: "clone this empty group
+   and add new for network-related widgets"). Same header (Blue, centred, 24px) and the same six
+   widget forms in the same order, each re-pointed at the network. */
+/* ⚠️ SPLIT BY VENDOR (request, 23 Sep 2026, later: "the network group has two kinds of network
+   widget, Cisco and Aruba — use Free Text to bifurcate all the widgets"). A full-width Free Text
+   banner opens each half and every widget under it is that vendor's: Cisco for switching and
+   routing, Aruba for wireless. No vendor logos — the banner names the vendor in text only.
+   The stream is now a builder so each half gets its own. Hosts are neutral names on RFC 5737. */
+const pmgNetStream = rows => `<table style="width:100%;font-size:11px">
+  <thead><tr>${['POLICY','POLICY TYPE','METRIC','SEVERITY','MONITOR','START TIME']
+    .map(h=>`<th style="text-align:left;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.04em;padding:0 8px 6px 0;white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(r=>{ const c = r[3]==='Critical' ? 'var(--red)' : r[3]==='Major' ? 'var(--orange)' : 'var(--yellow)';
+    return `<tr>
+      <td style="padding:5px 8px 5px 0;white-space:nowrap"><span style="color:${c}">◯</span> ${r[0]}</td>
+      <td style="padding:5px 8px 5px 0;color:var(--text-dim);white-space:nowrap">${r[1]}</td>
+      <td style="padding:5px 8px 5px 0" class="mono">${r[2]}</td>
+      <td style="padding:5px 8px 5px 0;white-space:nowrap;color:${c}">${r[3]}</td>
+      <td style="padding:5px 8px 5px 0" class="mono">${r[4]}</td>
+      <td style="padding:5px 0;color:var(--text-dim);white-space:nowrap">${r[5]}</td></tr>`; }).join('')}</tbody></table>`;
+/* the section banner — a Free Text widget, full width, left-aligned heading + one line of scope */
+/* ⚠️ EACH BANNER HAS ITS OWN FILL AT 30% (request, 23 Sep 2026, later: "show a background colour,
+   different for each, at 30% opacity") — an 8-digit hex, which `cwFtIsHex` accepts, so the alpha
+   rides in the value and the card shows through. Blue for Cisco, orange for Aruba: this file's own
+   `--blue` #3b82f6 and `--orange` #fb923c + `4d` (0x4d/0xff = 30%). The ink stays `Default`, which
+   is correct on a 30% tint in BOTH themes — a tint keeps the surface's own lightness. */
+const pmgVendor = (name, scope, bg) => ({ t:'freetext', title:'', span:12, h:64, size:'16px', align:'left',
+  valign:'middle', bg: bg || 'Gray', color:'Default', pad:true, tick:false, tickEdge:'Left',
+  text:'## ' + name + '\n' + scope });
+UNGROUPED.add('ui_pmg');
+BOARDS['ui_pmg'] = {
+  /* ⚠️ THE FOURTH BAND IS UNNAMED — it renders with no header and no box (see renderCanvas), so
+     its widgets sit outside every group; a Free Text title names them instead (request, 23 Sep
+     2026: "show these without the empty group … the other widgets get a header text using Free
+     Text"). Memory by Process and Memory Composition moved here from the Memory group. */
+  tabs: ['Memory', 'CPU', 'Network', ''],
+  /* both titles centred at 24px (request, 23 Sep 2026, later); Network is CPU's clone */
+  style: [{ bg:'Green', align:'center', size:'24px' }, { bg:'Blue', align:'center', size:'24px' },
+          { bg:'Blue', align:'center', size:'24px' }, null],
+  /* ⚠️ THE MEMORY GROUP IS SPLIT INTO "Used" AND "Free" BY TWO TALL FREE TEXT LABELS (request,
+     23 Sep 2026, later, with a reference of two tall label tiles). Each label is ONE column wide
+     and spans its section's rows (`rows`), so the widgets beside it fill the other 11 columns —
+     which is why the spans below are 4 / 3 / 4, not 4 / 4 / 4.
+     ⚠️ PLACEMENT IS PLAIN AUTO-FLOW, like the Payment board: Used label (rows 1–3), heatmap
+     (cols 2–5, rows 1–2), then everything fills the gaps in source order. Reorder with care.
+     The Free row is new: its three widgets describe headroom rather than consumption. */
+  widgets: [[
+    { t:'freetext', title:'', span:1, rows:3, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Used**' },
+    { t:'honey', title:'Memory Utilization Heatmap', span:4, rows:2, seed:4417, n:132,
+      pal:[[.55,'var(--green)','Normal'],[.78,'var(--yellow)','Warning'],[.9,'var(--orange)','Major'],[1,'#9b1c1c','Critical']] },
+    { t:'donuts', title:'Memory Health', span:3, h:150, items:[
+        [98,'Normal','var(--green)',.74], [21,'Warning','var(--yellow)',.16],
+        [9,'Critical','var(--red)',.07], [4,'Unknown','var(--blue)',.03] ] },
+    { t:'donuts', title:'Memory Alert Count', span:4, h:150, items:[
+        [41,'Critical','#f2504b',.46], [27,'Major','var(--orange)',.3],
+        [14,'Warning','var(--yellow)',.16], [7,'Clear','var(--green)',.08] ] },
+
+    { t:'pie', title:'Top Server Monitors by Memory Used %', span:3, h:190, items:[
+        ['laptop-t490-01',94,PIE_C[0]], ['sles-11',91,PIE_C[1]], ['desktop-pc-14',88,PIE_C[2]],
+        ['192.0.2.238',85,PIE_C[3]], ['desktop-pc-22',82,PIE_C[4]], ['rpe-12-175',79,PIE_C[5]] ] },
+    { t:'pie', title:'Top Virtualization Monitors by Memory Used %', span:4, h:190, items:[
+        ['win-node1',92,PIE_C[0]], ['esxi15.example.com',87,PIE_C[1]], ['192.0.2.238',74,PIE_C[2]],
+        ['198.51.100.7',61,PIE_C[3]], ['198.51.100.180',45,PIE_C[4]] ] },
+    { t:'pie', title:'Top Network Monitors by Memory Used %', span:4, h:190, items:[
+        ['fg-firewall.example.com',83,PIE_C[0]], ['cisco-core.example.com',71,PIE_C[1]],
+        ['cisco-nexus',66,PIE_C[2]], ['node-10-50',58,PIE_C[3]], ['netman-208',52,PIE_C[4]] ] },
+    { t:'pie', title:'Top Cloud Monitors by Memory Used %', span:3, h:190, items:[
+        ['192.0.2.238',78,PIE_C[0]] ] },
+    { t:'pie', title:'Top Monitors by Swap Used %', span:4, h:190, items:[
+        ['192.0.2.238',64,PIE_C[0]], ['ewc.example.com',38,PIE_C[1]], ['wlc-controller-1',21,PIE_C[2]] ] },
+    /* ── Free ── */
+    { t:'freetext', title:'', span:1, rows:1, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Free**' },
+    { t:'donuts', title:'Free Memory Health', span:4, h:190, items:[
+        [86,'Plenty','var(--green)',.65], [31,'Low','var(--yellow)',.23],
+        [11,'Critical','var(--red)',.08], [4,'Unknown','var(--blue)',.03] ] },
+    { t:'hbars', title:'Lowest Free Memory %', span:4, h:190, max:30, color:'var(--orange)', items:[
+        ['laptop-t490-01',6], ['sles-11',9], ['desktop-pc-14',12], ['192.0.2.238',15], ['desktop-pc-22',18] ] },
+    { t:'pie', title:'Top Servers by Free Memory (GB)', span:3, h:190, items:[
+        ['esxi15.example.com',15.4,PIE_C[0]], ['sles-11',2.1,PIE_C[1]], ['desktop-pc-14',1.4,PIE_C[2]],
+        ['win-node1',1.1,PIE_C[3]], ['192.0.2.238',1.0,PIE_C[4]] ] },
+    { t:'freetext', title:'', span:6, h:210, size:'16px', align:'left', valign:'top', bg:'Gray',
+      color:'Default', pad:true, tick:false, tickEdge:'Left', text:
+      '## Memory runbook\n' +
+      '- **Normal** — under 75%, no action\n' +
+      '- **Warning** — 75–90%, check the top five processes by RSS\n' +
+      '- **Critical** — over 90% for 10 min, page the on-call SRE\n\n' +
+      'Metric: `system.memory.used.percent` · [Product guide ↗](https://docs.motadata.com/motadata-aiops-docs/)' },
+    { t:'freetext', title:'', span:6, h:210, size:'16px', align:'left', valign:'top', bg:'Yellow',
+      color:'Default', pad:true, tick:false, tickEdge:'Left', text:
+      '![CPU and memory](' + PMG_NOTE_IMG + ')\n' +
+      '### Demo note — swap pressure\n' +
+      'Swap on **192.0.2.238** is at 64%: memory pressure, not a leak.\n' +
+      '1. Open the host from *Top Monitors by Swap Used %*\n' +
+      '2. Compare resident memory against page cache' },
+  ], [
+    /* ⚠️ TWO HALVES SIDE BY SIDE (request, 23 Sep 2026, later: "the Idle label shows beside the
+       Used column"; the four-stack option was chosen). Left: Used label (rows 1–4) + the four
+       consumption widgets stacked (cols 2–6). Right: Idle label (rows 1–4) + the three headroom
+       widgets (cols 8–12). The LEFT widgets carry fixed heights and so size the four row tracks;
+       the RIGHT ones use `rows` and stretch to them (Idle Cores takes the last two), which is what
+       keeps the two halves' edges aligned.
+       ⚠️ SOURCE ORDER IS THE PLACEMENT — plain auto-flow alternates left/right row by row. */
+    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Used**' },
+    { t:'hbars', title:'Top CPU Policy by Alert Count', span:5, h:272, max:500, items:[
+        ['CPU Critical',436], ['CPU Load High',281], ['HyperV CPU Utilization',94],
+        ['Forecast system.cpu.percent',71], ['CPU Anomaly',58], ['system.cpu.iowait.high',44],
+        ['VM CPU Ready Time',39], ['Container CPU Throttling',31], ['CPU Steal Time',22],
+        ['Process CPU Hog',18] ] },
+    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Idle**' },
+    { t:'donuts', title:'CPU Idle Health', span:5, rows:1, items:[
+        [74,'Plenty','var(--green)',.56], [38,'Low','var(--yellow)',.29],
+        [16,'Critical','var(--red)',.12], [4,'Unknown','var(--blue)',.03] ] },
+    { t:'hbars', title:'Top Monitor by CPU %', span:5, h:272, max:100, items:[
+        ['192.0.2.162',98], ['203.0.113.219',96], ['n149.example.com',93], ['win-node1',91],
+        ['esxi15.example.com',88], ['sles-11',84], ['laptop-t490-01',79],
+        ['cisco-core.example.com',71], ['desktop-pc-14',66], ['hpe-msa',58] ] },
+    { t:'hbars', title:'Lowest CPU Idle %', span:5, rows:1, max:30, color:'var(--orange)', items:[
+        ['192.0.2.162',2], ['203.0.113.219',4], ['n149.example.com',7], ['win-node1',9], ['esxi15.example.com',12] ] },
+    { t:'bmeter', title:'CPU vs Thresholds', span:5, h:320, warn:75, crit:90, items:[
+        ['192.0.2.162',98], ['203.0.113.219',93], ['n149.example.com',86], ['win-node1',81],
+        ['esxi15.example.com',72], ['sles-11',64], ['laptop-t490-01',41] ] },
+    { t:'pie', title:'Top Servers by Idle Cores', span:5, rows:2, items:[
+        ['esxi15.example.com',38,PIE_C[0]], ['sles-11',11,PIE_C[1]], ['laptop-t490-01',6,PIE_C[2]],
+        ['desktop-pc-14',5,PIE_C[3]], ['hpe-msa',3,PIE_C[4]] ] },
+    { t:'topproc', title:'Top Processes by CPU', span:5, h:320, u:'%', items:[
+        ['java','192.0.2.162',87,12], ['postgres','203.0.113.219',74,-3], ['elasticsearch','n149.example.com',69,8],
+        ['sqlservr.exe','win-node1',58,0], ['vmx','esxi15.example.com',46,-6], ['node','sles-11',31,4] ] },
+    { t:'table', title:'CPU Alert Stream', span:12, h:230, html:PMG_CPU_STREAM },
+  ], [
+    /* ── Cisco · switching & routing ── */
+    pmgVendor('Cisco', 'Switching & routing — Catalyst, Nexus and ISR · 6 devices', '#3b82f64d'),
+    { t:'hbars', title:'Top Cisco Policy by Alert Count', span:6, h:272, max:400, items:[
+        ['Interface Down',352], ['Interface Utilization High',218], ['Packet Loss',131], ['BGP Peer Down',97],
+        ['Interface Errors',76], ['OSPF Neighbor Change',52], ['Interface Flapping',41], ['CPU High (IOS)',29],
+        ['Power Supply Fault',17], ['Fan Failure',11] ] },
+    { t:'hbars', title:'Top Cisco Interface by Utilization %', span:6, h:272, max:100, items:[
+        ['cisco-core · Gi0/1',94], ['cisco-nexus · Eth1/12',89], ['cisco-core · Te1/1/1',84],
+        ['cisco-isr-01 · Gi0/0/0',78], ['cisco-switch-lab · Gi1/0/24',73], ['cisco-nexus · Eth1/3',66],
+        ['cisco-access-02 · Gi1/0/48',59], ['cisco-isr-01 · Gi0/0/1',51], ['cisco-access-03 · Po1',44],
+        ['cisco-access-02 · Gi1/0/1',38] ] },
+    { t:'bmeter', title:'Cisco Interface Utilization vs Thresholds', span:6, h:320, warn:70, crit:85, items:[
+        ['cisco-core · Gi0/1',94], ['cisco-nexus · Eth1/12',89], ['cisco-core · Te1/1/1',84],
+        ['cisco-isr-01 · Gi0/0/0',72], ['cisco-switch-lab · Gi1/0/24',61], ['cisco-nexus · Eth1/3',48],
+        ['cisco-access-03 · Po1',33] ] },
+    { t:'topproc', title:'Top Talkers through Cisco Core', span:6, h:320, u:' Mbps', items:[
+        ['192.0.2.45','→ 203.0.113.10 · HTTPS',842,120], ['192.0.2.77','→ 198.51.100.20 · SMB',611,-40],
+        ['192.0.2.12','→ 203.0.113.55 · Backup',540,75], ['192.0.2.90','→ 198.51.100.8 · SQL',318,0],
+        ['192.0.2.61','→ 203.0.113.99 · Video',264,-18], ['192.0.2.33','→ 198.51.100.4 · DNS',96,6] ] },
+    { t:'table', title:'Cisco Alert Stream', span:12, h:230, html:pmgNetStream([
+        ['Interface Down','Availability','interface.status','Critical','cisco-core.example.com','Aug 12, 2026 04:10:29 PM'],
+        ['Interface Utilization High','Metric Threshold','interface.in.utilization.percent','Major','cisco-nexus.example.com','Aug 12, 2026 04:10:29 PM'],
+        ['BGP Peer Down','Availability','bgp.peer.state','Critical','cisco-isr-01.example.com','Aug 12, 2026 04:09:29 PM'],
+        ['Interface Errors','Metric Threshold','interface.error.packets','Warning','cisco-switch-lab.example.com','Aug 12, 2026 04:09:29 PM'],
+        ['Packet Loss','Metric Threshold','ping.packet.lost.percent','Critical','192.0.2.1','Aug 12, 2026 04:08:29 PM'] ]) },
+
+    /* ── Aruba · wireless ── */
+    pmgVendor('Aruba', 'Wireless — Mobility Controller and 48 access points', '#fb923c4d'),
+    { t:'hbars', title:'Top Aruba Policy by Alert Count', span:6, h:272, max:300, items:[
+        ['AP Down',236], ['Channel Utilization High',174], ['Client Association Failure',121],
+        ['Radio Noise Floor High',88], ['Rogue AP Detected',63], ['AP Reboot',47], ['Controller CPU High',32],
+        ['RADIUS Timeout',24], ['PoE Budget Low',15], ['Licence Near Expiry',6] ] },
+    { t:'hbars', title:'Top Aruba APs by Client Count', span:6, h:272, max:120, items:[
+        ['aruba-ap-lobby-01',112], ['aruba-ap-conf-3f',97], ['aruba-ap-cafe-01',88], ['aruba-ap-open-2f',81],
+        ['aruba-ap-lab-02',64], ['aruba-ap-hall-1f',57], ['aruba-ap-conf-2f',49], ['aruba-ap-wh-01',33],
+        ['aruba-ap-store-01',21], ['aruba-ap-dock-01',12] ] },
+    { t:'theat', title:'Aruba Wireless Clients by Hour of Week', span:12, h:230, seed:5519, color:'var(--teal)' },
+    { t:'table', title:'Aruba Alert Stream', span:12, h:230, html:pmgNetStream([
+        ['AP Down','Availability','ap.status','Critical','aruba-ap-dock-01','Aug 12, 2026 04:10:29 PM'],
+        ['Channel Utilization High','Metric Threshold','radio.channel.utilization.percent','Major','aruba-ap-lobby-01','Aug 12, 2026 04:10:29 PM'],
+        ['Rogue AP Detected','Security','wids.rogue.ap.count','Critical','aruba-7210-mc.example.com','Aug 12, 2026 04:09:29 PM'],
+        ['Radio Noise Floor High','Metric Threshold','radio.noise.floor.dbm','Warning','aruba-ap-cafe-01','Aug 12, 2026 04:09:29 PM'],
+        ['Client Association Failure','Metric Threshold','client.assoc.failures','Major','aruba-ap-conf-3f','Aug 12, 2026 04:08:29 PM'] ]) },
+  ], [
+    /* centred on a white fill (request, 23 Sep 2026, later). Both are CUSTOM HEX values — the named
+       Background list has no white — so the ink is a custom hex too: `Default` would be the theme's
+       light text in dark mode, i.e. white on white. #07101f is this file's own darkest ink. */
+    { t:'freetext', title:'', span:12, h:48, size:'24px', align:'center', valign:'middle', bg:'#ffffff',
+      color:'#07101f', pad:false, tick:false, tickEdge:'Left', text:'**Other widgets**' },
+    /* moved out of CPU and Network (request, 23 Sep 2026, later) — they stand outside every group */
+    /* ⚠️ TWO VERTICAL FREE TEXT LABELS (request, 23 Sep 2026, later: "add 2 new free text widgets,
+       shown vertical, with vertical text"). They are Header-mode notes — `hdr:true` (plain text) +
+       `orient:'v'`, the Font style the editor now offers with the Header preset — one column wide,
+       each spanning the rows it names. Same 1 + 11 rule as the Used / Idle labels, so the widgets
+       beside them lose one column. Auto-flow places them; keep this order. */
+    { t:'freetext', title:'', span:1, rows:2, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', hdr:true, orient:'v', text:'CPU & Wireless' },
+    { t:'theat', title:'CPU Load by Hour of Week', span:11, h:230, seed:7301, color:'var(--blue)' },
+    { t:'bmeter', title:'Aruba AP Channel Utilization vs Thresholds', span:5, h:320, warn:60, crit:80, items:[
+        ['aruba-ap-lobby-01 · 5 GHz',91], ['aruba-ap-conf-3f · 5 GHz',83], ['aruba-ap-cafe-01 · 2.4 GHz',76],
+        ['aruba-ap-open-2f · 5 GHz',64], ['aruba-ap-lab-02 · 2.4 GHz',55], ['aruba-ap-hall-1f · 5 GHz',41],
+        ['aruba-ap-wh-01 · 2.4 GHz',27] ] },
+    { t:'topproc', title:'Top Aruba Clients by Bandwidth', span:6, h:320, u:' Mbps', items:[
+        ['laptop-t490-01','aruba-ap-conf-3f · 5 GHz',212,38], ['desktop-pc-14','aruba-ap-open-2f · 5 GHz',174,-12],
+        ['tablet-sales-07','aruba-ap-lobby-01 · 5 GHz',131,22], ['laptop-5430-07','aruba-ap-cafe-01 · 2.4 GHz',96,0],
+        ['scanner-wh-03','aruba-ap-wh-01 · 2.4 GHz',41,-9], ['phone-guest-112','aruba-ap-lobby-01 · 2.4 GHz',18,4] ] },
+    { t:'freetext', title:'', span:1, rows:1, size:'24px', align:'center', valign:'middle', bg:'Gray',
+      color:'Default', pad:false, tick:false, tickEdge:'Left', hdr:true, orient:'v', text:'Memory' },
+    { t:'treemap', title:'Memory by Process', span:5, h:260, items:[
+        ['java (app-server)',6144], ['postgres',4096], ['elasticsearch',3584], ['chrome',1536],
+        ['node (api)',1280], ['redis-server',896], ['nginx',384], ['sshd',96], ['other',1024] ] },
+    { t:'stack100', title:'Memory Composition by Host', span:6, h:260,
+      keys:[['Used',PIE_C[0]],['Cached',PIE_C[5]],['Buffers',PIE_C[2]],['Free','var(--chip)']],
+      items:[['laptop-t490-01',[12.1,2.4,0.6,0.9]], ['sles-11',[24.6,4.1,1.2,2.1]],
+             ['desktop-pc-14',[11.2,2.9,0.5,1.4]], ['192.0.2.238',[27.2,3.0,0.8,1.0]],
+             ['esxi15.example.com',[88.0,20.5,4.1,15.4]], ['win-node1',[29.4,1.2,0.3,1.1]]] },
+  ]],
+};
+UNGROUPED.add('Payment Business Dashboard');
+BOARDS['Payment Business Dashboard'] = {
+  tabs: ['NEFT', 'RTGS'],
+  style: [{ bg:'Yellow', align:'center', size:'16px' }, { bg:'Yellow', align:'center', size:'16px' }],
+  widgets: [
+    pbBand('NEFT', { req:284, avg:'207.67', ok:278, fail:6, bd:.0211,
+      trend:[['CM',100,PB_C.blue],['IB',81,PB_C.gray],['MB',20,PB_C.green],['RB',84,PB_C.pink]],
+      succ:[['CM',98,PB_C.green],['IB',88,PB_C.green],['MB',20,PB_C.green],['RB',84,PB_C.green]],
+      failed:[['CM',2,PB_C.red],['RB',2,PB_C.red]],
+      exc:[['BusinessException',6]] }),
+    pbBand('RTGS', { req:38, avg:'184.65', ok:38, fail:0, bd:null,
+      trend:[['CM',32,PB_C.blue],['IB',2,PB_C.gray],['MB',3,PB_C.green]],
+      succ:[['CM',32,PB_C.green],['IB',2,PB_C.green],['MB',3,PB_C.green]],
+      failed:[],
+      exc:[] }),
+  ],
+};
 let GRP_SHUT = new Set();
 function toggleGroup(i){
   GRP_SHUT.has(i) ? GRP_SHUT.delete(i) : GRP_SHUT.add(i);
@@ -17909,6 +18496,9 @@ function renderCanvas(){
     return;
   }
   const gap = document.getElementById('gapVal') ? document.getElementById('gapVal').textContent : 10;
+  /* ⚠️ A FREE TEXT WIDGET CARRIES NO TIME TAG (request, 23 Sep 2026: "don't show 'today' on free
+     text, everywhere"). A note has no data and no time range, so "today" on it claimed one — it is
+     dropped where the header is built (below) and in full screen (`wFull`). */
   const tb  = `<span class="wtime" title="Widget time range — follows the dashboard">${trSelIdx>=0?TR_PRESETS[trSelIdx][1]:'custom'}</span>`;
   /* an ungrouped board has nothing to jump between */
   const gb = document.getElementById('grpBtn'); if (gb) gb.style.display = ungrouped ? 'none' : '';
@@ -17920,13 +18510,19 @@ function renderCanvas(){
        each of those is draggable in its own right; a draggable ancestor would make the whole
        band the thing that lifts whenever a widget drag missed its grip. */
     const gsty = ungrouped ? '' : gStyleCSS(gi);
-    const head = ungrouped ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}${gPat(gi)?' gpat':''}${gAlign(gi)?' galgn':''}"${gsty?` style="${gsty}"`:''} draggable="true"
+    /* ⚠️ AN UNNAMED BAND ON A GROUPED BOARD DRAWS NO HEADER (23 Sep 2026: ui_pmg's "other widgets
+       sit outside the empty group"). With no `.ghead`, `.dgroup:has(.ghead)` paints no box either,
+       so its widgets stand on the board itself — the same thing a flat board is, for one band.
+       The band is still a TABS entry, so drag, add and undo need no special case. */
+    const head = (ungrouped || name === '') ? '' : `<div class="ghead${shut?' closed':''}${gBan(gi)?' gban':''}${gPat(gi)?' gpat':''}${gAlign(gi)?' galgn':''}${gAlign(gi)==='center'?' galgnc':''}"${gsty?` style="${gsty}"`:''} draggable="true"
         ondragstart="gDragStart(event,${gi})" ondragend="gDragEnd()">
         <span class="ggrip" data-tip="Drag to move this group">⠿</span>
         <button class="gtog" onclick="toggleGroup(${gi})" data-tip="${shut?'Expand':'Collapse'} this group"><span class="gcar">${ico('chevron-right','gcari')}</span></button>
         <span class="gnm" role="button" tabindex="0" data-tip="Rename group" onclick="gNameEdit(${gi})"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();gNameEdit(${gi})}">${name}</span>
-        <span class="gcnt">${ws.length} widget${ws.length===1?'':'s'}</span>
+        <!-- THE "N widgets" TAG WAS REMOVED (request, 23 Sep 2026). The gcnt CSS is kept and
+             unreferenced; the count is still in the Groups menu. No backticks in here: this
+             comment sits inside a template literal. -->
         <span class="gsp"></span>
         <button class="gact gaddw" data-tip="Add a widget to this group" onclick="curG=${gi};openAwDrawer()">${ico('plus','gacti')}</button>
         <button class="gact" data-tip="Group actions" onclick="openGMenu(event,${gi})">${ico('ellipsis-v','gacti')}</button>
@@ -17966,7 +18562,7 @@ function renderCanvas(){
           /* ⚠️ `wft` DOES NOT REMOVE THE HEADER, IT MAKES IT AN OVERLAY — see the CSS. The
              header is where `⋮` and the AI ✦ live, so deleting it for a Free Text widget
              would take Edit / Clone / Remove with it and strand the widget on the board. */
-          return `<div class="widget${w.t==='freetext'?' wft'+(cwFtBg(w.bg||'Transparent')==='transparent'?' wftbare':''):''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
+          return `<div class="widget${w.t==='freetext'?' wft'+(cwFtBg(w.bg||'Transparent')==='transparent'?' wftbare':''):''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${w.t==='freetext'?'':tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
         }).join('') + `</div>`
       : `<div class="dgrid12" style="gap:${gap}px" ondragover="wDragOverGroup(event,${gi})" ondrop="wDrop(event,${gi},-1)" ondragleave="wDragLeave(event)">`
         /* ⚠️ a flat board's empty state is the board's, and keeps the big add tile; an empty
@@ -18259,11 +18855,16 @@ const GRP_BG = [/* ⚠️ DEFAULT'S SWATCH IS `--card-head`, THE STRIP IT ACTUAL
                    a fill. Default's swatch is `--card-head` for exactly the same reason. */
                 ['Transparent', 'transparent', ''],
                 ['Gray','var(--panel-2)','var(--track)'],
-                ['Green','color-mix(in srgb, var(--green) 16%, var(--card-head))','var(--green)'],
-                ['Blue','color-mix(in srgb, var(--blue) 16%, var(--card-head))','var(--blue)'],
-                ['Yellow','color-mix(in srgb, var(--yellow) 20%, var(--card-head))','var(--yellow)'],
-                ['Orange','color-mix(in srgb, var(--orange) 18%, var(--card-head))','var(--orange)'],
-                ['Red','color-mix(in srgb, var(--red) 16%, var(--card-head))','var(--red)']];
+                /* ⚠️ SOLID FILLS, THE SAME FIVE AS FREE TEXT'S BACKGROUND (request, 23 Sep 2026:
+                   "the header colour will be improved, use dark colour like free text"). The
+                   values are copied from `CW_FT_BG`, not read from it — that array is declared
+                   in a later script block and is in the temporal dead zone here. Change one,
+                   change both. The FOURTH field is the ink `gStyleCSS` puts on the strip. */
+                ['Green','color-mix(in srgb, var(--green) 62%, #000)','var(--green)','#fff'],
+                ['Blue','color-mix(in srgb, var(--blue) 72%, #000)','var(--blue)','#fff'],
+                ['Yellow','var(--yellow)','var(--yellow)','#1a1405'],
+                ['Orange','var(--orange)','var(--orange)','#1f1105'],
+                ['Red','color-mix(in srgb, var(--red) 70%, #000)','var(--red)','#fff']];
 /* ⚠️ HEADER PATTERNS — OPTION 2 ONLY (request, 22 Sep 2026, with five abstract
    banner references supplied: a low-poly network lattice, halftone dots, flowing lines).
    ⚠️ EVERY PATTERN IS ONE `<path>`, which the request asked for in as many words, and that
@@ -18492,7 +19093,54 @@ function gPubSync(){
     if (prev) Object.assign(prev, rec); else GRP_PUBLIC.push(rec);
   });
   for (let i = GRP_PUBLIC.length - 1; i >= 0; i--)
-    if (GRP_PUBLIC[i].board === board && !seen.has(GRP_PUBLIC[i].name)) GRP_PUBLIC.splice(i, 1);
+    if (GRP_PUBLIC[i].board === board && !GRP_PUBLIC[i].lib && !seen.has(GRP_PUBLIC[i].name)) GRP_PUBLIC.splice(i, 1);
+}
+/* ── the Group tab's row actions (23 Sep 2026) ────────────────────────────────────────────
+   ⚠️ A SHARED GROUP IS A LIVE MIRROR OF A GROUP ON SOME BOARD (see `gPubSync`), so each action
+   says which of the two it touches:
+     Edit   — opens the SOURCE: switches to its dashboard if needed and opens Edit group on it.
+              The seeded examples live on boards that don't carry them, so those say so instead.
+     Clone  — a library copy, `lib:true`: no source board, so `gPubSync` never prunes it.
+     Delete — un-shares. On the open board that clears the group's Share = Public; on a stored
+              board it clears it in `BOARDS[...]`, or the next visit there would re-list it. The
+              group itself is never deleted — only its listing here. */
+function gPubEdit(id){
+  const p = GRP_PUBLIC.find(x => x.id === id); if (!p) return;
+  closeAwDrawer();
+  /* switch boards ONLY when the group is really stored there — the seeded examples name boards
+     that don't carry them, and jumping to one just to say so would strand you there */
+  if (!p.lib && p.board !== gBoardName() && DASH_INDEX[p.board] &&
+      BOARDS[p.board] && BOARDS[p.board].tabs.includes(p.name)) pickDash(p.board);
+  const gi = p.lib ? -1 : TABS.indexOf(p.name);
+  if (gi >= 0){ gMenuIdx = gi; gEditOpen(); return; }
+  toast(p.lib ? '“' + p.name + '” is a library copy — add it to a dashboard to edit it there'
+              : '“' + p.name + '” is shared from “' + p.board + '”, which isn’t on this prototype’s canvas');
+}
+function gPubClone(id){
+  const p = GRP_PUBLIC.find(x => x.id === id); if (!p) return;
+  let name = 'Copy of ' + p.name, n = 2;
+  while (GRP_PUBLIC.some(x => x.name === name)) name = 'Copy of ' + p.name + ' (' + (n++) + ')';
+  const i = GRP_PUBLIC.indexOf(p);
+  GRP_PUBLIC.splice(i + 1, 0, { board: p.board, name, lib: true, id: ++gPubSeq, at: Date.now(),
+    w: JSON.parse(JSON.stringify(p.w || [])), y: p.y ? Object.assign({}, p.y) : null });
+  awRender();
+  toast('Cloned as “' + name + '” with ' + (p.w || []).length + ' widgets');
+}
+function gPubDel(id){
+  const i = GRP_PUBLIC.findIndex(x => x.id === id); if (i < 0) return;
+  const p = GRP_PUBLIC[i];
+  if (!p.lib){
+    if (p.board === gBoardName()){
+      const gi = TABS.indexOf(p.name);
+      if (gi >= 0 && GRP_STYLE[gi]) delete GRP_STYLE[gi].share;
+    } else if (BOARDS[p.board]){
+      const b = BOARDS[p.board], gi = b.tabs.indexOf(p.name);
+      if (gi >= 0 && b.style && b.style[gi]) delete b.style[gi].share;
+    }
+  }
+  GRP_PUBLIC.splice(i, 1);
+  awRender();
+  toast('“' + p.name + '” removed from shared groups' + (p.lib ? '' : ' — the group itself is unchanged'));
 }
 /* the drawer's Share group control — see `gEditPaint` */
 /* ⚠️ NOT THROUGH `gEditSet`. That ends in `gEditApply()`, which rewrites the header's inline
@@ -18635,12 +19283,22 @@ function gStyleCSS(gi){
   if (st.transp || st.bg === 'Transparent') return 'background:var(--bg);' + ta + pat
     + (st.pad === false ? 'border-bottom-color:transparent;' : '')
     + (szp ? '--gh-size:' + szp + 'px;' : '');
-  const named = (GRP_BG.find(b => b[0] === st.bg) || [])[1];
+  const ent = GRP_BG.find(b => b[0] === st.bg) || [];
+  const named = ent[1];
   const bg = named || (String(st.bg || '')[0] === '#' ? st.bg : '');
+  /* ⚠️ A SOLID FILL RE-INKS THE WHOLE STRIP (23 Sep 2026). The title, caret, grip and ⋮ actions
+     each take their colour from a text token, so the tokens are overridden ON THE HEADER and
+     every child follows — white on green/blue/red, near-black on yellow/orange. */
+  const ink = ent[3] ? 'color:' + ent[3] + ';--text:' + ent[3] + ';--muted:' + ent[3] +
+    ';--text-dim:color-mix(in srgb, ' + ent[3] + ' 78%, transparent)' +
+    ';--faint:color-mix(in srgb, ' + ent[3] + ' 55%, transparent)' +
+    /* `--chip` too: the widget-count badge and the actions' hover sit on it, and a card-grey
+       chip on a solid strip read as a hole (dark) or a white blank (light) */
+    ';--chip:color-mix(in srgb, ' + ent[3] + ' 18%, transparent);' : '';
 
   /* ⚠️ THE THREE LONGHANDS MUST FOLLOW THE `background` SHORTHAND ABOVE — see the note at
      `.ghead.gban::before` for why they cannot live in the stylesheet. */
-  return (bg ? 'background:' + bg + ';' : '') + ta + pat + (szp ? '--gh-size:' + szp + 'px;' : '')
+  return (bg ? 'background:' + bg + ';' : '') + ink + ta + pat + (szp ? '--gh-size:' + szp + 'px;' : '')
     + (st.banner ? 'background-image:url(' + st.banner + ');background-size:cover;'
                  + 'background-position:center;background-repeat:no-repeat;' : '');
 }
@@ -18985,9 +19643,10 @@ const AW_ACT = {
   clone:['Clone widget', 'M8 2h10a2 2 0 0 1 2 2v10h-2V4H8V2ZM4 6h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v12h10V8H4Z'],
   del:  ['Delete widget', 'M9 3h6l1 2h4v2H4V5h4l1-2ZM6 9h12l-1 12H7L6 9Z']
 };
-function awActBtn(k, on, danger){
+/* `tip` overrides the label — the Group tab's rows say "Edit group", not "Edit widget" */
+function awActBtn(k, on, danger, tip){
   const a = AW_ACT[k];
-  return '<button class="awab' + (danger?' dg':'') + '" title="' + a[0] + '" onclick="event.stopPropagation();' + on + '">' +
+  return '<button class="awab' + (danger?' dg':'') + '" title="' + (tip || a[0]) + '" onclick="event.stopPropagation();' + on + '">' +
     '<svg viewBox="0 0 24 24"><path d="' + a[1] + '"/></svg></button>';
 }
 function awRender(){
@@ -19057,10 +19716,21 @@ function awRender(){
       return `<div class="awrow" onclick="gPubAdd(${p.id})">` +
         `<span class="awrart">${W_GROUP_SVG}</span>` +
         `<span class="nm2">${hx(p.name)}</span>` +
-        `<span class="used" title="Shared from this dashboard">${hx(p.board)}</span>` +
-        `<span class="awacts"><span class="awcnt" title="${n} widget${n===1?'':'s'}">${n}</span>` +
-          awActBtn('add', `gPubAdd(${p.id})`) +
-        `</span></div>`;
+        /* ⚠️ THE BOARD TAG WENT AND THE COUNT BECAME WORDS (request, 23 Sep 2026: "remove the
+           'Network NOC Wall' tag, show the count as '3 widgets', and on hover list the widget
+           names"). The chip is always visible now (it was inside the hover-only `.awacts`), and
+           its tooltip is a list of the group's widget titles. The board name still matches the
+           search above, and `.used` keeps its CSS for the other tabs. */
+        `<span class="awgcnt" data-tip="${n} widget${n===1?'':'s'}" ` +
+          `data-tip-list="${hx((p.w || []).map(w => w.title || 'Untitled widget').join('|'))}">` +
+          `${n} widget${n===1?'':'s'}</span>` +
+        /* ⚠️ EDIT · CLONE · DELETE (request, 23 Sep 2026: "add these 3 actions to the Group list")
+           — the same three buttons, glyphs and hover-reveal as the User Define rows; the add ⊕
+           stays first because adding is what the row is for. See `gPubEdit` for what each does. */
+        `<span class="awacts">` + awActBtn('add', `gPubAdd(${p.id})`) +
+          awActBtn('edit',  `gPubEdit(${p.id})`,  false, 'Edit group') +
+          awActBtn('clone', `gPubClone(${p.id})`, false, 'Clone group') +
+          awActBtn('del',   `gPubDel(${p.id})`,   true,  'Remove from shared groups') + `</span></div>`;
     }).join('')
       || `<div class="dempty">${GRP_PUBLIC.length
             ? `No shared groups match “${hx(q)}”.`
@@ -19526,7 +20196,7 @@ function openGroupMenu(ev){
   const allShut = TABS.every((_,i)=>GRP_SHUT.has(i));
   document.getElementById('grpMenu').innerHTML =
     TABS.map((n,i)=>`<button class="gmi${i===cur?' cur':''}" onclick="jumpGroup(${i})">
-        <span class="tick">${i===cur?'●':''}</span><span class="nm">${n}</span>
+        <span class="tick">${i===cur?'●':''}</span><span class="nm">${n || 'Other widgets'}</span>
         <span class="ct">${(WIDGETS[i]||[]).length}</span></button>`).join('') +
     `<div class="cmsep"></div>
      <button class="gmi" onclick="${allShut?'expandAllGroups()':'collapseAllGroups()'}">
@@ -19780,11 +20450,18 @@ function gEditPaint(){
         'onclick="gEditSet(\'align\',\'' + a[0] + '\')">' +
         gAlignSVG(a[0]) + '</button>').join('') +
       '</div></div>' +
-    '<div class="ddfield"><span class="ddlbl">No padding</span>' +
-      '<div class="cwftseg"><button class="cwftsg' + (st.pad === false ? ' on' : '') + '" ' +
-        'data-tip="No padding" aria-label="No padding" ' +
-        'aria-pressed="' + (st.pad === false) + '" onclick="gPadTog()">' + gPadSVG() +
-      '</button></div></div>' +
+    /* ⚠️ "Padding" WITH TWO CELLS, AS FREE TEXT HAS IT (request, 23 Sep 2026: "in empty group
+       improve 'no padding' like free text") — `No padding | Padding`, same order, same glyphs
+       (read from `CW_FT_PAD` by key), one always lit. The group's DEFAULT is unchanged: an
+       untouched group still has padding, so no existing board repaints. */
+    '<div class="ddfield"><span class="ddlbl">Padding</span>' +
+      '<div class="cwftseg">' + [['none', 'No padding'], ['pad', 'Padding']].map(c => {
+        const on = (st.pad === false) === (c[0] === 'none');
+        return '<button class="cwftsg' + (on ? ' on' : '') + '" data-tip="' + c[1] + '" ' +
+          'aria-label="' + c[1] + '" aria-pressed="' + on + '" ' +
+          'onclick="gEditSet(\'pad\', ' + (c[0] === 'pad') + ')">' + gPadSVG(c[0]) + '</button>';
+      }).join('') +
+      '</div></div>' +
     /* ⚠️ VERTICAL ALIGNMENT WAS REMOVED ON 21 SEP 2026 ("in empty group remove the Vertical
        alignment"), and only the CONTROL was: `GRP_VALIGN`, `gValignSVG`, `gValign` and the
        `--gv-align` the renderer emits are all still live, so a group already set to middle or
@@ -19856,10 +20533,12 @@ function gEditPaint(){
    a 2px round-capped stroke — because `.cwftsg svg` sets `fill:currentColor`, and a RULE beats a
    presentation attribute: `fill="none"` on the element would lose and the outline would paint as
    a solid blob. The recorded `.dvic svg` trap. */
-const gPadSVG = () =>
+const gPadSVG = (k = 'none') =>
   '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" ' +
   'stroke-linecap="round" stroke-linejoin="round">' +
-  CW_FT_PAD[0][2].split('|').map(d => '<path d="' + d + '"/>').join('') + '</svg>';
+  /* the box-padding glyph by key — CW_FT_PAD grew a second cell on 23 Sep, and the group
+     drawer keeps the glyph it has always drawn */
+  CW_FT_PAD.find(a => a[0] === k)[2].split('|').map(d => '<path d="' + d + '"/>').join('') + '</svg>';
 /* ⚠️ ONE CELL, TWO STATES, AND THE FIELD IS STORED POSITIVELY. `pad` is true when the group
    HAS padding, so the control lit means `pad === false` and pressing it flips that — the same
    inversion the checkbox carried, and the same one `cwFtPadTog` performs in Free Text. */
@@ -20343,6 +21022,8 @@ function wFull(){ closeOverlays(); if(curW<0) return;
   const w=WIDGETS[curG][curW];
   document.getElementById('wfTitle').innerHTML = w.title;
   document.getElementById('wfTime').textContent = trSelIdx>=0? TR_PRESETS[trSelIdx][1] : 'custom';
+  /* no time tag on a note, full screen included (23 Sep 2026) — see the board's `tb` */
+  document.getElementById('wfTime').style.display = w.t === 'freetext' ? 'none' : '';
   document.getElementById('wfBody').innerHTML = w.t==='stat'
     ? `<div style="flex:1;display:grid;place-items:center;text-align:center">
          <div><div style="font-size:64px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${w.vc}">${w.v}</div>
@@ -20514,12 +21195,15 @@ const MICON = {
    status, archived) off these names rather than duplicating the list. */
 const DASH_GROUPS = [
   { name:'PMG', items:[
-    ['Log Statistics','sys',0], ['Application Performance','mine',0] ]},
+    ['Log Statistics','sys',0], ['Application Performance','mine',0], ['ui_pmg','mine',0] ]},
   { name:'Network', items:[
     ['Network NOC Wall','shared',0], ['WAN Link Health','mine',1] ]},
   { name:'Infrastructure', items:[
     ['Server Capacity','sys',0], ['Virtualization Overview','shared',0],
     ['Storage Utilisation','mine',1], ['Container Fleet','mine',0] ]},
+  /* 23 Sep 2026 — the board built from Free Text + empty groups; its widgets live in BOARDS */
+  { name:'Business', items:[
+    ['Payment Business Dashboard','mine',0] ]},
 ];
 /* NOC views (live: groups rotate their dashboards full-screen at an interval) */
 const NOC_VIEWS = [
@@ -20550,6 +21234,8 @@ const MD_META = {
   'Virtualization Overview': { own:'Rakesh Rathod',  acc:['Rakesh Rathod','Infra'],  pub:1, upd:'2mo ago' },
   'Storage Utilisation':     { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:0, upd:'11mo ago' },
   'Container Fleet':         { own:'Sneha Patil',    acc:['Sneha Patil'],            pub:1, upd:'2mo ago' },
+  'ui_pmg':                  { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:1, upd:'just now' },
+  'Payment Business Dashboard': { own:'Kishan Patel', acc:['Kishan Patel','Finance Ops'], pub:1, upd:'just now' },
 };
 /* archived dashboards leave the other three tabs and appear only under Archive */
 const MD_ARCH = new Set();
@@ -21168,6 +21854,10 @@ const DMI = {
   pdf:   '<svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5ZM8 13h8v2H8v-2Zm0 4h5v2H8v-2Z"/></svg>',
   sched: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm1-13h-2v6l5 3 1-1.7-4-2.3V7Z"/></svg>',
   del:   '<svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2ZM6 8h12l-1 13H7L6 8Zm4 2v9h1.6v-9H10Zm3.4 0v9H15v-9h-1.6Z"/></svg>',
+  /* Tabler `media/photo-down` (23 Sep 2026, Export as image). STROKED, unlike its filled
+     neighbours — `fill:none` is INLINE because `.dmi svg{fill:currentColor}` is a rule and would
+     beat a presentation attribute, painting the outline as a blob. Bounding-box path dropped. */
+  img:   '<svg viewBox="0 0 24 24" style="fill:none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8h.01"/><path d="M12.5 21h-6.5a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v6.5"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l4 4"/><path d="M14 14l1 -1c.653 -.629 1.413 -.815 2.13 -.559"/><path d="M19 16v6"/><path d="M22 19l-3 3l-3 -3"/></svg>',
   hist:  '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 8.5 12h-2.2A6.8 6.8 0 1 1 12 5.2c1.9 0 3.6.8 4.8 2H14v2h6V3h-2v2.3A9 9 0 0 0 12 3Zm-1 4v5.4l4.4 2.6.9-1.6-3.3-1.9V7h-2Z"/></svg>',
 };
 function openDashMenu(ev, n){
@@ -21195,6 +21885,9 @@ function openDashMenu(ev, n){
          lands, which is the same question Make public / Make private answers two rows down. It
          opens the same drawer the toolbar button did. -->
     <button class="dmi" onclick="dmAct('share','${k}')">${DMI.share}<span class="dmtx">Share<i>Send a link, or export this board</i></span></button>
+    <!-- Export as image (request, 23 Sep 2026: "in the header ⋮ add 'image export'"). Beside
+         Share because both are how a board leaves this screen. -->
+    <button class="dmi" onclick="dmAct('img','${k}')">${DMI.img}<span class="dmtx">Export as image<i>Download this board as a PNG</i></span></button>
     <button class="dmi" onclick="dmAct('default','${k}')">${DMI.home}${DASH_DEFAULT===n?'Remove default landing':'Set as default landing'}${DASH_DEFAULT===n?'<span class="dmst on">Current</span>':''}</button>
     <button class="dmi" onclick="dmAct('vis','${k}')">${it.p?DMI.pub+'Make public':DMI.locki+'Make private'}<span class="dmst">${it.p?'Private now':'Public now'}</span></button>
     <div class="dmdiv"></div>
@@ -21248,6 +21941,9 @@ function dmAct(a, n){
                : `"${n}" is now Public — anyone in the organization can view; edit access stays with you and Dashboard Admins`);
   }
   else if (a==='history'){ openVersions(n); }
+  /* ⚠️ A TOAST, LIKE ITS PDF SIBLING BELOW — the prototype has no renderer; it names what the
+     product would download (the board as open, at the current time range). */
+  else if (a==='img'){ toast(`Exporting "${n}" as PNG — the board as shown, for the current time range`); }
   else if (a==='pdf'){ toast(`Export "${n}" as PDF — share via password-protected email attachment`); }
   else if (a==='sched'){ toast(`Create Schedule — email "${n}" data on a recurring schedule`); }
   else if (a==='del'){
@@ -29592,10 +30288,38 @@ const CW_FT_HELP_IC =
   '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 17l0 .01"/>' +
   '<path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></svg>';
 
+/* ⚠️ TWO CELLS NOW, UNDER THE LABEL "Padding" (request, 23 Sep 2026: "change the 'no padding'
+   — it will show 2 icons, padding or no padding, and the title changes to 'padding'"). With both
+   states drawn, the lit cell simply names the current one, so the inversion the one-cell toggle
+   had to guard against (a cell labelled "Padding" lit to mean *none*) cannot happen.
+   `Padding` keeps Tabler `design/box-padding` (the box with its dotted inset); `No padding` is
+   Tabler `shapes/square-rounded` — the same box with nothing inside, so the pair reads as
+   with / without. Both minus Tabler's invisible 24x24 bounding-box path. */
+/* ⚠️ `No padding` LEADS and is the DEFAULT (request, 23 Sep 2026: "swap the icon and by default
+   'no padding' selected") — the cells swapped places, each keeping its own glyph and tooltip,
+   and the Default preset below now sets `pad:false`. */
+/* ⚠️ GLYPHS SWAPPED AND `Padding` IS THE DEFAULT AGAIN (request, 23 Sep 2026, later: "swap the
+   icon and by default padding option selected"). The cells keep their places — `No padding`
+   left, `Padding` right — and trade icons: `No padding` now wears Tabler `box-padding` (the
+   dotted box it wore as a one-cell toggle), `Padding` the plain `square-rounded`. The Default
+   preset is back to `pad:true`. Applies to the group drawer too, which reads glyphs by key. */
 const CW_FT_PAD = [['none', 'No padding',
   'M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12|' +
-  'M8 16v.01|M8 12v.01|M8 8v.01|M16 16v.01|M16 12v.01|M16 8v.01|M12 8v.01|M12 16v.01']];
-/* the toggle — `seg` hands back the cell's key, which this ignores: one cell, two states */
+  'M8 16v.01|M8 12v.01|M8 8v.01|M16 16v.01|M16 12v.01|M16 8v.01|M12 8v.01|M12 16v.01'],
+  ['pad', 'Padding',
+  'M12 3c7.2 0 9 1.8 9 9c0 7.2 -1.8 9 -9 9c-7.2 0 -9 -1.8 -9 -9c0 -7.2 1.8 -9 9 -9']];
+/* ⚠️ "Font style" — HORIZONTAL | VERTICAL, SHOWN ONLY WITH THE HEADER PRESET (request, 23 Sep 2026:
+   "when I select Header, show the font style Vertical"). Tabler `text/text-direction-ltr` and
+   `text/text-orientation`, bounding-box path dropped; drawn by `seg()`'s stroke branch like the
+   vertical-alignment trio beside it. The field is `orient`: 'h' (default) or 'v'. */
+const CW_FT_ORIENT = [['h', 'Horizontal',
+  'M5 19h14|M17 21l2 -2l-2 -2|M16 4h-6.5a3.5 3.5 0 0 0 0 7h.5|M14 15v-11|M10 15v-11'],
+  ['v', 'Vertical',
+  'M9 15l-5 -5c-1.367 -1.367 -1.367 -3.633 0 -5s3.633 -1.367 5 0l5 5|M5.5 11.5l5 -5|M21 12l-9 9|M21 12v4|M21 12h-4']];
+function cwFtOrient(k){ cwFtSet('orient', k); }
+/* `seg` hands back the cell's key; `pad` is stored positively (true = has padding) */
+function cwFtPadSet(k){ cwFtSet('pad', k === 'pad'); }
+/* kept: the old one-cell toggle, in case anything still calls it */
 function cwFtPadTog(){ cwFtSet('pad', !CW.ft.pad); }
 
 const CW_FT_SIZE = [['Auto',0], ['16px',16], ['24px',24], ['36px',36], ['56px',56], ['72px',72], ['88px',88]];
@@ -29627,12 +30351,27 @@ const CW_FT_COLOR = [['Default','var(--text)'], ['Gray','var(--text-dim)'], ['Gr
    ⚠️ `CW_FT_COLOR`'s `Default` is NOT renamed. There it means "inherit the widget's text
    colour", which is a real behaviour and not a colour — the two lists say different things and
    should not be made to match. */
-const CW_FT_BG = [['Transparent','transparent'], ['Gray','var(--panel-2)','var(--track)'],
-                  ['Green','color-mix(in srgb, var(--green) 18%, var(--card))','var(--green)'],
-                  ['Blue','color-mix(in srgb, var(--blue) 18%, var(--card))','var(--blue)'],
-                  ['Yellow','color-mix(in srgb, var(--yellow) 22%, var(--card))','var(--yellow)'],
-                  ['Orange','color-mix(in srgb, var(--orange) 20%, var(--card))','var(--orange)'],
-                  ['Red','color-mix(in srgb, var(--red) 18%, var(--card))','var(--red)']];
+/* ⚠️ SOLID FILLS NOW, NOT TINTS (request, 23 Sep 2026, with a reference: a finance board whose
+   `UPI` / `IMPS` section banners are solid yellow and whose KPI tiles are solid blue / green /
+   red). The 18–22% tints read as five shades of the same dark card — a banner has to be seen
+   from across the room. Green, Blue and Red are the token taken ~30–40% toward black, so
+   white text sits on them as it does in the reference; Yellow and Orange stay at full strength
+   and take dark ink, as the reference's IMPS banner does.
+   ⚠️ THE FOURTH FIELD IS THE INK. A `Default` font colour means "the widget's text colour",
+   which is light in dark theme and dark in light — right on a card, wrong on a solid fill
+   (light text on yellow, dark text on red). So `ftHTML` swaps `Default` for this ink when the
+   background has one; an explicitly picked font colour is always honoured. */
+const CW_FT_BG = [['Transparent','transparent'],
+                  /* Gray stays the dark neutral card fill — it is the Default preset's
+                     background, so a solid slate here would repaint every new note */
+                  ['Gray','var(--panel-2)','var(--track)'],
+                  ['Green','color-mix(in srgb, var(--green) 62%, #000)','var(--green)','#fff'],
+                  ['Blue','color-mix(in srgb, var(--blue) 72%, #000)','var(--blue)','#fff'],
+                  ['Yellow','var(--yellow)','var(--yellow)','#1a1405'],
+                  ['Orange','var(--orange)','var(--orange)','#1f1105'],
+                  ['Red','color-mix(in srgb, var(--red) 70%, #000)','var(--red)','#fff']];
+/* the ink a solid background asks for, or '' — see the note on `CW_FT_BG` */
+function cwFtInk(k){ const e = CW_FT_BG.find(x => x[0] === k); return (e && e[3]) || ''; }
 /* ⚠️ STROKED TABLER, BESIDE THE PRODUCT'S OWN FILLED ALIGN ICONS — A STATED DIVERGENCE
    (restored 19 Sep 2026: "in free text add text alignment", with this control's own
    "Align top" tooltip in the picture). `observeops-icons/` carries `align-left/center/right`
@@ -29688,6 +30427,7 @@ const CW_FT_EDGE   = ['Left', 'Right', 'Top', 'Bottom'];
    for the next preset added here — declare a span or it inherits one by accident.
    ⚠️ IT IS DELIBERATELY NOT PART OF THE TILE-MATCH TEST — see `cwFtPresetOn`. */
 const CW_FT_PRESET = [
+  /* pad:true — a new note opens on `Padding` (23 Sep 2026, later; see `CW_FT_PAD`) */
   ['Default',    {size:'16px', align:'left',   valign:'top',    bg:'Gray', pad:true,  tick:false, span:4}],
   /* ⚠️ CAPTION WAS REMOVED ON REQUEST (21 Sep 2026) and is kept here, commented, exactly as
      Annotation is below it — two of the four shapes the Notes & Links reference shipped with are
@@ -29728,7 +30468,9 @@ function cwFtSpan(){
   const n = Number(CW.ft && CW.ft.span);
   return n >= 1 && n <= 12 ? n : CW_FT_PRESET[0][1].span;
 }
-function cwFtSizePx(k){ const e = CW_FT_SIZE.find(x => x[0] === k); return e ? e[1] : 0; }
+/* a literal `NNpx` outside the list is honoured too (23 Sep 2026) — the Payment board's KPI
+   tiles need 12–14px, below the editor's 16px floor. The editor still offers only its list. */
+function cwFtSizePx(k){ const e = CW_FT_SIZE.find(x => x[0] === k); return e ? e[1] : (/^\d+px$/.test(k || '') ? parseInt(k, 10) : 0); }
 /* ⚠️ A COLOUR FIELD NOW HOLDS EITHER A TOKEN NAME OR A LITERAL HEX (request, 17 Sep 2026:
    *"add custom colour option — the user will add a colour code, or pick any colour, or set any
    colour using a colour palette"*). `cwFtIsHex` is the discriminator and EVERY reader of
@@ -29812,7 +30554,8 @@ function cwOpen(gi, i){
       if (w.t === 'freetext') CW.ftLoad = {text:w.text||'', size:w.size||'Auto',
                                            color:w.color||'Default', align:w.align||'center',
                                            valign:w.valign||'middle', bg:w.bg||'Default',
-                                           pad:w.pad !== false, tick:!!w.tick, tickEdge:w.tickEdge||'Left'};
+                                           pad:w.pad !== false, tick:!!w.tick, tickEdge:w.tickEdge||'Left',
+                                           hdr:!!w.hdr, orient:w.orient||'h'};
     }
   } else {
     CW.name = ''; CW.desc = ''; CW.viz = 'chart';
@@ -30087,9 +30830,11 @@ function cwFtPanelHTML(){
        link straight to markdownguide.org; this opens the in-product dialog (`cwFtMdOpen`),
        which is what was asked for. Same place, because that is where the reference puts it and
        there is nowhere else on this panel for it to belong. */
+    /* no Formatting help in Header mode — it takes plain text only (see `ftHTML`) */
     '<label class="cwftl">Text to display<i>*</i>' +
+      (F.preset === 'Header' ? '' :
       '<button class="cwftmh" onclick="cwFtMdOpen()">' + CW_FT_HELP_IC +
-        '<span>Formatting help</span></button></label>' +
+        '<span>Formatting help</span></button>') + '</label>' +
     /* ⚠️ FULL WIDTH AND 100px TALL (request, 17 Sep 2026) — it is the one control on this
        panel that is NOT capped to the field column, because it is the only one whose content
        is arbitrary: a size or a colour is a word, and the text can be a paragraph.
@@ -30140,11 +30885,10 @@ function cwFtPanelHTML(){
           seg(CW_FT_ALIGN, F.align, 'cwFtAlign', a => a[0], a => a[1]) + '</div>' +
         '<div class="cwftcol"><label class="cwftl">Vertical alignment</label>' +
           seg(CW_FT_VALIGN, F.valign || 'middle', 'cwFtVAlign', a => a[0], a => a[1], true) + '</div>' +
-        /* ⚠️ THE LABEL STAYS "No padding", NOT "Padding". The cell is LIT when the state is
-           active, which is what `.on` means on the two controls beside it — so a cell labelled
-           "Padding" and lit to mean *none* would invert the row's own language. */
-        '<div class="cwftcol"><label class="cwftl">No padding</label>' +
-          seg(CW_FT_PAD, F.pad ? '' : 'none', 'cwFtPadTog', a => a[0], a => a[1], true) + '</div>' +
+        /* ⚠️ THE LABEL IS "Padding" AND THE CONTROL HAS TWO CELLS (request, 23 Sep 2026) —
+           `Padding | No padding`, one always lit. See `CW_FT_PAD`. */
+        '<div class="cwftcol"><label class="cwftl">Padding</label>' +
+          seg(CW_FT_PAD, F.pad ? 'pad' : 'none', 'cwFtPadSet', a => a[0], a => a[1], true) + '</div>' +
       '</div></div>' +
     '</div>' +
     /* ⚠️ FONT COLOUR AND BACKGROUND SHARE ONE ROW (request, 17 Sep 2026). They are the
@@ -30159,6 +30903,10 @@ function cwFtPanelHTML(){
       '<div class="cwftcol"><label class="cwftl">Background</label>' +
         cwFtDD('bg', CW_FT_BG, F.bg, true, true) + '</div>' +
     '</div>' +
+    (F.preset === 'Header'
+      ? '<div class="cwftpair"><div class="cwftcol"><label class="cwftl">Font style</label>' +
+          seg(CW_FT_ORIENT, F.orient || 'h', 'cwFtOrient', a => a[0], a => a[1], true) + '</div></div>'
+      : '') +
     /* ⚠️ SUPERSEDED 19 Sep 2026 — THE VERTICAL CONTROL IS BACK, in the Alignment column above.
        The 17 Sep request ("remove the top / middle / bottom row") is kept as written because it
        records the decision that made the restoration cheap: **`valign` stayed in the model,
@@ -30778,6 +31526,7 @@ function cwFtPresetOn(pr){ return CW.ft.preset === pr[0]; }
 /* the preset a style matches — `span` is excluded because it is not a control on this panel
    and the EDIT path's draft deliberately carries none (so updating cannot undo a resize) */
 function cwFtPresetKey(ft){
+  if (ft.hdr) return 'Header';   /* a saved header re-opens as one, whatever its other fields */
   const hit = CW_FT_PRESET.find(pr =>
     Object.keys(pr[1]).every(k => k === 'span' || ft[k] === pr[1][k]));
   return hit ? hit[0] : CW_FT_PRESET[0][0];
@@ -30873,17 +31622,12 @@ function cwFtMdEl(){
         '<div class="cwmdo"><div class="ftt">' + ftMd(r[0].replace(/\\n/g, '\n')) + '</div>' +
           '<span class="cwmdn">' + esc(r[1]) + '</span></div>' +
       '</div>').join('') +
-    '</div>' +
-    /* the footer slot replaces the component's built-in Cancel/confirm pair. `hide-footer` was
-       the other option and is what the registry's own card suggests for view-only content —
-       but its `do` list is equally explicit that a modal should "always include a footer Cancel
-       (visible way out)", and the product's real modals keep BOTH that and a header ✕. This
-       carries the way out AND the outbound link, pinned, which is what the hand-built footer
-       did. */
-    '<a slot="footer" class="cwmdf" href="https://www.markdownguide.org/basic-syntax/" ' +
-      'target="_blank" rel="noopener noreferrer">Markdown guide \u2197</a>' +
-    '<obs-button slot="footer" variant="default" ' +
-      'onclick="cwTap(&quot;mdclose&quot;, cwFtMdClose)">Close</obs-button>';
+    '</div>';
+  /* ⚠️ NO FOOTER (request, 23 Sep 2026: remove the "Close" button and the "Markdown guide"
+     link). `hide-footer` rather than an empty slot — with nothing slotted the component draws
+     its own Cancel/confirm pair. The way out is the header ✕ and Escape, both still handled by
+     the listeners below. `cwFtMdClose` and `.cwmdf` are kept and unreferenced. */
+  el.setAttribute('hide-footer', '');
   document.body.appendChild(el);
   /* ⚠️ THE COMPONENT HAS THREE WAYS OUT WE DO NOT OWN — its header ✕, Escape (the UA's own
      `<dialog>` behaviour, which `escClosable` leaves on) and a backdrop click if `mask-closable`
@@ -30986,6 +31730,11 @@ addEventListener('keydown', e => {
 function cwFtPreset(i){
   const pr = CW_FT_PRESET[i]; if (!pr) return;
   Object.assign(CW.ft, pr[1]);
+  /* ⚠️ PICKING A PRESET STARTS HORIZONTAL (request, 23 Sep 2026: "when I select Header the text is
+     horizontal by default — Vertical is only an option"). The preset objects carry no `orient`, so
+     `Object.assign` used to keep whatever the last pick was; a header chosen after a vertical one
+     came up vertical. Vertical is now always a second, deliberate click on Font style. */
+  CW.ft.orient = 'h';
   CW.ft.preset = pr[0];   /* pin it — see cwFtPresetOn for why this is remembered, not derived */
   cwRender();
   toast('Preset “' + pr[0] + '” applied — every option is still editable');
@@ -31242,7 +31991,9 @@ function cwSave(place){
        it is re-derived from the style on every open (see `cwFtPresetKey`). */
     const draft  = {text:CW.ft.text.trim(), size:CW.ft.size, color:CW.ft.color, align:CW.ft.align,
                     valign:CW.ft.valign, bg:CW.ft.bg, pad:CW.ft.pad,
-                    tick:CW.ft.tick, tickEdge:CW.ft.tickEdge};
+                    tick:CW.ft.tick, tickEdge:CW.ft.tickEdge,
+                    /* Header mode travels with the widget: plain text + its orientation */
+                    hdr:CW.ft.preset === 'Header', orient:CW.ft.preset === 'Header' ? (CW.ft.orient || 'h') : 'h'};
     if (CW.edit){
       const w0 = (WIDGETS[CW.edit.g] || [])[CW.edit.i];
       if (w0){ histDo('Edit widget \u201c' + ftName + '\u201d');

@@ -16,7 +16,7 @@
   --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f;
   --pop-line:#2b394f;        /* dividers INSIDE a popover — --border is the same colour as --pop here,
                                 so .dmdiv, the flyout column rule and the docs footer drew nothing */
-  --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
+  --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e; 
   --white:#f4f7fb; --ink:#172336;
   /* ⚠️ 190px, UP FROM 170 (2 Sep 2026). The brand row gained the collapse button, and the row
      then needed 15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26(button) + 15 = 189
@@ -11916,16 +11916,7 @@ const MF_TREE_ICONS = ['Explorer'];
 const MF_PIN_INTRO_KEY = 'oo13-pin-intro-read';
 /* the live mark: a blinking dot BEFORE the pin — the pin says what the control is, the dot says "something new here, hover me".
    Its own role="button" span, never a <button> inside the pin's <button> (interactive content inside a button eats the clicks). */
-/* ⚠️ THE DOT CARRIES A `data-tip` NOW (request, 22 Sep 2026: the blinking dot should show a
-   tooltip on hover). It deliberately had none, and the recorded reason was real: the tooltip
-   engine paints 320ms after `mouseover`, the intro card used to open at 120ms, so the label
-   arrived SECOND and landed underneath a 360px panel.
-   ⚠️ THE FIX IS ORDERING, NOT SUPPRESSION — see `mfPinIntroShow`: the card's dwell moved out
-   past the engine's, so a quick hover gets the label and a deliberate one gets the card, and
-   the card calls `tipHide()` as it opens so the two are never on screen together.
-   ⚠️ THE TIP AND THE `aria-label` ARE THE SAME STRING. A control whose hover label and
-   accessible name disagree describes itself two ways. */
-const MF_PIN_DOT = '<span class="mfpinhot" role="button" tabindex="0" aria-label="What is pinning?" data-tip="What is pinning?" onmouseenter="mfPinIntroShow(this)" ' +
+const MF_PIN_DOT = '<span class="mfpinhot" role="button" tabindex="0" aria-label="What is pinning?" onmouseenter="mfPinIntroShow(this)" ' +
   'onmouseleave="mfPinIntroLater(event)" onfocus="mfPinIntroShow(this)" onblur="mfPinIntroLater(event)" ' +
   'onclick="event.stopPropagation();mfPinIntroOpen(this)"><i class="mfpindot"></i></span>';
 let mfPinIntroMem = false, mfPinIntroT = null;
@@ -11991,13 +11982,7 @@ function mfPinIntroHTML(){
 /* the picture's arrow: the product's own long-arrow-right, verbatim from observeops-icons/common/arrows-direction/ */
 const MF_PI_ARROW = '<svg class="mfpiarr" viewBox="0 0 48 48"><path d="M40,24c0,.5-.2,1-.6,1.4l-12,12c-.8,.8-2,.8-2.8,0-.8-.8-.8-2,0-2.8l8.6-8.6H10c-1.1,0-2-.9-2-2s.9-2,2-2h23.2l-8.6-8.6c-.8-.8-.8-2,0-2.8,.8-.8,2-.8,2.8,0l12,12c.4,.4,.6,.9,.6,1.4Z"/></svg>';
 const stEscMf = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-/* ⚠️ 650ms, AND IT USED TO BE 120. The dot now has its own `data-tip`, and this file's
-   tooltip engine paints at 320ms — at 120 the card opened first and the label appeared behind
-   it a fifth of a second later. Past the engine's delay, the two become a sequence instead of a
-   collision: brush the dot and you get "What is pinning?", dwell on it and the card takes over.
-   ⚠️ A CLICK STILL OPENS IT AT ONCE (`mfPinIntroOpen` straight from `onclick`), so the longer
-   dwell costs nobody the card — it only stops it ambushing a pointer passing through. */
-function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 650); }
+function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 120); }
 function mfPinIntroOpen(btn){
   if (!btn || !btn.isConnected || !mfPinIntroOn()) return;
   const fly = document.getElementById('mflyout');
@@ -12008,10 +11993,6 @@ function mfPinIntroOpen(btn){
   const top = Math.max(8, Math.min(cy - 28, innerHeight - h - 8));
   el.style.left = f.right + 'px'; el.style.top = top + 'px';
   el.style.setProperty('--mfpi-arrow', Math.max(14, Math.min(cy - top, h - 14)) + 'px');
-  /* ⚠️ THE LABEL COMES DOWN AS THE CARD GOES UP. `tipHide()` clears the pending timer AS WELL
-     as the box, so a tip that has not painted yet cannot arrive on top of the card a moment
-     later — the same call, for the same reason, that Option 6's module grid makes. */
-  if (typeof tipHide === 'function') tipHide();
   el.classList.add('on');
 }
 function mfPinIntroLater(e){
