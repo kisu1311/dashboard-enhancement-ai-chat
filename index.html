@@ -5269,6 +5269,9 @@ html[data-theme="light"]{
 .aiempty{padding:14px 18px 12px;text-align:center;
   display:flex;flex-direction:column;min-height:100%}
 .aibig{display:grid;place-items:center;margin-bottom:14px}
+/* the empty state sits in the MIDDLE of the panel (request, 23 Sep 2026: "it will be set in center"): an auto
+   margin above the mark pairs with .aihelpl's auto margin below, so the free space splits evenly */
+.aiempty > .aibig{margin-top:auto}
 .aibig svg{width:30px;height:30px;fill:var(--ai-2)}
 .aiempty h3{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
 .aiempty p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
@@ -5299,8 +5302,8 @@ html[data-theme="light"]{
    ⚠️ THE 12px OF PADDING STAYS. It is not the hairline's gutter — it is the gap that keeps the
    pair off the last starter, and with the line gone it is the only thing doing that. Removing
    it with the border would jam the two buttons against the starters above them. */
-.aihelpl{margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--border);
-  display:flex;gap:8px}
+.aihelpl{margin:auto 0 0;padding:12px 0 0;
+  display:flex;gap:8px}   /* no hairline — as Option 13 (23 Sep 2026) */
 /* ⚠️ the guaranteed gap above the help pair — see `.aihelpl`. It was written for the hairline
    that used to sit there and it outlived it: with no line, this 6px is what stops the last
    starter and the two grey buttons touching when the panel is short and `auto` resolves to 0.
@@ -7067,10 +7070,24 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aidockghost{display:none;position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);
   z-index:119;pointer-events:none;background:var(--ai-soft);
   border-left:2px solid var(--ai);box-shadow:-8px 0 28px rgba(0,0,0,.10)}
+/* ⚠️ REBUILT 23 Sep 2026 as the FLOATING card's own docked rectangle (20px in, full height, the card's
+   radius) — that is where a release puts it now; Sidebar mode is gone. */
+.aidockghost{top:20px;right:20px;bottom:20px;border-radius:var(--aifloat-r,14px);
+  border:1.5px solid color-mix(in srgb,var(--ai) 60%,transparent);box-shadow:none;
+  background:color-mix(in srgb,var(--ai) 14%,transparent)}
+/* ⚠️ A 20px STRIP ON THE RIGHT EDGE, clearly coloured (request, 23 Sep 2026: "the colour effect is not
+   shown … height is ok, the width will be 20px on the right" — monday's dock band). Full card height,
+   flush to the window's right edge; the card itself stays OPAQUE (the .55 fade let the board show through). */
+.aidockghost{right:0;left:auto;width:20px;border:0;border-radius:6px 0 0 6px;
+  background:color-mix(in srgb,var(--dockc) 28%,transparent);box-shadow:none}
+/* the strip's colour (request, 23 Sep 2026): #CAD3E2 in dark, #1D2A3E in light, at a LOW opacity */
+:root{--dockc:#cad3e2}
+html[data-theme="light"]{--dockc:#1d2a3e}
+body.aidockr .aipanel.aifloat{opacity:1}
 body.aidockr .aidockghost{display:block}
 /* the card itself goes translucent while it is over the zone, so the ghost reads as the
    destination rather than as a second panel */
-body.aidockr .aipanel.aifloat{opacity:.55}
+/* the card stays OPAQUE over the dock zone (23 Sep 2026) — the fade let the board show through it */
 /* ⚠️ `+6px`, AND THE 4px IT REPLACES WAS A ZERO-GAP (request, 24 Aug 2026: "in text area &
    Arrow icon between add more margin space"). `bottom` here is measured from `.aicomp`'s
    BOTTOM, so `100%` puts the button's lower edge on `.aicomp`'s TOP edge — and `.aicomp`
@@ -10884,6 +10901,12 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
      ⚠️ SO OPTION 1 AND OPTIONS 10–13 NOW DISAGREE ABOUT THE NAME, on purpose and in the
      open. If the 9 Sep "use Ask AI everywhere" was meant to be global rather than per-page,
      this page is the one to change — it is 13 strings, listed in the swap banner above.
+     ⚠️ RESOLVED 23 Sep 2026 — IT IS "Ask AI" HERE TOO NOW (request: "the Option 13 Ask AI — all
+     improvements apply in Option 1"). A function-by-function and rule-by-rule diff of the two panels
+     found only two real differences: this name, and the hairline above Documentation / Support in
+     the empty state (13 has none; it is gone here too). The two notes above describe the state
+     before that and are kept as history. Option 1 is AHEAD of 13 in one place: the word-by-word
+     Gemini fade (`aitw*`, 23 Sep 2026), which 13 does not have.
      The MARK is the other way round: the gradient star came WITH the sidebar, because the
      rail's own intro animation is built on it. See the swap banner for why.
      ⚠️ THE MARK IS LUCIDE `sparkles`, pasted verbatim from `free-icons/lucide/cursors` — the
@@ -10923,7 +10946,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
            star's inner counter closes up and it reads as a smudge, where the solid one keeps
            its silhouette. Its only difference is a second, inner star subpath; it can be
            swapped in by replacing this `d` if a lighter mark is ever wanted. -->
-    <div class="sitem airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic aisprk" data-aispark viewBox="0 0 48 48"></svg><span class="lbl">Iris</span></div>
+    <div class="sitem airail" id="sbAI" data-tip="Ask AI" onclick="aiOpen()"><svg class="ic aisprk" data-aispark viewBox="0 0 48 48"></svg><span class="lbl">Ask AI</span></div>
     <div class="sitem" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search<span class="kbd" id="sbKbd">⌘ K</span></span></div>
     <!-- Global AI — the product's own assistant screen (`Global_ai.html`, 16 Sep 2026). A real
          navigation, not a panel: it is a page of its own, so this row is a link and not a
@@ -11438,9 +11461,9 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
           <!-- the chat, in this module (annotation, 17 Aug 2026). It opens the same panel
                the Dashboard uses, but scoped to Logs and pinned to this screen, so the
                questions it offers are about logs rather than about a board. -->
-          <button class="lxask" data-tip="Ask Iris about these logs  A" onclick="aiOpen('logs')">
+          <button class="lxask" data-tip="Ask AI about these logs  A" onclick="aiOpen('logs')">
             <svg data-aispark viewBox="0 0 48 48"></svg>
-            <span>Iris</span></button>
+            <span>Ask AI</span></button>
           <button class="lxlive" data-tip="Tail incoming logs in real time" onclick="lxLive(1)">
             <svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 21h8M6 9h5M6 12.5h8"/></svg>
             <span>Start Live Trail</span></button>
@@ -15970,7 +15993,7 @@ const KB = [
   {k:'f', cap:'F',  grp:'View',       label:'Full screen',            sel:'#fsBtn',                run:()=>toggleFS()},
   {k:'/', cap:'/',  grp:'View',       label:'Search dashboards',      sel:'#dsearchBox',           run:()=>openDPanel()},
   {k:'s', cap:'S',  grp:'Share & AI', label:'Share dashboard',        sel:'#shareBtn',             run:()=>openDrawer('drawer-share')},
-  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask Iris',               sel:'.aibtn',                run:()=>aiOpen()},
+  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask AI',               sel:'.aibtn',                run:()=>aiOpen()},
   /* display-only rows: these keys are owned by handlers that already existed */
   {k:null, cap:KMOD+'K', grp:'General', label:'Global search',        sel:'',  run:null},
   {k:null, cap:'?',  grp:'General',   label:'This shortcut sheet',    sel:'',  run:null},
@@ -16727,7 +16750,7 @@ function wAiCard(w, gi, i){
       '<div class="aicde">' + (w.body
         ? '<div class="aicdmsg">Editing the question — Save to run it again.</div>'
         : W_AICARD_SVG.replace('<svg ', '<svg class="aicdart" ') +
-          '<div class="aicdmsg">Ask Iris anything to get started.</div>') + '</div>' +
+          '<div class="aicdmsg">Ask AI anything to get started.</div>') + '</div>' +
       aicdPromptHTML(w, gi, i) + '</div>';
   return '<div class="aicdw">' +
       '<div class="aicdbody">' + w.body + '</div>' +
@@ -16743,7 +16766,7 @@ function wAiCard(w, gi, i){
 function aicdPromptHTML(w, gi, i){
   const tries = aicdTries();
   return '<div class="aicdp">' +
-    '<input class="aicdin" id="aicdIn' + gi + '_' + i + '" placeholder="Ask Iris anything about this board…" ' +
+    '<input class="aicdin" id="aicdIn' + gi + '_' + i + '" placeholder="Ask AI anything about this board…" ' +
       'value="' + aicdA(w.prompt) + '" ' +
       'onclick="event.stopPropagation()" oninput="aicdTyped(' + gi + ',' + i + ')" ' +
       'onkeydown="aicdKey(event,' + gi + ',' + i + ')">' +
@@ -16802,10 +16825,10 @@ function aicdSave(gi, i){
 function aicdRun(gi, i){
   const w = aicdAt(gi, i); if (!w || !w.prompt) return;
   if (!aicdReads(w.prompt)){
-    toast('An AI Card reads the board — ask Iris in the chat to build something');
+    toast('An AI Card reads the board — ask AI in the chat to build something');
     w.body = '<p class="aicdno">This card reads the board and reports what it finds. ' +
       '<b>Building</b> a widget or a dashboard is a change, and a change needs the chat’s ' +
-      'approval step — ask Iris for it there.</p>';
+      'approval step — ask AI for it there.</p>';
     w.at = Date.now(); w.edit = 0; renderCanvas();
     return;
   }
@@ -21887,7 +21910,7 @@ function waiAsk(){
      precedent for this in the same panel. */
   const el = document.getElementById('aiIn');
   if (el){ el.value = t ? `Explain “${t}” — ` : ''; if (typeof aiGrow === 'function') aiGrow(el); el.focus(); }
-  toast(t ? `Asking about “${t}”` : 'Ask Iris about this widget');
+  toast(t ? `Asking about “${t}”` : 'Ask AI about this widget');
 }
 
 /* ================= Version history =================
@@ -25617,13 +25640,38 @@ function aiClamp(){
   AIF.x = Math.max(xMin, Math.min(AIF.x, Math.max(xMin, innerWidth - AIF.w - AI_EDGE)));
   AIF.y = Math.max(AI_EDGE, Math.min(AIF.y, Math.max(AI_EDGE, innerHeight - AIF.h - AI_EDGE)));
 }
+/* the card's content-fit height: its chrome (header + composer) plus what the body NATURALLY needs,
+   capped so a long thread still scrolls inside. The empty state stretches to fill (min-height:100%,
+   auto margins), so that is switched off for the one measurement. */
+const AI_COMPACT_MAX = 720;   /* the empty state needs ~660px; above this a thread scrolls inside */
+function aiCompactH(){
+  const p = document.getElementById('aiPanel'), b = document.getElementById('aiBody');
+  if (!p || !b) return AIF.h;
+  const chrome = p.getBoundingClientRect().height - b.clientHeight;
+  /* ⚠️ NOT b.scrollHeight — it is never smaller than the visible height, so it reported the FULL
+     height as "natural" and the card never shrank. Measure from the body's top to its last child. */
+  const em = b.querySelector('.aiempty'), prev = em ? em.style.minHeight : '';
+  if (em) em.style.minHeight = '0';
+  const cs = getComputedStyle(b), last = b.lastElementChild;
+  const natural = last ? last.getBoundingClientRect().bottom - b.getBoundingClientRect().top + b.scrollTop
+    + parseFloat(cs.paddingBottom) : 0;
+  if (em) em.style.minHeight = prev;
+  return Math.round(Math.max(aiFMinH(), Math.min(AI_COMPACT_MAX, aiFMaxH(), chrome + natural)));
+}
 function aiDragStart(e){
   const p = document.getElementById('aiPanel');
   if (!p.classList.contains('aifloat')) return;
   /* a press on any control in the header is a click, not the start of a drag */
   if (e.target.closest('button,input,a,.aihttl,.aihm')) return;
   if (AIF.x === null) aiFloatSeed();
-  aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h };
+  /* ⚠️ PULLED OFF ITS DOCK, THE CARD SHRINKS TO ITS CONTENT (request, 23 Sep 2026, monday.com's
+     Sidekick as the reference): docked it is full height; the first move away turns it into a compact
+     card that fits what it holds, header still under the pointer. Only from the FULL-HEIGHT resting
+     size — a card someone has already sized keeps that size. This is the one exception to "a move may
+     never change the size" below: it happens once, at mousedown, and the drag then pins it as usual. */
+  /* armed here, applied on the FIRST REAL MOVE (aiRzMove) — a plain click on the header must not shrink it */
+  aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h,
+             cp: AIF.h >= aiFMaxH() - 2 };
   /* ⚠️ MOVE ONLY — the edge grips want their own resize cursors, so this cannot go in
      `aiRzBind`, which every drag goes through. Cleared in `aiRzEnd` with the edge flags. */
   document.body.classList.add('aidragmv');
@@ -25658,7 +25706,9 @@ function aiRzMove(e){
     return;
   }
   if (aiDrag.m === 'move'){
+    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){ aiDrag.cp = false; aiDrag.h = aiCompactH(); }
     AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy;
+    AIF.w = aiDrag.w; AIF.h = aiDrag.h;   /* clamp against the (possibly compact) size, or it pins to the old full height */
     /* ⚠️ A MOVE MAY NEVER CHANGE THE SIZE — reported twice (21 Aug 2026: "when I move the
        chat interface down the height increases"). It could not be reproduced: a header drag
        measured a 0px height delta at 1600×950 and 1512×1000, at rest and after shrinking.
@@ -25670,6 +25720,12 @@ function aiRzMove(e){
     aiClamp();
     AIF.w = aiDrag.w; AIF.h = aiDrag.h;
     aiFloatApply(); aiFabPaint();
+    /* ⚠️ THE DOCK ZONE (request, 23 Sep 2026, monday's Sidekick as the reference): pointer near the
+       right edge → a ghost shows where the card will land — its DEFAULT, full-height dock — and
+       releasing there puts it back (aiRzEnd). The POINTER is tested, not the card: the card is
+       clamped 20px in and its edge can never reach the window's. */
+    aiDockGhost();
+    document.body.classList.toggle('aidockr', e.clientX >= innerWidth - AI_DOCK_ZONE);
     return;
   }
   /* ⚠️ EIGHT MODES, tested by MEMBERSHIP not equality (`nw` is both `n` and `w`). Written
@@ -25708,10 +25764,19 @@ function aiRzMove(e){
     Math.min(aiFMaxH(), innerHeight - AI_EDGE - aiDrag.y, aiDrag.h + dy));
   aiClamp(); aiFloatApply(); aiFabPaint();
 }
+const AI_DOCK_ZONE = 72;   /* px from the window's right edge where a release docks the card */
+function aiDockGhost(){
+  if (document.getElementById('aiDockGhost')) return;
+  const g = document.createElement('div'); g.id = 'aiDockGhost'; g.className = 'aidockghost';
+  g.setAttribute('aria-hidden', 'true'); document.body.appendChild(g);
+}
 function aiRzEnd(){
   const d = aiDrag; aiDrag = null;
   document.body.classList.remove('aidragging');
   ['n','s','e','w','mv'].forEach(k => document.body.classList.remove('aidrag' + k));  /* never outlive the drag */
+  const dock = d && d.m === 'move' && document.body.classList.contains('aidockr');
+  document.body.classList.remove('aidockr');
+  if (dock){ AIF.x = AIF.y = AIF.w = AIF.h = null; aiFloatApply(); aiFabPaint(); }   /* back to the default dock */
   removeEventListener('mousemove', aiRzMove);
   removeEventListener('mouseup', aiRzEnd);
   if (!d) return;
@@ -25859,8 +25924,9 @@ function aiRender(){
            aiLogQ builds the query), so the line names both. */
         ? '<p>Ask about the logs on this screen, or describe a search — a severity, a ' +
           'time window, a host — and I\'ll build the query.</p>'
-        : '<p>Ask Iris anything about this dashboard, or get help with insights, ' +
-          'changes and building widgets.</p>') +
+        /* one line, not two (request, 23 Sep 2026: "improve and make it short") — "Ask AI" repeated the
+           panel's own name, and "insights, changes and building widgets" listed what the starters below show */
+        : '<p>Ask about this dashboard, or build a widget.</p>') +
       /* ⚠️ NO ICON on a starter (request, 20 Aug 2026). Four rows carried a tinted glyph
          and two of them were the SAME ✦ the panel's own mark and every answer already
          wear — so the column read as decoration rather than as four different things you
@@ -28556,7 +28622,7 @@ sbNotifBind();    /* the notification card's own hover grace period — see sbNo
 <!-- the dock preview: a ghost of the sidebar column, shown while a floating card is
      dragged into the right-hand hot zone. Outside .aipanel so the card's own opacity
      while docking does not fade the preview with it. -->
-<aside class="aipanel" id="aiPanel" role="dialog" aria-label="Iris — ObserveOps AI">
+<aside class="aipanel" id="aiPanel" role="dialog" aria-label="Ask AI — ObserveOps AI">
   <!-- the ambient thinking glow — decorative only, so it is hidden from assistive tech.
        It runs from the moment the question is sent until the answer lands (.gen). -->
   <!-- resize grips. The left one is shared: it widens the COLUMN in Sidebar and the CARD in
