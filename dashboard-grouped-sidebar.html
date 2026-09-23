@@ -13,7 +13,7 @@
   --bg:#07101f; --header:#07101f; --sidebar:#172336; --sidebar-panel:#172336;
   --card:#0b1627; --card-head:#0f1c30; --panel:#0a1322; --panel-2:#0c1728;
   --border:#1d2a3e; --border-soft:#131f31; --hover:#101d30; --hover-side:#22314a;
-  --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f;
+  --pop:#1d2a3e; --pop-item-hover:#2b394f; --chip:#2b394f; --chip-hover:#485975;
   --pop-line:#2b394f;        /* dividers INSIDE a popover — --border is the same colour as --pop here, so it drew nothing */
   --text:#cad3e2; --text-dim:#8a9ab0; --muted:#5272a0; --faint:#42546e;
   --white:#f4f7fb; --ink:#172336;
@@ -43,7 +43,7 @@ html[data-theme="light"]{
   --bg:#ffffff; --header:#ffffff; --sidebar:#F6F9FC; --sidebar-panel:#ffffff;
   --card:#ffffff; --card-head:#f4f6fa; --panel:#f7f9fc; --panel-2:#eef2f8;
   --border:#dfe5ee; --border-soft:#e3e8f2; --hover:#f0f4f9; --hover-side:#eef2f8;
-  --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4; --pop-line:#dfe5ee;
+  --pop:#ffffff; --pop-item-hover:#eef2f8; --chip:#e7ecf4; --chip-hover:#dee5ed; --pop-line:#dfe5ee;
   --text:#24344d; --text-dim:#5b6b85; --muted:#7a8aa5; --faint:#a3b0c5;
   --white:#16233a; --ink:#f4f7fb;
   --card2:#ffffff; --raise:#f6f9fc; --sel:#e0ebf5; --text-dim2:#516381;   /* added for the AI panel */
@@ -2054,6 +2054,135 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 .sitem.uxnews .uxtag{margin-left:6px;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--text-dim);background:var(--chip);border-radius:3px;padding:1px 5px}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+/* ══ OPTION 1's HEADER, COPIED INTO OPTION 2 (request, 23 Sep 2026: "remove the header in option 2
+   and copy option 1 header and paste in option 2"). Rules copied from index.html, comments dropped;
+   the reasons behind each live at the same rules in that file. ══ */
+.timechip{display:flex;align-items:center;gap:7px;background:var(--sidebar);border:1px solid transparent;
+  border-radius:5px;height:28px;padding:0 9px;font-size:12.8px;color:var(--text);cursor:pointer;
+  transition:background .12s,border-color .12s}
+.timechip:hover{background:var(--hover-side)}
+.timechip.on{background:var(--hover-side);border-color:var(--teal)}
+.timechip .tcmain{font-weight:600;white-space:nowrap}
+.timechip .tcsub{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+  white-space:nowrap;padding-left:7px;border-left:1px solid var(--border)}
+.timechip .tcsub .arw{opacity:.7;padding:0 1px}
+.timechip.on .caret{color:var(--teal)}
+.trseg{display:inline-flex;align-items:stretch;height:30px;border:1px solid var(--border);border-radius:6px;
+  background:var(--sidebar);overflow:hidden}
+.trseg > *{border-left:1px solid var(--border)}
+.trseg > :first-child{border-left:0}
+.trseg .timechip{height:auto;border:0;border-left:1px solid var(--border);border-radius:0;background:transparent;padding:0 10px;gap:6px}
+.trseg .timechip:hover,.trseg .timechip.on{background:var(--hover-side)}
+.trseg .timechip.on{box-shadow:inset 0 -2px 0 var(--teal)}
+.trseg .timechip .clock svg,.trseg .timechip .caret svg,.trnav svg,.trrf svg{fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.trseg .timechip .clock svg{width:14px;height:14px}
+.trseg .timechip .caret{display:flex}
+.trseg .timechip .caret svg{width:13px;height:13px}
+.trseg .timechip .tcmain{font-size:13px}
+.trseg .timechip .tcsub{font-family:inherit;font-size:12px;color:var(--text-dim);padding-left:0;border-left:0}
+.trnav,.trrf{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:transparent;border-top:0;border-right:0;border-bottom:0;
+  color:var(--text-dim);cursor:pointer;padding:0;font:inherit}
+.trnav{width:30px}
+.trnav svg{width:14px;height:14px}
+.trrf{padding:0 10px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.trrf svg{width:14px;height:14px}
+.trnav:hover:not(:disabled),.trrf:hover,.trrf.on{background:var(--hover-side);color:var(--text)}
+.trnav:disabled{opacity:.35;cursor:default}
+.trrf.spin svg{animation:trspin .6s linear}
+@keyframes trspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.trrf.spin svg{animation:none}}
+.rfpop{position:fixed;display:none;z-index:1200;min-width:170px;padding:4px;background:var(--pop);border:1px solid var(--pop-line,var(--border));
+  border-radius:6px;box-shadow:var(--pop-shadow,0 8px 24px rgba(0,0,0,.3))}
+.rfpop.on{display:block}
+.rfpop button{display:flex;align-items:center;width:100%;height:30px;padding:0 10px;border:0;border-radius:4px;background:transparent;
+  color:var(--text);font:inherit;font-size:12.5px;cursor:pointer;text-align:left}
+.rfpop button:hover{background:var(--hover-side)}
+.rfpop button.sel{font-weight:600;background:var(--sel,var(--hover-side))}
+.rfpop hr{border:0;border-top:1px solid var(--pop-line,var(--border));margin:4px 0}
+.rfpop .h{padding:6px 10px 4px;font-size:11px;font-weight:600;color:var(--text-dim)}
+.btn.ico{padding:0;width:28px;justify-content:center}
+.pagehead .btn.ico{background:var(--chip);border-color:transparent}
+.pagehead .btn.ico:hover{background:var(--chip-hover)}
+.timechip .clock{display:flex;color:var(--text-dim)}
+.timechip .caret{color:var(--text-dim);font-size:9px}
+.timechip .pill,.range-item .pill{background:var(--chip);color:var(--text);font-weight:600;font-size:11.5px;line-height:17px;padding:0 4px;border-radius:4px}
+.trpop{position:fixed;top:34px;right:0;width:430px;background:var(--pop);border:1px solid var(--border);border-radius:6px;box-shadow:var(--shadow);display:none;z-index:60;overflow:hidden;text-align:left}
+.trpop.on{display:flex}
+.trcustom{flex:1;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.trcustom h4{margin:0 0 4px;font-size:12px;font-weight:600;color:var(--text)}
+.trcustom label{font-size:11px;color:var(--text-dim)}
+.trcustom input{background:var(--panel-2);border:1px solid var(--border);border-radius:4px;height:28px;padding:0 8px;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:11.5px;outline:none;width:100%;box-sizing:border-box}
+.trcustom input:focus{border-color:var(--teal)}
+.trapply{margin-top:8px;height:28px;border-radius:4px;background:var(--teal);color:#04211d;font-weight:600;font-size:12px}
+.trapply:hover{background:#17ccb8}
+.trpresets{width:170px;border-left:1px solid var(--border);display:flex;flex-direction:column}
+.trsearch{margin:8px 8px 4px;height:26px;background:var(--panel-2);border:1px solid var(--border);border-radius:4px;padding:0 8px;color:var(--text);font-size:12px;outline:none}
+.trsearch:focus{border-color:var(--teal)}
+.trlist{overflow:auto;max-height:290px;padding:2px 6px 6px}
+.range-item{display:flex;align-items:center;justify-content:space-between;height:27px;padding:4px 6px;box-sizing:border-box;border-radius:4px;font-size:12.8px;color:var(--text);cursor:pointer}
+.range-item:hover{background:var(--pop-item-hover)}
+.range-item.sel{background:var(--hover-side)}
+.pagehead .crumbs .cur{min-width:0}
+.favstar{color:var(--faint);font-size:15px;cursor:pointer}
+.favstar.on,.favstar.faved{color:var(--yellow)}   /* .faved is what the ported panel toggles */
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;border-radius:3px;padding:0 6px;line-height:17px;background:var(--ok-bg);color:var(--green)}
+.tstamp{display:flex;align-items:center;gap:5px;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.tstamp .arw{color:var(--faint)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:5px;font-weight:600;font-size:12px;border:1px solid var(--border);color:var(--text)}
+.btn:hover{background:var(--hover-side)}
+.btn.pri{background:var(--action);border-color:var(--action);color:var(--action-fg)}
+.btn.pri:hover{background:var(--action-h);border-color:var(--action-h)}
+.btn svg{width:13px;height:13px;fill:currentColor}
+.icobtn{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--text-dim);
+  transition:background .12s,color .12s}
+.icobtn svg{width:16px;height:16px;fill:currentColor}
+.icobtn.off{opacity:.34}
+.icobtn.off:hover{background:transparent;color:var(--text-dim)}
+.icobtn:hover{background:var(--hover-side);color:var(--text)}
+.icobtn:active{background:var(--chip)}
+.icobtn.on{background:var(--ai-soft,var(--chip));color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.pagehead .hsep{width:1px;height:18px;background:var(--border);flex:0 0 1px;margin:0 2px}
+.kbpop{position:fixed;z-index:95;width:462px;max-width:94vw;
+  background:var(--pop);border:1px solid var(--border);border-radius:8px;
+  box-shadow:var(--pop-shadow);padding:13px 15px 14px;
+  opacity:0;visibility:hidden;transform:translateY(-4px);
+  transition:opacity .12s,transform .12s,visibility .12s}
+.kbpop.on{opacity:1;visibility:visible;transform:none}
+.kbpoph{font-size:12.8px;font-weight:600;color:var(--white);margin-bottom:2px}
+.kbpops{font-size:11.5px;color:var(--text-dim);line-height:1.45;margin-bottom:11px}
+.kbpopc{display:grid;grid-template-columns:1fr 1fr;gap:11px 20px}
+.kbpopg{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border-soft)}
+.kbpopr{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:12px;color:var(--text)}
+.kbpopr b{font-weight:400;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kbpopr span{margin-left:auto;flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:10px;
+  font-weight:600;color:var(--text);background:var(--chip);border-radius:4px;padding:2px 6px;
+  min-width:22px;text-align:center}
+.kbpopf{margin-top:12px;padding-top:10px;border-top:1px solid var(--pop-line);
+  font-size:11.5px;color:var(--text-dim)}
+.kbpopf b{color:var(--text);font-family:"JetBrains Mono",monospace;font-weight:600}
+#dashHeadIc{flex:0 0 auto;color:var(--text-dim)}
+.pagehead .crumbs{gap:8px;font-size:13.5px}
+.pagehead .crumbs .cur{font-size:16px;font-weight:700}
+.crumbs .csep{display:inline-flex;align-items:center}
+.crumbs .csv{width:14px;height:14px;fill:none;stroke:var(--text-dim);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.crmore{flex:0 0 auto;display:inline-grid;place-items:center;width:28px;height:24px;border-radius:6px;
+  border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;padding:0}
+.crmore:hover{background:var(--hover-side);color:var(--text)}
+.crmore svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.pagehead .vbadge{flex:0 0 auto;gap:5px;font-size:12px;font-weight:600;line-height:22px;padding:0 10px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--green) 35%,transparent);background:color-mix(in srgb,var(--green) 12%,transparent)}
+.pagehead .vbadge svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pagehead .favstar:not(.faved){color:var(--text-dim)}
+.pagehead .favstar{flex:0 0 auto;display:inline-grid;place-items:center;width:24px;height:24px;margin-left:2px}
+.pagehead .favstar svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.pagehead .favstar.faved svg{fill:currentColor}
+#view-dashboard > .pagehead{height:50px;flex:0 0 50px;overflow:hidden}
+.pagehead .btn.ico{margin-left:1px}
+.trseg > *{border-left:1px solid var(--border)}
+
+
 </style>
 </head>
 <body class="mpshut">
@@ -2116,53 +2245,57 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
     <!-- ===== Dashboards view — redesigned dashboard picker panel + widget canvas ===== -->
     <section class="view" id="view-dashboard">
       <div class="pagehead">
-        <!-- live 8.2.6 uses a chevron here, not a panel glyph — it points the way the panel moves.
-             Starts FLIPPED because the dashboard list is collapsed by default (annotation,
-             13 Aug 2026) — the chevron and the title have to agree with #dpanel.hid below. -->
-        <button class="iconbtn dpchev flip" style="width:30px;height:28px" id="dpanelBtn" title="Show dashboard list" onclick="toggleDPanel()">
-          <svg viewBox="0 0 24 24"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>
+        <!-- ⚠️ OPTION 1's HEADER, COPIED IN (request, 23 Sep 2026: "remove the header in option 2 and
+             copy option 1 header and paste in option 2"). Option 2's own head — the switcher, Live/Paused,
+             firing chip, countdown ring, AI Chat and Export — is gone. Groups is left out: Option 2's
+             boards have no groups. The time bar drives THIS page's timeline engine (setRange /
+             tApplyCustom), so the strip below follows it; see the tr2 block in the script. -->
+        <button class="icobtn dpchev flip" id="dpanelBtn" title="Show dashboard list" onclick="toggleDPanel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>
         </button>
+        <span class="hsep"></span>
         <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
-        <!-- Breadcrumbs, matching Option 1 (annotation, 13 Aug 2026). The ancestors open the
-             dashboard list in place — they do not navigate out of the prototype. #dashTitle
-             stays the current crumb, so every existing writer of it still works. -->
         <span class="crumbs">
-          <a onclick="openDPanel()" title="Browse all dashboards">Dashboards</a><span class="csep">/</span>
-          <a onclick="openDPanel(document.getElementById('crumbCat').textContent)" title="Browse this category" id="crumbCat">PMG</a><span class="csep">/</span>
-          <button class="hsw" id="hswBtn" type="button" onclick="hswOpen(event)" aria-haspopup="dialog" data-tip="Switch dashboard"><span class="cur" id="dashTitle">Log Statistics</span><svg class="hswcv" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6l6 -6"/></svg></button>
+          <a id="crumbCat" hidden>PMG</a>
+          <span class="cur" id="dashTitle">Log Statistics</span>
         </span>
-        <!-- ⚠️ THE 22 Sep 2026 HEADER PASS (Option 2 only), from a written list of ideas — 1, 2, 4,
-             5 and 6. The title is a SWITCHER (Favorites · Recent · search), the visibility badge sits
-             beside it with NO chevron (a chevron says "next level"), the red chip counts firing
-             alerts and highlights their widgets, the time chip says Live / Paused, and ⟳ is a
-             countdown ring. Namespaced `hsw` / `hvis` / `hfire` / `hlive` / `hrf`, grepped free.
-             ⚠️ The alert counts are SEEDED per dashboard name — deterministic demo data. -->
-        <span class="hvis" id="hVis" data-tip="Visible to the whole organisation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg><span id="hVisTx">Public</span></span>
-        <button class="hfire" id="hFire" type="button" onclick="hFireGo()"><i></i><span id="hFireTx">3 firing</span></button>
-        <button class="dstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></button>
-        <span style="flex:1"></span>
-        <!-- The absolute-range readout (#tstamps, "Aug 13 at 12:00 AM — Aug 13 at 02:02 PM")
-             was REMOVED (annotation, 13 Aug 2026). The time chip beside it already names the
-             range, and the slider strip below shows it. Both writers now guard for the
-             missing node. -->
-        <div class="tchip" id="tchip" onclick="openTimeMenu(event)" title="Time range">
-          <b id="tchipShort">today</b>
-          <svg class="tcal" viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2Zm13 8H4v9h16v-9Z"/></svg>
-          <span id="tchipLabel">Today</span>
-          <span class="hlive" id="hLive"><i></i><span id="hLiveTx">Live</span></span>
-          <button class="tclr" onclick="clearTime(event)" title="Clear time range">⊗</button>
-        </div>
-        <button class="hback" id="hBack" type="button" onclick="hBackLive()">Back to live</button>
-        <button class="hrf" id="hRf" type="button" onclick="hRfNow()" aria-label="Refresh now"><svg class="hrfring" viewBox="0 0 30 30" aria-hidden="true"><circle class="t" cx="15" cy="15" r="13"/><circle class="p" id="hRfArc" cx="15" cy="15" r="13"/></svg><svg class="hrfic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg></button>
-        <!-- The Sticky Timeline toggle (#stickyBtn) was removed from the toolbar
-             (annotation, 13 Aug 2026). tSticky stays true, so one time range still
-             applies to every widget — it just can no longer be turned off from here.
-             toggleSticky() guards for the missing button and is now unreachable. -->
-        <!-- primary entry point for the chat panel; the rail's ✦ row and ⌘I are the others -->
-        <button class="acaskbtn" title="Ask ObserveOps AI  ⌘I" onclick="acOpen('toolbar')"><svg viewBox="0 0 24 24"><path d="M9.5 2.5c.4 3.7 3.3 6.6 7 7-3.7.4-6.6 3.3-7 7-.4-3.7-3.3-6.6-7-7 3.7-.4 6.6-3.3 7-7ZM18 14c.23 2.1 1.9 3.77 4 4-2.1.23-3.77 1.9-4 4-.23-2.1-1.9-3.77-4-4 2.1-.23 3.77-1.9 4-4Z"/></svg>Ask AI</button>
-        <button class="iconbtn" title="Full Screen" onclick="toggleFullscreen()"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
-        <button class="iconbtn" title="Export" onclick="openExportMenu(event)"><svg viewBox="0 0 24 24"><path d="M12 3l5 5-1.4 1.4L13 6.8V15h-2V6.8L8.4 9.4 7 8l5-5ZM5 14h2v5h10v-5h2v7H5v-7Z"/></svg></button>
-        <button class="kebab" title="Dashboard actions" onclick="openDashMenu(event, dashState.cur)">⋮</button>
+        <span class="vbadge" title="Visible to the whole org"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg>Public</span>
+        <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span>
+
+        <span class="spacer" style="flex:1"></span>
+        <span style="position:relative">
+          <span class="trseg" id="trSeg">
+            <button class="trnav" id="trPrev" type="button" onclick="trShift(-1)" data-tip="Previous range" aria-label="Previous range"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg></button>
+            <button class="timechip" onclick="trToggle(event)" title="Time range">
+              <span class="clock"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/></svg></span>
+              <span class="tcmain" id="tcLabel">Today</span>
+              <span class="tcsub" id="tcStamp"></span>
+              <span class="caret"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg></span>
+            </button>
+            <button class="trnav" id="trNext" type="button" onclick="trShift(1)" data-tip="Next range" aria-label="Next range"><svg viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6"/></svg></button>
+            <button class="trrf" id="trRf" type="button" onclick="rfToggle(event)" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="rfLabel">30s</span></button>
+          </span>
+          <div class="rfpop" id="rfPop" onclick="event.stopPropagation()"></div>
+          <div class="trpop" id="trPop">
+            <!-- Option 1's ORIGINAL dropdown (absolute range left, quick ranges right) — swapped in on request,
+                 23 Sep 2026: "in option 1 & 2 header in timeline dropdown will be swap". The grouped redesign is Option 1's now. -->
+            <div class="trcustom" onclick="event.stopPropagation()">
+              <h4>Absolute time range</h4>
+              <label for="trFrom">From</label><input id="trFrom" spellcheck="false"/>
+              <label for="trTo">To</label><input id="trTo" spellcheck="false"/>
+              <button class="trapply" onclick="trApply(event)">Apply time range</button>
+            </div>
+            <div class="trpresets">
+              <input class="trsearch" id="trSearch" placeholder="Search quick ranges" oninput="trRenderPop()" onclick="event.stopPropagation()"/>
+              <div class="trlist" id="trList"></div>
+            </div>
+          </div>
+        </span>
+<button class="btn ico" id="fsBtn" title="Full Screen" onclick="toggleFullscreen()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
+        <button class="btn ico" id="kbPopBtn" aria-label="Keyboard shortcuts"
+          onmouseenter="kb2Hover()" onmouseleave="kb2Later()"
+          onclick="kb2Toggle()"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5h18v14H3V5Zm2 2v10h14V7H5Zm1.5 1.5h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h1.5v2H17v-2ZM6.5 12h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h4v2h-4v-2ZM8 15.5h8v2H8v-2Z"/></svg></button>
+        <button class="btn ico" title="More" onclick="openDashMenu(event, dashState.cur)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></svg></button>
       </div>
       <!-- time-slider strip (live: tick dots + draggable window, domain = 4× selection, right-pinned at now) -->
       <div class="tstrip" id="tstrip">
@@ -3774,6 +3907,179 @@ setInterval(() => {
   hRfPaint();
 }, 1000);
 function hHeadPaint(){ hVisPaint(); hFirePaint(); hLivePaint(); }
+
+/* ================= tr2 — Option 1's time bar, driving THIS page's timeline (23 Sep 2026) =================
+   Option 1's header carries its own range engine; Option 2 already has one (timeState, setRange,
+   tApplyCustom, the strip). Two engines would disagree, so the bar is a front end on this one:
+   a preset calls setRange, Apply and ‹ › call tApplyCustom, and tRefreshUI repaints the bar. */
+const tr2P2 = n => String(n).padStart(2,'0');
+const tr2In = t => { const d = new Date(t);
+  return `${d.getFullYear()}-${tr2P2(d.getMonth()+1)}-${tr2P2(d.getDate())} ${tr2P2(d.getHours())}:${tr2P2(d.getMinutes())}:${tr2P2(d.getSeconds())}`; };
+function trFmtSpan(a, b){
+  const da = new Date(a), db = new Date(b);
+  const day = d => d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+  const hm  = d => tr2P2(d.getHours())+':'+tr2P2(d.getMinutes());
+  return day(da) === day(db) && da.getFullYear() === db.getFullYear()
+    ? day(da)+' · '+hm(da)+' – '+hm(db) : day(da)+' '+hm(da)+' – '+day(db)+' '+hm(db);
+}
+function tr2Paint(){
+  const l = document.getElementById('tcLabel'), s = document.getElementById('tcStamp'), n = document.getElementById('trNext');
+  if (l) l.textContent = timeState.cleared ? 'Select Time' : timeState.label;
+  if (s) s.textContent = timeState.cleared ? '' : trFmtSpan(timeState.from, timeState.to);
+  if (n) n.disabled = timeState.cleared || timeState.to >= Date.now() - 60000;
+}
+function trRenderPop(){
+  const q = (document.getElementById('trSearch').value || '').toLowerCase();
+  document.getElementById('trList').innerHTML = TIME_PRESETS
+    .filter(([k, lb]) => !q || lb.toLowerCase().includes(q) || k.includes(q))
+    .map(([k, lb]) => `<div class="range-item${timeState.key === k ? ' sel' : ''}" onclick="trSetKey('${k}')">${lb}<span class="pill">${k}</span></div>`)
+    .join('') || '<div style="padding:8px;font-size:11.5px;color:var(--text-dim)">No matching range</div>';
+}
+function trPaint(on){
+  const p = document.getElementById('trPop'); if (p) p.classList.toggle('on', !!on);
+  const c = document.querySelector('.timechip'); if (c) c.classList.toggle('on', !!on);
+}
+function trClose(){ trPaint(false); }
+function trPlace(){
+  const p = document.getElementById('trPop'), c = document.getElementById('trSeg');
+  if (!p || !c) return;
+  const b = c.getBoundingClientRect(), w = p.offsetWidth || 430, h = p.offsetHeight || 330;
+  p.style.left = Math.round(Math.max(8, Math.min(b.right - w, innerWidth - w - 8))) + 'px';
+  p.style.top  = Math.round(Math.max(8, Math.min(b.bottom + 6, innerHeight - h - 8))) + 'px';
+}
+function trToggle(e){ e.stopPropagation();
+  const on = !document.getElementById('trPop').classList.contains('on');
+  if (on){ closePops(); rfClose(); }
+  trPaint(on);
+  if (on){ const f = document.getElementById('trFrom'), t = document.getElementById('trTo');
+    if (!timeState.cleared){ f.value = tr2In(timeState.from); t.value = tr2In(timeState.to); }
+    trRenderPop(); trPlace(); } }
+function trSetKey(k){ setRange(k); trClose(); }
+function trApply(e){
+  e.stopPropagation();
+  const a = new Date(document.getElementById('trFrom').value.trim().replace(' ','T')).getTime();
+  const b = new Date(document.getElementById('trTo').value.trim().replace(' ','T')).getTime();
+  if (isNaN(a) || isNaN(b) || a >= b){ toast('Invalid range — expected YYYY-MM-DD HH:MM:SS, with From before To'); return; }
+  tApplyCustom(a, Math.min(b, Date.now())); trClose();
+}
+/* ‹ › step the window by its own length; › stops at now, and landing back on now restores the preset */
+let tr2Home = null;
+function trShift(dir){
+  if (timeState.cleared) return;
+  if (timeState.key !== 'custom') tr2Home = timeState.key;
+  const now = Date.now(), span = timeState.to - timeState.from;
+  let a = timeState.from + dir*span, b = timeState.to + dir*span;
+  if (b >= now - 60000){ if (tr2Home){ setRange(tr2Home); return; } b = now; a = b - span; }
+  tApplyCustom(a, b);
+}
+addEventListener('resize', () => { const p = document.getElementById('trPop'); if (p && p.classList.contains('on')) trPlace(); });
+document.addEventListener('click', e => { const p = document.getElementById('trPop');
+  if (p && p.classList.contains('on') && !p.contains(e.target)) trClose(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ trClose(); rfClose(); } });
+/* ⟳ — refresh now, or an auto-refresh interval that only fires while nothing is open over the board */
+const RF_OPTS = [['Off',0],['10s',1e4],['30s',3e4],['1m',6e4],['5m',3e5],['15m',9e5]];
+let rfMs = 3e4, rfTimer = null;
+function rfPaint(){
+  const l = document.getElementById('rfLabel'), b = document.getElementById('trRf');
+  const o = RF_OPTS.find(x => x[1] === rfMs);
+  if (l) l.textContent = rfMs ? o[0] : '';
+  if (b) b.dataset.tip = rfMs ? 'Auto-refresh every ' + o[0] : 'Refresh';
+}
+function rfArm(){
+  if (rfTimer) clearInterval(rfTimer);
+  rfTimer = rfMs ? setInterval(() => {
+    if (document.hidden || !document.querySelector('#view-dashboard.on')) return;
+    if (document.querySelector('#trPop.on,#rfPop.on,.pop.on,.sdrawer.on,#ddrawer.on,#awDrawer.on,.dwidget.dragging,.dwidget.rzing')) return;
+    if (typeof tDrag !== 'undefined' && tDrag) return;
+    const ae = document.activeElement;
+    if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
+    renderDashCanvas();
+  }, rfMs) : null;
+}
+function rfNow(){
+  const b = document.getElementById('trRf');
+  if (b){ b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); }
+  renderDashCanvas(); rfClose(); toast('Dashboard refreshed');
+}
+function rfSet(ms){ rfMs = ms; rfPaint(); rfArm(); rfClose();
+  toast(ms ? 'Auto-refresh every ' + RF_OPTS.find(x => x[1] === ms)[0] : 'Auto-refresh off'); }
+function rfClose(){ const p = document.getElementById('rfPop'), b = document.getElementById('trRf');
+  if (p) p.classList.remove('on'); if (b) b.classList.remove('on'); }
+function rfToggle(e){
+  e.stopPropagation();
+  const p = document.getElementById('rfPop'), b = document.getElementById('trRf');
+  if (p.classList.contains('on')){ rfClose(); return; }
+  trClose();
+  p.innerHTML = '<button onclick="rfNow()">Refresh now</button><hr><div class="h">Auto-refresh</div>'
+    + RF_OPTS.map(([n, ms]) => `<button class="${ms === rfMs ? 'sel' : ''}" onclick="rfSet(${ms})">${n}</button>`).join('');
+  p.classList.add('on'); b.classList.add('on');
+  const r = b.getBoundingClientRect(), w = p.offsetWidth;
+  p.style.left = Math.round(Math.max(8, Math.min(r.right - w, innerWidth - w - 8))) + 'px';
+  p.style.top  = Math.round(r.bottom + 6) + 'px';
+}
+document.addEventListener('click', e => { const p = document.getElementById('rfPop');
+  if (p && p.classList.contains('on') && !p.contains(e.target)) rfClose(); });
+/* keyboard shortcuts — Option 1's hover popover, over the keys THIS page has. One registry drives
+   the popover and the handler, so the list cannot name a key that does nothing. */
+const KB2_MOD = /Mac|iP(hone|ad)/.test(navigator.platform || '') ? '⌘' : 'Ctrl ';
+const KB2 = [
+  {k:'n', cap:'N', grp:'Dashboard', label:'Create new dashboard', run:() => dashNew()},
+  {k:'d', cap:'D', grp:'Dashboard', label:'Show / hide dashboard list', run:() => toggleDPanel()},
+  {k:'r', cap:'R', grp:'Dashboard', label:'Refresh now', run:() => rfNow()},
+  {k:'t', cap:'T', grp:'View', label:'Time range', run:() => trToggle({stopPropagation(){}})},
+  {k:'[', cap:'[', grp:'View', label:'Previous range', run:() => trShift(-1)},
+  {k:']', cap:']', grp:'View', label:'Next range', run:() => trShift(1)},
+  {k:'f', cap:'F', grp:'View', label:'Full screen', run:() => toggleFullscreen()},
+  {k:null, cap:KB2_MOD + 'I', grp:'AI', label:'AI Chat', run:null},
+  {k:null, cap:KB2_MOD + 'K', grp:'General', label:'Search', run:null},
+  {k:'/', cap:'/', grp:'General', label:'Search', run:() => openSearch()},
+  {k:'?', cap:'?', grp:'General', label:'This shortcut list', run:() => kb2Toggle()},
+  {k:null, cap:'Esc', grp:'General', label:'Close menu / popover', run:null}
+];
+let kb2T = null, kb2In = false, kb2Pin = false;
+function kb2El(){
+  let el = document.getElementById('kbPop'); if (el) return el;
+  el = document.createElement('div'); el.id = 'kbPop'; el.className = 'kbpop';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Keyboard shortcuts');
+  el.addEventListener('mouseenter', () => { kb2In = true; clearTimeout(kb2T); });
+  el.addEventListener('mouseleave', () => { kb2In = false; kb2Later(); });
+  const grps = [...new Set(KB2.map(s => s.grp))];
+  el.innerHTML = '<div class="kbpoph">Keyboard shortcuts</div>'
+    + '<div class="kbpops">These work on the dashboard — never while you are typing.</div>'
+    + '<div class="kbpopc">' + grps.map(g => '<div><div class="kbpopg">' + g + '</div>'
+      + KB2.filter(s => s.grp === g).map(s => '<div class="kbpopr"><b>' + s.label + '</b><span>' + s.cap + '</span></div>').join('')
+      + '</div>').join('') + '</div>'
+    + '<div class="kbpopf">Click the button to keep this open, or press <b>?</b> from anywhere.</div>';
+  document.body.appendChild(el); return el;
+}
+function kb2Open(){
+  const b = document.getElementById('kbPopBtn'); if (!b) return;
+  const el = kb2El(), r = b.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  let top = r.bottom + 8; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  el.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px'; el.style.top = top + 'px';
+  el.classList.add('on');
+}
+function kb2Close(){ clearTimeout(kb2T); kb2In = false; kb2Pin = false;
+  const el = document.getElementById('kbPop'); if (el) el.classList.remove('on'); }
+function kb2Hover(){ clearTimeout(kb2T); kb2T = setTimeout(kb2Open, 140); }
+function kb2Later(){ clearTimeout(kb2T); kb2T = setTimeout(() => { if (!kb2In && !kb2Pin) kb2Close(); }, 200); }
+function kb2Toggle(){ const el = document.getElementById('kbPop');
+  if (el && el.classList.contains('on') && kb2Pin){ kb2Close(); return; }
+  clearTimeout(kb2T); kb2Open(); kb2Pin = true; }
+addEventListener('resize', kb2Close);
+document.addEventListener('click', e => { if (kb2Pin && !e.target.closest('#kbPop,#kbPopBtn')) kb2Close(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ kb2Close(); return; }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const a = document.activeElement;
+  if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+  if (!document.querySelector('#view-dashboard.on')) return;
+  if (document.querySelector('#searchLayer.on,.pop.on,.sdrawer.on,#ddrawer.on,#awDrawer.on,#acPanel.on')) return;
+  const s = KB2.find(x => x.k && (x.k === e.key.toLowerCase() || x.k === e.key));
+  if (!s || !s.run) return;
+  e.preventDefault(); s.run();
+});
+
 function dashNew(){
   if (dashState.tab==='dash'){ openCreateDrawer(); return; }
   openNocNew();
@@ -4602,10 +4908,12 @@ function tApplyCustom(from, to, viaSlider){
   tRefreshUI();
 }
 function tRefreshUI(){
+  /* the old chip left with Option 2's header (23 Sep 2026) — guarded, and Option 1's time bar painted */
   const chip = document.getElementById('tchip');
-  chip.classList.toggle('cleared', timeState.cleared);
-  document.getElementById('tchipShort').textContent = timeState.short;
-  document.getElementById('tchipLabel').textContent = timeState.cleared ? 'Select Time' : timeState.label;
+  if (chip){ chip.classList.toggle('cleared', timeState.cleared);
+    document.getElementById('tchipShort').textContent = timeState.short;
+    document.getElementById('tchipLabel').textContent = timeState.cleared ? 'Select Time' : timeState.label; }
+  if (typeof tr2Paint === 'function') tr2Paint();
   /* #tstamps was removed from the toolbar — guard, don't assume it is there */
   const _ts = document.getElementById('tstamps');
   if (_ts) _ts.textContent = timeState.cleared ? '' : tFmt(timeState.from)+' — '+tFmt(timeState.to);
@@ -4744,8 +5052,9 @@ function tStripInit(){
     const len = tDomain.end - tDomain.start;
     timeState = { cleared:false, key:'custom', short:'custom', label:'Custom',
       from: Math.round(tDomain.start + len*L/100), to: Math.round(tDomain.start + len*R/100) };
-    document.getElementById('tchipShort').textContent = 'custom';
-    document.getElementById('tchipLabel').textContent = 'Custom';
+    const _c1 = document.getElementById('tchipShort'); if (_c1) _c1.textContent = 'custom';
+    const _c2 = document.getElementById('tchipLabel'); if (_c2) _c2.textContent = 'Custom';
+    if (typeof tr2Paint === 'function') tr2Paint();
     const _ts2 = document.getElementById('tstamps');            /* removed from the toolbar */
     if (_ts2) _ts2.textContent = tFmt(timeState.from)+' — '+tFmt(timeState.to);
   });
@@ -5037,6 +5346,7 @@ document.addEventListener('click', e=>{
   tStripInit();
   setRange('today');
   hHeadPaint();
+  rfPaint(); rfArm();
   selectModule(0);
   renderApprovals();
   renderHealthTabs();
