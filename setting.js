@@ -1786,6 +1786,10 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    do not conflict: what the reference shows here is the TREATMENT, which is what changed. */
 .agpci.sm{flex:0 0 16px;width:16px;height:16px;background:none;border-radius:0}
 .agpci.sm svg{width:16px;height:16px}
+/* Advanced configure's provider tiles: the brand marks are MONOCHROME (request, 23 Sep 2026:
+   "the provider all icon will be use black & white"). They take the tile's own text colour, so they
+   read white in dark and black in light. Scoped to .agadvtile: the Option 3 cards keep their brand colours. */
+.agadvtile .agpci[data-brand]{color:var(--page-text-color)}
 /* the reference's leading dot, and the one place the Active card differs from Available beyond its word */
 .agpcd{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
 .agpcn{font-size:14px;font-weight:600;color:var(--page-text-color)}

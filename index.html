@@ -3415,6 +3415,12 @@ body:has(#view-dashboard.on) .gnav{display:block}
 .wpie{flex:1;min-height:0;display:flex;align-items:center;gap:10px;padding:2px 4px}
 .wpie svg{flex:0 0 auto;width:38%;max-width:150px;height:auto;align-self:center}
 .wpl{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;overflow:auto;font-size:11px;color:var(--text-dim)}
+/* ⚠️ PIE + LEGEND ARE ONE BLOCK, CENTRED IN THE WIDGET (request, 23 Sep 2026: "the chart shows centre
+   aligned in every widget"). The legend used to take `flex:1`, so it swallowed the spare width and
+   the pie sat hard left of a wide card. Now the legend hugs its longest row (capped so a long host
+   name still ellipsises) and the pair centres; on a narrow card it behaves exactly as before. */
+.wpie{justify-content:center;gap:18px}
+.wpl{flex:0 1 auto;max-width:60%}
 .wpl span{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-family:"JetBrains Mono",monospace;font-size:10.5px}
 .wpl i{width:8px;height:8px;flex:0 0 8px;border-radius:2px}
@@ -3707,6 +3713,14 @@ body:has(#view-dashboard.on) .gnav{display:block}
 /* ---- drag a widget between groups ---- */
 .widget[draggable]{cursor:grab}
 .widget.dragging{opacity:.35;cursor:grabbing}
+/* ⚠️ THE MOVE CURSOR ON EVERY WIDGET (request, 23 Sep 2026: "when I hover a widget the cursor
+   changes to the move icon"). The four-arrow `move` replaces the open hand over the whole card and
+   its title bar, and stays `move` while dragging. Scoped to `#dashGrid`, so the widget cards in
+   the drawers and library keep their own cursors; buttons, links, the ⋮ and the resize corner set
+   their own and are unaffected. Placed after the grab rules so source order decides at equal
+   specificity. */
+#dashGrid .widget[draggable],#dashGrid .widget .whead,#dashGrid .widget .whead:active,
+#dashGrid .widget.dragging{cursor:move}
 .widget.dropbefore{box-shadow:inset 3px 0 0 var(--teal)}
 .dgrid12.dropinto{outline:2px dashed var(--teal);outline-offset:3px;border-radius:8px}
 
@@ -3751,7 +3765,9 @@ body:has(#view-dashboard.on) .gnav{display:block}
    width whether the list is open or not, so opening it never re-flows the dashboard. */
 /* Both board panels live on the LEFT: the outline sits in flow at the edge of the canvas,
    and the dashboard / NOC View picker overlays it when you open it. */
-.dpanel{position:absolute;left:0;top:0;bottom:0;z-index:40;width:340px;max-width:86vw;
+/* ⚠️ 540px, WAS 340px (request, 23 Sep 2026: "sidebar width 340px to 540px"). It overlays the canvas,
+   so nothing re-flows; `max-width:86vw` still caps it on a narrow window. */
+.dpanel{position:absolute;left:0;top:0;bottom:0;z-index:40;width:540px;max-width:86vw;
   display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--panel);
   border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.34);
   transform:translateX(0);transition:transform .2s ease}
@@ -15780,6 +15796,17 @@ document.addEventListener('mouseover', e => {
 document.addEventListener('mouseout', e => { if (tipCur && !tipCur.contains(e.relatedTarget)) tipHide(); });
 document.addEventListener('mousedown', tipHide);          /* don't leave one hanging over a menu */
 document.addEventListener('keydown', e => { if (e.key === 'Escape') tipHide(); });
+/* ⚠️ A GROUP'S ＋ / ⋮ MUST NOT OUTSTAY THE POINTER (request, 23 Sep 2026: "sometimes the ⋮ does
+   not hide when I am not hovering the group"). Reproduced: click ⋮, close its menu with Esc — the
+   Escape key makes Chrome treat the still-focused button as `:focus-visible`, and
+   `.gact:focus-visible{opacity:1}` then pinned it on after the pointer left. Esc is "I'm done
+   here", so the header control lets go of focus. Tabbing to it still shows it, ring and all. */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){
+    const a = document.activeElement;
+    if (a && a.classList && a.classList.contains('gact')) setTimeout(() => a.blur(), 0);
+  }
+}, true);
 document.addEventListener('focusin',  e => { const t = tipFor(e.target); if (t){ tipCur = t; tipShow(t); } });
 document.addEventListener('focusout', tipHide);
 addEventListener('scroll', tipHide, true);
@@ -17209,7 +17236,7 @@ BOARDS['ui_pmg'] = {
        Used column"; the four-stack option was chosen). Left: Used label (rows 1–4) + the four
        consumption widgets stacked (cols 2–6). Right: Idle label (rows 1–4) + the three headroom
        widgets (cols 8–12). The LEFT widgets carry fixed heights and so size the four row tracks;
-       the RIGHT ones use `rows` and stretch to them (Idle Cores takes the last two), which is what
+       the RIGHT ones use `rows` and stretch to them (one track each), which is what
        keeps the two halves' edges aligned.
        ⚠️ SOURCE ORDER IS THE PLACEMENT — plain auto-flow alternates left/right row by row.
        ⚠️ THE TWO LABELS ARE TINTED, EACH ITS OWN (request, 23 Sep 2026, later): Used in `--red`
@@ -17236,12 +17263,18 @@ BOARDS['ui_pmg'] = {
     { t:'bmeter', title:'CPU vs Thresholds', span:5, h:320, warn:75, crit:90, items:[
         ['192.0.2.162',98], ['203.0.113.219',93], ['n149.example.com',86], ['win-node1',81],
         ['esxi15.example.com',72], ['sles-11',64], ['laptop-t490-01',41] ] },
-    { t:'pie', title:'Top Servers by Idle Cores', span:5, rows:2, items:[
+    { t:'pie', title:'Top Servers by Idle Cores', span:5, rows:1, items:[
         ['esxi15.example.com',38,PIE_C[0]], ['sles-11',11,PIE_C[1]], ['laptop-t490-01',6,PIE_C[2]],
         ['desktop-pc-14',5,PIE_C[3]], ['hpe-msa',3,PIE_C[4]] ] },
     { t:'topproc', title:'Top Processes by CPU', span:5, h:320, u:'%', items:[
         ['java','192.0.2.162',87,12], ['postgres','203.0.113.219',74,-3], ['elasticsearch','n149.example.com',69,8],
         ['sqlservr.exe','win-node1',58,0], ['vmx','esxi15.example.com',46,-6], ['node','sles-11',31,4] ] },
+    /* 23 Sep 2026, later: Idle Cores shrank to one row and this fills the track it gave up —
+       row 4, right half, beside Top Processes (source order places it there). */
+    { t:'topproc', title:'Most Idle Hosts', span:5, rows:1, u:'%', items:[
+        ['esxi15.example.com','ESXi · 48 cores',91,4], ['hpe-msa','Storage array · 16 cores',84,-2],
+        ['sles-11','SUSE 11 · 24 cores',77,6], ['desktop-pc-14','Windows 11 · 8 cores',72,0],
+        ['laptop-t490-01','Windows 11 · 8 cores',63,-9], ['cisco-core.example.com','IOS XE · 4 cores',58,3] ] },
     { t:'table', title:'CPU Alert Stream', span:12, h:230, html:PMG_CPU_STREAM },
   ], [
     /* ── Cisco · switching & routing ── */
