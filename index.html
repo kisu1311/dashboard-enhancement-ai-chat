@@ -4885,6 +4885,11 @@ body.aidragmv,body.aidragmv *{cursor:grabbing!important}
    frame behind the pointer and the whole thread highlights blue as you move */
 body.aidragging{user-select:none;cursor:inherit}
 body.aidragging .aipanel,body.aidragging .shell{transition:none!important}
+/* ⚠️ THE COMPACT SHRINK ANIMATES (request, 24 Sep 2026: "not instant — slowly change the height, like
+   monday.com"). Only WIDTH and HEIGHT ease; left/top stay instant so the card never lags the pointer.
+   It must out-rank the drag's own `transition:none!important` above, hence the extra class. */
+body.aidragging .aipanel.aicompacting,.aipanel.aicompacting{
+  transition:width .35s cubic-bezier(.2,0,0,1),height .35s cubic-bezier(.2,0,0,1)!important}
 /* ── SIDEBAR — the panel gets a column and the board keeps its own ───────────────────────
    The full-height edge panel, with `.shell` giving up exactly the width it occupies, so
    nothing is covered and the dashboard stays readable while you ask about it.
@@ -25560,7 +25565,8 @@ function aiRailW(){
    the grip being broken. Take whichever is smaller. */
 function aiFMinW(){
   const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ai-w'));
-  return Math.min(AI_MIN_W, Number.isFinite(w) ? w : AI_MIN_W, innerWidth - AI_EDGE * 2);
+  /* AI_COMPACT_W is also a floor: the compact card (24 Sep 2026) is narrower than the docked one */
+  return Math.min(AI_MIN_W, AI_COMPACT_W, Number.isFinite(w) ? w : AI_MIN_W, innerWidth - AI_EDGE * 2);
 }
 function aiFMinH(){ return Math.min(AI_MIN_H, innerHeight - AI_EDGE * 2); }
 function aiFMaxW(){
@@ -25643,6 +25649,7 @@ function aiClamp(){
 /* the card's content-fit height: its chrome (header + composer) plus what the body NATURALLY needs,
    capped so a long thread still scrolls inside. The empty state stretches to fill (min-height:100%,
    auto margins), so that is switched off for the one measurement. */
+const AI_COMPACT_W = 380;   /* the compact card's width — narrower than the docked 420, like monday's */
 const AI_COMPACT_MAX = 720;   /* the empty state needs ~660px; above this a thread scrolls inside */
 function aiCompactH(){
   const p = document.getElementById('aiPanel'), b = document.getElementById('aiBody');
@@ -25710,7 +25717,21 @@ function aiRzMove(e){
     return;
   }
   if (aiDrag.m === 'move'){
-    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){ aiDrag.cp = false; aiDrag.h = Math.min(aiDrag.h, aiCompactH()); }
+    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){
+      aiDrag.cp = false;
+      const p = document.getElementById('aiPanel');
+      const nw = Math.max(aiFMinW(), Math.min(aiDrag.w, AI_COMPACT_W));
+      /* measure the content-fit height AT the new width (text rewraps), synchronously — no frame paints */
+      const pw = p.style.width; p.style.width = nw + 'px';
+      const nh = Math.min(aiDrag.h, aiCompactH());
+      p.style.width = pw;
+      /* keep the grabbed point under the pointer if the narrower card would leave it outside */
+      const grab = aiDrag.mx - aiDrag.x;
+      if (grab > nw - 24) aiDrag.x += grab - (nw - 24);
+      aiDrag.w = nw; aiDrag.h = nh;
+      p.classList.add('aicompacting');
+      clearTimeout(aiDrag.ct); aiDrag.ct = setTimeout(() => p.classList.remove('aicompacting'), 380);
+    }
     AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy;
     AIF.w = aiDrag.w; AIF.h = aiDrag.h;   /* clamp against the (possibly compact) size, or it pins to the old full height */
     /* ⚠️ A MOVE MAY NEVER CHANGE THE SIZE — reported twice (21 Aug 2026: "when I move the
