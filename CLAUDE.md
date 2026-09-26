@@ -9177,6 +9177,181 @@ own**, so `getComputedStyle(...).backgroundColor` returns `rgba(0,0,0,0)` and ev
 computed against **black** — which pointed the right way in dark by accident and inverted in
 light. Walk up to the first opaque ancestor before measuring a contrast against "the background".
 
+## The dashboard header is the LIVE PRODUCT'S, copied as it is (Option 1, 25 Sep 2026)
+
+Request: *"go to `https://172.16.12.100/dashboard/112669747490` using dev tools and the header will be
+copied and added in current flow — only dashboard header, as it is, no change header in dashboard"*.
+**Option 1 only** (`index.html`). ⚠️ **Where this conflicts with the 22–23 Sep header entries above,
+this is current** — the segmented `‹ chip › ⟳` bar, the `.btn.ico` squares and their `--chip-hover`
+hover, the Groups button, the Public badge and the keyboard button are all gone from this page.
+
+### What the live bar is, measured (build 10.0.1, `.dashboard-selector-bar`, dark theme)
+
+    bar        padding 4px 8px · 1px rule under it (--border-color) · 45.4px tall · Inter 12.8px
+    left       25px circle (1px --border-color, ink rgba(255,255,255,.65)) with fa-chevron-right 17.6px
+               · 1×25 divider on 8px margins · h3 20px/500/30px in --header-title-text-color (#e3e8f2),
+               margin 0 8px, leading with fa-dashboard 17.6px (mr 8) · fa-star 17.6px (ml 8) #f5bc18
+    chip       --code-tag-background-color (#172336), radius 4, padding 8, 36.4px tall, 193px wide:
+               [today] key pill 18px 12.8/600 on --timerange-background-color · 1×20 rule (mx 8) ·
+               label 13.6/400 in a 100px slot · ⊗ fa-times-circle 17.6px --neutral-light, ml auto
+    stamps     two lines, 12/18, --neutral-light, 8px after the chip: "Fri, Sep 25, 2026 12:00:00 AM"
+    buttons    Full Screen · Export · ⋮ — 35×35, radius 4, padding 8, fill AND border
+               --code-tag-background-color, ink --neutral-button-text, 8px apart, 17.6px glyphs;
+               `.button-neutral-lightest:hover` paints the SAME colours (measured rule)
+
+- ⚠️ **THE LIVE INSTANCE'S CERT IS SELF-SIGNED, SO THE chrome-devtools MCP CANNOT OPEN IT**
+  (`ERR_CERT_AUTHORITY_INVALID`). The user's own Chrome session (claude-in-chrome) has the exception
+  and the login; drive that. ⚠️ **ITS TAB IS `visibilityState:hidden`**, so the SPA's fade-in
+  never completes — the first screenshot was solid navy with `innerText` 357 chars. Inject
+  `*{animation:none;transition:none}` and force `opacity:1`, THEN read; it painted on the second try.
+- ⚠️ **THE claude-in-chrome CONTENT FILTER BLOCKS `key=value;` STRINGS** (`[BLOCKED: Cookie/query
+  string data]`) — three whole style dumps and the `outerHTML` came back empty. Return **JSON** with
+  `:` separators, in chunks under ~1,000 chars (the tool truncates past that too), and rewrite `;`/`=`
+  in any cssText you return.
+- ⚠️ **THE LIVE TOKENS READ OFF `:root` ARE THE LIGHT VALUES** — the dark theme is `body[data-theme=
+  "dark-theme"]`. Read `getComputedStyle(el).getPropertyValue('--x')` on an element INSIDE the bar for
+  the values it actually paints, and `_ds/observeops-ds.css` for the other theme.
+
+### How it is built here
+
+- **The colours are the DS tokens the live bar resolves to, declared per theme on the header itself**
+  (`--lh-*` on `.pagehead.lhd`, the `#gChart` / `.aipanel` precedent) rather than hand-mapped onto
+  this file's near-misses (`--border` is #1d2a3e in dark but #dfe5ee in light where the DS says
+  #e3e8f2; `--sidebar` is #F6F9FC where the DS says #ecf1f9). Dark read off the page, light out of
+  `_ds/observeops-ds.css`; the mapping table is in the CSS comment.
+  ⚠️ **THE STAR IS A LITERAL IN THE DS TOO** — `.text-secondary-yellow{color:rgb(245,188,24)}` with
+  no theme flip — so `--lh-star` is the one value that does not change with the theme.
+- **The glyphs are the product's own, pasted verbatim from `observeops-icons/` on their 48 grid** —
+  chevron-right · dashboard (already `ICONS.dashboard`, via `setIco`) · star · times-circle ·
+  fullscreen · image · ellipsis-v. The live `fa-star` path was compared: it IS the harvested outline
+  star (699 chars, same start), so the faved star reads as an outlined yellow star at 17px, exactly
+  as live.
+- **The ids are the old ones on purpose** — `#dpanelBtn`, `#dashHeadIc`, `#crumbCat` (hidden),
+  `#dashTitle`, `#dashHeadStar`, `.timechip` / `#tcLabel` / `#tcStamp`, `#fsBtn` — because
+  `toggleDPanel`, `pickDash`, `trPlace`, the `KB` registry, `toggleFS` and the widget editor read them.
+  ⚠️ **`trPlace` falls back to `.timechip` when `#trSeg` is gone**; that fallback was already there.
+- ⚠️ **THE CHEVRON GLYPH IS chevron-RIGHT, SO THE FLIP RULE IS INVERTED.** The list boots hidden
+  (`dpanelBtn.classList.add('flip')` at init) and the live bar's resting state is ›, so `.flip` is
+  `transform:none` and the un-flipped state is `scaleX(-1)` (‹ = "hide"). `toggleDPanel` is untouched.
+- ⚠️ **THE CHIP IS A `<div role="button">`, NOT A `<button>`** — the ⊗ inside it is its own control
+  (`trReset`), and interactive content inside a button eats the clicks (the recorded trap). `trReset`
+  stops the click so the popover the chip opens does not also open, then `trSet(TR_HOME)` — the same
+  preset the board boots with; `trSet` ends in `trClose`.
+- **`trStamp()` writes TWO lines now** (`trFmtLive`: `Fri, Sep 25, 2026 12:00:00 AM` — composed by
+  hand, because `toLocaleString` puts a comma after the year) **and the key pill** (`trKeyPaint`:
+  `TR_PRESETS[trSelIdx][1]`, or `custom` for an absolute / stepped / dragged range). Every path that
+  changes the range already reaches `trStamp` through `trSync`, so nothing else had to learn about
+  the pill. The widget editor only tests `#tcStamp` for existence.
+- **The Export square goes through `dmAct('img')`** — the live `handleExport` renders the board to
+  an image and the ⋮ menu's *Export as image* row is that action; the button is a second door to the
+  same row, which is what the live header has.
+- ⚠️ **`.lhsq svg` is `flex:0 0 auto`** — the button's content box is 17px (35 − 2 − 16) and the
+  live glyph is 17.6, overflowing it by a hair; a shrinkable flex item measured 17.
+- ⚠️ **`#dashHeadIc` is addressed BY ID in the `.lhd` rules** — `#dashHeadIc{color:var(--text-dim)}`
+  above is (1,0,0) and beats any class rule.
+- ⚠️ **SCOPED WITH `.lhd`.** The other four `.pagehead`s (module placeholder, Health, Manage) keep
+  their 50px chrome — probe-asserted.
+
+### What left with it, and what that costs — stated, not softened
+
+| gone from the header | still reachable |
+|---|---|
+| **Public** badge | the ⋮ menu's *Make public / Make private* row still shows the state |
+| **Groups ▾** | `openGroupMenu` is reached only from the canvas navigator (`gNav`, boards with ≥ 2 groups) — a two-group board's jump list is the mark at the canvas's right edge |
+| **‹ ›** range stepping | nowhere on screen. `trShift` is kept and unreferenced |
+| **⟳ + auto-refresh interval** | ⚠️ **AUTO-REFRESH STILL RUNS at its 30s default with nothing on screen to change or stop it.** `rfMs` is the dial (`0` = off), `rfArm()` the loop; `rf*` is kept and unreferenced. Deliberately not switched off — the request was the header, not the behaviour |
+| **Keyboard shortcuts** button | `?` and the profile popover still open the sheet; `kbPopOpen` already guarded for the missing button |
+| the chip's own hover / open highlight and the squares' `--chip-hover` | the live bar has neither (measured), so neither is here. The popover is the whole feedback |
+
+- ⚠️ **The stamps say "Jul 11, 2026"** because `TL_NOW` is the prototype's frozen clock — the same
+  anchor the timeline strip under the header draws. Not a bug.
+
+### Verification
+
+A **49-assertion probe** (`lhdprobe.py`, scratchpad): every number in the table above measured on
+the rendered header, the seven product paths present, the boot chevron ›, no trace of the removed
+controls, the chip a div, the two stamps in the live format with midnight first, `trSet` → pill/label/
+stamps, ⊗ → Today, an absolute range → `custom`, the popover opening 6px under the chip with the chip
+unhighlighted, the list toggle flipping the chevron both ways, `toggleFS` still writing its tip, a
+grouped board rendering with no `#grpBtn` to paint, the navigator present, the other `.pagehead`s at
+50px, the full light-theme table, and no console error. Dark, light and 1280×720 screenshotted.
+⚠️ **Three of the first run's four failures were the probe's own model**: the glyph is 16px after
+the divider, not 8 (`mx-2` on both the divider and the h3 — live measures 107 → 123 too); the star is
+dim because the open board is not in `DASH_FAVS` (asserted after `favCurrent()` instead); and the
+light-theme check carried the same star assumption. The fourth was the 17px glyph squeeze above.
+
+## The Monitor module's two header rows are the live product's (Option 1, 25 Sep 2026)
+
+Request: *"in monitor create this 2 header"*, with the live Monitor screen as the picture. Read off
+build 10.0.1 at `/inventory/All/groups` in the user's Chrome (the same harvest route as the dashboard
+header above — the devtools MCP cannot open the self-signed host, the tab is hidden so animations must
+be killed first, and every dump goes back as JSON in <1,000-char chunks). **Option 1 only.**
+
+`Monitors` now opens its own **`#view-monitor`** (`selectModule` routes it there, before the
+placeholder branch) instead of the generic `#view-module` card. Only the two headers are built; the
+grid under them is still the placeholder card, and it says so.
+
+    row 1  `.mnhd`  43.2px on a 1px --border-color rule, 8px left padding · the 25px circled chevron
+                    and the 1×25 divider (the dashboard header's `.lhchev` / `.lhdiv`) · seventeen
+                    ant-tabs: 12.8px, padding 12/0/8, 20px apart, a 4px underline — active 500 in
+                    --primary (#e3e8f2 / #111c2c), the rest 400 in --neutral-light, hover --primary
+    row 2  `.mntb`  16px under it, 8px side padding · a 288×36 search (1px --border-color, radius 4,
+                    page bg, the product `search` glyph 17.6px 12px in, ink --search-icon
+                    #e7f5fb / #2b394f, placeholder at 50%) · five 35px `.lhsq` squares 8px apart —
+                    Columns (eye) · Tags · Export As PDF · Export As CSV · Filter — the last ACTIVE
+                    (`filter-button-active`: --primary fill, page-bg ink), as the live screen ships
+
+- ⚠️ **THE `--lh-*` TOKENS AND THE SHARED CONTROLS MOVED FROM `.pagehead.lhd` ONTO `.lhtok`**, a
+  class both headers carry (`<div class="pagehead lhd lhtok">`, `<section class="view lhtok"
+  id="view-monitor">`). The two screens are the same product chrome and now cannot drift: one
+  circle, one divider, one square. The block gained four tokens for this screen — `--lh-primary`,
+  `--lh-bg`, `--lh-sicon`, `--lh-ph` — all DS values, both themes.
+- ⚠️ **THE TABS ARE DERIVED FROM `EXPLORER_TREE`'s MONITOR ROW** — its kids filtered to the ones
+  that open `Monitors` — which is the live strip's seventeen in its order (`Metric explorer` sits in
+  that row too and is dropped by the filter). One source; the literal list is only the fallback.
+- ⚠️ **THE STRIP SCROLLS SIDEWAYS WITH NO SCROLLBAR** — a stated divergence. Seventeen tabs are
+  1,316px; live has 1,645 to spend and never shows its arrows, but this canvas is ~1,180 at 1280
+  with the list panel shut. `overflow-x:auto` keeps every tab reachable; `mnPaint` scrolls the
+  active one into view.
+- ⚠️ **`.mntabs` IS 43.2px INSIDE A 43.2px BORDER-BOX ROW**, so it overhangs the 1px rule by the
+  rule — which puts the active underline ON the rule, not above it. That is the live geometry
+  (inner row 42.2, tab 43.2); probe-asserted as `tab.bottom === row.bottom`.
+- ⚠️ **THE 5px-OFF SEARCH GLYPH COLOUR IS A REAL TOKEN.** `--search-icon` is #e7f5fb in dark — an
+  odd near-white beside `--neutral-light` everywhere else on the row — and #2b394f in light. Read
+  out of `_ds/observeops-ds.css`, not tuned.
+- ⚠️ **A MONITOR ROW OF THE FLYOUT NOW NAMES THE TAB IT OPENS.** Only `pickRail` ever wrote
+  `MOD_SUB`; a flyout row's `mfGo(mod, act)` did not, so entering through *Network* landed on
+  Inventory. Both row templates (`mfCol`'s and `mfTree`'s inline children) prepend
+  `MOD_SUB="<label>";` — **for `mod === 'Monitors'` rows with no `act` only**, so no other module's
+  placeholder changes. `mnInit(MOD_SUB)` opens that tab, or Inventory, and clears it.
+- ⚠️ **THE CHEVRON RESTS WITH `.flip` ON.** The glyph is chevron-RIGHT and `.lhtok .lhchev svg` mirrors
+  it to ‹ for the dashboard's "list open" state; the monitor list panel starts CLOSED, so this button
+  carries `flip` in its markup and rests on ›, the live screen's resting state. Shipped for an hour
+  without it and pointed ‹ (reported with a screenshot, *"improve in monitor"*), and the tab strip sat
+  16px after the divider — `.lhdiv`'s own 8px margin plus an 8px `margin-left` on `.mntabs` — where
+  live is 8 (107 → 115). `.mntabs` has no left margin now.
+- ⚠️ **THE DARK CIRCLE OVER THE TAB STRIP IN THAT SCREENSHOT IS AGENTATION'S TOOLBAR**, not this page —
+  the recorded z-index trap. It is stripped from every probe copy, which is why it never appears in
+  verification shots.
+- **What each control does, honestly:** tabs switch the underline and the card's name; the chevron
+  flips and says the Groups · Types · Severity · Filter side panel is not built; Search is a real
+  field with nothing under it to filter; Columns / Tags / the two exports toast that they are not
+  built; Filter toggles its active look (live: shows the filter row, which is not built either).
+  ⚠️ The live toolbar has a **sixth** button — `＋ Add filter`, in the filter row below — which is
+  not one of these two headers and is not here.
+- ⚠️ `title` is not used on the Columns square because the live one carries none — `aria-label` +
+  `data-tip` instead, so the tooltip engine still has a name for it.
+
+### Verification
+
+A **32-assertion probe** (`mnprobe.py`, scratchpad): the dashboard header still painting after the
+token move; Monitors opening the new view; every number above measured on the rendered rows; the
+seventeen tabs in order and 20px apart; the underline on the rule; the strip's overflow; the search
+box's geometry, ink, padding, placeholder and glyph; the five squares' order, size, fill, gaps and
+product paths; Filter active at rest and toggling; a tab pick; the chevron flip; `MOD_SUB="Network"`
+landing on Network and the pinned card's row carrying it; Topology still on the placeholder; the
+light-theme table; no console error. Dark and light screenshotted.
+
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 
 The **fourteenth page in the switcher and the first that is NOT an option**: it demonstrates no
@@ -11970,6 +12145,72 @@ module correctly shows that module's agent rather than the one just picked. The 
   gate intact, the titled rail, the un-clipped spacer, a real gap between rows, the rounded selection, the active
   glyph's colour, the component's inline indent untouched — **and Option 1 still carrying its help card, its Advanced
   settings, its Model selection and its plain rail** · `stbehave` **ALL 21 PASS × 13 pages** · dark and light shots.
+
+## Settings › Discovery Settings › Discovery Profile — cloned from live 10.0.1 (25 Sep 2026)
+
+Request: *"go to `/settings/network-discovery/network-discovery-profiles` and understand the full
+Discovery Settings flow and add [it] in the setting module as it is, with the same UI, no changes"*.
+Read off **live build 10.0.1** in the user's Chrome (DOM, computed styles, every popover opened
+by hand) and rebuilt in **`setting.js`**, so it reaches **all fourteen option pages** at once.
+Registered as `ST_PAGES['Discovery Settings › Discovery Profile']`; namespace **`dp*` / `DP_*` /
+`.dp*`**, grepped free first (105 functions, 51 classes, no clash). **Nothing was created, run or
+deleted on the instance.** Credential Profile, the category's other page, is still the stub.
+
+| screen | what it has |
+|---|---|
+| list | the live grid over `.stcgrid`: **Discovery Profile Name** (a link to the result) · **IP/Host/IP Range/CIDR/CSV** · **Type** (the vendor mark) · **Discovered Objects** (the used-count pill) · **Status** (*Last ran at …* / *Last ran failed at …* / *Not Run Yet*) · Scheduler; optional Groups · Collectors from the eye column chooser (+ *Reset Column Preference*); chips `Type · Status · Discovered Objects` with `=` / `!=`; search; Export PDF/CSV; the shared pager at 50 a page over **66 rows**; per row ⟳ run + ⋮ = Schedule · Edit · **Delete** (red) |
+| delete | the live 450px red-bordered confirm, trash in a circle, **No · Yes**, focus on No, Esc closes |
+| schedule | the live 682px drawer *"<name> Schedule Discovery"* — Once/Daily/Weekly/Monthly, Start Date\*, Hours\*, days / months / dates for the recurring types, notify + BCC, auto-provision; validated before it saves |
+| create / edit | a full page (`stFullOpen`): a searchable **type rail** of 12 categories (collapsible, the product's own category glyphs) · the type's **field form** in the live order · the **Discovery Help Card** (collapsible sections, copy buttons, docs link) · footer **Save and Exit · Save and Schedule · Reset · Save and Run**. Edit prefills and **locks the rail** (a profile's type cannot change) |
+| result | the profile's discovered objects — status badge, name, IP, vendor, model, host — search, select the *New* ones, **Provision**, CSV |
+| credential drawer | *Create Credential Profile* from the form's credential field: name\*, protocol, user\*, password (eye), SSH key, the CLI/enable block, **Reset · Test · Create Credentials Profile**; a created profile lands in the form's picker |
+
+- ⚠️ **EVERY IP, HOST AND PERSON IS SCRUBBED** (`dp_data.py` in the session scratch dir, with
+  a collision check so no two hosts merge): the instance's `10.20.40.x` / `172.16.x` / `172.19.x`
+  onto `192.0.2.x` / `198.51.100.x` / `203.0.113.x`, `motadata.local` → `example.com`, and people's
+  PC names → *Ops-PC* / *Analyst PC* / *analyst*. The 14 credential profiles are scrubbed the same way.
+- ⚠️ **THE LIST STATE REGISTERS ON `STC.pg.dp`** — `stcSearchHTML` / `stcPagerHTML` /
+  `stcPage` key their state there, which is what lets the Compliance pages' helpers serve this
+  page unchanged. A second copy of the pager would be the drift this module exists to avoid.
+- ⚠️ **THE TYPE MARKS ARE THE PRODUCT'S OWN** — 28 vendor SVGs harvested from the live grid,
+  their `<defs>` ids namespaced per icon (the `wArt` trap). A type with no harvested mark falls
+  back to its CATEGORY glyph in `--text-dim` (key `cat:<glyph>`), never a drawn one.
+- ⚠️ **SAVE IS VALIDATED FIELD BY FIELD** (`dpValidate`) — the label and underline turn red, as
+  live does, and it re-checks live once you have tried. Picking another type re-seeds the form
+  from that type's defaults and keeps only the name, as the live form does.
+- ⚠️ **`lxDownload` IS GUARDED** — Options 2 and 3 have no file-writing path, so CSV toasts there.
+
+- ⚠️ **EVERY FIELD SITS ON ONE THREE-COLUMN GRID** (26 Sep 2026, reported with a screenshot). The
+  first row used to be its own `1.4fr/1fr/1fr` row, so the name ran 54px past column 1 and the
+  segment groups floated on no column. The name is column 1 now and the segment groups share ONE
+  `.dpsegs` cell spanning columns 2-3; a grid field flagged `wide` (Service Check's five-option
+  *Target Type*) spans two columns and starts a fresh row if only one is left. `dpalign.py`
+  (scratch dir) measures all 32 type forms: every cell starts on a column line, nothing pokes out
+  of its cell or past the 744px form.
+
+**Deliberate divergences — stated so nothing is mistaken for the product:**
+- **Run (⟳) is INFERRED.** The live control was not pressed on a customer's instance; the spin
+  and the restamped status are what the Compliance run does, and the count is left alone.
+- **13 of the 30 type forms were measured** (Linux · Windows · Network · AWS Cloud · VMWare ·
+  Database · Service Check · Storage · Ping · Cisco Wireless · Nutanix · Kubernetes · Cisco
+  Meraki). **The other ~17 are modelled on the nearest measured sibling**, with the protocols'
+  well-known ports. The option lists behind Regions / Resources / Vendor / Device Model /
+  Database Type are readings — those pickers were not opened.
+- **Only the Linux help card was harvested.** Other types show its four headings and body, and
+  say so under the title — inventing thirty help cards would be inventing documentation.
+- **Result objects are synthesized** from the row (its discovered count, scrubbed addresses,
+  a plausible vendor/model per type) — the instance's results were not opened per profile.
+- **Credential Test connects to nothing**; it reports a canned outcome.
+
+**Verified:** `dpprobe.py` (session scratch dir) **ALL 25 PASS** on `index.html`,
+`dashboard-grouped-sidebar.html` and `dashboard-rail-flyout-alt3.html` — 50 of 66 rows with a mark on every one, no internal address on
+screen, the status strings, search narrowing to 3, the ⋮ menu's three rows with Delete red, delete
+confirm → Yes removes the row, the schedule drawer refusing an empty hour then saving, the create
+page with 12 categories and the help card, an empty save marking fields red, **all 32 type forms
+rendering**, a real save adding a row and returning to the list, Edit prefilling and locking the
+rail, the result page listing 45 objects, the credential drawer refusing an empty name, no console
+error · `node --check setting.js` clean · `stbehave` **0 of 14 pages FAILED** · every screen
+screenshotted dark (list, create, schedule, result, credential drawer, delete) and list + create light.
 
 ## Every box in the Settings module has 4px corners (14 Sep 2026)
 

@@ -1,4 +1,18 @@
-# Handoff — 2026-09-22 (latest)
+# Handoff — 2026-09-25 (latest)
+
+## Latest — Settings › Discovery Settings › Discovery Profile, cloned from live 10.0.1
+
+The live Discovery Profile flow is rebuilt in `setting.js` (all fourteen pages): the list (66
+scrubbed rows, vendor marks, chips, column chooser, ⟳ run, ⋮ Schedule/Edit/Delete), the delete
+confirm, the Schedule drawer, the full-page Create/Edit form (type rail · field form · help card ·
+Save and Exit / Schedule / Reset / Run), the Result page and the Create Credential Profile drawer.
+Full notes and the list of **stated divergences** (Run is inferred, ~17 type forms modelled on a
+sibling, only the Linux help card harvested, results synthesized, credential Test canned) are in
+`CLAUDE.md` → *"Settings › Discovery Settings › Discovery Profile"*. Probe `dpprobe.py` 25/25.
+Not committed. **Credential Profile (the category's other page) is still the stub** — next obvious
+step if wanted.
+
+## Earlier — 2026-09-22
 
 ## Latest — the header icons' hover was pointing the wrong way
 
@@ -181,3 +195,29 @@ scrolled board with no gap.
 - ⚠️ Still standing from before: `#licHistDr` is in `setting.js`'s dark token opener and not the
   light one; a note still draws the `today` time chip; named colours and the picker store different
   things (a name is theme-aware, a hex is not).
+
+
+## 25 Sep 2026 — Option 1's dashboard header is the live product's, as it is
+
+- **`index.html` `#view-dashboard > .pagehead.lhd`** is the live bar from
+  `https://172.16.12.100/dashboard/112669747490` (build 10.0.1), measured in the user's Chrome session and
+  rebuilt part for part: circled › · divider · dashboard glyph · 20px/500 title · star · the
+  `[today] | Today ⊗` chip · two absolute stamps · Full Screen · Export · ⋮. Colours are the DS tokens the
+  live bar resolves to, per theme, as `--lh-*` on the header. Full account in CLAUDE.md, *"The dashboard
+  header is the LIVE PRODUCT'S"*.
+- ⚠️ **Gone from the header, by copying it faithfully:** Public badge, Groups ▾ (the canvas navigator is
+  the only door to `openGroupMenu` now), ‹ › stepping, the ⟳ control, the keyboard button. **Auto-refresh
+  still runs at 30s with no control on screen** — `rfMs` is the dial.
+- ⚠️ **The chevron glyph is chevron-RIGHT, so `.flip` means "no transform"** — the inverse of the old rule.
+- ⚠️ **UNCOMMITTED with the rest of this session's index.html work** (the "What can I do for you, Kishan?"
+  greeting, the Free Text 2×2 panel, Vertical → Header) — publish when asked.
+- Harvest traps, recorded in CLAUDE.md: the devtools MCP cannot open the self-signed host; the
+  claude-in-chrome tab is hidden so the SPA never fades in until animations are killed; its content
+  filter blocks `key=value;` strings — return JSON in <1,000-char chunks.
+
+- **Monitor module (`Monitors`) has its own view now — `#view-monitor` — carrying the live product's
+  two header rows** (tab strip of the 17 types · Search + Columns/Tags/PDF/CSV/Filter squares), measured
+  off `/inventory/All/groups`. The grid under them is still the placeholder card. The `--lh-*` tokens and
+  the circle / divider / square controls now live on **`.lhtok`**, shared by both headers. Flyout rows
+  for Monitor types set `MOD_SUB` so the tab you clicked opens. CLAUDE.md: *"The Monitor module's two
+  header rows"*. Uncommitted with the rest.
