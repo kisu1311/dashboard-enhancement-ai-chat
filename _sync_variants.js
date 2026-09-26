@@ -43,10 +43,14 @@ function pageTitle(file) {
   return t;
 }
 
+const NOT_OPTIONS = 'setting.html';
+
 function sync() {
   const htmlFiles = fs
     .readdirSync(DIR)
-    .filter(f => f.toLowerCase().endsWith('.html') && !f.startsWith('_'))
+    /* setting.html is the Settings module's own page, reached from every option's Settings
+       entries — it is not an option, so it is not a switcher row (26 Sep 2026). */
+    .filter(f => f.toLowerCase().endsWith('.html') && !f.startsWith('_') && f !== NOT_OPTIONS)
     .sort();
 
   const vjs = fs.readFileSync(VJS, 'utf8');
@@ -129,7 +133,8 @@ if (process.argv.includes('--hook')) {
         !rel.startsWith('..') &&
         !rel.includes(path.sep) &&
         rel.toLowerCase().endsWith('.html') &&
-        !rel.startsWith('_');
+        !rel.startsWith('_') &&
+        rel !== NOT_OPTIONS;
       if (isOurs) {
         try {
           sync();

@@ -174,14 +174,13 @@ made twice**, and that is the same cost the other options already carry.
   original AI prototypes the panel was ported from. **The only copies that exist**
   (their old `AI_Chat_Interface/` folder is gone). Kept out of the folder root so
   the variant sync ignores them. Reference only — do not delete.
-- **`setting.js`** — **the whole Settings module, in one file, loaded by all fourteen option pages**
-  (12 Sep 2026). PART 1 is its stylesheet, which injects itself as a `<style>`; PART 2 is the
-  `#view-settings` markup plus the `st*` (My Profile), `stc*` (Compliance Settings) and
-  `ag*` / `lic*` (Agentic AI, Product License) blocks. One `<script src>` per page, placed
-  after the design-system bundle — there is no `<link>`. It replaced the pair
-  `_settings-module.css` + `_settings-module.js`, which are **deleted**.
-  ⚠️ **EVERY BACKTICK IN PART 1 IS WRITTEN `` \` ``** — the CSS lives in a template literal and
-  its comments are full of code names. `node --check setting.js` after editing there.
+- **`setting.html`** — **the Settings module's own page** (26 Sep 2026). Option 1's chrome with
+  the whole module INLINE: its stylesheet as `<style id="settings-css">` right after the page's
+  own, the `#view-settings` markup authored in place, and every `st*` / `stc*` / `dp*` / `ag*` /
+  `lic*` script. It boots on Settings; `setting.js` is **deleted**. See *"Settings moved into
+  `setting.html`"* below.
+- **`setting-nav.js`** — the only Settings code the option pages still load: `ST_TREE`, `ST_ICO`,
+  and the `stOpen` / `stInit` doors that navigate to `setting.html`.
 - `Dashboard-Research-Notes.md` — the verified product research (see MANDATORY
   above). `_variants.js` + `_sync_variants.js` — variant switcher + auto-sync.
 
@@ -689,6 +688,56 @@ the property CLAUDE.md had asserted since 19 Aug 2026. Pointing them at these tw
 true by construction instead of by discipline. It was **not** done on 1 Sep (the request named
 `index.html`); it **was** done on 12 Sep — see *"Options 2, 3 and 4 share the Settings module
 too"* below.
+
+## Settings moved into `setting.html` (26 Sep 2026)
+
+Request: *"create a new `setting.html` for the Settings module — move all Settings options,
+sections and content into it."* Asked first, answered: **a standalone page, and every Settings
+door in all fourteen pages leads to it; the code INLINE in `setting.html`, `setting.js` deleted.**
+
+> ⚠️ **THIS SUPERSEDES EVERY "`setting.js` IS LOADED BY ALL FOURTEEN PAGES" STATEMENT IN THIS
+> FILE.** The dated sections below (12 Sep onward) are kept as written — they record why the
+> module is shaped the way it is — but where they say `setting.js`, read **`setting.html`** for
+> the module and **`setting-nav.js`** for what the option pages load. The ~60 prose mentions of
+> `setting.js` inside the page files' own comments are likewise stale and were not rewritten.
+
+| file | what it holds |
+|---|---|
+| `setting.html` | a copy of `index.html` (Option 1's sidebar, tokens, `toast` / `showView` / `selectModuleByName` / `lxDownload` / `.sdrawer` …) + the module inline + a BOOT block |
+| `setting-nav.js` | `ST_ICO` + `ST_TREE` (one copy — `setting.html` loads it too) and, on every page but `setting.html`, the navigation doors |
+| the 14 option pages | `<script src="setting-nav.js">` where `setting.js` was; `#agCfgScrim` / `#drawer-agcfg` removed from the nine that had them |
+
+**The doors.** On an option page `stOpen(cat, page)` → `setting.html?from=<this page>#st=<cat>|<page>`,
+`stInit()` → the same with no hash, and `showView('settings')` is wrapped to navigate (because
+`selectModule` calls it *before* `stInit()` and would otherwise blank the page for a frame). So the
+rail row, every flyout / docked-panel / nav-column Settings row and the profile popover's My Profile
+all land on the exact page they name. **The way back:** in `setting.html` every non-Settings
+`showView(v)` goes to `<from>#m=<module>[&sub=<tab>]` (dashboard / logexp / module / monitor views,
+module read off `MODULES[activeModule]`) or `#v=<view>` (Approval, Health); `setting-nav.js` on
+arrival runs `selectModuleByName` / `showView` and clears the hash.
+
+- ⚠️ **`setting.html` IS NOT AN OPTION AND NOT A SWITCHER ROW.** `_sync_variants.js` skips it
+  (`NOT_OPTIONS`). It still loads `_variants.js`, so the pill is there to jump to any option.
+- ⚠️ **ITS CHROME IS OPTION 1's WHICHEVER OPTION SENT YOU.** A page cannot load another page's
+  markup over `file://` (CORS), so there is one Settings page with one sidebar; `?from=` is what
+  takes you back to the option you came from.
+- ⚠️ **IT IS A 3.4 MB FILE CARRYING OPTION 1's DASHBOARD, LOG EXPLORER AND AI CODE, UNUSED.**
+  Stripping it to the shell was judged too risky in one pass — `init()` touches the canvas, the
+  panels and the rail together. The dead views never show (every navigation to them leaves the
+  page), but **a change to Option 1's sidebar is now a change to `index.html` AND `setting.html`**,
+  the same drift trap as Options 1/14. Stripping the unused views is the obvious follow-up.
+- ⚠️ **THE BOOT IS ORDER-SENSITIVE.** `#view-dashboard` lost its `on` and `#view-settings` has it,
+  so nothing flashes; `stOpen()` runs once at the end of the inline script; and the `showView`
+  redirect is installed only AFTER that, because `init()` and the dashboard panel's boot run
+  earlier in the file and must not navigate the page away.
+- ⚠️ **`window.ST_HOME = true` is set before `setting-nav.js` loads** and is what stops the stubs
+  installing on the Settings page — a probe copy under another filename still behaves.
+- ⚠️ **THE CSS IS NO LONGER IN A TEMPLATE LITERAL**, so the "every backtick is written `` \` ``"
+  rule is gone; the stylesheet was produced by evaluating the literal, so it is byte-identical to
+  what the injector used to put in `<head>`.
+- ⚠️ **`_verify/stbehave.py`** now discovers pages by `<style id="settings-css">` (i.e. only
+  `setting.html`); **`dsconf.py` / `licconf.py`** default to `setting.html`.
+- ⚠️ `git checkout a216064 -- setting.js` brings the old single file back if this is ever unwound.
 
 ## One file called `setting.js` (12 Sep 2026)
 

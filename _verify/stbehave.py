@@ -21,9 +21,12 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 # `Global_ai.html` names it three times in prose and loads none of it, so discovery
 # pulled that page in and every one of the 21 assertions failed on it, on a page that
 # is correct. Matching the tag asks the question the suite actually means.
+# ⚠️ 26 Sep 2026: `setting.js` is gone and the module is INLINE in `setting.html`, which is the
+# only page that carries it; the marker is its inline stylesheet. The option pages load only
+# `setting-nav.js` now (the tree + the doors into setting.html) and are not in this suite.
 ALL = [f for f in sorted(os.listdir(BASE))
        if f.endswith(".html") and not f.startswith("_")
-       and '<script src="setting.js"></script>' in open(os.path.join(BASE, f), encoding="utf-8").read()]
+       and '<style id="settings-css">' in open(os.path.join(BASE, f), encoding="utf-8").read()]
 FILES = sys.argv[1:] or ALL
 
 PROBE = r"""
@@ -56,7 +59,7 @@ PROBE = r"""
     /* the stylesheet reached the page: .stnav has its authored width, not auto */
     stOpen('My Account','My Profile');
     var nav=document.querySelector('#view-settings .stnav');
-    ok('setting.js stylesheet applied', !!nav&&parseFloat(getComputedStyle(nav).width)>100,
+    ok('settings stylesheet applied', !!nav&&parseFloat(getComputedStyle(nav).width)>100,
         nav?getComputedStyle(nav).width:'no .stnav');
     ok('settings view is on', s.classList.contains('on'));
     ok('19 categories rendered', document.querySelectorAll('#stList .stcat').length===19,

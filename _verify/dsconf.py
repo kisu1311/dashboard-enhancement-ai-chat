@@ -35,7 +35,7 @@ import re, subprocess, sys, os, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-SRC  = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "index.html"
+SRC  = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "setting.html"   # the Settings module lives only there since 26 Sep 2026
 OUT  = HERE / "_out"
 CHK  = ROOT / "node_modules/@mtdt/observeops-ds-spec/conformance/ds-conformance.mjs"
 

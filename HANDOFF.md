@@ -1,4 +1,28 @@
-# Handoff — 2026-09-25 (latest)
+# Handoff — 2026-09-26 (latest)
+
+## Latest — Settings moved into its own page, `setting.html`
+
+Request: *"create a new `setting.html` for the Settings module and move all Settings options,
+sections and content into it."* Asked two questions first; answers: **standalone page reached
+from every option's Settings doors**, and **the code inline in `setting.html` with `setting.js`
+deleted**.
+
+- **`setting.html`** = a copy of `index.html` (Option 1's sidebar and host helpers) + the whole
+  module inline (stylesheet, `#view-settings` markup, all `st*`/`stc*`/`dp*`/`ag*`/`lic*` code),
+  booting on Settings. Deep links: `setting.html?from=<page>#st=<category>|<page>`.
+- **`setting-nav.js`** (new, 48 KB) = `ST_TREE` + `ST_ICO` (one copy, also loaded by
+  `setting.html`) + the doors: on every option page `stOpen` / `stInit` / `showView('settings')`
+  navigate to `setting.html`, and `#m=` / `#v=` bring you back to the module you picked there.
+- All 14 option pages load `setting-nav.js` instead of `setting.js`; the Agentic AI configure
+  drawer markup left the nine pages that carried it. `setting.js` is **deleted**.
+- `_sync_variants.js` skips `setting.html` (not an option). `stbehave.py` now tests only
+  `setting.html`; `dsconf.py` / `licconf.py` default to it.
+
+⚠️ **Open follow-up:** `setting.html` still carries Option 1's dashboard / Log Explorer / AI code
+unused (3.4 MB) — so Option 1 sidebar edits must be made in both `index.html` and `setting.html`
+until the dead views are stripped. Full notes: `CLAUDE.md` → *"Settings moved into `setting.html`"*.
+
+# Handoff — 2026-09-25
 
 ## Latest — Settings › Discovery Settings › Discovery Profile, cloned from live 10.0.1
 
