@@ -22,7 +22,7 @@
      then needed 15 + 30(mark) + 9 + 85("ObserveOps" at 14px/600) + 9 + 26(button) + 15 = 189
      in a 170px rail — measured, and the wordmark was ellipsising to "ObserveO…". Shrinking the
      product's own name to make room for a chrome control is the wrong way round. */
-  --rail-w:53px; --rail-w-open:240px;   /* rule 1's floor for an expandeddark theme" &  sidebar (was 190px, 8 Sep 2026) */   /* the flyout anchors off these, not off the animating box */
+  --rail-w:53px; --rail-w-open:240px;   /* rule 1's floor for an expanded sidebar (was 190px, 8 Sep 2026) */   /* the flyout anchors off these, not off the animating box */
     --ai:#8b5cf6; --ai-2:#a78bfa; --ai-3:#c4b5fd;
   --ai-soft:rgba(139,92,246,.13); --ai-line:rgba(139,92,246,.34);
   /* the chat panel's surface wash — 5% black at the FOOT of the panel, over --card
@@ -573,7 +573,8 @@ body.rzing-body{user-select:none}
 .awab{width:24px;height:24px;border:0;border-radius:4px;background:transparent;color:var(--text-dim);
   cursor:pointer;display:grid;place-items:center;padding:0}
 .awab:hover{background:var(--chip);color:var(--teal)}
-.awab svg{width:14px;height:14px;fill:currentColor}
+.awab svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.awab.dg{color:var(--red)}   /* red at rest, as the reference shows it */
 .awab.dg:hover{background:rgba(242,80,75,.14);color:var(--red)}
 .awrow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border-soft);border-radius:6px;
   margin-bottom:7px;background:var(--card);cursor:pointer;font-size:12.4px}
@@ -587,7 +588,10 @@ body.rzing-body{user-select:none}
 .awgcnt{margin-left:auto;flex:0 0 auto;background:var(--chip);border-radius:9px;padding:1px 9px;
   font-size:11px;font-weight:600;color:var(--text-dim);white-space:nowrap;cursor:default}
 .awgcnt:hover{color:var(--text)}
-.awgcnt + .awacts{margin-left:6px}
+.awacts .awgcnt{margin:0 3px 0 0}
+/* the "N widgets" pill shows only on hover (request, 23 Sep 2026) — opacity, not display, so the row does not reflow under the pointer */
+.awrow .awgcnt{opacity:0;transition:opacity .12s}
+.awrow:hover .awgcnt,.awrow:focus-within .awgcnt{opacity:1}
 .awrow .used{background:var(--chip);border-radius:9px;padding:1px 8px;font-size:10px;font-weight:600;color:var(--text-dim);white-space:nowrap}
 .awfoot{padding:11px 16px;border-top:1px solid var(--border);font-size:11.4px;color:var(--text-dim);flex:0 0 auto}
 .awfoot a{color:var(--teal);text-decoration:underline}
@@ -2983,7 +2987,10 @@ html[data-theme="light"] .dwidget:hover{box-shadow:0 3px 12px rgba(0,0,0,.10)}
 .trrf{padding:0 10px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
 .trrf svg{width:14px;height:14px}
 .trnav:hover:not(:disabled),.trrf:hover,.trrf.on{background:var(--hover-side);color:var(--text)}
-.trnav:disabled{opacity:.35;cursor:default}
+/* › reads like ‹ even at "now" (request, 23 Sep 2026: "the right icon will be show like left arrow"); it still
+   cannot step past now — it just no longer dims, and it takes no hover */
+.trnav:disabled{cursor:default}
+.trnav:disabled:hover{background:transparent;color:var(--text-dim)}
 .trrf.spin svg{animation:trspin .6s linear}
 @keyframes trspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.trrf.spin svg{animation:none}}
@@ -3228,8 +3235,13 @@ body:has(#view-dashboard.on) .gnav{display:block}
    ⚠️ `--gv-line:transparent`, NOT `border:0` — the 1px stays in the box, so ticking the
    checkbox does not ALSO move every widget in the group a pixel in each direction on top of
    removing the padding. Same reasoning, same wording, as `.widget.wft.wftbare`. */
-.dgroup:has(.ghead){border:1px solid var(--gv-line,var(--border-soft));border-radius:var(--radius);
-  padding:var(--gv-pad,10px 12px);background:var(--bg)}
+.dgroup:has(.ghead){border:1px solid var(--gv-line,var(--gv-tint,var(--border-soft)));border-radius:var(--radius);
+  padding:var(--gv-pad,10px 12px);background:var(--gv-bg,var(--bg))}
+/* ⚠️ A HEADER COLOUR TINTS THE WHOLE GROUP (request, 28 Sep 2026: "when i apply the Header
+   colour add border colour and background colour 10% opacity"). `gTint()` emits `--gv-tint`
+   (the border) and `--gv-bg` (10% of the same colour over the canvas) on the section — only
+   for a real colour, so Default / Transparent / untouched groups carry nothing. No padding
+   still wins the BORDER: its `--gv-line:transparent` is a separate token, emitted after. */
 /* ⚠️ THE HEADER IS A TITLE STRIP, LIKE A WIDGET'S OWN (request, 17 Sep 2026: "the header
    title background add like widget title"). It takes `.widget .whead`'s three defining
    properties verbatim — the `--card-head` fill, the 8px/12px padding and the `--border-soft`
@@ -3415,6 +3427,12 @@ body:has(#view-dashboard.on) .gnav{display:block}
 .wpie{flex:1;min-height:0;display:flex;align-items:center;gap:10px;padding:2px 4px}
 .wpie svg{flex:0 0 auto;width:38%;max-width:150px;height:auto;align-self:center}
 .wpl{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;overflow:auto;font-size:11px;color:var(--text-dim)}
+/* ⚠️ PIE + LEGEND ARE ONE BLOCK, CENTRED IN THE WIDGET (request, 23 Sep 2026: "the chart shows centre
+   aligned in every widget"). The legend used to take `flex:1`, so it swallowed the spare width and
+   the pie sat hard left of a wide card. Now the legend hugs its longest row (capped so a long host
+   name still ellipsises) and the pair centres; on a narrow card it behaves exactly as before. */
+.wpie{justify-content:center;gap:18px}
+.wpl{flex:0 1 auto;max-width:60%}
 .wpl span{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-family:"JetBrains Mono",monospace;font-size:10.5px}
 .wpl i{width:8px;height:8px;flex:0 0 8px;border-radius:2px}
@@ -3707,6 +3725,14 @@ body:has(#view-dashboard.on) .gnav{display:block}
 /* ---- drag a widget between groups ---- */
 .widget[draggable]{cursor:grab}
 .widget.dragging{opacity:.35;cursor:grabbing}
+/* ⚠️ THE MOVE CURSOR ON EVERY WIDGET (request, 23 Sep 2026: "when I hover a widget the cursor
+   changes to the move icon"). The four-arrow `move` replaces the open hand over the whole card and
+   its title bar, and stays `move` while dragging. Scoped to `#dashGrid`, so the widget cards in
+   the drawers and library keep their own cursors; buttons, links, the ⋮ and the resize corner set
+   their own and are unaffected. Placed after the grab rules so source order decides at equal
+   specificity. */
+#dashGrid .widget[draggable],#dashGrid .widget .whead,#dashGrid .widget .whead:active,
+#dashGrid .widget.dragging{cursor:move}
 .widget.dropbefore{box-shadow:inset 3px 0 0 var(--teal)}
 .dgrid12.dropinto{outline:2px dashed var(--teal);outline-offset:3px;border-radius:8px}
 
@@ -3751,10 +3777,14 @@ body:has(#view-dashboard.on) .gnav{display:block}
    width whether the list is open or not, so opening it never re-flows the dashboard. */
 /* Both board panels live on the LEFT: the outline sits in flow at the edge of the canvas,
    and the dashboard / NOC View picker overlays it when you open it. */
-.dpanel{position:absolute;left:0;top:0;bottom:0;z-index:40;width:340px;max-width:86vw;
+/* ⚠️ 540px, WAS 340px (request, 23 Sep 2026: "sidebar width 340px to 540px"). It overlays the canvas,
+   so nothing re-flows; `max-width:86vw` still caps it on a narrow window. */
+.dpanel{position:absolute;left:0;top:0;bottom:0;z-index:40;width:540px;max-width:86vw;
   display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--panel);
   border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.34);
   transform:translateX(0);transition:transform .2s ease}
+/* dark theme: the dashboard list panel is #08101F (request, 23 Sep 2026). Light keeps --panel. */
+html:not([data-theme="light"]) .dpanel{background:#08101f}
 html[data-theme="light"] .dpanel:not(.hid){box-shadow:6px 0 24px rgba(23,35,54,.12)}
 .dpanel.hid{transform:translateX(-101%);box-shadow:none}
 /* chevron flips to point the way the panel will move */
@@ -4860,6 +4890,11 @@ body.aidragmv,body.aidragmv *{cursor:grabbing!important}
    frame behind the pointer and the whole thread highlights blue as you move */
 body.aidragging{user-select:none;cursor:inherit}
 body.aidragging .aipanel,body.aidragging .shell{transition:none!important}
+/* ⚠️ THE COMPACT SHRINK ANIMATES (request, 24 Sep 2026: "not instant — slowly change the height, like
+   monday.com"). Only WIDTH and HEIGHT ease; left/top stay instant so the card never lags the pointer.
+   It must out-rank the drag's own `transition:none!important` above, hence the extra class. */
+body.aidragging .aipanel.aicompacting,.aipanel.aicompacting{
+  transition:width .35s cubic-bezier(.2,0,0,1),height .35s cubic-bezier(.2,0,0,1)!important}
 /* ── SIDEBAR — the panel gets a column and the board keeps its own ───────────────────────
    The full-height edge panel, with `.shell` giving up exactly the width it occupies, so
    nothing is covered and the dashboard stays readable while you ask about it.
@@ -5244,8 +5279,15 @@ html[data-theme="light"]{
 .aiempty{padding:14px 18px 12px;text-align:center;
   display:flex;flex-direction:column;min-height:100%}
 .aibig{display:grid;place-items:center;margin-bottom:14px}
+/* the empty state sits in the MIDDLE of the panel (request, 23 Sep 2026: "it will be set in center"): an auto
+   margin above the mark pairs with .aihelpl's auto margin below, so the free space splits evenly */
+.aiempty > .aibig{margin-top:auto}
 .aibig svg{width:30px;height:30px;fill:var(--ai-2)}
 .aiempty h3{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--white);letter-spacing:-.01em}
+/* the greeting, to the supplied spec (24 Sep 2026): semibold 600, 21px, primary text, -0.01em; with no
+   subline under it on the dashboard, it carries the gap to the starters itself */
+.aiempty h3.aihi{font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--white);line-height:1.3}
+.aiempty h3.aihi:not(:has(+ p)){margin-bottom:20px}
 .aiempty p{margin:0 0 18px;font-size:13px;line-height:1.55;color:var(--text-dim)}
 /* ⚠️ Documentation / Support, under the starters (request, 21 Aug 2026). They are the
    quietest thing in the empty state on purpose: the five starters are what the panel is
@@ -5274,8 +5316,8 @@ html[data-theme="light"]{
    ⚠️ THE 12px OF PADDING STAYS. It is not the hairline's gutter — it is the gap that keeps the
    pair off the last starter, and with the line gone it is the only thing doing that. Removing
    it with the border would jam the two buttons against the starters above them. */
-.aihelpl{margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--border);
-  display:flex;gap:8px}
+.aihelpl{margin:auto 0 0;padding:12px 0 0;
+  display:flex;gap:8px}   /* no hairline — as Option 13 (23 Sep 2026) */
 /* ⚠️ the guaranteed gap above the help pair — see `.aihelpl`. It was written for the hairline
    that used to sit there and it outlived it: with no line, this 6px is what stops the last
    starter and the two grey buttons touching when the panel is short and `auto` resolves to 0.
@@ -6998,7 +7040,7 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    ⚠️ EVERY RULE IS SCOPED UNDER `.aitw` so nothing can be stranded invisible or 12px low:
    the class comes off the root when the reveal ends, and every pending character and staged
    block stops applying with it — whatever state its own animation was in. */
-.aitw{--aitw-dur:.6s;--aitw-ease:cubic-bezier(.175,.885,.32,1.275)}
+.aitw{--aitw-dur:.42s;--aitw-ease:cubic-bezier(.2,0,0,1)}
 .aitw .aitwh{display:none}
 .aitw .aitww{display:inline-block;white-space:nowrap}
 /* ⚠️ TWO PLACES ASK FOR LONG TOKENS TO BREAK — `.ailq` (the generated query expression) and
@@ -7007,16 +7049,18 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
    its own box, so inside them a word may break — between characters, which is what
    `break-word` was already doing to it. */
 .aitw .ailq .aitww,.aitw .lxaipvq .aitww{white-space:normal}
-.aitw .aitwx{display:inline-block;opacity:0;transform:translateY(12px)}
-.aitw .aitwx.on{opacity:1;transform:none}
+/* Gemini-style: a word fades in where it stands — no rise, no overshoot (23 Sep 2026) */
+.aitw .aitwx{opacity:0}
+.aitw .aitwx.on{opacity:1}
 /* `.new` is added only to a character crossing the threshold NOW — never to one restored
    after a repaint, or every re-render would replay the whole answer (see aiTwPaint). */
-.aitw .aitwx.on.new{animation:aitwrise var(--aitw-dur) var(--aitw-ease) both}
+.aitw .aitwx.on.new{animation:aitwfade var(--aitw-dur) var(--aitw-ease) both}
+@keyframes aitwfade{from{opacity:0}to{opacity:1}}
 @keyframes aitwrise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 /* the furniture named by `AI_TW_SKIP` — the preview art, the chips, the feedback row, the
    follow-ups — takes the SAME curve at its own place in the reveal, so the card speaks one
    language. ⚠️ The var fallbacks matter: this class can outlive `.aitw` by one frame. */
-.aitwin{animation:aitwrise var(--aitw-dur,.6s) var(--aitw-ease,cubic-bezier(.175,.885,.32,1.275)) both}
+.aitwin{animation:aitwfade var(--aitw-dur,.42s) var(--aitw-ease,cubic-bezier(.2,0,0,1)) both}
 /* composer */
 /* composer: a 46px pill with ＋ on the left and send on the right, under a hairline of
    the brand gradient — the reference's `.inbox` */
@@ -7040,10 +7084,24 @@ html:not([data-theme="light"]) .aick input{color-scheme:dark}
 .aidockghost{display:none;position:fixed;top:0;right:0;bottom:0;width:var(--ai-w);
   z-index:119;pointer-events:none;background:var(--ai-soft);
   border-left:2px solid var(--ai);box-shadow:-8px 0 28px rgba(0,0,0,.10)}
+/* ⚠️ REBUILT 23 Sep 2026 as the FLOATING card's own docked rectangle (20px in, full height, the card's
+   radius) — that is where a release puts it now; Sidebar mode is gone. */
+.aidockghost{top:20px;right:20px;bottom:20px;border-radius:var(--aifloat-r,14px);
+  border:1.5px solid color-mix(in srgb,var(--ai) 60%,transparent);box-shadow:none;
+  background:color-mix(in srgb,var(--ai) 14%,transparent)}
+/* ⚠️ A 20px STRIP ON THE RIGHT EDGE, clearly coloured (request, 23 Sep 2026: "the colour effect is not
+   shown … height is ok, the width will be 20px on the right" — monday's dock band). Full card height,
+   flush to the window's right edge; the card itself stays OPAQUE (the .55 fade let the board show through). */
+.aidockghost{right:0;left:auto;width:20px;border:0;border-radius:6px 0 0 6px;
+  background:color-mix(in srgb,var(--dockc) 28%,transparent);box-shadow:none}
+/* the strip's colour (request, 23 Sep 2026): #CAD3E2 in dark, #1D2A3E in light, at a LOW opacity */
+:root{--dockc:#cad3e2}
+html[data-theme="light"]{--dockc:#1d2a3e}
+body.aidockr .aipanel.aifloat{opacity:1}
 body.aidockr .aidockghost{display:block}
 /* the card itself goes translucent while it is over the zone, so the ghost reads as the
    destination rather than as a second panel */
-body.aidockr .aipanel.aifloat{opacity:.55}
+/* the card stays OPAQUE over the dock zone (23 Sep 2026) — the fade let the board show through it */
 /* ⚠️ `+6px`, AND THE 4px IT REPLACES WAS A ZERO-GAP (request, 24 Aug 2026: "in text area &
    Arrow icon between add more margin space"). `bottom` here is measured from `.aicomp`'s
    BOTTOM, so `100%` puts the button's lower edge on `.aicomp`'s TOP edge — and `.aicomp`
@@ -7717,6 +7775,109 @@ body.aidockr .aipanel.aifloat{opacity:.55}
 .pagehead .favstar{flex:0 0 auto;display:inline-grid;place-items:center;width:24px;height:24px;margin-left:2px}
 .pagehead .favstar svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
 .pagehead .favstar.faved svg{fill:currentColor}
+/* ── THE LIVE PRODUCT'S DASHBOARD HEADER, AS IT IS (25 Sep 2026) ──
+   Measured off build 10.0.1's `.dashboard-selector-bar` at /dashboard/112669747490 in the browser.
+   Every number below is that DOM's: 4/8 bar padding on a 1px rule, a 25px circled chevron, a 1×25
+   divider on 8px margins, the h3 at 20px/500/30px with a 17.6px glyph, the chip at 8px padding on a
+   4px radius with an 18px key pill · a 20px rule · a 100px label · a 17.6px ⊗, the stamps at 12/18,
+   and three 35px squares 8px apart.
+   THE COLOURS ARE THE DS TOKENS THE LIVE BAR RESOLVES TO, declared per theme on the header itself
+   (the `#gChart` / `.aipanel` precedent) rather than hand-mapped onto this file's near-misses:
+     --lh-line   --border-color                 --lh-arrow   --left-menu-arrow-color
+     --lh-title  --header-title-text-color      --lh-chip    --code-tag-background-color
+     --lh-pill   --timerange-background-color   --lh-pill-ink --timerange-text-color
+     --lh-text   --page-text-color              --lh-dim     --neutral-light
+     --lh-btn    --code-tag-background-color    --lh-btn-ink --neutral-button-text
+   Dark read off the page, light out of `_ds/observeops-ds.css`.
+   ⚠️ THE STAR IS A LITERAL IN THE DS TOO — `.text-secondary-yellow{color:rgb(245,188,24)}` with no
+   theme flip — so it is the one value here that does not change with the theme.
+   ⚠️ SCOPED WITH `.lhd`: the other four `.pagehead`s (module placeholder, Health, Manage) keep their
+   own chrome. ⚠️ THE TOKENS AND THE SHARED CONTROLS (`.lhchev` · `.lhdiv` · `.lhsq`) LIVE ON `.lhtok`,
+   not on `.pagehead.lhd`, because the Monitor module's two header rows (25 Sep 2026, below) are
+   the same product chrome and read the same tokens. ⚠️ `#dashHeadIc` is addressed with its id, because `#dashHeadIc{color:…}` above is
+   (1,0,0) and would beat a class rule. */
+.lhtok{--lh-line:#1d2a3e;--lh-arrow:rgba(255,255,255,.65);--lh-title:#e3e8f2;--lh-star:#f5bc18;--lh-chip:#172336;
+  --lh-pill:#2b394f;--lh-pill-ink:#e3e8f2;--lh-text:#cad3e2;--lh-dim:#8e9fbc;--lh-btn:#172336;--lh-btn-ink:#cad3e2;
+  --lh-primary:#e3e8f2;--lh-bg:#07101f;--lh-sicon:#e7f5fb;--lh-ph:rgba(202,211,226,.5)}
+html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:#1d2a3e;--lh-chip:#ecf1f9;
+  --lh-pill:#e3e8f2;--lh-pill-ink:#7186a8;--lh-text:#1d2a3e;--lh-dim:#6a7fa0;--lh-btn:#ecf1f9;--lh-btn-ink:#7186a8;
+  --lh-primary:#111c2c;--lh-bg:#fff;--lh-sicon:#2b394f;--lh-ph:rgba(43,57,79,.5)}
+.pagehead.lhd{height:auto;flex:0 0 auto;gap:0;padding:4px 8px;border-bottom:1px solid var(--lh-line);
+  font-size:12.8px;line-height:1.5;color:var(--lh-text)}
+.lhtok .lhchev{flex:0 0 25px;width:25px;height:25px;display:flex;align-items:center;justify-content:center;padding:0;margin:0;
+  border:1px solid var(--lh-line);border-radius:50%;background:transparent;color:var(--lh-arrow);cursor:pointer}
+/* the glyph is the product's chevron-RIGHT; it points ‹ while the list is open and › once it is
+   hidden, which is the live bar's resting state (the list boots hidden here too) */
+.lhtok .lhchev svg{width:17.6px;height:17.6px;fill:currentColor;transform:scaleX(-1)}
+.lhtok .lhchev.flip svg{transform:none}
+.lhtok .lhdiv{flex:0 0 1px;width:1px;height:25px;margin:0 8px;background:var(--lh-line)}
+.pagehead.lhd .lhtitle{flex:1 1 auto;min-width:0;display:flex;align-items:center;margin:0 8px;font-size:20px;font-weight:500;line-height:30px;color:var(--lh-title)}
+.pagehead.lhd #dashHeadIc{flex:0 0 auto;width:17.6px;height:17.6px;margin-right:8px;color:var(--lh-title)}
+.pagehead.lhd .crumbs{flex:0 1 auto;min-width:0;gap:0;font-size:inherit;color:inherit}
+.pagehead.lhd .crumbs .cur{font-size:20px;font-weight:500;line-height:30px;color:var(--lh-title)}
+.pagehead.lhd .lhstar{flex:0 0 auto;display:inline-flex;width:auto;height:auto;margin-left:8px;color:var(--lh-dim);cursor:pointer}
+.pagehead.lhd .lhstar svg{width:17.6px;height:17.6px;fill:currentColor;stroke:none}
+.pagehead.lhd .lhstar.faved{color:var(--lh-star)}
+.pagehead.lhd .lhright{flex:0 0 auto;display:flex;align-items:center}
+.pagehead.lhd .lhtr{display:inline-flex;align-items:center;padding:0 8px;font-size:13.6px;line-height:1.5}
+.pagehead.lhd .lhchip{display:flex;align-items:center;height:auto;padding:8px;gap:0;border:0;border-radius:4px;background:var(--lh-chip);
+  color:var(--lh-text);font:inherit;cursor:pointer;transition:none}
+/* the live chip has no hover or open state of its own — the popover is the whole feedback */
+.pagehead.lhd .lhchip:hover,.pagehead.lhd .lhchip.on{background:var(--lh-chip);border-color:transparent;box-shadow:none}
+.pagehead.lhd .lhkey{display:inline-flex;align-items:center;height:18px;padding:0 4px;border-radius:4px;background:var(--lh-pill);
+  color:var(--lh-pill-ink);font-size:12.8px;font-weight:600;line-height:normal}
+.pagehead.lhd .lhsep{width:0;height:20px;margin:0 8px;border-left:1px solid var(--lh-line)}
+.pagehead.lhd .tcmain{display:inline-block;width:100px;font-weight:400;font-size:13.6px;line-height:20.4px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;color:var(--lh-text)}
+.pagehead.lhd .lhclear{display:inline-flex;align-items:center;margin-left:auto;color:var(--lh-dim);cursor:pointer}
+.pagehead.lhd .lhclear svg{width:17.6px;height:17.6px;fill:currentColor}
+.pagehead.lhd .lhstamp{display:flex;flex-direction:column;margin-left:8px;font-size:12px;line-height:18px;color:var(--lh-dim);white-space:nowrap}
+.pagehead.lhd .lhbtns{display:flex;align-items:center;gap:8px}
+.lhtok .lhsq{display:inline-flex;align-items:center;justify-content:center;width:35px;height:35px;padding:8px;margin:0;
+  border:1px solid var(--lh-btn);border-radius:4px;background:var(--lh-btn);color:var(--lh-btn-ink);cursor:pointer}
+/* the live rule (`.ant-btn-primary.button-neutral-lightest:hover`) paints the SAME fill, border and
+   ink on hover, so these do too — a stated departure from `.pagehead .btn.ico:hover` above */
+.lhtok .lhsq:hover{background:var(--lh-btn);border-color:var(--lh-btn);color:var(--lh-btn-ink)}
+/* `flex:0 0 auto` — the button's content box is 17px (35 − 2 border − 16 padding) and the live glyph is
+   17.6, overflowing it by a hair; a shrinkable flex item would be squeezed to 17 instead */
+.lhtok .lhsq svg{flex:0 0 auto;width:17.6px;height:17.6px;fill:currentColor}
+/* ── THE MONITOR MODULE'S TWO HEADER ROWS, AS THE LIVE PRODUCT DRAWS THEM (25 Sep 2026) ──
+   Request: "in monitor create this 2 header", with the live Monitor screen as the picture. Measured
+   off build 10.0.1 at /inventory/All/groups in the browser, on the same `--lh-*` tokens as the
+   dashboard header above:
+     row 1  43.2px on a 1px --border-color rule, 8px left padding · the 25px circled chevron and the
+            1×25 divider from the dashboard header · ant-tabs: 12.8px, padding 12/0/8, 20px apart, a
+            4px underline — active 500 in --primary, the rest 400 in --neutral-light, hover --primary
+     row 2  16px under it, 8px side padding · a 288×36 search (1px --border-color, radius 4, page bg,
+            17.6px search glyph 12px in, placeholder at 50%) · five 35px squares 8px apart — Columns
+            · Tags · Export As PDF · Export As CSV · Filter, the last one ACTIVE (--primary fill,
+            page-bg ink), which is the live `filter-button-active` state
+   ⚠️ THE TAB STRIP SCROLLS SIDEWAYS WITH NO SCROLLBAR. Seventeen tabs are 1,316px; the live page has
+   1,645 to spend and never shows its ant-tabs arrows, but this prototype's canvas is ~1,180 at 1280
+   with the list panel shut. `overflow-x:auto` keeps every tab reachable; the bar is hidden because a
+   strip of chrome should not grow a scrollbar of its own. A stated divergence — live would page.
+   ⚠️ `.mntabs` IS 43.2px TALL INSIDE A 43.2px BORDER-BOX ROW, so it overhangs the row's 1px rule by
+   exactly the rule — which is what puts the active tab's 4px underline ON the rule rather than above
+   it. That is the live geometry (inner row 42.2, tab 43.2). */
+.mnhd{flex:0 0 auto;display:flex;align-items:center;height:43.2px;padding-left:8px;border-bottom:1px solid var(--lh-line);font-size:12.8px;color:var(--lh-text)}
+.mntabs{flex:1 1 auto;min-width:0;display:flex;align-items:flex-start;margin-left:0;height:43.2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.mntabs::-webkit-scrollbar{display:none}
+.mntab{flex:0 0 auto;padding:12px 0 8px;margin:0 20px 0 0;border:0;border-bottom:4px solid transparent;background:transparent;
+  font:inherit;font-size:12.8px;line-height:19.2px;font-weight:400;color:var(--lh-dim);white-space:nowrap;cursor:pointer}
+.mntab:hover{color:var(--lh-primary)}
+.mntab.on{font-weight:500;color:var(--lh-primary);border-bottom-color:var(--lh-primary)}
+.mntab:focus-visible{outline:2px solid var(--lh-primary);outline-offset:-2px}
+.mntb{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;padding:0 8px;font-size:12.8px}
+.mnsrch{position:relative;flex:0 1 288px;display:flex;align-items:center;width:288px;max-width:288px;height:36px;border-radius:4px;background:var(--lh-bg)}
+.mnsrch svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17.6px;height:17.6px;fill:currentColor;color:var(--lh-sicon);pointer-events:none}
+.mnsrch input{width:100%;height:36px;padding:4px 11px 4px 40px;border:1px solid var(--lh-line);border-radius:4px;background:transparent;
+  color:var(--lh-text);font:inherit;font-size:12.8px;line-height:19.2px;outline:0}
+.mnsrch input::placeholder{color:var(--lh-ph)}
+.mnsrch:hover input,.mnsrch input:focus{border-color:var(--lh-primary)}
+.mnbtns{flex:0 0 auto;display:flex;align-items:center;gap:8px}
+/* the live `filter-button-active`: --primary fill, ink punched back to the page — hover paints the same */
+.lhtok .lhsq.on,.lhtok .lhsq.on:hover{background:var(--lh-primary);border-color:var(--lh-primary);color:var(--lh-bg)}
+#view-monitor .modwrap{flex:1 1 auto;min-height:0}
 @media(max-width:1560px){.pagehead .tstamp{display:none}}
 @media(max-width:1360px){.pagehead .btn{padding:0 8px}}
 @media(max-width:1240px){.tabs.inhead .tab:not(.on):not(.tplus){display:none}}
@@ -8907,7 +9068,7 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    unaffected. */
 .ftw{width:100%;height:100%;display:flex;align-items:center;padding:10px 14px;box-sizing:border-box;
   container-type:size;overflow:hidden}
-.ftw > .ftt{display:block;width:100%;font-weight:700;line-height:1.15;word-break:break-word}
+.ftw > .ftt{display:block;width:100%;font-weight:600;line-height:1.15;word-break:break-word}   /* semibold by default (request, 23 Sep 2026); **bold** in the text is still 700 */
 /* ⚠️ AN IMAGE IS BOUNDED BY THE WIDGET, NOT BY ITS OWN PIXELS (19 Sep 2026). `.ftw` does not
    scroll, so an unbounded `<img>` is simply clipped — a 2000px screenshot pasted into a note
    would show its top-left corner and nothing would say why. `height:auto` keeps the aspect
@@ -9001,6 +9162,9 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
    narrower. These paddings bring all three to 8.75–9px (sub-pixel placement moves the read by a
    quarter pixel either way). Change the icon or the font size and re-measure. */
 .cwftmh{padding:0 8px 0 6.75px}
+/* ⚠️ REVERSED (request, 23 Sep 2026: "the icon and text in between and the margin is same, make it different").
+   The padding now reads ~12px each side against a ~9px icon–text gap, so the glyph sits with its label. */
+.cwftmh{padding:0 11px 0 9.75px;gap:6px}
 .cwftmh svg{flex:0 0 14px;width:14px;height:14px}
 .cwftmh span{display:block;line-height:1}
 /* ⚠️ THE PAIR CANCELS TWO RULES WRITTEN FOR A ONE-CONTROL COLUMN, and neither cancel is
@@ -9024,6 +9188,14 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 .cwftpair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   row-gap:10px;column-gap:24px;align-items:start;margin-top:24px}
 .cwftpair .cwftcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+/* three dropdowns in one row, and the alignment trio as the last row (24 Sep 2026) */
+.cwftpair.cwft22{row-gap:18px}
+.cwftpair.cwft22 .cwftvrow{display:flex;justify-content:flex-start;gap:24px}
+.cwftpair.cwft3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cwftpair.cwftlast{grid-template-columns:minmax(0,1fr)}
+/* the four controls span EXACTLY the dropdown row above (request, 24 Sep 2026: "proper alignment"): first on its
+   left edge, last flush to its right edge, even gaps between — a quarter-grid left Font style ~100px short */
+.cwftpair.cwftlast .cwftvrow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:nowrap}
 #cwModal.cwft .cwftpair .cwftdd{max-width:none}
 /* ⚠️ TWO ROWS USE THIS GRID NOW — Font Size + Alignment, then Font Color + Background. The
    note below was written when there was one, and every word of it still applies to both.
@@ -9450,6 +9622,10 @@ html[data-theme="light"] .cwftddp{box-shadow:0 10px 30px rgba(23,35,54,.16)}
 .cwftddn{padding:8px 9px;font-size:11.5px;color:var(--muted)}
 /* the swatch, in the trigger and on every row — one class, so the two cannot disagree */
 .cwftsw2{flex:0 0 13px;width:13px;height:13px;border-radius:3px;border:1px solid var(--border)}
+/* ⚠️ IN A MENU ROW THE EDGE IS `--text-dim` AT 55% (request, 23 Sep 2026, the Transparent row): `--border` is the
+   SAME colour as the menu's `--pop` in dark, so a Transparent swatch was an empty gap until the hover fill
+   lit its edge. It now has an edge at rest, and the same one on hover. */
+.cwftddo .cwftsw2,.cwftddt .cwftsw2{border-color:color-mix(in srgb,var(--text-dim) 55%,transparent)}
 /* ── the custom colour row — see the note at `cwFtDD` ────────────────────────── */
 .cwftdc{display:flex;align-items:center;gap:8px;margin-top:7px;padding-top:7px;
   border-top:1px solid var(--border)}
@@ -9477,6 +9653,7 @@ html[data-theme="light"] .cwftddp{box-shadow:0 10px 30px rgba(23,35,54,.16)}
 html[data-theme="light"] .cwftck input{color-scheme:light}
 /* ── the note on the board: markdown, and the pointer ────────────────────── */
 .ftt h1,.ftt h2,.ftt h3{margin:0 0 .35em;line-height:1.2;font-weight:700}
+.ftt strong,.ftt b{font-weight:700}   /* explicit: `bolder` from a 600 base would ask for 900 */
 .ftt h1{font-size:1.5em}.ftt h2{font-size:1.25em}.ftt h3{font-size:1.08em}
 .ftt p{margin:0 0 .5em}.ftt p:last-child,.ftt ul:last-child,.ftt ol:last-child{margin-bottom:0}
 .ftt ul,.ftt ol{margin:0 0 .5em;padding-left:1.4em;text-align:left}
@@ -10661,6 +10838,112 @@ body:has(#mfGridPop.on) .uxgrip:not(.on):hover::before{opacity:0}
 body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+/* ── the redesigned time-range dropdown — built for Option 2, swapped into Option 1 (23 Sep 2026) ── */
+#trPop.tr2{width:540px;max-width:calc(100vw - 16px);border-radius:8px;border-color:var(--pop-line,var(--border));box-shadow:var(--pop-shadow,0 12px 32px rgba(0,0,0,.35));z-index:95}
+#trPop.tr2 .tr2q{flex:0 0 250px;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--pop-line,var(--border))}
+.tr2s{display:flex;align-items:center;gap:8px;height:34px;margin:10px 10px 4px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--panel-2)}
+.tr2s:focus-within{border-color:var(--teal)}
+.tr2s svg{flex:0 0 14px;width:14px;height:14px;fill:none;stroke:var(--text-dim);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#trPop.tr2 .tr2s .trsearch{flex:1;min-width:0;margin:0;height:auto;padding:0;border:0;background:transparent;font-size:12.5px}
+#trPop.tr2 .trlist{flex:0 1 auto;max-height:min(500px, calc(100vh - 150px));overflow-y:auto;padding:0 6px 8px;scrollbar-width:thin}
+.tr2g{padding:10px 8px 4px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+#trPop.tr2 .range-item{height:30px;padding:0 8px;gap:10px;justify-content:flex-start;border-radius:5px;font-size:13px}
+#trPop.tr2 .range-item .lb{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#trPop.tr2 .range-item .pill{background:transparent;color:var(--text-dim);font-family:"JetBrains Mono",monospace;font-weight:500;font-size:11px;padding:0}
+#trPop.tr2 .range-item .tk{flex:0 0 14px;width:14px;height:14px;fill:none;stroke:var(--teal);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#trPop.tr2 .range-item.sel{background:var(--sel);font-weight:600}
+#trPop.tr2 .range-item.sel .pill{color:var(--text)}
+.tr2e{padding:14px 10px;font-size:12.5px;color:var(--text-dim)}
+#trPop.tr2 .trcustom{padding:14px 16px 16px;gap:0}
+#trPop.tr2 .trcustom h4{margin:0 0 12px;font-size:12.5px;font-weight:600}
+#trPop.tr2 .trcustom label{margin:0 0 5px;font-size:11.5px}
+.tr2f{display:flex;align-items:center;gap:8px;height:34px;margin-bottom:12px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--panel-2)}
+.tr2f:focus-within{border-color:var(--teal)}
+.tr2f svg{flex:0 0 14px;width:14px;height:14px;fill:none;stroke:var(--text-dim);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#trPop.tr2 .tr2f input{flex:1;min-width:0;height:auto;padding:0;border:0;background:transparent;font-size:12px}
+.tr2h{margin:-4px 0 14px;font-size:11px;color:var(--text-dim)}
+#trPop.tr2 .trapply{margin-top:0;align-self:stretch;height:34px;border-radius:6px;background:var(--text);color:var(--bg);font-size:12.5px}
+#trPop.tr2 .trapply:hover{background:var(--text);opacity:.9}
+
+/* ══ THE DASHBOARD LIST PANEL, ON THE OBSERVEOPS DESIGN SYSTEM (request, 23 Sep 2026: "improve the ui
+   — using the ObserveOps design system"). The DS answer for this panel is `obs-side-menu mode="categories"`
+   ("the dashboard picker"); the component itself was NOT swapped in because it has no Quick access, filter
+   chips, per-row ★/⋮, type icons or keyboard nav — so every feature stays and the panel is REPAINTED to
+   that component's spec. Token values are the DS's own (`_ds/observeops-ds.css`), declared under DS names
+   and scoped to #dpanel, the way #agPage / #drawer-layout do it.
+   ⚠️ Declared divergences: Inter, not the DS's Poppins; the panel keeps a drop shadow because here it
+   OVERLAYS the board (the DS panel is a flush column); and the dark surface is #08101F by request. ══ */
+#dpanel{--ds-primary:#e3e8f2;--ds-primary-alt:#cad3e2;--ds-text:#cad3e2;--ds-dim:#8e9fbc;--ds-border:#1d2a3e;
+  --ds-field:#2b394f;--ds-hover:#1d2a3e;--ds-active:#172336;--ds-tag-bg:#2b394f;--ds-tag:#cad3e2;
+  --ds-seg-bg:#07101f;--ds-seg-on:#e3e8f2;--ds-on-primary:#07101f;--ds-btn:#fff;--ds-btn-text:#07101f;
+  --ds-yellow:#fad100;--ds-r:4px;--ds-surface:#08101f}
+html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;--ds-text:#1d2a3e;--ds-dim:#6a7fa0;
+  --ds-border:#e3e8f2;--ds-field:#e3e8f2;--ds-hover:#ecf1f9;--ds-active:#ecf1f9;--ds-tag-bg:#e3e8f2;--ds-tag:#7186a8;
+  --ds-seg-bg:#fff;--ds-seg-on:#111c2c;--ds-on-primary:#fff;--ds-btn:#07101f;--ds-btn-text:#fff;--ds-yellow:#e8b407;--ds-surface:#fff;
+  background:#fff}
+#dpanel{border-right:1px solid var(--ds-border);color:var(--ds-text)}
+/* segmented Dashboard / NOC switch — obs-radio as-button (the side-menu's tab-style="segmented") */
+#dpanel .dtabs{margin:12px 12px 8px;padding:0;gap:0;border:1px solid var(--ds-field);border-radius:var(--ds-r);
+  background:var(--ds-seg-bg);overflow:hidden}
+#dpanel .dtab{height:32px;border-radius:0;font-size:13px;font-weight:500;color:var(--ds-dim)}
+#dpanel .dtab + .dtab{border-left:1px solid var(--ds-field)}
+#dpanel .dtab:hover{color:var(--ds-text);background:var(--ds-hover)}
+#dpanel .dtab.on{background:var(--ds-seg-on);color:var(--ds-on-primary);font-weight:500}
+/* search — obs-input */
+#dpanel .dsearch{margin:0 12px 6px;height:32px;padding:0 10px;gap:8px;border:1px solid var(--ds-field);
+  border-radius:var(--ds-r);background:transparent;color:var(--ds-dim)}
+#dpanel .dsearch:focus-within{border-color:var(--ds-primary)}
+#dpanel .dsearch svg{width:14px;height:14px;flex-basis:14px}
+#dpanel .dsearch input{font-size:13px;color:var(--ds-text)}
+#dpanel .dsearch input::placeholder{color:var(--ds-dim)}
+#dpanel .dtools{padding:2px 12px 6px}
+#dpanel .dtools,#dpanel .dtools button{font-size:12px;color:var(--ds-dim)}
+#dpanel .dtools button:hover{background:var(--ds-hover);color:var(--ds-text)}
+/* category group — chevron + label + count (obs-tag rounded) */
+/* sticky, so it needs an opaque fill — the panel's OWN surface, or it paints a tinted band (one flush surface, per the DS) */
+#dpanel .shead{background:var(--ds-surface);padding:12px 12px 6px;font-size:13px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ds-primary-alt)}
+#dpanel .shead:not(.static):hover{color:var(--ds-primary)}
+#dpanel .shead .shcar{color:var(--ds-dim)}
+#dpanel .shead svg{fill:var(--ds-yellow)}
+#dpanel .shead .cnt2{background:var(--ds-tag-bg);color:var(--ds-tag);border-radius:10px;font-size:11px;font-weight:500;min-width:22px;line-height:18px}
+#dpanel .shead .shsub{font-size:11px;color:var(--ds-dim)}
+/* leaf rows — hover --nav-hover-bg; ACTIVE is --primary on --code-tag-background-color, no accent bar */
+#dpanel .frow{height:36px;margin:0 6px;padding:0 8px 0 26px;border-radius:var(--ds-r);color:var(--ds-text)}
+#dpanel .frow:hover{background:var(--ds-hover)}
+#dpanel .frow.cur{background:var(--ds-active)}
+#dpanel .frow.cur::before{content:none}
+#dpanel .frow.cur .dnm{color:var(--ds-primary);font-weight:500}
+#dpanel .frow .dnm{font-size:13px}
+#dpanel .frow .dnm mark{background:color-mix(in srgb,var(--ds-yellow) 30%,transparent);color:inherit}
+#dpanel .frow.kbd{background:var(--ds-hover);box-shadow:inset 0 0 0 1px var(--ds-field)}
+#dpanel .rtic{width:22px;height:22px;flex-basis:22px;border-radius:var(--ds-r);background:var(--ds-tag-bg);color:var(--ds-dim)}
+#dpanel .rtic svg{width:13px;height:13px}
+#dpanel .frow.cur .rtic{color:var(--ds-primary)}
+#dpanel .dstar,#dpanel .dkebab{color:var(--ds-dim);border-radius:var(--ds-r)}
+#dpanel .dstar.faved{color:var(--ds-yellow)}
+#dpanel .dstar:hover,#dpanel .dkebab:hover{background:var(--ds-field);color:var(--ds-text)}
+#dpanel .dstar.faved:hover{color:var(--ds-yellow)}
+/* quick access — bordered tiles on the DS radius */
+#dpanel .qgrid{gap:8px;padding:4px 12px 12px}
+#dpanel .qcard{height:36px;border:1px solid var(--ds-border);border-radius:var(--ds-r);background:transparent;color:var(--ds-text)}
+#dpanel .qcard:hover{background:var(--ds-hover);border-color:var(--ds-field)}
+#dpanel .qcard.cur{background:var(--ds-active);border-color:var(--ds-field);color:var(--ds-primary)}
+#dpanel .qcard .qic{fill:var(--ds-dim)}
+#dpanel .qcard .qic.fav{fill:var(--ds-yellow)}
+#dpanel .qcard span{font-size:12.5px;font-weight:500}
+#dpanel .qgap{border-bottom-color:var(--ds-border);margin:0 12px 6px}
+/* System / Mine / Shared — obs-tag (selected = --primary fill) */
+#dpanel .dfilt{padding:8px 12px;gap:6px;border-top:1px solid var(--ds-border)}
+#dpanel .dfchip{height:24px;padding:0 8px;border:0;border-radius:var(--ds-r);background:var(--ds-tag-bg);color:var(--ds-tag);font-size:12px}
+#dpanel .dfchip:hover{color:var(--ds-text)}
+#dpanel .dfchip.on{background:var(--ds-seg-on);color:var(--ds-on-primary);font-weight:500}
+/* footer — the DS primary button, and a quiet row for Manage */
+#dpanel .dfoot{border-top-color:var(--ds-border);padding:12px}
+#dpanel .dnew{height:32px;border-radius:var(--ds-r);background:var(--ds-btn);color:var(--ds-btn-text);font-weight:500;font-size:13px}
+#dpanel .dnew:hover{filter:none;opacity:.9;box-shadow:none}
+#dpanel .dmanage{border-radius:var(--ds-r);color:var(--ds-dim)}
+#dpanel .dmanage:hover{background:var(--ds-hover);border-color:transparent;color:var(--ds-text)}
+#dpanel .dmanage:focus-visible,#dpanel .dnew:focus-visible,#dpanel .dtab:focus-visible{outline:2px solid var(--ds-primary);outline-offset:1px}
 </style>
 </head>
 <body>
@@ -10743,6 +11026,12 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
      ⚠️ SO OPTION 1 AND OPTIONS 10–13 NOW DISAGREE ABOUT THE NAME, on purpose and in the
      open. If the 9 Sep "use Ask AI everywhere" was meant to be global rather than per-page,
      this page is the one to change — it is 13 strings, listed in the swap banner above.
+     ⚠️ RESOLVED 23 Sep 2026 — IT IS "Ask AI" HERE TOO NOW (request: "the Option 13 Ask AI — all
+     improvements apply in Option 1"). A function-by-function and rule-by-rule diff of the two panels
+     found only two real differences: this name, and the hairline above Documentation / Support in
+     the empty state (13 has none; it is gone here too). The two notes above describe the state
+     before that and are kept as history. Option 1 is AHEAD of 13 in one place: the word-by-word
+     Gemini fade (`aitw*`, 23 Sep 2026), which 13 does not have.
      The MARK is the other way round: the gradient star came WITH the sidebar, because the
      rail's own intro animation is built on it. See the swap banner for why.
      ⚠️ THE MARK IS LUCIDE `sparkles`, pasted verbatim from `free-icons/lucide/cursors` — the
@@ -10782,7 +11071,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
            star's inner counter closes up and it reads as a smudge, where the solid one keeps
            its silhouette. Its only difference is a second, inner star subpath; it can be
            swapped in by replacing this `d` if a lighter mark is ever wanted. -->
-    <div class="sitem airail" id="sbAI" data-tip="Iris" onclick="aiOpen()"><svg class="ic aisprk" data-aispark viewBox="0 0 48 48"></svg><span class="lbl">Iris</span></div>
+    <div class="sitem airail" id="sbAI" data-tip="Ask AI" onclick="aiOpen()"><svg class="ic aisprk" data-aispark viewBox="0 0 48 48"></svg><span class="lbl">Ask AI</span></div>
     <div class="sitem" id="sbSearch" data-tip="Search  ⌘K" onclick="openSearch()"><svg class="ic" viewBox="0 0 48 48" id="sbSearchIc"></svg><span class="lbl">Search<span class="kbd" id="sbKbd">⌘ K</span></span></div>
     <!-- Global AI — the product's own assistant screen (`Global_ai.html`, 16 Sep 2026). A real
          navigation, not a panel: it is a page of its own, so this row is a link and not a
@@ -10920,176 +11209,75 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
   <main class="main">
     <!-- ===== Dashboard view (next-gen canvas per Dashboard-NextGen proposal) ===== -->
     <section class="view on" id="view-dashboard">
-      <div class="pagehead">
-        <!-- the crumb no longer jumps to another prototype: it opens the dashboard list
-             panel in place, the same flow as V2 -->
-        <button class="icobtn dpchev" id="dpanelBtn" title="Hide dashboard list" onclick="toggleDPanel()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>
-        </button>
-        <!-- ⚠️ TOGGLE DASHBOARD OUTLINE WAS REMOVED FROM THE HEADER (request, 22 Sep 2026:
-             "in header remove the 'toggle dashboard outline'"). THE OUTLINE IS NOT GONE: the `O`
-             shortcut still calls `toggleOutline()`, it is still in the `KB` registry and still
-             listed in the `?` sheet, and `#outline` and its CSS are untouched — only the button
-             went. Its `KB` entry keeps a `sel` that now matches nothing; `kbTag` guards for that.
-             ⚠️ CONSEQUENCE, STATED: the outline is keyboard-only on this page now, the same
-             trade undo and redo took. Nothing on screen announces it. -->
-        <span class="hsep"></span>
-        <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
-        <!-- ⚠️ THE BREADCRUMB WAS REMOVED (request, 23 Sep 2026: "remove the breadcrumb and show
-             only dashboard icon, dashboard name & tag or favorite icon"). The row is now
-             `[icon] <name> (Public) ☆`. `Dashboards`, the `⋯` category chip and every `›` went;
-             the ‹ chevron before this still opens the dashboard list, so browsing is not lost.
-             `#crumbCat` STAYS in the DOM (hidden) because seven readers take the category from
-             its textContent. `#dashHeadIc` is shown again — `setIco` already fills it. -->
-        <span class="crumbs">
-          <a id="crumbCat" hidden>PMG</a>
-          <span class="cur" id="dashTitle">Application Performance</span>
-        </span>
-        <span class="vbadge" title="Visible to the whole org"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg>Public</span>
-        <span class="favstar faved" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span>
-        <!-- ⚠️ THIS DIVIDER IS THE GROUPS BUTTON’S, AND HIDES WITH IT (request,
-             22 Sep 2026: "remove the no need divider line"). It separates the breadcrumb from
-             the board-editing controls, and `renderCanvas` hides `#grpBtn` on a FLAT board — so
-             on a board with no groups it was a rule with nothing after it, hanging off the end
-             of the crumb. It became visible the moment undo and redo left the row.
-             ⚠️ IT IS HIDDEN BESIDE `#grpBtn`, ON THE SAME LINE OF `renderCanvas`, rather than
-             by a `:has()` rule " one test, one place, and the two cannot disagree. -->
-        <span class="hdiv" id="grpDiv"></span>
-        <!-- ⚠️ UNDO / REDO WERE REMOVED FROM THE TOOLBAR (request, 22 Sep 2026: "we need to
-             change the header overall — remove the 'undu & redu' option"). THE FEATURE IS NOT
-             GONE: ⌘Z / Ctrl+Z and ⇧⌘Z / Ctrl+Y still run `histUndo` / `histRedo`, both are
-             still in the `KB` registry and still listed in the `?` sheet, and every board edit
-             still snapshots through `histDo`. Only the two buttons went.
-             ⚠️ `histRender()` ALREADY GUARDED FOR THEM (`if (!u || !r) return;`), which is the
-             only reason this is a markup-only change — it is called from `histDo`, `histUndo`,
-             `histRedo` and `histLoad`, so an unguarded lookup would have thrown on every edit.
-             ⚠️ THEIR `KB` ENTRIES CARRY NO `sel` and never did, so no keycap was orphaned.
-             ⚠️ CONSEQUENCE, STATED: undo is now keyboard-only on this page. Nothing on screen
-             says the board can be undone, and the `?` sheet is where that is written. -->
-        <!-- ⚠️ THE SECOND DIVIDER THAT STOOD HERE WAS REMOVED (request, 23 Sep 2026: "remove the line
-             in header — only show when Groups is added"). It was undo/redo's, left behind when they
-             went, and it never hid — so a flat board drew a rule after the ☆ with nothing beyond
-             it, and a grouped board drew TWO. `#grpDiv` above is now the only one, and
-             `renderCanvas` shows it exactly when `#grpBtn` shows. -->
-        <button class="btn grpbtn" id="grpBtn" title="Jump to a group" onclick="openGroupMenu(event)">
-          <svg viewBox="0 0 24 24"><path d="M3 4h8v6H3V4Zm10 0h8v6h-8V4ZM3 14h8v6H3v-6Zm10 0h8v6h-8v-6Z"/></svg>Groups<span class="cr">▾</span></button>
-
-        <span class="spacer" style="flex:1"></span>
-        <span style="position:relative">
-          <!-- ⚠️ THE TIME CONTROL IS ONE SEGMENTED BAR (request, 22 Sep 2026, with a reference):
-               ‹ step back · the range chip · › step forward · ⟳ refresh + auto-refresh interval.
-               The chip keeps `.timechip` / `#tcLabel` / `#tcStamp`, which trPlace, the `T`
-               shortcut and the widget editor all read. Glyphs are Tabler, from free-icons/. -->
-          <span class="trseg" id="trSeg">
-            <button class="trnav" id="trPrev" type="button" onclick="trShift(-1)" data-tip="Previous range" aria-label="Previous range"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg></button>
-            <button class="timechip" onclick="trToggle(event)" title="Time range">
-              <span class="clock"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/></svg></span>
+      <div class="pagehead lhd lhtok">
+        <!-- ⚠️ THIS IS THE LIVE PRODUCT'S DASHBOARD HEADER, COPIED AS IT IS (request, 25 Sep 2026:
+             "go to https://172.16.12.100/dashboard/112669747490 using dev tools and the header will
+             be copied and added in current flow — only dashboard header, as it is, no change").
+             Read off build 10.0.1's `.dashboard-selector-bar` in the browser: every box, gap, size and
+             colour in the `.lhd` rules is the measured DOM, not a drawing. Left: a 25px circled
+             chevron (the list toggle) · a 1×25 rule · the dashboard glyph · the name at 20px/500 ·
+             a star. Right: the time chip (`today` key pill · rule · label · ⊗ clear) · the two
+             absolute stamps · Full Screen · Export · ⋮ as three 35px squares.
+             ⚠️ WHAT LEFT WITH IT, because the live header has none of them: the Public badge, the
+             Groups button (`openGroupMenu` is reached from the canvas navigator now, on boards with
+             two or more groups), the ‹ › range stepping, the ⟳ refresh control and the
+             keyboard-shortcuts button (`?` and the profile popover still open the sheet).
+             `trShift` / `rf*` / `kbPop*` and their CSS are kept and unreferenced.
+             ⚠️ AUTO-REFRESH STILL RUNS at its 30s default with nothing on screen to change it —
+             `rfMs` is the dial, `rfArm()` the loop. Stated rather than silently switched off.
+             ⚠️ THE IDS ARE THE OLD ONES ON PURPOSE: `#dpanelBtn`, `#dashHeadIc`, `#crumbCat`
+             (hidden), `#dashTitle`, `#dashHeadStar`, `.timechip` / `#tcLabel` / `#tcStamp` and
+             `#fsBtn` are read by `toggleDPanel`, `pickDash`, `trPlace`, the `KB` registry,
+             `toggleFS` and the widget editor. `#tcKey` is new — `trKeyPaint` fills it.
+             ⚠️ THE CHIP IS A `<div role="button">`, NOT A `<button>` — the ⊗ inside it is its own
+             control, and interactive content inside a button eats the clicks (the recorded trap).
+             ⚠️ THE GLYPHS ARE THE PRODUCT'S OWN, pasted verbatim from `observeops-icons/` on their
+             48 grid: chevron-right · dashboard (via `setIco`) · star · times-circle · fullscreen ·
+             image · ellipsis-v — the seven the live bar draws. -->
+        <button class="lhchev dpchev" id="dpanelBtn" title="Hide dashboard list" onclick="toggleDPanel()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg></button>
+        <span class="lhdiv"></span>
+        <h3 class="lhtitle">
+          <svg class="ic" id="dashHeadIc" viewBox="0 0 48 48"></svg>
+          <span class="crumbs"><a id="crumbCat" hidden>PMG</a><span class="cur" id="dashTitle">Application Performance</span></span>
+          <span class="favstar faved lhstar" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M43.9,19.4c-.1-.4-.4-.7-.7-.9-.3-.2-.7-.4-1.1-.4l-11.4-1.7-5.1-10.3c-.2-.3-.4-.6-.7-.8-.3-.2-.7-.3-1.1-.3s-.7,.1-1.1,.3c-.3,.2-.6,.5-.7,.8l-5.1,10.3-11.4,1.7c-.4,0-.7,.2-1,.4-.3,.2-.5,.6-.6,.9-.1,.3-.1,.7,0,1.1,0,.4,.3,.7,.5,.9l8.2,8-2,11.3c0,.4,0,.8,.1,1.1,.1,.4,.4,.7,.7,.9,.3,.2,.7,.3,1,.4,.4,0,.7,0,1.1-.2l10.2-5.3,10.2,5.4c.3,.2,.6,.2,.9,.2,.4,0,.8-.1,1.2-.4,.3-.2,.5-.5,.7-.9,.1-.4,.2-.7,.1-1.1l-2-11.3,8.2-8c.3-.2,.5-.6,.6-.9,.1-.4,.1-.7,0-1.1Zm-12.3,8c-.2,.2-.4,.5-.5,.8-.1,.3-.1,.6,0,1l1.4,8.4-7.5-4c-.3-.2-.6-.2-.9-.2s-.6,0-.9,.2l-7.5,4,1.4-8.4c0-.3,0-.7,0-1-.1-.3-.3-.6-.5-.8l-6-6,8.4-1.2c.3,0,.6-.2,.9-.4,.3-.2,.5-.4,.6-.7l3.6-7.6,3.8,7.6c.1,.3,.4,.5,.6,.7,.3,.2,.6,.3,.9,.4l8.4,1.2-6,6Z"/></svg></span>
+        </h3>
+        <div class="lhright">
+          <div class="lhtr">
+            <!-- ⊗ is the live picker's clear control: it puts the range back to the default (Today),
+                 which is what `trSet(TR_HOME)` does on boot. It stops the click so the popover the
+                 chip opens does not also open. -->
+            <div class="timechip lhchip" role="button" tabindex="0" title="Time range" onclick="trToggle(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();trToggle(event)}">
+              <span class="lhkey" id="tcKey">today</span>
+              <span class="lhsep"></span>
               <span class="tcmain" id="tcLabel">Today</span>
-              <span class="tcsub" id="tcStamp"></span>
-              <span class="caret"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg></span>
-            </button>
-            <button class="trnav" id="trNext" type="button" onclick="trShift(1)" data-tip="Next range" aria-label="Next range"><svg viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6"/></svg></button>
-            <button class="trrf" id="trRf" type="button" onclick="rfToggle(event)" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="rfLabel">30s</span></button>
-          </span>
-          <div class="rfpop" id="rfPop" onclick="event.stopPropagation()"></div>
-          <div class="trpop" id="trPop">
-            <div class="trcustom" onclick="event.stopPropagation()">
-              <h4>Absolute time range</h4>
-              <label for="trFrom">From</label><input id="trFrom" spellcheck="false"/>
-              <label for="trTo">To</label><input id="trTo" spellcheck="false"/>
-              <button class="trapply" onclick="trApply(event)">Apply time range</button>
+              <a class="lhclear" role="button" tabindex="0" data-tip="Clear time range" onclick="trReset(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();trReset(event)}"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31.8,18.8c.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6-.2-.2-.4-.3-.6-.4s-.5-.2-.8-.2-.5,0-.8,.2c-.2,.1-.5,.2-.6,.4l-4.5,4.5-4.5-4.5c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l4.5,4.5-4.5,4.5c-.2,.2-.3,.4-.4,.6-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.2,.5,.4,.6,.2,.2,.4,.3,.6,.4s.5,.2,.8,.2,.5,0,.8-.2c.2-.1,.5-.2,.6-.4l4.5-4.5,4.5,4.5c.2,.2,.4,.3,.6,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2,.5-.2,.6-.4c.2-.2,.3-.4,.4-.6,.1-.2,.2-.5,.2-.8s0-.5-.2-.8c-.1-.2-.2-.5-.4-.6l-4.5-4.5,4.5-4.5c.2-.2,.3-.4,.4-.6Zm10.6-2.4c-1-2.4-2.5-4.6-4.4-6.4-1.8-1.9-4-3.4-6.4-4.4-2.4-1-5-1.6-7.6-1.6s-5.2,.5-7.7,1.5-4.6,2.5-6.5,4.3-3.3,4.1-4.3,6.5-1.5,5-1.5,7.7,.6,5.2,1.6,7.6c1,2.4,2.5,4.6,4.4,6.4,1.8,1.9,4,3.4,6.4,4.4,2.4,1,5,1.6,7.6,1.6,2.6,0,5.2-.5,7.7-1.5,2.4-1,4.6-2.5,6.5-4.3,1.9-1.9,3.3-4.1,4.3-6.5,1-2.4,1.5-5,1.5-7.7,0-2.6-.6-5.2-1.6-7.6Zm-3.8,13.6c-.8,1.9-2,3.7-3.4,5.1-2.6,2.6-6,4.2-9.6,4.6-3.6,.4-7.3-.6-10.3-2.6s-5.3-5.1-6.3-8.5c-1.1-3.5-.9-7.3,.5-10.6,1.4-3.4,3.9-6.2,7.1-7.9,3.2-1.7,6.9-2.3,10.5-1.6,3.6,.7,6.8,2.6,9.1,5.5,2.3,2.8,3.6,6.4,3.6,10,0,2.1-.4,4.1-1.2,6.1Z"/></svg></a>
             </div>
-            <div class="trpresets">
-              <input class="trsearch" id="trSearch" placeholder="Search quick ranges" oninput="trRenderPop()" onclick="event.stopPropagation()"/>
+            <span class="lhstamp" id="tcStamp"></span>
+          </div>
+          <div class="trpop tr2" id="trPop">
+            <!-- ⚠️ THE REDESIGNED DROPDOWN (built for Option 2 on 23 Sep 2026, then SWAPPED in here on request: "in option 1 & 2 header in timeline dropdown will be swap"). Quick ranges
+                 lead — they are what you pick nine times in ten — grouped Relative / Calendar with a tick on
+                 the current one; the absolute range sits beside them. Tabler glyphs, from free-icons/. -->
+            <div class="tr2q" onclick="event.stopPropagation()">
+              <label class="tr2s"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg><input class="trsearch" id="trSearch" placeholder="Search quick ranges" autocomplete="off" oninput="trRenderPop()"/></label>
               <div class="trlist" id="trList"></div>
             </div>
+            <div class="trcustom" onclick="event.stopPropagation()">
+              <h4>Absolute range</h4>
+              <label for="trFrom">From</label><div class="tr2f"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/></svg><input id="trFrom" spellcheck="false" onkeydown="if(event.key==='Enter')trApply(event)"/></div>
+              <label for="trTo">To</label><div class="tr2f"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/></svg><input id="trTo" spellcheck="false" onkeydown="if(event.key==='Enter')trApply(event)"/></div>
+              <p class="tr2h">YYYY-MM-DD HH:MM:SS · your local time</p>
+              <button class="trapply" onclick="trApply(event)">Apply time range</button>
+            </div>
           </div>
-        </span>
-        <!-- ⚠️ SHARE MOVED INTO THE ⋮ ACTIONS MENU (request, 22 Sep 2026: "share will be move
-             inside the '3 dot action'"). It is a row of `openDashMenu` now, beside Clone / Edit /
-             Version history — which is where the board's other verbs already live, and it opens
-             the same `#drawer-share`. The `S` shortcut is unchanged and still opens it. -->
-        <!-- ⚠️ THE ✦ IRIS PILL WAS REMOVED (request, 22 Sep 2026: "remove the 'AI' button").
-             THE ASSISTANT IS NOT GONE and this is the third entry point to lose rather than the
-             feature: the rail's own Iris row opens it, so does the `A` shortcut, and so does
-             Log Explorer's ✦ Ask Iris. `.aibtn`'s CSS stays — Options 2 and 3 still render it,
-             and it is what a revert needs. The `A` entry in `KB` keeps its `sel`, which now
-             matches nothing; `kbTag` guards for that, so the sheet still lists the key. -->
-        <!-- ⚠️ The "✦ AI Chat" button was REMOVED (annotation, 15 Aug 2026). It opened the
-             shared ac* chat and sat immediately beside "Ask AI", which opens this page's own
-             panel — two violet sparkle pills side by side, indistinguishable at a glance.
-             The ac* chat is still reachable here on ⌘I / Ctrl+I (acOpen), and is unchanged
-             in Options 2 and 3; only this toolbar entry point is gone. `.acaskbtn` stays in
-             the stylesheet because those two options still render it. -->
-        <!-- The toolbar's primary action is now creating a dashboard, not adding a widget:
-             adding a widget moved onto the canvas as a ghost tile (see .wadd), where the
-             widget will actually land.
-             It is icon-only (annotation, 13 Aug 2026): the full "＋ Create New Dashboard"
-             label ran ~180px and dominated the toolbar. The label survives in the tooltip,
-             the N shortcut and the list panel's own ＋ New Dashboard row. -->
-        <!-- A bare ＋ read as "add something" sitting next to the widget ＋ affordances
-     (annotation, 13 Aug 2026). The glyph is now the PRODUCT'S OWN dashboard grid
-     with the PRODUCT'S OWN plus in the free quadrant — both paths lifted from the
-     live 8.2.7 icon set (`custom-dashboard` minus its pencil, plus `plus`), so it
-     reads as "a new dashboard" rather than "add". Stays icon-only: the full
-     "＋ Create New Dashboard" label ran ~180px and dominated the toolbar. -->
-        <!-- ⚠️ ＋ CREATE NEW DASHBOARD WAS REMOVED FROM THE TOOLBAR (request, 22 Sep
-             2026: "in header remove the 'create new dashboard'"), with undo / redo, the ✦ Iris
-             pill, Share and Layout settings — the last two into the ⋮ actions menu.
-             ⚠️ NOTHING IS STRANDED, which is the check every removal in this file gets before it
-             happens: the dashboard list panel's own ＋ New Dashboard row, the Manage-dashboards
-             screen's primary and the `N` shortcut all still create one. `N`'s `KB` entry keeps
-             its `sel`, which now matches nothing; `kbTag` guards for that, so the `?` sheet
-             still lists the key.
-             ⚠️ ITS GLYPH TOOK TWO GOES TO GET RIGHT (13 Aug 2026 — a bare ＋ read as "add
-             something" beside the canvas and group ＋ affordances, so it became the product's own
-             dashboard grid with the product's own plus in the free quadrant). That composition
-             is in git history; don't redraw it if the button ever comes back. -->
-        <!-- Full screen and More carry the SHARE button's treatment (.btn.ico — bordered
-             28px box, 13px glyph), not the naked .icobtn, so the right-hand action cluster
-             reads as one set (annotation, 13 Aug 2026). -->
-        <!-- ⚠️ LAYOUT SETTINGS MOVED HERE FROM THE ⋮ MENU (request, 27 Aug 2026). It is a
-             `.btn.ico` like its neighbours so the right-hand cluster stays one set, and it
-             sits BEFORE Full Screen because it acts on the board while Full Screen, the
-             shortcut sheet and More are chrome about the page.
-             ⚠️ IT IS NOT ALSO LEFT IN THE ⋮ MENU. Two doors to one drawer is the duplicate
-             entry-point smell this file has been trimmed for twice — the ⋮ row is removed,
-             and the Manage screen's bulk bar is still the other (different) way in, because
-             that one arrives carrying a selection. -->
-        <!-- ⚠️ THE GLYPH IS THE PRODUCT'S OWN (annotation, 27 Aug 2026: "change the icon
-             using icon library"). It is `observeops-icons/common/navigation-layout/
-             splited-screen.svg`, harvested from the live product and pasted VERBATIM —
-             the icon library this repo already carries, rather than a shape composed out
-             of rects here, which is what the first two attempts were.
-             ⚠️ IT IS FILLED, LIKE EVERY OTHER BUTTON IN THIS CLUSTER. `.btn svg` sets
-             `fill:currentColor`, and share / full-screen / keyboard / More are all solid;
-             a stroked outline here would be the one odd mark in the row. That is also why
-             a Lucide icon was the wrong answer — that set is drawn to be stroked.
-             ⚠️ ITS viewBox IS 48, not 24 like its neighbours. That is the box the product
-             drew it in and rescaling a harvested path by hand is the tidying this repo
-             forbids; nothing downstream cares, because `.btn svg` sizes it in CSS.
-             ⚠️ It still has to differ from ＋ Create New Dashboard two buttons away, whose
-             glyph is the product dashboard grid with a plus — a framed split pane and a
-             grid-plus are different silhouettes, not the same mark with a detail moved. -->
-        <!-- ⚠️ LAYOUT SETTINGS MOVED INTO THE ⋮ ACTIONS MENU (request, 22 Sep 2026: "the
-             layout setting will be move '3 dot action'"), WHICH IS WHERE IT STARTED. It was a row
-             of `openDashMenu` until 27 Aug 2026, when it became this toolbar button; the row's
-             `dmAct('layout')` branch was kept and unreferenced against exactly this, and its own
-             note said so. So the move is one row back, not a rebuild.
-             ⚠️ THE ROW IS BETTER THAN THE BUTTON WAS, and that is worth keeping: `dmAct('layout')`
-             opens the drawer ON A NAMED BOARD (`if (dashState.cur !== n) pickDash(n)`), which the
-             toolbar button could not do — it only ever knew about the open one.
-             ⚠️ `#layBtn` AND ITS `fill:none` CANCEL ARE KEPT IN THE STYLESHEET. The glyph is a
-             stroked Lucide `sliders-horizontal` and `.btn svg` fills, so a revert needs both. -->
-<button class="btn ico" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 0h2v6h-6v-2h4v-4Z"/></svg></button>
-        <!-- Keyboard shortcuts. Hover shows every key in a popover, click opens the full
-             sheet. It sits with Full Screen and More because it is chrome about the page
-             rather than an action on the dashboard, and it is LAST because it is the one
-             control here you use once and then never again. -->
-        <button class="btn ico" id="kbPopBtn" aria-label="Keyboard shortcuts"
-          onmouseenter="kbPopHover()" onmouseleave="kbPopLater()"
-          onclick="kbPopClose();kbOpen()"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5h18v14H3V5Zm2 2v10h14V7H5Zm1.5 1.5h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h1.5v2H17v-2ZM6.5 12h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h4v2h-4v-2ZM8 15.5h8v2H8v-2Z"/></svg></button>
-        <button class="btn ico" title="More" onclick="openDashMenu(event, dashState.cur)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></svg></button>
+          <div class="lhbtns">
+            <button class="lhsq" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M21,25c-.6,0-1,.2-1.4,.6l-11.6,11.5v-3.1c0-.6-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6-.6,.8-.6,1.4v8c0,.3,0,.5,.2,.8,.2,.5,.6,.9,1,1,.3,.1,.5,.2,.8,.2H14c.6,0,1-.2,1.4-.6,.5-.4,.6-.8,.6-1.4s-.2-1-.6-1.4c-.3-.4-.8-.6-1.4-.6h-3.1l11.6-11.6c.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4c-.4-.5-.8-.6-1.5-.6h0ZM43.9,5.2c-.2-.5-.6-.9-1-1s-.6-.2-.9-.2h-8c-.6,0-1,.2-1.4,.6s-.6,.8-.6,1.4,.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h3.1l-11.5,11.6c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.6,.2,.8c.1,.3,.3,.5,.5,.7s.4,.4,.7,.5c.3,.1,.5,.2,.8,.2s.6,0,.8-.2c.3-.1,.5-.3,.7-.5l11.4-11.7v3.1c0,.6,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.5-.4,.6-.8,.6-1.4V6c0-.3,0-.5,0-.8Z"/></svg></button>
+            <!-- the live Export renders the board to an image (`handleExport`, html2canvas); the ⋮ menu's
+                 Export-as-image row is the same action, so this goes through the same `dmAct('img')` -->
+            <button class="lhsq" title="Export" onclick="dmAct('img', dashState.cur)"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31,20c1.7,0,3-1.3,3-3s-1.3-3-3-3-3,1.3-3,3,1.3,3,3,3Zm7-14H10c-2.2,0-4,1.8-4,4v28c0,2.2,1.8,4,4,4h28c2.2,0,4-1.8,4-4V10c0-2.2-1.8-4-4-4Zm0,32H10v-7l8-6.4,8.8,7c.8,.6,1.9,.6,2.7-.1l2.6-2.6,6,6v3.2Zm0-8.8l-4.6-4.6c-.8-.8-2-.8-2.8,0l-2.7,2.7-8.6-6.9c-.7-.6-1.8-.6-2.5,0l-6.8,5.4V10h28V29.2Z"/></svg></button>
+            <button class="lhsq" title="More" onclick="openDashMenu(event, dashState.cur)"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M24,14c2.2,0,4-1.8,4-4s-1.8-4-4-4-4,1.8-4,4,1.8,4,4,4Zm0,20c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Zm0-14c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Z"/></svg></button>
+          </div>
+        </div>
       </div>
       <!-- Order: breadcrumb → timeline → sub-dashboard tabs → canvas. The timeline scopes
            the whole dashboard so it sits directly under the breadcrumb; the tabs sit next
@@ -11189,6 +11377,46 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
              `.stpt[hidden]` is the recorded case where an author rule beat the UA's. -->
         <div class="sub modsub" id="modSub" hidden></div>
         <div class="sub">Module screen — chrome prototype focuses on sidebar &amp; header actions.</div>
+      </div></div>
+    </section>
+    <!-- ══════ MONITOR MODULE — the live product's two header rows (25 Sep 2026) ═══════════════════
+         Request: "in monitor create this 2 header", with the live Monitor screen as the picture. Read
+         off build 10.0.1 at /inventory/All/groups in the browser and rebuilt part for part: the tab
+         strip (chevron · rule · seventeen monitor types, Inventory active) and the toolbar (Search ·
+         Columns · Tags · Export As PDF · Export As CSV · Filter, active). Same `--lh-*` tokens and the
+         same `.lhchev` / `.lhdiv` / `.lhsq` controls as the dashboard header, so the two screens'
+         chrome cannot drift apart. `mn*` block in the script, after `selectModule`.
+         ⚠️ THE TABS ARE `EXPLORER_TREE`'s OWN MONITOR TYPES (the rows under the pinned Monitor card),
+         filtered to the ones that open this module — which is the live strip's seventeen, in its
+         order. One source; a type added to the tree appears here.
+         ⚠️ ONLY THE TWO HEADERS ARE BUILT. The chevron toggles nothing (live: the Groups · Types ·
+         Severity · Filter side panel), the search filters nothing, and Columns / Tags / the two
+         exports say so in a toast. Filter toggles its active look — the live state is the filter row
+         being shown, and there is no filter row here. Every one of those is one handler away. -->
+    <section class="view lhtok" id="view-monitor">
+      <div class="mnhd">
+        <!-- `.flip` at rest: the glyph is chevron-RIGHT and `.lhtok .lhchev svg` mirrors it to ‹ for the
+             dashboard's "hide the list" state; the monitor list panel starts CLOSED, so this one rests
+             on › (the live screen's resting state) and `mnChev` toggles the class from there -->
+        <button class="lhchev mnchev flip" id="mnChev" type="button" title="Show monitor list" onclick="mnChev()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg></button>
+        <span class="lhdiv"></span>
+        <div class="mntabs" id="mnTabs" role="tablist"></div>
+      </div>
+      <div class="mntb">
+        <label class="mnsrch"><svg class="mnsi" viewBox="0 0 48 48" aria-hidden="true"></svg><input id="mnSearch" type="text" placeholder="Search" autocomplete="off" oninput="mnSearch(this.value)"/></label>
+        <div class="mnbtns">
+          <button class="lhsq" type="button" aria-label="Columns" data-tip="Columns" onclick="mnStub('The column chooser')"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M43.8,23.2c-4-9.3-11.6-15.2-19.8-15.2S8.2,13.8,4.2,23.2c0,.3-.2,.6-.2,.8s0,.6,.2,.8c4,9.3,11.6,15.2,19.8,15.2s15.8-5.8,19.8-15.2c0-.3,.2-.6,.2-.8s0-.6-.2-.8Zm-19.8,12.8c-6.4,0-12.4-4.6-15.8-12,3.4-7.4,9.4-12,15.8-12s12.4,4.6,15.8,12c-3.4,7.4-9.4,12-15.8,12Zm0-20c-1.6,0-3.1,.5-4.5,1.3-1.3,.9-2.4,2.1-3,3.6-.6,1.4-.8,3-.5,4.7,.3,1.5,1,3,2.2,4.1s2.6,1.9,4.1,2.2,3.1,.2,4.7-.5c1.4-.6,2.7-1.6,3.6-3,.9-1.3,1.3-2.9,1.3-4.5s-.9-4.2-2.4-5.6c-1.5-1.5-3.5-2.4-5.6-2.4Zm2.9,10.9c-.8,.8-1.8,1.1-2.9,1.1s-1.5-.2-2.2-.7c-.7-.5-1.1-1-1.4-1.8s-.4-1.5-.2-2.3c.2-.8,.6-1.5,1-2s1.2-1,2-1c.8-.2,1.6,0,2.3,.2,.8,.3,1.3,.9,1.8,1.4,.5,.7,.7,1.4,.7,2.2s-.4,2.1-1.1,2.9Z"/></svg></button>
+          <button class="lhsq" type="button" title="Tags" onclick="mnStub('Tags')"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M15,12c-1.66,0-3,1.34-3,3s1.34,3,3,3,3-1.34,3-3-1.34-3-3-3ZM43.41,24.59L23.41,4.59c-.38-.38-.88-.59-1.41-.59H6c-1.1,0-2,.9-2,2v16c0,.53.21,1.04.59,1.41l20,20c.78.78,2.05.78,2.83,0l16-16c.78-.78.78-2.05,0-2.83ZM26,39.17L8,21.17V8h13.17l18,18-13.17,13.17Z"/></svg></button>
+          <button class="lhsq" type="button" title="Export As PDF" onclick="mnStub('Export as PDF')"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M37.9,11.7l-6.6-6.6c-.7-.7-1.7-1.1-2.6-1.1H12.8c-2.1,0-3.7,1.7-3.7,3.8V40.3c0,2.1,1.7,3.7,3.7,3.7h22.5c2.1,0,3.7-1.7,3.7-3.7V14.3c0-1-.4-2-1.1-2.7Zm-3,2.4h-5.9v-5.9l5.9,5.9ZM12.8,40.3V7.8h12.5V15.9c0,1,.8,1.9,1.9,1.9h8.1v22.5H12.8Zm19.5-11.2c-1-.9-3.7-.7-5-.5-1.3-.8-2.2-2-2.9-3.6,.3-1.3,.8-3.2,.4-4.4-.3-2-3-1.8-3.3-.5-.3,1.3,0,3,.5,5.2-.8,1.9-1.9,4.4-2.8,5.8-1.6,.8-3.7,2-4,3.6-.3,1.2,2,4.3,5.9-2.4,1.7-.6,3.7-1.3,5.3-1.6,1.5,.8,3.2,1.3,4.4,1.3,2,0,2.2-2.2,1.4-3Zm-15.5,6.1c.4-1.1,1.9-2.3,2.4-2.7-1.5,2.4-2.4,2.8-2.4,2.7Zm6.4-14.9c.6,0,.5,2.5,.1,3.2-.3-1.1-.3-3.2-.1-3.2Zm-1.9,10.7c.8-1.3,1.4-2.9,1.9-4.3,.6,1.2,1.5,2.1,2.4,2.8-1.6,.3-3,1-4.3,1.5Zm10.3-.4s-.4,.5-2.9-.6c2.7-.2,3.2,.4,2.9,.6Z"/></svg></button>
+          <button class="lhsq" type="button" title="Export As CSV" onclick="mnStub('Export as CSV')"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M37.9,11.7l-6.6-6.6c-.7-.7-1.7-1.1-2.6-1.1H12.7c-2.1,0-3.7,1.7-3.7,3.8V40.3c0,2.1,1.7,3.7,3.7,3.7h22.5c2.1,0,3.8-1.7,3.8-3.7V14.3c0-1-.4-2-1.1-2.7Zm-8.9-3.6l5.9,5.9h-5.9v-5.9h0Zm6.3,32.2H12.7V7.8h12.5V15.9c0,1,.8,1.9,1.9,1.9h8.1v22.5Zm-8.8-15.6v1.6c0,2.8,1,5.4,2.8,7.4,.2,.3,.6,.4,.9,.4s.7-.1,.9-.4c1.8-2,2.8-4.6,2.8-7.4v-1.6c0-.3-.3-.6-.6-.6h-1.2c-.3,0-.6,.3-.6,.6v1.6c0,1.6-.4,3.1-1.2,4.4-.8-1.3-1.2-2.9-1.2-4.4v-1.6c0-.3-.3-.6-.6-.6h-1.2c-.3,0-.6,.3-.6,.6Zm-8.1-.6h-.6c-2.1,0-3.8,1.7-3.8,3.8v2.5c0,2.1,1.7,3.8,3.8,3.8h.6c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6h-.6c-.7,0-1.2-.6-1.2-1.2v-2.5c0-.7,.6-1.2,1.2-1.2h.6c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6Zm4.6,3.3c-.1,0-.2-.2-.2-.3,0-.2,.3-.5,.8-.5h1c.3,0,.6-.3,.6-.6v-1.2c0-.3-.3-.6-.6-.6h-1c-1.8,0-3.3,1.4-3.3,3s.4,1.6,1,2.2l1.7,1.5c.1,0,.2,.2,.2,.3,0,.2-.3,.5-.8,.5h-1c-.3,0-.6,.3-.6,.6v1.2c0,.3,.3,.6,.6,.6h1c1.8,0,3.3-1.4,3.3-3s-.4-1.6-1-2.2l-1.7-1.5h0Z"/></svg></button>
+          <button class="lhsq on" type="button" id="mnFilterBtn" title="Filter" aria-pressed="true" onclick="mnFilterTog()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M28,44c-.3,0-.6,0-.9-.2l-8-4c-.7-.3-1.1-1-1.1-1.8v-12.3L2.5,7.3c-.5-.6-.6-1.4-.3-2.1,.3-.7,1-1.2,1.8-1.2H44c.8,0,1.5,.5,1.8,1.2s.2,1.5-.3,2.1l-15.5,18.4v16.3c0,.7-.4,1.3-.9,1.7-.3,.2-.7,.3-1.1,.3Zm-6-7.2l4,2v-13.8c0-.5,.2-.9,.5-1.3l13.2-15.6H8.3l13.2,15.6c.3,.4,.5,.8,.5,1.3v11.8Z"/></svg></button>
+        </div>
+      </div>
+      <div class="modwrap"><div class="modcard">
+        <svg class="ic" id="mnBigIc" viewBox="0 0 48 48"></svg>
+        <div class="nm" id="mnName">Inventory</div>
+        <div class="sub">/inventory/</div>
+        <div class="sub">Monitor grid — the two header rows above are the live product's; the grid is not built.</div>
       </div></div>
     </section>
 
@@ -11294,9 +11522,9 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
           <!-- the chat, in this module (annotation, 17 Aug 2026). It opens the same panel
                the Dashboard uses, but scoped to Logs and pinned to this screen, so the
                questions it offers are about logs rather than about a board. -->
-          <button class="lxask" data-tip="Ask Iris about these logs  A" onclick="aiOpen('logs')">
+          <button class="lxask" data-tip="Ask AI about these logs  A" onclick="aiOpen('logs')">
             <svg data-aispark viewBox="0 0 48 48"></svg>
-            <span>Iris</span></button>
+            <span>Ask AI</span></button>
           <button class="lxlive" data-tip="Tail incoming logs in real time" onclick="lxLive(1)">
             <svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 21h8M6 9h5M6 12.5h8"/></svg>
             <span>Start Live Trail</span></button>
@@ -13424,7 +13652,7 @@ function mfCol(secs, width, tail){   /* `tail`: Option 9's foot · card · licen
          The text ＋ sat in exactly the place the icon column now occupies, so keeping both would
          print two pluses side by side. The glyph keeps the teal (`.mfic.plus`) so "create" still
          reads as the one different kind of row. Rows without a glyph render exactly as before. */
-      `<div class="mfi${kind==='sub'?' sub':''}" onclick="mfGo(${mfAttr(mod)},${mfAttr(act)})">${
+      `<div class="mfi${kind==='sub'?' sub':''}" onclick="${mod==='Monitors' && !act ? 'MOD_SUB='+mfAttr(label)+';' : ''}mfGo(${mfAttr(mod)},${mfAttr(act)})">${
         ic ? mfIco(ic, kind==='plus' ? 'mfic plus' : 'mfic') : ''}${
         kind==='plus' ? (ic ? '' : '<span class="plus">＋</span>')+label.replace('＋ ','')
       : kind==='beta' ? label+'<span class="mfbeta">BETA</span>'
@@ -13897,7 +14125,7 @@ function mfTree(name){
          module, action]` triple — the third element is the guard that keeps an `act` row from
          being treated as a module. */
       ((r.kids && r.kids.length) ? r.kids.map(([cl, cmod, cact]) =>
-        `<div class="mfi sub" onclick="mfGo(${mfAttr(cmod)},${mfAttr(cact || null)})">` +
+        `<div class="mfi sub" onclick="${cmod==='Monitors' && !cact ? 'MOD_SUB='+mfAttr(cl)+';' : ''}mfGo(${mfAttr(cmod)},${mfAttr(cact || null)})">` +
           `<span class="mfl">${cl}</span></div>`).join('') : '')
       ).join('') +
     '</div>' + mfTailFor(name, MOD_DOCS[name] || null) + '</div>' +   /* the list, then Option 9's tail (unless `MF_NO_TAIL`), then the column closes */
@@ -14771,6 +14999,9 @@ function selectModule(i){
   /* Settings is a real module screen too — My Account › My Profile cloned from live 8.2.7
      (19 Aug 2026). Everything it needs is in the st* script block. */
   if (m.name === 'Settings'){ showView('settings'); stInit(); return; }
+  /* Monitor is a real screen too — the live product's two header rows (25 Sep 2026); the grid under
+     them is still the placeholder card. `mn*` block below. */
+  if (m.name === 'Monitors'){ showView('monitor'); mnInit(MOD_SUB); MOD_SUB = ''; return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
   setIco(document.getElementById('modBigIc'), m.icon);
   document.getElementById('modHeadTtl').textContent = m.name;
@@ -14790,6 +15021,45 @@ function selectModule(i){
 }
 /* Sidebar: hover peeks (overlays, no layout shift), the button pins it open (pushes the page).
    Before, expanding always covered the canvas and there was no way to keep the labels visible. */
+
+/* ── MONITOR MODULE — the live product's two header rows (25 Sep 2026), `mn*` ──────────────────
+   The tab list is derived from `EXPLORER_TREE`'s Monitor row — the seventeen types that open this
+   module, in the live strip's order — with the live list as the fallback should the tree ever lose
+   the row. `Metric explorer` sits in that row too but opens another module, so the filter drops it. */
+const MN_TABS = (() => {
+  try { const m = EXPLORER_TREE.find(r => r.l === 'Monitor'); const t = m.kids.filter(k => k[1] === 'Monitors').map(k => k[0]); if (t.length) return t; } catch (e) {}
+  return ['Inventory','Network','SDN','Server & Apps','Storage','Virtualization','HCI','Database','Container Orchestration','Cloud','Interface','WAN Link','Process','Container','Service','Service Check','Other'];
+})();
+let mnTab = 0, mnFilterOn = true;
+/* `sub` is the row you came through (`MOD_SUB`, written by pickRail and by the Monitor rows of the
+   flyout) — the tab it names opens; anything else lands on Inventory, as the live route does. */
+function mnInit(sub){
+  const i = MN_TABS.indexOf(sub); mnTab = i >= 0 ? i : 0;
+  const ic = document.getElementById('mnBigIc'); if (ic && !ic.innerHTML) setIco(ic, 'navbar-monitor');
+  const si = document.querySelector('#view-monitor .mnsi'); if (si && !si.innerHTML) setIco(si, 'search');
+  mnPaint();
+}
+function mnPaint(){
+  const t = document.getElementById('mnTabs'); if (!t) return;
+  t.innerHTML = MN_TABS.map((n, i) => `<button class="mntab${i === mnTab ? ' on' : ''}" type="button" role="tab" aria-selected="${i === mnTab}" onclick="mnPick(${i})">${n}</button>`).join('');
+  const nm = document.getElementById('mnName'); if (nm) nm.textContent = MN_TABS[mnTab];
+  const on = t.querySelector('.mntab.on');   /* keep the active tab in view when the strip scrolls */
+  if (on && (on.offsetLeft + on.offsetWidth > t.scrollLeft + t.clientWidth || on.offsetLeft < t.scrollLeft)) t.scrollLeft = Math.max(0, on.offsetLeft - 24);
+}
+function mnPick(i){ mnTab = i; mnPaint(); }
+/* the live chevron shows / hides the Groups · Types · Severity · Filter side panel, which is not built */
+function mnChev(){
+  const b = document.getElementById('mnChev'); const open = b.classList.toggle('flip');
+  b.setAttribute('data-tip', open ? 'Hide monitor list' : 'Show monitor list'); b.removeAttribute('title');
+  toast('The monitor list panel (Groups · Types · Severity · Filter) is not built in this prototype');
+}
+function mnSearch(v){ /* nothing under the header to filter yet — the field is real, the grid is not */ }
+function mnStub(what){ toast(what + ' is not built in this prototype'); }
+function mnFilterTog(){
+  mnFilterOn = !mnFilterOn;
+  const b = document.getElementById('mnFilterBtn'); b.classList.toggle('on', mnFilterOn); b.setAttribute('aria-pressed', String(mnFilterOn));
+  toast(mnFilterOn ? 'Filter row shown (the row itself is not built here)' : 'Filter row hidden');
+}
 
 /* ── SIDEBAR UX PASS, 7 Sep 2026 (UX Planet's sidebar rules) — shared helpers, `ux*` ─────────── */
 const UX_KEY = /Mac|iP(hone|ad)/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
@@ -15770,6 +16040,17 @@ document.addEventListener('mouseover', e => {
 document.addEventListener('mouseout', e => { if (tipCur && !tipCur.contains(e.relatedTarget)) tipHide(); });
 document.addEventListener('mousedown', tipHide);          /* don't leave one hanging over a menu */
 document.addEventListener('keydown', e => { if (e.key === 'Escape') tipHide(); });
+/* ⚠️ A GROUP'S ＋ / ⋮ MUST NOT OUTSTAY THE POINTER (request, 23 Sep 2026: "sometimes the ⋮ does
+   not hide when I am not hovering the group"). Reproduced: click ⋮, close its menu with Esc — the
+   Escape key makes Chrome treat the still-focused button as `:focus-visible`, and
+   `.gact:focus-visible{opacity:1}` then pinned it on after the pointer left. Esc is "I'm done
+   here", so the header control lets go of focus. Tabbing to it still shows it, ring and all. */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){
+    const a = document.activeElement;
+    if (a && a.classList && a.classList.contains('gact')) setTimeout(() => a.blur(), 0);
+  }
+}, true);
 document.addEventListener('focusin',  e => { const t = tipFor(e.target); if (t){ tipCur = t; tipShow(t); } });
 document.addEventListener('focusout', tipHide);
 addEventListener('scroll', tipHide, true);
@@ -15805,7 +16086,7 @@ const KB = [
   {k:'f', cap:'F',  grp:'View',       label:'Full screen',            sel:'#fsBtn',                run:()=>toggleFS()},
   {k:'/', cap:'/',  grp:'View',       label:'Search dashboards',      sel:'#dsearchBox',           run:()=>openDPanel()},
   {k:'s', cap:'S',  grp:'Share & AI', label:'Share dashboard',        sel:'#shareBtn',             run:()=>openDrawer('drawer-share')},
-  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask Iris',               sel:'.aibtn',                run:()=>aiOpen()},
+  {k:'a', cap:'A',  grp:'Share & AI', label:'Ask AI',               sel:'.aibtn',                run:()=>aiOpen()},
   /* display-only rows: these keys are owned by handlers that already existed */
   {k:null, cap:KMOD+'K', grp:'General', label:'Global search',        sel:'',  run:null},
   {k:null, cap:'?',  grp:'General',   label:'This shortcut sheet',    sel:'',  run:null},
@@ -15982,11 +16263,32 @@ function trSync(){                                                 // reflect tl
   trStamp();
   if (typeof tsRender === 'function') tsRender();   /* the strip follows the chip */
 }
-function trStamp(){                                                // from → to stamps beside the chip (live header row)
+function trStamp(){                                                // the two absolute stamps beside the chip (live header row)
   const el = document.getElementById('tcStamp');
-  if(el) el.textContent = trFmtSpan(tlA, tlB);
+  if(el) el.innerHTML = '<span>' + trFmtLive(tlA) + '</span><span>' + trFmtLive(tlB) + '</span>';
+  trKeyPaint();
   trNavPaint();
 }
+/* "Fri, Sep 25, 2026 12:00:00 AM" — the live bar's own stamp format (25 Sep 2026). Composed by hand:
+   toLocaleString puts a comma after the year, which the live string does not carry. */
+function trFmtLive(t){
+  const d = new Date(t);
+  const wd = d.toLocaleDateString('en-US',{weekday:'short'}), mo = d.toLocaleDateString('en-US',{month:'short'});
+  let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  return wd + ', ' + mo + ' ' + trP2(d.getDate()) + ', ' + d.getFullYear() + ' ' + trP2(h) + ':' + trP2(d.getMinutes()) + ':' + trP2(d.getSeconds()) + ' ' + ap;
+}
+/* the key pill in the chip — the preset's own key (`today`, `1h`, `1w` …), `custom` for an absolute
+   or stepped range. Derived from `trSelIdx`, which every path that changes the range already sets;
+   a strip drag in flight (`tsDrag`) is custom before tsEnd clears the index. */
+function trKeyPaint(){
+  const k = document.getElementById('tcKey'); if (!k) return;
+  const dragging = typeof tsDrag !== 'undefined' && !!tsDrag;
+  k.textContent = !dragging && trSelIdx >= 0 && TR_PRESETS[trSelIdx] ? TR_PRESETS[trSelIdx][1] : 'custom';
+}
+/* ⊗ on the chip: the live picker's clear control. Back to the default range — the one the board
+   boots with — and the popover, if open, goes with it (trSet ends in trClose). */
+const TR_HOME = Math.max(0, TR_PRESETS.findIndex(p => p[1] === 'today'));
+function trReset(e){ if (e && e.stopPropagation) e.stopPropagation(); trSet(TR_HOME); }
 /* "Jul 11 · 00:00 – 20:46" on one day, "Jul 10 18:00 – Jul 11 20:46" across days */
 function trFmtSpan(a, b){
   const da = new Date(a), db = new Date(b);
@@ -16078,13 +16380,18 @@ function trApply(e){                                               // absolute r
   trStamp(); trRenderPop(); trRefresh();
   trClose();                       /* ⚠️ same — see trPaint */
 }
+/* grouped: RELATIVE ranges end at now, CALENDAR ones snap to a day / week / month (swapped in from Option 2, 23 Sep 2026) */
+const TR2_CAL = new Set(['today','1d','1w','1mo','week','month']);
+const TR2_TICK = '<svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5l10 -10"/></svg>';
 function trRenderPop(){
   const q = (document.getElementById('trSearch').value || '').toLowerCase();
-  document.getElementById('trList').innerHTML = TR_PRESETS
-    .map(([label,key],i) => ({label,key,i}))
-    .filter(o => !q || o.label.toLowerCase().includes(q) || o.key.includes(q))
-    .map(o => `<div class="range-item${o.i===trSelIdx?' sel':''}" onclick="trSet(${o.i})">${o.label}<span class="pill">${o.key}</span></div>`)
-    .join('') || '<div style="padding:8px;font-size:11.5px;color:var(--text-dim)">No matching range</div>';
+  const hit = TR_PRESETS.map(([label,key],i) => ({label,key,i})).filter(o => !q || o.label.toLowerCase().includes(q) || o.key.includes(q));
+  const row = o => `<div class="range-item${o.i === trSelIdx ? ' sel' : ''}" role="option" aria-selected="${o.i === trSelIdx}" onclick="trSet(${o.i})">`
+    + `<span class="lb">${o.label}</span><span class="pill">${o.key}</span>${o.i === trSelIdx ? TR2_TICK : '<span class="tk"></span>'}</div>`;
+  const grp = (h, xs) => xs.length ? `<div class="tr2g">${h}</div>` + xs.map(row).join('') : '';
+  document.getElementById('trList').innerHTML =
+    (grp('Relative', hit.filter(o => !TR2_CAL.has(o.key))) + grp('Calendar', hit.filter(o => TR2_CAL.has(o.key))))
+    || `<div class="tr2e">No range matches “${q.replace(/</g,'&lt;')}”</div>`;
 }
 /* ⚠️ ONE place closes the popover, because the chip's lit state has to move with it
    (annotation, 19 Aug 2026: "make to active this button"). Click-outside and Escape used to
@@ -16110,7 +16417,11 @@ function trToggle(e){ e.stopPropagation();
   const p = document.getElementById('trPop');
   const on = !p.classList.contains('on');
   trPaint(on);
-  if(on){ trCloseRf(); trSync(); trPlace(); } }
+  if(on){ trCloseRf(); trSync(); trRenderPop(); trPlace();
+    const l = document.getElementById('trList'), sel = l && l.querySelector('.range-item.sel');
+    if (sel){ const lo = sel.offsetTop - l.offsetTop, hi = lo + sel.offsetHeight;
+      if (hi > l.scrollTop + l.clientHeight) l.scrollTop = hi - l.clientHeight + 6; else if (lo < l.scrollTop) l.scrollTop = lo - 6; }
+    setTimeout(() => { const i = document.getElementById('trSearch'); if (i){ i.value = ''; i.focus(); } }, 30); } }
 /* a resize can strand a fixed popover away from the chip it belongs to */
 addEventListener('resize', () => { const p = document.getElementById('trPop');
   if (p && p.classList.contains('on')) trPlace(); });
@@ -16553,7 +16864,7 @@ function wAiCard(w, gi, i){
       '<div class="aicde">' + (w.body
         ? '<div class="aicdmsg">Editing the question — Save to run it again.</div>'
         : W_AICARD_SVG.replace('<svg ', '<svg class="aicdart" ') +
-          '<div class="aicdmsg">Ask Iris anything to get started.</div>') + '</div>' +
+          '<div class="aicdmsg">Ask AI anything to get started.</div>') + '</div>' +
       aicdPromptHTML(w, gi, i) + '</div>';
   return '<div class="aicdw">' +
       '<div class="aicdbody">' + w.body + '</div>' +
@@ -16569,7 +16880,7 @@ function wAiCard(w, gi, i){
 function aicdPromptHTML(w, gi, i){
   const tries = aicdTries();
   return '<div class="aicdp">' +
-    '<input class="aicdin" id="aicdIn' + gi + '_' + i + '" placeholder="Ask Iris anything about this board…" ' +
+    '<input class="aicdin" id="aicdIn' + gi + '_' + i + '" placeholder="Ask AI anything about this board…" ' +
       'value="' + aicdA(w.prompt) + '" ' +
       'onclick="event.stopPropagation()" oninput="aicdTyped(' + gi + ',' + i + ')" ' +
       'onkeydown="aicdKey(event,' + gi + ',' + i + ')">' +
@@ -16628,10 +16939,10 @@ function aicdSave(gi, i){
 function aicdRun(gi, i){
   const w = aicdAt(gi, i); if (!w || !w.prompt) return;
   if (!aicdReads(w.prompt)){
-    toast('An AI Card reads the board — ask Iris in the chat to build something');
+    toast('An AI Card reads the board — ask AI in the chat to build something');
     w.body = '<p class="aicdno">This card reads the board and reports what it finds. ' +
       '<b>Building</b> a widget or a dashboard is a change, and a change needs the chat’s ' +
-      'approval step — ask Iris for it there.</p>';
+      'approval step — ask AI for it there.</p>';
     w.at = Date.now(); w.edit = 0; renderCanvas();
     return;
   }
@@ -17145,7 +17456,7 @@ BOARDS['ui_pmg'] = {
      (cols 2–5, rows 1–2), then everything fills the gaps in source order. Reorder with care.
      The Free row is new: its three widgets describe headroom rather than consumption. */
   widgets: [[
-    { t:'freetext', title:'', span:1, rows:3, size:'24px', align:'center', valign:'middle', bg:'Gray',
+    { t:'freetext', title:'', span:1, rows:2, size:'24px', align:'center', valign:'middle', bg:'Gray',
       color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Used**' },
     { t:'honey', title:'Memory Utilization Heatmap', span:4, rows:2, seed:4417, n:132,
       pal:[[.55,'var(--green)','Normal'],[.78,'var(--yellow)','Warning'],[.9,'var(--orange)','Major'],[1,'#9b1c1c','Critical']] },
@@ -17162,13 +17473,7 @@ BOARDS['ui_pmg'] = {
     { t:'pie', title:'Top Virtualization Monitors by Memory Used %', span:4, h:190, items:[
         ['win-node1',92,PIE_C[0]], ['esxi15.example.com',87,PIE_C[1]], ['192.0.2.238',74,PIE_C[2]],
         ['198.51.100.7',61,PIE_C[3]], ['198.51.100.180',45,PIE_C[4]] ] },
-    { t:'pie', title:'Top Network Monitors by Memory Used %', span:4, h:190, items:[
-        ['fg-firewall.example.com',83,PIE_C[0]], ['cisco-core.example.com',71,PIE_C[1]],
-        ['cisco-nexus',66,PIE_C[2]], ['node-10-50',58,PIE_C[3]], ['netman-208',52,PIE_C[4]] ] },
-    { t:'pie', title:'Top Cloud Monitors by Memory Used %', span:3, h:190, items:[
-        ['192.0.2.238',78,PIE_C[0]] ] },
-    { t:'pie', title:'Top Monitors by Swap Used %', span:4, h:190, items:[
-        ['192.0.2.238',64,PIE_C[0]], ['ewc.example.com',38,PIE_C[1]], ['wlc-controller-1',21,PIE_C[2]] ] },
+    /* Top Network / Cloud / Swap by memory were removed (request, 23 Sep 2026) — the Used label now spans 2 rows */
     /* ── Free ── */
     { t:'freetext', title:'', span:1, rows:1, size:'24px', align:'center', valign:'middle', bg:'Gray',
       color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Free**' },
@@ -17192,24 +17497,27 @@ BOARDS['ui_pmg'] = {
       '![CPU and memory](' + PMG_NOTE_IMG + ')\n' +
       '### Demo note — swap pressure\n' +
       'Swap on **192.0.2.238** is at 64%: memory pressure, not a leak.\n' +
-      '1. Open the host from *Top Monitors by Swap Used %*\n' +
+      '1. Open the host from the *Memory Utilization Heatmap*\n' +
       '2. Compare resident memory against page cache' },
   ], [
     /* ⚠️ TWO HALVES SIDE BY SIDE (request, 23 Sep 2026, later: "the Idle label shows beside the
        Used column"; the four-stack option was chosen). Left: Used label (rows 1–4) + the four
        consumption widgets stacked (cols 2–6). Right: Idle label (rows 1–4) + the three headroom
        widgets (cols 8–12). The LEFT widgets carry fixed heights and so size the four row tracks;
-       the RIGHT ones use `rows` and stretch to them (Idle Cores takes the last two), which is what
+       the RIGHT ones use `rows` and stretch to them (one track each), which is what
        keeps the two halves' edges aligned.
-       ⚠️ SOURCE ORDER IS THE PLACEMENT — plain auto-flow alternates left/right row by row. */
-    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'Gray',
+       ⚠️ SOURCE ORDER IS THE PLACEMENT — plain auto-flow alternates left/right row by row.
+       ⚠️ THE TWO LABELS ARE TINTED, EACH ITS OWN (request, 23 Sep 2026, later): Used in `--red`
+       #f2504b, Idle in `--green` #22c55e, both at 30% (`4d`) — the Cisco/Aruba banners' recipe.
+       Red reads as consumption, green as headroom; Default ink stays legible on a 30% tint. */
+    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'#f2504b4d',
       color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Used**' },
     { t:'hbars', title:'Top CPU Policy by Alert Count', span:5, h:272, max:500, items:[
         ['CPU Critical',436], ['CPU Load High',281], ['HyperV CPU Utilization',94],
         ['Forecast system.cpu.percent',71], ['CPU Anomaly',58], ['system.cpu.iowait.high',44],
         ['VM CPU Ready Time',39], ['Container CPU Throttling',31], ['CPU Steal Time',22],
         ['Process CPU Hog',18] ] },
-    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'Gray',
+    { t:'freetext', title:'', span:1, rows:4, size:'24px', align:'center', valign:'middle', bg:'#22c55e4d',
       color:'Default', pad:false, tick:false, tickEdge:'Left', text:'**Idle**' },
     { t:'donuts', title:'CPU Idle Health', span:5, rows:1, items:[
         [74,'Plenty','var(--green)',.56], [38,'Low','var(--yellow)',.29],
@@ -17223,12 +17531,18 @@ BOARDS['ui_pmg'] = {
     { t:'bmeter', title:'CPU vs Thresholds', span:5, h:320, warn:75, crit:90, items:[
         ['192.0.2.162',98], ['203.0.113.219',93], ['n149.example.com',86], ['win-node1',81],
         ['esxi15.example.com',72], ['sles-11',64], ['laptop-t490-01',41] ] },
-    { t:'pie', title:'Top Servers by Idle Cores', span:5, rows:2, items:[
+    { t:'pie', title:'Top Servers by Idle Cores', span:5, rows:1, items:[
         ['esxi15.example.com',38,PIE_C[0]], ['sles-11',11,PIE_C[1]], ['laptop-t490-01',6,PIE_C[2]],
         ['desktop-pc-14',5,PIE_C[3]], ['hpe-msa',3,PIE_C[4]] ] },
     { t:'topproc', title:'Top Processes by CPU', span:5, h:320, u:'%', items:[
         ['java','192.0.2.162',87,12], ['postgres','203.0.113.219',74,-3], ['elasticsearch','n149.example.com',69,8],
         ['sqlservr.exe','win-node1',58,0], ['vmx','esxi15.example.com',46,-6], ['node','sles-11',31,4] ] },
+    /* 23 Sep 2026, later: Idle Cores shrank to one row and this fills the track it gave up —
+       row 4, right half, beside Top Processes (source order places it there). */
+    { t:'topproc', title:'Most Idle Hosts', span:5, rows:1, u:'%', items:[
+        ['esxi15.example.com','ESXi · 48 cores',91,4], ['hpe-msa','Storage array · 16 cores',84,-2],
+        ['sles-11','SUSE 11 · 24 cores',77,6], ['desktop-pc-14','Windows 11 · 8 cores',72,0],
+        ['laptop-t490-01','Windows 11 · 8 cores',63,-9], ['cisco-core.example.com','IOS XE · 4 cores',58,3] ] },
     { t:'table', title:'CPU Alert Stream', span:12, h:230, html:PMG_CPU_STREAM },
   ], [
     /* ── Cisco · switching & routing ── */
@@ -18536,7 +18850,11 @@ function renderCanvas(){
              button is one expression away if it is ever wanted back.
              ⚠️ The note is also edited by double-clicking its text (`ftEdit`), which changes
              the words in place; the ⋮ opens the full editor. */
-          const dots = (w.t==='freetext' ? ''
+          /* ⚠️ ui_pmg's Memory group carries no ✦ (request, 23 Sep 2026: "remove this icon in ui_pmg dashboard in
+             memory group"). Scoped by board + group name; the AI summary is still in each widget's ⋮ menu. */
+          /* dashState lives in a later <script> block: on the first render it is not declared yet (TDZ) */
+          let noAi = false; try { noAi = dashState.cur === 'ui_pmg' && TABS[gi] === 'Memory'; } catch (e) {}
+          const dots = (w.t==='freetext' || noAi ? ''
               : `<span class="wai" data-tip="AI summary" onclick="event.stopPropagation();openWAI(${gi},${i})">${waiIcon()}</span>`) +
             `<span class="wdots" data-tip="Widget actions" onclick="openWMenu(event,${gi},${i})">⋮</span>` +
             (editMode?`<span class="wremove" title="Remove" onclick="event.stopPropagation();curG=${gi};curW=${i};wRemove()">✕</span>`:'');
@@ -18605,7 +18923,8 @@ function renderCanvas(){
        edges when the padding goes. */
     const gpd = gStyleOf(gi).pad === false ? '--gv-pad:0;--gv-line:transparent;--gv-hm:0 0 10px;--gv-hpad:8px 0;' : '';
     const gdim = grz ? `${gRzH(gi) ? `height:${gRzH(gi)}px;` : ''}${gRzW(gi) < 12 ? `grid-column:span ${gRzW(gi)};` : ''}` : '';
-    const gsz = (gdim || gva || gpd) ? ` style="${gdim}${gpd}${gva ? `--gv-align:${gva}` : ''}"` : '';
+    const gtn = gTint(gi);
+    const gsz = (gdim || gva || gpd || gtn) ? ` style="${gdim}${gtn}${gpd}${gva ? `--gv-align:${gva}` : ''}"` : '';
     /* ⚠️ `.gdrsh` MARKS "this group's height is driven", and it is emitted from the same
        test as the inline `height` so the two can never disagree — see the band's floor in CSS. */
     const gcl = 'dgroup' + (grz ? ' gdrs' : '') + (grz && gRzH(gi) ? ' gdrsh' : '');
@@ -19206,6 +19525,15 @@ function gPubAdd(id){
   toast('Added “' + name + '” from “' + p.board + '” — ' + ws.length
         + ' widget' + (ws.length === 1 ? '' : 's'));
 }
+/* the group-box tint a header colour implies — '' for Default, Transparent or no colour.
+   ⚠️ IT READS THE SAME FILL `gStyleCSS` PAINTS, so the border is the strip's own colour and
+   the two can never disagree. */
+function gTint(gi){
+  const st = GRP_STYLE[gi]; if (!st || st.transp || !st.bg || st.bg === 'Transparent') return '';
+  const ent = GRP_BG.find(b => b[0] === st.bg) || [];
+  const c = ent[1] || (String(st.bg)[0] === '#' ? st.bg : '');
+  return c ? '--gv-tint:' + c + ';--gv-bg:color-mix(in srgb, ' + c + ' 10%, var(--bg));' : '';
+}
 /* the inline style a header carries — empty for a group nobody has touched */
 function gStyleCSS(gi){
   const st = GRP_STYLE[gi]; if (!st) return '';
@@ -19626,18 +19954,44 @@ const AW_ART_OF = { line:'Chart', hbars:'Top N', table:'Grid', rows:'Stream', do
 /* the hover action rail, copied from the live drawer: Predefined rows expose
    count · move · add · clone; User Define rows are yours, so they also get edit and
    delete. Nothing is shown until the row is hovered. */
+/* ⚠️ TABLER OUTLINES, from free-icons/ (request, 23 Sep 2026: "improve the icon", with the User Define row
+   as the reference). They were filled hand-drawn paths — a solid ⊕ beside outline pencils read as two
+   families. Each entry is its paths joined by "|"; `awActBtn` strokes them. */
 const AW_ACT = {
-  move: ['Move to a dashboard', 'M12 2l3 3h-2v5h5V8l3 3-3 3v-2h-5v5h2l-3 3-3-3h2v-5H6v2l-3-3 3-3v2h5V5H9l3-3Z'],
-  add:  ['Add to this dashboard', 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 5v4h4v2h-4v4h-2v-4H7v-2h4V7h2Z'],
-  edit: ['Edit widget', 'M14.06 4.94l3 3L7.5 17.5 3 19l1.5-4.5 9.56-9.56Zm1.06-1.06 1.44-1.44a1.5 1.5 0 0 1 2.12 0l.88.88a1.5 1.5 0 0 1 0 2.12l-1.44 1.44-3-3Z'],
-  clone:['Clone widget', 'M8 2h10a2 2 0 0 1 2 2v10h-2V4H8V2ZM4 6h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v12h10V8H4Z'],
-  del:  ['Delete widget', 'M9 3h6l1 2h4v2H4V5h4l1-2ZM6 9h12l-1 12H7L6 9Z']
+  move: ['Move to a dashboard', 'M18 9l3 3l-3 3|M15 12h6|M6 9l-3 3l3 3|M3 12h6|M9 18l3 3l3 -3|M12 15v6|M15 6l-3 -3l-3 3|M12 3v6'],
+  add:  ['Add to this dashboard', 'M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0|M9 12h6|M12 9v6'],
+  edit: ['Edit widget', 'M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4|M13.5 6.5l4 4'],
+  clone:['Clone widget', 'M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666|M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1'],
+  del:  ['Delete widget', 'M4 7l16 0|M10 11l0 6|M14 11l0 6|M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12|M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3']
 };
 /* `tip` overrides the label — the Group tab's rows say "Edit group", not "Edit widget" */
 function awActBtn(k, on, danger, tip){
   const a = AW_ACT[k];
   return '<button class="awab' + (danger?' dg':'') + '" title="' + (tip || a[0]) + '" onclick="event.stopPropagation();' + on + '">' +
-    '<svg viewBox="0 0 24 24"><path d="' + a[1] + '"/></svg></button>';
+    '<svg viewBox="0 0 24 24">' + a[1].split('|').map(d => '<path d="' + d + '"/>').join('') + '</svg></button>';
+}
+/* ── RECENTLY USED (request, 23 Sep 2026, with Datadog's "Recently Used" row as the reference) ──
+   The last tiles picked from THIS drawer, newest first, one row of four. Seeded so the row is on
+   screen the first time the drawer opens; session-only, like W_USER. It shows only with an empty
+   search — a search is already a shortcut to the tile you want. */
+const AW_RECENT = ['Free Text', 'Empty group', 'Chart', 'Top N'];
+function awRecent(label){
+  const i = AW_RECENT.indexOf(label); if (i >= 0) AW_RECENT.splice(i, 1);
+  AW_RECENT.unshift(label); AW_RECENT.length = Math.min(AW_RECENT.length, 4);
+}
+function awRecentHTML(){
+  const find = l => { for (const g of W_CATALOG) for (const t of g[1]) if (t[0] === l) return t; return null; };
+  const tiles = AW_RECENT.map((l, i) => {
+    if (l === 'Empty group'){
+      const o = W_GROUP_OPT[0];
+      return '<button class="awcard" onclick="awRecent(\'Empty group\');awAddGroup(' + o.opt + ')">' +
+        '<span class="awart">' + o.art + '</span><span>Empty group</span></button>';
+    }
+    const t = find(l); if (!t) return '';
+    return `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : `cwOpenViz('${t[0]}')`}">` +
+      `<span class="awart">${wArt(t[0], 'r'+i)}</span><span>${t[0]}</span></button>`;
+  }).join('');
+  return tiles ? '<div class="awgrp">Recently used</div><div class="awgrid">' + tiles + '</div>' : '';
 }
 function awRender(){
   const q = document.getElementById('awSearch').value.trim().toLowerCase();
@@ -19648,28 +20002,30 @@ function awRender(){
        section rather than a card among the charts — but it belongs in this drawer, because
        "what do I put on this board" is the question the drawer answers. */
     const grpHit = !q || 'empty group'.includes(q) || 'structure'.includes(q);
+    /* ⚠️ NO STRUCTURE SECTION ANY MORE (request, 23 Sep 2026: "empty group … will be show inside the
+       'TEXT AND INSERTS' category"). The tiles are appended to that section's grid below. */
     const grpTile = grpHit
-      ? '<div class="awgrp">Structure</div><div class="awgrid">' +
-        W_GROUP_OPT.map(o =>
-          '<button class="awcard awgopt" onclick="awAddGroup(' + o.opt + ')" ' +
+      ? W_GROUP_OPT.map(o =>
+          '<button class="awcard awgopt" onclick="awRecent(\'Empty group\');awAddGroup(' + o.opt + ')" ' +
             'data-tip="A titled band to organise widgets into — design option ' + o.opt + '">' +
             '<span class="awgn">' + o.opt + '</span>' +
-            '<span class="awart">' + o.art + '</span><span>Empty group</span></button>').join('') +
-        '</div>'
+            '<span class="awart">' + o.art + '</span><span>Empty group</span></button>').join('')
       : '';
-    b.innerHTML = grpTile + W_CATALOG.map((g, gi)=>{
+    const TI = 'Text and Inserts';
+    b.innerHTML = (q ? '' : awRecentHTML()) + W_CATALOG.map((g, gi)=>{
       const items = g[1].filter(t=>!q || t[0].toLowerCase().includes(q));
-      if (!items.length) return '';
+      const extra = g[0] === TI ? grpTile : '';
+      if (!items.length && !extra) return '';
       return `<div class="awgrp">${g[0]}</div><div class="awgrid">` +
         /* ⚠️ AN AI CARD DOES NOT OPEN THE QUERY EDITOR. `cwOpenViz` is the counter /
            aggregation / source builder, and this widget has no query at all — its whole
            configuration is a sentence you type on the card itself, which is exactly what
            the reference does (clicking the tile drops the card, then you write the prompt
            into it). `Empty group` is the precedent for a tile that does its own thing. */
-        items.map((t, i)=>`<button class="awcard" onclick="${t[1]==='aicard' ? 'awAddAiCard()' : `cwOpenViz('${t[0]}')`}"` +
+        items.map((t, i)=>`<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : `cwOpenViz('${t[0]}')`}"` +
           `${t[1]==='aicard' ? ' data-tip="Ask a question in plain English and pin the answer to the board"' : ''}` +
-          `><span class="awart">${wArt(t[0], 'c'+gi+'x'+i)}</span><span>${t[0]}</span></button>`).join('') + `</div>`;
-    }).join('') || (grpTile ? '' : `<div class="dempty">No widget types match “${q}”.</div>`);
+          `><span class="awart">${wArt(t[0], 'c'+gi+'x'+i)}</span><span>${t[0]}</span></button>`).join('') + extra + `</div>`;
+    }).join('') || `<div class="dempty">No widget types match “${q}”.</div>`;
   } else if (awMode==='predef'){
     const items = W_PREDEF.filter(t=>!q || t[0].toLowerCase().includes(q));
     b.innerHTML = items.map((t, i)=>
@@ -19711,13 +20067,14 @@ function awRender(){
            names"). The chip is always visible now (it was inside the hover-only `.awacts`), and
            its tooltip is a list of the group's widget titles. The board name still matches the
            search above, and `.used` keeps its CSS for the other tabs. */
-        `<span class="awgcnt" data-tip="${n} widget${n===1?'':'s'}" ` +
-          `data-tip-list="${hx((p.w || []).map(w => w.title || 'Untitled widget').join('|'))}">` +
-          `${n} widget${n===1?'':'s'}</span>` +
+
         /* ⚠️ EDIT · CLONE · DELETE (request, 23 Sep 2026: "add these 3 actions to the Group list")
            — the same three buttons, glyphs and hover-reveal as the User Define rows; the add ⊕
            stays first because adding is what the row is for. See `gPubEdit` for what each does. */
-        `<span class="awacts">` + awActBtn('add', `gPubAdd(${p.id})`) +
+        /* the count sits INSIDE the cluster, first, like User Define's badge (request, 23 Sep 2026) */
+        `<span class="awacts"><span class="awgcnt" data-tip="${n} widget${n===1?'':'s'}" ` +
+          `data-tip-list="${hx((p.w || []).map(w => w.title || 'Untitled widget').join('|'))}">` +
+          `${n} widget${n===1?'':'s'}</span>` + awActBtn('add', `gPubAdd(${p.id})`) +
           awActBtn('edit',  `gPubEdit(${p.id})`,  false, 'Edit group') +
           awActBtn('clone', `gPubClone(${p.id})`, false, 'Clone group') +
           awActBtn('del',   `gPubDel(${p.id})`,   true,  'Remove from shared groups') + `</span></div>`;
@@ -20608,6 +20965,10 @@ function gEditApply(){
   const sec = document.getElementById('grp-' + GE.gi);
   if (sec){
     sec.style.setProperty('--gv-align', gValign(GE.gi) || 'start');
+    /* the header colour's box tint lives on the section too — patched here, not on render */
+    const tn = gTint(GE.gi).match(/--gv-tint:([^;]+);--gv-bg:(.+);$/);
+    if (tn){ sec.style.setProperty('--gv-tint', tn[1]); sec.style.setProperty('--gv-bg', tn[2]); }
+    else { sec.style.removeProperty('--gv-tint'); sec.style.removeProperty('--gv-bg'); }
     /* the padding is on the SECTION too, so it patches here rather than waiting for a render */
     if (gStyleOf(GE.gi).pad === false){
       sec.style.setProperty('--gv-pad', '0');
@@ -21677,7 +22038,7 @@ function waiAsk(){
      precedent for this in the same panel. */
   const el = document.getElementById('aiIn');
   if (el){ el.value = t ? `Explain “${t}” — ` : ''; if (typeof aiGrow === 'function') aiGrow(el); el.focus(); }
-  toast(t ? `Asking about “${t}”` : 'Ask Iris about this widget');
+  toast(t ? `Asking about “${t}”` : 'Ask AI about this widget');
 }
 
 /* ================= Version history =================
@@ -25327,7 +25688,8 @@ function aiRailW(){
    the grip being broken. Take whichever is smaller. */
 function aiFMinW(){
   const w = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ai-w'));
-  return Math.min(AI_MIN_W, Number.isFinite(w) ? w : AI_MIN_W, innerWidth - AI_EDGE * 2);
+  /* AI_COMPACT_W is also a floor: the compact card (24 Sep 2026) is narrower than the docked one */
+  return Math.min(AI_MIN_W, AI_COMPACT_W, Number.isFinite(w) ? w : AI_MIN_W, innerWidth - AI_EDGE * 2);
 }
 function aiFMinH(){ return Math.min(AI_MIN_H, innerHeight - AI_EDGE * 2); }
 function aiFMaxW(){
@@ -25407,13 +25769,43 @@ function aiClamp(){
   AIF.x = Math.max(xMin, Math.min(AIF.x, Math.max(xMin, innerWidth - AIF.w - AI_EDGE)));
   AIF.y = Math.max(AI_EDGE, Math.min(AIF.y, Math.max(AI_EDGE, innerHeight - AIF.h - AI_EDGE)));
 }
+/* the card's content-fit height: its chrome (header + composer) plus what the body NATURALLY needs,
+   capped so a long thread still scrolls inside. The empty state stretches to fill (min-height:100%,
+   auto margins), so that is switched off for the one measurement. */
+const AI_COMPACT_W = 380;   /* the compact card's width — narrower than the docked 420, like monday's */
+const AI_COMPACT_MAX = 720;   /* the empty state needs ~660px; above this a thread scrolls inside */
+function aiCompactH(){
+  const p = document.getElementById('aiPanel'), b = document.getElementById('aiBody');
+  if (!p || !b) return AIF.h;
+  const chrome = p.getBoundingClientRect().height - b.clientHeight;
+  /* ⚠️ NOT b.scrollHeight — it is never smaller than the visible height, so it reported the FULL
+     height as "natural" and the card never shrank. Measure from the body's top to its last child. */
+  const em = b.querySelector('.aiempty'), prev = em ? em.style.minHeight : '';
+  if (em) em.style.minHeight = '0';
+  const cs = getComputedStyle(b), last = b.lastElementChild;
+  const natural = last ? last.getBoundingClientRect().bottom - b.getBoundingClientRect().top + b.scrollTop
+    + parseFloat(cs.paddingBottom) : 0;
+  if (em) em.style.minHeight = prev;
+  return Math.round(Math.max(aiFMinH(), Math.min(AI_COMPACT_MAX, aiFMaxH(), chrome + natural)));
+}
 function aiDragStart(e){
   const p = document.getElementById('aiPanel');
   if (!p.classList.contains('aifloat')) return;
   /* a press on any control in the header is a click, not the start of a drag */
   if (e.target.closest('button,input,a,.aihttl,.aihm')) return;
   if (AIF.x === null) aiFloatSeed();
-  aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h };
+  /* ⚠️ PULLED OFF ITS DOCK, THE CARD SHRINKS TO ITS CONTENT (request, 23 Sep 2026, monday.com's
+     Sidekick as the reference): docked it is full height; the first move away turns it into a compact
+     card that fits what it holds, header still under the pointer. Only from the FULL-HEIGHT resting
+     size — a card someone has already sized keeps that size. This is the one exception to "a move may
+     never change the size" below: it happens once, at mousedown, and the drag then pins it as usual. */
+  /* armed here, applied on the FIRST REAL MOVE (aiRzMove) — a plain click on the header must not shrink it */
+  aiDrag = { m:'move', mx:e.clientX, my:e.clientY, x:AIF.x, y:AIF.y, w:AIF.w, h:AIF.h,
+             /* ⚠️ ANY header drag compacts a card taller than its content (request, 23 Sep 2026: "when I click
+                the header and move it down, the size will minimise like monday.com") — not only from the
+                full-height dock: a card resized to 884×843 kept that height and never shrank. Height only;
+                the width you set is kept, and a card already shorter than its content is left alone. */
+             cp: AIF.h > aiCompactH() + 2 };
   /* ⚠️ MOVE ONLY — the edge grips want their own resize cursors, so this cannot go in
      `aiRzBind`, which every drag goes through. Cleared in `aiRzEnd` with the edge flags. */
   document.body.classList.add('aidragmv');
@@ -25448,7 +25840,23 @@ function aiRzMove(e){
     return;
   }
   if (aiDrag.m === 'move'){
+    if (aiDrag.cp && Math.abs(dx) + Math.abs(dy) > 4){
+      aiDrag.cp = false;
+      const p = document.getElementById('aiPanel');
+      const nw = Math.max(aiFMinW(), Math.min(aiDrag.w, AI_COMPACT_W));
+      /* measure the content-fit height AT the new width (text rewraps), synchronously — no frame paints */
+      const pw = p.style.width; p.style.width = nw + 'px';
+      const nh = Math.min(aiDrag.h, aiCompactH());
+      p.style.width = pw;
+      /* keep the grabbed point under the pointer if the narrower card would leave it outside */
+      const grab = aiDrag.mx - aiDrag.x;
+      if (grab > nw - 24) aiDrag.x += grab - (nw - 24);
+      aiDrag.w = nw; aiDrag.h = nh;
+      p.classList.add('aicompacting');
+      clearTimeout(aiDrag.ct); aiDrag.ct = setTimeout(() => p.classList.remove('aicompacting'), 380);
+    }
     AIF.x = aiDrag.x + dx; AIF.y = aiDrag.y + dy;
+    AIF.w = aiDrag.w; AIF.h = aiDrag.h;   /* clamp against the (possibly compact) size, or it pins to the old full height */
     /* ⚠️ A MOVE MAY NEVER CHANGE THE SIZE — reported twice (21 Aug 2026: "when I move the
        chat interface down the height increases"). It could not be reproduced: a header drag
        measured a 0px height delta at 1600×950 and 1512×1000, at rest and after shrinking.
@@ -25460,6 +25868,12 @@ function aiRzMove(e){
     aiClamp();
     AIF.w = aiDrag.w; AIF.h = aiDrag.h;
     aiFloatApply(); aiFabPaint();
+    /* ⚠️ THE DOCK ZONE (request, 23 Sep 2026, monday's Sidekick as the reference): pointer near the
+       right edge → a ghost shows where the card will land — its DEFAULT, full-height dock — and
+       releasing there puts it back (aiRzEnd). The POINTER is tested, not the card: the card is
+       clamped 20px in and its edge can never reach the window's. */
+    aiDockGhost();
+    document.body.classList.toggle('aidockr', e.clientX >= innerWidth - AI_DOCK_ZONE);
     return;
   }
   /* ⚠️ EIGHT MODES, tested by MEMBERSHIP not equality (`nw` is both `n` and `w`). Written
@@ -25498,10 +25912,19 @@ function aiRzMove(e){
     Math.min(aiFMaxH(), innerHeight - AI_EDGE - aiDrag.y, aiDrag.h + dy));
   aiClamp(); aiFloatApply(); aiFabPaint();
 }
+const AI_DOCK_ZONE = 72;   /* px from the window's right edge where a release docks the card */
+function aiDockGhost(){
+  if (document.getElementById('aiDockGhost')) return;
+  const g = document.createElement('div'); g.id = 'aiDockGhost'; g.className = 'aidockghost';
+  g.setAttribute('aria-hidden', 'true'); document.body.appendChild(g);
+}
 function aiRzEnd(){
   const d = aiDrag; aiDrag = null;
   document.body.classList.remove('aidragging');
   ['n','s','e','w','mv'].forEach(k => document.body.classList.remove('aidrag' + k));  /* never outlive the drag */
+  const dock = d && d.m === 'move' && document.body.classList.contains('aidockr');
+  document.body.classList.remove('aidockr');
+  if (dock){ AIF.x = AIF.y = AIF.w = AIF.h = null; aiFloatApply(); aiFabPaint(); }   /* back to the default dock */
   removeEventListener('mousemove', aiRzMove);
   removeEventListener('mouseup', aiRzEnd);
   if (!d) return;
@@ -25638,7 +26061,8 @@ function aiRender(){
       /* ⚠️ "I", not "we" — giving the assistant a name made the plural wrong, and the
          Logs branch of the copy below already spoke in the first person singular
          ("...and I'll build the query"), so the greeting was the odd one out. */
-      '<h3>Hello ' + aiEsc(AI_WHO) + ', how can I help?</h3>' +
+      /* new line + no subline on the dashboard (request, 24 Sep 2026) */
+      '<h3 class="aihi">What can I do for you, ' + aiEsc(AI_WHO) + '?</h3>' +
       /* the copy and the starters follow the screen — a dashboard greeting on the Log
          Explorer would be offering to explain something you are not looking at */
       (aiInLogs()
@@ -25649,8 +26073,9 @@ function aiRender(){
            aiLogQ builds the query), so the line names both. */
         ? '<p>Ask about the logs on this screen, or describe a search — a severity, a ' +
           'time window, a host — and I\'ll build the query.</p>'
-        : '<p>Ask Iris anything about this dashboard, or get help with insights, ' +
-          'changes and building widgets.</p>') +
+        /* one line, not two (request, 23 Sep 2026: "improve and make it short") — "Ask AI" repeated the
+           panel's own name, and "insights, changes and building widgets" listed what the starters below show */
+        : '') +
       /* ⚠️ NO ICON on a starter (request, 20 Aug 2026). Four rows carried a tinted glyph
          and two of them were the SAME ✦ the panel's own mark and every answer already
          wear — so the column read as decoration rather than as four different things you
@@ -25790,9 +26215,11 @@ function aiSayFade(){
    ⚠️ THE REVEAL WRAPS EVERY CHARACTER IN A SPAN, i.e. it MUTATES the answer's DOM — a
    600-character card becomes ~600 spans. That is affordable because it happens once per
    answer, and `aiTwPaint` only touches the characters that crossed on THIS tick. */
-const AI_TW_STEP = 15;    /* ms between characters — the reference's stagger */
+/* ⚠️ GEMINI'S STREAM (request, 23 Sep 2026: "the text animation … like Gemini"): the unit is a WORD, not a
+   character, and it FADES IN WHERE IT STANDS — no rise, no overshoot. The constants below are per word. */
+const AI_TW_STEP = 38;    /* ms between words */
 const AI_TW_LEAD = 100;   /* ms before the first character — the reference's base delay */
-const AI_TW_FADE = 600;   /* ms per character — the reference's duration; NEVER scaled */
+const AI_TW_FADE = 420;   /* ms per word's fade; NEVER scaled */
 const AI_TW_GAP  = 60;    /* ms between blocks — ours, see above */
 const AI_TW_MAX  = 4200;  /* a ceiling on the whole reveal, not a duration */
 /* ⚠️ `.aiat` / `.aiagch` are the card TITLES and are in here so they are readable from the
@@ -25853,15 +26280,11 @@ function aiTwWalk(node, c){
            query box, and `innerText` identical to the un-animated card. The reference's
            `margin-right` on the word is deliberately not ported; see the CSS. */
         if (!/\S/.test(p)){ f.appendChild(document.createTextNode(p)); continue; }
+        /* ⚠️ ONE SPAN PER WORD, and the word IS the unit the schedule counts (it keeps the old name
+           `chars`). Gemini streams words, not letters — a whole word fades in where it stands. */
         const w = document.createElement('span');
-        w.className = 'aitww';
-        /* ⚠️ Array.from, not split('') — it walks CODE POINTS, so an emoji or any surrogate
-           pair stays one character instead of being torn into two broken halves. */
-        Array.from(p).forEach(ch => {
-          const s = document.createElement('span');
-          s.className = 'aitwx'; s.textContent = ch;
-          w.appendChild(s); c.chars.push(s);
-        });
+        w.className = 'aitww aitwx'; w.textContent = p;
+        c.chars.push(w);
         f.appendChild(w);
       }
       n.parentNode.replaceChild(f, n);
@@ -28348,7 +28771,7 @@ sbNotifBind();    /* the notification card's own hover grace period — see sbNo
 <!-- the dock preview: a ghost of the sidebar column, shown while a floating card is
      dragged into the right-hand hot zone. Outside .aipanel so the card's own opacity
      while docking does not fade the preview with it. -->
-<aside class="aipanel" id="aiPanel" role="dialog" aria-label="Iris — ObserveOps AI">
+<aside class="aipanel" id="aiPanel" role="dialog" aria-label="Ask AI — ObserveOps AI">
   <!-- the ambient thinking glow — decorative only, so it is hidden from assistive tech.
        It runs from the moment the question is sent until the answer lands (.gen). -->
   <!-- resize grips. The left one is shared: it widens the COLUMN in Sidebar and the CARD in
@@ -30306,7 +30729,17 @@ const CW_FT_ORIENT = [['h', 'Horizontal',
   'M5 19h14|M17 21l2 -2l-2 -2|M16 4h-6.5a3.5 3.5 0 0 0 0 7h.5|M14 15v-11|M10 15v-11'],
   ['v', 'Vertical',
   'M9 15l-5 -5c-1.367 -1.367 -1.367 -3.633 0 -5s3.633 -1.367 5 0l5 5|M5.5 11.5l5 -5|M21 12l-9 9|M21 12v4|M21 12h-4']];
-function cwFtOrient(k){ cwFtSet('orient', k); }
+/* ⚠️ FONT STYLE IS ALWAYS SHOWN, and VERTICAL implies HEADER (request, 24 Sep 2026: "font style shown by
+   default with Horizontal selected; when I select Vertical, the Header option is selected automatically").
+   Vertical text only exists as a Header property (`hdr` + `orient` are saved together), so picking it
+   from any other preset applies Header first — then Vertical, since the preset resets orient to 'h'. */
+function cwFtOrient(k){
+  if (k === 'v' && CW.ft.preset !== 'Header'){
+    const i = CW_FT_PRESET.findIndex(p => p[0] === 'Header');
+    if (i >= 0) cwFtPreset(i);
+  }
+  cwFtSet('orient', k);
+}
 /* `seg` hands back the cell's key; `pad` is stored positively (true = has padding) */
 function cwFtPadSet(k){ cwFtSet('pad', k === 'pad'); }
 /* kept: the old one-cell toggle, in case anything still calls it */
@@ -30858,45 +31291,29 @@ function cwFtPanelHTML(){
        ⚠️ ALIGNMENT STILL HUGS ITS CONTENT rather than stretching to its half. Its three 38px
        cells are one control, and spread across ~299px they would read as three buttons — the
        reason recorded when the live screen was first matched. Only Font Size fills its column. */
-    '<div class="cwftpair">' +
+    /* ⚠️ REORDERED (request, 24 Sep 2026): the three dropdowns — Font Size · Font Color · Background —
+       are ONE row, and Alignment · Vertical alignment · Padding are the LAST row. They were split across
+       two mixed rows (Font Size beside the alignment trio, Font Color beside Background). */
+    /* ⚠️ A 2 × 3 GRID (request, 24 Sep 2026): Font Size | Font Color, then Background | Alignment + Vertical
+       alignment, then Padding | Font style. One grid, so both columns share their edges on every row. */
+    '<div class="cwftpair cwft22">' +
       '<div class="cwftcol"><label class="cwftl">Font Size</label>' +
         cwFtDD('size', CW_FT_SIZE, F.size, false) + '</div>' +
-      /* ⚠️ BOTH ALIGNMENT CONTROLS SHARE THIS COLUMN (request, 19 Sep 2026: vertical
-         alignment "will be show behind the alignment with proper alignment"). They are two
-         halves of one idea — where the text sits — so they read as a pair rather than as a
-         field and an afterthought a row apart, and "proper alignment" falls out of the two
-         `.cwftcol`s: each is label-over-control on the same 6px step, so the labels share a
-         baseline and the segments share a top edge.
-         ⚠️ IT FITS, MEASURED: the pair column is ~290px and each segment is 3 × 38 = 114px,
-         so 114 + 16 + 114 = 244 with ~46px spare. If a fourth cell is ever added to either
-         control, re-measure before assuming it still does. */
+      '<div class="cwftcol"><label class="cwftl">Font Color</label>' +
+        cwFtDD('color', CW_FT_COLOR, F.color, true, true) + '</div>' +
+      '<div class="cwftcol"><label class="cwftl">Background</label>' +
+        cwFtDD('bg', CW_FT_BG, F.bg, true, true) + '</div>' +
       '<div class="cwftcol"><div class="cwftvrow">' +
         '<div class="cwftcol"><label class="cwftl">Alignment</label>' +
           seg(CW_FT_ALIGN, F.align, 'cwFtAlign', a => a[0], a => a[1]) + '</div>' +
         '<div class="cwftcol"><label class="cwftl">Vertical alignment</label>' +
           seg(CW_FT_VALIGN, F.valign || 'middle', 'cwFtVAlign', a => a[0], a => a[1], true) + '</div>' +
-        /* ⚠️ THE LABEL IS "Padding" AND THE CONTROL HAS TWO CELLS (request, 23 Sep 2026) —
-           `Padding | No padding`, one always lit. See `CW_FT_PAD`. */
-        '<div class="cwftcol"><label class="cwftl">Padding</label>' +
-          seg(CW_FT_PAD, F.pad ? 'pad' : 'none', 'cwFtPadSet', a => a[0], a => a[1], true) + '</div>' +
       '</div></div>' +
+      '<div class="cwftcol"><label class="cwftl">Padding</label>' +
+        seg(CW_FT_PAD, F.pad ? 'pad' : 'none', 'cwFtPadSet', a => a[0], a => a[1], true) + '</div>' +
+      '<div class="cwftcol"><label class="cwftl">Font style</label>' +
+        seg(CW_FT_ORIENT, F.preset === 'Header' ? (F.orient || 'h') : 'h', 'cwFtOrient', a => a[0], a => a[1], true) + '</div>' +
     '</div>' +
-    /* ⚠️ FONT COLOUR AND BACKGROUND SHARE ONE ROW (request, 17 Sep 2026). They are the
-       one pair on this panel that is genuinely read together — you pick ink against a fill —
-       and stacked they pushed Alignment and the checkbox below the fold on a short editor.
-       The row is capped at the SAME 232px every other control uses, so all four fields keep
-       one left edge AND one right edge; that is what "proper alignment" is here, rather than
-       letting the pair run wider than the Font Size above it. */
-    '<div class="cwftpair">' +
-      '<div class="cwftcol"><label class="cwftl">Font Color</label>' +
-        cwFtDD('color', CW_FT_COLOR, F.color, true, true) + '</div>' +
-      '<div class="cwftcol"><label class="cwftl">Background</label>' +
-        cwFtDD('bg', CW_FT_BG, F.bg, true, true) + '</div>' +
-    '</div>' +
-    (F.preset === 'Header'
-      ? '<div class="cwftpair"><div class="cwftcol"><label class="cwftl">Font style</label>' +
-          seg(CW_FT_ORIENT, F.orient || 'h', 'cwFtOrient', a => a[0], a => a[1], true) + '</div></div>'
-      : '') +
     /* ⚠️ SUPERSEDED 19 Sep 2026 — THE VERTICAL CONTROL IS BACK, in the Alignment column above.
        The 17 Sep request ("remove the top / middle / bottom row") is kept as written because it
        records the decision that made the restoration cheap: **`valign` stayed in the model,
@@ -31720,6 +32137,11 @@ addEventListener('keydown', e => {
 function cwFtPreset(i){
   const pr = CW_FT_PRESET[i]; if (!pr) return;
   Object.assign(CW.ft, pr[1]);
+  /* ⚠️ PICKING A PRESET STARTS HORIZONTAL (request, 23 Sep 2026: "when I select Header the text is
+     horizontal by default — Vertical is only an option"). The preset objects carry no `orient`, so
+     `Object.assign` used to keep whatever the last pick was; a header chosen after a vertical one
+     came up vertical. Vertical is now always a second, deliberate click on Font style. */
+  CW.ft.orient = 'h';
   CW.ft.preset = pr[0];   /* pin it — see cwFtPresetOn for why this is remembered, not derived */
   cwRender();
   toast('Preset “' + pr[0] + '” applied — every option is still editable');
