@@ -10947,6 +10947,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
 .stcmi svg{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
 .stcmi:hover{background:var(--pop-item-hover);color:var(--white)}
 .stcmi.del:hover{color:var(--red)}
+.stcmi.ok,.stcmi.ok svg,.stcmi.ok:hover,.stcmi.ok:hover svg{color:var(--severity-clear,var(--green))}   /* an approve row */
 .stcmi.on{color:var(--white);font-weight:500}
 .stcmi.ck{padding-left:12px}
 .stcmi .bx{width:14px;height:14px;border:1px solid var(--text-dim);border-radius:4px;flex:0 0 14px;display:grid;place-items:center}
@@ -14183,9 +14184,29 @@ textarea.dpin{height:auto;min-height:72px;padding:8px 11px;resize:vertical;font-
 .ipm.ip-stackpanel[style*="52%"]{max-width:none}
 .ipm.ip-sp-scrim.on{display:block}
 .ipm.ip-stackpanel.on{display:flex}
+.ipm.ip-stackpanel:has(.ipmarwrap){max-width:none}   /* IPAM Option 2: form + help card need the room */
 .ipm .ip-sp-head{display:flex;align-items:center;gap:var(--ip-padding-sm);flex:none;margin:0 20px;padding:14px 0;border-bottom:1px solid var(--border-color)}
 .ipm .ip-sp-title{flex:1 1 auto;font-size:var(--ip-text-regular);font-weight:500;color:var(--primary-alt)}
 .ipm .ip-sp-body{flex:1 1 auto;min-height:0;overflow:auto;padding:20px}
+/* IPAM Option 2's floating toast (see ipmFlashHTML) */
+.ipmtoast{position:fixed;top:16px;right:20px;z-index:100010;width:min(420px,calc(100vw - 40px));
+  box-shadow:0 8px 24px rgba(0,0,0,.35);border-radius:4px;animation:ipmtoastin .2s cubic-bezier(.2,0,0,1) both}
+.ipmtoast.out{animation:ipmtoastout .2s ease-in both}
+@keyframes ipmtoastin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes ipmtoastout{to{opacity:0;transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.ipmtoast,.ipmtoast.out{animation:none}}
+/* IPAM Option 2: the form and its help card side by side (see ipmHelpHTML). The body stops scrolling as a
+   whole — each column scrolls on its own, so the card stays beside the field you are reading about. */
+.ipm .ip-sp-body:has(> .ipmarwrap){overflow:hidden;padding:0}
+.ipmarwrap{display:flex;height:100%;min-height:0}
+.ipmarform{flex:1 1 auto;min-width:0;overflow:auto;padding:20px}
+.ipmhelp{flex:0 0 420px;min-width:0;overflow:auto;border-left:1px solid var(--border-color);padding:20px;font-size:12.8px;line-height:1.6;color:var(--page-text-color)}
+.ipmhelp .dphcb ul{margin:4px 0 4px 18px}
+/* the footer belongs to the FORM (request, 29 Sep 2026): Reset / Add end on the form's own right edge, 20px
+   short of the help card's divider — and that divider runs on down through the footer to the drawer floor.
+   420px is .ipmhelp's width; change one, change both. */
+#ipmDr:has(.ipmarwrap) .ip-sp-foot{position:relative;padding-right:calc(420px + 20px)}
+#ipmDr:has(.ipmarwrap) .ip-sp-foot::after{content:'';position:absolute;top:0;bottom:0;right:419px;width:1px;background:var(--border-color)}
 .ipm .ip-sp-foot{flex:none;padding:12px 20px 16px}
 .ipm .ip-form obs-radio{align-self:flex-start}
 .ipm .ipmfile{display:flex;align-items:stretch;min-width:0}
@@ -37743,16 +37764,18 @@ function lxLtPaint(){
        is given onto the host (probed), so this selector cannot collide with a real variant used by
        any other table in the module. The values are `obs-tag`'s own, read from its shadow CSS. */
     'obs-table':     '.ppage,.psize{border-radius:4px}' +
-                     /* IPAM Option 2's site groups (request, 29 Sep 2026): the group header's fill and the row
-                        hover colour SWAPPED, on this grid only */
-                     ':host(.ipmgrp) .row-group td{background:var(--grid-header-hover-bg,rgba(165,186,208,.4))}' +
+                     /* IPAM Option 2's site groups (see ipmgrp): */
                      /* a 3px gap between site groups (request, 29 Sep 2026: "add 3px margin"). A table row takes no
                         margin, so the gap is a border in the page colour: under every group row (collapsed groups
                         stack 3px apart) and above a group row that follows an expanded group's last data row */
                      ':host(.ipmgrp) .row-group td{border-bottom:3px solid var(--page-background-color,#fff)}' +
                      ':host(.ipmgrp) tr:not(.row-group) + tr.row-group td{border-top:3px solid var(--page-background-color,#fff)}' +
                      ':host(.ipmgrp) td.ipmsubcol obs-tag{cursor:pointer}' +   /* the tags open Subnet Approval */
-                     ':host(.ipmgrp) .grid tbody tr:hover td{background:var(--neutral-lighter,#eef2f8)}' +
+                     /* the group band and the row hover SWAPPED again (request, 29 Sep 2026, later) — both are still
+                        the DS table's own tokens (--grid-header-hover-bg / --neutral-lighter), only traded. It was
+                        swapped, reverted, and swapped back the same day; this is the one that stands. */
+                     ':host(.ipmgrp) .row-group td{background:var(--grid-header-hover-bg,rgba(165,186,208,.4))}' +
+                     ':host(.ipmgrp) .grid tbody tr:hover td{background:color-mix(in srgb,var(--neutral-lighter,#eef2f8) 60%,transparent)}' +   /* a little lighter (29 Sep 2026) */
       /* request, 28 Sep 2026: a selected row carries no left accent bar in IPAM's grid — the ticked
          checkbox already says it is selected */
       ':host(.ipmsel) tr.row-selected td:first-child{box-shadow:none}' +
@@ -38338,7 +38361,7 @@ function stcMenu(anchor, items, o){
      reads as the ⋮ unfolding rather than a list dropped under it. The header ⋮ closes it. */
   const head = o.cover ? `<div class="stcmh" role="button" aria-label="Close menu">${stcSvg('ellipsis-v')}</div>` : '';
   const html = head + items.map((it, i) => it === '-' ? '<div class="stcmi sep"></div>' :
-    `<div class="stcmi${it.del?' del':''}${it.on?' on':''}" data-i="${i}">${it.ic ? stcSvg(it.ic) : ''}<span>${stcEsc(it.t)}</span></div>`).join('');
+    `<div class="stcmi${it.del?' del':''}${it.ok?' ok':''}${it.on?' on':''}" data-i="${i}">${it.ic ? stcSvg(it.ic) : ''}<span>${stcEsc(it.t)}</span></div>`).join('');
   const el = stcPop(anchor, html, o.cover ? Object.assign({}, o, { cls: ((o.cls || '') + ' stcmcov').trim() }) : o); if (!el) return;
   el.querySelectorAll('.stcmi[data-i]').forEach(m => m.onclick = () => { const it = items[+m.dataset.i]; stcPopClose(); it.fn && it.fn(); });
   if (o.cover) {
@@ -39900,7 +39923,15 @@ const ipmGroup = (title, body) => `<div class="ip-group"><div class="ip-group-h"
       attributes — a search sets `rows` alone, so the box you are typing in is never rebuilt.
    ⚠️ `cellaction` / `rowaction` are CUSTOM events: an inline `on…=` attribute would be inert. */
 const ipmToolbarSearch = ph => `<obs-input slot="start" id="ipmSearch" type="search" allow-clear value="${ipmEsc(IPM.q)}" placeholder="${ipmEsc(ph)}"></obs-input>`;
-const ipmFlashHTML = () => IPM.flash ? `<obs-banner variant="${IPM.flash.variant || 'success'}" title="${ipmEsc(IPM.flash.title)}" closable id="ipmFlash">${ipmEsc(IPM.flash.body)}</obs-banner>` : '';
+/* OPTION 2 (request, 29 Sep 2026): the same DS banner FLOATS as a toast — top-right, 420px, gone after ~5s,
+   its ✕ still works. The DS ships no toast (search_components: the banner is "inline"; "for transient
+   feedback use a toast", and no toast is catalogued), so the component is untouched and only its placement
+   and timing are ours. It sits inside #ipmPage, position:fixed, so it inherits the scoped DS tokens. */
+const ipmFlashHTML = () => {
+  if (!IPM.flash) return '';
+  const b = `<obs-banner variant="${IPM.flash.variant || 'success'}" title="${ipmEsc(IPM.flash.title)}" closable id="ipmFlash">${ipmEsc(IPM.flash.body)}</obs-banner>`;
+  return IPM.opt === '2' ? `<div class="ipmtoast" id="ipmToast" role="status">${b}</div>` : b;
+};
 /* the DS page-header rules for a LIST page (registry, page-header): `default` — "every list page's
    top bar", title over the 1px --border-color rule; `with-subtitle` is "don't use on a simple list
    page (title alone)". So: title, and the explanatory sentence as a muted hint under it.
@@ -40111,7 +40142,7 @@ function ipmRoutersBody(){
       active polling stays off until then, and rejecting one is never permanent; it simply re-queues the next time it's seen.</p>
     <obs-toolbar>${ipmToolbarSearch('Search pending subnets…')}<span class="ip-spacer"></span>${ipmFltBtn()}</obs-toolbar>
     ${ipmChipsHTML()}
-    <div class="ipmselw">${ipmTable('No subnet is waiting on approval', ' sortable selectable hide-selection-info', 'ipmname ipmsel')}
+    <div class="ipmselw">${ipmTable('No subnet is waiting on approval', ' sortable selectable hide-selection-info', 'ipmname ipmsel' + (IPM.opt === '2' ? ' ipmic ipmmenu' : ''))}
       <div class="ipmbulk" id="ipmBulk" role="toolbar" aria-label="Bulk actions" hidden></div></div>`;
   /* the three tools are the DS icon button for a toolbar (button registry: "icon-only /
      space-tight → class=squared-button", 35×35; "quiet utility in toolbar → neutral-lightest").
@@ -40281,7 +40312,12 @@ function ipmTableSpec(){
   if (k === 'rules') return { cols: IPM_RULE_COLS, rows: ipmRuleRows(), menu: [] };
   if (k === 'dhcp') return { cols: IPM_DHCP_COLS, rows: ipmDhcpRows(), menu: [] };
   if (k === 'vendors') return { cols: IPM_VENDOR_COLS, rows: ipmVendorRows(), menu: [] };
-  if (IPM.tab === 'approval') return { cols: IPM_PENDING_COLS, rows: ipmPendingRows(), menu: [] };
+  /* OPTION 2 adds an Actions ⋮ column to Subnet Approval (request, 29 Sep 2026) — the ⋮ opens this module's
+     row menu with Approve / Reject, the Discovery Profiles tab's own menu shape */
+  if (IPM.tab === 'approval') return IPM.opt === '2'
+    ? { cols: IPM_PENDING_COLS.concat([{ key: 'menu', title: 'Actions', width: '60px', type: 'icon', align: 'right' }]),
+        rows: ipmPendingRows().map(r => Object.assign(r, { menu: { icon: 'ellipsis-v', label: 'Actions' } })), menu: [] }
+    : { cols: IPM_PENDING_COLS, rows: ipmPendingRows(), menu: [] };
   return { cols: IPM_ROUTER_COLS.filter(c => !IPM.hideCols.has(c.key)), rows: ipmRouterRows(), menu: [] };
 }
 function ipmTablePaint(fresh){
@@ -40403,6 +40439,10 @@ const ipmRepaint = () => ipmTablePaint(false);
 Object.assign(STC_ICO, { undo: "M36.6,12.1c-6.5-6.5-17.4-6.5-23.9,0l-2.2,2.2v-3.6c0-1.1-.9-2-2-2s-2,.9-2,2v8.4c0,1.1,.9,2,2,2h8.4c1.1,0,2-.9,2-2s-.9-2-2-2h-3.6l2.2-2.2c5-5,13.3-5,18.3,0,5,5,5,13.3,0,18.3-5,5-13.3,5-18.3,0s-2-.8-2.8,0c-.8,.8-.8,2,0,2.8,6.5,6.5,17.4,6.5,23.9,0,6.5-6.5,6.5-17.4,0-23.9Z" });
 Object.assign(STC_ICO, { 'test-credentials': "M38.2,23.4c-1,0-1.9,.3-2.6,.7l-3.8-3.5c.4-.9,.6-1.9,.6-2.9s-.1-1.5-.3-2.2l2.2-1.7c.9,.6,1.9,1,3.1,1,3,0,5.4-2.4,5.4-5.4s-2.4-5.4-5.4-5.4-5.4,2.4-5.4,5.4,0,.8,.1,1.2l-2.1,1.6c-1.3-1.2-3.1-1.9-5-1.9s-3.6,.7-4.9,1.9l-2.3-1.4c.7-2.6-.4-5.4-2.8-6.8h0c-2.9-1.8-6.7-.8-8.5,2.1-.9,1.4-1.1,3.1-.7,4.7s1.4,3,2.8,3.8c1,.6,2.1,.9,3.2,.9s2.8-.5,3.9-1.4l2.2,1.3c-.2,.7-.4,1.5-.4,2.3,0,1.5,.5,3,1.3,4.1l-7.4,6.5c-.5-.2-1.1-.3-1.6-.3-3,0-5.4,2.4-5.4,5.4s2.4,5.4,5.4,5.4,5.4-2.4,5.4-5.4-.3-1.9-.7-2.7l7.4-6.5c.2,.1,.5,.2,.7,.3l.7,8.4c-2.3,.9-3.9,3.1-3.9,5.8s2.8,6.2,6.2,6.2,6.2-2.8,6.2-6.2-2-5.3-4.6-6l-.6-7.9c1.1-.2,2.1-.7,2.9-1.3l3.7,3.5c-.2,.5-.3,1.1-.3,1.7,0,3,2.4,5.4,5.4,5.4s5.4-2.4,5.4-5.4-2.4-5.4-5.4-5.4Zm-.8-15.6c.8,0,1.5,.7,1.5,1.5s-.7,1.5-1.5,1.5-1.5-.7-1.5-1.5,.7-1.5,1.5-1.5Zm-12.4,6.3c1.9,0,3.5,1.6,3.5,3.5s-1.6,3.5-3.5,3.5-3.5-1.6-3.5-3.5,1.6-3.5,3.5-3.5Zm-14.4-2.9c-.5-.3-.9-.8-1-1.4-.1-.6,0-1.2,.3-1.7,.4-.7,1.2-1.1,2-1.1s.8,.1,1.2,.3c.5,.3,.9,.8,1,1.4,.1,.6,0,1.2-.3,1.7-.3,.5-.8,.9-1.4,1-.6,.1-1.2,0-1.7-.3Zm-.9,23.8c-.8,0-1.5-.7-1.5-1.5s.7-1.5,1.5-1.5,1.5,.7,1.5,1.5-.7,1.5-1.5,1.5Zm15.7,6.1c-1.3,0-2.3-1-2.3-2.3s1-2.3,2.3-2.3,2.3,1,2.3,2.3-1,2.3-2.3,2.3Zm12.7-10.8c-.8,0-1.5-.7-1.5-1.5s.7-1.5,1.5-1.5,1.5,.7,1.5,1.5-.7,1.5-1.5,1.5Z", 'angle-up': "M34.9,27.7c0-.3-.2-.5-.4-.7l-9-8.9c-.2-.2-.4-.4-.7-.5-.3-.1-.5-.2-.8-.2s-.5,0-.8,.2c-.3,.1-.5,.3-.7,.5l-8.9,8.9c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.5,.2,.8c.1,.3,.3,.5,.5,.7,.4,.4,.9,.6,1.5,.6s1.1-.2,1.5-.6l7.4-7.4,7.4,7.4c.4,.4,.9,.6,1.5,.6,.3,0,.5,0,.8-.2,.3-.1,.5-.3,.7-.5,.2-.2,.4-.4,.5-.7,.1-.3,.2-.5,.2-.8,0-.3,0-.6-.1-.8Z", 'angle-down': "M34.8,18.8c-.1-.3-.3-.5-.5-.7-.4-.4-.9-.6-1.5-.6s-1.1,.2-1.5,.6l-7.5,7.4-7.4-7.4c-.4-.4-.9-.6-1.5-.6s-1.1,.2-1.5,.6c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.5,.2,.8c.1,.3,.3,.5,.5,.7l8.8,8.8c.2,.2,.4,.4,.7,.5,.3,.1,.5,.2,.8,.2s.5,0,.8-.2c.3-.1,.5-.3,.7-.5l9-8.8c.2-.2,.4-.4,.5-.7,.1-.3,.2-.5,.2-.8s0-.5-.2-.8Z" });
 function ipmRowMenu(anchor, id){
+  if (ipmKind() === 'routers' && IPM.tab === 'approval') return stcMenu(anchor, [
+    { t: 'Approve', ic: 'check', ok: true, fn: () => ipmDecide(id, true) },
+    { t: 'Reject', ic: 'times', del: true, fn: () => ipmDecide(id, false) }
+  ], { right: true, cover: true });
   if (ipmKind() === 'rules') {
     const i = IPM_RULES.findIndex(r => r.id === id);
     return stcMenu(anchor, [
@@ -40452,6 +40492,16 @@ function ipmAfter(){
     op.value = String(IPM.opt);
   }
   const fl = page.querySelector('#ipmFlash'); if (fl) fl.addEventListener('close', () => { IPM.flash = null; });
+  /* the Option 2 toast leaves by itself; a repaint clears the old timer first so it cannot close a new one */
+  clearTimeout(IPM.toastT);
+  const tw = page.querySelector('#ipmToast');
+  if (tw){
+    const bye = () => { tw.classList.add('out'); setTimeout(() => tw.remove(), 200); };
+    if (fl) fl.addEventListener('close', bye);
+    IPM.toastT = setTimeout(bye, 5000);
+    tw.addEventListener('mouseenter', () => clearTimeout(IPM.toastT));
+    tw.addEventListener('mouseleave', () => { IPM.toastT = setTimeout(bye, 2500); });
+  }
   const tabs = page.querySelector('#routersTabs');
   if (tabs) tabs.addEventListener('change', e => {
     IPM.tab = ipmKey(ipmDet(e)) || 'discovery'; IPM.q = '';
@@ -40576,6 +40626,38 @@ const IPM_AR_EXCLUDE = [{ key: 'ip', label: 'IP' }, { key: 'iprange', label: 'IP
 const ipmArDefaults = () => ({ target: 'cidr', targetValue: '', manualIps: '', excludeMode: 'ip', collectorType: 'Collector', collector: '',
   site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null });
 function ipmArOpen(){ IPM.ar = ipmArDefaults(); ipmArPaint(); }
+/* ── OPTION 2: the panel carries a HELP CARD on its right (request, 29 Sep 2026, with the product's own
+   "RUM Instrumentation Help Card" as the reference) — a titled column of collapsible sections, the first
+   open. It reuses the Discovery Profile help card's own classes (.dphh / .dphc / .dphch / .dphcb), so the
+   two cards in this module cannot drift. Toggling a section flips one class; it never repaints the form. */
+const IPM_HELP = [
+  { t: 'Prerequisites', b: `<ul>
+      <li>The seed router must be reachable from the selected <b>Collector</b> over SNMP (UDP 161).</li>
+      <li>The <b>Credential Profile</b> needs SNMP v2c or v3 read access to the router's ARP and interface tables
+        (<b>ipNetToPhysicalTable</b> / <b>ipNetToMediaTable</b> and IF-MIB).</li>
+      <li>Firewall and security-group rules must allow SNMP from the Collector to the router.</li>
+      <li>With <b>Ping Check</b> on, ICMP echo must also be allowed from the Collector.</li></ul>` },
+  { t: 'How discovery works', b: `<ul>
+      <li>On every poll IPAM reads the seed router's ARP table and the subnets on its interfaces.</li>
+      <li>Each subnet it reports waits in <b>Subnet Approval</b> — active polling stays off until an admin approves it.
+        Rejecting one is never permanent; it re-queues the next time it is reported.</li>
+      <li>The <b>Site</b> comes from the <b>Site Separation Rules</b>, evaluated top to bottom.</li></ul>` },
+  { t: 'Field guide', b: `<ul>
+      <li><b>Discovery Target</b> — one IP/CIDR, or a CSV of many routers (download the sample for the columns).</li>
+      <li><b>Exclude</b> — addresses or a range IPAM must never poll, such as a management VLAN.</li>
+      <li><b>Retry Count</b> — how many times an SNMP request is retried before the router is marked Failed.</li>
+      <li><b>Notify</b> — who hears when the router goes Stale or Failed, or a new subnet is waiting.</li></ul>` }
+];
+function ipmHelpHTML(){
+  if (!IPM.help) IPM.help = IPM_HELP.map((_, i) => i === 0);
+  return `<aside class="ipmhelp"><h3 class="dphh">IP Address Discovery Help Card</h3>` +
+    IPM_HELP.map((h, i) => `<div class="dphc${IPM.help[i] ? ' open' : ''}"><div class="dphch" role="button" tabindex="0" onclick="ipmHelpTog(${i})"><span>${ipmEsc(h.t)}</span>${stcSvg('chevron-right', 'car')}</div><div class="dphcb">${h.b}</div></div>`).join('') +
+    `</aside>`;
+}
+function ipmHelpTog(i){
+  IPM.help[i] = !IPM.help[i];
+  const c = document.querySelectorAll('#ipmDr .ipmhelp .dphc')[i]; if (c) c.classList.toggle('open', IPM.help[i]);
+}
 /* the target row changes with IP/CIDR ↔ CSV; it is two grid cells, so its wrapper is display:contents */
 function ipmArTargetHTML(d){
   const targetField = d.target === 'cidr'
@@ -40589,30 +40671,41 @@ function ipmArTargetHTML(d){
         <obs-button variant="default" id="arUploadCsv">Upload CSV</obs-button>
         <input type="file" id="arCsvIn" accept=".csv,text/csv" hidden></div>
       <div class="ipmsample"><obs-icon name="download" size="14"></obs-icon><obs-link id="arSampleCsv">Sample CSV</obs-link></div>`, null, true);
-  return targetField + ipmField('Enter one or more IPs', `<obs-input id="arManualIps" block placeholder="e.g. IPv4 or IPv6" value="${ipmEsc(d.manualIps)}"></obs-input>`);
+  /* Option 2 pairs the fields differently (see ipmArPaint), so the manual-IPs field is emitted there */
+  return targetField + (IPM.opt === '2' ? '' : ipmArManualHTML(d));
 }
+const ipmArManualHTML = d => ipmField('Enter one or more IPs', `<obs-input id="arManualIps" block placeholder="e.g. IPv4 or IPv6" value="${ipmEsc(d.manualIps)}"></obs-input>`);
 function ipmArPaint(){
   const d = IPM.ar;
   const body = `<div class="ip-form">
     ${ipmField('Discovery Target', `<obs-radio id="arTargetTabs" as-button options='${ipmJ(IPM_AR_TARGET)}' value="${ipmEsc(d.target)}"></obs-radio>`)}
+    ${IPM.opt === '2'
+      /* OPTION 2 (request, 29 Sep 2026): each control sits BESIDE the field it drives — Discovery Target | IP/CIDR,
+         then Exclude | Enter one or more IPs — instead of the two pickers sharing a row above their fields */
+      ? `<div id="arTargetArea" style="display:contents">${ipmArTargetHTML(d)}</div>
     ${ipmField('Exclude', `<obs-radio id="arExcludeTabs" as-button options='${ipmJ(IPM_AR_EXCLUDE)}' value="${ipmEsc(d.excludeMode)}"></obs-radio>`)}
-    <div id="arTargetArea" style="display:contents">${ipmArTargetHTML(d)}</div>
+    ${ipmArManualHTML(d)}`
+      : `${ipmField('Exclude', `<obs-radio id="arExcludeTabs" as-button options='${ipmJ(IPM_AR_EXCLUDE)}' value="${ipmEsc(d.excludeMode)}"></obs-radio>`)}
+    <div id="arTargetArea" style="display:contents">${ipmArTargetHTML(d)}</div>`}
     ${ipmField('Collector Type', `<obs-select id="arCollectorType" block options='${ipmJ([ipmOpt('Collector')])}' value="${ipmEsc(d.collectorType)}"></obs-select>`, null, true)}
     ${ipmField('Collectors', `<obs-select id="arCollector" block placeholder="Select" options='${ipmJ(IPM_SITES.map(s => ipmOpt(s)))}' value="${ipmEsc(d.collector)}"></obs-select>`, null, true)}
     ${ipmField('Credential Profiles', `<obs-select id="arProfile" block multiple allow-clear placeholder="Select" options='${ipmJ(ipmProfiles())}' value="${ipmEsc(d.profile.join(','))}"></obs-select>`,
       null, true)}
     <div class="ipmcredbtn"><obs-button variant="default" id="arCreateProfile">Create Credential Profile</obs-button></div>
-    <div class="ip-field"><span class="ip-field-label">Site<obs-tooltip placement="bottom-start" class="ipmtip">Pick a site, or press ⊕ in the list to add a new one. Leave blank to let the Site Separation precedence chain decide.</obs-tooltip></span>
+    ${IPM.opt === '2' ? '' /* no Site field in Option 2 (request, 29 Sep 2026) — the Site Separation Rules assign it */ : `<div class="ip-field"><span class="ip-field-label">Site<obs-tooltip placement="bottom-start" class="ipmtip">Pick a site, or press ⊕ in the list to add a new one. Leave blank to let the Site Separation precedence chain decide.</obs-tooltip></span>
       <obs-select id="arSite" block searchable="true" can-user-add-options allow-clear placeholder="Select or type a site"
-        options='${ipmJ(ipmSiteOpts(d.site))}' value="${ipmEsc(d.site)}"></obs-select></div>
+        options='${ipmJ(ipmSiteOpts(d.site))}' value="${ipmEsc(d.site)}"></obs-select></div>`}
     ${ipmField('Retry Count', `<obs-input id="arRetryCount" block value="${ipmEsc(d.retryCount)}"></obs-input>`, null, true)}
     ${ipmField('Ping Check', `<obs-switch id="arPingCheck" ${d.pingCheck ? 'checked' : ''} checked-text="ON" unchecked-text="OFF"></obs-switch>`)}
     <div class="span-2">${ipmField('Notify', `<obs-input id="arNotify" block placeholder="@User or Email or /Handle or #User Profile or Mobile Number" value="${ipmEsc(d.notify)}"></obs-input>`)}</div>
   </div>`;
+  const help = IPM.opt === '2' && !d.editId;
   const foot = `<div class="ip-row ipmfoot"><span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
       <obs-button variant="default" id="arReset">Reset</obs-button>
       <obs-button variant="primary" id="arSave">${d.editId ? 'Save changes' : 'Add IP Address Discovery'}</obs-button></div>`;
-  ipmPanel(d.editId ? 'Edit IP Address Discovery' : 'Add IP Address Discovery', body, foot, '684px');
+  ipmPanel(d.editId ? 'Edit IP Address Discovery' : 'Add IP Address Discovery',
+    help ? `<div class="ipmarwrap"><div class="ipmarform">${body}</div>${ipmHelpHTML()}</div>` : body, foot,
+    help ? 'min(1180px, calc(100vw - 80px))' : '684px');
   ipmArBind();
 }
 function ipmArBind(){

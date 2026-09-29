@@ -2135,6 +2135,11 @@ html[data-theme="light"] .mflyout{box-shadow:8px 0 28px rgba(16,26,42,.14)}
    the pin: untouched — hover-only, as on every other visit. It does NOT blink.
    the dot: before the pin, visible at rest, in .mftag.new's teal, blinking with a ripple — the hover target for the card. */
 .mfpinhot{position:relative;flex:0 0 12px;width:12px;height:20px;display:grid;place-items:center;border-radius:4px;cursor:help;color:var(--teal)}
+/* the badge placement: a 10px hotspot on the pin's top-right corner carrying a 5px dot */
+.mfpinw{position:relative;display:inline-flex;flex:0 0 auto}
+.mfpinw > .mfpinhot{position:absolute;top:-3px;right:-3px;width:12px;height:12px;flex:none;border-radius:50%}
+.mfpinw .mfpindot{width:7px;height:7px}   /* 5 → 7px (request, 29 Sep 2026: "a little big") */
+.mfpinw .mfpinhot::after{width:7px;height:7px;margin:-3.5px 0 0 -3.5px}
 .mfpinhot:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 .mfpindot{display:block;width:8px;height:8px;border-radius:50%;background:currentColor;animation:mfpindot 1.6s ease-in-out infinite}
 .mfpinhot::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;
@@ -2147,36 +2152,66 @@ html[data-theme="light"] .mflyout{box-shadow:8px 0 28px rgba(16,26,42,.14)}
    title · one-line description), a two-panel PICTURE of the actual flow (the Explorer row → the sidebar row it becomes),
    the four reference sections tightened to one or two lines each with their keys set as keys, and a lighter footer.
    360px card, so the copy stops orphaning single words. */
-.mfpi{position:fixed;left:0;top:0;z-index:120;width:372px;padding-left:12px;box-sizing:border-box;
+.mfpi{position:fixed;left:0;top:0;z-index:120;width:412px;padding-left:12px;box-sizing:border-box;
   visibility:hidden;opacity:0;transition:opacity .14s,visibility .14s}
 .mfpi.on{visibility:visible;opacity:1}
-.mfpic{position:relative;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);
+/* ⚠️ THE TOOLTIP'S ACCENT IS #C9D4E4, NOT TEAL (request, 29 Sep 2026). That is `--pill` — the rail's own
+   selected-pill colour — in dark; light keeps `--pill`'s own #24344d, since #c9d4e4 on white is ~1.4:1.
+   Re-pointing `--teal` here repaints every teal part of the card (the icon tile, the miniature's dot, the
+   count badge, the focus ring) and nothing outside it. */
+.mfpi{--teal:var(--pill)}
+.mfpic{position:relative;padding:14px 16px;border:1px solid var(--track);border-radius:var(--radius);
   background:var(--pop);box-shadow:var(--shadow);color:var(--text)}
 .mfpic::before{content:'';position:absolute;left:-6px;top:calc(var(--mfpi-arrow, 28px) - 6px);width:10px;height:10px;
-  background:var(--pop);border-left:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
+  background:var(--pop);border-left:1px solid var(--track);border-bottom:1px solid var(--track);transform:rotate(45deg)}
+/* ⚠️ THE CARD'S EDGE IS `--track`, NOT `--border` (request, 29 Sep 2026: "show border of tooltip") — `--border` is ~1.3:1 on the page and read as no edge at all */
 /* header: the pin in a teal tile, then the title over one line of description */
 .mfpih{display:flex;align-items:flex-start;gap:10px}
 .mfpii{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border-radius:var(--radius-sm);
-  background:rgba(20,184,166,.16);color:var(--teal)}
+  background:color-mix(in srgb,var(--pill) 16%,transparent);color:var(--teal)}
 .mfpii svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .mfpiht{min-width:0}
 .mfpit{display:block;font-size:13.5px;font-weight:600;line-height:18px;color:var(--text)}
 .mfpil{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--text-dim);text-wrap:pretty}
 /* ⚠️ text-wrap:pretty is what stops a one-word last line ("unpin.", "into More.") — Chrome 117+; older engines just wrap */
 /* the picture: the Explorer row you act on → the sidebar row it becomes, from this file's own glyphs */
-.mfpipic{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);align-items:center;gap:6px;margin-top:12px}
-.mfpip{align-self:stretch;display:grid;align-content:start;gap:2px;padding:6px;border:1px solid var(--border);
-  border-radius:var(--radius-sm);background:var(--sidebar)}
-.mfpicap{padding:0 6px 4px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim)}
+.mfpipic{display:grid;grid-template-columns:minmax(0,1fr) 16px auto;align-items:center;gap:6px}
+/* ⚠️ THE PICTURE LEADS AND THE TITLE FOLLOWS IT (request, 29 Sep 2026: "swap the title and example") */
+.mfpif .mfpih{flex:1 1 auto;min-width:0}
+.mfpif .mfpigot{flex:0 0 auto;white-space:nowrap}   /* beside a two-line description it wrapped to "Got / it" */   /* the title and Got it share ONE row under the rule (request, 29 Sep 2026); the count badge is gone */
+.mfpip{align-self:stretch;display:grid;grid-template-rows:auto 1fr;gap:6px;min-width:0}
+/* ⚠️ THE CAPTION SITS ABOVE ITS BOX, NOT INSIDE IT (request, 29 Sep 2026) — the box is the miniature itself,
+   so each panel reads "label → the thing it names". The two miniatures carry the frame now. */
+.mfpicap{padding:0 2px;font-size:11px;font-weight:600;color:var(--text-dim)}   /* sentence case, as written (request, 29 Sep 2026) — was 10px uppercase */
 .mfpir{display:flex;align-items:center;gap:6px;min-width:0;height:24px;padding:0 6px;border-radius:4px;font-size:11.5px;color:var(--text-dim)}
 .mfpir > span{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .mfpir .ic{flex:0 0 13px;width:13px;height:13px;fill:currentColor}
 .mfpir.hov{background:var(--hover-side);color:var(--text)}
-.mfpir.pin{background:rgba(20,184,166,.14);color:var(--text);font-weight:600}
+.mfpir.pin{background:color-mix(in srgb,var(--pill) 14%,transparent);color:var(--text);font-weight:600}
 .mfpir.pin .ic{color:var(--teal)}
 .mfpir .dot{flex:0 0 6px;width:6px;height:6px;border-radius:50%;background:var(--teal)}
 .mfpir .pn{flex:0 0 12px;width:12px;height:12px;color:var(--teal);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .mfpiarr{width:16px;height:16px;color:var(--text-dim);fill:currentColor}
+/* the miniature Explorer column — `.mfi`'s own proportions at ~3/4 scale, on the flyout's surface */
+.mfpicol{display:grid;align-content:start;gap:1px;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--card)}
+.mfpicr{display:flex;align-items:center;gap:7px;min-width:0;height:24px;padding:0 6px;border-radius:6px;font-size:11.5px;font-weight:600;color:var(--text)}
+.mfpicr > span{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mfpicr .ic{flex:0 0 13px;width:13px;height:13px;fill:currentColor;color:var(--text-dim)}
+.mfpicr.hov{background:var(--sb-hover)}
+.mfpicr.sub{padding-left:26px;font-weight:400}
+.mfpicr .mfpipw{position:relative;display:inline-flex;flex:0 0 auto}   /* not `.pw` — that is the widget-preview card at line ~1081 (background, border, overflow:hidden) */
+.mfpicr .dot{position:absolute;top:-2px;right:-2px;width:5px;height:5px;border-radius:50%;background:var(--teal)}
+.mfpicr .pn{flex:0 0 11px;width:11px;height:11px;color:var(--text-dim);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.mfpicr .dc{flex:0 0 auto;padding:1px 3px;border-radius:3px;background:var(--chip);font-size:7px;font-weight:700;letter-spacing:.06em;color:var(--text-dim)}
+/* the miniature rail — hugs its tiles like the real rail (request, 29 Sep 2026: "make the box small"), the sidebar's surface, 26px tiles at the rail's 4px radius, the lit one in `.sitem.on`'s pill */
+.mfpirail{justify-self:start;width:max-content;display:grid;align-content:start;gap:6px;justify-items:center;padding:8px 8px;border:1px solid var(--border);border-radius:4px;background:var(--sidebar)}
+.mfpitl{width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:var(--text)}
+.mfpitl .ic{width:15px;height:15px;fill:currentColor}
+.mfpitl.on{background:var(--sb-hover);color:var(--text)}   /* the rail's HOVER look (`.sitem:hover`), not its selected pill (request, 29 Sep 2026) */
+.mfpit2{position:relative;display:grid}
+.mfpit2 em{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;font-style:normal;
+  padding:3px 7px;border-radius:var(--radius-sm);background:var(--pop);border:1px solid var(--border);color:var(--text);
+  font-size:10.5px;font-weight:500;box-shadow:var(--pop-shadow)}
 /* the sections hang off one connector rail, each with its own short tick — the reference's tree */
 .mfpis{display:grid;gap:9px;margin:14px 0 0 2px;border-left:1px solid var(--pop-line)}
 .mfpisec{position:relative;padding-left:14px}
@@ -2192,8 +2227,8 @@ html[data-theme="light"] .mflyout{box-shadow:8px 0 28px rgba(16,26,42,.14)}
 .mfpisec li.off::before{background:var(--text-dim)}
 .mfpisec li b{font-weight:600}
 /* footer: a hairline, the count as a quiet tag, and the one action */
-.mfpif{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--pop-line)}
-.mfpib{padding:2px 7px;border-radius:4px;background:rgba(20,184,166,.12);font-size:11px;font-weight:600;color:var(--teal)}
+.mfpif{display:flex;align-items:center;gap:8px;margin:14px -16px 0;padding:12px 16px 0;border-top:1px solid var(--pop-line)}   /* the rule runs the card's full width — the negative margin cancels .mfpic's 16px side padding */
+.mfpib{padding:2px 7px;border-radius:4px;background:color-mix(in srgb,var(--pill) 12%,transparent);font-size:11px;font-weight:600;color:var(--teal)}
 .mfpigot{margin-left:auto;height:26px;padding:0 14px;border:0;border-radius:var(--radius-sm);background:var(--action);color:var(--action-fg);
   font-family:inherit;font-size:12px;font-weight:600;line-height:26px;cursor:pointer}
 .mfpigot:hover{background:var(--action-h)}
@@ -14744,12 +14779,15 @@ function mfPinIntroOn(){
   if (mfPinIntroMem) return false;
   try { return localStorage.getItem(MF_PIN_INTRO_KEY) !== '1'; } catch (e) { return true; }
 }
-function mfPinIntroDone(){
+/* ⚠️ "Got it" ONLY CLOSES THE CARD (request, 29 Sep 2026: "don't remove this blink and popup"). It used to
+   mark the intro read and strip every blinking dot, so the card could never be opened again. The dots stay and
+   hovering one still opens the card. The read-and-remove body is kept below as `mfPinIntroRetire`, unreferenced. */
+function mfPinIntroDone(){ mfPinIntroClose(); }
+function mfPinIntroRetire(){
   if (mfPinIntroMem) return;
   mfPinIntroMem = true;
   try { localStorage.setItem(MF_PIN_INTRO_KEY, '1'); } catch (e) {}
   mfPinIntroClose();
-  /* the dots go, in place — no repaint, so the pointer's row keeps its hover */
   document.querySelectorAll('#mflyout .mfpinhot').forEach(d => d.remove());
 }
 function mfPinIntroReset(){ mfPinIntroMem = false; try { localStorage.removeItem(MF_PIN_INTRO_KEY); } catch (e) {} }
@@ -14772,31 +14810,38 @@ function mfPinIntroHTML(){
   const hide = MF_TREE_HIDE.Explorer || [], rows = EXPLORER_TREE.filter(r => hide.indexOf(r.l) < 0), first = rows[0] || { l:'Topology', ic:'topology' };
   const pn = MF_PIN.replace('<svg ', '<svg class="pn" ');
   const row = (glyph, label, cls, tail) => `<div class="mfpir${cls ? ' ' + cls : ''}">${glyph}<span>${stEscMf(label)}</span>${tail || ''}</div>`;
-  const more = rows.slice(1, 4);   /* four rows a side, so the two panels are the same height */
+  /* ⚠️ THE PICTURE IS THE REAL SIDEBAR IN MINIATURE (request, 29 Sep 2026: "not like the current sidebar,
+     make it same to same"): the left panel is the Explorer column (a semibold module row carrying its dot,
+     pin and DOCS chip, its children indented at 400, the next module); the right is the collapsed ICON
+     rail — tiles, no labels — with the pinned tile lit in the rail's own `.sitem.on` pill. (Its name tooltip was
+     removed on request, 29 Sep 2026; `.mfpit2` is unreferenced.) */
+  const kids = (first.kids || []).slice(0, 2).map(k => Array.isArray(k) ? k[0] : (k.l || k)), next = rows[1];
+  const nextKids = ((next && next.kids) || []).slice(0, 2).map(k => Array.isArray(k) ? k[0] : (k.l || k));   /* NCCM's own pages, like the real column (29 Sep 2026) */
+  const tile = (g, cls) => `<span class="mfpitl${cls ? ' ' + cls : ''}">${g}</span>`;
   return `<div class="mfpic">
-    <div class="mfpih"><span class="mfpii">${MF_PIN}</span>
-      <div class="mfpiht"><span class="mfpit">Pin a sub-module</span>
-      <p class="mfpil">Keep an Explorer sub-module on the sidebar, one click away from any screen.</p></div></div>
     <div class="mfpipic" aria-hidden="true">
       <div class="mfpip"><span class="mfpicap">In Explorer</span>
-        ${row(mfIco(first.ic, 'ic'), first.l, 'hov', '<i class="dot"></i>' + pn)}
-        ${more.map(r => row(mfIco(r.ic, 'ic'), r.l)).join('')}
+        <div class="mfpicol">
+          <div class="mfpicr hov">${mfIco(first.ic, 'ic')}<span>${stEscMf(first.l)}</span><i class="mfpipw">${pn}<i class="dot"></i></i><b class="dc">DOCS ↗</b></div>
+          ${kids.map(k => `<div class="mfpicr sub"><span>${stEscMf(k)}</span></div>`).join('')}
+          ${next ? `<div class="mfpicr">${mfIco(next.ic, 'ic')}<span>${stEscMf(next.l)}</span></div>` : ''}
+          ${nextKids.map(k => `<div class="mfpicr sub"><span>${stEscMf(k)}</span></div>`).join('')}
+        </div>
       </div>
       ${MF_PI_ARROW}
-      <div class="mfpip"><span class="mfpicap">On your sidebar</span>
-        ${row(ico('dashboard', 'ic'), 'Dashboard')}
-        ${row(ico('metric-explorer', 'ic'), 'Explorer')}
-        ${row(mfIco(first.ic, 'ic'), first.l, 'pin')}
-        ${row(ico('report', 'ic'), 'Report')}
+      <div class="mfpip"><span class="mfpicap">Sidebar</span>
+        <div class="mfpirail">
+          ${tile(ico('dashboard', 'ic'))}${tile(ico('alert', 'ic'))}${tile(ico('metric-explorer', 'ic'))}
+          ${tile(mfIco(first.ic, 'ic'), 'on')}
+          ${tile(ico('report', 'ic'))}
+        </div>
       </div>
     </div>
-    <div class="mfpis">
-      <div class="mfpisec"><span class="mfpik">How to use</span><p>Hover a sub-module and click its pin. Click it again to unpin.</p></div>
-      <div class="mfpisec"><span class="mfpik">Output</span><ul><li class="on"><b>Pinned</b> stays on the sidebar, under Explorer</li><li class="off"><b>Not pinned</b> is on the sidebar only while it’s open</li></ul></div>
-      <div class="mfpisec"><span class="mfpik">Example</span><p class="ex">Pin ${stEscMf(first.l)} to open it from any dashboard.</p></div>
-      <div class="mfpisec"><span class="mfpik">Limitation</span><p>A full sidebar folds Approval, What’s new and Health into one More button.</p></div>
-    </div>
-    <div class="mfpif"><span class="mfpib">${rows.length} sub-modules can be pinned</span><button type="button" class="mfpigot" onclick="mfPinIntroDone()">Got it</button></div>
+    <div class="mfpif">
+      <div class="mfpih"><span class="mfpii">${MF_PIN}</span>
+      <div class="mfpiht"><span class="mfpit">Pin a sub-module</span>
+      <p class="mfpil">Keep an Explorer sub-module on the sidebar, one click away from any screen.</p></div></div>
+      <button type="button" class="mfpigot" onclick="mfPinIntroDone()">Got it</button></div>
   </div>`;
 }
 /* the picture's arrow: the product's own long-arrow-right, verbatim from observeops-icons/common/arrows-direction/ */
@@ -14810,7 +14855,7 @@ const stEscMf = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;
    dwell costs nobody the card — it only stops it ambushing a pointer passing through. */
 function mfPinIntroShow(btn){ clearTimeout(mfPinIntroT); mfPinIntroT = setTimeout(() => mfPinIntroOpen(btn), 650); }
 function mfPinIntroOpen(btn){
-  if (!btn || !btn.isConnected || !mfPinIntroOn()) return;
+  if (!btn || !btn.isConnected) return;   /* not gated on the read flag — the dot always shows, so its card always opens */
   const fly = document.getElementById('mflyout');
   if (!fly || !fly.classList.contains('on')) return;
   const el = mfPinIntroEl();
@@ -14916,9 +14961,14 @@ function mfTree(name){
            BEFORE railPinToggle, whose repaint asks mfPinIntroOn() again.
            ⚠️ PINNED ROWS GET A DOT TOO — the filled pin beside it still reports the state, and every row in the column keeps
            its pin at one x. */
-        (name === 'Explorer' ? (mfPinIntroOn() ? MF_PIN_DOT : '') +
+        /* ⚠️ the dot is on the FIRST row only, and ALWAYS shown (requests, 29 Sep 2026) — no longer gated on mfPinIntroOn(),
+           because an older "Got it" had written the read flag to localStorage and hid it for good in that browser.
+           ⚠️ IT SITS ON THE PIN'S TOP-RIGHT CORNER, SMALL, like a badge (request, 29 Sep 2026) — `.mfpinw` is the
+           positioning box; the dot is its sibling, NOT inside the <button>, so it stays its own hover target. */
+        (name === 'Explorer' ? '<span class="mfpinw">' +
           `<button class="mfpin" data-tip="${railPinned(r.l) ? 'Unpin from sidebar' : 'Pin to sidebar'}" ` +
-          `aria-pressed="${railPinned(r.l)}" onclick="event.stopPropagation();mfPinIntroDone();railPinToggle(${mfAttr(r.l)})">${MF_PIN}</button>` : '') +
+          `aria-pressed="${railPinned(r.l)}" onclick="event.stopPropagation();mfPinIntroDone();railPinToggle(${mfAttr(r.l)})">${MF_PIN}</button>` +
+          (k === 0 ? MF_PIN_DOT : '') + '</span>' : '') +
         /* ⚠️ the chevron is the ONLY thing saying a row has more behind it. Without it the
            second pane appears on some rows and not others with nothing to predict which,
            which reads as the menu misbehaving rather than as a shape. */
@@ -15135,7 +15185,9 @@ let mfAnchorTop = 0;
    replaced — KEPT AND UNREFERENCED, the house pattern, and what a revert calls. */
 function mfClamp(){
   const fly = document.getElementById('mflyout'); if (!fly) return;
-  fly.style.top = '0px';
+  /* ⚠️ NOT '0px' — the persistent top notification bar sits there, and an inline 0 beat `body.ntftop
+     .mflyout{top:var(--ntf-h)}`, so the column's head slid UNDER the bar (29 Sep 2026). */
+  fly.style.top = 'var(--ntf-h, 0px)';
   const list = fly.querySelector('.mflist');
   if (list){ list.style.maxHeight = ''; mfFadeCard(list.closest('.mfcol')); }
 }
