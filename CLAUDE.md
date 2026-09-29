@@ -739,6 +739,32 @@ arrival runs `selectModuleByName` / `showView` and clears the hash.
   `setting.html`); **`dsconf.py` / `licconf.py`** default to `setting.html`.
 - ⚠️ `git checkout a216064 -- setting.js` brings the old single file back if this is ever unwound.
 
+## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
+
+The IPAM module prototype (`~/Downloads/ipam-standalone.html`) carries its own Settings rail; its
+**IPAM** category was copied into `setting.html` as the `ipm*` block (`ST_TREE` entry after
+Utility in `setting-nav.js`, icon `ST_ICO.ipam` = `observeops-icons/.../ip.svg`):
+**IP Address Discovery** (Discovery Profiles | Subnet Approval tabs, Add IP Address Discovery
+panel) · **Site Separation Rules** · **Approved Vendor List**. Then, on request, a DS pass to the
+`list-view` recipe: `obs-page-header` title + description → default `obs-toolbar` → `obs-table`
+(typed `tags`/`switch`/`button`/`icon` cells, `rowActions` ⋯ menu, its own pager) → forms in
+`obs-drawer` (`#ipmFm`), confirms in `obs-modal variant="confirm"` (`#ipmCf`).
+
+- ⚠️ `#ipmPage`, `#ipmDr`, `#ipmCf`, `#ipmFm` are in all five scoped DS token-block openers — the
+  drawer and modal render in the top layer on `<body>`.
+- ⚠️ obs-table `columns` / `rows` / `rowActions` are set as PROPERTIES after paint; search sets
+  `rows` only, so the search box is never rebuilt. `rowaction` / `cellaction` are bound with
+  `addEventListener` (custom events).
+- ⚠️ obs-modal 0.1.166: after confirm/cancel the host stays `open`, and after an Esc close the next
+  `show()` can silently do nothing — `ipmConfirm` checks the inner `<dialog>` and retries once.
+  obs-drawer's ✕ emits nothing — `ipmFmWatch` observes the dialog's `open` attribute.
+- ⚠️ obs-button fires clicks twice — Save / Cancel go through `ipmTap`.
+- ⚠️ Add IP Address Discovery stays a hand-built stacked panel (as in the source): its Create
+  Credential Profile opens this module's `stcDr` drawer, which a top-layer obs-drawer would cover.
+- Site Separation Rules is `sortable="false"` — the row order IS the priority.
+- Divergences: addresses remapped to RFC 5737; Device Count is 0 (no IP estate here); toolbar
+  eye/PDF/CSV toast; Inter, not Poppins.
+
 ## One file called `setting.js` (12 Sep 2026)
 
 Request: *"create new file the name is 'setting' and all setting related all will be in this

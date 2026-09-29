@@ -3235,13 +3235,8 @@ body:has(#view-dashboard.on) .gnav{display:block}
    ⚠️ `--gv-line:transparent`, NOT `border:0` — the 1px stays in the box, so ticking the
    checkbox does not ALSO move every widget in the group a pixel in each direction on top of
    removing the padding. Same reasoning, same wording, as `.widget.wft.wftbare`. */
-.dgroup:has(.ghead){border:1px solid var(--gv-line,var(--gv-tint,var(--border-soft)));border-radius:var(--radius);
-  padding:var(--gv-pad,10px 12px);background:var(--gv-bg,var(--bg))}
-/* ⚠️ A HEADER COLOUR TINTS THE WHOLE GROUP (request, 28 Sep 2026: "when i apply the Header
-   colour add border colour and background colour 10% opacity"). `gTint()` emits `--gv-tint`
-   (the border) and `--gv-bg` (10% of the same colour over the canvas) on the section — only
-   for a real colour, so Default / Transparent / untouched groups carry nothing. No padding
-   still wins the BORDER: its `--gv-line:transparent` is a separate token, emitted after. */
+.dgroup:has(.ghead){border:1px solid var(--gv-line,var(--border-soft));border-radius:var(--radius);
+  padding:var(--gv-pad,10px 12px);background:var(--bg)}
 /* ⚠️ THE HEADER IS A TITLE STRIP, LIKE A WIDGET'S OWN (request, 17 Sep 2026: "the header
    title background add like widget title"). It takes `.widget .whead`'s three defining
    properties verbatim — the `--card-head` fill, the 8px/12px padding and the `--border-soft`
@@ -7841,6 +7836,8 @@ html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:
 /* `flex:0 0 auto` — the button's content box is 17px (35 − 2 border − 16 padding) and the live glyph is
    17.6, overflowing it by a hair; a shrinkable flex item would be squeezed to 17 instead */
 .lhtok .lhsq svg{flex:0 0 auto;width:17.6px;height:17.6px;fill:currentColor}
+/* the labelled Groups ▾ square (28 Sep 2026) — the same 35px chip, sized to its label */
+.pagehead.lhd .lhright > .lhgrp{margin-right:8px;flex:0 0 auto}   /* it leads the time chip now — the chip's own 8px step */
 /* ── THE MONITOR MODULE'S TWO HEADER ROWS, AS THE LIVE PRODUCT DRAWS THEM (25 Sep 2026) ──
    Request: "in monitor create this 2 header", with the live Monitor screen as the picture. Measured
    off build 10.0.1 at /inventory/All/groups in the browser, on the same `--lh-*` tokens as the
@@ -8963,6 +8960,23 @@ html[data-theme="light"] #cwModal{--cwa:#1d2a3e}
    ⚠️ SCOPED WITH `>`: a label inside `.cwftcol` (the paired rows) is its column's FIRST
    child and that column carries its own 6px gap, so a descendant rule would double it. */
 .cwftp > .cwftl{margin-bottom:6px}
+/* the label row is CENTRED, not baseline-aligned (28 Sep 2026): in Header mode Formatting help sits in a
+   wrapper span with a different baseline, and "Text to display" dropped 2px whenever the preset changed */
+.cwftp > .cwftl{align-items:center;min-height:24px}
+/* presets lead the panel now (28 Sep 2026): no top margin on them, and the 16px step moves to the label after them */
+.cwftp > .cwftpre:first-child{margin-top:0}
+/* the presets + Formatting help row (28 Sep 2026) */
+.cwfttop{display:flex;align-items:flex-start;gap:12px}
+.cwfttop .cwftpre{margin-top:0;flex:1 1 auto}
+.cwfttop .cwftmh,.cwfttop .cwftmhw{margin-left:auto;flex:0 0 auto}
+/* ⚠️ THE TEXT BOX FILLS THE PANEL (request, 28 Sep 2026, with a screenshot): the scroller is a
+   column, the panel grows to its height, and the textarea takes the slack — so the display
+   controls sit at the panel's foot. `flex:1 0 auto` on the panel and a 100px floor on the box
+   mean a short window still scrolls rather than squashing either. */
+#cwModal.cwft .cwsb{display:flex;flex-direction:column}
+#cwModal.cwft .cwftp{flex:1 0 auto}
+#cwModal.cwft .cwftin.cwftbig{flex:1 1 auto;height:auto}
+.cwftp > .cwftpre + .cwftl{margin-top:10px}
 /* ⚠️ 16px ABOVE A LABEL, 6px BELOW IT — the gap BETWEEN fields must beat the gap INSIDE
    one, or a label reads as belonging to the control above it. The rule this file has now
    recorded at `.aiab li`, `.aichips`, `.mfsec` and the Agentic AI form. */
@@ -9167,6 +9181,10 @@ html[data-theme="light"] .widget.wft.wftbare:hover{box-shadow:none}
 .cwftmh{padding:0 11px 0 9.75px;gap:6px}
 .cwftmh svg{flex:0 0 14px;width:14px;height:14px}
 .cwftmh span{display:block;line-height:1}
+/* Header mode (28 Sep 2026): Formatting help and Font Size stay on screen, greyed out */
+.cwftmhw{margin-left:auto;display:inline-flex}
+.cwftmh:disabled,.cwftdd.off .cwftddt{opacity:.45;cursor:not-allowed;pointer-events:none}
+.cwftdd.off{cursor:not-allowed}
 /* ⚠️ THE PAIR CANCELS TWO RULES WRITTEN FOR A ONE-CONTROL COLUMN, and neither cancel is
    optional: `#cwModal.cwft .cwftdd{max-width:232px}` (1,2,0) would cap EACH half at 232 and
    the row would overflow — the override has to carry the extra class to reach (1,3,0); and
@@ -10944,6 +10962,798 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
 #dpanel .dmanage{border-radius:var(--ds-r);color:var(--ds-dim)}
 #dpanel .dmanage:hover{background:var(--ds-hover);border-color:transparent;color:var(--ds-text)}
 #dpanel .dmanage:focus-visible,#dpanel .dnew:focus-visible,#dpanel .dtab:focus-visible{outline:2px solid var(--ds-primary);outline-offset:1px}
+/* ⚠️ THE DS TOKENS FOR THE DASHBOARD'S OWN DS OVERLAYS (restored 28 Sep 2026). `#cwMdHelp` (Formatting
+   help, an obs-modal in the top layer), `#drawer-gedit` (Edit group) and `#cwModal` read the DS's ~390
+   tokens from setting.js's scoped block until 26 Sep, when setting.js became setting.html and this page
+   stopped loading it — so the Formatting help modal fell back to the DS's LIGHT defaults in dark theme.
+   Copied verbatim from setting.html (dark block, light block, the Inter/card re-point), selectors
+   narrowed to the three elements on this page. Change one copy, change both. */
+#cwMdHelp,#drawer-gedit,#cwModal,#grpBtn{
+
+  --action-dropdown-divider:rgba(255, 255, 255, 0.2);
+  --action-dropdown-hover-bg:#172336;
+  --action-dropdown-text:#cad3e2;
+  --active-text-color:#fff;
+  --alert-message-color:#e3e8f2;
+  --alert-notification-popup-background-color:#282828;
+  --alert-notification-popup-border-color:rgb(22, 22, 22);
+  --ant-primary:#099dd9;
+  --apm-heatmap-border-color:rgba(23, 35, 54, 0.7);
+  --apm-heatmap-hover-color:#1d2a3e;
+  --availability-icon-background-color:#2b394f;
+  --availability-icon-text-color:#cad3e2;
+  --bar-chart-color:#14b8a6;
+  --border-color:#1d2a3e;
+  --border-color-opacity:rgba(60, 60, 60, 0.5);
+  --bottom-line-color:rgba(23, 35, 54, 1);
+  --btn-height:2.1rem;
+  --btn-radius:4px;
+  --btn-raidus-full:150px;
+  --button-disabled-bg:rgba(43, 57, 79, 0.7);
+  --button-disabled-border:rgba(72, 89, 117, 0.7);
+  --button-disabled-text:rgba(255, 255, 255, 0.5);
+  --button-transparent-hover-text:#cad3e2;
+  --button-transparent-text:#cad3e2;
+  --calendar-border-color:#2b394f;
+  --calendar-selected-day-background-color:#e3e8f2;
+  --chart-amber:#fbbf24;
+  --chart-aqua:#06b6d4;
+  --chart-border-color:rgba(255, 255, 255, 0.5);
+  --chart-bright-violet:#c026d3;
+  --chart-chartreuse:#a3e635;
+  --chart-electric-coral:#ff6b6b;
+  --chart-emerald-green:#10b981;
+  --chart-font-family:'JetBrains Mono', monospace;
+  --chart-fuchsia:#d946ef;
+  --chart-golden-yellow:#eab308;
+  --chart-grid-line-color:rgba(23, 35, 54, 0.8);
+  --chart-hot-pink:#ec4899;
+  --chart-indigo:#8b5cf6;
+  --chart-legend-color:rgba(255, 255, 255, 0.8);
+  --chart-lime-green:#84cc16;
+  --chart-line-type-icon:#8e9fbc;
+  --chart-mint-green:#2dd4bf;
+  --chart-neon-purple:#a855f7;
+  --chart-null-color:#000;
+  --chart-rose-red:#f43f5e;
+  --chart-sunset-orange:#f97316;
+  --chart-tangerine:#fb923c;
+  --chart-tooltip-background:rgba(43, 57, 79, 0.9);
+  --chart-type-icon:#fff;
+  --chart-vibrant-magenta:#e83e8c;
+  --chart-vivid-teal:#14b8a6;
+  --chart-vivid-teal-faded:rgba(20, 184, 166, 0.35);
+  --chat-height:400px;
+  --chat-width:50vw;
+  --checkbox-bg:#2b394f;
+  --checkbox-checked-border-color:#485975;
+  --checkbox-checked-color:#cad3e2;
+  --code-tag-background-color:#172336;
+  --code-tag-text-color:#cad3e2;
+  --collapse-content-padding:10px 6px;
+  --common-main-bg:#172336;
+  --common-padd-space:15px;
+  --common-widget-bg:#172336;
+  --control-btn-bg:rgba(52, 152, 219, 0.2);
+  --control-padding-horizontal:12px;
+  --control-padding-horizontal-sm:8px;
+  --dashboard-background:#0b1627;
+  --default-button-bg:#07101f;
+  --default-button-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-bg:#1d2a3e;
+  --default-button-hover-border:rgba(255, 255, 255, 0.8);
+  --default-button-hover-text:#cad3e2;
+  --default-button-text:#cad3e2;
+  --default-tag-bg:rgba(9, 157, 217, 0.3);
+  --default-tag-color:rgba(255, 255, 255, 0.2);
+  --default-tag-text-color:rgba(202, 211, 226, 0.8);
+  --disabled-checkbox-opacity:0.5;
+  --disk-space-full-background:#ecf1f9;
+  --drawer-background-color:#07101f;
+  --drawer-mask-color:rgba(255, 255, 255, 0.45);
+  --drawer-sidebar-background:#07101f;
+  --dropdown-background:#1d2a3e;
+  --dropdown-btn-background:'transparent';
+  --dropdown-hover-background:#2b394f;
+  --dropdown-text:#cad3e2;
+  --error-button-bg:#ec5b5b;
+  --error-button-hover-bg:#c84235;
+  --error-button-hover-text:#cad3e2;
+  --error-button-text:#cad3e2;
+  --error-outline-button-bg:transparent;
+  --error-outline-button-hover-bg:rgba(200, 66, 53, 0.2);
+  --error-outline-button-hover-text:#c84235;
+  --error-outline-button-text:#c84235;
+  --faded-page-background-color:rgba(30, 30, 30, 0.4);
+  --faded-text-color:rgba(30, 30, 30, 0.4);
+  --field-border-color:#2b394f;
+  --filter-background:#172336;
+  --filter-viewer-bg-color:rgb(80, 80, 80);
+  --focus-color:#204ca2;
+  --font-family:'Poppins', sans-serif;
+  --font-size-10:10px;
+  --font-size-base:0.8rem;
+  --font-size-lg:1rem;
+  --font-size-sm:0.8rem;
+  --gauge-base-color:#404244;
+  --gauge-text-color:rgba(255, 255, 255, 0.8);
+  --graph-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Crect x='4' y='4' width='2' height='2' fill='%232B394F'/%3E%3C/svg%3E");
+  --grid-header-bg:rgba(72, 89, 117, 0.4);
+  --grid-header-hover-bg:rgba(23, 35, 54, 0.4);
+  --grid-header-solid-bg:rgba(70, 70, 70, 1);
+  --grid-row-border-color:rgba(23, 35, 54, 0.7);
+  --group-header-upper:#172336;
+  --group-icon-color:#cad3e2;
+  --group-list-bg:#172336;
+  --group-list-hover-bg:#172336;
+  --group-text-color:#cad3e2;
+  --hardware-port-bolt-view-bg:#8fadc7;
+  --hc-primary:#0d9488;
+  --hc-range-background:#14b8a6;
+  --header-drop-width:320px;
+  --header-height:55px;
+  --header-title-text-color:#e3e8f2;
+  --help-card-bg-color:rgba(43, 57, 79, 0.3);
+  --hieararchy-border-color:#6a7fa0;
+  --info-border:#2c4a6b;
+  --info-surface:#16283c;
+  --info-text:#9cc4ec;
+  --input-addon-color:#cad3e2;
+  --input-height-base:32px;
+  --input-padding-horizontal:11px;
+  --input-padding-horizontal-base:11px;
+  --input-padding-vertical-base:4px;
+  --input-placeholder-color:rgba(202, 211, 226, 0.5);
+  --input-suffix-bg:rgb(45, 45, 45);
+  --input-suffix-text:#7186a8;
+  --input-text-color:#cad3e2;
+  --layout-header-height:55px;
+  --layout-header-padding:0 12px;
+  --left-menu-arrow-color:rgba(255, 255, 255, 0.65);
+  --left-menu-arrow-opacity:0.7;
+  --left-menu-hover-bg:#172336;
+  --left-menu-text-color:rgba(255, 255, 255, 0.65);
+  --left-menu-text-color-hover:rgba(255, 255, 255, 0.8);
+  --left-menu-text-hover-color:white;
+  --license-background:#07101f;
+  --list-menu-hover:#e7f5fb;
+  --main-tags-bg-color:#183a42;
+  --main-tags-text-color:#2ec4b6;
+  --map-line-color:#1d2a3e;
+  --menu-collapsed-width:70px;
+  --menu-item-active-border-width:3px;
+  --mesasge-error:#fcdbd8;
+  --mesasge-success:#e7f4d9;
+  --modal-background-color:#07101f;
+  --modal-text-color:#cad3e2;
+  --nav-beta-text:#cad3e2;
+  --nav-divider-bg:#e3e8f2;
+  --nav-hover-bg:#1d2a3e;
+  --nav-icon-height:40px;
+  --nav-icon-line-height:40px;
+  --nav-icon-size:1.1rem;
+  --nav-icon-width:50px;
+  --nav-menu-height:30px;
+  --nav-panel-bg:#172336;
+  --nav-selected-text-color:#172336;
+  --nav-text-color:#cad3e2;
+  --navbar-height:50px;
+  --neutral-button-bg:#2b394f;
+  --neutral-button-hover-bg:rgb(70, 70, 70);
+  --neutral-button-hover-text:#cad3e2;
+  --neutral-button-text:#cad3e2;
+  --neutral-dark:#172336;
+  --neutral-darker:#172336;
+  --neutral-darkest:#000;
+  --neutral-light:#8e9fbc;
+  --neutral-lighter:#1d2a3e;
+  --neutral-lightest:#172336;
+  --neutral-regular:#6a7fa0;
+  --neutral-regular-lighter:#ebeef2;
+  --neutral-shadow-light:rgba(70, 70, 70, 0.15);
+  --neutral-theme-color:#8e9fbc;
+  --notification-dropdown-background:#172336;
+  --notification-dropdown-background-hover:#1d2a3e;
+  --notification-dropdown-border-color:#2b394f;
+  --notification-dropdown-datetime-color:#8e9fbc;
+  --notification-dropdown-footer:#323232;
+  --notification-dropdown-header:rgb(70, 70, 70);
+  --notification-dropdown-header-footer:#2b394f;
+  --notification-subtitle-color:#cad3e2;
+  --numeric-font-family:'JetBrains Mono', monospace;
+  --outline-button-bg:transparent;
+  --outline-button-hover-bg:#1d2a3e;
+  --outline-button-hover-border:rgba(227, 232, 242, 0.5);
+  --outline-button-hover-text:#cad3e2;
+  --outline-button-text:#cad3e2;
+  --overlay-bg:rgba(255, 255, 255, 0.25);
+  --overlay-border-width:4px;
+  --padding-md:16px;
+  --padding-sm:12px;
+  --padding-xs:8px;
+  --page-background-color:#07101f;
+  --page-text-color:#cad3e2;
+  --pagination-active-bg:#172336;
+  --pagination-active-text:#cad3e2;
+  --pagination-select-bg:#172336;
+  --pagination-select-text:#cad3e2;
+  --pan-btn-bg:#2b394f;
+  --pan-btn-border:#485975;
+  --panel-side-box-shadow:-1px 6px 6px 0 rgba;
+  --partition-icon-background-color:#2b394f;
+  --partition-icon-text-color:#cad3e2;
+  --picker-popover-max-height:35vh;
+  --picker-popover-max-width:80vw;
+  --policy-border-color:none;
+  --pop-footer-height:75px;
+  --popover-arrow-width:6px;
+  --primary:#e3e8f2;
+  --primary-alt:#cad3e2;
+  --primary-alt-lighter:#e0ebf5;
+  --primary-button-bg:#fff;
+  --primary-button-hover-bg:rgba(255, 255, 255, 0.7);
+  --primary-button-hover-text:#07101f;
+  --primary-button-text:#07101f;
+  --progress-bar-bg:#2b394f;
+  --progress-bg:#2b394f;
+  --radio-btn-box-bg:#07101f;
+  --radio-btn-box-border-color:#204ca2;
+  --radio-btn-box-selected-bg:#e3e8f2;
+  --radio-btn-box-selected-text-color:#07101f;
+  --screenshot-share-form-bg:#07101f;
+  --screenshot-share-overlay-bg:rgba(255, 255, 255, 0.4);
+  --search-height:36px;
+  --search-icon:#e7f5fb;
+  --search-width:18rem;
+  --secondary-green:#36d576;
+  --secondary-green-lighter:#edf7e2;
+  --secondary-orange:#fa9950;
+  --secondary-red:#ec5b5b;
+  --secondary-red-dark:#c84235;
+  --secondary-red-light:#f17a73;
+  --secondary-yellow:#fad100;
+  --secondery-focus-bg:#172336;
+  --severity-clear:#36d576;
+  --severity-clear-darker:#0d3a1f;
+  --severity-clear-dot-box:#0d3a1f;
+  --severity-clear-lighter:#0d3a1f;
+  --severity-clear-lightest:#0d3a1f;
+  --severity-critical:#ec5b5b;
+  --severity-critical-darker:#310c0c;
+  --severity-critical-dot-box:#310c0c;
+  --severity-critical-lighter:#310c0c;
+  --severity-critical-lightest:#310c0c;
+  --severity-disable:#99aab7;
+  --severity-disable-darker:#0d151a;
+  --severity-disable-lighter:#0d151a;
+  --severity-disable-lightest:#0d151a;
+  --severity-down:#ad1111;
+  --severity-down-darker:#1e0202;
+  --severity-down-lighter:#1e0202;
+  --severity-down-lightest:#1e0202;
+  --severity-maintenance:#008cff;
+  --severity-maintenance-darker:#001489;
+  --severity-maintenance-dot-box:#001489;
+  --severity-maintenance-lighter:#001489;
+  --severity-maintenance-lightest:#001489;
+  --severity-major:#fa9950;
+  --severity-major-darker:#541914;
+  --severity-major-dot-box:#541914;
+  --severity-major-lighter:#541914;
+  --severity-major-lightest:#541914;
+  --severity-none:#8ac1d3;
+  --severity-none-darker:#04232c;
+  --severity-none-dot-box:#245463;
+  --severity-none-lighter:#04232c;
+  --severity-none-lightest:#04232c;
+  --severity-stop:#ff91a0;
+  --severity-stop-darker:#3e0614;
+  --severity-stop-dot-box:#82283b;
+  --severity-stop-lighter:#3e0614;
+  --severity-stop-lightest:#3e0614;
+  --severity-suspended:#d6b084;
+  --severity-suspended-darker:#2d1b04;
+  --severity-suspended-dot-box:#644621;
+  --severity-suspended-lighter:#2d1b04;
+  --severity-suspended-lightest:#2d1b04;
+  --severity-unknown:#b1b1b1;
+  --severity-unknown-darker:#2e2e2e;
+  --severity-unknown-dot-box:#5d5d5d;
+  --severity-unknown-lighter:#2e2e2e;
+  --severity-unknown-lightest:#2e2e2e;
+  --severity-unreachable:#8c5bd8;
+  --severity-unreachable-darker:#22094a;
+  --severity-unreachable-dot-box:#380e78;
+  --severity-unreachable-lighter:#22094a;
+  --severity-unreachable-lightest:#22094a;
+  --severity-up:#36d576;
+  --severity-up-darker:#0d3a1f;
+  --severity-up-lighter:#0d3a1f;
+  --severity-up-lightest:#0d3a1f;
+  --severity-warning:#fad100;
+  --severity-warning-darker:#543308;
+  --severity-warning-dot-box:#543308;
+  --severity-warning-lighter:#543308;
+  --severity-warning-lightest:#543308;
+  --side-menu-bg:#07101f;
+  --slider-tracker:#485975;
+  --sparkline-color-response-time:#14b8a6;
+  --sparkline-color-throughput:#fb923c;
+  --status-down:rgb(192, 62, 50);
+  --status-progress-color:#485564ad;
+  --status-up:rgb(110, 158, 51);
+  --success-button-bg:#36d576;
+  --success-button-hover-bg:#36d576;
+  --success-button-hover-text:#cad3e2;
+  --success-button-text:#cad3e2;
+  --success-outline-button-bg:transparent;
+  --success-outline-button-hover-bg:#0d3a1f;
+  --success-outline-button-hover-text:#14b053;
+  --success-outline-button-text:#14b053;
+  --switch-bg:#172336;
+  --switch-border:#1d2a3e;
+  --switch-port-view-bg:#485975;
+  --table-details-bg:#2b394f;
+  --table-group-header-highlight:#172336;
+  --tabs-card-height:32px;
+  --tabs-text-color:#8e9fbc;
+  --tag-bg:#1d2a3e;
+  --tag-bg-color:#2b394f;
+  --tag-border:#204ca2;
+  --tag-color:#cad3e2;
+  --tag-height:24px;
+  --text-color-common-link:#e3e8f2;
+  --text-color-common-primery:rgba(255, 255, 255, 0.8);
+  --text-color-common-secondary:#8e9fbc;
+  --text-input-bg:#fff;
+  --text-lg:1.5rem;
+  --text-neutral-ligher:#8e9fbc;
+  --text-regular:1rem;
+  --text-sm:0.8rem;
+  --text-xs:0.6rem;
+  --timeline-indicator-color:#1d2a3e;
+  --timeline-scrollbar-background-color:#1d2a3e;
+  --timerange-background-color:#2b394f;
+  --timerange-text-color:#e3e8f2;
+  --toast-background-color:#172336;
+  --toast-text-color:rgba(255, 255, 255, 0.8);
+  --tooltip-background-color:rgba(43, 57, 79, 0.9);
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.5);
+  --tooltip-text-color:#cad3e2;
+  --topology-background:#172336;
+  --topology-graph-tooltip-bg:#07101f;
+  --topology-graph-tooltip-text-color:#fff;
+  --topology-overlay-btn-bg:#cad3e2;
+  --topology-overlay-btn-hover-bg:#cad3e2;
+  --topology-overlay-btn-text:#07101f;
+  --topology-tooltip-devider:#2b394f;
+  --tour-flow-bg-color:#376842;
+  --tour-log-bg-color:#236777;
+  --tour-metric-bg-color:#142c40;
+  --transparent-border-color:'transparent';
+  --upgrade-accent-primary:#22d3ee;
+  --upgrade-accent-secondary:#fb7185;
+  --upgrade-accent-tertiary:#fbbf24;
+  --upgrade-node-fill:rgba(255, 255, 255, 0.1);
+  --upgrade-orb-primary:rgba(34, 211, 238, 0.3);
+  --upgrade-orb-secondary:rgba(251, 113, 133, 0.2);
+  --upgrade-progress-fill:linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%);
+  --upgrade-progress-shimmer:rgba(255, 255, 255, 0.3);
+  --upgrade-progress-track:rgba(255, 255, 255, 0.1);
+  --upgrade-ring-color:rgba(34, 211, 238, 0.22);
+  --upgrade-text-primary:#fff;
+  --upgrade-text-secondary:rgba(255, 255, 255, 0.6);
+  --user-count-height:23px;
+  --user-dropdown-button-bg:rgb(40, 40, 40);
+  --user-dropdown-button-hover-bg:#172336;
+  --user-dropdown-button-hover-text:#cad3e2;
+  --user-dropdown-button-text:#cad3e2;
+  --user-dropdown-theme-icon-color:#2b394f;
+  --utility-result-bg:#0b1627;
+  --utility-result-border:#172336;
+  --utility-scrollbar-thumb:rgba(160, 160, 160, 0.5);
+  --white-regular:rgba(255, 255, 255, 0.8);
+  --widget-background:#0b1627;
+  --widget-background-color:#172336;
+  --widget-border-color:#172336;
+  --widget-border-radius:4px;
+  --widget-box-shadow:#000;
+  --widget-type-selector-border-color:'transparent';
+}
+html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn{
+  /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
+     collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
+     with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
+     `--code-tag-background-color` and `.row:not(.active):hover` with `--nav-hover-bg`, and in
+     LIGHT both resolve to #ecf1f9. `sections` mode gets away with it because it adds
+     `box-shadow: inset 2px 0 0 var(--primary)` — that left rule is the only thing separating
+     the two states — and `categories`, which the reference's row shape required, has no rule.
+     Selected is now one step stronger than hover: `--neutral-lighter` (#e3e8f2) over #ecf1f9.
+     ⚠️ LIGHT ONLY, ON PURPOSE. In DARK the DS values already differ (active #172336 over hover
+     #1d2a3e), and `--neutral-lighter` is #1d2a3e there — re-pointing it for both themes would
+     FIX light by creating the identical collision in dark. Measured both before choosing.
+     ⚠️ Scoped to `#agPage`, like every token here: `--code-tag-background-color` also drives
+     code chips elsewhere in the product's vocabulary. */
+
+  --action-dropdown-divider:#e3e8f2;
+  --action-dropdown-hover-bg:#e3e8f2;
+  --action-dropdown-text:#7186a8;
+  --alert-notification-popup-background-color:#fff;
+  --alert-notification-popup-border-color:#eff2f6;
+  --apm-heatmap-border-color:rgba(236, 241, 249, 1);
+  --apm-heatmap-hover-color:#f6f9fc;
+  --availability-icon-background-color:#e3e8f2;
+  --availability-icon-text-color:#1d2a3e;
+  --bar-chart-color:#0d9488;
+  --border-color:#e3e8f2;
+  --border-color-opacity:rgba(222, 229, 237, 0.5);
+  --bottom-line-color:rgba(236, 241, 249, 1);
+  --button-disabled-bg:#ecf1f9;
+  --button-disabled-border:#e3e8f2;
+  --button-disabled-text:rgba(0, 0, 0, 0.5);
+  --button-transparent-hover-text:#7186a8;
+  --button-transparent-text:#7186a8;
+  --calendar-border-color:#e3e8f2;
+  --calendar-selected-day-background-color:#111c2c;
+  --chart-amber:#f59e0b;
+  --chart-aqua:#0891b2;
+  --chart-border-color:rgba(0, 0, 0, 0.1);
+  --chart-bright-violet:#a21caf;
+  --chart-chartreuse:#84cc16;
+  --chart-electric-coral:#ef4444;
+  --chart-emerald-green:#059669;
+  --chart-fuchsia:#c026d3;
+  --chart-golden-yellow:#ca8a04;
+  --chart-grid-line-color:rgba(236, 241, 249, 0.8);
+  --chart-hot-pink:#db2777;
+  --chart-indigo:#7c3aed;
+  --chart-legend-color:rgba(54, 70, 88, 0.9);
+  --chart-lime-green:#65a30d;
+  --chart-mint-green:#14b8a6;
+  --chart-neon-purple:#9333ea;
+  --chart-null-color:#e3e8f2;
+  --chart-rose-red:#e11d48;
+  --chart-sunset-orange:#ea580c;
+  --chart-tangerine:#f97316;
+  --chart-tooltip-background:rgba(255, 255, 255, 0.9);
+  --chart-type-icon:#6a7fa0;
+  --chart-vibrant-magenta:#db2777;
+  --chart-vivid-teal:#0d9488;
+  --chart-vivid-teal-faded:rgba(13, 148, 136, 0.35);
+  --checkbox-bg:#fff;
+  --checkbox-checked-border-color:#6a7fa0;
+  --checkbox-checked-color:#111c2c;
+  --code-tag-background-color:var(--neutral-lighter);/*#ecf1f9 — see the note above*/
+  --code-tag-text-color:#1d2a3e;
+  --common-main-bg:#ecf1f9;
+  --common-widget-bg:#fff;
+  --control-btn-bg:rgb(214 217 221);
+  --dashboard-background:#f9fafb;
+  --default-button-bg:#fff;
+  --default-button-border:#e3e8f2;
+  --default-button-hover-bg:#ecf1f9;
+  --default-button-hover-border:#e3e8f2;
+  --default-button-hover-text:#1d2a3e;
+  --default-button-text:#1d2a3e;
+  --default-tag-color:#e3e8f2;
+  --default-tag-text-color:#516381;
+  --disabled-checkbox-opacity:0.8;
+  --drawer-background-color:#fff;
+  --drawer-mask-color:rgba(0, 0, 0, 0.45);
+  --drawer-sidebar-background:#fff;
+  --dropdown-background:#fff;
+  --dropdown-btn-background:#fff;
+  --dropdown-hover-background:#ecf1f9;
+  --dropdown-text:#7186a8;
+  --error-button-hover-text:#fff;
+  --error-button-text:#fff;
+  --error-outline-button-hover-bg:rgba(240, 78, 62, 0.2);
+  --error-outline-button-hover-text:#ec5b5b;
+  --error-outline-button-text:#ec5b5b;
+  --faded-page-background-color:rgba(255, 255, 255, 0.4);
+  --field-border-color:#e3e8f2;
+  --filter-background:#fff;
+  --filter-viewer-bg-color:#fff;
+  --gauge-base-color:#dee5ed;
+  --gauge-text-color:#1d2a3e;
+  --graph-bg:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNEg2VjZINFY0WiIgZmlsbD0iI0RGRTVFQyIvPgo8L3N2Zz4K');
+  --grid-header-bg:#ecf1f9;
+  --grid-header-hover-bg:#f6f9fc;
+  --grid-header-solid-bg:#ecf1f9;
+  --grid-row-border-color:rgba(236, 241, 249, 1);
+  --group-header-upper:#f6f6f6;
+  --group-icon-color:#6a7fa0;
+  --group-list-bg:#ecf1f9;
+  --group-list-hover-bg:#ecf1f9;
+  --group-text-color:#2b394f;
+  --hc-range-background:#0d9488;
+  --header-title-text-color:#1d2a3e;
+  --help-card-bg-color:rgba(227, 232, 242, 0.4);
+  --hieararchy-border-color:#e3e8f2;
+  --info-border:#cadff5;
+  --info-surface:#eef5fc;
+  --info-text:#2f6099;
+  --input-addon-color:#6a7fa0;
+  --input-placeholder-color:rgba(43, 57, 79, 0.5);
+  --input-suffix-bg:#ecf1f9;
+  --input-text-color:#1d2a3e;
+  --left-menu-arrow-color:#6a7fa0;
+  --left-menu-arrow-opacity:1;
+  --left-menu-hover-bg:#ecf1f9;
+  --left-menu-text-color:#2b394f;
+  --left-menu-text-color-hover:#111c2c;
+  --left-menu-text-hover-color:#111c2c;
+  --license-background:#ecf1f9;
+  --list-menu-hover:#ecf1f9;
+  --main-tags-bg-color:#cdf1ed;
+  --main-tags-text-color:#218b81;
+  --map-line-color:#bbc8d6;
+  --modal-background-color:#fff;
+  --modal-text-color:#000;
+  --nav-beta-text:#f6f9fc;
+  --nav-divider-bg:#111c2c;
+  --nav-hover-bg:#ecf1f9;
+  --nav-panel-bg:#f6f9fc;
+  --nav-selected-text-color:#f6f9fc;
+  --nav-text-color:#1d2a3e;
+  --neutral-button-bg:#e3e8f2;
+  --neutral-button-hover-bg:#ecf1f9;
+  --neutral-button-hover-text:#7186a8;
+  --neutral-button-text:#7186a8;
+  --neutral-dark:#2b394f;
+  --neutral-light:#6a7fa0;
+  --neutral-lighter:#e3e8f2;
+  --neutral-lightest:#ecf1f9;
+  --neutral-regular:#7186a8;
+  --neutral-theme-color:#6a7fa0;
+  --notification-dropdown-background:white;
+  --notification-dropdown-background-hover:#ecf1f9;
+  --notification-dropdown-border-color:#e3e8f2;
+  --notification-dropdown-datetime-color:#516381;
+  --notification-dropdown-header-footer:#e3e8f2;
+  --notification-subtitle-color:#1d2a3e;
+  --outline-button-hover-bg:#ecf1f9;
+  --outline-button-hover-border:rgba(17, 28, 44, 0.5);
+  --outline-button-hover-text:#111c2c;
+  --outline-button-text:#111c2c;
+  --overlay-bg:rgba(0, 0, 0, 0.25);
+  --page-background-color:#fff;
+  --page-text-color:#1d2a3e;
+  --pagination-active-bg:#e3e8f2;
+  --pagination-active-text:#7186a8;
+  --pagination-select-bg:#e3e8f2;
+  --pagination-select-text:#7186a8;
+  --pan-btn-bg:#fff;
+  --pan-btn-border:#dee5ed;
+  --partition-icon-background-color:#e3e8f2;
+  --partition-icon-text-color:#1d2a3e;
+  --policy-border-color:#e3e8f2;
+  --primary:#111c2c;
+  --primary-alt:#1d2a3e;
+  --primary-button-bg:#07101f;
+  --primary-button-hover-bg:rgba(7, 16, 31, 0.7);
+  --primary-button-hover-text:#fff;
+  --primary-button-text:#fff;
+  --progress-bar-bg:#e3e8f2;
+  --progress-bg:#e3e8f2;
+  --radio-btn-box-bg:#fff;
+  --radio-btn-box-border-color:#e3e8f2;
+  --radio-btn-box-selected-bg:#111c2c;
+  --radio-btn-box-selected-text-color:#fff;
+  --screenshot-share-form-bg:#fff;
+  --screenshot-share-overlay-bg:rgba(0, 0, 0, 0.4);
+  --search-icon:#2b394f;
+  --secondary-green:#14b053;
+  --secondary-orange:#f47c22;
+  --secondary-yellow:#e8b407;
+  --severity-clear:#14b053;
+  --severity-clear-darker:#d1fae0;
+  --severity-clear-dot-box:#a2f6c3;
+  --severity-clear-lighter:#d1fae0;
+  --severity-clear-lightest:#d1fae0;
+  --severity-critical-darker:#fef5f5;
+  --severity-critical-dot-box:#fef5f5;
+  --severity-critical-lighter:#fef5f5;
+  --severity-critical-lightest:#fef5f5;
+  --severity-disable:#81929f;
+  --severity-disable-darker:#d9e3ea;
+  --severity-disable-lighter:#d9e3ea;
+  --severity-disable-lightest:#d9e3ea;
+  --severity-down-darker:#f3c9c4;
+  --severity-down-lighter:#f3c9c4;
+  --severity-down-lightest:#f3c9c4;
+  --severity-maintenance:#006dfa;
+  --severity-maintenance-darker:#cce4ff;
+  --severity-maintenance-dot-box:#99cdff;
+  --severity-maintenance-lighter:#cce4ff;
+  --severity-maintenance-lightest:#cce4ff;
+  --severity-major:#f47c22;
+  --severity-major-darker:#fddcc4;
+  --severity-major-dot-box:#fac2a0;
+  --severity-major-lighter:#fddcc4;
+  --severity-major-lightest:#fddcc4;
+  --severity-none:#6fa8bb;
+  --severity-none-darker:#dbf8ff;
+  --severity-none-dot-box:#c5ecfa;
+  --severity-none-lighter:#dbf8ff;
+  --severity-none-lightest:#dbf8ff;
+  --severity-stop:#e87587;
+  --severity-stop-darker:#ffdfe5;
+  --severity-stop-dot-box:#ffcad3;
+  --severity-stop-lighter:#ffdfe5;
+  --severity-stop-lightest:#ffdfe5;
+  --severity-suspended:#be9669;
+  --severity-suspended-darker:#ffeed7;
+  --severity-suspended-dot-box:#fcdfbf;
+  --severity-suspended-lighter:#ffeed7;
+  --severity-suspended-lightest:#ffeed7;
+  --severity-unknown-darker:#fcfcfc;
+  --severity-unknown-dot-box:#f8f8f8;
+  --severity-unknown-lighter:#fcfcfc;
+  --severity-unknown-lightest:#fcfcfc;
+  --severity-unreachable:#6d2ed1;
+  --severity-unreachable-darker:#e7dcfa;
+  --severity-unreachable-dot-box:#c8aff0;
+  --severity-unreachable-lighter:#e7dcfa;
+  --severity-unreachable-lightest:#e7dcfa;
+  --severity-up:#14b053;
+  --severity-up-darker:#d1fae0;
+  --severity-up-lighter:#d1fae0;
+  --severity-up-lightest:#d1fae0;
+  --severity-warning:#e8b407;
+  --severity-warning-darker:#fff1b3;
+  --severity-warning-dot-box:#ffe980;
+  --severity-warning-lighter:#fff1b3;
+  --severity-warning-lightest:#fff1b3;
+  --side-menu-bg:#fff;
+  --sparkline-color-response-time:#0d9488;
+  --sparkline-color-throughput:#f97316;
+  --status-progress-color:transparent;
+  --success-button-bg:#14b053;
+  --success-button-hover-bg:#14b053;
+  --success-button-hover-text:#fff;
+  --success-button-text:#fff;
+  --success-outline-button-hover-bg:#d1fae0;
+  --switch-bg:#fff;
+  --switch-border:#e3e8f2;
+  --switch-port-view-bg:#cad3e2;
+  --table-details-bg:#e3e8f2;
+  --table-group-header-highlight:#d6edf8;
+  --tabs-text-color:#516381;
+  --tag-bg:#ecf1f9;
+  --tag-bg-color:#e3e8f2;
+  --tag-border:#e3e8f2;
+  --tag-color:#7186a8;
+  --text-color-common-link:#111c2c;
+  --text-color-common-primery:#2b394f;
+  --text-color-common-secondary:#7186a8;
+  --text-neutral-ligher:#6a7fa0;
+  --timeline-indicator-color:#172336;
+  --timeline-scrollbar-background-color:#e3e8f2;
+  --timerange-background-color:#e3e8f2;
+  --timerange-text-color:#7186a8;
+  --toast-background-color:#fff;
+  --toast-text-color:#000;
+  --tooltip-background-color:#172336;
+  --tooltip-box-shadow:0 2px 8px rgba(0, 0, 0, 0.15);
+  --tooltip-text-color:#fff;
+  --topology-background:#fff;
+  --topology-graph-tooltip-bg:#172336;
+  --topology-overlay-btn-bg:#ecf1f9;
+  --topology-overlay-btn-hover-bg:#e3e8f2;
+  --topology-overlay-btn-text:#7186a8;
+  --tour-flow-bg-color:#def1e2;
+  --tour-log-bg-color:#d6f1f7;
+  --tour-metric-bg-color:#cfdce6;
+  --transparent-border-color:#e3e8f2;
+  --user-dropdown-button-bg:#ecf1f9;
+  --user-dropdown-button-hover-bg:#e3e8f2;
+  --user-dropdown-button-hover-text:#1d2a3e;
+  --user-dropdown-button-text:#1d2a3e;
+  --user-dropdown-theme-icon-color:#e3e8f2;
+  --utility-result-bg:#ecf1f9;
+  --utility-result-border:#e3e8f2;
+  --utility-scrollbar-thumb:rgba(136, 136, 136, 0.4);
+  --white-regular:#fff;
+  --widget-background:#fff;
+  --widget-background-color:#fff;
+  --widget-border-color:#e3e8f2;
+  --widget-box-shadow:none;
+  --widget-type-selector-border-color:#e3e8f2;
+}
+#cwMdHelp,#grpBtn{
+  /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
+  --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
+  --text:var(--page-text-color);       --text-dim:var(--text-color-common-secondary);
+  --text-dim2:var(--neutral-light);    --muted:var(--neutral-regular);
+  --border:var(--border-color);        --border-soft:var(--border-color);
+  --chip:var(--field-border-color);    --hover:var(--nav-hover-bg);
+  --sel:var(--neutral-lighter);        --white:var(--primary);
+  /* Atoms/Button → one `primary` per view = `--primary-button-bg` / `--primary-button-text` */
+  --action:var(--primary-button-bg);   --action-fg:var(--primary-button-text);
+  --action-h:var(--primary-alt);
+  --teal:var(--primary);               --teal-dim:var(--primary-alt);
+  /* ⚠️ THE AI ACCENT IS `--chart-indigo`, AND IT IS THE ONLY CHROMATIC THING HERE.
+     The DS has NO "AI accent" token — `resolve_token("AI accent purple")` returns nothing —
+     and the contract forbids inventing one. `--chart-indigo` is the DS's own violet and is
+     already what this prototype paints every AI surface with (Log Explorer's AI Query, the
+     per-widget ✦ drawer, the toolbar pill). Declaring it here also FIXES LIGHT THEME: `:root`
+     declares `--ai:#8b5cf6` once and never overrides it, so light was wearing the dark value.
+     ⚠️ It paints the MARK, never a button. The reference makes every CTA purple; the DS is
+     explicit that the primary action is `--primary` (navy) and warns twice that the brand is
+     "navy, NOT cyan, NOT blue". So violet marks *what this is*; navy marks *what to press*. */
+  --ai:var(--chart-indigo);
+  --ai-soft:color-mix(in srgb, var(--chart-indigo) 13%, transparent);
+  --ai-line:color-mix(in srgb, var(--chart-indigo) 34%, transparent);
+}
+/* ── NOTIFICATIONS — three kinds, one look (request, 28 Sep 2026, with the live Critical banner as the picture) ──
+   1 · `auto`   — shows for ~8s, then leaves by itself
+   2 · `close`  — stays until you press its ✕
+   3 · `sticky` — stays, and carries NO ✕: a condition that is still true (a collector down) must not be
+                  dismissable, it goes when the condition clears (`ntfHide(id)`).
+   Measured off the capture: a dark card on a 1px rule, a full-height severity block on the left (its colour
+   at ~18% over the card, the label in the colour itself, 13px/600), the message 13px at 1.55. Stacked,
+   centred, fixed at the top of the viewport over the header — where the live one sits. */
+.ntfstack{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:200010;display:flex;flex-direction:column;
+  gap:8px;width:min(930px,calc(100vw - 32px));pointer-events:none}
+.ntf{--ntc:var(--red);pointer-events:auto;display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:ntfin .22s cubic-bezier(.2,0,0,1) both}
+html[data-theme="light"] .ntf{box-shadow:0 8px 24px rgba(17,28,44,.14)}
+.ntf.out{animation:ntfout .2s ease-in both}
+@keyframes ntfin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes ntfout{to{opacity:0;transform:translateY(-8px)}}
+.ntf .ntfsev{flex:0 0 72px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px;font-weight:600;
+  color:var(--ntc);background:color-mix(in srgb,var(--ntc) 18%,var(--card))}
+.ntf .ntfmsg{flex:1 1 auto;min-width:0;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--text)}
+.ntf .ntfx{flex:0 0 auto;align-self:flex-start;display:grid;place-items:center;width:28px;height:28px;margin:6px 6px 0 0;
+  border:0;border-radius:4px;background:transparent;color:var(--text-dim);cursor:pointer}
+.ntf .ntfx:hover{background:var(--hover);color:var(--text)}
+.ntf .ntfx:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.ntf .ntfx svg{width:14px;height:14px}
+.ntf.sev-major{--ntc:var(--orange)} .ntf.sev-warning{--ntc:var(--yellow)} .ntf.sev-clear{--ntc:var(--green)}
+@media (prefers-reduced-motion:reduce){.ntf,.ntf.out{animation:none}}
+
+/* ── THE PERSISTENT NOTIFICATION IS A TOP BAR (request, 28 Sep 2026, with a "Heads up" trial banner as the
+   reference): it sits across the full width ABOVE the page and pushes everything down, instead of floating
+   over the header. Same card anatomy — severity block + message — just full-bleed, square, ruled underneath.
+   `--ntf-h` is its measured height (set by `ntfTopFit`), and every top-anchored fixed surface reads it. */
+#ntfTop{position:fixed;top:0;left:0;right:0;z-index:200009;display:flex;flex-direction:column}
+#ntfTop:empty{display:none}
+#ntfTop .ntf{border-radius:0;border-width:0 0 1px;box-shadow:none;animation:none}
+/* centred as ONE group (request, 28 Sep 2026: "it will be show in center"), like the reference's
+   "⚠ Heads up: …" — so the severity becomes a compact chip in front of the message rather than a
+   full-height block pinned to the left edge. The fill still runs the full width. */
+#ntfTop .ntf{justify-content:center;align-items:center;gap:10px;padding:7px 16px;background:#162336}
+/* ⚠️ #162336 IS THE DARK-THEME FILL, AS GIVEN (request, 28 Sep 2026). Light keeps the soft severity wash —
+   #162336 behind light-theme ink would be unreadable. */
+html[data-theme="light"] #ntfTop .ntf{background:color-mix(in srgb,var(--ntc) 8%,var(--card))}
+#ntfTop .ntf .ntfsev{flex:0 0 auto;padding:3px 10px;border-radius:4px;font-size:12px}
+#ntfTop .ntf .ntfmsg{flex:0 1 auto;padding:0}
+body.ntftop .sidebar{top:var(--ntf-h,0px)}
+body.ntftop .shell{margin-top:var(--ntf-h,0px);height:calc(100vh - var(--ntf-h,0px))}
+body.ntftop .mflyout{top:var(--ntf-h,0px);height:calc(100vh - var(--ntf-h,0px))}
+body.ntftop .ntfstack{top:calc(var(--ntf-h,0px) + 8px)}
+
+/* ── DESIGN 2 FOR THE PERSISTENT NOTIFICATION: A BOTTOM-RIGHT CARD (request, 28 Sep 2026) ──
+   Same anatomy as the floating cards — severity block + message, no ✕ — parked in the corner instead of
+   across the top, so the page is not pushed down at all. `--ntf-bh` is its measured height; the Create
+   Widget FAB, which lives in that corner, is lifted above it. `.ntfpos` is REVIEW CHROME: a switch to
+   compare the two designs, which goes when one is picked. */
+#ntfBR{position:fixed;right:20px;bottom:20px;z-index:200009;width:min(440px,calc(100vw - 40px));
+  display:flex;flex-direction:column;gap:8px}
+#ntfBR:empty{display:none}
+#ntfBR .ntf{background:#162336}   /* the same dark fill the top bar was given */
+html[data-theme="light"] #ntfBR .ntf{background:var(--card)}
+body.ntfbr .cwfab{bottom:calc(var(--ntf-bh,0px) + 32px)}
+.ntfpos{position:fixed;left:calc(var(--rail-w,53px) + 16px);bottom:18px;z-index:200008;display:flex;align-items:center;gap:6px;
+  padding:4px 4px 4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11.5px;color:var(--text-dim);
+  box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.ntfpos button{height:24px;padding:0 9px;border:0;border-radius:4px;background:transparent;color:var(--text-dim);font:inherit;cursor:pointer}
+.ntfpos button:hover{color:var(--text)}
+.ntfpos button.on{background:var(--chip);color:var(--text);font-weight:600}
+body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs to the dashboard */
+
 </style>
 </head>
 <body>
@@ -11242,6 +12052,14 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
           <span class="favstar faved lhstar" id="dashHeadStar" title="Favorite" onclick="favCurrent()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M43.9,19.4c-.1-.4-.4-.7-.7-.9-.3-.2-.7-.4-1.1-.4l-11.4-1.7-5.1-10.3c-.2-.3-.4-.6-.7-.8-.3-.2-.7-.3-1.1-.3s-.7,.1-1.1,.3c-.3,.2-.6,.5-.7,.8l-5.1,10.3-11.4,1.7c-.4,0-.7,.2-1,.4-.3,.2-.5,.6-.6,.9-.1,.3-.1,.7,0,1.1,0,.4,.3,.7,.5,.9l8.2,8-2,11.3c0,.4,0,.8,.1,1.1,.1,.4,.4,.7,.7,.9,.3,.2,.7,.3,1,.4,.4,0,.7,0,1.1-.2l10.2-5.3,10.2,5.4c.3,.2,.6,.2,.9,.2,.4,0,.8-.1,1.2-.4,.3-.2,.5-.5,.7-.9,.1-.4,.2-.7,.1-1.1l-2-11.3,8.2-8c.3-.2,.5-.6,.6-.9,.1-.4,.1-.7,0-1.1Zm-12.3,8c-.2,.2-.4,.5-.5,.8-.1,.3-.1,.6,0,1l1.4,8.4-7.5-4c-.3-.2-.6-.2-.9-.2s-.6,0-.9,.2l-7.5,4,1.4-8.4c0-.3,0-.7,0-1-.1-.3-.3-.6-.5-.8l-6-6,8.4-1.2c.3,0,.6-.2,.9-.4,.3-.2,.5-.4,.6-.7l3.6-7.6,3.8,7.6c.1,.3,.4,.5,.6,.7,.3,.2,.6,.3,.9,.4l8.4,1.2-6,6Z"/></svg></span>
         </h3>
         <div class="lhright">
+            <!-- Groups ▾ — Option 13's jump-to-group menu, before the time chip (swap, 28 Sep 2026) —, back in Option 1 (request, 28 Sep 2026). Same
+                 id and handler the canvas already drives: renderCanvas hides it on a flat board. -->
+            <!-- ⚠️ THE DS's OWN BUTTON (request, 28 Sep 2026: "improve this button using the ObserveOps design
+                 system"). Its decision flow routes a quiet toolbar utility to variant=neutral-lightest; the
+                 anatomy is leading icon + label + trailing icon, both the DS's own (layer-group,
+                 chevron-down). `grpTap` swallows obs-button's recorded double click. -->
+            <obs-button class="lhgrp" id="grpBtn" variant="neutral-lightest" aria-haspopup="menu"
+              data-tip="Jump to a group" onclick="grpTap(event)"><obs-icon name="layer-group" size="14"></obs-icon>Groups<obs-icon name="chevron-down" size="12"></obs-icon></obs-button>
           <div class="lhtr">
             <!-- ⊗ is the live picker's clear control: it puts the range back to the default (Today),
                  which is what `trSet(TR_HOME)` does on boot. It stops the click so the popover the
@@ -12142,6 +12960,10 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
   </div>
 </aside>
 <div id="toast"></div>
+<div id="ntfTop" role="region" aria-label="Persistent notifications"></div>
+<div id="ntfBR" role="region" aria-label="Persistent notifications"></div>
+<div class="ntfpos" id="ntfPos" aria-label="Critical notification design"><span>Critical notification</span><button type="button" class="on" data-p="top" onclick="ntfSetPos('top')">Top bar</button><button type="button" data-p="br" onclick="ntfSetPos('br')">Bottom right</button></div>
+<div class="ntfstack" id="ntfStack" role="region" aria-label="Notifications"></div>
 
 <script>
 /* ================= Icon registry (extracted from live js/icons bundle via DOM) ================= */
@@ -16196,6 +17018,69 @@ document.addEventListener('keydown', e => {
   hit.run();
 });
 
+/* ── notifications — see `.ntfstack` for the three kinds ──
+   ntfShow({sev:'Critical'|'Major'|'Warning'|'Clear', text, mode:'auto'|'close'|'sticky', ms}) → id */
+let ntfSeq = 0;
+const NTF_X = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M10.5858 10.5858C11.3668 9.80474 12.6332 9.80474 13.4142 10.5858L24 21.1716L34.5858 10.5858C35.3668 9.80474 36.6332 9.80474 37.4142 10.5858C38.1953 11.3668 38.1953 12.6332 37.4142 13.4142L26.8284 24L37.4142 34.5858C38.1953 35.3668 38.1953 36.6332 37.4142 37.4142C36.6332 38.1953 35.3668 38.1953 34.5858 37.4142L24 26.8284L13.4142 37.4142C12.6332 38.1953 11.3668 38.1953 10.5858 37.4142C9.80474 36.6332 9.80474 35.3668 10.5858 34.5858L21.1716 24L10.5858 13.4142C9.80474 12.6332 9.80474 11.3668 10.5858 10.5858Z"/></svg>';
+function ntfShow(o){
+  const st = document.getElementById('ntfStack'); if (!st) return;
+  const id = 'ntf' + (++ntfSeq), sev = o.sev || 'Critical', mode = o.mode || 'auto';
+  const el = document.createElement('div');
+  el.className = 'ntf sev-' + sev.toLowerCase() + (mode === 'sticky' ? ' sticky' : ''); el.id = id;
+  el.setAttribute('role', sev === 'Critical' || sev === 'Major' ? 'alert' : 'status');
+  el.innerHTML = '<span class="ntfsev">' + sev + '</span><div class="ntfmsg"></div>' +
+    (mode === 'close' ? '<button class="ntfx" type="button" aria-label="Close notification" data-tip="Close" onclick="ntfHide(\'' + id + '\')">' + NTF_X + '</button>' : '');
+  el.querySelector('.ntfmsg').textContent = o.text || '';
+  /* a persistent one goes in the top bar, the rest float */
+  (mode === 'sticky' ? ntfStickyHost() : st).appendChild(el);
+  if (mode === 'sticky') ntfFitAll();
+  /* ⚠️ AN AUTO NOTIFICATION PAUSES WHILE THE POINTER IS ON IT — 8s is not enough to read a long message
+     if the countdown keeps running under the cursor. */
+  if (mode === 'auto'){
+    const ms = o.ms || 8000; let t = setTimeout(() => ntfHide(id), ms);
+    el.addEventListener('mouseenter', () => clearTimeout(t));
+    el.addEventListener('mouseleave', () => { t = setTimeout(() => ntfHide(id), 2500); });
+  }
+  return id;
+}
+function ntfHide(id){
+  const el = document.getElementById(id); if (!el || el.classList.contains('out')) return;
+  el.classList.add('out'); setTimeout(() => { el.remove(); ntfFitAll(); }, 200);
+}
+/* design 1 = the top bar, design 2 = the bottom-right card — see #ntfBR */
+let NTF_POS = 'top';
+function ntfStickyHost(){ return document.getElementById(NTF_POS === 'br' ? 'ntfBR' : 'ntfTop'); }
+function ntfSetPos(p){
+  NTF_POS = p === 'br' ? 'br' : 'top';
+  const host = ntfStickyHost();
+  document.querySelectorAll('#ntfTop .ntf.sticky, #ntfBR .ntf.sticky').forEach(el => host.appendChild(el));
+  document.querySelectorAll('#ntfPos button').forEach(b => b.classList.toggle('on', b.dataset.p === NTF_POS));
+  ntfFitAll();
+}
+function ntfFitAll(){
+  ntfTopFit();
+  const b = document.getElementById('ntfBR'); if (!b) return;
+  const h = b.children.length ? b.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--ntf-bh', h + 'px');
+  document.body.classList.toggle('ntfbr', h > 0);
+}
+/* keeps `--ntf-h` equal to the top bar's real height — it wraps to two lines on a narrow window */
+let ntfTopRO = null;
+function ntfTopFit(){
+  const t = document.getElementById('ntfTop'); if (!t) return;
+  const h = t.children.length ? t.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--ntf-h', h + 'px');
+  document.body.classList.toggle('ntftop', h > 0);
+  if (!ntfTopRO && window.ResizeObserver){ ntfTopRO = new ResizeObserver(ntfTopFit); ntfTopRO.observe(t); }
+  if (typeof fitCanvas === 'function') try { fitCanvas(); } catch(e){}
+}
+/* the three kinds, on the board — the addresses are RFC 5737 (the capture carried an internal one) */
+function ntfDemo(){
+  ntfShow({sev:'Critical', mode:'sticky', text:'Unable to connect with STANDALONE FLOW_COLLECTOR : FLOWCOL - 192.0.2.204. Data synchronization may be affected until connectivity or service is restored.'});
+  ntfShow({sev:'Major', mode:'close', text:'Disk usage on db-primary (198.51.100.12) has crossed 85%. Free up space or extend the volume to avoid write failures.'});
+  ntfShow({sev:'Warning', mode:'auto', text:'License usage for Monitored Devices is at 82% of its allotment. This message closes by itself.'});
+}
+setTimeout(ntfDemo, 1200);
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
@@ -17006,13 +17891,16 @@ function ftHTML(ft, gi, i){
      typed. `hdr` is saved on the widget; the editor's draft carries `preset` instead. */
   const hdr  = !!(ft.hdr || ft.preset === 'Header');
   const body = ph ? ftEsc('Text to display') : (hdr ? ftEsc(raw) : ftMd(raw));
-  /* vertical text — the Header-only "Font style" (see `CW_FT_ORIENT`). Reads top to bottom. */
+  /* vertical text — the Header-only "Font style" (see `CW_FT_ORIENT`). Reads BOTTOM TO TOP
+     (request, 28 Sep 2026): `vertical-rl` runs the line downward, and a 180° turn of the box makes
+     it run upward with the letters' feet to the right — the spine-label reading. `sideways-lr` says
+     this in one word but is too new to rely on; this is the pair `.cwqtab span` already uses. */
   /* `.ftt` is `width:100%`, and a vertical-rl box fills from its RIGHT edge — so the column sat
      against the right side whatever Alignment said. Shrink it to its column and let Alignment
      place it with margins; text-align then positions the words along the column. */
   const vm = {left:'0 auto 0 0', right:'0 0 0 auto'}[ft.align] || '0 auto';
   const vert = hdr && ft.orient === 'v'
-    ? 'writing-mode:vertical-rl;text-orientation:mixed;width:auto;margin:' + vm + ';' : '';
+    ? 'writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);width:auto;margin:' + vm + ';' : '';
   return '<div class="ftw' + tick + '" style="text-align:' + (ft.align || 'center') +
          ';align-items:' + va + ';background:' + bg + ';padding:' + pad + '">' +
          /* ⚠️ THE PLACEHOLDER CLASS IS `ftph`, NOT `ph` — and it WAS `ph` for a few hours,
@@ -18921,10 +19809,12 @@ function renderCanvas(){
        inline style — the same rule the height, the span and the alignment all follow. The
        header strip is full-bleed by its own negative margins, so it keeps meeting the box's
        edges when the padding goes. */
-    const gpd = gStyleOf(gi).pad === false ? '--gv-pad:0;--gv-line:transparent;--gv-hm:0 0 10px;--gv-hpad:8px 0;' : '';
+    const gpd = gStyleOf(gi).pad === false ? '--gv-pad:0;--gv-line:transparent;--gv-hm:0 0 10px;' : '';
+    /* ⚠️ NO PADDING DOES NOT REACH THE HEADER (request, 28 Sep 2026): `--gv-hpad` is no longer
+       emitted, so the title strip keeps its own 8px 12px inset — only the box around the widgets
+       loses its padding. */
     const gdim = grz ? `${gRzH(gi) ? `height:${gRzH(gi)}px;` : ''}${gRzW(gi) < 12 ? `grid-column:span ${gRzW(gi)};` : ''}` : '';
-    const gtn = gTint(gi);
-    const gsz = (gdim || gva || gpd || gtn) ? ` style="${gdim}${gtn}${gpd}${gva ? `--gv-align:${gva}` : ''}"` : '';
+    const gsz = (gdim || gva || gpd) ? ` style="${gdim}${gpd}${gva ? `--gv-align:${gva}` : ''}"` : '';
     /* ⚠️ `.gdrsh` MARKS "this group's height is driven", and it is emitted from the same
        test as the inline `height` so the two can never disagree — see the band's floor in CSS. */
     const gcl = 'dgroup' + (grz ? ' gdrs' : '') + (grz && gRzH(gi) ? ' gdrsh' : '');
@@ -19524,15 +20414,6 @@ function gPubAdd(id){
   renderCanvas();
   toast('Added “' + name + '” from “' + p.board + '” — ' + ws.length
         + ' widget' + (ws.length === 1 ? '' : 's'));
-}
-/* the group-box tint a header colour implies — '' for Default, Transparent or no colour.
-   ⚠️ IT READS THE SAME FILL `gStyleCSS` PAINTS, so the border is the strip's own colour and
-   the two can never disagree. */
-function gTint(gi){
-  const st = GRP_STYLE[gi]; if (!st || st.transp || !st.bg || st.bg === 'Transparent') return '';
-  const ent = GRP_BG.find(b => b[0] === st.bg) || [];
-  const c = ent[1] || (String(st.bg)[0] === '#' ? st.bg : '');
-  return c ? '--gv-tint:' + c + ';--gv-bg:color-mix(in srgb, ' + c + ' 10%, var(--bg));' : '';
 }
 /* the inline style a header carries — empty for a group nobody has touched */
 function gStyleCSS(gi){
@@ -20538,6 +21419,10 @@ function currentGroup(){
   tops.forEach((t,i)=>{ if(t <= top + 8) cur = i; });
   return cur;
 }
+/* obs-button fires a consumer's onclick TWICE (its inner <button>'s composed click + its own re-emit) —
+   the second would close the menu the first opened. Same guard as setting.html's agTap. */
+let grpTapT = 0;
+function grpTap(ev){ const t = Date.now(); if (t - grpTapT < 60) return; grpTapT = t; openGroupMenu(ev); }
 function openGroupMenu(ev){
   const cur = currentGroup();
   const allShut = TABS.every((_,i)=>GRP_SHUT.has(i));
@@ -20965,10 +21850,6 @@ function gEditApply(){
   const sec = document.getElementById('grp-' + GE.gi);
   if (sec){
     sec.style.setProperty('--gv-align', gValign(GE.gi) || 'start');
-    /* the header colour's box tint lives on the section too — patched here, not on render */
-    const tn = gTint(GE.gi).match(/--gv-tint:([^;]+);--gv-bg:(.+);$/);
-    if (tn){ sec.style.setProperty('--gv-tint', tn[1]); sec.style.setProperty('--gv-bg', tn[2]); }
-    else { sec.style.removeProperty('--gv-tint'); sec.style.removeProperty('--gv-bg'); }
     /* the padding is on the SECTION too, so it patches here rather than waiting for a render */
     if (gStyleOf(GE.gi).pad === false){
       sec.style.setProperty('--gv-pad', '0');
@@ -20976,7 +21857,6 @@ function gEditApply(){
          render would disagree about the same checkbox — see `.dgroup:has(.ghead)`. */
       sec.style.setProperty('--gv-line', 'transparent');
       sec.style.setProperty('--gv-hm', '0 0 10px');
-      sec.style.setProperty('--gv-hpad', '8px 0');
     } else {
       sec.style.removeProperty('--gv-pad');
       sec.style.removeProperty('--gv-line');
@@ -31253,27 +32133,33 @@ function cwFtPanelHTML(){
        link straight to markdownguide.org; this opens the in-product dialog (`cwFtMdOpen`),
        which is what was asked for. Same place, because that is where the reference puts it and
        there is nowhere else on this panel for it to belong. */
-    /* no Formatting help in Header mode — it takes plain text only (see `ftHTML`) */
+    /* Text to display leads the panel again — the 28 Sep swap with the presets was undone on request */
     '<label class="cwftl">Text to display<i>*</i>' +
-      (F.preset === 'Header' ? '' :
-      '<button class="cwftmh" onclick="cwFtMdOpen()">' + CW_FT_HELP_IC +
-        '<span>Formatting help</span></button>') + '</label>' +
+      /* ⚠️ DISABLED, NOT REMOVED, IN HEADER MODE (request, 28 Sep 2026 — it used to vanish).
+         A header is plain text, so there is nothing to format; keeping the button in place
+         stops the label row changing shape when the preset changes. */
+      (F.preset === 'Header'
+        ? '<span class="cwftmhw" data-tip="A header is plain text — formatting does not apply">' +
+          '<button class="cwftmh" disabled tabindex="-1">' + CW_FT_HELP_IC + '<span>Formatting help</span></button></span>'
+        : '<button class="cwftmh" onclick="cwFtMdOpen()">' + CW_FT_HELP_IC +
+          '<span>Formatting help</span></button>') + '</label>' +
     /* ⚠️ FULL WIDTH AND 100px TALL (request, 17 Sep 2026) — it is the one control on this
        panel that is NOT capped to the field column, because it is the only one whose content
        is arbitrary: a size or a colour is a word, and the text can be a paragraph.
        ⚠️ A <textarea>, NOT A TALL <input>. An input is a single line whatever its height, so a
        100px one would put one line of text floating in the middle of an empty box and quietly
        swallow the Enter key. `ftMd` already renders newlines, so the extra rows are real. */
-    '<textarea class="cwftin cwftbig" id="cwFtText" placeholder="Enter the text" maxlength="600" ' +
+    /* ⚠️ THE PLACEHOLDER IS A SAMPLE OF WHAT THE BOX TAKES (request, 28 Sep 2026): plain text, a
+       bulleted list and a link, one per line (`&#10;` is a newline inside an attribute). */
+    '<textarea class="cwftin cwftbig" id="cwFtText" maxlength="600" ' +
+      /* the placeholder is a short Formatting-help cheat sheet (request, 28 Sep 2026), one syntax per
+         line in the same order as the Formatting help dialog, ending with a pointer to it */
+      /* Header mode takes plain text only, so its placeholder is a one-line title (28 Sep 2026) */
+      'placeholder="' + (F.preset === 'Header'
+        ? 'Enter a header, e.g. CPU Usage'
+        : '# Heading&#10;**Bold**, *italic* and `code`&#10;- A bulleted list&#10;1. A numbered list&#10;[A link](https://example.com)&#10;&#10;See Formatting help for more') + '" ' +
       'oninput="cwFtSet(\'text\', this.value)">' + esc(F.text) + '</textarea>' +
-
-    /* ── 2 · presets ──
-       ⚠️ NO SECTION TITLE (request, 17 Sep 2026: remove "Presets" and "Display options", the
-       titles ONLY — both groups keep every control they had). With one short panel and four
-       kinds of control in it, the two headings were labelling what the controls already say:
-       a row of four named tiles is self-evidently a set of presets. The 18px each heading
-       carried is preserved as `.cwftpre`'s own top margin, or the tiles would jump up against
-       the text box. `.cwftsec` and its two spacing rules are kept and unreferenced. */
+    /* ── 2 · presets ── */
     '<div class="cwftpre">' + CW_FT_PRESET.map((pr, i) => {
       const on = cwFtPresetOn(pr);
       return '<button class="cwftpr' + (on ? ' on' : '') + '" aria-pressed="' + on + '" ' +
@@ -31281,6 +32167,7 @@ function cwFtPanelHTML(){
       'onclick="cwFtPreset(' + i + ')"><span class="cwftprv ' + pr[0].toLowerCase() + '"></span>' +
       '<em>' + pr[0] + '</em></button>';
     }).join('') + '</div>' +
+
 
     /* ── 3 · display options — its heading went with the Presets one, see above ── */
     /* ⚠️ FONT SIZE AND ALIGNMENT SHARE A ROW TOO (request, 17 Sep 2026: "the font size and
@@ -31298,7 +32185,11 @@ function cwFtPanelHTML(){
        alignment, then Padding | Font style. One grid, so both columns share their edges on every row. */
     '<div class="cwftpair cwft22">' +
       '<div class="cwftcol"><label class="cwftl">Font Size</label>' +
-        cwFtDD('size', CW_FT_SIZE, F.size, false) + '</div>' +
+        /* ⚠️ DISABLED IN HEADER MODE (request, 28 Sep 2026): a header sizes itself to fill the widget
+           (`size:'Auto'`, set by the preset), so a size pick there would only fight it. Shown, not
+           removed, so the row keeps its shape and the reader sees why. */
+        cwFtDD('size', CW_FT_SIZE, F.size, false, false,
+               F.preset === 'Header' ? 'A header sizes itself to fill the widget' : '') + '</div>' +
       '<div class="cwftcol"><label class="cwftl">Font Color</label>' +
         cwFtDD('color', CW_FT_COLOR, F.color, true, true) + '</div>' +
       '<div class="cwftcol"><label class="cwftl">Background</label>' +
@@ -31739,8 +32630,9 @@ function cpPickCustom(key){
   CP.touched = true;
   ddPaint(key);
 }
-function cwFtDD(key, list, cur, swatch, custom){
-  const open = CW_FT_DD === key;
+function cwFtDD(key, list, cur, swatch, custom, off){
+  /* `off` greys the control out and stops it opening — Font Size in Header mode (28 Sep 2026) */
+  const open = !off && CW_FT_DD === key;
   const rows = list.filter(a => !CW_FT_DDQ || a[0].toLowerCase().indexOf(CW_FT_DDQ.toLowerCase()) >= 0);
   /* ⚠️ THE SWATCH IS THE OPTION'S IDENTITY, NOT ITS PAINT (request, 19 Sep 2026: "the
      background field all color are use dark color"). A background is deliberately a SUBTLE
@@ -31780,9 +32672,10 @@ function cwFtDD(key, list, cur, swatch, custom){
      ⚠️ IT MUST BE THE RESOLVED VALUE AND NOT THE NAME: `cwFtHexOf('Gray')` would resolve the
      CSS *keyword* `gray` (#808080) rather than this list's Gray, and the canvas would open on
      the wrong colour — which is exactly what the first build did. */
-  return '<div class="cwftdd' + (open ? ' open' : '') + '" data-k="' + key + '"' +
+  return '<div class="cwftdd' + (open ? ' open' : '') + (off ? ' off' : '') + '" data-k="' + key + '"' +
+    (off ? ' data-tip="' + off + '"' : '') +
     ' data-v="' + String(curV).replace(/"/g, '&quot;') + '">' +
-    '<button class="cwftddt" aria-haspopup="listbox" aria-expanded="' + open + '" ' +
+    '<button class="cwftddt" aria-haspopup="listbox" aria-expanded="' + open + '" ' + (off ? 'disabled ' : '') +
       'onclick="cwFtDDTog(event,\'' + key + '\',' + (custom ? 'true' : 'false') + ')">' + sw(curSw) +
       '<span>' + (isHex ? 'Custom' : cur) + '</span>' +
       /* ⚠️ THE TRIGGER CARRIES THE HEX ON A COLOUR CONTROL (reference, 19 Sep 2026): the
@@ -31795,7 +32688,8 @@ function cwFtDD(key, list, cur, swatch, custom){
          word, the chip is the only place the actual colour is written. It is still omitted when
          there is nothing to resolve — `transparent` has no hex, and `cwFtHexOf` returns '' for
          it rather than black, so an empty chip is never drawn. */
-      (custom && cwFtDDHex(cur, curV) ? '<b class="cwftddv">' + cwFtDDHex(cur, curV) + '</b>' : '') +
+      /* no colour code on the Background trigger (request, 28 Sep 2026) — the swatch is enough there */
+      (custom && key !== 'bg' && cwFtDDHex(cur, curV) ? '<b class="cwftddv">' + cwFtDDHex(cur, curV) + '</b>' : '') +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
     (open ? '<div class="cwftddp' + (custom ? ' two' : '') + '" role="listbox">' +
       /* ⚠️ THE LIST IS THE LEFT PANE AND THE PICKER THE RIGHT ONE (request, 19 Sep 2026:

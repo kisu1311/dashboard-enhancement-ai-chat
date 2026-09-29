@@ -9103,6 +9103,33 @@ body:has(#mfGridPop.on) .uxgrip:not(.on):hover::before{opacity:0}
 body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 /* rule 7 · a visible focus state for the rows a keyboard can now reach (see `uxFocusable`) */
 .sitem:focus-visible,.plib:focus-visible,.skib:focus-visible,.mpi:focus-visible,.mfi:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+/* ── NOTIFICATIONS — three kinds, one look (request, 28 Sep 2026, with the live Critical banner as the picture) ──
+   1 · `auto`   — shows for ~8s, then leaves by itself
+   2 · `close`  — stays until you press its ✕
+   3 · `sticky` — stays, and carries NO ✕: a condition that is still true (a collector down) must not be
+                  dismissable, it goes when the condition clears (`ntfHide(id)`).
+   Measured off the capture: a dark card on a 1px rule, a full-height severity block on the left (its colour
+   at ~18% over the card, the label in the colour itself, 13px/600), the message 13px at 1.55. Stacked,
+   centred, fixed at the top of the viewport over the header — where the live one sits. */
+.ntfstack{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:200010;display:flex;flex-direction:column;
+  gap:8px;width:min(930px,calc(100vw - 32px));pointer-events:none}
+.ntf{--ntc:var(--red);pointer-events:auto;display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:ntfin .22s cubic-bezier(.2,0,0,1) both}
+html[data-theme="light"] .ntf{box-shadow:0 8px 24px rgba(17,28,44,.14)}
+.ntf.out{animation:ntfout .2s ease-in both}
+@keyframes ntfin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes ntfout{to{opacity:0;transform:translateY(-8px)}}
+.ntf .ntfsev{flex:0 0 72px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px;font-weight:600;
+  color:var(--ntc);background:color-mix(in srgb,var(--ntc) 18%,var(--card))}
+.ntf .ntfmsg{flex:1 1 auto;min-width:0;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--text)}
+.ntf .ntfx{flex:0 0 auto;align-self:flex-start;display:grid;place-items:center;width:28px;height:28px;margin:6px 6px 0 0;
+  border:0;border-radius:4px;background:transparent;color:var(--text-dim);cursor:pointer}
+.ntf .ntfx:hover{background:var(--hover);color:var(--text)}
+.ntf .ntfx:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.ntf .ntfx svg{width:14px;height:14px}
+.ntf.sev-major{--ntc:var(--orange)} .ntf.sev-warning{--ntc:var(--yellow)} .ntf.sev-clear{--ntc:var(--green)}
+@media (prefers-reduced-motion:reduce){.ntf,.ntf.out{animation:none}}
+
 </style>
 </head>
 <body>
@@ -10237,6 +10264,7 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
   </div>
 </aside>
 <div id="toast"></div>
+<div class="ntfstack" id="ntfStack" role="region" aria-label="Notifications"></div>
 
 <script>
 /* ================= Icon registry (extracted from live js/icons bundle via DOM) ================= */
@@ -14142,6 +14170,40 @@ document.addEventListener('keydown', e => {
   hit.run();
 });
 
+/* ── notifications — see `.ntfstack` for the three kinds ──
+   ntfShow({sev:'Critical'|'Major'|'Warning'|'Clear', text, mode:'auto'|'close'|'sticky', ms}) → id */
+let ntfSeq = 0;
+const NTF_X = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M10.5858 10.5858C11.3668 9.80474 12.6332 9.80474 13.4142 10.5858L24 21.1716L34.5858 10.5858C35.3668 9.80474 36.6332 9.80474 37.4142 10.5858C38.1953 11.3668 38.1953 12.6332 37.4142 13.4142L26.8284 24L37.4142 34.5858C38.1953 35.3668 38.1953 36.6332 37.4142 37.4142C36.6332 38.1953 35.3668 38.1953 34.5858 37.4142L24 26.8284L13.4142 37.4142C12.6332 38.1953 11.3668 38.1953 10.5858 37.4142C9.80474 36.6332 9.80474 35.3668 10.5858 34.5858L21.1716 24L10.5858 13.4142C9.80474 12.6332 9.80474 11.3668 10.5858 10.5858Z"/></svg>';
+function ntfShow(o){
+  const st = document.getElementById('ntfStack'); if (!st) return;
+  const id = 'ntf' + (++ntfSeq), sev = o.sev || 'Critical', mode = o.mode || 'auto';
+  const el = document.createElement('div');
+  el.className = 'ntf sev-' + sev.toLowerCase(); el.id = id;
+  el.setAttribute('role', sev === 'Critical' || sev === 'Major' ? 'alert' : 'status');
+  el.innerHTML = '<span class="ntfsev">' + sev + '</span><div class="ntfmsg"></div>' +
+    (mode === 'close' ? '<button class="ntfx" type="button" aria-label="Close notification" data-tip="Close" onclick="ntfHide(\'' + id + '\')">' + NTF_X + '</button>' : '');
+  el.querySelector('.ntfmsg').textContent = o.text || '';
+  st.appendChild(el);
+  /* ⚠️ AN AUTO NOTIFICATION PAUSES WHILE THE POINTER IS ON IT — 8s is not enough to read a long message
+     if the countdown keeps running under the cursor. */
+  if (mode === 'auto'){
+    const ms = o.ms || 8000; let t = setTimeout(() => ntfHide(id), ms);
+    el.addEventListener('mouseenter', () => clearTimeout(t));
+    el.addEventListener('mouseleave', () => { t = setTimeout(() => ntfHide(id), 2500); });
+  }
+  return id;
+}
+function ntfHide(id){
+  const el = document.getElementById(id); if (!el || el.classList.contains('out')) return;
+  el.classList.add('out'); setTimeout(() => el.remove(), 200);
+}
+/* the three kinds, on the board — the addresses are RFC 5737 (the capture carried an internal one) */
+function ntfDemo(){
+  ntfShow({sev:'Critical', mode:'sticky', text:'Unable to connect with STANDALONE FLOW_COLLECTOR : FLOWCOL - 192.0.2.204. Data synchronization may be affected until connectivity or service is restored.'});
+  ntfShow({sev:'Major', mode:'close', text:'Disk usage on db-primary (198.51.100.12) has crossed 85%. Free up space or extend the volume to avoid write failures.'});
+  ntfShow({sev:'Warning', mode:'auto', text:'License usage for Monitored Devices is at 82% of its allotment. This message closes by itself.'});
+}
+setTimeout(ntfDemo, 1200);
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
