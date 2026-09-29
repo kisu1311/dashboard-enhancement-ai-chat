@@ -37685,6 +37685,8 @@ function lxLtPaint(){
     'obs-banner':    '.bn{border-radius:4px}',
     'obs-key-value': '.kv.v-card{border-radius:4px}',
     'obs-tag':       '.rounded{border-radius:4px}' +
+                     /* IPAM Option 2's plain "6/8 approved" text inside a tags cell (see ipmSubnetTags) */
+                     '.ipmplain{background:transparent;color:var(--page-text-color);padding-left:2px;padding-right:0}' +
                      /* Option 2's edition chip: the live license-hero-chip gradient (see .licxname) */
                      ':host(.licxchip) .tag{background:linear-gradient(135deg,var(--license-accent),var(--license-violet));' +
                      'color:var(--license-on-accent);font-weight:600}',
@@ -37741,6 +37743,16 @@ function lxLtPaint(){
        is given onto the host (probed), so this selector cannot collide with a real variant used by
        any other table in the module. The values are `obs-tag`'s own, read from its shadow CSS. */
     'obs-table':     '.ppage,.psize{border-radius:4px}' +
+                     /* IPAM Option 2's site groups (request, 29 Sep 2026): the group header's fill and the row
+                        hover colour SWAPPED, on this grid only */
+                     ':host(.ipmgrp) .row-group td{background:var(--grid-header-hover-bg,rgba(165,186,208,.4))}' +
+                     /* a 3px gap between site groups (request, 29 Sep 2026: "add 3px margin"). A table row takes no
+                        margin, so the gap is a border in the page colour: under every group row (collapsed groups
+                        stack 3px apart) and above a group row that follows an expanded group's last data row */
+                     ':host(.ipmgrp) .row-group td{border-bottom:3px solid var(--page-background-color,#fff)}' +
+                     ':host(.ipmgrp) tr:not(.row-group) + tr.row-group td{border-top:3px solid var(--page-background-color,#fff)}' +
+                     ':host(.ipmgrp) td.ipmsubcol obs-tag{cursor:pointer}' +   /* the tags open Subnet Approval */
+                     ':host(.ipmgrp) .grid tbody tr:hover td{background:var(--neutral-lighter,#eef2f8)}' +
       /* request, 28 Sep 2026: a selected row carries no left accent bar in IPAM's grid — the ticked
          checkbox already says it is selected */
       ':host(.ipmsel) tr.row-selected td:first-child{box-shadow:none}' +
@@ -39800,7 +39812,13 @@ const IPM_ROUTERS = [
   { id: 'rtr-2', name: 'PUN-EDGE-01', ip: '192.0.2.65',    site: 'Pune Branch',    vendor: 'Cisco ISR 4451',      profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 3 },
   { id: 'rtr-3', name: 'CHE-CORE-01', ip: '198.51.100.1',  site: 'Chennai DC',     vendor: 'Arista 7050X',        profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 5 },
   { id: 'rtr-4', name: 'DEL-EDGE-01', ip: '198.51.100.129', site: 'Delhi Branch',  vendor: 'Cisco ISR 4331',      profile: 'snmp-v2c-branch', status: 'stale',  lastRun: '2026-07-02 04:00', approved: 2, rejected: 2 },
-  { id: 'rtr-5', name: 'VAD-OT-01',   ip: '203.0.113.1',   site: 'Vadodara Plant', vendor: 'Cisco IE 4000',       profile: 'snmp-v3-ot',      status: 'failed', lastRun: '2026-09-09 04:00', approved: 1 }
+  { id: 'rtr-5', name: 'VAD-OT-01',   ip: '203.0.113.1',   site: 'Vadodara Plant', vendor: 'Cisco IE 4000',       profile: 'snmp-v3-ot',      status: 'failed', lastRun: '2026-09-09 04:00', approved: 1 },
+  /* OPTION 2 ONLY (`o2`, request 29 Sep 2026): a second and third profile at existing sites, so the site
+     grouping has something to group — Option 1 filters these out and reads exactly as before. */
+  { id: 'rtr-6', name: 'MUM-EDGE-01', ip: '192.0.2.2',     site: 'Mumbai HQ',      vendor: 'Cisco ISR 4451',      profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 4, o2: true },
+  { id: 'rtr-7', name: 'MUM-DC-02',   ip: '192.0.2.3',     site: 'Mumbai HQ',      vendor: 'Arista 7050X',        profile: 'snmp-v3-dc',      status: 'stale',  lastRun: '2026-08-21 04:00', approved: 2, rejected: 1, o2: true },
+  { id: 'rtr-8', name: 'PUN-CORE-01', ip: '192.0.2.66',    site: 'Pune Branch',    vendor: 'Cisco Catalyst 9300', profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 2, o2: true },
+  { id: 'rtr-9', name: 'CHE-EDGE-02', ip: '198.51.100.2',  site: 'Chennai DC',     vendor: 'Cisco ISR 4331',      profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 3, o2: true }
 ];
 let IPM_PENDING = [
   { id: 'ps-1', cidr: '198.51.100.0/24', source: 'SNMP routing table', device: 'MUM-CORE-01', firstSeen: 'Sun, Sep 14, 2026 11:20 AM', deviceCount: 6, vendorMix: 'Cisco, HPE', suggestedSite: 'Mumbai HQ' },
@@ -39822,6 +39840,18 @@ const IPM_CASE = ['None', 'UPPER', 'lower'];
    from the Subnet Approval tab moves it across, so the two numbers stay honest after that. */
 const ipmSubnetTags = r => {
   const pend = IPM_PENDING.filter(x => x.device === r.name).length, t = [];
+  /* OPTION 2 (request, 29 Sep 2026): the pending count is the only TAG, and the rest reads as plain text
+     after it — "6/8 approved", approved over every subnet this router reported (pending + approved +
+     rejected). The text rides as a tag whose variant `ipmplain` is styled flat in the obs-tag hook, because
+     obs-table's `tags` cell renders tags only. */
+  if (IPM.opt === '2'){
+    const ap = r.approved || 0, tot = pend + ap + (r.rejected || 0);
+    /* approved FIRST, pending after it (request, 29 Sep 2026: "swap the pending and approved") — and the
+       approved count is a neutral TAG, not plain text ("show as tag") */
+    t.push({ label: ap + '/' + tot + ' approved', variant: 'tag-primary' });
+    if (pend) t.push({ label: pend + ' pending', variant: 'tag-yellow' });
+    return t;
+  }
   if (pend) t.push({ label: pend + ' pending', variant: 'tag-yellow' });
   t.push({ label: (r.approved || 0) + ' approved', variant: 'tag-green' });
   /* rejected (request, same day) — shown only when there are some; a reject is not permanent, the
@@ -39835,8 +39865,14 @@ const IPM = {
   q: '', tab: 'discovery', flash: null,
   ar: null,          /* the Add IP Address Discovery panel's draft */
   fm: null,          /* { kind, id, data } — Add/Edit Rule, Add/Edit Vendor */
-  cf: null           /* the pending confirm's onOk */
+  cf: null,          /* the pending confirm's onOk */
+  opt: '1'           /* the review switch — Option 1 / Option 2 (see IPM_OPTS) */
 };
+/* ⚠️ OPTION 2 IS A COPY BY CONSTRUCTION (request, 29 Sep 2026: "copy IPAM and create option 2 as it is").
+   Both options render through the same builders; a difference is an `IPM.opt === '2'` branch at the part
+   that changes. The switcher is REVIEW CHROME, like the License and Agentic AI pages' — it goes when one
+   option is picked. It sits in every IPAM page's header, and the choice holds across the three pages. */
+const IPM_OPTS = [{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }];
 const ipmMatch = (...f) => !IPM.q || f.filter(Boolean).join(' ').toLowerCase().includes(IPM.q.toLowerCase());
 const ipmProfiles = () => [...new Set(IPM_ROUTERS.map(r => r.profile).concat((typeof DP !== 'undefined' && DP.creds ? DP.creds.map(c => c.n) : [])))].map(p => ipmOpt(p));
 
@@ -39871,7 +39907,9 @@ const ipmFlashHTML = () => IPM.flash ? `<obs-banner variant="${IPM.flash.variant
    ⚠️ `no-divider` IS A STATED DIVERGENCE from the registry's default (request, 28 Sep 2026: "remove
    this line", pointing at the rule between the title and the hint). Its padding is zeroed because
    `.stmain` already pads the page (usageRules.padding: "avoid double inset"). */
-const ipmHead = (heading, hint, actions) => `<obs-page-header heading="${ipmEsc(heading)}" no-divider>${actions || ''}</obs-page-header>`
+const ipmHead = (heading, hint, actions) => `<obs-page-header heading="${ipmEsc(heading)}" no-divider>`
+  + `<span class="aghact"><obs-radio id="ipmOpt" as-button size="small" options='${ipmJ(IPM_OPTS)}' value="${IPM.opt}"></obs-radio></span>`
+  + `${actions || ''}</obs-page-header>`
   + (hint ? `<p class="ipmhint">${ipmEsc(hint)}</p>` : '');
 const ipmTable = (empty, extra, cls) => `<obs-table id="ipmTbl" class="ipmfill${cls ? ' ' + cls : ''}" page-size="50" empty-text="${ipmEsc(empty)}"${extra || ''}></obs-table>`;
 
@@ -39890,14 +39928,18 @@ const IPM_ROUTER_COLS = [
      the leftover out to ALL of them — the two px icon columns included — and ⟳ and ⋮ drifted 41px apart */
   { key: 'vendor', title: 'Vendor / model', sortable: true },
   { key: 'state', title: 'State', width: '9%', type: 'tags' },
-  { key: 'subnets', title: 'Subnet Approval', width: '23%', type: 'tags' },
+  { key: 'subnets', title: 'Subnet Approval', width: '23%', type: 'tags', cls: 'ipmsubcol' },
   { key: 'lastRun', title: 'Last run', width: '12%', sortable: true },
   /* 28px = the 24px glyph + a little; the cells' own padding is trimmed in the obs-table hook so ⟳ and ⋮
      sit ~12px apart and the header's ACTIONS spills left over both (the Discovery Profile list's shape) */
   { key: 'discover', title: '', width: '28px', type: 'icon', align: 'right' },
   { key: 'menu', title: 'Actions', width: '28px', type: 'icon', align: 'right' }
 ];
-const ipmRouterRows = () => IPM_ROUTERS.filter(r => ipmMatch(r.name, r.ip, r.site, r.vendor, r.profile) && ipmFltOk('discovery', r)).map(r => ({
+/* Option 2 groups the grid by SITE (obs-table `group-by`), so its rows are ordered by site first — a group
+   is emitted in the order its first row appears, and IPM_SITES is the site order everywhere else */
+const ipmSiteIx = r => { const i = IPM_SITES.indexOf(r.site); return i < 0 ? 99 : i; };
+const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') && ipmMatch(r.name, r.ip, r.site, r.vendor, r.profile) && ipmFltOk('discovery', r))
+  .sort((a, b) => IPM.opt === '2' ? ipmSiteIx(a) - ipmSiteIx(b) : 0).map(r => ({
   id: r.id, name: r.name, ip: r.ip, site: r.site, vendor: r.vendor, lastRun: r.lastRun,
   state: [{ label: IPM_ROUTER_TAG[r.status][0], variant: IPM_ROUTER_TAG[r.status][1] }],
   subnets: ipmSubnetTags(r),
@@ -40082,7 +40124,7 @@ function ipmRoutersBody(){
       ${ipmFltBtn()}
       <obs-button variant="primary" id="btnAddRouter">Add IP Address Discovery</obs-button></obs-toolbar>
     ${ipmChipsHTML()}
-    ${ipmTable('No seed router matches this filter', ' sortable', 'ipmname ipmacts ipmic ipmmenu')}`;
+    ${ipmTable('No seed router matches this filter', ' sortable' + (IPM.opt === '2' ? ' group-by="site"' : ''), 'ipmname ipmacts ipmic ipmmenu' + (IPM.opt === '2' ? ' ipmgrp' : ''))}`;
 }
 function ipmRoutersHTML(){
   return `<div id="ipmPage" class="ipm" data-ipm="routers">${ipmFlashHTML()}
@@ -40309,6 +40351,12 @@ function ipmRuleDragBind(t){
     ipmRepaint(); toast('Rule order updated — rules run top to bottom');
   });
 }
+function ipmOpenApproval(name){
+  IPM.tab = 'approval'; IPM.q = name || '';
+  const tabs = document.getElementById('routersTabs'); if (tabs) tabs.value = 'approval';
+  const b = document.getElementById('ipmTabBody'); if (!b) return;
+  b.innerHTML = ipmRoutersBody(); ipmBindBody(b);
+}
 function ipmTableBind(){
   const t = document.getElementById('ipmTbl'); if (!t || t._ipmBound) return;
   t._ipmBound = true;
@@ -40321,6 +40369,20 @@ function ipmTableBind(){
      28 Sep 2026 with it as the reference) rather than obs-table's own obs-menu. `cellaction` does not
      say which element was clicked, so the last pointer target inside the table is kept as the anchor. */
   t.addEventListener('click', e => { const hit = e.composedPath().find(n => n && n.classList && n.classList.contains('cell-ic-btn')); if (hit) t._ipmHit = hit; }, true);
+  /* OPTION 2: a tag in the Subnet Approval column opens the Subnet Approval tab, filtered to that router
+     (request, 29 Sep 2026). A `tags` cell emits no event of its own, so the capture listener notes that the
+     click landed on a tag in that column, and the row's own `rowclick` (dispatched a moment later, inside
+     the same click) supplies which router it was. */
+  t.addEventListener('click', e => {
+    t._ipmSub = IPM.opt === '2' && ipmKind() === 'routers' && IPM.tab === 'discovery' &&
+      e.composedPath().some(n => n && n.tagName === 'OBS-TAG') &&
+      e.composedPath().some(n => n && n.classList && n.classList.contains('ipmsubcol'));
+  }, true);
+  t.addEventListener('rowclick', e => {
+    if (!t._ipmSub) return; t._ipmSub = false;
+    const r = IPM_ROUTERS.find(x => String(x.id) === String(ipmDet(e)));
+    if (r) ipmOpenApproval(r.name);
+  });
   ipmRuleDragBind(t);
   t.addEventListener('cellaction', e => {
     const d = ipmDet(e) || {};
@@ -40356,7 +40418,8 @@ function ipmRowMenu(anchor, id){
   ], { right: true, cover: true });
   stcMenu(anchor, [
     /* request, 28 Sep 2026 — opens Settings › System Settings › DHCP Server Profile (the source's #settings/dhcp) */
-    { t: 'Add DHCP Server Profile', ic: 'plus-circle', fn: () => stOpen('System Settings', 'DHCP Server Profile') },
+    /* not in Option 2 (request, 29 Sep 2026: "remove the Add DHCP server profile") */
+    ...(IPM.opt === '2' ? [] : [{ t: 'Add DHCP Server Profile', ic: 'plus-circle', fn: () => stOpen('System Settings', 'DHCP Server Profile') }]),
     { t: 'Edit Seed Router', ic: 'pencil', fn: () => ipmRowAction('edit', id) },
     { t: 'Remove Seed Router', ic: 'trash-alt', del: true, fn: () => ipmRowAction('delete', id) }
   ], { right: true, cover: true });
@@ -40377,6 +40440,17 @@ function ipmBindBody(scope){
 }
 function ipmAfter(){
   const page = document.getElementById('ipmPage'); if (!page) return;
+  page.setAttribute('data-ipmopt', IPM.opt);
+  /* the Option 1 / 2 switch REPAINTS the page (the agOvAfter pattern); the value is set as a string
+     PROPERTY after render, or obs-radio shows no selected segment (the licRadioSync lesson) */
+  const op = page.querySelector('#ipmOpt');
+  if (op){
+    op.addEventListener('change', e => {
+      const v = String((e && Array.isArray(e.detail)) ? e.detail[0] : (e && e.detail));
+      if (v && v !== IPM.opt && IPM_OPTS.some(o => o.value === v)){ IPM.opt = v; stMainPaint(); }
+    });
+    op.value = String(IPM.opt);
+  }
   const fl = page.querySelector('#ipmFlash'); if (fl) fl.addEventListener('close', () => { IPM.flash = null; });
   const tabs = page.querySelector('#routersTabs');
   if (tabs) tabs.addEventListener('change', e => {
