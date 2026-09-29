@@ -11746,6 +11746,14 @@ body.ntftop .ntfstack{top:calc(var(--ntf-h,0px) + 8px)}
 #ntfBR .ntf{background:#162336}   /* the same dark fill the top bar was given */
 html[data-theme="light"] #ntfBR .ntf{background:var(--card)}
 body.ntfbr .cwfab{bottom:calc(var(--ntf-bh,0px) + 32px)}
+/* DESIGN 3: BOTTOM LEFT (request, 29 Sep 2026) — the same card, anchored beside the rail. The review switch
+   lives in that corner too, so it rides up above the card while design 3 is on. */
+#ntfBL{position:fixed;left:calc(var(--rail-w,53px) + 20px);bottom:20px;z-index:200009;width:min(440px,calc(100vw - 40px));
+  display:flex;flex-direction:column;gap:8px}
+#ntfBL:empty{display:none}
+#ntfBL .ntf{background:#162336}
+html[data-theme="light"] #ntfBL .ntf{background:var(--card)}
+body.ntfbl .ntfpos{bottom:calc(var(--ntf-blh,0px) + 32px)}
 .ntfpos{position:fixed;left:calc(var(--rail-w,53px) + 16px);bottom:18px;z-index:200008;display:flex;align-items:center;gap:6px;
   padding:4px 4px 4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11.5px;color:var(--text-dim);
   box-shadow:0 4px 14px rgba(0,0,0,.25)}
@@ -12962,7 +12970,8 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
 <div id="toast"></div>
 <div id="ntfTop" role="region" aria-label="Persistent notifications"></div>
 <div id="ntfBR" role="region" aria-label="Persistent notifications"></div>
-<div class="ntfpos" id="ntfPos" aria-label="Critical notification design"><span>Critical notification</span><button type="button" class="on" data-p="top" onclick="ntfSetPos('top')">Top bar</button><button type="button" data-p="br" onclick="ntfSetPos('br')">Bottom right</button></div>
+<div id="ntfBL" role="region" aria-label="Persistent notifications"></div>
+<div class="ntfpos" id="ntfPos" aria-label="Critical notification design"><span>Critical notification</span><button type="button" class="on" data-p="top" onclick="ntfSetPos('top')">Top bar</button><button type="button" data-p="br" onclick="ntfSetPos('br')">Bottom right</button><button type="button" data-p="bl" onclick="ntfSetPos('bl')">Bottom left</button></div>
 <div class="ntfstack" id="ntfStack" role="region" aria-label="Notifications"></div>
 
 <script>
@@ -17049,11 +17058,11 @@ function ntfHide(id){
 }
 /* design 1 = the top bar, design 2 = the bottom-right card — see #ntfBR */
 let NTF_POS = 'top';
-function ntfStickyHost(){ return document.getElementById(NTF_POS === 'br' ? 'ntfBR' : 'ntfTop'); }
+function ntfStickyHost(){ return document.getElementById({br:'ntfBR', bl:'ntfBL'}[NTF_POS] || 'ntfTop'); }
 function ntfSetPos(p){
-  NTF_POS = p === 'br' ? 'br' : 'top';
+  NTF_POS = (p === 'br' || p === 'bl') ? p : 'top';
   const host = ntfStickyHost();
-  document.querySelectorAll('#ntfTop .ntf.sticky, #ntfBR .ntf.sticky').forEach(el => host.appendChild(el));
+  document.querySelectorAll('#ntfTop .ntf.sticky, #ntfBR .ntf.sticky, #ntfBL .ntf.sticky').forEach(el => host.appendChild(el));
   document.querySelectorAll('#ntfPos button').forEach(b => b.classList.toggle('on', b.dataset.p === NTF_POS));
   ntfFitAll();
 }
@@ -17063,6 +17072,10 @@ function ntfFitAll(){
   const h = b.children.length ? b.getBoundingClientRect().height : 0;
   document.documentElement.style.setProperty('--ntf-bh', h + 'px');
   document.body.classList.toggle('ntfbr', h > 0);
+  const l = document.getElementById('ntfBL'); if (!l) return;
+  const lh = l.children.length ? l.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--ntf-blh', lh + 'px');
+  document.body.classList.toggle('ntfbl', lh > 0);
 }
 /* keeps `--ntf-h` equal to the top bar's real height — it wraps to two lines on a narrow window */
 let ntfTopRO = null;
