@@ -2183,6 +2183,94 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 .trseg > *{border-left:1px solid var(--border)}
 
 
+/* ══ NOTIFICATIONS — moved here from Option 1 on 30 Sep 2026 ("the option 2 notification will move to dashboard option 2").
+   This page shows the OPTION 2 design of the Critical top bar (solid alert colour, white chip, semibold message) —
+   `body.ntfo2` is set once at load, and the bottom-corner hosts and the review switch were not brought across. */
+/* ── NOTIFICATIONS — three kinds, one look (request, 28 Sep 2026, with the live Critical banner as the picture) ──
+   1 · `auto`   — shows for ~8s, then leaves by itself
+   2 · `close`  — stays until you press its ✕
+   3 · `sticky` — stays, and carries NO ✕: a condition that is still true (a collector down) must not be
+                  dismissable, it goes when the condition clears (`ntfHide(id)`).
+   Measured off the capture: a dark card on a 1px rule, a full-height severity block on the left (its colour
+   at ~18% over the card, the label in the colour itself, 13px/600), the message 13px at 1.55. Stacked,
+   centred, fixed at the top of the viewport over the header — where the live one sits. */
+.ntfstack{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:200010;display:flex;flex-direction:column;
+  gap:8px;width:min(930px,calc(100vw - 32px));pointer-events:none}
+.ntf{--ntc:var(--red);pointer-events:auto;display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:ntfin .22s cubic-bezier(.2,0,0,1) both}
+html[data-theme="light"] .ntf{box-shadow:0 8px 24px rgba(17,28,44,.14)}
+.ntf.out{animation:ntfout .2s ease-in both}
+@keyframes ntfin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes ntfout{to{opacity:0;transform:translateY(-8px)}}
+.ntf .ntfsev{flex:0 0 72px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px;font-weight:600;
+  color:var(--ntc);background:color-mix(in srgb,var(--ntc) 18%,var(--card))}
+.ntf .ntfmsg{flex:1 1 auto;min-width:0;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--text)}
+.ntf .ntfx{flex:0 0 auto;align-self:flex-start;display:grid;place-items:center;width:28px;height:28px;margin:6px 6px 0 0;
+  border:0;border-radius:4px;background:transparent;color:var(--text-dim);cursor:pointer}
+.ntf .ntfx:hover{background:var(--hover);color:var(--text)}
+.ntf .ntfx:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.ntf .ntfx svg{width:14px;height:14px}
+.ntf.sev-major{--ntc:var(--orange)} .ntf.sev-warning{--ntc:var(--yellow)} .ntf.sev-clear{--ntc:var(--green)}
+@media (prefers-reduced-motion:reduce){.ntf,.ntf.out{animation:none}}
+
+/* ── THE PERSISTENT NOTIFICATION IS A TOP BAR (request, 28 Sep 2026, with a "Heads up" trial banner as the
+   reference): it sits across the full width ABOVE the page and pushes everything down, instead of floating
+   over the header. Same card anatomy — severity block + message — just full-bleed, square, ruled underneath.
+   `--ntf-h` is its measured height (set by `ntfTopFit`), and every top-anchored fixed surface reads it. */
+#ntfTop{position:fixed;top:0;left:0;right:0;z-index:200009;display:flex;flex-direction:column}
+#ntfTop:empty{display:none}
+#ntfTop .ntf{border-radius:0;border-width:0;box-shadow:none;animation:none}   /* no rule under it (request, 29 Sep 2026) — the tinted fill is the edge */
+/* centred as ONE group (request, 28 Sep 2026: "it will be show in center"), like the reference's
+   "⚠ Heads up: …" — so the severity becomes a compact chip in front of the message rather than a
+   full-height block pinned to the left edge. The fill still runs the full width. */
+#ntfTop .ntf{justify-content:center;align-items:center;gap:10px;padding:7px 16px;
+  background:color-mix(in srgb,var(--ntbg,var(--ntc)) 34%,var(--card))}
+#ntfTop .ntf.sev-critical{--ntbg:#ec5b5b}   /* the Critical wash is #ec5b5b at low strength, as given (29 Sep 2026) */
+/* ⚠️ THE FILL IS THE ALERT'S OWN COLOUR AT LOW STRENGTH (request, 29 Sep 2026: "use alert related down opacity
+   colour"), replacing the flat #162336 of 28 Sep — so a Critical bar reads red and a Major one orange before a
+   word is read. `--ntc` is set per severity on `.ntf`, so one rule covers all four. Mixed into `--card`, not a
+   raw alpha, so the bar stays opaque and the page does not show through it. Light takes the weaker 8% because
+   white takes a tint far more strongly than the dark canvas does. */
+html[data-theme="light"] #ntfTop .ntf{background:color-mix(in srgb,var(--ntbg,var(--ntc)) 14%,var(--card))}
+/* the chip's text AND its box are the same hue as the bar (request, 29 Sep 2026) — #ec5b5b on a Critical bar —
+   the box a step stronger than the bar's wash, or it vanishes into it */
+#ntfTop .ntf .ntfsev{flex:0 0 auto;padding:3px 10px;border-radius:4px;font-size:12px;
+  color:var(--ntbg,var(--ntc));background:color-mix(in srgb,var(--ntbg,var(--ntc)) 42%,var(--card))}
+html[data-theme="light"] #ntfTop .ntf .ntfsev{background:color-mix(in srgb,var(--ntbg,var(--ntc)) 26%,var(--card))}
+/* ⚠️ OPTION 1's LIGHT THEME, reworked (request, 29 Sep 2026: "not good in light"). The 14% wash read as a flat
+   pink slab, and #ec5b5b chip text on its own 26% box was ~2.4:1. Light now takes a 16% wash (9% read too pale — 29 Sep 2026) (the hairline along its foot was
+   then removed on request), and the chip's text is the hue darkened 30% so it reads (~5:1) while text and
+   box stay one colour family. Scoped `body:not(.ntfo2)` — Option 2 was not named. Dark is untouched. */
+html[data-theme="light"] body:not(.ntfo2) #ntfTop .ntf{background:color-mix(in srgb,var(--ntbg,var(--ntc)) 24%,var(--card))}   /* no bottom line (request, 29 Sep 2026) */
+html[data-theme="light"] body:not(.ntfo2) #ntfTop .ntf .ntfsev{color:color-mix(in srgb,var(--ntbg,var(--ntc)) 70%,#000);
+  background:color-mix(in srgb,var(--ntbg,var(--ntc)) 28%,var(--card))}
+/* ── OPTION 2 (request, 29 Sep 2026): the bar is the alert colour at FULL strength — #ec5b5b on a Critical bar —
+   in both themes; the chip is white with the alert colour as its text. Declared after the theme
+   rules at equal weight (`body.ntfo2 #ntfTop .ntf` = 1,2,1), so source order is what lets it win. */
+body.ntfo2 #ntfTop .ntf{background:var(--ntbg,var(--ntc))}
+body.ntfo2 #ntfTop .ntf .ntfsev{color:#ec5b5b;background:#ffffff}   /* white chip, red text (request, 29 Sep 2026) — replaced the white-text-on-dark-box of an hour earlier */
+body.ntfo2 #ntfTop .ntf .ntfmsg{font-weight:600}   /* semibold message (request, 29 Sep 2026) */
+/* OPTION 1's chip, both themes (request, 29 Sep 2026): solid alert colour — #ec5b5b on Critical — with white text.
+   ⚠️ (1,4,2) and declared last, so it outranks the light-theme Option 1 chip rule above at the same weight. */
+html body:not(.ntfo2) #ntfTop .ntf.sticky .ntfsev{color:#ffffff;background:var(--ntbg,var(--ntc))}
+/* ⚠️ IT SLIDES DOWN WHEN RAISED AND BACK UP WHEN THE PROBLEM CLEARS (request, 29 Sep 2026). The bar moves
+   (`ntftopin` / `ntftopout`) and the PAGE moves with it, because `--ntf-h` is a registered <length> with a
+   transition on :root — every surface that reads it (the shell's margin, the sidebar's and the flyout's top)
+   interpolates in the same 280ms, so nothing jumps. `ntfTopFit` drops a leaving bar from `--ntf-h` the moment
+   it starts to leave, and keeps `body.ntftop` until it is gone, or the page would snap up before the bar did. */
+@property --ntf-h{syntax:'<length>';inherits:true;initial-value:0px}
+:root{transition:--ntf-h .28s cubic-bezier(.2,0,0,1)}
+#ntfTop .ntf.sticky{animation:ntftopin .28s cubic-bezier(.2,0,0,1) both}
+#ntfTop .ntf.sticky.out{animation:ntftopout .28s cubic-bezier(.4,0,1,1) both}
+@keyframes ntftopin{from{transform:translateY(-100%);opacity:.4}to{transform:none;opacity:1}}
+@keyframes ntftopout{from{transform:none;opacity:1}to{transform:translateY(-100%);opacity:0}}
+@media (prefers-reduced-motion:reduce){:root{transition:none}#ntfTop .ntf.sticky,#ntfTop .ntf.sticky.out{animation:none}}
+#ntfTop .ntf .ntfmsg{flex:0 1 auto;padding:0}
+body.ntftop .sidebar{top:var(--ntf-h,0px)}
+body.ntftop .shell{margin-top:var(--ntf-h,0px);height:calc(100vh - var(--ntf-h,0px))}
+body.ntftop .mflyout{top:var(--ntf-h,0px);height:calc(100vh - var(--ntf-h,0px))}
+body.ntftop .ntfstack{top:calc(var(--ntf-h,0px) + 8px)}
+body.ntftop .mpanel{top:var(--ntf-h,0px)}   /* this page's docked panel is top-anchored too */
 </style>
 </head>
 <body class="mpshut">
@@ -2768,6 +2856,9 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
 </aside>
 
 <div id="toast"></div>
+<div id="ntfTop" role="region" aria-label="Persistent notifications"></div>
+<div class="ntfstack" id="ntfStack" role="region" aria-label="Notifications"></div>
+
 
 <script>
 /* ================= Icon registry (extracted from live js/icons bundle via DOM) ================= */
@@ -5307,6 +5398,86 @@ function wRzCommit(el, span, h){
   toast(span === null ? 'Widget size reset'
                       : `Widget resized \u2014 ${span}/12 columns \u00d7 ${Math.round(h)}px`);
 }
+
+/* ── notifications — see `.ntfstack` for the three kinds ──
+   ntfShow({sev:'Critical'|'Major'|'Warning'|'Clear', text, mode:'auto'|'close'|'sticky', ms}) → id */
+let ntfSeq = 0;
+const NTF_X = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M10.5858 10.5858C11.3668 9.80474 12.6332 9.80474 13.4142 10.5858L24 21.1716L34.5858 10.5858C35.3668 9.80474 36.6332 9.80474 37.4142 10.5858C38.1953 11.3668 38.1953 12.6332 37.4142 13.4142L26.8284 24L37.4142 34.5858C38.1953 35.3668 38.1953 36.6332 37.4142 37.4142C36.6332 38.1953 35.3668 38.1953 34.5858 37.4142L24 26.8284L13.4142 37.4142C12.6332 38.1953 11.3668 38.1953 10.5858 37.4142C9.80474 36.6332 9.80474 35.3668 10.5858 34.5858L21.1716 24L10.5858 13.4142C9.80474 12.6332 9.80474 11.3668 10.5858 10.5858Z"/></svg>';
+function ntfShow(o){
+  const st = document.getElementById('ntfStack'); if (!st) return;
+  const id = 'ntf' + (++ntfSeq), sev = o.sev || 'Critical', mode = o.mode || 'auto';
+  const el = document.createElement('div');
+  el.className = 'ntf sev-' + sev.toLowerCase() + (mode === 'sticky' ? ' sticky' : ''); el.id = id;
+  el.setAttribute('role', sev === 'Critical' || sev === 'Major' ? 'alert' : 'status');
+  el.innerHTML = '<span class="ntfsev">' + sev + '</span><div class="ntfmsg"></div>' +
+    (mode === 'close' ? '<button class="ntfx" type="button" aria-label="Close notification" data-tip="Close" onclick="ntfHide(\'' + id + '\')">' + NTF_X + '</button>' : '');
+  el.querySelector('.ntfmsg').textContent = o.text || '';
+  /* a persistent one goes in the top bar, the rest float */
+  (mode === 'sticky' ? ntfStickyHost() : st).appendChild(el);
+  if (mode === 'sticky') ntfFitAll();
+  /* ⚠️ AN AUTO NOTIFICATION PAUSES WHILE THE POINTER IS ON IT — 8s is not enough to read a long message
+     if the countdown keeps running under the cursor. */
+  if (mode === 'auto'){
+    const ms = o.ms || 8000; let t = setTimeout(() => ntfHide(id), ms);
+    el.addEventListener('mouseenter', () => clearTimeout(t));
+    el.addEventListener('mouseleave', () => { t = setTimeout(() => ntfHide(id), 2500); });
+  }
+  return id;
+}
+function ntfHide(id){
+  const el = document.getElementById(id); if (!el || el.classList.contains('out')) return;
+  el.classList.add('out');
+  /* the top bar's leaving is 280ms, and the page starts moving up with it now rather than after it */
+  const top = !!el.closest('#ntfTop'); if (top) ntfTopFit();
+  setTimeout(() => { el.remove(); ntfFitAll(); }, top ? 290 : 200);
+}
+/* design 1 = the top bar, design 2 = the bottom-right card — see #ntfBR */
+let NTF_POS = 'top';
+function ntfStickyHost(){ return document.getElementById({br:'ntfBR', bl:'ntfBL'}[NTF_POS] || 'ntfTop'); }
+/* ⚠️ BOTTOM RIGHT / BOTTOM LEFT LEFT THE SWITCH (request, 29 Sep 2026) and Option 2 took their place: a copy of
+   the top bar, identical for now, hooked as `body.ntfo2` so it can diverge with CSS alone. #ntfBR / #ntfBL and
+   their CSS are kept and unreferenced — `ntfSetPos('br'|'bl')` still works from the console. */
+function ntfSetPos(p){
+  NTF_POS = (p === 'br' || p === 'bl' || p === 'top2') ? p : 'top';
+  document.body.classList.toggle('ntfo2', NTF_POS === 'top2');
+  const host = ntfStickyHost();
+  document.querySelectorAll('#ntfTop .ntf.sticky, #ntfBR .ntf.sticky, #ntfBL .ntf.sticky').forEach(el => host.appendChild(el));
+  document.querySelectorAll('#ntfPos button').forEach(b => b.classList.toggle('on', b.dataset.p === NTF_POS));
+  ntfFitAll();
+}
+function ntfFitAll(){
+  ntfTopFit();
+  const b = document.getElementById('ntfBR'); if (!b) return;
+  const h = b.children.length ? b.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--ntf-bh', h + 'px');
+  document.body.classList.toggle('ntfbr', h > 0);
+  const l = document.getElementById('ntfBL'); if (!l) return;
+  const lh = l.children.length ? l.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--ntf-blh', lh + 'px');
+  document.body.classList.toggle('ntfbl', lh > 0);
+}
+/* keeps `--ntf-h` equal to the top bar's real height — it wraps to two lines on a narrow window */
+let ntfTopRO = null;
+function ntfTopFit(){
+  const t = document.getElementById('ntfTop'); if (!t) return;
+  /* a bar that is leaving (`.out`) no longer counts, so the page rises with it; the body class stays until it is removed */
+  let h = 0; for (const c of t.children) if (!c.classList.contains('out')) h += c.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--ntf-h', h + 'px');
+  document.body.classList.toggle('ntftop', t.children.length > 0);
+  if (!ntfTopRO && window.ResizeObserver){ ntfTopRO = new ResizeObserver(ntfTopFit); ntfTopRO.observe(t); }
+  if (typeof fitCanvas === 'function'){
+    try { fitCanvas(); } catch(e){}
+    clearTimeout(ntfTopFit.t); ntfTopFit.t = setTimeout(() => { try { fitCanvas(); } catch(e){} }, 320);   /* again once --ntf-h has finished moving */
+  }
+}
+/* the three kinds, on the board — the addresses are RFC 5737 (the capture carried an internal one) */
+function ntfDemo(){
+  ntfShow({sev:'Critical', mode:'sticky', text:'Unable to connect with STANDALONE FLOW_COLLECTOR : FLOWCOL - 192.0.2.204. Data synchronization may be affected until connectivity or service is restored.'});
+  ntfShow({sev:'Major', mode:'close', text:'Disk usage on db-primary (198.51.100.12) has crossed 85%. Free up space or extend the volume to avoid write failures.'});
+  ntfShow({sev:'Warning', mode:'auto', text:'License usage for Monitored Devices is at 82% of its allotment. This message closes by itself.'});
+}
+setTimeout(ntfDemo, 1200);
+document.body.classList.add('ntfo2');   /* this page is the Option 2 design */
 
 function toast(msg){
   const t = document.getElementById('toast');

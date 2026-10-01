@@ -2847,6 +2847,9 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
 /* ---------- Main / views ---------- */
 .main{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
 .view{flex:1;display:none;flex-direction:column;min-height:0}
+/* IPAM view: the iframe fills the content area; the vendored page brings its own surfaces. */
+.ipamhost{flex:1 1 auto;min-height:0;display:flex}
+.ipamfr{flex:1 1 auto;width:100%;height:100%;border:0;display:block;background:var(--bg)}
 .view.on{display:flex}
 /* ⚠️ 50px, NOT 44 (request, 22 Sep 2026: "the header height is 50px"). Both numbers move
    together — `height` AND the flex basis — or the row lays out at one and paints at the other.
@@ -12326,6 +12329,16 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
       <div class="pagebody" id="healthBody"></div>
     </section>
 
+    <!-- ===== IPAM (30 Sep 2026) =====
+         The IPAM module from divyam-shah29.github.io/IPAM-UI (Overview · Subnets · IP Addresses ·
+         Rogue), vendored as `_ipam/ipam.html` with every address scrubbed (10.x → 198.18.x,
+         RFC 2544; the rest RFC 5737; motadata.local → example.com). `?embed=1` hides its own rail
+         and app header so it sits inside this page's chrome; `?theme=` follows ours. The iframe is
+         created on first open — the page is 2 MB and most sessions never go there. -->
+    <section class="view" id="view-ipam">
+      <div class="ipamhost" id="ipamHost"></div>
+    </section>
+
     <!-- ===== Generic module view ===== -->
     <section class="view" id="view-module">
       <div class="pagehead">
@@ -13109,7 +13122,6 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
 <div id="ntfTop" role="region" aria-label="Persistent notifications"></div>
 <div id="ntfBR" role="region" aria-label="Persistent notifications"></div>
 <div id="ntfBL" role="region" aria-label="Persistent notifications"></div>
-<div class="ntfpos" id="ntfPos" aria-label="Critical notification design"><span>Critical notification</span><button type="button" class="on" data-p="top" onclick="ntfSetPos('top')">Option 1</button><button type="button" data-p="top2" onclick="ntfSetPos('top2')">Option 2</button></div>
 <div class="ntfstack" id="ntfStack" role="region" aria-label="Notifications"></div>
 
 <script>
@@ -13158,6 +13170,14 @@ const ICONS = {
    "M24.2,45c2.2,0,3.9-1.7,4.1-3.9h-8.1c.1,2.1,1.9,3.9,4.1,3.9Zm16.6-10.2l-3.1-3.3v-10.8c0-6.4-3.7-12.8-12-13.6v-2.4c0-1-.8-1.8-1.8-1.8s-1.8,.8-1.8,1.8v2.4c-8.3,.8-12,7.2-12,13.6v10.8l-3.1,3.2c-.5,.5-.6,1.3-.3,1.9,.3,.6,.9,1.1,1.6,1.1h31.1c.7,0,1.3-.4,1.6-1.1,.3-.6,.1-1.4-.3-1.9Zm-28.3-.5l.7-.8c.3-.3,.5-.8,.5-1.2v-11.5c0-4.9,2.7-10.2,10.2-10.2s10.2,5.2,10.2,10.2v11.5c0,.5,.2,1,.6,1.3l.7,.7H12.5Z"
   ],
   "from": "sidebar.html"
+ },
+ "ipam": {
+  "viewBox": "0 0 24 24",
+  "evenodd": true,
+  "paths": [
+   "M12.75 4.25C13.06 4.01 13.25 3.64 13.25 3.25C13.25 2.56 12.69 2 12 2C11.31 2 10.75 2.56 10.75 3.25C10.75 3.64 10.94 4.01 11.25 4.25L11.25 5.11Q10.79 5.23 10.33 5.5L7.94 6.88L5.99 4.93C6 4.87 6 4.81 6 4.75C6 4.06 5.44 3.5 4.75 3.5C4.06 3.5 3.5 4.06 3.5 4.75C3.5 5.44 4.06 6 4.75 6C4.81 6 4.87 6 4.93 5.99L6.64 7.7Q5.53 8.63 5.53 10.2L5.53 11.25L4.25 11.25C4.01 10.94 3.64 10.75 3.25 10.75C2.56 10.75 2 11.31 2 12C2 12.69 2.56 13.25 3.25 13.25C3.64 13.25 4.01 13.06 4.25 12.75L5.53 12.75L5.53 13.8Q5.53 15.37 6.64 16.3L4.93 18.01C4.87 18 4.81 18 4.75 18C4.06 18 3.5 18.56 3.5 19.25C3.5 19.94 4.06 20.5 4.75 20.5C5.44 20.5 6 19.94 6 19.25C6 19.19 6 19.13 5.99 19.07L7.94 17.12L10.33 18.5Q10.79 18.77 11.25 18.89L11.25 19.75C10.94 19.99 10.75 20.36 10.75 20.75C10.75 21.44 11.31 22 12 22C12.69 22 13.25 21.44 13.25 20.75C13.25 20.36 13.06 19.99 12.75 19.75L12.75 18.89Q13.21 18.77 13.67 18.5L16.06 17.12L18.01 19.07C18 19.13 18 19.19 18 19.25C18 19.94 18.56 20.5 19.25 20.5C19.94 20.5 20.5 19.94 20.5 19.25C20.5 18.56 19.94 18 19.25 18C19.19 18 19.13 18 19.07 18.01L17.36 16.3Q18.47 15.37 18.47 13.8L18.47 12.75L19.75 12.75C19.99 13.06 20.36 13.25 20.75 13.25C21.44 13.25 22 12.69 22 12C22 11.31 21.44 10.75 20.75 10.75C20.36 10.75 19.99 10.94 19.75 11.25L18.47 11.25L18.47 10.2Q18.47 8.63 17.36 7.7L19.07 5.99C19.13 6 19.19 6 19.25 6C19.94 6 20.5 5.44 20.5 4.75C20.5 4.06 19.94 3.5 19.25 3.5C18.56 3.5 18 4.06 18 4.75C18 4.81 18 4.87 18.01 4.93L16.06 6.88L13.67 5.5Q13.21 5.23 12.75 5.11L12.75 4.25ZM15.79 15.55C15.8 15.54 15.82 15.53 15.83 15.52L16.04 15.4Q16.97 14.87 16.97 13.8L16.97 10.2Q16.97 9.13 16.04 8.6L15.83 8.48C15.82 8.47 15.8 8.46 15.79 8.45L12.92 6.8Q12 6.27 11.08 6.8L8.21 8.45C8.2 8.46 8.18 8.47 8.17 8.48L7.96 8.6Q7.03 9.13 7.03 10.2L7.03 13.8Q7.03 14.87 7.96 15.4L8.17 15.52C8.18 15.53 8.2 15.54 8.21 15.55L11.08 17.2Q12 17.73 12.92 17.2L15.79 15.55ZM10.12 14.25C10.12 14.66 9.78 15 9.37 15C8.96 15 8.62 14.66 8.62 14.25L8.62 9.75C8.62 9.34 8.96 9 9.37 9C9.78 9 10.12 9.34 10.12 9.75L10.12 14.25ZM11.12 14.25C11.12 14.66 11.46 15 11.87 15C12.28 15 12.62 14.66 12.62 14.25L12.62 13.7L13.02 13.7Q15.37 13.7 15.37 11.35Q15.37 9 13.02 9L11.87 9C11.46 9 11.12 9.34 11.12 9.75L11.12 14.25ZM12.62 12.2L13.02 12.2Q13.87 12.2 13.87 11.35Q13.87 10.5 13.02 10.5L12.62 10.5L12.62 12.2Z"
+  ],
+  "from": "observeops-icons/common/network-connectivity/ip.svg"
  },
  "slo": {
   "viewBox": "0 0 48 48",
@@ -13467,8 +13487,10 @@ function ico(name, cls){ const i = ICONS[name]; if(!i) return '';
   const paint = i.stroke
     ? 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill:none"'
     : 'fill="currentColor"';
-  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" ${paint}>` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
-function setIco(el, name){ const i = ICONS[name]; if(!el||!i) return; el.setAttribute('viewBox', i.viewBox); el.innerHTML = i.paths.map(d=>`<path fill="currentColor" d="${d}"/>`).join(''); }
+  /* an icon drawn with holes (the IPAM hub: a hex ring around "IP") needs even-odd, or the holes fill in */
+  const rule = i.evenodd ? ' fill-rule="evenodd" clip-rule="evenodd"' : '';
+  return `<svg class="${cls||'ic'}" viewBox="${i.viewBox}" ${paint}${rule}>` + i.paths.map(d=>`<path d="${d}"/>`).join('') + `</svg>`; }
+function setIco(el, name){ const i = ICONS[name]; if(!el||!i) return; el.setAttribute('viewBox', i.viewBox); el.innerHTML = i.paths.map(d=>`<path fill="currentColor"${i.evenodd ? ' fill-rule="evenodd"' : ''} d="${d}"/>`).join(''); }
 
 /* ================= Sidebar model (live ul.mainMenu, 16 modules; groups from docs IA) ================= */
 const MODULES = [
@@ -13488,6 +13510,8 @@ const MODULES = [
   { name:'Trap Explorer',   icon:'trap-viewer',     route:'/trap-explorer/',   group:'Explorers' },
   { name:'Audits',          icon:'audit',           route:'/audit/',           group:'Management' },
   { name:'Settings',        icon:'settings',        route:'/settings/',        group:'Management' },
+  /* IPAM — APPENDED, not slotted, so every MODULES index above keeps its meaning (30 Sep 2026). */
+  { name:'IPAM',            icon:'ipam',            route:'/ipam/',            group:'Network' },
 ];
 let activeModule = 0;
 
@@ -13552,6 +13576,11 @@ const RAIL = [
      later index, the trap this file's notes record for `RAIL_SEED`. `renderMenu` skips it, and
      `railFootGo`/`railFootPaint` give the footer button the row's own behaviour and highlight. */
   { name:'Setting',   icon:'settings',        mod:'Settings',        group:'admin', foot:true },
+  /* ⚠️ IPAM IS APPENDED AT INDEX 6 (30 Sep 2026: "copy the main IPAM module … in option 1"),
+     never slotted: `activeRail` and `MOD_TO_RAIL` store indices into this array. Setting is a
+     `foot` row and skipped in the list, so in display order IPAM follows Report, under its own
+     hairline (`network` group). Its screen is the vendored `_ipam/ipam.html` in an iframe. */
+  { name:'IPAM',      icon:'ipam',            mod:'IPAM',            group:'network' },
 ];
 let activeRail = 0;
 
@@ -13889,7 +13918,7 @@ const MOD_TO_RAIL = {};
 [['Dashboards',0],['Alerts',1],['SLO',2],
  ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
  ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
- ['Reports',4],['Settings',5]
+ ['Reports',4],['Settings',5],['IPAM',6]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 /* ══ PINNED SUB-MODULES ════════════════════════════════════════════════════════════════
    Request, 27 Aug 2026: "in the explorer all sub module will be I pin and unpin, and when
@@ -15553,7 +15582,7 @@ function mfDocsPaint(){
    a rule enforced in the markup would have to be repeated in both, which is how two copies of
    one rule drift apart. `mfHoverIdx` is still assigned first, so leaving and re-entering the
    rail keeps behaving normally for the rows that DO have a menu. */
-const MF_NO_HOVER = ['Dashboard', 'SLO', 'Setting'];
+const MF_NO_HOVER = ['Dashboard', 'SLO', 'Setting', 'IPAM'];
 /* ── Explorer's module grid (`mfGrid*`) ──────────────────────────────────────────────────
    Explorer is the one rail entry whose children are all MODULES rather than pages, which is
    what makes a grid of marks read better than a column of words — and it is why Option 6 draws
@@ -15988,6 +16017,8 @@ function selectModule(i){
   /* Monitor is a real screen too — the live product's two header rows (25 Sep 2026); the grid under
      them is still the placeholder card. `mn*` block below. */
   if (m.name === 'Monitors'){ showView('monitor'); mnInit(MOD_SUB); MOD_SUB = ''; return; }
+  /* IPAM is the vendored module (`_ipam/ipam.html`), shown in an iframe in embed mode. */
+  if (m.name === 'IPAM'){ showView('ipam'); ipamInit(); return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
   setIco(document.getElementById('modBigIc'), m.icon);
   document.getElementById('modHeadTtl').textContent = m.name;
@@ -16240,6 +16271,23 @@ function sbHeld(){
 }
 
 /* ================= Views ================= */
+/* IPAM — lazily build the iframe; re-point it when the theme flips so the module follows ours. */
+function ipamTheme(){ return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+function ipamInit(){
+  const h = document.getElementById('ipamHost'); if (!h) return;
+  let f = h.querySelector('iframe');
+  if (!f){
+    f = document.createElement('iframe');
+    f.title = 'IPAM'; f.className = 'ipamfr';
+    f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#overview';
+    h.appendChild(f);
+    new MutationObserver(() => {
+      /* postMessage, not contentDocument — over file:// every page is its own origin, so a direct
+         reach into the frame throws. `_ipam/ipam.html` listens for {ipamTheme}. */
+      try { f.contentWindow.postMessage({ ipamTheme: ipamTheme() }, '*'); } catch(e){}
+    }).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+  }
+}
 function showView(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.getElementById('view-'+v).classList.add('on');

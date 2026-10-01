@@ -11,14 +11,20 @@ reproductions. The contract is explicit about this:
 
 | file | what | why it is committed |
 |---|---|---|
-| `observeops-elements.umd.js` | `@mtdt/observeops-ds-elements` **v0.1.166**, the UMD build, verbatim | registers the 47 `obs-*` custom elements. A `<script src>` works over `file://` **and** on GitHub Pages, so the prototypes keep opening with no build step |
-| `observeops-ds.css` | `@mtdt/observeops-ds-css` **v0.1.6**, verbatim | **NOT linked by any page.** It is the source the scoped token block in each option file is generated from — kept so a regeneration needs no network |
+| `observeops-elements.umd.js` | `@mtdt/observeops-ds-elements` **v0.1.240** (was v0.1.166 until 1 Oct 2026), the UMD build (`dist/observeops-elements.umd.cjs`, renamed `.js`), verbatim | registers the 47 `obs-*` custom elements. A `<script src>` works over `file://` **and** on GitHub Pages, so the prototypes keep opening with no build step |
+| `observeops-ds.css` | `@mtdt/observeops-ds-css` **v0.1.7** (was v0.1.6), verbatim — its only change is a new `--chart-font-family` token, which the scoped token blocks do not carry yet | **NOT linked by any page.** It is the source the scoped token block in each option file is generated from — kept so a regeneration needs no network |
 
 Both are public on npm, no auth:
 
 ```bash
-npm install @mtdt/observeops-ds-elements @mtdt/observeops-ds-css
+npm install @mtdt/observeops-ds-elements @mtdt/observeops-ds-css @mtdt/observeops-ds-spec
 ```
+
+⚠️ **Updated 1 Oct 2026** (elements 0.1.240 · css 0.1.7 · spec 0.1.259, the conformance checker the
+`_verify/*conf.py` scripts run from `node_modules/`). The gaps below were recorded against **0.1.166** —
+the work-arounds in the pages are still in place and still harmless, but each one should be re-measured
+before it is trusted or removed. The old bundle was checked side by side with the new one on the License,
+Agentic AI and Compliance screens and the Free Text help dialog: identical results, no console errors.
 
 ## ⚠️ The CSS is deliberately not linked
 

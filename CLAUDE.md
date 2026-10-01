@@ -739,6 +739,200 @@ arrival runs `selectModuleByName` / `showView` and clears the hash.
   `setting.html`); **`dsconf.py` / `licconf.py`** default to `setting.html`.
 - ⚠️ `git checkout a216064 -- setting.js` brings the old single file back if this is ever unwound.
 
+## IPAM module in Option 1 — the source page, vendored (30 Sep 2026)
+
+Request: copy the main IPAM module from `divyam-shah29.github.io/IPAM-UI/ipam-standalone.html` into
+Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
+
+- **`_ipam/ipam.html`** is the source page (2.2 MB, its own DS bundle) with every address scrubbed —
+  34 `10.a.b.x` /24s → one `198.18.N.x` each (RFC 2544), `172.16.9.243` / `192.168.1.x` → `203.0.113.x`,
+  `corp.motadata.local` → `corp.example.com`. **Regenerate, never hand-edit:**
+  `python3 _ipam/build_ipam.py <downloaded ipam-standalone.html>`. The script also injects the embed
+  block: `?embed=1` hides the page's own `.ip-rail` + `#appHeader`; `?theme=dark|light` sets its
+  `data-theme` (`dark-theme` / none), and it listens for `postMessage({ipamTheme})`.
+- **`index.html`**: `IPAM` APPENDED to `MODULES` (index 16) and `RAIL` (index 6, group `network`) so no
+  existing index moves; `MOD_TO_RAIL.IPAM = 6`; in `MF_NO_HOVER`; `ICONS.ipam` = the product's `ip.svg`;
+  `selectModule` → `showView('ipam')` + `ipamInit()`, which builds the iframe on first open (landing on
+  `#overview`) and posts the theme on every `data-theme` change.
+  ⚠️ **postMessage, not `contentDocument`** — over `file://` each page is its own origin.
+- **`setting.html`** carries the same rail data (it is Option 1's chrome); its `showView('ipam')` goes back
+  through the BOOT wrapper as `index.html#m=IPAM` (`ipam` added to `MOD_VIEWS`).
+- ⚠️ Only Option 1 (+ setting.html). The iframe keeps its own state (tab, subnet) for the session.
+- **DS pass (`_ipam/ds_pass.py`, run by `build_ipam.py`)** — the source already used obs-* for its controls; its
+  hand-built READOUTS now are DS too: the main-module grids (`tblSubnets` · `tblIps` · `tblSdIps` · `tblSdHist` ·
+  `tblIpHist` · `tblRogue`) and Overview's Top-N list are **`obs-table`** with its own pager (the hand pager and the
+  paged `svc` calls are gone — all rows go in, `page-size` pages them); stat tiles and the IP Address Status boxes
+  are **`obs-metric-list`**; the IP detail groups are **`obs-key-value`** (tag values keep their colour as a token,
+  the subnet `obs-link` is lifted under the list because key-value cannot host one).
+  ⚠️ The legacy column specs still return HTML; `dsCell()` reads it back into typed cells (obs-tag → `tags`, status
+  pill → `tags`, utilisation → `severity` with the band, two-line cells → one line joined by ` · `). A
+  **MutationObserver** mounts every `obs-table[data-dsgrid]` from `DS_GRID_DATA`, because the source repaints
+  these grids from several paths (some clone nodes). Row clicks go through `DS_ROWCLICK` (`rowclick` event).
+  ⚠️ Not converted: the Settings screens' grids (unreachable — the embed hides the source rail), the filter rail
+  and the IP detail stack panel (already built from obs-button/obs-checkbox/obs-tag/obs-input). The open row is
+  no longer highlighted (obs-table has no "current row" without `selectable`).
+- **Subnet Details list on the DS list-view recipe (`ds_pass.py` §8, 30 Sep 2026)**: toolbar `variant="grid"`;
+  an **`obs-filters kind="bar"`** under it over the subnet facets (Site · Utilisation · Subnet · VLAN · DHCP server ·
+  DHCP scope), driving the same `F` as the faceted rail (`=`/`in` only; the bar is re-derived from `F` each paint and
+  `repaintSubnetsTable` now keeps the LIVE bar); Subnet as a text link + its own **Name** column; Used/Available/
+  Reserved right-aligned and sortable (VLAN · Gateway · Name · Last scan sortable too); `header-style="tinted"`;
+  a row ⋯ (View details · Poll now · Edit subnet). ⚠️ obs-table right-aligns cells but not headers — `dsMount`
+  adopts a sheet with `.grid thead th:nth-child(n)` (the `.grid` is what beats `.grid.hs-tinted th`). Embed only:
+  the title and tab strip sit on the 16px content inset. ⚠️ `F` is module-scoped in the IPAM page — a probe can't read it.
+- **…then reshaped like the product Monitors list (§9, 30 Sep 2026)**: Site · Utilisation · VLAN are standing pills
+  (`obs-select trigger="button" multiple`, default-button tokens re-pointed at the + Filter fill — the bundled
+  obs-filters has no `quickFilters`) on one row with `+ Filter`, which now carries only the non-pill fields; the row is
+  kept LIVE across table repaints (`#snQuick`). Toolbar icons are the DS icon button **`squared`** (35×35, 4px) with
+  16px glyphs — ⚠️ `square` in this bundle means border-radius 0. The funnel **shows/hides the filter row** and is
+  filled (`primary`) while it shows — it used to toggle the facet rail, which the module tabs always hide (dead).
+  No card frame round the grid; the plain uppercase header (not tinted); 50 per page; a utilisation-band legend
+  (obs-severity dots + band names) overlaid on the pager row. ⚠️ The bundled bar never discarded an unpicked chip,
+  so `+ Filter` stacked empty "Select Filter" chips — an outside pointerdown re-feeds the bar its own reflected value
+  (only complete conditions; a trailing space changes the string so its watcher fires). ⚠️ obs-severity's
+  `display-text` is a BOOLEAN here (capitalised level) — band names come from a sibling span.
+- **§10 — grid header + pager** (every converted grid, one adopted sheet `DS_GRID_SHEET`): header 12.8px/600
+  uppercase in `--page-text-color`, 41px, over `--field-border-color` (`--border-color` is ~1.1:1 on the dark canvas);
+  28px page buttons at `--btn-radius` with a hover; the page-size `<select>` drawn like the DS dropdown
+  (`appearance:none` + the Tabler chevron as a data: URI in `--neutral-light`'s exact per-theme value, switched by
+  `:host-context([data-theme="dark-theme"])` — a data: URI cannot read a var()). The subnet legend is placed ON the
+  pager row by measurement (`dsSnLegendPlace`, a ResizeObserver on the table) — a negative margin left it floating.
+  Embed: `.ip-content` keeps 64px of bottom padding so the variant-switcher pill never sits on the pager row.
+- **§11 — IP Details list** gets the Subnet treatment: grid toolbar, `squared` icon buttons, the funnel toggling the
+  filter row, IP status · Site · Device type pills + `+ Filter` for the rest, the IP as a text link, Device type and
+  **Vendor** split, Subnet as its CIDR only, fixed widths dropped (they summed past the pane and wrapped every row),
+  sortable text columns, no card frame. `repaintIpsTable` keeps the live `#ipQuick` row.
+- **§12 — IP Address Status tiles**: dot + label, the value in page ink, its share of the total; left-aligned, no 3px
+  colour band. ⚠️ The source maps Transient → `statusVar('Available')` and Available → `statusVar('Transient')`
+  (swapped against its own colour contract); left as is, since the tags in the grid read the same way.
+- ⚠️ **THE `\\n` TRAP BIT FOUR TIMES in `ds_pass.py`**: a CSS string written as `"…\\n"` inside the `r'''…'''`
+  section wrapper ends up as a literal backslash-n in the page, which invalidates every rule after it — silently.
+  Inside those wrappers write `\n`, and assert a rule actually applies (computed style), not that the text exists.
+- **§13** IP Address Status has no outer box (card border + the widget header's shadow frame, the latter via
+  `--border-color`/`--common-widget-bg` re-pointed on the obs-toolbar host); title, tiles and search share one edge.
+- **§14** every converted grid's header also has a line ABOVE it (`--field-border-color`), and **Rogue Detection**
+  gets the Subnet Details layout: grid toolbar, `squared` buttons, funnel → filter row, Status · Vendor · VLAN pills +
+  `+ Filter` (Switch, Port), sortable columns, 50/page, no card frame. Rogue rows are not in `F`, so their filter
+  state is `DS_RG.f`; `repaintRogueTable` keeps the live `#rgQuick`. (The source never bound `#rogueFilterToggle`.)
+- **§15 — the pager is pinned to the bottom of the screen** on Subnet Details, IP Details and Rogue Detection, like the
+  product Monitors list: the grid fills what is left of the content area, rows scroll inside it under a sticky header,
+  and the pager stays at the foot whatever the row count. ⚠️ **obs-table's pager is INSIDE its scrolling `.box`**,
+  right after the table — sizing the box alone just carried the pager along. The adopted sheet makes `.box` a flex
+  column with `.pager{margin-top:auto; position:sticky; bottom:0}` on the page surface; `dsFit` measures the space
+  (content bottom − its padding − box top) into `maxHeight` + `min-height`, re-run by a ResizeObserver on the content
+  area and card, on window resize, and directly from the funnel handlers (the RO alone missed the filter-row toggle).
+  ⚠️ The sticky pager is `z-index:2`, so the subnet legend (placed over it) needs `z-index:3` or it paints UNDER it.
+  Embed bottom padding is 56px — the variant-switcher pill's height — so the pager sits just above the pill.
+- **§16 — the header holds still across tabs**: the time-range picker (Overview / Rogue only) keeps its box
+  (`visibility:hidden` over the source's `display:none`), so the title and tab strip no longer jump between tabs
+  (probe: identical tops on all four). And **obs-tabs' hover drew the same 4px underline as the active tab**, so the
+  tab under the pointer read as a second selected tab — an adopted sheet (`dsTabsStyle`, every obs-tabs on the page)
+  makes hover a colour change only.
+- **§17 — row action menus** lead with **Edit subnet** (the product's own row menus lead with Edit) and sit on the
+  product's action-dropdown surface — `--action-dropdown-backgroud` (sic, the token's spelling) `#1d2a3e` dark /
+  white light, with `--action-dropdown-text` and `--action-dropdown-hover-bg`. obs-menu paints its panel with
+  `--page-background-color`, which over a grid is the grid's own colour. The menus are inside obs-table's shadow
+  root and re-render on every page/sort, so a MutationObserver on that root adopts the sheet into each new one.
+  ⚠️ `edit` is not an obs-icon name in this bundle (it renders nothing) — the edit glyph is `pencil`.
+- **§18–§21** — IP panel key-value (`dsKvStyle`), Overview Top-N with a severity column and row → subnet, and the
+  **subnet detail page** rebuilt like the product's monitor detail page (`.ip-sdpg`: home › tile · "cidr (name)" + tags,
+  squared Poll/Export/Fullscreen, flat tabs, icon-tile KPIs, filled widget title strips).
+- **§22–§26 (1 Oct 2026) — the Overview grid**: row 1 = Address status · Device Monitoring Status · Subnet Capacity
+  (three across); row 2 = Site Count · Top Device Type and row 3 = Rogue Detection Trend · Overall Subnet Usage Trend
+  (`.ip-ov2`, two across); every card one height (290px since §35). Cards carry the product dashboard's filled title strip
+  (`--code-tag-background-color`) and **no ⋮** (`ovWidget` passes `actions:''`, scoped to `screenOverview`, so the subnet
+  detail's widgets keep theirs). Both donuts take `legendRight` — a vertical mono `Name: value` legend right of the chart
+  — and `drawCentre` now puts a small label OVER a mono figure for EVERY IPAM donut.
+- **Upstream sync (1 Oct 2026)**: the source gained a **Monitoring Status** column in `IP_COLS` (so IP Details too), kept
+  Connected switch/port on the subnet detail's IP grid, and added a per-row ⋮ **Discover Device** (`SD_IPS_ROW_MENU`,
+  `discoverDeviceForIp`). The DS grid drops `<obs-menu>` cells, so §26 maps that menu onto obs-table `rowActions`.
+  No ds_pass anchor broke. ⚠️ `scan` IS an obs-icon in this bundle (checked); `discovery` / `radar` are not.
+- **§27 — a `legendRight` donut is centred AS A GROUP** (donut + gap + legend) in its card: each render sets EQUAL
+  `spacingLeft/Right` so the plot is as wide as it is tall, with `legend.margin` 28. ⚠️ Moving the PIE instead
+  (`series.update({center})` + a floating legend inside the render event) rebuilt the series mid-paint — the legend
+  collapsed to one swatch and the centre label vanished. Only chart-level spacing is updated; a render that updates
+  skips `paint` (the nested render paints). ⚠️ `.highcharts-pie-series`'s DOM rect does NOT report the drawn pie —
+  probe geometry from `chart.series[0].center` / `plotLeft`, or from the screenshot.
+- **§28 — Site Count / Top Device Type are the product's Top-N bar** (`vizTopN(…, { product:true })` →
+  `barTopNProduct`): one series colour (the palette's first), mono category and value labels, a count axis along the
+  floor with vertical gridlines, square bar ends. ⚠️ The bars draw the RAW count (each row's `label`), not
+  `vizTopN`'s `v`, which is a share — an axis under a share would print a scale these cards never meant. Opt-in, so
+  any other `barTopN` keeps its look. Category labels no longer clip ("Windows Server", "Vadodara Plant").
+  Donut centre (§25) is 17px label over a 26px/600 mono figure.
+- **§29** — the two Overview trends carry a one-series legend (`DSCharts.line`'s opt-in `legendOne`: a line swatch +
+  the series name in mono, centred under the plot). Passed from the Overview calls only; the subnet detail's trend
+  still has none. ⚠️ `b.legend.enabled = (o.legend !== false) …` appears in TWO chart functions — anchor on `line(`.
+- **§30 — Site Count is a TREEMAP** (`vizTreemap` + `dsTreemapLayout`, squarified, laid out in % so it scales with the
+  card), filling the card body edge to edge (its padding dropped). ⚠️ The vendored Highcharts has NO treemap module and
+  this page must work offline, so it is HTML tiles: `--ds-series-N` fills by order, mono `--active-text-color` (#fff in
+  both themes) ink, names break only at spaces. Tiles size from `pct` (raw) — `v` is a formatted string.
+- **§31 — Subnet Capacity**: the Name column is gone; Utilization gains a 24 h sparkline — obs-table's own `sparkline`
+  cell, sized and recoloured by `DS_SPARK_SHEET`. Padding the series with its MINIMUM at both ends makes the polyline's
+  `fill` close along the baseline, so it reads as a shaded area. History is deterministic per subnet (`dsUtilSpark`)
+  and ends on today's real value.
+- **§32 — that sparkline is drawn like the DS's `spark-style="area"`** (columns Subnet · Utilization · **Sparkline**,
+  wide and last): the 24 points are Catmull-Rom resampled (the cell draws straight segments, so smoothness has to be in
+  the DATA), and a `<linearGradient id="dsSparkGrad">` is appended INTO the table's shadow root (`dsSparkDefs`) — an
+  SVG id is scoped to its tree, so page-level `<defs>` are invisible there. ⚠️ `spark-style`, `spark-color` and
+  `obs-widget-card` exist only in DS **0.1.240**; this page vendors **0.1.166** inline. Upgrading that bundle would
+  replace all of this with the native attribute — a separate, larger change.
+- **§33–§35 — the Overview cards' frame**: Subnet Capacity's Utilization is plain text (the band dot removed on
+  request); every card body has **no padding** (charts, treemap and table run to the edge); the header strip's own
+  frame is off (`--border-color: transparent` on the obs-toolbar host — `.tb.v-widget` drew a second border inside the
+  card's); **every card is 290px**, `box-sizing:border-box` so the border is inside the 290, with each chart drawn at
+  244 to fit the ~248px body. The Subnet Capacity scroller is sized from the body's own height (−6px, or it overhangs
+  5px). "Rogue Devices Trend" is **Rogue Detection Trend** on the Overview, legend "Rogue detection"
+  (`lineOpts.seriesName`, so the Rogue Detection tab's chart keeps its wording).
+- **§36–§38 — subnet detail**: "Total IP" and "IP utilisation" are ONE card (`dsSdKpiUtil`), shaped like the
+  product's CPU tile — icon, title, "Total IP: 254", the figure with a small unit, a bar filled to the % in its band
+  colour; no "% free", no "Used: N". The other four tiles lost their "N% of total" caption. Five tiles, not six.
+  IP History gained a **search box** (`sdHistSearch`) that filters the obs-table's own rows in place — the field is
+  never rebuilt, so it keeps focus — and both tabs' toolbars sit 12px above their grid. ⚠️ `on(sel, ev, fn)` is a
+  LOCAL of another function in this file: called from the subnet-detail wiring it threw, and took every binding after
+  it (the history rows' click) down with it. Bind with `view.querySelector(...).addEventListener` there.
+- **§39–§55 (1 Oct 2026), the list screens and the IP panel**:
+  - list toolbars sit 12px above their grid; the edge filter button's tooltip opens LEFT (`obs-tooltip` takes only
+    top/bottom/left/right, and `.ip-card`'s overflow clipped a centred one);
+  - the grid pager keeps only a **top** border (a boxed version was tried and reverted); ⚠️ it must stay
+    `flex:0 0 auto` — as a shrinkable flex child of the fitted `.box` it collapsed to 6px;
+  - every search box shows its magnifier LEFT (`DS_SEARCH_SHEET`, adopted into each `obs-input[type=search]` by a
+    document observer) and reads "Search"; subnet detail IP Details and IP History, and the IP panel's History,
+    filter the obs-table's own rows in place (`sdGridFilter`), so the field keeps focus;
+  - the row-actions column is titled **Action** (`th:last-child:empty::after`); a text value in a tag column is a
+    plain `ip-plain` tag (no fill), and tags never wrap;
+  - Subnet Details' Utilisation is obs-table's **bar** cell, % under the track, the fill repainted per value in the
+    legend's bands (`dsBarPaint`, Critical ≥90 · High ≥75 · Moderate ≥50 · Healthy) — ⚠️ a column-direction
+    `.cell-bar` needs `.bar-track{flex:0 0 6px}` or the track is 0px tall;
+  - the **Vendor** column is the vendor's LOGO (`dsVendorEnhance`, an `icon` cell with a private name painted by
+    the grid sheet). Coloured: Aruba + VMware from `observeops-icons/monitors`; Cisco · Dell · HP · Lenovo · Siemens
+    are Simple Icons (CC0) in each brand's official colour; Apple and Supermicro (near-black) stay a theme-adaptive
+    mask; **Axis has no mark in any free set** and shows `globe`. Marks live in `_ipam/vendor_logos.json`;
+  - the IP detail panel is laid out like the product's monitor panel (icon tile · bold IP + "| host | vendor" · tag
+    row · sentence-case section headings with rules between · **Discover device**, now a PRIMARY button, at the
+    right end of the tab row); its History grid is fitted so the pager sits at the panel's foot (`DS_FIT` +
+    `dsFit` measuring `.ip-sp-body`);
+  - KPI cards (subnet detail + IP Details): "Total IP" (was IP utilisation) · IP Used · IP Available · IP
+    Transient · IP Reserved, no captions but "254 addresses", counts on one baseline, and the DS's own IPAM glyphs
+    `total-ip` · `lease-ip` · `available-ip` · `transient-ip` · `lock-alt` (all confirmed to render in 0.1.166);
+    the IP Details "IP Address Status" heading is gone.
+- **The IPAM module icon is the supplied `ipam-hub-hex-pointy.svg`** (`ICONS.ipam` in `index.html` and
+  `setting.html`, 24-grid). ⚠️ It is drawn with holes, so its record carries `evenodd: true` and both `ico()` and
+  `setIco()` now emit `fill-rule="evenodd"` for such an entry — without it the hex ring fills in solid. The
+  Settings › IPAM category icon (`ST_ICO.ipam` in `setting-nav.js`) was NOT changed.
+- **§56 — inside the IPAM page, obs-icon `ip` IS the module mark everywhere**: the subnet header tile, the IP
+  panel tile, the IP Details module tab, the IPAM nav/Settings entries. Those last ones are drawn by DS components in
+  THEIR OWN shadow roots, which no page rule reaches, so a script at the top of `<head>` (before the bundle) wraps
+  `attachShadow` and adopts one sheet into every obs-icon: `:host([name="ip"])` hides the stock glyph (visibility —
+  the box keeps its size) and paints `_ipam/ipam-module-icon.svg` as a mask in currentColor. ⚠️ It relies on the
+  `name` ATTRIBUTE being reflected, which it is in 0.1.166 (checked inside obs-tabs too). The KPI cards use the DS's
+  `total-ip` family, not `ip`, so they are untouched.
+- **§57–§59**: the module tabs (Overview · Subnet Details · IP Details · Rogue Detection) carry no icons; the
+  page title leads with the module mark in `obs-page-header`'s `before` slot (no background, centred on the title's
+  line, 10px gap); the Site Count treemap tiles meet edge to edge (no border).
+- ⚠️ **An `obs-gauge` row for the IP Details status tiles was built and REMOVED on request (1 Oct 2026).** The DS
+  routes "count against a group total" to `obs-gauge` (DS 0.1.240, not in this 0.1.166 bundle) and it was
+  reproduced to spec; the user asked for it to be taken back out. The tiles stay the KPI-card design. Don't rebuild
+  it without asking.
+
 ## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
 
 The IPAM module prototype (`~/Downloads/ipam-standalone.html`) carries its own Settings rail; its
