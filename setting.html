@@ -11900,6 +11900,7 @@ body.ntfbr .cwfab{bottom:calc(var(--ntf-bh,0px) + 32px)}
 #ntfBL .ntf{background:#162336}
 html[data-theme="light"] #ntfBL .ntf{background:var(--card)}
 body.ntfbl .ntfpos{bottom:calc(var(--ntf-blh,0px) + 32px)}
+body.ntfoff .ntfpos{display:none}   /* notifications off — see NTF_KEY */
 .ntfpos{position:fixed;left:calc(var(--rail-w,53px) + 16px);bottom:18px;z-index:200008;display:flex;align-items:center;gap:6px;
   padding:4px 4px 4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11.5px;color:var(--text-dim);
   box-shadow:0 4px 14px rgba(0,0,0,.25)}
@@ -15516,6 +15517,11 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 /* IPAM Option 2: the form and its help card side by side (see ipmHelpHTML). The body stops scrolling as a
    whole — each column scrolls on its own, so the card stays beside the field you are reading about. */
 .ipm .ip-sp-body:has(> .ipmarwrap){overflow:hidden;padding:0}
+/* the Add Rule drawer: form left, help card right (2 Oct 2026) */
+#ipmFm .ipmfmwrap{display:flex;align-items:stretch;min-height:100%}
+#ipmFm .ipmfmwrap > .ip-form{flex:1 1 auto;min-width:0;padding-right:20px;align-content:start}
+#ipmFm .ipmfmwrap > .ipmhelp{margin:-20px -20px -20px 0}
+#ipmFm .ipmfmwrap > .ipmhelp[hidden]{display:none}
 .ipmarwrap{display:flex;height:100%;min-height:0}
 .ipmarform{flex:1 1 auto;min-width:0;overflow:auto;padding:20px}
 .ipmhelp{flex:0 0 420px;min-width:0;overflow:auto;border-left:1px solid var(--border-color);padding:20px;font-size:12.8px;line-height:1.6;color:var(--page-text-color)}
@@ -15547,10 +15553,13 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 .ipm .ipmba{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border:1px solid var(--border-color);border-radius:4px;
   background:transparent;color:var(--page-text-color);font:inherit;font-size:13px;cursor:pointer}
 .ipm .ipmba svg{width:16px;height:16px;flex:0 0 16px}
-.ipm .ipmba:hover{background:var(--neutral-lightest,var(--hover))}
+/* hover = the DS DEFAULT button's own hover (request, 2 Oct 2026: "a light hover, using the ObserveOps design system") —
+   lighter fill, lighter border, brighter text. It painted --neutral-lightest before, the bar's own colour, so it showed nothing. */
+.ipm .ipmba{transition:background .12s,border-color .12s,color .12s}
+.ipm .ipmba:hover{background:var(--default-button-hover-bg,var(--neutral-lighter));border-color:var(--default-button-hover-border,var(--border-color));color:var(--default-button-hover-text,var(--page-text-color))}
 .ipm .ipmba:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
 .ipm .ipmba.danger{color:var(--secondary-red,var(--red));border-color:var(--secondary-red,var(--red))}
-.ipm .ipmba.danger:hover{background:color-mix(in srgb,var(--secondary-red,var(--red)) 14%,transparent)}
+.ipm .ipmba.danger:hover{background:color-mix(in srgb,var(--secondary-red,var(--red)) 16%,transparent);border-color:var(--secondary-red,var(--red));color:var(--secondary-red,var(--red))}
 .ipm.ip-sp-scrim.ipmcr{z-index:100003}
 .ipm.ip-stackpanel.ipmcr{z-index:100004;width:684px}
 .ipm .ipmpw{display:flex;align-items:center;gap:4px;min-height:32px;box-sizing:border-box;padding:0 4px 0 8px;border:1px solid var(--border-color);border-radius:4px;background:var(--page-background-color)}
@@ -17291,7 +17300,10 @@ const RAIL = [
      never slotted: `activeRail` and `MOD_TO_RAIL` store indices into this array. Setting is a
      `foot` row and skipped in the list, so in display order IPAM follows Report, under its own
      hairline (`network` group). Its screen is the vendored `_ipam/ipam.html` in an iframe. */
-  { name:'IPAM',      icon:'ipam',            mod:'IPAM',            group:'network' },
+  /* ⚠️ `sub:true` (2 Oct 2026: "the main IPAM module will be set in Explorer between NetRoute and Log"): IPAM left the
+     rail for Explorer's list. The entry STAYS here at index 6 (indices are stored); renderMenu skips it like a `foot`
+     row, MOD_TO_RAIL lights Explorer while it is open, and EXPLORER_TREE carries its row. */
+  { name:'IPAM',      icon:'ipam',            mod:'IPAM',            group:'network', sub:true },
 ];
 let activeRail = 0;
 
@@ -17581,6 +17593,10 @@ const EXPLORER_TREE = [
       ['Virtualization','Topology'], ['HCI','Topology'], ['Custom','Topology'] ]},
   { l:'NCCM',     mod:'NCCM',          ic:'ncm', kidsAs:'pages', route:'/nccm/', doc:'network-configuration-and-compliance-management/overview', kids:[ ['Compliance','NCCM'], ['Compare','NCCM'] ]},
   { l:'NetRoute', mod:'NetRoute',      ic:'netroute', route:'/netroute/', doc:'netroute/overview' },
+  { l:'IPAM',     mod:'IPAM',          ic:'ipam',     route:'/ipam/', kidsAs:'tabs', kids:[   /* moved off the rail, 2 Oct 2026 */
+      /* IPAM's own four tabs (2 Oct 2026) — each opens IPAM ON that tab (ipamTab → the embedded page's hash) */
+      ['Overview','IPAM',"ipamTab('Overview')"], ['Subnet Details','IPAM',"ipamTab('Subnet Details')"],
+      ['IP Details','IPAM',"ipamTab('IP Details')"], ['Rogue Detection','IPAM',"ipamTab('Rogue Detection')"] ]},
   { l:'Log',      mod:'Log Explorer',  ic:'log', route:'/log/', doc:'log-management/overview' },
   /* ⚠️ APM's FOUR TABS ARE ITS CHILDREN (request, 9 Sep 2026: "the same thinking in APM", with
      the live tab bar as the picture) — the same relationship Monitor's types and Topology's maps
@@ -17629,7 +17645,7 @@ const MOD_TO_RAIL = {};
 [['Dashboards',0],['Alerts',1],['SLO',2],
  ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
  ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
- ['Reports',4],['Settings',5],['IPAM',6]
+ ['Reports',4],['Settings',5],['IPAM',3]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 /* ══ PINNED SUB-MODULES ════════════════════════════════════════════════════════════════
    Request, 27 Aug 2026: "in the explorer all sub module will be I pin and unpin, and when
@@ -17656,7 +17672,7 @@ const MOD_TO_RAIL = {};
    record that aborting `init()` five times.
    ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
    else and the band renders empty — no error, just nothing on the rail. */
-let RAIL_PINS = ['Monitor'];
+let RAIL_PINS = ['Monitor', 'IPAM'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer */
 /* ══ THE RAIL CARRIES TWO PINNED BANDS, AND THEY ANCHOR TO DIFFERENT ROWS ══════════════════
    Two requests, minutes apart on 11 Sep 2026, and asking which was meant settled it as BOTH:
      "when I pin ANY sub-module it will show in between [the] Explorer and Report icon"
@@ -18091,7 +18107,7 @@ function renderMenu(){
        It is tested BEFORE the group logic for the same reason a hidden row is: `Setting` is the
        only member of the `admin` group, so leaving it to the group test would emit a divider
        introducing a band with nothing in it. */
-    if (r.foot) return;
+    if (r.foot || r.sub) return;   /* `sub`: lives in Explorer's list (IPAM) */
     if (i === homeIdx) return;                 /* already at the top */
     if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
     last = r.group;
@@ -19984,13 +20000,20 @@ function sbHeld(){
 /* ================= Views ================= */
 /* IPAM — lazily build the iframe; re-point it when the theme flips so the module follows ours. */
 function ipamTheme(){ return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+/* an Explorer child row (Overview · Subnet Details · IP Details · Rogue Detection) names the tab in MOD_SUB — the
+   same carrier Monitor's rows use, and the one setting.html's hand-off passes as &sub= */
+const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
+function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 function ipamInit(){
   const h = document.getElementById('ipamHost'); if (!h) return;
   let f = h.querySelector('iframe');
+  let tab = null; try { tab = IPAM_TAB_HASH[MOD_SUB] || null; if (tab) MOD_SUB = ''; } catch (e) {}
+  /* the page routes on hashchange, so an already-open frame only needs its hash moved — no reload */
+  if (f && tab) { f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#' + tab; return; }
   if (!f){
     f = document.createElement('iframe');
     f.title = 'IPAM'; f.className = 'ipamfr';
-    f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#overview';
+    f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#' + (tab || 'overview');
     h.appendChild(f);
     new MutationObserver(() => {
       /* postMessage, not contentDocument — over file:// every page is its own origin, so a direct
@@ -21018,7 +21041,13 @@ function ntfDemo(){
   ntfShow({sev:'Major', mode:'close', text:'Disk usage on db-primary (198.51.100.12) has crossed 85%. Free up space or extend the volume to avoid write failures.'});
   ntfShow({sev:'Warning', mode:'auto', text:'License usage for Monitored Devices is at 82% of its allotment. This message closes by itself.'});
 }
-setTimeout(ntfDemo, 1200);
+/* ⚠️ NOTIFICATIONS ARE OFF BY DEFAULT (request, 2 Oct 2026) — the preference is Settings › My Account ›
+   My Profile › Notifications, stored in localStorage so every page reads the one value. Off also hides the
+   Critical-notification design switch (`.ntfpos`), which has nothing to switch while no bar is shown. */
+const NTF_KEY = 'oo-notifications';
+function ntfEnabled(){ try { return localStorage.getItem(NTF_KEY) === 'on'; } catch(e){ return false; } }
+document.body.classList.toggle('ntfoff', !ntfEnabled());
+if (ntfEnabled()) setTimeout(ntfDemo, 1200);
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
@@ -39862,6 +39891,15 @@ function lxLtPaint(){
       /* request, 28 Sep 2026: a selected row carries no left accent bar in IPAM's grid — the ticked
          checkbox already says it is selected */
       ':host(.ipmsel) tr.row-selected td:first-child{box-shadow:none}' +
+      /* obs-table renders its own bulk toolbar ("N items selected") even with hide-selection-info, which drew a SECOND
+         pill under the page's bar — the page's bar is the one that carries the actions (2 Oct 2026) */
+      ':host(.ipmsel) obs-toolbar{display:none !important}' +
+      /* the doubled rule over the header (request, 2 Oct 2026: "remove extra line"): obs-table's sticky header paints its
+         top/bottom rules as INSET box-shadows AND the cell keeps its own borders — two 1px lines stacked. IPAM's grids keep
+         the shadows (they survive sticky scrolling) and drop the borders. */
+      ':host(.ipmname) .grid thead th,:host(.ipmname) .grid.hs-default thead th,:host(.ipmname) .grid.hs-tinted thead th,:host(.ipmsch) .grid thead th{border-top:0 !important;border-bottom:0 !important}' +
+      /* Option 2's Subnet Approval: rows tick, the header has no select-all (request, 2 Oct 2026) */
+      ':host(.ipmnoall) thead th.ck obs-checkbox,:host(.ipmnoall) thead th:first-child obs-checkbox{visibility:hidden}' +
       ':host(.ipmdrag) tbody td:first-child .cell-ic-btn{cursor:grab}' +
       ':host(.ipmdrag) tbody tr.ipmdragsrc{opacity:.45}' +
       ':host(.ipmdrag) tbody tr.ipmdropb td{box-shadow:inset 0 2px 0 var(--primary)}' +
@@ -40176,6 +40214,8 @@ function stProfileHTML(){
       ${stField('user','User Name',{req:1,dis:1,ph:'Must be unique'})}
       ${stField('email','Email Address',{req:1})}
       ${stField('mobile','Mobile Number',{})}
+      <div class="stfi"><div class="stfl">Notifications</div><div class="stfc">
+        <button type="button" class="stsw${stNtfOn()?' on':''}" id="stNtfSw" role="switch" aria-checked="${stNtfOn()}" onclick="stNtfTog(this)"><span class="lb">${stNtfOn()?'ON':'OFF'}</span></button></div></div>
       <div class="stfi"><div class="stfl">Change Password</div><div class="stfc">
         <button type="button" class="stsw${ST.pw?' on':''}" role="switch" aria-checked="${ST.pw}" onclick="stPwTog()"><span class="lb">${ST.pw?'ON':'OFF'}</span></button></div></div>
       ${ST.pw ? stPwField('old','Current Password','') + stPwField('nw','Password','Do not use simple password') + stPwField('cf','Confirm Password','Same as the password field') : ''}
@@ -40192,6 +40232,17 @@ function stIn(k, v){
   ST.data[k] = v;
   if (k === 'first' || k === 'last'){ if (!ST.avatar){ const a = document.querySelector('#stAv .stavc'); if (a) a.textContent = stInitials(); } }
   if (ST.tried){ stErrSet(k, stValidate(k)); if (k === 'nw' && ST.pw) stErrSet('cf', stValidate('cf')); }
+}
+/* Notifications ON/OFF — saved the moment it is pressed (it is a preference, not a profile field, so
+   Update My Profile / Reset do not touch it). Default OFF. Read by the dashboard's ntfEnabled(). */
+function stNtfOn(){ try { return localStorage.getItem('oo-notifications') === 'on'; } catch(e){ return false; } }
+function stNtfTog(b){
+  const on = !stNtfOn();
+  try { localStorage.setItem('oo-notifications', on ? 'on' : 'off'); } catch(e){}
+  b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
+  b.querySelector('.lb').textContent = on ? 'ON' : 'OFF';
+  document.body.classList.toggle('ntfoff', !on);
+  if (typeof toast === 'function') toast('Notifications turned ' + (on ? 'on' : 'off'));
 }
 function stPwTog(){
   ST.pw = !ST.pw;
@@ -41494,7 +41545,9 @@ function dpSchedule(id){
   dpSfPaint(true);
 }
 function dpSfPaint(open){
-  const S = DP.sf, r = DP.rows.find(x => x.id === S.id), E = S.err;
+  const S = DP.sf, E = S.err;
+  /* IPAM seed routers use this same form (request, 2 Oct 2026: "change the scheduler flow" to the Schedule Discovery drawer) */
+  const r = S.ipm ? { n: (IPM_ROUTERS.find(x => x.id === S.ipm) || {}).name || '' } : DP.rows.find(x => x.id === S.id);
   const seg = (k, opts, cur) => `<div class="dpseg">${opts.map(o => `<button type="button" class="${cur===o?'on':''}" onclick="DP.sf.${k}=${stA(o)};dpSfPaint()">${o}</button>`).join('')}</div>`;
   const fi = (k, lab, req, inner) => `<div class="dpfi${E[k]?' err':''}"><span class="dplab${req?' req':''}">${lab}</span>${inner}</div>`;
   const sel = (txt, ph, on) => `<div class="dpsel" onclick="${on}"><span class="v${txt?'':' ph'}">${txt ? dpEsc(txt) : ph}</span>${stcSvg('chevron-down','car')}</div>`;
@@ -41510,7 +41563,7 @@ function dpSfPaint(open){
     ${S.showBcc ? fi('bcc', 'Bcc', 0, `<input class="dpin" placeholder="Email" value="${dpEsc(S.bcc)}" oninput="DP.sf.bcc=this.value">`) : ''}
     <label class="dpck"><span class="stcck${S.auto?' on':''}" onclick="DP.sf.auto=!DP.sf.auto;this.classList.toggle('on')">${stcSvg('check')}</span>Auto Provision</label>
   </div>`;
-  const foot = `<button class="stbtn pri" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="dpSchedule(${S.id})">Reset</button>`;
+  const foot = `<button class="stbtn pri" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="${S.ipm ? `ipmDpSchedule(${stA(S.ipm)}, ${stA(S.sid || '')})` : `dpSchedule(${S.id})`}">Reset</button>`;
   if (open) stcDrOpen(`${r.n} Schedule Discovery`, body, foot); else document.getElementById('stcDrB').innerHTML = body;
 }
 function dpSfTog(k, v){ const a = DP.sf[k], i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); dpSfPaint(); }
@@ -41526,6 +41579,7 @@ function dpSfSubmit(){
   if (S.type === 'Weekly' && !S.days.length) S.err.days = 1;
   if (S.type === 'Monthly'){ if (!S.months.length) S.err.months = 1; if (!S.dates.length) S.err.dates = 1; }
   if (Object.keys(S.err).length){ dpSfPaint(); return; }
+  if (S.ipm) return ipmDpSave();
   const r = DP.rows.find(x => x.id === S.id);
   r.sched = {type:S.type, date:S.date, hour:S.hour, days:S.days, months:S.months, dates:S.dates, notify:S.notify, bcc:S.bcc, auto:S.auto};
   stcDrClose(); stMainPaint(); toast(`“${r.n}” scheduled — ${dpSchedText(r.sched)}`);
@@ -41956,7 +42010,9 @@ const ipmSubnetTags = r => {
      rejected). The text rides as a tag whose variant `ipmplain` is styled flat in the obs-tag hook, because
      obs-table's `tags` cell renders tags only. */
   if (IPM.opt === '2'){
-    const ap = r.approved || 0, tot = pend + ap + (r.rejected || 0);
+    /* total = approved + pending ONLY (request, 2 Oct 2026: "when I reject the subnet it will be removed from the total") —
+       a rejected subnet is not one this router is tracking any more, so it leaves the denominator */
+    const ap = r.approved || 0, tot = pend + ap;
     /* approved FIRST, pending after it (request, 29 Sep 2026: "swap the pending and approved") — and the
        approved count is a neutral TAG, not plain text ("show as tag") */
     t.push({ label: ap + '/' + tot + ' approved', variant: 'tag-primary' });
@@ -41978,7 +42034,8 @@ const IPM = {
   fm: null,          /* { kind, id, data } — Add/Edit Rule, Add/Edit Vendor */
   cf: null,          /* the pending confirm's onOk */
   opt: '1',          /* the review switch — Option 1 / Option 2 (see IPM_OPTS) */
-  grp: true          /* Option 2's Discovery Profiles grid grouped by site — the toolbar's group toggle */
+  grp: false         /* Option 2's Discovery Profiles grid grouped by site — the toolbar's group toggle. OFF by default
+                        (request, 2 Oct 2026: "by default show without group"); the toggle still turns it on */
 };
 /* ⚠️ OPTION 2 IS A COPY BY CONSTRUCTION (request, 29 Sep 2026: "copy IPAM and create option 2 as it is").
    Both options render through the same builders; a difference is an `IPM.opt === '2'` branch at the part
@@ -42073,7 +42130,8 @@ const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') &
   /* the product's own run glyph — a play inside a circular arrow (request, 28 Sep 2026, with its SVG).
      obs-icon ships it as `restart`, the path identical, and it is what this module's Discovery Profile
      list already uses for Run. It replaced `play-circle`, which replaced the source's `scan`. */
-  sched: { icon: 'schedule', label: 'Schedule' },
+  /* icon only when scheduled — an unscheduled row gets '' (obs-table renders an object with an empty icon as a glyph) */
+  sched: ipmHasSched(r.id) ? { icon: 'schedule', label: 'Schedule' } : '',
   discover: { icon: 'restart', label: 'Discover now' }, menu: { icon: 'ellipsis-v', label: 'Actions' } }));
 const IPM_PENDING_COLS = [
   /* the five columns share the grid's width (request, 28 Sep 2026: "the grid will be full width") —
@@ -42170,10 +42228,11 @@ function ipmBulkPaint(){
   b.innerHTML = `<label class="ipmbulkn"><obs-checkbox id="ipmBulkCk" checked aria-label="Clear selection"></obs-checkbox><span aria-live="polite">${n} item${n === 1 ? '' : 's'} selected</span></label>`
     + (ipmKind() === 'rules'
       ? act('ipmBulkDel', IPM_BA_ICO.trash, 'Delete', true)
-      : act('ipmBulkOk', IPM_BA_ICO.approve, 'Approve') + act('ipmBulkNo', IPM_BA_ICO.reject, 'Reject', true));
+      : act('ipmBulkOk', IPM_BA_ICO.approve, 'Approve') + act('ipmBulkGuest', IPM_BA_ICO.approve, 'Approve as guest subnet') + act('ipmBulkNo', IPM_BA_ICO.reject, 'Reject', true));
   const on = (sel, fn) => { const el = b.querySelector(sel); if (el) el.addEventListener('click', () => ipmTap(fn)); };
   b.querySelector('#ipmBulkCk').addEventListener('change', ipmSelClear);
   on('#ipmBulkOk', () => ipmDecideMany(true));
+  on('#ipmBulkGuest', () => ipmDecideMany(true, true));   /* approve as a GUEST subnet (2 Oct 2026) */
   on('#ipmBulkNo', () => ipmDecideMany(false));
   on('#ipmBulkDel', ipmRulesDeleteMany);
 }
@@ -42181,7 +42240,7 @@ function ipmBulkPaint(){
    Site Separation Rules, whose only bulk action is Delete (a rule has nothing to approve) */
 /* (the Site Separation Rules grid carried a Delete bar for an hour and it was removed on request —
    ipmRulesDeleteMany is kept, unreferenced, the house pattern) */
-const ipmBulkOn = () => ipmKind() === 'routers' && IPM.tab === 'approval' && IPM.opt !== '2';   /* Option 2 has no bulk bar */
+const ipmBulkOn = () => ipmKind() === 'routers' && IPM.tab === 'approval';   /* both options carry the bar since 2 Oct 2026 */
 function ipmRulesDeleteMany(){
   const ids = IPM.sel.slice(), n = ids.length; if (!n) return;
   ipmConfirm({ title: n === 1 ? 'Delete this site separation rule?' : `Delete ${n} site separation rules?`, icon: 'trash', confirmText: 'Delete',
@@ -42190,9 +42249,21 @@ function ipmRulesDeleteMany(){
       IPM.flash = { title: n === 1 ? 'Rule deleted' : n + ' rules deleted', body: n === 1 ? 'The site separation rule has been removed.' : 'The site separation rules have been removed.' }; stMainPaint(); } });
 }
 function ipmSelClear(){ IPM.sel = []; const t = document.getElementById('ipmTbl'); if (t) t.selected = '[]'; ipmBulkPaint(); }
-function ipmDecideMany(approve){
+function ipmDecideMany(approve, guest){
   const rows = IPM_PENDING.filter(x => IPM.sel.includes(String(x.id))); if (!rows.length) return;
+  /* ONE subnet's Approve / Approve as guest opens the APPROVE PANEL — the same drawer the row menu opens, the
+     discovery form prefilled from the seed router (request, 2 Oct 2026, with the published page as the reference) —
+     instead of a bare confirm. Reject keeps its confirm: there is nothing to fill in to reject. */
+  if (approve && rows.length === 1) return ipmApproveOpen(rows[0].id, !!guest);
   const n = rows.length, noun = n === 1 ? rows[0].cidr : n + ' subnets';
+  /* a GUEST subnet is approved — it joins the known-subnets list — but marked guest: tracked, not treated as part of the
+     managed estate (no rogue alerting on what joins it). It counts as approved on the seed router like any other. */
+  if (guest) return ipmConfirm({ title: 'Approve ' + noun + ' as guest subnet?', icon: 'checkCircle', variant: 'primary', confirmText: 'Approve as guest',
+    body: (n === 1 ? ipmEsc(rows[0].cidr) + ' joins' : 'They join') + ' the known-subnets list as a GUEST subnet — its addresses are tracked, but devices on it are not treated as part of the managed estate.',
+    onOk: () => { const ids = rows.map(r => r.id); IPM_PENDING = IPM_PENDING.filter(x => !ids.includes(x.id));
+      rows.forEach(r => { r.guest = true; const rt = IPM_ROUTERS.find(x => x.name === r.device); if (rt) rt.approved = (rt.approved || 0) + 1; });
+      IPM.sel = []; IPM.flash = { title: n === 1 ? 'Subnet approved as guest' : n + ' subnets approved as guest', body: rows.map(r => r.cidr).join(', ') + ' added to the known-subnets list as guest.' };
+      stMainPaint(); } });
   ipmConfirm({ title: (approve ? 'Approve ' : 'Reject ') + noun + '?', icon: approve ? 'checkCircle' : 'timesCircle',
     variant: approve ? 'primary' : 'error', confirmText: approve ? 'Approve' : 'Reject',
     body: approve
@@ -42246,9 +42317,10 @@ function ipmRoutersBody(){
     <obs-toolbar>${ipmToolbarSearch('Search pending subnets…')}<span class="ip-spacer"></span>${ipmFltBtn()}</obs-toolbar>
     ${ipmChipsHTML()}
     ${IPM.opt === '2'
-      /* OPTION 2 has NO bulk approve / reject (request, 29 Sep 2026) — no checkboxes, no bulk bar; each row's
-         ⋮ Actions menu carries Approve / Reject instead */
-      ? ipmTable('No subnet is waiting on approval', ' sortable', 'ipmname ipmic ipmmenu')
+      /* OPTION 2 (request, 2 Oct 2026 — reverses 29 Sep's "no bulk"): row checkboxes + the bulk Approve / Reject bar,
+         and NO select-all box in the header (ipmnoall) */
+      ? `<div class="ipmselw">${ipmTable('No subnet is waiting on approval', ' sortable selectable hide-selection-info', 'ipmname ipmsel ipmnoall')}
+      <div class="ipmbulk" id="ipmBulk" role="toolbar" aria-label="Bulk actions" hidden></div></div>`
       : `<div class="ipmselw">${ipmTable('No subnet is waiting on approval', ' sortable selectable hide-selection-info', 'ipmname ipmsel')}
       <div class="ipmbulk" id="ipmBulk" role="toolbar" aria-label="Bulk actions" hidden></div></div>`}`;
   /* the three tools are the DS icon button for a toolbar (button registry: "icon-only /
@@ -42400,6 +42472,11 @@ function ipmDhSave(){
    the source's one window; the source has no way to ADD a window, so neither does this; the date fields are obs-input
    text in DD/MM/YYYY as the source's are (obs-date-time-picker field-date takes no starting value). */
 let IPM_SCHED = {};
+/* profiles with NO schedule (request, 2 Oct 2026: the Scheduler column shows its icon only for a scheduled discovery
+   profile; "the first 3 rows I don't schedule" — the first three of Option 2's grid). Their list starts empty instead of
+   being seeded, and saving the scheduler form is what gives them one. */
+const IPM_UNSCHED = new Set(['rtr-1', 'rtr-6', 'rtr-7']);
+const ipmHasSched = rid => ipmSchList(rid).length > 0;
 const IPM_SCH_TYPES = [{ key: 'Once', label: 'Once' }, { key: 'Daily', label: 'Daily' }, { key: 'Weekly', label: 'Weekly' }, { key: 'Monthly', label: 'Monthly' }];
 const IPM_SCH_HOURS = (() => { const o = []; for (let h = 0; h < 24; h++) for (let m = 0; m < 60; m += 5) o.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')); return o; })();
 const IPM_SCH_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -42417,9 +42494,36 @@ const IPM_SCH_COLS = [
   { key: 'on', title: 'Actions', width: '12%', type: 'switch', align: 'right' }
 ];
 const IPM_SCH_ACTIONS = [{ key: 'edit', label: 'Edit Scheduler', icon: 'pencil' }, { key: 'delete', label: 'Delete Scheduler', icon: 'trash', danger: true }];
-const ipmSchList = rid => IPM_SCHED[rid] || (IPM_SCHED[rid] = [{ id: 'sch-' + rid + '-1', type: 'Once', startDate: '30-06-2026', startAt: '30-06-2026 00:10',
+const ipmSchList = rid => IPM_SCHED[rid] || (IPM_UNSCHED.has(rid) ? [] : IPM_SCHED[rid] = [{ id: 'sch-' + rid + '-1', type: 'Once', startDate: '30-06-2026', startAt: '30-06-2026 00:10',
   endDate: '30-06-2026', endAt: '30-06-2026 00:15', enabled: true, days: [], months: [], dates: [], remark: '' }]);
 function ipmSchedOpen(rid){ IPM.sch = { rid, ed: null }; ipmSchedPaint(); }
+/* the IPAM scheduler FORM is the Discovery Profile's "Schedule Discovery" drawer (request, 2 Oct 2026, with it as the
+   picture): Scheduler Type · Start Date · Hours · Notify · Auto Provision. `sid` edits one window of the details list;
+   without it the profile's first window is edited, or a new one is made for an unscheduled profile. On save the window is
+   written back into IPM_SCHED in the list's own shape, so the Scheduler column and the details list keep working. */
+const ipmIso = dmy => { const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(dmy || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : ''; };
+const ipmDmy = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : iso; };
+function ipmDpSchedule(rid, sid, fromList){
+  const list = ipmSchList(rid), x = (sid && list.find(y => y.id === sid)) || (!sid && list[0]) || null;
+  const d = new Date(), today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  if (IPM.sch || document.getElementById('ipmDr')) { try { ipmPanelClose(); } catch (e) {} }
+  DP.sf = { id: 0, ipm: rid, sid: x ? x.id : '', fromList: !!fromList, type: x ? x.type : 'Once', date: x ? ipmIso(x.startDate) || today : today,
+    hour: x ? ((x.onHours && x.onHours[0]) || (x.startAt || '').split(' ')[1] || '') : '', days: x ? (x.days || []).slice() : [],
+    months: x ? (x.months || []).slice() : [], dates: x ? (x.dates || []).slice() : [], notify: x ? x.notify || '' : '', bcc: x ? x.bcc || '' : '',
+    showBcc: !!(x && x.bcc), auto: !!(x && x.auto), err: {} };
+  dpSfPaint(true);
+}
+function ipmDpSave(){
+  const S = DP.sf, rid = S.ipm, dmy = ipmDmy(S.date);
+  const w = { type: S.type, startDate: dmy, startAt: dmy + ' ' + S.hour, endDate: dmy, endAt: dmy + ' ' + S.hour, onHours: [S.hour], offHours: [],
+    days: S.days, months: S.months, dates: S.dates, notify: S.notify, bcc: S.bcc, auto: S.auto, single: true, remark: '' };
+  const list = ipmSchList(rid).slice(), i = list.findIndex(y => y.id === S.sid);
+  if (i >= 0) list[i] = Object.assign({}, list[i], w); else list.push(Object.assign({ id: 'sch-' + rid + '-' + (list.length + 1), enabled: true }, w));
+  IPM_SCHED[rid] = list; IPM_UNSCHED.delete(rid);
+  const name = (IPM_ROUTERS.find(x => x.id === rid) || {}).name || '';
+  stcDrClose(); toast('“' + name + '” scheduled — ' + dpSchedText({ type: S.type, hour: S.hour, date: S.date }));
+  ipmTablePaint(); if (S.fromList) ipmSchedOpen(rid);
+}
 /* Hours are MULTI-select (request, 30 Sep 2026, with the DS multi-select's checkbox list as the picture) — a window can
    start and end at several times, so each is a list; startAt / endAt keep the first time for anything that reads one */
 const ipmSchH = (list, at) => (list && list.length ? list.slice() : [at.split(' ')[1] || at]);
@@ -42427,7 +42531,11 @@ const ipmSchEd = x => ({ id: x.id, onDate: x.startDate.replace(/-/g, '/'), onHou
   offHours: ipmSchH(x.offHours, x.endAt), type: x.type, days: (x.days || []).slice(), months: (x.months || []).slice(), dates: (x.dates || []).slice(), remark: x.remark || '' });
 /* the row ⋮ › Schedule: the form straight away, on the profile's first window, titled by its IP as the source's is.
    `direct` means there is no list behind it — ✕ and Update Scheduler close the panel rather than going back */
-function ipmSchedDirect(rid){ const x = ipmSchList(rid)[0]; if (!x) return ipmSchedOpen(rid); IPM.sch = { rid, ed: ipmSchEd(x), direct: true }; ipmSchedEditPaint(); }
+function ipmSchedDirect(rid){ return ipmDpSchedule(rid);   /* §: the Schedule Discovery form (2 Oct 2026) — the old form below is kept unreferenced */
+  const x = ipmSchList(rid)[0];
+  /* an UNSCHEDULED profile opens the form on a fresh window ('new'); saving it is what schedules the profile */
+  if (!x) { IPM.sch = { rid, ed: ipmSchEd({ id: 'new', type: 'Once', startDate: '30-06-2026', startAt: '30-06-2026 00:10', endDate: '30-06-2026', endAt: '30-06-2026 00:15' }), direct: true }; return ipmSchedEditPaint(); }
+  IPM.sch = { rid, ed: ipmSchEd(x), direct: true }; ipmSchedEditPaint(); }
 function ipmSchedPaint(){
   const S = IPM.sch, r = IPM_ROUTERS.find(x => x.id === S.rid); if (!r) return;
   if (S.ed) return ipmSchedEditPaint();
@@ -42439,7 +42547,7 @@ function ipmSchedPaint(){
   const paint = () => { t.columns = IPM_SCH_COLS; t.rowActions = IPM_SCH_ACTIONS;
     t.rows = ipmSchList(S.rid).map(x => ({ id: x.id, type: x.type, startDate: x.startDate,
       trig: ipmSchH(x.onHours, x.startAt).map(h => ({ label: x.startDate + ' ' + h, variant: 'tag-primary' }))
-        .concat(ipmSchH(x.offHours, x.endAt).map(h => ({ label: x.endDate + ' ' + h, variant: 'tag-primary' }))), res: 'View Details', on: x.enabled })); };
+        .concat(x.single ? [] : ipmSchH(x.offHours, x.endAt).map(h => ({ label: x.endDate + ' ' + h, variant: 'tag-primary' }))), res: 'View Details', on: x.enabled })); };
   setTimeout(() => { paint(); ipmIc24Watch(t); }, 0);
   t.addEventListener('cellaction', e => { const d = ipmDet(e) || {};
     /* no run history exists in this prototype — the link says so rather than opening nothing */
@@ -42447,9 +42555,7 @@ function ipmSchedPaint(){
     if (d.key !== 'on') return;
     const x = ipmSchList(S.rid).find(y => y.id === d.id); if (x) x.enabled = d.value !== false; });
   t.addEventListener('rowaction', e => { const d = ipmDet(e) || {};
-    if (d.action === 'edit') { const x = ipmSchList(S.rid).find(y => y.id === d.id); if (!x) return;
-      S.ed = ipmSchEd(x);
-      ipmSchedEditPaint(); }
+    if (d.action === 'edit') return ipmDpSchedule(S.rid, d.id, true);   /* the Schedule Discovery form */
     else if (d.action === 'delete') ipmConfirm({ title: 'Delete this maintenance schedule?', icon: 'trash', confirmText: 'Delete',
       body: 'The device follows its normal polling schedule again once this maintenance window is removed.',
       onOk: () => { IPM_SCHED[S.rid] = ipmSchList(S.rid).filter(y => y.id !== d.id); toast('Scheduler deleted — the maintenance schedule has been removed'); if (IPM.sch) ipmSchedPaint(); } });
@@ -42489,7 +42595,9 @@ function ipmSchedEditPaint(){
   on('#esDates', 'change', e => { d.dates = arr(e); });
   on('#esRemark', 'input', e => { d.remark = ipmVal(e); });
   on('#esReset', 'click', () => ipmTap(() => { const row = ipmSchList(S.rid).find(y => y.id === d.id); if (!row) return; S.ed = ipmSchEd(row); ipmSchedEditPaint(); }));
-  on('#esSave', 'click', () => ipmTap(() => { const row = ipmSchList(S.rid).find(y => y.id === d.id);
+  on('#esSave', 'click', () => ipmTap(() => { let row = ipmSchList(S.rid).find(y => y.id === d.id);
+    /* a 'new' window on an unscheduled profile: create it, so the Scheduler column gains its icon */
+    if (!row && d.id === 'new') { row = { id: 'sch-' + S.rid + '-1', enabled: true }; IPM_SCHED[S.rid] = [row]; IPM_UNSCHED.delete(S.rid); setTimeout(() => ipmTablePaint(), 0); }
     if (row) { row.startDate = d.onDate.replace(/\//g, '-'); row.onHours = d.onHours.slice(); row.startAt = row.startDate + ' ' + (d.onHours[0] || '');
       row.endDate = d.offDate.replace(/\//g, '-'); row.offHours = d.offHours.slice(); row.endAt = row.endDate + ' ' + (d.offHours[0] || ''); row.type = d.type; row.days = d.days; row.months = d.months; row.dates = d.dates; row.remark = d.remark; }
     toast('Scheduler updated — the maintenance schedule has been updated');
@@ -42895,11 +43003,12 @@ function ipmTableSpec(){
      row menu with Approve / Reject, the Discovery Profiles tab's own menu shape */
   /* …and a VLAN column after CIDR (request, 29 Sep 2026, with the product's own "20 — <name>" cell); a
      subnet with no VLAN reads "—", as the reference does */
+  /* Option 2 (request, 2 Oct 2026): NO Actions column and NO Evidence — rows are ticked instead and the bulk bar
+     carries Approve / Reject (Option 1's bar), with no select-all box in the header */
   if (IPM.tab === 'approval') return IPM.opt === '2'
     ? { cols: [IPM_PENDING_COLS[0], { key: 'vlan', title: 'VLAN', width: '14%', sortable: true }]
-          .concat(IPM_PENDING_COLS.slice(1), [{ key: 'menu', title: 'Actions', width: '60px', type: 'icon', align: 'right' }]),
-        rows: ipmPendingRows().map(r => Object.assign(r, { vlan: (IPM_PENDING.find(x => x.id === r.id) || {}).vlan || '—',
-          menu: { icon: 'ellipsis-v', label: 'Actions' } })), menu: [] }
+          .concat(IPM_PENDING_COLS.slice(1).filter(c => c.key !== 'evidence')),
+        rows: ipmPendingRows().map(r => Object.assign(r, { vlan: (IPM_PENDING.find(x => x.id === r.id) || {}).vlan || '—' })), menu: [] }
     : { cols: IPM_PENDING_COLS, rows: ipmPendingRows(), menu: [] };
   return { cols: IPM_ROUTER_COLS.filter(c => !IPM.hideCols.has(c.key)), rows: ipmRouterRows(), menu: [] };
 }
@@ -43017,13 +43126,17 @@ function ipmTableBind(){
     if (ipmKind() === 'policy' && d.key === 'name') return ippOpen(d.id);   /* the name link opens the policy */
     if (d.key === 'menu') ipmRowMenu(t._ipmHit || t, d.id);
     else if (d.key === 'discover') ipmRowAction('discover', d.id);
-    else if (d.key === 'sched') ipmSchedOpen(d.id);
+    else if (d.key === 'sched') { if (ipmHasSched(d.id)) ipmSchedOpen(d.id); }   /* an empty cell (unscheduled) does nothing */
     else if (d.key === 'approve' || d.key === 'reject') ipmDecide(d.id, d.key === 'approve');
     else if (d.key === 'status' && ipmKind() === 'policy') { const r = IPP_POL.find(x => x.id === d.id); if (r) r.status = d.value === false ? 'Disabled' : 'Enabled'; }
     else if (d.key === 'status') { const r = IPM_VENDORS.find(x => x.id === d.id); if (r) r.status = d.value === false ? 'Suspended' : 'Active'; }
   });
   t.addEventListener('change', e => {
     const d = ipmDet(e); if (!Array.isArray(d) || !ipmBulkOn()) return;
+    /* Option 2: ONE subnet at a time (request, 2 Oct 2026: "at a time I select only a single checkbox, I don't bulk
+       approve") — ticking another row moves the tick there */
+    if (IPM.opt === '2' && d.length > 1) { const keep = d.map(String).filter(x => !IPM.sel.includes(x)).slice(-1);
+      IPM.sel = keep.length ? keep : d.map(String).slice(-1); t.selected = JSON.stringify(IPM.sel); return ipmBulkPaint(); }
     IPM.sel = d.map(String); ipmBulkPaint();
   });
 }
@@ -43143,7 +43256,7 @@ function ipmDecide(id, approve){
       ? `${ipmEsc(r.cidr)} will join the known-subnets list under ${ipmEsc(r.suggestedSite)}. Every pending record already collected for it is unblocked immediately.`
       : `${ipmEsc(r.cidr)} stays off the known-subnets list. It is not blacklisted — it re-enters this queue the next time any source reports it.`,
     onOk: () => {
-      IPM_PENDING = IPM_PENDING.filter(x => x.id !== id);
+      IPM_PENDING = IPM_PENDING.filter(x => x.id !== id); IPM.sel = [];
       const rt = IPM_ROUTERS.find(x => x.name === r.device); if (rt) rt[approve ? 'approved' : 'rejected'] = (rt[approve ? 'approved' : 'rejected'] || 0) + 1;
       IPM.flash = { title: approve ? 'Subnet approved' : 'Subnet rejected', body: approve ? `${r.cidr} has been added under ${r.suggestedSite}.` : `${r.cidr} has been rejected.` };
       stMainPaint();
@@ -43279,6 +43392,35 @@ function ipmHelpHTML(){
     IPM_HELP.map((h, i) => `<div class="dphc${IPM.help[i] ? ' open' : ''}"><div class="dphch" role="button" tabindex="0" onclick="ipmHelpTog(${i})"><span>${ipmEsc(h.t)}</span>${stcSvg('chevron-right', 'car')}</div><div class="dphcb">${h.b}</div></div>`).join('') +
     `</aside>`;
 }
+/* the Site Separation Rule help card — written from how the rules behave on this page */
+const IPM_RULE_HELP = [
+  { t: 'How rules work', b: `<ul>
+      <li>Rules run <b>top to bottom</b> against every device IPAM discovers — the <b>first match wins</b> and names the device's site.</li>
+      <li>A device no rule matches falls through to <b>Device Neighborship</b>, which places it beside the switch it hangs off.</li>
+      <li>The grid's order is the priority: drag a row by its handle, or use Move up / Move down in its ⋮ menu.</li></ul>` },
+  { t: 'Match Field', b: `<ul>
+      <li><b>Hostname</b> — the device's name, e.g. <b>MUM-ACC-SW03</b>. The only field Case Transform applies to.</li>
+      <li><b>SNMP Location</b> — the sysLocation string the device reports, e.g. <b>Floor 3, Mumbai HQ</b>.</li>
+      <li><b>IP/IP Range</b> — a from–to range instead of a pattern; every address inside it gets the site you name.</li></ul>` },
+  { t: 'Regex Pattern', b: `<p>A regular expression run against the Match Field. Parentheses <b>capture</b> the parts the site name is built from.</p>
+      <div class="dpcode">^([A-Z][a-z]+)-</div>
+      <p>Matches <b>Mumbai-core-01</b> and captures <b>Mumbai</b> as group 1. Named groups work too: <b>(?&lt;city&gt;…)</b>.</p>` },
+  { t: 'Site Name Template', b: `<p>How the captured parts become the site name.</p>
+      <ul><li><b>\${1}</b> — the first captured group.</li>
+      <li><b>\${city}-of-\${street}</b> — named groups joined with your own text.</li></ul>
+      <p>A template that refers to a group the pattern never captures leaves that part empty.</p>` },
+  { t: 'Case Transform', b: `<ul>
+      <li><b>None</b> — the name exactly as captured.</li><li><b>UPPER</b> / <b>lower</b> — so <b>mumbai</b>, <b>Mumbai</b> and <b>MUMBAI</b> land on one site.</li></ul>` }
+];
+function ipmRuleHelpHTML(){
+  if (!IPM.rhelp) IPM.rhelp = IPM_RULE_HELP.map((_, i) => i === 0);
+  return `<h3 class="dphh">Site Separation Rules Help Card</h3>` +
+    IPM_RULE_HELP.map((h, i) => `<div class="dphc${IPM.rhelp[i] ? ' open' : ''}"><div class="dphch" role="button" tabindex="0" onclick="ipmRuleHelpTog(${i})"><span>${ipmEsc(h.t)}</span>${stcSvg('chevron-right', 'car')}</div><div class="dphcb">${h.b}</div></div>`).join('');
+}
+function ipmRuleHelpTog(i){
+  IPM.rhelp[i] = !IPM.rhelp[i];
+  const c = document.querySelectorAll('#ipmFm #fmHelp .dphc')[i]; if (c) c.classList.toggle('open', IPM.rhelp[i]);
+}
 function ipmHelpTog(i){
   IPM.help[i] = !IPM.help[i];
   const c = document.querySelectorAll('#ipmDr .ipmhelp .dphc')[i]; if (c) c.classList.toggle('open', IPM.help[i]);
@@ -43397,6 +43539,7 @@ function ipmArBind(){
       IPM.flash = { title: 'Seed router updated', body: (r ? r.name : name) + ' has been saved.' };
     } else if (d.fromPending) {
       /* saving a panel opened from Subnet Approval approves that subnet — as a guest, or not */
+      IPM.sel = [];   /* the row it came from leaves the grid, so its selection (and the bulk bar) go with it */
       const r = IPM_PENDING.find(x => x.id === d.fromPending.id);
       if (r) {
         IPM_PENDING = IPM_PENDING.filter(x => x.id !== r.id);
@@ -43610,8 +43753,14 @@ function ipmFormBody(){
 function ipmFormPaint(){
   const f = IPM.fm, m = IPM_FORM_META[f.kind], d = ipmFmEl();
   d.setAttribute('title', f.id ? m.edit : m.title);
-  if (!d.querySelector('#fmBody')) d.innerHTML = `<div class="ip-form" id="fmBody"></div><div slot="actions" class="ip-row ipmfoot" id="fmFoot"></div>`;
+  /* the Add / Edit Rule form carries a HELP CARD beside it (request, 2 Oct 2026, "using the ObserveOps design system") — the
+     same collapsible card the Add IP Address Discovery drawer uses (.ipmhelp / .dphc), so the IPAM forms read as one.
+     The drawer widens only for this form; the other two keep their 684px. */
+  if (!d.querySelector('#fmHelp')) d.innerHTML = `<div class="ipmfmwrap"><div class="ip-form" id="fmBody"></div><aside class="ipmhelp" id="fmHelp" hidden></aside></div><div slot="actions" class="ip-row ipmfoot" id="fmFoot"></div>`;
   d.querySelector('#fmBody').innerHTML = ipmFormBody();
+  const hp = d.querySelector('#fmHelp'), withHelp = f.kind === 'siterule';
+  hp.hidden = !withHelp; hp.innerHTML = withHelp ? ipmRuleHelpHTML() : '';
+  d.setAttribute('width', withHelp ? 'min(1180px, calc(100vw - 80px))' : '684px');
   d.querySelector('#fmFoot').innerHTML = `<span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
     <obs-button variant="default" id="fmReset">Reset</obs-button>
     <obs-button variant="primary" id="fmSave">${ipmEsc(f.id ? m.save : m.primary)}</obs-button>`;

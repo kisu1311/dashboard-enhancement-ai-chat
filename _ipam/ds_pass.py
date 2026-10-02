@@ -430,7 +430,7 @@ rep("""      ${grid('tblSubnets', visibleCols(SUBNET_COLS, 'subnets'), all, { op
     """      ${grid('tblSubnets', visibleCols(SUBNET_COLS, 'subnets'), all, { openId: sd && sd.id, empty: 'No subnet matches this filter' })}
       ${dsSubnetLegend()}`, 'ip-sncard')}""")
 rep("function dsSubnetFilterBind() {",
-    """const DS_SN_LEGEND = [['critical', 'Critical'], ['major', 'High'], ['warning', 'Moderate'], ['clear', 'Healthy'], ['unknown', 'Not measurable']];
+    """const DS_SN_LEGEND = [['critical', 'Critical'], ['major', 'High'], ['warning', 'Moderate'], ['clear', 'Healthy']];   /* §83: 'Not measurable' removed from the legend on request */
 function dsSubnetLegend() {
   return `<div class="ip-snlegend" aria-label="Utilisation legend">${DS_SN_LEGEND.map(([s, l]) =>
     `<span class="ip-snlg"><obs-severity severity="${s}" shape="dot"></obs-severity>${esc(l)}</span>`).join('')}</div>`;
@@ -2131,6 +2131,425 @@ _s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr
 t = t.replace(_s, _s + """
 body .ip-content .ip-grid, body .ip-content .ip-sev-row, body .ip-content .ip-stack { gap: 10px; }
 body .ip-content .ip-card, body .ip-content .ip-sev-box { border-radius: 8px; }""")
+
+
+# ── §67 · Overview cards get inner padding back: 12px round every widget body (request, 2 Oct 2026) ──
+# Reverses §33's "no inner padding" for the body only — the toolbar border fix from §33 stays. Every chart is redrawn
+# 24px shorter (244 → 220) so it still fits the ~248px body of a 290px card, the treemap insets by the same 12px
+# (it is absolutely positioned, so padding alone would not move it), and the Subnet Capacity scroller subtracts the
+# padding from the body height it fills (clientHeight includes padding).
+# ⚠️ AMENDED THE SAME DAY: Site Count (treemap) and Subnet Capacity (table) run edge to edge again — the request
+# was "remove only this 2 widget padding". So no treemap inset, and the scroller is back to `- 6`.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+body .ip-ovgrid > .ip-card > .ip-card-body { padding: 12px; }
+body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-tm), body .ip-ovgrid > .ip-card > .ip-card-body:has(#tblTopN) { padding: 0; }""")
+_o = t.find('function screenOverview() {'); _e = t.find('\nfunction blindReason', _o)
+_b = t[_o:_e]
+assert _b.count('h: 244') + _b.count("'overview', 244,") >= 6, 'overview 244s'
+_b = _b.replace('h: 244', 'h: 220').replace("'overview', 244,", "'overview', 220,")
+t = t[:_o] + _b + t[_e:]
+
+
+# ── §68 · Overview restyled to the ObserveOps DS (request, 2 Oct 2026 — "restyle only", the bundle is NOT upgraded) ──
+# Read off the DS's own guidance: the dashboard-view recipe (every widget = obs-widget-card: title + TIME BADGE in the
+# grey header) and the data-viz captured Highcharts fixtures (chart-single-donut / -line / -horizontal-bar).
+# (1) every Overview card header carries a time badge — an obs-tag with the Overview's range (24h / 7d / 30d). Scoped
+#     with ovCard so the subnet detail's ovWidget cards (§64) are unchanged.
+# (2) every chart MOUNTED INSIDE .ip-ovgrid gets the fixtures' chrome on top of the bridge's base options: chart font
+#     --chart-font-family; legend 11px square swatches (radius 1) in --chart-legend-color at 0.65rem; tooltip on
+#     --chart-tooltip-background, radius 10, shadow; axis labels --page-text-color 0.65rem, grid --chart-grid-line-color
+#     (solid), axis line --bottom-line-color. Layout keys (legend position, sizes, data) are left alone. The wrapper also
+#     becomes the chart's dsMake, so a theme switch rebuilds it with the same chrome.
+# (3) the donut centre figure is 28px/600 mono on the Overview — the DS gauge spec (was 26px).
+_o = t.find('function screenOverview() {'); _e = t.find('\nfunction blindReason', _o)
+_b = t[_o:_e]
+assert _b.count('${ovWidget(') == 7, 'overview ovWidget calls: %d' % _b.count('${ovWidget(')
+t = t[:_o] + _b.replace('${ovWidget(', '${ovCard(') + t[_e:]
+_w = "const ovWidget = (title, bodyHtml, opts = {}) => widget(title, bodyHtml, Object.assign({}, opts, { actions: '' }));"
+assert t.count(_w) == 1, 'ovWidget'
+t = t.replace(_w, _w + """
+/* §68 · an Overview card: the DS widget header's TIME BADGE in the actions slot (the range the Overview is drawn for) */
+const ovCard = (title, bodyHtml, opts = {}) => widget(title, bodyHtml, Object.assign({}, opts, {
+  actions: `<obs-tag variant="tag-primary" class="ip-ovbadge" aria-label="Time range">${esc(typeof overviewTrendRange === 'string' ? overviewTrendRange : '24h')}</obs-tag>` }));""")
+_m = "      var make = pending[i].make, c;"
+assert t.count(_m) == 1, 'mount make'
+t = t.replace(_m, "      var make = pending[i].make, c;\n      if (el.closest && el.closest('.ip-ovgrid')) make = dsFixture(make);   /* §68 */")
+_f = "  /* ------------------------------------------------- queue / mount / life -- */"
+assert t.count(_f) == 1, 'queue banner'
+t = t.replace(_f, """  /* §68 · the DS captured-fixture chrome (data-viz chart-single-donut / -line / -horizontal-bar), layered over the
+     options a builder made. Style only — never position, size or data. Colours are still read from tokens. */
+  function dsFixture(make) {
+    return function () {
+      var o = make(), font = tok('--chart-font-family', "'JetBrains Mono', monospace"), text = tok('--page-text-color', '#cad3e2');
+      var grid = tok('--chart-grid-line-color', tok('--border-color', '#1d2a3e')), base = tok('--bottom-line-color', grid);
+      o.chart = o.chart || {}; o.chart.style = Object.assign({}, o.chart.style, { fontFamily: font });
+      o.legend = o.legend || {};
+      o.legend.symbolWidth = 11; o.legend.symbolHeight = 11; o.legend.symbolRadius = 1;
+      o.legend.itemStyle = Object.assign({}, o.legend.itemStyle, { color: tok('--chart-legend-color', text), fontWeight: 'normal', fontSize: '0.65rem', fontFamily: font });
+      o.legend.itemHoverStyle = Object.assign({}, o.legend.itemHoverStyle, { color: text });
+      o.tooltip = Object.assign({}, o.tooltip, { backgroundColor: tok('--chart-tooltip-background', tok('--common-widget-bg', '#172336')),
+        borderColor: tok('--border-color', '#1d2a3e'), borderWidth: 1, borderRadius: 10, shadow: true,
+        style: Object.assign({}, o.tooltip && o.tooltip.style, { color: text, fontFamily: font }) });
+      [].concat(o.xAxis || [], o.yAxis || []).forEach(function (a) {
+        a.labels = a.labels || {}; a.labels.style = Object.assign({}, a.labels.style, { color: text, fontSize: '0.65rem', fontFamily: font });
+        if (a.gridLineWidth !== 0) { a.gridLineColor = grid; a.gridLineDashStyle = 'Solid'; }
+        a.lineColor = base;
+      });
+      return o;
+    };
+  }
+
+""" + _f)
+_c = ".css({ color: tok('--primary-alt', '#111c2c'), fontSize: '26px', fontWeight: '600', fontFamily: mono })"
+assert t.count(_c) == 1, 'centre figure'
+t = t.replace(_c, ".css({ color: tok('--primary-alt', '#111c2c'), fontSize: (chart.renderTo && chart.renderTo.closest && chart.renderTo.closest('.ip-ovgrid')) ? '28px' : '26px', fontWeight: '600', fontFamily: mono })")
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+.ip-ovgrid .ip-ovbadge { margin-right: 4px; }""")
+
+
+# ── §69 · list grids to the DS table spec (request, 2 Oct 2026 — Subnet Details · IP Details · Rogue Detection) ──
+# The DS obs-table / product list grid (get_component table + the measured live Roles grid): a COMPACT header row
+# (~28px — the header reads crisper than the 41px data rows) and ONE LINE PER ROW. IP Details wrapped hostnames,
+# sites and "Last seen" onto two lines, so its rows were ~60px and uneven. Cells are nowrap with an ellipsis past
+# 240px (150px on IP Details — 12 columns must fit a 1600px window); tags already never wrap. Shared sheet, so the Overview's Subnet Capacity grid follows too.
+_g = "td obs-tag{white-space:nowrap}\n"
+assert t.count(_g) == 1, 'grid sheet anchor'
+t = t.replace(_g, _g + """.grid.hs-default th{padding-top:6px;padding-bottom:6px}
+.grid td{white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+:host(#tblIps) .grid td{max-width:150px}
+.grid td:has(.cell-bar){max-width:none;overflow:visible;text-overflow:clip}
+:host(#tblIps) .grid th,:host(#tblIps) .grid td{padding-left:12px;padding-right:12px}
+""")
+
+
+# ── §70 · KPI cards aligned to the product's KPI widget, icon tile at 30% (request, 2 Oct 2026) ──
+# Measured from the product's own CSS for the supplied card (data-v-68dc2909): .icon-container 45x45, radius .5rem
+# (8px), the glyph text-xl + fa-lg (20px x 1.333 = ~26px); the title 20px (request — the product's .text-kpi-header-title is 1rem / 1.25rem in two builds; the larger) mt-1; the figure 30px/600 with its
+# unit 16px/500 4px after it. The tile is no longer a SOLID fill with the glyph knocked out — its background is the
+# status colour at 30% and the glyph wears the full colour (request: "the icon background colour will be 30% opacity").
+# One component, so both rows (IP Details + subnet detail) change together.
+# ⚠️ `html body` prefix: every § inserts right AFTER the same anchor, so a NEWER section sits ABOVE the older ones
+# and loses ties to them (§65 set these same properties at `body .sn-kpis …`). Win on specificity, not order.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .sn-kpis .ip-sdki { width: 45px; height: 45px; flex: 0 0 45px; border-radius: 8px;
+  background: color-mix(in srgb, var(--ip-kc) 30%, transparent); color: var(--ip-kc); }
+html body .sn-kpis .ip-sdkt { margin-top: 4px; font-size: 20px; font-weight: 500; line-height: 1.3; }
+html body .sn-kpis .ip-kv small { font-size: 16px; font-weight: 500; margin-left: 4px; }""")
+_n = t.count('"></obs-icon></span>') and 0
+for _a in ("<span class=\"ip-sdki\" style=\"--ip-kc:${color}\"><obs-icon name=\"${DS_SD_KPI_IC[label] || 'ip'}\" size=\"24\">",
+           "<span class=\"ip-sdki\" style=\"--ip-kc:${col}\"><obs-icon name=\"${DS_SD_KPI_IC['IP utilisation'] || 'utilization'}\" size=\"24\">",
+           "<span class=\"ip-sdki\" style=\"--ip-kc:${b.color}\"><obs-icon name=\"${DS_SD_KPI_IC[b.label === 'Total' ? 'Total IP' : b.label] || 'ip'}\" size=\"24\">"):
+    assert t.count(_a) == 1, _a[:60]
+    t = t.replace(_a, _a.replace('size="24"', 'size="26"'))
+
+
+# ── §71 · Overview › Subnet Capacity: Utilization is the Subnet Details utilisation BAR (request, 2 Oct 2026) ──
+# The same obs-table `bar` cell the Subnet Details list uses (§39–§55): a track with the % under it, the fill
+# repainted per value in the legend's bands by dsBarPaint (Critical ≥90 · High ≥75 · Moderate ≥50 · Healthy).
+# It was plain text "74 %" since §33. The cell takes a number, so the value is parsed and rounded.
+_c = "{ key: 'ut', title: 'Utilization', width: '24%' },   /* plain value — the band dot was removed on request */"
+assert t.count(_c) == 1, 'topN ut column'
+t = t.replace(_c, "{ key: 'ut', title: 'Utilization', type: 'bar', width: '34%' },   /* §71: the Subnet Details utilisation bar */")
+_c = "{ key: 'sn', title: 'Subnet', type: 'link', width: '30%' },"
+assert t.count(_c) == 1, 'topN sn column'
+t = t.replace(_c, "{ key: 'sn', title: 'Subnet', type: 'link', width: '28%' },")
+_d = "d.ut = r.value;"
+assert t.count(_d) == 1, 'topN ut value'
+t = t.replace(_d, "d.ut = Math.round(parseFloat(r.value) || 0);")
+
+
+# ── §72 · Subnet Capacity: the Sparkline column is gone (request, 2 Oct 2026) — Subnet · Utilization only ──
+# The utilisation bar (§71) now carries the figure; the 24 h sparkline left with its column. dsUtilSpark and the
+# sparkline sheet (§31/§32) are kept and unreferenced, so the column is one line back.
+_c = """columns.push({ key: 'sn', title: 'Subnet', type: 'link', width: '28%' },
+               { key: 'ut', title: 'Utilization', type: 'bar', width: '34%' },   /* §71: the Subnet Details utilisation bar */
+               { key: 'sp', title: 'Sparkline', type: 'sparkline' });"""
+assert t.count(_c) == 1, 'topN columns'
+t = t.replace(_c, """columns.push({ key: 'sn', title: 'Subnet', type: 'link', width: '45%' },
+               { key: 'ut', title: 'Utilization', type: 'bar' });   /* §72: no Sparkline column */""")
+_d = "d.sp = dsUtilSpark(r.cidr, parseFloat(r.value) || 0); "
+assert t.count(_d) == 1, 'topN sp value'
+t = t.replace(_d, "")
+
+
+# ── §73 · the IP panel header is obs-page-header's DETAIL variant (request, 2 Oct 2026 — "Using the ObserveOps DS") ──
+# get_component('page-header'): "Entity / span DETAIL header — title + a status badge + a ' | '-separated metadata
+# strip", and "inside a drawer/panel — the drawer supplies its own close; page-header supplies the title + meta".
+# So: heading = the IP; `before` slot = the IP glyph tile; `title` slot = the address-status tag; `meta` = host ·
+# Vendor · Device type; Monitoring stays a tag BESIDE the status tag (as a 4th meta field it wrapped the strip to
+# two lines and left a stray '|' at the end of the first). The hand-built
+# "| host | vendor" line and the second tag row are gone. no-divider + --page-header-padding:0, because the panel
+# head (.ip-sp-head2) already pads and rules itself; the ✕ / back controls stay the panel's own siblings.
+_h = t.find('const dsIpHead = x => {'); _e = t.find('\n};', _h) + 3
+assert _h > 0 and t[_h:_e].count('ip-sp-tags') == 1, 'dsIpHead'
+t = t[:_h] + r"""const dsIpHead = x => {
+  /* §73 · obs-page-header detail header — see ds_pass §73 */
+  const meta = [];
+  if (x.host) meta.push({ icon: 'server', value: x.host });
+  if (x.vendor) meta.push({ label: 'Vendor', value: x.vendor });
+  if (x.devType) meta.push({ label: 'Device type', value: x.devType });
+  return `<obs-page-header class="ip-sp-ph" heading="${esc(x.ip)}" no-divider meta='${esc(JSON.stringify(meta))}' style="--page-header-padding:0">
+      <span slot="before" class="ip-sp-tile"><obs-icon name="ip" size="20"></obs-icon></span>
+      <obs-tag slot="title" variant="${DS_STATUS_TAG[x.status] || 'default'}">${esc(x.status)}</obs-tag>
+      <span slot="title" class="ip-sp-mon">${dsIpTag(x)}</span>
+    </obs-page-header>`;
+};""" + t[_e:]
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .ip-sp-head2 > .ip-sp-ph { flex: 1 1 auto; min-width: 0; }
+html body .ip-sp-head.ip-sp-head2 { align-items: center; }""")
+
+
+# ── §74 · IP panel body aligned to the product's monitor panel (request, 2 Oct 2026 — reference: inventory monitor
+#    Summary drawer, "Monitor Info / System Info / Tag Info") ──
+# Measured off the supplied product screenshot: the section heading 16px/500; each label starts 4px inside the
+# heading's left edge (ours was 10px — the plain key-value's own cell padding); values start in ONE column ~280px
+# from the label (ours 180); rows on a ~35px pitch (ours ~30). Scoped with :host-context(#ipBody) so the other
+# plain key-values in IPAM keep their geometry. NO row hover here (request, 2 Oct 2026) — the rows are read-only facts
+# and the product drawer has none; the fill only made one row look selected. The sheet is adopted into obs-key-value's shadow root (dsKvStyle).
+_k = ".kv.v-plain tr td:first-child{border-radius:4px 0 0 4px}.kv.v-plain tr td:last-child{border-radius:0 4px 4px 0}`);"
+assert t.count(_k) == 1, 'kv sheet'
+t = t.replace(_k, _k[:-3] + """
+:host-context(#ipBody) .kv.v-plain td{padding:8px 4px;line-height:19px}
+:host-context(#ipBody) .kv.v-plain .k{width:280px;padding-right:16px;box-sizing:border-box}
+:host-context(#ipBody) .kv.v-plain tr:hover td,:host-context(#ipBody) .kv.v-plain tr:hover td.val{background:transparent}`);""")
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body #ipBody .ip-group-h { font-weight: 500; margin-bottom: 4px; }""")
+
+
+# ── §75 · IP Details KPI cards are the subnet-detail cards' height (request, 2 Oct 2026) ──
+# Measured: IP Details 147px, subnet detail 187px (its Total IP card carries the "254 addresses" line + the bar,
+# which is what sets that row's height). The IP Details row now takes the same 187px; the figure is already pinned
+# to the card's foot (margin-top:auto), so it drops to the bottom exactly as on the subnet detail cards.
+# ⚠️ 187 is a MEASUREMENT of the other row — if that row's padding, title or bar changes, re-measure.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .sn-kpis.ip-ipkpis .ip-sev-box { min-height: 187px; box-sizing: border-box; }""")
+
+
+# ── §76 · IP panel header in the product's own layout (request, 2 Oct 2026 — reference: the inventory monitor drawer
+#    header "○ motadatadcdc | 172.16.12.117 | Proxmox VE" over its tag row) ──
+# Line 1: a monitoring STATUS RING (obs-severity, up/down) + the IP + "| host | vendor" inline; line 2: the tags
+# (address status, device type); the icon tile centred on both lines. REPLACES §73's obs-page-header: that element
+# always renders its meta strip BELOW the title and has no slot for a tag row, so it cannot express this layout — and
+# the long "host | Vendor: … | Device type: …" strip wrapped to three lines. Built from DS atoms instead.
+_h = t.find('const dsIpHead = x => {'); _e = t.find('\n};', _h) + 3
+assert _h > 0 and 'ip-sp-ph' in t[_h:_e], 'dsIpHead (§73)'
+t = t[:_h] + r"""const dsIpHead = x => {
+  /* §76 · the product monitor-drawer header — see ds_pass §76 */
+  const meta = [x.host, x.vendor].filter(Boolean).map(v => '| ' + esc(v)).join(' ');
+  return `<span class="ip-sp-tile"><obs-icon name="ip" size="20"></obs-icon></span>
+    <div class="ip-sp-id">
+      <div class="ip-sp-tl"><obs-severity class="ip-sp-dot" severity="${x.monitoring ? 'up' : 'down'}" title="${x.monitoring ? 'Monitored' : 'Not monitored'}"></obs-severity><b>${esc(x.ip)}</b>${meta ? `<span class="ip-sp-meta">${meta}</span>` : ''}</div>
+      <div class="ip-sp-tags"><obs-tag variant="${DS_STATUS_TAG[x.status] || 'default'}">${esc(x.status)}</obs-tag>${x.devType ? `<obs-tag variant="default">${esc(x.devType)}</obs-tag>` : ''}</div>
+    </div>`;
+};""" + t[_e:]
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .ip-sp-head2 .ip-sp-tl { align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+html body .ip-sp-head2 .ip-sp-tl b { font-size: 1.1rem; font-weight: 600; flex: none; }
+html body .ip-sp-head2 .ip-sp-meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body .ip-sp-head2 .ip-sp-dot { flex: none; display: inline-flex; }
+html body .ip-sp-head2 .ip-sp-id { gap: 6px; }
+html body .ip-sp-head2 .ip-sp-tile { flex: 0 0 40px; height: 40px; }""")
+
+
+# ── §77 · IP panel: header → tabs spacing and edges like the product monitor drawer (request, 2 Oct 2026) ──
+# Reference: the monitor drawer's tab strip (Summary · Polling Info …) sits right under the header, carries NO icons,
+# and the header's rule is INSET to the content edges rather than running the panel's full width. So: the header
+# takes the body's 24px side inset (tile, tabs and section headings share one left edge), its rule is drawn inset by
+# that same 24px, the body's top padding is 12px (was 24), and the tab items lose their glyphs.
+_v = "  const tabs = IP_TABS.map(t => t.key === 'history' ? { ...t, count: evTotal } : t);"
+assert t.count(_v) == 1, 'ip tabs'
+t = t.replace(_v, "  const tabs = IP_TABS.map(t => { const { icon, ...r } = t; return r.key === 'history' ? { ...r, count: evTotal } : r; });   /* §77: no tab glyphs */")
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .ip-stackpanel .ip-sp-head.ip-sp-head2 { padding: 16px 24px; border-bottom: 0;
+  background: linear-gradient(var(--border-color), var(--border-color)) no-repeat center bottom / calc(100% - 48px) 1px; }
+html body .ip-stackpanel .ip-sp-body { padding-top: 12px; }""")
+
+
+# ── §78 · IP panel: section rule tight under its rows; Discover device is the default-size primary (2 Oct 2026) ──
+# Measured against the product monitor drawer: last row → section rule ~10px (ours 26: the group's 16px top margin on
+# top of the key-value's own 10px), rule → heading ~17px (ours 17, kept). And "Discover device" was size="small"
+# (24px); the reference ("Create User") is the DS primary at its DEFAULT size (~34px, the @btn-height).
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body #ipBody .ip-group + .ip-group { margin-top: 0; }""")
+_b = '<obs-button variant="primary" size="small" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="14">'
+assert t.count(_b) == 1, 'discover button'
+t = t.replace(_b, '<obs-button variant="primary" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="16">')
+
+
+# ── §79 · IP panel: Discover device centred BETWEEN the header rule and the tab rule (request, 2 Oct 2026) ──
+# The tab row centres the button in ITSELF, but the band the eye reads runs from the header's rule (12px above the
+# tab row — the body's top padding, §77) to the tab row's bottom rule. A -12px top margin on a centred flex item
+# raises its centre by 6px, i.e. exactly to the middle of that band, without moving the tabs.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .ip-stackpanel .ip-sp-tabrow > #ipDiscoverDevice { margin-top: -12px; }""")
+
+
+# ── §80 · the Overview cards' time badge is gone (request, 2 Oct 2026 — reverses §68 (1)) ──
+# The page header's own "24h · Last 24 Hours" picker already states the range for the whole screen; seven copies
+# of it in the card headers said the same thing seven more times. ovCard stays (one place to give these cards
+# header actions later); its actions slot is empty again, as ovWidget's always was. .ip-ovbadge is kept unreferenced.
+_a = """  actions: `<obs-tag variant="tag-primary" class="ip-ovbadge" aria-label="Time range">${esc(typeof overviewTrendRange === 'string' ? overviewTrendRange : '24h')}</obs-tag>` }));"""
+assert t.count(_a) == 1, 'ovCard badge'
+t = t.replace(_a, "  actions: '' }));   /* §80: no time badge */")
+
+
+# ── §81 · the IP panel's key-value rules no longer use :host-context() (2 Oct 2026) ──
+# §74's alignment and the no-hover rule were written as `:host-context(#ipBody) …` inside DS_KV_SHEET. Safari and
+# Firefox do NOT implement :host-context, so for the user none of it applied: labels stayed 10px in, values 180px,
+# and the row hover came back. Headless Chrome supports it, which is why every probe passed. Now the rules are
+# `:host(.ip-pkv) …` (supported everywhere) and bindIpBody — run on every panel paint — puts .ip-pkv on the panel's
+# key-values. (A second sheet adopted only when k.closest('#ipBody') was tried first: dsKvStyle runs before the panel
+# exists, so it never matched.)
+_old = """:host-context(#ipBody) .kv.v-plain td{padding:8px 4px;line-height:19px}
+:host-context(#ipBody) .kv.v-plain .k{width:280px;padding-right:16px;box-sizing:border-box}
+:host-context(#ipBody) .kv.v-plain tr:hover td,:host-context(#ipBody) .kv.v-plain tr:hover td.val{background:transparent}`);"""
+assert t.count(_old) == 1, 'host-context rules'
+t = t.replace(_old, _old.replace(':host-context(#ipBody)', ':host(.ip-pkv)'))
+_b = "function bindIpBody() {\n  const host = ipHost();\n  if (!host) return;\n"
+assert t.count(_b) == 1, 'bindIpBody'
+t = t.replace(_b, _b + "  host.querySelectorAll('#ipBody obs-key-value').forEach(k => k.classList.add('ip-pkv'));   /* §81: the panel's key-values */\n")
+
+
+# ── §82 · the IP panel's left inset is 10px (request, 2 Oct 2026 — asked as 8px, then "add 10px margin") ──
+# Header (tile), its rule, the tab row and the section headings all start 10px from the panel's left edge (was 24).
+# The right inset stays 24px. The header rule is drawn from 8px to 24px-before-the-right-edge.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body aside.ip-stackpanel .ip-sp-head.ip-sp-head2 { padding-left: 10px;
+  background: linear-gradient(var(--border-color), var(--border-color)) no-repeat 10px bottom / calc(100% - 34px) 1px; }
+html body aside.ip-stackpanel .ip-sp-body { padding-left: 10px; }""")
+
+
+# ── §84 · Subnet Details: no Action column (request, 2 Oct 2026) ──
+# The row ⋮ (Edit subnet · View details · Poll now) is gone, and with it the "Action" header. View details is still
+# the row click. ⚠️ Edit subnet and Poll now have no other door on this list now — the subnet detail page still offers
+# Poll. DS_SUBNET_ACTIONS is kept, unreferenced, so the menu is one word back.
+_a = "    actions: id === 'tblSubnets' ? DS_SUBNET_ACTIONS : id === 'tblSdIps' ? SD_IPS_ROW_MENU : null };"
+assert t.count(_a) == 1, 'grid actions'
+t = t.replace(_a, "    actions: id === 'tblSdIps' ? SD_IPS_ROW_MENU : null };   /* §84: no row menu on tblSubnets */")
+
+
+# ── §85 · subnet detail › IP grid: Source, Connected switch, Connected port start HIDDEN (request, 2 Oct 2026) ──
+# The three columns pushed the grid past the page edge, so the whole subnet detail page scrolled sideways (its header
+# was cut off on the left). They are hidden through COL_HIDDEN — the eye menu still lists them — not deleted.
+_h = "  sdIps: new Set(), sdHist: new Set(), discoveryProfile: new Set(), routers: new Set() };"
+assert t.count(_h) == 1, 'COL_HIDDEN sdIps'
+t = t.replace(_h, "  sdIps: new Set(['Source', 'Connected switch', 'Connected port']),   /* §85 */\n  sdHist: new Set(), discoveryProfile: new Set(), routers: new Set() };")
+
+
+# ── §86 · the grid pager sticks only inside a FITTED grid (2 Oct 2026 — rows drew below the pager) ──
+# §15 made `.box>.pager` sticky:bottom so a height-fitted grid (DS_FIT) keeps its pager at the screen's foot. On a grid
+# that is NOT fitted (the subnet detail's IP grid) .box does not scroll, so sticky resolved against the PAGE scroller:
+# the pager pinned to the bottom of the viewport and the remaining rows scrolled on underneath it. dsFitWatch now marks
+# fitted hosts `.ds-fit`, and every other grid's pager is static — at the end of its table.
+_w = "  if (!DS_FIT.has(el.id) || el.__dsFit) return;\n  el.__dsFit = true;\n"
+assert t.count(_w) == 1, 'dsFitWatch'
+t = t.replace(_w, _w + "  el.classList.add('ds-fit');   /* §86 */\n")
+_g = "td obs-tag{white-space:nowrap}\n"
+assert t.count(_g) == 1, 'grid sheet anchor'
+t = t.replace(_g, _g + ":host(:not(.ds-fit)) .box>.pager{position:static}\n")
+
+
+# ── §87 · Top Device Type — four more DS visualizations as OPTIONS beside the original (request, 2 Oct 2026) ──
+# "Using the ObserveOps design system … create this widget better visualization and add as option in this screen and
+# don't remove this card … create multiple option". The original card is untouched (it is Option 1); four option cards
+# sit under it, each a view the DS itself prescribes for a ranking of the leaders:
+#   Option 2 · Ranked list   — data-viz `topn` ("a ranked list of the top N items with inline bars"), on obs-table:
+#                               rank · device type · devices · share bar (share of ALL classified devices).
+#   Option 3 · Packed bubble — the DS `topn-views` fixture's packed-bubble view (highcharts-more, already loaded),
+#                               area ∝ count, categorical palette IN ORDER.
+#   Option 4 · Gauge grid    — the `topn-views` solid-gauge grid: one ring per type, its share of all classified
+#                               devices; DSCharts.gauge gains compact options (labelY / fontSize / noTicks).
+#   Option 5 · Tree view     — the `topn-views` tree view (DS `treemap`: part-to-whole, many parts) via vizTreemap.
+# Every colour is a token; nothing new is invented outside data-viz's decision flow.
+_g = "        labels: { y: 14, distance: 6, style: { color: tok('--neutral-light', '#8a93a5'), fontSize: '10px' } },"
+assert t.count(_g) == 1, 'gauge ticks'
+t = t.replace(_g, "        labels: o.noTicks ? { enabled: false } : { y: 14, distance: 6, style: { color: tok('--neutral-light', '#8a93a5'), fontSize: '10px' } },")
+_g = """            y: -24, borderWidth: 0,
+            format: '<div style="text-align:center"><span style="font-size:20px;font-weight:500;color:' +"""
+assert t.count(_g) == 1, 'gauge label'
+t = t.replace(_g, """            y: o.labelY != null ? o.labelY : -24, borderWidth: 0,
+            format: '<div style="text-align:center"><span style="font-size:' + (o.fontSize || 20) + 'px;font-weight:500;font-family:' + tok('--numeric-font-family', 'monospace') + ';color:' +""")
+_b = "  /* Timeline epoch for the correlation dataset"
+assert t.count(_b) == 1, 'bridge tail'
+t = t.replace(_b, """  /* §87 · packed bubble — the DS topn-views fixture's bubble view. rows: [{name, v}]; area ∝ v; palette by order. */
+  function bubble(rows, o) {
+    o = o || {};
+    var h = o.h || 230;
+    return queue(function () {
+      var b = baseOpts(h);
+      delete b.xAxis; delete b.yAxis;
+      b.chart.type = 'packedbubble';
+      b.chart.spacing = [4, 4, 4, 4];
+      /* the names live in a right-hand legend (they overflowed the bubbles); the bubbles carry the counts */
+      b.legend = Object.assign(b.legend, { enabled: true, layout: 'vertical', align: 'right', verticalAlign: 'middle', itemMarginBottom: 2 });
+      b.tooltip.useHTML = true;
+      b.tooltip.pointFormat = '<b>{point.name}</b>: {point.value} devices';
+      b.tooltip.headerFormat = '';
+      b.plotOptions = { packedbubble: {
+        minSize: '46%', maxSize: '62%', zMin: 0,
+        layoutAlgorithm: { splitSeries: false, gravitationalConstant: 0.02, enableSimulation: false, bubblePadding: 4 },
+        dataLabels: { enabled: true, useHTML: false, format: '{point.value}',
+          style: { color: tok('--active-text-color', '#fff'), textOutline: 'none', fontWeight: '600', fontSize: '11px',
+                   fontFamily: tok('--chart-font-family', 'monospace') },
+          filter: { property: 'value', operator: '>', value: 0 } },
+        marker: { fillOpacity: 0.9, lineWidth: 0 } } };
+      /* one series per type so the legend lists the names (a single colorByPoint series shows ONE legend item) */
+      b.series = rows.map(function (r, i) { return { type: 'packedbubble', name: r.name, color: hue(i),
+        data: [{ name: r.name, value: Number(r.v) || 0 }] }; });
+      return b;
+    });
+  }
+
+""" + _b)
+_r = "    gauge: gauge,\n"
+assert t.count(_r) == 1, 'bridge exports'
+t = t.replace(_r, "    gauge: gauge,\n    bubble: bubble,\n")
+_v = "  const devTypeRows = Object.entries(devTypeCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)\n    .map(([name, n]) => ({ name, pct: n, v: num(n) }));"
+assert t.count(_v) == 1, 'devTypeRows'
+t = t.replace(_v, _v + """
+  /* §87 · the options' share denominator: EVERY classified device in the filter, not just the top 10 */
+  const devTypeTotal = Object.values(devTypeCounts).reduce((a, b) => a + b, 0);
+  const dtEmpty = `<p class="ip-empty">No address in this filter has a classified device yet</p>`;
+  const dtShare = n => devTypeTotal ? Math.round(n / devTypeTotal * 100) : 0;""")
+_c = """      ${ovCard('Top Device Type', devTypeRows.length ? vizTopN(devTypeRows, { h: 220, product: true })
+        : `<p class="ip-empty">No address in this filter has a classified device yet</p>`)}
+    </div>
+"""
+assert t.count(_c) == 1, 'top device card'
+t = t.replace(_c, _c + """
+    <!-- §87 · Top Device Type options 2–5 (the card above is Option 1, unchanged) -->
+    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Top Device Type · Option 2 — Ranked list', devTypeRows.length ? `<obs-table class="ip-dtrank" sticky-header max-height="248px" sortable="false"
+          columns='${esc(JSON.stringify([{ key: 'rk', title: '#', width: '44px' }, { key: 'nm', title: 'Device type' },
+            { key: 'n', title: 'Devices', align: 'right', width: '96px' }, { key: 'sh', title: 'Share of devices', type: 'bar', width: '42%' }]))}'
+          rows='${esc(JSON.stringify(devTypeRows.map((r, i) => ({ id: 'dt' + i, rk: i + 1, nm: r.name, n: r.v, sh: dtShare(r.pct) }))))}'></obs-table>` : dtEmpty)}
+      ${ovCard('Top Device Type · Option 3 — Packed bubble', devTypeRows.length ? DSCharts.bubble(devTypeRows.map(r => ({ name: r.name, v: r.pct })), { h: 244 }) : dtEmpty)}
+    </div>
+    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Top Device Type · Option 4 — Gauge grid', devTypeRows.length ? `<div class="ip-dtg">${devTypeRows.map(r =>
+          `<div class="ip-dtgc">${DSCharts.gauge(r.pct, { max: devTypeTotal || 1, h: 82, labelY: -14, fontSize: 14, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} (${dtShare(r.pct)}%)">${esc(r.name)}</span></div>`).join('')}</div>` : dtEmpty)}
+      ${ovCard('Top Device Type · Option 5 — Tree view', devTypeRows.length ? vizTreemap(devTypeRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 }) : dtEmpty)}
+    </div>
+""")
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+html body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-dtrank) { padding: 0; }
+.ip-dtg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 8px; height: 100%; align-content: center; }
+.ip-dtgc { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.ip-dtgc > span { font-size: .72rem; color: var(--neutral-light); font-family: var(--chart-font-family);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -6px; }
+.ip-dtgc .fa-viz { width: 100%; }""")
 
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

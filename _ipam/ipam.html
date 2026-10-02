@@ -853,6 +853,37 @@ html.ipembed .ip-content { padding-bottom: 56px; }
 .ip-ovgrid > .ip-card { grid-column: auto !important; box-sizing: border-box; height: 290px; display: flex; flex-direction: column; }
 .ip-ovgrid > .ip-card > .ip-card-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-dtrank) { padding: 0; }
+.ip-dtg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 8px; height: 100%; align-content: center; }
+.ip-dtgc { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.ip-dtgc > span { font-size: .72rem; color: var(--neutral-light); font-family: var(--chart-font-family);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -6px; }
+.ip-dtgc .fa-viz { width: 100%; }
+html body aside.ip-stackpanel .ip-sp-head.ip-sp-head2 { padding-left: 10px;
+  background: linear-gradient(var(--border-color), var(--border-color)) no-repeat 10px bottom / calc(100% - 34px) 1px; }
+html body aside.ip-stackpanel .ip-sp-body { padding-left: 10px; }
+html body .ip-stackpanel .ip-sp-tabrow > #ipDiscoverDevice { margin-top: -12px; }
+html body #ipBody .ip-group + .ip-group { margin-top: 0; }
+html body .ip-stackpanel .ip-sp-head.ip-sp-head2 { padding: 16px 24px; border-bottom: 0;
+  background: linear-gradient(var(--border-color), var(--border-color)) no-repeat center bottom / calc(100% - 48px) 1px; }
+html body .ip-stackpanel .ip-sp-body { padding-top: 12px; }
+html body .ip-sp-head2 .ip-sp-tl { align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+html body .ip-sp-head2 .ip-sp-tl b { font-size: 1.1rem; font-weight: 600; flex: none; }
+html body .ip-sp-head2 .ip-sp-meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body .ip-sp-head2 .ip-sp-dot { flex: none; display: inline-flex; }
+html body .ip-sp-head2 .ip-sp-id { gap: 6px; }
+html body .ip-sp-head2 .ip-sp-tile { flex: 0 0 40px; height: 40px; }
+html body .sn-kpis.ip-ipkpis .ip-sev-box { min-height: 187px; box-sizing: border-box; }
+html body #ipBody .ip-group-h { font-weight: 500; margin-bottom: 4px; }
+html body .ip-sp-head2 > .ip-sp-ph { flex: 1 1 auto; min-width: 0; }
+html body .ip-sp-head.ip-sp-head2 { align-items: center; }
+html body .sn-kpis .ip-sdki { width: 45px; height: 45px; flex: 0 0 45px; border-radius: 8px;
+  background: color-mix(in srgb, var(--ip-kc) 30%, transparent); color: var(--ip-kc); }
+html body .sn-kpis .ip-sdkt { margin-top: 4px; font-size: 20px; font-weight: 500; line-height: 1.3; }
+html body .sn-kpis .ip-kv small { font-size: 16px; font-weight: 500; margin-left: 4px; }
+.ip-ovgrid .ip-ovbadge { margin-right: 4px; }
+body .ip-ovgrid > .ip-card > .ip-card-body { padding: 12px; }
+body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-tm), body .ip-ovgrid > .ip-card > .ip-card-body:has(#tblTopN) { padding: 0; }
 body .ip-content .ip-grid, body .ip-content .ip-sev-row, body .ip-content .ip-stack { gap: 10px; }
 body .ip-content .ip-card, body .ip-content .ip-sev-box { border-radius: 8px; }
 body .sn-kpis .ip-sev-box .ip-sev-body { padding: 16px 16px 8px; gap: 0; }
@@ -2442,6 +2473,29 @@ window.DSCharts = (function () {
     };
   }
 
+  /* §68 · the DS captured-fixture chrome (data-viz chart-single-donut / -line / -horizontal-bar), layered over the
+     options a builder made. Style only — never position, size or data. Colours are still read from tokens. */
+  function dsFixture(make) {
+    return function () {
+      var o = make(), font = tok('--chart-font-family', "'JetBrains Mono', monospace"), text = tok('--page-text-color', '#cad3e2');
+      var grid = tok('--chart-grid-line-color', tok('--border-color', '#1d2a3e')), base = tok('--bottom-line-color', grid);
+      o.chart = o.chart || {}; o.chart.style = Object.assign({}, o.chart.style, { fontFamily: font });
+      o.legend = o.legend || {};
+      o.legend.symbolWidth = 11; o.legend.symbolHeight = 11; o.legend.symbolRadius = 1;
+      o.legend.itemStyle = Object.assign({}, o.legend.itemStyle, { color: tok('--chart-legend-color', text), fontWeight: 'normal', fontSize: '0.65rem', fontFamily: font });
+      o.legend.itemHoverStyle = Object.assign({}, o.legend.itemHoverStyle, { color: text });
+      o.tooltip = Object.assign({}, o.tooltip, { backgroundColor: tok('--chart-tooltip-background', tok('--common-widget-bg', '#172336')),
+        borderColor: tok('--border-color', '#1d2a3e'), borderWidth: 1, borderRadius: 10, shadow: true,
+        style: Object.assign({}, o.tooltip && o.tooltip.style, { color: text, fontFamily: font }) });
+      [].concat(o.xAxis || [], o.yAxis || []).forEach(function (a) {
+        a.labels = a.labels || {}; a.labels.style = Object.assign({}, a.labels.style, { color: text, fontSize: '0.65rem', fontFamily: font });
+        if (a.gridLineWidth !== 0) { a.gridLineColor = grid; a.gridLineDashStyle = 'Solid'; }
+        a.lineColor = base;
+      });
+      return o;
+    };
+  }
+
   /* ------------------------------------------------- queue / mount / life -- */
   var pending = [];   /* [{ id, make }] — queued but not yet in the DOM       */
   var live = [];      /* mounted Highcharts instances                          */
@@ -2460,6 +2514,7 @@ window.DSCharts = (function () {
       var el = document.getElementById(pending[i].id);
       if (!el) continue;                     /* not in the DOM — stay queued */
       var make = pending[i].make, c;
+      if (el.closest && el.closest('.ip-ovgrid')) make = dsFixture(make);   /* §68 */
       try { c = H.chart(el, make()); } catch (e) { pending.splice(i, 1); continue; }
       c.dsMake = make;
       live.push(c);
@@ -2822,7 +2877,7 @@ window.DSCharts = (function () {
 
     var mono = tok('--numeric-font-family', "'JetBrains Mono', monospace");
     chart.dsCentre = chart.renderer.text(String(big), 0, 0)
-      .css({ color: tok('--primary-alt', '#111c2c'), fontSize: '26px', fontWeight: '600', fontFamily: mono })
+      .css({ color: tok('--primary-alt', '#111c2c'), fontSize: (chart.renderTo && chart.renderTo.closest && chart.renderTo.closest('.ip-ovgrid')) ? '28px' : '26px', fontWeight: '600', fontFamily: mono })
       .attr({ zIndex: 5 }).add();
     var bb = chart.dsCentre.getBBox();
     chart.dsCentre.attr({ x: cx - bb.width / 2, y: cy + (small ? 24 : bb.height / 3) });
@@ -2983,15 +3038,15 @@ window.DSCharts = (function () {
         stops: [[0.999, o.severity ? sev(o.severity) : hue(0)]],
         lineWidth: 0, tickWidth: 0, minorTickInterval: null,
         tickPositions: [0, o.max || 100], startOnTick: false, endOnTick: false,
-        labels: { y: 14, distance: 6, style: { color: tok('--neutral-light', '#8a93a5'), fontSize: '10px' } },
+        labels: o.noTicks ? { enabled: false } : { y: 14, distance: 6, style: { color: tok('--neutral-light', '#8a93a5'), fontSize: '10px' } },
         title: { text: null }
       };
       b.plotOptions = {
         solidgauge: {
           innerRadius: '68%',
           dataLabels: {
-            y: -24, borderWidth: 0,
-            format: '<div style="text-align:center"><span style="font-size:20px;font-weight:500;color:' +
+            y: o.labelY != null ? o.labelY : -24, borderWidth: 0,
+            format: '<div style="text-align:center"><span style="font-size:' + (o.fontSize || 20) + 'px;font-weight:500;font-family:' + tok('--numeric-font-family', 'monospace') + ';color:' +
                     tok('--primary-alt', '#111c2c') + '">{y}</span>' +
                     (o.unit ? '<br/><span style="font-size:10px;color:' +
                     tok('--neutral-light', '#8a93a5') + '">' + o.unit + '</span>' : '') + '</div>',
@@ -3051,6 +3106,35 @@ window.DSCharts = (function () {
     });
   }
 
+  /* §87 · packed bubble — the DS topn-views fixture's bubble view. rows: [{name, v}]; area ∝ v; palette by order. */
+  function bubble(rows, o) {
+    o = o || {};
+    var h = o.h || 230;
+    return queue(function () {
+      var b = baseOpts(h);
+      delete b.xAxis; delete b.yAxis;
+      b.chart.type = 'packedbubble';
+      b.chart.spacing = [4, 4, 4, 4];
+      /* the names live in a right-hand legend (they overflowed the bubbles); the bubbles carry the counts */
+      b.legend = Object.assign(b.legend, { enabled: true, layout: 'vertical', align: 'right', verticalAlign: 'middle', itemMarginBottom: 2 });
+      b.tooltip.useHTML = true;
+      b.tooltip.pointFormat = '<b>{point.name}</b>: {point.value} devices';
+      b.tooltip.headerFormat = '';
+      b.plotOptions = { packedbubble: {
+        minSize: '46%', maxSize: '62%', zMin: 0,
+        layoutAlgorithm: { splitSeries: false, gravitationalConstant: 0.02, enableSimulation: false, bubblePadding: 4 },
+        dataLabels: { enabled: true, useHTML: false, format: '{point.value}',
+          style: { color: tok('--active-text-color', '#fff'), textOutline: 'none', fontWeight: '600', fontSize: '11px',
+                   fontFamily: tok('--chart-font-family', 'monospace') },
+          filter: { property: 'value', operator: '>', value: 0 } },
+        marker: { fillOpacity: 0.9, lineWidth: 0 } } };
+      /* one series per type so the legend lists the names (a single colorByPoint series shows ONE legend item) */
+      b.series = rows.map(function (r, i) { return { type: 'packedbubble', name: r.name, color: hue(i),
+        data: [{ name: r.name, value: Number(r.v) || 0 }] }; });
+      return b;
+    });
+  }
+
   /* Timeline epoch for the correlation dataset (2026-08-24 00:00, UTC so the
      axis renders as wall-clock regardless of the viewer's zone). */
   var BASE = Date.UTC(2026, 7, 24, 0, 0, 0);
@@ -3067,6 +3151,7 @@ window.DSCharts = (function () {
     barTopN: barTopN,
     column: column,
     gauge: gauge,
+    bubble: bubble,
     swimlane: swimlane,
     mount: mount,
     destroyAll: destroyAll,
@@ -16441,6 +16526,9 @@ const arrOf = v => (Array.isArray(v) ? v.map(x => (x && (x.value || x.key || x.l
 /* card / widget chrome — obs-toolbar variant=widget supplies the real header */
 /* overview cards: the product's dashboard widgets carry no menu when there is nothing to do */
 const ovWidget = (title, bodyHtml, opts = {}) => widget(title, bodyHtml, Object.assign({}, opts, { actions: '' }));
+/* §68 · an Overview card: the DS widget header's TIME BADGE in the actions slot (the range the Overview is drawn for) */
+const ovCard = (title, bodyHtml, opts = {}) => widget(title, bodyHtml, Object.assign({}, opts, {
+  actions: '' }));   /* §80: no time badge */
 function widget(title, bodyHtml, opts = {}) {
   const acts = opts.actions != null ? opts.actions
     : `<obs-button variant="transparent" square aria-label="Widget actions" title="Widget actions"><obs-icon name="ellipsis-v" size="14"></obs-icon></obs-button>`;
@@ -16781,7 +16869,7 @@ function dsGrid(id, cols, rows, opts = {}) {
   dsVendorEnhance(columns, data, rows);
   if (id === 'tblRogue') dsRgEnhance(columns);
   DS_GRID_DATA[id] = { columns, rows: data, size: DS_GRIDS[id] || 0,
-    actions: id === 'tblSubnets' ? DS_SUBNET_ACTIONS : id === 'tblSdIps' ? SD_IPS_ROW_MENU : null };
+    actions: id === 'tblSdIps' ? SD_IPS_ROW_MENU : null };   /* §84: no row menu on tblSubnets */
   const sub = ['tblSubnets', 'tblIps', 'tblRogue', 'tblSdIps', 'tblSdHist', 'tblIpHist'].includes(id);
   return `<obs-table id="${id}" data-dsgrid="${id}" class="ip-dstbl${sub ? ' ip-sntbl' : ''}" sortable="${sub}"
     empty-text="${esc(opts.empty || 'No records found')}"></obs-table>`;
@@ -16863,7 +16951,7 @@ function dsSubnetFilterBarOnly(f) {
     .map(k => ({ field: k, operator: F[k].length > 1 ? 'in' : '=', value: F[k].length > 1 ? F[k] : F[k][0] }));
   return `<obs-filters kind="bar" id="snFilterBar" class="ip-snfb" fields="${j(fields)}" value="${j(value)}"></obs-filters>`;
 }
-const DS_SN_LEGEND = [['critical', 'Critical'], ['major', 'High'], ['warning', 'Moderate'], ['clear', 'Healthy'], ['unknown', 'Not measurable']];
+const DS_SN_LEGEND = [['critical', 'Critical'], ['major', 'High'], ['warning', 'Moderate'], ['clear', 'Healthy']];   /* §83: 'Not measurable' removed from the legend on request */
 function dsSubnetLegend() {
   return `<div class="ip-snlegend" aria-label="Utilisation legend">${DS_SN_LEGEND.map(([s, l]) =>
     `<span class="ip-snlg"><obs-severity severity="${s}" shape="dot"></obs-severity>${esc(l)}</span>`).join('')}</div>`;
@@ -16963,6 +17051,12 @@ DS_GRID_SHEET.replaceSync(`
 :host-context([data-theme="dark-theme"]) .psize{background-image:${DS_CHEV('8e9fbc')}}
 .prange{font-variant-numeric:tabular-nums}
 td obs-tag{white-space:nowrap}
+:host(:not(.ds-fit)) .box>.pager{position:static}
+.grid.hs-default th{padding-top:6px;padding-bottom:6px}
+.grid td{white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+:host(#tblIps) .grid td{max-width:150px}
+.grid td:has(.cell-bar){max-width:none;overflow:visible;text-overflow:clip}
+:host(#tblIps) .grid th,:host(#tblIps) .grid td{padding-left:12px;padding-right:12px}
 td obs-icon[name="v-aruba"]{-webkit-mask:none;mask:none;background:url("data:image/svg+xml,%3Csvg%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20d%3D%22M256.33%20391.14c-76%200-138.51-60.82-138.51-135.15s62.45-135.13%20138.51-135.13S394.85%20181.67%20394.85%20256s-62.46%20135.14-138.52%20135.14zM256%2012.75C117.48%2012.75%206%20122.55%206%20256c0%20135.14%20111.49%20243.25%20250%20243.25%2057.44%200%20109.8-18.58%20152-50.75%2025.34%2042.24%2098%2050.75%2098%2050.75V256c0-133.45-111.49-243.25-250-243.25z%22%20fill%3D%22%23f5831f%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
 td obs-icon[name="v-vmware"]{-webkit-mask:none;mask:none;background:url("data:image/svg+xml,%3Csvg%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%229.3%22%20y1%3D%22256%22%20x2%3D%22502.7%22%20y2%3D%22256%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%22.05%22%20stop-color%3D%22%239ccb53%22%2F%3E%3Cstop%20offset%3D%22.32%22%20stop-color%3D%22%2393c24e%22%2F%3E%3Cstop%20offset%3D%22.75%22%20stop-color%3D%22%2379aa42%22%2F%3E%3Cstop%20offset%3D%22.99%22%20stop-color%3D%22%23689a3a%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22b%22%20x1%3D%22145.54%22%20y1%3D%22371.54%22%20x2%3D%22339.79%22%20y2%3D%22164.89%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%22.05%22%20stop-color%3D%22%23fcdd3e%22%2F%3E%3Cstop%20offset%3D%22.33%22%20stop-color%3D%22%23fad43e%22%2F%3E%3Cstop%20offset%3D%22.79%22%20stop-color%3D%22%23f5ba3d%22%2F%3E%3Cstop%20offset%3D%22.99%22%20stop-color%3D%22%23f2ad3d%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M483.83%2024.88A64.5%2064.5%200%2000438.27%206h-239a64.46%2064.46%200%2000-64.45%2064.45v67.63H73.75A64.46%2064.46%200%20009.3%20202.53v239A64.47%2064.47%200%200073.75%20506h239a64.44%2064.44%200%200064.45-64.45V373.9h61.07a64.47%2064.47%200%200064.46-64.45v-239a64.48%2064.48%200%2000-18.9-45.57zM435%20272.6a38.09%2038.09%200%2001-38%2038h-87.51v94.07a38%2038%200%2001-38%2038H106.24a38%2038%200%2001-38-38V239.4a38%2038%200%200138-38h87.52v-94.06a38%2038%200%200138-38H397a38%2038%200%200138%2038z%22%20fill%3D%22url%28%23a%29%22%2F%3E%3Cpath%20d%3D%22M386.25%20134.19a23.77%2023.77%200%2000-12.86-12.85%2023.82%2023.82%200%2000-9.09-1.81h-99.84a23.75%2023.75%200%2000-23.75%2023.75v99.89c0%209-8.47%208.46-8.47%208.46h-94.41a23.74%2023.74%200%2000-23.75%2023.75v99.88A23.75%2023.75%200%2000137.83%20399h99.87a23.77%2023.77%200%200023.75-23.76v-99.86s-.53-8.46%206.26-8.46h96.59a23.78%2023.78%200%200016.8-7%2023.73%2023.73%200%20007-16.79v-99.85a23.63%2023.63%200%2000-1.85-9.09z%22%20fill%3D%22url%28%23b%29%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
 td obs-icon[name="v-cisco"]{-webkit-mask:none;mask:none;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22%231BA0D7%22%20d%3D%22M16.331%2018.171V17.06l-.022.01c-.25.121-.522.19-.801.203a1.2%201.2%200%200%201-.806-.237a1.04%201.04%200%200%201-.352-.498a1.2%201.2%200%200%201-.023-.667c.052-.225.178-.426.357-.569c.16-.134.355-.218.562-.242a1.85%201.85%200%200%201%201.061.198l.024.013v-1.117l-.051-.014a2.9%202.9%200%200%200-1.011-.132a2.3%202.3%200%200%200-.903.206c-.287.132-.54.327-.739.571a2.22%202.22%200%200%200-.04%202.705c.295.378.709.645%201.175.756c.491.12%201.006.102%201.487-.052zm-10.995%200V17.06l-.022.01c-.25.121-.522.19-.801.203a1.18%201.18%200%200%201-.806-.237a1.03%201.03%200%200%201-.351-.498a1.2%201.2%200%200%201-.024-.667c.052-.225.177-.426.357-.569c.16-.134.355-.218.562-.242a1.85%201.85%200%200%201%201.061.198l.024.013v-1.117l-.051-.014a2.9%202.9%200%200%200-1.011-.132a2.3%202.3%200%200%200-.903.206a2.1%202.1%200%200%200-.74.571a2.224%202.224%200%200%200-.041%202.705a2.1%202.1%200%200%200%201.176.756c.491.12%201.005.102%201.487-.052zm3.924-.922l-.004.957l.07.012q.33.061.664.085q.293.028.587.012q.282-.021.551-.104c.21-.06.405-.163.571-.305a1.16%201.16%200%200%200%20.333-.478a1.3%201.3%200%200%200-.007-.96a1.1%201.1%200%200%200-.298-.414a1.3%201.3%200%200%200-.438-.255l-.722-.268a.4.4%200%200%201-.197-.188a.25.25%200%200%201%20.008-.219a.4.4%200%200%201%20.154-.142a.8.8%200%200%201%20.257-.074q.23-.034.46.005q.27.03.533.096l.038.008v-.883l-.069-.015a5%205%200%200%200-.543-.097a2.8%202.8%200%200%200-.714-.003c-.3.027-.585.143-.821.33c-.16.126-.281.293-.351.484c-.104.29-.105.608%200%20.899q.082.219.252.381q.146.14.327.236q.236.126.497.195q.086.026.17.054l.085.031l.024.01c.084.03.162.078.226.14q.068.064.101.151a.3.3%200%200%201%20.001.161a.34.34%200%200%201-.166.198a.9.9%200%200%201-.275.086a2%202%200%200%201-.427.021a5%205%200%200%201-.557-.074a9%209%200%200%201-.287-.067zm-2.475.995h1.05v-4.167h-1.05zm12.162-2.936a1.095%201.095%200%200%201%201.541.158a1.094%201.094%200%200%201-.157%201.541l-.017.014a1.096%201.096%200%200%201-1.367-1.713m-1.525.854a2.193%202.193%200%200%200%202.666%202.107a2.139%202.139%200%200%200%20.701-3.937a2.207%202.207%200%200%200-3.367%201.83m5.539-5.434a.52.52%200%200%200%201.039%200V9.573a.52.52%200%200%200-1.039%200zm-2.844%200a.522.522%200%200%200%201.041%200V8.139a.521.521%200%200%200-1.04%200v2.589m-2.887%201.043a.521.521%200%200%200%201.039%200V6.17a.52.52%200%200%200-1.039%200zm-2.838-1.043a.521.521%200%200%200%201.04%200V8.139a.52.52%200%200%200-1.039%200zm-2.9%200a.522.522%200%200%200%201.039%200V9.573a.52.52%200%200%200-1.039%200zm-2.87%200a.52.52%200%200%200%201.039%200V8.139a.52.52%200%200%200-1.039%200zm-2.887%201.043a.52.52%200%200%200%201.039%200V6.17a.52.52%200%200%200-1.039%200zm-2.861-1.043a.522.522%200%200%200%201.04%200V8.139a.52.52%200%200%200-1.039%200zm-2.877%200a.521.521%200%200%200%201.039%200V9.573a.52.52%200%200%200-1.039%200z%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}
@@ -17191,6 +17285,7 @@ addEventListener('resize', dsFitAll);
 function dsFitWatch(el) {
   if (!DS_FIT.has(el.id) || el.__dsFit) return;
   el.__dsFit = true;
+  el.classList.add('ds-fit');   /* §86 */
   el.stickyHeader = true;
   const ct = el.closest('.ip-sp-body') || el.closest('.ip-content'), card = el.closest('.ip-card');
   const ro = new ResizeObserver(() => dsFit(el));
@@ -17216,7 +17311,7 @@ const DS_SD_KPI_IC = { 'Total IP': 'total-ip', Used: 'lease-ip', Available: 'ava
 function dsSdKpi(label, value, color, sub, status, clickable) {
   return `<div class="ip-sev-box${clickable ? ' ip-stat-click' : ''}"${clickable ? ` data-stat-status="${esc(status)}" role="button" tabindex="0"` : ''}>
     <div class="ip-sev-body">
-      <span class="ip-sdki" style="--ip-kc:${color}"><obs-icon name="${DS_SD_KPI_IC[label] || 'ip'}" size="24"></obs-icon></span>
+      <span class="ip-sdki" style="--ip-kc:${color}"><obs-icon name="${DS_SD_KPI_IC[label] || 'ip'}" size="26"></obs-icon></span>
       <span class="ip-sdkt">IP ${esc(label)}</span>
       ${sub ? `<span class="ip-ks">${esc(sub)}</span>` : ''}
       <span class="ip-kv">${esc(value)}</span>
@@ -17227,7 +17322,7 @@ function dsSdKpiUtil(c, blind) {
   const fill = blind ? 0 : Math.max(0, Math.min(100, c.pct));
   return `<div class="ip-sev-box ip-stat-click ip-sdku" data-stat-status="" role="button" tabindex="0">
     <div class="ip-sev-body">
-      <span class="ip-sdki" style="--ip-kc:${col}"><obs-icon name="${DS_SD_KPI_IC['IP utilisation'] || 'utilization'}" size="24"></obs-icon></span>
+      <span class="ip-sdki" style="--ip-kc:${col}"><obs-icon name="${DS_SD_KPI_IC['IP utilisation'] || 'utilization'}" size="26"></obs-icon></span>
       <span class="ip-sdkt">Total IP</span>
       <span class="ip-sdkf"><span>${esc(num(c.total))} addresses</span></span>
       <span class="ip-kv">${blind ? '—' : esc(String(c.pct)) + '<small> %</small>'}</span>
@@ -17253,14 +17348,15 @@ function dsSdHistEnhance(columns, data, rows) {
 
 const dsIpTag = x => `<obs-tag variant="${x.monitoring ? 'tag-green' : 'tag-red'}">${x.monitoring ? 'Monitored' : 'Not monitored'}</obs-tag>`;
 const dsIpHead = x => {
+  /* §76 · the product monitor-drawer header — see ds_pass §76 */
   const meta = [x.host, x.vendor].filter(Boolean).map(v => '| ' + esc(v)).join(' ');
   return `<span class="ip-sp-tile"><obs-icon name="ip" size="20"></obs-icon></span>
     <div class="ip-sp-id">
-      <div class="ip-sp-tl"><b>${esc(x.ip)}</b>${meta ? `<span class="ip-sp-meta">${meta}</span>` : ''}</div>
-      <div class="ip-sp-tags"><obs-tag variant="${DS_STATUS_TAG[x.status] || 'default'}">${esc(x.status)}</obs-tag>${dsIpTag(x)}${x.devType ? `<obs-tag variant="default">${esc(x.devType)}</obs-tag>` : ''}</div>
+      <div class="ip-sp-tl"><obs-severity class="ip-sp-dot" severity="${x.monitoring ? 'up' : 'down'}" title="${x.monitoring ? 'Monitored' : 'Not monitored'}"></obs-severity><b>${esc(x.ip)}</b>${meta ? `<span class="ip-sp-meta">${meta}</span>` : ''}</div>
+      <div class="ip-sp-tags"><obs-tag variant="${DS_STATUS_TAG[x.status] || 'default'}">${esc(x.status)}</obs-tag>${x.devType ? `<obs-tag variant="default">${esc(x.devType)}</obs-tag>` : ''}</div>
     </div>`;
 };
-const dsIpDiscover = x => x.monitoring ? '' : `<obs-button variant="primary" size="small" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="14"></obs-icon>&nbsp;Discover device</obs-button>`;
+const dsIpDiscover = x => x.monitoring ? '' : `<obs-button variant="primary" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="16"></obs-icon>&nbsp;Discover device</obs-button>`;
 
 
 const DS_PANEL_SHEET = new CSSStyleSheet();
@@ -17274,7 +17370,11 @@ DS_KV_SHEET.replaceSync(`.kv.cols-1{max-width:none}
 .kv.v-plain .k{width:170px}
 .kv.v-plain tr:hover td.val{background:transparent}
 .kv.v-plain tr:hover td{background:var(--code-tag-background-color)}
-.kv.v-plain tr td:first-child{border-radius:4px 0 0 4px}.kv.v-plain tr td:last-child{border-radius:0 4px 4px 0}`);
+.kv.v-plain tr td:first-child{border-radius:4px 0 0 4px}.kv.v-plain tr td:last-child{border-radius:0 4px 4px 0}
+
+:host(.ip-pkv) .kv.v-plain td{padding:8px 4px;line-height:19px}
+:host(.ip-pkv) .kv.v-plain .k{width:280px;padding-right:16px;box-sizing:border-box}
+:host(.ip-pkv) .kv.v-plain tr:hover td,:host(.ip-pkv) .kv.v-plain tr:hover td.val{background:transparent}`);
 function dsKvStyle() {
   document.querySelectorAll('obs-key-value').forEach(k => {
     if (!k.shadowRoot || k.__dsKv) return;
@@ -17318,13 +17418,12 @@ function dsSparkDefs(root) {
 function dsTopNEnhance(columns, data, rows) {
   if (!rows.length || !rows[0].cidr) return;
   columns.length = 0;
-  columns.push({ key: 'sn', title: 'Subnet', type: 'link', width: '30%' },
-               { key: 'ut', title: 'Utilization', width: '24%' },   /* plain value — the band dot was removed on request */
-               { key: 'sp', title: 'Sparkline', type: 'sparkline' });
+  columns.push({ key: 'sn', title: 'Subnet', type: 'link', width: '45%' },
+               { key: 'ut', title: 'Utilization', type: 'bar' });   /* §72: no Sparkline column */
   data.forEach((d, i) => {
     const r = rows[i];
     for (const k of Object.keys(d)) if (k !== 'id') delete d[k];
-    d.sn = { text: r.cidr }; d.sp = dsUtilSpark(r.cidr, parseFloat(r.value) || 0); d.ut = r.value; d.sev = BAND_SEV[r.band] || 'unknown';
+    d.sn = { text: r.cidr }; d.ut = Math.round(parseFloat(r.value) || 0); d.sev = BAND_SEV[r.band] || 'unknown';
   });
 }
 
@@ -17596,6 +17695,10 @@ function screenOverview() {
   svc.ips(F, { page: 1, size: 100000 }).rows.forEach(x => { if (x.devType) devTypeCounts[x.devType] = (devTypeCounts[x.devType] || 0) + 1; });
   const devTypeRows = Object.entries(devTypeCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
     .map(([name, n]) => ({ name, pct: n, v: num(n) }));
+  /* §87 · the options' share denominator: EVERY classified device in the filter, not just the top 10 */
+  const devTypeTotal = Object.values(devTypeCounts).reduce((a, b) => a + b, 0);
+  const dtEmpty = `<p class="ip-empty">No address in this filter has a classified device yet</p>`;
+  const dtShare = n => devTypeTotal ? Math.round(n / devTypeTotal * 100) : 0;
 
   /* monitored vs not — scoped to actual devices (a MAC present), since an
      empty address was never a candidate for monitoring in the first place */
@@ -17613,36 +17716,50 @@ function screenOverview() {
   return `<div class="ip-stack">
 
     <div class="ip-grid ip-ovgrid">
-      ${ovWidget('Address status', vizStatusDonut([
+      ${ovCard('Address status', vizStatusDonut([
           { name: 'Used', v: c.used },
           { name: 'Available', v: c.available },
           { name: 'Reserved', v: c.reserved },
           { name: 'Transient', v: c.transient }
-        ], { h: 244, legendRight: true, showPercent: true,
+        ], { h: 220, legendRight: true, showPercent: true,
           defaultBig: util == null ? '—' : util + ' %', defaultSmall: 'utilised' }), { cls: 'ip-card-span1' })}
 
-      ${ovWidget('Device Monitoring Status', deviceIps.length ? vizStatusDonut([
+      ${ovCard('Device Monitoring Status', deviceIps.length ? vizStatusDonut([
           { name: 'Monitored', v: monitoredCount, color: '--severity-clear' },
           { name: 'Not Monitored', v: notMonitoredCount, color: '--severity-critical' }
-        ], { h: 244, legendRight: true, totalLabel: 'devices' })
+        ], { h: 220, legendRight: true, totalLabel: 'devices' })
         : `<p class="ip-empty">No device in this filter yet</p>`)}
 
-      ${ovWidget('Subnet Capacity', vizTopNTable(topSubnetRows, { valueHeader: 'Utilization', nameHeader: 'Subnet', empty: 'No subnet in this filter has discovery coverage', h: 244 }), { cls: 'ip-card-span2' })}
+      ${ovCard('Subnet Capacity', vizTopNTable(topSubnetRows, { valueHeader: 'Utilization', nameHeader: 'Subnet', empty: 'No subnet in this filter has discovery coverage', h: 220 }), { cls: 'ip-card-span2' })}
 
     </div>
 
     <div class="ip-grid ip-ovgrid ip-ov2">
-      ${ovWidget('Site Count', siteRows.length ? vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 })
+      ${ovCard('Site Count', siteRows.length ? vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 })
         : `<p class="ip-empty">No site in this filter</p>`)}
 
-      ${ovWidget('Top Device Type', devTypeRows.length ? vizTopN(devTypeRows, { h: 244, product: true })
+      ${ovCard('Top Device Type', devTypeRows.length ? vizTopN(devTypeRows, { h: 220, product: true })
         : `<p class="ip-empty">No address in this filter has a classified device yet</p>`)}
     </div>
 
+    <!-- §87 · Top Device Type options 2–5 (the card above is Option 1, unchanged) -->
     <div class="ip-grid ip-ovgrid ip-ov2">
-      ${ovWidget('Rogue Detection Trend', rogueTrendHtml(ROGUE_DEVICES.filter(r => r.status === 'Rogue').length, 'rogue-overview', false, { h: 244, legendOne: true, seriesName: 'Rogue detection' }))}
+      ${ovCard('Top Device Type · Option 2 — Ranked list', devTypeRows.length ? `<obs-table class="ip-dtrank" sticky-header max-height="248px" sortable="false"
+          columns='${esc(JSON.stringify([{ key: 'rk', title: '#', width: '44px' }, { key: 'nm', title: 'Device type' },
+            { key: 'n', title: 'Devices', align: 'right', width: '96px' }, { key: 'sh', title: 'Share of devices', type: 'bar', width: '42%' }]))}'
+          rows='${esc(JSON.stringify(devTypeRows.map((r, i) => ({ id: 'dt' + i, rk: i + 1, nm: r.name, n: r.v, sh: dtShare(r.pct) }))))}'></obs-table>` : dtEmpty)}
+      ${ovCard('Top Device Type · Option 3 — Packed bubble', devTypeRows.length ? DSCharts.bubble(devTypeRows.map(r => ({ name: r.name, v: r.pct })), { h: 244 }) : dtEmpty)}
+    </div>
+    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Top Device Type · Option 4 — Gauge grid', devTypeRows.length ? `<div class="ip-dtg">${devTypeRows.map(r =>
+          `<div class="ip-dtgc">${DSCharts.gauge(r.pct, { max: devTypeTotal || 1, h: 82, labelY: -14, fontSize: 14, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} (${dtShare(r.pct)}%)">${esc(r.name)}</span></div>`).join('')}</div>` : dtEmpty)}
+      ${ovCard('Top Device Type · Option 5 — Tree view', devTypeRows.length ? vizTreemap(devTypeRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 }) : dtEmpty)}
+    </div>
 
-      ${ovWidget('Overall Subnet Usage Trend', subnetUsageTrendHtml(c.used, 'overview', 244, false, { h: 244, legendOne: true }))}
+    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Rogue Detection Trend', rogueTrendHtml(ROGUE_DEVICES.filter(r => r.status === 'Rogue').length, 'rogue-overview', false, { h: 220, legendOne: true, seriesName: 'Rogue detection' }))}
+
+      ${ovCard('Overall Subnet Usage Trend', subnetUsageTrendHtml(c.used, 'overview', 220, false, { h: 220, legendOne: true }))}
     </div>
   </div>`;
 }
@@ -17681,7 +17798,8 @@ function grid(id, cols, rows, opts = {}) {
    from the eye menu. */
 const COL_HIDDEN = { subnets: new Set(),
   ips: new Set(['Connected switch', 'Connected port']), rogue: new Set(),
-  sdIps: new Set(), sdHist: new Set(), discoveryProfile: new Set(), routers: new Set() };
+  sdIps: new Set(['Source', 'Connected switch', 'Connected port']),   /* §85 */
+  sdHist: new Set(), discoveryProfile: new Set(), routers: new Set() };
 const visibleCols = (cols, key) => cols.filter(c => !c.title || !COL_HIDDEN[key].has(c.title));
 
 let colMenuPortal = null; /* { el, key, btn } while a checklist is open */
@@ -17883,7 +18001,7 @@ function ipStatusSummaryWidget() {
   return `<div class="ip-sev-row sn-kpis ip-ipkpis">
     ${boxes.map(b => `<div class="ip-sev-box">
       <div class="ip-sev-body">
-        <span class="ip-sdki" style="--ip-kc:${b.color}"><obs-icon name="${DS_SD_KPI_IC[b.label === 'Total' ? 'Total IP' : b.label] || 'ip'}" size="24"></obs-icon></span>
+        <span class="ip-sdki" style="--ip-kc:${b.color}"><obs-icon name="${DS_SD_KPI_IC[b.label === 'Total' ? 'Total IP' : b.label] || 'ip'}" size="26"></obs-icon></span>
         <span class="ip-sdkt">${b.label === 'Total' ? 'Total IP' : 'IP ' + esc(b.label)}</span>
         <span class="ip-kv">${num(b.value)}</span>
       </div>
@@ -18337,7 +18455,7 @@ function clearIpStack() {
 /* the view itself — identical in both hosts */
 function ipViewHtml(x) {
   const evTotal = svc.events(svc.EMPTY(), { page: 1, size: 1, ipId: x.id }).total;
-  const tabs = IP_TABS.map(t => t.key === 'history' ? { ...t, count: evTotal } : t);
+  const tabs = IP_TABS.map(t => { const { icon, ...r } = t; return r.key === 'history' ? { ...r, count: evTotal } : r; });   /* §77: no tab glyphs */
   return `<div class="ip-stack">
       ${x.status === 'Transient' ? `<obs-banner variant="info" title="Seen before, not in the current window">
         This address answered ARP on ${esc(x.lastSeen || 'an earlier scan')} and has not been seen since.
@@ -18466,6 +18584,7 @@ let ipHistQ = '';
 function bindIpBody() {
   const host = ipHost();
   if (!host) return;
+  host.querySelectorAll('#ipBody obs-key-value').forEach(k => k.classList.add('ip-pkv'));   /* §81: the panel's key-values */
   const hs = host.querySelector('#ipHistSearch');
   if (hs) hs.addEventListener('input', e => { const d = detailOf(e); ipHistQ = typeof d === 'string' ? d : (d && d.value) || ''; sdGridFilter('tblIpHist', ipHistQ); });
   if (ipHistQ) setTimeout(() => sdGridFilter('tblIpHist', ipHistQ), 0);

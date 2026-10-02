@@ -11900,6 +11900,7 @@ body.ntfbr .cwfab{bottom:calc(var(--ntf-bh,0px) + 32px)}
 #ntfBL .ntf{background:#162336}
 html[data-theme="light"] #ntfBL .ntf{background:var(--card)}
 body.ntfbl .ntfpos{bottom:calc(var(--ntf-blh,0px) + 32px)}
+body.ntfoff .ntfpos{display:none}   /* notifications off — see NTF_KEY */
 .ntfpos{position:fixed;left:calc(var(--rail-w,53px) + 16px);bottom:18px;z-index:200008;display:flex;align-items:center;gap:6px;
   padding:4px 4px 4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11.5px;color:var(--text-dim);
   box-shadow:0 4px 14px rgba(0,0,0,.25)}
@@ -13585,7 +13586,10 @@ const RAIL = [
      never slotted: `activeRail` and `MOD_TO_RAIL` store indices into this array. Setting is a
      `foot` row and skipped in the list, so in display order IPAM follows Report, under its own
      hairline (`network` group). Its screen is the vendored `_ipam/ipam.html` in an iframe. */
-  { name:'IPAM',      icon:'ipam',            mod:'IPAM',            group:'network' },
+  /* ⚠️ `sub:true` (2 Oct 2026: "the main IPAM module will be set in Explorer between NetRoute and Log"): IPAM left the
+     rail for Explorer's list. The entry STAYS here at index 6 (indices are stored); renderMenu skips it like a `foot`
+     row, MOD_TO_RAIL lights Explorer while it is open, and EXPLORER_TREE carries its row. */
+  { name:'IPAM',      icon:'ipam',            mod:'IPAM',            group:'network', sub:true },
 ];
 let activeRail = 0;
 
@@ -13875,6 +13879,10 @@ const EXPLORER_TREE = [
       ['Virtualization','Topology'], ['HCI','Topology'], ['Custom','Topology'] ]},
   { l:'NCCM',     mod:'NCCM',          ic:'ncm', kidsAs:'pages', route:'/nccm/', doc:'network-configuration-and-compliance-management/overview', kids:[ ['Compliance','NCCM'], ['Compare','NCCM'] ]},
   { l:'NetRoute', mod:'NetRoute',      ic:'netroute', route:'/netroute/', doc:'netroute/overview' },
+  { l:'IPAM',     mod:'IPAM',          ic:'ipam',     route:'/ipam/', kidsAs:'tabs', kids:[   /* moved off the rail, 2 Oct 2026 */
+      /* IPAM's own four tabs (2 Oct 2026) — each opens IPAM ON that tab (ipamTab → the embedded page's hash) */
+      ['Overview','IPAM',"ipamTab('Overview')"], ['Subnet Details','IPAM',"ipamTab('Subnet Details')"],
+      ['IP Details','IPAM',"ipamTab('IP Details')"], ['Rogue Detection','IPAM',"ipamTab('Rogue Detection')"] ]},
   { l:'Log',      mod:'Log Explorer',  ic:'log', route:'/log/', doc:'log-management/overview' },
   /* ⚠️ APM's FOUR TABS ARE ITS CHILDREN (request, 9 Sep 2026: "the same thinking in APM", with
      the live tab bar as the picture) — the same relationship Monitor's types and Topology's maps
@@ -13923,7 +13931,7 @@ const MOD_TO_RAIL = {};
 [['Dashboards',0],['Alerts',1],['SLO',2],
  ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
  ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
- ['Reports',4],['Settings',5],['IPAM',6]
+ ['Reports',4],['Settings',5],['IPAM',3]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 /* ══ PINNED SUB-MODULES ════════════════════════════════════════════════════════════════
    Request, 27 Aug 2026: "in the explorer all sub module will be I pin and unpin, and when
@@ -13950,7 +13958,7 @@ const MOD_TO_RAIL = {};
    record that aborting `init()` five times.
    ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
    else and the band renders empty — no error, just nothing on the rail. */
-let RAIL_PINS = ['Monitor'];
+let RAIL_PINS = ['Monitor', 'IPAM'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer */
 /* ══ THE RAIL CARRIES TWO PINNED BANDS, AND THEY ANCHOR TO DIFFERENT ROWS ══════════════════
    Two requests, minutes apart on 11 Sep 2026, and asking which was meant settled it as BOTH:
      "when I pin ANY sub-module it will show in between [the] Explorer and Report icon"
@@ -14385,7 +14393,7 @@ function renderMenu(){
        It is tested BEFORE the group logic for the same reason a hidden row is: `Setting` is the
        only member of the `admin` group, so leaving it to the group test would emit a divider
        introducing a band with nothing in it. */
-    if (r.foot) return;
+    if (r.foot || r.sub) return;   /* `sub`: lives in Explorer's list (IPAM) */
     if (i === homeIdx) return;                 /* already at the top */
     if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
     last = r.group;
@@ -16278,13 +16286,20 @@ function sbHeld(){
 /* ================= Views ================= */
 /* IPAM — lazily build the iframe; re-point it when the theme flips so the module follows ours. */
 function ipamTheme(){ return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+/* an Explorer child row (Overview · Subnet Details · IP Details · Rogue Detection) names the tab in MOD_SUB — the
+   same carrier Monitor's rows use, and the one setting.html's hand-off passes as &sub= */
+const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
+function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 function ipamInit(){
   const h = document.getElementById('ipamHost'); if (!h) return;
   let f = h.querySelector('iframe');
+  let tab = null; try { tab = IPAM_TAB_HASH[MOD_SUB] || null; if (tab) MOD_SUB = ''; } catch (e) {}
+  /* the page routes on hashchange, so an already-open frame only needs its hash moved — no reload */
+  if (f && tab) { f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#' + tab; return; }
   if (!f){
     f = document.createElement('iframe');
     f.title = 'IPAM'; f.className = 'ipamfr';
-    f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#overview';
+    f.src = '_ipam/ipam.html?embed=1&theme=' + ipamTheme() + '#' + (tab || 'overview');
     h.appendChild(f);
     new MutationObserver(() => {
       /* postMessage, not contentDocument — over file:// every page is its own origin, so a direct
@@ -17312,7 +17327,13 @@ function ntfDemo(){
   ntfShow({sev:'Major', mode:'close', text:'Disk usage on db-primary (198.51.100.12) has crossed 85%. Free up space or extend the volume to avoid write failures.'});
   ntfShow({sev:'Warning', mode:'auto', text:'License usage for Monitored Devices is at 82% of its allotment. This message closes by itself.'});
 }
-setTimeout(ntfDemo, 1200);
+/* ⚠️ NOTIFICATIONS ARE OFF BY DEFAULT (request, 2 Oct 2026) — the preference is Settings › My Account ›
+   My Profile › Notifications, stored in localStorage so every page reads the one value. Off also hides the
+   Critical-notification design switch (`.ntfpos`), which has nothing to switch while no bar is shown. */
+const NTF_KEY = 'oo-notifications';
+function ntfEnabled(){ try { return localStorage.getItem(NTF_KEY) === 'on'; } catch(e){ return false; } }
+document.body.classList.toggle('ntfoff', !ntfEnabled());
+if (ntfEnabled()) setTimeout(ntfDemo, 1200);
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
