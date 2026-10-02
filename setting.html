@@ -9004,15 +9004,20 @@ html[data-theme="light"] #cwModal{--cwa:#1d2a3e}
 .cw2ed ul,.cw2ed ol{margin:2px 0;padding-left:20px}
 .cw2ed img{display:block;max-width:100%;max-height:220px;margin:4px 0;border-radius:4px}
 .cw2imor{font-size:11px;color:var(--text-dim);text-align:center}
-.cw2imup{justify-content:center;gap:6px}
+.cw2imup{justify-content:center;gap:6px;border:1px dashed var(--track);background:var(--panel-2);color:var(--text);font-weight:500}
+.cw2imup:hover{border-color:var(--cwa,var(--teal));color:var(--cwa,var(--teal));background:var(--panel-2)}   /* dashed + filled: a place to put a file, not a second Cancel */
+.cw2imup.picked{border-style:solid;border-color:var(--cwa,var(--teal));color:var(--text);background:color-mix(in srgb,var(--cwa,var(--teal)) 12%,transparent)}
 .cw2lkp .cw2imup svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}   /* `.btn svg` fills its glyphs — this one is an outline */
 #cw2ImgP{left:auto;right:0}   /* the image button sits near the toolbar's right, so its form opens leftward */
-.cw2imup span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.cw2imup{flex:0 1 auto;min-width:0}
+.cw2imup span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;max-width:110px}
+.cw2lkf .btn:not(.cw2imup){flex:0 0 auto}
+.cw2lkp input{width:100%;min-width:0;box-sizing:border-box}
 .cw2ed a{color:var(--cwa,var(--teal));text-decoration:underline}
 .cw2ed code{padding:0 4px;border-radius:3px;background:var(--chip);font-family:'JetBrains Mono',monospace;font-size:12px}
 .cw2lk{position:relative;display:inline-flex}
 .cw2lkp:not(.on){display:none}   /* :not() — `.cw2mp`'s own display:grid is declared later and would win a plain tie */
-.cw2lkp{left:0;width:280px;grid-template-columns:1fr;gap:6px;padding:12px}
+.cw2lkp{left:0;width:280px;grid-template-columns:minmax(0,1fr);gap:6px;padding:12px}   /* minmax(0,…): a long file name must not widen the column past the card */
 .cw2mp.cw2lkp{padding:12px}   /* `.cw2mp`'s 4px would otherwise win — it is declared later */
 .cw2lkl{font-size:12px;font-weight:600;color:var(--text-dim)}
 .cw2lkl + input{margin-bottom:4px}
@@ -22008,6 +22013,11 @@ function ftMd(src){
     /* `{24px}text{/}` is a SIZED RUN (30 Sep 2026, Free Text option 2: a size picked with text selected applies to
        that text only). Digits only in the size, so nothing but a number can reach the style attribute. */
     .replace(/\{(\d{1,3})px\}(.+?)\{\/\}/g, '<span style="font-size:$1px">$2</span>')
+    /* `{c:Name}text{/c}` / `{c:#hex}text{/c}` is a COLOURED RUN (1 Oct 2026, Free Text option 2: a font colour applies
+       to the selected text only). Only a palette NAME or a hex can reach the style — never a raw CSS value. */
+    .replace(/\{c:(#[0-9a-fA-F]{3,8}|[A-Za-z]+)\}(.+?)\{\/c\}/g, (m0, k, t) => {
+      const v = /^#/.test(k) ? k : (typeof CW_FT_COLOR !== 'undefined' && (CW_FT_COLOR.find(x => x[0] === k) || [])[1]);
+      return v ? '<span data-c="' + k + '" style="color:' + v + '">' + t + '</span>' : t; })
     /* `***text***` is bold AND italic — the editor writes it when both are on, and the two rules below
        each need a run with no `*` in it, so neither could read it on its own */
     .replace(/\*\*\*([^*]+)\*\*\*/g, '<b><i>$1</i></b>')
@@ -36068,8 +36078,10 @@ const CW2_IC = {
   list:   'M9 6l11 0|M9 12l11 0|M9 18l11 0|M5 6l0 .01|M5 12l0 .01|M5 18l0 .01',
   olist:  'M11 6h9|M11 12h9|M12 18h8|M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4|M6 10v-6l-2 2',
   link:   'M9 15l6 -6|M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464|M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463',
-  hl:     'M3 19h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4|M12.5 5.5l4 4|M4.5 13.5l4 4',
-  color:  'M9 15v-7a3 3 0 0 1 6 0v7|M9 11h6',
+  /* background = Tabler `bucket-droplet` (a fill), font colour = Lucide `baseline`'s A without its rule — the colour
+     bar under the glyph IS the baseline (request, 1 Oct 2026: change both icons; the pencil read as "edit") */
+  hl:     'M5 16l1.465 1.638a2 2 0 1 1 -3.015 .099l1.55 -1.737|M13.737 9.737c2.299 -2.3 3.23 -5.095 2.081 -6.245c-1.15 -1.15 -3.945 -.217 -6.244 2.082c-2.3 2.299 -3.231 5.095 -2.082 6.244c1.15 1.15 3.946 .218 6.245 -2.081|M7.492 11.818c.362 .362 .768 .676 1.208 .934l6.895 4.047c1.078 .557 2.255 -.075 3.692 -1.512c1.437 -1.437 2.07 -2.614 1.512 -3.692c-.372 -.718 -1.72 -3.017 -4.047 -6.895a6.015 6.015 0 0 0 -.934 -1.208',
+  color:  'M6 16l6 -12l6 12|M8 12h8',
   size:   'M3 7v-2h13v2|M10 5v14|M12 19h-4|M15 13v-1h6v1|M18 12v7|M17 19h2',
   style:  'M4 20l3 0|M14 20l7 0|M6.9 15l6.9 0|M10.2 6.3l5.8 13.7|M5 20l6 -16l2 0l7 16',
   upload: 'M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2|M7 11l5 5l5 -5|M12 4l0 12',
@@ -36106,7 +36118,7 @@ function cw2DD(key, list, cur, swatch, custom, glyph, tip, off){
   /* no tooltip while its own list is open — it painted over the options.
      The SIZE control remembers the editor's selection the moment it is pressed — its search box takes focus next */
   return '<span class="cw2dd cw2dd-' + key + '"' + (CW_FT_DD === key ? '' : ' data-tip="' + tip + '"') +
-    (key === 'size' ? ' onmousedown="if(CW_FT_DD!==\'size\')cw2SaveSel()"' : '') + '>' +
+    (key === 'size' || key === 'color' ? ' onmousedown="if(CW_FT_DD!==\'' + key + '\')cw2SaveSel()"' : '') + '>' +
     cwFtDD(key, list, cur, swatch, custom, off).replace(/(<button class="cwftddt"[^>]*>)/, '$1' + glyph) + '</span>';
 }
 /* insert markdown around / before the selection, then hand the new text to the one writer */
@@ -36146,6 +36158,7 @@ function cw2ToMd(root){
     if (T === 'B' || T === 'STRONG') return kids(Object.assign({}, m, {b:1}));
     if (T === 'I' || T === 'EM') return kids(Object.assign({}, m, {i:1}));
     if (T === 'U') return kids(Object.assign({}, m, {u:1}));
+    if (T === 'SPAN' && n.dataset && n.dataset.c) return kids(Object.assign({}, m, {k:n.dataset.c}));
     if (T === 'SPAN' && n.style && parseInt(n.style.fontSize, 10)) return kids(Object.assign({}, m, {s:parseInt(n.style.fontSize, 10)}));
     if (T === 'A') return kids(Object.assign({}, m, {a:n.getAttribute('href') || ''}));
     if (T === 'CODE'){ run(n.textContent, Object.assign({}, m, {c:1})); return; }
@@ -36163,7 +36176,7 @@ function cw2ToMd(root){
     kids(m);
   };
   [...root.childNodes].forEach(c => walk(c, {}, false));
-  const same = (a, b) => !a.raw && !b.raw && a.b === b.b && a.i === b.i && a.u === b.u && a.a === b.a && a.c === b.c && a.s === b.s;
+  const same = (a, b) => !a.raw && !b.raw && a.b === b.b && a.i === b.i && a.u === b.u && a.a === b.a && a.c === b.c && a.s === b.s && a.k === b.k;
   const wrap = r => {
     if (r.m.raw) return r.t;
     if (r.m.c) return '`' + r.t + '`';
@@ -36175,6 +36188,7 @@ function cw2ToMd(root){
     if (r.m.b) x = '**' + x + '**';
     if (r.m.a) x = '[' + x + '](' + r.m.a + ')';
     if (r.m.s) x = '{' + r.m.s + 'px}' + x + '{/}';
+    if (r.m.k) x = '{c:' + r.m.k + '}' + x + '{/c}';
     return lead + x + tail;
   };
   return lines.map(L => {
@@ -36230,7 +36244,7 @@ function cw2ImgAsk(){
   const p = document.getElementById('cw2ImgP'); if (!p) return;
   p.classList.toggle('on'); CW2_IMG = '';
   ['cw2ImgIn','cw2ImgAlt'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
-  const fn = document.getElementById('cw2ImgFn'); if (fn) fn.textContent = 'Upload';
+  const fn = document.getElementById('cw2ImgFn'); if (fn) fn.textContent = 'Upload'; const ub = fn && fn.closest('.cw2imup'); if (ub) ub.classList.remove('picked');
   cw2ImgGate(); if (p.classList.contains('on')) document.getElementById('cw2ImgIn').focus();
 }
 function cw2ImgClose(){ const p = document.getElementById('cw2ImgP'); if (p) p.classList.remove('on'); }
@@ -36243,7 +36257,7 @@ function cw2ImgFile(inp){
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       CW2_IMG = c.toDataURL('image/jpeg', 0.8);
-      const fn = document.getElementById('cw2ImgFn'); if (fn) fn.textContent = f.name;
+      const fn = document.getElementById('cw2ImgFn'); if (fn){ fn.textContent = f.name; fn.closest('.cw2imup').classList.add('picked'); }
       const alt = document.getElementById('cw2ImgAlt'); if (alt && !alt.value) alt.value = f.name.replace(/\.[^.]+$/, '');
       cw2ImgGate(); };
     im.src = fr.result; };
@@ -36330,6 +36344,39 @@ function cw2SizeSel(val){
     return _pick(key, val);
   };
 }
+/* ── FONT COLOUR FOR THE SELECTION ONLY (request, 1 Oct 2026: "the font colour will change only when I select — no
+   change to the font colour when I don't select"). Unlike Size, there is NO whole-note fallback: with nothing
+   selected a pick changes nothing and says so. Default takes the colour back off the selected text. */
+function cw2ColorSel(val){
+  const o = CW2_SEL, ed = document.getElementById('cw2Ed'); if (!o || !ed) return false;
+  const r = document.createRange(), A = cw2TextPos(ed, o.a), B = cw2TextPos(ed, o.b);
+  r.setStart(A[0], A[1]); r.setEnd(B[0], B[1]);
+  const frag = r.extractContents();
+  frag.querySelectorAll('span[data-c]').forEach(sp => sp.replaceWith(...sp.childNodes));
+  let node = frag;
+  if (val && val !== 'Default'){
+    const sp = document.createElement('span'); sp.dataset.c = val; sp.style.color = cwFtVal(CW_FT_COLOR, val, ''); sp.appendChild(frag); node = sp;
+  }
+  const first = node.firstChild, last = node.lastChild, box = node.nodeType === 1 ? node : null;
+  r.insertNode(node);
+  const sel = window.getSelection(), nr = document.createRange();
+  if (box) nr.selectNodeContents(box); else if (first && last && first.parentNode){ nr.setStartBefore(first); nr.setEndAfter(last); }
+  sel.removeAllRanges(); sel.addRange(nr);
+  cw2SaveSel();   /* keep it, so the colour field can keep recolouring the same text while the menu stays open */
+  cw2Sync();
+  return true;
+}
+{ const _set = ddSet;
+  ddSet = function(key, val){
+    if (key === 'color' && CW_FT_OPT === 2 && document.getElementById('cw2Ed')){
+      if (CW.ft.preset === 'Header') return _set(key, val);   /* a header is one plain run — its colour is the whole header's */
+      if (!cw2ColorSel(val)) toast('Select some text first — the font colour applies to the selected text only');
+      if (!CW_FT_DD){ ddPaint('color'); }
+      return;
+    }
+    return _set(key, val);
+  };
+}
 function cwFt2PanelHTML(){
   const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const F = CW.ft, hdr = F.preset === 'Header';
@@ -36377,12 +36424,13 @@ function cwFt2PanelHTML(){
       '<label class="cw2lkl" for="cw2ImgIn">Image link</label><input id="cw2ImgIn" placeholder="https://..." oninput="cw2ImgGate()">' +
       '<input type="file" id="cw2ImgFile" accept="image/*" hidden onchange="cw2ImgFile(this)">' +
       '<input type="hidden" id="cw2ImgAlt">' +
-      '<span class="cw2lkf"><button type="button" class="btn cw2imup" onclick="document.getElementById(\'cw2ImgFile\').click()">' + cw2Svg('upload') + '<span id="cw2ImgFn">Upload</span></button>' +
+      '<span class="cw2lkf"><button type="button" class="btn cw2imup" data-tip="Upload an image from your computer" onclick="document.getElementById(\'cw2ImgFile\').click()">' + cw2Svg('upload') + '<span id="cw2ImgFn">Upload</span></button>' +
       '<span class="cw2sp"></span><button type="button" class="btn" onclick="cw2ImgClose()">Cancel</button>' +
       '<button type="button" class="btn pri" id="cw2ImgGo" disabled onclick="cw2ImgGo()">Insert</button></span></span></span>' +
     cw2Btn(cw2SegSvg(CW_FT_PAD[1], true), F.pad ? 'Padding — on' : 'Padding — off', 'cwFtPadTog()', !!F.pad) +
-    cw2Btn(cw2SegSvg(CW_FT_ORIENT[1], true), 'Vertical text' + (hdr ? '' : ' — switches to Header'),
-      "cwFtOrient('" + (hdr && F.orient === 'v' ? 'h' : 'v') + "')", hdr && F.orient === 'v') +
+    /* disabled on Default (request, 1 Oct 2026): vertical text is a Header-only option, so it no longer switches presets */
+    cw2Btn(cw2SegSvg(CW_FT_ORIENT[1], true), hdr ? 'Vertical text' : 'Vertical text — Header only',
+      "cwFtOrient('" + (hdr && F.orient === 'v' ? 'h' : 'v') + "')", hdr && F.orient === 'v', !hdr) +
     /* ⚠️ NO FORMATTING HELP IN OPTION 2 (request, 30 Sep 2026: "the features are already shown upfront") —
        the toolbar IS the help. Option 1 keeps its button; `CW2_IC.help` is unreferenced here. */
     '';

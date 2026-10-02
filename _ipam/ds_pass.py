@@ -1982,7 +1982,7 @@ t = t.replace(_s, _s + """
 .sn-kpis .ip-sev-box { display: flex; }
 .sn-kpis .ip-sev-body { flex: 1 1 auto; }
 .sn-kpis .ip-kv { margin-top: auto !important; }
-.sn-kpis:has(.ip-sdku) .ip-sev-box:not(.ip-sdku) .ip-kv { margin-bottom: 18px; }
+.sn-kpis:has(.ip-sdku) .ip-sev-box:not(.ip-sdku) .ip-kv { margin-bottom: 16px; }
 /* IP Details tiles have no bar to push the count down, so it gets its own 6px under the title */
 .sn-kpis.ip-ipkpis .ip-sev-box .ip-kv { margin-top: 6px !important; }""")
 
@@ -2051,6 +2051,86 @@ assert _n61 >= 3, 'kpi icon spans: %d' % _n61
 t = _re3.sub(r'(<span class="ip-sdki"[^>]*><obs-icon name="[^"]*") size="20"', r'\1 size="24"', t)
 _s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
 t = t.replace(_s, _s + "\n.sn-kpis .ip-sdki { width: 45px; height: 45px; flex: 0 0 45px; }")
+
+
+# ── §62 · ONE colour per address status, everywhere in IPAM ──
+# Three sources disagreed: statusVar (dots, donut) coloured by palette ORDER (Available orange, Transient green); the
+# KPI cards swapped Available/Transient to compensate (the source shipped that swap); the grid tags used the DS tag
+# variants (Used grey, Transient yellow). STATUS_COLOR is now the single map and its values ARE the DS tag colours,
+# so a tag, a card, a dot and a donut slice cannot disagree:
+#   Used → --main-tags-text-color (teal, tag `main-tags`) · Available → --secondary-green (tag-green)
+#   Transient → --secondary-orange (tag-orange) · Reserved → --severity-unreachable (tag-purple)
+_sv = """const STATUS_ORDER = ['Used', 'Available', 'Reserved', 'Transient'];
+const statusVar = s => (s === 'Not Scanned' ? 'var(--severity-unknown)'
+  : `var(--ds-series-${STATUS_ORDER.indexOf(s) + 1})`);"""
+assert t.count(_sv) == 1, 'statusVar'
+t = t.replace(_sv, """const STATUS_ORDER = ['Used', 'Available', 'Reserved', 'Transient'];
+const STATUS_COLOR = { Used: '--main-tags-text-color', Available: '--secondary-green',
+  Transient: '--secondary-orange', Reserved: '--severity-unreachable' };
+const statusVar = s => (STATUS_COLOR[s] ? `var(${STATUS_COLOR[s]})` : 'var(--severity-unknown)');""")
+_tg = "const DS_STATUS_TAG = { Used: 'tag-primary', Available: 'tag-green', Reserved: 'tag-purple', Transient: 'tag-yellow' };"
+assert t.count(_tg) == 1, 'status tags'
+t = t.replace(_tg, "const DS_STATUS_TAG = { Used: 'main-tags', Available: 'tag-green', Reserved: 'tag-purple', Transient: 'tag-orange' };")
+# the cards asked for each other's colour (the source's swap) — each now asks for its own
+for _a, _b in (("dsSdKpi('Available', num(c.available), statusVar('Transient')", "dsSdKpi('Available', num(c.available), statusVar('Available')"),
+               ("dsSdKpi('Transient', num(c.transient), statusVar('Available')", "dsSdKpi('Transient', num(c.transient), statusVar('Transient')"),
+               ("{ label: 'Transient', value: c.transient, color: statusVar('Available') }", "{ label: 'Transient', value: c.transient, color: statusVar('Transient') }"),
+               ("{ label: 'Available', value: c.available, color: statusVar('Transient') }", "{ label: 'Available', value: c.available, color: statusVar('Available') }")):
+    assert t.count(_a) == 1, _a
+    t = t.replace(_a, _b)
+# the donut: a slice named for a status takes that status's colour instead of the palette slot for its position
+_cf = "  function colourOf(s, i) {\n    return (s && s.severity) ? sev(s.severity) : hue(i);"
+assert t.count(_cf) == 1, 'colourOf'
+t = t.replace(_cf, "  function colourOf(s, i) {\n    if (s && s.colorVar) return tok(s.colorVar, hue(i));\n    return (s && s.severity) ? sev(s.severity) : hue(i);")
+_ds = "          return { name: s.name, y: s.v, color: colourOf(s, i) };\n        })\n      }];\n      b.chart.events = { render: function () { if (o.legendRight"
+assert t.count(_ds) == 1, 'donutSelectable data'
+_vz = "  DSCharts.donutSelectable(slices.map(s => ({ name: s.name, v: s.v, severity: sevOfToken(s.color) })),"
+assert t.count(_vz) == 1, 'vizStatusDonut'
+t = t.replace(_vz, "  DSCharts.donutSelectable(slices.map(s => ({ name: s.name, v: s.v, severity: sevOfToken(s.color), colorVar: (!s.color && STATUS_COLOR[s.name]) || undefined })),")
+
+
+# ── §63 · subnet detail cards: Transient before Available — the IP Details order (Used · Transient · Available · Reserved) ──
+_av = t[t.find("    ${dsSdKpi('Available',"):]
+_av = _av[:_av.find("\n") + 1]
+_tr = t[t.find("    ${dsSdKpi('Transient',"):]
+_tr = _tr[:_tr.find("\n") + 1]
+assert _av.startswith("    ${dsSdKpi('Available'") and _tr.startswith("    ${dsSdKpi('Transient'") and t.count(_av + _tr) == 1, 'kpi order'
+t = t.replace(_av + _tr, _tr + _av)
+
+
+# ── §64 · subnet detail's two chart widgets carry no ⋮ (it opened nothing) — ovWidget, as on the Overview ──
+for _w in ("${widget('Subnet Usage Trend',", "${widget('Subnet Forecast',"):
+    assert t.count(_w) == 1, _w
+    t = t.replace(_w, _w.replace('${widget(', '${ovWidget('))
+
+
+# ── §65 · KPI cards drawn like the product's KPI widget (the "Interface" tile) ──
+# Reference markup: padding px-4 pt-4 pb-2 (16/16/8); a SOLID-filled rounded icon tile with the glyph in contrast;
+# the title mt-1 under it; the figure at the card's foot in the numeric font at 30px/600, line-height 1, under a
+# 13px/500 footer label. Applies to both rows (subnet detail + IP Details — one component). Older rules here carry
+# !important and equal weight, so these win on specificity (the `body` prefix), not on source order.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+body .sn-kpis .ip-sev-box .ip-sev-body { padding: 16px 16px 8px; gap: 0; }
+body #ipStatusWidget .sn-kpis .ip-sev-body { padding: 16px 16px 8px; gap: 0; }   /* the IP Details row sits under an id-scoped rule */
+body .sn-kpis .ip-sdki { background: var(--ip-kc); color: var(--page-background-color); border-radius: 6px; margin-bottom: 0; }
+body .sn-kpis .ip-sdkt { margin-top: 4px; font-size: 18px; font-weight: 500; line-height: 1.3; color: var(--primary-alt); }
+body .sn-kpis .ip-kv { font-family: var(--numeric-font-family); font-size: 30px; line-height: 1; font-weight: 600;
+  color: var(--primary-alt); margin-top: auto !important; padding-top: 16px; }
+body .sn-kpis.ip-ipkpis .ip-sev-box .ip-kv { margin-top: auto !important; }
+body .sn-kpis .ip-kv small { font-size: .5em; font-weight: 500; }
+body .sn-kpis .ip-sdku .ip-sdkf { margin-top: auto; padding-top: 16px; font-size: 13px; font-weight: 500; color: var(--neutral-light); }
+body .sn-kpis .ip-sdku .ip-kv { margin-top: 4px !important; padding-top: 0; }
+body .sn-kpis .ip-sdkb { margin-top: 10px; }""")
+
+
+# ── §66 · across the IPAM module: 10px between neighbouring widgets (both axes) and an 8px widget radius ──
+# Every gap was --ip-padding-md (16px) and every card --ip-radius (4px). Scoped to the module's content area so the
+# side panel and drawers keep their own spacing; .ip-card covers the widgets, .ip-sev-box the KPI cards.
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + """
+body .ip-content .ip-grid, body .ip-content .ip-sev-row, body .ip-content .ip-stack { gap: 10px; }
+body .ip-content .ip-card, body .ip-content .ip-sev-box { border-radius: 8px; }""")
 
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

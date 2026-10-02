@@ -853,12 +853,25 @@ html.ipembed .ip-content { padding-bottom: 56px; }
 .ip-ovgrid > .ip-card { grid-column: auto !important; box-sizing: border-box; height: 290px; display: flex; flex-direction: column; }
 .ip-ovgrid > .ip-card > .ip-card-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body .ip-content .ip-grid, body .ip-content .ip-sev-row, body .ip-content .ip-stack { gap: 10px; }
+body .ip-content .ip-card, body .ip-content .ip-sev-box { border-radius: 8px; }
+body .sn-kpis .ip-sev-box .ip-sev-body { padding: 16px 16px 8px; gap: 0; }
+body #ipStatusWidget .sn-kpis .ip-sev-body { padding: 16px 16px 8px; gap: 0; }   /* the IP Details row sits under an id-scoped rule */
+body .sn-kpis .ip-sdki { background: var(--ip-kc); color: var(--page-background-color); border-radius: 6px; margin-bottom: 0; }
+body .sn-kpis .ip-sdkt { margin-top: 4px; font-size: 18px; font-weight: 500; line-height: 1.3; color: var(--primary-alt); }
+body .sn-kpis .ip-kv { font-family: var(--numeric-font-family); font-size: 30px; line-height: 1; font-weight: 600;
+  color: var(--primary-alt); margin-top: auto !important; padding-top: 16px; }
+body .sn-kpis.ip-ipkpis .ip-sev-box .ip-kv { margin-top: auto !important; }
+body .sn-kpis .ip-kv small { font-size: .5em; font-weight: 500; }
+body .sn-kpis .ip-sdku .ip-sdkf { margin-top: auto; padding-top: 16px; font-size: 13px; font-weight: 500; color: var(--neutral-light); }
+body .sn-kpis .ip-sdku .ip-kv { margin-top: 4px !important; padding-top: 0; }
+body .sn-kpis .ip-sdkb { margin-top: 10px; }
 .sn-kpis .ip-sdki { width: 45px; height: 45px; flex: 0 0 45px; }
 .ip-ph-mark { display: inline-flex; align-items: center; justify-content: center; color: var(--primary-alt); background: none; align-self: center; }
 .sn-kpis .ip-sev-box { display: flex; }
 .sn-kpis .ip-sev-body { flex: 1 1 auto; }
 .sn-kpis .ip-kv { margin-top: auto !important; }
-.sn-kpis:has(.ip-sdku) .ip-sev-box:not(.ip-sdku) .ip-kv { margin-bottom: 18px; }
+.sn-kpis:has(.ip-sdku) .ip-sev-box:not(.ip-sdku) .ip-kv { margin-bottom: 16px; }
 /* IP Details tiles have no bar to push the count down, so it gets its own 6px under the title */
 .sn-kpis.ip-ipkpis .ip-sev-box .ip-kv { margin-top: 6px !important; }
 .ip-sp-head.ip-sp-head2 { align-items: flex-start; gap: 12px; padding: 16px 20px; }
@@ -2356,6 +2369,7 @@ window.DSCharts = (function () {
   /* a series carrying a severity is a STATUS series; otherwise it is
      categorical and takes the palette slot for its position. */
   function colourOf(s, i) {
+    if (s && s.colorVar) return tok(s.colorVar, hue(i));
     return (s && s.severity) ? sev(s.severity) : hue(i);
   }
 
@@ -16444,7 +16458,7 @@ const panel = (bodyHtml, cls = '') => `<section class="ip-card ${cls}">${bodyHtm
 const sevOfToken = t => (t && t.startsWith('--severity-')) ? t.replace('--severity-', '') : undefined;
 
 const vizStatusDonut = (slices, opts = {}) =>
-  DSCharts.donutSelectable(slices.map(s => ({ name: s.name, v: s.v, severity: sevOfToken(s.color) })),
+  DSCharts.donutSelectable(slices.map(s => ({ name: s.name, v: s.v, severity: sevOfToken(s.color), colorVar: (!s.color && STATUS_COLOR[s.name]) || undefined })),
     { h: opts.h || 230, legendLayout: opts.legendLayout, totalLabel: opts.totalLabel,
       showPercent: opts.showPercent, defaultBig: opts.defaultBig, defaultSmall: opts.defaultSmall,
       legendRight: opts.legendRight });
@@ -16692,8 +16706,9 @@ const group = (title, body) => `<div class="ip-group"><div class="ip-group-h">${
    Utilisation BANDS are the opposite: they exist to be acted on, so they map
    to the severity scale. */
 const STATUS_ORDER = ['Used', 'Available', 'Reserved', 'Transient'];
-const statusVar = s => (s === 'Not Scanned' ? 'var(--severity-unknown)'
-  : `var(--ds-series-${STATUS_ORDER.indexOf(s) + 1})`);
+const STATUS_COLOR = { Used: '--main-tags-text-color', Available: '--secondary-green',
+  Transient: '--secondary-orange', Reserved: '--severity-unreachable' };
+const statusVar = s => (STATUS_COLOR[s] ? `var(${STATUS_COLOR[s]})` : 'var(--severity-unknown)');
 const BAND_SEV = { Critical: 'critical', High: 'major', Moderate: 'warning', Healthy: 'clear', Unknown: 'unknown' };
 const bandVar = b => `var(--severity-${BAND_SEV[b] || 'unknown'})`;
 
@@ -16711,7 +16726,7 @@ function utilCell(pct, band) {
    obs-key-value. Written by _ipam/ds_pass.py; re-run it rather than hand-editing. ══ */
 /* a status is a CATEGORY (see the colour contract above), so it maps onto tag variants,
    not onto the severity scale */
-const DS_STATUS_TAG = { Used: 'tag-primary', Available: 'tag-green', Reserved: 'tag-purple', Transient: 'tag-yellow' };
+const DS_STATUS_TAG = { Used: 'main-tags', Available: 'tag-green', Reserved: 'tag-purple', Transient: 'tag-orange' };
 const DS_TAG_TOKEN = { 'tag-green': '--severity-clear', 'tag-orange': '--severity-major',
   'tag-red': '--severity-critical', 'tag-yellow': '--severity-warning', 'tag-primary': '--primary-alt' };
 /* the legacy cell renderers still produce HTML; this reads that HTML back into the typed
@@ -17224,8 +17239,8 @@ function dsSdKpis(c, blind) {
   return `<div class="ip-sev-row sn-kpis">
     ${dsSdKpiUtil(c, blind)}
     ${dsSdKpi('Used', num(c.used), statusVar('Used'), pct(c.used), 'Used', true)}
-    ${dsSdKpi('Available', num(c.available), statusVar('Transient'), pct(c.available), 'Available', true)}
-    ${dsSdKpi('Transient', num(c.transient), statusVar('Available'), pct(c.transient), 'Transient', true)}
+    ${dsSdKpi('Transient', num(c.transient), statusVar('Transient'), pct(c.transient), 'Transient', true)}
+    ${dsSdKpi('Available', num(c.available), statusVar('Available'), pct(c.available), 'Available', true)}
     ${dsSdKpi('Reserved', num(c.reserved), statusVar('Reserved'), pct(c.reserved), 'Reserved', true)}
   </div>`;
 }
@@ -17861,8 +17876,8 @@ function ipStatusSummaryWidget() {
   const boxes = [
     { label: 'Total', value: c.total, color: 'var(--primary-alt)' },
     { label: 'Used', value: c.used, color: statusVar('Used') },
-    { label: 'Transient', value: c.transient, color: statusVar('Available') },
-    { label: 'Available', value: c.available, color: statusVar('Transient') },
+    { label: 'Transient', value: c.transient, color: statusVar('Transient') },
+    { label: 'Available', value: c.available, color: statusVar('Available') },
     { label: 'Reserved', value: c.reserved, color: statusVar('Reserved') }
   ];
   return `<div class="ip-sev-row sn-kpis ip-ipkpis">
@@ -18199,9 +18214,9 @@ function subnetStatsAndTrendsHtml(s) {
     ${dsSdKpis(c, blind)}
 
     <div class="ip-grid cols-6">
-      ${widget('Subnet Usage Trend', subnetUsageTrendHtml(c.used, s.id, 180, false), { cls: 'ip-card-span3' })}
+      ${ovWidget('Subnet Usage Trend', subnetUsageTrendHtml(c.used, s.id, 180, false), { cls: 'ip-card-span3' })}
 
-      ${widget('Subnet Forecast', blind ? `<p class="ip-empty">No discovery coverage — nothing to forecast from</p>`
+      ${ovWidget('Subnet Forecast', blind ? `<p class="ip-empty">No discovery coverage — nothing to forecast from</p>`
         : subnetForecastHtml(c.used, s.id, 180, false), { cls: 'ip-card-span3' })}
     </div>
   </div>`;

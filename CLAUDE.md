@@ -932,6 +932,24 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
   routes "count against a group total" to `obs-gauge` (DS 0.1.240, not in this 0.1.166 bundle) and it was
   reproduced to spec; the user asked for it to be taken back out. The tiles stay the KPI-card design. Don't rebuild
   it without asking.
+- **§62 — ONE colour per address status, everywhere in IPAM** (`STATUS_COLOR`): Used → `--main-tags-text-color`
+  (teal, tag `main-tags`) · Available → `--secondary-green` (tag-green) · Transient → `--secondary-orange` (tag-orange)
+  · Reserved → `--severity-unreachable` (tag-purple). The values ARE the DS tag colours, so cards, grid tags, status
+  dots and the Address-status donut paint identical RGB (verified). It replaced three disagreeing sources: `statusVar`
+  by palette ORDER (Available orange, Transient green), the KPI cards' compensating Available/Transient swap (shipped
+  by the source page — now each card asks for its own status), and the tags' grey Used / yellow Transient.
+  ⚠️ `colourOf` gained a `colorVar` slot; `vizStatusDonut` fills it for a slice NAMED for a status.
+- **§63–§64**: the subnet detail cards read Used · Transient · Available · Reserved (the IP Details order); the
+  subnet detail's Subnet Usage Trend and Subnet Forecast carry no ⋮ — no widget in IPAM draws one now.
+- **§65 — KPI cards drawn like the product's KPI widget** (the "Interface" tile): padding 16/16/8; a SOLID icon
+  tile in the status colour with the glyph in `--page-background-color` (so it inverts in light); title 18px/500
+  4px under it; the count 30px/600 in `--numeric-font-family`, line-height 1, at the card's foot; Total IP's
+  "254 addresses" is a 13px/500 footer label above its %. Both rows; counts share one baseline per row (measured).
+  ⚠️ The IP Details row sits under `#ipStatusWidget .ip-sev-body` — an ID rule — so its padding needs an ID-weight
+  override; several older `.sn-kpis` rules carry `!important`, so the new block wins on a `body` prefix.
+- **§66 — module-wide spacing**: 10px between neighbouring widgets in both axes (`.ip-grid`, `.ip-sev-row`,
+  `.ip-stack` inside `.ip-content`) and an 8px radius on every widget and KPI card. Was 16px / 4px. The side panel
+  and drawers sit outside `.ip-content` and keep their own spacing.
 
 ## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
 
