@@ -7963,6 +7963,257 @@ html[data-theme="light"] .tseg.on{background:#fff;box-shadow:0 1px 3px rgba(23,3
   border-radius:4px;color:var(--red);font-weight:600;font-size:13.5px}
 .umenu li.logout a:hover{background:rgba(242,80,75,.1);border-color:var(--red)}
 .umenu li.logout svg{width:15px;height:15px;fill:currentColor}
+/* ── the profile card, refined (request, 3 Oct 2026, with the live product's card as the reference) ──
+   The reference reads as three bands: a TINTED identity header, a plain list, then the preferences. Ours
+   had one flat surface, a 52px avatar out-weighing the name, a theme switch whose selected half was barely
+   different from the others, and a Logout drawn as an outlined box — the loudest control on the card for
+   the action you take least. Scoped to #userPop: .umenu is also the shell of the rail's More popover. */
+#userPop{overflow:hidden;padding:0}
+#userPop .uhead{gap:12px;padding:16px 16px 14px;background:color-mix(in srgb,var(--text) 5%,transparent);
+  border-bottom:1px solid var(--pop-line,var(--border))}
+#userPop .upavatar{width:44px;height:44px;font-size:15px;font-weight:600;flex:0 0 44px;
+  box-shadow:0 0 0 2px var(--sidebar),0 0 0 3px var(--pop-line,var(--border))}
+#userPop .uhead .nm{font-size:15px;font-weight:600;line-height:20px;color:var(--white)}
+#userPop .uhead .rl{display:inline-block;margin-top:3px;font-size:11.5px;line-height:16px;color:var(--text-dim)}
+#userPop .umenu{padding:8px 8px 10px}
+#userPop .umenu li.item a{gap:12px;padding:0 10px;height:36px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text)}
+#userPop .umenu li.item a:hover{background:var(--pop-item-hover)}
+#userPop .umenu li.item a:hover .ic{color:var(--text)}
+#userPop .umenu .ic{width:18px;height:18px;flex:0 0 18px}
+#userPop .umenu li.div{margin:8px -8px}
+/* one chip shape for "New" and the "?" keycap, so the two trailing marks read as one family */
+#userPop .newchip,#userPop .umenu .kbd{margin-left:auto;min-width:20px;height:20px;padding:0 7px;display:inline-flex;align-items:center;
+  justify-content:center;border-radius:4px;border:0;background:var(--chip);color:var(--text);font:600 10.5px/1 inherit}
+/* the theme switch: the selected half is FILLED with the inverting action pair, as the reference does —
+   one glance says which mode is on; the old raised segment was a 1.1:1 step in dark theme */
+#userPop .themerow{margin:2px 2px;padding:3px;gap:3px;border:0;border-radius:6px;background:color-mix(in srgb,var(--text) 6%,transparent)}
+#userPop .tseg{height:30px;border-radius:4px;font-size:12.5px}
+#userPop .tseg.on,html[data-theme="light"] #userPop .tseg.on{background:var(--action);color:var(--action-fg);box-shadow:none}
+/* Logout: a quiet row, red only in its ink — red is this system's critical colour and the card's only
+   destructive action, but it is reversible (sign back in), so it earns a tint on hover, not a frame at rest */
+#userPop .umenu li.logout a{height:36px;padding:0 10px;gap:12px;border:0;border-radius:6px;background:transparent;font-size:13px;font-weight:500}
+#userPop .umenu li.logout a:hover{background:color-mix(in srgb,var(--red) 12%,transparent)}
+#userPop .umenu li.logout svg{width:18px;height:18px}
+#userPop .upbuild{padding:8px 18px 10px;text-align:center;font-size:10.5px}
+/* ── matched to the live product's card (request, 4 Oct 2026, "same to same" as 172.16.14.71/dashboard):
+   no Keyboard shortcuts row, no build line, a 52px dark avatar on the header band, 20px icons, and
+   Logout as a FILLED row with red ink and no icon. The `?` sheet is still reachable from the `?` key. */
+#userPop .upavatar{width:52px;height:52px;flex:0 0 52px;font-size:18px;font-weight:600;color:var(--white);
+  background:color-mix(in srgb,var(--bg) 75%,transparent);box-shadow:none}
+#userPop .uhead{gap:16px;padding:18px 18px}
+#userPop .uhead .nm{font-size:15.5px;font-weight:500}
+#userPop .umenu{padding:10px 12px 12px}
+#userPop .umenu li.item a{height:39px;gap:12px;font-size:13.5px}
+#userPop .umenu .ic{width:20px;height:20px;flex:0 0 20px;color:var(--text)}
+#userPop .umenu li.div{margin:8px -12px}
+#userPop .umenu li.logout a{height:34px;padding:0 12px;background:color-mix(in srgb,var(--text) 7%,transparent);border-radius:4px}
+#userPop .umenu li.logout a:hover{background:color-mix(in srgb,var(--red) 14%,transparent)}
+/* the card's two surfaces, given exactly (request, 4 Oct 2026): body #07101F (= --bg), header band #162336 —
+   DARK theme only; light keeps the tinted band on the white card */
+html:not([data-theme="light"]) #userPop{background:var(--bg)}
+html:not([data-theme="light"]) #userPop .uhead{background:#162336}
+html:not([data-theme="light"]) #userPop .upavatar{background:var(--bg)}
+
+/* ── PROFILE CARD · OPTION 2 (request, 4 Oct 2026: "I need a better option as Option 2"). Option 1 is the
+   live product's card and stays the default; `#upOpt` at the card's top switches them — review chrome, like
+   the License page's switcher, and it goes when one is picked. Option 2 says the same things in less room:
+   the header names WHO (name + address + role chip), the theme is one labelled row of three icon segments
+   instead of a full-width bar, and Logout is a plain red row with the product's sign-out glyph. Same rows,
+   same handlers — only the layout differs, so the two cannot disagree about what the card can do. */
+#userPop .upsw{display:flex;justify-content:flex-end;gap:2px;padding:6px 8px 0}
+#userPop .upsw button{height:20px;padding:0 8px;border-radius:4px;font-size:10.5px;font-weight:600;color:var(--text-dim)}
+#userPop .upsw button:hover{color:var(--text)}
+#userPop .upsw button.on{background:var(--chip);color:var(--text)}
+#userPop .uhead .em,#userPop .themerow .tlbl,#userPop .lo2{display:none}
+#userPop.o2{width:288px}
+#userPop.o2 .upsw{position:absolute;top:0;right:0;z-index:1}
+#userPop.o2 .uhead{gap:12px;padding:20px 16px 14px;align-items:center}
+#userPop.o2 .upavatar{width:40px;height:40px;flex:0 0 40px;font-size:14px}
+#userPop.o2 .uhead > div:last-child{min-width:0;flex:1 1 auto;display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center}
+#userPop.o2 .uhead .nm{font-size:14px;font-weight:600;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#userPop.o2 .uhead .rl{justify-self:start;margin:0;padding:0 6px;height:18px;line-height:18px;border-radius:4px;font-size:10.5px;font-weight:600;
+  text-transform:capitalize;background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text)}
+#userPop.o2 .uhead .em{display:block;grid-column:1 / -1;font-size:12px;line-height:16px;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#userPop.o2 .umenu{padding:6px 8px 8px}
+#userPop.o2 .umenu li.item a{height:34px;gap:10px;padding:0 8px;font-size:13px;border-radius:6px}
+#userPop.o2 .umenu .ic{width:18px;height:18px;flex:0 0 18px;color:var(--text-dim)}
+#userPop.o2 .umenu li.item a:hover .ic{color:var(--text)}
+#userPop.o2 .umenu li.div{margin:6px -8px}
+#userPop.o2 .themerow{display:flex;align-items:center;margin:0;padding:0 0 0 8px;height:36px;gap:2px;background:none;border-radius:0}
+#userPop.o2 .themerow .tlbl{display:block;flex:1 1 auto;font-size:13px;font-weight:500;color:var(--text)}
+#userPop.o2 .tseg{flex:0 0 30px;width:30px;height:28px;padding:0;gap:0;font-size:0;border-radius:6px;
+  background:color-mix(in srgb,var(--text) 6%,transparent)}
+#userPop.o2 .tseg svg{width:15px;height:15px}
+#userPop.o2 .umenu li.logout a{height:34px;gap:10px;padding:0 8px;background:transparent;border-radius:6px;font-size:13px}
+#userPop.o2 .umenu li.logout a:hover{background:color-mix(in srgb,var(--red) 12%,transparent)}
+#userPop.o2 .lo2{display:block;width:18px;height:18px;flex:0 0 18px}
+html:not([data-theme="light"]) #userPop.o2 .upavatar{background:var(--chip)}
+/* the switch sits OUTSIDE the card (request, 4 Oct 2026), as a small pill above its top-right corner — it is
+   review chrome, not part of either design. The card stops clipping so the pill can hang outside it; the
+   header band rounds its own top corners instead, which is what the clip was doing. */
+#userPop{overflow:visible}
+#userPop .uhead{border-radius:4px 4px 0 0}
+#userPop .upsw,#userPop.o2 .upsw{position:absolute;bottom:calc(100% + 6px);right:0;top:auto;padding:3px;gap:2px;border-radius:6px;
+  background:var(--pop);border:1px solid var(--pop-line,var(--border));box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#userPop.o2 .tseg.on,html[data-theme="light"] #userPop.o2 .tseg.on{background:var(--action);color:var(--action-fg)}
+
+/* ── PROFILE CARD · OPTION 3 (4 Oct 2026), researched on Mobbin: Figma's account menu (a CENTRED identity
+   header — avatar, name, address — and Theme as ONE row that opens a side submenu showing the current value)
+   and Hootsuite's (every row carries a one-line description of where it goes). Same rows and handlers as
+   Options 1 and 2; only the layout differs. */
+#userPop .ds,#userPop .trow{display:none}
+#userPop.o3{width:300px}
+#userPop.o3 .uhead{flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 16px 16px}
+#userPop.o3 .upavatar{width:56px;height:56px;flex:0 0 56px;font-size:19px}
+#userPop.o3 .uhead > div:last-child{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;max-width:100%}
+#userPop.o3 .uhead .nm{order:1;font-size:15px;font-weight:600}
+#userPop.o3 .uhead .em{order:2;display:block;font-size:12px;color:var(--text-dim);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#userPop.o3 .uhead .rl{order:3;margin-top:8px;padding:0 8px;height:20px;line-height:20px;border-radius:10px;font-size:11px;font-weight:600;
+  text-transform:capitalize;background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text)}
+#userPop.o3 .umenu{padding:6px 8px 8px}
+#userPop.o3 .umenu li.item a{display:grid;grid-template-columns:20px 1fr auto;grid-template-rows:auto auto;column-gap:12px;row-gap:1px;
+  align-items:center;height:auto;padding:8px 10px;font-size:13px;font-weight:500;border-radius:6px}
+#userPop.o3 .umenu li.item a > .ic{grid-row:1 / 3;align-self:center;width:20px;height:20px;color:var(--text-dim)}
+#userPop.o3 .umenu li.item a > .newchip{grid-column:3;grid-row:1 / 3}
+#userPop.o3 .umenu li.item a > .ds{display:block;grid-column:2;grid-row:2;font-size:11.5px;font-weight:400;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#userPop.o3 .umenu li.item a:hover .ic{color:var(--text)}
+#userPop.o3 .umenu li.div{margin:6px -8px}
+#userPop.o3 li.tli{position:relative}
+#userPop.o3 .trow{display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border-radius:6px;font-size:13px;font-weight:500;cursor:default}
+#userPop.o3 .trow .tic{width:20px;height:20px;flex:0 0 20px;color:var(--text-dim);display:grid;place-items:center}
+#userPop.o3 .trow .tic svg{width:17px;height:17px;fill:currentColor}
+#userPop.o3 .trow .tv{margin-left:auto;font-size:12px;color:var(--text-dim);text-transform:capitalize}
+#userPop.o3 .trow .tch{width:14px;height:14px;color:var(--text-dim)}
+#userPop.o3 li.tli:hover .trow,#userPop.o3 li.tli:focus-within .trow{background:var(--pop-item-hover)}
+/* the submenu: the three theme buttons, stacked, flying out to the card's right — hover or focus opens it */
+#userPop.o3 .themerow{position:absolute;left:calc(100% + 4px);top:-6px;z-index:2;display:none;flex-direction:column;align-items:stretch;
+  width:160px;height:auto;margin:0;padding:6px;gap:2px;border-radius:6px;background:var(--pop);border:1px solid var(--pop-line,var(--border));
+  box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#userPop.o3 .themerow::before{content:"";position:absolute;left:-8px;top:0;bottom:0;width:8px}
+#userPop.o3 li.tli:hover .themerow,#userPop.o3 li.tli:focus-within .themerow{display:flex}
+#userPop.o3 .themerow .tlbl{display:none}
+#userPop.o3 .tseg,html[data-theme="light"] #userPop.o3 .tseg{flex:0 0 auto;width:auto;height:32px;justify-content:flex-start;gap:10px;padding:0 10px;
+  font-size:12.5px;font-weight:500;color:var(--text);background:transparent;border-radius:4px;box-shadow:none}
+#userPop.o3 .tseg:hover{background:var(--pop-item-hover)}
+#userPop.o3 .tseg.on,html[data-theme="light"] #userPop.o3 .tseg.on{background:var(--sel,var(--pop-item-hover));color:var(--text);font-weight:600}
+#userPop.o3 .umenu li.logout a{height:38px;gap:12px;padding:0 10px;background:transparent;border-radius:6px;font-size:13px}
+#userPop.o3 .umenu li.logout a:hover{background:color-mix(in srgb,var(--red) 12%,transparent)}
+#userPop.o3 .lo2{display:block;width:20px;height:20px;flex:0 0 20px}
+html:not([data-theme="light"]) #userPop.o3 .upavatar{background:var(--chip)}
+
+/* ── PROFILE CARD · OPTION 4 (4 Oct 2026): Option 3 taken further, after Datadog's account menu — one wide
+   card in TWO COLUMNS. Left is YOU (identity, your pages, theme, notifications, log out); right is the
+   WORKSPACE (the Settings categories, straight from ST_TREE, so it can never list one that does not exist).
+   Every row is a real door: stOpen / docsOpen / setTheme / the notification preference. */
+#userPop .up4{display:none}
+#userPop.o4{width:600px}
+#userPop.o4 > .uhead,#userPop.o4 > .umenu{display:none}
+#userPop.o4 .up4{display:grid;grid-template-columns:1fr 1fr}
+.up4c{padding:16px 14px 12px;min-width:0;display:flex;flex-direction:column}
+.up4c + .up4c{border-left:1px solid var(--pop-line,var(--border));background:color-mix(in srgb,var(--text) 3%,transparent);
+  border-radius:0 4px 4px 0}
+.up4id{display:flex;align-items:center;gap:12px;padding:0 6px 12px}
+.up4av{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:600;
+  background:var(--chip);color:var(--white);position:relative}
+.up4av::after{content:"";position:absolute;right:1px;bottom:1px;width:10px;height:10px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 2px var(--pop)}
+html:not([data-theme="light"]) #userPop .up4av::after{box-shadow:0 0 0 2px var(--bg)}
+.up4nm{font-size:15px;font-weight:600;color:var(--white);line-height:20px;display:flex;align-items:center;gap:8px}
+.up4nm b{font-size:10.5px;font-weight:600;padding:0 6px;height:18px;line-height:18px;border-radius:4px;text-transform:capitalize;
+  background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text)}
+.up4em{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up4h{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);padding:2px 8px 8px}
+.up4c .up4h:not(:first-child){margin-top:10px}
+.up4r{display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text);
+  cursor:pointer;text-align:left;width:100%;min-width:0}
+.up4r:hover,.up4r:focus-visible{background:var(--pop-item-hover);outline:0}
+.up4r > svg{width:17px;height:17px;flex:0 0 17px;color:var(--text-dim);fill:currentColor}
+.up4r:hover > svg{color:var(--text)}
+.up4r span{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up4r em{font-style:normal;flex:0 0 auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--chip);color:var(--text)}
+.up4r .up4x{width:12px;height:12px;flex:0 0 12px;color:var(--text-dim);opacity:0;transition:opacity .12s}
+.up4r:hover .up4x{opacity:1}
+.up4r.out{color:var(--red)} .up4r.out > svg{color:var(--red)}
+.up4r.out:hover{background:color-mix(in srgb,var(--red) 12%,transparent)}
+.up4pref{margin:8px 0 6px;padding:10px 8px;border-radius:6px;background:color-mix(in srgb,var(--text) 5%,transparent);display:grid;gap:10px}
+.up4pr{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--text)}
+.up4pr > span{flex:1 1 auto}
+.up4pr small{display:block;font-size:11px;font-weight:400;color:var(--text-dim)}
+.up4th{display:flex;gap:2px;padding:2px;border-radius:6px;background:color-mix(in srgb,var(--text) 7%,transparent)}
+.up4th button{width:30px;height:26px;border-radius:4px;display:grid;place-items:center;color:var(--text-dim)}
+.up4th button svg{width:15px;height:15px;fill:currentColor}
+.up4th button:hover{color:var(--text)}
+.up4th button.on{background:var(--action);color:var(--action-fg)}
+.up4sw{width:34px;height:20px;flex:0 0 34px;border-radius:10px;background:var(--track,var(--chip));position:relative;transition:background .15s}
+.up4sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.up4sw.on{background:var(--green)} .up4sw.on::after{transform:translateX(14px)}
+.up4c .up4sp{flex:1 1 auto}
+.up4all{color:var(--text-dim);font-size:12.5px}
+.up4all:hover{color:var(--text)}
+
+/* ── PROFILE CARD · OPTION 5 (4 Oct 2026), from the ClickUp and Mobbin account menus: a role pill over the
+   name and address, ONE full-width "Edit profile" action (Mobbin's "Set up profile"), the notification switch
+   where ClickUp puts "Mute notifications", theme as an inline icon group on its own row, external links marked
+   ↗, and a quiet text footer. Same doors as the other options. */
+#userPop .up5{display:none}
+#userPop.o5{width:280px}
+#userPop.o5 > .uhead,#userPop.o5 > .umenu{display:none}
+#userPop.o5 .up5{display:block;padding:14px 10px 10px}
+.up5top{padding:2px 8px 12px}
+.up5pill{display:inline-block;height:20px;line-height:20px;padding:0 9px;border-radius:10px;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;background:var(--action);color:var(--action-fg)}
+.up5nm{margin-top:10px;font-size:15.5px;font-weight:600;color:var(--white)}
+.up5em{font-size:12.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up5btn{margin-top:12px;width:100%;height:34px;border-radius:17px;font-size:13px;font-weight:600;color:var(--text);
+  background:color-mix(in srgb,var(--text) 10%,transparent)}
+.up5btn:hover{background:color-mix(in srgb,var(--text) 16%,transparent)}
+.up5 .up4r{height:34px}
+.up5hr{height:1px;margin:8px -10px;background:var(--pop-line,var(--border))}
+.up5th{display:flex;align-items:center;height:38px;padding:0 8px;font-size:13px;font-weight:500;color:var(--text)}
+.up5th > span{flex:1 1 auto}
+.up5th .up4th{border-radius:16px;padding:3px} .up5th .up4th button{border-radius:13px;width:30px;height:26px}
+.up5foot{display:flex;gap:12px;padding:8px 8px 2px;font-size:11.5px;color:var(--text-dim)}
+.up5foot a:hover{color:var(--text)}
+.up5foot span{margin-left:auto}
+.up4r > svg[fill="none"]{fill:none;stroke:currentColor}
+#userPop .upswl{display:flex;align-items:center;padding:0 6px 0 4px;font-size:10.5px;font-weight:600;color:var(--text-dim);white-space:nowrap}
+#userPop .upsw button{min-width:22px;white-space:nowrap}
+
+/* Option 5, improved (4 Oct 2026) */
+#userPop.o5{width:296px}
+#userPop.o5 .up5{padding:0 8px 8px}
+.up5top{margin:0 -8px 6px;padding:16px 16px 14px;border-bottom:1px solid var(--pop-line,var(--border));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--text) 7%,transparent),transparent);border-radius:4px 4px 0 0}
+.up5id{display:flex;align-items:center;gap:12px}
+.up5who{min-width:0;flex:1 1 auto}
+.up5nm{margin:0;display:flex;align-items:center;gap:8px;font-size:15px;line-height:20px}
+.up5pill{height:18px;line-height:18px;padding:0 7px;border-radius:9px;font-size:10px;letter-spacing:.05em}
+.up5em{margin-top:1px}
+.up5btn{margin-top:14px;height:32px;border-radius:16px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:6px}
+.up5sec{padding:8px 8px 4px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.up5 .up4r{height:34px}
+.up5 .up4r > svg{width:18px;height:18px;flex:0 0 18px}
+.up5nt{cursor:pointer}
+.up5st{font-style:normal;font-size:11.5px;color:var(--text-dim);flex:0 0 auto}
+.up5nt .up4sw{margin-left:2px;flex:0 0 34px;width:34px}   /* it is a span, and .up4r span{flex:1} would stretch it */
+.up5th{display:flex;align-items:center;gap:10px;height:40px;padding:0 8px;font-size:13px;font-weight:500;color:var(--text)}
+.up5th > span{flex:1 1 auto}
+.up5thi{width:18px;height:18px;flex:0 0 18px;fill:currentColor;color:var(--text-dim)}
+/* the theme switch SLIDES: one thumb under three buttons, moved by the lit index (up4ThemeLit sets data-i) */
+.up5slide{position:relative;border-radius:16px;padding:3px;gap:0}
+.up5slide button{position:relative;z-index:1;width:30px;height:26px;border-radius:13px;transition:color .2s}
+.up5slide button.on{background:transparent}
+.up5thumb{position:absolute;top:3px;left:3px;width:30px;height:26px;border-radius:13px;background:var(--action);
+  transition:transform .25s cubic-bezier(.3,1.3,.5,1)}
+.up5slide[data-i="1"] .up5thumb{transform:translateX(30px)}
+.up5slide[data-i="2"] .up5thumb{transform:translateX(60px)}
+.up5slide[data-i="-1"] .up5thumb{opacity:0}
+.up5hr{margin:6px -8px}
+@media (prefers-reduced-motion:reduce){.up5thumb{transition:none}}
+
+
 
 /* notifications (live: "Alerts & Notifications", 600px, tabs Alerts / System Notification) — opens beside the sidebar */
 #notifPop{width:600px;left:74px;bottom:56px;max-height:min(620px,calc(100vh - 70px))}
@@ -12410,7 +12661,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
    `--card` / `--text` / `--border` / `--teal` onto DS names, and the drawer's other three
    fields (`.ddin`, the `cwFtDD` dropdown, `.ddseg`) are written against this prototype's own
    values — taking the DS ones would repaint three fields nobody asked about. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#drawer-gedit,#cwModal,#ipmPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr,#ipmCrScrim{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#drawer-gedit,#cwModal,#ipmPage,#uipPage,#stProfPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr,#ipmCrScrim{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -12803,7 +13054,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --widget-type-selector-border-color:'transparent';
 }
 
-html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #ipmPage,html[data-theme="light"] #ippPage,html[data-theme="light"] #ipmDr,html[data-theme="light"] #ipmCf,html[data-theme="light"] #ipmFm,html[data-theme="light"] #ipmCr,html[data-theme="light"] #ipmCrScrim{
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #ipmPage,html[data-theme="light"] #uipPage,html[data-theme="light"] #stProfPage,html[data-theme="light"] #ippPage,html[data-theme="light"] #ipmDr,html[data-theme="light"] #ipmCf,html[data-theme="light"] #ipmFm,html[data-theme="light"] #ipmCr,html[data-theme="light"] #ipmCrScrim{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
@@ -13109,7 +13360,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    The `.ag*` rules below (and the `st`/`stc` atoms this page still borrows for layout) are
    written against this prototype's token names; pointing them at the DS names above converts
    every one of them at once, and keeps the mapping auditable in one table. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#ipmPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr,#ipmCrScrim{
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#cwMdHelp,#ipmPage,#uipPage,#stProfPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr,#ipmCrScrim{
   /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
   --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
@@ -14110,7 +14361,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
    Settings module). `--primary` reads the DS's own `--primary-alt`, which is exactly that pair, so no hex is pasted; the
    two notes above are the record of the teal it replaces. The hover mixes toward the page background, because in dark
    `--page-text-color` IS #cad3e2 and mixing toward it changed nothing. */
-#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#ipmPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr{--primary:var(--primary-alt);
+#agPage,#drawer-agadv,#licPage,#licHist,#licHistF,#licHistDr,#ipmPage,#uipPage,#stProfPage,#ippPage,#ipmDr,#ipmCf,#ipmFm,#ipmCr{--primary:var(--primary-alt);
   /* obs-button's primary reads its OWN pair, not --primary (registry tokensUsed: --primary-button-bg /
      --primary-button-text) — measured: the buttons stayed white after --primary alone moved */
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
@@ -14119,7 +14370,7 @@ html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[dat
 /* ⚠️ THE LIGHT RULE REPEATS THE BUTTON AND RADIO PAIRS. The scoped token block declares them under
    `html[data-theme="light"] #licPage` (1,1,1), which outranks the (1,0,0) rule above — measured:
    with only `--primary` here, light-theme buttons stayed navy while dark went teal. */
-html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #licHistDr,html[data-theme="light"] #ipmPage,html[data-theme="light"] #ippPage,html[data-theme="light"] #ipmDr,html[data-theme="light"] #ipmCf,html[data-theme="light"] #ipmFm,html[data-theme="light"] #ipmCr{--primary:var(--primary-alt);
+html[data-theme="light"] #agPage,html[data-theme="light"] #drawer-agadv,html[data-theme="light"] #licPage,html[data-theme="light"] #licHist,html[data-theme="light"] #licHistF,html[data-theme="light"] #licHistDr,html[data-theme="light"] #ipmPage,html[data-theme="light"] #uipPage,html[data-theme="light"] #stProfPage,html[data-theme="light"] #ippPage,html[data-theme="light"] #ipmDr,html[data-theme="light"] #ipmCf,html[data-theme="light"] #ipmFm,html[data-theme="light"] #ipmCr{--primary:var(--primary-alt);
   --primary-button-bg:var(--primary);--primary-button-text:var(--page-background-color);
   --primary-button-hover-bg:color-mix(in srgb, var(--primary) 84%, var(--page-background-color));--primary-button-hover-text:var(--page-background-color);
   --radio-btn-box-selected-bg:var(--primary);--radio-btn-box-selected-text-color:var(--page-background-color)}
@@ -15589,6 +15840,369 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 /* the footer note reads at body size, as the product's does — 9.6px was the source's hint size */
 .ipm .ipmfoot .ip-req{font-size:var(--ip-text-sm);color:var(--page-text-color)}
 
+
+/* ── My Account › UI Preference — cloned from live 10.0.1 (request, 4 Oct 2026, a screenshot of the live page):
+   a right-aligned label column, four controls, the theme as a three-way segment over three PICTURE previews,
+   and Reset to default · Save pinned at the page's foot. Built from this module's own atoms (.stsw, .stbtn). */
+.uip{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.uipf{display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,1.6fr);column-gap:20px;row-gap:16px;align-items:center;
+  padding:18px 0 8px;max-width:1000px;width:100%;margin:0 auto}
+.uipf > label{justify-self:end;font-size:13.5px;font-weight:500;color:var(--text)}
+.uipsel{position:relative;justify-self:start}
+.uipsel select{appearance:none;-webkit-appearance:none;height:32px;min-width:228px;padding:0 34px 0 11px;border-radius:4px;font:inherit;font-size:13px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer}
+.uipsel.w select{min-width:342px}
+.uipsel select:focus{outline:0;border-color:var(--text-dim)}
+.uipsel svg{position:absolute;right:11px;top:50%;width:13px;height:13px;margin-top:-6.5px;pointer-events:none;color:var(--text-dim)}
+.uipf .stsw{margin-top:0;justify-self:start}
+.uipseg{justify-self:start;display:inline-flex;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.uipseg button{height:30px;padding:0 11px;font-size:13px;color:var(--text-dim);border-left:1px solid var(--border)}
+.uipseg button:first-child{border-left:0}
+.uipseg button:hover{color:var(--text)}
+.uipseg button.on{background:var(--chip);color:var(--text);font-weight:500}
+.uipprev{display:grid;grid-template-columns:repeat(3,minmax(0,300px));justify-content:center;gap:18px;padding:12px 0 24px}
+.uipprev button{padding:0;border-radius:6px;border:3px solid transparent;overflow:hidden;line-height:0;background:transparent;
+  transition:border-color .15s,transform .15s}
+.uipprev button:hover{transform:translateY(-2px)}
+.uipprev button.on{border-color:var(--text)}
+.uipprev button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.uipprev svg,.uipprev img{width:100%;height:auto;display:block}
+.uipfoot{margin-top:auto;display:flex;justify-content:flex-end;gap:12px;padding:12px 0 0;border-top:1px solid var(--pop-line,var(--border))}
+
+/* ── UI Preference · OPTION 2 (4 Oct 2026), researched on Mobbin — Fibery and Notion (label + one-line description
+   on the left, the control on the right, grouped under section headings), Skiff/Langdock (theme as picture cards
+   with the name and a check under each), Buffer (each change saves itself with a toast — no Save bar). The date
+   format previews itself and the time zone shows the time there now, so a choice is never a guess. */
+.uipop{display:flex;justify-content:flex-end;gap:8px;align-items:center;font-size:12px;color:var(--text-dim);padding:2px 0 0}
+.uipop .uipseg button{height:26px;font-size:12px}
+.uip2{max-width:820px;width:100%;margin:0 auto;padding:4px 0 28px}
+.uip2 h2{margin:6px 0 2px;font-size:20px;font-weight:600;color:var(--white)}
+.uip2 .sub{font-size:13px;color:var(--text-dim)}
+.uip2 h3{margin:28px 0 4px;font-size:14px;font-weight:600;color:var(--text);padding-bottom:10px;border-bottom:1px solid var(--pop-line,var(--border))}
+.uip2r{display:flex;align-items:center;gap:24px;padding:16px 0;border-bottom:1px solid var(--pop-line,var(--border))}
+.uip2r:last-of-type{border-bottom:0}
+.uip2r > div:first-child{flex:1 1 auto;min-width:0}
+.uip2r b{display:block;font-size:13.5px;font-weight:500;color:var(--text)}
+.uip2r small{display:block;margin-top:3px;font-size:12px;color:var(--text-dim);line-height:1.45}
+.uip2r small code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text);background:var(--chip);padding:1px 6px;border-radius:4px}
+.uip2r .uipsel select{min-width:260px}
+.uip2r .stsw{margin-top:0}
+.uip2th{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:14px 0 6px}
+.uip2c{display:flex;flex-direction:column;gap:8px;padding:0;text-align:left;background:none;cursor:pointer}
+.uip2c .im{position:relative;border-radius:8px;overflow:hidden;line-height:0;border:2px solid var(--border);transition:border-color .15s,transform .15s}
+.uip2c:hover .im{transform:translateY(-2px);border-color:var(--text-dim)}
+.uip2c img{width:100%;height:auto;display:block}
+.uip2c .ck{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:var(--action);color:var(--action-fg);opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
+.uip2c .ck svg{width:13px;height:13px}
+.uip2c.on .im{border-color:var(--text)}
+.uip2c.on .ck{opacity:1;transform:none}
+.uip2c .nm{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text-dim)}
+.uip2c .nm svg{width:15px;height:15px;fill:currentColor}
+.uip2c.on .nm{color:var(--text);font-weight:600}
+.uip2c:focus-visible{outline:none}.uip2c:focus-visible .im{outline:2px solid var(--teal);outline-offset:2px}
+.uip2seg button{min-width:44px}
+.uip2foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;font-size:12px;color:var(--text-dim)}
+.uip2foot button{color:var(--text-dim);text-decoration:underline;text-underline-offset:3px}
+.uip2foot button:hover{color:var(--text)}
+
+/* Option 2, improved */
+.uip2{max-width:880px}
+.uip2hd{display:flex;align-items:flex-start;gap:16px;margin-bottom:6px}
+.uip2hd > div:first-child{flex:1 1 auto}
+.uip2hr{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.uip2hd .uipop{padding:0}
+.uip2sv{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:12px;font-size:12px;color:var(--text-dim);
+  background:color-mix(in srgb,var(--text) 6%,transparent);transition:background .2s,color .2s}
+.uip2sv svg{width:12px;height:12px;color:var(--green)}
+.uip2sv.flash{color:var(--text);background:color-mix(in srgb,var(--green) 16%,transparent)}
+.uip2s{margin-top:16px;padding:16px 20px 6px;border:1px solid var(--pop-line,var(--border));border-radius:8px;
+  background:color-mix(in srgb,var(--text) 2.5%,transparent)}
+.uip2s > header{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--pop-line,var(--border))}
+.uip2s .si{width:32px;height:32px;flex:0 0 32px;border-radius:8px;display:grid;place-items:center;color:var(--text);
+  background:color-mix(in srgb,var(--text) 8%,transparent)}
+.uip2s .si svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.uip2s > header b{display:block;font-size:14px;font-weight:600;color:var(--white)}
+.uip2s > header small{display:block;font-size:12px;color:var(--text-dim);margin-top:1px}
+.uip2s .uip2th{padding:16px 0 14px}
+.uip2s .uip2r{padding:14px 0}
+.uip2s .uip2r:last-child{border-bottom:0}
+.uip2c .nm > span{display:flex;flex-direction:column}
+.uip2c .nm small{font-size:11.5px;font-weight:400;color:var(--text-dim)}
+.uip2lk{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:12px;color:var(--text);text-decoration:underline;text-underline-offset:3px}
+.uip2lk svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
+.uip2lk:hover{color:var(--white)}
+.uip2 h3{display:none}
+
+/* ── UI Preference · OPTION 3 (4 Oct 2026), researched on Mobbin: Circle's and GitBook's theme editors (controls in a
+   left column, a LIVE PREVIEW of the product beside them), Wix's "Formats preview" (the date and time as they will
+   read) and Calendly/Gamma's footer (Discard · Save changes, so a preview is a try-on, not a commitment). The preview
+   is a miniature ObserveOps screen that redraws as you change anything — theme, date format, zone, rows, overlay. */
+.uip3{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.uip3 .uipop{padding:0 0 10px}
+.uip3b{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:24px}
+.uip3l{display:flex;flex-direction:column;gap:20px;overflow:auto;padding-right:4px}
+.uip3l h2{margin:0;font-size:18px;font-weight:600;color:var(--white)}
+.uip3l .sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.uip3f > label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.uip3f .hint{font-size:12px;color:var(--text-dim);margin-top:6px}
+.uip3f .uipsel,.uip3f .uipsel select{width:100%;min-width:0}
+.uip3th{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.uip3th button{height:64px;border-radius:8px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  font-size:12.5px;font-weight:500;color:var(--text-dim);transition:border-color .15s,background .15s,color .15s}
+.uip3th button svg{width:18px;height:18px;fill:currentColor}
+.uip3th button:hover{color:var(--text);border-color:var(--text-dim)}
+.uip3th button.on{color:var(--text);border-color:var(--text);background:color-mix(in srgb,var(--text) 7%,transparent);font-weight:600}
+.uip3rows{display:grid;grid-template-columns:repeat(4,1fr)}
+.uip3rows button{height:32px}
+.uip3sw{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px}
+.uip3sw > div{flex:1 1 auto} .uip3sw b{display:block;font-size:13px;font-weight:500;color:var(--text)}
+.uip3sw small{font-size:12px;color:var(--text-dim)} .uip3sw .stsw{margin-top:0}
+.uip3lk{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text);text-decoration:underline;text-underline-offset:3px;margin-top:6px}
+.uip3lk svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
+/* the preview stage */
+.uip3r{display:flex;flex-direction:column;min-height:0;border-radius:10px;border:1px solid var(--pop-line,var(--border));
+  background:color-mix(in srgb,var(--text) 3%,transparent);padding:14px 18px 18px}
+.uip3rh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);margin-bottom:12px}
+.uip3rh b{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.uip3rh .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 25%,transparent)}
+.uip3rh span:last-child{margin-left:auto}
+.pv{--pbg:#07101f;--pcard:#172336;--pline:#1d2a3e;--pink:#cad3e2;--pdim:#8e9fbc;--pchip:#2b394f;
+  flex:1 1 auto;position:relative;border-radius:8px;overflow:hidden;background:var(--pbg);color:var(--pink);display:flex;min-height:340px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);transition:background .25s,color .25s}
+.pv.lt{--pbg:#ecf1f9;--pcard:#ffffff;--pline:#e3e8f2;--pink:#1d2a3e;--pdim:#6a7fa0;--pchip:#e3e8f2}
+.pv *{transition:background .25s,color .25s,border-color .25s}
+.pvrail{width:40px;flex:0 0 40px;background:var(--pcard);border-right:1px solid var(--pline);display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px}
+.pvrail i{width:16px;height:16px;border-radius:4px;background:var(--pchip)} .pvrail i:first-child{background:#f2504b;border-radius:50%}
+.pvm{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+.pvh{height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--pcard);border-bottom:1px solid var(--pline);font-size:13px;font-weight:600}
+.pvh .tc{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--pdim)}
+.pvh .tc code{font-family:'JetBrains Mono',monospace;color:var(--pink);background:var(--pchip);padding:2px 6px;border-radius:4px}
+.pvb{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0;flex:1 1 auto}
+.pvk{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pvk div{background:var(--pcard);border:1px solid var(--pline);border-radius:6px;padding:8px 10px}
+.pvk small{display:block;font-size:10.5px;color:var(--pdim)} .pvk b{font-size:18px;font-family:'JetBrains Mono',monospace}
+.pvt{background:var(--pcard);border:1px solid var(--pline);border-radius:6px;overflow:hidden;font-size:11.5px;flex:1 1 auto;display:flex;flex-direction:column}
+.pvt table{width:100%;border-collapse:collapse}
+.pvt th{text-align:left;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--pdim);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--pline)}
+.pvt td{padding:7px 10px;border-bottom:1px solid var(--pline);white-space:nowrap}
+.pvt td.d{font-family:'JetBrains Mono',monospace;color:var(--pdim);font-size:10.5px}
+.pvt .sv{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.pvt .ft{margin-top:auto;display:flex;justify-content:space-between;padding:7px 10px;color:var(--pdim);font-size:10.5px}
+.pvt .ft b{color:var(--pink);font-weight:600}
+.pvov{position:absolute;top:50px;right:12px;width:230px;border-radius:6px;background:var(--pcard);border:1px solid #f2504b;
+  box-shadow:0 8px 20px rgba(0,0,0,.3);padding:9px 11px;font-size:11px;opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s;pointer-events:none}
+.pvov.on{opacity:1;transform:none}
+.pvov b{display:flex;align-items:center;gap:6px;color:#f2504b;font-size:11.5px} .pvov small{display:block;color:var(--pdim);margin-top:2px}
+.uip3ft{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding-top:12px;margin-top:14px;border-top:1px solid var(--pop-line,var(--border))}
+.uip3ft .ch{margin-right:auto;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:6px}
+.uip3ft .ch i{width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.uip3ft .stbtn[disabled]{opacity:.5}
+
+/* Option 3's preview — the Alert Summary miniature */
+.pv{--pring:#1d2a3e;--phead:#172336}
+.pv.lt{--pring:#e3e8f2;--phead:#ecf1f9}
+.pvh{height:36px;font-size:12px}
+.pvt1 em{font-style:normal;color:#eab308;margin-left:4px}
+.pvh .tc{gap:8px}
+.pvkey{font-size:9.5px;font-weight:600;padding:2px 5px;border-radius:3px;background:var(--pchip);color:var(--pink)}   /* not .pvk — that is the KPI row's grid */
+.pvst{font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.25;color:var(--pdim);text-align:right}
+.pvtl{display:flex;justify-content:space-between;padding:4px 14px;font:9px 'JetBrains Mono',monospace;color:var(--pdim);border-bottom:1px solid var(--pline);
+  background:repeating-linear-gradient(90deg,var(--pline) 0 1px,transparent 1px 12px) bottom/100% 5px no-repeat}
+.pvgrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1.1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:8px;padding:8px}
+.pvw{background:var(--pcard);border:1px solid var(--pline);border-radius:5px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.pvwh{font-size:9.5px;font-weight:500;padding:5px 8px;background:var(--phead);border-bottom:1px solid var(--pline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pvwb{flex:1 1 auto;padding:8px;display:flex;align-items:center;justify-content:center;min-height:0}
+.pvw.hm{grid-row:1 / 3}
+.pvw.wide{grid-column:1 / 3}
+.pvhx{width:100%;height:auto;max-height:100%}
+.pvrgs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
+.pvrg{display:flex;flex-direction:column;align-items:center;gap:2px}
+.pvrg svg{width:100%;max-width:52px;height:auto}
+.pvrg small{font-size:8.5px;color:var(--pdim);white-space:nowrap}
+.pvpie{display:flex;align-items:center;gap:10px;width:100%}
+.pvpie svg{width:46%;max-width:92px;height:auto;flex:0 0 auto}
+.pvlg{display:flex;flex-direction:column;gap:3px;font:8.5px 'JetBrains Mono',monospace;color:var(--pdim);min-width:0}
+.pvlg span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pvlg i{display:inline-block;width:7px;height:7px;margin-right:4px;vertical-align:-1px}
+.pvbrs{width:100%;display:flex;flex-direction:column;gap:6px}
+.pvbr{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:8px;font:8.5px 'JetBrains Mono',monospace;color:var(--pdim)}
+.pvbr span{text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pvbr i{height:9px;border-radius:2px;background:var(--pchip);display:block}
+.pvbr b{display:block;height:100%;border-radius:2px;background:#0d9488}
+.pvra{width:100%;display:flex;flex-direction:column;gap:5px;font-size:9.5px}
+.pvra > div{display:flex;align-items:center;gap:6px}
+.pvra i{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.pvra span{margin-left:auto;font:8.5px 'JetBrains Mono',monospace;color:var(--pdim);white-space:nowrap}
+.pvra .ft{display:block;margin-top:2px;padding-top:5px;border-top:1px solid var(--pline);font-size:8.5px;color:var(--pdim)}
+
+/* Option 3's preview — the REAL board, scaled */
+.pvfit{position:relative;width:100%;overflow:hidden;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.pvreal{position:absolute;top:0;left:0;width:1400px;transform-origin:0 0;display:flex;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,sans-serif;font-size:12px;pointer-events:none}
+.pvrr{width:52px;flex:0 0 52px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0}
+.pvrr span{color:var(--text-dim);display:grid;place-items:center} .pvrr span:nth-child(2){color:var(--text)}
+.pvrr .ic{width:20px;height:20px}
+.pvlogo{width:26px;height:26px;border-radius:50%;border:5px solid #f2504b;border-right-color:var(--text)}
+.pvrm{flex:1 1 auto;min-width:0}
+.pvrh{display:flex;align-items:center;gap:14px;height:52px;padding:0 16px;border-bottom:1px solid var(--border)}
+.pvrt{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:500;color:var(--white)}
+.pvrt .ic{width:20px;height:20px} .pvrt em{font-style:normal;font-size:16px;color:var(--text-dim)}
+.pvrc{margin-left:auto;display:flex;align-items:center;gap:10px;height:36px;padding:0 12px 0 8px;width:190px;border-radius:4px;background:var(--panel-2);font-size:13.5px}
+.pvrc b{font-size:12.5px;font-weight:600;padding:2px 6px;border-radius:3px;background:var(--chip)}
+.pvrs{font-size:12px;line-height:18px;color:var(--text-dim)}
+.pvrtl{position:relative;height:40px;padding:0 16px;border-bottom:1px solid var(--border)}
+.pvrtl > i{position:absolute;left:16px;right:16px;top:12px;height:2px;background:repeating-linear-gradient(90deg,var(--text-dim) 0 2px,transparent 2px 16px);opacity:.5}
+.pvrtl > div{position:absolute;left:16px;right:16px;top:22px;display:flex;justify-content:space-between;font:10.5px 'JetBrains Mono',monospace;color:var(--text-dim)}
+.pvrg12{padding:12px 14px;grid-auto-rows:auto}
+.pvreal .widget{display:flex;flex-direction:column;min-width:0}
+.pvreal .whead{cursor:default}
+.pvcap{margin-top:10px;font-size:12px;color:var(--text-dim)} .pvcap b{color:var(--text)}
+.pvreal .pvov{top:70px;right:20px;width:340px;padding:12px 14px;font-size:13px}
+.pvreal .pvov b{font-size:14px}
+
+/* ── UI Preference · OPTION 4 (4 Oct 2026): the simple one. One narrow column, one line per setting in plain words,
+   the theme as three small pictures, every control saves the moment it changes and a ✓ "Saved" appears on THAT
+   line — no sections, no footer buttons, nothing to remember to press. */
+.uip4{max-width:620px;width:100%;margin:0 auto;padding:0 0 24px}
+.uip4 .uipop{padding:0 0 18px}
+.uip4 h2{margin:0;font-size:18px;font-weight:600;color:var(--white)}
+.uip4 .sub{margin:4px 0 18px;font-size:13px;color:var(--text-dim)}
+.uip4l{border:1px solid var(--pop-line,var(--border));border-radius:10px;overflow:hidden}
+.uip4r{display:flex;align-items:center;gap:16px;padding:14px 18px;border-top:1px solid var(--pop-line,var(--border))}
+.uip4r:first-child{border-top:0}
+.uip4r > b{flex:0 0 150px;font-size:13.5px;font-weight:500;color:var(--text)}
+.uip4r > .c{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.uip4r .uipsel,.uip4r .uipsel select{min-width:0;width:100%}
+.uip4ok{flex:0 0 52px;font-size:11.5px;color:var(--green);display:flex;align-items:center;gap:3px;opacity:0;transition:opacity .2s}
+.uip4ok svg{width:12px;height:12px}
+.uip4ok.on{opacity:1}
+.uip4th{display:flex;gap:8px;width:100%}
+.uip4th button{flex:1 1 0;display:flex;flex-direction:column;gap:5px;align-items:center;padding:4px;border-radius:8px;border:2px solid transparent;
+  font-size:12px;color:var(--text-dim)}
+.uip4th img{width:100%;height:auto;border-radius:5px;display:block}
+.uip4th button:hover{color:var(--text)}
+.uip4th button.on{border-color:var(--text);color:var(--text);font-weight:600}
+.uip4r .uipseg{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
+.uip4r .uipseg button{height:32px}
+.uip4r .stsw{margin:0 0 0 auto}
+.uip4hint{font-size:12px;color:var(--text-dim);margin-top:2px}
+.uip4lk{font-size:12px;color:var(--text);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.uip4foot{margin-top:12px;display:flex;justify-content:flex-end}
+.uip4foot button{font-size:12px;color:var(--text-dim);text-decoration:underline;text-underline-offset:3px}
+
+/* Option 4, improved (4 Oct 2026): NO BORDERS — the card frame and the row rules are gone; rhythm and a soft hover
+   do the separating. Every control starts on ONE column (the switch too), the theme pictures fill that column, and
+   "Use mine" sits under the time zone it changes rather than under the label. */
+.uip4l{border:0;border-radius:0;overflow:visible;display:flex;flex-direction:column;gap:4px}
+.uip4r{border-top:0;padding:14px 16px;margin:0 -16px;border-radius:8px;align-items:flex-start;transition:background .15s}
+.uip4r:hover{background:color-mix(in srgb,var(--text) 4%,transparent)}
+.uip4r > b{flex:0 0 170px;padding-top:7px}
+.uip4r > .c{justify-content:flex-start;flex-direction:column;align-items:stretch;gap:6px}
+.uip4r .stsw{margin:4px 0 0;align-self:flex-start}   /* the control column stretches its children; a switch must keep its own width */
+.uip4r.sw > b{padding-top:5px}
+.uip4th{gap:12px}
+.uip4th button{padding:0;border:0;gap:7px;align-items:stretch;text-align:left}
+.uip4th img{border-radius:6px;outline:2px solid transparent;outline-offset:2px;transition:outline-color .15s,transform .15s}
+.uip4th button:hover img{transform:translateY(-2px)}
+.uip4th button.on img{outline-color:var(--text)}
+.uip4th button span{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.uip4th button span svg{width:14px;height:14px;fill:currentColor}
+.uip4ok{padding-top:9px}
+.uip4r .uip4lk{align-self:flex-start;display:inline-flex;align-items:center;gap:4px}
+.uip4r .uip4lk svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
+.uip4foot{margin-top:18px;justify-content:flex-start;padding-left:186px}
+
+/* Option 4 alignment pass (4 Oct 2026). Measured: the control column stopped 68px short of the Design switch because
+   the "Saved" badge reserved 52px on every row; it now floats under its label instead, so every control runs to the
+   same right edge as the switch above. Labels sit on the middle of a 32px control's first line; "Use my time zone"
+   and Reset lose the button padding that put them 6–8px right of the controls they belong to. */
+.uip4r{position:relative}
+.uip4r > b{padding-top:0;line-height:32px}
+.uip4r.sw > b{line-height:22px;padding-top:4px}
+.uip4ok{position:absolute;left:16px;top:42px;padding:0;flex:none}
+.uip4r .uip4lk,.uip4foot button{padding:0;margin:0;border:0;background:none}
+.uip4r .uip4lk{margin-top:2px}
+.uip4foot{padding-left:186px}
+.uip4th button span{padding-left:2px}
+
+/* Option 4, Mobbin pass */
+.uip4sec{margin:18px 0 2px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.uip4sec:first-child{margin-top:4px}
+.uip4r > b{line-height:20px;padding-top:2px;display:flex;flex-direction:column}
+.uip4r > b small{font-size:12px;font-weight:400;line-height:17px;color:var(--text-dim);margin-top:2px}
+.uip4r.sw > b{padding-top:0;line-height:20px}
+.uip4ok{top:auto;bottom:8px}
+.uip4th button > span{display:flex;align-items:flex-start;gap:8px}
+.uip4th .rd{width:14px;height:14px;flex:0 0 14px;margin-top:2px;border-radius:50%;border:1.5px solid var(--text-dim);position:relative}
+.uip4th button.on .rd{border-color:var(--text)}
+.uip4th button.on .rd::after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--text)}
+.uip4th button > span > span{display:flex;flex-direction:column;align-items:flex-start;text-align:left}   /* a <button> centres its text by default */
+.uip4th button > span{justify-content:flex-start;text-align:left}
+.uip4th em{font-style:normal;font-size:12.5px} .uip4th small{font-size:11px;color:var(--text-dim);font-weight:400}
+.uip4tz{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--text) 5%,transparent)}
+.uip4tz .t{flex:1 1 auto} .uip4tz b{display:block;font-size:13px;font-weight:500;color:var(--text)}
+.uip4tz small{font-size:12px;color:var(--text-dim)}
+.uip4tz .stsw{margin:0;align-self:center}
+
+/* ── Option 4, RECREATED on the design system (4 Oct 2026). Only layout lives here — every control is an obs-* element.
+   The older .uip4l / .uip4r / .uip4th rules above are now unreferenced. */
+#uipPage.uip4{max-width:880px;padding:0 0 16px}
+#uipPage .uip4d{margin:-4px 0 18px;font-size:13px;color:var(--neutral-light,var(--text-dim))}
+.uip4g{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:20px}
+.uip4i{display:flex;flex-direction:column;gap:8px;min-width:0}
+.uip4i.full{grid-column:1 / -1}
+.uip4i > label{font-size:13px;font-weight:500;color:var(--page-text-color,var(--text))}
+.uip4h{font-size:12px;color:var(--neutral-light,var(--text-dim))}
+.uip4h code{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:1px 6px;border-radius:4px;background:var(--code-tag-background-color,var(--chip));color:var(--page-text-color,var(--text))}
+.uip4img{width:100%;max-width:520px;height:auto;border-radius:4px;border:1px solid var(--border-color,var(--border));display:block}
+.uip4sw{display:flex;align-items:center;gap:12px;min-height:32px}
+.uip4sw span{font-size:12px;color:var(--neutral-light,var(--text-dim))}
+#uipPage obs-divider{--divider-my:20px}
+#uipPage obs-page-header{--page-header-padding:0;margin-left:-8px}   /* the form below starts at the page edge; the header must too — its title keeps 8px of inner inset the token does not reach (measured) */
+.uip4f{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.uip4st{margin-right:auto;font-size:12px;color:var(--neutral-light,var(--text-dim))}
+
+/* Option 4's theme row: all three pictures side by side, as on the live page — the chosen one wears a white frame */
+.uip4pv{display:grid;grid-template-columns:repeat(3,minmax(0,300px));gap:18px;margin-top:6px}
+.uip4pv button{padding:0;line-height:0;border-radius:6px;border:3px solid transparent;overflow:hidden;background:none;transition:border-color .15s,transform .15s}
+.uip4pv button:hover{transform:translateY(-2px)}
+.uip4pv button.on{border-color:var(--page-text-color,var(--text))}
+.uip4pv button:focus-visible{outline:2px solid var(--primary,var(--teal));outline-offset:2px}
+.uip4pv img{width:100%;height:auto;display:block}
+
+/* Option 2: lighter borders (request, 4 Oct 2026) — the card frames, the card header rules and the row rules drop from
+   --pop-line (#2b394f) to --border (#1d2a3e in dark), so the lines separate without competing with the content. */
+.uip2s,.uip2s > header,.uip2 .uip2r{border-color:var(--border-color)}   /* the DS border token (#1d2a3e dark / #e3e8f2 light) — resolves because the page root is #uipPage, inside the scoped DS block */
+
+/* Option 2: the two dropdowns are ONE width (request, 4 Oct 2026) — Date format carried the .w modifier (342px) and
+   Time zone did not (260px). Both are 300px now and share a right edge. */
+#uipPage.uip2 .uip2r .uipsel,#uipPage.uip2 .uip2r .uipsel select{width:300px;min-width:300px;max-width:300px}
+
+/* ── My Profile on the design system (4 Oct 2026). Layout only — every control is an obs-* element. */
+#stProfPage.stpd{max-width:980px;padding:0 0 12px}
+#stProfPage obs-page-header{--page-header-padding:0;margin-left:-8px}
+.stpdd{margin:-4px 0 20px;font-size:13px;color:var(--neutral-light,var(--text-dim))}
+.stpdb{display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px;align-items:start}
+.stpdav{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 12px;border:1px solid var(--border-color);border-radius:8px}
+#stProfPage .stav{display:flex;flex-direction:column;align-items:center;gap:12px;margin:0}
+#stProfPage .stavc{width:112px;height:112px;font-size:34px}
+#stProfPage .stavl{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.stpdhint{font-size:11.5px;color:var(--neutral-light,var(--text-dim))}
+.stpdf section h3{margin:0 0 14px;font-size:14px;font-weight:600;color:var(--page-text-color,var(--text))}
+.stpdg{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:16px}
+.stpdg.pw{margin-top:16px}
+.stpdfi{display:flex;flex-direction:column;gap:4px;min-width:0;margin:0;padding:0;border:0}
+.stpdfi.full{grid-column:1 / -1}
+.stpdfi .stex{font-size:12px;min-height:0;color:var(--secondary-red,var(--red))}
+.stpdfi .stex{display:block;margin:0;position:static}
+#stProfPage .stpdfi.err .stex:empty::before{content:"This field is required"}   /* the live form showed no text for an empty required field; the DS form always pairs a red state with a message */
+.stpdsw{display:flex;align-items:center;gap:16px;max-width:520px}
+.stpdsw > div{flex:1 1 auto}
+.stpdsw b{display:block;font-size:13px;font-weight:500;color:var(--page-text-color,var(--text))}
+.stpdsw small{font-size:12px;color:var(--neutral-light,var(--text-dim))}
+#stProfPage obs-divider{--divider-my:20px}
+.stpdft{display:flex;justify-content:flex-end;gap:8px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border-color)}
 </style>
 </head>
 <body>
@@ -16685,30 +17299,28 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 </div>
 
 <div class="pop" id="userPop">
+  <div class="upsw" id="upOpt" role="group" aria-label="Card design"><span class="upswl">Option</span><button type="button" data-o="1" class="on" onclick="upOptSet('1')">1</button><button type="button" data-o="2" onclick="upOptSet('2')">2</button><button type="button" data-o="3" onclick="upOptSet('3')">3</button><button type="button" data-o="4" onclick="upOptSet('4')">4</button><button type="button" data-o="5" onclick="upOptSet('5')">5</button></div>
   <div class="uhead">
     <div class="upavatar">KP</div>
-    <div><div class="nm">Kishan Patel</div><div class="rl">admin</div></div>
+    <div><div class="nm">Kishan Patel</div><div class="rl">admin</div><div class="em" id="upEmail"></div></div>
   </div>
   <ul class="umenu">
-    <li class="item"><a href="javascript:;" onclick="stOpen('My Account','My Profile')"><svg class="ic" viewBox="0 0 48 48" id="icMyProfile"></svg> My Profile</a></li>
-    <li class="item"><a href="javascript:;" onclick="docsOpen('/', 'Product Setup Guide')"><svg class="ic" viewBox="0 0 48 48" id="icTour"></svg> Product Setup Guide</a></li>
-    <li class="item"><a href="https://docs.motadata.com/motadata-aiops-docs/" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 48 48" id="icHelp"></svg> Documentation</a></li>
-    <li class="item"><a href="javascript:;" onclick="docsOpen('/', 'the documentation — the mobile app is not published in the docs, so there is no store link to open')"><svg class="ic" viewBox="0 0 48 48" id="icMobile"></svg> Download mobile app <span class="newchip">New</span></a></li>
-    <!-- the shortcut sheet needs a mouse route too, or "?" is only findable by accident -->
-    <li class="item"><a href="javascript:;" onclick="closePops();kbOpen()"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M3 5h18v14H3V5Zm2 2v10h14V7H5Zm1.5 1.5h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h1.5v2H17v-2ZM6.5 12h2v2h-2v-2Zm3.5 0h2v2h-2v-2Zm3.5 0h4v2h-4v-2ZM8 15.5h8v2H8v-2Z"/></svg> Keyboard shortcuts <span class="kbd">?</span></a></li>
+    <li class="item"><a href="javascript:;" onclick="stOpen('My Account','My Profile')"><svg class="ic" viewBox="0 0 48 48" id="icMyProfile"></svg> My Profile<span class="ds">Name, email and password</span></a></li>
+    <li class="item"><a href="javascript:;" onclick="docsOpen('/', 'Product Setup Guide')"><svg class="ic" viewBox="0 0 48 48" id="icTour"></svg> Product Setup Guide<span class="ds">Get ObserveOps running, step by step</span></a></li>
+    <li class="item"><a href="https://docs.motadata.com/motadata-aiops-docs/" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 48 48" id="icHelp"></svg> Documentation<span class="ds">The product guide, in a new tab</span></a></li>
+    <li class="item"><a href="javascript:;" onclick="docsOpen('/', 'the documentation — the mobile app is not published in the docs, so there is no store link to open')"><svg class="ic" viewBox="0 0 48 48" id="icMobile"></svg> Download mobile app <span class="newchip">New</span><span class="ds">ObserveOps on your phone</span></a></li>
     <li class="div"></li>
-    <li>
-      <div class="themerow">
-        <button class="tseg" data-mode="dark" onclick="setTheme('dark')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M18.7215 6.58584C19.3318 7.19608 19.4818 8.12893 19.0936 8.8997C18.0814 10.9094 17.5104 13.1807 17.5104 15.5912C17.5104 23.8194 24.1807 30.4896 32.4088 30.4896C34.8192 30.4896 37.0907 29.9187 39.1003 28.9064C39.8712 28.5184 40.804 28.6683 41.4141 29.2784C42.0245 29.8888 42.1744 30.8216 41.7861 31.5923C38.6792 37.7613 32.2856 42 24.8985 42C14.4611 42 6 33.5389 6 23.1016C6 15.7144 10.2388 9.32082 16.4077 6.21381C17.1785 5.82562 18.1113 5.9756 18.7215 6.58584ZM13.6434 13.3392C11.3727 15.9549 10 19.3687 10 23.1016C10 31.3299 16.6703 38 24.8985 38C28.6315 38 32.0453 36.6272 34.6608 34.3565C33.9221 34.4445 33.1707 34.4896 32.4088 34.4896C21.9715 34.4896 13.5104 26.0285 13.5104 15.5912C13.5104 14.8295 13.5556 14.0779 13.6434 13.3392Z"/></svg> Dark</button>
-        <button class="tseg" data-mode="light" onclick="setTheme('light')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C25.1046 4 26 4.89544 26 6V8C26 9.10456 25.1046 10 24 10C22.8954 10 22 9.10456 22 8V6C22 4.89544 22.8954 4 24 4ZM38.1421 9.85784C38.9232 10.6389 38.9232 11.9052 38.1421 12.6863L36.728 14.1005C35.9469 14.8815 34.6805 14.8815 33.8997 14.1005C33.1187 13.3194 33.1187 12.0531 33.8997 11.2721L35.3139 9.85784C36.0949 9.0768 37.3611 9.0768 38.1421 9.85784ZM9.85784 9.85784C10.6389 9.0768 11.9052 9.0768 12.6863 9.85784L14.1005 11.2721C14.8815 12.0531 14.8815 13.3194 14.1005 14.1005C13.3194 14.8815 12.0531 14.8815 11.2721 14.1005L9.85784 12.6863C9.0768 11.9052 9.0768 10.6389 9.85784 9.85784ZM24 16C19.5817 16 16 19.5817 16 24C16 28.4184 19.5817 32 24 32C28.4184 32 32 28.4184 32 24C32 19.5817 28.4184 16 24 16ZM12 24C12 17.3726 17.3726 12 24 12C30.6275 12 36 17.3726 36 24C36 30.6275 30.6275 36 24 36C17.3726 36 12 30.6275 12 24ZM4 24C4 22.8954 4.89544 22 6 22H8C9.10456 22 10 22.8954 10 24C10 25.1046 9.10456 26 8 26H6C4.89544 26 4 25.1046 4 24ZM38 24C38 22.8954 38.8955 22 40 22H42C43.1045 22 44 22.8954 44 24C44 25.1046 43.1045 26 42 26H40C38.8955 26 38 25.1046 38 24ZM11.2721 33.8995C12.0531 33.1184 13.3194 33.1184 14.1005 33.8995C14.8815 34.6805 14.8815 35.9469 14.1005 36.728L12.6863 38.1421C11.9052 38.9232 10.6389 38.9232 9.85784 38.1421C9.0768 37.3611 9.0768 36.0947 9.85784 35.3136L11.2721 33.8995ZM33.8997 36.728C33.1187 35.9469 33.1187 34.6805 33.8997 33.8995C34.6805 33.1184 35.9469 33.1184 36.728 33.8995L38.1421 35.3136C38.9232 36.0947 38.9232 37.3611 38.1421 38.1421C37.3611 38.9232 36.0949 38.9232 35.3139 38.1421L33.8997 36.728ZM24 38C25.1046 38 26 38.8955 26 40V42C26 43.1045 25.1046 44 24 44C22.8954 44 22 43.1045 22 42V40C22 38.8955 22.8954 38 24 38Z"/></svg> Light</button>
-        <button class="tseg" data-mode="auto" onclick="setTheme('auto')"><svg viewBox="0 0 48 48"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M24 4.7998L24.4951 4.80566C34.8702 5.06837 43.2002 13.5617 43.2002 24C43.2001 34.4383 34.8701 42.9306 24.4951 43.1934L24 43.2002L23.5234 43.1943C23.4625 43.1928 23.4017 43.1886 23.3408 43.1865C18.8412 43.0347 14.7347 41.336 11.5361 38.6035C11.5101 38.5813 11.4839 38.5594 11.458 38.5371C10.8999 38.0552 10.3703 37.5414 9.87109 36.999C9.79127 36.9123 9.71285 36.8244 9.63477 36.7363C9.47574 36.5571 9.31932 36.3756 9.16699 36.1904C9.13202 36.1479 9.09708 36.1053 9.0625 36.0625C6.58781 33.0019 5.03397 29.166 4.82422 24.9756C4.82047 24.9018 4.81833 24.8278 4.81543 24.7539C4.80577 24.5038 4.79981 24.2525 4.7998 24C4.7998 23.738 4.80699 23.4772 4.81738 23.2178C4.82614 23.0028 4.83662 22.7882 4.85254 22.5742C5.14832 18.5444 6.68782 14.8606 9.08887 11.9043C9.11496 11.8721 9.14068 11.8396 9.16699 11.8076C9.33852 11.5992 9.51531 11.3953 9.69531 11.1943C9.81028 11.0659 9.92722 10.9391 10.0459 10.8135C10.3834 10.4564 10.7329 10.1106 11.0967 9.78027C11.1295 9.75051 11.1633 9.7219 11.1963 9.69238C11.3964 9.51317 11.6001 9.3378 11.8076 9.16699C11.8611 9.12301 11.9158 9.08048 11.9697 9.03711C15.0251 6.57743 18.8485 5.03317 23.0244 4.82422C23.0956 4.8206 23.167 4.81826 23.2383 4.81543C23.4909 4.80558 23.745 4.7998 24 4.7998ZM24 39.2002C32.3945 39.2001 39.2001 32.3945 39.2002 24C39.2002 15.7366 32.6057 9.01301 24.3926 8.80469L24 8.7998V39.2002Z"/></svg> Auto</button>
+    <li class="tli">
+      <div class="trow" tabindex="0"><span class="tic" id="upThemeIc"></span>Theme<span class="tv" id="upThemeVal"></span><svg class="tch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></div>
+      <div class="themerow"><span class="tlbl">Theme</span>
+        <button class="tseg" data-mode="dark" data-tip="Dark" aria-label="Dark theme" onclick="setTheme('dark')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M18.7215 6.58584C19.3318 7.19608 19.4818 8.12893 19.0936 8.8997C18.0814 10.9094 17.5104 13.1807 17.5104 15.5912C17.5104 23.8194 24.1807 30.4896 32.4088 30.4896C34.8192 30.4896 37.0907 29.9187 39.1003 28.9064C39.8712 28.5184 40.804 28.6683 41.4141 29.2784C42.0245 29.8888 42.1744 30.8216 41.7861 31.5923C38.6792 37.7613 32.2856 42 24.8985 42C14.4611 42 6 33.5389 6 23.1016C6 15.7144 10.2388 9.32082 16.4077 6.21381C17.1785 5.82562 18.1113 5.9756 18.7215 6.58584ZM13.6434 13.3392C11.3727 15.9549 10 19.3687 10 23.1016C10 31.3299 16.6703 38 24.8985 38C28.6315 38 32.0453 36.6272 34.6608 34.3565C33.9221 34.4445 33.1707 34.4896 32.4088 34.4896C21.9715 34.4896 13.5104 26.0285 13.5104 15.5912C13.5104 14.8295 13.5556 14.0779 13.6434 13.3392Z"/></svg> Dark</button>
+        <button class="tseg" data-mode="light" data-tip="Light" aria-label="Light theme" onclick="setTheme('light')"><svg viewBox="0 0 48 48"><path fill="currentColor" d="M24 4C25.1046 4 26 4.89544 26 6V8C26 9.10456 25.1046 10 24 10C22.8954 10 22 9.10456 22 8V6C22 4.89544 22.8954 4 24 4ZM38.1421 9.85784C38.9232 10.6389 38.9232 11.9052 38.1421 12.6863L36.728 14.1005C35.9469 14.8815 34.6805 14.8815 33.8997 14.1005C33.1187 13.3194 33.1187 12.0531 33.8997 11.2721L35.3139 9.85784C36.0949 9.0768 37.3611 9.0768 38.1421 9.85784ZM9.85784 9.85784C10.6389 9.0768 11.9052 9.0768 12.6863 9.85784L14.1005 11.2721C14.8815 12.0531 14.8815 13.3194 14.1005 14.1005C13.3194 14.8815 12.0531 14.8815 11.2721 14.1005L9.85784 12.6863C9.0768 11.9052 9.0768 10.6389 9.85784 9.85784ZM24 16C19.5817 16 16 19.5817 16 24C16 28.4184 19.5817 32 24 32C28.4184 32 32 28.4184 32 24C32 19.5817 28.4184 16 24 16ZM12 24C12 17.3726 17.3726 12 24 12C30.6275 12 36 17.3726 36 24C36 30.6275 30.6275 36 24 36C17.3726 36 12 30.6275 12 24ZM4 24C4 22.8954 4.89544 22 6 22H8C9.10456 22 10 22.8954 10 24C10 25.1046 9.10456 26 8 26H6C4.89544 26 4 25.1046 4 24ZM38 24C38 22.8954 38.8955 22 40 22H42C43.1045 22 44 22.8954 44 24C44 25.1046 43.1045 26 42 26H40C38.8955 26 38 25.1046 38 24ZM11.2721 33.8995C12.0531 33.1184 13.3194 33.1184 14.1005 33.8995C14.8815 34.6805 14.8815 35.9469 14.1005 36.728L12.6863 38.1421C11.9052 38.9232 10.6389 38.9232 9.85784 38.1421C9.0768 37.3611 9.0768 36.0947 9.85784 35.3136L11.2721 33.8995ZM33.8997 36.728C33.1187 35.9469 33.1187 34.6805 33.8997 33.8995C34.6805 33.1184 35.9469 33.1184 36.728 33.8995L38.1421 35.3136C38.9232 36.0947 38.9232 37.3611 38.1421 38.1421C37.3611 38.9232 36.0949 38.9232 35.3139 38.1421L33.8997 36.728ZM24 38C25.1046 38 26 38.8955 26 40V42C26 43.1045 25.1046 44 24 44C22.8954 44 22 43.1045 22 42V40C22 38.8955 22.8954 38 24 38Z"/></svg> Light</button>
+        <button class="tseg" data-mode="auto" data-tip="Auto" aria-label="Auto theme" onclick="setTheme('auto')"><svg viewBox="0 0 48 48"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M24 4.7998L24.4951 4.80566C34.8702 5.06837 43.2002 13.5617 43.2002 24C43.2001 34.4383 34.8701 42.9306 24.4951 43.1934L24 43.2002L23.5234 43.1943C23.4625 43.1928 23.4017 43.1886 23.3408 43.1865C18.8412 43.0347 14.7347 41.336 11.5361 38.6035C11.5101 38.5813 11.4839 38.5594 11.458 38.5371C10.8999 38.0552 10.3703 37.5414 9.87109 36.999C9.79127 36.9123 9.71285 36.8244 9.63477 36.7363C9.47574 36.5571 9.31932 36.3756 9.16699 36.1904C9.13202 36.1479 9.09708 36.1053 9.0625 36.0625C6.58781 33.0019 5.03397 29.166 4.82422 24.9756C4.82047 24.9018 4.81833 24.8278 4.81543 24.7539C4.80577 24.5038 4.79981 24.2525 4.7998 24C4.7998 23.738 4.80699 23.4772 4.81738 23.2178C4.82614 23.0028 4.83662 22.7882 4.85254 22.5742C5.14832 18.5444 6.68782 14.8606 9.08887 11.9043C9.11496 11.8721 9.14068 11.8396 9.16699 11.8076C9.33852 11.5992 9.51531 11.3953 9.69531 11.1943C9.81028 11.0659 9.92722 10.9391 10.0459 10.8135C10.3834 10.4564 10.7329 10.1106 11.0967 9.78027C11.1295 9.75051 11.1633 9.7219 11.1963 9.69238C11.3964 9.51317 11.6001 9.3378 11.8076 9.16699C11.8611 9.12301 11.9158 9.08048 11.9697 9.03711C15.0251 6.57743 18.8485 5.03317 23.0244 4.82422C23.0956 4.8206 23.167 4.81826 23.2383 4.81543C23.4909 4.80558 23.745 4.7998 24 4.7998ZM24 39.2002C32.3945 39.2001 39.2001 32.3945 39.2002 24C39.2002 15.7366 32.6057 9.01301 24.3926 8.80469L24 8.7998V39.2002Z"/></svg> Auto</button>
       </div>
     </li>
     <li class="div"></li>
-    <li class="logout"><a href="javascript:;" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M10 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-8v-2h8V5h-8V3Zm-1.3 5.3L10 9.6 8.4 11H15v2H8.4L10 14.4l-1.3 1.3L4.6 12l4.1-3.7Z"/></svg>Logout</a></li>
+    <li class="logout"><a href="javascript:;" onclick="doLogout()"><svg class="lo2" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M25.2,26l-4.6,4.6c-.2,.2-.3,.4-.4,.7-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.3,.5,.4,.7,.2,.2,.4,.3,.7,.4,.2,.1,.5,.2,.8,.2s.5,0,.8-.2c.2-.1,.5-.3,.7-.4l8-8c.2-.2,.3-.4,.4-.7,.2-.5,.2-1,0-1.5,0-.2-.2-.5-.4-.7l-8-8c-.2-.2-.4-.3-.7-.4-.2-.1-.5-.2-.8-.2s-.5,0-.8,.2c-.2,.1-.5,.2-.7,.4-.2,.2-.3,.4-.4,.7-.1,.2-.2,.5-.2,.8s0,.5,.2,.8c.1,.2,.2,.5,.4,.7l4.6,4.6H6c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6H25.2Zm-1.2-22c-3.7,0-7.4,1-10.6,3-3.2,2-5.7,4.8-7.4,8.1-.2,.5-.3,1-.1,1.5,.2,.5,.5,.9,1,1.2,.5,.2,1,.3,1.5,.1,.5-.2,.9-.5,1.2-1,1.3-2.6,3.2-4.7,5.6-6.3,2.4-1.6,5.1-2.5,8-2.6,2.8-.1,5.7,.5,8.2,1.8,2.5,1.3,4.6,3.3,6.2,5.7,1.5,2.4,2.3,5.2,2.4,8s-.6,5.7-2,8.2c-1.4,2.5-3.4,4.6-5.8,6-2.5,1.5-5.2,2.2-8.1,2.2-3,0-5.9-.8-8.4-2.4-2.5-1.6-4.6-3.8-5.9-6.5-.2-.5-.7-.8-1.2-1-.5-.2-1.1-.1-1.5,.1-.5,.2-.8,.7-1,1.2-.2,.5-.1,1.1,.1,1.5,1.6,3.2,4,5.9,7,7.8,3,1.9,6.4,3.1,10,3.2,3.6,.2,7.1-.6,10.3-2.3,3.2-1.7,5.8-4.1,7.7-7.2,1.9-3,2.9-6.5,3-10.1,0-3.6-.8-7.1-2.5-10.2-1.7-3.1-4.3-5.7-7.3-7.5-3.1-1.8-6.6-2.8-10.1-2.8Z"/></svg>Logout</a></li>
   </ul>
-  <!-- the build, where "about this install" belongs — quiet, and below the actions -->
-  <div class="upbuild">BUILD : 8.2.6</div>
 </div>
 
 <div class="pop" id="notifPop">
@@ -20607,6 +21219,7 @@ function sbNotifOpen(id){
     /* the module flyout must not hang over it — the same call the bell's markup used to make */
     if (typeof mfHide === 'function') mfHide();
     togglePop(want);
+    if (typeof tipHide === 'function') tipHide();   /* the control's own tip, armed on the same hover, must not paint over the card (4 Oct 2026) */
     /* ⚠️ NO SCRIM IN HOVER MODE, AND THIS IS THE WHOLE BLINK FIX (reported 9 Sep 2026: "when I
        hover the notification icon the popup is blink").
        `togglePop` is built for CLICK, and part of what it does is raise `#scrim` —
@@ -20746,6 +21359,8 @@ function tipRedundant(el, txt){
 function tipFor(el){
   const t = el.closest && el.closest('[data-tip],[title]');
   if (!t) return null;
+  /* a rail control's tip must not paint over a card it opened (3 Oct 2026 — the avatar's name tip sat on the profile card's foot) */
+  if (t.closest('.sidebar') && document.querySelector('#userPop.on,#notifPop.on')) return null;
   /* ⚠️ NEVER ADOPT `title` FROM AN `obs-*` ELEMENT. On a DS component `title` is a PROP that the
      component renders — obs-banner's heading, obs-page-header's, obs-drawer's — not a browser
      tooltip. Adopting it deletes the attribute, so the component's own heading DISAPPEARS the
@@ -26371,6 +26986,126 @@ document.addEventListener('keydown', e=>{
   /* the dashboard panel boots at the end of its own script block, below */
   canvasReady = true;
 })();
+
+/* the profile card's Option 1 / Option 2 switch (4 Oct 2026) — remembered per browser */
+let UP_OPT = (() => { try { return localStorage.getItem('oo-up-opt') || '1'; } catch (e) { return '1'; } })();
+function upOptSet(o){
+  UP_OPT = o; try { localStorage.setItem('oo-up-opt', o); } catch (e) {}
+  const p = document.getElementById('userPop'); if (!p) return;
+  p.classList.toggle('o2', o === '2'); p.classList.toggle('o3', o === '3'); p.classList.toggle('o4', o === '4'); p.classList.toggle('o5', o === '5'); if (o === '4') up4Paint(); if (o === '5') up5Paint();
+  upThemePaint();
+  p.querySelectorAll('.upsw button').forEach(b => b.classList.toggle('on', b.dataset.o === o));
+  /* the address is the rail identity row's own (refreshUser writes it there), so the two cannot disagree */
+  const em = document.getElementById('upEmail'), src = document.getElementById('sbUserSub');
+  if (em) em.textContent = src ? src.textContent : '';
+}
+document.addEventListener('DOMContentLoaded', () => upOptSet(UP_OPT));
+/* Option 3's Theme row names the current mode and wears its glyph — read off the lit segment, so it cannot drift */
+function upThemePaint(){
+  const on = document.querySelector('#userPop .tseg.on'), v = document.getElementById('upThemeVal'), ic = document.getElementById('upThemeIc');
+  if (v) v.textContent = on ? on.dataset.mode : '';
+  if (ic) { const sv = on && on.querySelector('svg'); ic.innerHTML = sv ? sv.outerHTML : ''; }
+}
+(function(){ const st = window.setTheme; if (typeof st !== 'function') return;
+  window.setTheme = function(){ const r = st.apply(this, arguments); upThemePaint(); if (typeof up4ThemeLit === 'function') up4ThemeLit(); return r; }; })();
+
+/* Option 4's markup — built once from data the page already owns (ST_TREE for the workspace column) */
+const UP4_ICO = {
+  ext:'<svg class="up4x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"/></svg>',
+  out:'<svg class="up4x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>'
+};
+function up4Svg(id){ const e = document.getElementById(id); return e ? '<svg viewBox="'+(e.getAttribute('viewBox')||'0 0 48 48')+'">'+e.innerHTML+'</svg>' : ''; }
+function up4Go(fn){ try { closePops(); } catch (e) {} fn(); }
+function up4HTML(){
+  const p = document.getElementById('userPop');
+  const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
+  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
+  const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
+  let cats = [];
+  try { cats = ST_TREE.filter(c => c.n !== 'My Account').slice(0, 9); } catch (e) {}
+  const stIc = c => { try { const d = ST_ICO[c.ic]; return d ? '<svg viewBox="0 0 48 48"><path d="'+d+'"/></svg>' : ''; } catch (e) { return ''; } };
+  const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
+  return `<div class="up4c">
+      <div class="up4id"><div class="up4av">${av}</div><div style="min-width:0"><div class="up4nm">${nm}<b>${rl}</b></div><div class="up4em">${em}</div></div></div>
+      <div class="up4h">Personal</div>
+      ${row(up4Svg('icMyProfile'), 'My Profile', "up4Go(()=>stOpen('My Account','My Profile'))", UP4_ICO.ext)}
+      ${row(up4Svg('icTour'), 'Product Setup Guide', "up4Go(()=>docsOpen('/', 'Product Setup Guide'))", UP4_ICO.ext)}
+      ${row(up4Svg('icHelp'), 'Documentation', "up4Go(()=>window.open('https://docs.motadata.com/motadata-aiops-docs/','_blank','noopener'))", UP4_ICO.out)}
+      ${row(up4Svg('icMobile'), 'Download mobile app', "up4Go(()=>docsOpen('/', 'the documentation — the mobile app is not published in the docs, so there is no store link to open'))", '<em>New</em>')}
+      <div class="up4pref">
+        <div class="up4pr"><span>Theme<small id="up4ThV"></small></span><div class="up4th" role="group" aria-label="Theme">
+          ${['dark','light','auto'].map(m => `<button type="button" data-m="${m}" data-tip="${m[0].toUpperCase()+m.slice(1)}" aria-label="${m} theme" onclick="setTheme('${m}')">${seg(m)}</button>`).join('')}</div></div>
+        <div class="up4pr"><span>Notifications<small>Pop-up alerts on this browser</small></span><button type="button" class="up4sw${ntf?' on':''}" id="up4Ntf" role="switch" aria-checked="${ntf}" aria-label="Notifications" onclick="up4NtfTog()"></button></div>
+      </div>
+      <div class="up4sp"></div>
+      ${row(lo ? lo.outerHTML.replace('class="lo2"','') : '', 'Log out', 'up4Go(doLogout)', '', 'out')}
+    </div>
+    <div class="up4c">
+      <div class="up4h">Workspace settings</div>
+      ${cats.map(c => row(stIc(c), c.n, `up4Go(()=>stOpen('${c.n.replace(/'/g,"\\'")}'))`, UP4_ICO.ext)).join('')}
+      <div class="up4sp"></div>
+      ${row('', 'All settings →', "up4Go(()=>stOpen('My Account','My Profile'))", '', 'up4all')}
+    </div>`;
+}
+function up4Paint(){
+  const p = document.getElementById('userPop'); if (!p) return;
+  let h = p.querySelector('.up4'); if (!h) { h = document.createElement('div'); h.className = 'up4'; p.appendChild(h); }
+  h.innerHTML = up4HTML(); const o5 = p.querySelector('.up5'); if (o5) o5.innerHTML = ''; up4ThemeLit();
+}
+function up4ThemeLit(){
+  const on = document.querySelector('#userPop .tseg.on'), m = on ? on.dataset.mode : '';
+  document.querySelectorAll('#userPop .up4th button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  document.querySelectorAll('#userPop .up5slide').forEach(g => { g.dataset.i = [...g.querySelectorAll('button')].findIndex(b => b.dataset.m === m); });
+  const v = document.getElementById('up4ThV'); if (v) v.textContent = m ? (m === 'auto' ? 'Follows your system' : m[0].toUpperCase() + m.slice(1) + ' mode') : '';
+}
+/* repaint on every open: the identity, the icons and the notification state are read live */
+(function(){ const tp = window.togglePop; if (typeof tp !== 'function') return;
+  window.togglePop = function(id){ const r = tp.apply(this, arguments); if (id === 'userPop' && UP_OPT === '4') up4Paint(); if (id === 'userPop' && UP_OPT === '5') up5Paint(); return r; }; })();
+function up4NtfTog(){
+  const on = !((typeof ntfEnabled === 'function') && ntfEnabled());
+  try { localStorage.setItem('oo-notifications', on ? 'on' : 'off'); } catch (e) {}
+  document.body.classList.toggle('ntfoff', !on);
+  const b = document.getElementById('up4Ntf'); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-checked', on); } const st5 = document.getElementById('up5NtfSt'); if (st5) { st5.textContent = on ? 'On' : 'Off'; st5.parentNode.setAttribute('aria-checked', on); }
+  if (on && typeof ntfDemo === 'function') setTimeout(ntfDemo, 400);
+}
+
+function up5HTML(){
+  /* IMPROVED (4 Oct 2026): an avatar header with the online dot; the role pill beside the name instead of above
+     it; sections titled so the eye can find "you" vs "help"; Notifications says On / Off in words; the theme
+     switch slides; and the footer's Docs / Support links are gone — they repeated the two rows above them. */
+  const p = document.getElementById('userPop');
+  const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
+  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
+  const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
+  const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
+  let setIc = ''; try { setIc = '<svg viewBox="0 0 48 48"><path d="'+ST_ICO['system-settings']+'"/></svg>'; } catch (e) {}
+  const bell = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>';
+  const head = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-3a8 8 0 1 1 16 0v3"/><path d="M18 19c0 1.657 -2.686 3 -6 3"/><path d="M4 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/><path d="M15 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/></svg>';
+  return `<div class="up5top">
+      <div class="up5id"><div class="up4av">${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div></div>
+      <button type="button" class="up5btn" onclick="up4Go(()=>stOpen('My Account','My Profile'))">Edit profile</button></div>
+    <div class="up5sec">Account</div>
+    ${row(setIc, 'Settings', "up4Go(()=>stOpen('User Settings'))", UP4_ICO.ext)}
+    <div class="up4r up5nt" onclick="up4NtfTog()" role="switch" aria-checked="${ntf}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();up4NtfTog()}">${bell}<span>Notifications</span><i class="up5st" id="up5NtfSt">${ntf?'On':'Off'}</i><span class="up4sw${ntf?' on':''}" id="up4Ntf" aria-hidden="true"></span></div>
+    <div class="up5th"><svg viewBox="0 0 48 48" class="up5thi">${(p.querySelector('.tseg[data-mode="auto"] svg')||{}).innerHTML||''}</svg><span>Appearance</span>
+      <div class="up4th up5slide" role="group" aria-label="Theme"><i class="up5thumb" aria-hidden="true"></i>
+      ${['light','dark','auto'].map(m => `<button type="button" data-m="${m}" data-tip="${m[0].toUpperCase()+m.slice(1)}" aria-label="${m} theme" onclick="setTheme('${m}')">${seg(m)}</button>`).join('')}</div></div>
+    <div class="up5hr"></div>
+    <div class="up5sec">Help &amp; resources</div>
+    ${row(up4Svg('icTour'), 'Product Setup Guide', "up4Go(()=>docsOpen('/', 'Product Setup Guide'))", UP4_ICO.ext)}
+    ${row(up4Svg('icHelp'), 'Documentation', "up4Go(()=>window.open('https://docs.motadata.com/motadata-aiops-docs/','_blank','noopener'))", UP4_ICO.out)}
+    ${row(head, 'Support', "up4Go(()=>window.open('https://support.motadata.com','_blank','noopener'))", UP4_ICO.out)}
+    ${row(up4Svg('icMobile'), 'Download mobile app', "up4Go(()=>docsOpen('/', 'the documentation — the mobile app is not published in the docs, so there is no store link to open'))", '<em>New</em>')}
+    <div class="up5hr"></div>
+    ${row(lo ? lo.outerHTML.replace('class="lo2"','') : '', 'Log out', 'up4Go(doLogout)', '', 'out')}`;
+}
+function up5Paint(){
+  const p = document.getElementById('userPop'); if (!p) return;
+  let h = p.querySelector('.up5'); if (!h) { h = document.createElement('div'); h.className = 'up5'; p.appendChild(h); }
+  h.innerHTML = up5HTML(); up4ThemeLit();
+}
 </script>
 <div class="pop" id="dpRowMenu"></div>
 <div class="pop" id="nocNewPop"></div>
@@ -40170,7 +40905,7 @@ function stMainPaint(){
   const el = document.getElementById('stMain'); if (!el) return;
   const pages = (typeof ST_PAGES !== 'undefined') ? ST_PAGES : {};
   const pg = ST.full || pages[ST.cat + ' › ' + ST.page];
-  if (!ST.full && ST.cat === 'My Account' && ST.page === 'My Profile') el.innerHTML = stProfileHTML();
+  if (!ST.full && ST.cat === 'My Account' && ST.page === 'My Profile') { el.innerHTML = stProfileHTML(); stProfBind(); }
   else if (pg) el.innerHTML = pg.html();
   else el.innerHTML = stStubHTML();
   el.scrollTop = 0;
@@ -40189,7 +40924,7 @@ function stStubHTML(){
 function stInitials(){ const d = ST.data; return ((d.first||'').trim()[0]||'').toUpperCase() + ((d.last||'').trim()[0]||'').toUpperCase(); }
 function stAvHTML(){
   return `<div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div>
-    <div class="stavl"><a onclick="stAvPick()">Change</a>${ST.avatar ? '<span class="sep">|</span><a class="rm" onclick="stAvRemove()">Remove</a>' : ''}</div>`;
+    <div class="stavl"><obs-button variant="default" size="small" onclick="stTap(stAvPick)">${ST.avatar ? 'Change photo' : 'Upload photo'}</obs-button>${ST.avatar ? '<obs-button variant="transparent" size="small" onclick="stTap(stAvRemove)">Remove</obs-button>' : ''}</div>`;
 }
 function stAvPaint(){ const el = document.getElementById('stAv'); if (el) el.innerHTML = stAvHTML(); }
 function stField(k, label, o){
@@ -40206,27 +40941,54 @@ function stPwField(k, label, ph){
     <div class="stex" id="stex-${k}">${e && e.msg ? stEsc(e.msg) : ''}</div></div></div>`;
 }
 function stProfileHTML(){
-  return `<form class="stprof" autocomplete="off" onsubmit="stSubmit();return false">
-    <div class="stav" id="stAv">${stAvHTML()}</div>
-    <div class="stform">
-      ${stField('first','First Name',{req:1})}
-      ${stField('last','Last Name',{req:1})}
-      ${stField('user','User Name',{req:1,dis:1,ph:'Must be unique'})}
-      ${stField('email','Email Address',{req:1})}
-      ${stField('mobile','Mobile Number',{})}
-      <div class="stfi"><div class="stfl">Notifications</div><div class="stfc">
-        <button type="button" class="stsw${stNtfOn()?' on':''}" id="stNtfSw" role="switch" aria-checked="${stNtfOn()}" onclick="stNtfTog(this)"><span class="lb">${stNtfOn()?'ON':'OFF'}</span></button></div></div>
-      <div class="stfi"><div class="stfl">Change Password</div><div class="stfc">
-        <button type="button" class="stsw${ST.pw?' on':''}" role="switch" aria-checked="${ST.pw}" onclick="stPwTog()"><span class="lb">${ST.pw?'ON':'OFF'}</span></button></div></div>
-      ${ST.pw ? stPwField('old','Current Password','') + stPwField('nw','Password','Do not use simple password') + stPwField('cf','Confirm Password','Same as the password field') : ''}
+  /* REBUILT on the ObserveOps design system (request, 4 Oct 2026 — "replace the current page"). The form-view recipe:
+     obs-page-header, then labelled obs-input fields (their own label + help + required *) on a 2-column grid with a
+     16px gutter, the toggles as obs-switch, and the commit as obs-button default + primary. Validation, save, reset,
+     the avatar and the identity refresh are the SAME st* functions as before — only the markup changed. #stProfPage is
+     in the scoped DS token block so the components theme correctly in both modes. */
+  const inp = (k, label, o) => { const e = ST.err[k];
+    return `<div class="stfi stpdfi${e ? ' err' : ''}${o.full ? ' full' : ''}" id="stfi-${k}"><obs-input data-k="${k}" id="stin-${k}" block label="${label}"${o.req ? ' required' : ''}${o.dis ? ' disabled' : ''}${o.type ? ` type="${o.type}"` : ''}${o.help ? ` help="${stEsc(o.help)}"` : ''}${o.ph ? ` placeholder="${stEsc(o.ph)}"` : ''} value="${stEsc(ST.data[k] == null ? '' : ST.data[k])}"></obs-input>
+      <div class="stex" id="stex-${k}">${e && e.msg ? stEsc(e.msg) : ''}</div></div>`; };
+  return `<div class="stpd" id="stProfPage">
+    <obs-page-header heading="My Profile" no-divider></obs-page-header>
+    <p class="stpdd">Your name, contact details and sign-in password.</p>
+    <div class="stpdb">
+      <aside class="stpdav"><div class="stav" id="stAv">${stAvHTML()}</div><div class="stpdhint">JPEG, JPG, PNG or SVG</div></aside>
+      <form class="stpdf" autocomplete="off" onsubmit="stSubmit();return false">
+        <section><h3>Personal details</h3><div class="stpdg">
+          ${inp('first', 'First Name', { req: 1 })}${inp('last', 'Last Name', { req: 1 })}
+          ${inp('user', 'User Name', { req: 1, dis: 1, help: 'Must be unique · set by your administrator' })}${inp('email', 'Email Address', { req: 1 })}
+          ${inp('mobile', 'Mobile Number', { help: '8 to 12 digits' })}
+        </div></section>
+        <obs-divider></obs-divider>
+        <section><h3>Preferences</h3>
+          <div class="stpdsw"><div><b>Notifications</b><small>Pop-up alerts on this browser.</small></div><obs-switch id="stNtfSw" ${stNtfOn() ? 'checked' : ''} checked-text="ON" unchecked-text="OFF"></obs-switch></div>
+        </section>
+        <obs-divider></obs-divider>
+        <section><h3>Password</h3>
+          <div class="stpdsw"><div><b>Change Password</b><small>Turn on to set a new password.</small></div><obs-switch id="stPwSw" ${ST.pw ? 'checked' : ''} checked-text="ON" unchecked-text="OFF"></obs-switch></div>
+          ${ST.pw ? `<div class="stpdg pw">${inp('old', 'Current Password', { req: 1, type: 'password', full: 1 })}${inp('nw', 'Password', { req: 1, type: 'password', help: 'Do not use simple password' })}${inp('cf', 'Confirm Password', { req: 1, type: 'password', help: 'Same as the password field' })}</div>` : ''}
+        </section>
+        <input type="submit" hidden>
+      </form>
     </div>
-    <input type="submit" hidden>
-  </form>
-  <div class="stact">
-    <button class="stbtn" type="button" id="stResetBtn" onclick="stReset()">Reset</button>
-    <button class="stbtn pri" type="button" id="stSaveBtn" onclick="stSubmit()">Update My Profile</button>
+    <div class="stpdft"><obs-button variant="default" id="stResetBtn">Reset</obs-button><obs-button variant="primary" id="stSaveBtn">Update My Profile</obs-button></div>
   </div>
   <input type="file" id="stFile" accept="image/jpeg,image/png,image/svg+xml" style="display:none" onchange="stAvFile(this)">`;
+}
+/* wire the DS elements after paint: obs-input emits `input` with detail [value]; obs-switch `change` */
+const stTap = (() => { let last = 0; return fn => { const t = Date.now(); if (t - last < 60) return; last = t; fn(); }; })();   /* obs-button fires twice */
+function stProfBind(){
+  const root = document.getElementById('stProfPage'); if (!root) return;
+  root.querySelectorAll('obs-input[data-k]').forEach(el => el.addEventListener('input', e => {
+    const d = Array.isArray(e.detail) ? e.detail[0] : e.detail; stIn(el.dataset.k, d == null ? (el.value || '') : String(d)); }));
+  const nt = document.getElementById('stNtfSw');
+  if (nt) nt.addEventListener('change', () => { const on = !stNtfOn(); try { localStorage.setItem('oo-notifications', on ? 'on' : 'off'); } catch (e) {}
+    document.body.classList.toggle('ntfoff', !on); if (typeof toast === 'function') toast('Notifications turned ' + (on ? 'on' : 'off')); });
+  const pw = document.getElementById('stPwSw'); if (pw) pw.addEventListener('change', () => stPwTog());
+  const sv = document.getElementById('stSaveBtn'), rs = document.getElementById('stResetBtn');
+  if (sv) sv.addEventListener('click', () => stTap(stSubmit));
+  if (rs) rs.addEventListener('click', () => stTap(stReset));
 }
 function stIn(k, v){
   ST.data[k] = v;
@@ -40304,8 +41066,8 @@ function stErrSet(k, e){
 }
 function stBtnPaint(){
   const b = document.getElementById('stSaveBtn'); if (!b) return;
-  b.disabled = ST.busy;
-  b.innerHTML = (ST.busy ? '<span class="stspin"></span>' : '') + 'Update My Profile';
+  if (ST.busy) b.setAttribute('disabled', ''); else b.removeAttribute('disabled');
+  b.textContent = ST.busy ? 'Updating…' : 'Update My Profile';
 }
 function stSubmit(){
   if (ST.busy) return;
@@ -47668,6 +48430,367 @@ function licAfter(){
   if (LIC_EPS5.includes(LIC.opt)) lic5TrendMount();
 }
 ST_PAGES['My Account › License'] = { html: licHTML, after: licAfter };
+/* ── My Account › UI Preference (4 Oct 2026) — the live 10.0.1 page. Every control is real: Save applies the
+   theme through setTheme() and keeps the rest in localStorage; Reset to default puts the four back. */
+const UIP_DEF = { fmt:'ddd, MMM DD, yyyy hh:mm:ss A', tz:'(GMT +05:30) Asia/Calcutta', rows:'50', overlay:false, theme:'auto', tzAuto:false };
+const UIP_FMT = ['ddd, MMM DD, yyyy hh:mm:ss A','DD/MM/YYYY HH:mm:ss','MM/DD/YYYY hh:mm:ss A','YYYY-MM-DD HH:mm:ss','DD MMM YYYY, HH:mm'];
+const UIP_TZ = ['(GMT -08:00) America/Los_Angeles','(GMT -05:00) America/New_York','(GMT +00:00) Europe/London','(GMT +01:00) Europe/Berlin',
+  '(GMT +04:00) Asia/Dubai','(GMT +05:30) Asia/Calcutta','(GMT +08:00) Asia/Singapore','(GMT +09:00) Asia/Tokyo','(GMT +10:00) Australia/Sydney'];
+const UIP_ROWS = ['10','25','50','100'];
+function uipLoad(){
+  let v = {}; try { v = JSON.parse(localStorage.getItem('oo-ui-pref') || '{}'); } catch (e) {}
+  let th = 'auto'; try { th = localStorage.getItem('theme') || localStorage.getItem('oo-theme') || document.documentElement.dataset.themeMode || ''; } catch (e) {}
+  const lit = document.querySelector('#userPop .tseg.on'); if (lit) th = lit.dataset.mode;
+  return Object.assign({}, UIP_DEF, v, { theme: th || 'auto' });
+}
+let UIP = null;
+const UIP_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6l6 -6"/></svg>';
+/* a picture of the dashboard in one theme: rail, header, a honeycomb of alert dots, four rings, a pie and bars —
+   drawn, not a screenshot, so it stays sharp at any size. The palette is the product's own two themes. */
+function uipShot(dark){
+  const C = dark ? {bg:'#07101f',card:'#172336',line:'#1d2a3e',ink:'#cad3e2',mut:'#485975'} : {bg:'#ffffff',card:'#ffffff',line:'#e3e8f2',ink:'#1d2a3e',mut:'#e3e8f2'};
+  let hex = '';
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) {   /* 8 × 6 keeps every dot inside its card */
+    const x = 26 + c * 7.4 + (r % 2) * 3.7, y = 32 + r * 6.4, f = (r * 9 + c) % 11 === 3 ? '#a855f7' : '#f2504b', o = (r * 9 + c) % 11 === 3 || (r + c) % 3 ? 1 : .55;
+    hex += `<circle cx="${x}" cy="${y}" r="3" fill="${f}" fill-opacity="${o}"/>`;
+  }
+  const ring = (x, col, p) => `<circle cx="${x}" cy="40" r="7" fill="none" stroke="${C.mut}" stroke-width="2"/><circle cx="${x}" cy="40" r="7" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="${44*p} 44" transform="rotate(-90 ${x} 40)"/>`;
+  const pie = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="9" fill="#14b8a6"/><path d="M${cx} ${cy}L${cx} ${cy-9}A9 9 0 0 1 ${cx+8.6} ${cy+2.6}Z" fill="#a855f7"/><path d="M${cx} ${cy}L${cx+8.6} ${cy+2.6}A9 9 0 0 1 ${cx-3} ${cy+8.5}Z" fill="#fb923c"/>`;
+  return `<rect width="150" height="96" fill="${C.bg}"/><rect width="12" height="96" fill="${C.card}"/><rect x="12" width="138" height="10" fill="${C.card}"/>
+    <rect x="18" y="16" width="70" height="52" rx="2" fill="${C.card}" stroke="${C.line}" stroke-width=".6"/>${hex}
+    <rect x="92" y="16" width="52" height="34" rx="2" fill="${C.card}" stroke="${C.line}" stroke-width=".6"/>${ring(100,'#22c55e',.8)}${ring(116,'#f2504b',.6)}${ring(132,'#3b82f6',.3)}
+    <rect x="92" y="54" width="52" height="38" rx="2" fill="${C.card}" stroke="${C.line}" stroke-width=".6"/>${pie(106,72)}
+    <rect x="120" y="66" width="18" height="2" fill="${C.ink}" opacity=".5"/><rect x="120" y="71" width="14" height="2" fill="${C.ink}" opacity=".5"/><rect x="120" y="76" width="16" height="2" fill="${C.ink}" opacity=".5"/>
+    <rect x="18" y="72" width="70" height="20" rx="2" fill="${C.card}" stroke="${C.line}" stroke-width=".6"/>${pie(30,82).replace(/r="9"/,'r="7"')}
+    <rect x="44" y="78" width="38" height="2.4" fill="#14b8a6"/><rect x="44" y="83" width="24" height="2.4" fill="#14b8a6"/>`;
+}
+function uipPrevHTML(m){
+  /* the PRODUCT'S OWN preview images (request, 4 Oct 2026: "same to same"), read out of live 10.0.1's settings
+     chunk (img/auto · dark · light .png) — legend and label text blurred (internal hosts) and shrunk to 600px.
+     uipShot() is kept, unreferenced: the drawn version, if the images are ever unwanted. */
+  const nm = m === 'auto' ? 'Browser Default (Auto)' : m[0].toUpperCase() + m.slice(1);
+  return `<button type="button" class="${UIP.theme === m ? 'on' : ''}" data-m="${m}" aria-pressed="${UIP.theme === m}" aria-label="${nm} theme preview" onclick="uipTheme('${m}')"><img src="_settings-img/theme-${m}.jpg" alt="" width="600" height="375"></button>`;
+}
+function uipSel(id, list, cur, w){
+  return `<span class="uipsel${w ? ' w' : ''}"><select id="${id}" onchange="uipSet('${id}',this.value)">${list.map(o => `<option${o === cur ? ' selected' : ''}>${stEsc(o)}</option>`).join('')}</select>${UIP_CHEV}</span>`;
+}
+function uipHTML(){
+  /* each visit starts from what is saved; only Reset to default carries a draft through its own repaint */
+  if (!UIP || !UIP._keep) UIP = uipLoad(); delete UIP._keep;
+  const seg = [['auto','Browser Default (Auto)'],['light','Light'],['dark','Dark']];
+  return `<div class="uip">${uipOptHTML()}<div class="uipf">
+      <label for="uipFmt">Default Date Format</label>${uipSel('uipFmt', UIP_FMT, UIP.fmt, true)}
+      <label for="uipTz">Time Zone</label>${uipSel('uipTz', UIP_TZ, UIP.tz)}
+      <label for="uipRows">Default number of items to show in Grid</label>${uipSel('uipRows', UIP_ROWS, UIP.rows)}
+      <label>Alert Overlay</label><button type="button" class="stsw${UIP.overlay ? ' on' : ''}" role="switch" aria-checked="${UIP.overlay}" onclick="uipOverlay(this)"><span class="lb">${UIP.overlay ? 'ON' : 'OFF'}</span></button>
+      <label>Select Theme</label><span class="uipseg" role="group" aria-label="Select Theme">${seg.map(([k, t]) => `<button type="button" data-m="${k}" class="${UIP.theme === k ? 'on' : ''}" onclick="uipTheme('${k}')">${t}</button>`).join('')}</span>
+    </div>
+    <div class="uipprev">${['auto','light','dark'].map(uipPrevHTML).join('')}</div>
+    <div class="uipfoot"><button type="button" class="stbtn" onclick="uipReset()">Reset to default</button><button type="button" class="stbtn pri" onclick="uipSave()">Save</button></div></div>`;
+}
+function uipSet(id, v){ UIP[{uipFmt:'fmt', uipTz:'tz', uipRows:'rows'}[id]] = v; }
+function uipOverlay(b){ UIP.overlay = !UIP.overlay; b.classList.toggle('on', UIP.overlay); b.setAttribute('aria-checked', UIP.overlay); b.querySelector('.lb').textContent = UIP.overlay ? 'ON' : 'OFF'; }
+/* picking a theme only SELECTS it — the segment and its picture light together; Save applies it, as live does */
+function uipTheme(m){
+  UIP.theme = m;
+  document.querySelectorAll('.uipseg button,.uipprev button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('on', on); if (b.closest('.uipprev')) b.setAttribute('aria-pressed', on); });
+}
+function uipReset(){ UIP = Object.assign({}, UIP_DEF, { _keep: 1 }); stMainPaint(); }
+function uipSave(){
+  const { theme, ...rest } = UIP;
+  try { localStorage.setItem('oo-ui-pref', JSON.stringify(rest)); } catch (e) {}
+  if (typeof setTheme === 'function') setTheme(theme);
+  if (typeof toast === 'function') toast('UI preferences saved');
+}
+
+/* ── UI Preference Option 1 / Option 2 (4 Oct 2026). Option 1 is the live product's page and stays default. */
+let UIP_OPT = (() => { try { return localStorage.getItem('oo-uip-opt') || '1'; } catch (e) { return '1'; } })();
+function uipOptSet(o){ UIP_OPT = o; try { localStorage.setItem('oo-uip-opt', o); } catch (e) {} UIP = null; UIP3 = null; stMainPaint(); }
+function uipOptHTML(){
+  return `<div class="uipop">Design <span class="uipseg">${['1','2','3','4'].map(o => `<button type="button" class="${UIP_OPT === o ? 'on' : ''}" onclick="uipOptSet('${o}')">Option ${o}</button>`).join('')}</span></div>`;
+}
+/* the date format, rendered — so the dropdown shows what you will SEE, not a token string */
+function uipFmtDate(fmt, d){
+  const D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p = n => String(n).padStart(2, '0'), h12 = d.getHours() % 12 || 12;
+  const T = { ddd: D[d.getDay()], MMM: M[d.getMonth()], MM: p(d.getMonth() + 1), DD: p(d.getDate()), yyyy: d.getFullYear(), YYYY: d.getFullYear(),
+    HH: p(d.getHours()), hh: p(h12), mm: p(d.getMinutes()), ss: p(d.getSeconds()), A: d.getHours() < 12 ? 'AM' : 'PM' };
+  return fmt.replace(/ddd|MMM|MM|DD|yyyy|YYYY|HH|hh|mm|ss|A/g, t => T[t]);
+}
+/* "now" in a "(GMT +05:30) Asia/Calcutta" zone, read off the offset the label carries */
+function uipNowIn(tz){
+  const m = /GMT ([+-])(\d\d):(\d\d)/.exec(tz); const n = new Date(); if (!m) return n;
+  const off = (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]);
+  return new Date(n.getTime() + (n.getTimezoneOffset() + off) * 60000);
+}
+const UIP2_CK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"/></svg>';
+/* Option 2, IMPROVED (4 Oct 2026): each group is its own card with an icon and a line saying what it governs;
+   the date-format list shows each format RENDERED, not as tokens; the time zone can follow the browser in one
+   press; and a "Saved" indicator in the header replaces a toast per change. */
+const UIP2_IC = {
+  app:'<svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg>',
+  time:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/></svg>',
+  grid:'<svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>',
+  bell:'<svg viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>',
+  loc:'<svg viewBox="0 0 24 24"><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0"/><path d="M12 2l0 2"/><path d="M12 20l0 2"/><path d="M20 12l2 0"/><path d="M2 12l2 0"/></svg>'
+};
+function uip2Sec(ic, title, desc, body){
+  return `<section class="uip2s"><header><span class="si">${UIP2_IC[ic]}</span><div><b>${title}</b><small>${desc}</small></div></header>${body}</section>`;
+}
+function uip2HTML(){
+  if (!UIP || !UIP._keep) UIP = uipLoad(); delete UIP._keep;
+  const seg = m => { const b = document.querySelector('#userPop .tseg[data-mode="' + m + '"] svg'); return b ? b.outerHTML : ''; };
+  const card = (m, nm, d) => `<button type="button" class="uip2c${UIP.theme === m ? ' on' : ''}" data-m="${m}" aria-pressed="${UIP.theme === m}" onclick="uip2Theme('${m}')">
+      <span class="im"><img src="_settings-img/theme-${m}.jpg" alt="" width="600" height="375"><span class="ck">${UIP2_CK}</span></span>
+      <span class="nm">${seg(m)}<span>${nm}<small>${d}</small></span></span></button>`;
+  const now = uipNowIn(UIP.tz);
+  const fmtSel = `<span class="uipsel w"><select id="uipFmt" onchange="uip2Set('fmt',this.value)">${UIP_FMT.map(f => `<option value="${stEsc(f)}"${f === UIP.fmt ? ' selected' : ''}>${stEsc(uipFmtDate(f, now))}</option>`).join('')}</select>${UIP_CHEV}</span>`;
+  const tzSel = uipSel('uipTz', UIP_TZ, UIP.tz).replace(`onchange="uipSet('uipTz',this.value)"`, `onchange="uip2Set('tz',this.value)"`);
+  return `<div class="uip2" id="uipPage"><div class="uip2hd"><div><h2>Preferences</h2><div class="sub">How ObserveOps looks and reads for you, on this browser.</div></div>
+      <div class="uip2hr"><span class="uip2sv" id="uip2Sv">${UIP2_CK}<span>All changes saved</span></span>${uipOptHTML()}</div></div>
+    ${uip2Sec('app', 'Appearance', 'Pick a theme — it applies the moment you click it.',
+      `<div class="uip2th">${card('auto', 'System', 'Follows your OS')}${card('light', 'Light', 'Bright, high contrast')}${card('dark', 'Dark', 'Easy on the eyes')}</div>`)}
+    ${uip2Sec('time', 'Date &amp; time', 'Used by every chart axis, alert time and report in the product.',
+      `<div class="uip2r"><div><b>Date format</b><small>Pattern <code id="uip2Pat">${stEsc(UIP.fmt)}</code></small></div>${fmtSel}</div>
+       <div class="uip2r"><div><b>Time zone</b><small>It is <code id="uip2Tz">${stEsc(uipFmtDate('hh:mm A', now))}</code> there now.
+         <button type="button" class="uip2lk" onclick="uip2TzAuto()">${UIP2_IC.loc}Use my browser's time zone</button></small></div>${tzSel}</div>`)}
+    ${uip2Sec('grid', 'Data display', 'How much a grid shows at once.',
+      `<div class="uip2r"><div><b>Rows per page</b><small>More rows means less paging, and a longer scroll.</small></div>
+        <span class="uipseg uip2seg" role="group" aria-label="Rows per page">${UIP_ROWS.map(r => `<button type="button" class="${UIP.rows === r ? 'on' : ''}" onclick="uip2Set('rows','${r}')">${r}</button>`).join('')}</span></div>`)}
+    ${uip2Sec('bell', 'Alerts', 'How a new critical alert reaches you while you work.',
+      `<div class="uip2r"><div><b>Alert overlay</b><small>Show a critical alert over the screen you are on, the moment it arrives.</small></div>
+        <button type="button" class="stsw${UIP.overlay ? ' on' : ''}" role="switch" aria-checked="${UIP.overlay}" onclick="uipOverlay(this);uip2Saved()"><span class="lb">${UIP.overlay ? 'ON' : 'OFF'}</span></button></div>`)}
+    <div class="uip2foot"><span>Preferences follow you on this browser only.</span><button type="button" onclick="uip2Reset()">Reset to default</button></div></div>`;
+}
+function uip2Store(){ const { theme, _keep, ...rest } = UIP; try { localStorage.setItem('oo-ui-pref', JSON.stringify(rest)); } catch (e) {} }
+/* the header indicator flashes "Saved just now", then settles back — one quiet signal instead of a toast per click */
+let uip2SvT = 0;
+function uip2Saved(){
+  uip2Store();
+  const sv = document.getElementById('uip2Sv'); if (!sv) return;
+  sv.classList.remove('flash'); void sv.offsetWidth; sv.classList.add('flash'); sv.lastElementChild.textContent = 'Saved just now';
+  clearTimeout(uip2SvT); uip2SvT = setTimeout(() => { const e = document.getElementById('uip2Sv'); if (e) { e.classList.remove('flash'); e.lastElementChild.textContent = 'All changes saved'; } }, 2200);
+}
+function uip2Set(k, v){
+  UIP[k] = v; uip2Saved();
+  if (k === 'rows') document.querySelectorAll('.uip2seg button').forEach(b => b.classList.toggle('on', b.textContent === v));
+  const now = uipNowIn(UIP.tz), pat = document.getElementById('uip2Pat'), tz = document.getElementById('uip2Tz');
+  if (pat) pat.textContent = UIP.fmt; if (tz) tz.textContent = uipFmtDate('hh:mm A', now);
+  const fs = document.getElementById('uipFmt'); if (fs) [...fs.options].forEach(o => o.textContent = uipFmtDate(o.value, now));
+}
+/* the browser's own offset, matched to the nearest zone in the list */
+function uip2TzAuto(){
+  const off = -new Date().getTimezoneOffset();
+  const best = UIP_TZ.map(z => { const m = /GMT ([+-])(\d\d):(\d\d)/.exec(z); return [z, m ? (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]) : 0]; })
+    .sort((a, b) => Math.abs(a[1] - off) - Math.abs(b[1] - off))[0][0];
+  const sel = document.getElementById('uipTz'); if (sel) sel.value = best;
+  uip2Set('tz', best);
+}
+function uip2Theme(m){
+  UIP.theme = m;
+  document.querySelectorAll('.uip2c').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  if (typeof setTheme === 'function') setTheme(m);
+  uip2Saved();
+}
+function uip2Reset(){ UIP = Object.assign({}, UIP_DEF, { _keep: 1 }); uip2Store(); if (typeof setTheme === 'function') setTheme(UIP.theme); stMainPaint(); uip2Saved(); }
+
+/* ── UI Preference Option 3 — controls + live preview, applied on Save changes ─────────────────────────────── */
+let UIP3 = null, UIP3_SAVED = null;
+function uip3Dirty(){ return !!UIP3_SAVED && ['fmt','tz','rows','overlay','theme'].some(k => UIP3[k] !== UIP3_SAVED[k]); }
+function uip3Mode(){ const m = UIP3.theme; return m === 'auto' ? ((window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark') : m; }
+const UIP3_ROWS = [['#f2504b','Critical','core-router-01'],['#fb923c','Major','esxi-host-07'],['#eab308','Warning','web-lb-02'],['#22c55e','Clear','db-primary']];
+function uip3PreviewHTML(){
+  /* REAL (request, 4 Oct 2026: "it was not real like the dashboard"): the preview is the product's own Application
+     Performance board — the SAME widget objects (BOARDS[...]) drawn by the SAME renderers the canvas uses (wBody →
+     wHoney / wDonuts / wPie / wHBars), inside the same .widget / .whead / .wbody markup — laid out at a real 1400px
+     and scaled down to fit (uip3Fit). The theme is a scoped copy of the page's own dark / light token blocks
+     (uip3Tokens), so the preview can be light while the page is dark. Header stamps and the timeline follow the
+     date format and zone being tried. */
+  uip3Tokens();
+  const now = uipNowIn(UIP3.tz), mode = uip3Mode(), mid = new Date(now); mid.setHours(0, 0, 0, 0);
+  let ws = [];
+  try { ws = (BOARDS['Application Performance'].widgets[0] || []).filter(w => w.t !== 'table'); } catch (e) {}
+  const cards = ws.map(w => {
+    const dims = `grid-column:span ${w.span || 4};${w.rows ? 'grid-row:span ' + w.rows : 'height:' + (w.h || 190) + 'px'}`;
+    let body = ''; try { body = wBody(w, 0, 0); } catch (e) {}
+    return `<div class="widget" style="${dims}"><div class="whead">${w.title}</div><div class="wbody">${body}</div></div>`;
+  }).join('');
+  let rail = ''; try { rail = ['dashboard','navbar-monitor','alert','topology','log','apm','report','setting'].map(n => ico(n)).filter(Boolean).map(x => `<span>${x}</span>`).join(''); } catch (e) {}
+  const ticks = Array.from({ length: 11 }, (_, k) => `<span>${stEsc(uipFmtDate('MM/DD', new Date(now.getTime() - (10 - k) * 0.4 * 86400000)))}</span>`).join('');
+  return `<div class="pvfit" id="uip3Fit"><div class="pvreal ${mode === 'light' ? 'pvlt' : 'pvdk'}" id="uip3Pv">
+      <div class="pvrr"><div class="pvlogo"></div>${rail}</div>
+      <div class="pvrm">
+        <div class="pvrh"><span class="pvrt">${(() => { try { return ico('dashboard'); } catch (e) { return ''; } })()}Application Performance <em>☆</em></span>
+          <span class="pvrc"><b>today</b>Today</span><span class="pvrs">${stEsc(uipFmtDate(UIP3.fmt, mid))}<br>${stEsc(uipFmtDate(UIP3.fmt, now))}</span></div>
+        <div class="pvrtl"><i></i><div>${ticks}</div></div>
+        <div class="dgrid12 pvrg12">${cards}</div>
+      </div>
+      <div class="pvov${UIP3.overlay ? ' on' : ''}"><b><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></svg>Critical · fg-firewall.example.com</b><small>CPU above 95% for 5 minutes · ${stEsc(uipFmtDate(UIP3.fmt, now))}</small></div>
+    </div></div>`;   /* the "Grids show N rows per page" caption was removed on request (4 Oct 2026) */
+}
+/* copy the page's own token blocks into two classes the preview can wear — once */
+function uip3Tokens(){
+  if (document.getElementById('uip3TokCss')) return;
+  const dk = [], lt = [];
+  for (const sh of document.styleSheets) { let rs; try { rs = sh.cssRules; } catch (e) { continue; }
+    for (const r of rs) { if (!r.style || !r.selectorText) continue;
+      const sel = r.selectorText.trim(), bag = sel === ':root' ? dk : sel === 'html[data-theme="light"]' ? lt : null; if (!bag) continue;
+      for (let k = 0; k < r.style.length; k++) { const p = r.style[k]; if (p.startsWith('--')) bag.push(p + ':' + r.style.getPropertyValue(p).trim()); } } }
+  const st = document.createElement('style'); st.id = 'uip3TokCss';
+  st.textContent = `.pvreal.pvdk{${dk.join(';')}}.pvreal.pvlt{${dk.join(';')};${lt.join(';')}}`;
+  document.head.appendChild(st);
+}
+/* lay the board out at its real width, then scale it to the stage */
+function uip3Fit(){
+  const f = document.getElementById('uip3Fit'), p = document.getElementById('uip3Pv'); if (!f || !p) return;
+  const sc = f.clientWidth / 1400; p.style.transform = 'scale(' + sc + ')'; f.style.height = Math.ceil(p.offsetHeight * sc) + 'px';
+}
+if (typeof ResizeObserver === 'function' && !window.__uip3RO) { window.__uip3RO = new ResizeObserver(() => uip3Fit());
+  new MutationObserver(() => { const f = document.getElementById('uip3Fit'); if (f && !f.__ro) { f.__ro = 1; window.__uip3RO.observe(f); } uip3Fit(); })
+    .observe(document.body, { childList: true, subtree: true }); }
+function uip3HTML(){
+  if (!UIP3 || !UIP3._keep) { UIP3 = uipLoad(); UIP3_SAVED = Object.assign({}, UIP3); } delete UIP3._keep;
+  const seg = m => { const b = document.querySelector('#userPop .tseg[data-mode="' + m + '"] svg'); return b ? b.outerHTML : ''; };
+  const now = uipNowIn(UIP3.tz);
+  return `<div class="uip3">${uipOptHTML()}<div class="uip3b">
+    <div class="uip3l"><div><h2>Preferences</h2><div class="sub">Try a change on the right before you keep it.</div></div>
+      <div class="uip3f"><label>Theme</label><div class="uip3th">${[['auto','System'],['light','Light'],['dark','Dark']].map(([m, t]) =>
+        `<button type="button" data-m="${m}" class="${UIP3.theme === m ? 'on' : ''}" onclick="uip3Set('theme','${m}')">${seg(m)}${t}</button>`).join('')}</div>
+        <div class="hint" id="uip3ThH">${UIP3.theme === 'auto' ? 'Following your system — ' + uip3Mode() + ' right now.' : ''}</div></div>
+      <div class="uip3f"><label for="uipFmt">Date format</label><span class="uipsel"><select id="uipFmt" onchange="uip3Set('fmt',this.value)">${UIP_FMT.map(f =>
+        `<option value="${stEsc(f)}"${f === UIP3.fmt ? ' selected' : ''}>${stEsc(uipFmtDate(f, now))}</option>`).join('')}</select>${UIP_CHEV}</span></div>
+      <div class="uip3f"><label for="uipTz">Time zone</label>${uipSel('uipTz', UIP_TZ, UIP3.tz).replace(`onchange="uipSet('uipTz',this.value)"`, `onchange="uip3Set('tz',this.value)"`)}
+        <button type="button" class="uip3lk" onclick="uip3TzAuto()">${UIP2_IC.loc}Use my browser's time zone</button></div>
+      <div class="uip3f"><label>Rows per page</label><span class="uipseg uip3rows" role="group" aria-label="Rows per page">${UIP_ROWS.map(r =>
+        `<button type="button" class="${UIP3.rows === r ? 'on' : ''}" onclick="uip3Set('rows','${r}')">${r}</button>`).join('')}</span></div>
+      <div class="uip3sw"><div><b>Alert overlay</b><small>Pop critical alerts over any screen.</small></div>
+        <button type="button" class="stsw${UIP3.overlay ? ' on' : ''}" role="switch" aria-checked="${UIP3.overlay}" onclick="uip3Set('overlay',!UIP3.overlay)"><span class="lb">${UIP3.overlay ? 'ON' : 'OFF'}</span></button></div>
+    </div>
+    <div class="uip3r"><div class="uip3rh"><span class="dot"></span><b>Live preview</b><span>Nothing changes until you save</span></div><div id="uip3Stage" style="flex:1 1 auto;min-height:0;overflow:auto">${uip3PreviewHTML()}</div></div>
+  </div>
+  <div class="uip3ft"><span class="ch" id="uip3Ch">${uip3Dirty() ? '<i></i>Unsaved changes' : 'All changes saved'}</span>
+    <button type="button" class="stbtn" onclick="uip3Reset()">Reset to default</button>
+    <button type="button" class="stbtn" id="uip3Ds" onclick="uip3Discard()"${uip3Dirty() ? '' : ' disabled'}>Discard</button>
+    <button type="button" class="stbtn pri" id="uip3Sv" onclick="uip3Save()"${uip3Dirty() ? '' : ' disabled'}>Save changes</button></div></div>`;
+}
+/* a change repaints the PREVIEW and the footer only — never the controls, so a select keeps its focus */
+function uip3Set(k, v){
+  UIP3[k] = v;
+  if (k === 'theme') { document.querySelectorAll('.uip3th button').forEach(b => b.classList.toggle('on', b.dataset.m === v));
+    const h = document.getElementById('uip3ThH'); if (h) h.textContent = v === 'auto' ? 'Following your system — ' + uip3Mode() + ' right now.' : ''; }
+  if (k === 'rows') document.querySelectorAll('.uip3rows button').forEach(b => b.classList.toggle('on', b.textContent === v));
+  if (k === 'overlay') { const b = document.querySelector('.uip3sw .stsw'); if (b) { b.classList.toggle('on', v); b.setAttribute('aria-checked', v); b.querySelector('.lb').textContent = v ? 'ON' : 'OFF'; } }
+  if (k === 'tz') { const fs = document.getElementById('uipFmt'), now = uipNowIn(v); if (fs) [...fs.options].forEach(o => o.textContent = uipFmtDate(o.value, now)); }
+  const st = document.getElementById('uip3Stage'); if (st) { st.innerHTML = uip3PreviewHTML(); uip3Fit(); }
+  uip3Foot();
+}
+function uip3Foot(){
+  const d = uip3Dirty(), ch = document.getElementById('uip3Ch');
+  if (ch) ch.innerHTML = d ? '<i></i>Unsaved changes' : 'All changes saved';
+  ['uip3Ds','uip3Sv'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = !d; });
+}
+function uip3TzAuto(){
+  const off = -new Date().getTimezoneOffset();
+  const best = UIP_TZ.map(z => { const m = /GMT ([+-])(\d\d):(\d\d)/.exec(z); return [z, m ? (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]) : 0]; })
+    .sort((a, b) => Math.abs(a[1] - off) - Math.abs(b[1] - off))[0][0];
+  const sel = document.getElementById('uipTz'); if (sel) sel.value = best; uip3Set('tz', best);
+}
+function uip3Save(){
+  const { theme, _keep, ...rest } = UIP3;
+  try { localStorage.setItem('oo-ui-pref', JSON.stringify(rest)); } catch (e) {}
+  if (typeof setTheme === 'function') setTheme(theme);
+  UIP3_SAVED = Object.assign({}, UIP3); uip3Foot();
+  if (typeof toast === 'function') toast('Preferences saved');
+}
+function uip3Discard(){ UIP3 = Object.assign({}, UIP3_SAVED, { _keep: 1 }); stMainPaint(); }
+function uip3Reset(){ const saved = UIP3_SAVED; UIP3 = Object.assign({}, UIP_DEF, { _keep: 1 }); stMainPaint(); UIP3_SAVED = saved; uip3Foot(); }
+
+/* ── UI Preference Option 4 — simple: one line per setting, saves itself, says so on that line ─────────────────── */
+const UIP4_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"/></svg>';
+function uip4HTML(){
+  /* RECREATED on the ObserveOps design system (request, 4 Oct 2026). The DS's own recipe for this screen is
+     `form-view`: an obs-page-header, then FlotoFormItems laid out vertical on a 2-column MRow (16px gutter), the
+     one-of-few choices as obs-radio, selects as obs-select, the toggle as obs-switch, and a Save / Reset footer
+     (obs-button primary + default). Nothing here is hand-built except the grid and the theme picture, which is
+     the product's own preview image. #uipPage is in the scoped DS token block so the components theme correctly. */
+  if (!UIP || !UIP._keep) { UIP = uipLoad(); UIP4_SAVED = Object.assign({}, UIP); } delete UIP._keep;
+  const now = uipNowIn(UIP.tz), J = v => stEsc(JSON.stringify(v));
+  const themeOpts = [{ value:'auto', label:'Browser Default (Auto)' }, { value:'light', label:'Light' }, { value:'dark', label:'Dark' }];
+  /* obs-select reads a comma in its value as a LIST separator, and the patterns are full of commas — so the option values are indices */
+  const fmtOpts = UIP_FMT.map((f, k) => ({ value: 'f' + k, label: uipFmtDate(f, now) }));
+  const tzOpts = UIP_TZ.map(z => ({ value: z, label: z }));
+  const rowOpts = UIP_ROWS.map(r => ({ value: r, label: r }));
+  const item = (label, ctrl, help, full) => `<div class="uip4i${full ? ' full' : ''}"><label>${label}</label>${ctrl}${help ? `<div class="uip4h">${help}</div>` : ''}</div>`;
+  return `<div class="uip4" id="uipPage">${uipOptHTML()}
+    <obs-page-header heading="Display preferences" no-divider></obs-page-header>
+    <p class="uip4d">Choose how ObserveOps looks and reads for you on this browser.</p>
+    <div class="uip4g">
+      ${item('Select Theme', `<obs-radio id="uip4Th" as-button options="${J(themeOpts)}"></obs-radio>
+          <div class="uip4pv" role="group" aria-label="Theme previews">${['auto','light','dark'].map(m => `<button type="button" data-m="${m}" class="${UIP.theme === m ? 'on' : ''}" aria-pressed="${UIP.theme === m}" aria-label="${m} theme" onclick="uip4Pick('${m}')"><img src="_settings-img/theme-${m}.jpg" alt="" width="600" height="375"></button>`).join('')}</div>`, '', true)}
+      ${item('Default Date Format', `<obs-select class="agadvsel" id="uip4Fmt" options="${J(fmtOpts)}" value="f${Math.max(0, UIP_FMT.indexOf(UIP.fmt))}"></obs-select>`, 'Pattern: <code id="uip4Pat">' + stEsc(UIP.fmt) + '</code>')}
+      ${item('Time Zone', `<obs-select class="agadvsel" id="uip4Tz" options="${J(tzOpts)}" value="${stEsc(UIP.tz)}"></obs-select>`, 'It is <code id="uip4Now">' + stEsc(uipFmtDate('hh:mm A', now)) + '</code> there now.')}
+      ${item('Default number of items to show in Grid', `<obs-radio id="uip4Rows" as-button options="${J(rowOpts)}"></obs-radio>`)}
+      ${item('Alert Overlay', `<div class="uip4sw"><obs-switch id="uip4Ov" ${UIP.overlay ? 'checked' : ''} checked-text="ON" unchecked-text="OFF"></obs-switch><span>Show a critical alert over any screen the moment it arrives.</span></div>`)}
+    </div>
+    <obs-divider></obs-divider>
+    <div class="uip4f"><span class="uip4st" id="uip4St"></span>
+      <obs-button variant="default" id="uip4Reset">Reset to default</obs-button>
+      <obs-button variant="primary" id="uip4Save">Save</obs-button></div></div>`;
+}
+let UIP4_SAVED = null;
+const uip4Tap = (() => { let last = 0; return fn => { const t = Date.now(); if (t - last < 60) return; last = t; fn(); }; })();   /* obs-button fires its onclick twice */
+function uip4Dirty(){ return !!UIP4_SAVED && ['fmt','tz','rows','overlay','theme'].some(k => String(UIP[k]) !== String(UIP4_SAVED[k])); }
+function uip4Paint(){
+  const st = document.getElementById('uip4St'); if (st) st.textContent = uip4Dirty() ? 'Unsaved changes' : 'All changes saved';
+  const sv = document.getElementById('uip4Save'); if (sv) { if (uip4Dirty()) sv.removeAttribute('disabled'); else sv.setAttribute('disabled', ''); }
+}
+function uip4After(){
+  if (UIP_OPT !== '4') return;
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('change', fn); };
+  const th = document.getElementById('uip4Th'), rw = document.getElementById('uip4Rows');
+  if (th) th.value = String(UIP.theme); if (rw) rw.value = String(UIP.rows);   /* obs-radio selects by PROPERTY, as a string */
+  on('uip4Th', e => uip4Pick(ipmVal(e) || UIP.theme, true));
+  on('uip4Fmt', e => { const v = ipmVal(e); UIP.fmt = UIP_FMT[+String(v).slice(1)] || UIP.fmt; const p = document.getElementById('uip4Pat'); if (p) p.textContent = UIP.fmt; uip4Paint(); });
+  on('uip4Tz', e => { UIP.tz = ipmVal(e) || UIP.tz; const n = document.getElementById('uip4Now'); if (n) n.textContent = uipFmtDate('hh:mm A', uipNowIn(UIP.tz)); uip4Paint(); });
+  on('uip4Rows', e => { UIP.rows = ipmVal(e) || UIP.rows; uip4Paint(); });
+  on('uip4Ov', e => { UIP.overlay = ipmDet(e) !== false && !!ipmDet(e); uip4Paint(); });
+  const sv = document.getElementById('uip4Save'), rs = document.getElementById('uip4Reset');
+  if (sv) sv.addEventListener('click', () => uip4Tap(uip4Save));
+  if (rs) rs.addEventListener('click', () => uip4Tap(uip4Reset));
+  uip4Paint();
+}
+/* the three pictures and the segmented control are ONE choice: picking either lights both (as on the live page) */
+function uip4Pick(m, fromRadio){
+  UIP.theme = m;
+  document.querySelectorAll('.uip4pv button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  if (!fromRadio) { const th = document.getElementById('uip4Th'); if (th) th.value = m; }
+  uip4Paint();
+}
+function uip4Save(){
+  if (!uip4Dirty()) return;
+  uip2Store(); if (typeof setTheme === 'function') setTheme(UIP.theme);
+  UIP4_SAVED = Object.assign({}, UIP); uip4Paint();
+  if (typeof toast === 'function') toast('UI preferences saved');
+}
+const uip4T = {};
+function uip4Set(k, v){
+  UIP[k] = v;
+  if (k === 'theme') { document.querySelectorAll('.uip4th button').forEach(b => { const on = b.dataset.m === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); if (typeof setTheme === 'function') setTheme(v); }
+  if (k === 'rows') document.querySelectorAll('.uip4l .uipseg button').forEach(b => b.classList.toggle('on', b.textContent === v));
+  if (k === 'overlay') { const b = document.querySelector('.uip4 .stsw'); if (b) { b.classList.toggle('on', v); b.setAttribute('aria-checked', v); b.querySelector('.lb').textContent = v ? 'ON' : 'OFF'; } }
+  if (k === 'tz') { const fs = document.getElementById('uipFmt'), now = uipNowIn(v); if (fs) [...fs.options].forEach(o => o.textContent = uipFmtDate(o.value, now)); }
+  uip2Store();
+  const ok = document.getElementById('uip4Ok-' + k); if (ok) { ok.classList.add('on'); clearTimeout(uip4T[k]); uip4T[k] = setTimeout(() => ok.classList.remove('on'), 1800); }
+}
+function uip4TzAuto(){   /* kept: the old "Use mine" link, now the switch's job */
+  const off = -new Date().getTimezoneOffset();
+  const best = UIP_TZ.map(z => { const m = /GMT ([+-])(\d\d):(\d\d)/.exec(z); return [z, m ? (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]) : 0]; })
+    .sort((a, b) => Math.abs(a[1] - off) - Math.abs(b[1] - off))[0][0];
+  const sel = document.getElementById('uipTz'); if (sel) sel.value = best; uip4Set('tz', best);
+}
+function uip4Reset(){ const sv = UIP4_SAVED; UIP = Object.assign({}, UIP_DEF, { _keep: 1 }); stMainPaint(); UIP4_SAVED = sv; uip4Paint(); }
+ST_PAGES['My Account › UI Preference'] = { html: () => UIP_OPT === '4' ? uip4HTML() : UIP_OPT === '3' ? uip3HTML() : UIP_OPT === '2' ? uip2HTML() : uipHTML(), after: uip4After };
+
 
 
 /* ══════ BOOT — setting.html opens on Settings, and leaves for everything else ══════
