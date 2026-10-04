@@ -2551,5 +2551,8 @@ html body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-dtrank) { padding: 0; 
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -6px; }
 .ip-dtgc .fa-viz { width: 100%; }""")
 
+# ── §88 · Discover device carries no icon (request, 5 Oct 2026: "remove this icon") ──
+t = t.replace('''<obs-button variant="primary" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="16"></obs-icon>&nbsp;Discover device</obs-button>''', '''<obs-button variant="primary" id="ipDiscoverDevice">Discover device</obs-button>''')
+
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)
