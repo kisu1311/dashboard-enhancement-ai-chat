@@ -16291,6 +16291,17 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
    pair stacks again (Preferences above, Password below). */
 #stProfPage .stpdpair{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;row-gap:36px;margin-top:36px}
 #stProfPage .stpdpair.pwon{grid-template-columns:1fr}
+
+/* the Schedule drawer, matched to the live product (5 Oct 2026): rows 16px apart and the type control 20px above them;
+   Days, Months and Dates each a full-width dropdown row; Start Date | Hours two equal halves of the drawer;
+   Schedule · Reset at the footer's right */
+.dpsch{display:flex;flex-direction:column;gap:16px}
+.dpsch > .dpfi:first-child{margin-bottom:4px}
+.dpsch .dpfr{margin:0}
+.dpsch .dpfr.dpsch2{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.dpsch .dpfi > .dplab{margin-bottom:6px}
+.dpsch .dpck{margin-top:4px}
+.stcdrf .dpsfgo{margin-left:auto}
 </style>
 </head>
 <body>
@@ -41448,7 +41459,7 @@ function stcPick(anchor, o){
       const on = o.multi ? st.sel.includes(it.k) : st.sel === it.k;
       return `<div class="stcmi${o.multi?' ck':''}${on?' on':''}" data-k="${stcEsc(String(it.k))}">${o.multi ? `<span class="bx">${stcSvg('check')}</span>` : ''}<span style="overflow:hidden;text-overflow:ellipsis">${stcEsc(it.t)}</span>${it.sub?`<span style="margin-left:auto;color:var(--text-dim);font-size:11px">${stcEsc(it.sub)}</span>`:''}</div>`;
     }).join('') : `<div class="stcmi hd">No match</div>`;
-    const foot = o.live ? '' : o.multi ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Apply</button></div>` : (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '');
+    const foot = o.live ? (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '') : o.multi ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Apply</button></div>` : (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '');
     el.innerHTML = (o.title ? `<div class="stcmi hd">${stcEsc(o.title)}</div>` : '') + ops + search + `<div class="stcml">${list}</div>` + foot;
     el.querySelectorAll('.stcmi[data-k]').forEach(m => m.onclick = () => {
       const k = o.items.find(it => String(it.k) === m.dataset.k).k;
@@ -42477,6 +42488,7 @@ function dpSchedule(id){
 }
 function dpSfPaint(open){
   const S = DP.sf, E = S.err;
+  S.days = S.days.map(d => DP_SF_DAYS.find(x => x.startsWith(d)) || d);   /* older schedules stored Mon…Sun */
   /* IPAM seed routers use this same form (request, 2 Oct 2026: "change the scheduler flow" to the Schedule Discovery drawer) */
   const r = S.dh ? { n: (IPM_DHCP.find(x => x.id === S.dh) || {}).name || '' } : S.ipm ? { n: (IPM_ROUTERS.find(x => x.id === S.ipm) || {}).name || '' } : DP.rows.find(x => x.id === S.id);
   const seg = (k, opts, cur) => `<div class="dpseg">${opts.map(o => `<button type="button" class="${cur===o?'on':''}" onclick="DP.sf.${k}=${stA(o)};dpSfPaint()">${o}</button>`).join('')}</div>`;
@@ -42484,25 +42496,31 @@ function dpSfPaint(open){
   const sel = (txt, ph, on) => `<div class="dpsel" onclick="${on}"><span class="v${txt?'':' ph'}">${txt ? dpEsc(txt) : ph}</span>${stcSvg('chevron-down','car')}</div>`;
   const body = `<div class="dpsch">
     ${fi('type', 'Scheduler Type', 1, seg('type', ['Once','Daily','Weekly','Monthly'], S.type))}
-    ${S.type === 'Weekly' ? fi('days', 'Days', 1, `<div class="dpseg">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<button type="button" class="${S.days.includes(d)?'on':''}" onclick="dpSfTog('days',${stA(d)})">${d}</button>`).join('')}</div>`) : ''}
-    ${S.type === 'Monthly' ? `<div class="dpfr">${fi('months', 'Months', 1, sel(S.months.join(', '), 'Select', "dpSfPick(event,'months')"))}${fi('dates', 'Dates', 1, sel(S.dates.join(', '), 'Select', "dpSfPick(event,'dates')"))}</div>` : ''}
-    <div class="dpfr">
+    ${S.type === 'Weekly' ? fi('days', 'Days', 1, sel(S.days.join(', '), 'Select', "dpSfPick(event,'days')")) : ''}
+    ${S.type === 'Monthly' ? fi('months', 'Months', 1, sel(S.months.join(', '), 'Select', "dpSfPick(event,'months')")) + fi('dates', 'Dates', 1, sel(S.dates.join(', '), 'Select', "dpSfPick(event,'dates')")) : ''}
+    <div class="dpfr dpsch2">
       ${fi('date', 'Start Date', 1, `<input class="dpin" type="date" value="${S.date}" oninput="DP.sf.date=this.value">`)}
-      ${fi('hour', 'Hours', 1, sel(S.hour, '00:00', "dpSfPick(event,'hour')"))}
+      ${fi('hour', 'Hours', 1, sel(S.hour, 'Select', "dpSfPick(event,'hour')"))}
     </div>
     ${fi('notify', 'Notify', 0, `<div class="dpnot"><input class="dpin" placeholder="@User or Email or /Handle or #User Profile or Mobile Number" value="${dpEsc(S.notify)}" oninput="DP.sf.notify=this.value"><a class="dpbcc" onclick="DP.sf.showBcc=!DP.sf.showBcc;dpSfPaint()">+ Bcc</a></div>`)}
     ${S.showBcc ? fi('bcc', 'Bcc', 0, `<input class="dpin" placeholder="Email" value="${dpEsc(S.bcc)}" oninput="DP.sf.bcc=this.value">`) : ''}
     ${S.dh ? '' : `<label class="dpck"><span class="stcck${S.auto?' on':''}" onclick="DP.sf.auto=!DP.sf.auto;this.classList.toggle('on')">${stcSvg('check')}</span>Auto Provision</label>`}
   </div>`;
-  const foot = `<button class="stbtn pri" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="${S.dh ? `ipmDhSchedule(${stA(S.dh)})` : S.ipm ? `ipmDpSchedule(${stA(S.ipm)}, ${stA(S.sid || '')})` : `dpSchedule(${S.id})`}">Reset</button>`;
+  const foot = `<button class="stbtn pri dpsfgo" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="${S.dh ? `ipmDhSchedule(${stA(S.dh)})` : S.ipm ? `ipmDpSchedule(${stA(S.ipm)}, ${stA(S.sid || '')})` : `dpSchedule(${S.id})`}">Reset</button>`;
   if (open) stcDrOpen(S.dh ? `${r.n} Schedule Sync` : `${r.n} Schedule Discovery`, body, foot); else document.getElementById('stcDrB').innerHTML = body;
 }
+const DP_SF_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 function dpSfTog(k, v){ const a = DP.sf[k], i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); dpSfPaint(); }
 function dpSfPick(ev, k){
   const S = DP.sf;
   if (k === 'hour') return stcPick(ev.currentTarget, {items: DP_HOURS.map(h => ({k:h, t:h})), cur:S.hour, onPick:v => { S.hour = v; dpSfPaint(); }, matchWidth:true, width:200});
-  const items = k === 'months' ? DP_MONTHS : Array.from({length:31}, (_, i) => String(i + 1));
-  stcPick(ev.currentTarget, {items: items.map(t => ({k:t, t})), cur:S[k], multi:true, search:false, onPick:sel => { S[k] = items.filter(t => sel.includes(t)); dpSfPaint(); }, matchWidth:true, width:220});
+  const items = k === 'days' ? DP_SF_DAYS : k === 'months' ? DP_MONTHS : Array.from({length:31}, (_, i) => String(i + 1));
+  /* the live product's picker: a search box, ticks that apply at once, and Clear — no Apply (5 Oct 2026) */
+  const anc = ev.currentTarget;
+  stcPick(anc, {items: items.map(t => ({k:t, t})), cur:S[k], multi:true, live:true, clear:true, search:true, onPick:sel => {
+    S[k] = items.filter(t => sel.includes(t)); const v = anc.querySelector('.v');
+    if (v){ v.textContent = S[k].length ? S[k].join(', ') : 'Select'; v.classList.toggle('ph', !S[k].length); }
+    if (S.err[k] && S[k].length){ delete S.err[k]; const f = anc.closest('.dpfi'); if (f) f.classList.remove('err'); } }, matchWidth:true, width:220});
 }
 function dpSfSubmit(){
   const S = DP.sf; S.err = {};
@@ -42965,7 +42983,7 @@ const ipmSubnetTags = r => {
 const IPM_ROUTER_TAG = { ok: ['Polling', 'tag-green'], stale: ['Stale', 'tag-yellow'], failed: ['Failed', 'tag-red'] };
 
 const IPM = {
-  q: '', tab: 'profiles', flash: null,
+  q: '', tab: 'discovery', flash: null,
   ar: null,          /* the Add IP Address Discovery panel's draft */
   fm: null,          /* { kind, id, data } — Add/Edit Rule, Add/Edit Vendor */
   cf: null,          /* the pending confirm's onOk */
@@ -43033,7 +43051,8 @@ const ipmTable = (empty, extra, cls) => `<obs-table id="ipmTbl" class="ipmfill${
 /* ── 1 · IP Address Discovery ─────────────────────────────────────────────────────────────── */
 /* tabs (request, 5 Oct 2026): a new first tab, Discovery Profile — the Settings › Discovery Settings › Discovery Profile
    list itself, so both doors show one set of profiles — and the seed-router grid renamed Discover Subnet */
-const IPM_ROUTERS_TABS = [{ key: 'profiles', label: 'Discovery Profile' }, { key: 'discovery', label: 'Discover Subnet' }, { key: 'approval', label: 'Subnet Approval' }];
+/* the Discovery Profile tab was REMOVED again (request, 5 Oct 2026); its body branch in ipmRoutersBody is kept, unreferenced */
+const IPM_ROUTERS_TABS = [{ key: 'discovery', label: 'Discover Subnet' }, { key: 'approval', label: 'Subnet Approval' }];
 const IPM_ROUTER_MENU = [
   { key: 'test', label: 'Test credential', icon: 'testCredentials' },
   { key: 'edit', label: 'Edit', icon: 'pencil' },
