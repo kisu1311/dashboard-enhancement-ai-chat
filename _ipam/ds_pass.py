@@ -2554,5 +2554,36 @@ html body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-dtrank) { padding: 0; 
 # ── §88 · Discover device carries no icon (request, 5 Oct 2026: "remove this icon") ──
 t = t.replace('''<obs-button variant="primary" id="ipDiscoverDevice"><obs-icon name="network-discovery" size="16"></obs-icon>&nbsp;Discover device</obs-button>''', '''<obs-button variant="primary" id="ipDiscoverDevice">Discover device</obs-button>''')
 
+# ── §89 · IP Per Site (request, 5 Oct 2026) ──
+_v = "  const siteRows = s.bySite.slice().sort((a, b) => b.subnets - a.subnets).slice(0, 8).map(x =>\n    ({ name: x.site, pct: x.subnets, v: num(x.subnets) }));"
+assert t.count(_v) == 1, 'siteRows'
+t = t.replace(_v, _v + """
+  /* §89 · Top IP Per Site — the addresses IN USE at each site (counted from the site's own addresses), same
+     treemap as Site Count so the two read as a pair: one counts subnets, this one counts IPs */
+  const ipSiteRows = s.bySite.map(x => ({ name: x.site, n: x.used || 0 }))
+    .filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 8);""")
+_c = """    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Site Count',"""
+assert t.count(_c) == 1, 'row 2'
+t = t.replace(_c, """    <div class="ip-grid ip-ovgrid">
+      ${ovCard('Site Count',""")
+_c = """        : `<p class="ip-empty">No site in this filter</p>`)}
+
+      ${ovCard('Top Device Type',"""
+assert t.count(_c) == 1, 'site card tail'
+t = t.replace(_c, """        : `<p class="ip-empty">No site in this filter</p>`)}
+
+      ${ovCard('Top IP Per Site', ipSiteRows.length ? vizTreemap(ipSiteRows.map(r => ({ name: r.name, v: r.n, label: num(r.n) })), { h: 262, aspect: 1.8 })
+        : `<p class="ip-empty">No address in use in this filter</p>`)}
+
+      ${ovCard('Top Device Type',""")
+
+_a = "vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 })\n        : `<p class=\"ip-empty\">No site in this filter</p>`)}\n\n      ${ovCard('Top IP Per Site'"
+assert t.count(_a) == 1, 'site aspect'
+t = t.replace(_a, _a.replace('aspect: 2.9', 'aspect: 1.8'))   # Site Count is a third-width card now
+
+_s = '.ip-tmc b { font-size: 13px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }'
+assert t.count(_s) == 1, 'treemap name css'
+t = t.replace(_s, _s + '\n/* §89 · a tile too narrow for its name (Bengaluru DR beside Delhi Branch) used to break the word letter by letter; names\n   now break only at spaces, and a tile under 72px wide shows just its count — the full name is in its tooltip */\n.ip-tmc { container-type: inline-size; }\n.ip-tmc b { overflow-wrap: normal; word-break: keep-all; }\n@container (max-width: 72px) { .ip-tmc b { display: none; } }')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

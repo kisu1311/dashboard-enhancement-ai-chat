@@ -938,6 +938,11 @@ body .sn-kpis .ip-sdkb { margin-top: 10px; }
   padding: 8px; overflow: hidden; display: flex; flex-direction: column; gap: 2px;
   font-family: var(--numeric-font-family); color: var(--active-text-color); }
 .ip-tmc b { font-size: 13px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
+/* §89 · a tile too narrow for its name (Bengaluru DR beside Delhi Branch) used to break the word letter by letter; names
+   now break only at spaces, and a tile under 72px wide shows just its count — the full name is in its tooltip */
+.ip-tmc { container-type: inline-size; }
+.ip-tmc b { overflow-wrap: normal; word-break: keep-all; }
+@container (max-width: 72px) { .ip-tmc b { display: none; } }
 .ip-tmc span { font-size: 12px; opacity: .85; }
 .ip-ovgrid > .ip-card > obs-toolbar[variant="widget"] { --common-widget-bg: var(--code-tag-background-color); }
 @media (max-width: 1100px) { .ip-grid.ip-ovgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -17687,6 +17692,10 @@ function screenOverview() {
      coverage (a subnet count doesn't need a measured percentage to exist) */
   const siteRows = s.bySite.slice().sort((a, b) => b.subnets - a.subnets).slice(0, 8).map(x =>
     ({ name: x.site, pct: x.subnets, v: num(x.subnets) }));
+  /* §89 · Top IP Per Site — the addresses IN USE at each site (counted from the site's own addresses), same
+     treemap as Site Count so the two read as a pair: one counts subnets, this one counts IPs */
+  const ipSiteRows = s.bySite.map(x => ({ name: x.site, n: x.used || 0 }))
+    .filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 8);
 
   /* device-type mix — counted over every address this filter can see with a
      classified device behind it; addresses discovery never identified are
@@ -17734,9 +17743,12 @@ function screenOverview() {
 
     </div>
 
-    <div class="ip-grid ip-ovgrid ip-ov2">
-      ${ovCard('Site Count', siteRows.length ? vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 })
+    <div class="ip-grid ip-ovgrid">
+      ${ovCard('Site Count', siteRows.length ? vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 1.8 })
         : `<p class="ip-empty">No site in this filter</p>`)}
+
+      ${ovCard('Top IP Per Site', ipSiteRows.length ? vizTreemap(ipSiteRows.map(r => ({ name: r.name, v: r.n, label: num(r.n) })), { h: 262, aspect: 1.8 })
+        : `<p class="ip-empty">No address in use in this filter</p>`)}
 
       ${ovCard('Top Device Type', devTypeRows.length ? vizTopN(devTypeRows, { h: 220, product: true })
         : `<p class="ip-empty">No address in this filter has a classified device yet</p>`)}
