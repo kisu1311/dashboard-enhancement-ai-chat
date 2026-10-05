@@ -2585,5 +2585,70 @@ t = t.replace(_a, _a.replace('aspect: 2.9', 'aspect: 1.8'))   # Site Count is a 
 _s = '.ip-tmc b { font-size: 13px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }'
 assert t.count(_s) == 1, 'treemap name css'
 t = t.replace(_s, _s + '\n/* §89 · a tile too narrow for its name (Bengaluru DR beside Delhi Branch) used to break the word letter by letter; names\n   now break only at spaces, and a tile under 72px wide shows just its count — the full name is in its tooltip */\n.ip-tmc { container-type: inline-size; }\n.ip-tmc b { overflow-wrap: normal; word-break: keep-all; }\n@container (max-width: 72px) { .ip-tmc b { display: none; } }')
+# ── §90 · Site Count removed from the Overview (request, 5 Oct 2026) — Top IP Per Site and Top Device Type share the row ──
+_a = t.index("    <div class=\"ip-grid ip-ovgrid\">\n      ${ovCard('Site Count',")
+_b = t.index("      ${ovCard('Top IP Per Site'", _a)
+t = t[:_a] + "    <div class=\"ip-grid ip-ovgrid ip-ov2\">\n" + t[_b:]
+_c = "label: num(r.n) })), { h: 262, aspect: 1.8 })"
+assert t.count(_c) == 1, 'ip per site aspect'
+t = t.replace(_c, "label: num(r.n) })), { h: 262, aspect: 2.9 })")   # half-width card again
+# ── §91 · Option 4 gauge grid drawn like the product's own gauge widget (request, 5 Oct 2026, with the product's
+# "ui 1234567" gauge widget as the reference): a THICK three-quarter ring open at the foot (-135°→135°), the value as a
+# percentage in the ring's centre, the name under it with a dotted underline (its tooltip names the count). The value is
+# each type's SHARE of all classified devices — the honest percentage for this data — so the rings are short arcs.
+_g = """        center: ['50%', '80%'], size: '135%', startAngle: -90, endAngle: 90,"""
+assert t.count(_g) == 1, 'gauge pane'
+t = t.replace(_g, """        center: o.ring ? ['50%', '55%'] : ['50%', '80%'], size: o.ring ? '112%' : '135%',
+        startAngle: o.ring ? -135 : -90, endAngle: o.ring ? 135 : 90,""")
+_g = """          innerRadius: '68%', outerRadius: '100%', shape: 'arc', borderWidth: 0"""
+assert t.count(_g) == 1, 'gauge bg'
+t = t.replace(_g, """          innerRadius: o.ring ? '80%' : '68%', outerRadius: '100%', shape: 'arc', borderWidth: 0""")
+_g = """        solidgauge: {
+          innerRadius: '68%',"""
+assert t.count(_g) == 1, 'gauge inner'
+t = t.replace(_g, """        solidgauge: {
+          innerRadius: o.ring ? '80%' : '68%',""")
+_g = """                    tok('--primary-alt', '#111c2c') + '">{y}</span>' +"""
+assert t.count(_g) == 1, 'gauge value'
+t = t.replace(_g, """                    tok('--primary-alt', '#111c2c') + '">' + (o.ring ? '{y:.2f}%' : '{y}') + '</span>' +""")
+_c = """`<div class="ip-dtgc">${DSCharts.gauge(r.pct, { max: devTypeTotal || 1, h: 82, labelY: -14, fontSize: 14, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} (${dtShare(r.pct)}%)">${esc(r.name)}</span></div>`"""
+assert t.count(_c) == 1, 'gauge grid call'
+t = t.replace(_c, """`<div class="ip-dtgc">${DSCharts.gauge(devTypeTotal ? Math.round(r.pct / devTypeTotal * 10000) / 100 : 0, { max: 100, h: 104, ring: true, labelY: -10, fontSize: 13, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} devices">${esc(r.name)}</span></div>`""")
+_s = """.ip-dtgc > span { font-size: .72rem; color: var(--neutral-light); font-family: var(--chart-font-family);"""
+assert t.count(_s) == 1, 'gauge name css'
+t = t.replace(_s, """.ip-dtgc > span { font-size: .8rem; color: var(--page-text-color); text-decoration: underline dotted; text-underline-offset: 3px; padding-bottom: 4px; cursor: default; font-family: var(--chart-font-family);""")
+t = t.replace(".ip-dtgc > span { font-size: .8rem;", ".ip-dtgc > span { margin-top: -4px !important; font-size: .8rem;", 1)
+# ── §92 · KPI cards: Available before Transient again (request, 5 Oct 2026: "swap the card") — Used · Available ·
+# Transient · Reserved on BOTH rows (IP Details and the subnet detail), so the two rows keep one order. Reverses §63.
+_tr = "    { label: 'Transient', value: c.transient, color: statusVar('Transient') },\n"
+_av = "    { label: 'Available', value: c.available, color: statusVar('Available') },\n"
+assert t.count(_tr + _av) == 1, 'ip details kpi order'
+t = t.replace(_tr + _av, _av + _tr)
+_tr = "    ${dsSdKpi('Transient', num(c.transient), statusVar('Transient'), pct(c.transient), 'Transient', true)}\n"
+_av = "    ${dsSdKpi('Available', num(c.available), statusVar('Available'), pct(c.available), 'Available', true)}\n"
+assert t.count(_tr + _av) == 1, 'subnet detail kpi order'
+t = t.replace(_tr + _av, _av + _tr)
+O='/Users/kishanpatel/ObseverOps/observeops-icons/common/'
+import re
+ip=re.search(r' d="([^"]+)"',open(O+'network-connectivity/ip.svg').read()).group(1)
+lk=re.search(r' d="([^"]+)"',open(O+'security-access/locks.svg').read()).group(1)
+# ── §93 · IP Reserved gets an IP-family glyph (request, 5 Oct 2026: "improve this icon") ──
+# The other four cards wear the product's IP pins (total-ip / lease-ip / available-ip / transient-ip — a pin with its
+# status mark at the lower right); Reserved wore a bare lock-alt and read as a different family. The product ships no
+# reserved-ip, so it is COMPOSED from two product glyphs, both verbatim: common/network-connectivity/ip.svg with a
+# circle knocked out of its lower right (a mask, so the badge sits clear of the pin), and security-access/locks.svg
+# scaled into that corner — the same pin-plus-corner-mark shape the four siblings have. Nothing is drawn by hand.
+svg = ('<svg class="ip-resic" viewBox="0 0 48 48" width="26" height="26" aria-hidden="true"><defs><mask id="ipResMask">'
+       '<rect width="48" height="48" fill="#fff"/><circle cx="36.5" cy="36.5" r="13" fill="#000"/></mask></defs>'
+       '<path fill="currentColor" mask="url(#ipResMask)" d="' + ip + '"/>'
+       '<g transform="translate(26 25) scale(.44)"><path fill="currentColor" d="' + lk + '"/></g></svg>')
+_k = "const DS_SD_KPI_IC = {"
+assert t.count(_k) == 1, 'kpi ic'
+t = t.replace(_k, "const DS_RES_IC = '" + svg + "';\nconst dsKpiIc = n => n === 'Reserved' ? DS_RES_IC : `<obs-icon name=\"${DS_SD_KPI_IC[n] || 'ip'}\" size=\"26\"></obs-icon>`;\n" + _k)
+for a,b in [('<obs-icon name="${DS_SD_KPI_IC[label] || \'ip\'}" size="26"></obs-icon>', '${dsKpiIc(label)}'),
+            ('<obs-icon name="${DS_SD_KPI_IC[b.label === \'Total\' ? \'Total IP\' : b.label] || \'ip\'}" size="26"></obs-icon>', "${dsKpiIc(b.label === 'Total' ? 'Total IP' : b.label)}")]:
+    assert t.count(a) == 1, a; t = t.replace(a, b)
+_s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
+t = t.replace(_s, _s + "\n.ip-sdki .ip-resic { display: block; width: 26px; height: 26px; }", 1)
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

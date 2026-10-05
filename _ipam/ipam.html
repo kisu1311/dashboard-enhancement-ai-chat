@@ -853,10 +853,11 @@ html.ipembed .ip-content { padding-bottom: 56px; }
 .ip-ovgrid > .ip-card { grid-column: auto !important; box-sizing: border-box; height: 290px; display: flex; flex-direction: column; }
 .ip-ovgrid > .ip-card > .ip-card-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ip-sdki .ip-resic { display: block; width: 26px; height: 26px; }
 html body .ip-ovgrid > .ip-card > .ip-card-body:has(> .ip-dtrank) { padding: 0; }
 .ip-dtg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 8px; height: 100%; align-content: center; }
 .ip-dtgc { display: flex; flex-direction: column; align-items: center; min-width: 0; }
-.ip-dtgc > span { font-size: .72rem; color: var(--neutral-light); font-family: var(--chart-font-family);
+.ip-dtgc > span { margin-top: -4px !important; font-size: .8rem; color: var(--page-text-color); text-decoration: underline dotted; text-underline-offset: 3px; padding-bottom: 4px; cursor: default; font-family: var(--chart-font-family);
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -6px; }
 .ip-dtgc .fa-viz { width: 100%; }
 html body aside.ip-stackpanel .ip-sp-head.ip-sp-head2 { padding-left: 10px;
@@ -3032,10 +3033,11 @@ window.DSCharts = (function () {
       b.chart.spacing = [4, 4, 4, 4];
       b.legend.enabled = false;
       b.pane = {
-        center: ['50%', '80%'], size: '135%', startAngle: -90, endAngle: 90,
+        center: o.ring ? ['50%', '55%'] : ['50%', '80%'], size: o.ring ? '112%' : '135%',
+        startAngle: o.ring ? -135 : -90, endAngle: o.ring ? 135 : 90,
         background: {
           backgroundColor: tok('--neutral-lighter', '#e3e6ec'),
-          innerRadius: '68%', outerRadius: '100%', shape: 'arc', borderWidth: 0
+          innerRadius: o.ring ? '76%' : '68%', outerRadius: '100%', shape: 'arc', borderWidth: 0
         }
       };
       b.yAxis = {
@@ -3048,11 +3050,11 @@ window.DSCharts = (function () {
       };
       b.plotOptions = {
         solidgauge: {
-          innerRadius: '68%',
+          innerRadius: o.ring ? '76%' : '68%',
           dataLabels: {
             y: o.labelY != null ? o.labelY : -24, borderWidth: 0,
             format: '<div style="text-align:center"><span style="font-size:' + (o.fontSize || 20) + 'px;font-weight:500;font-family:' + tok('--numeric-font-family', 'monospace') + ';color:' +
-                    tok('--primary-alt', '#111c2c') + '">{y}</span>' +
+                    (o.ring ? 'var(--page-text-color)' : tok('--primary-alt', '#111c2c')) + '">' + (o.ring ? '{y:.2f}%' : '{y}') + '</span>' +
                     (o.unit ? '<br/><span style="font-size:10px;color:' +
                     tok('--neutral-light', '#8a93a5') + '">' + o.unit + '</span>' : '') + '</div>',
             useHTML: true
@@ -17312,11 +17314,13 @@ function dsTabsStyle() {
 }
 
 
+const DS_RES_IC = '<svg class="ip-resic" viewBox="0 0 48 48" width="26" height="26" aria-hidden="true"><defs><mask id="ipResMask"><rect width="48" height="48" fill="#fff"/><circle cx="36.5" cy="36.5" r="13" fill="#000"/></mask></defs><path fill="currentColor" mask="url(#ipResMask)" d="M31.47,14.57c-.77-.38-1.71-.58-2.82-.58h-5.51v13.95h3.4v-5.01h2.11c1.14,0,2.09-.21,2.86-.62s1.34-.95,1.71-1.61v.02c.37-.68,.56-1.42,.56-2.23,0-.87-.19-1.65-.58-2.33-.38-.68-.96-1.21-1.73-1.59Zm-1.63,5.22c-.32,.3-.8,.46-1.45,.46h-1.85v-3.5h1.85c.65,0,1.13,.15,1.45,.46,.32,.3,.48,.74,.48,1.29s-.16,.99-.48,1.29Zm-12.56,8.17h3.4V14.01h-3.4v13.95Zm23.54-8.68c-.28-2.91-1.31-5.69-2.98-8.08h-.01c-1.67-2.38-3.93-4.3-6.57-5.55s-5.55-1.81-8.46-1.6c-2.91,.2-5.72,1.16-8.15,2.77-2.08,1.39-3.84,3.24-5.13,5.39-1.29,2.16-2.09,4.57-2.34,7.07-.25,2.48,.06,4.99,.91,7.34,.85,2.35,2.21,4.48,3.98,6.24l10.54,10.56c.19,.18,.41,.33,.65,.43,.24,.1,.5,.15,.76,.15s.52-.05,.76-.15c.25-.1,.47-.24,.65-.43l10.5-10.56c1.78-1.76,3.13-3.89,3.98-6.24,.84-2.35,1.15-4.86,.91-7.34Zm-4.65,5.98c-.64,1.8-1.68,3.44-3.03,4.79l-9.14,9.14h-.01l-9.14-9.14c-1.35-1.35-2.38-2.98-3.02-4.77-.64-1.8-.88-3.71-.69-5.61,.18-1.93,.8-3.79,1.79-5.45,.99-1.66,2.34-3.08,3.95-4.15,2.11-1.4,4.58-2.15,7.12-2.15s5.01,.75,7.12,2.15c1.6,1.07,2.95,2.49,3.94,4.14,.99,1.65,1.61,3.5,1.8,5.42,.19,1.91-.05,3.83-.69,5.63Z"/><g transform="translate(26 25) scale(.44)"><path fill="currentColor" d="M34,18v-4c0-2.65-1.05-5.2-2.93-7.07-1.88-1.88-4.42-2.93-7.07-2.93s-5.2,1.05-7.07,2.93c-1.88,1.88-2.93,4.42-2.93,7.07v4c-1.59,0-3.12,.63-4.24,1.76-1.13,1.13-1.76,2.65-1.76,4.24v14c0,1.59,.63,3.12,1.76,4.24,1.13,1.13,2.65,1.76,4.24,1.76h20c1.59,0,3.12-.63,4.24-1.76s1.76-2.65,1.76-4.24v-14c0-1.59-.63-3.12-1.76-4.24-1.13-1.13-2.65-1.76-4.24-1.76Zm-16-4c0-1.59,.63-3.12,1.76-4.24,1.13-1.13,2.65-1.76,4.24-1.76s3.12,.63,4.24,1.76,1.76,2.65,1.76,4.24v4h-12v-4Zm18,24c0,.53-.21,1.04-.59,1.41-.37,.37-.88,.59-1.41,.59H14c-.53,0-1.04-.21-1.41-.59-.38-.38-.59-.88-.59-1.41v-14c0-.53,.21-1.04,.59-1.41,.38-.38,.88-.59,1.41-.59h20c.53,0,1.04,.21,1.41,.59,.37,.37,.59,.88,.59,1.41v14Z"/></g></svg>';
+const dsKpiIc = n => n === 'Reserved' ? DS_RES_IC : `<obs-icon name="${DS_SD_KPI_IC[n] || 'ip'}" size="26"></obs-icon>`;
 const DS_SD_KPI_IC = { 'Total IP': 'total-ip', Used: 'lease-ip', Available: 'available-ip', Transient: 'transient-ip', Reserved: 'lock-alt', 'IP utilisation': 'total-ip' };
 function dsSdKpi(label, value, color, sub, status, clickable) {
   return `<div class="ip-sev-box${clickable ? ' ip-stat-click' : ''}"${clickable ? ` data-stat-status="${esc(status)}" role="button" tabindex="0"` : ''}>
     <div class="ip-sev-body">
-      <span class="ip-sdki" style="--ip-kc:${color}"><obs-icon name="${DS_SD_KPI_IC[label] || 'ip'}" size="26"></obs-icon></span>
+      <span class="ip-sdki" style="--ip-kc:${color}">${dsKpiIc(label)}</span>
       <span class="ip-sdkt">IP ${esc(label)}</span>
       ${sub ? `<span class="ip-ks">${esc(sub)}</span>` : ''}
       <span class="ip-kv">${esc(value)}</span>
@@ -17339,8 +17343,8 @@ function dsSdKpis(c, blind) {
   return `<div class="ip-sev-row sn-kpis">
     ${dsSdKpiUtil(c, blind)}
     ${dsSdKpi('Used', num(c.used), statusVar('Used'), pct(c.used), 'Used', true)}
-    ${dsSdKpi('Transient', num(c.transient), statusVar('Transient'), pct(c.transient), 'Transient', true)}
     ${dsSdKpi('Available', num(c.available), statusVar('Available'), pct(c.available), 'Available', true)}
+    ${dsSdKpi('Transient', num(c.transient), statusVar('Transient'), pct(c.transient), 'Transient', true)}
     ${dsSdKpi('Reserved', num(c.reserved), statusVar('Reserved'), pct(c.reserved), 'Reserved', true)}
   </div>`;
 }
@@ -17743,11 +17747,8 @@ function screenOverview() {
 
     </div>
 
-    <div class="ip-grid ip-ovgrid">
-      ${ovCard('Site Count', siteRows.length ? vizTreemap(siteRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 1.8 })
-        : `<p class="ip-empty">No site in this filter</p>`)}
-
-      ${ovCard('Top IP Per Site', ipSiteRows.length ? vizTreemap(ipSiteRows.map(r => ({ name: r.name, v: r.n, label: num(r.n) })), { h: 262, aspect: 1.8 })
+    <div class="ip-grid ip-ovgrid ip-ov2">
+      ${ovCard('Top IP Per Site', ipSiteRows.length ? vizTreemap(ipSiteRows.map(r => ({ name: r.name, v: r.n, label: num(r.n) })), { h: 262, aspect: 2.9 })
         : `<p class="ip-empty">No address in use in this filter</p>`)}
 
       ${ovCard('Top Device Type', devTypeRows.length ? vizTopN(devTypeRows, { h: 220, product: true })
@@ -17764,7 +17765,7 @@ function screenOverview() {
     </div>
     <div class="ip-grid ip-ovgrid ip-ov2">
       ${ovCard('Top Device Type · Option 4 — Gauge grid', devTypeRows.length ? `<div class="ip-dtg">${devTypeRows.map(r =>
-          `<div class="ip-dtgc">${DSCharts.gauge(r.pct, { max: devTypeTotal || 1, h: 82, labelY: -14, fontSize: 14, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} (${dtShare(r.pct)}%)">${esc(r.name)}</span></div>`).join('')}</div>` : dtEmpty)}
+          `<div class="ip-dtgc">${DSCharts.gauge(devTypeTotal ? Math.round(r.pct / devTypeTotal * 10000) / 100 : 0, { max: 100, h: 104, ring: true, labelY: -10, fontSize: 14, noTicks: true, name: r.name })}<span title="${esc(r.name)}: ${esc(r.v)} of ${esc(num(devTypeTotal))} devices">${esc(r.name)}</span></div>`).join('')}</div>` : dtEmpty)}
       ${ovCard('Top Device Type · Option 5 — Tree view', devTypeRows.length ? vizTreemap(devTypeRows.map(r => ({ name: r.name, v: r.pct, label: r.v })), { h: 262, aspect: 2.9 }) : dtEmpty)}
     </div>
 
@@ -18006,14 +18007,14 @@ function ipStatusSummaryWidget() {
   const boxes = [
     { label: 'Total', value: c.total, color: 'var(--primary-alt)' },
     { label: 'Used', value: c.used, color: statusVar('Used') },
-    { label: 'Transient', value: c.transient, color: statusVar('Transient') },
     { label: 'Available', value: c.available, color: statusVar('Available') },
+    { label: 'Transient', value: c.transient, color: statusVar('Transient') },
     { label: 'Reserved', value: c.reserved, color: statusVar('Reserved') }
   ];
   return `<div class="ip-sev-row sn-kpis ip-ipkpis">
     ${boxes.map(b => `<div class="ip-sev-box">
       <div class="ip-sev-body">
-        <span class="ip-sdki" style="--ip-kc:${b.color}"><obs-icon name="${DS_SD_KPI_IC[b.label === 'Total' ? 'Total IP' : b.label] || 'ip'}" size="26"></obs-icon></span>
+        <span class="ip-sdki" style="--ip-kc:${b.color}">${dsKpiIc(b.label === 'Total' ? 'Total IP' : b.label)}</span>
         <span class="ip-sdkt">${b.label === 'Total' ? 'Total IP' : 'IP ' + esc(b.label)}</span>
         <span class="ip-kv">${num(b.value)}</span>
       </div>
