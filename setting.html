@@ -15511,7 +15511,7 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
 .dpcath .car{width:13px;height:13px;flex:0 0 13px;fill:currentColor;color:var(--text-dim);transition:transform .15s}
 .dpcat.open .dpcath .car{transform:rotate(90deg)}
 .dpcath:hover{color:var(--white)}
-.dpcath.on{color:var(--white);font-weight:500}
+.dpcath.on{color:var(--white);font-weight:500;background:var(--hover);border-radius:4px;padding-left:8px;margin-left:-8px}   /* a category with no children (Network, Storage, Database, Service Check) IS the type, so it takes a child row's selected fill (request, 5 Oct 2026); the negative margin keeps its icon on the column */
 .dpsub{display:none;padding:0 0 6px}
 .dpcat.open .dpsub{display:block}
 /* a child: 30px, 25px further in than its parent's text, selected on --hover in white 500 (live #172336) */
@@ -41448,11 +41448,11 @@ function stcPick(anchor, o){
       const on = o.multi ? st.sel.includes(it.k) : st.sel === it.k;
       return `<div class="stcmi${o.multi?' ck':''}${on?' on':''}" data-k="${stcEsc(String(it.k))}">${o.multi ? `<span class="bx">${stcSvg('check')}</span>` : ''}<span style="overflow:hidden;text-overflow:ellipsis">${stcEsc(it.t)}</span>${it.sub?`<span style="margin-left:auto;color:var(--text-dim);font-size:11px">${stcEsc(it.sub)}</span>`:''}</div>`;
     }).join('') : `<div class="stcmi hd">No match</div>`;
-    const foot = o.multi ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Apply</button></div>` : (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '');
+    const foot = o.live ? '' : o.multi ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button><button class="stbtn pri" style="height:28px;padding:0 12px" data-act="apply">Apply</button></div>` : (o.clear ? `<div class="stcmf"><button class="stbtn" style="height:28px;padding:0 10px" data-act="clear">Clear</button></div>` : '');
     el.innerHTML = (o.title ? `<div class="stcmi hd">${stcEsc(o.title)}</div>` : '') + ops + search + `<div class="stcml">${list}</div>` + foot;
     el.querySelectorAll('.stcmi[data-k]').forEach(m => m.onclick = () => {
       const k = o.items.find(it => String(it.k) === m.dataset.k).k;
-      if (o.multi){ const i = st.sel.indexOf(k); if (i >= 0) st.sel.splice(i, 1); else st.sel.push(k); const box = m; box.classList.toggle('on'); }
+      if (o.multi){ const i = st.sel.indexOf(k); if (i >= 0) st.sel.splice(i, 1); else st.sel.push(k); const box = m; box.classList.toggle('on'); if (o.live) o.onPick([...st.sel]); }   /* live: a tick applies at once — no Clear / Apply footer */
       else { stcPopClose(); o.onPick(k); }
     });
     const inp = el.querySelector('.stcms input'); if (inp){ inp.oninput = () => { st.q = inp.value; const pos = inp.selectionStart; paint(); const i2 = el.querySelector('.stcms input'); i2.focus(); i2.setSelectionRange(pos, pos); }; }
@@ -42153,6 +42153,9 @@ const DP_COLLECT = [['ctype','Collector Type','pick',{opts:['Collector','Edge Co
 const DP_GROUPS  = ['groups','Groups','multi',{req:1, ph:'Select', src:'groups'}];
 const DP_CRED    = ['cred','Credential Profiles','multi',{req:1, ph:'Select', src:'creds', create:1}];
 const DP_TAGS    = ['tags','Tags','tags',{ph:'Add Tags'}];
+/* the add-on modules a discovered device is handed to (request, 5 Oct 2026): it was a single Network Config Management
+   switch; IPAM joins it, and a profile may need one, the other, or both — so it is the form's own multi-select dropdown */
+const DP_MODS    = ['mods','Modules','multi',{opts:['Network Config Management','IPAM'], ph:'Select', live:1}];   /* ticks apply at once — no Clear / Apply (request, 5 Oct 2026) */
 const DP_PING    = ['ping','Ping Check','sw',{val:true}];
 const DP_NOTIFY  = ['notify','Notify','notify',{ph:'@User or Email or /Handle or #User Profile or Mobile Number'}];
 const DP_TARGET  = ['target','IP/Host','target',{req:1}];
@@ -42172,7 +42175,7 @@ const DP_FORMS = {
     params:[['down','Discover Down instances','sw',{val:false}], DP_PING, ['regions','Regions','multi',{req:1, ph:'Select', opts:['us-ashburn-1','us-phoenix-1','uk-london-1','eu-frankfurt-1','ap-mumbai-1']}]]}),
   'Google Cloud': dpF({sec:'Discovery Parameters Of Google Cloud', grid:[...DP_COLLECT, DP_GROUPS, DP_CRED, DP_TAGS],
     params:[['down','Discover Down instances','sw',{val:false}], DP_PING, ['res','Resources to be Monitored','multi',{ph:'Select', opts:['Compute Engine','Cloud SQL','Cloud Storage','GKE','Load Balancing']}]]}),
-  'Network': dpF({sec:'Discovery Parameters', grid:[DP_TARGET, ...DP_COLLECT, DP_GROUPS, DP_CRED, ['ncm','Network Config Management','sw',{val:false}], DP_TAGS],
+  'Network': dpF({sec:'Discovery Parameters', grid:[DP_TARGET, ...DP_COLLECT, DP_GROUPS, DP_CRED, DP_MODS, DP_TAGS],
     params:[['port','SNMP Port','num',{req:1, val:161}], ['retry','Retry Count','num',{req:1, val:2}], DP_PING, ['ifd','Interface Discovery','sw',{val:true}]],
     extra:[['Topology', [['topo','Run Topology','sw',{val:false}]]]]}),
   'Cisco Catalyst SD-WAN': dpF({sec:'Discovery Parameters of Cisco Catalyst SD-WAN', grid:[['url','URL Endpoint','text',{req:1, ph:'Enter text'}], ...DP_COLLECT, DP_GROUPS, DP_CRED, DP_TAGS], params:[['retry','Retry Count','num',{req:1, val:2}], DP_PING]}),
@@ -42475,7 +42478,7 @@ function dpSchedule(id){
 function dpSfPaint(open){
   const S = DP.sf, E = S.err;
   /* IPAM seed routers use this same form (request, 2 Oct 2026: "change the scheduler flow" to the Schedule Discovery drawer) */
-  const r = S.ipm ? { n: (IPM_ROUTERS.find(x => x.id === S.ipm) || {}).name || '' } : DP.rows.find(x => x.id === S.id);
+  const r = S.dh ? { n: (IPM_DHCP.find(x => x.id === S.dh) || {}).name || '' } : S.ipm ? { n: (IPM_ROUTERS.find(x => x.id === S.ipm) || {}).name || '' } : DP.rows.find(x => x.id === S.id);
   const seg = (k, opts, cur) => `<div class="dpseg">${opts.map(o => `<button type="button" class="${cur===o?'on':''}" onclick="DP.sf.${k}=${stA(o)};dpSfPaint()">${o}</button>`).join('')}</div>`;
   const fi = (k, lab, req, inner) => `<div class="dpfi${E[k]?' err':''}"><span class="dplab${req?' req':''}">${lab}</span>${inner}</div>`;
   const sel = (txt, ph, on) => `<div class="dpsel" onclick="${on}"><span class="v${txt?'':' ph'}">${txt ? dpEsc(txt) : ph}</span>${stcSvg('chevron-down','car')}</div>`;
@@ -42489,10 +42492,10 @@ function dpSfPaint(open){
     </div>
     ${fi('notify', 'Notify', 0, `<div class="dpnot"><input class="dpin" placeholder="@User or Email or /Handle or #User Profile or Mobile Number" value="${dpEsc(S.notify)}" oninput="DP.sf.notify=this.value"><a class="dpbcc" onclick="DP.sf.showBcc=!DP.sf.showBcc;dpSfPaint()">+ Bcc</a></div>`)}
     ${S.showBcc ? fi('bcc', 'Bcc', 0, `<input class="dpin" placeholder="Email" value="${dpEsc(S.bcc)}" oninput="DP.sf.bcc=this.value">`) : ''}
-    <label class="dpck"><span class="stcck${S.auto?' on':''}" onclick="DP.sf.auto=!DP.sf.auto;this.classList.toggle('on')">${stcSvg('check')}</span>Auto Provision</label>
+    ${S.dh ? '' : `<label class="dpck"><span class="stcck${S.auto?' on':''}" onclick="DP.sf.auto=!DP.sf.auto;this.classList.toggle('on')">${stcSvg('check')}</span>Auto Provision</label>`}
   </div>`;
-  const foot = `<button class="stbtn pri" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="${S.ipm ? `ipmDpSchedule(${stA(S.ipm)}, ${stA(S.sid || '')})` : `dpSchedule(${S.id})`}">Reset</button>`;
-  if (open) stcDrOpen(`${r.n} Schedule Discovery`, body, foot); else document.getElementById('stcDrB').innerHTML = body;
+  const foot = `<button class="stbtn pri" onclick="dpSfSubmit()">Schedule</button><button class="stbtn" onclick="${S.dh ? `ipmDhSchedule(${stA(S.dh)})` : S.ipm ? `ipmDpSchedule(${stA(S.ipm)}, ${stA(S.sid || '')})` : `dpSchedule(${S.id})`}">Reset</button>`;
+  if (open) stcDrOpen(S.dh ? `${r.n} Schedule Sync` : `${r.n} Schedule Discovery`, body, foot); else document.getElementById('stcDrB').innerHTML = body;
 }
 function dpSfTog(k, v){ const a = DP.sf[k], i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); dpSfPaint(); }
 function dpSfPick(ev, k){
@@ -42507,6 +42510,7 @@ function dpSfSubmit(){
   if (S.type === 'Weekly' && !S.days.length) S.err.days = 1;
   if (S.type === 'Monthly'){ if (!S.months.length) S.err.months = 1; if (!S.dates.length) S.err.dates = 1; }
   if (Object.keys(S.err).length){ dpSfPaint(); return; }
+  if (S.dh) return ipmDhSchedSave();
   if (S.ipm) return ipmDpSave();
   const r = DP.rows.find(x => x.id === S.id);
   r.sched = {type:S.type, date:S.date, hour:S.hour, days:S.days, months:S.months, dates:S.dates, notify:S.notify, bcc:S.bcc, auto:S.auto};
@@ -42569,7 +42573,7 @@ const DP_TPH = {'IP/Host':'e.g. 192.168.1.1 or fd00::1', 'IP Range':'e.g. 192.16
 function dpFields(T){ const a = []; if (T.top) a.push(T.top); a.push(...T.grid, ...T.params); (T.extra||[]).forEach(x => a.push(...x[1])); a.push(DP_NOTIFY); return a; }
 function dpForm(mode, id){
   const src = id != null ? DP.rows.find(x => x.id === id) : null;
-  let type = 'Linux / Unix', extra = {};
+  let type = 'Network', extra = {};   /* a NEW profile opens on the Network type (request, 5 Oct 2026); an edit opens on its own type */
   if (src){ const m = DP_ROW_FORM[src.ic] || [src.fty || 'Linux / Unix']; type = DP_FORMS[m[0]] ? m[0] : 'Linux / Unix'; extra = Object.assign({}, m[1] || {}, src.fv || {}); }
   DP.f = {mode, id, type, open:[dpCatOf(type)], railq:'', v:{}, err:{}, tried:false, bcc:false, fw:'ufw', help: DP_HELP.map(h => mode === 'create' ? !!h.open : false)};
   dpSeed(src, extra);
@@ -42743,10 +42747,14 @@ function dpMultiOpts(k, o){
 }
 /* a multi picker with the live list's "Select All" as its first row */
 function dpMulti(ev, k){
-  const F = DP.f, f = dpFieldDef(k), o = (f && f[3]) || {}, opts = dpMultiOpts(k, o), cur = F.v[k] || [];
+  const F = DP.f, f = dpFieldDef(k), o = (f && f[3]) || {}, opts = dpMultiOpts(k, o), cur = F.v[k] || [], anc = ev.currentTarget;
   const items = (opts.length > 3 ? [{k:'__all', t:'Select All'}] : []).concat(opts.map(t => ({k:t, t})));
   stcPick(ev.currentTarget, {title: f ? f[1] : '', items, cur: cur.length === opts.length && opts.length > 3 ? ['__all'].concat(cur) : cur, multi:true, search: opts.length > 6,
-    onPick:sel => { const had = cur.length === opts.length && opts.length > 3; let v = sel.filter(x => x !== '__all'); if (sel.includes('__all') && !had) v = [...opts]; else if (!sel.includes('__all') && had) v = []; dpSet(k, v); }, matchWidth:true, width:280});
+    live: !!o.live,
+    onPick:sel => { if (o.live){ /* the popover stays open, so only the field's value text is patched — a repaint would replace its anchor */
+        F.v[k] = sel.filter(x => x !== '__all'); const sp = anc && anc.querySelector('.v');
+        if (sp){ sp.textContent = F.v[k].length ? F.v[k].join(', ') : (o.ph || 'Select'); sp.classList.toggle('ph', !F.v[k].length); } return; }
+      const had = cur.length === opts.length && opts.length > 3; let v = sel.filter(x => x !== '__all'); if (sel.includes('__all') && !had) v = [...opts]; else if (!sel.includes('__all') && had) v = []; dpSet(k, v); }, matchWidth:true, width:280});
 }
 /* Tags: type a tag and press Enter, click one to drop it (the live ant tags-mode select) */
 function dpTags(ev){
@@ -42957,7 +42965,7 @@ const ipmSubnetTags = r => {
 const IPM_ROUTER_TAG = { ok: ['Polling', 'tag-green'], stale: ['Stale', 'tag-yellow'], failed: ['Failed', 'tag-red'] };
 
 const IPM = {
-  q: '', tab: 'discovery', flash: null,
+  q: '', tab: 'profiles', flash: null,
   ar: null,          /* the Add IP Address Discovery panel's draft */
   fm: null,          /* { kind, id, data } — Add/Edit Rule, Add/Edit Vendor */
   cf: null,          /* the pending confirm's onOk */
@@ -43023,7 +43031,9 @@ const ipmHead = (heading, hint, actions) => `<obs-page-header heading="${ipmEsc(
 const ipmTable = (empty, extra, cls) => `<obs-table id="ipmTbl" class="ipmfill${cls ? ' ' + cls : ''}" page-size="50" empty-text="${ipmEsc(empty)}"${extra || ''}></obs-table>`;
 
 /* ── 1 · IP Address Discovery ─────────────────────────────────────────────────────────────── */
-const IPM_ROUTERS_TABS = [{ key: 'discovery', label: 'Discovery Profiles' }, { key: 'approval', label: 'Subnet Approval' }];
+/* tabs (request, 5 Oct 2026): a new first tab, Discovery Profile — the Settings › Discovery Settings › Discovery Profile
+   list itself, so both doors show one set of profiles — and the seed-router grid renamed Discover Subnet */
+const IPM_ROUTERS_TABS = [{ key: 'profiles', label: 'Discovery Profile' }, { key: 'discovery', label: 'Discover Subnet' }, { key: 'approval', label: 'Subnet Approval' }];
 const IPM_ROUTER_MENU = [
   { key: 'test', label: 'Test credential', icon: 'testCredentials' },
   { key: 'edit', label: 'Edit', icon: 'pencil' },
@@ -43239,6 +43249,7 @@ function ipmColsOpen(anchor){
   });
 }
 function ipmRoutersBody(){
+  if (IPM.tab === 'profiles') return `<div class="ipmdp">${dpListHTML()}</div>`;
   if (IPM.tab === 'approval') return `
     <p class="ipmhint">Every subnet a discovery source reports is held here until an admin approves it —
       active polling stays off until then, and rejecting one is never permanent; it simply re-queues the next time it's seen.</p>
@@ -43440,6 +43451,21 @@ function ipmDpSchedule(rid, sid, fromList){
     months: x ? (x.months || []).slice() : [], dates: x ? (x.dates || []).slice() : [], notify: x ? x.notify || '' : '', bcc: x ? x.bcc || '' : '',
     showBcc: !!(x && x.bcc), auto: !!(x && x.auto), err: {} };
   dpSfPaint(true);
+}
+/* DHCP Server Profile › Schedule (5 Oct 2026): the Schedule Discovery form, re-titled "Schedule Sync" — a DHCP profile
+   is polled for scopes, leases and reservations — without Auto Provision, which only means something for discovery.
+   The schedule is kept on the profile row and re-seeds the form next time. */
+function ipmDhSchedule(id){
+  const r = IPM_DHCP.find(x => x.id === id); if (!r) return;
+  const x = r.sched, d = new Date(), today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  DP.sf = { id: 0, dh: id, type: x ? x.type : 'Once', date: x ? x.date : today, hour: x ? x.hour : '', days: x ? x.days.slice() : [],
+    months: x ? x.months.slice() : [], dates: x ? x.dates.slice() : [], notify: x ? x.notify : '', bcc: x ? x.bcc : '', showBcc: !!(x && x.bcc), auto: false, err: {} };
+  dpSfPaint(true);
+}
+function ipmDhSchedSave(){
+  const S = DP.sf, r = IPM_DHCP.find(x => x.id === S.dh); if (!r) return;
+  r.sched = { type: S.type, date: S.date, hour: S.hour, days: S.days, months: S.months, dates: S.dates, notify: S.notify, bcc: S.bcc };
+  stcDrClose(); toast('“' + r.name + '” sync scheduled — ' + dpSchedText(r.sched));
 }
 function ipmDpSave(){
   const S = DP.sf, rid = S.ipm, dmy = ipmDmy(S.date);
@@ -44097,6 +44123,8 @@ function ipmRowMenu(anchor, id){
   ], { right: true, cover: true });
   if (ipmKind() === 'dhcp') return stcMenu(anchor, [
     { t: 'Edit DHCP Server Profile', ic: 'pencil', fn: () => ipmDhOpen(id) },
+    /* request, 5 Oct 2026 — a DHCP profile gets the same Schedule action and form the IP Address Discovery rows have */
+    { t: 'Schedule', ic: 'schedule', fn: () => ipmDhSchedule(id) },
     { t: 'Delete DHCP Server Profile', ic: 'trash-alt', del: true, fn: () => ipmDhDelete(id) }
   ], { right: true, cover: true });
   stcMenu(anchor, [
