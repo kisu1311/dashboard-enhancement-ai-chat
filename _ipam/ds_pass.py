@@ -2650,5 +2650,37 @@ for a,b in [('<obs-icon name="${DS_SD_KPI_IC[label] || \'ip\'}" size="26"></obs-
     assert t.count(a) == 1, a; t = t.replace(a, b)
 _s = ".ip-grid.ip-ovgrid.ip-ov2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }"
 t = t.replace(_s, _s + "\n.ip-sdki .ip-resic { display: block; width: 26px; height: 26px; }", 1)
+# ── §94 · Top Device Type: only the packed bubble survives (request, 6 Oct 2026: remove the bar card and Options 2, 4, 5) ──
+# The bubble takes the old bar card's slot beside Top IP Per Site and drops its "Option 3" label — with no other options
+# left, the label named a comparison that no longer exists. Options 2/4/5's CSS and the gauge `ring` mode stay, unreferenced.
+_a = t.index("      ${ovCard('Top Device Type', devTypeRows.length ? vizTopN(")
+_b = t.index("    <div class=\"ip-grid ip-ovgrid ip-ov2\">\n      ${ovCard('Rogue Detection Trend'", _a)
+t = t[:_a] + "      ${ovCard('Top Device Type', devTypeRows.length ? DSCharts.bubble(devTypeRows.map(r => ({ name: r.name, v: r.pct })), { h: 244 }) : dtEmpty)}\n    </div>\n\n" + t[_b:]
+# ── §95 · ONE Total IP card (request, 6 Oct 2026: "the name and colour is same" between the subnet detail and IP Details).
+# IP Details drew its own Total tile — a grey (--primary-alt) icon over the raw address count — while the subnet detail
+# draws dsSdKpiUtil: the icon in the utilisation-band colour, "N addresses", the % and a bar. IP Details now calls the
+# same function, so the two cards cannot drift. `click` is false there: that page's tiles are not filters.
+_a = """function dsSdKpiUtil(c, blind) {"""
+assert t.count(_a) == 1, 'util fn'
+t = t.replace(_a, """function dsSdKpiUtil(c, blind, click = true) {""")
+_a = """  return `<div class="ip-sev-box ip-stat-click ip-sdku" data-stat-status="" role="button" tabindex="0">"""
+assert t.count(_a) == 1, 'util box'
+t = t.replace(_a, """  return `<div class="ip-sev-box${click ? ' ip-stat-click' : ''} ip-sdku"${click ? ' data-stat-status="" role="button" tabindex="0"' : ''}>""")
+_a = """    { label: 'Total', value: c.total, color: 'var(--primary-alt)' },
+"""
+assert t.count(_a) == 1, 'ip total box'
+t = t.replace(_a, "")
+_a = """  return `<div class="ip-sev-row sn-kpis ip-ipkpis">
+    ${boxes.map("""
+assert t.count(_a) == 1, 'ip kpi row'
+t = t.replace(_a, """  return `<div class="ip-sev-row sn-kpis ip-ipkpis">
+    ${dsSdKpiUtil(c, c.pct == null, false)}
+    ${boxes.map(""")
+# ── §96 · the subnet header's tag row is the site only (request, 6 Oct 2026: remove the origin and address-count tags) ──
+_a = """          <obs-tag variant="tag-primary">${esc(s.origin)}</obs-tag>
+          <obs-tag>${esc(num(s.counts.total))} addresses</obs-tag>
+"""
+assert t.count(_a) == 1, 'sd tags'
+t = t.replace(_a, "")
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

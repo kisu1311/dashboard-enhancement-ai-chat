@@ -914,10 +914,13 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
     Transient · IP Reserved, no captions but "254 addresses", counts on one baseline, and the DS's own IPAM glyphs
     `total-ip` · `lease-ip` · `available-ip` · `transient-ip` · `lock-alt` (all confirmed to render in 0.1.166);
     the IP Details "IP Address Status" heading is gone.
-- **The IPAM module icon is the supplied `ipam-hub-hex-pointy.svg`** (`ICONS.ipam` in `index.html` and
-  `setting.html`, 24-grid). ⚠️ It is drawn with holes, so its record carries `evenodd: true` and both `ico()` and
-  `setIco()` now emit `fill-rule="evenodd"` for such an entry — without it the hex ring fills in solid. The
-  Settings › IPAM category icon (`ST_ICO.ipam` in `setting-nav.js`) was NOT changed.
+- **The IPAM module icon is the supplied "IP on a monitor + location pin" mark (6 Oct 2026)** — 48 grid, six paths,
+  in ALL THREE places: `ICONS.ipam` (`index.html` + `setting.html`, the rail / Explorer row), `ST_ICO.ipam`
+  (`setting-nav.js`, the Settings › IPAM category, one concatenated path) and `_ipam/ipam-module-icon.svg` (the IPAM
+  page's own `obs-icon ip` mask — the data URI in `_ipam/ipam.html` was patched in place, 2 hits; `build_ipam.py`
+  reads the svg file, so a rebuild keeps it). It replaced `ipam-hub-hex-pointy.svg`. ⚠️ The "P" bowl, the pin and
+  the ring each carry an inner subpath wound OPPOSITE to their outer one, so the holes survive nonzero too — which is
+  why the single-path `ST_ICO` renderers (no fill-rule) draw it correctly. `ICONS.ipam` keeps `evenodd: true`.
 - **§56 — inside the IPAM page, obs-icon `ip` IS the module mark everywhere**: the subnet header tile, the IP
   panel tile, the IP Details module tab, the IPAM nav/Settings entries. Those last ones are drawn by DS components in
   THEIR OWN shadow roots, which no page rule reaches, so a script at the top of `<head>` (before the bundle) wraps
@@ -950,6 +953,282 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
 - **§66 — module-wide spacing**: 10px between neighbouring widgets in both axes (`.ip-grid`, `.ip-sev-row`,
   `.ip-stack` inside `.ip-content`) and an 8px radius on every widget and KPI card. Was 16px / 4px. The side panel
   and drawers sit outside `.ip-content` and keep their own spacing.
+
+- **§94 (6 Oct 2026) — Top Device Type is the packed bubble ONLY.** The bar card (Option 1) and the §87 options 2 (ranked
+  list), 4 (gauge grid) and 5 (tree view) were removed on request; the bubble took the bar card's slot beside Top IP Per
+  Site and is titled plain **Top Device Type** (its "Option 3 — Packed bubble" label named a comparison that no longer
+  exists). Patched into `_ipam/ipam.html` directly AND appended to `ds_pass.py` as §94, so a rebuild keeps it. The
+  options' CSS and the gauge `ring` mode stay in the page, unreferenced.
+- **§95 (6 Oct 2026) — ONE Total IP card.** IP Details drew its own Total tile (grey `--primary-alt` icon over the raw
+  count); it now calls the subnet detail's `dsSdKpiUtil(c, c.pct == null, false)` — icon in the utilisation-band colour,
+  "N addresses", the %, the bar — so the two cannot drift. The third arg drops the click/role (that page's tiles are not
+  filters). In `ipam.html` and `ds_pass.py` §95.
+
+## Compliance module in Option 1 — cloned from the live build with Playwright (6 Oct 2026)
+
+Request: *"add new module 'compliance' — the reference is the lab instance's /compliance/overview — using
+playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) only**, namespace **`cpl*` /
+`CPL_*` / `.cpl*`** — ⚠️ not `cp*`, which is the colour picker's (`CP`, `cpRepaint`, `cpCur`).
+
+| tab | what it has |
+|---|---|
+| Overview | Compliance Score (15% · 13 Pass · 72 Fail) · Compliance Trend (the live empty state) · Rule Assessment Results donut (85 evaluated) · Failed by Severity tiles |
+| Policies | search + grid/list toggle · the `p1n` policy card (22%, device posture stack) → the **policy detail page** (back · 5 KPI tiles · Devices grid with search, chips, eye/PDF/CSV/filter) |
+| Explorer | facet panel (Policy · Evaluation · Rule severity, or Policy · Type · Asset severity) · **Group by Rules / Resources** · search · PDF/CSV · 50-per-page pager · row → **drawer**: a rule (Summary · Audit · References · Controls · Tags, all 85 rules' real text) or a resource (Rules · Policy — the three CIS planes, expandable · Details) |
+
+- **The Overview is on the ObserveOps DS** (request, 6 Oct 2026): each widget is `obs-widget-card static` in a plain
+  grid (the DS recipe for a board nobody rearranges), Pass/Fail are `obs-tag` (`tag-green`/`tag-red`), the donut legend
+  is a color-coded `obs-metric-list`, and Failed by Severity is a row of five `obs-gauge` dials against one total (the
+  open failures) — the DS's own Alert-Count pattern. Severity map: High→`major`, Medium→`warning`, Low→`clear`,
+  Info→`maintenance`. ⚠️ `#cplOv` (not the whole view) is in the scoped DS token block's dark and light openers — the
+  rest of the module still reads this file's tokens. ⚠️ Declared gaps: the score bar and the donut (no DS meter/chart).
+  ⚠️ The live tiles' "N% of open failures" line is gone — the gauge arc and its `aria-label` carry it. Policies and
+  Explorer are NOT on the DS yet.
+- **Later the same day**: Compliance is **pinned by default** (`RAIL_PINS`, both pages). The Overview's **trend is a column
+  chart** (`--bar-chart-color`) — ⚠️ only the LAST bar is real; the 11 earlier weekly scans are **demo history**
+  (`CPL_TREND_DEMO`), because the instance has one assessment. The **donut** is the dashboard donut style (Total + mono
+  figure, `Name: value` legend, hover lifts the slice and shows count **with %**). **Failed by Severity** dials are
+  `obs-gauge` zoomed ×1.75 (it has no size prop; the DS says scale via zoom) with our own 13px labels, zeros dimmed.
+  The **policy card** is `obs-overview-card`'s frame/layout (DS v0.1.240 at localhost:3000) — ⚠️ not the element: the
+  vendored `_ds/` bundle predates it. The Explorer **facet panel has a search** that narrows its own rows. The two
+  **drawer headers** are DS parts: `obs-tag` (Pass/Fail, Router, IP, the band-tinted policy chip), `obs-tabs`
+  (`change` event, bound), and a transparent squared `obs-button` close. `#cplOv`, `#cplPolList` and `#cplDr` are in
+  the scoped DS token openers. ⚠️ The widget cards' native `title` tooltip cannot be dropped — removing the
+  attribute also removes the card's heading.
+- **Then**: the Overview's **Compliance Score** went to obs-overview-card's SLO shape and was **REVERTED on request** the same
+  day — it is the widget card (big %, bar, Pass/Fail tags) again; `cplScoreCardHTML` is kept, unreferenced. The **policy detail page** header is the real `obs-page-header` (`back`
+  CustomEvent, bound in `cplPaint`) and its five tiles are **obs-kpi-card's layout** (45px severity chip with an
+  `obs-icon`, 20px title, 30px mono value, 6px bar) — ⚠️ not the element, which the vendored bundle lacks. The device grid
+  has **no widget frame** any more (`.cpldevs`), like the Monitor list. `#cplPolDet` is in the DS token openers.
+- **The policy card was REVERTED to the ORIGINAL card** on request (the overview-card-shaped one and its DS-dot legend are
+  kept unreferenced as `.cplovc`), and **its colours were then verified against the DS** (measured, both themes): the
+  posture palette had been this file's `--green/--yellow/--orange/--red`, not the DS severities. It now reads
+  `--severity-clear/warning/major/critical`, `--widget-background`, `--widget-border-color`, `--page-text-color`,
+  `--tag-bg-color` + `--default-tag-text-color` (pills) and `--progress-bar-bg` (tracks). ⚠️ The REST of the module's
+  posture/severity colours (`CPL_POST`, `CPL_SEV`) are still the file's own palette.
+  The rule drawer's **Tags** tab renders `obs-tag variant="tag-orange"` (filled, tinted), as asked.
+- **Rule drawer = the live NCCM rule drawer's layout** (the NCCM lab instance as the reference): tabs Summary · Audit ·
+  **Remediation** · References · Controls · Tags; sections are FLAT (heading over text, no boxes — also Details);
+  Summary gains **Default Value** (= the harvested "Expected value") and keeps the assessed-resources grid; Audit shows
+  the CLI value or "No audit command", then the Rule Condition as read-only fields (Occurrence −1 → "Any"); Controls are
+  "Controls Version" / name / description blocks; Tags a ruled list. ⚠️ **Remediation text and the Audit instructions
+  were NOT harvested** — the .94 instance (login `kisu`) forces its product-setup screen under automation and never
+  opened the compliance page; the tab says so instead of inventing text. The rule drawer head has **no icon tile**.
+- **Policy tab = the Compliance Breakdown tree**: `CPL_TREE` (planes → groups → sub-groups → rules) comes from
+  setting.html's `STC_BENCH0` CIS IOS XE 16 tree, mapped onto `CPL_DATA.rules` **by name** (85/85; the two copies'
+  ORDER differs — never map by index). Root (policy) row filled, every row under it clear; numbered paths (1.1.1);
+  per-group "N /M passed rule | %"; per-rule "– → status" (one assessment, so no previous) + Pass/Fail tag; rows open
+  the rule drawer. `r.planeIx` is derived from the tree now. The plane list lost its border.
+- **Compliance Score (Overview)** is now the **KPI Card layout** (severity chip, title, Pass/Fail obs-tags + band,
+  30px value, bar) — the 3rd design of that widget today; the widget-card version and the overview-card version are
+  both kept unreferenced/recorded above.
+- **(Superseded) Policy card DS pass**: header glyph is `obs-icon network`; the posture legend is `obs-severity` dots + label + count,
+  and the stack bar + compliance figure read the same `--severity-*` tokens (Secure clear · Moderate warning · Poor major
+  · Vulnerable critical). ⚠️ `obs-severity-legend` was tried and dropped: the vendored build IGNORES its `labels` override
+  (attribute and property), so it can only print "Clear / Major…" with no counts.
+- **Drawer heads** follow the product's monitor-panel shape (`cplDrHead`): 40px icon tile (`shield-check` for a rule,
+  `router` for a resource) · `obs-severity` dot · bold name · muted `| a | b` trail · an `obs-tag` row · close at right ·
+  a rule above the `obs-tabs`.
+- **Wiring**: `MODULES` (appended, so no index moves), an `EXPLORER_TREE` row after NCCM with the three tabs as
+  children (`cplGo('<tab>')`), `MOD_TO_RAIL['Compliance']=3`, a `selectModule` branch → `#view-compliance` +
+  `cplInit(MOD_SUB)`, `ICONS.compliance` = the product's `shield-check`, `MOD_DOCS['Compliance']` (verified 200).
+  **`setting.html`** carries the same rail data; there `showView('compliance')` is redirected by the BOOT block
+  (`MOD_VIEWS.compliance`) to `index.html#m=Compliance&sub=<tab>`.
+- **Data is the instance's, in one `CPL_DATA` const**: 1 policy, 85 rules (name + severity), 3 routers each with a
+  pass/fail string over all 85, the three plane sizes (38/29/18), and per-rule drawer text. **Every figure is
+  derived** from it, and the derivation reproduces every live count (13/72, 26/72, 31/23/18, 22%).
+- ⚠️ **Scrubbed**: routers `ospfN.example.com` on `192.0.2.6–8` (live: lab hostnames, internal `172.16.x`).
+- ⚠️ **Stated divergences**: live labels the same routers *Moderate* on the policy page and *Poor* in Explorer, and
+  prints `20/85` beside `64 failed`; here one band set (Secure ≥80 · Moderate ≥60 · Poor ≥20 · Vulnerable <20) and
+  the real pass counts everywhere. PDF export, the column chooser and *+ Filter* toast; CSV writes a real file.
+- **Re-harvesting**: the Playwright scripts lived in the session scratch dir — login (`input[name=username]`, force
+  fill: the SPA fades in), then drive tabs and read `innerText`. ⚠️ The instance's SPA **intermittently fails to
+  boot** (login page never mounts) — retry; a run that waits 240s for the form usually gets through.
+  ⚠️ Playwright's bundled browser is not downloaded here — launch with `{channel:'chrome'}`.
+
+- **The device-in-policy page** (6 Oct 2026, `cplPolDev(i)` / `cplPolDevHTML`) — a device row on the policy page opens
+  it, as live `/compliance/policies/<policy>/<device>` does (it used to open the resource drawer). Laid out like the live
+  NCCM device page (the lab instance): `‹ device | policy` on a hairline with PDF/CSV squares; three tiles (`.cpldvk`, `--chip`
+  fill, 4px top edge — `--teal` / `--severity-clear` / `--severity-critical`, value 42px in `--text-dim`); *Failed Rule by
+  Severity* as `obs-tag`s in a bordered box that hugs its content; then an UNFRAMED *Compliance Breakdown* grid (plain
+  header, filled plane rows 10px apart, sub-groups unfilled, rules showing previous `→` current status + a Pass/Fail tag).
+  ⚠️ Only one assessment exists, so "previous" repeats the current result (live shows both the same too).
+- **6 Oct 2026, later — three DS passes on the module:**
+  - **The device page's header is the policy page's KPI tiles**, which supersedes the `.cpldvk` tiles above. `cplTile()` was
+    lifted out of `cplPolDetHTML` so both pages share one builder. The header row, `.cplkpis.cpldvkp`, holds:
+    - **Compliance**: `shield-check`, with the chip in the band's severity colour;
+    - **Pass**: `check-circle`, `/ 85`;
+    - **Fail**: `times-circle`, `/ 85`;
+    - a fourth widget, **Failed Rule by Severity** (`.cplfsev`), in the same card. Each of its five rows is an `obs-tag`, a
+      token bar in `--severity-*`, a mono `f/all` count and the %. Zero-count rows are dimmed.
+
+    Below 1440px the severity widget wraps to its own row. The `.cpldvk` / `.cplfrs` / `.cplfsr` CSS is kept but no longer
+    referenced. `CPL_BAND_SEV`, `CPL_BAND_TAG` and `CPL_SEV_DS` are the shared maps.
+  - **The Overview's Compliance Score** keeps its chip and drops the green/red tag blobs and the muted "· band" text. It now
+    shows:
+    - a *Posture* label over the band as an `obs-tag` (`tag-green` / `-yellow` / `-orange` / `-red`);
+    - the mono value and the bar;
+    - a legend of `● Pass N  ● Fail N … 85 rules` with severity-token dots.
+  - **The Explorer facet search's magnifier sat outside its field** because of a class collision. The label carried
+    `cplsr cplfs`, and `.cplfs` is also the severity *cell* class (a padded flex column with a left border). It is
+    `cplfsrch` now. ⚠️ Grep a class before reusing it.
+  - Verified by a 12-assertion headless probe:
+    - the magnifier sits 12px inside the input, and the input spans the panel;
+    - the device page has 4 cards in one row with 5 severity rows;
+    - no JS errors.
+- **Two visualizations each for the device header and the policy card** (6 Oct 2026, two requests: *"add other
+  visualization option … using the design system"*). Each has an `obs-radio as-button` switch. Option values are strings,
+  and the value is set as a PROPERTY in `cplPaint` with `change` bound there.
+  - **Device header:**
+    - The switch, `#cplDvView`, is in the header bar beside PDF/CSV, and its state is `CPLS.dvView`.
+    - *Tiles* is the `cplTile` row described above.
+    - *Gauges* is `cplDvGaugesHTML`: a Compliance card (an `obs-gauge` of rules passed out of 85, then the % with the band
+      as an `obs-tag` and a Pass/Fail legend), and a severity card with five `obs-gauge` dials. Each dial is measured against
+      **that severity's own rule count**, not the open failures, so it differs from the Overview's dials. Dials at 0 are
+      dimmed.
+  - **Policy card:**
+    - The switch, `#cplPcView`, is in the Policies toolbar, shown in grid view only, and its state is `CPLS.pcView`.
+    - *Bars* is the original card.
+    - *Gauges* is `cplPolCardGaugesHTML`: the same header and footer, a compliance ring next to the % and band tag, then
+      four posture dials (Secure · Moderate · Poor · Vulnerable) out of the device count.
+    - Switching repaints `#cplPolList` only.
+  - **The default *Bars* card was rebuilt on the DS** (`.cplpb`; request: *"this card better visualization with the
+    design system"*). Same facts, clearer hierarchy:
+    - an icon tile + name, with an *85 rules* caption;
+    - the type and the extra tags as `obs-tag`;
+    - a 32px mono % in the band colour, beside a *Compliance* label over the band as an `obs-tag`, with the policy's
+      passed / failed rule counts (`--secondary-green` / `--secondary-red`) split off by hairlines;
+    - the compliance bar;
+    - *Device posture · N devices* over a segmented bar with 2px gaps. Zero bands emit no segment, and each segment has a
+      tooltip;
+    - a four-cell legend (dot · band · mono count) with zero bands dimmed;
+    - a footer whose relative scan time shows the timestamp as a tooltip.
+
+    Frame: 7px radius on `--widget-*`. The old `.cplpch` / `.cplpct` / `.cplstk` / `.cplleg` rules are no longer referenced.
+  - **Later the same day (6 Oct 2026):**
+    - **Gauges card rebuilt and then made minimal** (`.cplpg2`, on the `.cplpb` frame). The ring's own number is the
+      compliance %, so the second "22%" is gone, and the passed / failed rule counts were added. On request ("minimal
+      ui"), what went: the cell boxes, the "N of 3" lines, the icon tile, and the hairlines between the counts and above the
+      footer. Four small dials remain, each with just its band name, and zero bands are dimmed.
+    - **The Overview card's device strip became labelled rows:** severity dot · device · bar · mono %, sorted worst
+      first, capped at 5 with a "+N more" line. Each row still opens its device.
+    - **Compliance Score has Option 1 / Option 2** (`CPLS.scView`, `cplScore2HTML`). The switch, `#cplScView`, is an
+      `obs-radio` placed absolutely at the top right of the widget body, because `obs-widget-card`'s header takes no slot.
+      Option 2 is:
+      - a large `obs-gauge` with the score;
+      - the posture `obs-tag`;
+      - Passed and Failed rows, each with a dot · label · mono count · share;
+      - a pass|fail split bar, and a line reading *85 rules evaluated*.
+  - **Then (6 Oct 2026), and these supersede the Compliance Score note above:**
+    - **Option 1 is the product's KPI tile, shaped like the "Disk" reference** (`.cplsc1`). It shows a NEUTRAL
+      `shield-check` chip (`sev-neutral`: a `--primary-alt` fill with page-ink glyph), *Compliance* under it, and the % at
+      the foot with the bar kept. The posture tag and the Pass / Fail values are gone.
+    - **Option 2 is the KPI value widget, shaped like the "Overall Compliance" reference** (`.cplsc2v`). It shows the
+      score large and centred, with a `trending-up` glyph and the change at the bottom right. The change is 0 %, because
+      only one assessment exists. The ring + rule-split Option 2 was replaced.
+    - **The Bars policy card lost its segmented posture bar.** The four legend cells carry the same counts.
+    - **The device page's Gauges Compliance card:** the ring now carries the % (it used to show the passed count beside a
+      second "25%"). Beside the ring are the Posture `obs-tag` and *85 rules evaluated*, then the passed / failed rule
+      counts in mono green / red. The severity card's subtitle lost its "each dial against…" clause.
+    - **The policy page's posture tiles dropped their " / 3" unit.** The note line under each title already gives the
+      share.
+  - **Final round (6 Oct 2026). Where this conflicts with the notes above, it is current:**
+    - **The device page's Tiles view is three `obs-widget-card`s** (`.cpldvkp2`, a 210px row):
+      - **Overall Compliance**: the % large and centred in the band colour, with a `trending-up` glyph and 0 % at the
+        bottom right;
+      - **Overall Rule Assessment Result** (`.cplra`): "85 | Total" over a Pass | Fail pair. It replaced the separate Pass
+        and Fail tiles;
+      - **Failed Rule by Severity** (`.cplsevc`): five columns, each tag · % · `f/all`, with dividers between.
+
+      The `cplTile` + `.cplfsev` row markup is no longer rendered.
+    - **The device page's Gauges view is two `obs-widget-card`s on the same 210px row:**
+      - Compliance: ring = %, then the band tag and "N passed · N failed · of 85 rules".
+      - Failed Rule by Severity: the product's "Server" dial row, five large dials with only the level name, zero levels
+        dimmed.
+
+      **Superseded the same day:** the Compliance card was split into two widgets, *Overall Compliance* (the Tiles view's
+      own widget) and *Rule Assessment Result*. The second is the Overview's dashboard donut (`cplDonutHTML`: Total in the
+      centre, a mono `Pass: 21 / Fail: 64` legend, the hover lift). The row is now 1fr · 1.2fr · 2fr. The donut's CSS
+      scope was widened from `#cplOv` to `:is(#cplOv,#cplPolDet)` (23 rules). ⚠️ The donut keeps its `id="cplDon"`, which
+      is safe only because the Overview and the device page are never rendered at the same time.
+      ⚠️ `obs-widget-card`'s `time` prop did NOT render a count chip on a static card, so the reference's count badge is
+      not reproduced.
+    - **All three policy card views are minimal.**
+      - Bars: label · % · band tag, the bar, then "13 passed · 72 failed" as one quiet line (`.kp3`).
+      - Gauges: the same counts line sits under the band tag, and the posture section header is dropped.
+      - Overview: the Type | Tags pair and "worst first" are gone, and the footer shows the relative scan time, with the
+        timestamp as a tooltip.
+    - Alignment was measured: every widget in a device-header row has the same top and the same 210px height.
+  - **The policy page's KPI row has Option 1 / Option 2** (`CPLS.pdView`). The switch, `#cplPdView`, is an `obs-radio` in
+    `obs-page-header`'s action slot.
+    - Option 1 is the five KPI tiles.
+    - Option 2 (`.cplpd2`) is three `obs-widget-card`s on the device page's 210px row:
+      - Overall Compliance: the % large, with the change at the bottom right;
+      - Device Posture: `cplDonutHTML` with Total devices in the centre and one slice per band in its `--severity-*`
+        token;
+      - Rule Assessment Result: 85 | Total over the policy-level Pass 13 | Fail 72, a figure Option 1 never showed.
+
+    Below 1280px the donut drops to its own row.
+  - **Option 3 of the same row** (`cplPd3HTML`, `.cplpd3`; request: *"make it simple and user-friendly"*) is ONE card
+    instead of five boxed tiles. Compliance leads (label · % in the band colour · band tag · bar), then the four postures
+    as plain columns split by hairlines, each with a dot + name, a mono device count and "N% of devices". There are no
+    icon chips and no per-tile bars, and zero bands are dimmed. Below 1280px, Compliance spans a row of its own. The
+    switch now uses `CPL_PD_VIEWS` (three options); the Compliance Score switch keeps `CPL_SC_VIEWS`.
+    **Then each column became its own card, 10px apart** (on request): the shared frame and the hairlines between columns
+    are gone. Measured: 10px between every pair of cards.
+    **Then every card was given the same three fixed rows** (label 18px · value 32px · footer 18px), so labels, figures
+    and the bar/captions each share one line across all five cards. The Compliance label is 13px/500 like the others, and
+    the % matches the counts at 28px mono. Measured: the row centres are identical on all five cards.
+  - **Section titles in every Compliance drawer are 12px / 500 in `--neutral-light`** (`.cpldrb .cplsec h4`, including
+    `.sub`). These are titles such as Description, Rationale, Impact, Default Value, Assessed resources and Rule
+    Condition. The Controls tab's control names (`.cplctl h5`) are content, not titles, and were left alone.
+  - **The third device option is now *Summary* (value `simple`), rebuilt for the END USER from Mobbin references.** It
+    supersedes the *Simple* widgets below. The references:
+    [Google Ads Security tasks](https://mobbin.com/screens/849f39bc-0968-4f24-82e8-493e9a74905a),
+    [1Password Watchtower](https://mobbin.com/screens/01399ac0-e9ac-43e8-a94a-90b04f813f74),
+    [NordVPN Password Health](https://mobbin.com/screens/8483f135-df5a-4481-ad2d-30892858953b). What it shows (`.cplsum`):
+    - one summary card: a semicircle gauge (hand-drawn SVG, all tokens) · *This device is **Poor*** · "64 of 85 rules are
+      failing. Start with the 25 critical rules." · a pass|fail bar with "21 passing · 64 failing";
+    - one issue card per severity that HAS failures: icon chip · count + "Critical issues" · what that level means ("Highest
+      risk — fix these first") · *View rules ›*, which scrolls `#cplBody` to the Compliance Breakdown. Severities with no
+      failures get no card. Below 1440px the summary card spans its own row.
+
+    ⚠️ The card classes are `.iss` / `.ich`, NOT `.ic` / `.chip`. A bare page-wide `.ic{width:20px;height:20px}` squeezed
+    every card to 20px.
+  - **The device page's switch now reads Tiles · Gauges · Simple** (`CPL_DV_VIEWS`). The simplified widgets were first
+    built IN PLACE of Gauges; on request they became a third option, *Simple* (`cplDvSimpleHTML`), and the Gauges view
+    (`cplDvGaugesHTML`) was restored as it was: Overall Compliance + trend, the donut, and five name-only dials. The
+    *Simple* option is:
+    - **Overall Compliance** (`.cploc3`): the % with its band tag, then "21 of 85 rules passing" over a bar. The 0 % trend
+      was dropped, because with one assessment it said nothing.
+    - **Rule Assessment Result:** the donut's legend also gives each slice's share. This is `cplDonutHTML`'s new optional
+      second argument, `pct`; the Overview's call omits it.
+    - **Failed Rule by Severity** (`.cpldvgs3`): dials appear ONLY for levels that have rules, each with "N of M failed"
+      under its name. The empty levels are named in a footnote ("No Low or Info rules in this policy").
+  - **The policy card has a THIRD view, *Overview*** (`cplPolCardOvHTML`, `.cplocv`; request: *"copy this widget and
+    improve the visualization using localhost:3000/overview-card"*). It uses `obs-overview-card`'s layout from DS
+    **v0.1.240**. That element's shadow CSS was pulled from the reference bundle (`observeops-elements.js`, `dp`) and its
+    classes were copied. The vendored 0.1.166 bundle lacks the element, so the card is rebuilt from `obs-severity` +
+    `obs-tag`:
+    - the SLO variant's header: severity dot · name · the band as a status pill;
+    - the SLO variant's Type | Tags pair;
+    - the SLO variant's trio: Compliance % (band colour) · Passed rules (`--secondary-green`) · Failed rules
+      (`--secondary-red`), in 22px mono;
+    - the NetRoute variant's availability row + strip, but with **one pill per device** in its band's severity colour
+      (NetRoute has one per hour). Each pill has a tooltip, and clicking it opens that device's page;
+    - the NetRoute variant's rule + "Last scan at" footer with the mono timestamp from `P.ts`.
+
+    Frame: the DS card's 7px radius and `--widget-*` tokens.
+  - ⚠️ **`#cplPcView` had to be added to the scoped DS token block (both the dark and light openers).** The Policies
+    toolbar sits outside `#cplPolList`, so in dark theme the switch painted the DS's LIGHT defaults (white unselected
+    segments). Only the dark screenshot showed it.
+  - ⚠️ **The light selected segment on the dark page is the DS's own dark value** (`--radio-btn-box-selected-bg #e3e8f2`),
+    not a theme leak.
+  - ⚠️ **`obs-gauge` shows its raw value**, so the device ring reads *21* (rules passed) beside *25%*. The compliance %
+    is printed next to it.
+  - Verified by probes of 12 and 9 assertions. They click the Gauges option inside the switch's shadow root, then check:
+    6 and 5 gauges actually render, the switch value syncs, nothing overflows, there is no switch in list view, and there
+    are no JS errors.
 
 ## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
 
