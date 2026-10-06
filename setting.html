@@ -16302,6 +16302,18 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 .dpsch .dpfi > .dplab{margin-bottom:6px}
 .dpsch .dpck{margin-top:4px}
 .stcdrf .dpsfgo{margin-left:auto}
+
+/* IPAM › Add IP Address Discovery: the type rail (6 Oct 2026), shaped like APM › Application Registration's */
+.ipmkind{flex:0 0 220px;display:flex;flex-direction:column;gap:4px;padding:16px 12px;border-right:1px solid var(--border-color);overflow:auto}
+.ipmkindi{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;border:0;border-radius:4px;background:transparent;color:var(--neutral-light);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.ipmkindi:hover{color:var(--page-text-color);background:color-mix(in srgb,var(--page-text-color) 5%,transparent)}
+.ipmkindi.on{color:var(--page-text-color);font-weight:500;background:var(--code-tag-background-color)}
+.ipmkindi obs-icon{flex:0 0 auto}
+
+/* the type's own title + one line under it, at the top of the form column (6 Oct 2026, from Application Registration) */
+.ipmkhd{margin:0 0 20px}
+.ipmkhd h3{margin:0;font-size:16px;font-weight:600;line-height:24px;color:var(--page-text-color)}
+.ipmkhd p{margin:4px 0 0;font-size:12.8px;line-height:18px;color:var(--neutral-light)}
 </style>
 </head>
 <body>
@@ -42166,6 +42178,8 @@ const DP_CRED    = ['cred','Credential Profiles','multi',{req:1, ph:'Select', sr
 const DP_TAGS    = ['tags','Tags','tags',{ph:'Add Tags'}];
 /* the add-on modules a discovered device is handed to (request, 5 Oct 2026): it was a single Network Config Management
    switch; IPAM joins it, and a profile may need one, the other, or both — so it is the form's own multi-select dropdown */
+/* REVERTED (request, 6 Oct 2026): the Network type is back on its single Network Config Management switch; this
+   dropdown is kept, unreferenced */
 const DP_MODS    = ['mods','Modules','multi',{opts:['Network Config Management','IPAM'], ph:'Select', live:1}];   /* ticks apply at once — no Clear / Apply (request, 5 Oct 2026) */
 const DP_PING    = ['ping','Ping Check','sw',{val:true}];
 const DP_NOTIFY  = ['notify','Notify','notify',{ph:'@User or Email or /Handle or #User Profile or Mobile Number'}];
@@ -42186,7 +42200,7 @@ const DP_FORMS = {
     params:[['down','Discover Down instances','sw',{val:false}], DP_PING, ['regions','Regions','multi',{req:1, ph:'Select', opts:['us-ashburn-1','us-phoenix-1','uk-london-1','eu-frankfurt-1','ap-mumbai-1']}]]}),
   'Google Cloud': dpF({sec:'Discovery Parameters Of Google Cloud', grid:[...DP_COLLECT, DP_GROUPS, DP_CRED, DP_TAGS],
     params:[['down','Discover Down instances','sw',{val:false}], DP_PING, ['res','Resources to be Monitored','multi',{ph:'Select', opts:['Compute Engine','Cloud SQL','Cloud Storage','GKE','Load Balancing']}]]}),
-  'Network': dpF({sec:'Discovery Parameters', grid:[DP_TARGET, ...DP_COLLECT, DP_GROUPS, DP_CRED, DP_MODS, DP_TAGS],
+  'Network': dpF({sec:'Discovery Parameters', grid:[DP_TARGET, ...DP_COLLECT, DP_GROUPS, DP_CRED, ['ncm','Network Config Management','sw',{val:false}], DP_TAGS],
     params:[['port','SNMP Port','num',{req:1, val:161}], ['retry','Retry Count','num',{req:1, val:2}], DP_PING, ['ifd','Interface Discovery','sw',{val:true}]],
     extra:[['Topology', [['topo','Run Topology','sw',{val:false}]]]]}),
   'Cisco Catalyst SD-WAN': dpF({sec:'Discovery Parameters of Cisco Catalyst SD-WAN', grid:[['url','URL Endpoint','text',{req:1, ph:'Enter text'}], ...DP_COLLECT, DP_GROUPS, DP_CRED, DP_TAGS], params:[['retry','Retry Count','num',{req:1, val:2}], DP_PING]}),
@@ -42987,7 +43001,7 @@ const IPM = {
   ar: null,          /* the Add IP Address Discovery panel's draft */
   fm: null,          /* { kind, id, data } — Add/Edit Rule, Add/Edit Vendor */
   cf: null,          /* the pending confirm's onOk */
-  opt: '1',          /* the review switch — Option 1 / Option 2 (see IPM_OPTS) */
+  opt: '2',          /* the review switch — Option 1 / Option 2 (see IPM_OPTS); Option 2 is the chosen one and opens by default (6 Oct 2026) */
   grp: false         /* Option 2's Discovery Profiles grid grouped by site — the toolbar's group toggle. OFF by default
                         (request, 2 Oct 2026: "by default show without group"); the toggle still turns it on */
 };
@@ -43298,7 +43312,7 @@ function ipmRoutersBody(){
 }
 function ipmRoutersHTML(){
   return `<div id="ipmPage" class="ipm" data-ipm="routers">${ipmFlashHTML()}
-    ${ipmHead('IP Address Discovery', 'Seed routers whose ARP tables IPAM reads, and the subnets they report waiting on approval.')}
+    ${ipmHead('IP Address Manager', 'Seed routers whose ARP tables IPAM reads, and the subnets they report waiting on approval.')}
     <obs-tabs id="routersTabs" value="${ipmEsc(IPM.tab)}" tabs='${ipmJ(IPM_ROUTERS_TABS)}'></obs-tabs>
     <div id="ipmTabBody" class="ipmbody">${ipmRoutersBody()}</div></div>`;
 }
@@ -44326,7 +44340,14 @@ const IPM_AR_TARGET = [{ key: 'cidr', label: 'IP/CIDR' }, { key: 'csv', label: '
 const ipmSiteOpts = cur => [...new Set(IPM_SITES.concat(cur ? [cur] : []))].map(x => ipmOpt(x));
 const IPM_AR_EXCLUDE = [{ key: 'ip', label: 'IP' }, { key: 'iprange', label: 'IP Range' }];
 const ipmArDefaults = () => ({ target: 'cidr', targetValue: '', manualIps: '', excludeMode: 'ip', collectorType: 'Collector', collector: '',
-  site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null });
+  site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null, kind: 'ipv4', devices: [] });
+/* the panel's TYPE rail (request, 6 Oct 2026, with APM › Application Registration's Host/VM · Docker · Kubernetes rail as the
+   reference): IPv4 Subnet is the form that was here; Discover Subnet is ONE field, Select Devices (Firewall · Switch · Router) */
+const IPM_AR_KINDS = [{ key: 'ipv4', label: 'IPv4 Subnet', icon: 'ip',
+    head: 'Discovering an IPv4 Subnet', sub: 'Enter the subnet or upload a CSV, then choose the collector and credentials IPAM uses to read it.' },
+  { key: 'discover', label: 'Discover Subnet', icon: 'network-discovery',
+    head: 'Discovering Subnets from Devices', sub: 'Choose the device types IPAM reads routing and ARP tables from; the subnets they report wait on Subnet Approval.' }];
+const IPM_AR_DEVICES = ['Firewall', 'Switch', 'Router'];
 function ipmArOpen(){ IPM.ar = ipmArDefaults(); ipmArPaint(); }
 /* from a pending subnet's Approve / Approve as guest: the panel opens on IP/CIDR with that subnet's CIDR, and
    remembers which pending row it came from so Save can approve it */
@@ -44444,6 +44465,9 @@ function ipmArPaint(){
     <div class="span-2">${ipmField('Notify', `<obs-input id="arNotify" block placeholder="@User or Email or /Handle or #User Profile or Mobile Number" value="${ipmEsc(d.notify)}"></obs-input>`)}</div>
   </div>`;
   const help = IPM.opt === '2' && !d.editId && !d.fromPending;   /* the approve flow needs no help card (29 Sep 2026) */
+  const rail = help ? `<nav class="ipmkind" aria-label="Discovery type">${IPM_AR_KINDS.map(k => `<button type="button" class="ipmkindi${d.kind === k.key ? ' on' : ''}" data-kind="${k.key}"><obs-icon name="${k.icon}" size="18"></obs-icon><span>${ipmEsc(k.label)}</span></button>`).join('')}</nav>` : '';
+  const disc = help && d.kind === 'discover';
+  const discBody = `<div class="ip-form"><div class="span-2">${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}</div></div>`;
   const foot = `<div class="ip-row ipmfoot"><span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
       ${d.fromPending
         /* opened from Subnet Approval (request, 29 Sep 2026): the footer DECIDES the subnet — Reject | Approve —
@@ -44458,9 +44482,28 @@ function ipmArPaint(){
      with the subnet's state as a tag under it — Pending until this panel is saved */
   const fp = d.fromPending, pr = fp && IPM_PENDING.find(x => x.id === fp.id);
   ipmPanel(pr ? pr.cidr + ' - ' + (fp.guest ? 'Approve as guest' : 'Approve') : d.editId ? 'Edit IP Address Discovery' : 'Add IP Address Discovery',
-    help ? `<div class="ipmarwrap"><div class="ipmarform">${body}</div>${ipmHelpHTML()}</div>` : body, foot,
-    help ? 'min(1180px, calc(100vw - 80px))' : '684px', pr ? ['Pending', 'tag-orange'] : null);
+    help ? `<div class="ipmarwrap">${rail}<div class="ipmarform">${(k => k ? `<div class="ipmkhd"><h3>${ipmEsc(k.head)}</h3><p>${ipmEsc(k.sub)}</p></div>` : '')(IPM_AR_KINDS.find(x => x.key === d.kind))}${disc ? discBody : body}</div>${ipmHelpHTML()}</div>` : body, foot,
+    help ? 'min(1400px, calc(100vw - 80px))' : '684px', pr ? ['Pending', 'tag-orange'] : null);
   ipmArBind();
+}
+/* Clear shown by DEFAULT in a multi obs-select's menu (request, 6 Oct 2026). obs-select 0.1.166 renders its footer
+   (div.foot > button.clearbtn) only once something is ticked; with nothing ticked this puts a disabled copy of that
+   same footer — the component's own classes, so its own shadow CSS paints it — at the end of the open menu, and takes
+   it away the moment the real one renders. ⚠️ It is appended AFTER the component's comment anchor, so Vue still
+   inserts its own footer at its own place, ahead of ours. */
+function ipmClearAlways(el){
+  if (!el || el._clrObs) return;
+  const sync = () => {
+    const r = el.shadowRoot; if (!r) return;
+    const lb = r.querySelector('[aria-multiselectable]'), real = r.querySelector('.foot:not(.ipmclr)'), mine = r.querySelector('.foot.ipmclr');
+    if (!lb || real) { if (mine) mine.remove(); return; }
+    if (mine) return;
+    const f = document.createElement('div'); f.className = 'foot ipmclr';
+    f.innerHTML = '<button class="clearbtn" disabled style="opacity:.55;cursor:default"><obs-icon class="x" name="times" size="12"></obs-icon>Clear</button>';
+    lb.parentElement.appendChild(f);
+  };
+  const go = () => { if (!el.shadowRoot) return setTimeout(go, 50); el._clrObs = new MutationObserver(sync); el._clrObs.observe(el.shadowRoot, { childList: true, subtree: true }); sync(); };
+  go();
 }
 function ipmArBind(){
   const P = document.getElementById('ipmDr'), on = (sel, ev, fn) => { const el = P.querySelector(sel); if (el) el.addEventListener(ev, fn); };
@@ -44483,6 +44526,9 @@ function ipmArBind(){
   });
   bindTarget();
   on('#arProfile', 'change', e => { IPM.ar.profile = ipmArr(ipmDet(e)); });
+  on('#arDevices', 'change', e => { IPM.ar.devices = ipmArr(ipmDet(e)); });
+  ipmClearAlways(P.querySelector('#arDevices'));
+  P.querySelectorAll('.ipmkindi').forEach(b => b.addEventListener('click', () => { if (IPM.ar.kind === b.dataset.kind) return; IPM.ar.kind = b.dataset.kind; ipmArPaint(); }));
   on('#arSite', 'change', e => { IPM.ar.site = ipmVal(e); });
   on('#arSite', 'add', e => {
     const el = P.querySelector('#arSite'), d = ipmDet(e);
@@ -44508,6 +44554,11 @@ function ipmArBind(){
   on('#arSave', 'click', () => ipmTap(() => {
     if (!IPM.ar) return;
     const d = IPM.ar, name = d.targetValue || d.manualIps || 'The seed router';
+    if (d.kind === 'discover' && !d.editId && !d.fromPending) {
+      if (!d.devices.length) { toast('Select at least one device type'); return; }
+      IPM.flash = { title: 'Subnet discovery queued', body: 'Subnets will be discovered from every ' + d.devices.join(', ').toLowerCase() + ' IPAM can reach; they wait on Subnet Approval.' };
+      ipmPanelClose(); stMainPaint(); return;
+    }
     if (d.editId) {
       const r = IPM_ROUTERS.find(x => x.id === d.editId);
       if (r) Object.assign(r, { ip: d.targetValue || r.ip, site: d.site || r.site, profile: d.profile[0] || r.profile });
@@ -44779,7 +44830,7 @@ document.addEventListener('keydown', e => {
 
 /* the flash banner is said once: leaving an IPAM page clears it */
 const ipmPageOf = html => () => { const out = html(); IPM.flash = null; return out; };
-ST_PAGES['IPAM › IP Address Discovery']  = { html: ipmPageOf(ipmRoutersHTML), after: ipmAfter };
+ST_PAGES['IPAM › IP Address Manager']  = { html: ipmPageOf(ipmRoutersHTML), after: ipmAfter };
 ST_PAGES['IPAM › Site Separation Rules'] = { html: ipmPageOf(ipmRulesHTML),   after: ipmAfter };
 ST_PAGES['IPAM › Approved Vendor List']  = { html: ipmPageOf(ipmVendorsHTML), after: ipmAfter };
 ST_PAGES['System Settings › DHCP Server Profile'] = { html: ipmPageOf(ipmDhcpHTML), after: ipmAfter };
