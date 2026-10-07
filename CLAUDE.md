@@ -1182,6 +1182,29 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
   - **Section titles in every Compliance drawer are 12px / 500 in `--neutral-light`** (`.cpldrb .cplsec h4`, including
     `.sub`). These are titles such as Description, Rationale, Impact, Default Value, Assessed resources and Rule
     Condition. The Controls tab's control names (`.cplctl h5`) are content, not titles, and were left alone.
+  - **7 Oct 2026, later:**
+    - **The policy page's KPI row opens on Option 3 by default.** `CPLS.pdView` is `'3'`, declared the final design.
+      Options 1 and 2 stay in the switch.
+    - **The Explorer grid has a filter button** (`#cplFacetBtn`, before PDF/CSV). It shows and hides the facet panel, is
+      filled while the panel shows, and carries a live count badge of active facet picks, so a hidden panel never hides
+      that the grid is filtered. It is toggled in place (`cplFacetsTog`); `cplFacet` keeps the badge current.
+    - **setting.html › IPAM › the discovery-type rail lost its icons** (labels only; `k.icon` stays in `IPM_AR_KINDS`).
+      The form's footer button reads **Save and Run** (*Save changes* when editing). The toolbar's *Create Subnet
+      Discovery Profile* button and the panel title were left as they are.
+  - **The *Compact* option, "improve ui" pass (7 Oct 2026). This supersedes the next note's card description.**
+    - All four boxes are `obs-widget-card`s with title strips: Compliance · Pass · Fail · Failed Rule by Severity.
+    - Every body has the same rows: value · a one-line context ("Poor posture", "of 85 rules", "25 of 39 failed") · a
+      thin bar at the foot. Each severity's tag shares its % line (`.vr`), and zero severities are dimmed.
+    - Measured: every value, context line and bar centre is identical across all eight columns.
+    - ⚠️ `.cplsevc .c` carries `align-items:flex-start` from the Tiles view, which shrank the severity bars to 0 wide.
+      They need `align-self:stretch`.
+  - **Device switch, 4th option *Compact*** (`cplDvCompactHTML`, `.cpldvc4`; 7 Oct 2026, from a supplied screen). It
+    shows three small cards (Compliance to one decimal in the band colour · Pass with a green label · Fail with a red label
+    and value), each a coloured label over one large mono value, beside the five-column Failed Rule by Severity widget. That
+    widget reuses `.cplsevc`. Below 1440px it takes its own row.
+  - **Policy card, 4th option *Option 4*** (`pcView 'bars2'`) is the Bars card COPIED with one change: the four boxed
+    posture cells became rows (dot · band · a bar of that band's share of devices · count · %), with zero bands dimmed.
+    The copy shares the Bars card's markup, so the two cannot drift apart.
   - **The third device option is now *Summary* (value `simple`), rebuilt for the END USER from Mobbin references.** It
     supersedes the *Simple* widgets below. The references:
     [Google Ads Security tasks](https://mobbin.com/screens/849f39bc-0968-4f24-82e8-493e9a74905a),
