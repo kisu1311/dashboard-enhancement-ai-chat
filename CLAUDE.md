@@ -1183,7 +1183,10 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
     `.sub`). These are titles such as Description, Rationale, Impact, Default Value, Assessed resources and Rule
     Condition. The Controls tab's control names (`.cplctl h5`) are content, not titles, and were left alone.
   - **7 Oct 2026, later:**
-    - **The policy page's KPI row opens on Option 3 by default.** `CPLS.pdView` is `'3'`, declared the final design.
+    - **The device page opens on Option 6 by default** (`CPLS.dvView = 'cards6'`, 7 Oct 2026); the other five stay in the
+      switch.
+    - **The policy page's KPI row opens on Option 4 by default** (later the same day; it was Option 3). `CPLS.pdView` is
+      `'4'`.
       Options 1 and 2 stay in the switch.
     - **The Explorer grid has a filter button** (`#cplFacetBtn`, before PDF/CSV). It shows and hides the facet panel, is
       filled while the panel shows, and carries a live count badge of active facet picks, so a hidden panel never hides
