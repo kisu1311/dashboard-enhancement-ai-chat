@@ -8829,6 +8829,16 @@ html:not([data-theme="light"]) #userPop.o2 .upavatar{background:var(--chip)}
    and Hootsuite's (every row carries a one-line description of where it goes). Same rows and handlers as
    Options 1 and 2; only the layout differs. */
 #userPop .ds,#userPop .trow{display:none}
+#userPop .untfr{display:flex;align-items:center;gap:12px;padding:6px 10px;font-size:13px;font-weight:500;color:var(--text)}
+#userPop .untfr .tic{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;color:var(--text-dim)}
+#userPop .untfr .tic svg{width:16px;height:16px}
+#userPop .untfl{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
+#userPop .untfl small{font-size:11.5px;font-weight:400;color:var(--text-dim)}
+#userPop .untfsw{flex:0 0 32px;width:32px;height:18px;border-radius:9px;border:0;padding:2px;background:var(--track);cursor:pointer;display:flex;align-items:center;transition:background .15s}
+#userPop .untfsw span{width:14px;height:14px;border-radius:50%;background:var(--white);transition:transform .15s}
+#userPop .untfsw.on{background:var(--green)}
+#userPop .untfsw.on span{transform:translateX(14px)}
+#userPop .untfsw:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 #userPop.o3{width:300px}
 #userPop.o3 .uhead{flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 16px 16px}
 #userPop.o3 .upavatar{width:56px;height:56px;flex:0 0 56px;font-size:19px}
@@ -14009,6 +14019,7 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
     <li class="item"><a href="https://docs.motadata.com/motadata-aiops-docs/" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 48 48" id="icHelp"></svg> Documentation<span class="ds">The product guide, in a new tab</span></a></li>
     <li class="item"><a href="javascript:;" onclick="docsOpen('/', 'the documentation — the mobile app is not published in the docs, so there is no store link to open')"><svg class="ic" viewBox="0 0 48 48" id="icMobile"></svg> Download mobile app <span class="newchip">New</span><span class="ds">ObserveOps on your phone</span></a></li>
     <li class="div"></li>
+    <li class="untf"><div class="untfr"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></span><span class="untfl">Notifications<small>Pop-up alerts on this browser</small></span><button type="button" class="untfsw" id="upNtf" role="switch" aria-checked="false" aria-label="Notifications" onclick="event.stopPropagation();up4NtfTog()"><span></span></button></div></li>
     <li class="tli">
       <div class="trow" tabindex="0"><span class="tic" id="upThemeIc"></span>Theme<span class="tv" id="upThemeVal"></span><svg class="tch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></div>
       <div class="themerow"><span class="tlbl">Theme</span>
@@ -24498,12 +24509,15 @@ function up4ThemeLit(){
 }
 /* repaint on every open: the identity, the icons and the notification state are read live */
 (function(){ const tp = window.togglePop; if (typeof tp !== 'function') return;
-  window.togglePop = function(id){ const r = tp.apply(this, arguments); if (id === 'userPop' && UP_OPT === '4') up4Paint(); if (id === 'userPop' && UP_OPT === '5') up5Paint(); return r; }; })();
+  window.togglePop = function(id){ const r = tp.apply(this, arguments); if (id === 'userPop') upNtfPaint(); if (id === 'userPop' && UP_OPT === '4') up4Paint(); if (id === 'userPop' && UP_OPT === '5') up5Paint(); return r; }; })();
+/* the Notifications switch in the profile popup's menu (request, 7 Oct 2026: the preference left My Profile and lives here).
+   Same key and same toggle as card designs 4 and 5 (up4NtfTog), so every surface agrees; painted on every popup open. */
+function upNtfPaint(){ const on = (typeof ntfEnabled === 'function') && ntfEnabled(); const b = document.getElementById('upNtf'); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-checked', on); } }
 function up4NtfTog(){
   const on = !((typeof ntfEnabled === 'function') && ntfEnabled());
   try { localStorage.setItem('oo-notifications', on ? 'on' : 'off'); } catch (e) {}
   document.body.classList.toggle('ntfoff', !on);
-  const b = document.getElementById('up4Ntf'); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-checked', on); } const st5 = document.getElementById('up5NtfSt'); if (st5) { st5.textContent = on ? 'On' : 'Off'; st5.parentNode.setAttribute('aria-checked', on); }
+  const b = document.getElementById('up4Ntf'); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-checked', on); } upNtfPaint(); const st5 = document.getElementById('up5NtfSt'); if (st5) { st5.textContent = on ? 'On' : 'Off'; st5.parentNode.setAttribute('aria-checked', on); }
   if (on && typeof ntfDemo === 'function') setTimeout(ntfDemo, 400);
 }
 

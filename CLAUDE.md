@@ -1204,6 +1204,13 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
     starts COLLAPSED (internal expanded set, no prop): `ipmExpandGroups` clicks each group row open once per menu open (the flag resets when the menu closes, or a second open stays folded).
     Groups need a `value` or the component's toggle keys them all as `undefined`. The IPv4 form now builds from
     `bodyHead` + `common`.
+  - **User based role on the Discover Subnet grid** (7 Oct 2026, `ipmUs*`, `IPM.rsel`): the grid is `selectable hide-selection-info`
+    (class `ipmsel`); ticking any row shows a **User based role** icon button (`#rtUsersW`, `obs-icon user`) right after the eye —
+    hidden with nothing ticked (`[hidden]` needs `!important`: obs-tooltip's `:host` display beats the UA rule). It opens a 684px
+    side panel: **Choose Users\*** full width — a hand-built picker in the product's shape (chips in the trigger, Search, Select All,
+    a checkbox per user, Clear) over canned `IPM_USERS`; Cancel · Save bottom-right (`.ipmusbtns`, the foot is not flex).
+    Save writes `r.users` on every ticked profile, and the grid then gains a **Users** column (after Site) showing only those users.
+    ⚠️ obs-table emits `change` with detail `[[ids]]` — `ipmDet` unwraps the outer array, so a probe must dispatch it that way.
   - **Supernet discovers in the background, then you pick** (7 Oct 2026, `ipmSup*`): a valid Network address + mask starts a scan
     on its own (600ms debounce) → a spinner line *Discovering subnets in a/p…* (1.8s) → **`#arSupTbl`**, a selectable `obs-table`
     (Subnet · Mask · Usable hosts · Gateway · Site · Status New/Known/Conflict) with search, 10 per page, the **New** rows pre-ticked.
@@ -1322,6 +1329,48 @@ dirty, Reset/Save cover it, and Save sets `<html lang>`. ⚠️ The prototype's 
 does NOT translate or flip the page to RTL; that would be a much larger change. Probe: 14/14 (fields, section, one footer,
 label, theme bound, repaint keeps prefs, reset, save, column alignment, no errors).
 
+## My Profile · Option 6 — My Profile Option 2 + UI Preference Option 3, no live preview (7 Oct 2026)
+
+`stProfileHTML6()` = `stProfileHTML2()` with a **Display preferences** section spliced into the form (the Option 4 technique), built by
+`uip3BodyHTML()` — UI Preference Option 3's own controls on its own `UIP3` model and `uip3Set` handlers: Theme (System · Light · Dark),
+Date format | Time zone side by side (+ *Use my browser's time zone*), Rows per page, Alert overlay. **The Live preview column is not
+rendered** — `uip3Set` only repaints `#uip3Stage` when it exists, so nothing else had to change. One footer: Reset (`stCombo6Reset`) ·
+Save changes (`stCombo6Save` → `uip3Save` if dirty, then `stSubmit`); theme applies on save, as in UIP Option 3. Scoped `#stProfPage.stpd6`.
+The UI Preference page itself is untouched. **Footer fixes (same day):** the footer overlapped the last row because `#stProfPage` is a
+flex column with `min-height:0` — a form taller than the pane shrank the page and its overflow ran under the footer. Option 6 sets
+`min-height:auto` + 32px under the form, and the footer is **sticky** (`bottom:-20px`, page-surface fill), so it stays at the pane's
+foot while the form scrolls (measured: bottom edge fixed at scroll top / middle / end).
+
+## Language in every My Profile option (8 Oct 2026)
+
+One preference — `UIP.lang` in `oo-ui-pref`, the value Options 4/5's Display preferences already write. `stLang()` reads it,
+`stLangSet(v)` saves it **at once**, sets `<html lang>` and mirrors it into `UIP`/`UIP4_SAVED`/`UIP3`/`UIP3_SAVED` so no later Save reverts it.
+- Option 1: a `Language` row after Mobile Number (native `.uipsel`, `stLangNative()`); Option 3: a Language section after Contact.
+- Option 2 (so also 6 and 7): `obs-select#stLang` in Personal details after User Name — it fills the empty grid slot; bound in `stProfBind`.
+- Option 4 strips that copy (it has Language in its Display preferences); Option 5 keeps its own row. Exactly one per option (probed).
+- ⚠️ English only — picking العربية does not translate or flip to RTL.
+
+## Notifications left My Profile for the profile popup (7 Oct 2026)
+
+Request: *"the notification option is removed in every option and the notification on/off will be shown in the my profile popup"*.
+- **Removed from all seven My Profile options**: Option 1's row, Option 3's section, Option 2's **Preferences section** (it held only
+  Notifications — so Options 2 / 6 / 7 show Password alone, full width via `.stpdpair:not(:has(> section + section))`), Option 5's row
+  (its card is now titled **Alerts** and holds Alert overlay). Option 4 keeps a **Preferences** section holding only Alert Overlay —
+  it was injected after the Notifications switch; it now prepends a section before Password.
+- **Added to `#userPop`'s menu** (`li.untf`, `#upNtf`, `upNtfPaint`) in **`index.html` and `setting.html`**: bell · Notifications /
+  *Pop-up alerts on this browser* · a switch, above the theme row. It calls the popup's existing **`up4NtfTog`** (same
+  `oo-notifications` key as card designs 4 and 5), and is painted on every popup open. Designs 4/5 hide `.umenu`, so they keep their own.
+- ⚠️ **The other twelve option pages' popups do not have the row** — their `#userPop` markup is per file.
+- **Also fixed: the password fields sat in a box** — a page-level `.pw{background;border;radius;overflow:hidden;display:flex}` (another
+  component) matched `.stpdg.pw`. Cancelled under `#stProfPage`, which fixes Options 2/4/6/7. Option 7's Alert overlay row was
+  unboxed to match the Notifications row's shape (switch on the half-column's right edge).
+
+## My Profile · Option 7 — a clone of Option 6 (7 Oct 2026)
+
+Rendered by `stProfileHTML6()` with an extra **`stpd7`** class on `#stProfPage` (it keeps `stpd6`, so every Option 6 rule applies), and
+every `ST_POPT === '6'` path (bind, Save/Reset, button label) also takes `'7'`. A copy by construction: nothing differs yet — a change
+meant for Option 7 only goes under `#stProfPage.stpd7` or an `ST_POPT === '7'` branch. **Then (same day): every field grid in THREE columns** (`stProfileHTML7`): Personal details First · Last · Email / Mobile · User name, the password fields Current · New · Confirm in one row, Rows per page moved into the preferences grid beside Date format and Time zone (a markup move in `stProfileHTML7`), and the three theme cards on the same three columns. The Preferences | Password pair stays two sections side by side. **Then every field column is 300px** (was ~235): `repeat(3,minmax(0,300px))` on the field, preferences and theme grids, and the form column widened 738 → 932px (`.stpdb{grid-template-columns:200px minmax(0,932px)}`); measured 300px each at a 1700px window with no horizontal overflow.
+
 ## My Profile · Option 5 — Option 4 re-laid on Mobbin's settings rows (7 Oct 2026)
 
 `stProfileHTML5`, `.st5*`. Same fields, models, ids and handlers as Option 4 (save = `stComboSave`, discard =
@@ -1332,7 +1381,7 @@ Gumloop (Upload / Remove beside a 48px photo + name/email), Magnific (password =
 its three fields). The footer is sticky and says *All changes saved / You have unsaved changes* (`st5Dirty`, called from
 `stIn` and `uip4Paint`). ⚠️ The theme group carries `.uip4pv` only so `uip4Pick()` lights it — that class's own button
 chrome (line-height 0, 3px border, clip) is cancelled under `.st5th.uip4pv`. ⚠️ `#stProfPage .stavc` (112px) and
-`.stav` (166px wide) had to be outranked for the small photo. Probe: 13/13. **Then (same day): every field is its own box** — `.st5card` is a plain 8px stack and each `.st5r` carries the border / 8px radius / fill; the hairlines between rows went with the shared frame.
+`.stav` (166px wide) had to be outranked for the small photo. Probe: 13/13. **Then (same day): every field is its own box** — `.st5card` is a plain 8px stack and each `.st5r` carries the border / 8px radius / fill; the hairlines between rows went with the shared frame. **Then, later the same day — superseded: no boxes at all** (*"show without box"*) — no section frame, no row frame, rows flush at the heading's left edge (`padding:16px 0`) with a hairline between rows. **Then aligned on Mobbin's settings pages** (Linear · Vercel · Notion): the hairlines are gone, each row is `minmax(0,1fr) 420px` so every input, select, photo row and switch ends on ONE right edge (measured: all x=1390 at 1600px; the Change password button and the Rows-per-grid segments start at the column's left edge), rows 12px apart, and sections set apart by 48px of space instead of lines.
 
 ## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
 
