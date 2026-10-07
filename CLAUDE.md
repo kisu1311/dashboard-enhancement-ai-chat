@@ -1191,6 +1191,23 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
     - **setting.html › IPAM › the discovery-type rail lost its icons** (labels only; `k.icon` stays in `IPM_AR_KINDS`).
       The form's footer button reads **Save and Run** (*Save changes* when editing). The toolbar's *Create Subnet
       Discovery Profile* button and the panel title were left as they are.
+  - **Merged-card options (7 Oct 2026).**
+    - **Policy KPI row Option 4** (`cplPd3HTML(s, band, true)`) is Option 3 with the four posture cards merged into ONE
+      card (`.pm4`): four columns split by hairlines.
+    - **Device switch Option 6** (`cards6`, `cplDvCardsHTML(d, true)`) is Option 5 with the five severity cards merged
+      into ONE card (`.pm4.pm5`).
+
+    Both keep the label · value · footer rows, and this was measured to align. ⚠️ The five-column rule needs
+    `.cplpd3 .pm4.pm5` (0,3,0): `.cplpd3 .pm4`'s four columns come later in the sheet and won a tie, which wrapped Info to
+    a second line.
+  - **Device switch, 5th option *Option 5*** (`cards`, `cplDvCardsHTML`, `.cplpd3.cpldv5`, 7 Oct 2026). It is Compact's
+    content as separate cards in the policy page's Option 3 style, 10px apart, all on `.cplpd3`'s three fixed rows:
+    - Compliance: the Option 3 card (% · band tag · bar in the footer);
+    - **one combined Rules card**: 21 passed | 64 failed, split by a hairline, "of 85 rules evaluated". Pass and Fail were
+      merged on request;
+    - five severity cards: dot + level · % · "N of M failed", with zero levels dimmed.
+
+    Columns are 1.4fr · 1.5fr · 5 × 1fr. Measured: the label, value and footer rows are identical across all seven cards.
   - **The *Compact* option, "improve ui" pass (7 Oct 2026). This supersedes the next note's card description.**
     - All four boxes are `obs-widget-card`s with title strips: Compliance · Pass · Fail · Failed Rule by Severity.
     - Every body has the same rows: value · a one-line context ("Poor posture", "of 85 rules", "25 of 39 failed") · a

@@ -8498,6 +8498,16 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cpls4 .na .r i{width:8px;height:8px;border-radius:50%}
 .cpls4 .na .r b{font:600 13px var(--numeric-font-family,'JetBrains Mono',monospace)}
 .cpls4 .na .r.z{opacity:.45}
+/* device page Option 5 — eight Option-3-style cards (7 Oct 2026) */
+.cplpd3.cpldv5{grid-template-columns:minmax(0,1.4fr) minmax(0,1.5fr) repeat(5,minmax(0,1fr));margin:14px 0 18px}
+.cpldv5 .pf5 .row{gap:8px}
+.cpldv5 .pf5 .w{font-size:12.8px;color:var(--neutral-light);align-self:flex-end;margin-bottom:5px}
+.cpldv5 .pf5 .dv{width:1px;height:24px;background:var(--border-color);margin:0 6px}
+.cpldv5 .z{opacity:.45}
+.cpldv5 .k .ok{color:var(--secondary-green)}.cpldv5 .k .bad{color:var(--secondary-red)}
+.cplpd3.cpldv5:has(> .pm5){grid-template-columns:minmax(0,1.4fr) minmax(0,1.5fr) minmax(0,5fr)}
+.cplpd3 .pm4.pm5{grid-template-columns:repeat(5,minmax(0,1fr))}   /* (0,3,0): .cplpd3 .pm4's 4 columns come later in the sheet and won a tie */
+@media(max-width:1440px){.cplpd3.cpldv5{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) repeat(2,minmax(0,1fr))}}
 /* device page "Compact" option (7 Oct 2026; "improve ui" pass: label · value · context · bar in every column) */
 .cpldvc4{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,5.6fr);gap:12px;margin:14px 0 18px;align-items:stretch}
 .cpldvc4 .k{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--widget-border-color);border-radius:4px;background:var(--widget-background,var(--page-background-color));min-width:0}
@@ -8565,7 +8575,12 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplpd3 .bar{flex:1 1 auto;height:6px;border-radius:3px;background:var(--widget-border-color);overflow:hidden}
 .cplpd3 .bar i{display:block;height:100%;border-radius:3px}
 .cplpd3 .c.z{opacity:.45}
+.cplpd3:has(> .pm4){grid-template-columns:minmax(0,1.6fr) minmax(0,4fr)}
+.cplpd3 .pm4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0}
+.cplpd3 .pm4>div{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;padding:16px 20px;min-width:0;border:0;border-radius:0;background:transparent}
+.cplpd3 .pm4>div+div{border-left:1px solid var(--border-color)}
 @media(max-width:1280px){.cplpd3{grid-template-columns:repeat(4,minmax(0,1fr))}.cplpd3 .cc{grid-column:1/-1}}
+@media(max-width:1280px){.cplpd3:has(> .pm4){grid-template-columns:minmax(0,1fr)}}
 /* policy page KPI row, Option 2 (6 Oct 2026) — same 210px widget row as the device page */
 .cplpd2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);grid-auto-rows:210px;gap:8px;margin:8px 0 12px}
 .cplpd2 .cplsc2v{min-height:0}
@@ -17451,7 +17466,7 @@ function cplPolDevHTML(){
       <obs-radio id="cplDvView" class="cpldvsw" as-button size="small" aria-label="Header visualization" options="${CPL_DV_VIEWS}" value="${CPLS.dvView}"></obs-radio>
       <button class="lhsq" type="button" data-tip="Export As PDF" onclick="toast('Export as PDF is not built in this prototype')">${cplSvg('pdf')}</button>
       <button class="lhsq" type="button" data-tip="Export As CSV" onclick="cplCsvDev(${CPLS.polDev})">${cplSvg('csv')}</button></div>
-    ${CPLS.dvView === 'gauges' ? cplDvGaugesHTML(d) : CPLS.dvView === 'simple' ? cplDvSimpleHTML(d) : CPLS.dvView === 'compact' ? cplDvCompactHTML(d) : `<!-- (6 Oct 2026) the Tiles view is three DS widgets, after the product's own references:
+    ${CPLS.dvView === 'gauges' ? cplDvGaugesHTML(d) : CPLS.dvView === 'simple' ? cplDvSimpleHTML(d) : CPLS.dvView === 'compact' ? cplDvCompactHTML(d) : CPLS.dvView === 'cards' ? cplDvCardsHTML(d) : CPLS.dvView === 'cards6' ? cplDvCardsHTML(d, true) : `<!-- (6 Oct 2026) the Tiles view is three DS widgets, after the product's own references:
          "Overall Compliance" (the % large and centred, the change since the last assessment foot-right — 0 %, one
          assessment exists), "Overall Rule Assessment Result" (the total over a Pass | Fail pair; it replaced the separate
          Pass and Fail tiles), and the severity split. obs-widget-card gives every one the same title strip. -->
@@ -17470,7 +17485,7 @@ function cplPolDevHTML(){
    using the design system"). `CPLS.dvView` picks: 'tiles' = the cplTile KPI cards + the severity bars; 'gauges' = the DS's
    own obs-gauge dials — one ring for the device's rules passed, and one per severity against THAT severity's rule count.
    The switch is obs-radio as-button (string values, value set as a PROPERTY after paint — the recorded licRadioSync rule). */
-const CPL_DV_VIEWS = JSON.stringify([{ value:'tiles', label:'Tiles' }, { value:'gauges', label:'Gauges' }, { value:'simple', label:'Summary' }, { value:'compact', label:'Compact' }]).replace(/"/g, '&quot;');
+const CPL_DV_VIEWS = JSON.stringify([{ value:'tiles', label:'Tiles' }, { value:'gauges', label:'Gauges' }, { value:'simple', label:'Summary' }, { value:'compact', label:'Compact' }, { value:'cards', label:'Option 5' }, { value:'cards6', label:'Option 6' }]).replace(/"/g, '&quot;');
 function cplDvView(v){ if (!v || v === CPLS.dvView) return; CPLS.dvView = v; cplPaint(); }
 function cplDvGaugesHTML(d){
   /* (6 Oct 2026) RESTORED — the Gauges view as it was before the "Simple" pass: Overall Compliance (the % large + change),
@@ -17537,6 +17552,26 @@ function cplDvCompactHTML(d){
     ${card('Fail', `<b class="bad">${d.fail}</b>`, `of ${n} rules`, Math.round(cplPct(d.fail, n)), '--severity-critical')}
     <obs-widget-card static title="Failed Rule by Severity"><div class="cplovb cplsevc" role="group" aria-label="Failed rules by severity">${cols}</div></obs-widget-card></div>`;
 }
+/* OPTION 5 (request, 7 Oct 2026): Compact's content, with the one "Failed Rule by Severity" widget converted into FIVE
+   separate cards in the policy page's Option 3 style — dot + level name · the large % · "25 of 39 failed" — each its own
+   card, 10px apart. Compliance / Pass / Fail take the same card shape so the eight line up (label · value · caption).
+   It reuses .cplpd3's three fixed rows (label 18 · value 32 · footer 18). Zero levels are dimmed. */
+/* OPTION 6 = Option 5 with the five severity cards merged into ONE card (request, 7 Oct 2026) — the same five columns
+   inside it, split by hairlines (the policy page's Option 4 treatment, .pm4). cplDvCardsHTML(d, true). */
+function cplDvCardsHTML(d, merged){
+  const R = CPL.R, n = R.length, bs = CPL_BAND_SEV[d.band];
+  const card = (lab, val, cap, cls) => `<div class="${cls || ''}"><span class="k">${lab}</span><div class="row"><b${val[1] ? ` style="color:var(${val[1]})"` : ''}>${val[0]}</b></div><div class="ft"><span class="lb">${cap}</span></div></div>`;
+  const sev = Object.keys(CPL_SEV).map(s => { const all = R.filter(r => r.sev === s), f = all.filter(r => d.st[r.i] === 'F').length;
+    return card(`<i style="background:var(--severity-${CPL_SEV_DS[s]})"></i>${s}`, [Math.round(cplPct(f, all.length)) + '%'], `${f} of ${all.length} failed`, f ? '' : 'z'); }).join('');
+  return `<div class="cplpd3 cpldv5" role="group" aria-label="Compliance ${cplFix(d.pct)}%, ${d.pass} pass, ${d.fail} fail">
+    <!-- the Compliance card is the policy page's Option 3 card (request, 7 Oct 2026): % · band tag · bar in the footer row -->
+    <div class="cc"><span class="k">Compliance</span><div class="row"><b style="color:var(--severity-${bs})">${cplFix(d.pct)}%</b><obs-tag variant="${CPL_BAND_TAG[d.band]}">${d.band}</obs-tag></div>
+      <div class="ft"><div class="bar"><i style="width:${Math.round(d.pct)}%;background:var(--severity-${bs})"></i></div></div></div>
+    <!-- Pass and Fail are ONE card (request, 7 Oct 2026: "combine the two widgets"): both counts on the value row, split by
+         a hairline, each with its word; the same three rows as every other card, so the row stays aligned -->
+    <div class="pf5"><span class="k">Rules</span><div class="row"><b style="color:var(--secondary-green)">${d.pass}</b><span class="w">passed</span><i class="dv"></i><b style="color:var(--secondary-red)">${d.fail}</b><span class="w">failed</span></div><div class="ft"><span class="lb">of ${n} rules evaluated</span></div></div>
+    ${merged ? `<div class="pm4 pm5" role="group" aria-label="Failed rules by severity">${sev}</div>` : sev}</div>`;
+}
 function cplDvToBreakdown(){ const b = document.getElementById('cplBody'), t = document.querySelector('#cplPolDet .cplbrkw');
   if (b && t) b.scrollTop += t.getBoundingClientRect().top - b.getBoundingClientRect().top - 8; }
 function cplCsvDev(i){ const d = CPL.devs[i]; const rows = [['rule','severity','plane','status']].concat(CPL.R.map(r => [r.n, r.sev, CPL_TREE[r.planeIx].g, d.st[r.i] === 'P' ? 'Pass' : 'Fail']));
@@ -17571,14 +17606,17 @@ function cplScore2HTML(sc, pass, fail, band, sev){
    card instead of five boxed tiles. Compliance leads (label · % in the band colour · band tag · the bar), then the four
    postures as plain columns split by hairlines — a coloured dot + name, the device count in mono, "N% of devices".
    No icon chips and no per-tile progress bars: the eye reads one row left to right. Zero bands are dimmed. */
-const CPL_PD_VIEWS = JSON.stringify([{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }, { value:'3', label:'Option 3' }]).replace(/"/g, '&quot;');
-function cplPd3HTML(s, band){
+/* OPTION 4 of the policy KPI row (request, 7 Oct 2026: "the last 4 widgets combined"): Option 3 with the four posture
+   cards merged into ONE card — the same four columns inside it, split by hairlines, still on the label · value · footer
+   rows so they line up with the Compliance card. cplPd3HTML(s, band, true). */
+const CPL_PD_VIEWS = JSON.stringify([{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }, { value:'3', label:'Option 3' }, { value:'4', label:'Option 4' }]).replace(/"/g, '&quot;');
+function cplPd3HTML(s, band, merged){
   const SEVK = { Secure:'clear', Moderate:'warning', Poor:'major', Vulnerable:'critical' }, sv = SEVK[band];
   const cols = s.post.map(p => { const pc = Math.round(cplPct(p[2], s.n));
     return `<div class="c${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(--severity-${SEVK[p[0]]})"></i>${p[0]}</span><div class="row"><b>${p[2]}</b></div><div class="ft"><span class="lb">${pc}% of devices</span></div></div>`; }).join('');
   return `<div class="cplpd3" role="group" aria-label="Compliance ${s.pct}%, ${band}; ${s.post.map(p => p[0] + ' ' + p[2]).join(', ')} of ${s.n} devices">
     <div class="cc"><span class="k">Compliance</span><div class="row"><b style="color:var(--severity-${sv})">${s.pct}%</b><obs-tag variant="${CPL_BAND_TAG[band]}">${band}</obs-tag></div>
-      <div class="ft"><div class="bar"><i style="width:${s.pct}%;background:var(--severity-${sv})"></i></div></div></div>${cols}</div>`;
+      <div class="ft"><div class="bar"><i style="width:${s.pct}%;background:var(--severity-${sv})"></i></div></div></div>${merged ? `<div class="pm4" role="group" aria-label="Device posture, ${s.n} devices">${cols}</div>` : cols}</div>`;
 }
 function cplPolDetHTML(){
   const P = CPL_DATA.policy, s = cplPolStats();
@@ -17606,7 +17644,7 @@ function cplPolDetHTML(){
         <div class="pf"><div><span class="ok">Pass</span><b class="ok">${rp}</b></div><div><span class="bad">Fail</span><b class="bad">${rf}</b></div></div></div></div></obs-widget-card></div>`;
   return `<div id="cplPolDet"><obs-page-header class="cplph" heading="${cplEsc(P.name)}" back><obs-icon slot="before" name="network" size="17"></obs-icon>
       <obs-radio id="cplPdView" as-button size="small" aria-label="KPI row design" options="${CPL_PD_VIEWS}" value="${CPLS.pdView}"></obs-radio></obs-page-header>
-    ${CPLS.pdView === '2' ? op2 : CPLS.pdView === '3' ? cplPd3HTML(s, band) : `<div class="cplkpis">${kp}</div>`}</div>
+    ${CPLS.pdView === '2' ? op2 : CPLS.pdView === '3' ? cplPd3HTML(s, band) : CPLS.pdView === '4' ? cplPd3HTML(s, band, true) : `<div class="cplkpis">${kp}</div>`}</div>
     <!-- no widget frame (6 Oct 2026, on request): the device grid sits straight on the page, as the Monitor list does -->
     <div class="cpldevs">
       <div class="cpltb"><label class="cplsr">${cplSvg('search')}<input type="text" placeholder="Search" oninput="CPLS.devQ=this.value;cplDevRows()"/></label><span class="sp"></span>
