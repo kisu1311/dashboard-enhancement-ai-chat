@@ -2682,5 +2682,109 @@ _a = """          <obs-tag variant="tag-primary">${esc(s.origin)}</obs-tag>
 """
 assert t.count(_a) == 1, 'sd tags'
 t = t.replace(_a, "")
+# ── §97 · a SUPERNET tab (request, 7 Oct 2026: "add new tab Supernet and show the same subnet details grid, but group
+# wise", with Settings › IPAM's site-grouped Discovery Profiles grid as the picture). The Subnet Details grid — same
+# columns, same cells, same utilisation bars — grouped by the /22 supernet each subnet falls in, via obs-table's own
+# `group-by` (collapsible group rows with a count). No supernet data exists in the model, so the supernet is DERIVED
+# from the subnet's network address (its /22), and rows are ordered by supernet, then utilisation. A row opens the
+# subnet's own detail page on Subnet Details.
+_a = """        {"key":"subnets","label":"Subnet Details"},\n"""
+assert t.count(_a) == 1, 'sp tabs'
+t = t.replace(_a, _a + """        {"key":"supernet","label":"Supernet"},\n""")
+_a = """  subnets:  { heading: 'IP Address Management', sub: '', primary: null },\n"""
+assert t.count(_a) == 1, 'sp meta'
+t = t.replace(_a, _a + """  supernet: { heading: 'IP Address Management', sub: '', primary: null },\n""")
+_a = "const MODULE_TABS = ['overview', 'subnets', 'ips', 'rogue'];"
+assert t.count(_a) == 1, 'sp tabs list'
+t = t.replace(_a, "const MODULE_TABS = ['overview', 'subnets', 'supernet', 'ips', 'rogue'];")
+_a = "    case 'ips':      view.innerHTML = (ipd && !ipd.stacked)"
+assert t.count(_a) == 1, 'sp render'
+t = t.replace(_a, "    case 'supernet': view.innerHTML = screenSupernet(); break;\n" + _a)
+_a = "const DS_GRIDS = { tblSubnets: 50,"
+assert t.count(_a) == 1, 'sp grids'
+t = t.replace(_a, "const DS_GRIDS = { tblSupernet: 100, tblSubnets: 50,")
+_a = "  if (id === 'tblSubnets') dsSubnetEnhance(columns, data, rows);"
+assert t.count(_a) == 1, 'sp enhance'
+t = t.replace(_a, """  if (id === 'tblSubnets' || id === 'tblSupernet') dsSubnetEnhance(columns, data, rows);
+  if (id === 'tblSupernet') data.forEach((o, ri) => { o.grp = supernetOf(rows[ri].cidr); });""")
+_a = "  const sub = ['tblSubnets', 'tblIps',"
+assert t.count(_a) == 1, 'sp sub'
+t = t.replace(_a, "  const sub = ['tblSubnets', 'tblSupernet', 'tblIps',")
+_a = """  return `<obs-table id="${id}" data-dsgrid="${id}" class="ip-dstbl${sub ? ' ip-sntbl' : ''}" sortable="${sub}\""""
+assert t.count(_a) == 1, 'sp table'
+t = t.replace(_a, """  return `<obs-table id="${id}" data-dsgrid="${id}" class="ip-dstbl${sub ? ' ip-sntbl' : ''}"${id === 'tblSupernet' ? ' group-by="grp"' : ''} sortable="${sub}\"""")
+_a = "  tblSubnets: id => openSubnet(id),\n"
+assert t.count(_a) == 1, 'sp click'
+t = t.replace(_a, _a + "  tblSupernet: id => { go('subnets'); openSubnet(id); },\n")
+_a = "PAGERS.tblSubnets = d => { pageAt += d; renderContent(); };"
+assert t.count(_a) == 1, 'sp screen'
+t = t.replace(_a, _a + """
+/* SUPERNET tab (§97): the /22 a subnet's network address falls in — "198.18.4.0/22" */
+function supernetOf(cidr) {
+  const o = String(cidr || '').split('/')[0].split('.').map(Number);
+  if (o.length !== 4 || o.some(isNaN)) return '—';
+  return `${o[0]}.${o[1]}.${o[2] & 252}.0/22`;
+}
+const spKey = c => String(c).split(/[./]/).slice(0, 4).reduce((a, x) => a * 256 + (+x || 0), 0);
+function screenSupernet() {
+  const all = svc.subnets(F, { sort: 'util' }).slice().sort((a, b) => spKey(supernetOf(a.cidr)) - spKey(supernetOf(b.cidr)) || (b.util || 0) - (a.util || 0));
+  return `<div class="ip-stack">
+    ${panel(`<obs-toolbar variant="grid">
+        <obs-input slot="start" id="spSearch" type="search" allow-clear value="${esc(F.q)}" placeholder="Search"></obs-input>
+        <span class="ip-spacer"></span>
+      </obs-toolbar>
+      ${grid('tblSupernet', visibleCols(SUBNET_COLS, 'subnets'), all, { empty: 'No subnet matches this search' })}`, 'ip-sncard ip-spcard')}
+  </div>`;
+}
+/* search repaints the grid only, so the field keeps its focus */
+function repaintSupernetTable() {
+  const card = view.querySelector('.ip-spcard'); if (!card) return;
+  const tmp = document.createElement('div'); tmp.innerHTML = screenSupernet();
+  const fresh = tmp.querySelector('obs-toolbar'), live = card.querySelector('obs-toolbar');
+  if (!fresh || !live) return;
+  while (live.nextSibling) card.removeChild(live.nextSibling);
+  for (let n = fresh.nextSibling; n; n = n.nextSibling) card.appendChild(n.cloneNode(true));
+}""")
+_a = "  on('#snColumns', 'click', e => openColMenu('subnets', SUBNET_COLS, e.currentTarget, repaintSubnetsTable));"
+assert t.count(_a) == 1, 'sp bind'
+t = t.replace(_a, _a + """
+  on('#spSearch', 'input', e => { const d = detailOf(e); F.q = typeof d === 'string' ? d : (d && d.value) || ''; repaintSupernetTable(); });""")
+# ── §98 · Supernet grid: only the FIRST group open by default, and 2px between rows (request, 7 Oct 2026). obs-table keeps
+# its collapsed groups in an internal set with no prop, so once the table has painted, every group header but the first
+# is clicked (its own toggle) — once per table element, so a group the user opens or closes stays that way until the grid
+# is rebuilt (search). The 2px is a page-coloured rule ABOVE each group header after the first, in the table's own shadow
+# sheet; the component's 2px border UNDER the header goes, so a group's rows sit flush under it.
+_a = "    if (d.actions) el.rowActions = d.actions;"
+assert t.count(_a) == 1, 'sp mount'
+t = t.replace(_a, _a + """
+    if (el.id === 'tblSupernet') spGroupInit(el);""")
+_a = "/* SUPERNET tab (§97): the /22 a subnet's network address falls in"
+assert t.count(_a) == 1, 'sp fn'
+t = t.replace(_a, """/* §98: first group open, the rest collapsed; 2px between group rows */
+const SP_SHEET = (() => { try { const s = new CSSStyleSheet();
+  /* the group band, hover and gap are Settings › IPAM's site-grouped grid's (setting.html, ':host(.ipmgrp)'): the band is
+     --grid-header-hover-bg, the row hover a 60% --neutral-lighter; the gap is 2px (requested) in that same pattern —
+     under every group row, and above a group row that follows an expanded group's last data row */
+  s.replaceSync('.row-group td{background:var(--grid-header-hover-bg, rgba(165,186,208,.4));font-weight:500;border-bottom:2px solid var(--page-background-color, #fff)}' +
+    'tr:not(.row-group) + tr.row-group td{border-top:2px solid var(--page-background-color, #fff)}' +
+    '.grid tbody tr:hover td{background:color-mix(in srgb, var(--neutral-lighter, #eef2f8) 60%, transparent)}');
+  return s; } catch (e) { return null; } })();
+function spGroupInit(el) {
+  if (el.__spInit) return;
+  const go = (n = 0) => {
+    const r = el.shadowRoot, hs = r ? [...r.querySelectorAll('tr.row-group .grp.clickable')] : [];
+    if (!hs.length) { if (n < 40) setTimeout(() => go(n + 1), 50); return; }
+    el.__spInit = true;
+    if (SP_SHEET && !r.adoptedStyleSheets.includes(SP_SHEET)) r.adoptedStyleSheets = [...r.adoptedStyleSheets, SP_SHEET];
+    hs.slice(1).forEach(h => h.click());
+  };
+  go();
+}
+""" + _a)
+# ── §99 · the Supernet grid's pager sits at the foot of the screen, like Subnet Details (request, 7 Oct 2026): it joins
+# DS_FIT, so dsFit sizes its box to the space left in the content area and §15's sticky pager rule applies to it too.
+_a = "const DS_FIT = new Set(['tblSubnets', 'tblIps', 'tblRogue', 'tblIpHist']);"
+assert t.count(_a) == 1, 'sp fit'
+t = t.replace(_a, "const DS_FIT = new Set(['tblSubnets', 'tblSupernet', 'tblIps', 'tblRogue', 'tblIpHist']);")
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

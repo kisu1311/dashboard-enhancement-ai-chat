@@ -1432,6 +1432,7 @@ body.ip-app-ready .ip-boot-loading { display: none; }
       <obs-tabs id="moduleTabs" value="overview" tabs='[
         {"key":"overview","label":"Overview"},
         {"key":"subnets","label":"Subnet Details"},
+        {"key":"supernet","label":"Supernet"},
         {"key":"ips","label":"IP Details"},
         {"key":"rogue","label":"Rogue Detection"}
       ]'></obs-tabs>
@@ -16846,7 +16847,7 @@ function dsCell(html) {
     ? [...c.firstElementChild.children].map(n => n.textContent.trim()).filter(Boolean) : null;
   return { type: 'text', value: lines ? lines.join(' · ') : c.textContent.replace(/\s+/g, ' ').trim() };
 }
-const DS_GRIDS = { tblSubnets: 50, tblIps: 50, tblSdIps: 25, tblSdHist: 25, tblHistory: 50, tblIpHist: 20, tblRogue: 50, tblTopN: 0 };
+const DS_GRIDS = { tblSupernet: 100, tblSubnets: 50, tblIps: 50, tblSdIps: 25, tblSdHist: 25, tblHistory: 50, tblIpHist: 20, tblRogue: 50, tblTopN: 0 };
 const DS_GRID_DATA = {};
 function dsGrid(id, cols, rows, opts = {}) {
   const keep = cols.filter(c => c.title);
@@ -16869,7 +16870,8 @@ function dsGrid(id, cols, rows, opts = {}) {
     });
     return o;
   });
-  if (id === 'tblSubnets') dsSubnetEnhance(columns, data, rows);
+  if (id === 'tblSubnets' || id === 'tblSupernet') dsSubnetEnhance(columns, data, rows);
+  if (id === 'tblSupernet') data.forEach((o, ri) => { o.grp = supernetOf(rows[ri].cidr); });
   if (id === 'tblIps' || id === 'tblSdIps') dsIpEnhance(columns, data, rows);
   if (id === 'tblTopN') dsTopNEnhance(columns, data, rows);
   if (id === 'tblSdHist' || id === 'tblIpHist') dsSdHistEnhance(columns, data, rows);
@@ -16877,14 +16879,15 @@ function dsGrid(id, cols, rows, opts = {}) {
   if (id === 'tblRogue') dsRgEnhance(columns);
   DS_GRID_DATA[id] = { columns, rows: data, size: DS_GRIDS[id] || 0,
     actions: id === 'tblSdIps' ? SD_IPS_ROW_MENU : null };   /* §84: no row menu on tblSubnets */
-  const sub = ['tblSubnets', 'tblIps', 'tblRogue', 'tblSdIps', 'tblSdHist', 'tblIpHist'].includes(id);
-  return `<obs-table id="${id}" data-dsgrid="${id}" class="ip-dstbl${sub ? ' ip-sntbl' : ''}" sortable="${sub}"
+  const sub = ['tblSubnets', 'tblSupernet', 'tblIps', 'tblRogue', 'tblSdIps', 'tblSdHist', 'tblIpHist'].includes(id);
+  return `<obs-table id="${id}" data-dsgrid="${id}" class="ip-dstbl${sub ? ' ip-sntbl' : ''}"${id === 'tblSupernet' ? ' group-by="grp"' : ''} sortable="${sub}"
     empty-text="${esc(opts.empty || 'No records found')}"></obs-table>`;
 }
 /* row clicks — obs-table's rows live in its shadow root, so the old tbody tr[data-id]
    listeners find nothing; each grid's click goes through here instead */
 const DS_ROWCLICK = {
   tblSubnets: id => openSubnet(id),
+  tblSupernet: id => { go('subnets'); openSubnet(id); },
   tblTopN: id => { if (!/^n\d+$/.test(id)) { go('subnets'); openSubnet(id); } },
   tblIps: id => openIp(id, { stacked: true }),
   tblSdIps: id => openIp(id, { stacked: true }),
@@ -17273,7 +17276,7 @@ function dsRgFilterBind() {
 }
 
 
-const DS_FIT = new Set(['tblSubnets', 'tblIps', 'tblRogue', 'tblIpHist']);
+const DS_FIT = new Set(['tblSubnets', 'tblSupernet', 'tblIps', 'tblRogue', 'tblIpHist']);
 function dsFit(el) {
   if (!el.isConnected || !el.shadowRoot) return;
   const box = el.shadowRoot.querySelector('.box'), pg = el.shadowRoot.querySelector('.pager');
@@ -17480,6 +17483,7 @@ function dsMount() {
       setTimeout(dsSnLegendPlace, 60);
     }
     if (d.actions) el.rowActions = d.actions;
+    if (el.id === 'tblSupernet') spGroupInit(el);
     if (el.id === 'tblTopN') { el.stickyHeader = true; const _bd = el.closest('.ip-card-body'); el.maxHeight = ((_bd && _bd.clientHeight > 120) ? _bd.clientHeight - 6 : 300) + 'px';
       if (el.shadowRoot && !el.__dsSpark) { el.__dsSpark = true; el.shadowRoot.adoptedStyleSheets = [...el.shadowRoot.adoptedStyleSheets, DS_SPARK_SHEET]; }
       if (el.shadowRoot) dsSparkDefs(el.shadowRoot); }
@@ -17937,6 +17941,52 @@ function screenSubnets() {
   </div>`;
 }
 PAGERS.tblSubnets = d => { pageAt += d; renderContent(); };
+/* §98: first group open, the rest collapsed; 2px between group rows */
+const SP_SHEET = (() => { try { const s = new CSSStyleSheet();
+  /* the group band, hover and gap are Settings › IPAM's site-grouped grid's (setting.html, ':host(.ipmgrp)'): the band is
+     --grid-header-hover-bg, the row hover a 60% --neutral-lighter; the gap is 2px (requested) in that same pattern —
+     under every group row, and above a group row that follows an expanded group's last data row */
+  s.replaceSync('.row-group td{background:var(--grid-header-hover-bg, rgba(165,186,208,.4));font-weight:500;border-bottom:2px solid var(--page-background-color, #fff)}' +
+    'tr:not(.row-group) + tr.row-group td{border-top:2px solid var(--page-background-color, #fff)}' +
+    '.grid tbody tr:hover td{background:color-mix(in srgb, var(--neutral-lighter, #eef2f8) 60%, transparent)}');
+  return s; } catch (e) { return null; } })();
+function spGroupInit(el) {
+  if (el.__spInit) return;
+  const go = (n = 0) => {
+    const r = el.shadowRoot, hs = r ? [...r.querySelectorAll('tr.row-group .grp.clickable')] : [];
+    if (!hs.length) { if (n < 40) setTimeout(() => go(n + 1), 50); return; }
+    el.__spInit = true;
+    if (SP_SHEET && !r.adoptedStyleSheets.includes(SP_SHEET)) r.adoptedStyleSheets = [...r.adoptedStyleSheets, SP_SHEET];
+    hs.slice(1).forEach(h => h.click());
+  };
+  go();
+}
+/* SUPERNET tab (§97): the /22 a subnet's network address falls in — "198.18.4.0/22" */
+function supernetOf(cidr) {
+  const o = String(cidr || '').split('/')[0].split('.').map(Number);
+  if (o.length !== 4 || o.some(isNaN)) return '—';
+  return `${o[0]}.${o[1]}.${o[2] & 252}.0/22`;
+}
+const spKey = c => String(c).split(/[./]/).slice(0, 4).reduce((a, x) => a * 256 + (+x || 0), 0);
+function screenSupernet() {
+  const all = svc.subnets(F, { sort: 'util' }).slice().sort((a, b) => spKey(supernetOf(a.cidr)) - spKey(supernetOf(b.cidr)) || (b.util || 0) - (a.util || 0));
+  return `<div class="ip-stack">
+    ${panel(`<obs-toolbar variant="grid">
+        <obs-input slot="start" id="spSearch" type="search" allow-clear value="${esc(F.q)}" placeholder="Search"></obs-input>
+        <span class="ip-spacer"></span>
+      </obs-toolbar>
+      ${grid('tblSupernet', visibleCols(SUBNET_COLS, 'subnets'), all, { empty: 'No subnet matches this search' })}`, 'ip-sncard ip-spcard')}
+  </div>`;
+}
+/* search repaints the grid only, so the field keeps its focus */
+function repaintSupernetTable() {
+  const card = view.querySelector('.ip-spcard'); if (!card) return;
+  const tmp = document.createElement('div'); tmp.innerHTML = screenSupernet();
+  const fresh = tmp.querySelector('obs-toolbar'), live = card.querySelector('obs-toolbar');
+  if (!fresh || !live) return;
+  while (live.nextSibling) card.removeChild(live.nextSibling);
+  for (let n = fresh.nextSibling; n; n = n.nextSibling) card.appendChild(n.cloneNode(true));
+}
 
 /* ========================================================================== */
 /* TAB 3 — IP DETAILS                                                         */
@@ -20848,11 +20898,12 @@ function editSubnet(s) {
 const PAGE_META = {
   overview: { heading: 'IP Address Management', sub: '', primary: null },
   subnets:  { heading: 'IP Address Management', sub: '', primary: null },
+  supernet: { heading: 'IP Address Management', sub: '', primary: null },
   ips:      { heading: 'IP Address Management', sub: '', primary: null },
   rogue:    { heading: 'IP Address Management', sub: '', primary: null },
   settings: { heading: 'Settings', sub: '', primary: null, settings: true }
 };
-const MODULE_TABS = ['overview', 'subnets', 'ips', 'rogue'];
+const MODULE_TABS = ['overview', 'subnets', 'supernet', 'ips', 'rogue'];
 
 let currentTab = 'overview';
 let currentSection = null;
@@ -20875,6 +20926,7 @@ function renderContent() {
   switch (currentTab) {
     case 'overview': view.innerHTML = screenOverview(); break;
     case 'subnets':  view.innerHTML = sd ? screenSubnetDetail(svc.subnet(sd.id)) : screenSubnets(); break;
+    case 'supernet': view.innerHTML = screenSupernet(); break;
     case 'ips':      view.innerHTML = (ipd && !ipd.stacked) ? screenIpDetail(svc.ip(ipd.id)) : screenIps(); break;
     case 'rogue':    view.innerHTML = screenRogue(); break;
     case 'settings': view.innerHTML = screenSettings(currentSection); break;
@@ -21171,6 +21223,7 @@ function bindContent() {
   dsSubnetFilterBind();
   dsIpFilterBind();
   on('#snColumns', 'click', e => openColMenu('subnets', SUBNET_COLS, e.currentTarget, repaintSubnetsTable));
+  on('#spSearch', 'input', e => { const d = detailOf(e); F.q = typeof d === 'string' ? d : (d && d.value) || ''; repaintSupernetTable(); });
   on('#ipColumns', 'click', e => openColMenu('ips', IP_COLS, e.currentTarget, repaintIpsTable));
   on('#rogueColumns', 'click', e => openColMenu('rogue', ROGUE_COLS, e.currentTarget, repaintRogueTable));
   dsRgFilterBind();

@@ -964,6 +964,19 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
   "N addresses", the %, the bar — so the two cannot drift. The third arg drops the click/role (that page's tiles are not
   filters). In `ipam.html` and `ds_pass.py` §95.
 
+- **§97 (7 Oct 2026) — a SUPERNET tab** after Subnet Details: the same Subnet Details grid (`SUBNET_COLS`, same cells and
+  utilisation bars, `dsSubnetEnhance`) grouped by obs-table's own `group-by="grp"` — collapsible group rows with a count,
+  as Settings › IPAM's site-grouped grid does. ⚠️ The model has NO supernets, so the group is DERIVED: the /22 the subnet's
+  network address falls in (`supernetOf`), rows ordered by supernet then utilisation. Search repaints the grid only
+  (`repaintSupernetTable`); a row opens the subnet on Subnet Details. Patched into `_ipam/ipam.html` AND appended to
+  `ds_pass.py`, so a rebuild keeps it. The IPAM child rows in `index.html` / `setting.html` (and `IPAM_TAB_HASH`) list it.
+- **§98 (7 Oct 2026) — Supernet grid: only the FIRST group open, 2px between rows, Settings › IPAM's colours.** obs-table
+  keeps collapsed groups in an internal set (no prop), so `spGroupInit` clicks every group header but the first once the
+  table paints (once per element; a search rebuilds it). `SP_SHEET` (adopted into the table's shadow root) copies
+  setting.html's `:host(.ipmgrp)` look — band `--grid-header-hover-bg`, weight 500, hover 60% `--neutral-lighter` — with
+  a 2px page-coloured gap under every group row and above one that follows a data row.
+- **§99 (7 Oct 2026)** — the Supernet grid joins `DS_FIT`, so its pager is pinned to the foot of the screen like Subnet Details.
+
 ## Compliance module in Option 1 — cloned from the live build with Playwright (6 Oct 2026)
 
 Request: *"add new module 'compliance' — the reference is the lab instance's /compliance/overview — using
@@ -1183,7 +1196,21 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
     `.sub`). These are titles such as Description, Rationale, Impact, Default Value, Assessed resources and Rule
     Condition. The Controls tab's control names (`.cplctl h5`) are content, not titles, and were left alone.
   - **7 Oct 2026, later:**
-    - **The device page opens on Option 6 by default** (`CPLS.dvView = 'cards6'`, 7 Oct 2026); the other five stay in the
+    - **setting.html › IPAM › the discovery-type rail has a third type, *Supernet*** (7 Oct 2026): `IPM_AR_KINDS` entry
+    `supernet` → **Network address\*** (`obs-input#arNetAddr`) | **Network mask\*** (`obs-select#arNetMask`, searchable,
+    `IPM_MASK_OPTS`: /8–/23 grouped Class A · B (Class C removed on request), labelled `255.255.0.0/16 - 65534 Hosts` as the supplied picker does,
+    default /16) and nothing else — the collector / credential / retry / ping / notify fields were shown first and
+    removed on request. Save checks the address is IPv4 and queues it. ⚠️ obs-select 0.1.166 draws groups as a TREE that
+    starts COLLAPSED (internal expanded set, no prop): `ipmExpandGroups` clicks each group row open once per menu open (the flag resets when the menu closes, or a second open stays folded).
+    Groups need a `value` or the component's toggle keys them all as `undefined`. The IPv4 form now builds from
+    `bodyHead` + `common`.
+  - **Supernet discovers in the background, then you pick** (7 Oct 2026, `ipmSup*`): a valid Network address + mask starts a scan
+    on its own (600ms debounce) → a spinner line *Discovering subnets in a/p…* (1.8s) → **`#arSupTbl`**, a selectable `obs-table`
+    (Subnet · Mask · Usable hosts · Gateway · Site · Status New/Known/Conflict) with search, 10 per page, the **New** rows pre-ticked.
+    **Save and Run** saves the ticked subnets and refuses while the scan is running or nothing is ticked. Canned: the supernet split into
+    /24s (or eight parts at /24 and smaller), max 50, seeded per address. Only `#arSupRes` repaints, so the field keeps focus. Column
+    specs use **`title`, not `label`** — `label` renders blank headers. The panel with the rail opens at **97vw** (was min(1400px, 100vw-80px)).
+  - **The device page opens on Option 6 by default** (`CPLS.dvView = 'cards6'`, 7 Oct 2026); the other five stay in the
       switch.
     - **The policy page's KPI row opens on Option 4 by default** (later the same day; it was Option 3). `CPLS.pdView` is
       `'4'`.
@@ -1272,6 +1299,40 @@ playwright copy the module, add in explorer module"*. **Option 1 (`index.html`) 
   - Verified by probes of 12 and 9 assertions. They click the Gauges option inside the switch's shadow root, then check:
     6 and 5 gauges actually render, the switch value syncs, nothing overflows, there is no switch in list view, and there
     are no JS errors.
+
+## My Profile · Option 4 — My Profile Option 2 + UI Preference Option 4 on one page (7 Oct 2026)
+
+`setting.html`. The My Profile switcher gained **Option 4** (`stProfileHTML4`): Option 2's markup verbatim, with UI
+Preference Option 4's field grid (`uip4BodyHTML(true)`, split out of `uip4HTML` so both pages share it) as a
+**Display preferences** section in the form column after Preferences / Password, and ONE footer — **Reset**
+(`stComboReset`: both back) · **Save changes** (`stComboSave`: stores the preferences, then the profile's own
+validate + update). `stBtnPaint` names the button per option. Binding runs through `stProfBind` + `uip4Bind(true)`
+(`uip4After` is now a wrapper). ⚠️ On the combined page the UIP model survives a profile repaint (password switch,
+save), so unsaved preference choices are not lost. ⚠️ The **UI Preference page is untouched** and still has its own
+four options and its nav row; Option 1 is still My Profile's default. **Alignment pass (same day):** one 32px gutter for every
+two-column row (Personal details was 16px, so its second column sat 16px left of Password / Time Zone — now all at
+one x); the display labels take obs-input's label type (12.8px / 400 / `--neutral-light`, 4px to the control); the
+display grid's row gap is 16 like Personal details; **Alert Overlay moved into Preferences** under Notifications in
+the same title-left / switch-right row (`uip4BodyHTML(true)` omits it from the grid; the id `uip4Ov` is unchanged so
+`uip4Bind` still drives it). All scoped to `#stProfPage.stpd4`. **Then:** `.stpdb` carries 32px of bottom padding — the footer
+sits on `margin-top:auto`, which is 0 once the page overflows, so the last row ran flush against it; and a
+**Language** dropdown (`obs-select#uip4Lang`, `UIP_LANG` = English / العربية, each label in its own language) beside
+the grid-items row, combined page only. `UIP.lang` (default `en`) is stored with the other preferences, counts toward
+dirty, Reset/Save cover it, and Save sets `<html lang>`. ⚠️ The prototype's copy is English only — picking العربية
+does NOT translate or flip the page to RTL; that would be a much larger change. Probe: 14/14 (fields, section, one footer,
+label, theme bound, repaint keeps prefs, reset, save, column alignment, no errors).
+
+## My Profile · Option 5 — Option 4 re-laid on Mobbin's settings rows (7 Oct 2026)
+
+`stProfileHTML5`, `.st5*`. Same fields, models, ids and handlers as Option 4 (save = `stComboSave`, discard =
+`stComboReset`, `uip4Bind(true)`), re-laid on the pattern the Mobbin references share — ClickUp / Gumloop (each row:
+label + one-line description LEFT 260px, control RIGHT, capped 420px), Devin (rows grouped into bordered section cards:
+Personal details · Security · Notifications · Appearance), Featurebase (theme = three captioned preview cards),
+Gumloop (Upload / Remove beside a 48px photo + name/email), Magnific (password = a **Change password** button that opens
+its three fields). The footer is sticky and says *All changes saved / You have unsaved changes* (`st5Dirty`, called from
+`stIn` and `uip4Paint`). ⚠️ The theme group carries `.uip4pv` only so `uip4Pick()` lights it — that class's own button
+chrome (line-height 0, 3px border, clip) is cancelled under `.st5th.uip4pv`. ⚠️ `#stProfPage .stavc` (112px) and
+`.stav` (166px wide) had to be outranked for the small photo. Probe: 13/13. **Then (same day): every field is its own box** — `.st5card` is a plain 8px stack and each `.st5r` carries the border / 8px radius / fill; the hairlines between rows went with the shared frame.
 
 ## Settings › IPAM — copied from `ipam-standalone.html`, then put on the DS (28 Sep 2026)
 
