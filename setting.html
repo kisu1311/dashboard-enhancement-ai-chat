@@ -43276,15 +43276,17 @@ const IPM_SITES = ['Mumbai HQ', 'Pune Branch', 'Chennai DC', 'Delhi Branch', 'Va
 const IPM_ROUTERS = [
   { id: 'rtr-1', name: 'MUM-CORE-01', ip: '192.0.2.1',     site: 'Mumbai HQ',      vendor: 'Cisco Catalyst 9500', profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 6, rejected: 1 },
   { id: 'rtr-2', name: 'PUN-EDGE-01', ip: '192.0.2.65',    site: 'Pune Branch',    vendor: 'Cisco ISR 4451',      profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 3 },
-  { id: 'rtr-3', name: 'CHE-CORE-01', ip: '198.51.100.1',  site: 'Chennai DC',     vendor: 'Arista 7050X',        profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 5 },
+  { id: 'rtr-3', name: 'CHE-CORE-01', ip: '198.51.100.1',  site: 'Chennai DC',     vendor: 'Arista 7050X',        profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 5, kind: 'supernet',
+    subs: [{ cidr: '198.51.100.0/26', nm: 'Core servers' }, { cidr: '198.51.100.64/26', nm: 'Storage' }, { cidr: '198.51.100.128/26', nm: '' }] },
   { id: 'rtr-4', name: 'DEL-EDGE-01', ip: '198.51.100.129', site: 'Delhi Branch',  vendor: 'Cisco ISR 4331',      profile: 'snmp-v2c-branch', status: 'stale',  lastRun: '2026-07-02 04:00', approved: 2, rejected: 2 },
-  { id: 'rtr-5', name: 'VAD-OT-01',   ip: '203.0.113.1',   site: 'Vadodara Plant', vendor: 'Cisco IE 4000',       profile: 'snmp-v3-ot',      status: 'failed', lastRun: '2026-09-09 04:00', approved: 1 },
+  { id: 'rtr-5', name: 'VAD-OT-01',   ip: '203.0.113.1',   site: 'Vadodara Plant', vendor: 'Cisco IE 4000',       profile: 'snmp-v3-ot',      status: 'failed', lastRun: '2026-09-09 04:00', approved: 1, kind: 'discover' },
   /* OPTION 2 ONLY (`o2`, request 29 Sep 2026): a second and third profile at existing sites, so the site
      grouping has something to group — Option 1 filters these out and reads exactly as before. */
   { id: 'rtr-6', name: 'MUM-EDGE-01', ip: '192.0.2.2',     site: 'Mumbai HQ',      vendor: 'Cisco ISR 4451',      profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 4, o2: true },
   { id: 'rtr-7', name: 'MUM-DC-02',   ip: '192.0.2.3',     site: 'Mumbai HQ',      vendor: 'Arista 7050X',        profile: 'snmp-v3-dc',      status: 'stale',  lastRun: '2026-08-21 04:00', approved: 2, rejected: 1, o2: true },
-  { id: 'rtr-8', name: 'PUN-CORE-01', ip: '192.0.2.66',    site: 'Pune Branch',    vendor: 'Cisco Catalyst 9300', profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 2, o2: true },
-  { id: 'rtr-9', name: 'CHE-EDGE-02', ip: '198.51.100.2',  site: 'Chennai DC',     vendor: 'Cisco ISR 4331',      profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 3, o2: true }
+  { id: 'rtr-8', name: 'PUN-CORE-01', ip: '192.0.2.66',    site: 'Pune Branch',    vendor: 'Cisco Catalyst 9300', profile: 'snmp-v3-prod',    status: 'ok',     lastRun: '2026-09-09 04:00', approved: 2, o2: true, kind: 'discover' },
+  { id: 'rtr-9', name: 'CHE-EDGE-02', ip: '198.51.100.2',  site: 'Chennai DC',     vendor: 'Cisco ISR 4331',      profile: 'snmp-v3-dc',      status: 'ok',     lastRun: '2026-09-09 04:00', approved: 3, o2: true, kind: 'supernet',
+    subs: [{ cidr: '198.51.100.192/27', nm: 'Management' }, { cidr: '198.51.100.224/27', nm: 'Backup' }] }
 ];
 let IPM_PENDING = [
   { id: 'ps-1', vlan: '20 — corp-DMZ', cidr: '198.51.100.0/24', source: 'SNMP routing table', device: 'MUM-CORE-01', firstSeen: 'Sun, Sep 14, 2026 11:20 AM', deviceCount: 6, vendorMix: 'Cisco, HPE', suggestedSite: 'Mumbai HQ' },
@@ -43402,6 +43404,55 @@ const ipmTable = (empty, extra, cls) => `<obs-table id="ipmTbl" class="ipmfill${
 /* tabs (request, 5 Oct 2026): a new first tab, Discovery Profile — the Settings › Discovery Settings › Discovery Profile
    list itself, so both doors show one set of profiles — and the seed-router grid renamed Discover Subnet */
 /* the Discovery Profile tab was REMOVED again (request, 5 Oct 2026); its body branch in ipmRoutersBody is kept, unreferenced */
+/* a profile's discovery kind → the rail's own label; a profile with no `kind` is an IPv4 Subnet one */
+const ipmRtType = r => ({ ipv4: 'IPv4 Subnet', discover: 'Discover Subnet', supernet: 'Supernet' })[r.kind || 'ipv4'];
+IPM.supOpen = IPM.supOpen || new Set();   /* supernet profiles whose child subnets are SHOWN — all start collapsed (8 Oct 2026) */
+/* marks the supernet rows (a chevron before the name) and their child rows (indented, quieter) inside obs-table's
+   shadow root — the component's <tr> carries no class hook, so rows are recognised by their primary cell's text */
+/* ONE text edge for every row (request, 8 Oct 2026, "align the all text"): the chevron hangs in the cell's own 12px
+   padding gutter, and child rows carry no indent — nesting is said by their quieter ink and the open chevron above */
+const IPM_SUPTREE_CSS = 'tr.ipmsuphd td.primary-cell{position:relative}' +
+  /* the name column's text edge moves 12 → 30px on EVERY row and its header (request, 8 Oct 2026: more room between
+     the chevron and the name) — so the chevron sits 8px clear of the text and all names still share one edge */
+  ':host(.ipmsuptree) td.primary-cell,:host(.ipmsuptree) thead th:nth-child(1){padding-left:30px!important}' +
+  'tr.ipmsupkid td{color:var(--neutral-light)}' +
+  '.ipmsupcv{position:absolute;left:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:12px;height:18px;margin:0;border:0;padding:0;background:transparent;color:var(--neutral-light);cursor:pointer;vertical-align:middle;border-radius:4px}' +
+  '.ipmsupcv:hover{color:var(--page-text-color);background:color-mix(in srgb,var(--page-text-color) 8%,transparent)}' +
+  '.ipmsupcv svg{width:11px;height:11px;transition:transform .15s}.ipmsupcv.shut svg{transform:rotate(-90deg)}' +
+  '.ipmsupn{font-size:11px;color:var(--neutral-light);margin-left:6px;white-space:nowrap}' +
+  /* chevron · name · count on ONE line: the cell's own clip span is a block, which stacked all three */
+  'tr.ipmsuphd td.primary-cell{white-space:nowrap}tr.ipmsuphd td.primary-cell .cell-clip{display:inline;vertical-align:middle}';
+function ipmSupTree(t){
+  const root = t.shadowRoot; if (!root) return setTimeout(() => ipmSupTree(t), 50);
+  if (!root._supCss) { const ss = new CSSStyleSheet(); ss.replaceSync(IPM_SUPTREE_CSS); root.adoptedStyleSheets = [...root.adoptedStyleSheets, ss]; root._supCss = 1; }
+  const sync = () => {
+    if (ipmKind() !== 'routers' || IPM.tab === 'approval') return;
+    const sup = new Map(IPM_ROUTERS.filter(r => r.kind === 'supernet' && r.subs && r.subs.length).map(r => [r.name, r]));
+    const kids = new Set(IPM_ROUTERS.flatMap(r => r.kind === 'supernet' && r.subs ? r.subs.map(k => (k.nm || k.cidr) + '|' + k.cidr) : []));
+    root.querySelectorAll('tbody tr').forEach(tr => {
+      const pc = tr.querySelector('td.primary-cell'); if (!pc) return;
+      const clip = pc.querySelector('.cell-clip'), txt = (clip ? clip.textContent : pc.textContent).trim();
+      const ipTd = [...tr.children].find(td => /^\d+\.\d+\.\d+\.\d+\/\d+$/.test(td.textContent.trim()));
+      const isKid = !!ipTd && kids.has(txt + '|' + ipTd.textContent.trim());
+      if (tr.classList.contains('ipmsupkid') !== isKid) tr.classList.toggle('ipmsupkid', isKid);
+      const s = !isKid && sup.get(txt), cv = pc.querySelector('.ipmsupcv');
+      if (s) {
+        const shut = !IPM.supOpen.has(s.id);
+        if (!cv) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ipmsupcv';
+          b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6l6 -6"/></svg>';
+          b.addEventListener('click', e => { e.stopPropagation(); const id = b.dataset.sid; IPM.supOpen.has(id) ? IPM.supOpen.delete(id) : IPM.supOpen.add(id); ipmTablePaint(); });
+          pc.insertBefore(b, pc.firstChild); }
+        tr.classList.add('ipmsuphd'); const b = pc.querySelector('.ipmsupcv'); b.dataset.sid = s.id; b.classList.toggle('shut', shut);
+        b.setAttribute('aria-label', (shut ? 'Show' : 'Hide') + ' the subnets of ' + s.name); b.setAttribute('aria-expanded', String(!shut));
+        let n = pc.querySelector('.ipmsupn'); if (!n) { n = document.createElement('span'); n.className = 'ipmsupn'; pc.appendChild(n); }
+        const c = s.subs.length + ' subnet' + (s.subs.length === 1 ? '' : 's'); if (n.textContent !== c) n.textContent = c;
+      } else { tr.classList.remove('ipmsuphd'); if (cv) cv.remove(); const n = pc.querySelector('.ipmsupn'); if (n) n.remove(); }
+    });
+  };
+  if (t._supObs) t._supObs.disconnect();
+  t._supObs = new MutationObserver(() => { t._supObs.disconnect(); sync(); t._supObs.observe(root, { childList: true, subtree: true, characterData: true }); });
+  t._supObs.observe(root, { childList: true, subtree: true, characterData: true }); sync();
+}
 const IPM_ROUTERS_TABS = [{ key: 'discovery', label: 'Discover Subnet' }, { key: 'approval', label: 'Subnet Approval' }];
 const IPM_ROUTER_MENU = [
   { key: 'test', label: 'Test credential', icon: 'testCredentials' },
@@ -43410,6 +43461,9 @@ const IPM_ROUTER_MENU = [
 ];
 const IPM_ROUTER_COLS = [
   { key: 'name', title: 'Discovery Profile Name', width: '17%', sortable: true },
+  /* TYPE (request, 8 Oct 2026): which of the panel's three discovery kinds made the profile —
+     IPv4 Subnet · Discover Subnet · Supernet, the rail's own labels (ipmRtType) */
+  { key: 'type', title: 'Type', width: '11%', sortable: true },
   { key: 'ip', title: 'IP/CIDR/CSV', width: '13%', sortable: true },
   { key: 'site', title: 'Site', width: '11%', sortable: true },
   /* no width: this column takes the slack. When every column carries a width, table-layout:fixed shares
@@ -43429,9 +43483,9 @@ const IPM_ROUTER_COLS = [
 /* Option 2 groups the grid by SITE (obs-table `group-by`), so its rows are ordered by site first — a group
    is emitted in the order its first row appears, and IPM_SITES is the site order everywhere else */
 const ipmSiteIx = r => { const i = IPM_SITES.indexOf(r.site); return i < 0 ? 99 : i; };
-const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') && ipmMatch(r.name, r.ip, r.site, r.vendor, r.profile) && ipmFltOk('discovery', r))
+const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') && ipmMatch(r.name, ipmRtType(r), r.ip, r.site, r.vendor, r.profile) && ipmFltOk('discovery', r))
   .sort((a, b) => IPM.opt === '2' ? ipmSiteIx(a) - ipmSiteIx(b) : 0).map(r => ({
-  id: r.id, name: r.name, ip: r.ip, site: r.site, vendor: r.vendor, lastRun: r.lastRun,
+  id: r.id, name: r.name, type: ipmRtType(r), ip: r.ip, site: r.site, vendor: r.vendor, lastRun: r.lastRun,
   users: (r.users || []).map(u => ({ label: u, variant: 'tag-primary' })),
   state: [{ label: IPM_ROUTER_TAG[r.status][0], variant: IPM_ROUTER_TAG[r.status][1] }],
   subnets: ipmSubnetTags(r),
@@ -43440,7 +43494,14 @@ const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') &
      list already uses for Run. It replaced `play-circle`, which replaced the source's `scan`. */
   /* icon only when scheduled — an unscheduled row gets '' (obs-table renders an object with an empty icon as a glyph) */
   sched: ipmHasSched(r.id) ? { icon: 'schedule', label: 'Schedule' } : '',
-  discover: { icon: 'restart', label: 'Discover now' }, menu: { icon: 'ellipsis-v', label: 'Actions' } }));
+  discover: { icon: 'restart', label: 'Discover now' }, menu: { icon: 'ellipsis-v', label: 'Actions' } }))
+  /* a SUPERNET profile carries its discovered child subnets (request, 8 Oct 2026): each one is a row of its own,
+     directly under the supernet, indented, with its name (or CIDR) and the supernet's site — see ipmSupTree() */
+  .flatMap(row => { const r = IPM_ROUTERS.find(x => x.id === row.id), kids = (r && r.kind === 'supernet' && r.subs) || [];
+    if (!kids.length) return [row];
+    const open = IPM.supOpen.has(r.id);
+    return open ? [row].concat(kids.map((k, i) => ({ id: 'sub:' + r.id + ':' + i, name: k.nm || k.cidr, type: 'Subnet', ip: k.cidr, site: r.site,
+      vendor: '', lastRun: '', users: [], state: [], subnets: [], sched: '', discover: '', menu: '' }))) : [row]; });
 const IPM_PENDING_COLS = [
   /* the five columns share the grid's width (request, 28 Sep 2026: "the grid will be full width") —
      with Evidence alone taking the slack, the first four huddled left and the right half was empty */
@@ -44353,6 +44414,8 @@ function ipmTablePaint(fresh){
     hs.slice(1).forEach(h => h.click());
   }, 0);
   ipmIc24Watch(t);
+  const tree = ipmKind() === 'routers' && IPM.tab !== 'approval';
+  t.classList.toggle('ipmsuptree', tree); if (tree) ipmSupTree(t);
 }
 /* the Actions icons at 24px (request, 28 Sep 2026). Both glyphs live two shadow roots deep — the
    icon cell's obs-icon inside obs-table, and the ⋮ inside each row's obs-menu — so page CSS cannot
@@ -44569,6 +44632,7 @@ function ipmAfter(){
 
 /* ── row actions ──────────────────────────────────────────────────────────────────────────── */
 function ipmRowAction(key, id){
+  if (String(id).startsWith('sub:')) return;   /* a supernet's child subnet row has no actions of its own */
   const name = (IPM_ROUTERS.find(x => x.id === id) || {}).name || 'this item';
   if (key === 'delete') return ipmConfirm({ title: 'Delete ' + name + '?', icon: 'trash', confirmText: 'Delete',
     body: 'The subnets this router discovered stay in IPAM, but nothing will refresh their ARP view. Their utilisation becomes <b>not measurable</b> rather than dropping to zero.' });
@@ -44578,7 +44642,7 @@ function ipmRowAction(key, id){
     body: 'A single read is attempted with the profile assigned to this device. Nothing else is collected.' });
   if (key === 'edit') {
     const r = IPM_ROUTERS.find(x => x.id === id); if (!r) return;
-    ipmArOpen(); Object.assign(IPM.ar, { kind: 'ipv4', target: 'cidr', targetValue: r.ip, site: r.site, profile: [r.profile], editId: id }); ipmArPaint();
+    ipmArOpen(); Object.assign(IPM.ar, { kind: r.kind || 'ipv4', netAddr: r.ip, target: 'cidr', targetValue: r.ip, site: r.site, profile: [r.profile], editId: id }); ipmArPaint();
   }
 }
 function ipmDecide(id, approve){
@@ -44980,8 +45044,8 @@ function ipmArPaint(){
   const supBody = `<div class="ip-form">
     ${ipmField('Supernet name', `<obs-input id="arSupName" block placeholder="e.g. Mumbai campus" value="${ipmEsc(d.supName)}"></obs-input>`)}
     ${ipmField('Description', `<obs-input id="arSupDesc" block placeholder="What this supernet covers" value="${ipmEsc(d.supDesc)}"></obs-input>`)}
-    ${ipmField('Network address', `<obs-input id="arNetAddr" block placeholder="e.g. 10.0.0.0" value="${ipmEsc(d.netAddr)}"></obs-input>`, null, true)}
-    ${ipmField('Network mask', `<obs-select id="arNetMask" block searchable="true" options='${ipmJ(IPM_MASK_OPTS)}' value="${ipmEsc(d.netMask)}"></obs-select>`, null, true)}</div>
+    ${ipmField('Network address', `<obs-input id="arNetAddr" block placeholder="e.g. 10.0.0.0" value="${ipmEsc(d.netAddr)}"${d.editId ? ' disabled' : ''}></obs-input>`, null, true)}
+    ${ipmField('Network mask', ` <obs-select id="arNetMask" block searchable="true"${d.editId ? ' disabled' : ''} options='${ipmJ(IPM_MASK_OPTS)}' value="${ipmEsc(d.netMask)}"></obs-select>`, null, true)}</div>
     <div id="arSupRes" class="ipmsup">${ipmSupResHTML(d)}</div>`;
   /* EDIT opens the full Create layout too (request, 8 Oct 2026) — rail + form + help card — with the profile's own
      kind (IPv4 Subnet) lit and the other two kinds disabled: a saved profile's type cannot change */
@@ -45106,6 +45170,10 @@ function ipmArBind(){
       if (d.scan !== 'done') { toast(d.scan === 'run' ? 'Wait for the subnet discovery to finish' : 'Enter the network address and mask to discover its subnets'); return; }
       if (!d.subSel.length) { toast('Select at least one subnet to save'); return; }
       const n = d.subSel.length;
+      /* the discovered supernet JOINS the grid as a Supernet profile, its ticked subnets as its child rows (8 Oct 2026) */
+      IPM_ROUTERS.push({ id: 'rtr-' + Date.now(), name: d.supName.trim() || a + '/' + p, ip: a + '/' + p, site: 'Other', vendor: '—',
+        profile: 'snmp-v3-prod', status: 'ok', lastRun: 'Just now', approved: 0, o2: true, kind: 'supernet',
+        subs: d.subs.filter(x => d.subSel.includes(x.id)).map(x => ({ cidr: x.cidr, nm: (x.nm || '').trim() })) });
       IPM.flash = { title: n === 1 ? 'Subnet saved and queued' : n + ' subnets saved and queued', body: 'From supernet ' + (d.supName.trim() ? d.supName.trim() + ' (' + a + '/' + p + ')' : a + '/' + p) + ': ' + d.subs.filter(x => d.subSel.includes(x.id)).map(x => x.cidr).slice(0, 6).join(', ') + (n > 6 ? ' and ' + (n - 6) + ' more' : '') + ' — discovery runs now.' };
       ipmPanelClose(); stMainPaint(); return;
     }
