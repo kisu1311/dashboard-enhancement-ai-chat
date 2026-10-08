@@ -16486,6 +16486,7 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 .ipmkindi:hover{color:var(--page-text-color);background:color-mix(in srgb,var(--page-text-color) 5%,transparent)}
 .ipmkindi.on{color:var(--page-text-color);font-weight:500;background:var(--code-tag-background-color)}
 .ipmkindi obs-icon{flex:0 0 auto}
+.ipmkindi:disabled{opacity:.45;cursor:not-allowed;background:transparent;color:var(--neutral-light)}
 
 /* the type's own title + one line under it, at the top of the form column (6 Oct 2026, from Application Registration) */
 .ipmkhd{margin:0 0 20px}
@@ -21792,7 +21793,8 @@ function kbTag(t){
   const hit = KB.find(s => s.sel && t.matches(s.sel));
   if (hit) t.setAttribute('data-tip', cur + '  ' + hit.cap);
 }
-function kbTyping(){ const a = document.activeElement;
+function kbTyping(){ let a = document.activeElement;
+  while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement;   /* DS fields focus inside their shadow root */
   return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }
 /* a modal surface owns the keyboard while it is open, and these are dashboard actions —
    don't fire them under a drawer, or from the approvals / health / module views */
@@ -21882,6 +21884,7 @@ document.addEventListener('keydown', e => {
   const sheet = document.getElementById('kbHelp');
   if (e.key === 'Escape' && sheet && sheet.classList.contains('on')){ e.preventDefault(); kbClose(); return; }
   if (e.metaKey || e.ctrlKey || e.altKey || kbTyping()) return;
+  if (document.querySelector('#view-settings.on')) return;   /* no single-key shortcuts in Settings (8 Oct 2026) */
   if (e.key === '?'){ e.preventDefault(); kbToggle(); return; }
   if (kbBusy() || sheet && sheet.classList.contains('on')) return;
   const hit = KB.find(s => s.run && s.k === e.key.toLowerCase());
@@ -43636,7 +43639,6 @@ function ipmRoutersBody(){
      the padding, so the boxes came out narrower than the 34px Add button beside them. */
   return `<obs-toolbar>${ipmToolbarSearch('Search seed routers…')}<span class="ip-spacer"></span>
       <obs-tooltip placement="bottom"><obs-button slot="trigger" variant="neutral-lightest" squared id="rtView" aria-label="View"><obs-icon name="eye" size="16"></obs-icon></obs-button>View</obs-tooltip>
-      <span id="rtUsersW" class="ipmusw"${IPM.rsel.length ? '' : ' hidden'}>${IPM.rsel.length ? ipmUsersBtnHTML() : ''}</span>
       ${/* Option 2: group by site ON / OFF, right after the eye (request, 30 Sep 2026) — lit (primary) while grouped,
            the filter toggle's own pressed look; OFF shows every profile as one flat list */ IPM.opt === '2' ? `<obs-tooltip placement="bottom"><obs-button slot="trigger" variant="${IPM.grp ? 'primary' : 'neutral-lightest'}" squared id="rtGroup" aria-label="Group by site" aria-pressed="${IPM.grp}"><obs-icon name="layer-group" size="16"></obs-icon></obs-button>${IPM.grp ? 'Show without groups' : 'Group by site'}</obs-tooltip>` : ''}
       <obs-tooltip placement="bottom"><obs-button slot="trigger" variant="neutral-lightest" squared id="rtExportPdf" aria-label="Export as PDF"><obs-icon name="export-pdf" size="16"></obs-icon></obs-button>Export as PDF</obs-tooltip>
@@ -43644,7 +43646,7 @@ function ipmRoutersBody(){
       ${ipmFltBtn()}
       <obs-button variant="primary" id="btnAddRouter">Create Subnet Discovery Profile</obs-button></obs-toolbar>
     ${ipmChipsHTML()}
-    ${ipmTable('No seed router matches this filter', ' sortable selectable hide-selection-info' + (IPM.opt === '2' && IPM.grp ? ' group-by="site"' : ''), 'ipmname ipmacts ipmic ipmmenu ipmsel' + (IPM.opt === '2' && IPM.grp ? ' ipmgrp' : ''))}`;
+    ${/* no checkboxes and no User based role button (request, 8 Oct 2026); ipmUsers* kept unreferenced */ ipmTable('No seed router matches this filter', ' sortable' + (IPM.opt === '2' && IPM.grp ? ' group-by="site"' : ''), 'ipmname ipmacts ipmic ipmmenu' + (IPM.opt === '2' && IPM.grp ? ' ipmgrp' : ''))}`;
 }
 function ipmRoutersHTML(){
   return `<div id="ipmPage" class="ipm" data-ipm="routers">${ipmFlashHTML()}
@@ -44576,7 +44578,7 @@ function ipmRowAction(key, id){
     body: 'A single read is attempted with the profile assigned to this device. Nothing else is collected.' });
   if (key === 'edit') {
     const r = IPM_ROUTERS.find(x => x.id === id); if (!r) return;
-    ipmArOpen(); Object.assign(IPM.ar, { targetValue: r.ip, site: r.site, profile: [r.profile], editId: id }); ipmArPaint();
+    ipmArOpen(); Object.assign(IPM.ar, { kind: 'ipv4', target: 'cidr', targetValue: r.ip, site: r.site, profile: [r.profile], editId: id }); ipmArPaint();
   }
 }
 function ipmDecide(id, approve){
@@ -44682,7 +44684,7 @@ const IPM_AR_TARGET = [{ key: 'cidr', label: 'IP/CIDR' }, { key: 'csv', label: '
 const ipmSiteOpts = cur => [...new Set(IPM_SITES.concat(cur ? [cur] : []))].map(x => ipmOpt(x));
 const IPM_AR_EXCLUDE = [{ key: 'ip', label: 'IP' }, { key: 'iprange', label: 'IP Range' }];
 const ipmArDefaults = () => ({ target: 'cidr', targetValue: '', manualIps: '', excludeMode: 'ip', collectorType: 'Collector', collector: '',
-  site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null, kind: 'ipv4', devices: [], netAddr: '', netMask: '255.255.0.0/16', scan: null, scanKey: '', subs: [], subSel: [], subQ: '' });
+  site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null, kind: 'ipv4', devices: [], netAddr: '', netMask: '255.255.0.0/16', supName: '', supDesc: '', scan: null, scanKey: '', subs: [], subSel: [], subQ: '' });
 /* the panel's TYPE rail (request, 6 Oct 2026, with APM › Application Registration's Host/VM · Docker · Kubernetes rail as the
    reference): IPv4 Subnet is the form that was here; Discover Subnet is ONE field, Select Devices (Firewall · Switch · Router) */
 const IPM_AR_KINDS = [{ key: 'ipv4', label: 'IPv4 Subnet', icon: 'ip',
@@ -44766,13 +44768,40 @@ function ipmArOpen(){ IPM.ar = ipmArDefaults(); ipmArPaint(); }
    Save and Run saves the ticked ones. Canned and deterministic — the subnets are the supernet split into /24s (or into
    eight equal parts when the supernet is already /24 or smaller), at most 50, each with a seeded status.
    ⚠️ Only #arSupRes repaints, never the whole panel — a full ipmArPaint() would destroy the field being typed in. */
+/* 8 Oct 2026: Usable hosts, Gateway and Site removed; a SUBNET NAME column you type into is the LAST column, and Mask reads Subnet mask.
+   ⚠️ obs-table has no input cell type, so that column renders empty text and ipmSupNames() puts a real <input> into
+   each of its cells inside the table's shadow root. Rows are matched by their CIDR (the primary cell) — the component's
+   <tr> carries no row id and Vue reuses rows across pages and sorts. */
 const IPM_SUP_COLS = [
   { key: 'cidr', title: 'Subnet', sortable: true },
-  { key: 'mask', title: 'Mask' },
-  { key: 'hosts', title: 'Usable hosts', sortable: true },
-  { key: 'gw', title: 'Gateway' },
-  { key: 'site', title: 'Site', sortable: true },
-  { key: 'state', title: 'Status', type: 'tags' }];
+  { key: 'mask', title: 'Subnet mask' },
+  { key: 'nm', title: 'Subnet name', width: '34%' }];   /* Status column removed (request, 8 Oct 2026) */
+const IPM_SUP_NM_COL = 1 + IPM_SUP_COLS.findIndex(c => c.key === 'nm');   /* +1 for the checkbox cell */
+const IPM_SUP_NM_CSS = 'td.ipmsnmtd .cell-clip{display:none}' +
+  'input.ipmsnm{width:100%;max-width:320px;box-sizing:border-box;height:28px;padding:0 8px;border:1px solid var(--field-border-color,var(--border-color));border-radius:4px;' +
+  'background:var(--page-background-color);color:var(--page-text-color);font:inherit;font-size:12.5px;outline:0}' +
+  'input.ipmsnm::placeholder{color:var(--neutral-light);opacity:.7}input.ipmsnm:focus{border-color:var(--primary)}';
+function ipmSupNames(t, d){
+  const root = t.shadowRoot; if (!root) return setTimeout(() => ipmSupNames(t, d), 50);
+  if (!root._snmCss) { const ss = new CSSStyleSheet(); ss.replaceSync(IPM_SUP_NM_CSS); root.adoptedStyleSheets = [...root.adoptedStyleSheets, ss]; root._snmCss = 1; }
+  const sync = () => {
+    root.querySelectorAll('tbody tr').forEach(tr => {
+      const pc = tr.querySelector('td.primary-cell'), td = tr.querySelectorAll(':scope > td')[IPM_SUP_NM_COL]; if (!pc || !td) return;
+      const cidr = pc.textContent.trim(), sub = d.subs.find(x => x.cidr === cidr); if (!sub) return;
+      let inp = td.querySelector('input.ipmsnm');
+      if (!inp) {
+        td.classList.add('ipmsnmtd');
+        inp = document.createElement('input'); inp.className = 'ipmsnm'; inp.placeholder = 'Enter subnet name'; inp.setAttribute('aria-label', 'Subnet name');
+        ['click', 'mousedown', 'keydown'].forEach(ev => inp.addEventListener(ev, e => e.stopPropagation()));
+        inp.addEventListener('input', () => { const x = d.subs.find(y => y.cidr === inp.dataset.cidr); if (x) x.nm = inp.value; });
+        td.appendChild(inp);
+      }
+      if (inp.dataset.cidr !== cidr) { inp.dataset.cidr = cidr; inp.value = sub.nm || ''; }
+    });
+  };
+  if (t._snmObs) t._snmObs.disconnect();
+  t._snmObs = new MutationObserver(sync); t._snmObs.observe(root, { childList: true, subtree: true, characterData: true }); sync();
+}
 let ipmSupT = null;
 const ipmSupIp = a => a.split('.').reduce((n, o) => n * 256 + +o, 0) >>> 0;
 const ipmSupStr = n => [24, 16, 8, 0].map(b => (n >>> b) & 255).join('.');
@@ -44785,7 +44814,7 @@ function ipmSupFind(addr, p){
   return Array.from({ length: n }, (_, i) => { const net = (base + i * step) >>> 0, r = rnd();
     const st = r < .62 ? ['New', 'tag-green'] : r < .88 ? ['Known', 'tag-primary'] : ['Conflict', 'tag-orange'];
     return { id: String(i), cidr: ipmSupStr(net) + '/' + sp, mask: ipmSupMask(sp), hosts: (step - 2).toLocaleString('en-US'),
-      gw: ipmSupStr(net + 1), site: IPM_SITES[Math.floor(rnd() * IPM_SITES.length)], state: [{ label: st[0], variant: st[1] }], _new: st[0] === 'New' }; });
+      gw: ipmSupStr(net + 1), site: IPM_SITES[Math.floor(rnd() * IPM_SITES.length)], nm: '', state: [{ label: st[0], variant: st[1] }], _new: st[0] === 'New' }; });
 }
 function ipmSupQueue(){
   const d = IPM.ar; if (!d || d.kind !== 'supernet') return;
@@ -44813,14 +44842,14 @@ function ipmSupResHTML(d){
     <obs-table id="arSupTbl" class="ipmname ipmsel" selectable sortable hide-selection-info page-size="10" empty-text="No subnet matches the search"></obs-table>`;
 }
 function ipmSupRows(d){ const q = d.subQ.trim().toLowerCase();
-  return d.subs.filter(x => !q || (x.cidr + ' ' + x.gw + ' ' + x.site + ' ' + x.state[0].label).toLowerCase().includes(q)); }
+  return d.subs.filter(x => !q || (x.cidr + ' ' + x.mask + ' ' + x.state[0].label + ' ' + (x.nm || '')).toLowerCase().includes(q)); }
 function ipmSupPaint(){
   const el = document.getElementById('arSupRes'), d = IPM.ar; if (!el || !d) return;
   el.innerHTML = ipmSupResHTML(d); ipmSupBind();
 }
 function ipmSupBind(){
   const d = IPM.ar, t = document.getElementById('arSupTbl'); if (!d || !t) return;
-  t.columns = IPM_SUP_COLS; t.rows = ipmSupRows(d); t.selected = JSON.stringify(d.subSel);
+  t.columns = IPM_SUP_COLS; t.rows = ipmSupRows(d); t.selected = JSON.stringify(d.subSel); ipmSupNames(t, d);
   t.addEventListener('change', e => { const v = ipmDet(e); if (!Array.isArray(v)) return; d.subSel = v.map(String);
     const n = document.getElementById('arSupN'); if (n) n.textContent = d.subSel.length + ' selected'; });
   const q = document.getElementById('arSupQ');
@@ -44902,7 +44931,7 @@ function ipmHelpTog(i){
 /* the target row changes with IP/CIDR ↔ CSV; it is two grid cells, so its wrapper is display:contents */
 function ipmArTargetHTML(d){
   const targetField = d.target === 'cidr'
-    ? ipmField('IP/CIDR', `<obs-input id="arTargetVal" block placeholder="e.g. 192.168.1.12/24" value="${ipmEsc(d.targetValue)}"${d.fromPending ? ' disabled' : ''}></obs-input>`, null, true)
+    ? ipmField('IP/CIDR', `<obs-input id="arTargetVal" block placeholder="e.g. 192.168.1.12/24" value="${ipmEsc(d.targetValue)}"${d.fromPending || d.editId ? ' disabled' : ''}></obs-input>`, null, true)
     /* ⚠️ HAND-COMPOSED, and only because obs-input 0.1.166 renders no icon (its prefix-icon prop and
        prefix slot are both inert — recorded in _ds/README.md). The parts are DS ones: obs-icon
        (paper-clip, download), obs-button (default), obs-link; the box is obs-input's own geometry and
@@ -44919,7 +44948,7 @@ const ipmArManualHTML = d => ipmField('Enter one or more IPs', `<obs-input id="a
 function ipmArPaint(){
   const d = IPM.ar;
   const bodyHead = `<div class="ip-form">
-    ${ipmField('Discovery Target', `<obs-radio id="arTargetTabs" as-button options='${ipmJ(IPM_AR_TARGET)}' value="${ipmEsc(d.target)}"${d.fromPending ? ' disabled' : ''}></obs-radio>`)}
+    ${ipmField('Discovery Target', `<obs-radio id="arTargetTabs" as-button options='${ipmJ(IPM_AR_TARGET)}' value="${ipmEsc(d.target)}"${d.fromPending || d.editId ? ' disabled' : ''}></obs-radio>`)}
     ${'' /* the approve flow LOCKS the target (request, 30 Sep 2026): it is the subnet being approved, so
        Discovery Target and IP/CIDR are shown disabled rather than editable */}
     ${IPM.opt === '2'
@@ -44947,12 +44976,17 @@ function ipmArPaint(){
   const body = bodyHead.replace(/<\/div>$/, '') + common;
   /* Supernet: Network address | Network mask and nothing else — the collector / credential / retry / ping / notify
      fields were shown here first and REMOVED on request (7 Oct 2026) */
+  /* Supernet name + Description lead the form (request, 8 Oct 2026) */
   const supBody = `<div class="ip-form">
+    ${ipmField('Supernet name', `<obs-input id="arSupName" block placeholder="e.g. Mumbai campus" value="${ipmEsc(d.supName)}"></obs-input>`)}
+    ${ipmField('Description', `<obs-input id="arSupDesc" block placeholder="What this supernet covers" value="${ipmEsc(d.supDesc)}"></obs-input>`)}
     ${ipmField('Network address', `<obs-input id="arNetAddr" block placeholder="e.g. 10.0.0.0" value="${ipmEsc(d.netAddr)}"></obs-input>`, null, true)}
     ${ipmField('Network mask', `<obs-select id="arNetMask" block searchable="true" options='${ipmJ(IPM_MASK_OPTS)}' value="${ipmEsc(d.netMask)}"></obs-select>`, null, true)}</div>
     <div id="arSupRes" class="ipmsup">${ipmSupResHTML(d)}</div>`;
-  const help = IPM.opt === '2' && !d.editId && !d.fromPending;   /* the approve flow needs no help card (29 Sep 2026) */
-  const rail = help ? `<nav class="ipmkind" aria-label="Discovery type">${IPM_AR_KINDS.map(k => `<button type="button" class="ipmkindi${d.kind === k.key ? ' on' : ''}" data-kind="${k.key}"><span>${ipmEsc(k.label)}</span></button>`).join('')}</nav>` : '';
+  /* EDIT opens the full Create layout too (request, 8 Oct 2026) — rail + form + help card — with the profile's own
+     kind (IPv4 Subnet) lit and the other two kinds disabled: a saved profile's type cannot change */
+  const help = IPM.opt === '2' && !d.fromPending;   /* the approve flow needs no help card (29 Sep 2026) */
+  const rail = help ? `<nav class="ipmkind" aria-label="Discovery type">${IPM_AR_KINDS.map(k => `<button type="button" class="ipmkindi${d.kind === k.key ? ' on' : ''}" data-kind="${k.key}"${d.editId && d.kind !== k.key ? ' disabled' : ''}><span>${ipmEsc(k.label)}</span></button>`).join('')}</nav>` : '';
   const disc = help && d.kind === 'discover';
   const discBody = `<div class="ip-form"><div class="span-2">${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}</div></div>`;
   const foot = `<div class="ip-row ipmfoot"><span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
@@ -45028,11 +45062,13 @@ function ipmArBind(){
   on('#arProfile', 'change', e => { IPM.ar.profile = ipmArr(ipmDet(e)); });
   on('#arDevices', 'change', e => { IPM.ar.devices = ipmArr(ipmDet(e)); });
   on('#arNetAddr', 'input', e => { IPM.ar.netAddr = ipmVal(e); ipmSupQueue(); });
+  on('#arSupName', 'input', e => { IPM.ar.supName = ipmVal(e); });
+  on('#arSupDesc', 'input', e => { IPM.ar.supDesc = ipmVal(e); });
   on('#arNetMask', 'change', e => { IPM.ar.netMask = ipmVal(e) || IPM.ar.netMask; ipmSupQueue(); });
   ipmSupBind();
   ipmExpandGroups(P.querySelector('#arNetMask'));
   ipmClearAlways(P.querySelector('#arDevices'));
-  P.querySelectorAll('.ipmkindi').forEach(b => b.addEventListener('click', () => { if (IPM.ar.kind === b.dataset.kind) return; IPM.ar.kind = b.dataset.kind; ipmArPaint(); }));
+  P.querySelectorAll('.ipmkindi').forEach(b => b.addEventListener('click', () => { if (b.disabled || IPM.ar.kind === b.dataset.kind) return; IPM.ar.kind = b.dataset.kind; ipmArPaint(); }));
   on('#arSite', 'change', e => { IPM.ar.site = ipmVal(e); });
   on('#arSite', 'add', e => {
     const el = P.querySelector('#arSite'), d = ipmDet(e);
@@ -45070,7 +45106,7 @@ function ipmArBind(){
       if (d.scan !== 'done') { toast(d.scan === 'run' ? 'Wait for the subnet discovery to finish' : 'Enter the network address and mask to discover its subnets'); return; }
       if (!d.subSel.length) { toast('Select at least one subnet to save'); return; }
       const n = d.subSel.length;
-      IPM.flash = { title: n === 1 ? 'Subnet saved and queued' : n + ' subnets saved and queued', body: 'From supernet ' + a + '/' + p + ': ' + d.subs.filter(x => d.subSel.includes(x.id)).map(x => x.cidr).slice(0, 6).join(', ') + (n > 6 ? ' and ' + (n - 6) + ' more' : '') + ' — discovery runs now.' };
+      IPM.flash = { title: n === 1 ? 'Subnet saved and queued' : n + ' subnets saved and queued', body: 'From supernet ' + (d.supName.trim() ? d.supName.trim() + ' (' + a + '/' + p + ')' : a + '/' + p) + ': ' + d.subs.filter(x => d.subSel.includes(x.id)).map(x => x.cidr).slice(0, 6).join(', ') + (n > 6 ? ' and ' + (n - 6) + ' more' : '') + ' — discovery runs now.' };
       ipmPanelClose(); stMainPaint(); return;
     }
     if (d.editId) {

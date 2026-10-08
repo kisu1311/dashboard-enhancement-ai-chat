@@ -12043,7 +12043,8 @@ function kbTag(t){
   const hit = KB.find(s => s.sel && t.matches(s.sel));
   if (hit) t.setAttribute('data-tip', cur + '  ' + hit.cap);
 }
-function kbTyping(){ const a = document.activeElement;
+function kbTyping(){ let a = document.activeElement;
+  while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement;   /* DS fields focus inside their shadow root */
   return !!a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }
 /* a modal surface owns the keyboard while it is open, and these are dashboard actions —
    don't fire them under a drawer, or from the approvals / health / module views */
@@ -12133,6 +12134,7 @@ document.addEventListener('keydown', e => {
   const sheet = document.getElementById('kbHelp');
   if (e.key === 'Escape' && sheet && sheet.classList.contains('on')){ e.preventDefault(); kbClose(); return; }
   if (e.metaKey || e.ctrlKey || e.altKey || kbTyping()) return;
+  if (document.querySelector('#view-settings.on')) return;   /* no single-key shortcuts in Settings (8 Oct 2026) */
   if (e.key === '?'){ e.preventDefault(); kbToggle(); return; }
   if (kbBusy() || sheet && sheet.classList.contains('on')) return;
   const hit = KB.find(s => s.run && s.k === e.key.toLowerCase());

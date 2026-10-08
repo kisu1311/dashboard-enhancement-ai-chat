@@ -180,6 +180,9 @@
      only: N W G E D O T F / S A), so nothing was displaced. */
   function vsTyping() {
     var a = document.activeElement;
+    /* ⚠️ the DS fields (obs-input / obs-select …) keep the real <input> inside their SHADOW root, so
+       document.activeElement is only the host — walk down to the element that actually has focus */
+    while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement;
     if (!a) return false;
     if (a.isContentEditable) return true;
     return /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
@@ -192,6 +195,8 @@
     var idx = vsIdx(e.key);
     if (idx < 0) return;
     if (vsTyping()) return;
+    /* no option-switch keys inside the Settings module (request, 8 Oct 2026) — it is a page of forms */
+    if (document.querySelector('#view-settings.on')) return;
     var v = VARIANTS[idx];
     if (!v || v.file === here) return;        /* already here — do nothing */
     e.preventDefault();
