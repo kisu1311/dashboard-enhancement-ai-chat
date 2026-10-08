@@ -15141,12 +15141,14 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
 .licg4c.licg4rh .licg4b{grid-template-columns:minmax(0,1fr)}
 .licg4b.lic4nr{grid-template-columns:minmax(0,1fr)}
 /* "170 of 5,000 devices" in each Option 4 card's header, before History (8 Oct 2026) — where the ring's figure went */
-.lic6fig{margin-left:auto;margin-right:16px;display:flex;flex-direction:column;gap:6px;width:200px;flex:0 0 200px}
+.lic6fig{margin-left:auto;margin-right:16px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
 .lic6fl{display:flex;align-items:baseline;gap:6px;white-space:nowrap;font-size:12.8px;color:var(--neutral-light)}
 .lic6fl b{font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:16px;font-weight:600;color:var(--page-text-color)}
-.lic6fl em{margin-left:auto;font-style:normal;font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:12px;color:var(--page-text-color)}
-.lic6fb{display:block;height:4px;border-radius:2px;background:var(--progress-bar-bg,var(--neutral-lighter));overflow:hidden}
-.lic6fb i{display:block;height:100%;border-radius:2px;background:var(--lic6-t)}
+.lic6sg{display:flex;align-items:center;gap:8px}
+.lic6sb{display:flex;gap:3px}
+.lic6sb i{width:12px;height:8px;border-radius:2px;background:var(--progress-bar-bg,var(--neutral-lighter))}
+.lic6sb i.on{background:var(--lic6-t)}
+.lic6sg em{min-width:34px;text-align:right;font-style:normal;font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:12px;color:var(--page-text-color)}
 .lic4fig{margin-left:auto;margin-right:16px;white-space:nowrap;font-size:14px;color:var(--neutral-light)}
 .lic4fig b{font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:20px;font-weight:600;color:var(--page-text-color);margin-right:2px}   /* Option 4 without the ring (8 Oct 2026) */
 .licg4rt{stroke:color-mix(in srgb, var(--page-text-color) 10%, transparent)}
@@ -48313,10 +48315,14 @@ function lic4DevHTML(v){
    sentence — used / total and the share on one line, a thin bar in the entitlement's tone under it. It also puts the
    share back on the card, which the ring used to carry. Zero draws an empty track, never a stub. */
 function lic6Fig(q, tone){
+  /* SEGMENTED version (request, 8 Oct 2026, picked from four): "170 of 5,000 devices" on one line, then a 10-block meter
+     with the share beside it. A block lights once usage reaches its start, so any non-zero use lights the first block
+     and 0 lights none; the share text carries the exact figure the blocks round. */
   const f = q.total ? Math.min(100, q.used / q.total * 100) : 0, pc = f > 0 && f < 1 ? '<1' : f < 10 && Math.round(f * 10) % 10 ? f.toFixed(1) : String(Math.round(f));
+  const on = f > 0 ? Math.max(1, Math.ceil(f / 10)) : 0;
   return `<span class="lic6fig" style="--lic6-t:var(${tone})" role="img" aria-label="${licFmt(q.used)} of ${licFmt(q.total)} ${stEsc(q.unit)} used, ${pc}%">
-    <span class="lic6fl"><b>${licFmt(q.used)}</b><span>/ ${licFmt(q.total)} ${stEsc(q.unit)}</span><em>${pc}%</em></span>
-    <span class="lic6fb">${f > 0 ? `<i style="width:${f.toFixed(2)}%"></i>` : ''}</span></span>`;
+    <span class="lic6fl"><b>${licFmt(q.used)}</b><span>of ${licFmt(q.total)} ${stEsc(q.unit)}</span></span>
+    ${/* the segmented meter under it was removed on request (8 Oct 2026) — only the figure line stays */ ''}</span>`;
 }
 function lic4Ring(q, tone){
   const C = 2 * Math.PI * 40, f = q.total ? Math.min(1, q.used / q.total) : 0;
