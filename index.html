@@ -8979,6 +8979,32 @@ html:not([data-theme="light"]) #userPop .up4av::after{box-shadow:0 0 0 2px var(-
 .up5slide[data-i="-1"] .up5thumb{opacity:0}
 .up5hr{margin:6px -8px}
 @media (prefers-reduced-motion:reduce){.up5thumb{transition:none}}
+/* Option 6 · the Language row (12 Oct 2026) — a dropdown that opens in place under its row */
+/* Option 6: Edit profile is an icon at the end of the identity row (request, 12 Oct 2026), not a full-width button */
+.up6ed{width:30px;height:30px;flex:0 0 30px;border-radius:4px;display:grid;place-items:center;color:var(--text-dim);
+  background:color-mix(in srgb,var(--text) 8%,transparent)}
+.up6ed svg{width:16px;height:16px}
+.up6ed:hover,.up6ed:focus-visible{color:var(--text);background:color-mix(in srgb,var(--text) 15%,transparent);outline:0}
+/* revealed only while the header is hovered (request, 12 Oct 2026). opacity, not display — the button keeps its box
+   so the name and address do not reflow when it appears; :focus-visible keeps it reachable by keyboard */
+.up6ed{opacity:0;transition:opacity .12s}
+.up5top:hover .up6ed,.up6ed:focus-visible{opacity:1}
+.up6lr .up6lv{font-style:normal;font-size:12px;color:var(--text-dim);flex:0 0 auto}
+/* a RIGHT chevron (request, 12 Oct 2026): the list opens beside the popup, so the arrow points where it goes.
+   ⚠️ needs (0,3,1) — `.up5 .up4r > svg` (0,2,1) sizes every row's leading glyph to 18px and was winning, which pushed
+   the value text into an ellipsis. Same 12px as the Settings row's chevron, so the two arrows share one column. */
+/* a 4px gap between neighbouring action rows (request, 12 Oct 2026): at 34px with no gap two hovered/active fills
+   touched and read as one slab. Sibling-only, so the first row under a section label keeps its spacing. */
+#userPop.o6 .up5 > :is(.up4r,.up6lang,.up5th) + :is(.up4r,.up6lang,.up5th){margin-top:4px}
+#userPop .up6lr > svg.up6cv{width:12px;height:12px;flex:0 0 12px;color:var(--text-dim)}
+#userPop .up6lang.open .up6lr > svg.up6cv{color:var(--text)}
+.up6ll{display:none;position:absolute;left:calc(100% + 8px);z-index:3;width:180px;padding:4px;border-radius:4px;border:1px solid var(--pop-line,var(--border));
+  background:var(--pop);box-shadow:var(--pop-shadow,0 8px 24px rgba(0,0,0,.35))}
+.up6lang.open .up6ll{display:grid;gap:2px}
+.up6lang.open .up6lr{background:var(--pop-item-hover)}
+.up6lo{height:30px;padding:0 10px;border-radius:4px;text-align:left;font-size:13px;color:var(--text)}
+.up6lo:hover,.up6lo:focus-visible{background:var(--pop-item-hover);outline:0}
+.up6lo.on{background:var(--chip);font-weight:600}
 
 
 
@@ -13999,7 +14025,7 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
 </div>
 
 <div class="pop" id="userPop">
-  <div class="upsw" id="upOpt" role="group" aria-label="Card design"><span class="upswl">Option</span><button type="button" data-o="1" class="on" onclick="upOptSet('1')">1</button><button type="button" data-o="2" onclick="upOptSet('2')">2</button><button type="button" data-o="3" onclick="upOptSet('3')">3</button><button type="button" data-o="4" onclick="upOptSet('4')">4</button><button type="button" data-o="5" onclick="upOptSet('5')">5</button></div>
+  <div class="upsw" id="upOpt" role="group" aria-label="Card design"><span class="upswl">Option</span><button type="button" data-o="1" class="on" onclick="upOptSet('1')">1</button><button type="button" data-o="2" onclick="upOptSet('2')">2</button><button type="button" data-o="3" onclick="upOptSet('3')">3</button><button type="button" data-o="4" onclick="upOptSet('4')">4</button><button type="button" data-o="5" onclick="upOptSet('5')">5</button><button type="button" data-o="6" onclick="upOptSet('6')">6</button></div>
   <div class="uhead">
     <div class="upavatar">KP</div>
     <div><div class="nm">Kishan Patel</div><div class="rl">admin</div><div class="em" id="upEmail"></div></div>
@@ -24433,7 +24459,9 @@ let UP_OPT = (() => { try { return localStorage.getItem('oo-up-opt') || '1'; } c
 function upOptSet(o){
   UP_OPT = o; try { localStorage.setItem('oo-up-opt', o); } catch (e) {}
   const p = document.getElementById('userPop'); if (!p) return;
-  p.classList.toggle('o2', o === '2'); p.classList.toggle('o3', o === '3'); p.classList.toggle('o4', o === '4'); p.classList.toggle('o5', o === '5'); if (o === '4') up4Paint(); if (o === '5') up5Paint();
+  p.classList.toggle('o2', o === '2'); p.classList.toggle('o3', o === '3'); p.classList.toggle('o4', o === '4'); /* Option 6 (12 Oct 2026) is a COPY of Option 5 by construction: it wears o5 too, so every Option 5 rule and the up5 builder
+     serve it unchanged. Diverge it with an #userPop.o6 rule or an UP_OPT === '6' branch. */
+  p.classList.toggle('o5', o === '5' || o === '6'); p.classList.toggle('o6', o === '6'); if (o === '4') up4Paint(); if (o === '5' || o === '6') up5Paint();
   upThemePaint();
   p.querySelectorAll('.upsw button').forEach(b => b.classList.toggle('on', b.dataset.o === o));
   /* the address is the rail identity row's own (refreshUser writes it there), so the two cannot disagree */
@@ -24502,7 +24530,7 @@ function up4ThemeLit(){
 }
 /* repaint on every open: the identity, the icons and the notification state are read live */
 (function(){ const tp = window.togglePop; if (typeof tp !== 'function') return;
-  window.togglePop = function(id){ const r = tp.apply(this, arguments); if (id === 'userPop') upNtfPaint(); if (id === 'userPop' && UP_OPT === '4') up4Paint(); if (id === 'userPop' && UP_OPT === '5') up5Paint(); return r; }; })();
+  window.togglePop = function(id){ const r = tp.apply(this, arguments); if (id === 'userPop') upNtfPaint(); if (id === 'userPop' && UP_OPT === '4') up4Paint(); if (id === 'userPop' && (UP_OPT === '5' || UP_OPT === '6')) up5Paint(); return r; }; })();
 /* the Notifications switch in the profile popup's menu (request, 7 Oct 2026: the preference left My Profile and lives here).
    Same key and same toggle as card designs 4 and 5 (up4NtfTog), so every surface agrees; painted on every popup open. */
 function upNtfPaint(){ const on = (typeof ntfEnabled === 'function') && ntfEnabled(); const b = document.getElementById('upNtf'); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-checked', on); } }
@@ -24528,11 +24556,11 @@ function up5HTML(){
   const bell = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>';
   const head = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-3a8 8 0 1 1 16 0v3"/><path d="M18 19c0 1.657 -2.686 3 -6 3"/><path d="M4 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/><path d="M15 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/></svg>';
   return `<div class="up5top">
-      <div class="up5id"><div class="up4av">${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div></div>
-      <button type="button" class="up5btn" onclick="up4Go(()=>stOpen('My Account','My Profile'))">Edit profile</button></div>
+      <div class="up5id"><div class="up4av">${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div>${UP_OPT === '6' ? `<button type="button" class="up6ed" aria-label="Edit profile" data-tip="Edit profile" onclick="up4Go(()=>stOpen('My Account','My Profile'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg></button>` : ''}</div>
+      ${UP_OPT === '6' ? '' : `<button type="button" class="up5btn" onclick="up4Go(()=>stOpen('My Account','My Profile'))">Edit profile</button>`}</div>
     <div class="up5sec">Account</div>
-    ${row(setIc, 'Settings', "up4Go(()=>stOpen('User Settings'))", UP4_ICO.ext)}
-    <div class="up4r up5nt" onclick="up4NtfTog()" role="switch" aria-checked="${ntf}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();up4NtfTog()}">${bell}<span>Notifications</span><i class="up5st" id="up5NtfSt">${ntf?'On':'Off'}</i><span class="up4sw${ntf?' on':''}" id="up4Ntf" aria-hidden="true"></span></div>
+    ${UP_OPT === '6' ? '' : row(setIc, 'Settings', "up4Go(()=>stOpen('User Settings'))", UP4_ICO.ext)}
+    ${UP_OPT === '6' ? upLangRowHTML() : `<div class="up4r up5nt" onclick="up4NtfTog()" role="switch" aria-checked="${ntf}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();up4NtfTog()}">${bell}<span>Notifications</span><i class="up5st" id="up5NtfSt">${ntf?'On':'Off'}</i><span class="up4sw${ntf?' on':''}" id="up4Ntf" aria-hidden="true"></span></div>`}
     <div class="up5th"><svg viewBox="0 0 48 48" class="up5thi">${(p.querySelector('.tseg[data-mode="auto"] svg')||{}).innerHTML||''}</svg><span>Appearance</span>
       <div class="up4th up5slide" role="group" aria-label="Theme"><i class="up5thumb" aria-hidden="true"></i>
       ${['light','dark','auto'].map(m => `<button type="button" data-m="${m}" data-tip="${m[0].toUpperCase()+m.slice(1)}" aria-label="${m} theme" onclick="setTheme('${m}')">${seg(m)}</button>`).join('')}</div></div>
@@ -24549,6 +24577,49 @@ function up5Paint(){
   const p = document.getElementById('userPop'); if (!p) return;
   let h = p.querySelector('.up5'); if (!h) { h = document.createElement('div'); h.className = 'up5'; p.appendChild(h); }
   h.innerHTML = up5HTML(); up4ThemeLit();
+}
+/* Option 6 (12 Oct 2026): the Notifications on/off row is replaced by a LANGUAGE row — a dropdown that opens in
+   place under the row, listing each language in its own script. Same preference as My Profile's Language field
+   (oo-ui-pref.lang, via stLangSet where the Settings module is loaded), so the two cannot disagree.
+   ⚠️ English only — picking العربية sets <html lang>, it does not translate the page or flip it to RTL. */
+const UP_LANGS = [{ v:'en', l:'English' }, { v:'ar', l:'العربية' }];
+let UP_LANG_OPEN = false;
+function upLang(){ try { return (JSON.parse(localStorage.getItem('oo-ui-pref') || '{}').lang) || 'en'; } catch (e) { return 'en'; } }
+function upLangRowHTML(){
+  const cur = upLang(), lab = (UP_LANGS.find(o => o.v === cur) || UP_LANGS[0]).l;
+  /* Tabler text/language (the 文A glyph) — reads as "language" where the globe read as "web / region" */
+  const globe = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629"/><path d="M4 6.371h7"/><path d="M5 9c0 2.144 2.252 3.908 6 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/><path d="M6.694 3l.793 .582"/></svg>';
+  const chev = '<svg class="up6cv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"/></svg>';
+  return `<div class="up6lang${UP_LANG_OPEN?' open':''}" id="up6Lang">
+      <button type="button" class="up4r up6lr" aria-haspopup="listbox" aria-expanded="${UP_LANG_OPEN}" onclick="upLangTog()">${globe}<span>Language</span><i class="up6lv" id="up6LangV">${lab}</i>${chev}</button>
+      <div class="up6ll" role="listbox" aria-label="Language">${UP_LANGS.map(o => `<button type="button" role="option" class="up6lo${o.v===cur?' on':''}" aria-selected="${o.v===cur}" lang="${o.v}" onclick="upLangPick('${o.v}')">${o.l}</button>`).join('')}</div></div>`;
+}
+/* ⚠️ NO REPAINT ON TOGGLE OR PICK: replacing the row detached the clicked node, and the document click handler
+   (which exempts clicks inside a .pop by walking up from the target) then closed the whole popup. Classes and text
+   are patched in place. The list opens BESIDE the popup (request, 12 Oct 2026), level with its row, and it stays a child of #userPop so clicks in it
+   still count as inside the popup. */
+function upLangPlace(){
+  /* absolute against #userPop (not fixed against the viewport): the card is re-placed after it opens, and a list
+     placed in viewport px would be left behind. #userPop is overflow:visible, so nothing clips it. */
+  const w = document.getElementById('up6Lang'), p = document.getElementById('userPop'); if (!w || !p) return;
+  const l = w.querySelector('.up6ll'), r = w.querySelector('.up6lr').getBoundingClientRect(), pr = p.getBoundingClientRect();
+  l.style.top = (r.top - pr.top - 5) + 'px';
+}
+function upLangTog(){
+  UP_LANG_OPEN = !UP_LANG_OPEN;
+  const w = document.getElementById('up6Lang'); if (!w) return;
+  w.classList.toggle('open', UP_LANG_OPEN); w.querySelector('.up6lr').setAttribute('aria-expanded', UP_LANG_OPEN);
+  if (UP_LANG_OPEN) upLangPlace();
+}
+function upLangPick(v){
+  if (typeof stLangSet === 'function') stLangSet(v);
+  else { try { const o = JSON.parse(localStorage.getItem('oo-ui-pref') || '{}'); o.lang = v; localStorage.setItem('oo-ui-pref', JSON.stringify(o)); } catch (e) {} document.documentElement.lang = v; }
+  const w = document.getElementById('up6Lang');
+  if (w) {
+    w.querySelectorAll('.up6lo').forEach(b => { const on = b.getAttribute('lang') === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    document.getElementById('up6LangV').textContent = (UP_LANGS.find(o => o.v === v) || UP_LANGS[0]).l;
+  }
+  UP_LANG_OPEN = true; upLangTog();
 }
 </script>
 <div class="pop" id="dpRowMenu"></div>
