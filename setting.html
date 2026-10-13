@@ -2820,6 +2820,12 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    old one was. */
 .sfoot{flex:0 0 auto;padding:10px;position:relative;z-index:1}
 /* `.sfoot::before` drew the rule above the footer — removed with the rest, see above */
+/* ⚠️ …AND IT IS BACK, ABOVE THE SETTING ROW (request + picture, 13 Oct 2026: "add line on upside the setting module").
+   Collapsed it is 24px centred over the gear — the width the rail's own group gaps take (`.sgroup-gap`); open it spans the
+   footer's rows. `--track`, not `--border`: on this rail `--border` is ~1.3:1 and would not show (the 8 Sep `.skrdiv`
+   measurement). The footer's 10px top padding and Setting's 10px margin put it midway between the list and the gear. */
+.sfoot::before{content:"";display:block;height:1px;background:var(--track);margin:0 7px}
+.sidebar:not(.open) .sfoot::before{width:24px;margin:0 auto}
 /* ⚠️ THE COLLAPSE ROW IS NOW BUILT TO `.sitem`'s NUMBERS (gap 11, 20px glyph at margin-left
    5, 13px label). It had gap 9, an 18px glyph at margin-left 6 and a 12px label — so its icon
    sat 3px right of every other glyph and 2px smaller, and its label 1px left of every other
@@ -2850,6 +2856,9 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
 /* IPAM view: the iframe fills the content area; the vendored page brings its own surfaces. */
 .ipamhost{flex:1 1 auto;min-height:0;display:flex}
 .ipamfr{flex:1 1 auto;width:100%;height:100%;border:0;display:block;background:var(--bg)}
+/* Firewall Analyzer view (13 Oct 2026): the same iframe shape as IPAM. */
+.fahost{flex:1 1 auto;min-height:0;display:flex}
+.fafr{flex:1 1 auto;width:100%;height:100%;border:0;display:block;background:var(--bg)}
 .view.on{display:flex}
 /* ⚠️ 50px, NOT 44 (request, 22 Sep 2026: "the header height is 50px"). Both numbers move
    together — `height` AND the flex basis — or the row lays out at one and paints at the other.
@@ -12338,6 +12347,10 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
 .stempty{padding:18px 4px;color:var(--text-dim);font-size:12px}
 /* ── content ── */
 .stmain{flex:1;min-width:0;min-height:0;overflow:auto;padding:16px 16px 20px;display:flex;flex-direction:column}
+/* Firewall Analyzer settings: the embedded page fills the pane edge to edge (it pads itself) */
+.stmain:has(> .stfa){padding:0;overflow:hidden}
+.stfa{flex:1 1 auto;min-height:0;display:flex}
+.stfafr{flex:1 1 auto;width:100%;border:0;display:block;background:var(--bg)}
 /* ── My Profile form: avatar column + a 710px label/field column, as measured ── */
 .stprof{display:flex;align-items:flex-start;flex:0 0 auto}
 .stav{flex:0 0 166px;width:166px;padding:0 16px;display:flex;flex-direction:column;align-items:center}
@@ -15986,6 +15999,7 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
    format previews itself and the time zone shows the time there now, so a choice is never a guess. */
 .uipop{display:flex;justify-content:flex-end;gap:8px;align-items:center;font-size:12px;color:var(--text-dim);padding:2px 0 0}
 .uipop .uipseg button{height:26px;font-size:12px}
+.uipop .uipopsel{width:140px;flex:0 0 140px}   /* the Design dropdown (13 Oct 2026): wide enough for "Option 19" + chevron */
 .uipmv{padding:0 0 12px}
 .uip2{max-width:820px;width:100%;margin:0 auto;padding:4px 0 28px}
 .uip2 h2{margin:6px 0 2px;font-size:20px;font-weight:600;color:var(--white)}
@@ -16119,6 +16133,7 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
    profile fields"): a full-width rule with 32px either side, then the heading over a one-line note that says what the
    section is for, and its own 24px before the first control */
 #stProfPage.stpd6 .st6s{margin-top:32px;padding-top:32px;border-top:1px solid var(--border-color)}
+#stProfPage.stpd7:not(.stpd9):not(.stpd12) .st6s{border-top:0;padding-top:0}   /* Option 1 (design '7') only: no divider between Password and Display preferences (request, 13 Oct 2026); its copy Option 9 ('12', class stpd12) keeps it */
 #stProfPage.stpd6 .st6sh{margin-bottom:24px}
 #stProfPage.stpd6 .st6sh h3{margin:0}
 #stProfPage.stpd6 .st6sh p{margin:4px 0 0;font-size:12.8px;color:var(--neutral-light,var(--text-dim))}
@@ -16159,13 +16174,57 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 #stProfPage.stpd7 .stavl a,#stProfPage.stpd7 .stavl .sep{margin:0}   /* the 140px card fits Change | Remove on one line once the 8px link margins go */
 #stProfPage.stpd7 .st7h1{margin:0;font-size:24px;font-weight:600;line-height:32px;color:var(--primary-alt,var(--white))}
 #stProfPage.stpd7 .stpdd{margin:4px 0 24px;font-size:14px;line-height:20px}
+#stProfPage.stpd7.stpd13 .stpdd{margin-bottom:40px}   /* Option 2: more air between the page title and Personal details (request, 13 Oct 2026) — the 40px the page puts between its sections */
+/* Option 5 ('16'): three fields across instead of two (request, 13 Oct 2026) — Personal details' six fields and the
+   date / time / rows row, still inside the 624px box the theme cards set. (1,5,0) beats the two-column rules. */
+#stProfPage.stpd7.stpd13.stpd16 .st7pdh .stpdg,#stProfPage.stpd7.stpd13.stpd16 .st7dth .st6g{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* …and the right-hand column widens 624 → 816px (3 × 264 + 2 × 12) so a 3-across field still shows a full date and time
+   zone — at 200px a column both clipped. Every right-hand box takes the same width, the theme cards and alert tiles
+   share it out evenly, and the row's own cap grows to fit (240 text + 24 gap + 816). */
+#stProfPage.stpd7.stpd13.stpd16 :is(.st7hd,.st7ov2){max-width:1080px}
+#stProfPage.stpd7.stpd13.stpd16 .stpdb{grid-template-columns:minmax(0,1080px)}   /* the form column's own 932px cap had to grow with it, or every row wraps its content under the title */
+#stProfPage.stpd7.stpd13.stpd16 :is(.st7pdr,.st7pwb,.st7dth .st6g,.st7ovg,.st7hd > .st7th){flex:0 0 816px;width:816px;max-width:100%}
+#stProfPage.stpd7.stpd13.stpd16 .st7hd > .st7th{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Option 5 ('11'): one 40px step between every section (request, 13 Oct 2026, "proper margin between all fields") —
+   it ran 32 · 32 · 24 · 32, and the 24 under the theme cards made the untitled date row read as part of them. */
+#stProfPage.stpd7.stpd11 :is(.stpdpair,.st6s){margin-top:40px}
+#stProfPage.stpd7.stpd11 .st6s .st6sh{margin-bottom:40px}
+#stProfPage.stpd7.stpd11 .st6uip{row-gap:40px}
+#stProfPage.stpd7.stpd11 .st6uip > .st7ov2{margin-top:0}
+/* Option 3 ('14'): the titles stay, their one-line descriptions go — Personal details, Change Password, Display
+   preferences, Date, time & tables (request, 13 Oct 2026). Hidden by CSS so Option 2's markup stays shared. */
+#stProfPage.stpd14:not(.stpd15) :is(.st7pdh,.st7dth,.st7hd:has(> .st7th)) > .st7hdl > p,#stProfPage.stpd14:not(.stpd15) .st7pwr .st7hdl small{display:none}
+#stProfPage.stpd7.stpd14:not(.stpd15) :is(.st7ov2l,.st7ov3t,.uip3sw) small{display:none}   /* Option 4 ('15') keeps every description, like Option 2 (request, 13 Oct 2026) */   /* …and Alert overlay's line too, in whichever of its three layouts is showing (request, 13 Oct 2026) */
 #stProfPage.stpd7 .stavc{width:96px;height:96px;font-size:30px}   /* medium (request, 12 Oct 2026; was 72) */
 /* the photo's edit badge (12 Oct 2026; it replaced a hover overlay that put Change / Remove inside the circle) */
 #stProfPage.stpd7 .stavw{position:relative;width:96px;height:96px}
+/* Option 6 ('11'): the photo 96 → 170px (request, 13 Oct 2026) — the photo column grows with it, the initials scale up, and
+   the badge moves in by 10px so it still sits ON the circle's edge (at 96px its corner position already did; at 170 the
+   corner is 25px outside the arc). */
+#stProfPage.stpd7.stpd11 .stpdb{grid-template-columns:170px minmax(0,932px);column-gap:64px}   /* 64px between the 170px photo and the form (request, 13 Oct 2026; was 32 — too tight beside a photo this size) */
+#stProfPage.stpd7.stpd11 .stavc{width:170px;height:170px;font-size:52px}
+#stProfPage.stpd7.stpd11 .stavw{width:170px;height:170px}
+#stProfPage.stpd7.stpd11 .st7ed{right:10px;bottom:10px}
+#stProfPage.stpd7.stpd11 .stpdf section > h3.st11h{margin-bottom:0}
+#stProfPage.stpd7.stpd11 .st11dh h3.st11h{margin:0}
+#stProfPage.stpd7.stpd11 .st11dh .st11p{margin-bottom:0}
+#stProfPage.stpd7.stpd11 .st11dh + .st6g{margin-top:-26px}   /* the title block is its own .st6uip row (40px row gap); pull the fields back to 14px under it, as under Personal details */
+#stProfPage.stpd7.stpd11 .st11p{margin:4px 0 14px;font-size:12.8px;color:var(--neutral-light,var(--text-dim))}   /* Display preferences' own description style and 14px to the fields */
+/* Option 6: Display preferences laid out like Personal details (request, 13 Oct 2026) — title + line ON TOP, the three
+   theme cards under it across the full form width on the field grid's own three columns, so each card sits under a
+   field column. flex:0 0 auto on both halves: in a column a flex-basis becomes a HEIGHT. */
+#stProfPage.stpd7.stpd11 .st7hd:has(> .st7th){flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:14px;max-width:none}
+#stProfPage.stpd7.stpd11 .st7hd:has(> .st7th) > *{flex:0 0 auto}
+#stProfPage.stpd7.stpd11 .st7hd > .st7th{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:16px}
+/* …and Alert overlay the same way (request, 13 Oct 2026): title + line on top, its two tiles under it across the full
+   form width. */
+#stProfPage.stpd7.stpd11 .st7ov2{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:14px;max-width:none}
+#stProfPage.stpd7.stpd11 .st7ov2 > *{flex:0 0 auto}
+#stProfPage.stpd7.stpd11 .st7ov2 > .st7ovg{width:100%;max-width:none;column-gap:16px}
 #stProfPage.stpd7 .st7ed{position:absolute;right:0;bottom:2px;width:28px;height:28px;display:grid;place-items:center;padding:0;border-radius:50%;
   border:1px solid var(--border-color);background:var(--common-widget-bg);color:var(--page-text-color);cursor:pointer;
   box-shadow:0 0 0 2px var(--page-background-color,var(--bg))}
-#stProfPage.stpd7 .st7ed svg{width:14px;height:14px}
+#stProfPage.stpd7 .st7ed svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.75}   /* photo-edit carries more detail than the pencil did, so 16px; 1.75 on a 24 grid ≈ 1.17px on screen */
 #stProfPage.stpd7 .st7ed:hover{border-color:var(--neutral-light)}
 #stProfPage.stpd7 .st7ed:focus-visible{outline:2px solid var(--primary-alt);outline-offset:2px}
 #stProfPage.stpd7 .st7am{display:none;position:absolute;left:calc(100% - 20px);top:calc(100% + 4px);z-index:5;min-width:140px;padding:4px;
@@ -16205,6 +16264,16 @@ html:not([data-theme="light"]) #ippPage .ippbox,html:not([data-theme="light"]) #
 #stProfPage.stpd7 .st7hd{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px 24px;max-width:932px}   /* wraps the cards under the text once the text would drop below 240px */
 #stProfPage.stpd7 .st7hdl{flex:1 1 240px;min-width:0}
 #stProfPage.stpd7 .st7hd .st7th{flex:0 0 auto;margin:0}
+#stProfPage.stpd7 .st7pdh{margin-bottom:0}
+#stProfPage.stpd13 .stpdb{grid-template-columns:minmax(0,932px)}   /* Option 2: no photo column — the photo is in the My Profile row */
+#stProfPage.stpd13 .st7pdr{flex:0 0 624px;width:624px;display:flex;flex-direction:column;gap:20px}   /* Option 2: the photo above the fields, in the Personal details right column */
+#stProfPage.stpd13 .st7pdh .st7pdr .stpdg{width:auto;flex:0 0 auto}   /* (1,4,0): must beat .st7pdh .stpdg, whose 624px flex-basis would otherwise become the grid HEIGHT in this column */   /* the ~40px the page already puts between Personal details and Change password */
+#stProfPage.stpd13 .st7mpb{flex:0 0 624px;width:624px;display:flex}
+#stProfPage.stpd7 .st7pwr{align-items:center}   /* the Change password row (Option 1): text left, button at the start of the 624px field box */
+#stProfPage.stpd7 .st7pwb{flex:0 0 624px;width:624px;display:flex}
+#stProfPage.stpd7 .st7dth{margin:8px 0 0}   /* Date, time & tables on the same row layout (Option 1): the old .st7rgh title's 8px above */
+#stProfPage.stpd7 .st7dth .st6g{flex:0 0 624px;width:624px;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}   /* Personal details on the Display preferences row layout (Option 1): no rows follow inside the section */
+#stProfPage.stpd7 .st7pdh .stpdg{flex:0 0 624px;width:624px;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}   /* the theme card row's measured box (624px), so the fields share its left and right edges */
 /* THEME TILES (request, 9 Oct 2026, "make it better visualization"): each option is ONE framed tile — the preview inset
    in it, then a radio + name caption — so the picked one reads at a glance (ring, faint fill, filled radio, bright name)
    instead of a thin outline round a picture with loose text under it. The ring lives on the tile, not the image. */
@@ -16376,7 +16445,8 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ovg button:focus-visible{outline:2px solid var(--primary-alt);outline-offset:2px}
 #stProfPage.stpd7 .st7ovg button:not(.on) .st7ovs img{filter:saturate(.6) brightness(.85)}
 #stProfPage.stpd7 .st7ovg .st7ovt{opacity:1;transform:none}
-#stProfPage.stpd7 .st7ovl{display:flex;align-items:flex-start;gap:6px;padding:0 2px 2px}
+#stProfPage.stpd7 .st7ovl{display:flex;align-items:flex-start;gap:8px;padding:9px 4px 3px}   /* the theme cards' caption numbers (.st7th span), so both rows' radios sit on one inset (request, 13 Oct 2026) */
+#stProfPage.stpd7 .st7ovg button{gap:0}
 #stProfPage.stpd7 .st7ovl .st7rd{margin-top:2px}
 #stProfPage.stpd7 .st7ovg button.on .st7rd{border-color:var(--primary-alt,var(--page-text-color))}
 #stProfPage.stpd7 .st7ovg button.on .st7rd::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--primary-alt,var(--page-text-color))}
@@ -16384,8 +16454,8 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ovl small{display:block;font-size:11.5px;color:var(--neutral-light,var(--text-dim))}
 #stProfPage.stpd7 .st7ovg button.on .st7ovl b{color:var(--page-text-color,var(--text));font-weight:600}
 /* Option 3 — a two-pane card: the setting on the left, a preview stage on the right (Chatbase's widget settings) */
-#stProfPage.stpd7 .st7ov3{max-width:932px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);border:1px solid var(--border-color);border-radius:8px;background:var(--common-widget-bg,var(--card));overflow:hidden}
-#stProfPage.stpd7 .st7ov3s{display:flex;flex-direction:column;gap:16px;padding:20px}
+#stProfPage.stpd7 .st7ov3{max-width:932px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);column-gap:24px;border:0;border-radius:0;background:transparent}   /* no card at all (request, 13 Oct 2026): the row sits on the form like its neighbours */   /* no card fill (request, 13 Oct 2026) */
+#stProfPage.stpd7 .st7ov3s{display:flex;flex-direction:column;gap:16px;padding:0}
 #stProfPage.stpd7 .st7ov3h{display:flex;align-items:flex-start;gap:12px}
 #stProfPage.stpd7 .st7ov3i{flex:0 0 36px;height:36px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--page-text-color) 8%,transparent);color:var(--neutral-light,var(--text-dim));transition:color .2s,background .2s}
 #stProfPage.stpd7 .st7ov3.on .st7ov3i{color:var(--severity-critical,#ec5b5b);background:color-mix(in srgb,var(--severity-critical,#ec5b5b) 14%,transparent)}
@@ -16401,17 +16471,15 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ov3k em.crit{font-style:normal;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;color:var(--severity-critical,#ec5b5b);background:color-mix(in srgb,var(--severity-critical,#ec5b5b) 14%,transparent)}
 #stProfPage.stpd7 .st7ov3s .st7ovo{margin-top:auto}
 /* the stage: a dot-grid canvas with the miniature window on it */
-#stProfPage.stpd7 .st7ov3g{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px 20px 16px;border-left:1px solid var(--border-color);
-  background-color:color-mix(in srgb,var(--page-text-color) 3%,var(--page-background-color,var(--bg)));
-  background-image:radial-gradient(color-mix(in srgb,var(--page-text-color) 14%,transparent) 1px,transparent 1px);background-size:14px 14px}
-#stProfPage.stpd7 .st7ov3w{position:relative;width:100%;max-width:340px;aspect-ratio:16/10;border:1px solid var(--border-color);border-radius:6px;background:var(--page-background-color,var(--bg));box-shadow:0 8px 24px rgba(0, 0, 0, 0.25);display:flex;flex-direction:column}
+#stProfPage.stpd7 .st7ov3g{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;padding:0}   /* no dot-grid canvas (request, 13 Oct 2026) */
+#stProfPage.stpd7 .st7ov3w{position:relative;width:100%;max-width:340px;aspect-ratio:16/10;border:1px solid var(--border-color);border-radius:6px;background:var(--page-background-color,var(--bg));display:flex;flex-direction:column}
 #stProfPage.stpd7 .st7ov3wb{flex:0 0 22px;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--border-color)}
 #stProfPage.stpd7 .st7ov3wb .dots{display:flex;gap:3px}
 #stProfPage.stpd7 .st7ov3wb .dots i{width:5px;height:5px;border-radius:50%;background:color-mix(in srgb,var(--page-text-color) 22%,transparent)}
 #stProfPage.stpd7 .st7ov3wb .srch{flex:0 0 72px;height:8px;border-radius:4px;margin:0 auto;background:color-mix(in srgb,var(--page-text-color) 9%,transparent)}
 #stProfPage.stpd7 .st7ov3wb .bell{position:relative;display:grid;place-items:center;width:14px;height:14px;color:var(--neutral-light,var(--text-dim))}
 #stProfPage.stpd7 .st7ov3wb .bell svg{width:11px;height:11px}
-#stProfPage.stpd7 .st7ov3wb .bell em{position:absolute;top:-4px;right:-5px;min-width:10px;height:10px;padding:0 2px;border-radius:5px;background:var(--severity-critical,#ec5b5b);color:#ffffff;font:600 7px/10px inherit;font-style:normal;text-align:center;transition:transform .2s}
+#stProfPage.stpd7 .st7ov3wb .bell em{position:absolute;top:-3px;right:-4px;display:grid;place-items:center;min-width:9px;height:9px;padding:0 2px;border-radius:5px;background:var(--severity-critical,#ec5b5b);color:#ffffff;font-size:6.5px;font-weight:700;line-height:1;font-style:normal;transition:transform .2s;box-shadow:0 0 0 1.5px var(--page-background-color,var(--bg))}   /* longhands: `font:… inherit` is invalid, which dropped the whole declaration and drew the 1 at full size (13 Oct 2026); the ring cuts it off the bell like a real badge */
 #stProfPage.stpd7 .st7ov3.on .st7ov3wb .bell em{transform:scale(0)}
 #stProfPage.stpd7 .st7ov3wm{flex:1 1 auto;display:flex;min-height:0}
 #stProfPage.stpd7 .st7ov3wm .side{flex:0 0 22px;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:8px;border-right:1px solid var(--border-color)}
@@ -16437,7 +16505,7 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ov3aa .pri{color:var(--page-text-color,var(--text))}
 #stProfPage.stpd7 .st7ov3c{font-size:12px;text-align:center;color:var(--neutral-light,var(--text-dim))}
 #stProfPage.stpd7 .st7ov3.on .st7ov3c{color:var(--page-text-color,var(--text))}
-@media (max-width:1300px){#stProfPage.stpd7 .st7ov3{grid-template-columns:minmax(0,1fr)}#stProfPage.stpd7 .st7ov3g{border-left:0;border-top:1px solid var(--border-color)}}
+@media (max-width:1300px){#stProfPage.stpd7 .st7ov3{grid-template-columns:minmax(0,1fr)}#stProfPage.stpd7 .st7ov3g{border-left:0}}
 @media (prefers-reduced-motion:reduce){#stProfPage.stpd7 .st7ov3a,#stProfPage.stpd7 .st7ov3wb .bell em{transition:none}}
 /* the Off tile's mark: the bell with one unread, where the alert waits instead of covering the screen */
 /* Option 2's tiles carry Option 3's miniature window (13 Oct 2026). It is laid out at the stage's own 340px and
@@ -16446,9 +16514,21 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ov2z{display:block}
 #stProfPage.stpd7 .st7ov2z .st7ov3w{box-shadow:none}
 #stProfPage.stpd7 .st7ov2z .st7ov3w{max-width:none}
+#stProfPage.stpd7 .st7ov2z .st7ov3w{aspect-ratio:auto;height:100px;overflow:hidden}   /* only the top of the window (request, 13 Oct 2026): the bell and the toast are all the tile needs to show */
+#stProfPage.stpd7 .st7ov2z .st7ov3wm .wide{display:none}
+#stProfPage.stpd7 .st7ov3g .st7ov3w{max-width:none}   /* no card padding left, so the window runs to the form's right edge like the fields above it */
 #stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3a{opacity:1;transform:none}
 #stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3wb .bell em{transform:scale(0)}
-#stProfPage.stpd7 .st7ovg button:not(.on) .st7ov2st{opacity:.75}
+/* THE SUBJECT OF EACH TILE IS HIGHLIGHTED (request, 13 Oct 2026: "the notification icon and popup is not highlight"):
+   the window's skeleton steps back, and what the tile is about steps forward — the bell (with its badge) in Quiet,
+   the toast in Alert me. The unselected tile is no longer dimmed as a whole, or its subject would fade with it. */
+#stProfPage.stpd7 .st7ov2z .st7ov3wm,#stProfPage.stpd7 .st7ov2z .st7ov3wb .dots,#stProfPage.stpd7 .st7ov2z .st7ov3wb .srch{opacity:.45}
+#stProfPage.stpd7 .st7ov2z .st7ov3wb{flex-basis:26px}
+#stProfPage.stpd7 .st7ovg button[data-ov="off"] .st7ov3wb .bell{width:20px;height:20px;border-radius:50%;color:var(--page-text-color,var(--text));
+  background:color-mix(in srgb,var(--severity-critical,#ec5b5b) 16%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--severity-critical,#ec5b5b) 10%,transparent)}
+#stProfPage.stpd7 .st7ovg button[data-ov="off"] .st7ov3wb .bell svg{width:12px;height:12px}
+#stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3a.st7ovn{border-color:color-mix(in srgb,var(--severity-critical,#ec5b5b) 45%,var(--border-color));
+  box-shadow:0 8px 22px rgba(0, 0, 0, 0.45),0 0 0 3px color-mix(in srgb,var(--severity-critical,#ec5b5b) 10%,transparent)}
 /* The preview's popup is a miniature of the product's own notification toast (.ntf — request, 13 Oct 2026, with the
    live Major / Warning toasts as the reference): a tinted severity block, the message, a close ×, centred at the top of
    the window where .ntfstack puts it. Same tokens as .ntf, so the preview and the real thing cannot disagree. */
@@ -16706,6 +16786,13 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage .stpdsw{max-width:none}
 #stProfPage .stpdsw obs-switch{flex:0 0 auto}
 #stProfPage .stpdf section h3{line-height:20px;margin:0 0 14px}
+#stProfPage.stpd7 .st6uip > h3.st7rgh{margin:8px 0 -6px}
+/* ONE RHYTHM (request, 13 Oct 2026, measured): title → its first field 14 · row → row inside a group 20 · group → group 32.
+   Two places broke it: Personal details → Password was 36 (.stpdpair's own margin, from the older designs), and the
+   Alert overlay row sat 20 under the date row — the in-group step — though it is its own setting, laid out like Display
+   preferences. */
+#stProfPage.stpd7 .stpdpair{margin-top:32px}
+#stProfPage.stpd7 .st6uip > .st7ov2,#stProfPage.stpd7 .st6uip > .uip3sw,#stProfPage.stpd7 .st6uip > .st7ov3{margin-top:12px}   /* the uip3l column already spaces its children; this only adds the step a new group needs */
 #stProfPage .stpdav{margin-top:0}
 #stProfPage .stpdb{grid-template-columns:200px minmax(0,738px);gap:32px}
 
@@ -17312,6 +17399,15 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
          created on first open — the page is 2 MB and most sessions never go there. -->
     <section class="view" id="view-ipam">
       <div class="ipamhost" id="ipamHost"></div>
+    </section>
+
+    <!-- ===== Firewall Analyzer (13 Oct 2026) =====
+         The Firewall Analyzer module from "Firewall analyzer/firewall-analyzer-standalone.html", vendored
+         as `_firewall/firewall.html` by `_firewall/build_firewall.py` (every private address scrubbed to
+         198.18.x, RFC 2544). `?embed=1` hides its own rail + app header; `?theme=` follows ours. The iframe
+         is created on first open — the page is 2.9 MB. -->
+    <section class="view" id="view-firewall">
+      <div class="fahost" id="faHost"></div>
     </section>
 
     <!-- ===== Generic module view ===== -->
@@ -18203,6 +18299,13 @@ const ICONS = {
   ],
   "from": "supplied IPAM module icon (6 Oct 2026)"
  },
+ "firewall": {
+  "viewBox": "0 0 512 512",
+  "paths": [
+   "M463.65,277.68a174.71,174.71,0,0,1-25.36,67.67,225.28,225.28,0,0,0-33.82-126.88,179.57,179.57,0,0,0-67.59,177.64,207.07,207.07,0,0,1-33.82-67.7,120.33,120.33,0,0,0,11.49,138.66,114.48,114.48,0,0,0,161.57,10.46,113.16,113.16,0,0,0,9.48-9.36C524.84,424.61,501.91,316.84,463.65,277.68Zm0,0,0,0v0Zm-137.9,12.53q2.61-6.85,5.7-13.46h-2.13V227.83h34.4A200.11,200.11,0,0,1,382.94,209H320.46l-.58,0H278.6V160.21H395v39.63a20.69,20.69,0,0,1,18.81,0V32.28A26.31,26.31,0,0,0,387.56,6H32.27A26.33,26.33,0,0,0,6,32.32v372.3a26.31,26.31,0,0,0,26.28,26.25H271.62a142,142,0,0,1-4.37-18.81H160.13V363.19H267.94a140.93,140.93,0,0,1,10.66-33.08V295.53h45.17C324.39,293.74,325,292,325.71,290.18ZM310.47,141.4H160.13V92.51H310.47Zm-50.73,18.81V209H109.4V160.21ZM395,141.4H329.28V92.51H395ZM278.6,24.81h109A7.49,7.49,0,0,1,395,32.32V73.7H278.6Zm-169.16,0h150.3V73.7H109.41Zm-84.63,7.5a7.51,7.51,0,0,1,7.52-7.5H90.59V73.7H24.81Zm0,60.2H141.32V141.4H24.81Zm0,67.7H90.59V209H24.81Zm0,67.62H141.32v48.84H24.81Zm0,67.67H90.59v48.86H24.81ZM141.32,412.06h-109a7.34,7.34,0,0,1-5.3-2.18,7.52,7.52,0,0,1-2.21-5.35V363.19H141.32Zm118.34-67.7H109.4V295.5H259.66Zm50.81-67.67H269.6l-.4,0H160.13V227.83H310.47Z"
+  ],
+  "from": "the DS icon firewall, read out of the vendored Firewall Analyzer bundle (13 Oct 2026)"
+ },
  "slo": {
   "viewBox": "0 0 48 48",
   "paths": [
@@ -18237,6 +18340,14 @@ const ICONS = {
    "M42.54,27.3h-6.89v-11.79c1.68-.68,2.88-2.32,2.88-4.24,0-2.53-2.05-4.58-4.58-4.58-1.9,0-3.52,1.15-4.22,2.8h-4.09v-4.78c0-.94-.76-1.71-1.71-1.71H6.98c-.94,0-1.71.76-1.71,1.71v12.61c-.85.1-1.51.79-1.51,1.67,0,.94.76,1.71,1.71,1.71h8.32v11.3c-1.66.69-2.83,2.32-2.83,4.23,0,2.53,2.05,4.58,4.58,4.58,1.97,0,3.45-1.21,4.09-2.81h4.26v5.31c0,.94.76,1.71,1.71,1.71h16.96c.94,0,1.71-.76,1.71-1.71v-14.28c0-.94-.76-1.71-1.71-1.71ZM33.94,10.11c.64,0,1.16.52,1.16,1.16s-.52,1.16-1.16,1.16-1.16-.52-1.16-1.16.52-1.16,1.16-1.16ZM8.68,17.28V6.42h13.54v10.87h-13.54ZM15.53,37.38c-.64,0-1.16-.52-1.16-1.16s.52-1.16,1.16-1.16c.52,0,1.01.39,1.01,1.16s-.49,1.16-1.01,1.16ZM23.87,29.01v5.56h-4.22c-.42-1.16-1.29-2.12-2.46-2.59v-11.28h8.25c.94,0,1.71-.76,1.71-1.71,0-.87-.67-1.57-1.51-1.67v-4.42h4.04c.45,1.18,1.37,2.12,2.54,2.6v11.8h-6.65c-.94,0-1.71.76-1.71,1.71ZM40.83,41.58h-13.54v-10.87h6.65s0,0,0,0,0,0,0,0h6.89v10.87Z"
   ],
   "from": "sidebar.html"
+ },
+ "explorer": {
+  "viewBox": "0 0 48 48",
+  "evenodd": true,
+  "paths": [
+   "M24 4C35.0457 4 44 12.9543 44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24C4 12.9543 12.9543 4 24 4ZM24 8C15.1634 8 8 15.1634 8 24C8 32.8366 15.1634 40 24 40C32.8366 40 40 32.8366 40 24C40 15.1634 32.8366 8 24 8ZM30.2119 15.1621C30.9636 14.8401 31.8358 15.0078 32.4141 15.5859C32.9921 16.1642 33.1599 17.0365 32.8379 17.7881L28.6387 27.5879C28.4364 28.0598 28.0598 28.4363 27.5879 28.6387L17.7881 32.8379C17.0365 33.16 16.1642 32.9921 15.5859 32.4141C15.0077 31.8358 14.84 30.9636 15.1621 30.2119L19.3613 20.4121C19.5636 19.9401 19.9401 19.5636 20.4121 19.3613L30.2119 15.1621ZM22.7227 22.7227L20.8066 27.1924L25.2764 25.2764L27.1924 20.8066L22.7227 22.7227Z"
+  ],
+  "from": "supplied explorer_48_single-path.svg (13 Oct 2026) — the Explorer rail entry"
  },
  "metric-explorer": {
   "viewBox": "0 0 48 48",
@@ -18538,6 +18649,8 @@ const MODULES = [
   { name:'IPAM',            icon:'ipam',            route:'/ipam/',            group:'Network' },
   /* Compliance — APPENDED like IPAM, so no index above moves (6 Oct 2026). Lives in Explorer; its screen is in index.html. */
   { name:'Compliance',      icon:'compliance',      route:'/compliance/overview', group:'Network' },
+  /* Firewall Analyzer — APPENDED like IPAM (13 Oct 2026). Vendored page in an iframe; lives in Explorer. */
+  { name:'Firewall Analyzer', icon:'firewall',      route:'/firewall-analyzer/', group:'Network' },
 ];
 let activeModule = 0;
 
@@ -18590,7 +18703,9 @@ const RAIL = [
   { name:'Dashboard', icon:'dashboard',       mod:'Dashboards',      group:'work' },
   { name:'Alert',     icon:'alert',           mod:'Alerts',          group:'work' },
   { name:'SLO',       icon:'slo',             mod:'SLO',             group:'work', beta:true },
-  { name:'Explorer',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
+  /* icon:'explorer' — the supplied compass mark (13 Oct 2026); it was Metric Explorer's glyph, which now belongs to the
+     Metric Explorer row inside Explorer's list instead of standing for the whole group. */
+  { name:'Explorer',  icon:'explorer',        mod:'Metric Explorer', group:'analyse' },
   { name:'Report',    icon:'report',          mod:'Reports',         group:'analyse' },
   /* ⚠️ `foot:true` MOVES THE ROW TO THE FOOTER'S ICON CLUSTER — IT DOES NOT REMOVE IT (request,
      10 Sep 2026: "the Setting icon will be moved to show after What's new"). Settings is a
@@ -18861,9 +18976,8 @@ SUBNAV2['Explorer'] = [
    ⚠️ THIS IS OPTION 1 ONLY. It is the only file with the six-entry rail; Options 2 and 3
    still carry the older seven-entry one and neither defines `SUBNAV['Explorer']`, so
    nothing here has to be made three times.
-   ⚠️ `Metric explorer` STAYS UNDER `Monitor`. It reads like a slip — Metric Explorer is a
-   module, not a monitor type — but `sidemenu.md` indents it there and the spec is the
-   spec. One line to move if it was ever meant as a sibling.
+   ⚠️ `Metric explorer` USED TO SIT UNDER `Monitor` (sidemenu.md's indentation). Since 13 Oct 2026 it is
+   Explorer's own first row — see the entry at the top of EXPLORER_TREE.
    ⚠️ Nine of the eleven have NO children, and that is not an omission: pointing at one
    must therefore CLEAR the pane, or Monitor's 18 types sit there while you hover `Log`. */
 const EXPLORER_TREE = [
@@ -18873,8 +18987,7 @@ const EXPLORER_TREE = [
       ['HCI','Monitors'], ['Database','Monitors'], ['Container Orchestration','Monitors'],
       ['Cloud','Monitors'], ['Interface','Monitors'], ['WAN Link','Monitors'],
       ['Process','Monitors'], ['Container','Monitors'], ['Service','Monitors'],
-      ['Service Check','Monitors'], ['Other','Monitors'],
-      ['Metric explorer','Metric Explorer'] ]},
+      ['Service Check','Monitors'], ['Other','Monitors'] ]},
   /* ⚠️ TOPOLOGY HAS CHILDREN TOO (request, 9 Sep 2026: "the same thinking is topology, this is
      sub module", with the live tab bar as the picture). They are the module's own tabs, which is
      the same relationship `Monitor`'s 18 types have to it — a tab bar IS the second level here.
@@ -18902,11 +19015,18 @@ const EXPLORER_TREE = [
      live build's /compliance/overview with Playwright. Its three tabs are its children; each opens the module ON that tab. */
   { l:'Compliance', mod:'Compliance', ic:'compliance', kidsAs:'tabs', route:'/compliance/overview', doc:'network-configuration-and-compliance-management/compliance-management/overview', kids:[
       ['Overview','Compliance',"cplGo('Overview')"], ['Policies','Compliance',"cplGo('Policies')"], ['Explorer','Compliance',"cplGo('Explorer')"] ]},
+  /* ⚠️ METRIC EXPLORER IS A SUB-MODULE OF EXPLORER, NOT A MONITOR TYPE (13 Oct 2026: "the metric explorer will move in
+     'explorer'"). It sat as the last of Monitor's children. It led the list for an hour, then moved here, directly before
+     NetRoute (request, same day). ⚠️ With it no longer tree[0], mfRailFirst() lands the Explorer rail click on Monitor again. */
+  { l:'Metric Explorer', mod:'Metric Explorer', ic:'metric-explorer', route:'/metric-explorer/', doc:'Metric%20Analysis/Overview' },
   { l:'NetRoute', mod:'NetRoute',      ic:'netroute', route:'/netroute/', doc:'netroute/overview' },
   { l:'IPAM',     mod:'IPAM',          ic:'ipam',     route:'/ipam/', kidsAs:'tabs', kids:[   /* moved off the rail, 2 Oct 2026 */
       /* IPAM's own four tabs (2 Oct 2026) — each opens IPAM ON that tab (ipamTab → the embedded page's hash) */
       ['Overview','IPAM',"ipamTab('Overview')"], ['Subnet Details','IPAM',"ipamTab('Subnet Details')"], ['Supernet','IPAM',"ipamTab('Supernet')"],
       ['IP Details','IPAM',"ipamTab('IP Details')"], ['Rogue Detection','IPAM',"ipamTab('Rogue Detection')"] ]},
+  /* Firewall Analyzer (13 Oct 2026: "add new module 'Firewall Analyzer'") — the vendored module; it has no
+     tab row of its own (the estate list is the module, every other view lives inside a firewall). */
+  { l:'Firewall Analyzer', mod:'Firewall Analyzer', ic:'firewall', route:'/firewall-analyzer/' },
   { l:'Log',      mod:'Log Explorer',  ic:'log', route:'/log/', doc:'log-management/overview' },
   /* ⚠️ APM's FOUR TABS ARE ITS CHILDREN (request, 9 Sep 2026: "the same thinking in APM", with
      the live tab bar as the picture) — the same relationship Monitor's types and Topology's maps
@@ -18955,7 +19075,7 @@ const MOD_TO_RAIL = {};
 [['Dashboards',0],['Alerts',1],['SLO',2],
  ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
  ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
- ['Reports',4],['Settings',5],['IPAM',3],['Compliance',3]
+ ['Reports',4],['Settings',5],['IPAM',3],['Compliance',3],['Firewall Analyzer',3]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 /* ══ PINNED SUB-MODULES ════════════════════════════════════════════════════════════════
    Request, 27 Aug 2026: "in the explorer all sub module will be I pin and unpin, and when
@@ -18982,7 +19102,8 @@ const MOD_TO_RAIL = {};
    record that aborting `init()` five times.
    ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
    else and the band renders empty — no error, just nothing on the rail. */
-let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer; Compliance too (6 Oct 2026, on request) */
+let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance', 'Firewall Analyzer'];   /* Firewall Analyzer pinned by default too (13 Oct 2026, on request) */
+/* (was) let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer; Compliance too (6 Oct 2026, on request) */
 /* ══ THE RAIL CARRIES TWO PINNED BANDS, AND THEY ANCHOR TO DIFFERENT ROWS ══════════════════
    Two requests, minutes apart on 11 Sep 2026, and asking which was meant settled it as BOTH:
      "when I pin ANY sub-module it will show in between [the] Explorer and Report icon"
@@ -21057,6 +21178,8 @@ function selectModule(i){
   if (m.name === 'Monitors'){ showView('monitor'); mnInit(MOD_SUB); MOD_SUB = ''; return; }
   /* IPAM is the vendored module (`_ipam/ipam.html`), shown in an iframe in embed mode. */
   if (m.name === 'IPAM'){ showView('ipam'); ipamInit(); return; }
+  /* Firewall Analyzer — the vendored module (`_firewall/firewall.html`), iframe in embed mode. */
+  if (m.name === 'Firewall Analyzer'){ showView('firewall'); faInit(); return; }
   /* Compliance's screen lives in index.html — showView('compliance') is redirected there by the BOOT block (6 Oct 2026). */
   if (m.name === 'Compliance'){ showView('compliance'); return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
@@ -21318,6 +21441,17 @@ function ipamTheme(){ return document.documentElement.getAttribute('data-theme')
 const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Supernet': 'supernet', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
 function cplGo(t){ try { MOD_SUB = t; } catch (e) {} selectModuleByName('Compliance'); }
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
+/* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
+function faInit(){
+  const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
+  const f = document.createElement('iframe');
+  f.title = 'Firewall Analyzer'; f.className = 'fafr';
+  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme();
+  h.appendChild(f);
+  new MutationObserver(() => {
+    try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}
+  }).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+}
 function ipamInit(){
   const h = document.getElementById('ipamHost'); if (!h) return;
   let f = h.querySelector('iframe');
@@ -27725,7 +27859,7 @@ function up4Go(fn){ try { closePops(); } catch (e) {} fn(); }
 function up4HTML(){
   const p = document.getElementById('userPop');
   const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
-  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const avEl = p.querySelector('.upavatar'), av = (avEl||{}).textContent || '', avBg = avEl && avEl.style.backgroundImage ? ` style="background-image:${avEl.style.backgroundImage.replace(/"/g,'&quot;')};background-size:cover;background-position:center"` : '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
   const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
   const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
   let cats = [];
@@ -27733,7 +27867,7 @@ function up4HTML(){
   const stIc = c => { try { const d = ST_ICO[c.ic]; return d ? '<svg viewBox="0 0 48 48"><path d="'+d+'"/></svg>' : ''; } catch (e) { return ''; } };
   const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
   return `<div class="up4c">
-      <div class="up4id"><div class="up4av">${av}</div><div style="min-width:0"><div class="up4nm">${nm}<b>${rl}</b></div><div class="up4em">${em}</div></div></div>
+      <div class="up4id"><div class="up4av"${avBg}>${av}</div><div style="min-width:0"><div class="up4nm">${nm}<b>${rl}</b></div><div class="up4em">${em}</div></div></div>
       <div class="up4h">Personal</div>
       ${row(up4Svg('icMyProfile'), 'My Profile', "up4Go(()=>stOpen('My Account','My Profile'))", UP4_ICO.ext)}
       ${row(up4Svg('icTour'), 'Product Setup Guide', "up4Go(()=>docsOpen('/', 'Product Setup Guide'))", UP4_ICO.ext)}
@@ -27786,7 +27920,7 @@ function up5HTML(){
      switch slides; and the footer's Docs / Support links are gone — they repeated the two rows above them. */
   const p = document.getElementById('userPop');
   const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
-  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const avEl = p.querySelector('.upavatar'), av = (avEl||{}).textContent || '', avBg = avEl && avEl.style.backgroundImage ? ` style="background-image:${avEl.style.backgroundImage.replace(/"/g,'&quot;')};background-size:cover;background-position:center"` : '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
   const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
   const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
   const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
@@ -27794,7 +27928,7 @@ function up5HTML(){
   const bell = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>';
   const head = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-3a8 8 0 1 1 16 0v3"/><path d="M18 19c0 1.657 -2.686 3 -6 3"/><path d="M4 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/><path d="M15 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/></svg>';
   return `<div class="up5top">
-      <div class="up5id"><div class="up4av">${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div>${UP_OPT === '6' ? `<button type="button" class="up6ed" aria-label="Edit profile" data-tip="Edit profile" onclick="up4Go(()=>stOpen('My Account','My Profile'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg></button>` : ''}</div>
+      <div class="up5id"><div class="up4av"${avBg}>${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div>${UP_OPT === '6' ? `<button type="button" class="up6ed" aria-label="Edit profile" data-tip="Edit profile" onclick="up4Go(()=>stOpen('My Account','My Profile'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg></button>` : ''}</div>
       ${UP_OPT === '6' ? '' : `<button type="button" class="up5btn" onclick="up4Go(()=>stOpen('My Account','My Profile'))">Edit profile</button>`}</div>
     <div class="up5sec">Account</div>
     ${UP_OPT === '6' ? '' : row(setIc, 'Settings', "up4Go(()=>stOpen('User Settings'))", UP4_ICO.ext)}
@@ -41664,7 +41798,7 @@ function stMainPaint(){
   const el = document.getElementById('stMain'); if (!el) return;
   const pages = (typeof ST_PAGES !== 'undefined') ? ST_PAGES : {};
   const pg = ST.full || pages[ST.cat + ' › ' + ST.page];
-  if (!ST.full && ST.cat === 'My Account' && ST.page === 'My Profile') { if (!ST_POPTS.includes(ST_POPT)) ST_POPT = stProfOpt(); el.innerHTML = stProfileHTML(); if (ST_POPT === '2' || ST_POPT === '4' || ST_POPT === '5' || ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10') || ST_POPT === '8') stProfBind(); if (ST_POPT === '4' || ST_POPT === '5') uip4Bind(true); if (ST_POPT === '5') st5Dirty(); }
+  if (!ST.full && ST.cat === 'My Account' && ST.page === 'My Profile') { if (!ST_POPTS.includes(ST_POPT)) ST_POPT = stProfOpt(); el.innerHTML = stProfileHTML(); stProfAfter(); }
   else if (pg) el.innerHTML = pg.html();
   else el.innerHTML = stStubHTML();
   el.scrollTop = 0;
@@ -41681,6 +41815,13 @@ function stStubHTML(){
 
 /* ── My Profile ───────────────────────────────────────────────────────────── */
 function stInitials(){ const d = ST.data; return ((d.first||'').trim()[0]||'').toUpperCase() + ((d.last||'').trim()[0]||'').toUpperCase(); }
+/* the photo badge's glyph is Tabler `media/photo-edit` (MIT), pasted verbatim from free-icons/ minus its invisible bounding
+   box (request, 13 Oct 2026: "use profile photo edit icon") — a picture with a pencil says *edit the photo*, where the bare
+   pencil read as "edit the profile". */
+/* …and Tabler `media/photo-plus` while there is NO photo (request, 13 Oct 2026): add when empty, edit once one exists.
+   stAvPaint repaints the badge on upload / remove, so it always matches ST.avatar. */
+const ST7_PHOTO_ADD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 8h.01"/><path d="M12.5 21h-6.5a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v6.5"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l4 4"/><path d="M14 14l1 -1c.67 -.644 1.45 -.824 2.182 -.54"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>';
+const ST7_PHOTO_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 8h.01"/><path d="M11 20h-4a3 3 0 0 1 -3 -3v-10a3 3 0 0 1 3 -3h10a3 3 0 0 1 3 3v4"/><path d="M4 15l4 -4c.928 -.893 2.072 -.893 3 0l3 3"/><path d="M14 14l1 -1c.31 -.298 .644 -.497 .987 -.596"/><path d="M18.42 15.61a2.1 2.1 0 0 1 2.97 2.97l-3.39 3.42h-3v-3l3.42 -3.39"/></svg>';
 function stAvHTML(){
   if (ST_POPT === '3' || ST_POPT === '5') return `<div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div>`;
   if (stBnOn()) return `<div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div><button type="button" class="stbned" aria-label="Change photo" data-tip="Change photo" onclick="stAvPick()">${ST_BN_IC.pen}</button>`;
@@ -41690,8 +41831,8 @@ function stAvHTML(){
   /* design 7 ("Option 4"), 12 Oct 2026: a round PENCIL badge on the circle's lower-right edge — the banner designs'
      own .stbned shape — replaces the hover overlay. It opens a menu — Choose photo, and Delete photo only when there is one to delete.
      No data-tip: its tooltip opened under the badge and sat on top of the menu. */
-  if (ST_POPT === '7') return `<div class="stavw"><div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div>
-    <button type="button" class="st7ed" aria-label="Edit photo" aria-haspopup="menu" aria-expanded="false" onclick="st7AvTap(event)">${ST_BN_IC.pen}</button>
+  if ((ST_POPT === '7' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16'))) return `<div class="stavw"><div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div>
+    <button type="button" class="st7ed" aria-label="${ST.avatar ? 'Edit photo' : 'Add photo'}" aria-haspopup="menu" aria-expanded="false" onclick="st7AvTap(event)">${ST.avatar ? ST7_PHOTO_EDIT : ST7_PHOTO_ADD}</button>
     <div class="st7am" role="menu"><button type="button" role="menuitem" onclick="st7AvClose();stAvPick()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg><span>Choose photo</span></button>${ST.avatar ? `<button type="button" role="menuitem" class="rm" onclick="st7AvClose();stAvRemove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg><span>Delete photo</span></button>` : ''}</div></div>`;
   if (ST_POPT !== '2' && ST_POPT !== '4') return (function(){
   return `<div class="stavc">${ST.avatar ? `<img src="${ST.avatar}" alt="">` : stEsc(stInitials())}</div>
@@ -41703,6 +41844,9 @@ function stAvHTML(){
 function st7AvClose(){ const w = document.querySelector('#stProfPage .stavw'); if (w) { w.classList.remove('open'); const b = w.querySelector('.st7ed'); if (b) b.setAttribute('aria-expanded', 'false'); } }
 function st7AvTap(e){
   e.stopPropagation();
+  /* NO PHOTO YET → STRAIGHT TO THE FILE PICKER (request, 13 Oct 2026): the menu would hold one row, Choose photo, so
+     opening it is a click in the way. With a photo it still opens, because then there are two things to choose from. */
+  if (!ST.avatar){ st7AvClose(); stAvPick(); return; }
   const w = e.currentTarget.closest('.stavw'), on = w.classList.toggle('open');
   e.currentTarget.setAttribute('aria-expanded', on);
 }
@@ -41752,14 +41896,32 @@ function stProfileHTML1(){
    one of them (uipMovedHTML), because every st* path that renders, binds and saves those designs reads it. */
 /* SHOWN AS 1–6 (request, 10 Oct 2026): the internal keys are NOT renumbered — '3'/'4'/'5' still name the designs UI Preference
    renders (ST_PMOVED) and every note naming 6/7/8 stays true. Only the LABEL changes: 6→3, 7→4, the new copy of 7 ('9')→5, 8→6. */
-const ST_POPTS = ['1','2','6','7','9','8','10'];
-const ST_PLABEL = { '1':'1', '2':'2', '6':'3', '7':'4', '9':'5', '8':'6', '10':'7' };   /* '10' = Option 7, a copy of Option 5 (request, 10 Oct 2026) */
-const ST_PMOVED = { '5':'3', '6':'4', '7':'5' };   /* UI Preference option → the My Profile design it renders */
-function stProfOpt(){ let v = '1'; try { v = localStorage.getItem('oo-prof-opt') || '1'; } catch (e) {} return ST_POPTS.includes(v) ? v : '1'; }
+/* '11' = Option 8, a copy of design '7' (request, 13 Oct 2026) — rendered by stProfileHTML7() through every
+   '7' || '9' || '10' test, which now also names '11'. Then Options 1 and 4 SWAPPED POSITIONS (same request): design '7'
+   leads the switcher as Option 1 and the live-10.0.1 design '1' is Option 4. Keys are not renumbered, only order and labels. */
+/* '12' = Option 9, a copy of Option 1 (design '7') (request, 13 Oct 2026) — every '7'-family test also names '12'. */
+/* Options 8 & 9 ('11', '12') swapped with Options 2 & 3 ('2', '6') (request, 13 Oct 2026) — only the switcher order and labels move; every internal key keeps its design. */
+/* '13' = Option 10, a copy of Option 1 (design '7') as it stands on 13 Oct 2026 (request) — every test that names '7'
+   (including the Option-1-only Personal details / Password / Date-time rows) also names '13'; the divider rule
+   (.stpd7:not(.stpd9):not(.stpd11):not(.stpd12)) reaches its class stpd13 by construction. */
+/* the copy moved right after Option 1 and the labels renumbered in switcher order (request, 13 Oct 2026) —
+   '13' now reads Option 2 and every option after it shifts up by one; internal keys are unchanged. */
+/* OPTION 4 ('15') IS THE MY PROFILE DESIGN (request, 13 Oct 2026: "option 4 is done, the other options move to UI
+   Preference"). My Profile renders it alone, with no Design switcher; the other twelve designs moved to UI Preference
+   as its Options 8–19 (ST_PMOVED), in the order My Profile listed them. Keys are not renumbered. */
+const ST_POPTS = ['15'];
+const ST_PMOVED_ORDER = ['7','13','14','16','11','12','1','9','8','10','2','6'];
+const ST_PLABEL = Object.fromEntries(ST_POPTS.map((k, i) => [k, String(i + 1)]));   /* '10' = Option 7, a copy of Option 5 (request, 10 Oct 2026) */
+const ST_PMOVED = Object.assign({ '5':'3', '6':'4', '7':'5' }, Object.fromEntries(ST_PMOVED_ORDER.map((k, i) => [String(8 + i), k])));   /* UI Preference option → the My Profile design it renders; 8–19 moved 13 Oct 2026 */
+function stProfOpt(){ let v = ST_POPTS[0]; try { v = localStorage.getItem('oo-prof-opt') || ST_POPTS[0]; } catch (e) {} return ST_POPTS.includes(v) ? v : ST_POPTS[0]; }   /* the default follows the switcher's first slot, i.e. Option 1 after the swap */
 let ST_POPT = stProfOpt();
 function stPOptHTML(){
+  if (ST_POPTS.length < 2 || ST.page !== 'My Profile') return '';   /* one design, or hosted by UI Preference (which draws its own switch) */
   return `<div class="stpopt">Design <span class="uipseg">${ST_POPTS.map(o => `<button type="button" class="${ST_POPT === o ? 'on' : ''}" onclick="stPOptSet('${o}')">Option ${ST_PLABEL[o] || o}</button>`).join('')}</span></div>`;
 }
+/* the binding every My Profile design needs after it paints — one function, used by My Profile AND by UI Preference when
+   it hosts a moved design (uipMovedAfter), so the two cannot bind differently. */
+function stProfAfter(){ if (ST_POPT === '2' || ST_POPT === '4' || ST_POPT === '5' || ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) || ST_POPT === '8') stProfBind(); if (ST_POPT === '4' || ST_POPT === '5') uip4Bind(true); if (ST_POPT === '5') st5Dirty(); }
 function stPOptSet(o){ ST_POPT = o; try { localStorage.setItem('oo-prof-opt', o); } catch (e) {} stMainPaint(); }
 /* the My Profile Design switch lives in the Settings HEADER bar (request, 8 Oct 2026), not over the page: it is painted
    there whenever My Profile is the open page, and the copies each option still renders into its page are hidden */
@@ -41896,7 +42058,16 @@ function st10SessHTML(){
 function st10Paint(){ const el = document.getElementById('st10Sess'); if (el) el.innerHTML = st10SessHTML(); }
 function st10Out(i){ const x = ST10_SESS[i]; if (!x || x.cur) return; ST10_SESS = ST10_SESS.filter((_, k) => k !== i); st10Paint(); toast('Signed out ' + x.dev); }
 function st10OutAll(){ const n = ST10_SESS.filter(x => !x.cur).length; ST10_SESS = ST10_SESS.filter(x => x.cur); st10Paint(); toast('Signed out ' + n + ' other session' + (n === 1 ? '' : 's')); }
-function stProfileHTML(){ return ST_POPT === '10' ? stBannerize(stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd9 stpd10"')).replace('<input type="submit" hidden>', '<section class="st6s st10s" id="st10Snd">' + st10SndHTML() + '</section><section class="st6s st10s" id="st10Sess">' + st10SessHTML() + '</section><input type="submit" hidden>') : ST_POPT === '9' ? stBannerize(stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd9"')) : ST_POPT === '8' ? stProfileHTML8() : (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10') ? stProfileHTML7() : ST_POPT === '6' ? stProfileHTML6() : ST_POPT === '5' ? stProfileHTML5() : ST_POPT === '4' ? stProfileHTML4() : ST_POPT === '3' ? stProfileHTML3() : ST_POPT === '2' ? stProfileHTML2() : stProfileHTML1(); }
+function stProfileHTML(){ return ST_POPT === '10' ? stBannerize(stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd9 stpd10"')).replace('<input type="submit" hidden>', '<section class="st6s st10s" id="st10Snd">' + st10SndHTML() + '</section><section class="st6s st10s" id="st10Sess">' + st10SessHTML() + '</section><input type="submit" hidden>') : ST_POPT === '9' ? stBannerize(stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd9"')) : ST_POPT === '11' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd11"') : ST_POPT === '12' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd12"') :
+    ST_POPT === '13' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd13"') :
+    /* '14' = a copy of Option 2 ('13') placed right after it (request, 13 Oct 2026). It carries stpd13 too, so every
+       Option 2 rule reaches it, plus its own stpd14 for anything that should differ later. */
+    ST_POPT === '14' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd13 stpd14"') :
+    /* '15' = a copy of Option 3 ('14') placed right after it (request, 13 Oct 2026); carries stpd13 + stpd14 so every
+       rule of both reaches it, plus stpd15 for its own changes later. */
+    ST_POPT === '15' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd13 stpd14 stpd15"') :
+    /* '16' = a copy of Option 4 ('15') placed right after it (request, 13 Oct 2026); carries stpd13/14/15 plus its own stpd16. */
+    ST_POPT === '16' ? stProfileHTML7().replace('class="stpd stpd6 stpd7"', 'class="stpd stpd6 stpd7 stpd13 stpd14 stpd15 stpd16"') : ST_POPT === '8' ? stProfileHTML8() : (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) ? stProfileHTML7() : ST_POPT === '6' ? stProfileHTML6() : ST_POPT === '5' ? stProfileHTML5() : ST_POPT === '4' ? stProfileHTML4() : ST_POPT === '3' ? stProfileHTML3() : ST_POPT === '2' ? stProfileHTML2() : stProfileHTML1(); }
 function stProfileHTML2(){
   /* REBUILT on the ObserveOps design system (request, 4 Oct 2026 — "replace the current page"). The form-view recipe:
      obs-page-header, then labelled obs-input fields (their own label + help + required *) on a 2-column grid with a
@@ -42017,8 +42188,30 @@ function stProfileHTML7(){
   const thm = h.match(/<div class="uip3f"><label>Theme<\/label>(<div class="st5th st7th"[\s\S]*?<\/button><\/div>)\s*(<div class="hint" id="uip3ThH"><\/div>)<\/div>/);
   if (thm) h = h.replace(thm[0], '').replace(/<div class="st6sh"><h3>Display preferences<\/h3>(<p>[\s\S]*?<\/p>)<\/div>/,
     (_, p) => `<div class="st6sh st7hd"><div class="st7hdl"><h3>Display preferences</h3>${p}${thm[2]}</div>${thm[1]}</div>`);
-  if ((ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10')) h = h.replace(/<div class="stpdsw"><div><b>Change Password<\/b>[\s\S]*?<\/obs-switch><\/div>/,
+  /* PERSONAL DETAILS LAID OUT LIKE DISPLAY PREFERENCES (request, 13 Oct 2026): title + one line on the left (.st7hdl), the
+     fields on the right in the theme cards' own 612px box, two across, so both sections share the same left text column and
+     the same right content edge. Option 1 (design '7') only — its copies keep the full-width 3-column grid. */
+  /* OPTION 2 ('13'): "MY PROFILE" IS A ROW LIKE PERSONAL DETAILS (request, 13 Oct 2026) — the page title and its line move
+     into the row's left column and the photo into its right column, so the separate photo column beside the form goes and
+     every row starts on the title's own left edge. #stAv keeps its id, so stAvPaint still repaints the badge in place. */
+  if ((ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) { const t = h.match(/<h1 class="st7h1">My Profile<\/h1>\s*<p class="stpdd">([\s\S]*?)<\/p>/), av = h.match(/<aside class="stpdav">[\s\S]*?<\/aside>/);
+    /* …REVISED the same day: the page title and its line stay at the top as they are, and only the PHOTO becomes a
+       Personal-details-style row ("Profile photo" left, the photo right). */
+    /* …REVISED AGAIN the same day: no "Profile photo" row — the photo sits INSIDE Personal details, at the top of its
+       right column above First / Last name (injected after the Personal details row is built, below). */
+    if (t && av) { h = h.replace(av[0], ''); var st13Av = av[0]; } }
+  if (ST_POPT === '7' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) h = h.replace(/<section><h3>Personal details<\/h3><div class="stpdg">([\s\S]*?)<\/div><\/section>/,
+    (_, g) => `<section><div class="st6sh st7hd st7pdh"><div class="st7hdl"><h3>Personal details</h3><p>Your name, how to reach you and the language ObserveOps uses for you.</p></div>${(ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16') && typeof st13Av === 'string' ? `<div class="st7pdr">${st13Av}<div class="stpdg">${g}</div></div>` : `<div class="stpdg">${g}</div>`}</div></section>`);
+  if ((ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16'))) h = h.replace(/<div class="stpdsw"><div><b>Change Password<\/b>[\s\S]*?<\/obs-switch><\/div>/,
     `<div class="stpdsw"><div><b>Change Password</b><small>Set a new password for signing in.</small></div><obs-button variant="default" id="stPwBtn" onclick="stTap(stPwOpen)">${agIc('lock-alt', 14)}Change password</obs-button></div>`);
+  /* PASSWORD ROW WITHOUT ITS TITLE (request, 13 Oct 2026: "remove this 'Password' and the button will be show nearest") —
+     Option 1 only. The "Password" heading said the same thing as "Change Password" directly under it; the row now uses the
+     Display preferences layout, so the text sits in the left column and the button opens the right column at the fields'
+     left edge, beside the words it acts on instead of at the far right. */
+  /* Option 6 ('11') takes this row too (request, 13 Oct 2026: "the button will [be] nearest") — the button opens the right
+     column at the theme cards' left edge instead of sitting at the far right. */
+  if (ST_POPT === '7' || ST_POPT === '11' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) h = h.replace(/<section><h3>Password<\/h3>\s*<div class="stpdsw">(<div><b>Change Password<\/b>[\s\S]*?<\/div>)(<obs-button[^>]*id="stPwBtn"[\s\S]*?<\/obs-button>)<\/div>/,
+    (_, t, b) => `<section><div class="stpdsw st7hd st7pwr"><div class="st7hdl">${t}</div><div class="st7pwb">${b}</div></div>`);
   /* ALERT OVERLAY LIVE PREVIEW (request, 12 Oct 2026: "the notification on/off live preview like Display preferences"):
      a tile in the theme cards' shape at the row's right edge — the picked theme's screenshot with a critical alert card
      slid in when the switch is ON, the bare screen when OFF. uip3Set repaints it in place (st7OvPaint) for both the
@@ -42027,17 +42220,41 @@ function stProfileHTML7(){
      way to TWO picture tiles in the theme cards' own shape — Off (the bell holds the alert) and On (it pops over the
      screen) — so the choice reads exactly like Display preferences above it. ST7OV picks; the small Option 1 · 2 control
      under the description is review chrome, like the page's own Design switcher, and goes when one is chosen. */
+  /* a section title over the date / time / rows row, in the "Personal details" heading's own style (request, 13 Oct 2026)
+     — Option 1 (design '7') only; its copies 5, 7 and 8 render through this function and are left as they were */
+  if (ST_POPT === '7' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) h = h.replace('<div class="st6g">', '<h3 class="st7rgh">Date, time &amp; tables</h3><div class="st6g">');
+  /* DATE, TIME & TABLES LAID OUT LIKE DISPLAY PREFERENCES (request, 13 Oct 2026) — Option 1 only: the title and one line on
+     the left, the three fields on the right in the theme cards' 624px box, two across. The grid's closing tag is found by
+     counting <div> depth, because its fields nest divs of their own and a lazy regex would stop at the first one. */
+  if (ST_POPT === '7' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) { const a = h.indexOf('<h3 class="st7rgh">Date, time &amp; tables</h3><div class="st6g">');
+    if (a >= 0) { const g0 = h.indexOf('<div class="st6g">', a); let d = 0, i = g0, end = -1; const re = /<div\b|<\/div>/g; re.lastIndex = g0;
+      for (let mm; (mm = re.exec(h)); ) { d += mm[0] === '</div>' ? -1 : 1; if (!d) { end = re.lastIndex; break; } }
+      if (end > 0) h = h.slice(0, a) + `<div class="st6sh st7hd st7dth"><div class="st7hdl"><h3>Date, time &amp; tables</h3><p>How dates read, which time zone they are shown in, and how many rows a grid shows.</p></div>${h.slice(g0, end)}</div>` + h.slice(end); } }
   if (ST7OV === '2') h = h.replace(/<div class="uip3sw">[\s\S]*?<\/button><\/div>/, st7Ov2HTML());
   else if (ST7OV === '3') h = h.replace(/<div class="uip3sw">[\s\S]*?<\/button><\/div>/, st7Ov3HTML());
   else h = h.replace(/(<div class="uip3sw">[\s\S]*?<\/small>)(<\/div>)/, `$1${st7OvOptHTML()}$2`)
     .replace(/(<div class="uip3sw">[\s\S]*?<\/button>)(<\/div>)/, `$1${st7OvpHTML()}$2`).replace('<div class="uip3sw">', '<div class="uip3sw st7ovr">');
+  /* OPTION 4 ('15'): the left-column descriptions shortened to one line each (request, 13 Oct 2026). Change Password and
+     Alert overlay already fit on one line and keep their words. */
+  /* OPTION 5 ('11'), 13 Oct 2026: no "Password" heading over the Change Password row, and the Display preferences line
+     shortened to one line; its divider above Display preferences went too (the .st6s rule no longer excludes stpd11). */
+  if (ST_POPT === '11') h = h.replace(/<h3>Password<\/h3>\s*/, '')
+    .replace('<section><h3>Personal details</h3>', '<section><h3 class="st11h">Personal details</h3><p class="st11p">Your name, how to reach you and the language ObserveOps uses for you.</p>')   /* Option 6: a line under the title, like Display preferences' (request, 13 Oct 2026) */
+    .replace('<div class="st6g">', '<div class="st11dh"><h3 class="st11h">Date, time &amp; tables</h3><p class="st11p">Date format, time zone and grid rows.</p></div><div class="st6g">')   /* Option 6: a title + line over the date / time / rows fields (request, 13 Oct 2026) */
+    .replace('<p>How ObserveOps looks and reads on this browser — these are not part of your profile.</p>', '<p>How ObserveOps looks on this browser.</p>');
+  if (ST_POPT === '15' || ST_POPT === '16') h = h.replace('<p>Your name, how to reach you and the language ObserveOps uses for you.</p>', '<p>Your name, contact and language.</p>')
+    .replace('<p>How ObserveOps looks and reads on this browser — these are not part of your profile.</p>', '<p>How ObserveOps looks on this browser.</p>')
+    .replace('<p>How dates read, which time zone they are shown in, and how many rows a grid shows.</p>', '<p>Date format, time zone and grid rows.</p>');
   return h;
 }
-let ST7OV = '1';
-function st7OvOpt(v){ if (ST7OV === v) return; ST7OV = v; const k = document.getElementById('stMain'), y = k ? k.scrollTop : 0; stMainPaint(); if (k) k.scrollTop = y; }
+let ST7OV = '2';   /* Options 1 & 2 SWAPPED (request, 13 Oct 2026): the two-tile design (key '2') is shown as Option 1 and is the default; the single tile (key '1') is Option 2. Keys not renumbered. */
+function st7OvOpt(v){ v = '2'; if (ST7OV === v) return; ST7OV = v; const k = document.getElementById('stMain'), y = k ? k.scrollTop : 0; stMainPaint(); if (k) k.scrollTop = y; }
 function st7OvOptHTML(){
-  return `<span class="uipseg st7ovo" role="group" aria-label="Alert overlay design">${['1','2','3'].map(v =>
-    `<button type="button" class="${ST7OV === v ? 'on' : ''}" aria-pressed="${ST7OV === v}" onclick="st7OvOpt('${v}')">Option ${v}</button>`).join('')}</span>`;
+  /* OPTIONS 2 & 3 REMOVED (request, 13 Oct 2026): the two-tile Quiet / Alert me design (key '2') is the design, so a
+     switcher holding one option goes with them. st7Ov3HTML and the single-tile st7OvpHTML are kept, unreferenced. */
+  return '';
+  return `<span class="uipseg st7ovo" role="group" aria-label="Alert overlay design">${[['2','1'],['1','2'],['3','3']].map(([v, n]) =>
+    `<button type="button" class="${ST7OV === v ? 'on' : ''}" aria-pressed="${ST7OV === v}" onclick="st7OvOpt('${v}')">Option ${n}</button>`).join('')}</span>`;
 }
 /* OPTION 3 (request, 12 Oct 2026: "create option 3 using mobbin"). Built from Linktree's Support Banner setting
    (mobbin.com/screens/30fb265c-8153-4f23-9e3e-ae6f7e02ab4c) — a bordered settings card whose switch sits at the end of
@@ -42086,7 +42303,7 @@ function st7Ov2HTML(){
       <span class="st7ov2st" aria-hidden="true"><span class="st7ov2z">${st7OvWinHTML()}</span></span>
       <span class="st7ovl"><i class="st7rd" aria-hidden="true"></i><span><b>${l}</b><small>${d}</small></span></span></button>`;
   return `<div class="st7ov2"><div class="st7ov2l"><b>Alert overlay</b><small>Pop critical alerts over any screen.</small>${st7OvOptHTML()}</div>
-    <div class="st7ovg" role="radiogroup" aria-label="Alert overlay">${[['off', false, 'Off', 'Alerts stay in the bell'], ['on', true, 'On', 'Alerts pop over the screen']].map(t).join('')}</div></div>`;
+    <div class="st7ovg" role="radiogroup" aria-label="Alert overlay">${[['off', false, 'Quiet', 'Alerts stay in the bell'], ['on', true, 'Alert me', 'Alerts pop over the screen']].map(t).join('')}</div></div>`;
 }
 function st7OvpHTML(){
   return `<button type="button" class="st7ovp${UIP3.overlay ? ' on' : ''}" id="st7Ovp" aria-label="Alert overlay preview" onclick="uip3Set('overlay',!UIP3.overlay)">
@@ -42272,8 +42489,8 @@ function stProfBind(){
     document.body.classList.toggle('ntfoff', !on); if (typeof toast === 'function') toast('Notifications turned ' + (on ? 'on' : 'off')); });
   const pw = document.getElementById('stPwSw'); if (pw) pw.addEventListener('change', () => stPwTog());
   const sv = document.getElementById('stSaveBtn'), rs = document.getElementById('stResetBtn');
-  if (sv) sv.addEventListener('click', () => stTap(ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10') || ST_POPT === '8' ? stCombo6Save : ST_POPT === '4' || ST_POPT === '5' ? stComboSave : stSubmit));
-  if (rs) rs.addEventListener('click', () => stTap(ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10') || ST_POPT === '8' ? stCombo6Reset : ST_POPT === '4' || ST_POPT === '5' ? stComboReset : stReset));
+  if (sv) sv.addEventListener('click', () => stTap(ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) || ST_POPT === '8' ? stCombo6Save : ST_POPT === '4' || ST_POPT === '5' ? stComboSave : stSubmit));
+  if (rs) rs.addEventListener('click', () => stTap(ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) || ST_POPT === '8' ? stCombo6Reset : ST_POPT === '4' || ST_POPT === '5' ? stComboReset : stReset));
 }
 function stIn(k, v){
   ST.data[k] = v;
@@ -42321,7 +42538,7 @@ function stAvFile(inp){
   if (!f) return;
   if (!/^image\/(jpeg|png|svg\+xml)$/.test(f.type)){ toast('Unsupported file type — only JPEG, JPG, PNG and SVG files are allowed'); return; }
   const r = new FileReader();
-  r.onload = e => { if (ST_POPT === '7') { st7Crop(e.target.result); return; } ST.avatar = e.target.result; stAvPaint(); };
+  r.onload = e => { if ((ST_POPT === '7' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16'))) { st7Crop(e.target.result); return; } ST.avatar = e.target.result; stAvPaint(); };
   r.readAsDataURL(f);
 }
 function stAvRemove(){ ST.avatar = null; stAvPaint(); }
@@ -42426,7 +42643,7 @@ function stErrSet(k, e){
 }
 function stBtnPaint(){
   const b = document.getElementById('stSaveBtn'); if (!b) return;
-  if (b.tagName === 'OBS-BUTTON') { if (ST.busy) b.setAttribute('disabled', ''); else b.removeAttribute('disabled'); const cb = ST_POPT === '4' || ST_POPT === '5' || ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10') || ST_POPT === '8'; b.textContent = ST.busy ? (cb ? 'Saving…' : 'Updating…') : (cb ? 'Save changes' : 'Update My Profile'); return; }
+  if (b.tagName === 'OBS-BUTTON') { if (ST.busy) b.setAttribute('disabled', ''); else b.removeAttribute('disabled'); const cb = ST_POPT === '4' || ST_POPT === '5' || ST_POPT === '6' || (ST_POPT === '7' || ST_POPT === '9' || ST_POPT === '10' || ST_POPT === '11' || ST_POPT === '12' || (ST_POPT === '13' || ST_POPT === '14' || ST_POPT === '15' || ST_POPT === '16')) || ST_POPT === '8'; b.textContent = ST.busy ? (cb ? 'Saving…' : 'Updating…') : (cb ? 'Save changes' : 'Update My Profile'); return; }
   b.disabled = ST.busy;
   b.innerHTML = (ST.busy ? '<span class="stspin"></span>' : '') + 'Update My Profile';
 }
@@ -46343,6 +46560,16 @@ const ipmPageOf = html => () => { const out = html(); IPM.flash = null; return o
 ST_PAGES['IPAM › IP Address Manager']  = { html: ipmPageOf(ipmRoutersHTML), after: ipmAfter };
 ST_PAGES['IPAM › Site Separation Rules'] = { html: ipmPageOf(ipmRulesHTML),   after: ipmAfter };
 ST_PAGES['IPAM › Approved Vendor List']  = { html: ipmPageOf(ipmVendorsHTML), after: ipmAfter };
+/* Settings › Firewall Analyzer (13 Oct 2026) — the vendored module's own screens (#fwinventory / #fwtemplates) in
+   ?embed=settings mode, which hides its Settings list and head so this page's own list and head stand in. The frame
+   follows the theme over postMessage ({faTheme}), as the module view does. */
+const faSetPage = hash => ({ html: () => `<div class="stfa"><iframe class="stfafr" title="Firewall Analyzer settings"
+  src="_firewall/firewall.html?embed=settings&theme=${ipamTheme()}#${hash}"></iframe></div>` });
+ST_PAGES['Firewall Analyzer › Firewall Inventory'] = faSetPage('fwinventory');
+ST_PAGES['Firewall Analyzer › Firewall Templates'] = faSetPage('fwtemplates');
+new MutationObserver(() => document.querySelectorAll('.stfafr').forEach(f => {
+  try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch (e) {} }))
+  .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 ST_PAGES['System Settings › DHCP Server Profile'] = { html: ipmPageOf(ipmDhcpHTML), after: ipmAfter };
 ST_PAGES['Policy Settings › IPAM Policy'] = { html: ipmPageOf(ippListHTML), after: ipmAfter };
 
@@ -50314,7 +50541,12 @@ function uipSave(){
 let UIP_OPT = (() => { try { return localStorage.getItem('oo-uip-opt') || '1'; } catch (e) { return '1'; } })();
 function uipOptSet(o){ UIP_OPT = o; try { localStorage.setItem('oo-uip-opt', o); } catch (e) {} UIP = null; UIP3 = null; stMainPaint(); }
 function uipOptHTML(){
-  return `<div class="uipop">Design <span class="uipseg">${['1','2','3','4','5','6','7'].map(o => `<button type="button" class="${UIP_OPT === o ? 'on' : ''}" onclick="uipOptSet('${o}')">Option ${o}</button>`).join('')}</span></div>`;
+  /* a DROPDOWN, not a segmented row (request, 13 Oct 2026) — 19 buttons ran off the line and wrapped their labels. It is
+     the same native select + chevron the Date format field uses (.uipsel / UIP_CHEV), so it reads as one of this page's
+     own controls. */
+  const n = 7 + ST_PMOVED_ORDER.length;
+  return `<div class="uipop"><label for="uipOptSel">Design</label><span class="uipsel uipopsel"><select id="uipOptSel" onchange="uipOptSet(this.value)">${Array.from({ length: n }, (_, i) => String(i + 1)).map(o =>
+    `<option value="${o}"${UIP_OPT === o ? ' selected' : ''}>Option ${o}</option>`).join('')}</select>${UIP_CHEV}</span></div>`;
 }
 /* the date format, rendered — so the dropdown shows what you will SEE, not a token string */
 function uipFmtDate(fmt, d){
@@ -50613,7 +50845,7 @@ function uip4Reset(){ const sv = UIP4_SAVED; UIP = Object.assign({}, UIP_DEF, { 
 /* UI Preference Options 5 / 6 / 7 are My Profile's former Options 3 / 4 / 5, moved here whole (9 Oct 2026): the same
    markup, model and save path, with this page's own Design switch above them. */
 function uipMovedHTML(){ ST_POPT = ST_PMOVED[UIP_OPT]; return `<div class="uipmv">${uipOptHTML()}</div>` + stProfileHTML(); }
-function uipMovedAfter(){ if (ST_POPT === '4' || ST_POPT === '5') { stProfBind(); uip4Bind(true); } if (ST_POPT === '5') st5Dirty(); }
+function uipMovedAfter(){ stProfAfter(); }   /* the same bind My Profile runs, so all 15 moved designs work here (13 Oct 2026) */
 ST_PAGES['My Account › UI Preference'] = { html: () => ST_PMOVED[UIP_OPT] ? uipMovedHTML() : UIP_OPT === '4' ? uip4HTML() : UIP_OPT === '3' ? uip3HTML() : UIP_OPT === '2' ? uip2HTML() : uipHTML(),
   after: () => ST_PMOVED[UIP_OPT] ? uipMovedAfter() : uip4After() };
 
@@ -50632,7 +50864,7 @@ ST_PAGES['My Account › UI Preference'] = { html: () => ST_PMOVED[UIP_OPT] ? ui
   var parts = h ? h.split('|').map(decodeURIComponent) : [];
   stOpen(parts[0] || undefined, parts[1] || undefined);
 
-  var MOD_VIEWS = { dashboard: 1, logexp: 1, module: 1, monitor: 1, ipam: 1, compliance: 1 };
+  var MOD_VIEWS = { dashboard: 1, logexp: 1, module: 1, monitor: 1, ipam: 1, compliance: 1, firewall: 1 };
   var sv = showView;
   window.showView = function (v) {
     if (v === 'settings') return sv.apply(this, arguments);

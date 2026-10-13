@@ -43,7 +43,7 @@ PROBE = r"""
         /^view-(manage|logexp)$/.test(s.nextElementSibling.id||'')),
         s&&s.nextElementSibling?s.nextElementSibling.id:'no sibling');
     ok('stInit/stOpen are functions', typeof stInit==='function'&&typeof stOpen==='function');
-    ok('ST_TREE has 19 categories', typeof ST_TREE!=='undefined'&&ST_TREE.length===19,
+    ok('ST_TREE has its categories (>=19)', typeof ST_TREE!=='undefined'&&ST_TREE.length>=19,
         typeof ST_TREE!=='undefined'?ST_TREE.length:'undefined');
     ok('ST_ICO populated', typeof ST_ICO!=='undefined'&&Object.keys(ST_ICO).length>20);
     ok('ST_PAGES: License registered', !!ST_PAGES['My Account › License']);
@@ -62,7 +62,7 @@ PROBE = r"""
     ok('settings stylesheet applied', !!nav&&parseFloat(getComputedStyle(nav).width)>100,
         nav?getComputedStyle(nav).width:'no .stnav');
     ok('settings view is on', s.classList.contains('on'));
-    ok('19 categories rendered', document.querySelectorAll('#stList .stcat').length===19,
+    ok('every category rendered', document.querySelectorAll('#stList .stcat').length===ST_TREE.length,
         document.querySelectorAll('#stList .stcat').length);
     ok('My Profile form rendered', !!document.getElementById('stSaveBtn')&&
         !!document.getElementById('stAv'));
@@ -77,10 +77,10 @@ PROBE = r"""
     /* the list search still works (it is the module's own, not the host's) */
     stOpen('My Account','My Profile');
     stSearch('utility');
-    ok('list search narrows', document.querySelectorAll('#stList .stcat').length<19,
+    ok('list search narrows', document.querySelectorAll('#stList .stcat').length<ST_TREE.length,
         document.querySelectorAll('#stList .stcat').length);
     stSearch('');
-    ok('clearing search restores 19', document.querySelectorAll('#stList .stcat').length===19);
+    ok('clearing search restores every category', document.querySelectorAll('#stList .stcat').length===ST_TREE.length);
     ok('no console errors', E.length===0, E.join(' | '));
    }catch(err){ R.push('FAIL threw: '+err.message) }
    var n=R.filter(function(x){return x[0]==='F'}).length;

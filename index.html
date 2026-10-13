@@ -2820,6 +2820,12 @@ html[data-theme="light"] .sutil{border-top-color:var(--border)}
    old one was. */
 .sfoot{flex:0 0 auto;padding:10px;position:relative;z-index:1}
 /* `.sfoot::before` drew the rule above the footer — removed with the rest, see above */
+/* ⚠️ …AND IT IS BACK, ABOVE THE SETTING ROW (request + picture, 13 Oct 2026: "add line on upside the setting module").
+   Collapsed it is 24px centred over the gear — the width the rail's own group gaps take (`.sgroup-gap`); open it spans the
+   footer's rows. `--track`, not `--border`: on this rail `--border` is ~1.3:1 and would not show (the 8 Sep `.skrdiv`
+   measurement). The footer's 10px top padding and Setting's 10px margin put it midway between the list and the gear. */
+.sfoot::before{content:"";display:block;height:1px;background:var(--track);margin:0 7px}
+.sidebar:not(.open) .sfoot::before{width:24px;margin:0 auto}
 /* ⚠️ THE COLLAPSE ROW IS NOW BUILT TO `.sitem`'s NUMBERS (gap 11, 20px glyph at margin-left
    5, 13px label). It had gap 9, an 18px glyph at margin-left 6 and a 12px label — so its icon
    sat 3px right of every other glyph and 2px smaller, and its label 1px left of every other
@@ -2850,6 +2856,9 @@ body.pinned #collapseArrow{transform:scaleX(-1)}
 /* IPAM view: the iframe fills the content area; the vendored page brings its own surfaces. */
 .ipamhost{flex:1 1 auto;min-height:0;display:flex}
 .ipamfr{flex:1 1 auto;width:100%;height:100%;border:0;display:block;background:var(--bg)}
+/* Firewall Analyzer view (13 Oct 2026): the same iframe shape as IPAM. */
+.fahost{flex:1 1 auto;min-height:0;display:flex}
+.fafr{flex:1 1 auto;width:100%;height:100%;border:0;display:block;background:var(--bg)}
 .view.on{display:flex}
 /* ⚠️ 50px, NOT 44 (request, 22 Sep 2026: "the header height is 50px"). Both numbers move
    together — `height` AND the flex basis — or the row lays out at one and paints at the other.
@@ -13389,6 +13398,15 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
       <div class="ipamhost" id="ipamHost"></div>
     </section>
 
+    <!-- ===== Firewall Analyzer (13 Oct 2026) =====
+         The Firewall Analyzer module from "Firewall analyzer/firewall-analyzer-standalone.html", vendored
+         as `_firewall/firewall.html` by `_firewall/build_firewall.py` (every private address scrubbed to
+         198.18.x, RFC 2544). `?embed=1` hides its own rail + app header; `?theme=` follows ours. The iframe
+         is created on first open — the page is 2.9 MB. -->
+    <section class="view" id="view-firewall">
+      <div class="fahost" id="faHost"></div>
+    </section>
+
     <!-- ===== Generic module view ===== -->
     <section class="view" id="view-module">
       <div class="pagehead">
@@ -14250,6 +14268,13 @@ const ICONS = {
   ],
   "from": "supplied IPAM module icon (6 Oct 2026)"
  },
+ "firewall": {
+  "viewBox": "0 0 512 512",
+  "paths": [
+   "M463.65,277.68a174.71,174.71,0,0,1-25.36,67.67,225.28,225.28,0,0,0-33.82-126.88,179.57,179.57,0,0,0-67.59,177.64,207.07,207.07,0,0,1-33.82-67.7,120.33,120.33,0,0,0,11.49,138.66,114.48,114.48,0,0,0,161.57,10.46,113.16,113.16,0,0,0,9.48-9.36C524.84,424.61,501.91,316.84,463.65,277.68Zm0,0,0,0v0Zm-137.9,12.53q2.61-6.85,5.7-13.46h-2.13V227.83h34.4A200.11,200.11,0,0,1,382.94,209H320.46l-.58,0H278.6V160.21H395v39.63a20.69,20.69,0,0,1,18.81,0V32.28A26.31,26.31,0,0,0,387.56,6H32.27A26.33,26.33,0,0,0,6,32.32v372.3a26.31,26.31,0,0,0,26.28,26.25H271.62a142,142,0,0,1-4.37-18.81H160.13V363.19H267.94a140.93,140.93,0,0,1,10.66-33.08V295.53h45.17C324.39,293.74,325,292,325.71,290.18ZM310.47,141.4H160.13V92.51H310.47Zm-50.73,18.81V209H109.4V160.21ZM395,141.4H329.28V92.51H395ZM278.6,24.81h109A7.49,7.49,0,0,1,395,32.32V73.7H278.6Zm-169.16,0h150.3V73.7H109.41Zm-84.63,7.5a7.51,7.51,0,0,1,7.52-7.5H90.59V73.7H24.81Zm0,60.2H141.32V141.4H24.81Zm0,67.7H90.59V209H24.81Zm0,67.62H141.32v48.84H24.81Zm0,67.67H90.59v48.86H24.81ZM141.32,412.06h-109a7.34,7.34,0,0,1-5.3-2.18,7.52,7.52,0,0,1-2.21-5.35V363.19H141.32Zm118.34-67.7H109.4V295.5H259.66Zm50.81-67.67H269.6l-.4,0H160.13V227.83H310.47Z"
+  ],
+  "from": "the DS icon firewall, read out of the vendored Firewall Analyzer bundle (13 Oct 2026)"
+ },
  "slo": {
   "viewBox": "0 0 48 48",
   "paths": [
@@ -14284,6 +14309,14 @@ const ICONS = {
    "M42.54,27.3h-6.89v-11.79c1.68-.68,2.88-2.32,2.88-4.24,0-2.53-2.05-4.58-4.58-4.58-1.9,0-3.52,1.15-4.22,2.8h-4.09v-4.78c0-.94-.76-1.71-1.71-1.71H6.98c-.94,0-1.71.76-1.71,1.71v12.61c-.85.1-1.51.79-1.51,1.67,0,.94.76,1.71,1.71,1.71h8.32v11.3c-1.66.69-2.83,2.32-2.83,4.23,0,2.53,2.05,4.58,4.58,4.58,1.97,0,3.45-1.21,4.09-2.81h4.26v5.31c0,.94.76,1.71,1.71,1.71h16.96c.94,0,1.71-.76,1.71-1.71v-14.28c0-.94-.76-1.71-1.71-1.71ZM33.94,10.11c.64,0,1.16.52,1.16,1.16s-.52,1.16-1.16,1.16-1.16-.52-1.16-1.16.52-1.16,1.16-1.16ZM8.68,17.28V6.42h13.54v10.87h-13.54ZM15.53,37.38c-.64,0-1.16-.52-1.16-1.16s.52-1.16,1.16-1.16c.52,0,1.01.39,1.01,1.16s-.49,1.16-1.01,1.16ZM23.87,29.01v5.56h-4.22c-.42-1.16-1.29-2.12-2.46-2.59v-11.28h8.25c.94,0,1.71-.76,1.71-1.71,0-.87-.67-1.57-1.51-1.67v-4.42h4.04c.45,1.18,1.37,2.12,2.54,2.6v11.8h-6.65c-.94,0-1.71.76-1.71,1.71ZM40.83,41.58h-13.54v-10.87h6.65s0,0,0,0,0,0,0,0h6.89v10.87Z"
   ],
   "from": "sidebar.html"
+ },
+ "explorer": {
+  "viewBox": "0 0 48 48",
+  "evenodd": true,
+  "paths": [
+   "M24 4C35.0457 4 44 12.9543 44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24C4 12.9543 12.9543 4 24 4ZM24 8C15.1634 8 8 15.1634 8 24C8 32.8366 15.1634 40 24 40C32.8366 40 40 32.8366 40 24C40 15.1634 32.8366 8 24 8ZM30.2119 15.1621C30.9636 14.8401 31.8358 15.0078 32.4141 15.5859C32.9921 16.1642 33.1599 17.0365 32.8379 17.7881L28.6387 27.5879C28.4364 28.0598 28.0598 28.4363 27.5879 28.6387L17.7881 32.8379C17.0365 33.16 16.1642 32.9921 15.5859 32.4141C15.0077 31.8358 14.84 30.9636 15.1621 30.2119L19.3613 20.4121C19.5636 19.9401 19.9401 19.5636 20.4121 19.3613L30.2119 15.1621ZM22.7227 22.7227L20.8066 27.1924L25.2764 25.2764L27.1924 20.8066L22.7227 22.7227Z"
+  ],
+  "from": "supplied explorer_48_single-path.svg (13 Oct 2026) — the Explorer rail entry"
  },
  "metric-explorer": {
   "viewBox": "0 0 48 48",
@@ -14585,6 +14618,8 @@ const MODULES = [
   { name:'IPAM',            icon:'ipam',            route:'/ipam/',            group:'Network' },
   /* Compliance — APPENDED like IPAM, so no index above moves (6 Oct 2026). Lives in Explorer. */
   { name:'Compliance',      icon:'compliance',      route:'/compliance/overview', group:'Network' },
+  /* Firewall Analyzer — APPENDED like IPAM (13 Oct 2026). Vendored page in an iframe; lives in Explorer. */
+  { name:'Firewall Analyzer', icon:'firewall',      route:'/firewall-analyzer/', group:'Network' },
 ];
 let activeModule = 0;
 
@@ -14637,7 +14672,9 @@ const RAIL = [
   { name:'Dashboard', icon:'dashboard',       mod:'Dashboards',      group:'work' },
   { name:'Alert',     icon:'alert',           mod:'Alerts',          group:'work' },
   { name:'SLO',       icon:'slo',             mod:'SLO',             group:'work', beta:true },
-  { name:'Explorer',  icon:'metric-explorer', mod:'Metric Explorer', group:'analyse' },
+  /* icon:'explorer' — the supplied compass mark (13 Oct 2026); it was Metric Explorer's glyph, which now belongs to the
+     Metric Explorer row inside Explorer's list instead of standing for the whole group. */
+  { name:'Explorer',  icon:'explorer',        mod:'Metric Explorer', group:'analyse' },
   { name:'Report',    icon:'report',          mod:'Reports',         group:'analyse' },
   /* ⚠️ `foot:true` MOVES THE ROW TO THE FOOTER'S ICON CLUSTER — IT DOES NOT REMOVE IT (request,
      10 Sep 2026: "the Setting icon will be moved to show after What's new"). Settings is a
@@ -14908,9 +14945,8 @@ SUBNAV2['Explorer'] = [
    ⚠️ THIS IS OPTION 1 ONLY. It is the only file with the six-entry rail; Options 2 and 3
    still carry the older seven-entry one and neither defines `SUBNAV['Explorer']`, so
    nothing here has to be made three times.
-   ⚠️ `Metric explorer` STAYS UNDER `Monitor`. It reads like a slip — Metric Explorer is a
-   module, not a monitor type — but `sidemenu.md` indents it there and the spec is the
-   spec. One line to move if it was ever meant as a sibling.
+   ⚠️ `Metric explorer` USED TO SIT UNDER `Monitor` (sidemenu.md's indentation). Since 13 Oct 2026 it is
+   Explorer's own first row — see the entry at the top of EXPLORER_TREE.
    ⚠️ Nine of the eleven have NO children, and that is not an omission: pointing at one
    must therefore CLEAR the pane, or Monitor's 18 types sit there while you hover `Log`. */
 const EXPLORER_TREE = [
@@ -14920,8 +14956,7 @@ const EXPLORER_TREE = [
       ['HCI','Monitors'], ['Database','Monitors'], ['Container Orchestration','Monitors'],
       ['Cloud','Monitors'], ['Interface','Monitors'], ['WAN Link','Monitors'],
       ['Process','Monitors'], ['Container','Monitors'], ['Service','Monitors'],
-      ['Service Check','Monitors'], ['Other','Monitors'],
-      ['Metric explorer','Metric Explorer'] ]},
+      ['Service Check','Monitors'], ['Other','Monitors'] ]},
   /* ⚠️ TOPOLOGY HAS CHILDREN TOO (request, 9 Sep 2026: "the same thinking is topology, this is
      sub module", with the live tab bar as the picture). They are the module's own tabs, which is
      the same relationship `Monitor`'s 18 types have to it — a tab bar IS the second level here.
@@ -14949,11 +14984,18 @@ const EXPLORER_TREE = [
      live build's /compliance/overview with Playwright. Its three tabs are its children; each opens the module ON that tab. */
   { l:'Compliance', mod:'Compliance', ic:'compliance', kidsAs:'tabs', route:'/compliance/overview', doc:'network-configuration-and-compliance-management/compliance-management/overview', kids:[
       ['Overview','Compliance',"cplGo('Overview')"], ['Policies','Compliance',"cplGo('Policies')"], ['Explorer','Compliance',"cplGo('Explorer')"] ]},
+  /* ⚠️ METRIC EXPLORER IS A SUB-MODULE OF EXPLORER, NOT A MONITOR TYPE (13 Oct 2026: "the metric explorer will move in
+     'explorer'"). It sat as the last of Monitor's children. It led the list for an hour, then moved here, directly before
+     NetRoute (request, same day). ⚠️ With it no longer tree[0], mfRailFirst() lands the Explorer rail click on Monitor again. */
+  { l:'Metric Explorer', mod:'Metric Explorer', ic:'metric-explorer', route:'/metric-explorer/', doc:'Metric%20Analysis/Overview' },
   { l:'NetRoute', mod:'NetRoute',      ic:'netroute', route:'/netroute/', doc:'netroute/overview' },
   { l:'IPAM',     mod:'IPAM',          ic:'ipam',     route:'/ipam/', kidsAs:'tabs', kids:[   /* moved off the rail, 2 Oct 2026 */
       /* IPAM's own four tabs (2 Oct 2026) — each opens IPAM ON that tab (ipamTab → the embedded page's hash) */
       ['Overview','IPAM',"ipamTab('Overview')"], ['Subnet Details','IPAM',"ipamTab('Subnet Details')"], ['Supernet','IPAM',"ipamTab('Supernet')"],
       ['IP Details','IPAM',"ipamTab('IP Details')"], ['Rogue Detection','IPAM',"ipamTab('Rogue Detection')"] ]},
+  /* Firewall Analyzer (13 Oct 2026: "add new module 'Firewall Analyzer'") — the vendored module; it has no
+     tab row of its own (the estate list is the module, every other view lives inside a firewall). */
+  { l:'Firewall Analyzer', mod:'Firewall Analyzer', ic:'firewall', route:'/firewall-analyzer/' },
   { l:'Log',      mod:'Log Explorer',  ic:'log', route:'/log/', doc:'log-management/overview' },
   /* ⚠️ APM's FOUR TABS ARE ITS CHILDREN (request, 9 Sep 2026: "the same thinking in APM", with
      the live tab bar as the picture) — the same relationship Monitor's types and Topology's maps
@@ -15002,7 +15044,7 @@ const MOD_TO_RAIL = {};
 [['Dashboards',0],['Alerts',1],['SLO',2],
  ['Metric Explorer',3],['Log Explorer',3],['Flow Explorer',3],['APM Explorer',3],['RUM Explorer',3],
  ['Trap Explorer',3],['Monitors',3],['Topology',3],['NCCM',3],['NetRoute',3],['Audits',3],
- ['Reports',4],['Settings',5],['IPAM',3],['Compliance',3]
+ ['Reports',4],['Settings',5],['IPAM',3],['Compliance',3],['Firewall Analyzer',3]
 ].forEach(([n,i])=>{ MOD_TO_RAIL[n]=i; });
 /* ══ PINNED SUB-MODULES ════════════════════════════════════════════════════════════════
    Request, 27 Aug 2026: "in the explorer all sub module will be I pin and unpin, and when
@@ -15029,7 +15071,8 @@ const MOD_TO_RAIL = {};
    record that aborting `init()` five times.
    ⚠️ THE LABEL MUST MATCH `EXPLORER_TREE`'s `l` EXACTLY. `railPinRow` returns null for anything
    else and the band renders empty — no error, just nothing on the rail. */
-let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer; Compliance too (6 Oct 2026, on request) */
+let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance', 'Firewall Analyzer'];   /* Firewall Analyzer pinned by default too (13 Oct 2026, on request) */
+/* (was) let RAIL_PINS = ['Monitor', 'IPAM', 'Compliance'];   /* IPAM pinned by default (2 Oct 2026) — it left the rail for Explorer; Compliance too (6 Oct 2026, on request) */
 /* ══ THE RAIL CARRIES TWO PINNED BANDS, AND THEY ANCHOR TO DIFFERENT ROWS ══════════════════
    Two requests, minutes apart on 11 Sep 2026, and asking which was meant settled it as BOTH:
      "when I pin ANY sub-module it will show in between [the] Explorer and Report icon"
@@ -17104,6 +17147,8 @@ function selectModule(i){
   if (m.name === 'Monitors'){ showView('monitor'); mnInit(MOD_SUB); MOD_SUB = ''; return; }
   /* IPAM is the vendored module (`_ipam/ipam.html`), shown in an iframe in embed mode. */
   if (m.name === 'IPAM'){ showView('ipam'); ipamInit(); return; }
+  /* Firewall Analyzer — the vendored module (`_firewall/firewall.html`), iframe in embed mode. */
+  if (m.name === 'Firewall Analyzer'){ showView('firewall'); faInit(); return; }
   /* Compliance — the live module's three tabs, `cpl*` block below (6 Oct 2026). */
   if (m.name === 'Compliance'){ showView('compliance'); cplInit(MOD_SUB); MOD_SUB = ''; return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
@@ -18081,6 +18126,17 @@ function ipamTheme(){ return document.documentElement.getAttribute('data-theme')
    same carrier Monitor's rows use, and the one setting.html's hand-off passes as &sub= */
 const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Supernet': 'supernet', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
+/* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
+function faInit(){
+  const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
+  const f = document.createElement('iframe');
+  f.title = 'Firewall Analyzer'; f.className = 'fafr';
+  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme();
+  h.appendChild(f);
+  new MutationObserver(() => {
+    try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}
+  }).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+}
 function ipamInit(){
   const h = document.getElementById('ipamHost'); if (!h) return;
   let f = h.querySelector('iframe');
@@ -24488,7 +24544,7 @@ function up4Go(fn){ try { closePops(); } catch (e) {} fn(); }
 function up4HTML(){
   const p = document.getElementById('userPop');
   const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
-  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const avEl = p.querySelector('.upavatar'), av = (avEl||{}).textContent || '', avBg = avEl && avEl.style.backgroundImage ? ` style="background-image:${avEl.style.backgroundImage.replace(/"/g,'&quot;')};background-size:cover;background-position:center"` : '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
   const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
   const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
   let cats = [];
@@ -24496,7 +24552,7 @@ function up4HTML(){
   const stIc = c => { try { const d = ST_ICO[c.ic]; return d ? '<svg viewBox="0 0 48 48"><path d="'+d+'"/></svg>' : ''; } catch (e) { return ''; } };
   const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
   return `<div class="up4c">
-      <div class="up4id"><div class="up4av">${av}</div><div style="min-width:0"><div class="up4nm">${nm}<b>${rl}</b></div><div class="up4em">${em}</div></div></div>
+      <div class="up4id"><div class="up4av"${avBg}>${av}</div><div style="min-width:0"><div class="up4nm">${nm}<b>${rl}</b></div><div class="up4em">${em}</div></div></div>
       <div class="up4h">Personal</div>
       ${row(up4Svg('icMyProfile'), 'My Profile', "up4Go(()=>stOpen('My Account','My Profile'))", UP4_ICO.ext)}
       ${row(up4Svg('icTour'), 'Product Setup Guide', "up4Go(()=>docsOpen('/', 'Product Setup Guide'))", UP4_ICO.ext)}
@@ -24548,7 +24604,7 @@ function up5HTML(){
      switch slides; and the footer's Docs / Support links are gone — they repeated the two rows above them. */
   const p = document.getElementById('userPop');
   const nm = (p.querySelector('.uhead .nm')||{}).textContent || '', rl = (p.querySelector('.uhead .rl')||{}).textContent || '';
-  const av = (p.querySelector('.upavatar')||{}).textContent || '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
+  const avEl = p.querySelector('.upavatar'), av = (avEl||{}).textContent || '', avBg = avEl && avEl.style.backgroundImage ? ` style="background-image:${avEl.style.backgroundImage.replace(/"/g,'&quot;')};background-size:cover;background-position:center"` : '', em = (document.getElementById('sbUserSub')||{}).textContent || '';
   const lo = p.querySelector('.lo2'), seg = m => { const b = p.querySelector('.tseg[data-mode="'+m+'"] svg'); return b ? b.outerHTML : ''; };
   const row = (ic, label, act, extra, cls) => `<button type="button" class="up4r${cls?' '+cls:''}" onclick="${act}">${ic}<span>${label}</span>${extra||''}</button>`;
   const ntf = (typeof ntfEnabled === 'function') && ntfEnabled();
@@ -24556,7 +24612,7 @@ function up5HTML(){
   const bell = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>';
   const head = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-3a8 8 0 1 1 16 0v3"/><path d="M18 19c0 1.657 -2.686 3 -6 3"/><path d="M4 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/><path d="M15 14a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3z"/></svg>';
   return `<div class="up5top">
-      <div class="up5id"><div class="up4av">${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div>${UP_OPT === '6' ? `<button type="button" class="up6ed" aria-label="Edit profile" data-tip="Edit profile" onclick="up4Go(()=>stOpen('My Account','My Profile'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg></button>` : ''}</div>
+      <div class="up5id"><div class="up4av"${avBg}>${av}</div><div class="up5who"><div class="up5nm">${nm}<span class="up5pill">${rl}</span></div><div class="up5em">${em}</div></div>${UP_OPT === '6' ? `<button type="button" class="up6ed" aria-label="Edit profile" data-tip="Edit profile" onclick="up4Go(()=>stOpen('My Account','My Profile'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg></button>` : ''}</div>
       ${UP_OPT === '6' ? '' : `<button type="button" class="up5btn" onclick="up4Go(()=>stOpen('My Account','My Profile'))">Edit profile</button>`}</div>
     <div class="up5sec">Account</div>
     ${UP_OPT === '6' ? '' : row(setIc, 'Settings', "up4Go(()=>stOpen('User Settings'))", UP4_ICO.ext)}
