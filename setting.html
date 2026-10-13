@@ -16365,11 +16365,11 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 #stProfPage.stpd7 .st7ovo button.on{background:var(--chip);color:var(--text)}
 /* Option 2 — the row laid out like the Display preferences heading row: text left, two tiles in the theme cards' frame on
    the right, on the same 196px columns as the Light and Dark cards above them */
-#stProfPage.stpd7 .st7ov2{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);align-items:start;gap:16px 24px;max-width:932px}
-#stProfPage.stpd7 .st7ov2l{min-width:0}
+#stProfPage.stpd7 .st7ov2{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px 24px;max-width:932px}   /* the Display preferences row's own layout (.st7hd), so the tiles share the theme cards' left and right edges (request, 13 Oct 2026) */
+#stProfPage.stpd7 .st7ov2l{flex:1 1 240px;min-width:0}
 #stProfPage.stpd7 .st7ov2l > b{display:block;font-size:13px;font-weight:500;color:var(--page-text-color,var(--text))}
 #stProfPage.stpd7 .st7ov2l > small{display:block;margin-top:2px;font-size:12px;color:var(--neutral-light,var(--text-dim))}
-#stProfPage.stpd7 .st7ovg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#stProfPage.stpd7 .st7ovg{flex:0 0 624px;max-width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}   /* 624 = the three theme cards' measured width */
 #stProfPage.stpd7 .st7ovg button{display:grid;gap:8px;padding:6px;border:1px solid var(--border-color);border-radius:8px;background:transparent;cursor:pointer;text-align:left;font:inherit;color:var(--neutral-light);transition:border-color .15s,background .15s}
 #stProfPage.stpd7 .st7ovg button:hover{border-color:var(--neutral-light)}
 #stProfPage.stpd7 .st7ovg button.on{border-color:var(--primary-alt,var(--page-text-color));background:color-mix(in srgb,var(--page-text-color) 5%,transparent);box-shadow:0 0 0 1px var(--primary-alt,var(--page-text-color))}
@@ -16442,15 +16442,24 @@ html[data-theme="light"] #stProfPage.stpd10 .st10vr input[type=range]{color-sche
 /* the Off tile's mark: the bell with one unread, where the alert waits instead of covering the screen */
 /* Option 2's tiles carry Option 3's miniature window (13 Oct 2026). It is laid out at the stage's own 340px and
    zoomed down to the tile, so the alert card keeps its proportions instead of being re-drawn small. */
-#stProfPage.stpd7 .st7ov2st{display:block;overflow:hidden;border-radius:4px;border:1px solid var(--border-color);
-  background-color:color-mix(in srgb,var(--page-text-color) 3%,var(--page-background-color,var(--bg)));
-  background-image:radial-gradient(color-mix(in srgb,var(--page-text-color) 14%,transparent) 1px,transparent 1px);background-size:14px 14px}
-#stProfPage.stpd7 .st7ov2z{display:block;padding:18px 24px 20px 16px}
+#stProfPage.stpd7 .st7ov2st{display:block;overflow:hidden;border-radius:6px}   /* no dot-grid canvas (request, 13 Oct 2026): the window IS the preview */
+#stProfPage.stpd7 .st7ov2z{display:block}
+#stProfPage.stpd7 .st7ov2z .st7ov3w{box-shadow:none}
 #stProfPage.stpd7 .st7ov2z .st7ov3w{max-width:none}
 #stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3a{opacity:1;transform:none}
 #stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3wb .bell em{transform:scale(0)}
 #stProfPage.stpd7 .st7ovg button:not(.on) .st7ov2st{opacity:.75}
-@media (max-width:1100px){#stProfPage.stpd7 .st7ov2{grid-template-columns:minmax(0,1fr)}}
+/* The preview's popup is a miniature of the product's own notification toast (.ntf — request, 13 Oct 2026, with the
+   live Major / Warning toasts as the reference): a tinted severity block, the message, a close ×, centred at the top of
+   the window where .ntfstack puts it. Same tokens as .ntf, so the preview and the real thing cannot disagree. */
+#stProfPage.stpd7 .st7ov3a.st7ovn{--ntc:var(--severity-critical,#ec5b5b);top:28px;right:auto;left:50%;width:86%;margin-left:-43%;gap:0;padding:0;align-items:stretch;
+  border:1px solid var(--border-color);border-radius:4px;overflow:hidden;background:var(--common-widget-bg,var(--card));transform:translateY(-6px)}
+#stProfPage.stpd7 .st7ov3.on .st7ov3a.st7ovn,#stProfPage.stpd7 .st7ovg button[data-ov="on"] .st7ov3a.st7ovn{transform:none}
+#stProfPage.stpd7 .st7ovn .sev{flex:0 0 46px;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:600;
+  color:var(--ntc);background:color-mix(in srgb,var(--ntc) 18%,var(--common-widget-bg,var(--card)))}
+#stProfPage.stpd7 .st7ovn .msg{flex:1 1 auto;min-width:0;padding:6px 8px;font-size:9.5px;line-height:1.45;color:var(--page-text-color,var(--text))}
+#stProfPage.stpd7 .st7ovn .x{flex:0 0 auto;display:grid;place-items:center;width:16px;height:16px;margin:4px 4px 0 0;color:var(--neutral-light,var(--text-dim))}
+#stProfPage.stpd7 .st7ovn .x svg{width:8px;height:8px}
 #stProfPage.stpd7 .st7ovb{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:24px;height:24px;border-radius:4px;background:#172336;color:#e3e8f2;box-shadow:0 4px 12px rgba(0, 0, 0, 0.4)}
 #stProfPage.stpd7 .st7ovb.lt{background:#ffffff;color:#1d2a3e;box-shadow:0 4px 12px rgba(0, 0, 0, 0.25)}
 #stProfPage.stpd7 .st7ovb svg{width:14px;height:14px}
@@ -42045,10 +42054,7 @@ function st7OvWinHTML(){
   return `<div class="st7ov3w">
         <div class="st7ov3wb"><span class="dots"><i></i><i></i><i></i></span><span class="srch"></span><span class="bell">${ST7_BELL}<em>1</em></span></div>
         <div class="st7ov3wm"><div class="side">${sk(6)}</div><div class="body"><span class="ttl"></span><div class="tiles">${sk(4)}</div><div class="wide"></div></div></div>
-        <div class="st7ov3a"><span class="st7ov3ai">${ST7_WARN}</span>
-          <div class="st7ov3ab"><div class="st7ov3ah"><b>CPU above 95%</b><em>Critical</em></div>
-            <small>web-01 · 192.0.2.10 · just now</small>
-            <div class="st7ov3aa"><span class="pri">View alert</span><span>Dismiss</span></div></div></div>
+        <div class="st7ov3a st7ovn"><span class="sev">Critical</span><span class="msg">CPU on web-01 (192.0.2.10) has crossed 95%.</span><span class="x">${NTF_X}</span></div>
       </div>`;
 }
 function st7Ov3HTML(){
