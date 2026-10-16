@@ -21442,11 +21442,12 @@ const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Su
 function cplGo(t){ try { MOD_SUB = t; } catch (e) {} selectModuleByName('Compliance'); }
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 /* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
+function faBuildV(){ try { return sessionStorage.faV || (sessionStorage.faV = String(Date.now())); } catch (e) { return '1'; } }
 function faInit(){
   const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
   const f = document.createElement('iframe');
-  f.title = 'Firewall Analyzer'; f.className = 'fafr';
-  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme();
+  f.setAttribute('aria-label', 'Firewall Analyzer'); f.className = 'fafr';   /* aria-label, not title: the tooltip engine turns a title into a chip floating over the module */
+  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV();   /* &v: a fresh copy each browser session, stable within it (Agentation keys notes by URL) */
   h.appendChild(f);
   new MutationObserver(() => {
     try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}
@@ -45470,9 +45471,9 @@ function ipmTableSpec(){
   /* Option 2 (request, 2 Oct 2026): NO Actions column and NO Evidence — rows are ticked instead and the bulk bar
      carries Approve / Reject (Option 1's bar), with no select-all box in the header */
   if (IPM.tab === 'approval') return IPM.opt === '2'
-    ? { cols: [IPM_PENDING_COLS[0], { key: 'vlan', title: 'VLAN', width: '14%', sortable: true }]
-          .concat(IPM_PENDING_COLS.slice(1).filter(c => c.key !== 'evidence')),
-        rows: ipmPendingRows().map(r => Object.assign(r, { vlan: (IPM_PENDING.find(x => x.id === r.id) || {}).vlan || '—' })), menu: [] }
+    /* …and the VLAN column went again (request, 16 Oct 2026: "remove the VLAN column") */
+    ? { cols: [IPM_PENDING_COLS[0]].concat(IPM_PENDING_COLS.slice(1).filter(c => c.key !== 'evidence')),
+        rows: ipmPendingRows(), menu: [] }
     : { cols: IPM_PENDING_COLS, rows: ipmPendingRows(), menu: [] };
   /* the Users column appears once a profile has been given users (User based role) — it says who it is limited to */
   /* with Description shown the percentage widths summed past 100% and Vendor / model (the slack column) was squeezed
@@ -45969,6 +45970,15 @@ function ipmSupFind(addr, p){
     return { id: String(i), cidr: ipmSupStr(net) + '/' + sp, mask: ipmSupMask(sp), hosts: (step - 2).toLocaleString('en-US'),
       gw: ipmSupStr(net + 1), site: IPM_SITES[Math.floor(rnd() * IPM_SITES.length)], nm: '', siteIn: '', state: [{ label: st[0], variant: st[1] }], _new: st[0] === 'New' }; });
 }
+/* Network address is SELECT-ONLY (request, 16 Oct 2026): its options are the Discover Subnet grid's own profiles —
+   the same rows ipmRouterRows() lists (Option 1 drops the `o2` ones) — each offered by its address, labelled with
+   the profile and site. ipmSupFind() masks the address to the chosen prefix, so a host address scans its network.
+   A value already on the draft (an edited profile) is kept as an option even if no row carries it. */
+function ipmNetAddrOpts(cur){
+  const o = IPM_ROUTERS.filter(r => !r.o2 || IPM.opt === '2').map(r => ({ value: r.ip, label: `${r.ip} — ${r.name} (${r.site})` }));
+  if (cur && !o.some(x => x.value === cur)) o.unshift({ value: cur, label: cur });
+  return o;
+}
 function ipmSupQueue(){
   const d = IPM.ar; if (!d || d.kind !== 'supernet') return;
   clearTimeout(ipmSupT);
@@ -46149,7 +46159,7 @@ function ipmArPaint(){
   const supBody = `<div class="ip-form">
     ${ipmField('Supernet name', `<obs-input id="arSupName" block placeholder="e.g. Mumbai campus" value="${ipmEsc(d.supName)}"></obs-input>`)}
     ${ipmField('Description', `<obs-input id="arSupDesc" block placeholder="What this supernet covers" value="${ipmEsc(d.supDesc)}"></obs-input>`)}
-    ${ipmField('Network address', `<obs-input id="arNetAddr" block placeholder="e.g. 10.0.0.0" value="${ipmEsc(d.netAddr)}"${d.editId ? ' disabled' : ''}></obs-input>`, null, true)}
+    ${ipmField('Network address', `<obs-select id="arNetAddr" block searchable="true" placeholder="Select a discovered subnet"${d.editId ? ' disabled' : ''} options='${ipmJ(ipmNetAddrOpts(d.netAddr))}' value="${ipmEsc(d.netAddr)}"></obs-select>`, null, true)}
     ${ipmField('Network mask', ` <obs-select id="arNetMask" block searchable="true"${d.editId ? ' disabled' : ''} options='${ipmJ(IPM_MASK_OPTS)}' value="${ipmEsc(d.netMask)}"></obs-select>`, null, true)}</div>
     <div id="arSupRes" class="ipmsup">${ipmSupResHTML(d)}</div>`;
   /* EDIT opens the full Create layout too (request, 8 Oct 2026) — rail + form + help card — with the profile's own
@@ -46230,7 +46240,7 @@ function ipmArBind(){
   bindTarget();
   on('#arProfile', 'change', e => { IPM.ar.profile = ipmArr(ipmDet(e)); });
   on('#arDevices', 'change', e => { IPM.ar.devices = ipmArr(ipmDet(e)); });
-  on('#arNetAddr', 'input', e => { IPM.ar.netAddr = ipmVal(e); ipmSupQueue(); });
+  on('#arNetAddr', 'change', e => { IPM.ar.netAddr = ipmVal(e); ipmSupQueue(); });
   on('#arSupName', 'input', e => { IPM.ar.supName = ipmVal(e); });
   on('#arSupDesc', 'input', e => { IPM.ar.supDesc = ipmVal(e); });
   on('#arNetMask', 'change', e => { IPM.ar.netMask = ipmVal(e) || IPM.ar.netMask; ipmSupQueue(); });
@@ -46564,12 +46574,12 @@ ST_PAGES['IPAM › Approved Vendor List']  = { html: ipmPageOf(ipmVendorsHTML), 
    ?embed=settings mode, which hides its Settings list and head so this page's own list and head stand in. The frame
    follows the theme over postMessage ({faTheme}), as the module view does. */
 const faSetPage = hash => ({ html: () => `<div class="stfa"><iframe class="stfafr" aria-label="Firewall Analyzer settings"
-  src="_firewall/firewall.html?embed=settings&theme=${ipamTheme()}#${hash}"></iframe></div>` });
+  src="_firewall/firewall.html?embed=settings&theme=${ipamTheme()}&v=${faBuildV()}#${hash}"></iframe></div>` });
 ST_PAGES['Firewall Analyzer › Firewall Inventory'] = faSetPage('fwinventory');
 ST_PAGES['Firewall Analyzer › Firewall Templates'] = faSetPage('fwtemplates');
 /* Policies Management moved here from the firewall's tab row (15 Oct 2026). It is a per-firewall screen, so the frame
    opens it on the first firewall and the module draws a Firewall picker in place of its header (embed=settings). */
-ST_PAGES['Firewall Analyzer › Policies Management'] = faSetPage('device/fw-01/policy');
+ST_PAGES['Firewall Analyzer › Policies Management'] = faSetPage('device/fw-01/policy/objects');   /* opens on Objects, the first tab (owner, 16 Oct 2026) */
 new MutationObserver(() => document.querySelectorAll('.stfafr').forEach(f => {
   try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch (e) {} }))
   .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -50905,12 +50915,64 @@ ST_PAGES['My Account › UI Preference'] = { html: () => ST_PMOVED[UIP_OPT] ? ui
   st.textContent =
     '[data-agentation-root] > *{z-index:2147483000 !important}' +
     '[data-agentation-root] > [class*="markersLayer" i]{z-index:2147483001 !important}' +
-    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}';
+    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}' +
+    /* one Agentation toolbar on screen: the Firewall Analyzer frame carries its own (its screens cannot be annotated from
+       here), so while that frame is showing this page hides its toolbar — owner, 16 Oct 2026 */
+    'html.fa-agt-frame [data-agentation-root] > [class*="toolbar"]{display:none !important}' +
+    /* inside an open drawer / modal (see follow() below) the toolbar rides above the dialog's footer buttons */
+    ':is(obs-drawer, obs-modal) > [data-agentation-root] > [class*="toolbar"]{bottom:84px !important}';
   document.head.appendChild(st);
+  setInterval(function () {
+    var on = [].some.call(document.querySelectorAll('iframe[src*="_firewall/firewall.html"]'), function (f) {
+      var r = f.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+    document.documentElement.classList.toggle('fa-agt-frame', on);
+  }, 400);
   var s = document.createElement('script');
   s.src = 'agentation-embed.js';
   s.defer = true;
   document.body.appendChild(s);
+  /* An open obs-drawer / obs-modal is a MODAL <dialog>: the browser draws it in the top layer and makes everything outside
+     it inert, so Agentation's toolbar sat under the drawer and could not be clicked (owner, 16 Oct 2026). While one is open,
+     Agentation's root is moved into that dialog's light DOM (slotted into the dialog, so not inert, and still in this
+     document, so its styles and events keep working); when none is open it goes back where it was mounted. A drawer that
+     repaints its body drops the root, and the next tick puts it back. */
+  (function follow() {
+    var root = null, home = null;
+    setInterval(function () {
+      if (!root) { root = document.querySelector('[data-agentation-root]'); if (!root) return; home = root.parentNode; }
+      var host = null;
+      [].forEach.call(document.querySelectorAll('obs-drawer, obs-modal'), function (el) {
+        var d = el.shadowRoot && el.shadowRoot.querySelector('dialog'); if (d && d.open) host = el; });
+      var target = host || home;
+      if (target && root.parentNode !== target) target.appendChild(root);
+    }, 250);
+  })();
+})();
+</script>
+<script>/* FIREWALL ANALYZER OVERLAY HAND-OFF (16 Oct 2026). The Firewall Analyzer frame posts {faOverlay:true|false} while one of
+   its drawers or modals is open. The frame is lifted to cover the whole window, so the drawer runs from the top of the screen,
+   and this page's own chrome (rail, Settings list, header) is blurred behind a scrim. The frame keeps its screen where it was:
+   it gets its old box back as {faRect}. Restored on {faOverlay:false}. */
+(function(){
+  var st = document.createElement('style');
+  st.textContent = 'iframe.fa-ovl{position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;z-index:100002!important;background:transparent!important}'
+    + '#faOvlScrim{position:fixed;inset:0;z-index:100001;display:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}#faOvlScrim.on{display:block}';
+  document.head.appendChild(st);
+  addEventListener('message', function(e){
+    var d = e.data; if (!d || typeof d.faOverlay !== 'boolean') return;
+    var f = [].slice.call(document.querySelectorAll('iframe')).find(function(x){ return x.contentWindow === e.source; });
+    if (!f) return;
+    var s = document.getElementById('faOvlScrim');
+    if (!s) { s = document.createElement('div'); s.id = 'faOvlScrim'; document.body.appendChild(s); }
+    if (d.faOverlay && !f.__faovl) {
+      var b = f.getBoundingClientRect(); f.__faovl = 1;
+      f.contentWindow.postMessage({ faRect: { l: b.left, t: b.top, w: b.width, h: b.height } }, '*');
+      f.classList.add('fa-ovl'); s.classList.add('on');
+    } else if (!d.faOverlay && f.__faovl) {
+      f.__faovl = 0; f.classList.remove('fa-ovl'); s.classList.remove('on');
+      f.contentWindow.postMessage({ faRect: null }, '*');
+    }
+  });
 })();
 </script>
 </body>

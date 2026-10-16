@@ -12190,7 +12190,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
    stopped loading it — so the Formatting help modal fell back to the DS's LIGHT defaults in dark theme.
    Copied verbatim from setting.html (dark block, light block, the Inter/card re-point), selectors
    narrowed to the three elements on this page. Change one copy, change both. */
-#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,.highcharts-tooltip-container{
+#view-approval,#apvDrawer,#apvModal,#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,.highcharts-tooltip-container{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -12582,7 +12582,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
   --widget-box-shadow:#000;
   --widget-type-selector-border-color:'transparent';
 }
-html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] .highcharts-tooltip-container{
+html[data-theme="light"] #view-approval,html[data-theme="light"] #apvDrawer,html[data-theme="light"] #apvModal,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] .highcharts-tooltip-container{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
@@ -13409,32 +13409,13 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
 
     <!-- ===== Approval view (live: /ncm-approval) ===== -->
     <section class="view" id="view-approval">
+      <!-- APPROVAL — the live NCM approval queue (build 10.0.1, /ncm-approval), on the ObserveOps design system
+           (16 Oct 2026). The grid, the request drawer and the Approve / Reject notes are the `apv*` block below. -->
       <div class="pagehead">
         <svg class="ic" id="aprHeadIc" viewBox="0 0 48 48"></svg>
         <span class="ttl">Approval</span>
       </div>
-      <div class="pagebody">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <label class="searchbox"><svg class="ic" viewBox="0 0 48 48" id="aprSearchIc"></svg><input placeholder="Search" oninput="aprSearch(this.value)" /></label>
-          <span class="spacer" style="flex:1"></span>
-          <button class="iconbtn" title="Export PDF" onclick="aprExport('PDF')"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg></button>
-          <button class="iconbtn" title="Export CSV" onclick="aprExport('CSV')"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm2 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg></button>
-          <button class="iconbtn" title="Column visibility" onclick="aprColMenu(event)"><svg viewBox="0 0 24 24"><path d="M12 5c5 0 9 4.5 10 7-1 2.5-5 7-10 7S3 14.5 2 12c1-2.5 5-7 10-7Zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg></button>
-          <button class="iconbtn" id="aprFiltBtn" title="Filter" onclick="aprChips()"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/></svg></button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;position:relative" id="aprChips"></div>
-        <div class="card" style="margin-bottom:0">
-          <table id="aprTable">
-            <thead id="aprHead"></thead>
-            <tbody></tbody>
-          </table>
-          <!-- ⚠️ THE PAGER WAS FIVE STATIC `<span>`s AND A HARDCODED "1 – 7 of 7 items".
-               Not even buttons, so it appeared in no search for a missing handler — and the
-               moment search and the facet chips above it became real, its count started
-               lying about how many rows were on screen. `aprPager()` builds it now. -->
-          <div class="pager" id="aprPager"></div>
-        </div>
-      </div>
+      <div class="pagebody apv-body" id="apvHost"></div>
     </section>
 
     <!-- ===== Health view (live: /health/ "Motadata Health") ===== -->
@@ -18187,11 +18168,12 @@ function ipamTheme(){ return document.documentElement.getAttribute('data-theme')
 const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Supernet': 'supernet', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 /* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
+function faBuildV(){ try { return sessionStorage.faV || (sessionStorage.faV = String(Date.now())); } catch (e) { return '1'; } }
 function faInit(){
   const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
   const f = document.createElement('iframe');
-  f.title = 'Firewall Analyzer'; f.className = 'fafr';
-  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme();
+  f.setAttribute('aria-label', 'Firewall Analyzer'); f.className = 'fafr';   /* aria-label, not title: the tooltip engine turns a title into a chip floating over the module */
+  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV();   /* &v: a fresh copy each browser session, stable within it (Agentation keys notes by URL) */
   h.appendChild(f);
   new MutationObserver(() => {
     try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}
@@ -18303,6 +18285,9 @@ function aprChips(){
   renderApprovals();
 }
 function renderApprovals(){
+  /* SUPERSEDED 16 Oct 2026 by the `apv*` block (the DS rebuild), which reassigns renderApprovals. This body only ran
+     against the old hand-built table, which is gone — so it returns rather than throw during init. */
+  if (!document.getElementById('aprTable')) return;
   /* the header is built from the same array as the body, so they cannot fall out of step */
   const th = document.getElementById('aprHead');
   if (th) th.innerHTML = '<tr><th>Approvals</th>' +
@@ -38430,7 +38415,15 @@ function lxLtPaint(){
 function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.host) el = r.host; const t = performance.now(); if (el._dsT && t - el._dsT < 60) return false; el._dsT = t; return true; }
 (function(){
   const at = Element.prototype.attachShadow;
-  const CSS = { 'OBS-WIDGET-CARD':':host(.wdscard) .wkebab{display:none}:host(.wdscard) .wactions{padding-right:48px}' };
+  const CSS = { 'OBS-WIDGET-CARD':':host(.wdscard) .wkebab{display:none}:host(.wdscard) .wactions{padding-right:48px}',
+    /* Approval: the grid fills the screen and its pager sits at the foot (the box is sized by apvFit → --apv-h);
+       the Approve / Reject notes title in green / red, as the live dialogs do */
+    'OBS-TABLE':':host(#apvTable) .box{display:flex;flex-direction:column;height:var(--apv-h,auto);max-height:var(--apv-h,none);overflow:auto}:host(#apvTable) .box > table{flex:0 0 auto}:host(#apvTable) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}:host(#apvTable) tbody td .cell-clip{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:host(#apvTable) tbody tr{cursor:pointer}:host(#apvTable) .pager{margin-top:auto;position:sticky;bottom:0;z-index:2;background:var(--page-background-color);flex:0 0 auto}',
+    'OBS-MODAL':':host(.apv-ok) .title{color:var(--secondary-green)}:host(.apv-no) .title{color:var(--secondary-red)}',
+    /* Approval's Columns chooser: the eye trigger takes the toolbar squares' own neutral-lightest fill (the select's icon
+       trigger is the outlined default button, so it stood apart from PDF / CSV beside it); its column names take the page
+       text colour — the rows set none and render black on the dark menu (DS gap 07) */
+    'OBS-SELECT':':host(#apvCols) .t-icon{background:var(--code-tag-background-color);border-color:var(--code-tag-background-color);color:var(--neutral-button-text)}:host(#apvCols) .t-icon:hover,:host(#apvCols) .t-icon.open{border-color:var(--neutral-light);color:var(--page-text-color)}:host(#apvCols) .cc-row{color:var(--page-text-color)}' };
   Element.prototype.attachShadow = function(o){
     const r = at.call(this, o), css = CSS[this.tagName];
     if (css){ try { const sh = new CSSStyleSheet(); sh.replaceSync(css); r.adoptedStyleSheets = [...r.adoptedStyleSheets, sh]; } catch (e) {} }
@@ -38443,6 +38436,333 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
 <!-- Settings lives in `setting.html` (26 Sep 2026). This page loads only its navigation data
      (ST_TREE / ST_ICO, for the Setting flyout and lists) and the stOpen/stInit doors into it. -->
 <script src="setting-nav.js"></script>
+<style id="apv-css">
+/* ── APPROVAL (apv*) — the live NCM approval queue on the ObserveOps design system (16 Oct 2026) ── */
+#view-approval .apv-body{display:flex;flex-direction:column;min-height:0;padding-top:12px;background:var(--page-background-color)}
+.apv-bar{display:flex;align-items:center;gap:8px}
+.apv-bar .apv-search{width:288px}
+.apv-sp{flex:1 1 auto}
+.apv-filt{margin-top:10px}
+.apv-filt[hidden]{display:none}
+.apv-grid{flex:1 1 auto;min-height:0;margin-top:12px}
+.apv-grid obs-table{display:block}
+#apvDrawer .apv-tt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+#apvDrawer .apv-tt b{font-size:18px;font-weight:500;color:var(--page-text-color);line-height:24px}
+#apvDrawer .apv-sec{margin:4px 0 20px}
+#apvDrawer .apv-sec h4{margin:0 0 10px;padding-bottom:8px;font-size:16px;font-weight:600;color:var(--page-text-color);border-bottom:1px solid var(--field-border-color)}
+#apvDrawer .apv-kv{display:grid;grid-template-columns:160px minmax(0,1fr);row-gap:10px;column-gap:16px;font-size:13px;align-items:center}
+#apvDrawer .apv-kv .k{color:var(--neutral-light)}
+#apvDrawer .apv-kv .v{color:var(--page-text-color);overflow-wrap:anywhere}
+#apvDrawer .apv-kv .v.mono{font-family:var(--fa-mono,'JetBrains Mono',monospace);font-size:12.5px}
+#apvDrawer .apv-kv obs-input{max-width:340px}
+#apvDrawer .apv-kv .apv-tags{display:flex;flex-wrap:wrap;gap:6px}
+#apvDrawer .apv-note{white-space:pre-wrap}
+#apvDrawer .apv-foot{display:flex;justify-content:flex-end;gap:8px;width:100%}
+#apvModal .apv-ml{display:block;margin:0 0 6px;font-size:13px;color:var(--page-text-color)}
+#apvModal .apv-mi{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;color:var(--neutral-light)}
+</style>
+<script>
+/* ════════ APPROVAL (`apv*`) — the live NCM approval queue, rebuilt on the ObserveOps design system ════════
+   Read off build 10.0.1 at /ncm-approval (owner's screenshots, 16 Oct 2026) and replaces the hand-built grid:
+     · toolbar — search · Export PDF · Export CSV · Columns · Filter (the filter row toggles, Device Name / Device Type /
+       Approver as standing pills, + Filter for Status and Type) — obs-input / obs-button / obs-select / obs-filters
+     · grid — APPROVALS · DEVICE NAME · DEVICE TYPE · APPROVER · STATUS · TYPE · REQUESTED ON · ⋮ Approve / Reject —
+       obs-table, 50 a page, its own pager pinned at the foot
+     · a row opens the request drawer — the title, its status tag, Requestor info / Request info / Approver info and,
+       while pending, Reject · Approve — obs-drawer
+     · Approve asks for an optional note, Reject for the reason (the requester is told; the action does not run) — obs-modal
+   Every address and host is RFC 5737 / example.com (the live queue is full of internal ones). Requests are generated
+   deterministically, all Firmware Upgrade — the one flow the live queue shows (Sync / Restore / Execute Runbook were
+   added and then removed on request, 16 Oct 2026). */
+const APV_ME = 'admin';
+const APV_TYPES = { router: 'Router', secure: 'Firewall', network: 'Switch', wifi: 'Wireless Controller' };
+const APV_DEV = [
+  ['NVR-switch', 'network'], ['fg_firewall.example.com', 'secure'], ['brocade_san_switch.example.com', 'network'],
+  ['cisco2960.example.com', 'network'], ['sophos_firewall.example.com', 'secure'], ['CISCO-WLC', 'wifi'],
+  ['ciscostack1.example.com', 'network'], ['extreme_network.example.com', 'network'], ['RJ-WLC-01', 'wifi'],
+  ['PA-3020', 'secure'], ['D-Link_Switch', 'network'], ['ArubaMC-VA', 'wifi'], ['cisco_core.example.com', 'network'],
+  ['cisco841.example.com', 'router'], ['ospf3.example.com', 'router'], ['bgp1.example.com', 'router']];
+const APV_IMG = ['c800m-universalk9-mz.SPA.158-3.M1a.bin', 'FGT_100F-v7.2.8.F-build1639.out', 'PanOS_3000-10.2.4',
+  'c2960x-universalk9-mz.152-7.E9.bin', 'AOS-CX_FL_10_12_1000.swi'];
+function apvStamp(d){ const z = n => String(n).padStart(2, '0'), h = d.getHours() % 12 || 12;
+  return `${d.toLocaleDateString('en-US', { weekday: 'short' })}, ${d.toLocaleDateString('en-US', { month: 'short' })} ${z(d.getDate())}, ${d.getFullYear()} ${z(h)}:${z(d.getMinutes())}:${z(d.getSeconds())} ${d.getHours() < 12 ? 'AM' : 'PM'}`; }
+const APV = (() => {
+  const out = []; let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  /* 14 requests (owner, 16 Oct 2026): 4 Pending, then 5 Approved and 5 Rejected, alternating — APR 193 down to 180 */
+  for (let i = 10; i < 24; i++) {
+    const n = 203 - i, [base, ic] = APV_DEV[i % APV_DEV.length], ip = `192.0.2.${10 + ((i * 7) % 230)}`;
+    const dev = /example\.com$/.test(base) ? `${base}-${ip}` : `${base}-${ip}`;
+    const kind = 'Firmware Upgrade';   /* the live queue's one flow — Sync / Restore / Execute Runbook removed on request */
+    const when = new Date(2026, 8, 7 - Math.floor(i / 12), 11 - (i % 5), (i * 13) % 60, 15);
+    const img = APV_IMG[i % APV_IMG.length];
+    const p = i - 10, st = p < 4 ? 'Pending' : (p - 4) % 2 === 0 ? 'Approved' : 'Rejected';
+    const r = { id: 'apr-' + n, n, module: 'NCCM', dev, ic, kind, when, by: i % 4 === 3 ? 'network-ops' : 'req', st,
+      approver: st === 'Pending' ? '' : APV_ME, decided: st === 'Pending' ? null : new Date(when.getTime() + 36e5 * (2 + i % 5)),
+      note: st === 'Rejected' ? 'Outside the approved change window.' : st === 'Approved' ? 'OK to proceed.' : '' };
+    if (kind === 'Firmware Upgrade') Object.assign(r, { verb: 'upgrade', reason: `Bulk ${40 + (i % 20)} devices Firmware Upgrade - ${img}`,
+      info: [['Devices Name', dev], ['Select Firmware image', { ro: img }], ['MD5 Hash', { mono: (rnd().toString(16).slice(2) + rnd().toString(16).slice(2) + '0'.repeat(32)).slice(0, 32) }]] });
+    r.title = `APR: ${n} – ${dev} – ${r.verb}-${kind}`;
+    out.push(r);
+  }
+  /* APR 203–194 were removed on request (16 Oct 2026); the queue opens on APR 193 */
+  /* Firewall Analyzer's demo requests (owner, 16 Oct 2026: "show some object and policies rows for demo") — the same six
+     drafts its Policy and Object Status tab lists, by id, so the two screens agree; APR 194–199, newest first */
+  const FA_DEMO_FA = {
+    'fa-demo-1': { objType: 'Address', value: '198.18.23.0/16', desc: 'Pune branch LAN' },
+    'fa-demo-2': { rule: { seq: 212, action: 'Allow', status: 'Enable', src: ['BR-PUN-LAN'], srcIntf: 'port1', dst: ['CORE-APP'], dstIntf: 'port3', svc: ['tcp/443'], nat: null, log: true } },
+    'fa-demo-4': { objType: 'Address', value: '203.0.113.40/29', desc: 'Second web farm' },
+    'fa-demo-5': { rule: { seq: 240, action: 'Allow', status: 'Enable', src: ['any'], srcIntf: 'ethernet1/1', dst: ['DMZ-SERVERS'], dstIntf: 'ethernet1/3', svc: ['tcp/3389'], nat: null, log: true } } };
+  [['fa-demo-1', 'HQ-FTG-01', 'Object', 'Add', 'BR-PUN-LAN', 'Address 198.18.23.0/16 for the Pune branch', [2026, 8, 18, 9, 12], 'Pending'],
+   ['fa-demo-2', 'HQ-FTG-01', 'Policy', 'Add', 'allow-pune-to-core', 'Allow BR-PUN-LAN → CORE-APP on tcp/443, port1 → port3 (Mumbai-LAN)', [2026, 8, 18, 9, 20], 'Pending'],
+   ['fa-demo-3', 'HQ-FTG-01', 'NAT Policy', 'Add', 'static-core-app-02', 'Static NAT 198.18.12.12 ↔ 49.36.12.13', [2026, 8, 18, 9, 31], 'Pending'],
+   ['fa-demo-4', 'DMZ-PA-01', 'Object', 'Add', 'WEB-FARM-02', 'Address 203.0.113.40/29 for the second web farm', [2026, 8, 17, 16, 5], 'Approved'],
+   ['fa-demo-5', 'DMZ-PA-01', 'Policy', 'Add', 'allow-any-rdp', 'Allow any → DMZ-SERVERS on tcp/3389, ethernet1/1 → ethernet1/3', [2026, 8, 17, 14, 48], 'Rejected'],
+   ['fa-demo-6', 'CLOUD-FTG-01', 'Policy', 'Modify', 'api-gw-to-pay', 'Policy 51: log traffic turned on', [2026, 8, 17, 11, 22], 'Approved']]
+    .sort((a, b) => new Date(...a[6]) - new Date(...b[6]))
+    .forEach(([id, dev, kind, op, target, summary, t, st], i) => {
+      const n = 194 + i, when = new Date(...t), verb = op.toLowerCase();
+      out.unshift({ id, n, module: 'Firewall Analyzer', dev, ic: 'secure', kind, verb, when, by: 'network-ops', st,
+        approver: st === 'Pending' ? '' : APV_ME, decided: st === 'Pending' ? null : new Date(when.getTime() + 36e5 * 3),
+        note: st === 'Rejected' ? 'RDP from any to the DMZ is not allowed — scope the source.' : st === 'Approved' ? 'OK to push.' : '',
+        reason: summary, info: [['Firewall', dev], [kind + ' name', target], ['Change', summary]], title: `APR: ${n} – ${dev} – ${verb}-${kind}`,
+        fa: Object.assign({ op, kind, target, summary, members: [] }, FA_DEMO_FA[id] || {}) });
+    });
+  return out;
+})();
+/* decisions are saved (localStorage 'oo-apv-decisions') so Firewall Analyzer's status view reads them, and survive a reload */
+function apvDecisions(){ try { return JSON.parse(localStorage.getItem('oo-apv-decisions') || '{}'); } catch (e) { return {}; } }
+function apvApplyDecisions(){ const d = apvDecisions();
+  APV.forEach(r => { const x = d[r.id]; if (x) { r.st = x.st; r.approver = x.by; r.decided = new Date(x.at); r.note = x.note || ''; } }); }
+apvApplyDecisions();
+/* Requests raised by other modules (owner, 16 Oct 2026): Firewall Analyzer queues one for every object or policy created,
+   and every policy edited, in localStorage 'oo-apv-queue' — shared by every file:// page, so a change made on
+   setting.html's Policies Management is here too. Each is taken in once (by id), newest first, numbered on from the top. */
+function apvSync(){
+  let q = [];
+  try { q = JSON.parse(localStorage.getItem('oo-apv-queue') || '[]'); } catch (e) {}
+  let added = 0;
+  q.forEach(x => {
+    if (!x || !x.id || APV.some(r => r.id === x.id)) return;
+    const n = Math.max(...APV.map(r => r.n)) + 1, verb = String(x.op || 'Add').toLowerCase();
+    const dd = apvDecisions()[x.id];
+    APV.unshift({ id: x.id, n, module: x.module || 'Firewall Analyzer', dev: x.dev, ic: 'secure', kind: x.kind, verb,
+      when: new Date(x.when), by: x.by || APV_ME, st: 'Pending', approver: '', decided: null, note: '',
+      reason: x.summary, info: x.info || [], title: `APR: ${n} – ${x.dev} – ${verb}-${x.kind}`,
+      fa: { op: x.op || 'Add', kind: x.kind, target: x.target, summary: x.summary, rule: x.rule || null, objType: x.objType || '',
+        value: x.value || '', members: x.members || [], desc: x.desc || '' } });
+    if (dd) Object.assign(APV[0], { st: dd.st, approver: dd.by, decided: new Date(dd.at), note: dd.note || '' });
+    added++;
+  });
+  return added;
+}
+addEventListener('storage', e => { if (e.key === 'oo-apv-queue' && apvSync()) apvRender(); });
+/* the firewall frame embedded in this page does not get a storage event for a write made here — tell it directly */
+function apvTellFrames(){ document.querySelectorAll('iframe').forEach(f => { try { f.contentWindow.dispatchEvent(new StorageEvent('storage', { key: 'oo-apv-decisions' })); } catch (e) {} }); }
+addEventListener('message', e => { const d = e.data; if (!d || !d.faApproval) return;
+  try { const q = JSON.parse(localStorage.getItem('oo-apv-queue') || '[]');
+    if (!q.some(x => x.id === d.faApproval.id)) { q.push(d.faApproval); localStorage.setItem('oo-apv-queue', JSON.stringify(q)); } } catch (err) {}
+  if (apvSync()) { apvRender(); toast(`Sent for approval — ${d.faApproval.op} ${d.faApproval.kind.toLowerCase()} “${d.faApproval.target}” on ${d.faApproval.dev}`); } });
+const APV_TAG = { Pending: 'tag-orange', Approved: 'tag-green', Rejected: 'tag-red' };
+const APV_COLS = [
+  { key: 'title', title: 'Approvals', width: '200px', primary: true },
+  /* which module raised the request (owner, 16 Oct 2026) — NCCM's firmware upgrades, Firewall Analyzer's policy changes */
+  { key: 'module', title: 'Module', width: '150px' },
+  { key: 'dev', title: 'Device Name', width: '200px' },
+  { key: 'type', title: 'Device Type', width: '110px', type: 'icon' },
+  { key: 'approver', title: 'Approver', width: '140px' },
+  { key: 'status', title: 'Status', width: '130px', type: 'tags' },
+  /* no Type column: every request is Firmware Upgrade, so it repeated one word down the grid (removed on request, 16 Oct 2026) */
+  { key: 'when', title: 'Requested On', width: '220px' }];
+const APV_FIELDS = [
+  { key: 'module', label: 'Module', type: 'enum', values: ['NCCM', 'Firewall Analyzer'] },
+  { key: 'dev', label: 'Device Name', type: 'enum', values: [...new Set(APV.map(r => r.dev))].sort() },
+  { key: 'type', label: 'Device Type', type: 'enum', values: Object.values(APV_TYPES) },
+  { key: 'approver', label: 'Approver', type: 'enum', values: [APV_ME] },
+  { key: 'status', label: 'Status', type: 'enum', values: ['Pending', 'Approved', 'Rejected'] }];
+const APV_ST = { q: '', conds: [], match: 'all', hidden: new Set(), filt: true, open: null, act: null };
+const apvEsc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const apvJ = o => apvEsc(JSON.stringify(o));
+/* the cell text a filter or the search reads — the same value a reader sees */
+const apvVal = (r, k) => k === 'type' ? APV_TYPES[r.ic] : k === 'approver' ? (r.approver || '—') : k === 'status' ? r.st
+  : k === 'when' ? apvStamp(r.when) : r[k];
+function apvRows(){
+  const q = APV_ST.q.trim().toLowerCase();
+  const test = (r, c) => { const cell = String(apvVal(r, c.field) ?? ''), op = String(c.operator || '').toLowerCase();
+    const vals = (Array.isArray(c.value) ? c.value : [c.value]).map(String);
+    const hit = vals.some(v => /contain/.test(op) ? cell.toLowerCase().includes(v.toLowerCase()) : /start/.test(op) ? cell.toLowerCase().startsWith(v.toLowerCase())
+      : /end/.test(op) ? cell.toLowerCase().endsWith(v.toLowerCase()) : cell === v);
+    return /not|!=/.test(op) ? !hit : hit; };
+  const conds = APV_ST.conds.filter(c => c && c.field && (Array.isArray(c.value) ? c.value.length : c.value != null && c.value !== ''));
+  return APV.filter(r => (!q || ['title', 'module', 'dev', 'type', 'approver', 'status', 'kind', 'when'].some(k => String(apvVal(r, k)).toLowerCase().includes(q)))
+    && (!conds.length || (APV_ST.match === 'any' ? conds.some(c => test(r, c)) : conds.every(c => test(r, c)))))
+    .map(r => ({ id: r.id, title: r.title, module: r.module, dev: r.dev, type: r.ic, approver: r.approver || '—',
+      status: [{ label: r.st, variant: APV_TAG[r.st] }], kind: r.kind, when: apvStamp(r.when) }));
+}
+function apvRender(){
+  apvSync();
+  const host = document.getElementById('apvHost'); if (!host) return;
+  if (!host.__apv) {
+    host.__apv = true;
+    const sq = (k, ic, lab) => `<obs-tooltip placement="top"><obs-button slot="trigger" variant="neutral-lightest" squared data-apv="${k}" aria-label="${lab}"><obs-icon name="${ic}" size="15"></obs-icon></obs-button>${lab}</obs-tooltip>`;
+    host.innerHTML = `<div class="apv-bar">
+        <obs-input class="apv-search" id="apvSearch" type="search" placeholder="Search" allow-clear></obs-input>
+        <span class="apv-sp"></span>
+        ${sq('pdf', 'export-pdf', 'Export PDF')}${sq('csv', 'export-csv', 'Export CSV')}
+        <obs-select id="apvCols" trigger="icon" trigger-icon="eye" heading="COLUMNS" reset-label="Reset column preference"
+          columns="${apvJ(APV_COLS.map(c => ({ key: c.key, label: c.title, checked: true, locked: c.key === 'title' })))}"></obs-select>
+        <obs-tooltip placement="top"><obs-button slot="trigger" id="apvFiltBtn" variant="primary" squared aria-label="Filter"><obs-icon name="filter" size="15"></obs-icon></obs-button>Filter</obs-tooltip>
+      </div>
+      <div class="apv-filt" id="apvFiltRow"><obs-filters id="apvFilters" kind="bar" match="all" value="[]" fields="${apvJ(APV_FIELDS)}" quick-filters="dev,type,approver"></obs-filters></div>
+      <div class="apv-grid" id="apvGrid"><obs-table id="apvTable" header-style="default" sticky-header page-size="50"
+        row-actions="${apvJ([{ key: 'approve', label: 'Approve', icon: 'check' }, { key: 'reject', label: 'Reject', icon: 'times', danger: true }])}"></obs-table></div>`;
+    apvBind(host);
+  }
+  const t = document.getElementById('apvTable');
+  t.columns = APV_COLS.filter(c => !APV_ST.hidden.has(c.key));
+  t.rows = apvRows();
+  requestAnimationFrame(apvFit); setTimeout(apvFit, 0);
+}
+/* the grid runs to the foot of the screen, so the pager is pinned there (the obs-table sheet reads --apv-h) */
+function apvFit(){
+  const g = document.getElementById('apvGrid'), body = document.getElementById('apvHost'), t = document.getElementById('apvTable');
+  if (!g || !t || !document.getElementById('view-approval').classList.contains('on')) return;
+  const bottom = body.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(body).paddingBottom) || 0);
+  t.style.setProperty('--apv-h', Math.max(220, Math.floor(bottom - g.getBoundingClientRect().top)) + 'px');
+}
+addEventListener('resize', apvFit);
+function apvBind(host){
+  const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  const s = host.querySelector('#apvSearch');
+  s.addEventListener('input', e => { APV_ST.q = String(det(e) ?? e.target.value ?? ''); apvRender(); });
+  s.addEventListener('change', e => { APV_ST.q = String(det(e) ?? ''); apvRender(); });
+  host.querySelector('#apvFilters').addEventListener('change', e => { const v = det(e) || {};
+    APV_ST.conds = v.conditions || (Array.isArray(v) ? v : []); APV_ST.match = v.match || 'all'; apvRender(); });
+  host.querySelector('#apvCols').addEventListener('change', e => { const v = det(e);
+    const on = new Set((Array.isArray(v) ? v : (v && v.columns) || []).map(x => typeof x === 'string' ? x : x && (x.key || x.value)));
+    APV_ST.hidden = new Set(APV_COLS.map(c => c.key).filter(k => k !== 'title' && !on.has(k))); apvRender(); });
+  host.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('obs-button[data-apv], #apvFiltBtn'); if (!b || !dsTap(b)) return;
+    if (b.id === 'apvFiltBtn') { APV_ST.filt = !APV_ST.filt; host.querySelector('#apvFiltRow').hidden = !APV_ST.filt;
+      b.setAttribute('variant', APV_ST.filt ? 'primary' : 'neutral-lightest'); apvFit(); return; }
+    apvExport(b.getAttribute('data-apv'));
+  });
+  const t = host.querySelector('#apvTable');
+  t.addEventListener('rowaction', e => { const d = det(e) || {}; apvAsk(String(d.id), d.action === 'reject' || (d.action && d.action.key === 'reject') ? 'no' : 'ok'); });
+  t.addEventListener('cellaction', e => { const d = det(e) || {}; if (d.id) apvOpen(String(d.id)); });
+  /* rowclick's payload is the row id itself (a string), as measured */
+  t.addEventListener('rowclick', e => { const d = det(e); const id = typeof d === 'string' ? d : d && (d.id || (d.row && d.row.id)); if (id) apvOpen(String(id)); });
+}
+function apvExport(kind){
+  const rows = apvRows(), cols = APV_COLS.filter(c => !APV_ST.hidden.has(c.key));
+  if (kind === 'csv' && typeof lxDownload === 'function') {
+    const cell = v => `"${String(v).replace(/"/g, '""')}"`;
+    const body = [cols.map(c => cell(c.title)).join(',')].concat(rows.map(r => cols.map(c => cell(c.key === 'status' ? r.status[0].label : c.key === 'type' ? APV_TYPES[r.type] : r[c.key])).join(','))).join('\n');
+    lxDownload('approval.csv', body, 'text/csv'); toast(`Exported ${rows.length} approvals as CSV`); return;
+  }
+  toast(`Export ${kind.toUpperCase()} — ${rows.length} approvals (not built in this prototype)`);
+}
+/* ── the request drawer ── */
+function apvDrawerEl(){
+  let d = document.getElementById('apvDrawer');
+  if (!d) { d = document.createElement('obs-drawer'); d.id = 'apvDrawer'; d.setAttribute('width', '55%'); d.setAttribute('esc-closable', '');
+    document.body.appendChild(d);
+    /* the request a drawer shows is ON the drawer (data-id): its `close` event can land late — after a reopen — so state
+       kept from it would be wrong exactly when it matters */
+    d.addEventListener('click', e => { const b = e.target.closest && e.target.closest('obs-button[data-apvd]'); if (b && dsTap(b)) apvAsk(d.dataset.id, b.getAttribute('data-apvd')); }); }
+  return d;
+}
+function apvKV(rows){ return `<div class="apv-kv">${rows.map(([k, v]) => `<span class="k">${apvEsc(k)}</span>` + (v && typeof v === 'object'
+  ? v.tags ? `<span class="v apv-tags">${v.tags.length ? v.tags.map(t => `<obs-tag variant="${t[1] || 'tag-unknown'}">${apvEsc(t[0])}</obs-tag>`).join('') : '—'}</span>`
+  : v.ro != null ? `<span class="v"><obs-input type="text" block disabled value="${apvEsc(v.ro)}"></obs-input></span>` : `<span class="v mono">${apvEsc(v.mono)}</span>`
+  : `<span class="v">${apvEsc(v || '—')}</span>`)).join('')}</div>`; }
+/* Firewall Analyzer requests (owner, 16 Oct 2026: "improve the information"): what will reach the firewall, field by field
+   — the change and where it lands, then the policy's match and action, or the object's definition */
+function apvFaSecs(r){
+  const f = r.fa, ru = f.rule, opTag = { Add: 'tag-green', Modify: 'tag-yellow', Delete: 'tag-red' }[f.op] || 'tag-unknown';
+  const list = a => ({ tags: (a || []).map(x => [x, 'tag-unknown']) });
+  const req = [['Change', { tags: [[`${f.op} ${String(f.kind).toLowerCase()}`, opTag]] }], ['Firewall', r.dev], [f.kind + ' name', f.target]];
+  let det = null, h = '';
+  if (ru) { h = 'Policy details';
+    det = [['Policy ID', String(ru.seq)], ['Action', { tags: [[ru.action, ru.action === 'Deny' ? 'tag-red' : 'tag-green']] }],
+      ['Status', ru.status === 'Disable' ? 'Disabled' : 'Enabled'],
+      ['Source', list(ru.src)], ['Source interface', ru.srcIntf], ['Destination', list(ru.dst)], ['Destination interface', ru.dstIntf],
+      ['Services', ru.svc && ru.svc.length ? list(ru.svc) : 'any'], ['NAT', ru.nat ? `On — ${ru.nat}` : 'Off'], ['Log traffic', ru.log ? 'Yes' : 'No']]
+      .concat(f.desc ? [['Description', f.desc]] : []);
+  } else if (f.objType) { h = 'Object details';
+    det = [['Object type', f.objType]].concat(f.members && f.members.length ? [['Members', list(f.members)]] : f.value ? [['Value', { mono: f.value }]] : [])
+      .concat(f.desc ? [['Description', f.desc]] : []);
+  } else { req.push(['Change detail', f.summary]); }
+  return `<div class="apv-sec"><h4>Request info</h4>${apvKV(req)}</div>` + (det ? `<div class="apv-sec"><h4>${h}</h4>${apvKV(det)}</div>` : '');
+}
+function apvOpen(id){
+  const r = APV.find(x => x.id === id); if (!r) return;
+  APV_ST.open = id;
+  const d = apvDrawerEl(), pend = r.st === 'Pending';
+  d.dataset.id = id;
+  d.innerHTML = `<div slot="title" class="apv-tt"><b>${apvEsc(r.title)}</b><obs-tag variant="${APV_TAG[r.st]}">${r.st}</obs-tag></div>
+    <div class="apv-sec"><h4>Requestor info</h4>${apvKV([['Requestor', r.by], ['Requested on', apvStamp(r.when)], ['Reason for request', r.reason]])}</div>
+    ${r.fa ? apvFaSecs(r) : `<div class="apv-sec"><h4>Request info</h4>${apvKV(r.info)}</div>`}
+    <div class="apv-sec"><h4>Approver info</h4>${apvKV([['Approver', r.approver || '—']].concat(r.decided ? [[r.st === 'Rejected' ? 'Rejected on' : 'Approved on', apvStamp(r.decided)],
+      [r.st === 'Rejected' ? 'Reason for rejection' : 'Note', r.note || '—']] : []))}</div>
+    ${pend ? `<div slot="actions" class="apv-foot"><obs-button variant="error" outline data-apvd="no">Reject</obs-button><obs-button variant="success" data-apvd="ok">Approve</obs-button></div>` : ''}`;
+  /* ⚠️ when an obs-modal closed this drawer (gap 09) its `open` prop is left TRUE with the dialog shut, so setting it
+     true again is no change and nothing reopens. The component's own show() opens it whatever the prop says. */
+  const dlg = d.shadowRoot && d.shadowRoot.querySelector('dialog');
+  if (dlg && dlg.open) return;
+  if (typeof d.show === 'function') d.show(); else { d.open = true; d.setAttribute('open', ''); }
+}
+/* ── Approve / Reject: one modal, a note (optional) or a reason (asked for), then the request is decided ── */
+function apvModalEl(){
+  let m = document.getElementById('apvModal');
+  if (!m) { m = document.createElement('obs-modal'); m.id = 'apvModal'; m.setAttribute('width', '480'); document.body.appendChild(m);
+    m.addEventListener('confirm', () => apvDecide());
+    /* ⚠️ opening this modal CLOSES an open obs-drawer (DS gap 09) — so the drawer the decision came from is reopened
+       once the modal has closed, on Cancel as on Confirm, and shows the request as it now stands */
+    /* reopen on `hide`, which the modal emits once its dialog has actually shut — `close` comes first, while it is still
+       the active overlay, and a drawer raised then is closed again by it */
+    m.addEventListener('close', () => { m.open = false; });
+    m.addEventListener('hide', () => {
+      /* a hide that lands after the modal was asked again belongs to the previous ask — reopening a drawer now would
+         make it the active overlay and shut the new modal */
+      const dl = m.shadowRoot && m.shadowRoot.querySelector('dialog'); if (dl && dl.open) return;
+      const back = APV_ST.back; APV_ST.act = null; APV_ST.back = null; if (back) apvOpen(back); }); }
+  return m;
+}
+function apvAsk(id, v){
+  const r = APV.find(x => x.id === id); if (!r) return;
+  if (r.st !== 'Pending') { toast(`${r.title.split(' – ')[0]} is already ${r.st.toLowerCase()}`); return; }
+  APV_ST.act = { id, v };
+  /* the drawer this came from, if it is open — reopened when the modal closes */
+  { const dd = document.getElementById('apvDrawer'), dl = dd && dd.shadowRoot && dd.shadowRoot.querySelector('dialog');
+    APV_ST.back = dl && dl.open ? dd.dataset.id : null; }
+  const m = apvModalEl(), ok = v === 'ok';
+  m.className = ok ? 'apv-ok' : 'apv-no';
+  m.setAttribute('title', ok ? 'Approve request' : 'Reject request');
+  m.setAttribute('confirm-text', ok ? 'Approve' : 'Reject');
+  m.setAttribute('confirm-variant', ok ? 'success' : 'error');
+  m.innerHTML = ok
+    ? `<label class="apv-ml">Add a note</label><obs-input id="apvNote" type="textarea" block placeholder="Add any context or notes for this decision…"></obs-input>`
+    : `<label class="apv-ml">Reason for rejection</label><obs-input id="apvNote" type="textarea" block placeholder="Explain why this request is being rejected…"></obs-input>
+       <div class="apv-mi"><obs-icon name="info-circle" size="14"></obs-icon>This will notify the requester and the action will not be executed.</div>`;
+  m.open = true;
+}
+function apvDecide(){
+  const a = APV_ST.act; if (!a) return;
+  const r = APV.find(x => x.id === a.id); if (!r) return;
+  const n = document.getElementById('apvNote'), note = n ? String(n.value || '').trim() : '';
+  r.st = a.v === 'ok' ? 'Approved' : 'Rejected'; r.approver = APV_ME; r.decided = new Date(); r.note = note;
+  try { const d = apvDecisions(); d[r.id] = { st: r.st, by: r.approver, at: r.decided.toISOString(), note }; localStorage.setItem('oo-apv-decisions', JSON.stringify(d)); } catch (e) {}
+  APV_ST.act = null;
+  apvRender(); apvTellFrames();
+  toast(`${r.title.split(' – ')[0]} ${r.st.toLowerCase()} — ${r.kind} on ${r.dev}`);
+}
+/* every caller of the old grid (showView, the rail, the shortcuts) lands here */
+window.renderApprovals = apvRender;
+renderApprovals = apvRender;
+apvRender();
+/* opening the screen takes in anything queued since it was last painted (another page's Firewall Analyzer change) */
+{ const sv = showView; window.showView = showView = function(v){ const r = sv.apply(this, arguments); if (v === 'approval') apvRender(); return r; }; }
+</script>
 
 <script src="_variants.js"></script>
 <!-- Agentation visual-feedback widget (DEV-ONLY: loads only on file:// / localhost;
@@ -38466,12 +38786,64 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
   st.textContent =
     '[data-agentation-root] > *{z-index:2147483000 !important}' +
     '[data-agentation-root] > [class*="markersLayer" i]{z-index:2147483001 !important}' +
-    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}';
+    '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}' +
+    /* one Agentation toolbar on screen: the Firewall Analyzer frame carries its own (its screens cannot be annotated from
+       here), so while that frame is showing this page hides its toolbar — owner, 16 Oct 2026 */
+    'html.fa-agt-frame [data-agentation-root] > [class*="toolbar"]{display:none !important}' +
+    /* inside an open drawer / modal (see follow() below) the toolbar rides above the dialog's footer buttons */
+    ':is(obs-drawer, obs-modal) > [data-agentation-root] > [class*="toolbar"]{bottom:84px !important}';
   document.head.appendChild(st);
+  setInterval(function () {
+    var on = [].some.call(document.querySelectorAll('iframe[src*="_firewall/firewall.html"]'), function (f) {
+      var r = f.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+    document.documentElement.classList.toggle('fa-agt-frame', on);
+  }, 400);
   var s = document.createElement('script');
   s.src = 'agentation-embed.js';
   s.defer = true;
   document.body.appendChild(s);
+  /* An open obs-drawer / obs-modal is a MODAL <dialog>: the browser draws it in the top layer and makes everything outside
+     it inert, so Agentation's toolbar sat under the drawer and could not be clicked (owner, 16 Oct 2026). While one is open,
+     Agentation's root is moved into that dialog's light DOM (slotted into the dialog, so not inert, and still in this
+     document, so its styles and events keep working); when none is open it goes back where it was mounted. A drawer that
+     repaints its body drops the root, and the next tick puts it back. */
+  (function follow() {
+    var root = null, home = null;
+    setInterval(function () {
+      if (!root) { root = document.querySelector('[data-agentation-root]'); if (!root) return; home = root.parentNode; }
+      var host = null;
+      [].forEach.call(document.querySelectorAll('obs-drawer, obs-modal'), function (el) {
+        var d = el.shadowRoot && el.shadowRoot.querySelector('dialog'); if (d && d.open) host = el; });
+      var target = host || home;
+      if (target && root.parentNode !== target) target.appendChild(root);
+    }, 250);
+  })();
+})();
+</script>
+<script>/* FIREWALL ANALYZER OVERLAY HAND-OFF (16 Oct 2026). The Firewall Analyzer frame posts {faOverlay:true|false} while one of
+   its drawers or modals is open. The frame is lifted to cover the whole window, so the drawer runs from the top of the screen,
+   and this page's own chrome (rail, Settings list, header) is blurred behind a scrim. The frame keeps its screen where it was:
+   it gets its old box back as {faRect}. Restored on {faOverlay:false}. */
+(function(){
+  var st = document.createElement('style');
+  st.textContent = 'iframe.fa-ovl{position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;z-index:100002!important;background:transparent!important}'
+    + '#faOvlScrim{position:fixed;inset:0;z-index:100001;display:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}#faOvlScrim.on{display:block}';
+  document.head.appendChild(st);
+  addEventListener('message', function(e){
+    var d = e.data; if (!d || typeof d.faOverlay !== 'boolean') return;
+    var f = [].slice.call(document.querySelectorAll('iframe')).find(function(x){ return x.contentWindow === e.source; });
+    if (!f) return;
+    var s = document.getElementById('faOvlScrim');
+    if (!s) { s = document.createElement('div'); s.id = 'faOvlScrim'; document.body.appendChild(s); }
+    if (d.faOverlay && !f.__faovl) {
+      var b = f.getBoundingClientRect(); f.__faovl = 1;
+      f.contentWindow.postMessage({ faRect: { l: b.left, t: b.top, w: b.width, h: b.height } }, '*');
+      f.classList.add('fa-ovl'); s.classList.add('on');
+    } else if (!d.faOverlay && f.__faovl) {
+      f.__faovl = 0; f.classList.remove('fa-ovl'); s.classList.remove('on');
+      f.contentWindow.postMessage({ faRect: null }, '*');
+    }
+  });
 })();
 </script>
 </body>

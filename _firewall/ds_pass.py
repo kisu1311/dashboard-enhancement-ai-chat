@@ -440,7 +440,9 @@ function dsGridMark(id, n) {""", 'ifDsCols')
     # (Add Policy / Add Object / Push) sits at its right end — so the action no longer takes a row of its own.
     # Policies Analytics keeps its two-way segment (its own polSwitch call, tab='analytics').
     rep("""const polSwitch = (value, tab = 'analytics') =>\n""",
-        """const PM_TABS = () => POL_SWITCH_MGMT.map(o => ({ key: o.value, label: o.text }));
+        """/* Objects leads, then Policies (owner, 16 Oct 2026: "swap the policies & object") — Policies Management's tab
+   row only; Policies Analytics' own two-way switch keeps POL_SWITCH's order */
+const PM_TABS = () => [POL_SWITCH_MGMT[1], POL_SWITCH_MGMT[0]].concat(POL_SWITCH_MGMT.slice(2)).map(o => ({ key: o.value, label: o.text }));
 const pmTabOf = section => (isObjectsSec(section) ? OBJECTS_SEC : [NAT_SEC, STATUS_SEC].includes(section) ? section : 'policies');
 const polSwitch = (value, tab = 'analytics') => tab === 'policy' ? '' :
 """, 'polSwitch policy tabs')
@@ -507,9 +509,705 @@ const polSwitch = (value, tab = 'analytics') => tab === 'policy' ? '' :
       <obs-button variant="default" id="${ns}Reset">Reset</obs-button>
       ${reason ? `<obs-tooltip placement="top"><obs-button slot="trigger" variant="primary" id="${ns}Add" disabled>${f.edit ? 'Save changes' : 'Add'}</obs-button>${esc(reason)}</obs-tooltip>`
         : `<obs-button variant="primary" id="${ns}Add">${f.edit ? 'Save changes' : 'Add'}</obs-button>`}`;""", 'pm foot')
+    # The firewall cards take the DS overview card's APM visualisation (owner, 16 Oct 2026, localhost:3000/overview-card
+    # as the reference): an AREA sparkline under each of the two readings and a COLUMN sparkline beside the bottom count.
+    # obs-overview-card variant="apm" itself is not used — its three labels are fixed in the component ("Response Time",
+    # "Throughput", "Error Count") and would mislabel a firewall — so the card is composed from that variant's own parts
+    # (obs-icon · obs-severity · obs-sparkline). A reading with no value draws no chart, as the reference's half/empty
+    # states do. The series are deterministic per firewall and END on the card's own reading.
+    rep("""function deviceTile(d) {\n""",
+        """/* a firewall's 24-point trend for one reading: a seeded walk that ends exactly on the value the card prints */
+function ovcSeries(id, key, end, n = 24) {
+  let h = 2166136261; for (const ch of id + '|' + key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const rnd = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296);
+  const out = [end]; let v = end;
+  for (let i = 1; i < n; i++) { v = Math.max(end * 0.35, v * (1 + (rnd() - 0.55) * 0.18)); out.unshift(Math.round(v * 100) / 100); }
+  return out;
+}
+/* the denied count as ten columns that add up to it */
+function ovcCols(id, total, n = 10) {
+  let h = 5381; for (const ch of id) h = (Math.imul(h, 33) + ch.charCodeAt(0)) >>> 0;
+  const w = Array.from({ length: n }, () => { h = (Math.imul(h, 1103515245) + 12345) >>> 0; return 0.6 + (h % 1000) / 1250; });
+  const sum = w.reduce((a, b) => a + b, 0);
+  return w.map(x => Math.round(total * x / sum));
+}
+function deviceTile(d) {
+""", 'ovc series')
+    rep("""      <div class="fa-ovc-c"><span class="fa-ovc-l">Throughput</span><span class="fa-ovc-v"><b>${tp ? tp.toFixed(2) : '—'}</b><i>Gbps</i></span></div>
+      <div class="fa-ovc-c"><span class="fa-ovc-l">Sessions</span><span class="fa-ovc-v"><b>${sess.toLocaleString('en-US')}</b><i>24h</i></span></div>""",
+        """      <div class="fa-ovc-c"><span class="fa-ovc-l">Throughput</span><span class="fa-ovc-v"><b>${tp ? tp.toFixed(2) : '—'}</b><i>Gbps</i></span>
+        ${tp ? `<obs-sparkline class="fa-ovc-sp" type="area" smooth height="30" color="var(--chart-vivid-teal)" name="Throughput" unit=" Gbps" data='${j(ovcSeries(d.id, 'tp', tp))}'></obs-sparkline>` : ''}</div>
+      <div class="fa-ovc-c"><span class="fa-ovc-l">Sessions</span><span class="fa-ovc-v"><b>${sess.toLocaleString('en-US')}</b><i>24h</i></span>
+        ${sess ? `<obs-sparkline class="fa-ovc-sp" type="area" smooth height="30" color="var(--chart-tangerine)" name="Sessions" data='${j(ovcSeries(d.id, 'sess', sess).map(Math.round))}'></obs-sparkline>` : ''}</div>""", 'ovc sparks')
+    rep("""      <span class="fa-ovc-ev${den ? ' bad' : ''}"><b>${den.toLocaleString('en-US')}</b><i>${den ? denPct + '% of sessions' : 'none denied'}</i></span>
+    </div>""",
+        """<span class="fa-ovc-ev${den ? ' bad' : ''}"><b>${den.toLocaleString('en-US')}</b></span>
+      ${den ? `<obs-sparkline class="fa-ovc-cols" type="column" height="40" bar-width="10" color="var(--severity-critical)" name="Denied sessions" data='${j(ovcCols(d.id, den))}'></obs-sparkline>` : ''}
+    </div>""", 'ovc cols')
+    # the card's "Open firewall" chevron is gone (owner, 16 Oct 2026) — the whole card opens the firewall (.fa-tile
+    # data-dev), so the button said what the card already does. The card itself takes the keyboard path: focusable,
+    # role="link", Enter/Space open it (bound below in the click delegate's keydown twin).
+    rep("""      <span class="fa-spacer"></span>
+      <obs-tooltip placement="left"><obs-button slot="trigger" variant="transparent" squared data-dev1="${esc(d.id)}"
+        aria-label="Open ${esc(d.name)}"><obs-icon name="chevron-right" size="14"></obs-icon></obs-button>Open firewall</obs-tooltip>
+""", "", 'drop open chevron')
+    rep("""  return `<article class="fa-ovc fa-tile" data-dev="${esc(d.id)}" aria-label="${esc(d.name)}">""",
+        """  return `<article class="fa-ovc fa-tile" data-dev="${esc(d.id)}" aria-label="Open ${esc(d.name)}" role="link" tabindex="0">""", 'card focusable')
+    rep("""  if (e.key === 'Escape') { closeDrawer(); closeLogDrawer(); closeCredDrawer(); closeFwTemplate(); closeRole(); return; }""",
+        """  if (e.key === 'Escape') { closeDrawer(); closeLogDrawer(); closeCredDrawer(); closeFwTemplate(); closeRole(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches && e.target.matches('.fa-ovc.fa-tile[data-dev]')) { e.preventDefault(); e.target.click(); }""", 'card keyboard')
+    # Compliance tab: its two top widgets on DS components (owner, 16 Oct 2026 — the "KPI card + table" choice), laid out
+    # like the Flow tab's widget row: the standard's score is an obs-kpi-card (the Overview's KPI card, neutral chip —
+    # the band colours its bar), and "This firewall across all standards" is an obs-table — Standard · Compliance ·
+    # Passed · Failed · Status (a band tag) — in place of the hand-coloured bar chart. The note under the score went:
+    # the banner directly below says which control fails and what clearing it does.
+    i0 = t.index("""    <div class="fa-grid cols-3">\n      ${(() => {\n        const band = ev.score >= 90""")
+    i1 = t.index("""    ${worst ? `<obs-banner variant="warning" title="Clearing""", i0)
+    t = t[:i0] + """    <div class="fa-grid cols-3 fa-cmp-top">
+      ${(() => {
+        const band = ev.score >= 90 ? 'clear' : ev.score >= 75 ? 'warning' : 'critical';
+        /* owner, 16 Oct 2026 ("make it new better ui"): a framed widget like the table beside it, not a KPI card
+           stretched to the row — status tag + one line, then the score as an obs-gauge beside an obs-metric-list */
+        const tg = ev.score >= 90 ? ['Compliant', 'tag-green'] : ev.score >= 75 ? ['At risk', 'tag-yellow'] : ['Non-compliant', 'tag-red'];
+        return widget(std.label, `<div class="fa-cmp-sc">
+          <div class="fa-cmp-sch"><obs-tag variant="${tg[1]}">${tg[0]}</obs-tag>
+            <span>${ev.failed.length} of ${total} controls failing</span></div>
+          <div class="fa-cmp-scb">
+            <obs-gauge class="fa-cmp-g" value="${ev.score}" total="100" severity="${band}" label="% compliant"></obs-gauge>
+            <obs-metric-list class="fa-cmp-ml" items='${j([[String(ev.passed), '', 'Passed', '--severity-clear'], [String(ev.failed.length), '', 'Failed', '--severity-critical'], [String(total), '', 'Evaluated']])}'></obs-metric-list>
+          </div>
+        </div>`, { actions: '', cls: 'fa-cmp-scw' });
+      })()}
+      <div class="span-2 fa-cmp-stdw">
+        ${widget('This firewall across all standards', `<obs-table id="tblStds" class="fa-tblrule fa-tbldense" header-style="default" sortable="false" page-size="0"
+          columns='${j([
+            { key: 'std', title: 'Standard', primary: true },
+            { key: 'pct', title: 'Compliance', width: '140px' },
+            { key: 'passed', title: 'Passed', width: '110px' },
+            { key: 'failed', title: 'Failed', width: '110px' },
+            { key: 'status', title: 'Status', type: 'tags', width: '150px' }])}'
+          rows='${j(D.standards.map(x => {
+            const e = evalCompliance(dev, x.label);
+            const b = e.score >= 90 ? ['Compliant', 'tag-green'] : e.score >= 75 ? ['At risk', 'tag-yellow'] : ['Non-compliant', 'tag-red'];
+            return { id: 'std-' + x.label, std: x.label, pct: e.score + ' %', passed: String(e.passed), failed: String(e.failed.length), status: chip(b[0], b[1]) };
+          }))}'></obs-table>`, {
+          actions: `<obs-button variant="default"><obs-icon name="export-pdf" size="14"></obs-icon>&nbsp;Export evidence pack</obs-button>` })}
+      </div>
+    </div>
+
+""" + t[i1:]
+    # …and FRAMED, as Flow's widgets are: the screen's .fa-flat stack stripped every widget card's frame and title strip
+    rep('  return `<div class="fa-stack fa-flat">\n    <div class="fa-grid cols-3 fa-cmp-top">',
+        '  return `<div class="fa-stack">\n    <div class="fa-grid cols-3 fa-cmp-top">', 'cmp framed')
+    # Settings › Firewall Analyzer: Firewall Inventory and Firewall Templates are ONE screen with two tabs (owner,
+    # 16 Oct 2026 — like Monitor Settings' tabbed screens). Under ?embed=settings the shared settings header carries an
+    # obs-tabs row over the two routes; picking a tab is a route change, so each screen keeps its own bindings.
+    rep("""function dpSettingsHeader() {
+  return `<obs-page-header id="dpHeader" heading="Settings" back><obs-icon slot="before" name="settings" size="18" class="fa-lic-page-icon"></obs-icon></obs-page-header>`;
+}""", """const FW_SET_TABS = [{ key: 'fwinventory', label: 'Firewall Inventory' }, { key: 'fwtemplates', label: 'Firewall Templates' }];
+function dpSettingsHeader() {
+  const tabs = document.documentElement.classList.contains('fasettings') && FW_SET_TABS.some(x => x.key === currentTab)
+    ? `<obs-tabs class="fa-fwset-tabs" value="${currentTab}" tabs='${j(FW_SET_TABS)}'></obs-tabs>` : '';
+  return `<obs-page-header id="dpHeader" heading="Settings" back><obs-icon slot="before" name="settings" size="18" class="fa-lic-page-icon"></obs-icon></obs-page-header>${tabs}`;
+}
+document.addEventListener('change', e => {
+  const tb = e.target;
+  if (!tb || !tb.classList || !tb.classList.contains('fa-fwset-tabs')) return;
+  const d = Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  const k = typeof d === 'string' ? d : d && (d.key || d.value);
+  if (k && k !== currentTab) go(k);
+}, true);   /* capture: obs-tabs' change does not bubble to the document */""", 'fw settings tabs')
+    # Settings › Firewall Inventory on obs-table (owner, 16 Oct 2026): the hand-built light-DOM grid (faGrid) is replaced.
+    # Device = severity cell (status dot + name, the lead column) · Firewall Manage Status = obs-table's own switch cell ·
+    # Credential Status = a coloured tag (Successful / Failed / No credential / Not applicable) · Type = an icon cell ·
+    # the ⋯ menu is obs-table's rowActions. obs-table has no per-row link colour, so "Add Credential" and the red
+    # "Failed" link became tags; their doors are the row menu's Update Credential and the new Credential status.
+    # dsGrid learns rowActions (+ a `rowaction` handler) for it.
+    rep("""    page-size="${opts.pageSize ?? 50}" empty-text="${esc(opts.empty || 'No records found')}"
+    columns='${j(dsCols)}' rows='${j(dsRows)}'></obs-table></div>`;""",
+        """    page-size="${opts.pageSize ?? 50}" empty-text="${esc(opts.empty || 'No records found')}"${opts.rowActions ? ` row-actions='${j(opts.rowActions)}'` : ''}
+    columns='${j(dsCols)}' rows='${j(dsRows)}'></obs-table></div>`;""", 'dsGrid rowActions')
+    rep("""  DSG[id] = { gridId, cols, rows, srt: sc ? srt : null, onCell: opts.onCell };""",
+        """  DSG[id] = { gridId, cols, rows, srt: sc ? srt : null, onCell: opts.onCell, onRow: opts.onRow };""", 'dsGrid onRow')
+    rep("""    if (g.onCell) t.addEventListener('cellaction', e => {""",
+        """    if (g.onRow) t.addEventListener('rowaction', e => {
+      const d = detailOf(e) || {};
+      g.onRow(keyOf(d.action), String(d.id));
+    });
+    if (g.onCell) t.addEventListener('cellaction', e => {""", 'dsGrid rowaction bind')
+    rep("""      ${faGrid('tblFwInventory', cols, D.devices, { maxHeight: 'calc(100vh - 300px)' })}`)}""",
+        """      ${dsGrid('tblFwInventory', 'fiGrid', [
+        { key: 'name', title: 'Device', ds: { type: 'severity', primary: true }, sortVal: d => d.name, cell: d => d.name },
+        { key: 'mgmt', title: 'IP/Host', sortVal: d => d.mgmt, cell: d => d.mgmt },
+        { key: 'sysOid', title: 'System OID', sortVal: d => d.sysOid, cell: d => d.sysOid },
+        { key: 'vendor', title: 'Vendor', sortVal: d => fwVendorName(d), cell: d => fwVendorName(d) },
+        { key: 'template', title: 'Template', sortVal: d => (fwTemplateOf(d) || {}).name || '', cell: d => { const t = fwTemplateOf(d); return t ? t.name : 'Not assigned'; } },
+        { key: 'manage', title: 'Firewall Manage Status', ds: { type: 'switch' }, cell: d => fwManaged(d) },
+        /* the live NCCM Device Inventory's Credential Status (owner, 16 Oct 2026): icon + text, not tags — ✓ Successful,
+           ⊗ Failed, ⊘ Not Applicable — and "Add Credential" a text BUTTON (obs-table's link cell, which emits cellaction) */
+        { key: 'cred', title: 'Credential Status', ds: { type: 'link' }, sortVal: d => credStatusOf(d).kind, cell: d => {
+            const k = credStatusOf(d).kind;
+            return k === 'ok' ? { text: 'Successful', icon: 'check-circle', iconLabel: 'Successful' }
+              : k === 'fail' ? { text: 'Failed', icon: 'times-circle', iconLabel: 'Failed' }
+              : k === 'add' ? { text: 'Add Credential' } : { text: 'Not Applicable', icon: 'ban', iconLabel: 'Not applicable' }; } },
+        { key: 'type', title: 'Type', ds: { type: 'icon' }, cell: () => 'secure' }
+      ].map(c => ({ ...c, sev: undefined })), D.devices.map(d => ({ ...d, sev: d.status })), {
+        rowActions: FI_ROW_ACTIONS.concat([{ key: 'credStatus', label: 'Credential status', icon: 'shield-check' }]),
+        onRow: (k, id) => {
+          const dm = D.devices.find(x => x.id === id); if (dm && !fwManaged(dm)) return;   /* management off: no actions */
+          if (k === 'schedule') scheduleBackupModal(id);
+          if (k === 'updateCred') go('fwinventory', id + '/credential');
+          if (k === 'updateTpl') go('fwinventory', id + '/template');
+          if (k === 'credStatus') go('fwinventory', id + '/status');
+        },
+        onCell: (dd, r) => {
+          if (dd.key === 'cred') {   /* Add Credential → Select Credential Profile; Failed → where the collection failed */
+            const k = (credStatusOf(D.devices.find(x => x.id === r.id) || {}) || {}).kind;
+            if (k === 'add') go('fwinventory', r.id + '/credential'); else if (k === 'fail') go('fwinventory', r.id + '/status');
+            return;
+          }
+          if (dd.key !== 'manage') return;
+          const d = D.devices.find(x => x.id === r.id); if (!d) return;
+          const on = !!dd.value;
+          d.faManaged = on;
+          const rr = d.signals.rules = d.signals.rules || { state: 'off' };
+          if (!on) { if (rr.state !== 'off') rr.state = 'off'; }
+          else if (rr.cred) { const c = FS.credentials.find(x => x.id === rr.cred); rr.state = c && c.expired ? 'error' : 'ok'; }
+          renderContent();
+        } })}`)}""", 'fwinv obs-table')
+    # Firewall Inventory on the DS list-view recipe (owner, 16 Oct 2026: "change the table view using observeops design system"):
+    # NO card frame round toolbar + grid (table.dont: "the product grid is borderless"), the tinted header the recipe names
+    # (--grid-header-bg), `selectable` rows with obs-table's own floating bulk-action bar (Enable / Disable management),
+    # and column widths so "Firewall Manage Status" no longer truncates. dsGrid learns selectable / headerStyle / bulk.
+    rep("""data-dsg="${id}"><obs-table id="${id}" class="fa-tblrule" header-style="default" sticky-header""",
+        """data-dsg="${id}"><obs-table id="${id}" class="fa-tblrule" header-style="${opts.headerStyle || 'default'}"${opts.selectable ? ' selectable' : ''} sticky-header""", 'dsGrid header/selectable')
+    rep("""    columns='${j(dsCols)}' rows='${j(dsRows)}'></obs-table></div>`;""",
+        """    columns='${j(dsCols)}' rows='${j(dsRows)}'>${opts.bulk || ''}</obs-table></div>`;""", 'dsGrid bulk slot')
+    rep("""  DSG[id] = { gridId, cols, rows, srt: sc ? srt : null, onCell: opts.onCell, onRow: opts.onRow };""",
+        """  DSG[id] = { gridId, cols, rows, srt: sc ? srt : null, onCell: opts.onCell, onRow: opts.onRow, sel: [] };""", 'dsGrid sel')
+    rep("""    if (g.onRow) t.addEventListener('rowaction', e => {""",
+        """    t.addEventListener('change', e => {
+      if (e.target !== t) return;
+      const d = e.detail; const ids = Array.isArray(d) ? (Array.isArray(d[0]) ? d[0] : d) : [];
+      g.sel = ids.map(String);
+    });
+    if (g.onRow) t.addEventListener('rowaction', e => {""", 'dsGrid selection bind')
+    rep("""  <div class="fa-dp-list">
+    ${panel(`
+      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="fiFilters\"""",
+        """  <div class="fa-dp-list fa-fi-list">
+      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="fiFilters\"""", 'fwinv no panel open')
+    rep("""          renderContent();
+        } })}`)}
+  </div>`;""", """          renderContent();
+        },
+        selectable: true, headerStyle: 'default',
+        bulk: `<obs-button slot="bulk-actions" variant="default" size="small" data-fibulk="1">Enable management</obs-button>
+          <obs-button slot="bulk-actions" variant="default" size="small" data-fibulk="0">Disable management</obs-button>` })}
+  </div>`;""", 'fwinv no panel close')
+    rep("""        { key: 'name', title: 'Device', ds: { type: 'severity', primary: true }, sortVal: d => d.name, cell: d => d.name },
+        { key: 'mgmt', title: 'IP/Host', sortVal: d => d.mgmt, cell: d => d.mgmt },
+        { key: 'sysOid', title: 'System OID', sortVal: d => d.sysOid, cell: d => d.sysOid },
+        { key: 'vendor', title: 'Vendor', sortVal: d => fwVendorName(d), cell: d => fwVendorName(d) },
+        { key: 'template', title: 'Template',""",
+        """        { key: 'name', title: 'Device', width: 150, ds: { type: 'severity', primary: true }, sortVal: d => d.name, cell: d => d.name },
+        { key: 'mgmt', title: 'IP/Host', width: 120, sortVal: d => d.mgmt, cell: d => d.mgmt },
+        { key: 'sysOid', title: 'System OID', sortVal: d => d.sysOid, cell: d => d.sysOid },
+        { key: 'vendor', title: 'Vendor', sortVal: d => fwVendorName(d), cell: d => fwVendorName(d) },
+        { key: 'template', title: 'Template',""", 'fwinv widths a')
+    rep("""        { key: 'manage', title: 'Firewall Manage Status', ds: { type: 'switch' }""",
+        """        { key: 'manage', title: 'Firewall Manage Status', width: 200, ds: { type: 'switch' }""", 'fwinv widths b')
+    rep("""        { key: 'type', title: 'Type', ds: { type: 'icon' }""",
+        """        { key: 'type', title: 'Type', width: 80, ds: { type: 'icon' }""", 'fwinv widths d')
+    rep("""        { key: 'cred', title: 'Credential Status', ds: { type: 'link' }""",
+        """        { key: 'cred', title: 'Credential Status', width: 160, ds: { type: 'link' }""", 'fwinv widths c')
+    rep("""function bindFwInventory() {""", """/* the bulk bar's two actions: every selected firewall's management on / off, the same write the row switch makes */
+function fiBulk(on) {
+  const g = DSG.tblFwInventory; if (!g || !g.sel.length) return;
+  g.sel.forEach(id => {
+    const d = D.devices.find(x => String(x.id) === id); if (!d) return;
+    d.faManaged = on;
+    const rr = d.signals.rules = d.signals.rules || { state: 'off' };
+    if (!on) rr.state = 'off';
+    else if (rr.cred) { const c = FS.credentials.find(x => x.id === rr.cred); rr.state = c && c.expired ? 'error' : 'ok'; }
+  });
+  g.sel = [];
+  renderContent();
+}
+/* app.js is a module, so an inline onclick cannot reach fiBulk — one delegated listener. obs-button fires twice (inner
+   button + host re-emit); the second finds the selection already cleared and does nothing. */
+document.addEventListener('click', e => {
+  const b = e.target && e.target.closest && e.target.closest('[data-fibulk]');
+  if (b) fiBulk(b.dataset.fibulk === '1');
+});
+function bindFwInventory() {""", 'fiBulk')
+    # Firewall Templates on the same DS list-view shape as Firewall Inventory (owner, 16 Oct 2026): no card frame, the
+    # table in a .fa-dsg bounded box so its rows scroll under a sticky header and its pager sits at the foot of the
+    # screen, the header ruled like every converted grid, and the right-aligned Devices count gets a right-aligned header.
+    rep("""    ${panel(`
+      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="ftFilters\"""", """      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="ftFilters\"""", 'fwtpl no panel open')
+    rep("""      <obs-table id="tblFwTemplates" columns='${j(cols)}' rows='${j(rows)}' header-style="tinted" sort="name:asc" page-size="50" row-actions='${j(FT_ROW_ACTIONS)}'></obs-table>`)}""",
+        """      <div class="fa-dsg"><obs-table id="tblFwTemplates" class="fa-tblrule fa-thr" columns='${j(cols)}' rows='${j(rows)}' header-style="default" sticky-header sort="name:asc" page-size="50" row-actions='${j(FT_ROW_ACTIONS)}'></obs-table></div>""", 'fwtpl no panel close')
+    rep("""function bindFwTemplates() {""", """function bindFwTemplates() {
+  if (currentTab === 'fwtemplates') setTimeout(() => dsGridFit(), 0);""", 'fwtpl fit')
+    rep(""":host(.fa-tblx) thead th:first-child,:host(.fa-tblx) tbody td:first-child{padding-left:0}');r.adoptedStyleSheets""", """:host(.fa-tblx) thead th:first-child,:host(.fa-tblx) tbody td:first-child{padding-left:0}:host(.fa-thr) thead th.al-right{text-align:right}:host(.fa-tblrule) .hs-tinted thead th{background:linear-gradient(var(--grid-header-bg),var(--grid-header-bg)),var(--page-background-color)}');r.adoptedStyleSheets""", 'fwtpl th right')
+    # Gap 06: obs-select's column-chooser menu is capped at 440px with overflow:hidden but its rows never scroll, so the
+    # "Reset column preference" footer was clipped with 10 columns. Menu = flex column; rows take the rest and scroll;
+    # long labels wrap instead of ellipsising in the fixed 220px menu.
+    rep("""if(this.tagName==='OBS-TABLE'){try{var ts=""", """if(this.tagName==='OBS-SELECT'){try{var cs=new CSSStyleSheet();cs.replaceSync(':host(.ds-dg-cols) .menu.cols{display:flex;flex-direction:column}:host(.ds-dg-cols) .menu.cols .ccm{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}:host(.ds-dg-cols) .cc-rows{flex:1 1 auto;min-height:0;overflow-y:auto}:host(.ds-dg-cols) .cc-reset{flex:0 0 auto}:host(.ds-dg-cols) .cc-row{color:var(--page-text-color)}:host(.ds-dg-cols) .cc-lbl{white-space:normal;overflow-wrap:anywhere;line-height:1.3}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[cs]);}catch(e){}}if(this.tagName==='OBS-TABLE'){try{var ts=""", 'gap06 col chooser')
+    # Policies Management's four grids (owner, 16 Oct 2026: "the pagination will be set by default bottom"): each table
+    # sits in a .fa-dsg box sized to the rest of the screen (dsGridFit), so rows scroll under the sticky header and the
+    # pager is at the foot whatever the row count — as Firewall Inventory / Templates. The old max-height cap goes.
+    for tid in ['tblPmRules', 'tblPmNat', 'tblPmStatus']:
+        rep('<obs-table id="%s" class="fa-tblrule"' % tid, '<div class="fa-dsg"><obs-table id="%s" class="fa-tblrule"' % tid, 'pm dsg open ' + tid)
+    rep("""<obs-table id="${table}" class="fa-tblrule" columns='${j(gridCols(grid, cols))}' rows='${j(rows)}'
+        header-style="default" sticky-header max-height="calc(100vh - 400px)" page-size="50" sort="name:asc"></obs-table>""",
+        """<div class="fa-dsg"><obs-table id="${table}" class="fa-tblrule" columns='${j(gridCols(grid, cols))}' rows='${j(rows)}'
+        header-style="default" sticky-header page-size="50" sort="name:asc"></obs-table></div>""", 'pm dsg objects')
+    rep("""          { key: 'delete',  label: 'Delete Policy', icon: 'trash', danger: true }])}'></obs-table>`)}""",
+        """          { key: 'delete',  label: 'Delete Policy', icon: 'trash', danger: true }])}'></obs-table></div>`)}""", 'pm dsg close rules')
+    rep("""        empty-text="No NAT policy is collected for this firewall"></obs-table>`)}""",
+        """        empty-text="No NAT policy is collected for this firewall"></obs-table></div>`)}""", 'pm dsg close nat')
+    rep("""        empty-text="Nothing is pending on this firewall"></obs-table>`);""",
+        """        empty-text="Nothing is pending on this firewall"></obs-table></div>`);""", 'pm dsg close status')
+    rep("""header-style="default" sticky-header max-height="calc(100vh - 400px)" page-size="50" sort="seq:asc\"""",
+        """header-style="default" sticky-header page-size="50" sort="seq:asc\"""", 'pm rules no cap')
+    rep("""header-style="default" sticky-header max-height="calc(100vh - 400px)" page-size="50" sort="name:asc"
+        empty-text="No NAT""", """header-style="default" sticky-header page-size="50" sort="name:asc"
+        empty-text="No NAT""", 'pm nat no cap')
+    rep("""header-style="default" sticky-header max-height="calc(100vh - 400px)" page-size="50" sort="requested:desc\"""",
+        """header-style="default" sticky-header page-size="50" sort="requested:desc\"""", 'pm status no cap')
+    rep("""function mountStdGrids() {
+""", """function mountStdGrids() {
+  setTimeout(() => dsGridFit(), 0);
+""", 'stdgrids fit')
+    # Firewall Inventory's toolbar = the module's standard DS grid toolbar (DS.DataGrid, as Policies Management) — owner,
+    # 16 Oct 2026: "improve the view and alignment". Row 1: search · filter / PDF / CSV / Excel squares (neutral-lightest)
+    # · the Columns chooser; row 2: the obs-filters bar with Groups · Types · Vendor as quick filters. The hand-built
+    # strip (pills + bordered squares on one line, a Tag button that did nothing) is gone.
+    rep("""function screenFwInventory() {
+  const filterFields = [""", """let FI_FIELDS = [];
+/* the Columns chooser's list — the grid's own columns, key + title (the name column stays) */
+const FI_COLS = [{ key: 'name', title: 'Device', fixed: true }, { key: 'mgmt', title: 'IP/Host' }, { key: 'sysOid', title: 'System OID' },
+  { key: 'vendor', title: 'Vendor' }, { key: 'template', title: 'Template' }, { key: 'manage', title: 'Firewall Manage Status' },
+  { key: 'cred', title: 'Credential Status' }, { key: 'type', title: 'Type' }];
+function screenFwInventory() {
+  const filterFields = FI_FIELDS = [""", 'fi fields global')
+    rep("""      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="fiFilters" kind="bar" match="all" value='[]' fields='${j(filterFields)}' quick-filters='${j(['groups', 'types', 'vendor'])}'></obs-filters>
+        ${toolbarIcons(['preview', 'tag', 'pdf', 'csv', 'filter'])}
+      </obs-toolbar>""", """      ${stdGridHost('fiGrid')}""", 'fi std toolbar')
+    rep("""function mountStdGrids() {
+""", """function mountStdGrids() {
+  mountStdGrid('fiGrid', { columns: FI_COLS, table: 'tblFwInventory', fields: FI_FIELDS, quickFilters: ['groups', 'types', 'vendor'] });
+""", 'fi mount')
+    # Settings › Policies Management lists EVERY firewall (owner, 16 Oct 2026: "firewall is the device type, so remove this
+    # field and it will be set in the table, and by default show all rows"). The Firewall picker is gone; under fasettings
+    # the four grids are scoped to no device, so Policies / Objects / NAT carry their existing Firewall column and Policy
+    # and Object Status gains one; Push sends the ticked changes whatever firewall they are for; Add Policy / Add Object
+    # ask which firewall (Device Name becomes a picker, and changing it re-seeds the form from that firewall's ports,
+    # objects and next Policy ID). The device's own Policies tab elsewhere stays one firewall.
+    rep("""function pmBar(section, devName) {""", """/* Settings › Policies Management: every firewall at once (the route still names one, for the drawers' default) */
+const pmAll = () => document.documentElement.classList.contains('fasettings');
+const pmHome = () => (dev1 && (D.devices.find(x => x.id === dev1.id) || {}).name) || '';
+const pmScope = () => (pmAll() ? null : pmHome());
+function pmBar(section, devName) {""", 'pm all helpers')
+    rep("""screenPolicyManagement(dev1.sub.policy, d.name)""", """screenPolicyManagement(dev1.sub.policy, pmAll() ? null : d.name)""", 'pm all screen')
+    rep("""    <div class="fa-pmset">${field('Firewall', `<obs-select id="pmFwPick" searchable options='${j(D.devices.map(x => ({ label: x.name, value: x.id })))}' value="${esc(d.id)}"></obs-select>`)}</div>
+""", "", 'pm all no picker')
+    rep("""pmBar(sec, (D.devices.find(x => x.id === dev1.id) || {}).name)""", """pmBar(sec, pmScope())""", 'pm all bar')
+    rep("""const pendingOf = devName => D.pendingChanges.filter(p => p.device === devName);""",
+        """const pendingOf = devName => D.pendingChanges.filter(p => devName === null || p.device === devName);""", 'pm all pendingOf')
+    rep("""  if (!mine.length) return `Nothing pending on ${devName}`;""", """  if (!mine.length) return devName ? `Nothing pending on ${devName}` : 'Nothing pending';""", 'pm all reason')
+    rep("""  const rows = mine.map(p => ({ id: p.id, name: p.target, kind: p.kind, op: p.op, summary: p.summary, by: p.by,
+    requested: p.requested, status: PENDING_TAG }));
+  ST_COLS = [
+    { key: 'name', title: 'Name', width: 210, fixed: true },""", """  const rows = mine.map(p => ({ id: p.id, name: p.target, device: p.device, kind: p.kind, op: p.op, summary: p.summary, by: p.by,
+    requested: p.requested, status: PENDING_TAG }));
+  ST_COLS = [
+    { key: 'name', title: 'Name', width: 210, fixed: true },
+    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 140 }]),""", 'pm all status col')
+    rep("""        empty-text="Nothing is pending on this firewall"></obs-table>""", """        empty-text="${dev ? 'Nothing is pending on this firewall' : 'Nothing is pending'}"></obs-table>""", 'pm all status empty')
+    rep("""    pmTicked = ids.filter(id => pendingOf(d.name).some(p => p.id === id));
+    paintPmBar(d.name);""", """    pmTicked = ids.filter(id => pendingOf(pmScope()).some(p => p.id === id));
+    paintPmBar(pmScope());""", 'pm all status bind')
+    rep("""    if (d && !pmPushBtn.hasAttribute('disabled')) pmPush(d.name);""", """    if (d && !pmPushBtn.hasAttribute('disabled')) pmPush(pmScope());""", 'pm all push click')
+    rep("""    title: `Push ${n} change${s} to ${devName}?`""", """    title: `Push ${n} change${s} to ${devName || [...new Set(picked.map(x => x.device))].join(', ')}?`""", 'pm all push title')
+    rep("""      pmFlash = { title: `${n} change${s} submitted to ${devName}`""", """      pmFlash = { title: `${n} change${s} submitted to ${devName || [...new Set(picked.map(x => x.device))].join(', ')}`""", 'pm all push flash')
+    rep("""      ${field('Device Name', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}""",
+        """      ${pmAll() && !f.edit ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true })
+        : field('Device Name', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}""", 'pm all policy dev')
+    rep("""  return `<div class="fa-grid cols-2">
+      ${field('Mode', mode ? pmRo(mode) : pmRo('Not collected', true))}""", """  return `<div class="fa-grid cols-2">
+      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true }) : ''}
+      ${field('Mode', mode ? pmRo(mode) : pmRo('Not collected', true))}""", 'pm all object dev')
+    rep("""      if (k === 'type') { f.value = ''; f.members = []; }
+      if (PM_SHAPE[k]) repaint(); else repaintFoot();""", """      if (k === 'type') { f.value = ''; f.members = []; }
+      /* another firewall: its ports, objects and next Policy ID — the form re-seeds, keeping what was typed as name and description */
+      if (k === 'dev') { const keep = { name: f.name, desc: f.desc }; Object.assign(f, pmBlank(f.kind, f.dev, f.types), keep); }
+      if (PM_SHAPE[k] || k === 'dev') repaint(); else repaintFoot();""", 'pm all dev reseed')
+    rep("""  if (!d || !r || r.device !== d.name) return;
+  pmf = pmEditForm(r);""", """  if (!d || !r || (!pmAll() && r.device !== d.name)) return;
+  pmf = pmEditForm(r);""", 'pm all edit')
+    rep("""  const rule = r.edit ? D.rules.find(x => x.id === r.edit && x.device === d.name) : null;""",
+        """  const rule = r.edit ? D.rules.find(x => x.id === r.edit && (pmAll() || x.device === d.name)) : null;""", 'pm all edit route')
+    # Firewall as a filter (owner, 16 Oct 2026: "the device type is shown in the filter"): on the all-firewalls view each of
+    # the four grids leads its quick-filter pills with Firewall. And the filter bar now FILTERS — DS.DataGrid kept the
+    # chosen conditions (and the search) in gridState but nothing applied them to the rows; pmGridRows does, for these four.
+    rep("""const pmScope = () => (pmAll() ? null : pmHome());""", """const pmScope = () => (pmAll() ? null : pmHome());
+const PM_FW_FIELD = () => ({ key: 'device', label: 'Firewall', type: 'enum', values: D.devices.map(d => d.name) });
+/* the grid's own filter bar + search, applied: obs-filters' {field, operator, value} conditions, Match all / any */
+function pmGridRows(id, rows) {
+  const st = gridState[id] || {};
+  const txt = v => Array.isArray(v) ? v.map(x => (x && typeof x === 'object' ? (x.label || x.name || '') : String(x))).join('\\u0001')
+    : v && typeof v === 'object' ? String(v.label || v.name || '') : String(v ?? '');
+  const conds = (st.conditions || []).filter(c => c && c.field && (Array.isArray(c.value) ? c.value.length : c.value != null && c.value !== ''));
+  const test = (r, c) => {
+    const cell = txt(r[c.field]), parts = cell.split('\\u0001'), op = String(c.operator || '').toLowerCase();
+    const vals = (Array.isArray(c.value) ? c.value : [c.value]).map(String);
+    const lc = cell.toLowerCase();
+    const hit = vals.some(v => { const x = v.toLowerCase();
+      return /contain/.test(op) ? lc.includes(x) : /start/.test(op) ? lc.startsWith(x) : /end/.test(op) ? lc.endsWith(x) : parts.includes(v); });
+    return /not|!=|exclude/.test(op) ? !hit : hit;
+  };
+  const q = String(st.query || '').trim().toLowerCase();
+  return rows.filter(r => (!q || Object.keys(r).some(k => k !== 'id' && txt(r[k]).toLowerCase().includes(q)))
+    && (!conds.length || (st.match === 'any' ? conds.some(c => test(r, c)) : conds.every(c => test(r, c)))));
+}""", 'pm grid filter')
+    rep("""  PM_FIELDS = [TAG_FIELD(['Used', 'Unused', 'Unassigned'])].concat(policyConfigFields(dev));""",
+        """  const pcf = policyConfigFields(dev);
+  PM_FIELDS = pcf.filter(f => f.key === 'device').concat([TAG_FIELD(['Used', 'Unused', 'Unassigned'])], pcf.filter(f => f.key !== 'device'));""", 'pm rules fields')
+    rep("""PM_FIELDS.slice(0, 4)""", """PM_FIELDS.slice(0, pmAll() ? 5 : 4)""", 'pm rules quick')
+    rep("""  OBJ_GRIDS[grid] = { table, cols, fields: [
+    { key: 'kind', label: 'Object Type', type: 'enum', values: ['Address', 'Address group', 'Service', 'Service group'] },
+    TAG_FIELD(['Assigned', 'Unassigned']),
+    ...(dev ? [] : [{ key: 'device', label: 'Firewall', type: 'enum', values: D.devices.map(d => d.name) }])
+  ] };""", """  OBJ_GRIDS[grid] = { table, cols, fields: [
+    ...(dev ? [] : [PM_FW_FIELD()]),
+    { key: 'kind', label: 'Object Type', type: 'enum', values: ['Address', 'Address group', 'Service', 'Service group'] },
+    TAG_FIELD(['Assigned', 'Unassigned'])
+  ] };""", 'pm obj fields')
+    rep("""quickFilters: ['tag', 'kind'] });""", """quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'kind']) });""", 'pm obj quick')
+    rep("""  NAT_FIELDS = [
+    TAG_FIELD""", """  NAT_FIELDS = [
+    ...(dev ? [] : [PM_FW_FIELD()]),
+    TAG_FIELD""", 'pm nat fields')
+    rep("""  ST_FIELDS = [
+""", """  ST_FIELDS = [
+    ...(dev ? [] : [PM_FW_FIELD()]),
+""", 'pm status fields')
+    # apply the filter to each grid's rows
+    rep("""rows='${j(rows)}'
+        header-style="default" sticky-header page-size="50" sort="seq:asc\"""", """rows='${j(pmGridRows('pmRulesGrid', rows))}'
+        header-style="default" sticky-header page-size="50" sort="seq:asc\"""", 'pm rules apply')
+    rep("""columns='${j(gridCols(grid, cols))}' rows='${j(rows)}'""", """columns='${j(gridCols(grid, cols))}' rows='${j(pmGridRows(grid, rows))}'""", 'pm obj apply')
+    rep("""columns='${j(gridCols('pmNatGrid', NAT_COLS))}' rows='${j(rows)}'""", """columns='${j(gridCols('pmNatGrid', NAT_COLS))}' rows='${j(pmGridRows('pmNatGrid', rows))}'""", 'pm nat apply')
+    rep("""columns='${j(gridCols('pmStatusGrid', ST_COLS))}' rows='${j(rows)}'""", """columns='${j(gridCols('pmStatusGrid', ST_COLS))}' rows='${j(pmGridRows('pmStatusGrid', rows))}'""", 'pm status apply')
+    # Add / Edit Policy and Add Object on the DS form recipe (owner, 16 Oct 2026: "this sidebar is not perfect on observeops
+    # design system"): a read-only value is a disabled obs-input like Device Name and Mode beside it (Policy ID, the object
+    # form's Mode and NAT's translated address were bare text), labels in --page-text-color (form-view labelColour) and the
+    # DS 16px column gutter (MRow :gutter 16, was 24).
+    rep("""const pmRo = (v, muted) => `<span class="fa-pmf-ro${muted ? ' is-muted' : ''}">${esc(v)}</span>`;""",
+        """const pmRo = v => `<obs-input type="text" block disabled value="${esc(v)}"></obs-input>`;""", 'pm ro input')
+    # …and the same reference's two behaviours: the switch carries its ON / OFF text, and the primary names its action
+    rep("""      ${field('NAT', `<obs-switch data-${ns}="nat" size="small"${f.nat ? ' checked' : ''} aria-label="NAT"></obs-switch>`)}""",
+        """      ${field('NAT', `<obs-switch data-${ns}="nat" size="small" checked-text="ON" unchecked-text="OFF"${f.nat ? ' checked' : ''} aria-label="NAT"></obs-switch>`)}""", 'pm nat onoff')
+    rep("""${f.edit ? 'Save changes' : 'Add'}</obs-button>${esc(reason)}</obs-tooltip>`
+        : `<obs-button variant="primary" id="${ns}Add">${f.edit ? 'Save changes' : 'Add'}</obs-button>`}`;""",
+        """${f.edit ? 'Save changes' : PM_ADD[f.kind] || 'Add'}</obs-button>${esc(reason)}</obs-tooltip>`
+        : `<obs-button variant="primary" id="${ns}Add">${f.edit ? 'Save changes' : PM_ADD[f.kind] || 'Add'}</obs-button>`}`;""", 'pm add label')
+    # the reference drawer's fields and frame, inside the components (their own shadow CSS cannot be reached from the page)
+    rep('<obs-drawer id="pmAddDrawer" width="52%"', '<obs-drawer id="pmAddDrawer" width="40%"', 'pm drawer 40')
+    rep("""const pmRo = v => `<obs-input type="text" block disabled value="${esc(v)}"></obs-input>`;""",
+        """const pmRo = v => `<obs-input class="fa-pmfi" type="text" block disabled value="${esc(v)}"></obs-input>`;""", 'pm ro class')
+    rep("""if(this.tagName==='OBS-SELECT'){try{var cs=new CSSStyleSheet();cs.replaceSync('""",
+        """if(this.tagName==='OBS-DRAWER'){try{var dw=new CSSStyleSheet();dw.replaceSync(':host(#pmAddDrawer) .hd{margin-left:16px;margin-right:16px}:host(#pmAddDrawer) .body{padding:15px 16px}:host(#pmAddDrawer) .title{font-size:18px;font-weight:500}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[dw]);}catch(e){}}if(this.tagName==='OBS-INPUT'){try{var pi=new CSSStyleSheet();pi.replaceSync(':host([data-pmf]) .ip,:host([data-pmo]) .ip,:host(.fa-pmfi) .ip{border-color:var(--field-border-color)}:host([data-pmf]) input,:host([data-pmo]) input,:host(.fa-pmfi) input,:host([data-pmf]) textarea,:host([data-pmo]) textarea{font-size:14px}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[pi]);}catch(e){}}if(this.tagName==='OBS-SELECT'){try{var ps=new CSSStyleSheet();ps.replaceSync(':host([data-pmf]) .trig,:host([data-pmo]) .trig{border-color:var(--field-border-color);font-size:14px}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[ps]);}catch(e){}}if(this.tagName==='OBS-SELECT'){try{var cs=new CSSStyleSheet();cs.replaceSync('""", 'pm field hooks')
+    # Policies Analytics (owner, 16 Oct 2026): "remove the LAST HIT COUNT and change TOTAL HIT COUNTS to HIT COUNTS" —
+    # the time-range count goes from the grid and its filter; the lifetime count keeps its key and is renamed
+    rep("""    { key: 'hits', title: 'Last Hit Count', align: 'right', width: 180, sortVal: r => r.hits, cell: r => r.hits.toLocaleString(), render: r => r.hits.toLocaleString() },
+    { key: 'hitsTotal', title: 'Total Hit Counts',""", """    { key: 'hitsTotal', title: 'Hit Counts',""", 'pol hits col')
+    rep("""    { key: 'hits', label: 'Last Hit Count', type: 'string' },
+    { key: 'hitsTotal', label: 'Total Hit Counts', type: 'string' },""", """    { key: 'hitsTotal', label: 'Hit Counts', type: 'string' },""", 'pol hits field')
+    # Users (owner, 16 Oct 2026: "remove the tag"): the untitled column that tagged the Unknown row "unidentified" goes —
+    # the row's own name says it, and the Identity filter still separates identified from unidentified users
+    rep("""    { key: 'userTag', title: '', width: 120, ds: { type: 'tags' }, cell: r => (r.unknown ? chip('unidentified', 'tag-yellow') : []) },
+""", "", 'usr tag col')
+    # Users (owner, 16 Oct 2026: "remove the link in USER NAME"): a row no longer opens the user's screen — no inspector,
+    # no pointer, and the name keeps its weight but loses the dotted hover underline that promised a link
+    rep("""  tblRecert: () => ruleDrawer('r-118'), tblEvents: logDrawer, tblFwUsers: openUser
+};""", """  tblRecert: () => ruleDrawer('r-118'), tblEvents: logDrawer
+};""", 'usr no link')
+    rep("""#tblFwUsers { cursor: pointer; }""", """#tblFwUsers { cursor: default; }""", 'usr no pointer')
+    rep(""":host(.fa-thr) thead th.al-right{text-align:right}""", """:host(.fa-thr) thead th.al-right{text-align:right}:host(#tblFwUsers) .primary-text{text-decoration:none!important}:host(#tblFwUsers) tbody tr{cursor:default}:host(#tblFwInventory) a.cell-link{color:var(--page-text-color);text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}:host(#tblFwInventory) a.cell-link:hover{text-decoration:underline}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=check-circle]){color:var(--secondary-green);cursor:default;text-decoration:none}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=times-circle]){color:var(--secondary-red)}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban]){color:var(--neutral-light);cursor:default;text-decoration:none}:host(#tblFwInventory) a.cell-link obs-icon{cursor:inherit;color:inherit!important}""", 'usr no underline')
+    # Device header = the DS page-header's "Monitor detail header" (owner, 16 Oct 2026, localhost:3000/page-header):
+    # back › boxed type tile · title + a status badge · a label/value meta strip under it · squared icon actions on the
+    # right. The vendored bundle has no `home` / `type-icon` props, so the tile goes in the `before` slot and the
+    # back chevron stays as the way home. The OS track tag moved into the meta strip; the bare status dot became the badge.
+    rep("""      <obs-page-header id="devHeader" back heading="${esc(d.name)}" no-divider>
+        <span slot="before" class="fa-tile-ic fa-dev-ic"><obs-icon name="secure" size="14"></obs-icon></span>
+        <obs-severity slot="before" severity="${esc(d.status)}" shape="dot"></obs-severity>
+        <obs-tag slot="title" class="fa-dev-track" variant="tag-unknown">${esc(track.label || d.vendor)}</obs-tag>""",
+        """      <obs-page-header id="devHeader" back heading="${esc(d.name)}" no-divider class="fa-mdh"
+        meta='${j([{ label: 'Type', value: track.label || d.vendor }, { label: 'IP', value: d.mgmt }, { label: 'Site', value: d.site }, { label: 'HA', value: d.ha }])}'>
+        <span slot="before" class="fa-mdh-tile"><obs-icon name="secure" size="20"></obs-icon></span>
+        ${(() => { const st = { up: ['Up', 'tag-green'], critical: ['Down', 'tag-red'], warning: ['Warning', 'tag-yellow'], unreachable: ['Unreachable', 'tag-purple'] }[d.status] || [d.status, 'tag-unknown'];
+          return `<obs-tag slot="title" class="fa-mdh-st" variant="${st[1]}">${esc(st[0])}</obs-tag>`; })()}
+        <obs-button variant="default" squared aria-label="Refresh" data-tip="Refresh" data-mdh="refresh"><obs-icon name="sync" size="14"></obs-icon></obs-button>
+        <obs-button variant="default" squared aria-label="Full screen" data-tip="Full screen" data-mdh="full"><obs-icon name="expand" size="14"></obs-icon></obs-button>""", 'mdh header')
+    rep("""  if (h) h.addEventListener('back', () => go('devices', devReturn));
+  const t = view.querySelector('#devTabs');""",
+        """  if (h) h.addEventListener('back', () => go('devices', devReturn));
+  /* the header's icon actions — obs-button can deliver one press twice, so each is guarded */
+  let mdhAt = 0;
+  view.querySelectorAll('[data-mdh]').forEach(b => b.addEventListener('click', () => {
+    const now = Date.now(); if (now - mdhAt < 300) return; mdhAt = now;
+    if (b.dataset.mdh === 'refresh') go('device', devRoute());
+    else if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  }));
+  const t = view.querySelector('#devTabs');""", 'mdh bind')
+    # Creating an object or a policy (or editing a policy) also raises an APPROVAL request (owner, 16 Oct 2026: "when I
+    # create the object or any policies then it will go on the Approval flow"). The request is written to localStorage,
+    # which every file:// page shares, so Option 1's Approval screen (index.html) lists it whichever page the change was
+    # made on; the parent is also told directly so an open Approval screen repaints at once.
+    rep("""function pmRecordObject(f) {""",
+        """function faApvQueue(p) {
+  const req = { id: 'fa-' + Date.now().toString(36) + '-' + p.id, module: 'Firewall Analyzer', dev: p.device,
+    kind: p.kind, op: p.op, target: p.newName || p.target, summary: p.summary, by: p.by, when: new Date().toISOString(),
+    info: [['Firewall', p.device], [p.kind + ' name', p.newName || p.target]]
+      .concat(p.objType ? [['Object type', p.objType]] : []).concat([['Change', p.summary]]),
+    /* the change itself, so the Approval drawer can show what will reach the firewall, not just a sentence */
+    rule: p.rule || null, objType: p.objType || '', value: p.value || '', members: p.members || [], desc: p.desc || (p.rule && p.rule.desc) || '' };
+  try { const k = 'oo-apv-queue', q = JSON.parse(localStorage.getItem(k) || '[]'); q.push(req); localStorage.setItem(k, JSON.stringify(q)); } catch (e) {}
+  try { if (parent !== window) parent.postMessage({ faApproval: req }, '*'); } catch (e) {}
+  return req;
+}
+function pmRecordObject(f) {""", 'apv queue fn')
+    rep("""    by: 'Bhavin G', requested: stamp(), objType: f.type, value: f.value.trim(), members: f.members.slice(), desc: f.desc.trim() });
+  return name;""",
+        """    by: 'Bhavin G', requested: stamp(), objType: f.type, value: f.value.trim(), members: f.members.slice(), desc: f.desc.trim() });
+  faApvQueue(D.pendingChanges[D.pendingChanges.length - 1]);
+  return name;""", 'apv object')
+    rep("""      by: 'Bhavin G', requested: stamp(), rule });
+    return name;
+  }""",
+        """      by: 'Bhavin G', requested: stamp(), rule });
+    faApvQueue(D.pendingChanges[D.pendingChanges.length - 1]);
+    return name;
+  }""", 'apv policy add')
+    rep("""    by: 'Bhavin G', requested: stamp(), rule });
+  return r.name;""",
+        """    by: 'Bhavin G', requested: stamp(), rule });
+  faApvQueue(D.pendingChanges[D.pendingChanges.length - 1]);
+  return r.name;""", 'apv policy edit')
+    # Policy and Object Status is a VIEW of the approval (owner, 16 Oct 2026): every row is a change waiting on (or
+    # decided by) the Approval module, its Status reads that decision, and the tab carries no checkboxes and no Push.
+    # Decisions come from Option 1's Approval screen via localStorage 'oo-apv-decisions'; the seeded drafts share ids
+    # with the Approval screen's demo rows, so the two screens agree from the first load.
+    rep("""    { id: 'pc-3', device: 'HQ-FTG-01', kind: 'NAT Policy', op: 'Add', target: 'static-core-app-02', summary: 'Static NAT 198.18.12.12 ↔ 49.36.12.13',                               by: 'network-ops', requested: '2026-09-18 09:31' }
+  ];""",
+        """    { id: 'pc-3', device: 'HQ-FTG-01', kind: 'NAT Policy', op: 'Add', target: 'static-core-app-02', summary: 'Static NAT 198.18.12.12 ↔ 49.36.12.13',                               by: 'network-ops', requested: '2026-09-18 09:31' },
+    { id: 'pc-4', device: 'DMZ-PA-01', kind: 'Object', op: 'Add', target: 'WEB-FARM-02', summary: 'Address 203.0.113.40/29 for the second web farm', by: 'network-ops', requested: '2026-09-17 16:05',
+      objType: 'Address', value: '203.0.113.40/29', members: [], desc: 'Second web farm' },
+    { id: 'pc-5', device: 'DMZ-PA-01', kind: 'Policy', op: 'Add', target: 'allow-any-rdp', summary: 'Allow any → DMZ-SERVERS on tcp/3389, ethernet1/1 → ethernet1/3', by: 'network-ops', requested: '2026-09-17 14:48',
+      rule: { seq: 240, desc: '', action: 'Allow', status: 'Enable', src: ['any'], srcIntf: 'ethernet1/1', dst: ['DMZ-SERVERS'], dstIntf: 'ethernet1/3', svc: ['tcp/3389'], nat: null, log: true } },
+    { id: 'pc-6', device: 'CLOUD-FTG-01', kind: 'Policy', op: 'Modify', target: 'api-gw-to-pay', summary: 'Policy 51: log traffic turned on', by: 'network-ops', requested: '2026-09-17 11:22' }
+  ];
+  /* each seeded draft is already in the Approval queue — the ids are the Approval screen's demo rows */
+  [['pc-1', 'fa-demo-1'], ['pc-2', 'fa-demo-2'], ['pc-3', 'fa-demo-3'], ['pc-4', 'fa-demo-4'], ['pc-5', 'fa-demo-5'], ['pc-6', 'fa-demo-6']]
+    .forEach(([pc, a]) => { const p = pendingChanges.find(x => x.id === pc); if (p) p.apv = a; });""", 'seed approvals')
+    rep("""  try { const k = 'oo-apv-queue', q""", """  p.apv = req.id;
+  try { const k = 'oo-apv-queue', q""", 'pending knows its approval')
+    rep("""const PENDING_TAG = [{ label: 'Pending Request', variant: 'tag-yellow' }];""",
+        """const PENDING_TAG = [{ label: 'Pending Request', variant: 'tag-yellow' }];
+/* the Approval module's decision on a change: the seeded demo ones, then whatever Option 1's Approval screen decided */
+const FA_APV_SEED = { 'fa-demo-4': { st: 'Approved', by: 'admin' }, 'fa-demo-5': { st: 'Rejected', by: 'admin' }, 'fa-demo-6': { st: 'Approved', by: 'admin' } };
+function faApvOf(p) {
+  let dec = {};
+  try { dec = JSON.parse(localStorage.getItem('oo-apv-decisions') || '{}'); } catch (e) {}
+  return (p.apv && (dec[p.apv] || FA_APV_SEED[p.apv])) || { st: 'Pending', by: '' };
+}
+const FA_APV_TAG = { Pending: 'tag-orange', Approved: 'tag-green', Rejected: 'tag-red' };""", 'apv status fn')
+    rep("""  const rows = mine.map(p => ({ id: p.id, name: p.target, device: p.device, kind: p.kind, op: p.op, summary: p.summary, by: p.by,
+    requested: p.requested, status: PENDING_TAG }));""",
+        """  const rows = mine.map(p => { const a = faApvOf(p);
+    return { id: p.id, name: p.target, device: p.device, kind: p.kind, op: p.op, summary: p.summary, by: p.by,
+      requested: p.requested, approver: a.by || '—', status: [{ label: a.st === 'Pending' ? 'Pending Approval' : a.st, variant: FA_APV_TAG[a.st] }] }; });""", 'status rows')
+    rep("""    { key: 'requested', title: 'Requested Time', width: 160 },
+    { key: 'status', title: 'Status', type: 'tags', width: 170 }
+  ];""",
+        """    { key: 'requested', title: 'Requested Time', width: 160 },
+    { key: 'approver', title: 'Approver', width: 120 },
+    { key: 'status', title: 'Approval Status', type: 'tags', width: 170 }
+  ];""", 'status cols')
+    rep("""    { key: 'op', label: 'Change', type: 'enum', values: ['Add', 'Modify', 'Delete'] }
+  ];
+  return panel(`""",
+        """    { key: 'op', label: 'Change', type: 'enum', values: ['Add', 'Modify', 'Delete'] },
+    { key: 'status', label: 'Approval Status', type: 'enum', values: ['Pending Approval', 'Approved', 'Rejected'] }
+  ];
+  return panel(`""", 'status fields')
+    rep("""rows='${j(pmGridRows('pmStatusGrid', rows))}' selectable selected='${j(pmTicked)}'""",
+        """rows='${j(pmGridRows('pmStatusGrid', rows))}'""", 'status no select')
+    rep("""  const what = isObjectsSec(section) ? 'object' : section === NAT_SEC ? null : section === STATUS_SEC ? 'push' : 'policy';""",
+        """  const what = isObjectsSec(section) ? 'object' : section === NAT_SEC || section === STATUS_SEC ? null : 'policy';""", 'status no push')
+    rep("""window.addEventListener('hashchange', () => {""",
+        """/* a decision taken on the Approval screen (another page, or this frame's parent) repaints the status view */
+window.addEventListener('storage', e => {
+  if (e.key !== 'oo-apv-decisions') return;
+  const [t, sec] = fromHash(); if (String(sec || '').includes(STATUS_SEC)) go(t, sec, true);
+});
+window.addEventListener('hashchange', () => {""", 'status live')
+    # Add Object (owner, 16 Oct 2026): Object Name and Description side by side, Object Type on the next line, and the
+    # Details (value) field REMOVED — asked and confirmed: "remove the field entirely". A group type keeps its Members
+    # picker beside the type (that is a group's content, not the Details field). The value checks went with the field.
+    rep("""      ${pmSelect(ns, f, 'type', 'Object Type', f.types, { req: true })}
+      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${isGroupType(f.type) ? pmSelect(ns, f, 'members', 'Members', pool, { req: true, multi: true })
+        : pmInput(ns, f, 'value', 'Details', { req: true, ph: f.type === 'Service' ? 'tcp/8443' : '198.18.23.0/16 or host.example.com' })}
+      ${pmInput(ns, f, 'desc', 'Description', { type: 'textarea', wide: true })}""",
+        """      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${pmInput(ns, f, 'desc', 'Description')}
+      ${pmSelect(ns, f, 'type', 'Object Type', f.types, { req: true })}
+      ${isGroupType(f.type) ? pmSelect(ns, f, 'members', 'Members', pool, { req: true, multi: true }) : ''}""", 'obj form layout')
+    rep("""  if (!f.value.trim()) return 'Details is required';
+  if (f.type === 'Address' && !IP_OR_HOST.test(f.value.trim())) return 'Details must be an IP, a CIDR or a host name';
+  if (f.type === 'Service' && !PROTO_PORT.test(f.value.trim())) return 'Details must read protocol/port, e.g. tcp/8443';""",
+        "", 'obj no value checks')
+    rep("""  return isGroupType(f.type) ? `${f.type} of ${f.members.join(', ')}` : `${f.type} ${f.value.trim()}`;""",
+        """  return isGroupType(f.type) ? `${f.type} of ${f.members.join(', ')}` : f.value.trim() ? `${f.type} ${f.value.trim()}` : f.type;""", 'obj summary')
+    # Firewall Inventory's Manage Status switch (owner, 16 Oct 2026: "improve the on/off using the design system"): the
+    # DS Switch's own rules — size=small "for dense rows/tables", and its known issue F2 (on/off is colour only) answered
+    # with INNER on/off labels (owner, 16 Oct 2026: "use Inner on/off labels") — the component's own `labelled` mode
+    # (checked-text / unchecked-text), its rules copied verbatim, the text supplied by .sw::before since the cell
+    # cannot pass the props. obs-table's switch cell passes neither size nor checked-text (DS gap), so the shadow hook
+    # styles the switch, scoped to this grid by :host-context(#tblFwInventory); the track edge takes --field-border-color
+    # because the switch's own --switch-border is ~1.1:1 on the dark grid.
+    rep("""r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[ts]);}catch(e){}}""",
+        """r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[ts]);}catch(e){}}if(this.tagName==='OBS-SWITCH'){try{var sw=new CSSStyleSheet();sw.replaceSync(':host-context(#tblFwInventory){display:inline-flex;vertical-align:middle}:host-context(#tblFwInventory) .sw{width:auto;min-width:52px;height:22px;padding:0 3px;display:inline-flex;align-items:center;justify-content:space-between;gap:4px;border-color:var(--field-border-color)}:host-context(#tblFwInventory) .knob{position:static;transform:none!important;flex:0 0 auto}:host-context(#tblFwInventory) .sw::before{content:"OFF";order:2;font-size:10px;font-weight:500;line-height:1;padding:0 5px;white-space:nowrap;color:var(--neutral-light)}:host-context(#tblFwInventory) .sw.on::before{content:"ON";order:1;color:var(--page-text-color)}:host-context(#tblFwInventory) .sw.on .knob{order:2}:host-context(#tblFwInventory) .sw:not(.on) .knob{order:1}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[sw]);}catch(e){}}""", 'fi switch hook')
+    # Firewall Templates' toolbar = the module's standard DS grid toolbar, as Firewall Inventory's (owner, 16 Oct 2026:
+    # "improve this grid using the design system"): row 1 search · filter / exports / Columns · Import, row 2 the filter
+    # bar with OS Type · Vendor as quick filters. The grid's rows go through the toolbar's search + conditions.
+    rep("""  const rows = D.firewallTemplates.map(t => ({ id: t.id, name: t.name, vendor: t.vendor, os: t.osType, devices: String(fwTemplateDevices(t).length) }));
+  const filterFields = [""",
+        """  const rows = pmGridRows('ftGrid', D.firewallTemplates.map(t => ({ id: t.id, name: t.name, vendor: t.vendor, os: t.osType, devices: String(fwTemplateDevices(t).length) })));
+  const filterFields = FT_FIELDS = [""", 'ft rows filtered')
+    rep("""  <div class="fa-dp-list">
+    ${flash ? `<obs-banner variant="${esc(flash.variant)}" title="${esc(flash.title)}" closable>${esc(flash.body || '')}</obs-banner>` : ''}
+      <obs-toolbar>
+        <obs-input slot="start" type="search" placeholder="Search" allow-clear></obs-input>
+        <obs-filters id="ftFilters" kind="bar" match="all" value='[]' fields='${j(filterFields)}' quick-filters='${j(['os', 'vendor'])}'></obs-filters>
+        ${toolbarIcons(['pdf', 'csv'])}
+        <span class="fa-ft-import"><obs-button variant="default" id="ftImport"><obs-icon name="monitor-import" size="14"></obs-icon>&nbsp;Import</obs-button>
+          <input type="file" id="ftImportFile" accept="application/json,.json" hidden aria-label="Template JSON file"></span>
+        ${toolbarIcons(['filter'])}
+      </obs-toolbar>
+      <div class="fa-dsg"><obs-table id="tblFwTemplates" class="fa-tblrule fa-thr" columns='${j(cols)}'""",
+        """  <div class="fa-dp-list fa-fi-list">
+    ${flash ? `<obs-banner variant="${esc(flash.variant)}" title="${esc(flash.title)}" closable>${esc(flash.body || '')}</obs-banner>` : ''}
+      ${stdGridHost('ftGrid')}
+      <div class="fa-dsg"><obs-table id="tblFwTemplates" class="fa-tblrule fa-thr" columns='${j(gridCols('ftGrid', cols))}'""", 'ft std toolbar')
+    rep("""function screenFwTemplates() {""", """let FT_FIELDS = [];
+const FT_COLS = [{ key: 'name', title: 'Template', fixed: true }, { key: 'vendor', title: 'Vendor' }, { key: 'os', title: 'OS Type' }, { key: 'devices', title: 'Devices' }];
+function screenFwTemplates() {""", 'ft globals')
+    rep("""  mountStdGrid('fiGrid', {""", """  /* Import is the toolbar's trailing action; it is bound once the toolbar exists, after the screen's own binders ran */
+  if ($('#ftGrid')) {
+    mountStdGrid('ftGrid', { columns: FT_COLS, table: 'tblFwTemplates', search: 'Search', fields: FT_FIELDS, quickFilters: ['os', 'vendor'],
+      after: `<span class="fa-ft-import"><obs-button variant="default" id="ftImport"><obs-icon name="monitor-import" size="14"></obs-icon>&nbsp;Import</obs-button>
+        <input type="file" id="ftImportFile" accept="application/json,.json" hidden aria-label="Template JSON file"></span>` });
+    bindFtImport();
+  }
+  mountStdGrid('fiGrid', {""", 'ft mount')
+    # Schedule Backup is a SIDE drawer, not a centred modal (owner, 16 Oct 2026: "convert to side popup") — its own
+    # obs-drawer, sized and styled as Add Policy's (40 %, 16px inset, 18px/500 title, footer pinned to the foot). The
+    # shared formModal keeps every other form (the discovery schedule among them); only fm.dev (a firewall) routes here.
+    rep("""<obs-drawer id="pmAddDrawer" width="40%" title="Add Policy" scrolled-content use-padding esc-closable></obs-drawer>""",
+        """<obs-drawer id="pmAddDrawer" width="40%" title="Add Policy" scrolled-content use-padding esc-closable></obs-drawer>
+<obs-drawer id="schedDrawer" width="40%" title="Schedule Backup" scrolled-content use-padding esc-closable></obs-drawer>""", 'sched drawer el')
+    rep("""function openFormModal(title, body, footer) {
+  formModal.setAttribute('title', title);""",
+        """const fmInDrawer = () => !!(fm && fm.kind === 'schedule' && fm.dev);
+const fmHost = () => (fmInDrawer() ? $('#schedDrawer') : formModal);
+function openFormModal(title, body, footer) {
+  if (fmInDrawer()) {
+    const dr = $('#schedDrawer');
+    dr.setAttribute('title', title);
+    dr.innerHTML = `<div class="fa-pmf"><div class="fa-form">${body}</div><div class="ds-cred-foot">${footer}</div></div>`;
+    if (!dr.hasAttribute('open')) { dr.open = true; dr.setAttribute('open', ''); }
+    return;
+  }
+  formModal.setAttribute('title', title);""", 'sched open drawer')
+    rep("""function closeFormModal() { fm = null; formModal.open = false; formModal.removeAttribute('open'); }""",
+        """function closeFormModal() { fm = null; [formModal, $('#schedDrawer')].forEach(el => { if (el && el.hasAttribute('open')) { el.open = false; el.removeAttribute('open'); } }); }
+$('#schedDrawer').addEventListener('close', e => { if (e.target === $('#schedDrawer')) fm = null; });""", 'sched close')
+    rep("""  const on = (sel, ev, fn) => { const el = formModal.querySelector(sel); if (el) el.addEventListener(ev, fn); };
+  const arr = v =>""",
+        """  const on = (sel, ev, fn) => { const el = fmHost().querySelector(sel); if (el) el.addEventListener(ev, fn); };
+  const arr = v =>""", 'sched bind host')
+    rep("""$('#fwTplDrawer'), $('#roleDrawer'), $('#pmAddDrawer')].forEach(el => {""",
+        """$('#fwTplDrawer'), $('#roleDrawer'), $('#pmAddDrawer'), $('#schedDrawer')].forEach(el => {""", 'sched closeall')
+    rep(""":host(#pmAddDrawer) .hd{margin-left:16px;margin-right:16px}:host(#pmAddDrawer) .body{padding:15px 16px}:host(#pmAddDrawer) .title{font-size:18px;font-weight:500}""",
+        """:host(#pmAddDrawer) .hd,:host(#schedDrawer) .hd{margin-left:16px;margin-right:16px}:host(#pmAddDrawer) .body,:host(#schedDrawer) .body{padding:15px 16px}:host(#pmAddDrawer) .title,:host(#schedDrawer) .title{font-size:18px;font-weight:500}""", 'sched drawer hook')
+    # "No credential" opens the add-credential flow (owner, 16 Oct 2026). obs-table's tags cell emits nothing, so a
+    # capture-phase click on the table notes that the press landed on that tag, and the row's own `rowclick` (which carries
+    # the row id) opens the Select Credential Profile drawer — the same route as the row menu's Update Credential
+    # (#fwinventory/<id>/credential, obs-drawer + obs-select + obs-button, "Create Credential Profile" inside it).
+    # The tag gets a pointer, a focus stop and Enter/Space, set on the rendered tag because no CSS can single it out.
+    rep("""function bindFwInventory() {
+  if (currentTab !== 'fwinventory') return;
+  settingsNavOn('Firewall Inventory');""",
+        """function bindFwInventory() {
+  if (currentTab !== 'fwinventory') return;
+  settingsNavOn('Firewall Inventory');
+  /* (the "No credential" tag-click capture that stood here went with the tag — the column is a link cell now) */
+  /* a firewall whose management is OFF offers no row actions (owner, 16 Oct 2026: "when it is off then not show all
+     action"). obs-table gives every row the same rowActions — no per-row list (DS gap) — so the row's ⋮ cell is hidden
+     here, read off the row's own switch; the onRow handler refuses an unmanaged firewall as well. */
+  const ti = view.querySelector('#tblFwInventory');
+  if (ti && ti.shadowRoot) {
+    const sync = () => ti.shadowRoot.querySelectorAll('tbody tr').forEach(tr => {
+      const sw = tr.querySelector('obs-switch'), act = tr.querySelector('td.act-col'); if (!sw || !act) return;
+      const on = sw.shadowRoot && sw.shadowRoot.querySelector('.sw') ? sw.shadowRoot.querySelector('.sw').classList.contains('on') : !!sw.checked;
+      act.style.visibility = on ? '' : 'hidden'; act.setAttribute('aria-hidden', on ? 'false' : 'true');
+    });
+    [0, 60, 250, 800].forEach(ms => setTimeout(sync, ms));
+    new MutationObserver(sync).observe(ti.shadowRoot, { childList: true, subtree: true });
+  }""", 'fi cred tag click')
+    rep(""":host(#pmAddDrawer) .hd,:host(#schedDrawer) .hd{""", """:host(#pmAddDrawer) .hd,:host(#schedDrawer) .hd,:host(#credDrawer) .hd{""", 'cred drawer hd')
+    rep(""":host(#pmAddDrawer) .body,:host(#schedDrawer) .body{""", """:host(#pmAddDrawer) .body,:host(#schedDrawer) .body,:host(#credDrawer) .body{""", 'cred drawer body')
+    rep(""":host(#pmAddDrawer) .title,:host(#schedDrawer) .title{""", """:host(#pmAddDrawer) .title,:host(#schedDrawer) .title,:host(#credDrawer) .title{""", 'cred drawer title')
+    # the credential drawer is 40 % wide, the live NCCM Device Inventory's (owner, 16 Oct 2026; it was 52 %)
+    rep('<obs-drawer id="credDrawer" width="52%"', '<obs-drawer id="credDrawer" width="40%"', 'cred drawer 40')
     # CSS: the old rules still match the hosts by class — neutralise the box they drew; obs-progress draws its own track
     k = t.index('</style>')
     t = t[:k] + '\n' + MARK2 + """
+/* Add / Edit Policy and Add Object = the product's Create Integration Profile drawer, measured off the owner's screenshot
+   (16 Oct 2026): 40% wide, 16px side inset, 18px title, labels 14px --neutral-light with the asterisk right after,
+   7px label → field, 20px between rows, 32px between the two columns, no section headings (each label already names
+   its group: Source Address, Destination Interface …), the mandatory note 14px in page text. The fields themselves
+   (14px text, a visible --field-border-color edge) are set inside the components by the attachShadow hook. */
+#pmAddDrawer .fa-pmf-form { gap: 20px; }
+#pmAddDrawer .fa-pmf-form .fa-grid { column-gap: 32px; row-gap: 20px; }
+#pmAddDrawer .fa-pmf-form .fa-field { gap: 7px; }
+#pmAddDrawer .fa-field-label { color: var(--neutral-light); font-size: 14px; line-height: 18px; }
+#pmAddDrawer .fa-field-label { gap: 2px; }
+#pmAddDrawer .fa-field-label .fa-req { margin: 0; }
+#pmAddDrawer .fa-pmf-form .fa-pmf-sec { display: none; }
+#pmfFoot .fa-mandatory, #pmoFoot .fa-mandatory { font-size: 14px; color: var(--page-text-color); }
+/* Firewall Inventory / Templates have no card frame: the toolbar runs flush with the table's edges (the DataGrid
+   toolbar's own 16px side inset was for a panel), and the list sits on the page surface so the neutral pills and
+   squares keep their fill in light theme (the settings pane behind is --neutral-lightest, their own fill colour). */
+.fa-dp-list:has(.fa-dsg) { background: var(--page-background-color); }
+.fa-fi-list .ds-dg { padding: 0 0 12px; }
 obs-progress.fa-lic-bar, obs-progress.fa-lic-stack, obs-progress.fa-lic-track, obs-progress.fa-inv-bar,
 .fa-tbl obs-progress.bar-track, .fa-if-pct obs-progress.bar-track { display: block; height: auto; background: none; border-radius: 0; overflow: visible; }
 obs-progress.fa-lic-track { flex: 1 1 auto; }
@@ -526,6 +1224,10 @@ obs-kpi-card.fa-ov-kpi { display: block; min-width: 0; --kpi-card-min-height: 15
 /* the firewall header card clipped the time-range picker's open panel to its own 61px (overflow:hidden on .fa-card) —
    the header lets it out and sits above the tabs and the tab body it opens over */
 .fa-card.fa-dev-head { overflow: visible; position: relative; z-index: 5; }
+/* the header is 61px whether or not this tab carries the 35px time-range picker (Flow · Logs · Policies Analytics do,
+   the rest do not) — without it the tab row jumped 7px between tabs */
+/* section.… outranks the later `.fa-card.fa-dev-head { min-height: 0 }` (same weight, later in the sheet) */
+section.fa-card.fa-dev-head { box-sizing: border-box; min-height: 61px; display: flex; flex-direction: column; justify-content: center; }
 /* Settings › Firewall Analyzer › Policies Management: the firewall picker that stands in for the firewall header */
 /* the picker is the module's form-item shell (field(): the DS Form Field label above the control — obs-select ships no
    `label`), at the select's own width rather than the form column's */
@@ -537,15 +1239,106 @@ obs-kpi-card.fa-ov-kpi { display: block; min-width: 0; --kpi-card-min-height: 15
 /* Add Policy drawer: the read-only facts span both form columns; the section rules lean on the form's own 16px gap */
 /* Add Policy / Add Object: the product form's rhythm (Create Integration Profile) — label 6px over its control, 16px
    between rows, a 24px gutter between the two columns, and a section heading 24px under the field above it */
-.fa-pmf-form .fa-grid { column-gap: 24px; row-gap: 16px; }
+.fa-pmf-form .fa-grid { column-gap: 16px; row-gap: 16px; }
 .fa-pmf-form .fa-field { gap: 6px; }
 .fa-pmf-form .fa-pmf-sec { margin-top: 8px; }
 .fa-pmf-form .fa-dp-h3 { font-size: 16px; font-weight: 600; }
 .fa-pmf-form .fa-field > obs-switch, .fa-pmf-form .fa-field > obs-checkbox { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--fa-input-height); }
 .fa-req + .fa-mandatory, .fa-mandatory > .fa-req { margin: 0 2px 0 0; }
 #pmfFoot, #pmoFoot { border-top: 0; }
-#pmfFoot .fa-mandatory, #pmoFoot .fa-mandatory { font-size: 13px; color: var(--page-text-color); }
+.fa-fwset-tabs { display: block; margin-bottom: 16px; }
+/* Compliance top row, like Flow's: the KPI card and the standards widget share one height */
+.fa-grid.cols-3.fa-cmp-top { align-items: stretch; }
+.fa-cmp-top > obs-kpi-card.fa-cmp-kpi { height: 100%; --kpi-card-min-height: 0; }
+.fa-cmp-top > .fa-cmp-scw { height: 100%; }
+.fa-mdh-tile { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 4px;
+  background: color-mix(in srgb, var(--page-text-color) 8%, transparent); color: var(--page-text-color); }
+.fa-cmp-scw .fa-card-body { height: 100%; }
+.fa-cmp-sc { display: flex; flex-direction: column; gap: 16px; height: 100%; }
+.fa-cmp-sch { padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+.fa-cmp-sch { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--neutral-light); }
+.fa-cmp-scb { flex: 1 1 auto; display: flex; align-items: center; justify-content: space-around; gap: 24px; }
+.fa-cmp-g { zoom: 1.4; }
+.fa-cmp-ml { flex: 0 1 auto; white-space: nowrap; }
+.fa-cmp-stdw { grid-column: span 2; display: flex; flex-direction: column; min-width: 0; }
+.fa-cmp-stdw > .fa-wc { flex: 1 1 auto; }
+/* the Logs tree divider: ::before is the container's FIRST child, so the tree and the log columns painted over it and
+   only the bits above and below them showed — lift it over them (pointer-events none, so nothing under it is blocked) */
+.fa-logs.tree-on::before { z-index: 3; }
+/* firewall cards: the trend runs the column's full width under its reading; the denied columns sit at the band's end */
+/* the two halves are 50% INCLUDING their padding — content-box made them 2 × 32px wider than the card, so the
+   right half's trend ran past the card's edge */
+.fa-ovc-c { box-sizing: border-box; align-content: flex-start; }
+.fa-ovc-c > obs-sparkline.fa-ovc-sp { flex: 0 0 100%; display: block; margin-top: 8px; min-width: 0; }
+/* the column chart has a fixed width (ten 18px slots) — a flex basis under that let the bars overrun the caption.
+   The caption sits under the count instead of beside it, so the count, its share and the columns each keep room */
+.fa-ovc-e > obs-sparkline.fa-ovc-cols { flex: 0 0 180px; display: block; margin-left: auto; }
+.fa-ovc:focus-visible { outline: 2px solid var(--primary-alt); outline-offset: 1px; }
+.fa-ovc-ev { flex-direction: column; align-items: flex-start; gap: 4px; }
+#pmfFoot .fa-mandatory, #pmoFoot .fa-mandatory { font-size: 14px; color: var(--page-text-color); }
+/* OVERLAY HAND-OFF (owner, 16 Oct 2026: "the sidebar will open top to start and the sidebar and side menu will blur").
+   Embedded, this page is a frame BELOW the host's header and RIGHT of its Settings list, so a drawer drawn here could
+   neither start at the top of the screen nor blur the host's chrome. While a drawer or modal is open the host enlarges
+   the frame to the whole window (and blurs itself behind it); this page then pins its own box back where the frame was
+   (--faovl-*), with the canvas outside that box transparent so the host shows through. */
+html.faovl { background: linear-gradient(transparent, transparent) !important; }  /* a bg image stops body's background propagating to the canvas */
+html.faovl body { position: fixed; left: var(--faovl-l); top: var(--faovl-t); width: var(--faovl-w); height: var(--faovl-h); overflow: hidden; }
+html.faovl .fa-shell { height: 100%; }
 """ + t[k:]
+    # the frame's half of the hand-off: report whether any drawer / modal dialog is open; apply the host's rect
+    k2 = t.rindex('</body>')
+    t = t[:k2] + """<script>/* FA-OVERLAY — see the html.faovl rules */
+(function(){
+  if (window.parent === window) return;
+  var on = false, h = document.documentElement;
+  function anyOpen(){ var els = document.querySelectorAll('obs-drawer, obs-modal');
+    for (var i = 0; i < els.length; i++) { var d = els[i].shadowRoot && els[i].shadowRoot.querySelector('dialog'); if (d && d.open) return true; }
+    return false; }
+  setInterval(function(){ var a = anyOpen(); if (a !== on) { on = a; window.parent.postMessage({ faOverlay: a }, '*'); } }, 80);
+  addEventListener('message', function(e){ var d = e.data; if (!d || !('faRect' in d)) return; var r = d.faRect;
+    if (r) { h.style.setProperty('--faovl-l', r.l + 'px'); h.style.setProperty('--faovl-t', r.t + 'px');
+      h.style.setProperty('--faovl-w', r.w + 'px'); h.style.setProperty('--faovl-h', r.h + 'px'); h.classList.add('faovl'); }
+    else h.classList.remove('faovl');
+    dispatchEvent(new Event('resize')); });
+})();</script>
+""" + t[k2:]
+    # Agentation in the frame too (owner, 16 Oct 2026: "agentation is not working"). The parent page's widget cannot reach
+    # inside an iframe, so every note left on a Firewall Analyzer screen went nowhere. Same dev-only loader and stacking fix
+    # as the host pages (file:// / localhost only); the script is the folder root's shared copy.
+    k3 = t.rindex('</body>')
+    t = t[:k3] + """<script>/* AGENTATION (dev-only) */
+(function () {
+  var dev = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!dev || window.__faAgentation) return; window.__faAgentation = 1;
+  var st = document.createElement('style');
+  st.textContent = '[data-agentation-root] > *{z-index:2147483000 !important}'
+    + '[data-agentation-root] > [class*="markersLayer" i]{z-index:2147483001 !important}'
+    + '[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}'
+    /* inside an open drawer / modal (see follow() below) the toolbar rides above the dialog's footer buttons */
+    + ':is(obs-drawer, obs-modal) > [data-agentation-root] > [class*="toolbar"]{bottom:84px !important}';
+  /* framed (setting.html / index.html): ONE toolbar on screen — the host hides its own while this frame is showing
+     (owner, 16 Oct 2026: "show 2 agentation tools, fix the problem"), so this one keeps the normal corner */
+  document.head.appendChild(st);
+  var s = document.createElement('script'); s.src = '../agentation-embed.js'; s.defer = true; document.body.appendChild(s);
+  /* An open obs-drawer / obs-modal is a MODAL <dialog>: the browser draws it in the top layer and makes everything outside
+     it inert, so Agentation's toolbar sat under the drawer and could not be clicked (owner, 16 Oct 2026). While one is open,
+     Agentation's root is moved into that dialog's light DOM (slotted into the dialog, so not inert, and still in this
+     document, so its styles and events keep working); when none is open it goes back where it was mounted. A drawer that
+     repaints its body drops the root, and the next tick puts it back. */
+  (function follow() {
+    var root = null, home = null;
+    setInterval(function () {
+      if (!root) { root = document.querySelector('[data-agentation-root]'); if (!root) return; home = root.parentNode; }
+      var host = null;
+      [].forEach.call(document.querySelectorAll('obs-drawer, obs-modal'), function (el) {
+        var d = el.shadowRoot && el.shadowRoot.querySelector('dialog'); if (d && d.open) host = el; });
+      var target = host || home;
+      if (target && root.parentNode !== target) target.appendChild(root);
+    }, 250);
+  })();
+})();
+</script>
+""" + t[k3:]
     return t
 
 
