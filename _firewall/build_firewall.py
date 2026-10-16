@@ -37,6 +37,8 @@ addEventListener('message',function(e){var d=e.data;if(d&&d.faTheme)set(d.faThem
 if(th)addEventListener('load',function(){set(th);});})();</script>
 <style>html.faembed{--fa-rail-width:0px}
 html.faembed .fa-rail,html.faembed #appHeader{display:none!important}
+/* inside Option 1 the page sits on the host's page background like every other module (its own --common-main-bg is lighter) */
+html.faembed body,html.faembed .fa-body{background:var(--page-background-color)}
 /* ?embed=settings: the host's Settings page supplies the category list and the head, so the page's own go */
 html.fasettings .fa-sections,html.fasettings #dpHeader{display:none!important}</style>
 '''
@@ -45,3 +47,8 @@ t = t.replace('<head>\n', '<head>\n' + embed, 1)
 open(OUT, 'w', encoding='utf-8').write(t)
 left = re.findall(r'(?<![0-9.])(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d+\.\d+\.\d+', t)
 print(len(pre), 'prefixes mapped ·', len(left), 'private addresses left', left[:5])
+
+# DS pass (13 Oct 2026): swap the hand-built widget chrome, tiles, stats, key/value lists and pagers
+# for their obs-* elements — see _firewall/ds_pass.py.
+import subprocess, os
+subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ds_pass.py'), OUT], check=True)

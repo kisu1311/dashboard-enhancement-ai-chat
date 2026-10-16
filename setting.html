@@ -46563,10 +46563,13 @@ ST_PAGES['IPAM › Approved Vendor List']  = { html: ipmPageOf(ipmVendorsHTML), 
 /* Settings › Firewall Analyzer (13 Oct 2026) — the vendored module's own screens (#fwinventory / #fwtemplates) in
    ?embed=settings mode, which hides its Settings list and head so this page's own list and head stand in. The frame
    follows the theme over postMessage ({faTheme}), as the module view does. */
-const faSetPage = hash => ({ html: () => `<div class="stfa"><iframe class="stfafr" title="Firewall Analyzer settings"
+const faSetPage = hash => ({ html: () => `<div class="stfa"><iframe class="stfafr" aria-label="Firewall Analyzer settings"
   src="_firewall/firewall.html?embed=settings&theme=${ipamTheme()}#${hash}"></iframe></div>` });
 ST_PAGES['Firewall Analyzer › Firewall Inventory'] = faSetPage('fwinventory');
 ST_PAGES['Firewall Analyzer › Firewall Templates'] = faSetPage('fwtemplates');
+/* Policies Management moved here from the firewall's tab row (15 Oct 2026). It is a per-firewall screen, so the frame
+   opens it on the first firewall and the module draws a Firewall picker in place of its header (embed=settings). */
+ST_PAGES['Firewall Analyzer › Policies Management'] = faSetPage('device/fw-01/policy');
 new MutationObserver(() => document.querySelectorAll('.stfafr').forEach(f => {
   try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch (e) {} }))
   .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

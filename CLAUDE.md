@@ -7352,6 +7352,28 @@ Option 14 is the byte-accurate source.
 non-sidebar restorations asserted individually (title, 13 Iris strings, the hairline, the Global
 AI row present and inside `.stop`).
 
+## The dashboard board is on the ObserveOps DS (Option 1, 15 Oct 2026)
+
+Request: *"in this page the all component is obs components if no then use the obs design system components"*.
+Asked first: **frames + bodies** (keep this board's own drag/resize/undo engine) and **Highcharts for the charts**.
+The vendored `_ds/` bundle is **v0.1.240** and carries `obs-widget-card`, `obs-gauge`, `obs-severity-heatmap`.
+
+| part | now |
+|---|---|
+| every widget's frame (all boards, except a Free Text note) | `obs-widget-card static` inside the old `.widget` box (`.widget.wds`), which keeps `draggable`, the data attributes and the three resize grips |
+| ring clusters (`donuts`) | one `obs-gauge` per member, all against the group total, severity from the label (`W_SEV`) |
+| `honey` | `obs-severity-heatmap` (worst first, RFC 5737 names) + `obs-severity-legend` |
+| `pie` / `hbars` | Highcharts v10 from the DS fixtures `chart-single-pie` / `chart-single-horizontal-bar`, lazily from jsDelivr (`wHc` / `wHcMount`); the old SVG stays until it loads |
+| Alert Stream | `obs-table` (`w.ds`), Policy as the DS `severity` cell |
+| header squares · Create Widget FAB · add-tile quick buttons | `obs-button` |
+
+- ⚠️ **The card's own kebab is hidden** by an `attachShadow` hook placed BEFORE the bundle (`:host(.wdscard)`); the board's ✦ / ⋮ sit in `.wdsact` over that spot, because the card's menu has no AI summary or Export as CSV.
+- ⚠️ **`dsTap(this)` guards every obs-button `onclick`.** Measured: one click → 2 calls, because Vue forwards the host's `onclick` ATTRIBUTE onto the inner `<button>` — so the guard keys on the HOST (`getRootNode().host`), or a per-element guard lets both through.
+- ⚠️ **`#view-dashboard`, `#wFullView`, `#cwFab` and `.highcharts-tooltip-container` are in the scoped DS token openers** (dark + light). The chart tooltip is `outside:true`, i.e. on `<body>`.
+- ⚠️ **The 82px gauge does not fit a 150px card** with its label — `.wdsg` is a size container that zooms the dials down (`@container` steps). The DS says "scale via the container/zoom".
+- ⚠️ **Still hand-built**, stated: the time-range chip + popover, the timeline strip, the add tile's dashed body, the Free Text frame, and every other widget BODY type (spark, bars, treemap, …) — framed by the card now, drawn as before. `obs-severity-legend` shows level names without the counts the old legend had.
+- Verified: a 17-assertion probe (cards, hidden kebab, 8 gauges, 265 hexes, 8 table rows, 7 Highcharts charts, single-fire click, no console error) · `behave` 63/63 · `harness … query` 77/77 · `lxbehave` 57/57 · dark and light screenshots.
+
 ## Free Text — the widget, and its create-time editor (Option 1, 17 Sep 2026)
 
 Request: *"understand the 'free text' flow … and in this free text flow will be add in option 1"*,
@@ -10070,6 +10092,26 @@ box's geometry, ink, padding, placeholder and glyph; the five squares' order, si
 product paths; Filter active at rest and toggling; a tab pick; the chevron flip; `MOD_SUB="Network"`
 landing on Network and the pinned card's row carrying it; Topology still on the placeholder; the
 light-theme table; no console error. Dark and light screenshotted.
+
+## Free Text design 1 and Empty group design 2 moved to Option 2 (15 Oct 2026)
+
+Requests: *"the free text will be move in dashboard option 2"* and *"the empty group option 2 will be move in
+dashboard sidebar option 2"*. Read as: each design leaves Option 1's Add New Widget drawer and lives on the
+Option 2 page (`dashboard-grouped-sidebar.html`). In `index.html` the Free Text tiles are `[2].map(…)` and
+`W_GROUP_OPT`'s option-2 row is parked in a comment — one edit each to bring back.
+
+- **Free Text in Option 2** — the editor is COPIED VERBATIM from `index.html`: the `#cwScrim`/`#cwModal` markup, the
+  CSS (index lines ~9751–10094 + 10166–10928), `CW_FT_*`, `ftHTML`/`ftMd`/`ftEdit`, `cwFtPanelHTML` (option-1 branch),
+  the dropdown + colour picker + presets + Formatting help. Only a GLUE block at its end is Option 2's: a
+  Free-Text-only `CW`, `cwOpen(id)`/`cwRender`/`cwPreview`/`cwValid`/`cwSave`, landing in `DASH_WIDGETS` as
+  `{vis:'freetext', ft:{…}, span}`. ⚠️ **Nothing syncs the two copies.** The query-builder parts of the modal
+  markup are present but hidden by `.cwft`. Board double-click editing is not wired (Edit Widget in ⋮ is).
+- **Empty group in Option 2** (`wHTML`/`gHTML`/`awAddGroup2`/`gAct2`/`gDropInto`) — Option 2 had no groups, so a light
+  model: a group is a `DASH_WIDGETS` entry `vis:'group'` and a widget joins with `grp:<id>`; the array stays flat so
+  every find-by-id path works. A group is a `.dwidget`, so the ONE resize engine sizes it (columns × px) and two narrowed
+  groups share a row. No dashed box; header = collapse caret · rename (dbl-click) · count · ＋ (adds into it via `awGrp`)
+  · ⋮ (Rename · Add widget · Ungroup · Delete). ⚠️ DnD handlers `stopPropagation` — a widget inside a group is a
+  `.dwidget` inside a `.dwidget`. ⚠️ **Not ported:** Option 1's Edit-group drawer (colour, title size, banner, pattern, share).
 
 ## Global AI (`Global_ai.html`, 16 Sep 2026) — the assistant as a full page
 

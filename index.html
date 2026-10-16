@@ -3516,6 +3516,22 @@ body:has(#view-dashboard.on) .gnav{display:block}
 .gdrop svg{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
 .dgrid12.dropinto .gdrop{border-color:var(--teal);color:var(--text-dim)}
+/* the empty group's empty state — see `gEmptyHTML`. A column, centred; the art, one muted line
+   and a default button. `min-height` is raised from the band's 56px only for this state. */
+.gdrop.gdempty{flex-direction:column;gap:10px;padding:18px 14px 20px;min-height:0}
+.gdrop.gdempty .gdart{width:120px;height:80px;flex:0 0 auto;stroke:none;fill:none}
+/* no dashed box round the empty state (request, 16 Oct 2026) — `transparent`, not `border:0`, so the box does not
+   move by a pixel; `.dgrid12.dropinto .gdrop` (0,3,0) still outranks this and lights it teal while you drag over */
+.gdrop.gdempty{border-color:transparent}
+/* ── the Delete group confirm (`gDelAsk`) — its body is slotted, so these reach it ── */
+#gDelMd .gdelmsg{font-size:13px;line-height:1.55;color:var(--page-text-color)}
+#gDelMd .gdelmsg b{font-weight:600}
+#gDelMd .gdelopt{display:block;margin-top:12px}
+#gDelMd .gdelnote{margin-top:10px;font-size:12px;line-height:1.5;color:var(--neutral-light)}
+
+.gdrop.gdempty .gdtxt{font-size:13px;color:var(--text-dim)}
+.gdrop.gdempty .gdadd{display:inline-flex;align-items:center;gap:6px;margin-top:2px}
+.gdrop.gdempty .gdadd .gdpl{width:13px;height:13px;flex:0 0 13px;fill:currentColor}
 /* ── Empty group · DESIGN OPTION 2 ONLY (request, 17 Sep 2026) ─────────────────
    An option 2 GROUP can be dragged taller and narrower — in pixels and in grid columns, the
    widget's own two axes — and the board's widgets then give up the room (see `gRzDown` and
@@ -3708,6 +3724,12 @@ body:has(#view-dashboard.on) .gnav{display:block}
 .waQb:hover{opacity:1;color:var(--teal);border-color:var(--teal);background:var(--hover)}
 .waQb.ai:hover{color:var(--ai);border-color:var(--ai-line);background:var(--ai-soft)}
 .waMain:focus-visible,.waQb:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+/* the quick-add row is obs-button size="small" (15 Oct 2026): the DS draws the 24px button, so the host
+   drops the old chip's box, fill, border and hover — left on, the 26×24 host clipped a 35px squared button
+   that then rode up into the "Browse … types" line. No `squared`: that is the 35px toolbar icon button. */
+obs-button.waQb,obs-button.waQb:hover,obs-button.waQb.ai:hover{display:inline-block;width:auto;height:auto;
+  background:none;border:0;opacity:1;line-height:0}
+.waQ:has(obs-button){gap:6px;padding:8px 8px 12px}
 /* an empty group gets the same tile, just wider and with room to breathe */
 .wadd.big{min-height:152px}
 .wadd.big .waS{max-width:280px}
@@ -7681,6 +7703,48 @@ body.aidockr .aidockghost{display:block}
 .wstat .v{font-size:22px;font-weight:700;font-family:"JetBrains Mono",monospace}
 .wstat .k{font-size:11px;color:var(--text-dim)}
 .wstat .delta{font-size:11px;font-weight:600}
+/* ── THE WIDGET FRAME IS obs-widget-card (15 Oct 2026) ─────────────────────────────────────────────
+   The outer .widget is now a transparent positioning box: it keeps the grid placement, the data
+   attributes, `draggable` and the three resize grips, and the DS card fills it. Its own border, fill,
+   radius and hover shadow went, or the board would draw two frames, one inside the other.
+   ⚠️ The DS card is 7px-cornered on --widget-border-color over --page-background-color — the dashboard
+   canvas token the DS's own dashboard recipe names. */
+.widget.wds{background:transparent;border:0;border-radius:7px;overflow:visible;position:relative;display:block}
+.widget.wds:hover{box-shadow:none}
+/* the card's fill is --page-background-color; re-pointed to the DS widget surface --widget-background
+   (#0b1627 dark / #fff light). Request 15 Oct 2026 "add the widget background #0b1627" — it was
+   --common-widget-bg (#172336) an hour earlier, which merged the body into the #172336 title strip. */
+.widget.wds > obs-widget-card{height:100%;--page-background-color:var(--widget-background);--font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+/* the card pads its own body (10px 12px 14px) — the board's inner .wbody stops adding a second inset */
+.widget.wds .wbody{padding:0;height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+/* the board's ✦ / ⋮ / edit-mode ✕, where the card's kebab was (header padding 5px 10px, a 22px control) */
+.widget.wds .wdsact{position:absolute;top:6px;right:10px;height:22px;display:flex;align-items:center;gap:4px;z-index:3}
+.widget.wds .wdsact .wdots{color:var(--neutral-regular);font-size:14px;line-height:1;opacity:0;transition:opacity .12s;cursor:pointer;
+  display:grid;place-items:center;width:22px;height:22px;border-radius:4px}
+.widget.wds .wdsact .wdots:hover{background:var(--neutral-lighter);color:var(--page-text-color)}
+.widget.wds .wdsact .wai{display:grid;place-items:center;width:22px;height:22px;border-radius:4px;color:var(--ai-2,#a78bfa);
+  opacity:0;transition:opacity .12s,background .12s;cursor:pointer}
+.widget.wds .wdsact .wai svg{width:13px;height:13px;fill:currentColor}
+.widget.wds .wdsact .wai:hover{background:var(--ai-soft,rgba(139,92,246,.13))}
+.widget.wds:hover .wdsact .wdots,.widget.wds:focus-within .wdsact .wdots,.dgrid12.editing .widget.wds .wdsact .wdots{opacity:1}
+.widget.wds:hover .wdsact .wai,.widget.wds:focus-within .wdsact .wai{opacity:.85}
+.wstat.wds .statsp{margin:10px -12px -14px}
+/* gauges: one row, each dial the DS's fixed 82px ring */
+.wdsg{flex:1;min-height:0;display:flex;align-items:center;justify-content:space-around;gap:8px;container-type:size}
+/* ⚠️ THE RING IS A FIXED 82px (no size prop) and a dial + its label is ~106px tall, more than a 150px card's
+   body — the labels were cut in half. The DS's own answer is "scale via the container/zoom", so the row
+   steps down by its OWN box (height, and width for four dials in a narrow card), not by a board's numbers. */
+@container (max-height:106px){ .wdsg obs-gauge{zoom:.86} }
+@container (max-height:92px){ .wdsg obs-gauge{zoom:.74} }
+@container (max-height:78px){ .wdsg obs-gauge{zoom:.62} }
+@container (max-width:380px){ .wdsg obs-gauge{zoom:.72} }
+/* the honeycomb centred in what is left over the legend; it scrolls rather than overflowing a short card */
+.wdshm{flex:1;min-height:0;display:grid;place-items:center;overflow:auto}
+.wdshl{flex:0 0 auto;display:flex;justify-content:center;margin-top:8px}
+/* the Highcharts box fills the body; until Highcharts exists it holds the old SVG */
+.wdshc{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.wdshc .highcharts-container{position:absolute!important;inset:0}
+.wdstb{flex:1;min-height:0;display:block;overflow:auto}
 /* chart wrapper — the SVG stretches to fill the body; scale labels stay in HTML so they never distort */
 .cw{position:relative;flex:1;min-height:0}
 .cw svg{width:100%;height:100%;display:block}
@@ -7875,6 +7939,8 @@ html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:
 .pagehead.lhd .lhclear svg{width:17.6px;height:17.6px;fill:currentColor}
 .pagehead.lhd .lhstamp{display:flex;flex-direction:column;margin-left:8px;font-size:12px;line-height:18px;color:var(--lh-dim);white-space:nowrap}
 .pagehead.lhd .lhbtns{display:flex;align-items:center;gap:8px}
+/* the dashboard header's three squares are obs-button (15 Oct 2026) — the DS paints them; strip this chip's own paint from the host */
+.pagehead.lhd obs-button.lhsq{display:inline-block;width:auto;height:auto;padding:0;border:0;background:none}
 .lhtok .lhsq{display:inline-flex;align-items:center;justify-content:center;width:35px;height:35px;padding:8px;margin:0;
   border:1px solid var(--lh-btn);border-radius:4px;background:var(--lh-btn);color:var(--lh-btn-ink);cursor:pointer}
 /* the live rule (`.ant-btn-primary.button-neutral-lightest:hover`) paints the SAME fill, border and
@@ -9761,19 +9827,13 @@ textarea.acta::placeholder{color:var(--muted)}
 .wempty svg{width:34px;height:34px}
 .wempty b{font-size:13px;font-weight:500;color:var(--text-dim)}
 
-.cwfab{position:fixed;right:20px;bottom:72px;z-index:60;display:none;align-items:center;gap:8px;
-  height:40px;padding:0 16px 0 13px;border:0;border-radius:20px;cursor:pointer;
-  background:var(--action);color:var(--action-fg);font:inherit;font-size:12.5px;font-weight:600;
-  box-shadow:0 6px 20px rgba(0,0,0,.4)}
-html[data-theme="light"] .cwfab{box-shadow:0 6px 18px rgba(23,35,54,.22)}
-.cwfab:hover{background:var(--action-h)}
-.cwfab:active{transform:translateY(1px)}
-.cwfab svg{width:16px;height:16px;fill:currentColor;flex:0 0 16px}
+/* the FAB is an obs-button (15 Oct 2026): the DS paints the button, this rule only places the host */
+.cwfab{position:fixed;right:20px;bottom:72px;z-index:60;display:none;--font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.cwfab obs-icon{margin-right:6px}
 /* only on the dashboard — the page also has Approvals / Health / module views */
 body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 /* the label is the point, but it is the first thing to go if the board gets narrow */
-@media (max-width:1280px){ .cwfab{padding:0;width:44px;height:44px;justify-content:center;border-radius:50%}
-  .cwfab span{display:none} }
+@media (max-width:1280px){ .cwfab span{display:none} .cwfab obs-icon{margin-right:0} }
 #cwScrim{position:fixed;inset:0;z-index:200004;background:rgba(4,10,20,.62);opacity:0;pointer-events:none;transition:opacity .18s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 #cwScrim.on{opacity:1;pointer-events:auto}
 #cwModal{position:fixed;inset:18px;z-index:200005;background:var(--panel);border:1px solid var(--border);
@@ -12130,7 +12190,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
    stopped loading it — so the Formatting help modal fell back to the DS's LIGHT defaults in dark theme.
    Copied verbatim from setting.html (dark block, light block, the Inter/card re-point), selectors
    narrowed to the three elements on this page. Change one copy, change both. */
-#cwMdHelp,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView{
+#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,.highcharts-tooltip-container{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -12522,7 +12582,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
   --widget-box-shadow:#000;
   --widget-type-selector-border-color:'transparent';
 }
-html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView{
+html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] .highcharts-tooltip-container{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
@@ -12823,7 +12883,7 @@ html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #drawer-gedit,html[d
   --widget-box-shadow:none;
   --widget-type-selector-border-color:#e3e8f2;
 }
-#cwMdHelp,#grpBtn{
+#cwMdHelp,#gDelMd,#grpBtn{
   /* ⚠️ the DS ships Poppins; this prototype is Inter. Declared divergence — see above. */
   --font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --card:var(--common-widget-bg);      --panel-2:var(--neutral-lightest);
@@ -13297,11 +13357,11 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
             </div>
           </div>
           <div class="lhbtns">
-            <button class="lhsq" id="fsBtn" title="Full Screen" onclick="toggleFS()"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M21,25c-.6,0-1,.2-1.4,.6l-11.6,11.5v-3.1c0-.6-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6-.6,.8-.6,1.4v8c0,.3,0,.5,.2,.8,.2,.5,.6,.9,1,1,.3,.1,.5,.2,.8,.2H14c.6,0,1-.2,1.4-.6,.5-.4,.6-.8,.6-1.4s-.2-1-.6-1.4c-.3-.4-.8-.6-1.4-.6h-3.1l11.6-11.6c.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4c-.4-.5-.8-.6-1.5-.6h0ZM43.9,5.2c-.2-.5-.6-.9-1-1s-.6-.2-.9-.2h-8c-.6,0-1,.2-1.4,.6s-.6,.8-.6,1.4,.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h3.1l-11.5,11.6c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.6,.2,.8c.1,.3,.3,.5,.5,.7s.4,.4,.7,.5c.3,.1,.5,.2,.8,.2s.6,0,.8-.2c.3-.1,.5-.3,.7-.5l11.4-11.7v3.1c0,.6,.2,1,.6,1.4,.4,.4,.9,.6,1.4,.6s1-.2,1.4-.6c.5-.4,.6-.8,.6-1.4V6c0-.3,0-.5,0-.8Z"/></svg></button>
+            <obs-button class="lhsq" id="fsBtn" variant="neutral-lightest" squared data-tip="Full Screen" aria-label="Full Screen" onclick="dsTap(this)&&toggleFS()"><obs-icon name="fullscreen" size="17"></obs-icon></obs-button>
             <!-- the live Export renders the board to an image (`handleExport`, html2canvas); the ⋮ menu's
                  Export-as-image row is the same action, so this goes through the same `dmAct('img')` -->
-            <button class="lhsq" title="Export" onclick="dmAct('img', dashState.cur)"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31,20c1.7,0,3-1.3,3-3s-1.3-3-3-3-3,1.3-3,3,1.3,3,3,3Zm7-14H10c-2.2,0-4,1.8-4,4v28c0,2.2,1.8,4,4,4h28c2.2,0,4-1.8,4-4V10c0-2.2-1.8-4-4-4Zm0,32H10v-7l8-6.4,8.8,7c.8,.6,1.9,.6,2.7-.1l2.6-2.6,6,6v3.2Zm0-8.8l-4.6-4.6c-.8-.8-2-.8-2.8,0l-2.7,2.7-8.6-6.9c-.7-.6-1.8-.6-2.5,0l-6.8,5.4V10h28V29.2Z"/></svg></button>
-            <button class="lhsq" title="More" onclick="openDashMenu(event, dashState.cur)"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M24,14c2.2,0,4-1.8,4-4s-1.8-4-4-4-4,1.8-4,4,1.8,4,4,4Zm0,20c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Zm0-14c-2.2,0-4,1.8-4,4s1.8,4,4,4,4-1.8,4-4-1.8-4-4-4Z"/></svg></button>
+            <obs-button class="lhsq" variant="neutral-lightest" squared data-tip="Export" aria-label="Export" onclick="dsTap(this)&&dmAct('img', dashState.cur)"><obs-icon name="image" size="17"></obs-icon></obs-button>
+            <obs-button class="lhsq" variant="neutral-lightest" squared data-tip="More" aria-label="More" onclick="dsTap(this)&&openDashMenu(event, dashState.cur)"><obs-icon name="ellipsisV" size="17"></obs-icon></obs-button>
           </div>
         </div>
       </div>
@@ -13945,7 +14005,7 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
        content intact, and the rule below is what marks the boundary to the one that does not. -->
   <div class="cmi" onclick="gUngroup()"><span class="cmii"></span>Ungroup</div>
   <div class="cmsep"></div>
-  <div class="cmi danger" onclick="gRemove()"><span class="cmii"></span>Delete group</div>
+  <div class="cmi danger" onclick="gDelAsk()"><span class="cmii"></span>Delete group</div>
 </div>
 
 <!-- Edit group — the title, the header's colour and its size (request, 17 Sep 2026).
@@ -19511,17 +19571,36 @@ function wMini(seed,color){ const r=rng(seed+wShift*7),W=200,H=40,n=28,st=W/(n-1
 /* pal = [[cumulative probability, colour, label], …] — lets a board weight the grid its own
    way (the live Alert Summary heatmap is red-heavy, not the default green-heavy fleet) */
 function wHoney(seed,n,pal){
+  /* ⚠️ ON THE DS SINCE 15 Oct 2026 (request: "in this page the all component is obs components if no
+     then use the obs design system components"). The honeycomb is `obs-severity-heatmap` — the DS's
+     port of the product's own PlainHeatMap — and its key is `obs-severity-legend`. Each `pal` row's
+     LABEL is the severity it stands for, so the boards that already pass a palette keep their mix;
+     its colour is no longer used, the fill is var(--severity-<level>) inside the component.
+     ⚠️ WORST FIRST, as the DS asks ("order/band the data meaningfully") and as the product draws it.
+     ⚠️ Every cell carries a scrubbed RFC 5737 address + a location so the hover card has identity. */
   const r=rng(seed+wShift);
-  const P = pal || [[.75,'var(--green)','Up'],[.88,'var(--yellow)','Warning'],
-                    [.96,'var(--orange)','Major'],[1,'var(--red)','Critical']];
-  const c = P.map(()=>0);
-  let o='';
+  const P = pal || [[.75,'','Up'],[.88,'','Warning'],[.96,'','Major'],[1,'','Critical']];
+  const lv = P.map(x => W_SEV[String(x[2]).toLowerCase()] || 'unknown');
+  const c = P.map(()=>0), cells = [];
   for(let i=0;i<n;i++){ const p=r(); let k=P.findIndex(x=>p<x[0]); if(k<0) k=P.length-1; c[k]++;
-    o+=`<span title="Monitor ${i+1} — ${P[k][2]}" style="width:19px;height:19px;border-radius:5px;background:${P[k][1]};opacity:.88;display:inline-block;cursor:pointer"></span>`; }
-  return `<div style="flex:1;min-height:0;display:grid;place-items:center;overflow:hidden">
-      <div style="display:grid;grid-template-columns:repeat(14,19px);gap:5px;justify-content:center">${o}</div></div>
-    <div class="wlegend">${P.map((x,k)=>`<span><i style="background:${x[1]}"></i>${x[2]} ${c[k]}</span>`).join('')}</div>`;
+    cells.push({ severity:lv[k], k, name:(i < 250 ? '192.0.2.' + (i + 2) : '198.51.100.' + (i - 248)), location:'Site ' + (1 + i % 6) }); }
+  cells.sort((a, b) => (W_SEV_RANK[a.severity] ?? 9) - (W_SEV_RANK[b.severity] ?? 9));
+  const labels = {}; lv.forEach((l, k) => { labels[l] = P[k][2] + ' ' + c[k]; });
+  const sum = lv.map((l, k) => c[k] + ' ' + P[k][2].toLowerCase()).join(', ');
+  return `<div class="wdshm" role="img" aria-label="${n} monitors: ${sum}">
+      <obs-severity-heatmap size="22" cells="${wAttrJ(cells.map(({k, ...x}) => x))}"></obs-severity-heatmap></div>
+    <obs-severity-legend class="wdshl" levels="${lv.join(',')}" labels="${wAttrJ(labels)}"></obs-severity-legend>`;
 }
+/* ── DS helpers for the board's widget bodies (15 Oct 2026) ──────────────────────────────
+   A label → the DS severity key. Unknown words map to '' (obs-gauge then paints --primary). */
+const W_SEV = { up:'up', down:'down', unreachable:'unreachable', maintenance:'maintenance', critical:'critical',
+                major:'major', warning:'warning', clear:'clear', minor:'warning', info:'clear' };
+const W_SEV_RANK = { down:0, critical:1, unreachable:2, major:3, warning:4, maintenance:5, clear:6, up:7, unknown:8 };
+/* JSON for an attribute — the component JSON.parses it; only the quote and the ampersand need escaping */
+const wAttrJ = v => JSON.stringify(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+/* the DS chart palette, IN ORDER — the captured fixtures' `colors`, as tokens so light/dark follow */
+const W_HC_PAL = ['--chart-vivid-teal','--chart-tangerine','--chart-neon-purple','--chart-lime-green','--chart-hot-pink',
+  '--chart-aqua','--chart-golden-yellow','--chart-electric-coral','--chart-emerald-green','--chart-fuchsia'].map(t => `var(${t})`);
 /* ══ FIVE NEW WIDGET FORMS (request, 23 Sep 2026: "in ui_pmg create 4–5 new, different widgets
    using the ObserveOps design system — don't reuse existing ones") ══════════════════════════
    ⚠️ THE DS HAS NO CHART PALETTE — `resolve_token('chart series colors')` returns no match and
@@ -19651,20 +19730,106 @@ function wGauge(seed, fixed){ const r=rng(seed+wShift), v=fixed != null ? fixed 
    Alert Count" widgets) and labelled horizontal bars (Top Policy / Top Monitor). Copied
    in shape from the live 8.2.7 board, not invented. -------------------------------- */
 function wDonuts(items){
-  const R = 25, C = 2 * Math.PI * R;
-  return `<div class="wdon">` + items.map(([v, label, col, pct]) => {
-    const on = C * Math.max(.03, Math.min(1, pct));
-    return `<div class="wdo" title="${label}: ${v}">
-      <svg viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="var(--chip)" stroke-width="5"/>
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round"
-          stroke-dasharray="${on.toFixed(1)} ${(C - on).toFixed(1)}" transform="rotate(-90 32 32)"/>
-        <text x="32" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="${col}"
-          font-family="JetBrains Mono,monospace">${v}</text>
-      </svg><span>${label}</span></div>`;
-  }).join('') + `</div>`;
+  /* ON THE DS (15 Oct 2026): one `obs-gauge` per member, every one against the SAME group total — the DS's
+     own Monitor-Availability / Alert-Count pattern. The colour is the member's severity, read off its label;
+     the old per-item colour and `pct` are no longer used (the arc IS value/total now, so they cannot disagree).
+     ⚠️ role=img + an aria-label on each host: the component's SVG carries no text alternative (its own a11y note). */
+  const tot = items.reduce((a, it) => a + (+it[0] || 0), 0);
+  return `<div class="wdon wdsg">` + items.map(([v, label]) =>
+    `<obs-gauge value="${v}" total="${tot}" severity="${W_SEV[String(label).toLowerCase()] || ''}" label="${label}"
+       role="img" aria-label="${label}: ${v} of ${tot}"></obs-gauge>`).join('') + `</div>`;
 }
-function wPie(items){
+/* ── pie and horizontal bars on Highcharts, from the DS's captured fixtures (15 Oct 2026) ─────────────
+   The DS ships no obs-* chart; its data-viz guide answers a standalone chart with "copy the matching
+   fixture's config and render with Highcharts v10". `chart-single-pie` and `chart-single-horizontal-bar`
+   (@mtdt/observeops-ds-spec) supplied every style below — the transparent plot, --chart-font-family, the
+   0.65rem labels in --page-text-color, the --chart-legend-color legend, the --chart-tooltip-background
+   tooltip — and the palette above, in order.
+   ⚠️ LOADED ONCE, LAZILY, from jsDelivr, the License page's precedent. Highcharts is commercially licensed
+      (the product holds it). OFFLINE, THE SVG STAYS: each container is painted with the old renderer and
+      is only emptied once Highcharts exists.
+   ⚠️ The data rides on the container (`data-whc`), not a WIDGETS index — full screen, the AI previews and
+      the version preview all render wBody for widgets that are not at that index on the board. */
+const W_HC_SRC = 'https://cdn.jsdelivr.net/npm/highcharts@10.3.3/highcharts.js';
+let wHcP = null;
+function wHc(){
+  if (window.Highcharts) return Promise.resolve(window.Highcharts);
+  if (!wHcP) wHcP = new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.src = W_HC_SRC; sc.async = true;
+    sc.onload = () => window.Highcharts ? ok(window.Highcharts) : no(new Error('Highcharts missing'));
+    sc.onerror = () => { wHcP = null; no(new Error('Highcharts failed to load')); };
+    document.head.appendChild(sc);
+  });
+  return wHcP;
+}
+function wHcBox(kind, data, fallback){
+  return `<div class="wdshc" data-whk="${kind}" data-whc="${wAttrJ(data)}">${fallback}</div>`;
+}
+function wHcMount(){
+  if (!document.querySelector('.wdshc:not([data-hcon])')) return;
+  wHc().then(H => {
+    (H.charts || []).forEach(c => { if (c && c.renderTo && !c.renderTo.isConnected){ if (c.wRo) c.wRo.disconnect(); c.destroy(); } });
+    document.querySelectorAll('.wdshc:not([data-hcon])').forEach(el => {
+      let d; try { d = JSON.parse(el.dataset.whc); } catch (e) { return; }
+      el.dataset.hcon = '1'; el.innerHTML = '';
+      const c = H.chart(el, el.dataset.whk === 'pie' ? wHcPie(d) : wHcBar(d));
+      c.wRo = new ResizeObserver(() => { if (el.offsetWidth && (c.chartWidth !== el.offsetWidth || c.chartHeight !== el.offsetHeight)) c.setSize(el.offsetWidth, el.offsetHeight, false); });
+      c.wRo.observe(el);
+    });
+  }).catch(() => {});
+}
+/* the fixture's shared parts — every colour a var(--token), so one config renders in both themes */
+function wHcBase(type){
+  const lbl = { color:'var(--page-text-color)', fontSize:'0.65rem' };
+  return {
+    chart:{ type, backgroundColor:'transparent', plotBorderColor:'var(--border-color)', animation:false,
+            spacing:[4, 4, 4, 4], style:{ fontFamily:'var(--chart-font-family)' } },
+    accessibility:{ enabled:false }, credits:{ enabled:false }, exporting:{ enabled:false },
+    /* Highcharts draws EMPTY title/subtitle/caption nodes in its #666666 default — give them tokens */
+    title:{ text:null, style:{ color:'var(--page-text-color)' } }, subtitle:{ text:null, style:{ color:'var(--neutral-light)' } },
+    caption:{ text:null, style:{ color:'var(--neutral-light)' } },
+    colors:W_HC_PAL,
+    tooltip:{ useHTML:true, animation:false, shadow:false, outside:true, backgroundColor:'var(--chart-tooltip-background)',
+      borderColor:'var(--border-color)', borderWidth:1, borderRadius:10, padding:8,
+      style:{ color:'var(--page-text-color)', fontFamily:'var(--chart-font-family)', fontSize:'11px' },
+      /* the DS tooltip: swatch · name · bold value */
+      formatter(){ const p = this.point; return `<span style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:${p.color}"></i>${p.name || p.category}<b style="margin-left:6px">${p.y}</b></span>`; } },
+    legend:{ enabled:false, itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' },
+      itemHoverStyle:{ color:'var(--page-text-color)' }, itemHiddenStyle:{ opacity:.5 } },
+    plotOptions:{ series:{ animation:false, borderWidth:0, states:{ hover:{ lineWidthPlus:0 } },
+      dataLabels:{ color:'var(--page-text-color)', style:{ fontWeight:'normal', textOutline:'none' } } } },
+    xAxis:{ labels:{ style:lbl }, lineColor:'var(--bottom-line-color)', gridLineColor:'var(--chart-grid-line-color)', tickLength:0, title:{ text:null } },
+    yAxis:{ labels:{ style:lbl }, lineColor:'var(--bottom-line-color)', gridLineColor:'var(--chart-grid-line-color)', title:{ text:null } },
+  };
+}
+/* chart-single-pie: legend right, vertical, 11px square swatches; the live board prints "name : value" and no data labels */
+function wHcPie(items){
+  const o = wHcBase('pie');
+  o.legend = Object.assign(o.legend, { enabled:true, align:'right', verticalAlign:'middle', layout:'vertical',
+    symbolWidth:11, symbolHeight:11, symbolRadius:1, itemMarginTop:1, itemMarginBottom:1, useHTML:false,
+    /* the fixture's 8px item margins paginate a 7-row legend in a 190px card ("1/2 ▲▼"); the live board lists all seven */
+    navigation:{ enabled:false },
+    labelFormatter(){ return `${this.name} : ${this.y}`; } });
+  o.plotOptions.pie = { allowPointSelect:true, cursor:'pointer', showInLegend:true, borderWidth:0, size:'100%',
+    center:['50%', '50%'], dataLabels:{ enabled:false } };
+  o.series = [{ name:'Alert count', data:items.map(([n, v]) => ({ name:n, y:v })) }];
+  return o;
+}
+/* chart-single-horizontal-bar: one series, the palette's first colour, value labels at the bar's end */
+function wHcBar(d){
+  const o = wHcBase('bar');
+  o.xAxis.categories = d.items.map(i => i[0]); o.xAxis.lineWidth = 0;
+  o.yAxis = Object.assign(o.yAxis, { min:0, max:d.max || null, gridLineWidth:0, labels:{ enabled:false }, lineWidth:0 });
+  o.plotOptions.series = Object.assign(o.plotOptions.series, { pointPadding:.1, groupPadding:.12, maxPointWidth:14,
+    borderColor:'var(--widget-background)' });
+  o.plotOptions.bar = { dataLabels:{ enabled:true, inside:false, crop:false, overflow:'allow', color:'var(--page-text-color)',
+    style:{ fontWeight:'normal', textOutline:'none', fontSize:'0.65rem' } } };
+  o.series = [{ name:'Alert count', color:d.color && !/^#/.test(d.color) ? d.color : W_HC_PAL[0], data:d.items.map(i => i[1]) }];
+  return o;
+}
+function wPie(items){ return wHcBox('pie', items.map(i => [i[0], i[1]]), wPieSvg(items)); }
+function wHBars(items, max, color){ return wHcBox('bar', { items, max, color }, wHBarsSvg(items, max, color)); }
+function wPieSvg(items){
   const tot = items.reduce((s, i) => s + i[1], 0) || 1;
   let a = -Math.PI / 2, seg = '';
   if (items.length === 1){
@@ -19680,7 +19845,7 @@ function wPie(items){
     <div class="wpl">${items.map(([l, v, c]) =>
       `<span title="${l}: ${v}"><i style="background:${c}"></i><b>${l}</b>: ${v}</span>`).join('')}</div></div>`;
 }
-function wHBars(items, max, color){
+function wHBarsSvg(items, max, color){
   const m = max || Math.max(...items.map(i => i[1])) || 1;
   return `<div class="whb">` + items.map(([l, v]) =>
     `<div class="whbr" title="${l}: ${v}"><span class="whbl">${l}</span>
@@ -20246,6 +20411,7 @@ function wBody(w, gi, i){
   if(w.t==='theat')    return wTimeHeat(w.seed || 1, w.color || 'var(--blue)');
   if(w.t==='bmeter')   return wBullet(w.items || [], w);
   if(w.t==='topproc')  return wLeader(w.items || [], w);
+  if(w.t==='table' && w.ds) return `<obs-table class="wdstb" sticky-header columns="${wAttrJ(w.ds.columns)}" rows="${wAttrJ(w.ds.rows)}"></obs-table>`;
   if(w.t==='table') return `<div style="flex:1;min-height:0;overflow:auto">${w.html}</div>`;
   if(w.t==='note')  return `<div style="font-size:12px;color:var(--text-dim)">${w.html}</div>`;
   if(w.t==='freetext') return ftHTML(w, gi, i);
@@ -20277,6 +20443,16 @@ const DEMO = { tabs: TABS.slice(), widgets: WIDGETS.map(a => a.slice()) };
    hostnames, internal 10./172. addresses and people's laptop names, and these pages are
    published. RFC 5737 ranges + example.com + neutral device names only. */
 const PIE_C = ['#2fbfa5','#f5a05a','#a855f7','#8ec63f','#ec4899','#3b82f6','#eab308','#f2504b','#06b6d4','#94a3b8'];
+const AS_ROWS = [
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','router-1','Aug 12, 2026 04:10:29 PM'],
+    ['testava1','Availability','status','Down','n149.example.com','Aug 12, 2026 04:10:29 PM'],
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','n149.example.com','Aug 12, 2026 04:10:29 PM'],
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','nsx-t','Aug 12, 2026 04:09:29 PM'],
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','192.0.2.162','Aug 12, 2026 04:09:29 PM'],
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','203.0.113.219','Aug 12, 2026 04:09:29 PM'],
+    ['testava1','Availability','status','Down','203.0.113.219','Aug 12, 2026 04:09:29 PM'],
+    ['Test Runbook','Metric Threshold','ping.packet.lost.percent','Critical','laptop-5430-07','Aug 12, 2026 04:09:29 PM'],
+];
 const AS_STREAM = `<table style="width:100%;font-size:11px">
   <thead><tr>${['POLICY','POLICY TYPE','METRIC','SEVERITY','MONITOR','START TIME']
     .map(h=>`<th style="text-align:left;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.04em;padding:0 8px 6px 0;white-space:nowrap">${h}</th>`).join('')}</tr></thead>
@@ -20335,7 +20511,14 @@ BOARDS['Application Performance'] = { tabs: [''], widgets: [[
       ['laptop-t490-01',60], ['cisco-nexus',25], ['sles-11',26], ['win-node1',25],
       ['cisco-core.example.com',24], ['desktop-pc-14',21], ['hpe-msa',20] ] },
 
-  { t:'table', title:'Alert Stream', span:12, h:230, html:AS_STREAM },
+  /* ⚠️ ON THE DS (15 Oct 2026): `ds` makes wBody render an obs-table instead of the hand-built `html`, which
+     stays for anything that still reads it. The Policy column is the DS `severity` cell — the dot the live
+     stream puts before each policy — and it reads the row's `sev`. */
+  { t:'table', title:'Alert Stream', span:12, h:230, html:AS_STREAM, ds:{
+      columns:[{key:'policy',title:'Policy',type:'severity',width:'18%'},{key:'ptype',title:'Policy Type',width:'14%'},
+               {key:'metric',title:'Metric',width:'22%'},{key:'sevl',title:'Severity',width:'10%'},
+               {key:'monitor',title:'Monitor',width:'18%'},{key:'start',title:'Start Time',width:'18%'}],
+      rows:AS_ROWS.map((r, i) => ({ id:i, policy:r[0], ptype:r[1], metric:r[2], sevl:r[3], sev:r[3].toLowerCase(), monitor:r[4], start:r[5] })) } },
 ]] };
 /* ── "Payment Business Dashboard" — built from the widgets this page already has ─────────
    (request, 23 Sep 2026: "create a new dashboard using free text, empty group and other
@@ -20673,10 +20856,12 @@ function addTile(gi, name, big){
   /* an ungrouped board has no group name — the target is the dashboard itself */
   const nm = String(name || (document.getElementById('dashTitle')||{}).textContent || 'this dashboard')
                .replace(/"/g,'&quot;').replace(/'/g,"\\'");
-  const q = WA_QUICK.map(t=>`<button class="waQb" data-tip="${t[0]}" aria-label="Add a ${t[0]} widget"
-        onclick="event.stopPropagation();curG=${gi};awAdd('${t[0]}','${t[1]}')">${W_TYPE_ICON[t[1]]}</button>`).join('')
-    + `<button class="waQb ai" data-tip="AI suggest" aria-label="Let AI suggest a widget"
-        onclick="event.stopPropagation();curG=${gi};addWidgetFromLib('ai')">${WA_SPARK}</button>`;
+  /* the quick-add row is DS icon buttons (15 Oct 2026) — `neutral-lightest` squared, the registry's quiet
+     icon-only control; the glyphs are this file's own widget-type marks, slotted in */
+  const q = WA_QUICK.map(t=>`<obs-button class="waQb" variant="neutral-lightest" size="small" data-tip="${t[0]}" aria-label="Add a ${t[0]} widget"
+        onclick="event.stopPropagation();dsTap(this)&&(curG=${gi},awAdd('${t[0]}','${t[1]}'))">${W_TYPE_ICON[t[1]]}</obs-button>`).join('')
+    + `<obs-button class="waQb ai" variant="neutral-lightest" size="small" data-tip="AI suggest" aria-label="Let AI suggest a widget"
+        onclick="event.stopPropagation();dsTap(this)&&(curG=${gi},addWidgetFromLib('ai'))">${WA_SPARK}</obs-button>`;
   return `<div class="wadd${big?' big':''}" style="grid-column:span ${big?4:3}">
       <button class="waMain" data-tip="Add widget" aria-label="Add a widget to ${nm}" onclick="curG=${gi};openAwDrawer()">
         <span class="waPlus"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg></span>
@@ -21799,6 +21984,40 @@ const AI_SPARK_BUBBLE = '<svg viewBox="0 0 48 48"><path d="M36.8223 3C38.8983 3.
    uses that shape, and it is what a revert would read. */
 function waiIcon(){ return AI_SPARK; }
 
+/* ── The empty group's empty state (request, 13 Oct 2026, with a reference) ──────────
+   An empty group used to be its dashed border and nothing else (2 Sep 2026: "show only border
+   on new group"). The request reverses that: the band now carries an illustration, one line
+   saying what to do, and an Add widget button — so a just-added group invites the next step
+   instead of reading as a blank box.
+   ⚠️ THE ART IS AN ILLUSTRATION, NOT AN ICON, and is drawn on this file's tokens the way
+   `W_GROUP_SVG` is — two dashed placeholders and a chart card arriving along a dashed arc. It is
+   a FUNCTION, not a const, because `renderCanvas` runs at `init()` before any later block
+   parses; `W_GROUP_SVG` lives in such a block and would be in its TDZ here.
+   ⚠️ THE BUTTON TARGETS THIS GROUP — it sets `curG` before opening the drawer, exactly as the
+   header's ＋ (`gAddWidget`) does, so the widget lands where you pressed. */
+function gEmptyArt(){
+  return '<svg class="gdart" viewBox="0 0 120 80" fill="none" aria-hidden="true">' +
+    '<path d="M24 30 C30 14 48 10 62 18" stroke="var(--track)" stroke-width="1.3" stroke-dasharray="3 3" stroke-linecap="round"/>' +
+    '<path d="M58 14l5 4-6 2" stroke="var(--track)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<rect x="12" y="36" width="96" height="40" rx="5" stroke="var(--track)" stroke-width="1.2" stroke-dasharray="3 2.6"/>' +
+    '<rect x="18" y="44" width="38" height="24" rx="3" fill="var(--chip)"/>' +
+    '<rect x="64" y="44" width="38" height="24" rx="3" fill="var(--chip)" stroke="var(--track)" stroke-width="1" stroke-dasharray="2.5 2"/>' +
+    '<ellipse cx="83" cy="58" rx="12" ry="2.6" fill="var(--track)" opacity=".7"/>' +
+    '<g transform="rotate(-8 88 22)">' +
+      '<rect x="68" y="6" width="38" height="30" rx="4" fill="var(--card)" stroke="var(--text-dim2)" stroke-width="1.3"/>' +
+      '<rect x="73" y="11" width="14" height="2.4" rx="1.2" fill="var(--text-dim2)"/>' +
+      '<rect x="75" y="23" width="4" height="9" rx="1" fill="var(--text-dim)"/>' +
+      '<rect x="82" y="19" width="4" height="13" rx="1" fill="var(--text-dim)"/>' +
+      '<rect x="89" y="16" width="4" height="16" rx="1" fill="var(--text-dim)"/>' +
+      '<rect x="96" y="21" width="4" height="11" rx="1" fill="var(--text-dim)"/>' +
+    '</g></svg>';
+}
+function gEmptyHTML(gi){
+  return `<div class="gdrop gdempty">${gEmptyArt()}` +
+    `<div class="gdtxt">No widgets yet — drag one here, or add a widget.</div>` +
+    `<button class="btn gdadd" onclick="gEmptyAdd(${gi})">${ico('plus','gdpl')}Add widget</button></div>`;
+}
+function gEmptyAdd(gi){ closeOverlays(); curG = gi; openAwDrawer(); }
 function renderCanvas(){
   /* the shared-group registry is derived from this board's own model — see `gPubSync` */
   gPubSync();
@@ -21872,16 +22091,29 @@ function renderCanvas(){
             (editMode?`<span class="wremove" title="Remove" onclick="event.stopPropagation();curG=${gi};curW=${i};wRemove()">✕</span>`:'');
           const extra = w.t==='honey'? `<span class="wcount">${w.n} monitors</span>`:'';
           const dnd = `draggable="true" ondragstart="wDragStart(event,${gi},${i})" ondragend="wDragEnd()" ondragover="wDragOver(event,${gi},${i})" ondrop="wDrop(event,${gi},${i})"`;
-          if(w.t==='stat') return `<div class="widget wstat" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.h||0}" style="grid-column:span ${w.span||2}${w.h?`;height:${Math.round(w.h*hMul)}px`:''}"><div class="whead">${WGRIP}${w.title}${tb}${dots}</div>
-            <div class="wbody"><div class="v" style="color:${w.vc}">${w.v}</div><div class="k">${w.k}</div><div class="delta" style="color:${w.dc}">${w.d}</div>
-            <div class="statsp">${wMini((gi+1)*97+i*31, w.sc||w.vc)}</div></div>${WGRIPS}</div>`;
+          const dims = w.t==='stat' ? `grid-column:span ${w.span||2}${w.h?`;height:${Math.round(w.h*hMul)}px`:''}`
+                     : w.rows ? `grid-column:span ${w.span};grid-row:span ${w.rows}`
+                              : `grid-column:span ${w.span};height:${Math.round(w.h*hMul)}px`;
+          /* ⚠️ THE FRAME IS THE DS's `obs-widget-card` (15 Oct 2026) — title strip, hover time badge — in its
+             `static` mode, because this board's own engine still owns drag, resize and undo (the card's grip only
+             signals an obs-widget-grid, which this board is not). The OUTER .widget keeps every data attribute,
+             the draggable and the three resize grips; the card is what is painted.
+             ⚠️ ONLY THE CARD'S KEBAB IS HIDDEN (the attachShadow hook before the DS bundle): its menu is five rows,
+             and the board's ⋮ also carries AI summary and Export as CSV. The board's ✦ / ⋮ sit in `.wdsact`, over
+             the card header where its kebab was. A Free Text note keeps its own frame — it is a note, not a widget
+             with a title strip, and its transparent / no-padding looks depend on that. */
+          const tl = trSelIdx>=0?TR_PRESETS[trSelIdx][1]:'custom';
+          const card = (cls, h, body) => `<div class="widget wds${cls}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${h}" style="${dims}">` +
+            `<obs-widget-card class="wdscard" static title="${String(w.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" time="${tl}"><div class="wbody">${body}</div></obs-widget-card>` +
+            `<div class="wdsact">${dots}</div>${WGRIPS}</div>`;
+          if(w.t==='stat') return card(' wstat', w.h||0, `<div class="v" style="color:${w.vc}">${w.v}</div><div class="k">${w.k}</div><div class="delta" style="color:${w.dc}">${w.d}</div>
+            <div class="statsp">${wMini((gi+1)*97+i*31, w.sc||w.vc)}</div>`);
           /* w.rows spans grid ROWS instead of taking a fixed height — the live Alert
              Summary heatmap is one tall tile beside two stacked ones */
-          const dims = w.rows ? `grid-column:span ${w.span};grid-row:span ${w.rows}`
-                              : `grid-column:span ${w.span};height:${Math.round(w.h*hMul)}px`;
           /* ⚠️ `wft` DOES NOT REMOVE THE HEADER, IT MAKES IT AN OVERLAY — see the CSS. The
              header is where `⋮` and the AI ✦ live, so deleting it for a Free Text widget
              would take Edit / Clone / Remove with it and strand the widget on the board. */
+          if(w.t!=='freetext') return card('', w.rows?0:w.h, wBody(w, gi, i));
           return `<div class="widget${w.t==='freetext'?' wft'+(w.ftopt===2?' wft2':'')+(cwFtBg(w.bg||'Transparent')==='transparent'?' wftbare':''):''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${w.t==='freetext'?'':tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
         }).join('') + `</div>`
       : `<div class="dgrid12" style="gap:${gap}px" ondragover="wDragOverGroup(event,${gi})" ondrop="wDrop(event,${gi},-1)" ondragleave="wDragLeave(event)">`
@@ -21902,7 +22134,7 @@ function renderCanvas(){
                         rendered only while the group is EMPTY, so all three vanished on the
                         first drop. They are on the `<section>` below now; what makes option 2's
                         band look different is `.dgroup.gdrs .gdrop`, i.e. its group. */
-                     : `<div class="gdrop"></div>`)
+                     : gEmptyHTML(gi))
         + `</div>`);
     /* ⚠️ THE DROP ZONE IS THE WHOLE BAND, not the 37px header — an expanded group's headers
        are hundreds of pixels apart, and "anywhere" has to mean anywhere. Its own midpoint
@@ -21962,6 +22194,7 @@ function renderCanvas(){
   '';
   renderOutline();
   gNavPaint();
+  wHcMount();      /* the pies and bars swap their SVG for the DS Highcharts render — see `wHcMount` */
 }
 /* ── the group navigator (request, 21 Sep 2026: "when i add empty group the scroll will be
    show like [ChatGPT's canvas section navigator] … only multipal empty group") ─────
@@ -22865,7 +23098,9 @@ const W_GROUP_OPT = [
      2026). `awAddGroup` reads `rz` off the tile you pressed and stamps it on the group; nothing
      downstream tests the option NUMBER, so renumbering the tiles or giving option 3 the same
      capability is an edit here and nowhere else. */
-  {opt:2, art:W_GROUP_SVG, rz:true},
+  /* ⚠️ OPTION 2 MOVED TO THE OPTION 2 PAGE (15 Oct 2026: "the empty group option 2 will be move in dashboard
+     sidebar option 2") — `awAddGroup2` in dashboard-grouped-sidebar.html. Parked here, so it is one line back:
+  {opt:2, art:W_GROUP_SVG, rz:true}, */
   /* ⚠️ OPTION 3 WAS REMOVED ON 21 SEP 2026 ("option 3 empty group remove option3 only in Add
      New Widget"), which is this array doing exactly what it was built for: the drawer is the
      only place an option exists, so a design is withdrawn by deleting one line. It was a byte
@@ -22993,7 +23228,9 @@ function awRecentHTML(){
         '<span class="awart">' + o.art + '</span><span>Empty group</span></button>';
     }
     const t = find(l); if (!t) return '';
-    return `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : `cwOpenViz('${t[0]}')`}">` +
+    /* ⚠️ Free Text opens DESIGN OPTION 2 here, the only Free Text design Option 1 still carries (16 Oct 2026) —
+       with no option number `cwOpenViz` fell back to design 1, which moved to the Option 2 page */
+    return `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : t[1]==='freetext' ? `cwOpenViz('${t[0]}', 2)` : `cwOpenViz('${t[0]}')`}">` +
       `<span class="awart">${wArt(t[0], 'r'+i)}</span><span>${t[0]}</span></button>`;
   }).join('');
   return tiles ? '<div class="awgrp">Recently used</div><div class="awgrid">' + tiles + '</div>' : '';
@@ -23029,7 +23266,9 @@ function awRender(){
            into it). `Empty group` is the precedent for a tile that does its own thing. */
         items.map((t, i)=> t[1] === 'freetext'
           /* Free Text is two numbered tiles — option 1 and its clone, option 2 (see `CW_FT_OPT`) */
-          ? [1, 2].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');cwOpenViz('${t[0]}', ${o})" ` +
+          /* ⚠️ DESIGN OPTION 1 MOVED TO THE OPTION 2 PAGE (15 Oct 2026: "the free text will be move in dashboard option 2");
+             `[1, 2]` brings it back here */
+          ? [2].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');cwOpenViz('${t[0]}', ${o})" ` +
               `data-tip="Free Text — design option ${o}"><span class="awgn">${o}</span>` +
               `<span class="awart">${wArt(t[0], 'c'+gi+'x'+i+'o'+o)}</span><span>${t[0]}</span></button>`).join('')
           : `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : `cwOpenViz('${t[0]}')`}"` +
@@ -23087,7 +23326,7 @@ function awRender(){
           `${n} widget${n===1?'':'s'}</span>` + awActBtn('add', `gPubAdd(${p.id})`) +
           awActBtn('edit',  `gPubEdit(${p.id})`,  false, 'Edit group') +
           awActBtn('clone', `gPubClone(${p.id})`, false, 'Clone group') +
-          awActBtn('del',   `gPubDel(${p.id})`,   true,  'Remove from shared groups') + `</span></div>`;
+          awActBtn('del',   `gPubDelAsk(${p.id})`,   true,  'Remove from shared groups') + `</span></div>`;
     }).join('')
       || `<div class="dempty">${GRP_PUBLIC.length
             ? `No shared groups match “${hx(q)}”.`
@@ -24175,6 +24414,120 @@ function gCollapseOthers(){
   GRP_SHUT = new Set(TABS.map((_,i)=>i).filter(i=>i!==gMenuIdx));
   renderCanvas(); toast('Other groups collapsed');
 }
+/* ══ DELETE GROUP — asked first, on the DS confirm (request, 16 Oct 2026) ═══════════════════════
+   "when I delete the empty group, or the group has widgets, show 2 different options: 1. delete the group,
+   2. ungroup the group then delete the group — add the delete flow using the obs design system".
+   ⚠️ `obs-modal variant="confirm"` with `confirm-variant="error"` — the DS's own answer for a destructive
+   confirm (FlotoConfirmModal, 71× in the product), Cancel left and the named verb right.
+   · a group WITH widgets → the two choices as an `obs-radio` list. "Ungroup, then delete" is the DEFAULT:
+     it is the one that loses nothing, so Enter on a fresh dialog is the safe answer.
+     It runs `gUngroup` (the widgets merge into the neighbouring group, or the board goes flat) — which IS
+     "ungroup, then the group is gone"; "Delete group and widgets" runs `gRemove`.
+   · an EMPTY group → one plain confirm; there is nothing to keep, so a choice would be a question with one answer.
+   · the LAST group still refuses to be deleted (a grouped board needs one) — but ungrouping it is allowed,
+     so with widgets in it the dialog offers only that.
+   ⚠️ v0.1.166: after confirm / cancel the host keeps `open` true and the next show() does nothing —
+   one hide() settles it (the same work-around `ipmConfirm` and the Formatting-help modal use).
+   It lives on <body>, i.e. in the TOP LAYER, which is why `#gDelMd` is in the DS token openers. */
+let G_DEL = null;                                  /* {kind:'board', gi} | {kind:'pub', id} */
+function gDelEl(){
+  let m = document.getElementById('gDelMd'); if (m) return m;
+  m = document.createElement('obs-modal'); m.id = 'gDelMd';
+  m.setAttribute('variant', 'confirm'); m.setAttribute('width', '450');
+  m.setAttribute('cancel-text', 'Cancel'); m.setAttribute('confirm-variant', 'error'); m.setAttribute('icon', 'trash');
+  const settle = () => setTimeout(() => { if (typeof m.hide === 'function') m.hide(); }, 0);
+  m.addEventListener('confirm', () => { const d = G_DEL; G_DEL = null; settle(); if (d) gDelRun(d); });
+  m.addEventListener('cancel', () => { G_DEL = null; settle(); });
+  document.body.appendChild(m);
+  return m;
+}
+function gDelShow(title, body, confirmText){
+  const m = gDelEl();
+  m.setAttribute('title', title); m.setAttribute('confirm-text', confirmText);
+  m.innerHTML = body;
+  const dlgOf = () => m.shadowRoot && m.shadowRoot.querySelector('dialog');
+  const go = () => {
+    if (typeof m.show !== 'function') return setTimeout(go, 0);
+    m.show();
+    setTimeout(() => { const d = dlgOf(); if (d && !d.open){ m.hide(); setTimeout(() => m.show(), 0); } }, 0);
+    const r = m.querySelector('#gDelOpt');
+    if (r){
+      r.value = G_DEL && G_DEL.mode;
+      r.addEventListener('change', e => {
+        const v = Array.isArray(e.detail) ? e.detail[0] : (e.detail != null ? e.detail : r.value);
+        if (!G_DEL || !v) return;
+        G_DEL.mode = v;
+        m.setAttribute('confirm-text', v === 'all' ? 'Delete group and widgets' : 'Ungroup and delete');
+      });
+    }
+  };
+  go();
+}
+const gDelEsc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+/* the body both doors share: a plain confirm for an empty group, the two choices for one with widgets */
+function gDelBody(name, n, last, where){
+  const nm = '<b>“' + gDelEsc(name) + '”</b>';
+  if (!n) return '<div class="gdelmsg">' + nm + ' has no widgets. Deleting it removes the empty group' + where + '.</div>';
+  const s = n === 1 ? '' : 's';
+  const opts = [{ value:'ungroup', label:'Ungroup, then delete the group — keep its ' + n + ' widget' + s + ' on the dashboard' }];
+  if (!last) opts.push({ value:'all', label:'Delete the group and its ' + n + ' widget' + s });
+  return '<div class="gdelmsg">' + nm + ' has ' + n + ' widget' + s + '. What should happen to ' + (n === 1 ? 'it' : 'them') + '?</div>' +
+    '<obs-radio id="gDelOpt" class="gdelopt" vertical aria-label="What happens to the widgets" options="' +
+      gDelEsc(JSON.stringify(opts)) + '" value="ungroup"></obs-radio>' +
+    (last ? '<div class="gdelnote">This is the only group, so it cannot be deleted with its widgets — ungrouping keeps them on a flat dashboard.</div>' : '');
+}
+function gDelAsk(){
+  closeOverlays(); if (gMenuIdx < 0) return;
+  const gi = gMenuIdx, name = TABS[gi] || 'this group', n = (WIDGETS[gi] || []).length;
+  const last = TABS.length < 2;
+  if (last && !n){ toast('A dashboard needs at least one group'); return; }
+  G_DEL = { kind:'board', gi, mode: n ? 'ungroup' : 'all' };
+  gDelShow('Delete group?', gDelBody(name, n, last, ' from this dashboard'), n ? 'Ungroup and delete' : 'Delete group');
+}
+/* ⚠️ THE GROUP TAB ASKS THE SAME QUESTION (request, 16 Oct 2026: "this same flow in the Add New Widget › Group tab").
+   A shared entry is either a group ON THE OPEN BOARD — then the choice acts on that band exactly as the board's ⋮
+   does — or a SNAPSHOT (a library copy, or a group on a board that is not open). For a snapshot, "ungroup, then
+   delete" puts its widgets loose on the open dashboard (into the current group, or the flat board) and removes the
+   entry; "delete" removes the entry and its widget snapshot. */
+function gPubDelAsk(id){
+  const p = GRP_PUBLIC.find(x => x.id === id); if (!p) return;
+  const gi = (!p.lib && p.board === gBoardName()) ? TABS.indexOf(p.name) : -1;
+  const n = gi >= 0 ? (WIDGETS[gi] || []).length : (p.w || []).length;
+  const last = gi >= 0 && TABS.length < 2;
+  G_DEL = { kind:'pub', id, gi, mode: n ? 'ungroup' : 'all' };
+  gDelShow('Delete group?', gDelBody(p.name, n, last, gi >= 0 ? ' from this dashboard' : ' from shared groups'),
+           n ? 'Ungroup and delete' : 'Delete group');
+}
+function gPubUngroup(p){
+  const ws = JSON.parse(JSON.stringify(p.w || []));
+  histDo('Ungroup shared group');
+  const gi = ungrouped ? 0 : Math.min(Math.max(curG, 0), TABS.length - 1);
+  (WIDGETS[gi] = WIDGETS[gi] || []).push(...ws);
+  renderCanvas();
+  return ws.length;
+}
+function gDelRun(d){
+  if (d.kind === 'pub'){
+    const p = GRP_PUBLIC.find(x => x.id === d.id); if (!p) return;
+    if (d.gi >= 0 && TABS[d.gi] === p.name){            /* the band is on this board — act on it */
+      gMenuIdx = d.gi;
+      if (d.mode === 'all') gRemove(); else gUngroup();
+      if (GRP_PUBLIC.some(x => x.id === d.id)) gPubDel(d.id);
+      openAwDrawer(); awTab('group');      /* gRemove / gUngroup close every overlay — put you back where you were */
+      return;
+    }
+    if (d.mode === 'ungroup' && (p.w || []).length){
+      const n = gPubUngroup(p);
+      gPubDel(d.id);
+      toast('“' + p.name + '” ungrouped — its ' + n + ' widget' + (n === 1 ? '' : 's') + ' are on this dashboard, and the group is deleted — ' + KMOD + 'Z brings the widgets back off');
+      return;
+    }
+    return gPubDel(d.id);
+  }
+  if (d.gi >= TABS.length) return;
+  gMenuIdx = d.gi;
+  if (d.mode === 'all') gRemove(); else gUngroup();
+}
 function gRemove(){
   closeOverlays(); if(gMenuIdx<0) return;
   if(TABS.length<2){ toast('A dashboard needs at least one group'); return; }
@@ -24391,6 +24744,7 @@ function wFull(){ closeOverlays(); if(curW<0) return;
          <div style="margin-top:4px;font-weight:600;color:${w.dc}">${w.d}</div></div></div>`
     : wBody(w, curG, curW);
   document.getElementById('wFullView').classList.add('on');
+  wHcMount();
 }
 function closeWFull(){ document.getElementById('wFullView').classList.remove('on'); }
 /* Dashboard-level Full Screen (live 8.2.6 header action) */
@@ -33701,9 +34055,11 @@ acHistRender();
      header for what was observed). Everything is rendered by cwRender().
      ══════════════════════════════════════════════════════════════════════════ -->
 <!-- always-in-reach Create Widget, the live product's own entry point for widget creation -->
-<button class="cwfab" id="cwFab" data-tip="Create a widget on this dashboard" aria-label="Create a widget on this dashboard" onclick="cwFabGo()">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg><span>Create Widget</span>
-</button>
+<!-- ⚠️ ON THE DS (15 Oct 2026): `obs-button variant="primary"` with the DS `plus` glyph. The host keeps the
+     `.cwfab` class, which now owns only the fixed position and the show-on-dashboard rule. -->
+<obs-button class="cwfab" id="cwFab" variant="primary" data-tip="Create a widget on this dashboard" aria-label="Create a widget on this dashboard" onclick="dsTap(this)&&cwFabGo()">
+  <obs-icon name="plus" size="14"></obs-icon><span>Create Widget</span>
+</obs-button>
 
 <div id="cwScrim" onclick="cwClose()"></div>
 <div id="cwModal" role="dialog" aria-label="Create Widget">
@@ -34293,7 +34649,8 @@ function cwPickViz(k){
    `.widget.wft2` as the hooks it will diverge through. Review chrome, like the Empty group options. */
 let CW_FT_OPT = 1;
 function cwOpenViz(name, opt){
-  CW_FT_OPT = opt === 2 ? 2 : 1;
+  /* design 1 moved to the Option 2 page (15 Oct 2026), so a caller that names no option gets design 2 (16 Oct 2026) */
+  CW_FT_OPT = opt === 1 ? 1 : 2;
   if (typeof closeAwDrawer === 'function') closeAwDrawer();
   cwOpen();
   const v = CW_VIZ.find(x => x.n.toLowerCase() === String(name).toLowerCase());
@@ -38054,6 +38411,33 @@ function lxLtPaint(){
      Agentic AI screen. ⚠️ ITS CSS PACKAGE IS DELIBERATELY NOT LINKED — see the token block in
      the stylesheet for why (its light values sit on `:root`, which is the opposite of this
      prototype's theme convention). Only the elements bundle is loaded. -->
+<script>
+/* ── SHADOW-ROOT TWEAKS FOR THE DASHBOARD'S DS PARTS (15 Oct 2026) ─────────────────────────────────
+   Page CSS cannot reach inside an obs-* shadow root and these components expose no ::part, so each
+   instance adopts one small sheet as it is constructed (the bundle's custom-element base calls
+   attachShadow once per instance). An adopted sheet is ordered after the root's own <style>s, so a rule
+   here wins its tie with the component's. Scoped by a HOST CLASS, so the Compliance module's cards and
+   every other obs-* element are untouched.
+     obs-widget-card.wdscard — hide ONLY the kebab (the board's own ✦ / ⋮ sit over that spot and carry
+       AI summary + Export as CSV, which the card's five-row menu does not), and hold the time badge clear
+       of them. */
+/* ⚠️ obs-button FIRES A CONSUMER'S onclick TWICE (measured 15 Oct 2026 on the v0.1.240 bundle: one click
+   on the inner button → 2 calls) — the inner click is composed and the host sees it again. Fine for an
+   idempotent handler, wrong for a toggle (Full screen) or an add (the quick-add row would add two widgets).
+   Every obs-button onclick on the board goes through this same-element / 60ms guard. */
+/* ⚠️ KEYED ON THE HOST: Vue forwards the host's onclick ATTRIBUTE onto the inner <button>, so the two calls come
+   from two different elements (the inner button, then the host) — a per-element guard would let both through. */
+function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.host) el = r.host; const t = performance.now(); if (el._dsT && t - el._dsT < 60) return false; el._dsT = t; return true; }
+(function(){
+  const at = Element.prototype.attachShadow;
+  const CSS = { 'OBS-WIDGET-CARD':':host(.wdscard) .wkebab{display:none}:host(.wdscard) .wactions{padding-right:48px}' };
+  Element.prototype.attachShadow = function(o){
+    const r = at.call(this, o), css = CSS[this.tagName];
+    if (css){ try { const sh = new CSSStyleSheet(); sh.replaceSync(css); r.adoptedStyleSheets = [...r.adoptedStyleSheets, sh]; } catch (e) {} }
+    return r;
+  };
+})();
+</script>
 <script src="_ds/observeops-elements.umd.js"></script>
 
 <!-- Settings lives in `setting.html` (26 Sep 2026). This page loads only its navigation data

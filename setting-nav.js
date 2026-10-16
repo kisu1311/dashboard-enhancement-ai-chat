@@ -75,7 +75,7 @@ const ST_TREE = [
   {n:"Monitor Settings", ic:"inventory", subs:[["Device Monitor Settings","/settings/monitoring/device-monitor-settings"], ["Cloud Monitor Settings","/settings/monitoring/cloud-monitor-settings"], ["Monitor Templates","/settings/monitoring/monitor-templates"], ["Agent Monitor Settings","/settings/monitoring/agent-monitor-settings"], ["Service Check Monitor Settings","/settings/monitoring/service-check-monitor-settings"], ["Process Monitor Settings","/settings/monitoring/processes"], ["Service Monitor Settings","/settings/monitoring/services"], ["File/Directory Settings","/settings/monitoring/file-directory-list"], ["SNMP Device Catalog","/settings/monitoring/snmp-device-catalog"], ["Rediscover Settings","/settings/monitoring/rediscover-setting"], ["NetRoute Settings","/settings/monitoring/netroute-setting"], ["Topology Scanner","/settings/monitoring/topology-scanner"], ["Monitoring Hour","/settings/monitoring/monitoring-hours"], ["Custom Monitoring Field","/settings/monitoring/custom-monitoring-field"]]},
   {n:"Network Config Settings", ic:"ncm", subs:[["Device Inventory","/settings/nccm-settings/device-inventory"], ["Device Template","/settings/nccm-settings/device-template"], ["Firmware Update Profile","/settings/nccm-settings/firmware-update-profile"]]},
   /* Firewall Analyzer (13 Oct 2026) — the vendored module's own two settings pages, embedded from _firewall/firewall.html */
-  {n:"Firewall Analyzer", ic:"secure", subs:[["Firewall Inventory","/settings/firewall-analyzer/firewall-inventory"], ["Firewall Templates","/settings/firewall-analyzer/firewall-templates"]]},
+  {n:"Firewall Analyzer", ic:"secure", subs:[["Firewall Inventory","/settings/firewall-analyzer/firewall-inventory"], ["Firewall Templates","/settings/firewall-analyzer/firewall-templates"], ["Policies Management","/settings/firewall-analyzer/policies-management"]]},
   {n:"Compliance Settings", ic:"metric-explorer", subs:[["Compliance Policy","/settings/compliance-settings/audit-policy"], ["Benchmark","/settings/compliance-settings/benchmark"], ["Rules","/settings/compliance-settings/rules"]]},
   {n:"IPAM", ic:"ipam", subs:[["IP Address Manager","/settings/ipam/ip-address-discovery"], ["Site Separation Rules","/settings/ipam/site-separation-rules"], ["Approved Vendor List","/settings/ipam/approved-vendor-list"]]},
   {n:"SNMP Trap", ic:"trap-viewer", subs:[["SNMP Trap Profile","/settings/snmp-trap/"], ["SNMP Trap Forwarder","/settings/snmp-trap/snmp-trap-forwarder"], ["SNMP Trap Listener","/settings/snmp-trap/snmp-trap-listener"]]},
@@ -132,6 +132,25 @@ const ST_TREE = [
     var sv = showView;
     window.showView = function (v) { if (v === 'settings') { location.href = stUrl(); return; } return sv.apply(this, arguments); };
   }
+
+  /* THE PROFILE PHOTO REACHES EVERY PAGE (13 Oct 2026, "fix in the dashboard sidebar"): setting.html paints the
+     saved photo on its rail and profile popover, and the option pages drew initials — so the same person had a
+     photo in Settings and "KP" everywhere else. One store, read here: 'oo-prof-avatar' (a data URL, or '' once
+     removed in My Profile → initials), else the default the Settings module ships. ⚠️ Keep this in step with
+     setting.html's stAvLoad / ST_AV_DEFAULT. */
+  function avPaint() {
+    var av = '_settings-img/avatar-kp.jpg';
+    try { var s = localStorage.getItem('oo-prof-avatar'); if (s !== null) av = s || ''; } catch (e) {}
+    if (!av) return;
+    document.querySelectorAll('#sbUser .miniav, #userPop .upavatar').forEach(function (el) {
+      el.textContent = '';
+      el.style.backgroundImage = 'url("' + av + '")';
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    });
+  }
+  avPaint();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avPaint);
 
   /* arriving back from setting.html: #m=<module>[&sub=<tab>] or #v=<view> */
   var p = new URLSearchParams((location.hash || '').replace(/^#/, ''));

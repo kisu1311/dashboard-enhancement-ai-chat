@@ -20,7 +20,7 @@ Both are public on npm, no auth:
 npm install @mtdt/observeops-ds-elements @mtdt/observeops-ds-css @mtdt/observeops-ds-spec
 ```
 
-⚠️ **Updated 1 Oct 2026** (elements 0.1.240 · css 0.1.7 · spec 0.1.259, the conformance checker the
+⚠️ **Updated 1 Oct 2026** (elements 0.1.240 · css 0.1.7 · spec 0.1.260 since 15 Oct 2026 — a version-stamp-only release over 0.1.259, the conformance checker the
 `_verify/*conf.py` scripts run from `node_modules/`). The gaps below were recorded against **0.1.166** —
 the work-arounds in the pages are still in place and still harmless, but each one should be re-measured
 before it is trusted or removed. The old bundle was checked side by side with the new one on the License,
