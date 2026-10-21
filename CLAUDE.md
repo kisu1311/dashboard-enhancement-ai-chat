@@ -977,6 +977,54 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
   a 2px page-coloured gap under every group row and above one that follows a data row.
 - **§99 (7 Oct 2026)** — the Supernet grid joins `DS_FIT`, so its pager is pinned to the foot of the screen like Subnet Details.
 
+## Topology module in Option 1 — cloned from the live build with Playwright (21 Oct 2026)
+
+Request: *"create new topology file and connect the current file — go to `https://172.16.15.199/topology/network`
+using playwright, the topology module will add in my project"*. Same shape as IPAM / Firewall Analyzer: a
+vendored page in an iframe.
+
+| file | what |
+|---|---|
+| `_topology/topology.src.html` | **the source — edit this** |
+| `_topology/build_topology.py` | `python3 _topology/build_topology.py` → `topology.html` (inlines the DS tokens, the UI glyphs, node icons, empty-state art) |
+| `_topology/icons.json` · `empty.svg` | the harvest: the live page's own glyph paths and its empty-state illustration, so a rebuild needs no instance |
+| `_topology/topology.html` | **generated** — editing it is undone by the next build |
+
+What it carries, all read off live build 10.0.1: the module header (‹ · Topology), the six tabs (`#network`
+`#sdn` `#cloud` `#virtualization` `#hci` `#custom`), the toolbar (find box *Ctrl + F | Esc to clear* · Layer 3
+switch · Expanded / Progressive · radial / hierarchical / left-to-right · ? · full screen · settings · Export As XML ·
+Create Topology View), the entry-point tree (group → type → vendor → monitor, severity ring, monitor glyph), the
+dot-grid canvas (root = rounded square on `--topology-info-btn-bg`, neighbours = status rings, multi-link curves,
+count badges, overlay stack keyboard · fit · + · − · centre, the pan pad, a collapsible minimap), the **Topology
+Settings** drawer (Security tab as captured) and the **Create Topology View** drawer (fields as captured). Custom
+tab: *Custom Views* + `+`, search, the `tag11` group, *Select or create a Custom View to begin designing*.
+
+- **Wiring** (`index.html` AND `setting.html` — both carry Option 1's chrome): `#view-topology` > `#topoHost`
+  (reuses `.fahost`/`.fafr`); `selectModule` → `topoInit()`; `topoTab(label)` + `TOPO_TAB_HASH`; Explorer's six
+  Topology child rows call `topoTab('<Tab>')`; an open frame gets `{topoTab}` posted rather than reloaded; theme via
+  `{topoTheme}`; the frame's ‹ posts `{topoBack}` → Dashboards. `setting.html`'s `MOD_VIEWS` gained `topology`.
+  The host hides its own Agentation toolbar while this frame shows (the `fa-agt-frame` selector).
+- **Pinned by default** (request, 21 Oct 2026): `'Topology'` joined `RAIL_PINS` in both `index.html` and
+  `setting.html`. The band orders pins by `EXPLORER_TREE`, so it sits second, after Monitor.
+- **Data is the instance's tree, scrubbed**: `192.0.2.x` / `198.51.100.x` / `example.com`; `MORBI_RUCKUS_L3` →
+  `RUCKUS_L3`, `VMC-CCC-OA1` → `core-oa1`. Of the network entry points only the Ruckus switch drew a map on the
+  instance (the others answered *No data found*, reproduced). VM names under the hypervisors are invented — the
+  live labels were truncated.
+- ⚠️ **Login**: the instance needs a session. The harvest ran a HEADED Playwright Chrome, the user signed in, and
+  the script saved `storageState` (scratch dir, not the repo). The SPA is slow: `goto` needs `waitUntil:'commit'`
+  plus a wait for tree text, and every other load can time out — retry. Tree rows are a `vue-recycle-scroller`;
+  expand by clicking `.hierarchy-item a [data-icon=chevron-right]`.
+- ⚠️ **Node icons are monochrome**: the `observeops-icons/monitors/` marks are recoloured to `currentColor`
+  (white-fill paths only where a mark has them — the switch's arrows — or the tile would paint a solid square).
+  Live tree rows show the brand colours; that would put ~20 un-tokened hexes in the file.
+- ⚠️ **Inferred, stated**: the ? button opened nothing capturable on live, so it is a legend; the Settings drawer's
+  *Visualization Settings* tab (Node label Name/IP · Show minimap) was not captured; Export As XML writes a real
+  XML of the drawn tree after the live toast; a created custom view draws its filtered monitors round a hub; the
+  hierarchical layout wraps a host's VMs into 6-wide blocks.
+- Verified: a 15-assertion host probe (frame built once, fills the view, tab via child row, theme follows, back →
+  Dashboard, 17 nodes drawn, side 257px, pan pad cross, no errors) and the `setting.html` → `index.html#m=Topology`
+  hand-off landing on the HCI tab.
+
 ## Compliance module in Option 1 — cloned from the live build with Playwright (6 Oct 2026)
 
 Request: *"add new module 'compliance' — the reference is the lab instance's /compliance/overview — using

@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topology</title>
+<!--
+  Topology module — cloned from the live product (build 10.0.1, the lab instance, /topology/network)
+  with Playwright on 21 Oct 2026: the tab bar, the toolbar, the entry-point tree, the graph canvas with
+  its overlay controls and minimap, the Topology Settings drawer and the Create Topology View drawer.
+
+  ⚠️ GENERATED FILE. Edit `topology.src.html`, then run `python3 _topology/build_topology.py`, which
+  inlines the design-system tokens (design-tokens/observeops-tokens.css) and the product's own icons
+  (observeops-icons/ + the glyphs read out of the live page). Editing topology.html is undone by the
+  next build.
+
+  Every host name and address from the instance is scrubbed to RFC 5737 / example.com.
+  ?embed=1  — loaded by index.html / setting.html in an iframe (no host chrome of its own beyond the
+              module header, which is the live module's own row).
+  ?theme=   — dark | light; the host re-posts {topoTheme} whenever its theme flips.
+  #<tab>    — network | sdn | cloud | virtualization | hci | custom.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*@@TOKENS@@*/
+
+/* ---------- module ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--page-background-color);color:var(--page-text-color);font:400 12.8px/1.5 Inter,system-ui,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit}
+svg.i{width:1em;height:1em;display:block;fill:currentColor}
+.tp{display:flex;flex-direction:column;height:100vh}
+
+/* row 1 — the module header: ‹ · glyph · Topology (live: 44px, title 20px/500) */
+.thd{flex:0 0 44px;display:flex;align-items:center;gap:10px;padding:0 8px;border-bottom:1px solid var(--border-color)}
+.tback{width:25px;height:25px;border-radius:50%;border:1px solid var(--border-color);background:none;display:grid;place-items:center;cursor:pointer;color:var(--neutral-light);padding:0;font-size:14px}
+.tback:hover{color:var(--page-text-color);border-color:var(--field-border-color)}
+.tdiv{width:1px;height:25px;background:var(--border-color)}
+.thd h1{margin:0;display:flex;align-items:center;gap:8px;font-size:20px;font-weight:500;color:var(--primary)}
+.thd h1 svg{font-size:22px}
+
+/* row 2 — tabs · toolbar (live: 43px; tab 12.8px, padding 12/0/8, 20px apart, active 500 + 4px underline) */
+.tbar{flex:0 0 44px;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--border-color)}
+.ttabs{display:flex;gap:20px;align-self:stretch}
+.ttab{border:0;background:none;padding:12px 0 8px;cursor:pointer;color:var(--page-text-color);border-bottom:4px solid transparent;margin-bottom:-1px}
+.ttab:hover{color:var(--primary)}
+.ttab.on{color:var(--primary);font-weight:500;border-bottom-color:var(--primary)}
+.tsp{flex:1 1 auto}
+.ttools{display:flex;align-items:center;gap:8px}
+.ttools[hidden]{display:none}
+.tsrch{position:relative;width:198px}
+.tsrch input{width:100%;height:36px;border:1px solid var(--border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:4px 11px 4px 36px;font:inherit;outline:0}
+.tsrch input:focus{border-color:var(--field-border-color)}
+.tsrch input::placeholder{color:var(--neutral-light)}
+.tsrch svg{position:absolute;left:12px;top:10px;font-size:16px;color:var(--neutral-light)}
+.tl3{display:flex;align-items:center;gap:8px;margin-left:4px}
+.tsw{position:relative;width:51px;height:22px;border-radius:100px;border:1px solid var(--field-border-color);background:var(--neutral-lightest);cursor:pointer;padding:0 0 0 24px;font-size:11px;text-align:left;color:var(--page-text-color)}
+.tsw::before{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--neutral-light)}
+.tsw.on{padding:0 24px 0 7px;background:var(--neutral-lightest)}
+.tsw.on::before{left:auto;right:3px;background:var(--severity-clear)}
+.tinfo{border:0;background:none;padding:0;cursor:help;color:var(--neutral-light);font-size:15px}
+.tseg{display:flex}
+.tseg button{height:32px;border:1px solid var(--border-color);background:var(--page-background-color);cursor:pointer;padding:0 11px;color:var(--page-text-color);margin-left:-1px}
+.tseg button:first-child{border-radius:4px 0 0 4px;margin-left:0}
+.tseg button:last-child{border-radius:0 4px 4px 0}
+.tseg button.on{background:var(--primary);color:var(--page-background-color);border-color:var(--primary);position:relative;z-index:1}
+.tseg button svg{font-size:17px}
+.tseg.ico button{width:41px;padding:0;display:grid;place-items:center}
+.tsq{width:35px;height:35px;border-radius:4px;border:1px solid var(--neutral-lightest);background:var(--neutral-lightest);display:grid;place-items:center;cursor:pointer;padding:0;font-size:16px}
+.tsq:hover{border-color:var(--field-border-color)}
+.tsq.on{background:var(--primary);color:var(--page-background-color)}
+.tgap{width:8px}
+.tpri{height:34px;border-radius:4px;border:1px solid var(--primary-button-bg);background:var(--primary-button-bg);color:var(--primary-button-text);padding:0 15px;cursor:pointer;margin-left:8px}
+.tpri:hover{opacity:.9}
+.tpri[disabled]{opacity:.5;cursor:not-allowed}
+
+/* body — entry-point tree | graph */
+.tbody{flex:1 1 auto;display:flex;min-height:0}
+.tside{flex:0 0 257px;width:257px;min-width:0;overflow:hidden;display:flex;flex-direction:column;border-right:1px solid var(--border-color);padding:8px 0 8px 8px;min-height:0}
+.tside .tsrch{width:auto;margin-right:8px}
+.ttree{flex:1 1 auto;overflow:auto;margin-top:12px;padding-right:4px}
+.tr{height:27px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;border-radius:4px;padding-right:6px}
+.tr:hover{background:var(--left-menu-hover-bg)}
+.tr.on{background:var(--code-tag-background-color)}
+.tcv{flex:0 0 14px;width:14px;height:14px;display:grid;place-items:center;color:var(--neutral-light);font-size:12px;cursor:pointer}
+.tcv.ph{visibility:hidden}
+.tdot{flex:0 0 10px;width:10px;height:10px;border-radius:50%;border:2px solid currentColor}
+.tdot.fill{background:currentColor}
+.tmi{flex:0 0 15px;width:15px;height:15px;font-size:15px;color:var(--neutral-light)}
+.tnm{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tnone{color:var(--neutral-light);padding:6px 8px}
+.s-down{color:var(--severity-down)}.s-critical{color:var(--severity-critical)}.s-major{color:var(--severity-major)}
+.s-warning{color:var(--severity-warning)}.s-clear{color:var(--severity-clear)}.s-unreachable{color:var(--severity-unreachable)}
+.s-maintenance{color:var(--severity-maintenance)}.s-unknown{color:var(--neutral-light)}
+
+/* custom views panel */
+.tcvh{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px 0;font-weight:600;color:var(--primary)}
+.tcvh .tsq{width:26px;height:26px;background:var(--primary);color:var(--page-background-color);border-color:var(--primary);font-size:13px}
+
+.tgraph{position:relative;flex:1 1 auto;min-width:0;background-color:var(--nav-panel-bg);
+  background-image:radial-gradient(circle,var(--field-border-color) 1px,transparent 1.2px);background-size:20px 20px;overflow:hidden;outline:0}
+.tgraph.empty{background-image:none}
+.tsvg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;user-select:none}
+.tsvg.pan{cursor:grabbing}
+.tsvg .lk{fill:none;stroke:var(--neutral-light);stroke-opacity:.55;stroke-width:1.4}
+.tsvg .lk.l3{stroke:var(--chart-indigo);stroke-dasharray:5 4;stroke-opacity:.8}
+.tsvg .lk.hl{stroke:var(--primary);stroke-opacity:.9}
+.tsvg .nd{cursor:pointer}
+.tsvg .nd circle.ring,.tsvg .nd rect.ring{fill:var(--neutral-lighter);stroke-width:3}
+.tsvg .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
+.tsvg .nd .gl{color:var(--page-text-color)}
+.tsvg .nd.root .gl{color:var(--topology-info-btn-text)}
+.tsvg .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
+.tsvg .nd .bdg circle{fill:var(--primary)}
+.tsvg .nd .bdg text{font:600 10px Inter,sans-serif;fill:var(--page-background-color)}
+.tsvg .nd.sel .sring{display:block}
+.tsvg .nd .sring{display:none;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-dasharray:4 3}
+.tsvg .nd.dim,.tsvg .lk.dim{opacity:.18}
+.tsvg .nd.hit .sring{display:block;stroke:var(--severity-warning)}
+
+.tempty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;color:var(--primary);font-size:18px;text-align:center}
+.tempty[hidden]{display:none}
+.tempty svg{width:216px;height:auto}
+.tempty.big{font-size:30px}
+
+/* overlay controls: top-right stack, bottom-left pan pad (live 28px tiles on the pan-button token) */
+.tovl{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:8px}
+.tovl .g{display:flex;flex-direction:column;border-radius:4px;overflow:hidden}
+.tob{width:28px;height:28px;border:0;background:var(--pan-btn-bg);color:var(--page-text-color);display:grid;place-items:center;cursor:pointer;font-size:12px;padding:0}
+.tob + .tob{border-top:1px solid var(--page-background-color)}
+.tob:hover{background:var(--neutral-regular)}
+.tpad{position:absolute;left:14px;bottom:14px;display:grid;grid-template-columns:28px 28px 28px;gap:6px}
+.tpad .tob{border-radius:8px;font-size:14px}
+.tpad .u{grid-column:2;grid-row:1}
+.tpad .tob:not(.u){grid-row:2}
+.tmini{position:absolute;right:14px;bottom:14px;width:198px;background:var(--page-background-color);border:1px solid var(--border-color);border-radius:4px;overflow:hidden}
+.tmini .h{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;font-size:12px;font-weight:600;color:var(--primary);cursor:pointer;border-bottom:1px solid var(--border-color)}
+.tmini.shut .h{border-bottom:0}
+.tmini.shut svg.mm,.tmini.shut .h svg{transform:none}
+.tmini .h svg{transition:transform .15s;transform:rotate(0)}
+.tmini.shut .h svg{transform:rotate(-90deg)}
+.tmini svg.mm{display:block;width:100%;height:120px}
+.tmini.shut svg.mm{display:none}
+.tmini .mmv{fill:none;stroke:var(--primary);stroke-opacity:.5}
+.tovl[hidden],.tpad[hidden],.tmini[hidden]{display:none}
+
+/* tooltip / popovers / toast */
+.ttip{position:fixed;z-index:50;pointer-events:none;background:var(--topology-graph-tooltip-bg);color:var(--topology-graph-tooltip-text-color);border:1px solid var(--topology-tooltip-devider);border-radius:4px;padding:5px 8px;font-size:11.5px;display:none;max-width:280px}
+.ttip b{display:block;font-weight:600}
+.ttip span{color:var(--neutral-light)}
+.ttip.on{display:block}
+.tpop{position:fixed;z-index:40;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;padding:10px 12px;min-width:220px;display:none;box-shadow:0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent)}
+.tpop.on{display:block}
+.tpop h4{margin:0 0 8px;font-size:12.8px;font-weight:600;color:var(--primary)}
+.tpop .r{display:flex;align-items:center;gap:8px;padding:3px 0}
+.tpop kbd{font:500 11px 'JetBrains Mono',monospace;background:var(--tag-bg-color);border-radius:3px;padding:1px 5px;color:var(--page-text-color)}
+.tpop .r .sp{flex:1}
+.ttoast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:60;background:var(--secondary-green);color:var(--active-text-color);border-radius:4px;padding:10px 40px 10px 14px;min-width:280px;display:none}
+.ttoast.on{display:block}
+.ttoast b{display:block;font-size:13px;font-weight:600}
+.ttoast button{position:absolute;right:8px;top:8px;border:0;background:none;color:inherit;cursor:pointer;font-size:13px}
+
+/* drawers (Topology Settings · Create Topology View) */
+.tscrim{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--page-background-color) 55%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:none}
+.tscrim.on{display:block}
+.tdr{position:fixed;top:0;right:0;bottom:0;z-index:31;background:var(--page-background-color);border-left:1px solid var(--border-color);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s}
+.tdr.on{transform:none}
+.tdr.w20{width:max(360px,20vw)}
+.tdr.w40{width:max(560px,40vw)}
+.tdr .dh{flex:0 0 50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:16px;font-weight:500;color:var(--primary)}
+.tdr .dh button{border:0;background:none;cursor:pointer;color:var(--neutral-light);font-size:15px}
+.tdr .db{flex:1 1 auto;overflow:auto;padding:0 16px 16px}
+.tdr .df{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--border-color)}
+.tdr .df .sp{flex:1;color:var(--neutral-light);font-size:12px}
+.tdr .df .sp i{color:var(--severity-critical);font-style:normal}
+.dtabs{display:flex;gap:20px;border-bottom:1px solid var(--border-color);margin-bottom:12px}
+.dtabs button{border:0;background:none;padding:6px 0;cursor:pointer;color:var(--page-text-color);border-bottom:2px solid transparent;margin-bottom:-1px}
+.dtabs button.on{color:var(--primary);font-weight:500;border-bottom-color:var(--primary)}
+.dnote{display:flex;gap:8px;border:1px solid var(--border-color);border-radius:4px;padding:8px 10px;color:var(--neutral-light);font-size:12px;margin-bottom:18px}
+.dsec{font-size:14px;font-weight:600;color:var(--primary);margin:6px 0 10px;display:flex;align-items:center;gap:8px}
+.dtag{font-size:11px;font-weight:500;background:var(--tag-bg-color);color:var(--page-text-color);border-radius:4px;padding:1px 7px}
+.dlbl{font-size:12.8px;color:var(--neutral-light);margin:0 0 6px}
+.dlbl i{color:var(--severity-critical);font-style:normal}
+.dfld{margin-bottom:18px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+.din{width:100%;height:34px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:0 11px;font:inherit;outline:0}
+.din:focus{border-color:var(--neutral-light)}
+.din.err{border-color:var(--severity-critical)}
+.din::placeholder{color:var(--neutral-light)}
+.derr{color:var(--severity-critical);font-size:11.5px;margin-top:4px}
+.dck{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.dck input{margin:2px 0 0;accent-color:var(--page-text-color);color-scheme:dark}
+html:not([data-theme]) .dck input{color-scheme:light}
+.dck small{display:block;color:var(--neutral-light);font-size:12px;margin-top:2px}
+.tbtn{height:32px;border-radius:4px;border:1px solid var(--field-border-color);background:var(--page-background-color);color:var(--page-text-color);padding:0 14px;cursor:pointer}
+.tbtn:hover{border-color:var(--neutral-light)}
+.dsel{position:relative}
+.dsel .din{display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}
+.dsel .din span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsel .din span.ph{color:var(--neutral-light)}
+.dmenu{position:absolute;left:0;right:0;top:38px;z-index:5;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;max-height:240px;overflow:auto;display:none;padding:4px}
+.dmenu.on{display:block}
+.dmenu label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.dmenu label:hover{background:var(--dropdown-hover-background)}
+.dmenu input{accent-color:var(--page-text-color)}
+.tbody.fs{position:fixed;inset:0;z-index:20;background:var(--page-background-color)}
+</style>
+</head>
+<body>
+<div class="tp" id="tp">
+  <div class="thd">
+    <button class="tback" id="tBack" aria-label="Back">@@I:chevron-left@@</button>
+    <span class="tdiv"></span>
+    <h1>@@I:topology@@ Topology</h1>
+  </div>
+  <div class="tbar">
+    <nav class="ttabs" id="tTabs"></nav>
+    <span class="tsp"></span>
+    <div class="ttools" id="tTools">
+      <label class="tsrch" id="tFindW"><span>@@I:search@@</span><input id="tFind" placeholder="Ctrl + F | Esc to clear" autocomplete="off"></label>
+      <span class="tl3">Layer 3 <button class="tsw" id="tL3" aria-pressed="false">OFF</button>
+        <button class="tinfo" data-tip="Show the Layer 3 (IP / routing) links between devices, drawn dashed" aria-label="About Layer 3">@@I:info-circle@@</button></span>
+      <span class="tgap"></span>
+      <div class="tseg" id="tMode"><button data-m="expanded">Expanded</button><button data-m="progressive" class="on">Progressive</button></div>
+      <span class="tgap"></span>
+      <div class="tseg ico" id="tLay">
+        <button data-l="radial" class="on" data-tip="Radial" aria-label="Radial layout">@@I:bulls-eye@@</button>
+        <button data-l="tree" data-tip="Hierarchical" aria-label="Hierarchical layout">@@I:tree-view@@</button>
+        <button data-l="ltr" data-tip="Left to right" aria-label="Left to right layout">@@I:topology-left-to-right@@</button>
+      </div>
+      <span class="tgap"></span>
+      <button class="tsq" id="tHelp" aria-label="Legend" data-tip="Legend">@@I:question-circle@@</button>
+    </div>
+    <button class="tsq" id="tFs" aria-label="Full screen" data-tip="Full screen">@@I:fullscreen@@</button>
+    <span class="ttools" id="tTools2" style="gap:8px">
+      <button class="tsq" id="tSet" aria-label="Topology Settings" data-tip="Topology Settings">@@I:settings@@</button>
+      <button class="tsq" id="tXml" aria-label="Export As XML" data-tip="Export As XML">@@I:export-xml@@</button>
+    </span>
+    <button class="tpri" id="tCreate">Create Topology View</button>
+  </div>
+  <div class="tbody" id="tBody">
+    <aside class="tside" id="tSide"></aside>
+    <div class="tgraph empty" id="tGraph" tabindex="0">
+      <svg class="tsvg" id="tSvg" hidden><g id="tVp"><g id="tLinks"></g><g id="tNodes"></g></g></svg>
+      <div class="tempty" id="tEmpty">@@EMPTY@@<div id="tEmptyT">Please select entry point to view Topology</div></div>
+      <div class="tovl" id="tOvl" hidden>
+        <div class="g"><button class="tob" id="oKey" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts">@@I:keyboard@@</button><button class="tob" id="oFit" data-tip="Fit to screen" aria-label="Fit to screen">@@I:expand@@</button></div>
+        <div class="g"><button class="tob" id="oIn" data-tip="Zoom in" aria-label="Zoom in">@@I:plus@@</button><button class="tob" id="oOut" data-tip="Zoom out" aria-label="Zoom out">@@I:minus@@</button></div>
+        <div class="g"><button class="tob" id="oCtr" data-tip="Centre on entry point" aria-label="Centre on entry point">@@I:crosshair@@</button></div>
+      </div>
+      <div class="tpad" id="tPad" hidden>
+        <button class="tob u" data-pan="0,1" data-tip="Move Up  Up Arrow" aria-label="Move up">@@I:long-arrow-up@@</button>
+        <button class="tob" data-pan="1,0" data-tip="Move Left  Left Arrow" aria-label="Move left">@@I:long-arrow-left@@</button>
+        <button class="tob" data-pan="0,-1" data-tip="Move Down  Down Arrow" aria-label="Move down">@@I:long-arrow-down@@</button>
+        <button class="tob" data-pan="-1,0" data-tip="Move Right  Right Arrow" aria-label="Move right">@@I:long-arrow-right@@</button>
+      </div>
+      <div class="tmini" id="tMini" hidden><div class="h" id="tMiniH">Minimap @@I:chevron-down@@</div><svg class="mm" id="tMm"></svg></div>
+    </div>
+  </div>
+</div>
+
+<div class="ttip" id="tTip"></div>
+<div class="tpop" id="tPop"></div>
+<div class="ttoast" id="tToast"><b id="tToastT"></b><span id="tToastB"></span><button aria-label="Close" onclick="toastHide()">@@I:times@@</button></div>
+<div class="tscrim" id="tScrim"></div>
+
+<aside class="tdr w20" id="dSet" aria-label="Topology Settings">
+  <div class="dh">Topology Settings <button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <div class="dtabs" id="dSetTabs"><button data-t="sec" class="on">Security</button><button data-t="vis">Visualization Settings</button></div>
+    <div data-pane="sec">
+      <div class="dnote">@@I:info-circle@@ Applies to the currently selected topology. Other topologies are not affected.</div>
+      <div class="dsec">Visibility</div>
+      <div class="dfld"><div class="dlbl">Access Type <i>*</i></div><div class="tseg" id="dAcc"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+      <div class="dsec">Sub Topology <span class="dtag">Network only</span></div>
+      <label class="dck"><input type="checkbox" id="dSub" checked><span>Include Sub-Topologies<small>When enabled, auto-discovered sub-topologies (CDP, LLDP, etc.) appear in the sidebar under this topology. When disabled, they are hidden for this topology only.</small></span></label>
+    </div>
+    <div data-pane="vis" hidden>
+      <div class="dnote">@@I:info-circle@@ Applies to the currently selected topology. Other topologies are not affected.</div>
+      <div class="dfld"><div class="dlbl">Node label</div><div class="tseg" id="dLbl"><button data-v="name" class="on">Name</button><button data-v="ip">IP</button></div></div>
+      <label class="dck"><input type="checkbox" id="dMini" checked><span>Show minimap</span></label>
+    </div>
+  </div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="dSetReset">Reset to Defaults</button><button class="tpri" id="dSetApply">Apply</button></div>
+</aside>
+
+<aside class="tdr w40" id="dNew" aria-label="Create Topology View">
+  <div class="dh">Create Topology View <button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <div class="dgrid">
+      <div class="dfld"><div class="dlbl">Topology View Name <i>*</i></div><input class="din" id="nName" autocomplete="off"><div class="derr" id="nNameE" hidden>Topology View Name is required</div></div>
+      <div class="dfld"><div class="dlbl">Topology View Group <i>*</i> <span class="tinfo" data-tip="Leave as a standalone view, or file it under a key:value group">@@I:info-circle@@</span></div><input class="din" id="nGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="nGrpE" hidden>Topology View Group is required</div></div>
+      <div class="dfld"><div class="tseg" id="nInc"><button data-v="include" class="on">Include</button><button data-v="exclude">Exclude</button></div></div>
+      <div class="dfld"><div class="dlbl">Monitor Filter</div><div class="dsel"><button class="din" id="nMonB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nMonM"></div></div></div>
+    </div>
+    <div class="dfld"><div class="dlbl">Security <i>*</i></div><div class="tseg" id="nSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+  </div>
+  <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="nReset">Reset</button><button class="tpri" id="nSave">Create Topology View</button></div>
+</aside>
+
+<script>
+const IC = /*@@ICONS@@*/;
+const MON = /*@@MONICONS@@*/;
+const ic = (n) => IC[n] || '';
+const mi = (n) => MON[n] || MON.server || '';
+
+/* ================= DATA — the instance's own tree, every name and address scrubbed =================
+   Tree: a group → its type rows → vendor rows → the monitors that can be an entry point. A leaf's `t`
+   is its topology: the neighbours that auto-discovery reported, each `{n, ip, ic, s, links, l3, kids}`.
+   ⚠️ `kids` are only drawn when a neighbour is expanded (Progressive) or always (Expanded); `count` is
+   what the live vCenter graph badges on a host whose VMs it has not drawn. */
+const VMS = (pre, n, ip0, sevs) => Array.from({length:n}, (_, i) => ({ n: pre + '-' + String(i+1).padStart(2,'0'), ip: '198.51.100.' + (ip0 + i), ic: 'vm', s: (sevs && sevs[i]) || 'clear' }));
+const T_EDGE = { n:'RUCKUS_L3', ip:'192.0.2.182', ic:'switch', s:'unreachable', kids:[
+  { n:'Cisco nexus-C9524', ip:'192.0.2.24', ic:'switch', s:'clear', links:2, l3:true },
+  { n:'6506-4-282',        ip:'192.0.2.28', ic:'switch', s:'clear', links:2, l3:true },
+  { n:'5520-24T-9794',     ip:'192.0.2.94', ic:'switch', s:'clear', links:1 } ]};
+const T_ESX11 = { n:'esxi11.example.com', ip:'198.51.100.11', ic:'vmware-esxi', s:'down', kids: [
+  ...['app-ubuntu-114','ui-server-8.113','ni-8.136','kr-8.67','int-f-8.67','internal-svc-9.111','sql-145','support-9.154','docker-aiops','vcls-8be33','sql-148','sql-159','windows-10.132','aix-10.84','analytics-2.226'].map((n,i)=>({ n, ip:'198.51.100.'+(40+i), ic:'vm', s: n==='docker-aiops'?'critical':'clear' })),
+  { n:'metadata-server', ip:'198.51.100.60', ic:'linux', s:'warning' } ]};
+const T_ESX13 = { n:'esxi13.example.com', ip:'198.51.100.13', ic:'vmware-esxi', s:'down', kids: VMS('vm13', 8, 70, {2:'critical', 5:'warning'}) };
+const T_VC = { n:'198.51.100.180', ip:'198.51.100.180', ic:'vcenter', s:'clear', kids:[
+  { n:'198.51.100.32', ip:'198.51.100.32', ic:'vmware-esxi', s:'clear', kids: VMS('vm32', 9, 100) },
+  { n:'198.51.100.35', ip:'198.51.100.35', ic:'vmware-esxi', s:'clear', kids: VMS('vm35', 12, 110) },
+  { n:'198.51.100.122', ip:'198.51.100.122', ic:'vmware-esxi', s:'clear', kids: VMS('vm22', 59, 130) },
+  { n:'198.51.100.124', ip:'198.51.100.124', ic:'vmware-esxi', s:'clear', kids: VMS('vm24', 57, 190) },
+  { n:'esxi13.example.com', ip:'198.51.100.13', ic:'vmware-esxi', s:'critical', kids: VMS('vm13', 49, 1) },
+  { n:'esxi18.example.com', ip:'198.51.100.18', ic:'vmware-esxi', s:'clear', kids: VMS('vm18', 6, 60) },
+  { n:'198.51.100.22', ip:'198.51.100.22', ic:'vmware-esxi', s:'clear', kids: VMS('vm22b', 23, 140) } ]};
+const T_XEN = { n:'xen71master', ip:'198.51.100.231', ic:'citrix-xen', s:'clear', kids: VMS('xenvm', 5, 232, {3:'warning'}) };
+const T_NTX = { n:'NTNX-806419bd-A', ip:'198.51.100.210', ic:'nutanix', s:'clear', kids:[
+  { n:'Ubuntu', ip:'198.51.100.214', ic:'vm', s:'clear' }, { n:'198.51.100.212', ip:'198.51.100.212', ic:'prism', s:'clear' },
+  { n:'Linux-Test-Machine', ip:'198.51.100.215', ic:'vm', s:'clear' } ]};
+const T_PRISM = { n:'198.51.100.212', ip:'198.51.100.212', ic:'prism', s:'clear', kids:[ { n:'NTNX-806419bd-A', ip:'198.51.100.210', ic:'nutanix', s:'clear', kids: T_NTX.kids } ]};
+const leaf = (n, ip, ic, s, t) => ({ n, ip, ic, s, t: t || null });
+const TREE = {
+  network: [{ n:'Network', s:'down', kids:[
+    { n:'Switch', s:'down', kids:[
+      { n:'Hewlett Packard Enterprise', s:'down', kids:[ leaf('HP ProCurve Switch 4108GL', '192.0.2.84', 'switch', 'down') ]},
+      { n:'Cisco Systems', s:'warning', kids:[ leaf('cisco-core.example.com', '192.0.2.2', 'switch', 'warning') ]},
+      leaf('core-oa1', '192.0.2.12', 'router', 'clear'),
+      leaf('RUCKUS_L3', '192.0.2.182', 'switch', 'unreachable', T_EDGE) ]},
+    { n:'Router', s:'clear', kids:[ { n:'Cisco Systems', s:'clear', kids:[ leaf('core-oa1', '192.0.2.12', 'router', 'clear') ]} ]} ]}],
+  sdn: [], cloud: [],
+  virtualization: [{ n:'Virtualization', s:'down', kids:[
+    { n:'VMware ESXi', s:'down', kids:[ leaf('esxi11.example.com', '198.51.100.11', 'vmware-esxi', 'down', T_ESX11), leaf('esxi13.example.com', '198.51.100.13', 'vmware-esxi', 'down', T_ESX13) ]},
+    { n:'vCenter', s:'clear', kids:[ leaf('198.51.100.180', '198.51.100.180', 'vcenter', 'clear', T_VC) ]},
+    { n:'Citrix Xen', s:'clear', kids:[ leaf('xen71master', '198.51.100.231', 'citrix-xen', 'clear', T_XEN) ]} ]}],
+  hci: [{ n:'HCI', s:'clear', kids:[
+    { n:'Prism', s:'clear', kids:[ leaf('198.51.100.212', '198.51.100.212', 'prism', 'clear', T_PRISM) ]},
+    { n:'Nutanix', s:'clear', kids:[ leaf('NTNX-806419bd-A', '198.51.100.210', 'nutanix', 'clear', T_NTX) ]} ]}],
+};
+const TABS = [['network','Network'],['sdn','SDN'],['cloud','Cloud'],['virtualization','Virtualization'],['hci','HCI'],['custom','Custom']];
+const CUSTOM = [{ grp:'tag11', views:[] }];
+
+/* ================= STATE ================= */
+const T = { tab:'network', open:{}, sel:{}, q:'', find:'', l3:false, mode:'progressive', lay:'radial',
+  exp:{}, vp:{x:0,y:0,k:1}, nodes:[], links:[], pick:null, label:'name', mini:true, acc:'public', sub:true,
+  view:null, cv:{} };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= THEME / EMBED ================= */
+const QS = new URLSearchParams(location.search);
+function setTheme(t){ if (t === 'light') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme','dark-theme'); }
+setTheme(QS.get('theme') || 'dark');
+addEventListener('message', (e) => { const d = e.data; if (d && d.topoTheme) setTheme(d.topoTheme); if (d && d.topoTab) goTab(d.topoTab); });
+$('tBack').onclick = () => { if (QS.get('embed')) parent.postMessage({ topoBack: 1 }, '*'); else history.back(); };
+
+/* ================= TABS ================= */
+function tabsPaint(){
+  $('tTabs').innerHTML = TABS.map(([k, l]) => `<button class="ttab${T.tab===k?' on':''}" data-k="${k}">${l}</button>`).join('');
+}
+$('tTabs').onclick = (e) => { const b = e.target.closest('.ttab'); if (b) goTab(b.dataset.k); };
+function goTab(k){
+  if (!TABS.some(t => t[0] === k)) k = 'network';
+  T.tab = k; T.q = ''; T.pick = T.sel[k] || null; T.exp = {}; T.find = ''; $('tFind').value = '';
+  if (location.hash.slice(1) !== k) history.replaceState(null, '', '#' + k);
+  tabsPaint(); sidePaint(); toolsPaint(); graphLoad();
+}
+addEventListener('hashchange', () => goTab(location.hash.slice(1)));
+
+/* ================= THE ENTRY-POINT TREE ================= */
+function leavesOf(list, out = []){ list.forEach(x => x.kids ? leavesOf(x.kids, out) : out.push(x)); return out; }
+function sidePaint(){
+  const s = $('tSide');
+  if (T.tab === 'custom') return customSidePaint();
+  s.innerHTML = `<label class="tsrch"><span>${ic('search')}</span><input id="tQ" placeholder="Search" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="tTree"></div>`;
+  $('tQ').oninput = (e) => { T.q = e.target.value; treePaint(); };
+  treePaint();
+}
+function treePaint(){
+  const list = TREE[T.tab] || [], q = T.q.trim().toLowerCase();
+  if (!list.length) { $('tTree').innerHTML = '<div class="tnone">No data found</div>'; return; }
+  const match = (x) => !q || (x.n + ' ' + (x.ip||'')).toLowerCase().includes(q) || (x.kids || []).some(match);
+  const rows = [];
+  const walk = (arr, d, path) => arr.forEach((x, i) => {
+    if (!match(x)) return;
+    const id = path + '/' + i, isLeaf = !x.kids, open = q ? true : (T.open[T.tab + id] ?? (d < 1));
+    const on = isLeaf && T.pick === id;
+    rows.push(`<div class="tr${on?' on':''}" data-id="${id}" data-leaf="${isLeaf?1:''}" style="padding-left:${d*20}px" ${isLeaf?`title="${esc(x.n + ' - (' + x.ip + ')')}"`:''}>`
+      + `<span class="tcv${isLeaf?' ph':''}">${open ? ic('chevron-down') : ic('chevron-right')}</span>`
+      + `<span class="tdot s-${x.s}${!isLeaf && x.s==='down'?' fill':''}${isLeaf && x.s==='down'?' fill':''}" title="${x.s}"></span>`
+      + (isLeaf ? `<span class="tmi">${mi(x.ic)}</span>` : '')
+      + `<span class="tnm">${esc(x.n)}${isLeaf ? ' - (' + esc(x.ip) + ')' : ''}</span></div>`);
+    if (!isLeaf && open) walk(x.kids, d + 1, id);
+  });
+  walk(list, 0, '');
+  $('tTree').innerHTML = rows.join('') || '<div class="tnone">No matching monitors</div>';
+}
+$('tSide').addEventListener('click', (e) => {
+  const r = e.target.closest('.tr'); if (!r || T.tab === 'custom') return;
+  const id = r.dataset.id;
+  if (!r.dataset.leaf) { const k = T.tab + id, d = id.split('/').length - 2; T.open[k] = !(T.open[k] ?? (d < 1)); treePaint(); return; }
+  T.pick = id; T.sel[T.tab] = id; T.exp = {}; treePaint(); graphLoad();
+});
+function nodeAt(id){ let arr = TREE[T.tab], x = null; id.split('/').slice(1).forEach(i => { x = arr[+i]; arr = x && x.kids || []; }); return x; }
+
+/* custom views */
+function customSidePaint(){
+  const s = $('tSide');
+  s.innerHTML = `<div class="tcvh">Custom Views <button class="tsq" id="cvAdd" aria-label="Create Topology View" data-tip="Create Topology View">${ic('plus')}</button></div>`
+    + `<label class="tsrch"><span>${ic('search')}</span><input id="cvQ" placeholder="Search views" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="cvTree"></div>`;
+  $('cvAdd').onclick = () => drOpen('dNew');
+  $('cvQ').oninput = (e) => { T.q = e.target.value; cvTreePaint(); };
+  cvTreePaint();
+}
+function cvTreePaint(){
+  const q = T.q.trim().toLowerCase(), rows = [];
+  CUSTOM.forEach((g, gi) => {
+    const vs = g.views.filter(v => !q || v.name.toLowerCase().includes(q));
+    if (q && !vs.length && !g.grp.toLowerCase().includes(q)) return;
+    const open = q ? true : !!T.cv[g.grp];
+    rows.push(`<div class="tr" data-g="${gi}"><span class="tcv">${open?ic('chevron-down'):ic('chevron-right')}</span><span class="tnm">${esc(g.grp)}</span></div>`);
+    if (open) { if (!vs.length) rows.push('<div class="tnone" style="padding-left:28px">No views yet</div>');
+      vs.forEach((v) => rows.push(`<div class="tr${T.view===v?' on':''}" data-v="${gi}:${g.views.indexOf(v)}" style="padding-left:20px"><span class="tcv ph"></span><span class="tmi">${ic('topology')}</span><span class="tnm">${esc(v.name)}</span></div>`)); }
+  });
+  $('cvTree').innerHTML = rows.join('') || '<div class="tnone">No matching views</div>';
+}
+$('tSide').addEventListener('click', (e) => {
+  if (T.tab !== 'custom') return; const r = e.target.closest('.tr'); if (!r) return;
+  if (r.dataset.g != null) { const g = CUSTOM[+r.dataset.g]; T.cv[g.grp] = !T.cv[g.grp]; cvTreePaint(); return; }
+  const [gi, vi] = r.dataset.v.split(':').map(Number); T.view = CUSTOM[gi].views[vi]; cvTreePaint(); graphLoad();
+});
+
+/* ================= TOOLBAR ================= */
+function toolsPaint(){
+  const custom = T.tab === 'custom', drawn = !!curRoot();
+  $('tTools').hidden = custom; $('tTools2').hidden = custom;
+  $('tFindW').hidden = !drawn;
+  $('tL3').classList.toggle('on', T.l3); $('tL3').textContent = T.l3 ? 'ON' : 'OFF'; $('tL3').setAttribute('aria-pressed', T.l3);
+  [...$('tMode').children].forEach(b => b.classList.toggle('on', b.dataset.m === T.mode));
+  [...$('tLay').children].forEach(b => b.classList.toggle('on', b.dataset.l === T.lay));
+}
+$('tL3').onclick = () => { T.l3 = !T.l3; toolsPaint(); graphPaint(); };
+$('tMode').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; T.mode = b.dataset.m; T.exp = {}; toolsPaint(); graphBuild(true); };
+$('tLay').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; T.lay = b.dataset.l; toolsPaint(); graphBuild(true); };
+$('tFind').oninput = (e) => { T.find = e.target.value.trim().toLowerCase(); graphPaint(); };
+$('tFs').onclick = () => { const b = $('tBody'); b.classList.toggle('fs'); $('tFs').classList.toggle('on', b.classList.contains('fs')); setTimeout(fit, 30); };
+$('tXml').onclick = () => {
+  const r = curRoot(); if (!r) { toast('Nothing to export', 'Select an entry point first.'); return; }
+  const node = (x, d) => '  '.repeat(d) + `<node name="${esc(x.n)}" ip="${esc(x.ip||'')}" status="${x.s}">` + (x.kids ? '\n' + x.kids.map(k => node(k, d + 1)).join('\n') + '\n' + '  '.repeat(d) : '') + '</node>';
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<topology tab="' + T.tab + '">\n' + node(r, 1) + '\n</topology>\n';
+  toast('Success', 'The file will be downloaded once ready');
+  setTimeout(() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([xml], { type:'application/xml' })); a.download = 'topology-' + r.n.replace(/\W+/g,'-') + '.xml'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }, 600);
+};
+$('tHelp').onclick = (e) => popToggle(e.currentTarget, '<h4>Legend</h4>' + ['clear','warning','major','critical','down','unreachable','maintenance'].map(s => `<div class="r"><span class="tdot s-${s}"></span>${s[0].toUpperCase()+s.slice(1)}</div>`).join('')
+  + `<div class="r" style="margin-top:6px"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" class="lk" style="stroke:var(--neutral-light)"/></svg>Link</div><div class="r"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" style="stroke:var(--chart-indigo);stroke-dasharray:5 4"/></svg>Layer 3 link</div>`
+  + '<div class="r"><span class="dtag">N</span>Hidden children — click to expand</div>');
+$('tSet').onclick = () => drOpen('dSet');
+$('tCreate').onclick = () => drOpen('dNew');
+
+/* ================= GRAPH ================= */
+function curRoot(){
+  if (T.tab === 'custom') { const v = T.view; if (!v) return null;
+    return { n: v.name, ip: v.grp, ic:'topology', s:'clear', kids: v.mons.map(m => ({ ...m, kids: undefined })) }; }
+  if (!T.pick) return null; const l = nodeAt(T.pick); return l ? (l.t || 'none') : null;
+}
+function graphLoad(){ graphBuild(true); }
+function graphBuild(refit){
+  const r = curRoot(), g = $('tGraph');
+  const show = r && r !== 'none';
+  $('tSvg').hidden = !show; $('tOvl').hidden = !show; $('tPad').hidden = !show; $('tMini').hidden = !show || !T.mini;
+  g.classList.toggle('empty', !show);
+  $('tEmpty').hidden = show; $('tEmpty').classList.toggle('big', r === 'none');
+  $('tEmptyT').textContent = r === 'none' ? 'No data found' : T.tab === 'custom' ? 'Select or create a Custom View to begin designing' : 'Please select entry point to view Topology';
+  toolsPaint();
+  if (!show) { T.nodes = []; T.links = []; return; }
+  layout(r); graphPaint(); if (refit) fit();
+}
+/* a node is "open" (its kids drawn) in Expanded mode, or once clicked in Progressive mode */
+const isOpen = (key) => T.mode === 'expanded' || !!T.exp[key];
+function layout(r){
+  const N = [], L = [];
+  const add = (x, key, depth, parent) => { const n = { x:0, y:0, d:x, key, depth, parent, kids:[] }; N.push(n); if (parent) { parent.kids.push(n); L.push({ a:parent, b:n, links: x.links || 1, l3: !!x.l3 }); } return n; };
+  const root = add(r, 'r', 0, null);
+  (r.kids || []).forEach((c, i) => { const cn = add(c, 'r/' + i, 1, root); if (c.kids && isOpen(cn.key)) c.kids.forEach((g, j) => add(g, cn.key + '/' + j, 2, cn)); });
+  const kids = root.kids, n1 = kids.length;
+  if (T.lay === 'radial') {
+    const R1 = Math.max(170, n1 * 21);   /* ~21px of arc per neighbour keeps 16 labels apart */
+    kids.forEach((c, i) => { const a = -Math.PI / 2 + (i / Math.max(1, n1)) * Math.PI * 2; c.a = a; c.x = Math.cos(a) * R1; c.y = Math.sin(a) * R1;
+      const m = c.kids.length; if (!m) return;
+      const R2 = Math.max(120, m * 9), spread = Math.min(Math.PI * 1.6, Math.max(Math.PI / 2, m * 0.16));
+      c.kids.forEach((g, j) => { const b = a + (m === 1 ? 0 : (j / (m - 1) - .5) * spread); const rr = R2 + (m > 24 ? (j % 2) * 60 : 0); g.x = c.x + Math.cos(b) * rr; g.y = c.y + Math.sin(b) * rr; }); });
+  } else {
+    /* hierarchical / left-to-right: leaves get one slot each, parents centre over theirs */
+    /* ⚠️ A host with dozens of VMs would run them out into one 6,000px row, so a neighbour's children
+       wrap into a block COLS wide, one level-step per row — the block is what the parent centres over. */
+    const GAP = 110, LV = 170, COLS = 6; let slot = 0;
+    root.kids.forEach(c => {
+      if (!c.kids.length) { c.s = slot++; c.r = 0; return; }
+      const w = Math.min(COLS, c.kids.length); c.kids.forEach((g, j) => { g.s = slot + (j % w); g.r = Math.floor(j / w); });
+      c.s = slot + (w - 1) / 2; c.r = 0; slot += w + .4;
+    });
+    root.s = root.kids.length ? (Math.min(...root.kids.map(c => c.s)) + Math.max(...root.kids.map(c => c.s))) / 2 : 0; root.r = 0;
+    N.forEach(n => { n.s -= root.s; });
+    N.forEach(n => { const a = n.s * GAP, b = (n.depth + (n.r || 0)) * (n.depth === 2 ? LV * .62 : LV) + (n.depth === 2 ? LV * .38 : 0); if (T.lay === 'tree') { n.x = a; n.y = b; } else { n.x = b; n.y = a; } });
+  }
+  T.nodes = N; T.links = L;
+}
+function trunc(s, n = 16){ return s.length > n ? s.slice(0, 6) + '…' + s.slice(-6) : s; }
+function graphPaint(){
+  const f = T.find, hit = (n) => f && (n.d.n + ' ' + (n.d.ip || '')).toLowerCase().includes(f);
+  const anyHit = f && T.nodes.some(hit);
+  /* links: a pair with several physical links fans out as several curves (live: two arcs between a pair) */
+  const lk = [];
+  T.links.forEach(l => {
+    const {a, b} = l, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+    const dim = anyHit && !(hit(a) || hit(b)) ? ' dim' : '';
+    for (let i = 0; i < l.links; i++) { const o = l.links === 1 ? 0 : (i - (l.links - 1) / 2) * 22;
+      lk.push(`<path class="lk${dim}" data-a="${a.key}" data-b="${b.key}" d="M${a.x},${a.y} Q${mx + nx * o},${my + ny * o} ${b.x},${b.y}"/>`); }
+    if (T.l3 && l.l3) lk.push(`<path class="lk l3${dim}" d="M${a.x},${a.y} Q${mx + nx * 40},${my + ny * 40} ${b.x},${b.y}"/>`);
+  });
+  $('tLinks').innerHTML = lk.join('');
+  $('tNodes').innerHTML = T.nodes.map(n => {
+    const d = n.d, root = n.depth === 0, sev = 'var(--severity-' + (d.s || 'unknown') + ', var(--neutral-light))';
+    const hidden = d.kids && d.kids.length && n.depth > 0 && !isOpen(n.key) ? d.kids.length : 0;
+    const label = trunc(T.label === 'ip' && d.ip ? d.ip : d.n);
+    const cls = 'nd' + (root ? ' root' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
+    const shape = root ? `<rect class="ring" x="-38" y="-38" width="76" height="76" rx="12" style="stroke:${sev}"/><rect class="sring" x="-45" y="-45" width="90" height="90" rx="16"/>`
+                       : `<circle class="ring" r="33" style="stroke:${sev}"/><circle class="sring" r="40"/>`;
+    const gs = root ? 34 : 24;
+    return `<g class="${cls}" data-k="${n.key}" transform="translate(${n.x},${n.y})">${shape}`
+      + `<svg class="gl" x="${-gs/2}" y="${-gs/2 - (d.badge?5:0)}" width="${gs}" height="${gs}" viewBox="0 0 512 512">${monGlyph(d.ic)}</svg>`
+      + (d.badge ? `<text x="0" y="24" text-anchor="middle" style="font:600 10px Inter;fill:currentColor" class="gl">${esc(d.badge)}</text>` : '')
+      + `<text class="lb" x="0" y="${root ? 56 : 50}" text-anchor="middle">${esc(label)}</text>`
+      + (hidden ? `<g class="bdg" transform="translate(25,-25)"><circle r="11"/><text text-anchor="middle" y="3.5">${hidden}</text></g>` : '')
+      + '</g>';
+  }).join('');
+  vpApply(); miniPaint();
+}
+function monGlyph(n){ const s = MON[n] || MON.server || ''; const m = s.match(/<svg[^>]*>([\s\S]*)<\/svg>/); return m ? m[1] : ''; }
+
+/* pan & zoom: one transform on #tVp; the minimap reads the same numbers */
+function vpApply(){ const v = T.vp; $('tVp').setAttribute('transform', `translate(${v.x},${v.y}) scale(${v.k})`); miniView(); }
+function bbox(){ if (!T.nodes.length) return {x0:0,y0:0,x1:1,y1:1}; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; T.nodes.forEach(n => { x0=Math.min(x0,n.x-45); y0=Math.min(y0,n.y-45); x1=Math.max(x1,n.x+45); y1=Math.max(y1,n.y+65); }); return {x0,y0,x1,y1}; }
+function fit(){
+  const g = $('tGraph'), W = g.clientWidth, H = g.clientHeight, b = bbox(); if (!W) return;
+  const k = Math.min(1.3, Math.max(.2, Math.min((W - 120) / (b.x1 - b.x0), (H - 120) / (b.y1 - b.y0))));
+  T.vp = { k, x: W / 2 - (b.x0 + b.x1) / 2 * k, y: H / 2 - (b.y0 + b.y1) / 2 * k }; vpApply();
+}
+function zoom(f, cx, cy){ const g = $('tGraph'); cx ??= g.clientWidth / 2; cy ??= g.clientHeight / 2; const v = T.vp, k = Math.min(3, Math.max(.15, v.k * f)); v.x = cx - (cx - v.x) * k / v.k; v.y = cy - (cy - v.y) * k / v.k; v.k = k; vpApply(); }
+function pan(dx, dy){ T.vp.x += dx; T.vp.y += dy; vpApply(); }
+function centre(){ const g = $('tGraph'), r = T.nodes[0]; if (!r) return; T.vp.x = g.clientWidth / 2 - r.x * T.vp.k; T.vp.y = g.clientHeight / 2 - r.y * T.vp.k; vpApply(); }
+$('oFit').onclick = fit; $('oIn').onclick = () => zoom(1.2); $('oOut').onclick = () => zoom(1 / 1.2); $('oCtr').onclick = centre;
+$('tPad').onclick = (e) => { const b = e.target.closest('[data-pan]'); if (!b) return; const [x, y] = b.dataset.pan.split(',').map(Number); pan(x * 80, y * 80); };
+$('oKey').onclick = (e) => popToggle(e.currentTarget, '<h4>Keyboard shortcuts</h4>' + [['Move','← ↑ → ↓'],['Zoom in','+'],['Zoom out','−'],['Fit to screen','0'],['Find a node','Ctrl F'],['Clear find','Esc']].map(([a,b]) => `<div class="r">${a}<span class="sp"></span>${b.split(' ').map(k=>`<kbd>${k}</kbd>`).join(' ')}</div>`).join(''), 'left');
+$('tGraph').addEventListener('wheel', (e) => { if ($('tSvg').hidden) return; e.preventDefault(); const r = $('tGraph').getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX - r.left, e.clientY - r.top); }, { passive:false });
+
+/* drag: a node moves; empty canvas pans. Pointer capture keeps a fast drag that leaves the canvas going. */
+let DR = null;
+$('tSvg').addEventListener('pointerdown', (e) => {
+  const g = e.target.closest('.nd'); const n = g && T.nodes.find(x => x.key === g.dataset.k);
+  DR = { n, x: e.clientX, y: e.clientY, moved: false }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
+});
+$('tSvg').addEventListener('pointermove', (e) => {
+  if (!DR) return tipMove(e); const dx = e.clientX - DR.x, dy = e.clientY - DR.y; if (Math.abs(dx) + Math.abs(dy) > 3) DR.moved = true; if (!DR.moved) return;
+  DR.x = e.clientX; DR.y = e.clientY; tipHide();
+  if (DR.n) { DR.n.x += dx / T.vp.k; DR.n.y += dy / T.vp.k; graphPaint(); } else pan(dx, dy);
+});
+$('tSvg').addEventListener('pointerup', () => {
+  if (DR && !DR.moved && DR.n) nodeClick(DR.n);
+  else if (DR && !DR.moved && !DR.n) { T.sel.node = null; graphPaint(); }
+  DR = null; $('tSvg').classList.remove('pan');
+});
+$('tSvg').addEventListener('pointerleave', tipHide);
+function nodeClick(n){
+  T.sel.node = n.key;
+  /* Progressive: a neighbour that hides children opens them; clicking an open one folds them again */
+  if (T.mode === 'progressive' && n.depth > 0 && n.d.kids && n.d.kids.length) { T.exp[n.key] = !T.exp[n.key]; layout(curRoot()); }
+  graphPaint();
+}
+function tipMove(e){
+  const g = e.target.closest && e.target.closest('.nd'), t = $('tTip');
+  if (!g) return tipHide(); const n = T.nodes.find(x => x.key === g.dataset.k); if (!n) return;
+  const d = n.d, kids = d.kids ? d.kids.length : 0;
+  t.innerHTML = `<b>${esc(d.n)}</b><span>${esc(d.ip || '')}${d.ip ? ' · ' : ''}${d.s ? d.s[0].toUpperCase() + d.s.slice(1) : ''}${kids && n.depth ? ' · ' + kids + (isOpen(n.key) ? ' shown' : ' hidden — click to expand') : ''}</span>`;
+  t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 14) + 'px'; t.classList.add('on');
+}
+function tipHide(){ $('tTip').classList.remove('on'); }
+
+/* minimap: every node as a dot, the links, and the visible window as a rectangle */
+function miniPaint(){
+  if ($('tMini').hidden) return; const m = $('tMm'), b = bbox(), W = 198, H = 120, pad = 10;
+  const k = Math.min((W - pad * 2) / (b.x1 - b.x0), (H - pad * 2) / (b.y1 - b.y0)); T.mm = { k, ox: pad - b.x0 * k + ((W - pad*2) - (b.x1 - b.x0) * k) / 2, oy: pad - b.y0 * k + ((H - pad*2) - (b.y1 - b.y0) * k) / 2 };
+  const P = (n) => [n.x * k + T.mm.ox, n.y * k + T.mm.oy];
+  m.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  m.innerHTML = T.links.map(l => { const [x1,y1] = P(l.a), [x2,y2] = P(l.b); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--neutral-light);stroke-opacity:.6;stroke-width:1"/>`; }).join('')
+    + T.nodes.map(n => { const [x,y] = P(n); return `<circle cx="${x}" cy="${y}" r="${n.depth ? 2.6 : 3.4}" style="fill:${n.depth ? 'var(--severity-' + n.d.s + ', var(--neutral-light))' : 'var(--topology-info-btn-bg)'}"/>`; }).join('')
+    + '<rect class="mmv" id="tMmV"/>';
+  miniView();
+}
+function miniView(){
+  const r = $('tMmV'); if (!r || !T.mm) return; const g = $('tGraph'), v = T.vp, k = T.mm.k;
+  const x = (-v.x / v.k) * k + T.mm.ox, y = (-v.y / v.k) * k + T.mm.oy;
+  r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', g.clientWidth / v.k * k); r.setAttribute('height', g.clientHeight / v.k * k);
+}
+$('tMiniH').onclick = () => $('tMini').classList.toggle('shut');
+$('tMm').addEventListener('click', (e) => { if (!T.mm) return; const r = $('tMm').getBoundingClientRect(), g = $('tGraph');
+  const wx = ((e.clientX - r.left) * (198 / r.width) - T.mm.ox) / T.mm.k, wy = ((e.clientY - r.top) * (120 / r.height) - T.mm.oy) / T.mm.k;
+  T.vp.x = g.clientWidth / 2 - wx * T.vp.k; T.vp.y = g.clientHeight / 2 - wy * T.vp.k; vpApply(); });
+new ResizeObserver(() => { if (!$('tSvg').hidden) miniView(); }).observe($('tGraph'));
+
+/* keyboard — only while no field and no drawer has focus */
+addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && !$('tSvg').hidden) { e.preventDefault(); $('tFind').focus(); return; }
+  if (e.key === 'Escape') { if (document.querySelector('.tdr.on')) { drClose(); return; } if (popOpen()) { popClose(); return; }
+    if ($('tBody').classList.contains('fs')) { $('tFs').click(); return; } if (T.find) { T.find = ''; $('tFind').value = ''; $('tFind').blur(); graphPaint(); return; } }
+  if (/INPUT|TEXTAREA/.test(document.activeElement.tagName) || document.querySelector('.tdr.on') || $('tSvg').hidden) return;
+  const P = { ArrowLeft:[80,0], ArrowRight:[-80,0], ArrowUp:[0,80], ArrowDown:[0,-80] }[e.key];
+  if (P) { e.preventDefault(); pan(P[0], P[1]); } else if (e.key === '+' || e.key === '=') zoom(1.2); else if (e.key === '-') zoom(1 / 1.2); else if (e.key === '0') fit();
+});
+
+/* ================= POPOVERS · TOOLTIPS · TOAST ================= */
+let popFor = null;
+function popOpen(){ return $('tPop').classList.contains('on'); }
+function popClose(){ $('tPop').classList.remove('on'); popFor = null; }
+function popToggle(btn, html, side){
+  if (popFor === btn) return popClose(); const p = $('tPop'); p.innerHTML = html; p.classList.add('on'); popFor = btn;
+  const r = btn.getBoundingClientRect(), w = p.offsetWidth;
+  if (side === 'left') { p.style.left = (r.left - w - 8) + 'px'; p.style.top = r.top + 'px'; }
+  else { p.style.left = Math.min(innerWidth - w - 8, Math.max(8, r.right - w)) + 'px'; p.style.top = (r.bottom + 6) + 'px'; }
+}
+document.addEventListener('pointerdown', (e) => { if (popFor && !e.target.closest('#tPop') && !popFor.contains(e.target)) popClose();
+  if (!e.target.closest('.dsel')) $('nMonM').classList.remove('on'); });
+/* data-tip: a small hover card; two spaces split the label from its key ("Move Right  Right Arrow") */
+let tipT = null;
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest && e.target.closest('[data-tip]'); clearTimeout(tipT); if (!el) { if (!e.target.closest('.nd')) tipHide(); return; }
+  tipT = setTimeout(() => { const t = $('tTip'), [a, k] = el.dataset.tip.split(/\s{2,}/); t.innerHTML = esc(a) + (k ? ` <kbd style="font:500 10.5px 'JetBrains Mono';background:var(--tag-bg-color);border-radius:3px;padding:0 4px;margin-left:6px">${esc(k)}</kbd>` : '');
+    const r = el.getBoundingClientRect(); t.classList.add('on'); const w = t.offsetWidth;
+    t.style.left = Math.min(innerWidth - w - 6, Math.max(6, r.left + r.width / 2 - w / 2)) + 'px'; t.style.top = (r.bottom + 6 + 30 > innerHeight ? r.top - 34 : r.bottom + 6) + 'px'; }, 320);
+});
+document.addEventListener('mouseout', (e) => { if (e.target.closest && e.target.closest('[data-tip]')) { clearTimeout(tipT); tipHide(); } });
+let toastT = null;
+function toast(t, b){ $('tToastT').textContent = t; $('tToastB').textContent = b || ''; $('tToast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(toastHide, 3500); }
+function toastHide(){ $('tToast').classList.remove('on'); }
+
+/* ================= DRAWERS ================= */
+function segBind(id, onPick){ $(id).onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$(id).children].forEach(x => x.classList.toggle('on', x === b)); onPick && onPick(b.dataset.v); }; }
+function segVal(id){ const b = $(id).querySelector('.on'); return b && b.dataset.v; }
+function segSet(id, v){ [...$(id).children].forEach(x => x.classList.toggle('on', x.dataset.v === v)); }
+function drOpen(id){
+  drClose(); $(id).classList.add('on'); $('tScrim').classList.add('on'); popClose();
+  if (id === 'dSet') { segSet('dAcc', T.acc); $('dSub').checked = T.sub; segSet('dLbl', T.label); $('dMini').checked = T.mini; }
+  if (id === 'dNew') { newReset(); setTimeout(() => $('nName').focus(), 220); }
+}
+function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); }
+$('tScrim').onclick = drClose;
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
+$('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('#dSet [data-pane]').forEach(p => p.hidden = p.dataset.pane !== b.dataset.t); };
+['dAcc','dLbl','nInc','nSec'].forEach(id => segBind(id));
+$('dSetReset').onclick = () => { segSet('dAcc','public'); $('dSub').checked = true; segSet('dLbl','name'); $('dMini').checked = true; };
+$('dSetApply').onclick = () => { T.acc = segVal('dAcc'); T.sub = $('dSub').checked; T.label = segVal('dLbl'); T.mini = $('dMini').checked; drClose(); graphBuild(false); toast('Success', 'Topology settings applied'); };
+
+/* Create Topology View — the monitor filter lists every entry point the instance has */
+const ALLMON = () => { const out = []; Object.keys(TREE).forEach(k => leavesOf(TREE[k]).forEach(l => { if (!out.some(o => o.n === l.n && o.ip === l.ip)) out.push(l); })); return out; };
+let NEW = { mons:[] };
+function newReset(){
+  NEW = { mons:[] }; $('nName').value = ''; $('nGrp').value = ''; segSet('nInc','include'); segSet('nSec','public');
+  ['nName','nGrp'].forEach(i => $(i).classList.remove('err')); $('nNameE').hidden = $('nGrpE').hidden = true; monPaint();
+}
+function monPaint(){
+  const all = ALLMON(), b = $('nMonB').querySelector('span');
+  b.textContent = NEW.mons.length ? NEW.mons.map(i => all[i].n).join(', ') : 'Select'; b.classList.toggle('ph', !NEW.mons.length);
+  $('nMonM').innerHTML = all.map((m, i) => `<label><input type="checkbox" data-i="${i}"${NEW.mons.includes(i) ? ' checked' : ''}><span class="tmi">${mi(m.ic)}</span>${esc(m.n)} - (${esc(m.ip)})</label>`).join('');
+}
+$('nMonB').onclick = () => $('nMonM').classList.toggle('on');
+$('nMonM').onchange = (e) => { const i = +e.target.dataset.i; NEW.mons = e.target.checked ? [...NEW.mons, i] : NEW.mons.filter(x => x !== i); const keep = $('nMonM').scrollTop; monPaint(); $('nMonM').scrollTop = keep; };
+$('nReset').onclick = newReset;
+['nName','nGrp'].forEach(i => $(i).oninput = () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+$('nSave').onclick = () => {
+  const name = $('nName').value.trim(), grp = $('nGrp').value.trim(); let bad = false;
+  if (!name) { $('nName').classList.add('err'); $('nNameE').hidden = false; bad = true; }
+  if (!grp) { $('nGrp').classList.add('err'); $('nGrpE').hidden = false; bad = true; }
+  if (bad) return;
+  const all = ALLMON(), inc = segVal('nInc') === 'include', picked = NEW.mons.map(i => all[i]);
+  const mons = inc ? picked : all.filter(m => !picked.includes(m));
+  const gname = grp === '<standalone>' ? 'Standalone' : grp;
+  let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
+  const v = { name, grp: gname, sec: segVal('nSec'), mons: mons.map(m => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s })) }; g.views.push(v);
+  drClose(); T.view = v; T.cv[gname] = true; toast('Success', 'Topology View "' + name + '" created'); goTab('custom');
+};
+
+/* ================= BOOT ================= */
+goTab(location.hash.slice(1) || 'network');
+</script>
+<script>
+/* AGENTATION (dev-only) — one toolbar on screen: the host hides its own while this frame shows */
+(function () {
+  var dev = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!dev) return;
+  var st = document.createElement('style');
+  st.textContent = '[data-agentation-root] > *{z-index:2147483000 !important}[data-agentation-root] > [class*="toolbar"]{z-index:2147483002 !important}';
+  document.head.appendChild(st);
+  var s = document.createElement('script'); s.src = '../agentation-embed.js'; s.defer = true; document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>

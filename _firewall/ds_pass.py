@@ -604,9 +604,9 @@ function deviceTile(d) {
     # obs-tabs row over the two routes; picking a tab is a route change, so each screen keeps its own bindings.
     rep("""function dpSettingsHeader() {
   return `<obs-page-header id="dpHeader" heading="Settings" back><obs-icon slot="before" name="settings" size="18" class="fa-lic-page-icon"></obs-icon></obs-page-header>`;
-}""", """const FW_SET_TABS = [{ key: 'fwinventory', label: 'Firewall Inventory' }, { key: 'fwtemplates', label: 'Firewall Templates' }];
+}""", """const FW_SET_TABS = [{ key: 'fwinventory', label: 'Firewall Inventory' }];   /* Firewall Templates tab removed (owner, 19 Oct 2026); its screen and route stay */
 function dpSettingsHeader() {
-  const tabs = document.documentElement.classList.contains('fasettings') && FW_SET_TABS.some(x => x.key === currentTab)
+  const tabs = document.documentElement.classList.contains('fasettings') && FW_SET_TABS.length > 1 && FW_SET_TABS.some(x => x.key === currentTab)
     ? `<obs-tabs class="fa-fwset-tabs" value="${currentTab}" tabs='${j(FW_SET_TABS)}'></obs-tabs>` : '';
   return `<obs-page-header id="dpHeader" heading="Settings" back><obs-icon slot="before" name="settings" size="18" class="fa-lic-page-icon"></obs-icon></obs-page-header>${tabs}`;
 }
@@ -1187,6 +1187,204 @@ $('#schedDrawer').addEventListener('close', e => { if (e.target === $('#schedDra
     rep(""":host(#pmAddDrawer) .title,:host(#schedDrawer) .title{""", """:host(#pmAddDrawer) .title,:host(#schedDrawer) .title,:host(#credDrawer) .title{""", 'cred drawer title')
     # the credential drawer is 40 % wide, the live NCCM Device Inventory's (owner, 16 Oct 2026; it was 52 %)
     rep('<obs-drawer id="credDrawer" width="52%"', '<obs-drawer id="credDrawer" width="40%"', 'cred drawer 40')
+    # Add Object (owner, 19 Oct 2026): "swap the 2 row" — Object Name · Description lead, Device Name · Mode follow.
+    rep("""      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true }) : ''}
+      ${field('Mode', mode ? pmRo(mode) : pmRo('Not collected', true))}
+      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${pmInput(ns, f, 'desc', 'Description')}
+""",
+        """      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${pmInput(ns, f, 'desc', 'Description')}
+      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true }) : ''}
+      ${field('Mode', mode ? pmRo(mode) : pmRo('Not collected', true))}
+""", 'obj name row first')
+    # Firewall Inventory row menu (owner, 19 Oct 2026): "remove the firewall template in action".
+    rep("""  { key: 'updateCred', label: 'Update Credential', icon: 'lock-alt' },
+  { key: 'updateTpl',  label: 'Update Template',   icon: 'file-alt' }
+];""",
+        """  { key: 'updateCred', label: 'Update Credential', icon: 'lock-alt' }
+  /* Update Template removed from the row menu (owner, 19 Oct 2026); its screen and handlers stay */
+];""", 'no update template action')
+    # Firewall Inventory bulk bar on the DS (owner, 19 Oct 2026): default-size bordered actions with a glyph each and the
+    # pill's divider; and no 2px --primary edge on a selected row (owner: "when i select the check box remove the white line").
+    rep("""        bulk: `<obs-button slot="bulk-actions" variant="default" size="small" data-fibulk="1">Enable management</obs-button>
+          <obs-button slot="bulk-actions" variant="default" size="small" data-fibulk="0">Disable management</obs-button>` })}""",
+        """        bulk: `<span slot="bulk-actions" class="fa-bulk-div" aria-hidden="true"></span>
+          <obs-button slot="bulk-actions" variant="default" data-fibulk="1"><obs-icon name="check-circle" size="14"></obs-icon>Enable management</obs-button>
+          <obs-button slot="bulk-actions" variant="default" data-fibulk="0"><obs-icon name="ban" size="14"></obs-icon>Disable management</obs-button>` })}""", 'fi bulk ds')
+    rep("""var(--page-background-color)}');r.adoptedStyleSheets""", """var(--page-background-color)}:host(#tblFwInventory) tbody tr.row-selected td:first-child{box-shadow:none}');r.adoptedStyleSheets""", 'fi no selected edge')
+    rep("""              : k === 'add' ? { text: 'Add Credential' } : { text: 'Not Applicable', icon: 'ban', iconLabel: 'Not applicable' }; } },
+        { key: 'type', title: 'Type', width: 80, ds: { type: 'icon' }, cell: () => 'secure' }
+      ].map(""",
+        """              : k === 'add' ? { text: 'Add Credential' } : { text: 'Not Applicable', icon: 'ban', iconLabel: 'Not applicable' }; } }
+        /* Type column removed (owner, 19 Oct 2026): every row is a firewall, so it said the same thing ten times */
+      ].map(""", 'fi no type col 0')
+    rep("""  { key: 'cred', title: 'Credential Status' }, { key: 'type', title: 'Type' }];""",
+        """  { key: 'cred', title: 'Credential Status' }];""", 'fi no type col 1')
+    # Credentials Status drawer on the DS (owner, 19 Oct 2026): obs-table (tags cell for Validity) + obs-banner for the error.
+    rep("""  const validity = v => v === 'na' ? `<span class="fa-cs is-na">[NA]</span>`
+    : `<span class="fa-cs is-${v}"><obs-icon name="${v === 'ok' ? 'check-circle' : 'times-circle'}" size="14"></obs-icon>${v === 'ok' ? 'Succeed' : 'Failed'}</span>`;
+  const cols = [
+    { key: 'label',    title: 'Credential', render: s => esc(s.label) },
+    { key: 'value',    title: 'Value',      render: s => s.value ? `<span class="fa-oid">${esc(s.value)}</span>` : '' },
+    { key: 'validity', title: 'Validity',   render: s => validity(s.validity) }
+  ];
+  credDrawer.innerHTML = `<div class="ds-cred fa-cst" data-cred-status-for="${esc(d.id)}" data-method="${f.method}">
+    ${faGrid('tblCredStatus', cols, f.steps, { static: true, pager: false, maxHeight: 'none' })}
+    ${f.error ? `<div class="fa-cst-err"><obs-icon name="exclamation-triangle" size="14"></obs-icon>Error: ${esc(f.error)}</div>` : ''}""",
+        """  /* on the DS (owner, 19 Oct 2026: "update the observeops design system components"): the steps are an obs-table with
+     Validity as its tags cell (Succeed green · Failed red · NA neutral — the product's three words), the error is an
+     obs-banner (error). The output box stays a <pre>: the DS ships no code/log block (searched), so it is token-only. */
+  const VAL = { ok: { label: 'Succeed', variant: 'tag-green' }, fail: { label: 'Failed', variant: 'tag-red' }, na: { label: 'NA', variant: 'tag-unknown' } };
+  const cols = [
+    { key: 'label', title: 'Credential' }, { key: 'value', title: 'Value' },
+    { key: 'validity', title: 'Validity', type: 'tags', width: '140px' }
+  ];
+  const rows = f.steps.map(s => ({ id: s.key, label: s.label, value: s.value || '—', validity: [VAL[s.validity]] }));
+  credDrawer.innerHTML = `<div class="ds-cred fa-cst" data-cred-status-for="${esc(d.id)}" data-method="${f.method}">
+    <obs-table id="tblCredStatus" class="fa-tblrule" header-style="default" page-size="0" columns='${j(cols)}' rows='${j(rows)}'></obs-table>
+    ${f.error ? `<obs-banner variant="error" title="${esc(f.error)}"></obs-banner>` : ''}""", 'cred status ds')
+    # Successful opens Credentials Status too, and Credential status leaves the row menu (owner, 19 Oct 2026).
+    rep("""        rowActions: FI_ROW_ACTIONS.concat([{ key: 'credStatus', label: 'Credential status', icon: 'shield-check' }]),""",
+        """        rowActions: FI_ROW_ACTIONS,   /* Credential status left the menu (owner, 19 Oct 2026) — the Credential Status cell opens it */""", 'cred ok link 0')
+    rep("""            if (k === 'add') go('fwinventory', r.id + '/credential'); else if (k === 'fail') go('fwinventory', r.id + '/status');""",
+        """            if (k === 'add') go('fwinventory', r.id + '/credential'); else if (k === 'fail' || k === 'ok') go('fwinventory', r.id + '/status');""", 'cred ok link 1')
+    rep(""":host(#tblFwInventory) a.cell-link:has(obs-icon[name=check-circle]){color:var(--secondary-green);cursor:default;text-decoration:none}""",
+        """:host(#tblFwInventory) a.cell-link:has(obs-icon[name=check-circle]){color:var(--secondary-green)}""", 'cred ok link 2')
+    # Credential Status: "Add Credential" shown as a small secondary (default) button with a plus-circle (2026-10-19)
+    rep("k === 'add' ? { text: 'Add Credential' } :", "k === 'add' ? { text: 'Add Credential', icon: 'plus-circle', iconLabel: 'Add credential' } :", 'add cred icon')
+    rep(':host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', ':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:24px;padding:0 10px;box-sizing:border-box;border:1px solid var(--default-button-border,var(--field-border-color));border-radius:var(--btn-radius,4px);background:var(--default-button-bg,var(--page-background-color));color:var(--default-button-text,var(--page-text-color));text-decoration:none;white-space:nowrap}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]):hover{background:var(--default-button-hover-bg,var(--neutral-lightest));border-color:var(--outline-button-hover-border,var(--neutral-light));text-decoration:none}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', 'add cred accent')
+    # Add Credential at the DS small-button size; a "New" tag on recently added firewalls (2026-10-19)
+    rep(':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:24px;padding:0 10px;box-sizing:border-box;', ':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:var(--btn-height,2.1rem);padding:0 15px;gap:6px;font-size:var(--text-sm,.8rem);font-weight:400;font-family:var(--font-family,inherit);line-height:1;box-sizing:border-box;', 'add cred ds small')
+    rep(':host(#tblFwInventory) tbody tr.row-selected td:first-child{box-shadow:none}', ':host(#tblFwInventory) tbody tr.row-selected td:first-child{box-shadow:none}:host(#tblFwInventory) obs-tag.fa-new{margin-left:8px;flex:0 0 auto}', 'fi new tag css')
+    rep('    [0, 60, 250, 800].forEach(ms => setTimeout(sync, ms));\n    new MutationObserver(sync).observe(ti.shadowRoot, { childList: true, subtree: true });', '    /* a firewall added in the last FA_NEW_DAYS (by its `since` date, against the newest one) carries a "New" tag after\n       its name (owner, 19 Oct 2026). The severity cell prints text only, so the tag is placed into the cell here. */\n    const fresh = new Set(D.devices.filter(faIsNew).map(d => d.name));\n    const tagNew = () => ti.shadowRoot.querySelectorAll(\'tbody tr\').forEach(tr => {\n      const clip = tr.querySelector(\'td .cell-clip\'); if (!clip || !fresh.has(clip.textContent.trim())) return;\n      if (!clip.parentNode.querySelector(\'obs-tag.fa-new\')) clip.insertAdjacentHTML(\'afterend\', \'<obs-tag class="fa-new" variant="tag-primary">New</obs-tag>\');\n    });\n    const both = () => { sync(); tagNew(); };\n    [0, 60, 250, 800].forEach(ms => setTimeout(both, ms));\n    new MutationObserver(both).observe(ti.shadowRoot, { childList: true, subtree: true });', 'fi new tag js')
+    rep('function fiBulk(on) {', 'const FA_NEW_DAYS = 7;\nfunction faIsNew(d) {\n  const last = Math.max(...D.devices.map(x => Date.parse(x.since) || 0));\n  return !!d.since && last - Date.parse(d.since) <= FA_NEW_DAYS * 864e5;\n}\nfunction fiBulk(on) {', 'fi new fn')
+    # Add Object: the form takes .fa-pmf-form, so it gets the drawer's 7 / 20 / 32 spacing like Add Policy (2026-10-19)
+    rep('  return `<div class="fa-grid cols-2">\n      ${pmInput(ns, f, \'name\', \'Object Name\', { req: true, ph: \'Must be unique\' })}', '  return `<div class="fa-pmf-form"><div class="fa-grid cols-2">\n      ${pmInput(ns, f, \'name\', \'Object Name\', { req: true, ph: \'Must be unique\' })}', 'obj form spacing 0')
+    rep("      ${isGroupType(f.type) ? pmSelect(ns, f, 'members', 'Members', pool, { req: true, multi: true }) : ''}\n    </div>`;", "      ${isGroupType(f.type) ? pmSelect(ns, f, 'members', 'Members', pool, { req: true, multi: true }) : ''}\n    </div></div>`;", 'obj form spacing 1')
+    # Device details drawer from the device name (2026-10-19)
+    rep("  if (!d || !['credential', 'template', 'status'].includes(what)) { go('fwinventory'); return; }\n  if (what === 'credential') openCredAsk(d); else if (what === 'status') openCredStatus(d); else openTplAsk(d);", "  if (!d || !['credential', 'template', 'status', 'details'].includes(what)) { go('fwinventory'); return; }\n  if (what === 'details') { openFwDetails(d); return; }\n  if (what === 'credential') openCredAsk(d); else if (what === 'status') openCredStatus(d); else openTplAsk(d);", 'fi details route')
+    rep("credDrawer.addEventListener('close', () => { credAsk = null; tplAsk = null; credStatus = null; });", '/* ---- Device details (owner, 19 Oct 2026: "when I click the device, show the view details using the ObserveOps design\n   system"): the device name opens this drawer in the shared credential host. Built from DS parts only — obs-tag for the\n   status chips, obs-key-value (card, two-column — "a record has MANY fields") for the record and for how each signal is\n   collected, obs-button for the way on. The Status value uses obs-key-value\'s own status tag where the map has the word;\n   Warning is not in it, so that value is coloured by its --severity token instead. ---- */\nlet fwDetails = null;   /* { dev } */\nfunction openFwDetails(d) {\n  fwDetails = { dev: d };\n  paintFwDetails();\n  credDrawer.open = true; credDrawer.setAttribute(\'open\', \'\');\n}\nfunction paintFwDetails() {\n  const a = fwDetails; if (!a) return;\n  const d = a.dev, t = fwTemplateOf(d), cs = credStatusOf(d), inv = invRowOf(d), on = fwManaged(d);\n  credDrawer.setAttribute(\'title\', d.name);\n  const STATUS_TAG = { up: \'tag-green\', warning: \'tag-yellow\', critical: \'tag-red\', down: \'tag-red\', unreachable: \'tag-purple\' };\n  const CRED_TAG = { ok: \'tag-green\', fail: \'tag-red\', add: \'tag-orange\', na: \'tag-unknown\' };\n  const st = d.status === \'warning\' ? [\'Status\', \'Warning\', \'--severity-warning\'] : [\'Status\', STATUS_LABEL[d.status] || d.status, \'\', d.status];\n  const general = [\n    [\'Device\', d.name], [\'IP/Host\', d.mgmt], [\'Vendor\', fwVendorName(d)], [\'Model\', d.vendor],\n    [\'System OID\', d.sysOid], [\'Template\', t ? t.name : \'Not assigned\'], [\'Site\', d.site || \'—\'], [\'HA Role\', d.ha || \'—\'],\n    [\'Version\', d.version || \'—\'], [\'Added On\', d.since || \'—\'], st, [\'Service\', d.service || \'—\']\n  ];\n  const SIG = { metrics: \'Metrics\', logs: \'Logs\', flow: \'Flow\', rules: \'Policies\' };\n  const sigVal = g => !g || g.state === \'off\' ? (g && g.note ? \'Off · \' + g.note : \'Off\')\n    : [g.state === \'ok\' ? \'OK\' : g.state === \'error\' ? \'Error\' : g.state === \'stalled\' ? \'Stalled\' : g.state, g.via, g.last ? \'last \' + g.last : \'\'].filter(Boolean).join(\' · \');\n  const sigCol = g => !g || g.state === \'off\' ? \'\' : g.state === \'ok\' ? \'\' : g.state === \'stalled\' ? \'--severity-warning\' : \'--severity-critical\';\n  const signals = Object.keys(SIG).map(k => { const g = (d.signals || {})[k]; return [SIG[k], sigVal(g), sigCol(g)]; });\n  const tags = (inv.groups || []).map(x => `<obs-tag variant="tag-primary">${esc(x)}</obs-tag>`).concat((inv.tags || []).map(x => `<obs-tag>${esc(x)}</obs-tag>`)).join(\'\');\n  credDrawer.innerHTML = `<div class="ds-cred fa-fid" data-fw-details="${esc(d.id)}">\n    <div class="fa-fid-tags">\n      <obs-tag variant="${STATUS_TAG[d.status] || \'tag-unknown\'}">${esc(STATUS_LABEL[d.status] || d.status)}</obs-tag>\n      <obs-tag variant="${on ? \'tag-green\' : \'tag-unknown\'}">Management ${on ? \'On\' : \'Off\'}</obs-tag>\n      <obs-tag variant="${CRED_TAG[cs.kind]}">Credential: ${esc(cs.label)}</obs-tag>\n      ${faIsNew(d) ? \'<obs-tag variant="tag-primary">New</obs-tag>\' : \'\'}\n    </div>\n    <div class="fa-fid-sec"><h4 class="fa-fid-h">General</h4><obs-key-value columns="2" items=\'${j(general)}\'></obs-key-value></div>\n    <div class="fa-fid-sec"><h4 class="fa-fid-h">Data Collection</h4><obs-key-value columns="2" items=\'${j(signals)}\'></obs-key-value></div>\n    ${tags ? `<div class="fa-fid-sec"><h4 class="fa-fid-h">Groups &amp; Tags</h4><div class="fa-fid-tags">${tags}</div></div>` : \'\'}\n    <div class="ds-cred-foot"><span class="fa-spacer"></span>\n      ${on ? `<obs-button variant="default" id="fdCred">${cs.kind === \'add\' ? \'Add Credential\' : \'Update Credential\'}</obs-button>` : \'\'}\n      <obs-button variant="primary" id="fdOpen">Open Device</obs-button></div>\n  </div>`;\n  const c = credDrawer.querySelector(\'#fdCred\');\n  if (c) c.addEventListener(\'click\', () => { fwDetails = null; go(\'fwinventory\', d.id + \'/credential\'); });\n  const o = credDrawer.querySelector(\'#fdOpen\');\n  if (o) o.addEventListener(\'click\', () => { fwDetails = null; credDrawer.open = false; credDrawer.removeAttribute(\'open\'); go(\'device\', d.id); });\n}\ncredDrawer.addEventListener(\'close\', () => { credAsk = null; tplAsk = null; credStatus = null; fwDetails = null; });', 'fi details drawer')
+    rep('    const both = () => { sync(); tagNew(); };', "    const both = () => { sync(); tagNew(); };\n    /* the device NAME opens its details (owner, 19 Oct 2026) — only the name: the row's other cells keep their own jobs */\n    if (!ti.__fid) {\n      ti.__fid = true;\n      ti.addEventListener('click', e => {\n        const path = e.composedPath ? e.composedPath() : [];\n        if (!path.some(n => n.classList && n.classList.contains('primary-text'))) return;\n        const name = (path.find(n => n.classList && n.classList.contains('primary-text')).textContent || '').trim();\n        const dv = D.devices.find(x => x.name === name); if (dv) go('fwinventory', dv.id + '/details');\n      });\n    }", 'fi details click')
+    rep(':host(#tblFwInventory) obs-tag.fa-new{margin-left:8px;flex:0 0 auto}', ':host(#tblFwInventory) obs-tag.fa-new{margin-left:8px;flex:0 0 auto}:host(#tblFwInventory) .primary-text{cursor:pointer}:host(#tblFwInventory) .primary-text:hover{text-decoration:underline}', 'fi details css')
+    rep('.ds-cred-foot { display: flex;', '.fa-fid-tags { display: flex; flex-wrap: wrap; gap: var(--ds-padding-xs, 8px); }\n.fa-fid-sec { display: flex; flex-direction: column; gap: var(--ds-padding-xs, 8px); }\n.fa-fid-h { margin: 0; font-size: 14px; font-weight: 500; color: var(--page-text-color); }\n.ds-cred-foot { display: flex;', 'fi details page css')
+    rep('    <div class="fa-fid-sec"><h4 class="fa-fid-h">Data Collection</h4><obs-key-value columns="2" items=\'${j(signals)}\'></obs-key-value></div>', '    <div class="fa-fid-sec"><h4 class="fa-fid-h">Data Collection</h4><obs-table id="tblFwSignals" class="fa-tblrule" header-style="default" page-size="0"\n      columns=\'${j([{ key: \'sig\', title: \'Signal\', width: \'110px\' }, { key: \'state\', title: \'State\', type: \'tags\', width: \'110px\' }, { key: \'via\', title: \'Collected Via\' }, { key: \'last\', title: \'Last\', width: \'110px\' }])}\'\n      rows=\'${j(signals)}\'></obs-table></div>', 'fi details sig table')
+    rep('  const signals = Object.keys(SIG).map(k => { const g = (d.signals || {})[k]; return [SIG[k], sigVal(g), sigCol(g)]; });', "  const SIG_TAG = { ok: ['OK', 'tag-green'], stalled: ['Stalled', 'tag-yellow'], error: ['Error', 'tag-red'], off: ['Off', 'tag-unknown'] };\n  const signals = Object.keys(SIG).map(k => { const g = (d.signals || {})[k] || { state: 'off' }; const tg = SIG_TAG[g.state] || [g.state, 'tag-unknown'];\n    return { id: k, sig: SIG[k], state: [{ label: tg[0], variant: tg[1] }], via: g.state === 'off' ? (g.note || '—') : (g.via || '—'), last: g.last || '—' }; });", 'fi details sig rows')
+    rep("  const sigVal = g => !g || g.state === 'off' ? (g && g.note ? 'Off · ' + g.note : 'Off')\n    : [g.state === 'ok' ? 'OK' : g.state === 'error' ? 'Error' : g.state === 'stalled' ? 'Stalled' : g.state, g.via, g.last ? 'last ' + g.last : ''].filter(Boolean).join(' · ');\n  const sigCol = g => !g || g.state === 'off' ? '' : g.state === 'ok' ? '' : g.state === 'stalled' ? '--severity-warning' : '--severity-critical';\n", '', 'fi details sig helpers')
+    # Device details v2: identity header, stat strip, General without repeats (2026-10-19)
+    rep("  const general = [\n    ['Device', d.name], ['IP/Host', d.mgmt], ['Vendor', fwVendorName(d)], ['Model', d.vendor],\n    ['System OID', d.sysOid], ['Template', t ? t.name : 'Not assigned'], ['Site', d.site || '—'], ['HA Role', d.ha || '—'],\n    ['Version', d.version || '—'], ['Added On', d.since || '—'], st, ['Service', d.service || '—']\n  ];", '  /* the header already names the device, its IP and its status, so General does not repeat them (owner, 19 Oct 2026:\n     "improve this") — and System OID gets the full row width (a 2-column cell truncated it) */\n  const general = [\n    [\'Vendor\', fwVendorName(d)], [\'Model\', d.vendor], [\'Template\', t ? t.name : \'Not assigned\'], [\'Site\', d.site || \'—\'],\n    [\'HA Role\', d.ha || \'—\'], [\'Version\', d.version || \'—\'], [\'Service\', d.service || \'—\'], [\'Added On\', d.since || \'—\']\n  ];\n  /* headline figures → obs-stat-card (the DS\'s joined KPI strip), each value coloured by its severity when it bites */\n  const stats = [\n    { label: \'Policies\', value: d.rules == null ? \'—\' : nf(d.rules), caption: \'collected\' },\n    { label: \'Findings\', value: d.findings == null ? \'—\' : nf(d.findings), valueSeverity: d.findings ? \'warning\' : undefined, caption: \'open\' },\n    { label: \'Critical\', value: d.critical == null ? \'—\' : nf(d.critical), valueSeverity: d.critical ? \'critical\' : undefined, caption: \'findings\' },\n    { label: \'Throughput\', value: d.throughput || \'—\', caption: d.lastLog ? \'last log \' + d.lastLog : \'\' }\n  ];', 'fi details general v2')
+    rep('  credDrawer.innerHTML = `<div class="ds-cred fa-fid" data-fw-details="${esc(d.id)}">\n    <div class="fa-fid-tags">', '  credDrawer.innerHTML = `<div class="ds-cred fa-fid" data-fw-details="${esc(d.id)}">\n    <div class="fa-fid-id">\n      <span class="fa-fid-tile"><obs-icon name="secure" size="22"></obs-icon></span>\n      <div class="fa-fid-who"><b>${esc(d.name)}</b><span>${esc(d.mgmt)} <i>|</i> ${esc(d.vendor)}</span></div>\n    </div>\n    <div class="fa-fid-tags">', 'fi details identity')
+    rep('    <div class="fa-fid-sec"><h4 class="fa-fid-h">General</h4><obs-key-value columns="2" items=\'${j(general)}\'></obs-key-value></div>', '    <obs-stat-card class="fa-fid-stats" items=\'${j(stats)}\'></obs-stat-card>\n    <div class="fa-fid-sec"><h4 class="fa-fid-h">General</h4><obs-key-value columns="2" items=\'${j(general)}\'></obs-key-value>\n      <obs-key-value items=\'${j([[\'System OID\', d.sysOid]])}\' class="fa-fid-oid"></obs-key-value></div>', 'fi details stats')
+    rep('.fa-fid-h { margin: 0; font-size: 14px; font-weight: 500; color: var(--page-text-color); }', '.fa-fid-h { margin: 0; font-size: 14px; font-weight: 500; color: var(--page-text-color); }\n.fa-fid { gap: var(--ds-padding-lg, 24px); }\n.fa-fid > .fa-fid-tags { margin-top: calc(-1 * var(--ds-padding-sm, 12px)); }\n.fa-fid-id { display: flex; align-items: center; gap: var(--ds-padding-sm, 12px); }\n.fa-fid-tile { flex: 0 0 40px; height: 40px; display: grid; place-items: center; border-radius: var(--btn-radius, 4px);\n  background: var(--neutral-lightest); color: var(--page-text-color); }\n.fa-fid-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }\n.fa-fid-who b { font-size: 16px; font-weight: 600; color: var(--page-text-color); }\n.fa-fid-who span { font-size: 13px; color: var(--neutral-light); }\n.fa-fid-who i { font-style: normal; margin: 0 4px; color: var(--border-color); }\n.fa-fid-sec > obs-key-value + obs-key-value { margin-top: -8px; }', 'fi details css v2')
+    rep("  const st = d.status === 'warning' ? ['Status', 'Warning', '--severity-warning'] : ['Status', STATUS_LABEL[d.status] || d.status, '', d.status];\n", '', 'fi details drop st')
+    rep('    <div class="ds-cred-foot"><span class="fa-spacer"></span>\n      ${on ? `<obs-button variant="default" id="fdCred">${cs.kind === \'add\' ? \'Add Credential\' : \'Update Credential\'}</obs-button>` : \'\'}\n      <obs-button variant="primary" id="fdOpen">Open Device</obs-button></div>\n  </div>`;\n  const c = credDrawer.querySelector(\'#fdCred\');\n  if (c) c.addEventListener(\'click\', () => { fwDetails = null; go(\'fwinventory\', d.id + \'/credential\'); });\n  const o = credDrawer.querySelector(\'#fdOpen\');\n  if (o) o.addEventListener(\'click\', () => { fwDetails = null; credDrawer.open = false; credDrawer.removeAttribute(\'open\'); go(\'device\', d.id); });', "  </div>`;   /* no footer: Update Credential / Open Device removed (owner, 19 Oct 2026) — the row's ⋮ and Credential Status cell carry them */", 'fi details no foot')
+    rep("  credDrawer.setAttribute('title', d.name);\n  const STATUS_TAG", "  credDrawer.setAttribute('title', 'Device Details');\n  const STATUS_TAG", 'fi details title')
+    rep('<obs-key-value columns="2" items=\'${j(general)}\'></obs-key-value>', '<obs-key-value columns="2" class="fa-fid-gen" items=\'${j(general)}\'></obs-key-value>', 'fi details gen class')
+    rep("if(this.tagName==='OBS-SWITCH'){", "if(this.tagName==='OBS-KEY-VALUE'){try{var kv=new CSSStyleSheet();kv.replaceSync(':host(.fa-fid-gen) .kv.v-card{border-bottom-left-radius:0;border-bottom-right-radius:0}:host(.fa-fid-oid) .kv.cols-1{max-width:none}:host(.fa-fid-oid) .kv .k{width:22%}:host(.fa-fid-oid) .kv.v-card{border-top:0;border-top-left-radius:0;border-top-right-radius:0}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[kv]);}catch(e){}}if(this.tagName==='OBS-SWITCH'){", 'fi details kv hook')
+    # Device details v3: the product monitor panel shape — title-slot identity, tabs, plain key-value (2026-10-19)
+    t = t[:t.index('let fwDetails = null;')] + 'let fwDetails = null;   /* { dev, tab } */\n/* rebuilt on the product\'s monitor panel (owner, 19 Oct 2026 — the HB1 reference): the identity sits in the drawer\'s\n   own title row (icon tile · status dot · name · | IP | vendor, then the group and tag chips), obs-tabs under it, and\n   Summary is two flat label → value sections (obs-key-value plain) split by a hairline. The other three tabs are the\n   Devices list drawer\'s own panes (Polling · Triggered Alert Policies · Activity), so the two drawers cannot disagree. */\nconst FID_TABS = [\n  { key: \'summary\',  label: \'Summary\' },\n  { key: \'polling\',  label: \'Polling Info\' },\n  { key: \'policies\', label: \'Triggered Policies\' },\n  { key: \'activity\', label: \'Action History\' }\n];\nfunction openFwDetails(d) {\n  fwDetails = { dev: d, tab: \'summary\' };\n  credDrawer.setAttribute(\'width\', \'56%\');\n  paintFwDetails();\n  credDrawer.open = true; credDrawer.setAttribute(\'open\', \'\');\n}\nfunction fwDetailsSummary(d) {\n  const t = fwTemplateOf(d), cs = credStatusOf(d), inv = invRowOf(d), on = fwManaged(d);\n  const status = d.status === \'warning\' ? [\'Status\', \'Warning\', \'--severity-warning\'] : [\'Status\', STATUS_LABEL[d.status] || d.status, \'\', d.status];\n  const cred = cs.kind === \'ok\' ? [\'Credential\', \'Successful\', \'\', \'success\'] : cs.kind === \'fail\' ? [\'Credential\', \'Failed\', \'\', \'failed\']\n    : [\'Credential\', cs.kind === \'add\' ? \'Not added\' : \'Not applicable\'];\n  const dev = [\n    [\'Name\', d.name], [\'IP/Host\', d.mgmt], [\'System OID\', d.sysOid], [\'Type\', \'Firewall\'],\n    [\'Vendor\', fwVendorName(d)], [\'Model\', d.vendor], [\'Template\', t ? t.name : \'Not assigned\'],\n    [\'Group\', (inv.groups || []).join(\', \') || \'—\'], [\'Tags\', (inv.tags || []).join(\', \') || \'—\'],\n    status, [\'Management\', on ? \'On\' : \'Off\', \'\', on ? \'on\' : \'off\'], cred\n  ];\n  const sys = [\n    [\'Site\', d.site || \'—\'], [\'HA Role\', d.ha || \'—\'], [\'Service\', d.service || \'—\'], [\'Version\', d.version || \'—\'],\n    [\'Config Changed\', d.changed || \'—\'], [\'Throughput\', d.throughput || \'—\'],\n    [\'Policies\', d.rules == null ? \'—\' : nf(d.rules)],\n    [\'Findings\', d.findings == null ? \'—\' : nf(d.findings), d.findings ? \'--severity-warning\' : \'\'],\n    [\'Critical Findings\', d.critical == null ? \'—\' : nf(d.critical), d.critical ? \'--severity-critical\' : \'\'],\n    [\'Last Log\', d.lastLog || \'—\'], [\'Added On\', d.since || \'—\']\n  ];\n  return `<div class="fa-fid-sum">\n    <h4 class="fa-fid-h">Device Info</h4>\n    <obs-key-value variant="plain" class="fa-fid-kv" items=\'${j(dev)}\'></obs-key-value>\n    <obs-divider class="fa-fid-div"></obs-divider>\n    <h4 class="fa-fid-h">System Info</h4>\n    <obs-key-value variant="plain" class="fa-fid-kv" items=\'${j(sys)}\'></obs-key-value>\n  </div>`;\n}\nconst FID_PANES = { summary: fwDetailsSummary, polling: d => devDrawerPolling(d), policies: d => devDrawerPolicies(d), activity: d => devDrawerActivity(d) };\nfunction paintFwDetails() {\n  const a = fwDetails; if (!a) return;\n  const d = a.dev, inv = invRowOf(d), pane = FID_PANES[a.tab] ? a.tab : \'summary\';\n  credDrawer.setAttribute(\'title\', d.name);   /* the accessible name; the title slot below is what shows */\n  const chips = (inv.groups || []).map(x => `<obs-tag>${esc(x)}</obs-tag>`)\n    .concat((inv.tags || []).map(x => `<obs-tag variant="main-tags">${esc(x)}</obs-tag>`))\n    .concat(faIsNew(d) ? [\'<obs-tag variant="tag-primary">New</obs-tag>\'] : []).join(\'\');\n  credDrawer.innerHTML = `<div slot="title" class="fa-fid-hd">\n      <span class="fa-fid-tile"><obs-icon name="secure" size="22"></obs-icon></span>\n      <div class="fa-fid-who">\n        <div class="fa-fid-nm"><obs-severity severity="${esc(d.status)}" shape="dot"></obs-severity><b>${esc(d.name)}</b>\n          <span>| ${esc(d.mgmt)} | ${esc(fwVendorName(d))}</span></div>\n        ${chips ? `<div class="fa-fid-chips">${chips}</div>` : \'\'}\n      </div>\n    </div>\n    <div class="fa-fid" data-fw-details="${esc(d.id)}">\n      <obs-tabs id="fidTabs" value="${pane}" tabs=\'${j(FID_TABS)}\'></obs-tabs>\n      <div id="fidPane" class="fa-fid-pane" data-tab="${pane}">${FID_PANES[pane](d)}</div>\n    </div>`;\n  const tabs = credDrawer.querySelector(\'#fidTabs\');\n  if (tabs) tabs.addEventListener(\'change\', e => {\n    const v = detailOf(e), key = (typeof v === \'string\' ? v : (v && (v.key || v.value))) || \'summary\';\n    const host = credDrawer.querySelector(\'#fidPane\'); if (!host || !FID_PANES[key]) return;\n    a.tab = key; host.setAttribute(\'data-tab\', key); host.innerHTML = FID_PANES[key](d);\n  });\n}\n' + t[t.index("credDrawer.addEventListener('close', () => { credAsk = null; tplAsk = null; credStatus = null; fwDetails = null; });"):]
+    rep("credDrawer.addEventListener('close', () => { credAsk = null; tplAsk = null; credStatus = null; fwDetails = null; });", "credDrawer.addEventListener('close', () => { credAsk = null; tplAsk = null; credStatus = null; fwDetails = null; credDrawer.setAttribute('width', '40%'); });", 'fi details v3 close')
+    rep('.fa-fid-tags { display: flex; flex-wrap: wrap; gap: var(--ds-padding-xs, 8px); }\n.fa-fid-sec { display: flex; flex-direction: column; gap: var(--ds-padding-xs, 8px); }\n.fa-fid-h { margin: 0; font-size: 14px; font-weight: 500; color: var(--page-text-color); }\n.fa-fid { gap: var(--ds-padding-lg, 24px); }\n.fa-fid > .fa-fid-tags { margin-top: calc(-1 * var(--ds-padding-sm, 12px)); }\n.fa-fid-id { display: flex; align-items: center; gap: var(--ds-padding-sm, 12px); }\n.fa-fid-tile { flex: 0 0 40px; height: 40px; display: grid; place-items: center; border-radius: var(--btn-radius, 4px);\n  background: var(--neutral-lightest); color: var(--page-text-color); }\n.fa-fid-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }\n.fa-fid-who b { font-size: 16px; font-weight: 600; color: var(--page-text-color); }\n.fa-fid-who span { font-size: 13px; color: var(--neutral-light); }\n.fa-fid-who i { font-style: normal; margin: 0 4px; color: var(--border-color); }\n.fa-fid-sec > obs-key-value + obs-key-value { margin-top: -8px; }\n', '.fa-fid-h { margin: 0; font-size: 16px; font-weight: 500; color: var(--page-text-color); }\n.fa-fid { display: flex; flex-direction: column; }\n.fa-fid-pane { padding-top: var(--ds-padding-md, 16px); }\n.fa-fid-sum { display: flex; flex-direction: column; gap: var(--ds-padding-xs, 8px); }\n.fa-fid-sum obs-key-value { margin: 0 -10px; }\n.fa-fid-div { --divider-my: 8px; }\n.fa-fid-hd { display: flex; align-items: flex-start; gap: var(--ds-padding-sm, 12px); min-width: 0; font-size: 13px; font-weight: 400; }\n.fa-fid-tile { flex: 0 0 36px; height: 36px; display: grid; place-items: center; border-radius: var(--btn-radius, 4px);\n  background: var(--neutral-lightest); color: var(--page-text-color); }\n.fa-fid-who { display: flex; flex-direction: column; gap: 6px; min-width: 0; }\n.fa-fid-nm { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }\n.fa-fid-nm b { font-size: 18px; font-weight: 500; color: var(--page-text-color); }\n.fa-fid-nm span { font-size: 13px; color: var(--neutral-light); overflow: hidden; text-overflow: ellipsis; }\n.fa-fid-chips { display: flex; flex-wrap: wrap; gap: 6px; }\n', 'fi details v3 css')
+    rep(':host(.fa-fid-gen) .kv.v-card{', ':host(.fa-fid-kv) .kv.cols-1{max-width:none}:host(.fa-fid-kv) .kv tr:hover td.val{background:none}:host(.fa-fid-kv) .kv .k{width:35%;font-weight:400}:host(.fa-fid-gen) .kv.v-card{', 'fi details v3 kv hook')
+    # Policies Management tab: "Policy and Object Status" → "Policy & Object Approval" (2026-10-19)
+    rep("{ value: STATUS_SEC, text: 'Policy and Object Status' }", "{ value: STATUS_SEC, text: 'Policy & Object Approval' }", 'tab rename 0')
+    rep('`Not on ${f.dev} until pushed from Policy and Object Status.`', '`Not on ${f.dev} until pushed from Policy & Object Approval.`', 'tab rename 1')
+    rep('until the request is pushed from Policy and Object Status.</p>', 'until the request is pushed from Policy & Object Approval.</p>', 'tab rename 2')
+    rep('`Not on ${r.device} until pushed from Policy and Object Status.`', '`Not on ${r.device} until pushed from Policy & Object Approval.`', 'tab rename 3')
+    # Device details: Summary only, no tabs (2026-10-19)
+    rep('      <obs-tabs id="fidTabs" value="${pane}" tabs=\'${j(FID_TABS)}\'></obs-tabs>\n      <div id="fidPane" class="fa-fid-pane" data-tab="${pane}">${FID_PANES[pane](d)}</div>', '      <div id="fidPane" class="fa-fid-pane" data-tab="summary">${fwDetailsSummary(d)}</div>', 'fid summary only')
+    rep("  fwDetails = { dev: d, tab: 'summary' };\n  credDrawer.setAttribute('width', '56%');", "  fwDetails = { dev: d, tab: 'summary' };   /* Summary only (owner, 19 Oct 2026) — no tab strip, the drawer's own 40% */", 'fid no wide')
+    # Device details: only the identifying fields (2026-10-19)
+    rep("  const dev = [\n    ['Name', d.name], ['IP/Host', d.mgmt], ['System OID', d.sysOid], ['Type', 'Firewall'],\n    ['Vendor', fwVendorName(d)], ['Model', d.vendor], ['Template', t ? t.name : 'Not assigned'],\n    ['Group', (inv.groups || []).join(', ') || '—'], ['Tags', (inv.tags || []).join(', ') || '—'],\n    status, ['Management', on ? 'On' : 'Off', '', on ? 'on' : 'off'], cred\n  ];\n  const sys = [\n    ['Site', d.site || '—'], ['HA Role', d.ha || '—'], ['Service', d.service || '—'], ['Version', d.version || '—'],\n    ['Config Changed', d.changed || '—'], ['Throughput', d.throughput || '—'],\n    ['Policies', d.rules == null ? '—' : nf(d.rules)],\n    ['Findings', d.findings == null ? '—' : nf(d.findings), d.findings ? '--severity-warning' : ''],\n    ['Critical Findings', d.critical == null ? '—' : nf(d.critical), d.critical ? '--severity-critical' : ''],\n    ['Last Log', d.lastLog || '—'], ['Added On', d.since || '—']\n  ];\n", '  /* only what identifies the firewall (owner, 19 Oct 2026: "show only need details, remove the extra"): the grid row\n     already carries status, management and credential; Type is always Firewall; Service repeats the tag; the counts,\n     throughput and log age are live readings that belong to the firewall\'s own screens */\n  const dev = [\n    [\'Name\', d.name], [\'IP/Host\', d.mgmt], [\'System OID\', d.sysOid], [\'Vendor\', fwVendorName(d)], [\'Model\', d.vendor],\n    [\'Template\', t ? t.name : \'Not assigned\'], [\'Group\', (inv.groups || []).join(\', \') || \'—\'], [\'Tags\', (inv.tags || []).join(\', \') || \'—\']\n  ];\n  const sys = [[\'Site\', d.site || \'—\'], [\'HA Role\', d.ha || \'—\'], [\'Version\', d.version || \'—\'], [\'Added On\', d.since || \'—\']];\n', 'fid trim fields')
+    rep("  const t = fwTemplateOf(d), cs = credStatusOf(d), inv = invRowOf(d), on = fwManaged(d);\n  const status = d.status === 'warning' ? ['Status', 'Warning', '--severity-warning'] : ['Status', STATUS_LABEL[d.status] || d.status, '', d.status];\n  const cred = cs.kind === 'ok' ? ['Credential', 'Successful', '', 'success'] : cs.kind === 'fail' ? ['Credential', 'Failed', '', 'failed']\n    : ['Credential', cs.kind === 'add' ? 'Not added' : 'Not applicable'];\n", '  const t = fwTemplateOf(d), inv = invRowOf(d);\n', 'fid trim vars')
+    # Policies Management: the Add button carries no + glyph (2026-10-19)
+    rep('<obs-button variant="primary" id="pmAdd" data-add="${what}"><obs-icon name="plus" size="14"></obs-icon>&nbsp;${PM_ADD[what]}</obs-button>', '<obs-button variant="primary" id="pmAdd" data-add="${what}">${PM_ADD[what]}</obs-button>', 'pm add no plus')
+    # Policies Management › Policies: overview KPI row (2026-10-19)
+    rep('  return `<div class="fa-stack">\n    ${panel(`\n      ${stdGridHost(\'pmRulesGrid\')}', '  return `<div class="fa-stack">\n    ${pmRulesOverview(rules, dev)}\n    ${panel(`\n      ${stdGridHost(\'pmRulesGrid\')}', 'pm ov call')
+    rep('let PM_COLS = [], PM_FIELDS = [];', 'let PM_COLS = [], PM_FIELDS = [];\n/* the Policies overview (owner, 19 Oct 2026: "some details of policy related overview card"): six obs-kpi-card tiles —\n   the DS KPI widget the firewall Overview already uses — over the same rules the grid lists, so the two cannot disagree.\n   Each figure is read the way the grid\'s Tag column reads it (ruleTags): Used = hit at least once, Unassigned = an\n   "any" in source / destination / service / either interface. A count turns amber / red only when it is a problem. */\nfunction pmRulesOverview(rules, dev) {\n  const n = rules.length, pct = v => (n ? Math.round(v / n * 100) : 0) + \'%\';\n  const allow = rules.filter(r => /^allow/i.test(r.action)).length;\n  const used = rules.filter(r => r.hitsTotal > 0).length;\n  const unasg = rules.filter(r => ruleTags(r).includes(\'Unassigned\')).length;\n  const findings = rules.filter(r => r.finding && r.finding !== \'clean\').length;\n  const pend = pendingOf(dev || null), pendPol = pend.filter(p => p.kind === \'Policy\').length;\n  const kpi = o => `<obs-kpi-card class="fa-ov-kpi fa-pm-kpi" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : \'\'}\n    value="${esc(String(o.value))}" stats=\'${j(o.stats)}\'></obs-kpi-card>`;\n  return `<div class="fa-grid cols-6 fa-ov-tiles fa-pm-ov">${[\n    kpi({ title: \'Total Policies\', icon: \'secure\', value: nf(n), stats: [{ label: \'Firewalls\', value: String(new Set(rules.map(r => r.device)).size) }] }),\n    kpi({ title: \'Allow\', icon: \'check-circle\', sev: \'clear\', value: nf(allow), stats: [{ label: \'Deny\', value: nf(n - allow) }] }),\n    kpi({ title: \'Unused\', icon: \'ban\', sev: n - used ? \'warning\' : \'clear\', value: nf(n - used), stats: [{ label: \'Used\', value: nf(used) }] }),\n    kpi({ title: \'Unassigned\', icon: \'exclamation-circle\', sev: unasg ? \'warning\' : \'clear\', value: nf(unasg), stats: [{ label: \'Share\', value: pct(unasg) }] }),\n    kpi({ title: \'With Findings\', icon: \'times-circle\', sev: findings ? \'critical\' : \'clear\', value: nf(findings), stats: [{ label: \'Clean\', value: nf(n - findings) }] }),\n    kpi({ title: \'Pending Approval\', icon: \'history\', sev: pendPol ? \'warning\' : \'clear\', value: nf(pendPol), stats: [{ label: \'All changes\', value: nf(pend.length) }] })\n  ].join(\'\')}</div>`;\n}', 'pm ov fn')
+    rep('obs-kpi-card.fa-ov-kpi { display: block; min-width: 0; --kpi-card-min-height: 150px; }', 'obs-kpi-card.fa-ov-kpi { display: block; min-width: 0; --kpi-card-min-height: 150px; }\nobs-kpi-card.fa-pm-kpi { --kpi-card-min-height: 120px; }\n.fa-pm-ov { margin-bottom: var(--ds-padding-md, 16px); }', 'pm ov css')
+    # Policies overview cards: one row each — icon left, title + stat, value right (2026-10-19)
+    rep(':host(.fa-ov-kpi) .kpi[class]{--chip-bg:var(--primary-alt,#1d2a3e);--chip-fg:var(--page-background-color,#fff)}', ':host(.fa-ov-kpi) .kpi[class]{--chip-bg:var(--primary-alt,#1d2a3e);--chip-fg:var(--page-background-color,#fff)}:host(.fa-pm-kpi) .kpi{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:0;padding:12px 16px}:host(.fa-pm-kpi) .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:12px;row-gap:2px;flex:1 1 auto;min-width:0}:host(.fa-pm-kpi) .chip{grid-row:1 / span 2;width:40px;height:40px}:host(.fa-pm-kpi) .title{margin:0;font-size:14px;line-height:20px}:host(.fa-pm-kpi) .stats{grid-column:2}:host(.fa-pm-kpi) .foot{flex:0 0 auto;align-items:center}:host(.fa-pm-kpi) .fc{flex:0 0 auto}', 'pm kpi row hook')
+    rep('value="${esc(String(o.value))}" stats=\'${j(o.stats)}\'></obs-kpi-card>`;', 'value="${esc(String(o.value))}" size="medium" stats=\'${j(o.stats)}\'></obs-kpi-card>`;', 'pm kpi medium')
+    rep('obs-kpi-card.fa-pm-kpi { --kpi-card-min-height: 120px; }', 'obs-kpi-card.fa-pm-kpi { --kpi-card-min-height: 0px; }', 'pm kpi minh')
+    # Policies overview: 3 + 3 (2026-10-19)
+    rep('.fa-pm-ov { margin-bottom: var(--ds-padding-md, 16px); }', '.fa-pm-ov { margin-bottom: var(--ds-padding-md, 16px); }\n.fa-grid.cols-6.fa-ov-tiles.fa-pm-ov { grid-template-columns: repeat(3, minmax(0, 1fr)); }', 'pm kpi 3x2')
+    # Objects overview KPI row, 3 + 3 (2026-10-19)
+    rep('    TAG_FIELD([\'Assigned\', \'Unassigned\'])\n  ] };\n  return `<div class="fa-stack">\n    ${panel(`\n      ${stdGridHost(grid)}', '    TAG_FIELD([\'Assigned\', \'Unassigned\'])\n  ] };\n  return `<div class="fa-stack">\n    ${pmObjectsOverview(inView, dev)}\n    ${panel(`\n      ${stdGridHost(grid)}', 'obj ov call')
+    rep('const OBJ_GRIDS = {};', 'const OBJ_GRIDS = {};\n/* the Objects overview (owner, 19 Oct 2026: "the same changes in Objects"): the Policies row\'s six DS KPI cards, 3 + 3,\n   over the objects the grid lists — Assigned / Unassigned read exactly as the grid\'s Tag column (objectTags) */\nfunction pmObjectsOverview(objs, dev) {\n  const n = objs.length, pct = v => (n ? Math.round(v / n * 100) : 0) + \'%\';\n  const cnt = k => objs.filter(o => o.kind === k).length;\n  const asg = objs.filter(o => objectTags(o).includes(\'Assigned\')).length;\n  const pend = pendingOf(dev || null), pendObj = pend.filter(p => p.kind === \'Object\').length;\n  const kpi = o => `<obs-kpi-card class="fa-ov-kpi fa-pm-kpi" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : \'\'}\n    value="${esc(String(o.value))}" size="medium" stats=\'${j(o.stats)}\'></obs-kpi-card>`;\n  return `<div class="fa-grid cols-6 fa-ov-tiles fa-pm-ov">${[\n    kpi({ title: \'Total Objects\', icon: \'secure\', value: nf(n), stats: [{ label: \'Firewalls\', value: String(new Set(objs.map(o => o.device)).size) }] }),\n    kpi({ title: \'Addresses\', icon: \'network\', value: nf(cnt(\'Address\')), stats: [{ label: \'Groups\', value: nf(cnt(\'Address group\')) }] }),\n    kpi({ title: \'Services\', icon: \'cog\', value: nf(cnt(\'Service\')), stats: [{ label: \'Groups\', value: nf(cnt(\'Service group\')) }] }),\n    kpi({ title: \'Assigned\', icon: \'check-circle\', value: nf(asg), stats: [{ label: \'Share\', value: pct(asg) }] }),\n    kpi({ title: \'Unassigned\', icon: \'exclamation-circle\', sev: n - asg ? \'warning\' : \'clear\', value: nf(n - asg), stats: [{ label: \'Share\', value: pct(n - asg) }] }),\n    kpi({ title: \'Pending Approval\', icon: \'history\', sev: pendObj ? \'warning\' : \'clear\', value: nf(pendObj), stats: [{ label: \'All changes\', value: nf(pend.length) }] })\n  ].join(\'\')}</div>`;\n}', 'obj ov fn')
+    # View Object / View Policy read-only drawers from the name cells (2026-10-19)
+    rep("    { key: 'name', title: 'Policy Name', width: 220, ...(sev ? { type: 'severity' } : {}) },", "    { key: 'name', title: 'Policy Name', width: 220, ...(sev ? { type: 'severity' } : links ? { type: 'link' } : {}) },", 'pol name link')
+    rep("    { key: 'name', title: 'Object Name', width: 200, fixed: true },\n    { key: 'kind', title: 'Object Type', width: 150 },", "    { key: 'name', title: 'Object Name', width: 200, fixed: true, type: 'link' },\n    { key: 'kind', title: 'Object Type', width: 150 },", 'obj name link')
+    rep("    if (p.key === 'src' || p.key === 'dst') objectDetailDrawer(r.device, r[p.key]);", "    if (p.key === 'name') { viewPolicyDrawer(r.id); return; }\n    if (p.key === 'src' || p.key === 'dst') objectDetailDrawer(r.device, r[p.key]);", 'pol name click')
+    rep("  if (pmObjs) pmObjs.addEventListener('cellaction', e => { const p = detailOf(e) || {}; if (p.key === 'assoc' && p.id) assocRulesDrawer(p.id); });", "  if (pmObjs) pmObjs.addEventListener('cellaction', e => { const p = detailOf(e) || {};\n    if (p.key === 'name' && p.id) viewObjectDrawer(p.id);\n    if (p.key === 'assoc' && p.id) assocRulesDrawer(p.id); });", 'obj name click')
+    rep('/* Policies and Objects Analytics */\nfunction screenPolicy(', '/* VIEW OBJECT / VIEW POLICY (owner, 19 Oct 2026 — the product\'s "View User Profile" as the reference): the name in the\n   Objects / Policies grid opens a READ-ONLY drawer laid out like the Add form — two columns, label over a disabled\n   field, lists as chips — so viewing and adding read as one form. Every value is the grid row\'s own. */\nfunction pmViewHTML(rows) {\n  const ro = v => pmRo(v == null || v === \'\' ? \'—\' : String(v));\n  const chips = (list, variant = \'\') => `<div class="fa-pmv-chips">${(list || []).length ? list.map(x => `<obs-tag${variant ? ` variant="${variant}"` : \'\'}>${esc(x)}</obs-tag>`).join(\'\')\n    : \'<span class="fa-muted">—</span>\'}</div>`;\n  return `<div class="fa-pmf-form fa-pmv"><div class="fa-grid cols-2">${rows.map(([label, v, kind, variant, wide]) => {\n    const html = field(label, kind === \'chips\' ? chips(v, variant) : kind === \'html\' ? v : ro(v));\n    return wide ? `<div class="fa-pmf-wide">${html}</div>` : html;\n  }).join(\'\')}</div></div>`;\n}\nfunction viewObjectDrawer(id) {\n  const o = D.objects.find(x => x.id === id); if (!o) return;\n  const d = D.devices.find(x => x.name === o.device), tags = objectTags(o);\n  openDrawer(\'View Object\', pmViewHTML([\n    [\'Object Name\', o.name], [\'Description\', o.desc],\n    [\'Device Name\', o.device], [\'Mode\', pmMode(d) || \'Not collected\'],\n    [\'Object Type\', o.kind], [\'Associated Policies\', objAssocRules(o).length],\n    isGroupObj(o) ? [\'Members\', o.members, \'chips\', \'\', true] : [isAddrType(o.kind) ? \'Address\' : \'Service\', o.value, \'\', \'\', true],\n    [\'Tag\', tags, \'chips\', tags.includes(\'Unassigned\') ? \'tag-orange\' : \'tag-green\']\n  ]), \'\', \'40%\');\n}\nfunction viewPolicyDrawer(id) {\n  const r = D.rules.find(x => x.id === id); if (!r) return;\n  const tags = ruleTags(r);\n  openDrawer(\'View Policy\', pmViewHTML([\n    [\'Policy ID\', r.seq], [\'Policy Name\', r.name],\n    [\'Device Name\', r.device], [\'Policy Action\', `<div class="fa-pmv-chips"><obs-tag variant="${/^allow/i.test(r.action) ? \'tag-green\' : \'tag-red\'}">${esc(r.action)}</obs-tag></div>`, \'html\'],\n    [\'Source\', [r.src], \'chips\'], [\'Destination\', [r.dst], \'chips\'],\n    [\'Source Interface\', ruleIntf(r, \'srcIntf\')], [\'Destination Interface\', ruleIntf(r, \'dstIntf\')],\n    [\'Services\', [r.svc], \'chips\'], [\'Log\', r.log],\n    [\'Last update Policy Time\', ruleLastUpdate(r)], [\'Hits\', r.hits == null ? \'—\' : nf(r.hits)],\n    [\'Tag\', tags, \'chips\', tags.includes(\'Unused\') || tags.includes(\'Unassigned\') ? \'tag-orange\' : \'tag-green\', true]\n  ]), \'\', \'40%\');\n}\n\n/* Policies and Objects Analytics */\nfunction screenPolicy(', 'pm view drawers')
+    rep('#pmAddDrawer .fa-pmf-form { gap: 20px; }', '#pmAddDrawer .fa-pmf-form { gap: 20px; }\n.fa-pmv .fa-grid { column-gap: 32px; row-gap: 20px; }\n.fa-pmv .fa-field { gap: 7px; }\n.fa-pmv .fa-field-label { color: var(--neutral-light); font-size: 14px; line-height: 18px; }\n.fa-pmv-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 22px; align-items: center; }', 'pm view css')
+    # Add / View Policy: Policy Name | Device Name lead the form (2026-10-19)
+    rep('      ${pmAll() && !f.edit ? pmSelect(ns, f, \'dev\', \'Device Name\', D.devices.map(x => x.name), { req: true })\n        : field(\'Device Name\', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}\n      ${field(\'Mode\', `<obs-input type="text" block disabled value="${esc(mode || \'Not collected\')}"></obs-input>`)}\n      ${f.edit ? field(\'Policy ID\', pmRo(f.seq)) : pmInput(ns, f, \'seq\', \'Policy ID\', { req: true, type: \'number\' })}\n      ${pmInput(ns, f, \'name\', \'Policy Name\', { req: true, ph: \'Must be unique\' })}', '      ${pmInput(ns, f, \'name\', \'Policy Name\', { req: true, ph: \'Must be unique\' })}\n      ${pmAll() && !f.edit ? pmSelect(ns, f, \'dev\', \'Device Name\', D.devices.map(x => x.name), { req: true })\n        : field(\'Device Name\', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}\n      ${f.edit ? field(\'Policy ID\', pmRo(f.seq)) : pmInput(ns, f, \'seq\', \'Policy ID\', { req: true, type: \'number\' })}\n      ${field(\'Mode\', `<obs-input type="text" block disabled value="${esc(mode || \'Not collected\')}"></obs-input>`)}', 'policy form name+dev first')
+    rep("    ['Policy ID', r.seq], ['Policy Name', r.name],\n    ['Device Name', r.device], ['Policy Action',", "    ['Policy Name', r.name], ['Device Name', r.device],\n    ['Policy ID', r.seq], ['Policy Action',", 'view policy name+dev first')
+    # One system tag per policy / NAT row (2026-10-19)
+    rep("const ruleTags = r => [r.hitsTotal > 0 ? 'Used' : 'Unused']\n  .concat([r.src, r.dst, r.svc, r.srcIntf, r.dstIntf].includes('any') ? ['Unassigned'] : []);", '/* ONE system tag per row (owner, 19 Oct 2026: "the tag is system generated, it shows a single tag"): Unassigned wins\n   (an "any" in source / destination / service / either interface is the finding whether or not it is hit), then Unused\n   (never hit), else Used — so the three tags partition the rule base and the overview cards add up to the total */\nconst ruleTags = r => [[r.src, r.dst, r.svc, r.srcIntf, r.dstIntf].includes(\'any\') ? \'Unassigned\' : r.hitsTotal > 0 ? \'Used\' : \'Unused\'];', 'one tag rule')
+    rep("const natTags = n => [n.hits > 0 ? 'Used' : 'Unused'].concat(natAssigned(n) ? [] : ['Unassigned']);", "const natTags = n => [!natAssigned(n) ? 'Unassigned' : n.hits > 0 ? 'Used' : 'Unused'];   /* one tag, same precedence as ruleTags */", 'one tag nat')
+    rep("  const used = rules.filter(r => r.hitsTotal > 0).length;\n  const unasg = rules.filter(r => ruleTags(r).includes('Unassigned')).length;", "  const tagN = k => rules.filter(r => ruleTags(r)[0] === k).length;\n  const used = tagN('Used'), unused = tagN('Unused'), unasg = tagN('Unassigned');", 'ov tag counts')
+    rep("    kpi({ title: 'Unused', icon: 'ban', sev: n - used ? 'warning' : 'clear', value: nf(n - used), stats: [{ label: 'Used', value: nf(used) }] }),", "    kpi({ title: 'Unused', icon: 'ban', sev: unused ? 'warning' : 'clear', value: nf(unused), stats: [{ label: 'Used', value: nf(used) }] }),", 'ov unused')
+    # Add Policy: Policy Description is a one-line field beside Policy Name (2026-10-19)
+    rep("      ${pmInput(ns, f, 'name', 'Policy Name', { req: true, ph: 'Must be unique' })}\n      ${pmAll() && !f.edit ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true })", "      ${pmInput(ns, f, 'name', 'Policy Name', { req: true, ph: 'Must be unique' })}\n      ${pmInput(ns, f, 'desc', 'Policy Description')}\n      ${pmAll() && !f.edit ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true })", 'pol desc beside name')
+    rep("      ${pmSelect(ns, f, 'status', 'Policy Status', ['Enable', 'Disable'])}\n      ${pmInput(ns, f, 'desc', 'Policy Description', { type: 'textarea', wide: true })}\n    </div>", "      ${pmSelect(ns, f, 'status', 'Policy Status', ['Enable', 'Disable'])}\n    </div>", 'pol desc no textarea')
+    rep('      ${f.edit ? field(\'Policy ID\', pmRo(f.seq)) : pmInput(ns, f, \'seq\', \'Policy ID\', { req: true, type: \'number\' })}\n      ${field(\'Mode\', `<obs-input type="text" block disabled value="${esc(mode || \'Not collected\')}"></obs-input>`)}', '      ${field(\'Mode\', `<obs-input type="text" block disabled value="${esc(mode || \'Not collected\')}"></obs-input>`)}\n      ${f.edit ? field(\'Policy ID\', pmRo(f.seq)) : pmInput(ns, f, \'seq\', \'Policy ID\', { req: true, type: \'number\' })}', 'pol form dev+mode pair')
+    # Policies Management drawers: "Device Name" → "Firewall Name" (2026-10-19)
+    rep('      ${pmAll() && !f.edit ? pmSelect(ns, f, \'dev\', \'Device Name\', D.devices.map(x => x.name), { req: true })\n        : field(\'Device Name\', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}', '      ${pmAll() && !f.edit ? pmSelect(ns, f, \'dev\', \'Firewall Name\', D.devices.map(x => x.name), { req: true })\n        : field(\'Firewall Name\', `<obs-input type="text" block disabled value="${esc(f.dev)}"></obs-input>`)}', 'fw name policy')
+    rep("      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true }) : ''}", "      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Firewall Name', D.devices.map(x => x.name), { req: true }) : ''}", 'fw name object')
+    rep("    ['Device Name', o.device], ['Mode', pmMode(d) || 'Not collected'],", "    ['Firewall Name', o.device], ['Mode', pmMode(d) || 'Not collected'],", 'fw name view obj')
+    rep("    ['Policy Name', r.name], ['Device Name', r.device],", "    ['Policy Name', r.name], ['Firewall Name', r.device],", 'fw name view pol')
+    # Objects overview: one joined obs-stat-card, no Services (2026-10-20)
+    rep('function pmObjectsOverview(objs, dev) {\n  const n = objs.length, pct = v => (n ? Math.round(v / n * 100) : 0) + \'%\';\n  const cnt = k => objs.filter(o => o.kind === k).length;\n  const asg = objs.filter(o => objectTags(o).includes(\'Assigned\')).length;\n  const pend = pendingOf(dev || null), pendObj = pend.filter(p => p.kind === \'Object\').length;\n  const kpi = o => `<obs-kpi-card class="fa-ov-kpi fa-pm-kpi" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : \'\'}\n    value="${esc(String(o.value))}" size="medium" stats=\'${j(o.stats)}\'></obs-kpi-card>`;\n  return `<div class="fa-grid cols-6 fa-ov-tiles fa-pm-ov">${[\n    kpi({ title: \'Total Objects\', icon: \'secure\', value: nf(n), stats: [{ label: \'Firewalls\', value: String(new Set(objs.map(o => o.device)).size) }] }),\n    kpi({ title: \'Addresses\', icon: \'network\', value: nf(cnt(\'Address\')), stats: [{ label: \'Groups\', value: nf(cnt(\'Address group\')) }] }),\n    kpi({ title: \'Services\', icon: \'cog\', value: nf(cnt(\'Service\')), stats: [{ label: \'Groups\', value: nf(cnt(\'Service group\')) }] }),\n    kpi({ title: \'Assigned\', icon: \'check-circle\', value: nf(asg), stats: [{ label: \'Share\', value: pct(asg) }] }),\n    kpi({ title: \'Unassigned\', icon: \'exclamation-circle\', sev: n - asg ? \'warning\' : \'clear\', value: nf(n - asg), stats: [{ label: \'Share\', value: pct(n - asg) }] }),\n    kpi({ title: \'Pending Approval\', icon: \'history\', sev: pendObj ? \'warning\' : \'clear\', value: nf(pendObj), stats: [{ label: \'All changes\', value: nf(pend.length) }] })\n  ].join(\'\')}</div>`;\n}\n', 'function pmObjectsOverview(objs, dev) {\n  /* one JOINED obs-stat-card, hairline-split columns (owner, 20 Oct 2026 — the DS overview-card page\'s "Stat cards — the\n     four postures joined into one card" as the reference); Services left the row on the same request */\n  const n = objs.length, pct = v => nf(v) + \' of \' + nf(n) + \' objects\';   /* a count, not a % (owner, 20 Oct 2026) */\n  const cnt = k => objs.filter(o => o.kind === k).length;\n  const asg = objs.filter(o => objectTags(o).includes(\'Assigned\')).length;\n  const pend = pendingOf(dev || null), pendObj = pend.filter(p => p.kind === \'Object\').length;\n  const items = [\n    { label: \'Total Objects\', value: nf(n), caption: new Set(objs.map(o => o.device)).size + \' firewalls\' },\n    { label: \'Addresses\', value: nf(cnt(\'Address\')), caption: nf(cnt(\'Address group\')) + \' address groups\' },\n    { label: \'Assigned\', value: nf(asg), caption: pct(asg) },\n    { label: \'Unassigned\', value: nf(n - asg), caption: pct(n - asg), ...(n - asg ? { valueSeverity: \'warning\' } : {}) },\n    { label: \'Pending Approval\', value: nf(pendObj), caption: nf(pend.length) + \' changes in all\' }\n  ];\n  return `<obs-stat-card class="fa-pm-stats" items=\'${j(items)}\'></obs-stat-card>`;\n}\n', 'obj ov joined')
+    rep('.fa-pm-ov { margin-bottom: var(--ds-padding-md, 16px); }', '.fa-pm-ov { margin-bottom: var(--ds-padding-md, 16px); }\nobs-stat-card.fa-pm-stats { display: block; margin-bottom: var(--ds-padding-md, 16px); }', 'obj ov joined css')
+    rep("    { label: 'Assigned', value: nf(asg), caption: pct(asg) },\n    { label: 'Unassigned', value: nf(n - asg), caption: pct(n - asg), ...(n - asg ? { valueSeverity: 'warning' } : {}) },", '    /* the caption says what the count is MADE OF (it repeated the figure above it), the bar shows its share of the total\n       (owner, 20 Oct 2026: "improve 34 of 47 objects") — both counts, no % */\n    { label: \'Assigned\', value: nf(asg), caption: mix(o => objectTags(o).includes(\'Assigned\')), percent: n ? asg / n * 100 : 0, barSeverity: \'clear\' },\n    { label: \'Unassigned\', value: nf(n - asg), caption: mix(o => !objectTags(o).includes(\'Assigned\')), percent: n ? (n - asg) / n * 100 : 0,\n      barSeverity: \'warning\', ...(n - asg ? { valueSeverity: \'warning\' } : {}) },', 'obj ov caption mix')
+    rep("  const pend = pendingOf(dev || null), pendObj = pend.filter(p => p.kind === 'Object').length;\n  const items = [", "  const pend = pendingOf(dev || null), pendObj = pend.filter(p => p.kind === 'Object').length;\n  const mix = f => { const sel = objs.filter(f), g = sel.filter(isGroupObj).length, one = sel.length - g;\n    return `${nf(one)} object${one === 1 ? '' : 's'} · ${nf(g)} group${g === 1 ? '' : 's'}`; };\n  const items = [", 'obj ov mix fn')
+    # Add Object: wide drawer with a Network / Service Object rail (2026-10-20)
+    rep('  pmAddDrawer.setAttribute(\'title\', pmf.edit ? \'Edit Policy\' : PM_ADD[pmf.kind]);\n  pmAddDrawer.innerHTML = `<div class="fa-pmf">\n    <div id="pmfBody">${pmf.kind === \'policy\' ? policyFormBody(pmf) : objectFormBody(\'pmf\', pmf)}</div>\n    <div class="ds-cred-foot" id="pmfFoot" data-reason="${esc(pmfReason(pmf))}">${pmFoot(\'pmf\', pmf)}</div>\n  </div><div id="pmStack"></div>`;', '  pmAddDrawer.setAttribute(\'title\', pmf.edit ? \'Edit Policy\' : PM_ADD[pmf.kind]);\n  /* Add Object = the wide category drawer (owner, 20 Oct 2026 — IPAM\'s "Create Subnet Discovery Profile" as the\n     reference): a rail of the two object families, Network Object (Address / Address group) and Service Object\n     (Service / Service group), the chosen family\'s form beside it under its own heading. Policy keeps the 40% form. */\n  const wide = pmf.kind === \'object\';\n  pmAddDrawer.setAttribute(\'width\', \'40%\');   /* Add Object back to 40% like Add Policy (owner, 20 Oct 2026) */\n  if (wide && !pmf.cat) pmfObjCat(isAddrType(pmf.type) ? \'network\' : \'service\', true);\n  const cat = wide ? PMO_CATS[pmf.cat] : null;\n  const body = `<div id="pmfBody">${pmf.kind === \'policy\' ? policyFormBody(pmf) : objectFormBody(\'pmf\', pmf)}</div>`;\n  pmAddDrawer.innerHTML = `<div class="fa-pmf${wide ? \' fa-pmo-wide\' : \'\'}">\n    ${wide ? `<div class="fa-pmo-cols">\n      <nav class="fa-pmo-rail" aria-label="Object type">${Object.keys(PMO_CATS).map(k =>\n        `<button type="button" class="fa-pmo-cat${k === pmf.cat ? \' on\' : \'\'}" data-pmo-cat="${k}" aria-pressed="${k === pmf.cat}">${PMO_CATS[k].label}</button>`).join(\'\')}</nav>\n      <div class="fa-pmo-main"><h3 class="fa-pmo-h">${cat.label}</h3><p class="fa-pmo-sub">${esc(cat.help)}</p>${body}</div>\n    </div>` : body}\n    <div class="ds-cred-foot" id="pmfFoot" data-reason="${esc(pmfReason(pmf))}">${pmFoot(\'pmf\', pmf)}</div>\n  </div><div id="pmStack"></div>`;\n  pmAddDrawer.querySelectorAll(\'[data-pmo-cat]\').forEach(b => b.addEventListener(\'click\', () => {\n    if (b.getAttribute(\'data-pmo-cat\') === pmf.cat) return;\n    pmfObjCat(b.getAttribute(\'data-pmo-cat\')); paintPmAdd();\n  }));', 'pmo wide paint')
+    rep('function paintPmFoot(ns) {', "const PMO_CATS = {\n  network: { label: 'Network Object', types: ['Address', 'Address group'],\n    help: 'An address or a group of addresses the firewall policies can match as a source or a destination.' },\n  service: { label: 'Service Object', types: ['Service', 'Service group'],\n    help: 'A protocol and port, or a group of them, the firewall policies can match as the service.' }\n};\n/* switching family keeps what is family-neutral (name, description, firewall) and resets the type and its members */\nfunction pmfObjCat(k, keepType) {\n  if (!PMO_CATS[k]) return;\n  pmf.cat = k; pmf.types = PMO_CATS[k].types;\n  if (!keepType || !pmf.types.includes(pmf.type)) { pmf.type = pmf.types[0]; pmf.members = []; }\n}\nfunction paintPmFoot(ns) {", 'pmo cats')
+    rep('.fa-pmv .fa-grid { column-gap: 32px; row-gap: 20px; }', '.fa-pmv .fa-grid { column-gap: 32px; row-gap: 20px; }\n.fa-pmo-wide { display: flex; flex-direction: column; min-height: 100%; }\n.fa-pmo-cols { display: grid; grid-template-columns: 180px minmax(0, 1fr); flex: 1 1 auto; min-height: 0; }\n.fa-pmo-rail { display: flex; flex-direction: column; gap: 4px; padding-right: 16px; border-right: 1px solid var(--border-color); }\n.fa-pmo-cat { all: unset; box-sizing: border-box; padding: 10px 12px; border-radius: var(--btn-radius, 4px); cursor: pointer;\n  font-size: 14px; color: var(--neutral-light); }\n.fa-pmo-cat:hover { color: var(--page-text-color); background: var(--neutral-lightest); }\n.fa-pmo-cat.on { color: var(--page-text-color); background: var(--neutral-lighter); font-weight: 500; }\n.fa-pmo-cat:focus-visible { outline: 2px solid var(--primary-alt); outline-offset: 1px; }\n.fa-pmo-main { padding: 4px 0 0 24px; min-width: 0; }\n.fa-pmo-h { margin: 0; font-size: 18px; font-weight: 500; color: var(--page-text-color); }\n.fa-pmo-sub { margin: 4px 0 20px; font-size: 13px; color: var(--neutral-light); }\n.fa-pmo-wide > .ds-cred-foot { padding-top: 16px; border-top: 1px solid var(--border-color); }', 'pmo wide css')
+    # Network Object form: Name · Description · Type · Members List (2026-10-20)
+    rep('const PM_SHAPE = { nat: 1, natAddr: 1, type: 1 };', 'const PM_SHAPE = { nat: 1, natAddr: 1, type: 1, ntype: 1 };', 'pmo ntype shape')
+    rep("      if (k === 'type') { f.value = ''; f.members = []; }", "      if (k === 'type') { f.value = ''; f.members = []; }\n      if (k === 'ntype') { f.type = f.ntype === 'Address Group' ? 'Address group' : 'Address'; f.value = ''; f.members = []; }", 'pmo ntype put')
+    rep('function objectFormBody(ns, f) {\n  const d = D.devices.find(x => x.name === f.dev), mode = pmMode(d);', '/* Network Object (owner, 20 Oct 2026 — FortiGate\'s address form as the reference): four fields — Object Name · Description\n   · Type (Address Group · IP Range · Subnet · FQDN) · Members List. A group picks its members from the firewall\'s\n   addresses (search + checkboxes); the other three types have no members, so that slot takes the value they name. The\n   Type is stored as the grid\'s kind (Address group / Address) with the chosen form kept as `ntype`. */\nconst NET_TYPES = [\'Address Group\', \'IP Range\', \'Subnet\', \'FQDN\'];\nconst NET_PH = { \'IP Range\': \'e.g. 192.0.2.10-192.0.2.40\', Subnet: \'e.g. 192.0.2.0/24\', FQDN: \'e.g. portal.example.com\' };\nfunction networkObjectBody(ns, f) {\n  const pool = [...new Set(pmChoices(f.dev).objs.filter(o => isAddrType(o.kind)).map(o => o.name))].sort();\n  return `<div class="fa-pmf-form"><div class="fa-grid cols-2">\n      ${pmInput(ns, f, \'name\', \'Object Name\', { req: true, ph: \'Must be unique\' })}\n      ${pmInput(ns, f, \'desc\', \'Description\')}\n      ${pmSelect(ns, f, \'ntype\', \'Type\', NET_TYPES, { req: true })}\n      ${f.ntype === \'Address Group\'\n        ? pmSelect(ns, f, \'members\', \'Members List\', pool, { req: true, multi: true, ph: \'Select Members\' })\n        : pmInput(ns, f, \'value\', f.ntype, { req: true, ph: NET_PH[f.ntype] || \'\' })}\n    </div></div>`;\n}\nfunction objectFormBody(ns, f) {\n  if (ns === \'pmf\' && f.cat === \'network\') return networkObjectBody(ns, f);\n  const d = D.devices.find(x => x.name === f.dev), mode = pmMode(d);', 'pmo network body')
+    rep("  if (isGroupType(f.type)) return f.members.length ? '' : 'Pick at least one member';\n", "  if (isGroupType(f.type)) return f.members.length ? '' : 'Pick at least one member';\n  if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype} is required`;\n", 'pmo ntype reason')
+    rep("  return isGroupType(f.type) ? `${f.type} of ${f.members.join(', ')}` : f.value.trim() ? `${f.type} ${f.value.trim()}` : f.type;", "  const tp = f.cat === 'network' && f.ntype ? f.ntype : f.type;\n  return isGroupType(f.type) ? `${tp} of ${f.members.join(', ')}` : f.value.trim() ? `${tp} ${f.value.trim()}` : tp;", 'pmo ntype summary')
+    rep('  pmf.cat = k; pmf.types = PMO_CATS[k].types;\n  if (!keepType || !pmf.types.includes(pmf.type)) { pmf.type = pmf.types[0]; pmf.members = []; }', "  pmf.cat = k; pmf.types = PMO_CATS[k].types;\n  if (k === 'network') { if (!keepType || !pmf.ntype) { pmf.ntype = 'Address Group'; pmf.type = 'Address group'; pmf.members = []; pmf.value = ''; } return; }\n  if (!keepType || !pmf.types.includes(pmf.type)) { pmf.type = pmf.types[0]; pmf.members = []; }", 'pmo ntype default')
+    # Add Object: the type rail becomes a segmented switch (2026-10-20)
+    rep('    ${wide ? `<div class="fa-pmo-cols">\n      <nav class="fa-pmo-rail" aria-label="Object type">${Object.keys(PMO_CATS).map(k =>\n        `<button type="button" class="fa-pmo-cat${k === pmf.cat ? \' on\' : \'\'}" data-pmo-cat="${k}" aria-pressed="${k === pmf.cat}">${PMO_CATS[k].label}</button>`).join(\'\')}</nav>\n      <div class="fa-pmo-main"><h3 class="fa-pmo-h">${cat.label}</h3><p class="fa-pmo-sub">${esc(cat.help)}</p>${body}</div>\n    </div>` : body}', '    ${wide ? `<div class="fa-pmo-main">\n      <!-- the two families as a segmented switch (owner, 20 Oct 2026: "like Dashboard | NOC View", the rail removed) -->\n      <obs-radio as-button id="pmoCat" class="fa-pmo-seg" options=\'${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}\'></obs-radio>\n      ${body}</div>` : body}   <!-- no heading / help line: the switch names the family (owner, 20 Oct 2026) -->', 'pmo seg markup')
+    rep("  pmAddDrawer.querySelectorAll('[data-pmo-cat]').forEach(b => b.addEventListener('click', () => {\n    if (b.getAttribute('data-pmo-cat') === pmf.cat) return;\n    pmfObjCat(b.getAttribute('data-pmo-cat')); paintPmAdd();\n  }));", "  const seg = pmAddDrawer.querySelector('#pmoCat');\n  if (seg) {\n    seg.value = pmf.cat;   /* a PROPERTY, as a string — obs-radio matches it strictly */\n    seg.addEventListener('change', e => { const k = keyOf(detailOf(e)) || seg.value;\n      if (!PMO_CATS[k] || k === pmf.cat) return; pmfObjCat(k); paintPmAdd(); });\n  }", 'pmo seg bind')
+    rep('.fa-pmo-main { padding: 4px 0 0 24px; min-width: 0; }', '.fa-pmo-main { padding: 0; min-width: 0; flex: 1 1 auto; }\n.fa-pmo-seg { display: inline-block; margin-bottom: 20px; }', 'pmo seg css')
+    # Add Object: the switch gets a label, Object Category (2026-10-20)
+    rep('      <obs-radio as-button id="pmoCat" class="fa-pmo-seg" options=\'${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}\'></obs-radio>', '      <div class="fa-pmo-segf">${field(\'Object Category\', `<obs-radio as-button id="pmoCat" class="fa-pmo-seg" options=\'${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}\'></obs-radio>`)}</div>', 'pmo seg label')
+    rep('.fa-pmo-seg { display: inline-block; margin-bottom: 20px; }', '.fa-pmo-seg { display: inline-block; }\n.fa-pmo-segf { margin-bottom: 20px; }\n.fa-pmo-segf .fa-field { gap: 7px; }\n.fa-pmo-segf .fa-field-label { color: var(--neutral-light); font-size: 14px; line-height: 18px; }\n.fa-pmo-segf .fa-field > obs-radio { align-self: flex-start; }', 'pmo seg label css')
+    rep('      <div class="fa-pmo-segf">${field(\'Object Category\', `<obs-radio as-button id="pmoCat" class="fa-pmo-seg" options=\'${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}\'></obs-radio>`)}</div>', '', 'pmo cat out of head')
+    rep('function networkObjectBody(ns, f) {', '/* Object Category sits on the form\'s SECOND line, after Object Name | Description (owner, 20 Oct 2026) */\nconst pmoCatField = () => `<div class="fa-pmo-segf">${field(\'Object Category\', `<obs-radio as-button id="pmoCat" class="fa-pmo-seg" options=\'${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}\'></obs-radio>`)}</div>`;\nfunction networkObjectBody(ns, f) {', 'pmo cat fn')
+    rep("      ${pmInput(ns, f, 'desc', 'Description')}\n      ${pmSelect(ns, f, 'ntype', 'Type', NET_TYPES, { req: true })}", "      ${pmInput(ns, f, 'desc', 'Description')}\n      ${pmoCatField()}\n      ${pmSelect(ns, f, 'ntype', 'Type', NET_TYPES, { req: true })}", 'pmo cat in network')
+    rep("      ${pmInput(ns, f, 'desc', 'Description')}\n      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Firewall Name', D.devices.map(x => x.name), { req: true }) : ''}", "      ${pmInput(ns, f, 'desc', 'Description')}\n      ${ns === 'pmf' && f.cat ? pmoCatField() : ''}\n      ${pmAll() && ns === 'pmf' ? pmSelect(ns, f, 'dev', 'Firewall Name', D.devices.map(x => x.name), { req: true }) : ''}", 'pmo cat in service')
+    rep('.fa-pmo-segf { margin-bottom: 20px; }', '.fa-pmo-segf { margin-bottom: 0; }', 'pmo cat gap')
+    # Network Object › IP Range: Start IP · End IP · Interface (2026-10-20)
+    rep("      ${f.ntype === 'Address Group'\n        ? pmSelect(ns, f, 'members', 'Members List', pool, { req: true, multi: true, ph: 'Select Members' })\n        : pmInput(ns, f, 'value', f.ntype, { req: true, ph: NET_PH[f.ntype] || '' })}", "      ${f.ntype === 'Address Group'\n        ? pmSelect(ns, f, 'members', 'Members List', pool, { req: true, multi: true, ph: 'Select Members' })\n        : f.ntype === 'IP Range'\n        /* IP Range = Start IP · End IP · Interface (owner, 20 Oct 2026 — FortiGate's range form as the reference) */\n        ? `${pmInput(ns, f, 'startIp', 'Start IP', { req: true, ph: 'e.g. 192.0.2.10' })}\n           ${pmInput(ns, f, 'endIp', 'End IP', { req: true, ph: 'e.g. 192.0.2.40' })}\n           ${pmSelect(ns, f, 'intf', 'Interface', ['Any'].concat(pmChoices(f.dev).ports.filter(p => p !== 'any')))}`\n        : pmInput(ns, f, 'value', f.ntype, { req: true, ph: NET_PH[f.ntype] || '' })}", 'iprange fields')
+    rep("      if (k === 'ntype') { f.type = f.ntype === 'Address Group' ? 'Address group' : 'Address'; f.value = ''; f.members = []; }", "      if (k === 'ntype') { f.type = f.ntype === 'Address Group' ? 'Address group' : 'Address'; f.value = ''; f.members = []; f.startIp = ''; f.endIp = ''; f.intf = 'Any'; }\n      if (k === 'startIp' || k === 'endIp') f.value = f.startIp || f.endIp ? `${f.startIp || ''}-${f.endIp || ''}` : '';", 'iprange put')
+    rep("  if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype} is required`;", "  if (f.cat === 'network' && f.ntype === 'IP Range') {\n    if (!String(f.startIp || '').trim()) return 'Start IP is required';\n    if (!String(f.endIp || '').trim()) return 'End IP is required';\n  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype} is required`;", 'iprange reason')
+    rep("  if (k === 'network') { if (!keepType || !pmf.ntype) { pmf.ntype = 'Address Group'; pmf.type = 'Address group'; pmf.members = []; pmf.value = ''; } return; }", "  if (k === 'network') { if (!keepType || !pmf.ntype) { pmf.ntype = 'Address Group'; pmf.type = 'Address group'; pmf.members = []; pmf.value = ''; pmf.startIp = ''; pmf.endIp = ''; pmf.intf = 'Any'; } return; }", 'iprange init')
+    # Network Object › Subnet: IP/Netmask · Interface (2026-10-20)
+    rep("        : pmInput(ns, f, 'value', f.ntype, { req: true, ph: NET_PH[f.ntype] || '' })}", "        : f.ntype === 'Subnet'\n        /* Subnet = IP/Netmask · Interface (owner, 20 Oct 2026 — FortiGate's subnet form as the reference) */\n        ? `${pmInput(ns, f, 'value', 'IP/Netmask', { req: true, ph: 'e.g. 192.0.2.0/255.255.255.0' })}\n           ${pmSelect(ns, f, 'intf', 'Interface', ['Any'].concat(pmChoices(f.dev).ports.filter(p => p !== 'any')))}`\n        : pmInput(ns, f, 'value', f.ntype, { req: true, ph: NET_PH[f.ntype] || '' })}", 'subnet fields')
+    rep("  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype} is required`;", "  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype === 'Subnet' ? 'IP/Netmask' : f.ntype} is required`;", 'subnet reason')
+    # Network Object › FQDN: FQDN value · Interface (2026-10-20)
+    rep("        : pmInput(ns, f, 'value', f.ntype, { req: true, ph: NET_PH[f.ntype] || '' })}", "        /* FQDN = FQDN value · Interface (owner, 20 Oct 2026 — FortiGate's FQDN form as the reference) */\n        : `${pmInput(ns, f, 'value', 'FQDN value', { req: true, ph: NET_PH[f.ntype] || '' })}\n           ${pmSelect(ns, f, 'intf', 'Interface', ['Any'].concat(pmChoices(f.dev).ports.filter(p => p !== 'any')))}`}", 'fqdn fields')
+    rep("return `${f.ntype === 'Subnet' ? 'IP/Netmask' : f.ntype} is required`;", "return `${f.ntype === 'Subnet' ? 'IP/Netmask' : f.ntype === 'FQDN' ? 'FQDN value' : f.ntype} is required`;", 'fqdn reason')
+    # Service Object: Type Custom Service + Protocol / Source Port / Destination Port rows (2026-10-20)
+    rep("function objectFormBody(ns, f) {\n  if (ns === 'pmf' && f.cat === 'network') return networkObjectBody(ns, f);", '/* Service Object (owner, 20 Oct 2026 — FortiGate\'s custom-service form as the reference): Object Name · Description ·\n   Object Category · Type (Custom Service), then one or more Protocol · Source Port · Destination Port rows with × / +.\n   The rows are kept on f.svcRows and folded into f.value ("tcp/443, udp/53") — the shape the grid\'s Details prints. */\nconst SVC_PROTOS = [\'TCP\', \'UDP\', \'SCTP\'];\nconst svcRowBlank = () => ({ proto: \'TCP\', src: \'1-65535\', dst: \'\' });\nconst svcValueOf = rows => rows.filter(r => String(r.dst).trim()).map(r => `${r.proto.toLowerCase()}/${String(r.dst).trim()}`).join(\', \');\nfunction serviceObjectBody(ns, f) {\n  const rows = f.svcRows || (f.svcRows = [svcRowBlank()]);\n  return `<div class="fa-pmf-form"><div class="fa-grid cols-2">\n      ${pmInput(ns, f, \'name\', \'Object Name\', { req: true, ph: \'Must be unique\' })}\n      ${pmInput(ns, f, \'desc\', \'Description\')}\n      ${pmoCatField()}\n      ${pmSelect(ns, f, \'stype\', \'Type\', [\'Custom Service\'], { req: true })}\n    </div>\n    <div class="fa-svc-rows">\n      <span class="fa-field-label">Protocol<i class="fa-req">&#42;</i></span><span class="fa-field-label">Source Port</span>\n      <span class="fa-field-label">Destination Port<i class="fa-req">&#42;</i></span><span></span>\n      ${rows.map((r, i) => `\n        <obs-select data-svcr="${i}:proto" block options=\'${j(SVC_PROTOS)}\' value="${esc(r.proto)}"></obs-select>\n        <obs-input data-svcr="${i}:src" class="fa-pmfi" block placeholder="1-65535" value="${esc(r.src)}"></obs-input>\n        <obs-input data-svcr="${i}:dst" class="fa-pmfi" block placeholder="e.g. 443 or 8000-8080" value="${esc(r.dst)}"></obs-input>\n        <span class="fa-svc-act">\n          <obs-button variant="default" square data-svc-del="${i}" aria-label="Remove row"${rows.length < 2 ? \' disabled\' : \'\'}><obs-icon name="times" size="14"></obs-icon></obs-button>\n          ${i === rows.length - 1 ? \'<obs-button variant="default" square data-svc-add aria-label="Add row"><obs-icon name="plus" size="14"></obs-icon></obs-button>\' : \'\'}\n        </span>`).join(\'\')}\n    </div></div>`;\n}\nfunction bindSvcRows(root) {\n  const f = pmf; if (!f || f.cat !== \'service\') return;\n  const sync = () => { f.value = svcValueOf(f.svcRows); paintPmFoot(\'pmf\'); };\n  root.querySelectorAll(\'[data-svcr]\').forEach(el => {\n    const [i, k] = el.getAttribute(\'data-svcr\').split(\':\');\n    const put = e => { const v = detailOf(e); f.svcRows[+i][k] = String((v && typeof v === \'object\' ? (v.value ?? v.label) : v) ?? e.target.value ?? \'\'); sync(); };\n    el.addEventListener(\'change\', put); if (el.tagName === \'OBS-INPUT\') el.addEventListener(\'input\', put);\n  });\n  root.querySelectorAll(\'obs-button[data-svc-del]\').forEach(b => b.addEventListener(\'click\', () => {\n    const i = +b.getAttribute(\'data-svc-del\'); if (f.svcRows.length < 2 || !f.svcRows[i]) return;\n    f.svcRows.splice(i, 1); f.value = svcValueOf(f.svcRows); paintPmAdd(); }));\n  const add = root.querySelector(\'obs-button[data-svc-add]\');\n  if (add) add.addEventListener(\'click\', () => { if (pmf.__svcAddT && Date.now() - pmf.__svcAddT < 300) return;   /* obs-button fires twice */\n    pmf.__svcAddT = Date.now(); f.svcRows.push(svcRowBlank()); paintPmAdd(); });\n}\nfunction objectFormBody(ns, f) {\n  if (ns === \'pmf\' && f.cat === \'network\') return networkObjectBody(ns, f);\n  if (ns === \'pmf\' && f.cat === \'service\') return serviceObjectBody(ns, f);', 'svc body')
+    rep('  if (!keepType || !pmf.types.includes(pmf.type)) { pmf.type = pmf.types[0]; pmf.members = []; }', "  if (k === 'service') { pmf.type = 'Service'; pmf.stype = 'Custom Service'; pmf.members = []; if (!keepType || !pmf.svcRows) pmf.svcRows = [svcRowBlank()]; pmf.value = svcValueOf(pmf.svcRows); return; }\n  if (!keepType || !pmf.types.includes(pmf.type)) { pmf.type = pmf.types[0]; pmf.members = []; }", 'svc init')
+    rep("  bindPmForm(pmAddDrawer.querySelector('#pmfBody'), 'pmf', () => pmf, paintPmAdd, () => paintPmFoot('pmf'));", "  bindPmForm(pmAddDrawer.querySelector('#pmfBody'), 'pmf', () => pmf, paintPmAdd, () => paintPmFoot('pmf'));\n  bindSvcRows(pmAddDrawer.querySelector('#pmfBody'));", 'svc bind')
+    rep("  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim())", "  } else if (f.cat === 'service' && f.svcRows) {\n    if (f.svcRows.some(r => !String(r.dst).trim())) return 'Destination Port is required';\n  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim())", 'svc reason')
+    rep('      pmf = rule ? pmEditForm(rule) : pmBlank(pmf.kind, pmf.dev); paintPmAdd(); });', '      const cat = pmf.cat; pmf = rule ? pmEditForm(rule) : pmBlank(pmf.kind, pmf.dev); if (cat) pmfObjCat(cat); paintPmAdd(); });   /* Reset keeps the chosen object category */', 'svc reset keeps cat')
+    rep('.fa-pmo-seg { display: inline-block; }', '.fa-pmo-seg { display: inline-block; }\n.fa-svc-rows { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto; column-gap: 16px; row-gap: 12px;\n  align-items: center; margin-top: 20px; }\n.fa-svc-rows > .fa-field-label { color: var(--neutral-light); font-size: 14px; line-height: 18px; margin-bottom: -5px; }\n.fa-svc-act { display: inline-flex; gap: 8px; min-width: 84px; }', 'svc css')
+    rep("    const i = +b.getAttribute('data-svc-del'); if (f.svcRows.length < 2 || !f.svcRows[i]) return;", "    if (pmf.__svcAddT && Date.now() - pmf.__svcAddT < 300) return; pmf.__svcAddT = Date.now();   /* obs-button fires twice */\n    const i = +b.getAttribute('data-svc-del'); if (f.svcRows.length < 2 || !f.svcRows[i]) return;", 'svc del guard')
+    # Select Credential Profile drawer: no "* fields are mandatory" / reason line in the footer (2026-10-19)
+    rep('    <div class="ds-cred-foot">\n      <span class="fa-mandatory"><i class="fa-req">*</i> fields are mandatory</span>\n      ${reason ? `<span class="fa-dp-why"><obs-icon name="exclamation-circle" size="13"></obs-icon>&nbsp;${esc(reason)}</span>` : \'\'}\n      <span class="fa-spacer"></span>\n      <obs-button variant="default" id="caReset">', '    <div class="ds-cred-foot">\n      <span class="fa-spacer"></span>\n      <obs-button variant="default" id="caReset">', 'cred ask no foot note')
     # CSS: the old rules still match the hosts by class — neutralise the box they drew; obs-progress draws its own track
     k = t.index('</style>')
     t = t[:k] + '\n' + MARK2 + """
@@ -1247,6 +1445,10 @@ section.fa-card.fa-dev-head { box-sizing: border-box; min-height: 61px; display:
 .fa-req + .fa-mandatory, .fa-mandatory > .fa-req { margin: 0 2px 0 0; }
 #pmfFoot, #pmoFoot { border-top: 0; }
 .fa-fwset-tabs { display: block; margin-bottom: 16px; }
+/* Firewall Inventory bulk bar (owner, 19 Oct 2026): the DS bulk pill's divider between the count and the actions
+   (the registry draws one, the vendored obs-toolbar does not), and the actions' glyph spaced from its label */
+.fa-bulk-div { align-self: stretch; width: 1px; margin: 2px 4px 2px 0; background: var(--border-color); }
+obs-button[data-fibulk] obs-icon { margin-right: 6px; }
 /* Compliance top row, like Flow's: the KPI card and the standards widget share one height */
 .fa-grid.cols-3.fa-cmp-top { align-items: stretch; }
 .fa-cmp-top > obs-kpi-card.fa-cmp-kpi { height: 100%; --kpi-card-min-height: 0; }
@@ -2350,5 +2552,1180 @@ assert 'obs-stat-card' in nb, 'DS build has no obs-stat-card'
 t = t[:bi] + nb + '\n' + t[be:]
 
 t = pass2(t)
+# Service Object port rows -> Special Days pattern (21 Oct 2026): rows inside a filled panel, a red (x) per row,
+# (+) only after the LAST row's (x); a single row shows (+) alone (nothing to remove).
+def svc_rows_patch(t):
+    o = """        <span class="fa-svc-act">
+          <obs-button variant="default" square data-svc-del="${i}" aria-label="Remove row"${rows.length < 2 ? ' disabled' : ''}><obs-icon name="times" size="14"></obs-icon></obs-button>
+          ${i === rows.length - 1 ? '<obs-button variant="default" square data-svc-add aria-label="Add row"><obs-icon name="plus" size="14"></obs-icon></obs-button>' : ''}
+        </span>"""
+    n = """        <span class="fa-svc-act">
+          ${rows.length > 1 ? `<button type="button" class="fa-svc-ib del" data-svc-del="${i}" aria-label="Remove row" data-tip="Remove row"><obs-icon name="times-circle" size="18"></obs-icon></button>` : ''}
+          ${i === rows.length - 1 ? '<button type="button" class="fa-svc-ib add" data-svc-add aria-label="Add row" data-tip="Add row"><obs-icon name="plus-circle" size="18"></obs-icon></button>' : ''}
+        </span>"""
+    assert t.count(o) == 1, ('svc act', t.count(o)); t = t.replace(o, n)
+    for a, b in [("root.querySelectorAll('obs-button[data-svc-del]')", "root.querySelectorAll('[data-svc-del]')"),
+                 ("root.querySelector('obs-button[data-svc-add]')", "root.querySelector('[data-svc-add]')")]:
+        assert t.count(a) == 1, a; t = t.replace(a, b)
+    o = ".fa-svc-rows { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) auto; column-gap: 16px; row-gap: 12px;\n  align-items: center; margin-top: 20px; }"
+    n = """.fa-svc-rows { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 56px; column-gap: 16px; row-gap: 12px;
+  align-items: center; margin-top: 20px; padding: 16px; border-radius: 4px;
+  background: color-mix(in srgb, var(--page-text-color) 5%, transparent); }"""
+    assert t.count(o) == 1, 'svc css'; t = t.replace(o, n)
+    o = ".fa-svc-act { display: inline-flex; gap: 8px; min-width: 84px; }"
+    n = """.fa-svc-act { display: inline-flex; align-items: center; gap: 8px; }
+.fa-svc-ib { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; cursor: pointer; }
+.fa-svc-ib.del { color: var(--secondary-red); }
+.fa-svc-ib.add { color: var(--page-text-color); }
+.fa-svc-ib:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+.fa-svc-ib:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }"""
+    assert t.count(o) == 1, 'svc act css'; t = t.replace(o, n)
+    return t
+t = svc_rows_patch(t)
+# Service Object Type gains "Service Group" (21 Oct 2026, FortiGate's Type dropdown as the reference): picking it swaps the
+# Protocol/Port rows for a Members List of this firewall's services, stored as the grid's 'Service group' kind.
+def svc_group_patch(t):
+    rp = lambda o, n, l: (t.count(o) == 1 or (_ for _ in ()).throw(AssertionError((l, t.count(o))))) and t.replace(o, n)
+    t = rp("      ${pmSelect(ns, f, 'stype', 'Type', ['Custom Service'], { req: true })}\n    </div>\n    <div class=\"fa-svc-rows\">",
+           "      ${pmSelect(ns, f, 'stype', 'Type', SVC_TYPES, { req: true })}\n      ${f.stype === 'Service Group'\n        ? pmSelect(ns, f, 'members', 'Members List', pmChoices(f.dev).svcs.filter(s => s !== f.name.trim()).sort(), { req: true, multi: true, ph: 'Select Members' })\n        : ''}\n    </div>\n    ${f.stype === 'Service Group' ? '' : `<div class=\"fa-svc-rows\">", 'svc type')
+    t = rp("          ${i === rows.length - 1 ? '<button type=\"button\" class=\"fa-svc-ib add\" data-svc-add aria-label=\"Add row\" data-tip=\"Add row\"><obs-icon name=\"plus-circle\" size=\"18\"></obs-icon></button>' : ''}\n        </span>`).join('')}\n    </div></div>`;",
+           "          ${i === rows.length - 1 ? '<button type=\"button\" class=\"fa-svc-ib add\" data-svc-add aria-label=\"Add row\" data-tip=\"Add row\"><obs-icon name=\"plus-circle\" size=\"18\"></obs-icon></button>' : ''}\n        </span>`).join('')}\n    </div>`}</div>`;", 'svc tail')
+    t = rp("const SVC_PROTOS = ['TCP', 'UDP', 'SCTP'];", "const SVC_PROTOS = ['TCP', 'UDP', 'SCTP'];\nconst SVC_TYPES = ['Custom Service', 'Service Group'];", 'svc types')
+    t = rp("const PM_SHAPE = { nat: 1, natAddr: 1, type: 1, ntype: 1 };", "const PM_SHAPE = { nat: 1, natAddr: 1, type: 1, ntype: 1, stype: 1 };", 'shape')
+    t = rp("      if (k === 'startIp' || k === 'endIp')",
+           "      if (k === 'stype') { f.type = f.stype === 'Service Group' ? 'Service group' : 'Service'; f.members = []; f.value = f.stype === 'Service Group' ? '' : svcValueOf(f.svcRows || []); }\n      if (k === 'startIp' || k === 'endIp')", 'stype change')
+    t = rp("  const sync = () => { f.value = svcValueOf(f.svcRows); paintPmFoot('pmf'); };",
+           "  if (f.stype === 'Service Group') return;\n  const sync = () => { f.value = svcValueOf(f.svcRows); paintPmFoot('pmf'); };", 'bind guard')
+    return t
+t = svc_group_patch(t)
+# Service Group's Members List = FortiGate's shape (21 Oct 2026): a list box of the chosen members, each with a red (x),
+# and a single "Select Members" dropdown under it that adds the picked service and clears itself.
+def svc_glist_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("? pmSelect(ns, f, 'members', 'Members List', pmChoices(f.dev).svcs.filter(s => s !== f.name.trim()).sort(), { req: true, multi: true, ph: 'Select Members' })",
+           "? svcGroupField(f)", 'glist field')
+    t = rp("function bindSvcRows(root) {",
+           """function svcGroupField(f) {
+  const avail = pmChoices(f.dev).svcs.filter(s => s !== f.name.trim() && !f.members.includes(s)).sort();
+  const list = f.members.length
+    ? f.members.map(m => `<div class="fa-svcg-item"><span>${esc(m)}</span><button type="button" class="fa-svc-ib del" data-svcg-del="${esc(m)}" aria-label="Remove ${esc(m)}" data-tip="Remove"><obs-icon name="times-circle" size="16"></obs-icon></button></div>`).join('')
+    : '';
+  return `<div class="fa-field fa-svcg"><span class="fa-field-label">Members List<i class="fa-req">&#42;</i></span>
+    <div class="fa-svcg-list">${list}</div>
+    <obs-select data-svcg-add block searchable="true" placeholder="Select Members" options='${j(avail)}' value=""></obs-select></div>`;
+}
+function bindSvcGroup(root, f) {
+  const sel = root.querySelector('[data-svcg-add]');
+  if (sel) sel.addEventListener('change', e => {
+    const v = detailOf(e), s = String((v && typeof v === 'object' ? (v.value ?? v.label) : v) ?? '').trim();
+    if (!s || f.members.includes(s)) return; f.members.push(s); paintPmAdd(); });
+  root.querySelectorAll('[data-svcg-del]').forEach(b => b.addEventListener('click', () => {
+    f.members = f.members.filter(m => m !== b.getAttribute('data-svcg-del')); paintPmAdd(); }));
+}
+function bindSvcRows(root) {""", 'glist fn')
+    t = rp("  if (f.stype === 'Service Group') return;\n", "  if (f.stype === 'Service Group') return bindSvcGroup(root, f);\n", 'glist bind')
+    t = rp(".fa-svc-ib.del { color: var(--secondary-red); }", """.fa-svc-ib.del { color: var(--secondary-red); }
+.fa-svcg-list { max-height: 200px; overflow-y: auto; }
+.fa-svcg-list:not(:empty) { margin-bottom: 8px; }
+.fa-svcg-item { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 4px 0 8px; border-radius: 4px; }
+.fa-svcg-item:hover { background: color-mix(in srgb, var(--page-text-color) 5%, transparent); }
+.fa-svcg-item > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fa-svcg-empty { display: grid; place-items: center; min-height: 110px; color: var(--neutral-light); }""", 'glist css')
+    return t
+t = svc_glist_patch(t)
+# Objects grid speaks the Add Object form's words (21 Oct 2026): an Object Category column (Network / Service Object) and
+# Object Type as the form's sub-type (Address Group · IP Range · Subnet · FQDN · Custom Service · Service Group), both
+# filterable. Derived from the stored kind + value, so the seed data needs no change.
+def obj_cat_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("function policyObjects(dev, { grid, table }) {", """const OBJ_CATS = ['Network Object', 'Service Object'];
+const OBJ_SUBTYPES = ['Address Group', 'IP Range', 'Subnet', 'FQDN', 'Custom Service', 'Service Group'];
+const objCategory = o => /^Service/.test(o.kind) ? 'Service Object' : 'Network Object';
+function objSubType(o) {
+  if (o.ntype) return o.ntype;
+  if (o.kind === 'Address group') return 'Address Group';
+  if (o.kind === 'Service group') return 'Service Group';
+  if (o.kind === 'Service') return 'Custom Service';
+  const v = String(o.value || '').trim();
+  if (/^\\d{1,3}(\\.\\d{1,3}){3}\\s*-\\s*\\d/.test(v)) return 'IP Range';
+  if (/[a-z]/i.test(v) && !v.includes('/')) return 'FQDN';
+  return 'Subnet';
+}
+function policyObjects(dev, { grid, table }) {""", 'helpers')
+    t = rp("    { key: 'kind', title: 'Object Type', width: 150 },\n    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 140 }]),",
+           "    { key: 'cat', title: 'Object Category', width: 150 },\n    { key: 'kind', title: 'Object Type', width: 150 },\n    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 140 }]),", 'cols')
+    t = rp("    id: o.id, name: o.name, kind: o.kind, device: o.device, definition: objDefinition(o),",
+           "    id: o.id, name: o.name, cat: objCategory(o), kind: objSubType(o), device: o.device, definition: objDefinition(o),", 'rows')
+    t = rp("    { key: 'kind', label: 'Object Type', type: 'enum', values: ['Address', 'Address group', 'Service', 'Service group'] },\n    TAG_FIELD",
+           "    { key: 'cat', label: 'Object Category', type: 'enum', values: OBJ_CATS },\n    { key: 'kind', label: 'Object Type', type: 'enum', values: OBJ_SUBTYPES },\n    TAG_FIELD", 'fields')
+    t = rp("    ['Object Type', o.kind], ['Associated Policies', objAssocRules(o).length],",
+           "    ['Object Category', objCategory(o)], ['Object Type', objSubType(o)], ['Associated Policies', objAssocRules(o).length],", 'view')
+    t = rp("  const kind = name === 'any' ? 'Address' : (o ? o.kind : '—');", "  const kind = name === 'any' ? 'Subnet' : (o ? objSubType(o) : '—');", 'detail')
+    return t
+t = obj_cat_patch(t)
+# Add Object gains a Device Name field (21 Oct 2026): the firewall the object is created on, from the inventory's device
+# list, FIRST on its own row (picked before anything else: it decides which members and services the form offers). Changing it re-seeds that firewall's members and services but keeps the
+# object's name, description, category and type.
+def obj_dev_patch(t):
+    nm = "      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}"
+    for fn in ("function networkObjectBody(ns, f) {", "function serviceObjectBody(ns, f) {"):
+        i = t.index(fn); o = '<div class="fa-pmf-form"><div class="fa-grid cols-2">'; j = t.index(o, i)
+        t = t[:j] + '<div class="fa-pmf-form"><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}</div><div class="fa-grid cols-2">' + t[j + len(o):]
+    o = "function networkObjectBody(ns, f) {"
+    assert t.count(o) == 1
+    t = t.replace(o, "const pmoDevField = (ns, f) => pmSelect(ns, f, 'dev', 'Device Name', D.devices.map(x => x.name), { req: true, ph: 'Select Device' });\n" + o)
+    o = "      if (k === 'dev') { const keep = { name: f.name, desc: f.desc }; Object.assign(f, pmBlank(f.kind, f.dev, f.types), keep); }"
+    assert t.count(o) == 1, 'dev handler'
+    t = t.replace(o, """      if (k === 'dev') { const keep = { name: f.name, desc: f.desc }, cat = f.cat, nt = f.ntype, st = f.stype;
+        Object.assign(f, pmBlank(f.kind, f.dev, f.types), keep);
+        if (cat && f === pmf) { pmfObjCat(cat); if (cat === 'network' && nt) { f.ntype = nt; f.type = nt === 'Address Group' ? 'Address group' : 'Address'; }
+          if (cat === 'service' && st === 'Service Group') { f.stype = st; f.type = 'Service group'; f.value = ''; } } }""")
+    return t
+t = obj_dev_patch(t)
+# Object Name + Description lead the form, Device Name follows on its own row (21 Oct 2026, owner).
+def obj_dev_order_patch(t):
+    o = """<div class="fa-pmf-form"><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}</div><div class="fa-grid cols-2">
+      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${pmInput(ns, f, 'desc', 'Description')}
+"""
+    n = """<div class="fa-pmf-form"><div class="fa-grid cols-2">
+      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}
+      ${pmInput(ns, f, 'desc', 'Description')}
+    </div><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}</div><div class="fa-grid cols-2">
+"""
+    assert t.count(o) == 2, ('dev order', t.count(o))
+    return t.replace(o, n)
+t = obj_dev_order_patch(t)
+# Objects grid says Device Name where the Add Object form does (21 Oct 2026): the column, its quick filter, and the
+# View Object drawer. Other grids keep "Firewall".
+def obj_devcol_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("    { key: 'kind', title: 'Object Type', width: 150 },\n    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 140 }]),",
+           "    { key: 'kind', title: 'Object Type', width: 150 },\n    ...(dev ? [] : [{ key: 'device', title: 'Device Name', width: 140 }]),", 'col')
+    t = rp("  OBJ_GRIDS[grid] = { table, cols, fields: [\n    ...(dev ? [] : [PM_FW_FIELD()]),",
+           "  OBJ_GRIDS[grid] = { table, cols, fields: [\n    ...(dev ? [] : [Object.assign(PM_FW_FIELD(), { label: 'Device Name' })]),", 'field')
+    t = rp("    ['Firewall Name', o.device], ['Mode', pmMode(d) || 'Not collected'],", "    ['Device Name', o.device], ['Mode', pmMode(d) || 'Not collected'],", 'view')
+    return t
+t = obj_devcol_patch(t)
+# Objects grid drops the Associated Policies column (21 Oct 2026, owner). The count is still in View Object, and the
+# Tag column's Assigned / Unassigned says the same thing at a glance.
+def obj_noassoc_patch(t):
+    o = "    /* the COUNT, a link to the rules (owner, 2026-09-17) */\n    { key: 'assoc', title: 'Associated Policies', width: 170, type: 'link' },\n"
+    assert t.count(o) == 1, ('assoc col', t.count(o))
+    return t.replace(o, '')
+t = obj_noassoc_patch(t)
+# Objects grid column order (21 Oct 2026, owner): Object Name · Device Name · Object Category · Object Type · the rest.
+def obj_order_patch(t):
+    o = """    { key: 'cat', title: 'Object Category', width: 150 },
+    { key: 'kind', title: 'Object Type', width: 150 },
+    ...(dev ? [] : [{ key: 'device', title: 'Device Name', width: 140 }]),
+"""
+    n = """    ...(dev ? [] : [{ key: 'device', title: 'Device Name', width: 140 }]),
+    { key: 'cat', title: 'Object Category', width: 150 },
+    { key: 'kind', title: 'Object Type', width: 150 },
+"""
+    assert t.count(o) == 1, ('order', t.count(o))
+    return t.replace(o, n)
+t = obj_order_patch(t)
+# Device Name and Object Category share a row (21 Oct 2026, owner): Name | Description, Device Name | Object Category,
+# Type | its fields.
+def obj_dev_pair_patch(t):
+    o = '<div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}</div><div class="fa-grid cols-2">'
+    assert t.count(o) == 2, ('dev pair', t.count(o))
+    return t.replace(o, '<div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}')
+t = obj_dev_pair_patch(t)
+# Objects grid: Details is titled IP and follows Device Name (21 Oct 2026, owner).
+def obj_ip_patch(t):
+    o = """    ...(dev ? [] : [{ key: 'device', title: 'Device Name', width: 140 }]),
+    { key: 'cat', title: 'Object Category', width: 150 },
+    { key: 'kind', title: 'Object Type', width: 150 },
+    { key: 'definition', title: 'Details', width: 320 },
+"""
+    n = """    ...(dev ? [] : [{ key: 'device', title: 'Device Name', width: 140 }]),
+    { key: 'definition', title: 'IP', width: 320 },
+    { key: 'cat', title: 'Object Category', width: 150 },
+    { key: 'kind', title: 'Object Type', width: 150 },
+"""
+    assert t.count(o) == 1, ('ip', t.count(o))
+    return t.replace(o, n)
+t = obj_ip_patch(t)
+# Policies overview = the Objects overview's joined obs-stat-card (21 Oct 2026, owner): With Findings removed, Deny added
+# as its own column. Allow / Deny carry a share bar like Assigned / Unassigned; counts, not %.
+def pol_ov_patch(t):
+    i = t.index("function pmRulesOverview(rules, dev) {")
+    a = t.index("  const kpi = o => `<obs-kpi-card class=\"fa-ov-kpi fa-pm-kpi\"", i)
+    b = t.index("  ].join('')}</div>`;\n}\n", a) + len("  ].join('')}</div>`;\n}\n")
+    n = """  const of = v => nf(v) + ' of ' + nf(n) + ' policies';
+  const deny = n - allow;
+  const items = [
+    { label: 'Total Policies', value: nf(n), caption: new Set(rules.map(r => r.device)).size + ' firewalls' },
+    { label: 'Allow', value: nf(allow), caption: of(allow), percent: n ? allow / n * 100 : 0, barSeverity: 'clear' },
+    { label: 'Deny', value: nf(deny), caption: of(deny), percent: n ? deny / n * 100 : 0, barSeverity: 'critical' },
+    { label: 'Unused', value: nf(unused), caption: nf(used) + ' used', ...(unused ? { valueSeverity: 'warning' } : {}) },
+    { label: 'Unassigned', value: nf(unasg), caption: of(unasg), ...(unasg ? { valueSeverity: 'warning' } : {}) },
+    { label: 'Pending Approval', value: nf(pendPol), caption: nf(pend.length) + ' changes in all' }
+  ];
+  return `<obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>`;
+}
+"""
+    t = t[:a] + n + t[b:]
+    o = "  const findings = rules.filter(r => r.finding && r.finding !== 'clean').length;\n"
+    assert t.count(o) == 1; t = t.replace(o, '')
+    return t
+t = pol_ov_patch(t)
+# Allow / Deny are ONE cell (21 Oct 2026, owner — Compliance's "Rules · 21 passed | 64 failed" as the reference):
+# obs-stat-card's own pair cell (passed / failed), its two words re-labelled allow / deny via data-pair-words, since
+# the component hardcodes them. Caption: "of N policies".
+def pol_pair_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""    { label: 'Allow', value: nf(allow), caption: of(allow), percent: n ? allow / n * 100 : 0, barSeverity: 'clear' },
+    { label: 'Deny', value: nf(deny), caption: of(deny), percent: n ? deny / n * 100 : 0, barSeverity: 'critical' },
+""", """    { label: 'Policy Action', passed: nf(allow), failed: nf(deny), caption: 'of ' + nf(n) + ' policies' },
+""", 'items')
+    i = t.index("function pmRulesOverview(rules, dev) {")
+    o = """  return `<obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>`;
+}
+"""
+    k = t.index(o, i)
+    t = t[:k] + """  return `<obs-stat-card class="fa-pm-stats" data-pair-words="allow,deny" items='${j(items)}'></obs-stat-card>`;
+}
+/* obs-stat-card prints its pair cell as "N passed | N failed" with the words baked in; a card carrying
+   data-pair-words="a,b" has them re-labelled once its shadow root has rendered, and again on any re-render. */
+(function faPairWords() {
+  const fix = c => { const r = c.shadowRoot; if (!r) return; const w = (c.getAttribute('data-pair-words') || '').split(',');
+    r.querySelectorAll('.row.pair').forEach(row => { const s = row.querySelectorAll('.w');
+      s.forEach((el, i) => { if (w[i] && el.textContent !== w[i]) el.textContent = w[i]; }); });
+    if (!c.__pw) { c.__pw = new MutationObserver(() => fix(c)); c.__pw.observe(r, { childList: true, subtree: true, characterData: true }); } };
+  const scan = () => document.querySelectorAll('obs-stat-card[data-pair-words]').forEach(fix);
+  new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+  customElements.whenDefined('obs-stat-card').then(() => setTimeout(scan, 0));
+})();
+""" + t[k + len(o):]
+    return t
+t = pol_pair_patch(t)
+# Add / Edit Policy: no Policy ID field (21 Oct 2026, owner). The ID is still assigned — pmBlank takes the firewall's next
+# free one (and again when the firewall changes), so the grid, the approval summary and the push keep their number.
+def pol_noid_patch(t):
+    o = "      ${f.edit ? field('Policy ID', pmRo(f.seq)) : pmInput(ns, f, 'seq', 'Policy ID', { req: true, type: 'number' })}\n"
+    assert t.count(o) == 1, ('policy id field', t.count(o))
+    return t.replace(o, '')
+t = pol_noid_patch(t)
+# Service Group Members List picks SEVERAL at once (21 Oct 2026, owner): the dropdown is obs-select `multiple` with
+# a tick per service and Select all; it stays open while you tick, and only the member rows above it repaint.
+def svc_multi_patch(t):
+    i = t.index("function svcGroupField(f) {"); k = t.index("function bindSvcRows(root) {", i)
+    n = r"""const svcgListHTML = f => f.members.map(m => `<div class="fa-svcg-item"><span>${esc(m)}</span><button type="button" class="fa-svc-ib del" data-svcg-del="${esc(m)}" aria-label="Remove ${esc(m)}" data-tip="Remove"><obs-icon name="times-circle" size="16"></obs-icon></button></div>`).join('');
+function svcGroupField(f) {
+  const avail = pmChoices(f.dev).svcs.filter(s => s !== f.name.trim()).sort();
+  return `<div class="fa-field fa-svcg"><span class="fa-field-label">Members List<i class="fa-req">&#42;</i></span>
+    <div class="fa-svcg-list">${svcgListHTML(f)}</div>
+    <obs-select data-svcg-add block multiple allow-select-all searchable="true" max-items="2" placeholder="Select Members" options='${j(avail)}' value="${esc(f.members.join(','))}"></obs-select></div>`;
+}
+function bindSvcGroup(root, f) {
+  const sel = root.querySelector('[data-svcg-add]'), list = root.querySelector('.fa-svcg-list');
+  const paint = () => { if (list) { list.innerHTML = svcgListHTML(f); bindDel(); } paintPmFoot('pmf'); };
+  const bindDel = () => list && list.querySelectorAll('[data-svcg-del]').forEach(b => b.addEventListener('click', () => {
+    f.members = f.members.filter(m => m !== b.getAttribute('data-svcg-del'));
+    if (sel) sel.value = f.members.join(','); paint(); }));
+  if (sel) sel.addEventListener('change', e => {
+    const v = detailOf(e), arr = Array.isArray(v) ? v : Array.isArray(e.detail) ? e.detail : String(v || '').split(',');
+    f.members = arr.map(x => (typeof x === 'string' ? x : (x && (x.value ?? x.label)) || '').trim()).filter(Boolean); paint(); });
+  bindDel();
+}
+"""
+    return t[:i] + n + t[k:]
+t = svc_multi_patch(t)
+# Members List lines up with Type beside it (21 Oct 2026, owner): an EMPTY member list is a flex child of .fa-field,
+# so it still took the field's 7px gap and pushed the dropdown 7px below Type's. It is out of flow while empty.
+def svcg_align_patch(t):
+    o = ".fa-svcg-list:not(:empty) { margin-bottom: 8px; }"
+    assert t.count(o) == 1, ('svcg align', t.count(o))
+    return t.replace(o, o + "\n.fa-svcg-list:empty { display: none; }")
+t = svcg_align_patch(t)
+# The picked members list sits UNDER the dropdown (21 Oct 2026): the dropdown is multi-select and stays open while you
+# tick, so rows growing above it pushed the open list down under the pointer; below, the dropdown stays level with Type.
+def svcg_below_patch(t):
+    o = """    <div class="fa-svcg-list">${svcgListHTML(f)}</div>
+    <obs-select data-svcg-add block multiple allow-select-all searchable="true" max-items="2" placeholder="Select Members" options='${j(avail)}' value="${esc(f.members.join(','))}"></obs-select></div>`;"""
+    n = """    <obs-select data-svcg-add block multiple allow-select-all searchable="true" max-items="2" placeholder="Select Members" options='${j(avail)}' value="${esc(f.members.join(','))}"></obs-select>
+    <div class="fa-svcg-list">${svcgListHTML(f)}</div></div>`;"""
+    assert t.count(o) == 1, ('svcg below', t.count(o)); t = t.replace(o, n)
+    o = ".fa-svcg-list:not(:empty) { margin-bottom: 8px; }"
+    assert t.count(o) == 1; return t.replace(o, ".fa-svcg-list:not(:empty) { margin-top: 1px; }")
+t = svcg_below_patch(t)
+# Policy Action (the allow | deny pair) is the overview's LAST column (21 Oct 2026, owner): it is the one cell shaped
+# differently from the rest, so it closes the row instead of breaking it up.
+def pol_act_last_patch(t):
+    o = "    { label: 'Policy Action', passed: nf(allow), failed: nf(deny), caption: 'of ' + nf(n) + ' policies' },\n"
+    assert t.count(o) == 1, ('pol act', t.count(o)); t = t.replace(o, '')
+    o2 = "    { label: 'Pending Approval', value: nf(pendPol), caption: nf(pend.length) + ' changes in all' }\n  ];\n  return `<obs-stat-card class=\"fa-pm-stats\" data-pair-words"
+    assert t.count(o2) == 1, ('pol pend', t.count(o2))
+    return t.replace(o2, o2.replace(" }\n  ];", " },\n" + o.rstrip(',\n') + "\n  ];"))
+t = pol_act_last_patch(t)
+# Policy Action is its OWN card beside the joined overview (21 Oct 2026, owner), with no "of N policies" caption.
+# Both cards share one row; the pair card takes one cell's width so it reads as a sibling, not a sixth column.
+def pol_act_sep_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""    { label: 'Pending Approval', value: nf(pendPol), caption: nf(pend.length) + ' changes in all' },
+    { label: 'Policy Action', passed: nf(allow), failed: nf(deny), caption: 'of ' + nf(n) + ' policies' }
+  ];
+  return `<obs-stat-card class="fa-pm-stats" data-pair-words="allow,deny" items='${j(items)}'></obs-stat-card>`;""",
+           """    { label: 'Pending Approval', value: nf(pendPol), caption: nf(pend.length) + ' changes in all' }
+  ];
+  const act = [{ label: 'Policy Action', passed: nf(allow), failed: nf(deny) }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats fa-pm-act" data-pair-words="allow,deny" items='${j(act)}'></obs-stat-card></div>`;""", 'sep')
+    t = rp("obs-stat-card.fa-pm-stats { display: block; margin-bottom: var(--ds-padding-md, 16px); }",
+           """obs-stat-card.fa-pm-stats { display: block; margin-bottom: var(--ds-padding-md, 16px); }
+.fa-pm-ovrow { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 1fr); gap: var(--ds-padding-md, 16px);
+  margin-bottom: var(--ds-padding-md, 16px); }
+.fa-pm-ovrow > obs-stat-card.fa-pm-stats { margin-bottom: 0; height: 100%; }""", 'css')
+    return t
+t = pol_act_sep_patch(t)
+# Policy Action card gets the overview's bottom line (21 Oct 2026, owner): one split bar under the pair — the allow share
+# in green, the rest (deny) in red — so it closes on the same line as the cards beside it. obs-stat-card's own bar
+# (percent + barSeverity 'clear'); the deny half is its TRACK (obs-progress reads --progress-bg), re-pointed to --severity-critical on this card only.
+def pol_act_bar_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("  const act = [{ label: 'Policy Action', passed: nf(allow), failed: nf(deny) }];",
+           "  const act = [{ label: 'Policy Action', passed: nf(allow), failed: nf(deny), percent: n ? allow / n * 100 : 0, barSeverity: 'clear' }];", 'bar')
+    t = rp(".fa-pm-ovrow > obs-stat-card.fa-pm-stats { margin-bottom: 0; height: 100%; }",
+           ".fa-pm-ovrow > obs-stat-card.fa-pm-stats { margin-bottom: 0; height: 100%; }", 'track')
+    # the card's own .bar sets --progress-bg inside its shadow root, so the red track is set there, by the attachShadow hook
+    t = rp(":host(.fa-cmp-stats) .cell:first-child{padding-left:0}');r.adoptedStyleSheets", ":host(.fa-cmp-stats) .cell:first-child{padding-left:0}:host(.fa-pm-act) .bar{--progress-bg:var(--severity-critical)}');r.adoptedStyleSheets", 'track red')
+    return t
+t = pol_act_bar_patch(t)
+# Add / Edit Policy: Source · Destination · Services are titled sections (21 Oct 2026, owner — APM's Application
+# Registration form as the reference): a hairline, a semibold title, one line saying what the section decides, then
+# its fields. The old pmHeading rows were hidden in this drawer; these are their own class.
+def pol_sec_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("const pmHeading = (text, extra = '') =>",
+           "const pmSecHead = (title, desc) => `<div class=\"fa-pmsh\"><span class=\"fa-pmsh-t\">${esc(title)}</span><span class=\"fa-pmsh-d\">${esc(desc)}</span></div>`;\nconst pmHeading = (text, extra = '') =>", 'fn')
+    t = rp("    ${pmHeading('Source')}\n", "    ${pmSecHead('Source', 'Where the traffic comes from: the source addresses and the interface it arrives on.')}\n", 'src')
+    t = rp("    ${pmHeading('Destination')}\n", "    ${pmSecHead('Destination', 'Where the traffic is going: the destination addresses and the interface it leaves by.')}\n", 'dst')
+    t = rp("    ${pmHeading('Services')}\n", "    ${pmSecHead('Services', 'The protocols and ports this policy matches. Leave it as any to match all services.')}\n", 'svc')
+    t = rp("#pmAddDrawer .fa-pmf-form .fa-pmf-sec { display: none; }",
+           """#pmAddDrawer .fa-pmf-form .fa-pmf-sec { display: none; }
+#pmAddDrawer .fa-pmsh { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent); }
+#pmAddDrawer .fa-pmsh-t { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--page-text-color); }
+#pmAddDrawer .fa-pmsh-d { font-size: 12.8px; line-height: 18px; color: var(--neutral-light); }""", 'css')
+    return t
+t = pol_sec_patch(t)
+# Add Policy's "Add" links open the SAME Add Object form (21 Oct 2026, owner): the stacked panel renders the Network /
+# Service object form (Object Name · Description · Device Name · Object Category · Type · its fields) instead of the
+# old generic one. Source / Destination open it on Network Object, Services on Service Object. Device Name and Object
+# Category are shown read-only there: the object belongs to the policy's firewall, and the list it is added to decides
+# whether it is an address or a service.
+def stack_form_patch(t):
+    def rp(o, n, l, c=1):
+        assert t.count(o) == c, (l, t.count(o)); return t.replace(o, n)
+    # objCatInit(f, k) — pmfObjCat's body for any form
+    i = t.index("function pmfObjCat(k, keepType) {"); j = t.index("\n}\n", i) + 3
+    body = t[i:j].replace("function pmfObjCat(k, keepType) {", "function objCatInit(f, k, keepType) {").replace("pmf.", "f.")
+    t = t[:i] + body + "function pmfObjCat(k, keepType) { return objCatInit(pmf, k, keepType); }\n" + t[j:]
+    # read-only Category / Device Name in the stacked panel
+    t = rp("const pmoCatField = () => `<div class=\"fa-pmo-segf\">",
+           "const pmoCatField = (ns, f) => ns === 'pmo'\n  ? `<div class=\"fa-pmo-segf\">${field('Object Category', `<obs-radio as-button disabled class=\"fa-pmo-seg\" value=\"${f.cat}\" options='${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}'></obs-radio>`)}</div>`\n  : `<div class=\"fa-pmo-segf\">", 'cat field')
+    t = rp("      ${pmoCatField()}\n", "      ${pmoCatField(ns, f)}\n", 'cat calls', 2)
+    t = rp("const pmoDevField = (ns, f) => pmSelect(", "const pmoDevField = (ns, f) => ns === 'pmo'\n  ? field('Device Name', `<obs-input type=\"text\" block disabled value=\"${esc(f.dev)}\"></obs-input>`, null, true)\n  : pmSelect(", 'dev field')
+    t = rp("  if (ns === 'pmf' && f.cat === 'network') return networkObjectBody(ns, f);\n  if (ns === 'pmf' && f.cat === 'service') return serviceObjectBody(ns, f);",
+           "  if (f.cat === 'network') return networkObjectBody(ns, f);\n  if (f.cat === 'service') return serviceObjectBody(ns, f);", 'body')
+    # bindSvcRows / bindSvcGroup for either form
+    i = t.index("function bindSvcGroup(root, f) {"); j = t.index("function objectFormBody(ns, f) {", i)
+    seg = t[i:j]
+    seg = seg.replace("function bindSvcGroup(root, f) {", "function bindSvcGroup(root, f, ns = 'pmf') {")
+    seg = seg.replace("function bindSvcRows(root) {\n  const f = pmf; if (!f || f.cat !== 'service') return;\n  if (f.stype === 'Service Group') return bindSvcGroup(root, f);",
+                      "function bindSvcRows(root, f = pmf, repaint = paintPmAdd, ns = 'pmf') {\n  if (!root || !f || f.cat !== 'service') return;\n  if (f.stype === 'Service Group') return bindSvcGroup(root, f, ns);")
+    seg = seg.replace("paintPmFoot('pmf')", "paintPmFoot(ns)").replace("paintPmAdd();", "repaint();").replace("pmf.__svcAddT", "f.__svcAddT")
+    assert "repaint();" in seg and "bindSvcGroup(root, f, ns)" in seg
+    t = t[:i] + seg + t[j:]
+    # the stack's form starts on its family and binds its rows
+    t = rp("  pmStack = { from, f: pmBlank('object', pmf.dev, STACK_FROM[from].types) };",
+           "  pmStack = { from, f: pmStackForm(pmf.dev, from) };", 'open')
+    t = rp("{ from: r.from, f: pmBlank('object', d.name, STACK_FROM[r.from].types) }", "{ from: r.from, f: pmStackForm(d.name, r.from) }", 'route')
+    t = rp("function openPmStack(from) {",
+           "const pmStackForm = (dev, from) => { const f = pmBlank('object', dev, STACK_FROM[from].types); objCatInit(f, from === 'services' ? 'service' : 'network'); return f; };\nfunction openPmStack(from) {", 'helper')
+    t = rp("  bindPmForm(host.querySelector('#pmoBody'), 'pmo', () => pmStack && pmStack.f, paintPmStack, () => paintPmFoot('pmo'));",
+           "  bindPmForm(host.querySelector('#pmoBody'), 'pmo', () => pmStack && pmStack.f, paintPmStack, () => paintPmFoot('pmo'));\n  bindSvcRows(host.querySelector('#pmoBody'), pmStack.f, paintPmStack, 'pmo');", 'bind')
+    # Reset in the stack keeps the family
+    t = rp("if (r) r.addEventListener('click', () => { pmStack.f = pmBlank('object', pmStack.f.dev, pmStack.f.types); paintPmStack(); });",
+           "if (r) r.addEventListener('click', () => { pmStack.f = pmStackForm(pmStack.f.dev, pmStack.from); paintPmStack(); });", 'reset')
+    return t
+t = stack_form_patch(t)
+# NAT is a three-way choice (21 Oct 2026, owner — FortiGate's No NAT · Enable NAT · Use Central NAT Table, drawn as the
+# product's segmented control like Config File | CLI). Default No NAT. Enable NAT keeps the Translated Address rows;
+# f.nat stays the boolean the rest of the flow reads (summary, record, push), true only for Enable NAT.
+def nat_mode_patch(t):
+    def rp(o, n, l, c=1):
+        assert t.count(o) == c, (l, t.count(o)); return t.replace(o, n)
+    t = rp("const NAT_ADDR = [", "const NAT_MODES = [{ value: 'none', text: 'No NAT' }, { value: 'enable', text: 'Enable NAT' }, { value: 'central', text: 'Use Central NAT Table' }];\nconst NAT_ADDR = [", 'modes')
+    t = rp("""    <div class="fa-grid cols-2">
+      ${field('NAT', `<obs-switch data-${ns}="nat" size="small" checked-text="ON" unchecked-text="OFF"${f.nat ? ' checked' : ''} aria-label="NAT"></obs-switch>`)}
+      ${field('Log traffic', `<obs-checkbox data-${ns}="log"${f.log ? ' checked' : ''}>Log firewall traffic</obs-checkbox>`)}
+    </div>
+    ${nat}""", """    <div class="fa-grid cols-2">
+      ${field('NAT', `<obs-radio as-button data-${ns}="natMode" class="fa-pmf-natmode" options='${j(NAT_MODES)}' value="${f.natMode || (f.nat ? 'enable' : 'none')}"></obs-radio>`)}
+      <div aria-hidden="true"></div>
+    </div>
+    ${nat}
+    <div class="fa-grid cols-2">
+      ${field('Log traffic', `<obs-checkbox data-${ns}="log"${f.log ? ' checked' : ''}>Log firewall traffic</obs-checkbox>`)}
+      <div aria-hidden="true"></div>
+    </div>""", 'field')
+    t = rp("const PM_SHAPE = { nat: 1, natAddr: 1, type: 1, ntype: 1, stype: 1 };", "const PM_SHAPE = { nat: 1, natMode: 1, natAddr: 1, type: 1, ntype: 1, stype: 1 };", 'shape')
+    t = rp("      if (k === 'stype') {", "      if (k === 'natMode') f.nat = f.natMode === 'enable';\n      if (k === 'stype') {", 'sync')
+    t = rp("NAT_ADDR.map(o => o.value)", "(k === 'natMode' ? NAT_MODES : NAT_ADDR).map(o => o.value)", 'kbd')
+    return t
+t = nat_mode_patch(t)
+# NAT's three segments take the form's full width so "Use Central NAT Table" stays on one line (it wrapped in a half column).
+def nat_wide_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""      ${field('NAT', `<obs-radio as-button data-${ns}="natMode" class="fa-pmf-natmode" options='${j(NAT_MODES)}' value="${f.natMode || (f.nat ? 'enable' : 'none')}"></obs-radio>`)}
+      <div aria-hidden="true"></div>""", """      <div class="fa-pmf-natrow">${field('NAT', `<obs-radio as-button data-${ns}="natMode" class="fa-pmf-natmode" options='${j(NAT_MODES)}' value="${f.natMode || (f.nat ? 'enable' : 'none')}"></obs-radio>`)}</div>""", 'row')
+    t = rp("#pmAddDrawer .fa-pmsh-d {", "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }\n#pmAddDrawer obs-radio.fa-pmf-natmode { display: inline-block; white-space: nowrap; }\n#pmAddDrawer .fa-pmsh-d {", 'css')
+    return t
+t = nat_wide_patch(t)
+# Translated Address's two radios stay on one line: their column hugs them (max-content) and Mapped IP takes the rest.
+def nat_pick_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("  const nat = !f.nat ? '' : `<div class=\"fa-grid cols-2\">", "  const nat = !f.nat ? '' : `<div class=\"fa-grid cols-2 fa-pmf-natgrid\">", 'grid')
+    t = rp("#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }", "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }\n#pmAddDrawer .fa-grid.fa-pmf-natgrid { grid-template-columns: max-content minmax(0, 1fr); }\n#pmAddDrawer obs-radio.fa-pmf-natpick { display: inline-block; white-space: nowrap; }", 'css')
+    return t
+t = nat_pick_patch(t)
+# Enable NAT = FortiGate's Dynamic IP Pool row (21 Oct 2026, owner): a "Dynamic IP Pool" checkbox and the pool picker
+# beside it (disabled until ticked; "No results found" when the firewall has none). Unticked = the outgoing interface
+# address. It writes the same natAddr / natIp the record and summary already read. Central NAT Table shows nothing.
+def ip_pool_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""  const nat = !f.nat ? '' : `<div class="fa-grid cols-2 fa-pmf-natgrid">
+      ${field('Translated Address', c.snat.length
+        ? `<obs-radio data-${ns}="natAddr" class="fa-pmf-natpick" options='${j(NAT_ADDR)}' value="${esc(f.natAddr)}"></obs-radio>`
+        : pmRo('Outgoing Interface Address'))}
+      ${f.natAddr === 'mapped' && c.snat.length ? pmSelect(ns, f, 'natIp', 'Mapped IP', c.snat, { req: true }) : '<div aria-hidden="true"></div>'}
+    </div>`;""", """  const pool = f.natAddr === 'mapped';
+  const nat = !f.nat ? '' : `<div class="fa-pmf-ippool">
+      <obs-checkbox data-${ns}="natPool"${pool ? ' checked' : ''}>Dynamic IP Pool</obs-checkbox>
+      <obs-select data-${ns}="natIp" block placeholder="${c.snat.length ? 'Select IP pool' : 'No results found'}" options='${j(c.snat)}' value="${esc(f.natIp)}"${pool && c.snat.length ? '' : ' disabled'}></obs-select>
+    </div>`;""", 'body')
+    t = rp("      if (k === 'natMode') f.nat = f.natMode === 'enable';",
+           "      if (k === 'natMode') f.nat = f.natMode === 'enable';\n      if (k === 'natPool') { f.natAddr = f.natPool ? 'mapped' : 'outgoing'; if (!f.natPool) f.natIp = ''; }", 'sync')
+    t = rp("const PM_SHAPE = { nat: 1, natMode: 1,", "const PM_SHAPE = { nat: 1, natMode: 1, natPool: 1,", 'shape')
+    t = rp("return 'Mapped IP is required';", "return 'Pick a Dynamic IP Pool';", 'reason')
+    t = rp("#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }",
+           "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }\n#pmAddDrawer .fa-pmf-ippool { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; column-gap: 16px; margin-top: 16px; }", 'css')
+    return t
+t = ip_pool_patch(t)
+# A hairline after the Services section (21 Oct 2026, owner), the same softened rule the section heads carry, so NAT and
+# Log traffic read as their own block rather than as part of Services.
+def svc_line_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""    <div class="fa-grid cols-2">
+      <div class="fa-pmf-natrow">""", """    <div class="fa-pmsep" aria-hidden="true"></div>
+    <div class="fa-grid cols-2">
+      <div class="fa-pmf-natrow">""", 'sep')
+    t = rp("#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }",
+           "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }\n#pmAddDrawer .fa-pmsep { margin-top: 8px; border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent); }", 'css')
+    return t
+t = svc_line_patch(t)
+# Dynamic IP Pool row on the form's own two columns (21 Oct 2026, owner: "alignment"): the checkbox in the left column,
+# the picker in the right one — so the picker lines up with Source / Destination Interface above it instead of running
+# from the checkbox's edge to the drawer's — both centred on one line.
+def pool_align_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("  const nat = !f.nat ? '' : `<div class=\"fa-pmf-ippool\">", "  const nat = !f.nat ? '' : `<div class=\"fa-grid cols-2 fa-pmf-ippool\">", 'cls')
+    t = rp("#pmAddDrawer .fa-pmf-ippool { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; column-gap: 16px; margin-top: 16px; }",
+           "#pmAddDrawer .fa-grid.fa-pmf-ippool { align-items: center; }\n#pmAddDrawer .fa-pmf-ippool > obs-checkbox { display: flex; align-items: center; }", 'css')
+    return t
+t = pool_align_patch(t)
+# Dynamic IP Pool gets an "Add" (21 Oct 2026, owner — FortiGate's IP Pool form as the reference): the picker carries the
+# form's "IP Pool · Add" label, and Add opens the stacked side panel (the same one Add Object uses) with IP Pool Name ·
+# Start IP · End IP and Cancel · Add. A saved pool joins that firewall's pool list (PM_POOLS) and is picked straight away.
+def pool_add_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("    .map(n => `${n.mSrcIp} (${n.name})`);\n  return { ports, addrs: names(isAddrType), svcs, objs, snat };",
+           "    .map(n => `${n.mSrcIp} (${n.name})`).concat(PM_POOLS[devName] || []);\n  return { ports, addrs: names(isAddrType), svcs, objs, snat };", 'choices')
+    t = rp("""      <obs-select data-${ns}="natIp" block placeholder="${c.snat.length ? 'Select IP pool' : 'No results found'}" options='${j(c.snat)}' value="${esc(f.natIp)}"${pool && c.snat.length ? '' : ' disabled'}></obs-select>""",
+           """      <div class="fa-field"><span class="fa-field-label fa-pmf-lab">IP Pool${pool ? '<i class="fa-req">&#42;</i>' : ''}<span class="fa-spacer"></span><obs-link href="#" data-pm-pool>Add</obs-link></span>
+      <obs-select data-${ns}="natIp" block placeholder="${c.snat.length ? 'Select IP pool' : 'No results found'}" options='${j(c.snat)}' value="${esc(f.natIp)}"${pool && c.snat.length ? '' : ' disabled'}></obs-select></div>""", 'field')
+    t = rp("#pmAddDrawer .fa-grid.fa-pmf-ippool { align-items: center; }",
+           "#pmAddDrawer .fa-grid.fa-pmf-ippool { align-items: end; }\n#pmAddDrawer .fa-pmf-ippool > obs-checkbox { min-height: 32px; }", 'css')
+    t = rp("""  pmAddDrawer.querySelectorAll('obs-link[data-pm-stack]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); openPmStack(a.getAttribute('data-pm-stack'));
+  }));""", """  pmAddDrawer.querySelectorAll('obs-link[data-pm-stack]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); openPmStack(a.getAttribute('data-pm-stack'));
+  }));
+  pmAddDrawer.querySelectorAll('#pmfBody obs-link[data-pm-pool]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); openPoolStack(); }));
+  if (pmPool) paintPoolStack();""", 'bind')
+    t = rp("function openPmStack(from) {", r"""const PM_POOLS = {};
+let pmPool = null;      /* { name, start, end }: the Add IP Pool panel stacked over Add Policy */
+const IPV4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+function poolReason(p) {
+  if (!p.name.trim()) return 'IP Pool Name is required';
+  if ((PM_POOLS[pmf.dev] || []).concat(pmChoices(pmf.dev).snat).some(s => s.toLowerCase().endsWith('(' + p.name.trim().toLowerCase() + ')'))) return `${p.name.trim()} already exists on ${pmf.dev}`;
+  if (!IPV4.test(p.start.trim())) return 'Start IP must be an IPv4 address';
+  if (!IPV4.test(p.end.trim())) return 'End IP must be an IPv4 address';
+  return '';
+}
+function openPoolStack() {
+  if (!pmf || pmf.kind !== 'policy') return;
+  pmPool = { name: '', start: '', end: '' }; paintPoolStack();
+  focusDeep(pmAddDrawer.querySelector('#pmPoolBody obs-input[data-pool="name"]'));
+}
+function closePoolStack() {
+  pmPool = null; const host = pmAddDrawer.querySelector('#pmStack'); if (host) host.innerHTML = '';
+  focusDeep(pmAddDrawer.querySelector('#pmfBody obs-link[data-pm-pool]'));
+}
+function poolFoot() {
+  const r = poolReason(pmPool);
+  return `<span class="fa-spacer"></span><obs-button variant="default" id="poolCancel">Cancel</obs-button>
+    ${r ? `<obs-tooltip placement="top"><obs-button slot="trigger" variant="primary" id="poolAdd" disabled>Add</obs-button>${esc(r)}</obs-tooltip>` : '<obs-button variant="primary" id="poolAdd">Add</obs-button>'}`;
+}
+function paintPoolStack() {
+  const host = pmAddDrawer.querySelector('#pmStack'); if (!host || !pmPool) return;
+  const inp = (k, label, ph) => field(label, `<obs-input data-pool="${k}" block placeholder="${ph}" value="${esc(pmPool[k])}"></obs-input>`, null, true);
+  host.innerHTML = `<div class="fa-sp-scrim"></div>
+  <aside class="fa-sp-panel" role="dialog" aria-modal="false" aria-label="Add IP Pool">
+    <div class="fa-sp-head"><span class="fa-sp-title">Add IP Pool</span>
+      <obs-button variant="transparent" square id="poolX" aria-label="Close"><obs-icon name="times" size="16"></obs-icon></obs-button></div>
+    <div class="fa-sp-body" id="pmPoolBody"><div class="fa-pmf-form"><div class="fa-grid cols-2">
+      ${inp('name', 'IP Pool Name', 'Must be unique')}<div aria-hidden="true"></div>
+      ${inp('start', 'Start IP', 'e.g. 203.0.113.10')}${inp('end', 'End IP', 'e.g. 203.0.113.20')}
+    </div></div></div>
+    <div class="fa-sp-foot" id="poolFoot">${poolFoot()}</div>
+  </aside>`;
+  const foot = () => { const ft = host.querySelector('#poolFoot'); ft.innerHTML = poolFoot(); bindFoot(); };
+  const bindFoot = () => {
+    host.querySelector('#poolCancel').addEventListener('click', () => closePoolStack());
+    const add = host.querySelector('obs-button#poolAdd');
+    if (add && !add.hasAttribute('disabled')) add.addEventListener('click', () => {
+      if (!pmPool || poolReason(pmPool)) return;
+      const v = `${pmPool.start.trim()}-${pmPool.end.trim()} (${pmPool.name.trim()})`;
+      (PM_POOLS[pmf.dev] = PM_POOLS[pmf.dev] || []).push(v);
+      pmf.natAddr = 'mapped'; pmf.natPool = true; pmf.natIp = v; pmPool = null;
+      const h = pmAddDrawer.querySelector('#pmStack'); if (h) h.innerHTML = '';
+      paintPmAdd();
+    });
+  };
+  host.querySelectorAll('obs-input[data-pool]').forEach(el => {
+    const put = e => { const v = detailOf(e); pmPool[el.getAttribute('data-pool')] = String((v && typeof v === 'object' ? v.value : v) ?? e.target.value ?? ''); foot(); };
+    el.addEventListener('input', put); el.addEventListener('change', put);
+  });
+  bindFoot();
+  host.querySelector('obs-button#poolX').addEventListener('click', () => closePoolStack());
+  host.querySelector('.fa-sp-panel').addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return; e.stopPropagation(); if (e.defaultPrevented) return; e.preventDefault(); closePoolStack(); });
+}
+function openPmStack(from) {""", 'fns')
+    t = rp("pmAddDrawer.addEventListener('close', e => { if (e.target !== pmAddDrawer) return; pmf = null; pmStack = null;",
+           "pmAddDrawer.addEventListener('close', e => { if (e.target !== pmAddDrawer) return; pmf = null; pmStack = null; pmPool = null;", 'close')
+    return t
+t = pool_add_patch(t)
+# Log traffic is one line (21 Oct 2026, owner — "Enable trace notifications (i)" as the reference): the checkbox with its
+# own label and an info tooltip after it; the separate "Log traffic" title above it is gone.
+def log_row_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""    <div class="fa-grid cols-2">
+      ${field('Log traffic', `<obs-checkbox data-${ns}="log"${f.log ? ' checked' : ''}>Log firewall traffic</obs-checkbox>`)}
+      <div aria-hidden="true"></div>
+    </div>""", """    <div class="fa-pmf-logrow">
+      <obs-checkbox data-${ns}="log"${f.log ? ' checked' : ''}>Log firewall traffic</obs-checkbox>
+      <obs-tooltip placement="top"><obs-icon slot="trigger" name="infoCircle" size="14" class="fa-field-info" label="About logging"></obs-icon>On: every session this policy allows or denies is logged and the logs are collected. Off: no traffic logs are collected for this policy.</obs-tooltip>
+    </div>""", 'row')
+    t = rp("#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }",
+           "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }\n#pmAddDrawer .fa-pmf-logrow { display: flex; align-items: center; gap: 8px; margin-top: 16px; }\n#pmAddDrawer .fa-pmf-logrow .fa-field-info { color: var(--neutral-light); cursor: help; }", 'css')
+    return t
+t = log_row_patch(t)
+# Objects overview: Pending Approval is its own card at the end of the row (21 Oct 2026, owner), the shape the Policies
+# overview's Policy Action card has — same .fa-pm-ovrow grid, same height.
+def obj_pend_patch(t):
+    o = """    { label: 'Pending Approval', value: nf(pendObj), caption: nf(pend.length) + ' changes in all' }
+  ];
+  return `<obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>`;
+}"""
+    n = """  ];
+  const pendCard = [{ label: 'Pending Approval', value: nf(pendObj), caption: nf(pend.length) + ' changes in all' }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats" items='${j(pendCard)}'></obs-stat-card></div>`;
+}"""
+    assert t.count(o) == 1, ('obj pend', t.count(o)); t = t.replace(o, n)
+    o = "    { label: 'Unassigned', value: nf(n - asg), caption: mix(o => !objectTags(o).includes('Assigned')), percent: n ? (n - asg) / n * 100 : 0,\n      barSeverity: 'warning', ...(n - asg ? { valueSeverity: 'warning' } : {}) },\n  ];"
+    if t.count(o) == 1:
+        t = t.replace(o, o.replace(" },\n  ];", " }\n  ];"))
+    return t
+t = obj_pend_patch(t)
+# IP Pool's "Add" opens Add OBJECT, not a pool-only form (21 Oct 2026, owner): the same stacked Add Object panel the
+# address and service Adds open, preset to Network Object · IP Range. Saving records the object (a pending change, as
+# every Add does) and its range becomes that firewall's IP pool, picked straight away with Dynamic IP Pool ticked.
+def pool_obj_patch(t):
+    def rp(o, n, l, c=1):
+        assert t.count(o) == c, (l, t.count(o)); return t.replace(o, n)
+    t = rp("  services:    { key: 'svc', types: ['Service', 'Service group'] }\n};",
+           "  services:    { key: 'svc', types: ['Service', 'Service group'] },\n  pool:        { key: 'natIp', types: ['Address', 'Address group'] }\n};", 'from')
+    t = rp("const pmStackForm = (dev, from) => { const f = pmBlank('object', dev, STACK_FROM[from].types); objCatInit(f, from === 'services' ? 'service' : 'network'); return f; };",
+           "const pmStackForm = (dev, from) => { const f = pmBlank('object', dev, STACK_FROM[from].types); objCatInit(f, from === 'services' ? 'service' : 'network');\n  if (from === 'pool') { f.ntype = 'IP Range'; f.type = 'Address'; }\n  return f; };", 'form')
+    t = rp("  const name = pmRecordObject(st.f), k = STACK_FROM[st.from].key;\n",
+           "  const name = pmRecordObject(st.f), k = STACK_FROM[st.from].key;\n  if (st.from === 'pool') {\n    const v = `${String(st.f.startIp || '').trim()}-${String(st.f.endIp || '').trim()} (${name})`;\n    (PM_POOLS[pmf.dev] = PM_POOLS[pmf.dev] || []).push(v);\n    pmf.natAddr = 'mapped'; pmf.natPool = true; pmf.natIp = v; pmf.made.push(name);\n    pmStack = null; paintPmAdd(); pmSetHash();\n    focusDeep(pmAddDrawer.querySelector('obs-link[data-pm-stack=\"pool\"]'));\n    return;\n  }\n", 'save')
+    t = rp("<obs-link href=\"#\" data-pm-pool>Add</obs-link>", "<obs-link href=\"#\" data-pm-stack=\"pool\">Add</obs-link>", 'link')
+    t = rp("  pmAddDrawer.querySelectorAll('#pmfBody obs-link[data-pm-pool]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); openPoolStack(); }));\n", "", 'bind')
+    t = rp("(?:\\/(source|destination|services))?$/;", "(?:\\/(source|destination|services|pool))?$/;", 'route1')
+    t = rp("(\\/(source|destination|services))?$/;", "(\\/(source|destination|services|pool))?$/;", 'route2')
+    return t
+t = pool_obj_patch(t)
+# Objects overview: the Pending Approval card reads the way Policy Action does (21 Oct 2026, owner): "N approved | N
+# rejected" — the Approval module's decision on this view's changes (faApvOf) — over a split bar, approved green,
+# rejected red. obs-stat-card's pair cell, its words re-labelled by data-pair-words; the red track is .fa-pm-act's.
+def obj_apv_patch(t):
+    o = """  const pendCard = [{ label: 'Pending Approval', value: nf(pendObj), caption: nf(pend.length) + ' changes in all' }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats" items='${j(pendCard)}'></obs-stat-card></div>`;"""
+    n = """  const apv = pend.map(p => faApvOf(p).st), apr = apv.filter(s => s === 'Approved').length, rej = apv.filter(s => s === 'Rejected').length;
+  const pendCard = [{ label: 'Pending Approval', passed: nf(apr), failed: nf(rej), percent: apr + rej ? apr / (apr + rej) * 100 : 0, barSeverity: 'clear' }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats fa-pm-act" data-pair-words="approved,rejected" items='${j(pendCard)}'></obs-stat-card></div>`;"""
+    assert t.count(o) == 1, ('obj apv', t.count(o))
+    return t.replace(o, n)
+t = obj_apv_patch(t)
+# Policy Action card words: allow / deny -> approve / reject (21 Oct 2026, owner). The counts are unchanged.
+def act_words_patch(t):
+    o = 'class="fa-pm-stats fa-pm-act" data-pair-words="allow,deny"'
+    assert t.count(o) == 1, ('act words', t.count(o))
+    return t.replace(o, 'class="fa-pm-stats fa-pm-act" data-pair-words="approve,reject"')
+t = act_words_patch(t)
+# Add Policy / Add Object drawer: no horizontal scroll (21 Oct 2026, owner). An obs-tooltip keeps its hidden bubble in
+# the layout, absolutely placed, and the one beside "Log firewall traffic" sits past the body's right edge — so the body
+# scrolled sideways by the bubble's overhang. The body clips horizontally; vertical scroll is untouched.
+def no_hscroll_patch(t):
+    # (overflow on the shadow .body would force overflow-y too; clipping the slotted form's x axis leaves y scrolling alone)
+    o = "#pmAddDrawer .fa-pmf-natrow { grid-column: 1 / -1; }"
+    assert t.count(o) == 1, ('hscroll', t.count(o))
+    return t.replace(o, o + "\n#pmAddDrawer > div:first-child { overflow-x: clip; }")
+t = no_hscroll_patch(t)
+# View Policy follows today's Add Policy (21 Oct 2026, owner): the same Source / Destination / Services sections (soft
+# hairline, title, one-line description), then a hairline and the NAT + Log block, then the read-outs (last update, hits,
+# tag). pmViewHTML gains two row kinds: ['__sec', title, desc] and ['__line']. NAT reads the pending edit when there is
+# one (the only place a rule's NAT is stored), else No NAT.
+def view_pol_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""  return `<div class="fa-pmf-form fa-pmv"><div class="fa-grid cols-2">${rows.map(([label, v, kind, variant, wide]) => {
+    const html = field(label, kind === 'chips' ? chips(v, variant) : kind === 'html' ? v : ro(v));""",
+           """  return `<div class="fa-pmf-form fa-pmv"><div class="fa-grid cols-2">${rows.map(([label, v, kind, variant, wide]) => {
+    if (label === '__sec') return `</div>${pmSecHead(v, kind)}<div class="fa-grid cols-2">`;
+    if (label === '') return '<div aria-hidden=\"true\"></div>';
+    if (label === '__line') return `</div><div class="fa-pmsep" aria-hidden="true"></div><div class="fa-grid cols-2">`;
+    const html = field(label, kind === 'chips' ? chips(v, variant) : kind === 'html' ? v : ro(v));""", 'view html')
+    t = rp("""    ['Source', [r.src], 'chips'], ['Destination', [r.dst], 'chips'],
+    ['Source Interface', ruleIntf(r, 'srcIntf')], ['Destination Interface', ruleIntf(r, 'dstIntf')],
+    ['Services', [r.svc], 'chips'], ['Log', r.log],
+    ['Last update Policy Time', ruleLastUpdate(r)], ['Hits', r.hits == null ? '—' : nf(r.hits)],""",
+           """    ['__sec', 'Source', 'Where the traffic comes from: the source addresses and the interface it arrives on.'],
+    ['Source Address', [r.src], 'chips'], ['Source Interface', ruleIntf(r, 'srcIntf')],
+    ['__sec', 'Destination', 'Where the traffic is going: the destination addresses and the interface it leaves by.'],
+    ['Destination Address', [r.dst], 'chips'], ['Destination Interface', ruleIntf(r, 'dstIntf')],
+    ['__sec', 'Services', 'The protocols and ports this policy matches. Leave it as any to match all services.'],
+    ['Services', [r.svc], 'chips'], ['', ''],
+    ['__line'],
+    ['NAT', (() => { const p = pmPendingEdit(r), n = p && p.rule && p.rule.nat; return !n ? 'No NAT' : n === 'outgoing interface' ? 'Enable NAT · Outgoing interface address' : 'Enable NAT · Dynamic IP Pool ' + n; })()],
+    ['Log firewall traffic', /^on$/i.test(String(r.log)) ? 'On' : 'Off'],
+    ['__line'],
+    ['Last update Policy Time', ruleLastUpdate(r)], ['Hits', r.hits == null ? '—' : nf(r.hits)],""", 'rows')
+    t = rp("#pmAddDrawer .fa-pmsh { display: flex;", ".fa-pmv .fa-pmsh, #pmAddDrawer .fa-pmsh { display: flex;", 'sh css')
+    t = rp("#pmAddDrawer .fa-pmsh-t {", ".fa-pmv .fa-pmsh-t, #pmAddDrawer .fa-pmsh-t {", 'sht css')
+    t = rp("#pmAddDrawer .fa-pmsh-d {", ".fa-pmv .fa-pmsh-d, #pmAddDrawer .fa-pmsh-d {", 'shd css')
+    t = rp("#pmAddDrawer .fa-pmsep {", ".fa-pmv .fa-pmsep, #pmAddDrawer .fa-pmsep {", 'sep css')
+    return t
+t = view_pol_patch(t)
+# Policies grid: no Policy ID column (21 Oct 2026, owner — it left the Add Policy form). Rows still come in policy order
+# (the grid sorts on the row's seq), and View Policy still shows the ID.
+def pol_noid_col_patch(t):
+    o = "    { key: 'seq', title: 'Policy ID', width: 90, fixed: true },\n    { key: 'name', title: 'Policy Name', width: 220,"
+    assert t.count(o) == 1, ('noid col', t.count(o))
+    return t.replace(o, "    { key: 'name', title: 'Policy Name', width: 220, fixed: true,")
+t = pol_noid_col_patch(t)
+# Policy & Object Approval: the Name is a link that opens the change in a side drawer (21 Oct 2026, owner: "show all
+# details"). Request (who / where / when / approver / status), then the change itself, laid out like View Policy and
+# View Object: a policy's rule in its Source · Destination · Services sections with NAT and Log; an object's category,
+# type, value or members and description; otherwise the change summary. Read off the pending change record.
+def chg_view_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("    { key: 'name', title: 'Name', width: 210, fixed: true },", "    { key: 'name', title: 'Name', width: 210, fixed: true, type: 'link' },", 'link')
+    t = rp("""  const pmObjs = view.querySelector('#tblPmObjects');""", """  const pmSt = view.querySelector('#tblPmStatus');
+  if (pmSt) pmSt.addEventListener('cellaction', e => { const p = detailOf(e) || {}; if (p.key === 'name' && p.id) viewChangeDrawer(p.id); });
+  const pmObjs = view.querySelector('#tblPmObjects');""", 'bind')
+    t = rp("function viewPolicyDrawer(id) {", r"""function viewChangeDrawer(id) {
+  const p = D.pendingChanges.find(x => x.id === id); if (!p) return;
+  const a = faApvOf(p), st = a.st === 'Pending' ? 'Pending Approval' : a.st;
+  const rows = [
+    ['__sec', 'Request', 'Who asked for this change, where it goes and where it stands.'],
+    ['Name', p.target], ['Firewall Name', p.device],
+    ['Type', p.kind], ['Change', p.op],
+    ['Requested By', p.by], ['Requested Time', p.requested],
+    ['Approver', a.by || '—'], ['Approval Status', [st], 'chips', FA_APV_TAG[a.st]]
+  ];
+  const r = p.rule;
+  if (p.kind === 'Policy' && r) {
+    const any = v => (v && v.length ? v : ['any']);
+    rows.push(['__sec', 'Policy', 'The policy as it will reach the firewall.'],
+      ['Policy ID', r.seq], ['Policy Action', `<div class="fa-pmv-chips"><obs-tag variant="${/^allow/i.test(r.action) ? 'tag-green' : 'tag-red'}">${esc(r.action)}</obs-tag></div>`, 'html'],
+      ['Policy Status', r.status || 'Enable'], ['Policy Description', r.desc],
+      ['__sec', 'Source', 'Where the traffic comes from: the source addresses and the interface it arrives on.'],
+      ['Source Address', any(r.src), 'chips'], ['Source Interface', portLabel(p.device, r.srcIntf) || r.srcIntf],
+      ['__sec', 'Destination', 'Where the traffic is going: the destination addresses and the interface it leaves by.'],
+      ['Destination Address', any(r.dst), 'chips'], ['Destination Interface', portLabel(p.device, r.dstIntf) || r.dstIntf],
+      ['__sec', 'Services', 'The protocols and ports this policy matches.'],
+      ['Services', any(r.svc), 'chips'], ['', ''],
+      ['__line'],
+      ['NAT', !r.nat ? 'No NAT' : r.nat === 'outgoing interface' ? 'Enable NAT · Outgoing interface address' : 'Enable NAT · Dynamic IP Pool ' + r.nat],
+      ['Log firewall traffic', r.log ? 'On' : 'Off']);
+  } else if (p.kind === 'Object' && (p.objType || p.value || (p.members || []).length)) {
+    const o = { kind: p.objType || 'Address', value: p.value || '', members: p.members || [] };
+    rows.push(['__sec', 'Object', 'The object as it will reach the firewall.'],
+      ['Object Category', objCategory(o)], ['Object Type', objSubType(o)],
+      o.members.length ? ['Members', o.members, 'chips', '', true] : [/^Service/.test(o.kind) ? 'Service' : 'Address', o.value, '', '', true],
+      ['Description', p.desc, '', '', true]);
+  }
+  rows.push(['__sec', 'Change summary', 'What this request does, in one line.'], ['Details', p.summary, '', '', true]);
+  openDrawer(p.target, pmViewHTML(rows), '', '40%');
+}
+function viewPolicyDrawer(id) {""", 'fn')
+    return t
+t = chg_view_patch(t)
+# a view that OPENS on a section (the change drawer) draws no rule above it: the drawer header already ends in one
+def first_sec_patch(t):
+    o = ".fa-pmv .fa-pmsh, #pmAddDrawer .fa-pmsh { display: flex;"
+    assert t.count(o) == 1, ('first sec', t.count(o))
+    return t.replace(o, ".fa-pmv > .fa-grid:first-child:empty { display: none; }\n.fa-pmv > .fa-grid:first-child:empty + .fa-pmsh { margin-top: 0; padding-top: 0; border-top: 0; }\n" + o)
+t = first_sec_patch(t)
+# Policies grid row menu: Disable Policy removed (21 Oct 2026, owner). Edit Policy · Delete Policy remain; the disable
+# handler (pmStagePolicy 'disable') is kept and unreferenced, so it is one row away.
+def no_disable_patch(t):
+    o = "          { key: 'disable', label: 'Disable Policy', icon: 'ban' },\n"
+    assert t.count(o) == 1, ('no disable', t.count(o))
+    return t.replace(o, '')
+t = no_disable_patch(t)
+# Edit Policy is "Update Policy" (21 Oct 2026, owner): the row menu, the drawer title and its primary all say Update
+# Policy. In update mode the Policy Name is read-only (with Firewall Name and Mode, which already were), and Update lands
+# on Policy & Object Approval, where the new pending change sits at the top waiting for approval.
+def upd_pol_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("          { key: 'edit',    label: 'Edit Policy', icon: 'pencil' },", "          { key: 'edit',    label: 'Update Policy', icon: 'pencil' },", 'menu')
+    t = rp("  pmAddDrawer.setAttribute('title', pmf.edit ? 'Edit Policy' : PM_ADD[pmf.kind]);", "  pmAddDrawer.setAttribute('title', pmf.edit ? 'Update Policy' : PM_ADD[pmf.kind]);", 'title')
+    t = t.replace("${f.edit ? 'Save changes' : PM_ADD[f.kind] || 'Add'}", "${f.edit ? 'Update Policy' : PM_ADD[f.kind] || 'Add'}")
+    t = rp("      ${pmInput(ns, f, 'name', 'Policy Name', { req: true, ph: 'Must be unique' })}",
+           "      ${f.edit ? field('Policy Name', `<obs-input type=\"text\" block disabled value=\"${esc(f.name)}\"></obs-input>`, null, true) : pmInput(ns, f, 'name', 'Policy Name', { req: true, ph: 'Must be unique' })}", 'name')
+    t = rp("""    body: `Not on ${f.dev} until pushed from Policy & Object Approval.` };
+  closePmAdd();
+  renderContent();
+}""", """    body: `Not on ${f.dev} until pushed from Policy & Object Approval.` };
+  closePmAdd();
+  if (f.edit && f.kind === 'policy' && dev1 && dev1.tab === 'policy') { dev1.sub[dev1.tab] = STATUS_SEC; go('device', devRoute()); return; }
+  renderContent();
+}""", 'go')
+    return t
+t = upd_pol_patch(t)
+# Clone Policy (21 Oct 2026, owner): a row action that opens Add Policy prefilled from the policy — a NEW policy, so
+# every field is editable (name, firewall included). The name starts as "Copy of <name>" made unique on that firewall,
+# the ID is the firewall's next free one, and saving is an ordinary Add (a pending request). The drawer is titled
+# Clone Policy and its primary reads Clone Policy.
+def clone_pol_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("          { key: 'edit',    label: 'Update Policy', icon: 'pencil' },",
+           "          { key: 'edit',    label: 'Update Policy', icon: 'pencil' },\n          { key: 'clone',   label: 'Clone Policy', icon: 'copy' },", 'menu')
+    t = rp("        if (key === 'edit') openPmEdit(id);", "        if (key === 'edit') openPmEdit(id);\n        else if (key === 'clone') openPmClone(id);", 'route')
+    t = rp("function openPmEdit(id) {", """function openPmClone(id) {
+  const d = dev1 && D.devices.find(x => x.id === dev1.id), r = D.rules.find(x => x.id === id);
+  if (!d || !r) return;
+  const f = pmEditForm(r);
+  delete f.edit; delete f.was; delete f.loaded;
+  let name = 'Copy of ' + r.name, k = 2;
+  while (pmNameTaken(f.dev, name)) name = `Copy of ${r.name} (${k++})`;
+  Object.assign(f, { name, seq: String(pmNextRuleId(f.dev)), clone: r.name, made: [] });
+  pmf = f; pmStack = null;
+  paintPmAdd();
+  pmAddDrawer.open = true; pmAddDrawer.setAttribute('open', '');
+}
+function openPmEdit(id) {""", 'fn')
+    t = rp("  pmAddDrawer.setAttribute('title', pmf.edit ? 'Update Policy' : PM_ADD[pmf.kind]);",
+           "  pmAddDrawer.setAttribute('title', pmf.edit ? 'Update Policy' : pmf.clone ? 'Clone Policy' : PM_ADD[pmf.kind]);", 'title')
+    t = t.replace("${f.edit ? 'Update Policy' : PM_ADD[f.kind] || 'Add'}", "${f.edit ? 'Update Policy' : f.clone ? 'Clone Policy' : PM_ADD[f.kind] || 'Add'}")
+    return t
+t = clone_pol_patch(t)
+# Objects grid row actions: Update Object and Clone Object (21 Oct 2026, owner), the Policies grid's pair. Both open the
+# Add Object form filled from the object (its category, type, value / range / members / service rows).
+#   Update: Object Name, Device Name and Object Category are read-only; saving is a Modify request and lands on
+#           Policy & Object Approval, as Update Policy does.
+#   Clone:  a NEW object, every field editable, named "Copy of <name>" (unique on the firewall); saving is an Add.
+# Reset reloads what the form opened with (f.reload) — for Clone Policy too, which used to reset to a blank form.
+def obj_upd_patch(t):
+    def rp(o, n, l, c=1):
+        assert t.count(o) == c, (l, t.count(o)); return t.replace(o, n)
+    t = rp("""        header-style="default" sticky-header page-size="50" sort="name:asc"></obs-table></div>`)}""",
+           """        header-style="default" sticky-header page-size="50" sort="name:asc"${table === 'tblPmObjects' ? ` row-actions='${j([
+          { key: 'edit', label: 'Update Object', icon: 'pencil' }, { key: 'clone', label: 'Clone Object', icon: 'copy' }])}'` : ''}></obs-table></div>`)}""", 'row actions')
+    t = rp("""  const pmObjs = view.querySelector('#tblPmObjects');
+  if (pmObjs) pmObjs.addEventListener('cellaction', e => { const p = detailOf(e) || {};""",
+           """  const pmObjs = view.querySelector('#tblPmObjects');
+  if (pmObjs) pmObjs.addEventListener('rowaction', e => { const p = detailOf(e) || {}, key = actionKeyOf(p), id = rowIdOf(p);
+    if (key === 'edit' || key === 'clone') openPmObj(id, key); });
+  if (pmObjs) pmObjs.addEventListener('cellaction', e => { const p = detailOf(e) || {};""", 'bind')
+    # read-only identity in update mode
+    t = rp("const pmoCatField = (ns, f) => ns === 'pmo'\n", "const pmoCatField = (ns, f) => ns === 'pmo' || (f && f.edit)\n", 'cat ro')
+    t = rp("const pmoDevField = (ns, f) => ns === 'pmo'\n", "const pmoDevField = (ns, f) => ns === 'pmo' || f.edit\n", 'dev ro')
+    t = rp("      ${pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}",
+           "      ${f.edit ? field('Object Name', `<obs-input type=\"text\" block disabled value=\"${esc(f.name)}\"></obs-input>`, null, true) : pmInput(ns, f, 'name', 'Object Name', { req: true, ph: 'Must be unique' })}", 'name ro', 3)
+    t = rp("  if (pmNameTaken(f.dev, f.name)) return `${f.name.trim()} already exists on ${f.dev}`;",
+           "  if (!f.edit && pmNameTaken(f.dev, f.name)) return `${f.name.trim()} already exists on ${f.dev}`;", 'name taken')
+    # Modify request for an update
+    t = rp("  D.pendingChanges.push({ id: 'pc-' + (++pcSeq), device: f.dev, kind: 'Object', op: 'Add', target: name, summary: pmfSummary(f),",
+           "  D.pendingChanges.push({ id: 'pc-' + (++pcSeq), device: f.dev, kind: 'Object', op: f.edit ? 'Modify' : 'Add', ...(f.edit ? { editOf: f.edit } : {}), target: name, summary: pmfSummary(f),", 'modify')
+    t = rp("  if (f.edit && f.kind === 'policy' && dev1 && dev1.tab === 'policy') {", "  if (f.edit && dev1 && dev1.tab === 'policy') {", 'go approval')
+    # titles + buttons
+    t = rp("  pmAddDrawer.setAttribute('title', pmf.edit ? 'Update Policy' : pmf.clone ? 'Clone Policy' : PM_ADD[pmf.kind]);",
+           "  pmAddDrawer.setAttribute('title', pmf.edit ? (pmf.kind === 'policy' ? 'Update Policy' : 'Update Object') : pmf.clone ? (pmf.kind === 'policy' ? 'Clone Policy' : 'Clone Object') : PM_ADD[pmf.kind]);", 'title')
+    t = t.replace("${f.edit ? 'Update Policy' : f.clone ? 'Clone Policy' : PM_ADD[f.kind] || 'Add'}",
+                  "${f.edit ? (f.kind === 'policy' ? 'Update Policy' : 'Update Object') : f.clone ? (f.kind === 'policy' ? 'Clone Policy' : 'Clone Object') : PM_ADD[f.kind] || 'Add'}")
+    # the object route has no edit form: an object update / clone keeps the address on /add
+    t = rp("  currentSection = devRoute() + (pmf ? (pmf.edit ? '/edit/' + pmf.edit : '/add')",
+           "  currentSection = devRoute() + (pmf ? (pmf.edit && pmf.kind === 'policy' ? '/edit/' + pmf.edit : '/add')", 'hash')
+    # Reset reloads the opened form
+    t = rp("    if (r) r.addEventListener('click', () => { const rule = pmf.edit && D.rules.find(x => x.id === pmf.edit);",
+           "    if (r) r.addEventListener('click', () => { if (pmf.reload) { pmf = pmf.reload(); paintPmAdd(); return; } const rule = pmf.edit && D.rules.find(x => x.id === pmf.edit);", 'reset')
+    t = rp("  Object.assign(f, { name, seq: String(pmNextRuleId(f.dev)), clone: r.name, made: [] });",
+           "  Object.assign(f, { name, seq: String(pmNextRuleId(f.dev)), clone: r.name, made: [], reload: () => { openPmClone(id); return pmf; } });", 'clone reload')
+    t = rp("function openPmClone(id) {", r"""function pmObjForm(o, mode) {
+  const f = pmBlank('object', o.device);
+  const cat = /^Service/.test(o.kind) ? 'service' : 'network';
+  objCatInit(f, cat);
+  f.desc = o.desc || ''; f.members = (o.members || []).slice(); f.value = o.value || '';
+  if (cat === 'network') {
+    f.ntype = objSubType(o); f.type = f.ntype === 'Address Group' ? 'Address group' : 'Address';
+    if (f.ntype === 'IP Range') { const [a, b] = String(o.value || '').split('-'); f.startIp = (a || '').trim(); f.endIp = (b || '').trim(); }
+    f.intf = 'Any';
+  } else if (o.kind === 'Service group') { f.stype = 'Service Group'; f.type = 'Service group'; f.value = ''; }
+  else {
+    f.stype = 'Custom Service'; f.type = 'Service';
+    const rows = String(o.value || '').split(',').map(s => s.trim()).filter(Boolean).map(s => {
+      const [p, port] = s.split('/'); return { proto: String(p || 'tcp').toUpperCase(), src: '1-65535', dst: port || '' }; });
+    f.svcRows = rows.length ? rows : [svcRowBlank()]; f.value = svcValueOf(f.svcRows);
+  }
+  if (mode === 'edit') { f.name = o.name; f.edit = o.id; f.was = o.name; }
+  else { let name = 'Copy of ' + o.name, k = 2; while (pmNameTaken(o.device, name)) name = `Copy of ${o.name} (${k++})`; f.name = name; f.clone = o.name; }
+  f.reload = () => pmObjForm(o, mode);
+  return f;
+}
+function openPmObj(id, mode) {
+  const o = D.objects.find(x => x.id === id); if (!o) return;
+  pmf = pmObjForm(o, mode); pmStack = null;
+  paintPmAdd();
+  pmAddDrawer.open = true; pmAddDrawer.setAttribute('open', '');
+}
+function openPmClone(id) {""", 'fns')
+    return t
+t = obj_upd_patch(t)
+# Objects grid: Delete Object in the row menu, and the menu's column is headed ACTION (21 Oct 2026, owner).
+# Delete asks once (askConfirm, as Delete Policy does), then stages a Delete request for Policy & Object Approval.
+# obs-table draws the row-menu column with an empty header (th.act-col); the attachShadow hook prints "Action" there.
+def obj_del_patch(t):
+    def rp(o, n, l):
+        assert t.count(o) == 1, (l, t.count(o)); return t.replace(o, n)
+    t = rp("          { key: 'edit', label: 'Update Object', icon: 'pencil' }, { key: 'clone', label: 'Clone Object', icon: 'copy' }])}'",
+           "          { key: 'edit', label: 'Update Object', icon: 'pencil' }, { key: 'clone', label: 'Clone Object', icon: 'copy' },\n          { key: 'delete', label: 'Delete Object', icon: 'trash', danger: true }])}'", 'menu')
+    t = rp("    if (key === 'edit' || key === 'clone') openPmObj(id, key); });",
+           "    if (key === 'edit' || key === 'clone') openPmObj(id, key);\n    else if (key === 'delete') pmStageObject(id); });", 'route')
+    t = rp("function openPmObj(id, mode) {", """function pmStageObject(id) {
+  const o = D.objects.find(x => x.id === id); if (!o) return;
+  askConfirm({
+    title: `Delete object ${o.name}?`, icon: 'trash', variant: 'error', confirmText: 'Delete Object',
+    body: `<p>${esc(o.device)} keeps the object as it is until the request is pushed from Policy & Object Approval.</p>`,
+    onOk: () => {
+      D.pendingChanges.push({ id: 'pc-' + (++pcSeq), device: o.device, kind: 'Object', op: 'Delete', editOf: o.id, target: o.name,
+        summary: `Delete ${objSubType(o).toLowerCase()} ${o.name}`, by: 'Bhavin G', requested: stamp(), objType: o.kind, value: o.value || '', members: (o.members || []).slice(), desc: o.desc || '' });
+      faApvQueue(D.pendingChanges[D.pendingChanges.length - 1]);
+      pmFlash = { title: `Deleting ${o.name} is a pending request`, body: `Not on ${o.device} until pushed from Policy & Object Approval.` };
+      renderContent();
+    }
+  });
+}
+function openPmObj(id, mode) {""", 'fn')
+    t = rp(" if(this.tagName==='OBS-WIDGET-CARD'){",
+           " if(this.tagName==='OBS-TABLE'){try{var tb=new CSSStyleSheet();tb.replaceSync(':host(#tblPmObjects) thead th.act-col{line-height:normal}:host(#tblPmObjects) thead th.act-col::after{content:\"Action\"}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[tb]);}catch(e){}}\n if(this.tagName==='OBS-WIDGET-CARD'){", 'hdr')
+    return t
+t = obj_del_patch(t)
+# The change drawer on Policy & Object Approval reads like the Approval module's own detail (21 Oct 2026, owner): the
+# status tag under the title, then Requestor info · Request info · Policy / Object details · Approver info as titled
+# sections of label | value rows (chips for addresses and services, tags for the change and the action), and Reject ·
+# Approve in the footer while the change is pending. A decision is written where the Approval screen keeps them
+# (oo-apv-decisions), so both screens agree; the drawer and the grid repaint with it.
+def apv_drawer_patch(t):
+    i = t.index("function viewChangeDrawer(id) {"); j = t.index("function viewPolicyDrawer(id) {", i)
+    n = r"""function viewChangeDrawer(id) {
+  const p = D.pendingChanges.find(x => x.id === id); if (!p) return;
+  const a = faApvOf(p), st = a.st === 'Pending' ? 'Pending' : a.st;
+  const tag = (txt, v) => `<obs-tag variant="${v}">${esc(txt)}</obs-tag>`;
+  const chips = list => `<div class="fa-pmv-chips">${(list && list.length ? list : ['any']).map(x => `<obs-tag>${esc(x)}</obs-tag>`).join('')}</div>`;
+  const row = (k, v, html) => `<div class="fa-apvd-k">${esc(k)}</div><div class="fa-apvd-v">${html ? v : esc(v == null || v === '' ? '—' : String(v))}</div>`;
+  const sec = (title, rows) => `<h3 class="fa-apvd-h">${esc(title)}</h3><div class="fa-apvd-g">${rows.join('')}</div>`;
+  const opTag = { Add: 'tag-green', Modify: 'tag-primary', Delete: 'tag-red' }[p.op] || 'tag-primary';
+  const out = [`<div class="fa-apvd-st">${tag(st, FA_APV_TAG[a.st])}</div>`,
+    sec('Requestor info', [row('Requestor', p.by), row('Requested on', p.requested), row('Reason for request', p.summary)]),
+    sec('Request info', [row('Change', tag(`${p.op} ${p.kind.toLowerCase()}`, opTag), true), row('Firewall', p.device),
+      row(p.kind === 'Object' ? 'Object name' : 'Policy name', p.newName || p.target)])];
+  const r = p.rule;
+  if (p.kind === 'Policy' && r) out.push(sec('Policy details', [
+    row('Policy ID', r.seq), row('Action', tag(r.action, /^allow/i.test(r.action) ? 'tag-green' : 'tag-red'), true),
+    row('Status', /^dis/i.test(r.status || '') ? 'Disabled' : 'Enabled'),
+    row('Source', chips(r.src), true), row('Source interface', portLabel(p.device, r.srcIntf) || r.srcIntf),
+    row('Destination', chips(r.dst), true), row('Destination interface', portLabel(p.device, r.dstIntf) || r.dstIntf),
+    row('Services', chips(r.svc), true),
+    row('NAT', !r.nat ? 'Off' : r.nat === 'outgoing interface' ? 'Outgoing interface address' : 'Dynamic IP Pool ' + r.nat),
+    row('Log traffic', r.log ? 'Yes' : 'No')]));
+  else if (p.kind === 'Object' && (p.objType || p.value || (p.members || []).length)) {
+    const o = { kind: p.objType || 'Address', value: p.value || '', members: p.members || [] };
+    out.push(sec('Object details', [row('Object category', objCategory(o)), row('Object type', objSubType(o)),
+      o.members.length ? row('Members', chips(o.members), true) : row(/^Service/.test(o.kind) ? 'Service' : 'Address', o.value),
+      row('Description', p.desc)]));
+  }
+  out.push(sec('Approver info', [row('Approver', a.by || '—')].concat(a.st === 'Pending' ? [] : [row('Decision', tag(a.st, FA_APV_TAG[a.st]), true)])));
+  const acts = a.st === 'Pending' && p.apv ? `<span class="fa-spacer"></span><obs-button variant="default" class="fa-apvd-rej" data-apv-dec="Rejected">Reject</obs-button><obs-button variant="primary" data-apv-dec="Approved">Approve</obs-button>` : '';
+  openDrawer(`${p.device} – ${p.op.toLowerCase()} ${p.kind.toLowerCase()} – ${p.newName || p.target}`, `<div class="fa-apvd">${out.join('')}</div>`, acts, '40%');
+  drawer.querySelectorAll('obs-button[data-apv-dec]').forEach(b => b.addEventListener('click', () => {
+    if (b.__done) return; b.__done = 1;   /* obs-button fires twice */
+    let dec = {}; try { dec = JSON.parse(localStorage.getItem('oo-apv-decisions') || '{}'); } catch (e) {}
+    dec[p.apv] = { st: b.getAttribute('data-apv-dec'), by: 'admin' };
+    try { localStorage.setItem('oo-apv-decisions', JSON.stringify(dec)); } catch (e) {}
+    renderContent(); viewChangeDrawer(id);
+  }));
+}
+"""
+    t = t[:i] + n + t[j:]
+    o = ".fa-pmv .fa-pmsh, #pmAddDrawer .fa-pmsh { display: flex;"
+    assert t.count(o) == 1
+    t = t.replace(o, """.fa-apvd-st { margin-bottom: 8px; }
+.fa-apvd-h { margin: 20px 0 0; padding-bottom: 8px; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--page-text-color);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent); }
+.fa-apvd-g { display: grid; grid-template-columns: minmax(0, 176px) minmax(0, 1fr); column-gap: 16px; row-gap: 12px; padding-top: 12px; align-items: center; }
+.fa-apvd-k { color: var(--neutral-light); font-size: 13px; }
+.fa-apvd-v { color: var(--page-text-color); font-size: 13px; min-width: 0; overflow-wrap: anywhere; }
+.fa-apvd-v .fa-pmv-chips { margin: 0; }
+obs-button.fa-apvd-rej { --default-button-text: var(--secondary-red); --default-button-border: var(--secondary-red); color: var(--secondary-red); }
+""" + o)
+    return t
+t = apv_drawer_patch(t)
+def obj_pend2_patch(t):
+    """Objects overview: the separate Pending Approval card (approved | rejected) leaves; a Pending Approval tile joins the
+    one stat card, carrying what is still waiting — policies and objects (owner, 21 Oct 2026, the Policies tab's joined
+    card as the reference)."""
+    old = """      barSeverity: 'warning', ...(n - asg ? { valueSeverity: 'warning' } : {}) }
+  ];
+  const apv = pend.map(p => faApvOf(p).st), apr = apv.filter(s => s === 'Approved').length, rej = apv.filter(s => s === 'Rejected').length;
+  const pendCard = [{ label: 'Pending Approval', passed: nf(apr), failed: nf(rej), percent: apr + rej ? apr / (apr + rej) * 100 : 0, barSeverity: 'clear' }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats fa-pm-act" data-pair-words="approved,rejected" items='${j(pendCard)}'></obs-stat-card></div>`;"""
+    new = """      barSeverity: 'warning', ...(n - asg ? { valueSeverity: 'warning' } : {}) },
+    /* what is still WAITING on an approver — policies and objects both (owner, 21 Oct 2026: the separate approved | rejected
+       card left the row and its status joined this card, as the Policies tab's own Pending Approval tile does) */
+    (() => { const wait = pend.filter(p => faApvOf(p).st === 'Pending'), wp = wait.filter(p => p.kind === 'Policy').length, wo = wait.length - wp;
+      return { label: 'Pending Approval', value: nf(wait.length),
+        caption: `${nf(wp)} polic${wp === 1 ? 'y' : 'ies'} · ${nf(wo)} object${wo === 1 ? '' : 's'}` }; })()
+  ];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card></div>`;"""
+    assert t.count(old) == 1, 'obj_pend2 anchor'
+    return t.replace(old, new)
+t = obj_pend2_patch(t)
+
+def obj_pend3_patch(t):
+    """the Objects overview is ONE card now, so its row is one full-width column (it kept the 4fr | 1fr split)."""
+    old = """  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card></div>`;"""
+    assert t.count(old) == 1, 'obj_pend3 markup'
+    t = t.replace(old, old.replace('class="fa-pm-ovrow"', 'class="fa-pm-ovrow fa-pm-one"'))
+    css = ".fa-pm-ovrow > obs-stat-card.fa-pm-stats { margin-bottom: 0; height: 100%; }"
+    assert t.count(css) == 1, 'obj_pend3 css'
+    return t.replace(css, css + "\n.fa-pm-ovrow.fa-pm-one { grid-template-columns: minmax(0, 1fr); }")
+t = obj_pend3_patch(t)
+
+def pol_pend_patch(t):
+    """Policies overview, the Objects tab's change (owner, 21 Oct 2026): the separate Policy Action card leaves the row,
+    the one stat card spans it, and its Pending Approval tile says what is still waiting — policies and objects."""
+    old = """    { label: 'Pending Approval', value: nf(pendPol), caption: nf(pend.length) + ' changes in all' }
+  ];
+  const act = [{ label: 'Policy Action', passed: nf(allow), failed: nf(deny), percent: n ? allow / n * 100 : 0, barSeverity: 'clear' }];
+  return `<div class="fa-pm-ovrow"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card>
+    <obs-stat-card class="fa-pm-stats fa-pm-act" data-pair-words="approve,reject" items='${j(act)}'></obs-stat-card></div>`;"""
+    new = """    (() => { const wait = pend.filter(p => faApvOf(p).st === 'Pending'), wp = wait.filter(p => p.kind === 'Policy').length, wo = wait.length - wp;
+      return { label: 'Pending Approval', value: nf(wait.length),
+        caption: `${nf(wp)} polic${wp === 1 ? 'y' : 'ies'} · ${nf(wo)} object${wo === 1 ? '' : 's'}` }; })()
+  ];
+  return `<div class="fa-pm-ovrow fa-pm-one"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card></div>`;"""
+    assert t.count(old) == 1, 'pol_pend anchor'
+    return t.replace(old, new)
+t = pol_pend_patch(t)
+
+def pend_cap_patch(t):
+    """Pending Approval caption, both tabs (owner, 21 Oct 2026: "improve 1 policy · 2 objects"): the waiting count read
+    against every change raised — "of 6 changes in all" — so the figure above it has a total to be read against."""
+    old = """        caption: `${nf(wp)} polic${wp === 1 ? 'y' : 'ies'} · ${nf(wo)} object${wo === 1 ? '' : 's'}` }; })()"""
+    assert t.count(old) == 2, 'pend_cap anchor'
+    return t.replace(old, """        caption: `of ${nf(pend.length)} change${pend.length === 1 ? '' : 's'} in all` }; })()""")
+t = pend_cap_patch(t)
+
+def pol_actcol_patch(t):
+    """the Policies grid's row-menu column is titled "Action", as the Objects grid's is (owner, 21 Oct 2026)."""
+    old = """tb.replaceSync(':host(#tblPmObjects) thead th.act-col{line-height:normal}:host(#tblPmObjects) thead th.act-col::after{content:"Action"}');"""
+    assert t.count(old) == 1, 'pol_actcol anchor'
+    return t.replace(old, """tb.replaceSync(':host(#tblPmObjects) thead th.act-col,:host(#tblPmRules) thead th.act-col{line-height:normal}:host(#tblPmObjects) thead th.act-col::after,:host(#tblPmRules) thead th.act-col::after{content:"Action"}');""")
+t = pol_actcol_patch(t)
+
+def grid_fit_patch(t):
+    """Policy & Object Approval grid (owner, 21 Oct 2026): every cell on ONE line with "…", the full text in a tooltip on
+    hover when it is cut, and columns resized by dragging a header's right edge. obs-table has neither (no resize, and a
+    link cell is an inline-flex box whose bare text node cannot take text-overflow) — so this binds into its shadow root.
+    Widths are kept per header name and re-applied whenever the table re-renders (search, filter, sort, page)."""
+    anchor = "Element.prototype.attachShadow.__fa=1;})();</script>"
+    assert t.count(anchor) == 1, 'grid_fit anchor'
+    js = r"""
+<script>/* FA grid fit — single-line cells, a tooltip on cut text, drag-to-resize columns (FA_FIT_IDS) */
+(function(){
+  var FA_FIT_IDS = ['tblPmStatus'], W = {};
+  var CSS = ':host(.fa-fit) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + ':host(.fa-fit) tbody td a.cell-link{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+    + ':host(.fa-fit) thead th{position:sticky}'
+    + ':host(.fa-fit) .fa-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:3}'
+    + ':host(.fa-fit) .fa-rz::after{content:"";position:absolute;left:3px;top:25%;height:50%;width:1px;background:var(--border-color)}'
+    + ':host(.fa-fit) .fa-rz:hover::after,:host(.fa-fit) .fa-rz.on::after{top:0;height:100%;width:2px;left:2.5px;background:var(--primary-alt,var(--primary))}'
+    + ':host(.fa-fit) thead th:last-child .fa-rz{display:none}';
+  var sheet; try { sheet = new CSSStyleSheet(); sheet.replaceSync(CSS); } catch (e) {}
+  var key = function (th) { return (th.getAttribute('data-fa-k') || th.textContent || '').trim(); };
+  var tip = document.createElement('div');
+  tip.className = 'fa-fit-tip';
+  tip.style.cssText = 'position:fixed;z-index:2147482000;max-width:420px;padding:6px 10px;border-radius:4px;font:12px/1.4 var(--font-family,Poppins,sans-serif);'
+    + 'background:var(--tooltip-background-color,var(--neutral-darkest,#1d2a3e));color:var(--tooltip-text-color,#fff);pointer-events:none;display:none;white-space:normal;word-break:break-word;box-shadow:0 4px 12px rgba(0,0,0,.25)';
+  function tipShow(el){ var r = el.getBoundingClientRect(); tip.textContent = el.textContent.trim(); tip.style.display = 'block';
+    var tw = tip.offsetWidth, th = tip.offsetHeight, x = Math.max(8, Math.min(r.left, innerWidth - tw - 8)), y = r.bottom + 6;
+    if (y + th > innerHeight - 8) y = r.top - th - 6; tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+  function tipHide(){ tip.style.display = 'none'; }
+  function cut(el){ return el && el.scrollWidth > el.clientWidth + 1; }
+  function paint(host){
+    var r = host.shadowRoot, ws = W[host.id] || (W[host.id] = {});
+    r.querySelectorAll('thead th').forEach(function (th) {
+      if (!th.hasAttribute('data-fa-k')) th.setAttribute('data-fa-k', th.textContent.trim());
+      var k = key(th); if (ws[k] && th.style.width !== ws[k] + 'px') th.style.width = ws[k] + 'px';
+      if (th.classList.contains('act-col') || th.querySelector('.fa-rz')) return;
+      var h = document.createElement('span'); h.className = 'fa-rz'; th.appendChild(h);
+      h.addEventListener('mousedown', function (e) {
+        e.preventDefault(); e.stopPropagation(); h.classList.add('on');
+        var x0 = e.clientX, w0 = th.getBoundingClientRect().width;
+        var mv = function (ev) { var w = Math.max(60, Math.round(w0 + ev.clientX - x0)); ws[key(th)] = w; th.style.width = w + 'px'; };
+        var up = function () { h.classList.remove('on'); removeEventListener('mousemove', mv); removeEventListener('mouseup', up, true); };
+        addEventListener('mousemove', mv); addEventListener('mouseup', up, true);
+      });
+      h.addEventListener('click', function (e) { e.stopPropagation(); });   /* a resize never sorts the column */
+    });
+  }
+  function bind(host){
+    if (host.__faFit || !host.shadowRoot) return; host.__faFit = 1; host.classList.add('fa-fit');
+    var r = host.shadowRoot; if (sheet) r.adoptedStyleSheets = [].concat(r.adoptedStyleSheets || [], [sheet]);
+    if (!tip.parentNode) document.body.appendChild(tip);
+    r.addEventListener('mouseover', function (e) {
+      var c = e.target.closest && e.target.closest('a.cell-link, .cell-clip, tbody td');
+      if (c && c.matches('tbody td') && c.querySelector('a.cell-link, .cell-clip, obs-tag')) c = c.querySelector('a.cell-link, .cell-clip');
+      if (c && cut(c)) tipShow(c); else tipHide();
+    });
+    r.addEventListener('mouseleave', tipHide, true); host.addEventListener('mouseleave', tipHide);
+    paint(host);
+    new MutationObserver(function () { paint(host); }).observe(r, { childList: true, subtree: true });
+  }
+  function scan(){ FA_FIT_IDS.forEach(function (id) { var el = document.getElementById(id); if (el) bind(el); }); }
+  new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('scroll', tipHide, true);
+})();</script>"""
+    return t.replace(anchor, anchor + js)
+t = grid_fit_patch(t)
+
+def req_reason_patch(t):
+    """Reason for request (owner, 21 Oct 2026): every Add / Update / Clone of a policy or an object asks WHY, as a mandatory
+    note at the foot of the form. It is the drawer's own form only (an object added from the stacked panel inside a
+    policy rides on that policy's request). The note travels with the pending change and is what the Approval drawer's
+    "Reason for request" row shows (it showed the summary before)."""
+    def rp(old, new, n=1):
+        nonlocal t
+        assert t.count(old) == n, ('req_reason', old[:60], t.count(old)); t = t.replace(old, new)
+    # the field, at the foot of the drawer's own form
+    rp("""  const body = `<div id="pmfBody">${pmf.kind === 'policy' ? policyFormBody(pmf) : objectFormBody('pmf', pmf)}</div>`;""",
+       """  const body = `<div id="pmfBody">${pmf.kind === 'policy' ? policyFormBody(pmf) : objectFormBody('pmf', pmf)}${pmReasonHTML(pmf)}</div>`;""")
+    rp("""const pmSecHead = (title, desc) =>""",
+       """/* the mandatory note: why this change is asked for — the approver reads it before deciding */
+const pmReasonHTML = f => `<div class="fa-pmsep" aria-hidden="true"></div><div class="fa-pmf-reason">${field('Reason for request',
+  `<obs-input data-pmf="reason" type="textarea" block placeholder="Why is this change needed? The approver reads this before deciding." value="${esc(f.reason || '')}"></obs-input>`, null, true)}</div>`;
+const pmSecHead = (title, desc) =>""")
+    # mandatory — checked after every other field (it is the last thing on the form), only for the drawer's own form
+    rp("""    if (f.edit && pmSnapshot(f) === f.loaded) return 'Nothing has changed';
+    return '';
+  }""", """    if (f.edit && pmSnapshot(f) === f.loaded) return 'Nothing has changed';
+    if (f === pmf && !String(f.reason || '').trim()) return 'Reason for request is required';
+    return '';
+  }""")
+    rp("""  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype === 'Subnet' ? 'IP/Netmask' : f.ntype === 'FQDN' ? 'FQDN value' : f.ntype} is required`;
+
+  return '';
+}""", """  } else if (f.cat === 'network' && f.ntype && !String(f.value).trim()) return `${f.ntype === 'Subnet' ? 'IP/Netmask' : f.ntype === 'FQDN' ? 'FQDN value' : f.ntype} is required`;
+  if (f === pmf && !String(f.reason || '').trim()) return 'Reason for request is required';
+  return '';
+}""")
+    # it travels with the request
+    rp("""by: 'Bhavin G', requested: stamp(), objType: f.type, value: f.value.trim(), members: f.members.slice(), desc: f.desc.trim() });""",
+       """by: 'Bhavin G', requested: stamp(), objType: f.type, value: f.value.trim(), members: f.members.slice(), desc: f.desc.trim(), reason: String(f.reason || '').trim() });""")
+    rp("""      by: 'Bhavin G', requested: stamp(), rule });""", """      by: 'Bhavin G', requested: stamp(), rule, reason: String(f.reason || '').trim() });""")
+    rp("""    by: 'Bhavin G', requested: stamp(), rule });""", """    by: 'Bhavin G', requested: stamp(), rule, reason: String(f.reason || '').trim() });""")
+    rp("""      .concat(p.objType ? [['Object type', p.objType]] : []).concat([['Change', p.summary]]),""",
+       """      .concat(p.objType ? [['Object type', p.objType]] : []).concat([['Change', p.summary]]).concat(p.reason ? [['Reason for request', p.reason]] : []),
+    reason: p.reason || '',""")
+    rp("""row('Reason for request', p.summary)]),""", """row('Reason for request', p.reason || p.summary)]),""")
+    rp("""#pmAddDrawer .fa-pmf-logrow { display: flex; align-items: center; gap: 8px; margin-top: 16px; }""",
+       """#pmAddDrawer .fa-pmf-logrow { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+#pmAddDrawer .fa-pmf-reason { margin-top: 16px; }""")
+    return t
+t = req_reason_patch(t)
+
+def req_reason2_patch(t):
+    """Reason for request, the owner's wording (21 Oct 2026): the placeholder asks for the why AND the impact, and a note
+    under the field says what happens next — the request goes to an approver before anything reaches the firewall."""
+    old = """placeholder="Why is this change needed? The approver reads this before deciding." value="${esc(f.reason || '')}"></obs-input>`, null, true)}</div>`;"""
+    assert t.count(old) == 1, 'req_reason2 field'
+    t = t.replace(old, """placeholder="Explain why this action is required and any expected impact." value="${esc(f.reason || '')}"></obs-input>`, null, true)}
+  <div class="fa-pmf-rnote"><obs-icon name="infoCircle" size="16"></obs-icon><span>Your request will be sent for approval. The approver will review it before the action is executed.</span></div></div>`;""")
+    css = "#pmAddDrawer .fa-pmf-reason { margin-top: 16px; }"
+    assert t.count(css) == 1, 'req_reason2 css'
+    return t.replace(css, css + """
+#pmAddDrawer .fa-pmf-rnote { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--page-text-color); }
+#pmAddDrawer .fa-pmf-rnote obs-icon { flex: 0 0 auto; margin-top: 2px; color: var(--neutral-light); }""")
+t = req_reason2_patch(t)
+
+
+
+
+
+
+
+
+assert t.count("quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'kind']) });") == 1; t = t.replace("quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'kind']) });", "quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'cat', 'kind']) });")
 open(P, 'w', encoding='utf-8').write(t)
 print('ds_pass: applied')
