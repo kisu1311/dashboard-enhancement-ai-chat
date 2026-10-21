@@ -2786,5 +2786,10 @@ function spGroupInit(el) {
 _a = "const DS_FIT = new Set(['tblSubnets', 'tblIps', 'tblRogue', 'tblIpHist']);"
 assert t.count(_a) == 1, 'sp fit'
 t = t.replace(_a, "const DS_FIT = new Set(['tblSubnets', 'tblSupernet', 'tblIps', 'tblRogue', 'tblIpHist']);")
+# ── §100 · no VLAN column in the subnet grids (request, 21 Oct 2026). SUBNET_COLS is shared by Subnet Details and the
+# Supernet tab, so it leaves both; the VLAN quick-filter pill and VLAN in the subnet detail header are kept.
+_a = """  { title: 'VLAN', width: 90, cell: r => esc(r.vlan || '\u2014') },\n"""
+assert t.count(_a) == 1, 'vlan col'
+t = t.replace(_a, '')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)
