@@ -43,14 +43,14 @@ function pageTitle(file) {
   return t;
 }
 
-const NOT_OPTIONS = 'setting.html';
+const NOT_OPTIONS = ['setting.html', 'topology.html'];   /* module pages, not options (topology.html: 22 Oct 2026) */
 
 function sync() {
   const htmlFiles = fs
     .readdirSync(DIR)
     /* setting.html is the Settings module's own page, reached from every option's Settings
        entries — it is not an option, so it is not a switcher row (26 Sep 2026). */
-    .filter(f => f.toLowerCase().endsWith('.html') && !f.startsWith('_') && f !== NOT_OPTIONS)
+    .filter(f => f.toLowerCase().endsWith('.html') && !f.startsWith('_') && !NOT_OPTIONS.includes(f))
     .sort();
 
   const vjs = fs.readFileSync(VJS, 'utf8');
@@ -134,7 +134,7 @@ if (process.argv.includes('--hook')) {
         !rel.includes(path.sep) &&
         rel.toLowerCase().endsWith('.html') &&
         !rel.startsWith('_') &&
-        rel !== NOT_OPTIONS;
+        !NOT_OPTIONS.includes(rel);
       if (isOurs) {
         try {
           sync();

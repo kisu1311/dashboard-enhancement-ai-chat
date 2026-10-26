@@ -17200,7 +17200,7 @@ function selectModule(i){
   /* Firewall Analyzer — the vendored module (`_firewall/firewall.html`), iframe in embed mode. */
   if (m.name === 'Firewall Analyzer'){ showView('firewall'); faInit(); return; }
   /* Topology — the vendored module (`_topology/topology.html`), iframe in embed mode (21 Oct 2026). */
-  if (m.name === 'Topology'){ showView('topology'); topoInit(); return; }
+  if (m.name === 'Topology'){ if (!TOPO_HOME) { topoGo(); return; } showView('topology'); topoInit(); return; }
   /* Compliance — the live module's three tabs, `cpl*` block below (6 Oct 2026). */
   if (m.name === 'Compliance'){ showView('compliance'); cplInit(MOD_SUB); MOD_SUB = ''; return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
@@ -18183,6 +18183,17 @@ function faBuildV(){ try { return sessionStorage.faV || (sessionStorage.faV = St
 /* Topology — built on first open; an Explorer child row (Network · SDN · … · Custom) names the tab in MOD_SUB,
    and an open frame only has its hash moved (the page routes on hashchange). Theme follows over postMessage. */
 const TOPO_TAB_HASH = { 'Network':'network', 'SDN':'sdn', 'Cloud':'cloud', 'Virtualization':'virtualization', 'HCI':'hci', 'Custom':'custom' };
+/* ══ TOPOLOGY IS ITS OWN PAGE (22 Oct 2026) — topology.html, like setting.html ══
+   On any page but topology.html a Topology door navigates there (with the tab and the page to come back to);
+   on topology.html itself the module opens in place. */
+const TOPO_HOME = /(^|\/)topology\.html$/.test(location.pathname);
+function topoGo(){
+  let tab = ''; try { tab = TOPO_TAB_HASH[MOD_SUB] || ''; MOD_SUB = ''; } catch (e) {}
+  const here = location.pathname.split('/').pop() || 'index.html';
+  let from = here;
+  if (here === 'setting.html') { from = new URLSearchParams(location.search).get('from') || 'index.html'; if (!/^[\w.\-]+\.html$/.test(from) || from === 'setting.html') from = 'index.html'; }
+  location.href = 'topology.html?from=' + encodeURIComponent(from) + (tab ? '#tab=' + tab : '');
+}
 function topoTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('Topology'); }
 function topoInit(){
   const h = document.getElementById('topoHost'); if (!h) return;

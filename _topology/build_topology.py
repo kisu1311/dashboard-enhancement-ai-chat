@@ -26,7 +26,7 @@ palette = json.loads((ROOT / 'design-tokens' / 'palette.json').read_text())['col
 icons = json.loads((HERE / 'icons.json').read_text())
 
 # extra glyphs the live page did not carry on screen when it was read
-for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg')]:
+for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg'), ('lock', 'settings/security-access/lock-alt.svg'), ('image', 'common/media-device/image.svg')]:
     s = (ROOT / 'observeops-icons' / path).read_text()
     vb = re.search(r'viewBox="([^"]+)"', s).group(1)
     icons[name] = {'vb': vb, 'd': re.findall(r'\sd="([^"]+)"', s)}
@@ -44,6 +44,8 @@ MON = {
     'vcenter': 'monitors/virtualization/vcenter.svg', 'citrix-xen': 'monitors/virtualization/citrix-xen.svg',
     'nutanix': 'monitors/virtualization/nutanix.svg', 'prism': 'monitors/virtualization/prism.svg',
     'linux': 'monitors/operating-systems/linux.svg', 'windows': 'monitors/operating-systems/windows.svg',
+    'proxmox': 'monitors/virtualization/proxmox-ve-cluster.svg', 'aws-cloud': 'monitors/aws/aws-cloud.svg',
+    'azure-cloud': 'monitors/azure/azure-cloud.svg', 'oracle-cloud': 'monitors/oracle-cloud/oracle-cloud.svg', 'firewall': 'monitors/security-identity/firewall.svg',
 }
 mon = {}
 for k, p in MON.items():
@@ -54,7 +56,22 @@ for k, p in MON.items():
     ds = [re.search(r'\sd="([^"]+)"', x).group(1) for x in keep if re.search(r'\sd="', x)]
     mon[k] = '<svg class="i" viewBox="0 0 512 512" aria-hidden="true">' + ''.join(f'<path d="{d}"/>' for d in ds) + '</svg>'
 mon['server'] = mon['vm']
-mon['topology'] = ui('topology').replace('viewBox="0 0 48 48"', 'viewBox="0 0 48 48"')
+
+# the TREE shows the product's marks in their own brand colours, as live does (request, 21 Oct 2026: "the icon
+# colour is not same … improve the icon colour"). Verbatim files; only their <defs> ids are namespaced, because
+# several marks use id="a"/"b" and a second copy on screen would steal the first one's gradient.
+monc = {}
+for k, p in MON.items():
+    s2 = (ROOT / 'observeops-icons' / p).read_text()
+    s2 = re.sub(r'<\?xml[^>]*>', '', s2)
+    ids = set(re.findall(r'\sid="([^"]+)"', s2))
+    for i in ids:
+        s2 = s2.replace(f'id="{i}"', f'id="mc-{k}-{i}"').replace(f'url(#{i})', f'url(#mc-{k}-{i})').replace(f'href="#{i}"', f'href="#mc-{k}-{i}"')
+    s2 = re.sub(r'<svg\b', '<svg class="i" aria-hidden="true"', s2, count=1)
+    monc[k] = s2
+monc['server'] = monc['vm']
+# the topology glyph is on a 48 grid; node glyphs are drawn in a 512 box, so it is scaled into it (a design's container node)
+mon['topology'] = '<svg class="i" viewBox="0 0 512 512" aria-hidden="true"><g transform="scale(10.6667)">' + ''.join(f'<path d="{d}"/>' for d in icons['topology']['d']) + '</g></svg>'
 
 # empty-state art: map every literal fill/stroke onto a token that carries exactly that colour
 def tok(hexv):
@@ -74,7 +91,9 @@ html = SRC.read_text()
 html = html.replace('/*@@TOKENS@@*/', tokens)
 html = html.replace('/*@@ICONS@@*/', json.dumps({k: ui(k) for k in icons}))
 html = html.replace('/*@@MONICONS@@*/', json.dumps(mon))
+html = html.replace('/*@@MONCOLOR@@*/', json.dumps(monc))
 html = html.replace('@@EMPTY@@', empty)
+html = html.replace('/*@@DATA@@*/', (HERE / 'data.json').read_text())
 html = re.sub(r'@@I:([a-z0-9-]+)@@', lambda m: ui(m.group(1)), html)
 OUT.write_text(html)
 print('wrote', OUT, len(html), 'bytes')

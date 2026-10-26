@@ -6,7 +6,7 @@
 <title>Topology</title>
 <!--
   Topology module — cloned from the live product (build 10.0.1, the lab instance, /topology/network)
-  with Playwright on 21 Oct 2026: the tab bar, the toolbar, the entry-point tree, the graph canvas with
+  with Playwright on 21 Oct 2026 (two lab instances; addresses kept out of the published page): the tab bar, the toolbar, the entry-point tree, the graph canvas with
   its overlay controls and minimap, the Topology Settings drawer and the Create Topology View drawer.
 
   ⚠️ GENERATED FILE. Edit `topology.src.html`, then run `python3 _topology/build_topology.py`, which
@@ -87,7 +87,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tcv.ph{visibility:hidden}
 .tdot{flex:0 0 10px;width:10px;height:10px;border-radius:50%;border:2px solid currentColor}
 .tdot.fill{background:currentColor}
-.tmi{flex:0 0 15px;width:15px;height:15px;font-size:15px;color:var(--neutral-light)}
+.tmi{flex:0 0 15px;width:15px;height:15px;font-size:15px}
+.tmi svg{width:15px;height:15px;display:block}
 .tnm{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .tnone{color:var(--neutral-light);padding:6px 8px}
 .s-down{color:var(--severity-down)}.s-critical{color:var(--severity-critical)}.s-major{color:var(--severity-major)}
@@ -95,12 +96,39 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .s-maintenance{color:var(--severity-maintenance)}.s-unknown{color:var(--neutral-light)}
 
 /* custom views panel */
+.cvpick{display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}
+.cvpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cvpick span.ph{color:var(--neutral-light)}
+.cvpick.open svg{transform:rotate(180deg)}
+.cvgrid{position:fixed;z-index:35;width:855px;max-width:calc(100vw - 16px);box-sizing:border-box;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;padding:16px;display:none;box-shadow:0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent)}
+.cvgrid.on{display:block}
+.cvgs{display:block;width:288px;margin-bottom:12px}   /* a <label>: inline unless told, so its width and the icon's offset never applied */
+.cvgh,.cvgr{display:grid;grid-template-columns:34px minmax(0,1.5fr) 120px 100px minmax(0,1.3fr) 80px;align-items:center;gap:0 8px}
+.cvgh{font-size:12.8px;font-weight:600;text-transform:uppercase;color:var(--page-text-color);padding:6px 0}
+.cvgb{max-height:380px;overflow:auto}
+.cvgr{min-height:46px;padding:6px 0;border-bottom:1px solid var(--border-color);cursor:pointer;font-size:13px;color:var(--page-text-color)}
+.cvgr:hover{background:var(--dropdown-hover-background)}
+.cvgr input{accent-color:var(--page-text-color);margin:0 0 0 8px;pointer-events:none}
+.cvgr .nm{display:flex;align-items:center;gap:8px;min-width:0}.cvgr .nm b{font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cvgr .ty svg{width:22px;height:22px}
+.cvgr .gp{display:flex;flex-wrap:wrap;gap:4px}
+.cvgr .gp span{font-size:12px;background:var(--tag-bg-color);color:var(--page-text-color);border-radius:4px;padding:2px 7px}
+.cvgn{padding:16px;color:var(--neutral-light)}
+.tdes{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:6;display:flex;gap:8px}
+.tdes .tbtn{display:inline-flex;align-items:center;gap:8px;height:34px;background:var(--neutral-lighter)}
+.tdes .tbtn svg{font-size:16px}
+.tgraph.bgimg{background-size:cover;background-position:center}
+.tcvempty{padding:220px 12px 0;text-align:center;color:var(--page-text-color);font-size:13px;line-height:1.6}
+#dNew.dNewD .nflt{display:none}
+.cvdot{flex:0 0 5px;height:5px;border-radius:50%;background:var(--neutral-light);margin:0 6px 0 2px}
+.tr.on .cvdot{background:var(--page-text-color)}
 .tcvh{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px 0;font-weight:600;color:var(--primary)}
 .tcvh .tsq{width:26px;height:26px;background:var(--primary);color:var(--page-background-color);border-color:var(--primary);font-size:13px}
 
 .tgraph{position:relative;flex:1 1 auto;min-width:0;background-color:var(--nav-panel-bg);
   background-image:radial-gradient(circle,var(--field-border-color) 1px,transparent 1.2px);background-size:20px 20px;overflow:hidden;outline:0}
 .tgraph.empty{background-image:none}
+/* ⚠️ [hidden] loses to any author display rule — the stale graph painted under the Custom empty state (22 Oct 2026) */
+[hidden]{display:none!important}
 .tsvg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;user-select:none}
 .tsvg.pan{cursor:grabbing}
 .tsvg .lk{fill:none;stroke:var(--neutral-light);stroke-opacity:.55;stroke-width:1.4}
@@ -109,7 +137,12 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tsvg .nd{cursor:pointer}
 .tsvg .nd circle.ring,.tsvg .nd rect.ring{fill:var(--neutral-lighter);stroke-width:3}
 .tsvg .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
-.tsvg .nd .gl{color:var(--page-text-color)}
+/* ⚠️ THE GLYPH IS A NESTED <svg>, SO ITS PATHS PAINT BLACK UNLESS `fill` IS SET HERE — that is why every node glyph
+   read dark on a dark node. Live: a light glyph on a dark node with a severity ring; a DOWN / CRITICAL node is a solid
+   disc in its severity colour with a white glyph; the entry point is white on the blue tile. */
+.tsvg .nd .gl{color:var(--page-text-color);fill:currentColor}
+.tsvg .nd.solid .gl{color:var(--topology-info-btn-text)}
+.tsvg .nd.solid circle.ring,.tsvg .nd.root.solid rect.ring{fill:var(--nd-sev)}
 .tsvg .nd.root .gl{color:var(--topology-info-btn-text)}
 .tsvg .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
 .tsvg .nd .bdg circle{fill:var(--primary)}
@@ -156,6 +189,20 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tpop .r{display:flex;align-items:center;gap:8px;padding:3px 0}
 .tpop kbd{font:500 11px 'JetBrains Mono',monospace;background:var(--tag-bg-color);border-radius:3px;padding:1px 5px;color:var(--page-text-color)}
 .tpop .r .sp{flex:1}
+/* Keyboard Shortcuts card, hung off the toolbar's ? (the live product's own card) */
+.tkb{position:fixed;z-index:45;width:280px;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;box-shadow:0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent);visibility:hidden;opacity:0;transition:opacity .12s}
+.tkb.on{visibility:visible;opacity:1}
+.tkb .kh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--field-border-color);font-size:12.8px;font-weight:600;color:var(--primary)}
+.tkb .kh .q{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--tag-bg-color);font:600 11px Inter;color:var(--page-text-color)}
+.tkb .kh .x{margin-left:auto;width:20px;height:20px;border:0;border-radius:4px;background:var(--tag-bg-color);color:var(--page-text-color);cursor:pointer;font:600 13px Inter;line-height:1}
+.tkb .kh .x:hover{background:var(--neutral-regular)}
+.tkb .kb{padding:4px 12px 12px}
+.tkb .ks{margin:12px 0 6px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--page-text-color)}
+.tkb .kr{display:flex;align-items:center;gap:6px;min-height:28px}
+.tkb .kr .d{margin-left:auto;font-size:11.5px;color:var(--neutral-light);text-align:right}
+.tkb kbd{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;font:500 11px Inter;background:var(--tag-bg-color);border-radius:3px;color:var(--page-text-color)}
+.tkb kbd svg{width:12px;height:12px;fill:currentColor}
+.tkb .pl{color:var(--neutral-light);font-size:11px}
 .ttoast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:60;background:var(--secondary-green);color:var(--active-text-color);border-radius:4px;padding:10px 40px 10px 14px;min-width:280px;display:none}
 .ttoast.on{display:block}
 .ttoast b{display:block;font-size:13px;font-weight:600}
@@ -182,6 +229,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .dtag{font-size:11px;font-weight:500;background:var(--tag-bg-color);color:var(--page-text-color);border-radius:4px;padding:1px 7px}
 .dlbl{font-size:12.8px;color:var(--neutral-light);margin:0 0 6px}
 .dlbl i{color:var(--severity-critical);font-style:normal}
+.dlbl .tinfo{vertical-align:middle;margin-left:2px}
+#dNew .dlbl{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .dfld{margin-bottom:18px}
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
 .din{width:100%;height:34px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:0 11px;font:inherit;outline:0}
@@ -190,6 +239,51 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .din::placeholder{color:var(--neutral-light)}
 .derr{color:var(--severity-critical);font-size:11.5px;margin-top:4px}
 .dck{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+/* Topology Settings, rebuilt to the live drawer (22 Oct 2026) */
+.tdr .dh .dsub{font-size:13px;font-weight:400;color:var(--neutral-light);margin-left:6px}
+.tsegs button{height:30px;font-size:12.8px}
+.tsegs button.on{background:var(--neutral-lighter);color:var(--page-text-color);border-color:var(--field-border-color)}
+.dhalf{max-width:320px}
+.dsep{border-top:1px solid var(--border-color);margin:18px 0}
+.dsec2{font-size:15px;font-weight:600;margin:0 0 14px}
+.dnew{font-size:10px;font-weight:600;background:var(--chart-indigo, var(--primary));color:#fff;border-radius:3px;padding:1px 6px;letter-spacing:.03em}
+.dprev{position:relative;height:300px;border:1px solid var(--border-color);border-radius:4px;margin-bottom:14px;background-color:var(--page-background-color);background-image:radial-gradient(var(--border-color) 1px,transparent 1px);background-size:14px 14px;overflow:hidden;transition:height .2s}
+.dprev.big{height:440px}
+.dprev svg{width:100%;height:100%;display:block}
+.dpctl{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px}
+.dpctl button{width:24px;height:24px;border:0;border-radius:4px;background:none;color:var(--neutral-light);cursor:pointer;display:grid;place-items:center;font-size:15px}
+.dpctl button:hover{background:var(--neutral-lighter);color:var(--page-text-color)}
+.dprev .pl{stroke:var(--neutral-light);stroke-width:1.2;fill:none}
+.dprev .pl.l3{stroke:var(--severity-major);stroke-dasharray:5 4}
+.dprev .pn circle{fill:var(--page-background-color);stroke-width:2}
+.dprev .pn .pg{color:var(--page-text-color);fill:currentColor}
+.dprev .pn rect{fill:var(--topology-info-btn-bg);stroke:var(--severity-clear);stroke-width:2.5}
+.dprev .pn .pg.w{color:#fff}
+.dprev .pn text{font:600 10px Inter;fill:var(--page-text-color)}
+.dprev .pn .pip{font-weight:400;fill:var(--neutral-light)}
+.dprev .pb circle{fill:var(--neutral-light);stroke:var(--page-background-color);stroke-width:1.5}
+.dprev .pb line{stroke:var(--page-background-color);stroke-width:1.5}
+.dlock{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border-color);border-radius:4px;padding:12px;cursor:pointer;margin-bottom:22px}
+.dlock input{margin-top:2px;width:16px;height:16px;accent-color:var(--page-text-color)}
+.dlock b{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--primary);font-size:13px}
+.dlock b svg{font-size:14px;color:var(--neutral-light)}
+.dlock small{display:block;color:var(--neutral-light);font-size:12px;line-height:1.5;margin-top:4px}
+.drow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.drt{font-size:13px;font-weight:500;color:var(--primary)}
+.drd{font-size:12px;color:var(--neutral-light);margin-top:3px}
+.tsw2{flex:0 0 40px;height:20px;border-radius:100px;border:0;background:var(--neutral-lighter);position:relative;cursor:pointer}
+.tsw2::before{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--neutral-light);transition:left .15s}
+.tsw2.on{background:var(--severity-clear)}
+.tsw2.on::before{left:23px;background:#fff}
+.drng .dlbl{display:flex;align-items:center;gap:4px}
+.drng .dlbl .tinfo{font-size:13px}
+.drng .rr{display:grid;grid-template-columns:1fr 48px;gap:8px;align-items:center}
+.drng input[type=range]{width:100%;accent-color:var(--page-text-color);margin:0}
+.drng .rv{height:28px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);font:inherit;font-size:12.5px;text-align:center;width:48px;padding:0;box-sizing:border-box}
+.drng .rmm{display:flex;justify-content:space-between;font-size:11px;color:var(--neutral-light);margin-top:2px;padding-right:56px}
+.tsvg .lb .ipl{fill:var(--neutral-light);font-weight:400}
+.dmenu .dmn{padding:8px;color:var(--neutral-light);font-size:12px}
+
 .dck input{margin:2px 0 0;accent-color:var(--page-text-color);color-scheme:dark}
 html:not([data-theme]) .dck input{color-scheme:light}
 .dck small{display:block;color:var(--neutral-light);font-size:12px;margin-top:2px}
@@ -221,7 +315,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <label class="tsrch" id="tFindW"><span>@@I:search@@</span><input id="tFind" placeholder="Ctrl + F | Esc to clear" autocomplete="off"></label>
       <span class="tl3">Layer 3 <button class="tsw" id="tL3" aria-pressed="false">OFF</button>
         <button class="tinfo" data-tip="Show the Layer 3 (IP / routing) links between devices, drawn dashed" aria-label="About Layer 3">@@I:info-circle@@</button></span>
-      <span class="tgap"></span>
+      <span class="tgap" id="tModeGap"></span>
       <div class="tseg" id="tMode"><button data-m="expanded">Expanded</button><button data-m="progressive" class="on">Progressive</button></div>
       <span class="tgap"></span>
       <div class="tseg ico" id="tLay">
@@ -230,7 +324,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
         <button data-l="ltr" data-tip="Left to right" aria-label="Left to right layout">@@I:topology-left-to-right@@</button>
       </div>
       <span class="tgap"></span>
-      <button class="tsq" id="tHelp" aria-label="Legend" data-tip="Legend">@@I:question-circle@@</button>
+      <button class="tsq" id="tHelp" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-expanded="false">@@I:question-circle@@</button>
     </div>
     <button class="tsq" id="tFs" aria-label="Full screen" data-tip="Full screen">@@I:fullscreen@@</button>
     <span class="ttools" id="tTools2" style="gap:8px">
@@ -243,6 +337,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <aside class="tside" id="tSide"></aside>
     <div class="tgraph empty" id="tGraph" tabindex="0">
       <svg class="tsvg" id="tSvg" hidden><g id="tVp"><g id="tLinks"></g><g id="tNodes"></g></g></svg>
+      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg">@@I:image@@ Add Background Image</button><button class="tbtn" id="desCt">@@I:topology@@ Add Container</button><button class="tbtn" id="desEn">@@I:topology@@ Add Entity</button><input type="file" id="desBgF" accept="image/*" hidden></div>
       <div class="tempty" id="tEmpty">@@EMPTY@@<div id="tEmptyT">Please select entry point to view Topology</div></div>
       <div class="tovl" id="tOvl" hidden>
         <div class="g"><button class="tob" id="oKey" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts">@@I:keyboard@@</button><button class="tob" id="oFit" data-tip="Fit to screen" aria-label="Fit to screen">@@I:expand@@</button></div>
@@ -262,39 +357,70 @@ html:not([data-theme]) .dck input{color-scheme:light}
 
 <div class="ttip" id="tTip"></div>
 <div class="tpop" id="tPop"></div>
+<div class="tkb" id="tKb" role="dialog" aria-label="Keyboard shortcuts"></div>
 <div class="ttoast" id="tToast"><b id="tToastT"></b><span id="tToastB"></span><button aria-label="Close" onclick="toastHide()">@@I:times@@</button></div>
 <div class="tscrim" id="tScrim"></div>
 
-<aside class="tdr w20" id="dSet" aria-label="Topology Settings">
-  <div class="dh">Topology Settings <button data-close aria-label="Close">@@I:times@@</button></div>
+<aside class="tdr w40" id="dSet" aria-label="Topology Settings">
+  <div class="dh"><span>Topology Settings <small class="dsub" id="dSetFor"></small></span><button data-close aria-label="Close">@@I:times@@</button></div>
   <div class="db">
     <div class="dtabs" id="dSetTabs"><button data-t="sec" class="on">Security</button><button data-t="vis">Visualization Settings</button></div>
     <div data-pane="sec">
       <div class="dnote">@@I:info-circle@@ Applies to the currently selected topology. Other topologies are not affected.</div>
       <div class="dsec">Visibility</div>
-      <div class="dfld"><div class="dlbl">Access Type <i>*</i></div><div class="tseg" id="dAcc"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
-      <div class="dsec">Sub Topology <span class="dtag">Network only</span></div>
-      <label class="dck"><input type="checkbox" id="dSub" checked><span>Include Sub-Topologies<small>When enabled, auto-discovered sub-topologies (CDP, LLDP, etc.) appear in the sidebar under this topology. When disabled, they are hidden for this topology only.</small></span></label>
+      <div class="dfld"><div class="dlbl">Access Type <i>*</i></div><div class="tseg tsegs" id="dAcc"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+      <div id="dShare" hidden>
+        <div class="dfld"><div class="dlbl">Share With</div><div class="tseg tsegs" id="dShw"><button data-v="users" class="on">Users</button><button data-v="profiles">User Profiles</button></div></div>
+        <div class="dfld dhalf"><div class="dlbl"><span id="dShL">Users</span> <i>*</i></div><div class="dsel"><button class="din" id="dShB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="dShM"></div></div><div class="derr" id="dShE" hidden>Select at least one</div></div>
+      </div>
+      <div class="dsep"></div>
+      <div id="dSubW"><div class="dsec">Sub Topology <span class="dtag">Network only</span></div>
+      <label class="dck"><input type="checkbox" id="dSub" checked><span>Include Sub-Topologies<small>When enabled, auto-discovered sub-topologies (CDP, LLDP, etc.) appear in the sidebar under this topology. When disabled, they are hidden for this topology only.</small></span></label></div>
     </div>
     <div data-pane="vis" hidden>
-      <div class="dnote">@@I:info-circle@@ Applies to the currently selected topology. Other topologies are not affected.</div>
-      <div class="dfld"><div class="dlbl">Node label</div><div class="tseg" id="dLbl"><button data-v="name" class="on">Name</button><button data-v="ip">IP</button></div></div>
-      <label class="dck"><input type="checkbox" id="dMini" checked><span>Show minimap</span></label>
+      <div class="dprev" id="dPrev"><svg id="dPrevS" viewBox="0 0 620 330" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="dpctl"><button id="dPrevX" aria-label="Expand preview" data-tip="Expand preview">@@I:fullscreen@@</button><button id="dPrevIn" aria-label="Zoom in" data-tip="Zoom in">@@I:plus@@</button><button id="dPrevOut" aria-label="Zoom out" data-tip="Zoom out">@@I:minus@@</button></div></div>
+      <label class="dlock"><input type="checkbox" id="dLock"><span><b>@@I:lock@@ Lock Topology Visualization <span class="dtag">Admin only</span></b><small>When locked, the visualization settings below are fixed for all users. When unlocked, each user can adjust their own view.</small></span></label>
+      <div class="dsec dsec2">Overlays <span class="dnew">NEW</span></div>
+      <div class="drow"><div><div class="drt">Show Node IP Address</div><div class="drd">Display the device IP address after the hostname on each node.</div></div><button class="tsw2" id="dIp" role="switch" aria-checked="false" aria-label="Show Node IP Address"></button></div>
+      <div class="dsep"></div>
+      <div class="dsec dsec2">Radial Layout</div>
+      <div class="dgrid"><div class="drng" id="rRing"></div></div>
+      <div class="dsep"></div>
+      <div class="dsec dsec2">Zoom</div>
+      <div class="dgrid"><div class="drng" id="rZmin"></div><div class="drng" id="rZmax"></div></div>
+      <div class="dsep"></div>
+      <div class="dsec dsec2">Labels</div>
+      <div class="dgrid"><div class="drng" id="rLw"></div></div>
     </div>
   </div>
   <div class="df"><span class="sp"></span><button class="tbtn" id="dSetReset">Reset to Defaults</button><button class="tpri" id="dSetApply">Apply</button></div>
 </aside>
 
+<aside class="tdr w40" id="dCv" aria-label="Create Custom View">
+  <div class="dh"><span id="dCvT">Create Custom View</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <div class="dfld"><div class="dlbl" id="dCvL">Root Monitor <i>*</i></div><button class="din cvpick" id="cvPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select root monitor</span>@@I:chevron-down@@</button><div class="derr" id="cvPickE" hidden>Root Monitor is required</div></div>
+  </div>
+  <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="cvReset">Reset</button><button class="tpri" id="cvCreate">Create</button></div>
+</aside>
+<div class="cvgrid" id="cvGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="cvGq" placeholder="Search" autocomplete="off"></label>
+  <div class="cvgh"><span></span><span>Monitor ↓</span><span>IP</span><span>Type</span><span>Groups</span><span>Tags</span></div><div class="cvgb" id="cvGb"></div></div>
+
 <aside class="tdr w40" id="dNew" aria-label="Create Topology View">
-  <div class="dh">Create Topology View <button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="dh"><span id="nTitle">Create Topology View</span> <button data-close aria-label="Close">@@I:times@@</button></div>
   <div class="db">
     <div class="dgrid">
-      <div class="dfld"><div class="dlbl">Topology View Name <i>*</i></div><input class="din" id="nName" autocomplete="off"><div class="derr" id="nNameE" hidden>Topology View Name is required</div></div>
-      <div class="dfld"><div class="dlbl">Topology View Group <i>*</i> <span class="tinfo" data-tip="Leave as a standalone view, or file it under a key:value group">@@I:info-circle@@</span></div><input class="din" id="nGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="nGrpE" hidden>Topology View Group is required</div></div>
-      <div class="dfld"><div class="tseg" id="nInc"><button data-v="include" class="on">Include</button><button data-v="exclude">Exclude</button></div></div>
-      <div class="dfld"><div class="dlbl">Monitor Filter</div><div class="dsel"><button class="din" id="nMonB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nMonM"></div></div></div>
+      <div class="dfld"><div class="dlbl"><span id="nNameL">Topology View Name</span> <i>*</i></div><input class="din" id="nName" autocomplete="off" placeholder=""><div class="derr" id="nNameE" hidden>Topology View Name is required</div></div>
+      <div class="dfld"><div class="dlbl"><span id="nGrpL">Topology View Group</span> <i>*</i> <span class="tinfo" data-tip="Leave as a standalone view, or file it under a key:value group">@@I:info-circle@@</span></div><input class="din" id="nGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="nGrpE" hidden>Topology View Group is required</div></div>
+      <div class="dfld nflt"><div class="tseg" id="nInc"><button data-v="include" class="on">Include</button><button data-v="exclude">Exclude</button></div></div>
+      <div class="dfld nflt"><div class="dlbl">Monitor Filter</div><div class="dsel"><button class="din" id="nMonB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nMonM"></div></div></div>
     </div>
     <div class="dfld"><div class="dlbl">Security <i>*</i></div><div class="tseg" id="nSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+    <div id="nShare" hidden>
+      <div class="dfld"><div class="dlbl">Share With</div><div class="tseg tsegs" id="nShw"><button data-v="users" class="on">Users</button><button data-v="profiles">User Profiles</button></div></div>
+      <div class="dfld dhalf"><div class="dlbl" id="nShL">Users</div><div class="dsel"><button class="din" id="nShB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nShM"></div></div></div>
+    </div>
   </div>
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="nReset">Reset</button><button class="tpri" id="nSave">Create Topology View</button></div>
 </aside>
@@ -302,62 +428,41 @@ html:not([data-theme]) .dck input{color-scheme:light}
 <script>
 const IC = /*@@ICONS@@*/;
 const MON = /*@@MONICONS@@*/;
+const MONC = /*@@MONCOLOR@@*/;   /* the same marks in their brand colours — the tree's icons */
 const ic = (n) => IC[n] || '';
-const mi = (n) => MON[n] || MON.server || '';
+const mi = (n) => MONC[n] || MONC.server || '';
 
 /* ================= DATA — the instance's own tree, every name and address scrubbed =================
    Tree: a group → its type rows → vendor rows → the monitors that can be an entry point. A leaf's `t`
    is its topology: the neighbours that auto-discovery reported, each `{n, ip, ic, s, links, l3, kids}`.
    ⚠️ `kids` are only drawn when a neighbour is expanded (Progressive) or always (Expanded); `count` is
    what the live vCenter graph badges on a host whose VMs it has not drawn. */
-const VMS = (pre, n, ip0, sevs) => Array.from({length:n}, (_, i) => ({ n: pre + '-' + String(i+1).padStart(2,'0'), ip: '198.51.100.' + (ip0 + i), ic: 'vm', s: (sevs && sevs[i]) || 'clear' }));
-const T_EDGE = { n:'RUCKUS_L3', ip:'192.0.2.182', ic:'switch', s:'unreachable', kids:[
-  { n:'Cisco nexus-C9524', ip:'192.0.2.24', ic:'switch', s:'clear', links:2, l3:true },
-  { n:'6506-4-282',        ip:'192.0.2.28', ic:'switch', s:'clear', links:2, l3:true },
-  { n:'5520-24T-9794',     ip:'192.0.2.94', ic:'switch', s:'clear', links:1 } ]};
-const T_ESX11 = { n:'esxi11.example.com', ip:'198.51.100.11', ic:'vmware-esxi', s:'down', kids: [
-  ...['app-ubuntu-114','ui-server-8.113','ni-8.136','kr-8.67','int-f-8.67','internal-svc-9.111','sql-145','support-9.154','docker-aiops','vcls-8be33','sql-148','sql-159','windows-10.132','aix-10.84','analytics-2.226'].map((n,i)=>({ n, ip:'198.51.100.'+(40+i), ic:'vm', s: n==='docker-aiops'?'critical':'clear' })),
-  { n:'metadata-server', ip:'198.51.100.60', ic:'linux', s:'warning' } ]};
-const T_ESX13 = { n:'esxi13.example.com', ip:'198.51.100.13', ic:'vmware-esxi', s:'down', kids: VMS('vm13', 8, 70, {2:'critical', 5:'warning'}) };
-const T_VC = { n:'198.51.100.180', ip:'198.51.100.180', ic:'vcenter', s:'clear', kids:[
-  { n:'198.51.100.32', ip:'198.51.100.32', ic:'vmware-esxi', s:'clear', kids: VMS('vm32', 9, 100) },
-  { n:'198.51.100.35', ip:'198.51.100.35', ic:'vmware-esxi', s:'clear', kids: VMS('vm35', 12, 110) },
-  { n:'198.51.100.122', ip:'198.51.100.122', ic:'vmware-esxi', s:'clear', kids: VMS('vm22', 59, 130) },
-  { n:'198.51.100.124', ip:'198.51.100.124', ic:'vmware-esxi', s:'clear', kids: VMS('vm24', 57, 190) },
-  { n:'esxi13.example.com', ip:'198.51.100.13', ic:'vmware-esxi', s:'critical', kids: VMS('vm13', 49, 1) },
-  { n:'esxi18.example.com', ip:'198.51.100.18', ic:'vmware-esxi', s:'clear', kids: VMS('vm18', 6, 60) },
-  { n:'198.51.100.22', ip:'198.51.100.22', ic:'vmware-esxi', s:'clear', kids: VMS('vm22b', 23, 140) } ]};
-const T_XEN = { n:'xen71master', ip:'198.51.100.231', ic:'citrix-xen', s:'clear', kids: VMS('xenvm', 5, 232, {3:'warning'}) };
-const T_NTX = { n:'NTNX-806419bd-A', ip:'198.51.100.210', ic:'nutanix', s:'clear', kids:[
-  { n:'Ubuntu', ip:'198.51.100.214', ic:'vm', s:'clear' }, { n:'198.51.100.212', ip:'198.51.100.212', ic:'prism', s:'clear' },
-  { n:'Linux-Test-Machine', ip:'198.51.100.215', ic:'vm', s:'clear' } ]};
-const T_PRISM = { n:'198.51.100.212', ip:'198.51.100.212', ic:'prism', s:'clear', kids:[ { n:'NTNX-806419bd-A', ip:'198.51.100.210', ic:'nutanix', s:'clear', kids: T_NTX.kids } ]};
-const leaf = (n, ip, ic, s, t) => ({ n, ip, ic, s, t: t || null });
-const TREE = {
-  network: [{ n:'Network', s:'down', kids:[
-    { n:'Switch', s:'down', kids:[
-      { n:'Hewlett Packard Enterprise', s:'down', kids:[ leaf('HP ProCurve Switch 4108GL', '192.0.2.84', 'switch', 'down') ]},
-      { n:'Cisco Systems', s:'warning', kids:[ leaf('cisco-core.example.com', '192.0.2.2', 'switch', 'warning') ]},
-      leaf('core-oa1', '192.0.2.12', 'router', 'clear'),
-      leaf('RUCKUS_L3', '192.0.2.182', 'switch', 'unreachable', T_EDGE) ]},
-    { n:'Router', s:'clear', kids:[ { n:'Cisco Systems', s:'clear', kids:[ leaf('core-oa1', '192.0.2.12', 'router', 'clear') ]} ]} ]}],
-  sdn: [], cloud: [],
-  virtualization: [{ n:'Virtualization', s:'down', kids:[
-    { n:'VMware ESXi', s:'down', kids:[ leaf('esxi11.example.com', '198.51.100.11', 'vmware-esxi', 'down', T_ESX11), leaf('esxi13.example.com', '198.51.100.13', 'vmware-esxi', 'down', T_ESX13) ]},
-    { n:'vCenter', s:'clear', kids:[ leaf('198.51.100.180', '198.51.100.180', 'vcenter', 'clear', T_VC) ]},
-    { n:'Citrix Xen', s:'clear', kids:[ leaf('xen71master', '198.51.100.231', 'citrix-xen', 'clear', T_XEN) ]} ]}],
-  hci: [{ n:'HCI', s:'clear', kids:[
-    { n:'Prism', s:'clear', kids:[ leaf('198.51.100.212', '198.51.100.212', 'prism', 'clear', T_PRISM) ]},
-    { n:'Nutanix', s:'clear', kids:[ leaf('NTNX-806419bd-A', '198.51.100.210', 'nutanix', 'clear', T_NTX) ]} ]}],
-};
+/* ⚠️ THE DATA IS THE LIVE PRODUCT'S (21 Oct 2026) — `_topology/data.json`, inlined by the build. Virtualization
+   is the second lab instance's own tree and topology: its `ui.action.topology.hierarchy.fetch` websocket frames (Snappy-
+   compressed JSON) decoded, names resolved through the frame's `instances` map and the objects API. Network and
+   HCI are the first lab instance's. Every address and every person / customer name is scrubbed; statuses are read off the
+   live screenshots, and a neighbour they did not show is 'unknown' (the grey ring). */
+const TREE = /*@@DATA@@*/;
 const TABS = [['network','Network'],['sdn','SDN'],['cloud','Cloud'],['virtualization','Virtualization'],['hci','HCI'],['custom','Custom']];
-const CUSTOM = [{ grp:'tag11', views:[] }];
+/* Custom views, from the live Custom tab (172.16.14.71, 22 Oct 2026 screenshot): groups mkl · test · western · view, and
+   mkl › abc = the core switch linked to a D-Link device. ⚠️ Only abc's contents were visible — the other three groups
+   were collapsed, so they carry no views here rather than invented ones. A view is an entry point + the monitors linked
+   to it, drawn like any other topology (not a hub named after the view). Names scrubbed (cisco_core.motadata.local). */
+const CUSTOM = [
+  { grp:'mkl', views:[ { name:'abc', grp:'mkl', sec:'public', root:{ n:'cisco-core.example.com', ip:'192.0.2.2', ic:'switch', s:'warning',
+      kids:[ { n:'DLink', ip:'192.0.2.40', ic:'router', s:'critical' } ] } } ] },
+  { grp:'test', views:[] }, { grp:'western', views:[] }, { grp:'view', views:[] } ];
 
 /* ================= STATE ================= */
 const T = { tab:'network', open:{}, sel:{}, q:'', find:'', l3:false, mode:'progressive', lay:'radial',
   exp:{}, vp:{x:0,y:0,k:1}, nodes:[], links:[], pick:null, label:'name', mini:true, acc:'public', sub:true,
-  view:null, cv:{} };
+  shw:'users', users:[], profiles:[], lock:false, ip:false, ring:300, zmin:.1, zmax:2.5, lw:80,
+  view:CUSTOM[0].views[0], cv:{ mkl:true } };   /* opens on mkl › abc, the view the live link points at */
 const $ = (id) => document.getElementById(id);
+/* ⚠️ an <svg> has no `.hidden` property (only HTML elements do) — `$('tSvg').hidden = true` set an expando and never
+   touched the attribute, so a stale graph kept painting under the Custom tab's empty state (22 Oct 2026). Give the
+   graph svg the HTML behaviour, so every existing `.hidden` read and write means the attribute. */
+Object.defineProperty($('tSvg'), 'hidden', { get(){ return this.hasAttribute('hidden'); }, set(v){ this.toggleAttribute('hidden', !!v); } });
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ================= THEME / EMBED ================= */
@@ -398,11 +503,11 @@ function treePaint(){
     if (!match(x)) return;
     const id = path + '/' + i, isLeaf = !x.kids, open = q ? true : (T.open[T.tab + id] ?? (d < 1));
     const on = isLeaf && T.pick === id;
-    rows.push(`<div class="tr${on?' on':''}" data-id="${id}" data-leaf="${isLeaf?1:''}" style="padding-left:${d*20}px" ${isLeaf?`title="${esc(x.n + ' - (' + x.ip + ')')}"`:''}>`
+    rows.push(`<div class="tr${on?' on':''}" data-id="${id}" data-leaf="${isLeaf?1:''}" style="padding-left:${d*20}px" ${isLeaf?`title="${esc(x.n + (x.ip ? ' - (' + x.ip + ')' : ''))}"`:''}>`
       + `<span class="tcv${isLeaf?' ph':''}">${open ? ic('chevron-down') : ic('chevron-right')}</span>`
       + `<span class="tdot s-${x.s}${!isLeaf && x.s==='down'?' fill':''}${isLeaf && x.s==='down'?' fill':''}" title="${x.s}"></span>`
       + (isLeaf ? `<span class="tmi">${mi(x.ic)}</span>` : '')
-      + `<span class="tnm">${esc(x.n)}${isLeaf ? ' - (' + esc(x.ip) + ')' : ''}</span></div>`);
+      + `<span class="tnm">${esc(x.n)}${isLeaf && x.ip ? ' - (' + esc(x.ip) + ')' : ''}</span></div>`);
     if (!isLeaf && open) walk(x.kids, d + 1, id);
   });
   walk(list, 0, '');
@@ -421,7 +526,7 @@ function customSidePaint(){
   const s = $('tSide');
   s.innerHTML = `<div class="tcvh">Custom Views <button class="tsq" id="cvAdd" aria-label="Create Topology View" data-tip="Create Topology View">${ic('plus')}</button></div>`
     + `<label class="tsrch"><span>${ic('search')}</span><input id="cvQ" placeholder="Search views" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="cvTree"></div>`;
-  $('cvAdd').onclick = () => drOpen('dNew');
+  $('cvAdd').onclick = () => { CV.mode = 'root'; drOpen('dCv'); };
   $('cvQ').oninput = (e) => { T.q = e.target.value; cvTreePaint(); };
   cvTreePaint();
 }
@@ -433,20 +538,27 @@ function cvTreePaint(){
     const open = q ? true : !!T.cv[g.grp];
     rows.push(`<div class="tr" data-g="${gi}"><span class="tcv">${open?ic('chevron-down'):ic('chevron-right')}</span><span class="tnm">${esc(g.grp)}</span></div>`);
     if (open) { if (!vs.length) rows.push('<div class="tnone" style="padding-left:28px">No views yet</div>');
-      vs.forEach((v) => rows.push(`<div class="tr${T.view===v?' on':''}" data-v="${gi}:${g.views.indexOf(v)}" style="padding-left:20px"><span class="tcv ph"></span><span class="tmi">${ic('topology')}</span><span class="tnm">${esc(v.name)}</span></div>`)); }
+      vs.forEach((v) => rows.push(`<div class="tr${T.view===v?' on':''}" data-v="${gi}:${g.views.indexOf(v)}" style="padding-left:20px"><span class="tcv ph"></span><span class="cvdot"></span><span class="tnm">${esc(v.name)}</span></div>`)); }
   });
-  $('cvTree').innerHTML = rows.join('') || '<div class="tnone">No matching views</div>';
+  $('cvTree').innerHTML = rows.join('') || (CUSTOM.length ? '<div class="tnone">No matching views</div>' : '<div class="tcvempty">No custom views yet. Click + to create one.</div>');
 }
 $('tSide').addEventListener('click', (e) => {
   if (T.tab !== 'custom') return; const r = e.target.closest('.tr'); if (!r) return;
   if (r.dataset.g != null) { const g = CUSTOM[+r.dataset.g]; T.cv[g.grp] = !T.cv[g.grp]; cvTreePaint(); return; }
-  const [gi, vi] = r.dataset.v.split(':').map(Number); T.view = CUSTOM[gi].views[vi]; cvTreePaint(); graphLoad();
+  const [gi, vi] = r.dataset.v.split(':').map(Number); T.design = null; T.view = CUSTOM[gi].views[vi]; cvTreePaint(); graphLoad();
 });
 
 /* ================= TOOLBAR ================= */
 function toolsPaint(){
   const custom = T.tab === 'custom', drawn = !!curRoot();
-  $('tTools').hidden = custom; $('tTools2').hidden = custom;
+  /* live Custom tab: the same toolbar minus Expanded/Progressive and left-to-right; creating a view is the sidebar's + */
+  $('tTools').hidden = false; $('tTools2').hidden = false; $('tMode').hidden = custom; $('tModeGap').hidden = custom;
+  $('tLay').querySelector('[data-l=ltr]').hidden = custom; if (custom && T.lay === 'ltr') T.lay = 'radial';
+  $('tCreate').hidden = custom && !T.design;
+  /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
+  const des = custom && !!T.design;
+  $('tL3').parentElement.hidden = des; $('tLay').hidden = des; $('tHelp').hidden = des; $('tTools2').hidden = des;
+  $('tDes').hidden = !des; $('tGraph').classList.toggle('bgimg', des && !!T.design.bg); $('tGraph').style.backgroundImage = des && T.design.bg ? `url("${T.design.bg}")` : '';
   $('tFindW').hidden = !drawn;
   $('tL3').classList.toggle('on', T.l3); $('tL3').textContent = T.l3 ? 'ON' : 'OFF'; $('tL3').setAttribute('aria-pressed', T.l3);
   [...$('tMode').children].forEach(b => b.classList.toggle('on', b.dataset.m === T.mode));
@@ -464,16 +576,53 @@ $('tXml').onclick = () => {
   toast('Success', 'The file will be downloaded once ready');
   setTimeout(() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([xml], { type:'application/xml' })); a.download = 'topology-' + r.n.replace(/\W+/g,'-') + '.xml'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }, 600);
 };
-$('tHelp').onclick = (e) => popToggle(e.currentTarget, '<h4>Legend</h4>' + ['clear','warning','major','critical','down','unreachable','maintenance'].map(s => `<div class="r"><span class="tdot s-${s}"></span>${s[0].toUpperCase()+s.slice(1)}</div>`).join('')
-  + `<div class="r" style="margin-top:6px"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" class="lk" style="stroke:var(--neutral-light)"/></svg>Link</div><div class="r"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" style="stroke:var(--chart-indigo);stroke-dasharray:5 4"/></svg>Layer 3 link</div>`
-  + '<div class="r"><span class="dtag">N</span>Hidden children — click to expand</div>');
+/* the ? is the live product's Keyboard Shortcuts card: HOVER opens it, click pins/unpins it. The Legend it
+   carried before this (an inference) is parked as kbLegendHTML, unreferenced. */
+const KB_SECT = [
+  ['Navigation', [ [['@up','@down','@left','@right'], 'Pan graph'], [['+','/','-'], 'Zoom in / out'], [['F'], 'Fit & center all nodes'] ]],
+  ['View', [ [['1','/','2','/','3'], 'Full / Tree / Left-to-right view'], [['Ctrl','+','Shift','+','F'], 'Toggle fullscreen'] ]],
+  ['UI', [ [['M'], 'Toggle minimap'], [['i'], 'Inspect node connections'], [['Ctrl','+','F'], 'Focus search'], [['Escape'], 'Clear search / deselect'] ]],
+];
+function kbKey(k){
+  if (k === '+' || k === '/') return `<span class="pl">${k}</span>`;
+  const a = { '@up':'long-arrow-up', '@down':'long-arrow-down', '@left':'long-arrow-left', '@right':'long-arrow-right' }[k];
+  return `<kbd>${a ? ic(a) : esc(k)}</kbd>`;
+}
+/* "+" is both a key (zoom in) and the joiner; in Zoom the first + is the key */
+function kbRow(keys, d, zoom){ return `<div class="kr">${keys.map((k, i) => zoom && i === 0 ? `<kbd>+</kbd>` : zoom && i === 2 ? `<kbd>-</kbd>` : kbKey(k)).join('')}<span class="d">${esc(d)}</span></div>`; }
+function kbHTML(){
+  return `<div class="kh"><span class="q">?</span>Keyboard Shortcuts<button class="x" id="tKbX" aria-label="Close keyboard shortcuts">−</button></div><div class="kb">`
+    + KB_SECT.map(([h, rows]) => `<div class="ks">${h}</div>` + rows.map(([k, d]) => kbRow(k, d, d === 'Zoom in / out')).join('')).join('') + '</div>';
+}
+function kbLegendHTML(){ return '<h4>Legend</h4>' + ['clear','warning','major','critical','down','unreachable','maintenance'].map(s => `<div class="r"><span class="tdot s-${s}"></span>${s[0].toUpperCase()+s.slice(1)}</div>`).join(''); }
+const KB = { pin:false, t:null };
+function kbPlace(anchor){
+  const c = $('tKb'), r = anchor.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight;
+  c.style.left = Math.min(innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2)) + 'px';
+  c.style.top = (r.bottom + 6 + h > innerHeight - 8 ? Math.max(8, r.top - h - 6) : r.bottom + 6) + 'px';
+}
+function kbShow(anchor){
+  clearTimeout(KB.t); const c = $('tKb'); popClose(); tipHide();
+  c.innerHTML = kbHTML(); $('tKbX').onclick = kbHide; kbPlace(anchor || $('tHelp')); c.classList.add('on'); $('tHelp').setAttribute('aria-expanded', 'true');
+}
+function kbHide(){ clearTimeout(KB.t); KB.pin = false; $('tKb').classList.remove('on'); $('tHelp').setAttribute('aria-expanded', 'false'); }
+function kbOpen(){ return $('tKb').classList.contains('on'); }
+/* the pointer must cross a 6px gap to reach the card: closing waits 200ms and the card's own enter cancels it */
+function kbLater(){ clearTimeout(KB.t); if (!KB.pin) KB.t = setTimeout(kbHide, 200); }
+$('tHelp').addEventListener('mouseenter', () => { clearTimeout(KB.t); if (!kbOpen()) KB.t = setTimeout(() => kbShow($('tHelp')), 140); });
+$('tHelp').addEventListener('mouseleave', kbLater);
+$('tKb').addEventListener('mouseenter', () => clearTimeout(KB.t));
+$('tKb').addEventListener('mouseleave', kbLater);
+$('tHelp').onclick = () => { if (kbOpen() && KB.pin) return kbHide(); KB.pin = true; kbShow($('tHelp')); };
 $('tSet').onclick = () => drOpen('dSet');
 $('tCreate').onclick = () => drOpen('dNew');
 
 /* ================= GRAPH ================= */
 function curRoot(){
-  if (T.tab === 'custom') { const v = T.view; if (!v) return null;
-    return { n: v.name, ip: v.grp, ic:'topology', s:'clear', kids: v.mons.map(m => ({ ...m, kids: undefined })) }; }
+  if (T.tab === 'custom') { if (T.design) return { ...T.design.root, kids: T.design.kids }; const v = T.view; if (!v) return null;
+    if (v.root) return v.root;
+    /* a view made in Create Topology View: its first monitor is the entry point, the rest link to it */
+    const [h, ...rest] = v.mons; return h ? { ...h, kids: rest.map(m => ({ ...m, kids: undefined })) } : null; }
   if (!T.pick) return null; const l = nodeAt(T.pick); return l ? (l.t || 'none') : null;
 }
 function graphLoad(){ graphBuild(true); }
@@ -485,7 +634,7 @@ function graphBuild(refit){
   $('tEmpty').hidden = show; $('tEmpty').classList.toggle('big', r === 'none');
   $('tEmptyT').textContent = r === 'none' ? 'No data found' : T.tab === 'custom' ? 'Select or create a Custom View to begin designing' : 'Please select entry point to view Topology';
   toolsPaint();
-  if (!show) { T.nodes = []; T.links = []; return; }
+  if (!show) { T.nodes = []; T.links = []; $('tNodes').innerHTML = ''; $('tLinks').innerHTML = ''; return; }
   layout(r); graphPaint(); if (refit) fit();
 }
 /* a node is "open" (its kids drawn) in Expanded mode, or once clicked in Progressive mode */
@@ -497,11 +646,13 @@ function layout(r){
   (r.kids || []).forEach((c, i) => { const cn = add(c, 'r/' + i, 1, root); if (c.kids && isOpen(cn.key)) c.kids.forEach((g, j) => add(g, cn.key + '/' + j, 2, cn)); });
   const kids = root.kids, n1 = kids.length;
   if (T.lay === 'radial') {
-    const R1 = Math.max(170, n1 * 21);   /* ~21px of arc per neighbour keeps 16 labels apart */
-    kids.forEach((c, i) => { const a = -Math.PI / 2 + (i / Math.max(1, n1)) * Math.PI * 2; c.a = a; c.x = Math.cos(a) * R1; c.y = Math.sin(a) * R1;
+    const anyOpen = kids.some(c => c.kids.length);
+    const R1 = Math.max(anyOpen ? T.ring * 1.1 : T.ring * .57, n1 * 21);   /* Ring Spacing (Topology Settings) scales the first ring; 300 = the old 330/170 */   /* ~21px of arc per neighbour keeps 16 labels apart */
+    kids.forEach((c, i) => { const a = n1 === 1 ? 0 : -Math.PI / 2 + (i / Math.max(1, n1)) * Math.PI * 2;   /* one neighbour sits to the right, as live draws a two-node view */ c.a = a; c.x = Math.cos(a) * R1; c.y = Math.sin(a) * R1;
       const m = c.kids.length; if (!m) return;
-      const R2 = Math.max(120, m * 9), spread = Math.min(Math.PI * 1.6, Math.max(Math.PI / 2, m * 0.16));
-      c.kids.forEach((g, j) => { const b = a + (m === 1 ? 0 : (j / (m - 1) - .5) * spread); const rr = R2 + (m > 24 ? (j % 2) * 60 : 0); g.x = c.x + Math.cos(b) * rr; g.y = c.y + Math.sin(b) * rr; }); });
+      /* a host's VMs fan OUTWARD from it on their own arc, sized so ~80px of arc separates two of them */
+      const spread = Math.min(Math.PI * 1.25, Math.max(Math.PI / 3, m * 0.24)), R2 = Math.max(150, (m * 80) / spread);
+      c.kids.forEach((g, j) => { const b = a + (m === 1 ? 0 : (j / (m - 1) - .5) * spread); const rr = R2 + (m > 24 ? (j % 2) * 70 : 0); g.x = c.x + Math.cos(b) * rr; g.y = c.y + Math.sin(b) * rr; }); });
   } else {
     /* hierarchical / left-to-right: leaves get one slot each, parents centre over theirs */
     /* ⚠️ A host with dozens of VMs would run them out into one 6,000px row, so a neighbour's children
@@ -519,14 +670,26 @@ function layout(r){
   T.nodes = N; T.links = L;
 }
 function trunc(s, n = 16){ return s.length > n ? s.slice(0, 6) + '…' + s.slice(-6) : s; }
+/* live wraps a label onto up to four centred lines of ~14 characters, word by word; only a single word longer
+   than a line is cut in the middle ("RADWIN…tility"), and a fifth line becomes "…" on the fourth */
+function wrapLabel(s, w = 14, max = 4){
+  const words = String(s).split(/\s+/).filter(Boolean), lines = []; let cur = '';
+  words.forEach(x => { if (x.length > w + 2) x = x.slice(0, 6) + '…' + x.slice(-6);
+    if (!cur) cur = x; else if ((cur + ' ' + x).length <= w) cur += ' ' + x; else { lines.push(cur); cur = x; } });
+  if (cur) lines.push(cur);
+  if (lines.length > max) { lines.length = max; lines[max - 1] = lines[max - 1].replace(/.{0,2}$/, '') + '…'; }
+  return lines;
+}
 function graphPaint(){
-  const f = T.find, hit = (n) => f && (n.d.n + ' ' + (n.d.ip || '')).toLowerCase().includes(f);
-  const anyHit = f && T.nodes.some(hit);
+  const sk = T.insp && T.sel.node, nb = new Set(sk ? [sk] : []);
+  if (sk) T.links.forEach(l => { if (l.a.key === sk) nb.add(l.b.key); if (l.b.key === sk) nb.add(l.a.key); });
+  const f = T.find, hit = (n) => sk ? nb.has(n.key) : f && (n.d.n + ' ' + (n.d.ip || '')).toLowerCase().includes(f);
+  const anyHit = (sk || f) && T.nodes.some(hit);
   /* links: a pair with several physical links fans out as several curves (live: two arcs between a pair) */
   const lk = [];
   T.links.forEach(l => {
     const {a, b} = l, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
-    const dim = anyHit && !(hit(a) || hit(b)) ? ' dim' : '';
+    const dim = sk ? (a.key === sk || b.key === sk ? '' : ' dim') : anyHit && !(hit(a) || hit(b)) ? ' dim' : '';
     for (let i = 0; i < l.links; i++) { const o = l.links === 1 ? 0 : (i - (l.links - 1) / 2) * 22;
       lk.push(`<path class="lk${dim}" data-a="${a.key}" data-b="${b.key}" d="M${a.x},${a.y} Q${mx + nx * o},${my + ny * o} ${b.x},${b.y}"/>`); }
     if (T.l3 && l.l3) lk.push(`<path class="lk l3${dim}" d="M${a.x},${a.y} Q${mx + nx * 40},${my + ny * 40} ${b.x},${b.y}"/>`);
@@ -535,15 +698,18 @@ function graphPaint(){
   $('tNodes').innerHTML = T.nodes.map(n => {
     const d = n.d, root = n.depth === 0, sev = 'var(--severity-' + (d.s || 'unknown') + ', var(--neutral-light))';
     const hidden = d.kids && d.kids.length && n.depth > 0 && !isOpen(n.key) ? d.kids.length : 0;
-    const label = trunc(T.label === 'ip' && d.ip ? d.ip : d.n);
-    const cls = 'nd' + (root ? ' root' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
+    const label = wrapLabel(d.n, root ? Math.round(T.lw * 26 / 80) : Math.max(4, Math.round(T.lw / 5.7)));   /* Label Width: 80px ≈ 14 chars */
+    if (T.ip && d.ip && d.ip !== d.n) label.push(d.ip);   /* the entry point prints its name whole */
+    /* live: only DOWN fills the shape (a VM disc, or the entry-point tile — motadataaa); critical is a red ring */
+    const solid = d.s === 'down';
+    const cls = 'nd' + (root ? ' root' : '') + (solid ? ' solid' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
     const shape = root ? `<rect class="ring" x="-38" y="-38" width="76" height="76" rx="12" style="stroke:${sev}"/><rect class="sring" x="-45" y="-45" width="90" height="90" rx="16"/>`
                        : `<circle class="ring" r="33" style="stroke:${sev}"/><circle class="sring" r="40"/>`;
     const gs = root ? 34 : 24;
-    return `<g class="${cls}" data-k="${n.key}" transform="translate(${n.x},${n.y})">${shape}`
+    return `<g class="${cls}" data-k="${n.key}" transform="translate(${n.x},${n.y})" style="--nd-sev:${sev}">${shape}`
       + `<svg class="gl" x="${-gs/2}" y="${-gs/2 - (d.badge?5:0)}" width="${gs}" height="${gs}" viewBox="0 0 512 512">${monGlyph(d.ic)}</svg>`
       + (d.badge ? `<text x="0" y="24" text-anchor="middle" style="font:600 10px Inter;fill:currentColor" class="gl">${esc(d.badge)}</text>` : '')
-      + `<text class="lb" x="0" y="${root ? 56 : 50}" text-anchor="middle">${esc(label)}</text>`
+      + `<text class="lb" x="0" y="${root ? 56 : 50}" text-anchor="middle">${label.map((t, i) => `<tspan x="0" dy="${i ? 14 : 0}"${T.ip && d.ip && i === label.length - 1 && t === d.ip ? ' class="ipl"' : ''}>${esc(t)}</tspan>`).join('')}</text>`
       + (hidden ? `<g class="bdg" transform="translate(25,-25)"><circle r="11"/><text text-anchor="middle" y="3.5">${hidden}</text></g>` : '')
       + '</g>';
   }).join('');
@@ -555,16 +721,16 @@ function monGlyph(n){ const s = MON[n] || MON.server || ''; const m = s.match(/<
 function vpApply(){ const v = T.vp; $('tVp').setAttribute('transform', `translate(${v.x},${v.y}) scale(${v.k})`); miniView(); }
 function bbox(){ if (!T.nodes.length) return {x0:0,y0:0,x1:1,y1:1}; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; T.nodes.forEach(n => { x0=Math.min(x0,n.x-45); y0=Math.min(y0,n.y-45); x1=Math.max(x1,n.x+45); y1=Math.max(y1,n.y+65); }); return {x0,y0,x1,y1}; }
 function fit(){
-  const g = $('tGraph'), W = g.clientWidth, H = g.clientHeight, b = bbox(); if (!W) return;
-  const k = Math.min(1.3, Math.max(.2, Math.min((W - 120) / (b.x1 - b.x0), (H - 120) / (b.y1 - b.y0))));
+  const g = $('tGraph'), W = g.clientWidth, H = g.clientHeight, b = bbox(); T.needFit = !W; if (!W) return;   /* no size yet (first paint): the ResizeObserver fits once it has one */
+  const k = Math.min(Math.min(1.3, T.zmax), Math.max(T.zmin, Math.min((W - 120) / (b.x1 - b.x0), (H - 120) / (b.y1 - b.y0))));
   T.vp = { k, x: W / 2 - (b.x0 + b.x1) / 2 * k, y: H / 2 - (b.y0 + b.y1) / 2 * k }; vpApply();
 }
-function zoom(f, cx, cy){ const g = $('tGraph'); cx ??= g.clientWidth / 2; cy ??= g.clientHeight / 2; const v = T.vp, k = Math.min(3, Math.max(.15, v.k * f)); v.x = cx - (cx - v.x) * k / v.k; v.y = cy - (cy - v.y) * k / v.k; v.k = k; vpApply(); }
+function zoom(f, cx, cy){ const g = $('tGraph'); cx ??= g.clientWidth / 2; cy ??= g.clientHeight / 2; const v = T.vp, k = Math.min(T.zmax, Math.max(T.zmin, v.k * f)); v.x = cx - (cx - v.x) * k / v.k; v.y = cy - (cy - v.y) * k / v.k; v.k = k; vpApply(); }
 function pan(dx, dy){ T.vp.x += dx; T.vp.y += dy; vpApply(); }
 function centre(){ const g = $('tGraph'), r = T.nodes[0]; if (!r) return; T.vp.x = g.clientWidth / 2 - r.x * T.vp.k; T.vp.y = g.clientHeight / 2 - r.y * T.vp.k; vpApply(); }
 $('oFit').onclick = fit; $('oIn').onclick = () => zoom(1.2); $('oOut').onclick = () => zoom(1 / 1.2); $('oCtr').onclick = centre;
 $('tPad').onclick = (e) => { const b = e.target.closest('[data-pan]'); if (!b) return; const [x, y] = b.dataset.pan.split(',').map(Number); pan(x * 80, y * 80); };
-$('oKey').onclick = (e) => popToggle(e.currentTarget, '<h4>Keyboard shortcuts</h4>' + [['Move','← ↑ → ↓'],['Zoom in','+'],['Zoom out','−'],['Fit to screen','0'],['Find a node','Ctrl F'],['Clear find','Esc']].map(([a,b]) => `<div class="r">${a}<span class="sp"></span>${b.split(' ').map(k=>`<kbd>${k}</kbd>`).join(' ')}</div>`).join(''), 'left');
+$('oKey').onclick = (e) => { if (kbOpen() && KB.pin) return kbHide(); KB.pin = true; kbShow(e.currentTarget); };
 $('tGraph').addEventListener('wheel', (e) => { if ($('tSvg').hidden) return; e.preventDefault(); const r = $('tGraph').getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX - r.left, e.clientY - r.top); }, { passive:false });
 
 /* drag: a node moves; empty canvas pans. Pointer capture keeps a fast drag that leaves the canvas going. */
@@ -619,16 +785,24 @@ $('tMiniH').onclick = () => $('tMini').classList.toggle('shut');
 $('tMm').addEventListener('click', (e) => { if (!T.mm) return; const r = $('tMm').getBoundingClientRect(), g = $('tGraph');
   const wx = ((e.clientX - r.left) * (198 / r.width) - T.mm.ox) / T.mm.k, wy = ((e.clientY - r.top) * (120 / r.height) - T.mm.oy) / T.mm.k;
   T.vp.x = g.clientWidth / 2 - wx * T.vp.k; T.vp.y = g.clientHeight / 2 - wy * T.vp.k; vpApply(); });
-new ResizeObserver(() => { if (!$('tSvg').hidden) miniView(); }).observe($('tGraph'));
+new ResizeObserver(() => { if ($('tSvg').hidden) return; if (T.needFit && $('tGraph').clientWidth) fit(); miniView(); }).observe($('tGraph'));
 
 /* keyboard — only while no field and no drawer has focus */
 addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); $('tFs').click(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && !$('tSvg').hidden) { e.preventDefault(); $('tFind').focus(); return; }
-  if (e.key === 'Escape') { if (document.querySelector('.tdr.on')) { drClose(); return; } if (popOpen()) { popClose(); return; }
-    if ($('tBody').classList.contains('fs')) { $('tFs').click(); return; } if (T.find) { T.find = ''; $('tFind').value = ''; $('tFind').blur(); graphPaint(); return; } }
+  if (e.key === 'Escape') { if ($('cvGrid').classList.contains('on')) { cvGridOpen(false); return; } if (document.querySelector('.tdr.on')) { drClose(); return; } if (kbOpen()) { kbHide(); return; } if (popOpen()) { popClose(); return; }
+    if ($('tBody').classList.contains('fs')) { $('tFs').click(); return; } if (T.find) { T.find = ''; $('tFind').value = ''; $('tFind').blur(); graphPaint(); return; }
+    if (T.sel.node || T.insp) { T.sel.node = null; T.insp = false; graphPaint(); return; } }
   if (/INPUT|TEXTAREA/.test(document.activeElement.tagName) || document.querySelector('.tdr.on') || $('tSvg').hidden) return;
   const P = { ArrowLeft:[80,0], ArrowRight:[-80,0], ArrowUp:[0,80], ArrowDown:[0,-80] }[e.key];
-  if (P) { e.preventDefault(); pan(P[0], P[1]); } else if (e.key === '+' || e.key === '=') zoom(1.2); else if (e.key === '-') zoom(1 / 1.2); else if (e.key === '0') fit();
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const L = { '1':'radial', '2':'tree', '3':'ltr' }[e.key], k = e.key.toLowerCase();
+  if (P) { e.preventDefault(); pan(P[0], P[1]); } else if (e.key === '+' || e.key === '=') zoom(1.2); else if (e.key === '-') zoom(1 / 1.2);
+  else if (e.key === '0' || k === 'f') fit();
+  else if (L) { if (T.lay !== L) { T.lay = L; toolsPaint(); graphBuild(true); } }
+  else if (k === 'm') { T.mini = !T.mini; $('tMini').hidden = !T.mini; if (T.mini) { miniPaint(); miniView(); } }
+  else if (k === 'i') { if (!T.sel.node) { toast('Inspect node connections', 'Select a node first, then press i.'); return; } T.insp = !T.insp; graphPaint(); }
 });
 
 /* ================= POPOVERS · TOOLTIPS · TOAST ================= */
@@ -642,7 +816,8 @@ function popToggle(btn, html, side){
   else { p.style.left = Math.min(innerWidth - w - 8, Math.max(8, r.right - w)) + 'px'; p.style.top = (r.bottom + 6) + 'px'; }
 }
 document.addEventListener('pointerdown', (e) => { if (popFor && !e.target.closest('#tPop') && !popFor.contains(e.target)) popClose();
-  if (!e.target.closest('.dsel')) $('nMonM').classList.remove('on'); });
+  if (kbOpen() && !e.target.closest('#tKb,#tHelp,#oKey')) kbHide();
+  if (!e.target.closest('.dsel')) { $('nMonM').classList.remove('on'); $('dShM').classList.remove('on'); } });
 /* data-tip: a small hover card; two spaces split the label from its key ("Move Right  Right Arrow") */
 let tipT = null;
 document.addEventListener('mouseover', (e) => {
@@ -661,24 +836,114 @@ function segBind(id, onPick){ $(id).onclick = (e) => { const b = e.target.closes
 function segVal(id){ const b = $(id).querySelector('.on'); return b && b.dataset.v; }
 function segSet(id, v){ [...$(id).children].forEach(x => x.classList.toggle('on', x.dataset.v === v)); }
 function drOpen(id){
-  drClose(); $(id).classList.add('on'); $('tScrim').classList.add('on'); popClose();
-  if (id === 'dSet') { segSet('dAcc', T.acc); $('dSub').checked = T.sub; segSet('dLbl', T.label); $('dMini').checked = T.mini; }
-  if (id === 'dNew') { newReset(); setTimeout(() => $('nName').focus(), 220); }
+  drClose(); $(id).classList.add('on'); $('tScrim').classList.add('on'); popClose(); kbHide();
+  if (id === 'dSet') setOpen();
+  if (id === 'dCv') cvOpen(CV.mode);
+  if (id === 'dNew') { newReset(); newMode(); setTimeout(() => $('nName').focus(), 220); }
 }
-function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); }
+function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('cvPickB').classList.remove('open'); }
 $('tScrim').onclick = drClose;
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
 $('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('#dSet [data-pane]').forEach(p => p.hidden = p.dataset.pane !== b.dataset.t); };
-['dAcc','dLbl','nInc','nSec'].forEach(id => segBind(id));
-$('dSetReset').onclick = () => { segSet('dAcc','public'); $('dSub').checked = true; segSet('dLbl','name'); $('dMini').checked = true; };
-$('dSetApply').onclick = () => { T.acc = segVal('dAcc'); T.sub = $('dSub').checked; T.label = segVal('dLbl'); T.mini = $('dMini').checked; drClose(); graphBuild(false); toast('Success', 'Topology settings applied'); };
+['nInc','nSec'].forEach(id => segBind(id));   /* dAcc / dShw are driven by the settings draft below */
+/* ---- Topology Settings: a DRAFT (SD) the drawer edits; Apply copies it onto T. ---- */
+const SET_DEF = { acc:'public', shw:'users', users:[], profiles:[], sub:true, lock:false, ip:false, ring:300, zmin:.1, zmax:2.5, lw:80 };
+const SET_USERS = ['abcdef', 'admin', 'noc-operator', 'network-lead', 'analyst'];
+const SET_PROFILES = ['Admin', 'Operator', 'Read Only', 'Network Team'];
+const SET_RNG = {
+  rRing:{ k:'ring', l:'Ring Spacing', min:120, max:1000, st:10, tip:'Distance between the entry point and its first ring of neighbours' },
+  rZmin:{ k:'zmin', l:'Min Zoom', min:.01, max:.5, st:.01, tip:'How far the canvas can zoom out' },
+  rZmax:{ k:'zmax', l:'Max Zoom', min:2, max:10, st:.1, tip:'How far the canvas can zoom in' },
+  rLw:{ k:'lw', l:'Label Width', min:20, max:300, st:5, tip:'Width a node label wraps at, in pixels' },
+};
+let SD = null;
+function setOpen(){
+  SD = {}; Object.keys(SET_DEF).forEach(k => SD[k] = Array.isArray(T[k]) ? [...T[k]] : T[k]);
+  const r = curRoot(); $('dSetFor').textContent = r && T.tab !== 'custom' ? '(' + r.n + ')' : r ? '(' + r.n + ')' : '';
+  $('dSubW').hidden = T.tab !== 'network';
+  $('dShE').hidden = true; setPaint(); prevPaint();
+}
+function setPaint(){
+  segSet('dAcc', SD.acc); segSet('dShw', SD.shw); $('dShare').hidden = SD.acc !== 'private';
+  $('dShL').textContent = SD.shw === 'users' ? 'Users' : 'User Profiles'; shPaint();
+  $('dSub').checked = SD.sub; $('dLock').checked = SD.lock;
+  $('dIp').classList.toggle('on', SD.ip); $('dIp').setAttribute('aria-checked', SD.ip);
+  Object.entries(SET_RNG).forEach(([id, c]) => {
+    const el = $(id), v = SD[c.k];
+    if (!el.firstChild) el.innerHTML = `<div class="dlbl">${c.l} <i>*</i> <span class="tinfo" data-tip="${c.tip}">${ic('info-circle')}</span></div>`
+      + `<div class="rr"><input type="range" min="${c.min}" max="${c.max}" step="${c.st}" aria-label="${c.l}"><input class="rv" type="number" min="${c.min}" max="${c.max}" step="${c.st}" aria-label="${c.l} value"></div><div class="rmm"><span>${c.min}</span><span>${c.max}</span></div>`;
+    const [rg, nb] = el.querySelectorAll('input'); rg.value = v; nb.value = v;
+  });
+}
+function shPaint(){
+  const list = SD.shw === 'users' ? SET_USERS : SET_PROFILES, picked = SD[SD.shw], b = $('dShB').querySelector('span');
+  b.textContent = picked.length ? picked.join(', ') : 'Select'; b.classList.toggle('ph', !picked.length);
+  $('dShM').innerHTML = list.map(u => `<label><input type="checkbox" data-u="${esc(u)}"${picked.includes(u) ? ' checked' : ''}>${esc(u)}</label>`).join('');
+}
+$('dAcc').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; SD.acc = b.dataset.v; setPaint(); };
+$('dShw').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; SD.shw = b.dataset.v; $('dShE').hidden = true; setPaint(); };
+$('dShB').onclick = () => $('dShM').classList.toggle('on');
+$('dShM').onchange = (e) => { const u = e.target.dataset.u, a = SD[SD.shw]; SD[SD.shw] = e.target.checked ? [...a, u] : a.filter(x => x !== u);
+  const keep = $('dShM').scrollTop; shPaint(); $('dShM').classList.add('on'); $('dShM').scrollTop = keep; $('dShE').hidden = true; };
+$('dSub').onchange = (e) => SD.sub = e.target.checked;
+$('dLock').onchange = (e) => SD.lock = e.target.checked;
+$('dIp').onclick = () => { SD.ip = !SD.ip; setPaint(); prevPaint(); };
+Object.entries(SET_RNG).forEach(([id, c]) => $(id).addEventListener('input', (e) => {
+  let v = +e.target.value; if (isNaN(v)) return;
+  if (e.target.type === 'number') { if (v < c.min || v > c.max) return; }
+  SD[c.k] = v; const [rg, nb] = $(id).querySelectorAll('input'); if (e.target === rg) nb.value = v; else rg.value = v; prevPaint();
+}));
+/* the preview: a fixed sample topology drawn with the DRAFT's spacing, IP overlay and label width */
+const PREV = { k:1, nodes:[
+  { n:'Core-Router', ip:'192.0.2.1', ic:'router', s:'clear', a:null },
+  { n:'Firewall-B', ip:'192.0.2.2', ic:'firewall', s:'clear', a:-90, p:0 },
+  { n:'Switch-A', ip:'192.0.2.10', ic:'switch', s:'warning', a:180, p:0, more:1 },
+  { n:'Switch-C', ip:'192.0.2.11', ic:'switch', s:'major', a:0, p:0, more:1, l3:1 },
+  { n:'App-Server-2', ip:'192.0.2.21', ic:'windows', s:'critical', a:-120, p:2 },
+  { n:'App-Server-1', ip:'192.0.2.20', ic:'linux', s:'clear', a:90, p:2 },
+  { n:'DB-Server-1', ip:'192.0.2.30', ic:'linux', s:'warning', a:0, p:3 } ] };
+function prevPaint(){
+  const S = $('dPrevS'); if (!S || !SD) return;
+  const W = 620, H = 330, cx = W / 2, cy = H / 2 - 10, k = PREV.k, r1 = SD.ring * .4, r2 = SD.ring * .28;
+  const P = PREV.nodes.map((n, i) => {
+    if (n.a == null) return { ...n, x:0, y:0 };
+    const par = n.p, rad = n.a * Math.PI / 180, R = par === 0 ? r1 : r2;
+    return { ...n, rad, R, par };
+  });
+  P.forEach((n) => { if (n.a == null) return; const b = n.par === 0 ? P[0] : P[n.par]; n.x = b.x + Math.cos(n.rad) * n.R; n.y = b.y + Math.sin(n.rad) * n.R; });
+  const sev = (s) => `var(--severity-${s})`, chars = Math.max(4, Math.round(SD.lw / 5.7));
+  const lines = P.filter(n => n.a != null).map(n => { const b = P[n.par];
+    return `<path class="pl${n.l3 ? ' l3' : ''}" d="M${b.x},${b.y} Q${(b.x + n.x) / 2 + (n.l3 ? 0 : 6)},${(b.y + n.y) / 2 + (n.l3 ? 14 : -6)} ${n.x},${n.y}"/>`; }).join('');
+  const nodes = P.map((n, i) => {
+    const root = i === 0, lb = wrapLabel(n.n, chars, 2);
+    const shape = root ? `<rect x="-22" y="-22" width="44" height="44" rx="8"/>` : `<circle r="17" style="stroke:${sev(n.s)}"/>`;
+    const g = root ? 22 : 14;
+    return `<g class="pn" transform="translate(${n.x},${n.y})">${shape}<svg class="pg${root ? ' w' : ''}" x="${-g/2}" y="${-g/2}" width="${g}" height="${g}" viewBox="0 0 512 512">${monGlyph(n.ic)}</svg>`
+      + (n.more ? `<g class="pb" transform="translate(13,-13)"><circle r="5"/><line x1="-2.5" y1="0" x2="2.5" y2="0"/></g>` : '')
+      + `<text y="${root ? 36 : 30}" text-anchor="middle">${lb.map((t, j) => `<tspan x="0" dy="${j ? 12 : 0}">${esc(t)}</tspan>`).join('')}${SD.ip ? `<tspan x="0" dy="12" class="pip">${n.ip}</tspan>` : ''}</text></g>`;
+  }).join('');
+  /* shrink to fit the box when a wide Ring Spacing would push nodes out; never enlarge */
+  const xs = P.map(n => n.x), ys = P.map(n => n.y), bw = Math.max(...xs) - Math.min(...xs) + 120, bh = Math.max(...ys) - Math.min(...ys) + 90;
+  const fitk = Math.min(1, (W - 40) / bw, (H - 30) / bh) * k, ox = cx - (Math.max(...xs) + Math.min(...xs)) / 2 * fitk, oy = cy + 10 - (Math.max(...ys) + Math.min(...ys)) / 2 * fitk;
+  S.innerHTML = `<g transform="translate(${ox},${oy}) scale(${fitk})">${lines}${nodes}</g>`;
+}
+$('dPrevIn').onclick = () => { PREV.k = Math.min(2.5, PREV.k * 1.2); prevPaint(); };
+$('dPrevOut').onclick = () => { PREV.k = Math.max(.4, PREV.k / 1.2); prevPaint(); };
+$('dPrevX').onclick = () => { $('dPrev').classList.toggle('big'); };
+$('dSetReset').onclick = () => { Object.keys(SET_DEF).forEach(k => SD[k] = Array.isArray(SET_DEF[k]) ? [] : SET_DEF[k]); PREV.k = 1; $('dShE').hidden = true; setPaint(); prevPaint(); };
+$('dSetApply').onclick = () => {
+  if (SD.acc === 'private' && !SD[SD.shw].length) { $('dSetTabs').querySelector('[data-t=sec]').click(); $('dShE').hidden = false; return; }
+  if (SD.zmin >= SD.zmax) { toast('Check zoom', 'Min Zoom must be below Max Zoom.'); return; }
+  Object.keys(SET_DEF).forEach(k => T[k] = Array.isArray(SD[k]) ? [...SD[k]] : SD[k]);
+  drClose(); graphBuild(true); toast('Success', 'Topology settings applied');
+};
 
 /* Create Topology View — the monitor filter lists every entry point the instance has */
 const ALLMON = () => { const out = []; Object.keys(TREE).forEach(k => leavesOf(TREE[k]).forEach(l => { if (!out.some(o => o.n === l.n && o.ip === l.ip)) out.push(l); })); return out; };
 let NEW = { mons:[] };
 function newReset(){
-  NEW = { mons:[] }; $('nName').value = ''; $('nGrp').value = ''; segSet('nInc','include'); segSet('nSec','public');
+  NEW = { mons:[], shw:'users', users:[], profiles:[] }; $('nName').value = ''; $('nGrp').value = ''; segSet('nInc','include'); segSet('nSec','public'); nSharePaint();
   ['nName','nGrp'].forEach(i => $(i).classList.remove('err')); $('nNameE').hidden = $('nGrpE').hidden = true; monPaint();
 }
 function monPaint(){
@@ -699,9 +964,103 @@ $('nSave').onclick = () => {
   const mons = inc ? picked : all.filter(m => !picked.includes(m));
   const gname = grp === '<standalone>' ? 'Standalone' : grp;
   let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
-  const v = { name, grp: gname, sec: segVal('nSec'), mons: mons.map(m => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s })) }; g.views.push(v);
+  const sec = segVal('nSec'), share = sec === 'private' ? { with: NEW.shw, who: [...NEW[NEW.shw]] } : null;
+  const v = T.design ? { name, grp: gname, sec, share, root: { ...T.design.root, kids: T.design.kids.map(k => ({ ...k })) }, bg: T.design.bg }
+                     : { name, grp: gname, sec, share, mons: mons.map(m => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s })) };
+  g.views.push(v); T.design = null;
   drClose(); T.view = v; T.cv[gname] = true; toast('Success', 'Topology View "' + name + '" created'); goTab('custom');
 };
+
+/* ---- the same drawer, two shapes: from a design it is live's SAVE VIEW (View Name · View Group · Security, and
+   Share With when Private); otherwise the Create Topology View form with its monitor filter. */
+function newMode(){
+  const d = !!T.design; $('dNew').classList.toggle('dNewD', d);
+  $('nTitle').textContent = d ? 'Save View' : 'Create Topology View'; $('nSave').textContent = d ? 'Save View' : 'Create Topology View';
+  $('nNameL').textContent = d ? 'View Name' : 'Topology View Name'; $('nGrpL').textContent = d ? 'View Group' : 'Topology View Group';
+  $('nName').placeholder = d ? 'Enter view name' : '';
+}
+function nSharePaint(){
+  const priv = segVal('nSec') === 'private'; $('nShare').hidden = !priv; segSet('nShw', NEW.shw);
+  $('nShL').textContent = NEW.shw === 'users' ? 'Users' : 'User Profiles';
+  const list = NEW.shw === 'users' ? SET_USERS : SET_PROFILES, picked = NEW[NEW.shw], b = $('nShB').querySelector('span');
+  b.textContent = picked.length ? picked.join(', ') : 'Select'; b.classList.toggle('ph', !picked.length);
+  $('nShM').innerHTML = list.map(u => `<label><input type="checkbox" data-u="${esc(u)}"${picked.includes(u) ? ' checked' : ''}>${esc(u)}</label>`).join('');
+}
+$('nSec').addEventListener('click', () => setTimeout(nSharePaint));
+$('nShw').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; NEW.shw = b.dataset.v; nSharePaint(); };
+$('nShB').onclick = () => $('nShM').classList.toggle('on');
+$('nShM').onchange = (e) => { const u = e.target.dataset.u, a = NEW[NEW.shw]; NEW[NEW.shw] = e.target.checked ? [...a, u] : a.filter(x => x !== u); nSharePaint(); $('nShM').classList.add('on'); };
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#nShM,#nShB')) $('nShM').classList.remove('on'); });
+
+/* ================= CREATE CUSTOM VIEW (live 10.0.1, 22 Oct 2026) =================
+   The sidebar's + opens this drawer: Root Monitor* is a grid dropdown (search · Monitor ↓ · IP · Type · Groups · Tags);
+   Create opens the DESIGN canvas — the root alone, with Add Background Image · Add Container · Add Entity under it —
+   and the toolbar's Create Topology View then opens Save View, which files it. Add Entity reuses this drawer, multi-select. */
+const CV = { mode:'root', pick:[] };
+/* every monitor that can be an entry point, with the tree path(s) it sits under — the GROUPS column */
+function cvMons(){
+  const out = [];
+  Object.keys(TREE).forEach(tab => { const walk = (list, path) => list.forEach(x => {
+    if (x.kids) return walk(x.kids, [...path, x.n]);
+    const key = x.n + '|' + (x.ip || ''); let m = out.find(o => o.key === key);
+    if (!m) { m = { key, n:x.n, ip:x.ip || '', ic:x.ic, s:x.s, grp:[] }; out.push(m); }
+    const g = path.slice(0, 2).join(' > '); if (g && !m.grp.includes(g)) m.grp.push(g);
+  }); walk(TREE[tab], []); });
+  return out.sort((a, b) => a.n.localeCompare(b.n));
+}
+function cvOpen(mode){
+  CV.mode = mode || 'root'; CV.pick = [];
+  $('dCvT').textContent = CV.mode === 'root' ? 'Create Custom View' : 'Add Entity';
+  $('dCvL').innerHTML = (CV.mode === 'root' ? 'Root Monitor' : 'Entities') + ' <i>*</i>';
+  $('cvCreate').textContent = CV.mode === 'root' ? 'Create' : 'Add';
+  $('cvPickE').hidden = true; $('cvPickB').classList.remove('err'); cvField();
+}
+function cvField(){
+  const b = $('cvPickB').querySelector('span');
+  b.textContent = CV.pick.length ? CV.pick.map(m => m.n).join(', ') : CV.mode === 'root' ? 'Select root monitor' : 'Select entities';
+  b.classList.toggle('ph', !CV.pick.length);
+}
+function cvGridPaint(){
+  const q = $('cvGq').value.trim().toLowerCase(), have = T.design ? [T.design.root, ...T.design.kids].map(m => m.n + '|' + (m.ip || '')) : [];
+  const rows = cvMons().filter(m => (!q || (m.n + ' ' + m.ip + ' ' + m.grp.join(' ')).toLowerCase().includes(q)) && (CV.mode === 'root' || !have.includes(m.key)));
+  $('cvGb').innerHTML = rows.map(m => { const on = CV.pick.some(p => p.key === m.key);
+    return `<div class="cvgr" role="option" data-k="${esc(m.key)}" aria-selected="${on}"><span><input type="checkbox" tabindex="-1"${on ? ' checked' : ''}></span>`
+    + `<span class="nm"><span class="tdot s-${m.s}"></span><b>${esc(m.n)}</b></span><span>${esc(m.ip)}</span><span class="ty">${mi(m.ic)}</span>`
+    + `<span class="gp">${m.grp.length ? `<span>${esc(m.grp[0])}</span>` + (m.grp.length > 1 ? `<span>+${m.grp.length - 1}</span>` : '') : ''}</span><span></span></div>`; }).join('')
+    || '<div class="cvgn">No monitors match</div>';
+}
+function cvGridPlace(){
+  const g = $('cvGrid'), r = $('cvPickB').getBoundingClientRect(), w = g.offsetWidth;
+  g.style.left = Math.max(8, r.right - w) + 'px'; g.style.top = (r.bottom + 4) + 'px';   /* right-aligned to the field, as live hangs it left over the canvas */
+}
+function cvGridOpen(on){
+  $('cvGrid').classList.toggle('on', on); $('cvPickB').classList.toggle('open', on); $('cvPickB').setAttribute('aria-expanded', on);
+  if (on) { $('cvGq').value = ''; cvGridPaint(); cvGridPlace(); setTimeout(() => $('cvGq').focus(), 0); }
+}
+$('cvPickB').onclick = () => cvGridOpen(!$('cvGrid').classList.contains('on'));
+$('cvGq').oninput = cvGridPaint;
+$('cvGb').onclick = (e) => {
+  const r = e.target.closest('.cvgr'); if (!r) return; const m = cvMons().find(x => x.key === r.dataset.k); if (!m) return;
+  if (CV.mode === 'root') { CV.pick = [m]; cvGridOpen(false); }          /* one root: a pick closes the list, as live */
+  else { CV.pick = CV.pick.some(p => p.key === m.key) ? CV.pick.filter(p => p.key !== m.key) : [...CV.pick, m]; const k = $('cvGb').scrollTop; cvGridPaint(); $('cvGb').scrollTop = k; }
+  cvField(); $('cvPickE').hidden = true; $('cvPickB').classList.remove('err');
+};
+document.addEventListener('pointerdown', (e) => { if ($('cvGrid').classList.contains('on') && !e.target.closest('#cvGrid,#cvPickB')) cvGridOpen(false); });
+$('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); };
+const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
+$('cvCreate').onclick = () => {
+  if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); return; }
+  if (CV.mode === 'root') { T.design = { root: cvNode(CV.pick[0]), kids: [], bg: null, ct: 0 }; T.view = null; }
+  else T.design.kids.push(...CV.pick.map(cvNode));
+  CV.mode = 'root'; cvGridOpen(false); drClose(); cvTreePaint(); graphLoad();
+};
+/* the design bar. ⚠️ What live does after each press was not captured — these are readings: an image behind the
+   canvas, a container node, monitors linked to the root. */
+$('desBg').onclick = () => $('desBgF').click();
+$('desBgF').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = () => { T.design.bg = r.result; toolsPaint(); toast('Success', 'Background image added'); }; r.readAsDataURL(f); e.target.value = ''; };
+$('desCt').onclick = () => { T.design.ct++; T.design.kids.push({ n:'Container ' + T.design.ct, ip:'', ic:'topology', s:'unknown' }); graphBuild(false); };
+$('desEn').onclick = () => { CV.mode = 'entity'; drOpen('dCv'); };
 
 /* ================= BOOT ================= */
 goTab(location.hash.slice(1) || 'network');

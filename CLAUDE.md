@@ -1006,17 +1006,33 @@ tab: *Custom Views* + `+`, search, the `tag11` group, *Select or create a Custom
   The host hides its own Agentation toolbar while this frame shows (the `fa-agt-frame` selector).
 - **Pinned by default** (request, 21 Oct 2026): `'Topology'` joined `RAIL_PINS` in both `index.html` and
   `setting.html`. The band orders pins by `EXPLORER_TREE`, so it sits second, after Monitor.
-- **Data is the instance's tree, scrubbed**: `192.0.2.x` / `198.51.100.x` / `example.com`; `MORBI_RUCKUS_L3` →
-  `RUCKUS_L3`, `VMC-CCC-OA1` → `core-oa1`. Of the network entry points only the Ruckus switch drew a map on the
-  instance (the others answered *No data found*, reproduced). VM names under the hypervisors are invented — the
-  live labels were truncated.
+- **THE DATA IS THE LIVE PRODUCT'S, NOT INVENTED** (request, 21 Oct 2026: *"you should not create the topology view
+  … make it using playwright"*) — `_topology/data.json`, inlined by the build as `TREE`. Virtualization is the
+  second lab instance (build 10.0.1): the tree as rendered, and each entry point's graph from its
+  **`ui.action.topology.hierarchy.fetch` websocket frame** — `event.context` is **URL-safe base64 of Snappy-compressed
+  JSON** (`compression.type: 1`); `result.dependency.children` is an adjacency map (root id → neighbours, host IP →
+  its VMs), `result.instances` maps IP → VM name, and bare object ids resolve through `/api/v1/settings/objects`.
+  Network and HCI are the first instance's (the second did not answer for them). The decoder + generator lived in
+  the session scratch dir (`snap.py`, `mkdata.py`); re-harvest rather than hand-edit.
+  - **Statuses are read off the live screenshots** (the `severity.query` frames were not captured before the
+    instance went offline); a neighbour no screenshot showed is `unknown` — the grey ring. Live draws **DOWN filled**
+    (a solid disc, or a solid entry-point tile — the Proxmox cluster), **critical as a red ring**, unknown grey.
+  - **Scrubbed**: lab addresses → `198.51.100.x` (the hypervisors' /24) / `203.0.113.x`, `motadata.local` →
+    `example.com`, people's and customer names out of VM names (`Gaurang |` → `Team-A |`, `Maruti Suzuki` →
+    `Customer`, first names dropped), `motadataaa` → `pve-cluster-01`, cloud account ids → documentation values. The
+    generator asserts none of those strings survive.
+  - Labels wrap like live: up to four centred lines of ~14 chars; only an over-long single word is cut in the middle;
+    the entry point's name prints whole.
 - ⚠️ **Login**: the instance needs a session. The harvest ran a HEADED Playwright Chrome, the user signed in, and
   the script saved `storageState` (scratch dir, not the repo). The SPA is slow: `goto` needs `waitUntil:'commit'`
   plus a wait for tree text, and every other load can time out — retry. Tree rows are a `vue-recycle-scroller`;
   expand by clicking `.hierarchy-item a [data-icon=chevron-right]`.
-- ⚠️ **Node icons are monochrome**: the `observeops-icons/monitors/` marks are recoloured to `currentColor`
-  (white-fill paths only where a mark has them — the switch's arrows — or the tile would paint a solid square).
-  Live tree rows show the brand colours; that would put ~20 un-tokened hexes in the file.
+- ⚠️ **Icon colour (request, 21 Oct 2026: "the icon colour is not same … improve")**: the TREE shows the
+  `observeops-icons/monitors/` marks verbatim in their brand colours (`MONC`, `<defs>` ids namespaced per mark), as
+  live does — the user's request is the approval for those brand hexes. CANVAS glyphs stay monochrome (`MON`):
+  light on a dark node with a severity ring; a **down / critical** node is a solid disc in its severity colour with a
+  white glyph; the entry point is white on the blue tile. ⚠️ The glyph is a NESTED `<svg>`, so `.gl` must set
+  `fill:currentColor` — without it every glyph painted black (the reported bug).
 - ⚠️ **Inferred, stated**: the ? button opened nothing capturable on live, so it is a legend; the Settings drawer's
   *Visualization Settings* tab (Node label Name/IP · Show minimap) was not captured; Export As XML writes a real
   XML of the drawn tree after the live toast; a created custom view draws its filtered monitors round a hub; the
@@ -1024,6 +1040,71 @@ tab: *Custom Views* + `+`, search, the `tag11` group, *Select or create a Custom
 - Verified: a 15-assertion host probe (frame built once, fills the view, tab via child row, theme follows, back →
   Dashboard, 17 nodes drawn, side 257px, pan pad cross, no errors) and the `setting.html` → `index.html#m=Topology`
   hand-off landing on the HCI tab.
+
+### Topology is its own page — `topology.html` (22 Oct 2026), and two screens rebuilt
+
+Request: *"the topology is the individual .html file like setting.html"*. **`topology.html`** (folder root) is a copy of
+`index.html` that opens on `#view-topology`; its BOOT block (before `_variants.js`) reads `?from=<page>` and
+`#tab=<network|sdn|cloud|virtualization|hci|custom>`, opens the module, then wraps `showView` so any other module goes
+back to `<from>#m=<module>[&sub=]` (routed by `setting-nav.js`, the setting.html contract). In `index.html` and
+`setting.html`, `TOPO_HOME` / `topoGo()` make every Topology door (rail pin, Explorer child rows, `topoTab`) navigate
+there; `setting.html` passes on its own `?from`. The frame's ‹ (`topoBack`) still lands on Dashboards — on the source page.
+- ⚠️ **It is a 3 MB copy of Option 1, like setting.html** — a change to Option 1's chrome is now `index.html` +
+  `setting.html` + `topology.html`. `_sync_variants.js`'s `NOT_OPTIONS` is an array now (`setting.html`, `topology.html`),
+  so it is not a switcher row. Hand-off verified by a 14-assertion harness over `http.server` (real filenames).
+- **The toolbar `?` opens the live product's Keyboard Shortcuts card on HOVER** (140ms open, 200ms grace so the pointer
+  can cross into it, click pins, `−` / Esc / click-away close) — `KB_SECT` / `kbShow` / `kbHide` in `topology.src.html`.
+  It replaced the inferred Legend (`kbLegendHTML`, parked). The overlay keyboard button opens the same card. **Every row
+  works**: arrows pan, `+`/`-` zoom, `F` (and `0`) fit, `1`/`2`/`3` radial/tree/LTR, Ctrl+Shift+F fullscreen, `M`
+  minimap, `i` inspects the selected node (dims all but it and its direct links), Ctrl+F search, Esc clears/deselects.
+  The button carries no `data-tip` (it would paint under the card).
+- **Topology Settings drawer rebuilt to the live one** (supplied screenshots, 40vw): title + `(selected entry point)`;
+  **Security** — the note, Access Type Public/Private; Private shows *Share With* Users | User Profiles and a required
+  multi-select (canned `SET_USERS` / `SET_PROFILES`; Apply refuses an empty pick); Sub Topology shows on the Network tab
+  only. **Visualization Settings** — a live **preview** of a fixed sample graph (Core-Router, Firewall-B, Switch-A/C,
+  App-Server-1/2, DB-Server-1; expand / + / −) drawn from the draft, **Lock Topology Visualization** (Admin only — stored,
+  enforces nothing), **Overlays · Show Node IP Address** (an IP line under each label), **Ring Spacing** 120–1000 (300),
+  **Min/Max Zoom** 0.01–0.5 (0.1) / 2–10 (2.5), **Label Width** 20–300 (80). The drawer edits a draft `SD`; Apply copies
+  it onto `T` and rebuilds, and the values are real: ring spacing scales the radial first ring (300 = the old 330/170),
+  zoom clamps `zoom()`/`fit()`, label width sets `wrapLabel`'s chars (80px ≈ 14). The old Name/IP label switch and
+  *Show minimap* checkbox are gone (`M` toggles the minimap). Probed 21/21 (drawer) and 21/21 (shortcuts).
+
+### The Custom tab, fixed against the live one (22 Oct 2026)
+
+Reported with the live `/topology/custom/monitors/<id>?viewId=<id>` (172.16.14.71, build 8.2.9) beside ours: ours painted
+the previous tab's graph under *"Select or create a Custom View"*.
+- ⚠️ **ROOT CAUSE: an `<svg>` has no `.hidden` property** — only HTML elements do. `$('tSvg').hidden = true` set a JS
+  expando and never the attribute, so the graph svg was never hidden on any tab. `topology.src.html` now gives that one
+  element an accessor (`Object.defineProperty(... 'hidden' ...)` → `toggleAttribute`) and carries a global
+  `[hidden]{display:none!important}` (an author `display` rule beats the UA's `[hidden]`). Empty also clears the node/link layers.
+- **Custom toolbar = live**: find · Layer 3 · radial + hierarchical (no left-to-right, no Expanded/Progressive) · ? ·
+  full screen · settings · export; **no Create Topology View button** (the sidebar's + creates).
+- **Seeded views**: groups `mkl · test · western · view`, `mkl › abc` = `cisco-core.example.com` (switch, warning tile)
+  linked to `DLink` (critical ring), and the tab opens on abc. ⚠️ The other three groups were collapsed in the screenshot,
+  so they hold no views here rather than invented ones. A view is drawn as a real topology (its entry point + linked
+  monitors); one made in Create Topology View uses its first monitor as the entry point. A single neighbour sits to the
+  right. Selected row: a bullet + fill, as live.
+- `fit()` sets `T.needFit` when the canvas has no size yet; the ResizeObserver fits once it does (a direct `#custom` load
+  drew the graph off-screen).
+- ⚠️ **The live login FAILED** with the credentials supplied (*"Invalid Credentials — You have 0 attempts left"*) on the
+  first attempt, so nothing more was harvested; the account may be locked. Probed: Custom 16/16, shortcuts 21/21, drawer 21/21.
+
+### Creating a custom view is the live 10.0.1 flow (26 Oct 2026)
+
+From four live screenshots: the sidebar's **+** opens **Create Custom View** (`#dCv`) — one field, **Root Monitor\***, a
+grid dropdown (`#cvGrid`, 855px, right-aligned to the field so it hangs over the canvas): Search · `MONITOR ↓` · IP ·
+TYPE (the brand mark) · GROUPS (`<tab group> > <type>` + `+N`) · TAGS. Picking a row fills the field and closes the list;
+**Create** (refuses an empty root) opens the **design canvas** (`T.design`): the root alone, the toolbar cut to
+find · full screen · **Create Topology View**, and **Add Background Image · Add Container · Add Entity** under it.
+Create Topology View then opens the same `#dNew` drawer re-labelled **Save View** (`newMode`: View Name\* · View Group\* ·
+Security, *Share With* Users | User Profiles + a Users picker when Private, Reset · Save View, no monitor filter);
+saving files `{root, kids, bg, share}` into the group, ends the design and selects the new view.
+- `cvMons()` derives every entry-point monitor and its tree path(s) from `TREE`. Add Entity reuses `#dCv` in
+  multi-select (the root and existing entities excluded). The sidebar says *"No custom views yet. Click + to create one."*
+  when there are none. Picking a saved view ends a design.
+- ⚠️ **Inferred, stated**: what live does after Add Background Image / Add Container / Add Entity was not captured —
+  here an image behind the canvas, a "Container N" node, and linked monitors. On a non-Custom tab Create Topology View
+  still opens the original form. Probed 36/36 (flow) + 21/21 + 21/21.
 
 ## Compliance module in Option 1 — cloned from the live build with Playwright (6 Oct 2026)
 
