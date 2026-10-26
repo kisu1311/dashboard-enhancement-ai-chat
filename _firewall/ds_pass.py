@@ -3719,6 +3719,81 @@ def req_reason2_patch(t):
 #pmAddDrawer .fa-pmf-rnote obs-icon { flex: 0 0 auto; margin-top: 2px; color: var(--neutral-light); }""")
 t = req_reason2_patch(t)
 
+def mdh_ds_patch(t):
+    """Firewall detail header = the DS page-header's "Monitor detail header" variant (owner, 26 Oct 2026, the DS docs'
+    /page-header as the reference): a boxed home button › a 28px type tile + title + status badge + the Type | IP |
+    Site | HA meta strip, icon actions on the right. The vendored obs-page-header predates that variant (no `home` /
+    `type-icon` props — DS gap 15), so the same parts go in its `before` slot, with the variant's own geometry and
+    tokens; `back` is gone (home IS the way back to Firewall Inventory)."""
+    def rp(old, new):
+        nonlocal t
+        assert t.count(old) == 1, ('mdh', old[:60]); t = t.replace(old, new)
+    rp("""      <obs-page-header id="devHeader" back heading="${esc(d.name)}" no-divider class="fa-mdh\"""",
+       """      <obs-page-header id="devHeader" heading="${esc(d.name)}" no-divider class="fa-mdh\"""")
+    rp("""        <span slot="before" class="fa-mdh-tile"><obs-icon name="secure" size="20"></obs-icon></span>""",
+       """        <span slot="before" class="fa-mdh-lead"><button type="button" class="fa-mdh-home" data-mdh="home" aria-label="Firewall Inventory" data-tip="Firewall Inventory"><obs-icon name="home" size="14"></obs-icon></button><span class="fa-mdh-sep" aria-hidden="true"><obs-icon name="chevronRight" size="12"></obs-icon></span><span class="fa-mdh-tile" aria-hidden="true"><obs-icon name="secure" size="16"></obs-icon></span></span>""")
+    rp("""    if (b.dataset.mdh === 'refresh') go('device', devRoute());""",
+       """    if (b.dataset.mdh === 'home') go('devices', devReturn);
+    else if (b.dataset.mdh === 'refresh') go('device', devRoute());""")
+    rp(""".fa-mdh-tile { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 4px;
+  background: color-mix(in srgb, var(--page-text-color) 8%, transparent); color: var(--page-text-color); }""",
+       """/* the DS "Monitor detail header": boxed home (28px, 1px border, page fill) › type tile (28px, info surface) */
+.fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }
+.fa-mdh-home { appearance: none; flex: 0 0 auto; width: 28px; height: 28px; padding: 0; border-radius: 4px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);
+  background: var(--page-background-color); color: var(--neutral-light); transition: background .12s, border-color .12s, color .12s; }
+.fa-mdh-home:hover { background: var(--neutral-lightest); border-color: var(--neutral-lighter); color: var(--primary-alt); }
+.fa-mdh-home:focus-visible { outline: 2px solid var(--primary-alt); outline-offset: 2px; }
+.fa-mdh-sep { display: inline-flex; align-items: center; height: 28px; color: var(--neutral-light); }
+.fa-mdh-tile { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+  border-radius: 4px; background: var(--info-surface); color: var(--info-text); }""")
+    return t
+t = mdh_ds_patch(t)
+
+def mdh_center_patch(t):
+    """the detail header's lead (home › tile) is centred on the WHOLE title block — title + meta strip — as the product's
+    inventory header does (owner, 26 Oct 2026). The vendored obs-page-header pins `before` to the title line when a meta
+    strip is present (`.left.stacked{align-items:flex-start}` + `.before{height:27px}`); scoped by the host class."""
+    a = " if(this.tagName==='OBS-WIDGET-CARD')"
+    assert t.count(a) == 1, 'mdh_center anchor'
+    return t.replace(a, """ if(this.tagName==='OBS-PAGE-HEADER'){try{var ph=new CSSStyleSheet();ph.replaceSync(':host(.fa-mdh) .left.stacked{align-items:center}:host(.fa-mdh) .left.stacked .before{height:auto}:host(.fa-mdh) .left{gap:10px}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[ph]);}catch(e){}}
+""" + a, 1)
+t = mdh_center_patch(t)
+
+def ov_ds_patch(t):
+    """Overview, checked against the DS docs (owner, 26 Oct 2026): (1) the Interface KPI is the DS's own "Up / Down with
+    arrows" card type — two labelled values — not "8 / 8"; (2) Availability Statistics' rows spread over the whole body
+    as the DS widget does: obs-availability-bars is height:100% with flex:1 rows, but the body centred it, so it shrank
+    to its content and the three rows bunched at the top."""
+    def rp(old, new):
+        nonlocal t
+        assert t.count(old) == 1, ('ov_ds', old[:70]); t = t.replace(old, new)
+    rp("""        const kpi = o => `<obs-kpi-card class="fa-ov-kpi" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : ''}${
+          o.stats ? ` stats='${j(o.stats)}'` : ''}${o.value == null ? '' : ` value="${esc(o.value)}"`}""",
+       """        const kpi = o => `<obs-kpi-card class="fa-ov-kpi" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : ''}${
+          o.stats ? ` stats='${j(o.stats)}'` : ''}${o.values ? ` values='${j(o.values)}'` : ''}${o.value == null ? '' : ` value="${esc(o.value)}"`}""")
+    rp("""          kpi({ title: 'Interface', icon: 'interface', sev: down ? 'critical' : 'clear', value: `${up} / ${total}`,
+                stats: [{ label: 'Status', value: down ? `${down} down` : 'All up' }] }),""",
+       """          kpi({ title: 'Interface', icon: 'interface', sev: down ? 'critical' : 'clear',
+                values: [{ label: 'Up', value: String(up) }, { label: 'Down', value: String(down) }] }),""")
+    rp(""".fa-av > .fa-card-body { display: flex; align-items: center; justify-content: center; min-height: 230px; padding: 12px 16px; }""",
+       """.fa-av > .fa-card-body { display: flex; align-items: center; justify-content: center; min-height: 230px; padding: 12px 16px; }
+.fa-av > .fa-card-body:has(> obs-availability-bars) { align-items: stretch; }""")
+    return t
+t = ov_ds_patch(t)
+
+def ov_ds2_patch(t):
+    """the bars' own :host{height:100%} cannot resolve against a body that has only a min-height, and a non-auto height
+    also blocks flex stretch — so the host takes height:auto and stretches to the body (26 Oct 2026)."""
+    old = "obs-availability-bars.fa-av-bars { display: block; width: 100%; }"
+    assert t.count(old) == 1, 'ov_ds2'
+    return t.replace(old, "obs-availability-bars.fa-av-bars { display: block; width: 100%; height: auto; align-self: stretch; }")
+t = ov_ds2_patch(t)
+
+
+
+
+
 
 
 
