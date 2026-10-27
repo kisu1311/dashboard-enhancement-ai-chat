@@ -21453,7 +21453,10 @@ const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Su
 function cplGo(t){ try { MOD_SUB = t; } catch (e) {} selectModuleByName('Compliance'); }
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 /* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
-function faBuildV(){ try { return sessionStorage.faV || (sessionStorage.faV = String(Date.now())); } catch (e) { return '1'; } }
+/* FA_BUILD: bump it when _firewall/firewall.html changes — the per-session stamp alone let a tab opened before an edit
+   keep serving the OLD module from cache (27 Oct 2026: the Device-name link "did nothing" for exactly that reason) */
+const FA_BUILD = '2026-10-27r';
+function faBuildV(){ const k = 'faV-' + FA_BUILD; try { return FA_BUILD + '.' + (sessionStorage[k] || (sessionStorage[k] = String(Date.now()))); } catch (e) { return FA_BUILD; } }
 /* Topology — built on first open; an Explorer child row (Network · SDN · … · Custom) names the tab in MOD_SUB,
    and an open frame only has its hash moved (the page routes on hashchange). Theme follows over postMessage. */
 const TOPO_TAB_HASH = { 'Network':'network', 'SDN':'sdn', 'Cloud':'cloud', 'Virtualization':'virtualization', 'HCI':'hci', 'Custom':'custom' };
@@ -21483,11 +21486,19 @@ function topoInit(){
 }
 /* the module header's ‹ inside the frame: back to the Dashboard, the way the live arrow leaves the module */
 addEventListener('message', (e) => { if (e.data && e.data.topoBack) selectModuleByName('Dashboards'); });
+/* Settings › Firewall Inventory: a Device name opens that firewall's page in Explorer › Firewall Analyzer (27 Oct 2026) —
+   the route rides in MOD_SUB as 'fa:<hash>', which faInit on index.html reads */
+addEventListener('message', (e) => { const id = e.data && e.data.faOpenDevice; if (!id) return;
+  try { MOD_SUB = 'fa:device/' + id + '/overview'; } catch (err) {} selectModuleByName('Firewall Analyzer'); });
 function faInit(){
-  const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
+  /* MOD_SUB 'fa:<hash>' opens the module on that route (Settings › Firewall Inventory's Device name, 27 Oct 2026) */
+  let faHash = ''; try { if (/^fa:/.test(MOD_SUB)) { faHash = MOD_SUB.slice(3); MOD_SUB = ''; } } catch (e) {}
+  const h = document.getElementById('faHost'); if (!h) return;
+  const old = h.querySelector('iframe');
+  if (old) { if (faHash) old.src = old.src.split('#')[0] + '#' + faHash; return; }   /* a hash-only change: the module routes on it, no reload */
   const f = document.createElement('iframe');
   f.setAttribute('aria-label', 'Firewall Analyzer'); f.className = 'fafr';   /* aria-label, not title: the tooltip engine turns a title into a chip floating over the module */
-  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV();   /* &v: a fresh copy each browser session, stable within it (Agentation keys notes by URL) */
+  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV() + (faHash ? '#' + faHash : '');   /* &v: a fresh copy each browser session, stable within it (Agentation keys notes by URL) */
   h.appendChild(f);
   new MutationObserver(() => {
     try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}

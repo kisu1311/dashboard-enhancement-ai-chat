@@ -126,31 +126,36 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 
 .tgraph{position:relative;flex:1 1 auto;min-width:0;background-color:var(--nav-panel-bg);
   background-image:radial-gradient(circle,var(--field-border-color) 1px,transparent 1.2px);background-size:20px 20px;overflow:hidden;outline:0}
-.tgraph.empty{background-image:none}
+/* two canvas colours (requests, 27 Oct 2026): a DRAWN topology sits on --nav-panel-bg (#172336 dark), the empty
+   "select a view" state on --page-background-color (#07101f dark) */
+.tgraph.empty{background-image:none;background-color:var(--page-background-color)}
 /* ⚠️ [hidden] loses to any author display rule — the stale graph painted under the Custom empty state (22 Oct 2026) */
 [hidden]{display:none!important}
 .tsvg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;user-select:none}
 .tsvg.pan{cursor:grabbing}
-.tsvg .lk{fill:none;stroke:var(--neutral-light);stroke-opacity:.55;stroke-width:1.4}
-.tsvg .lk.l3{stroke:var(--chart-indigo);stroke-dasharray:5 4;stroke-opacity:.8}
-.tsvg .lk.hl{stroke:var(--primary);stroke-opacity:.9}
-.tsvg .nd{cursor:pointer}
-.tsvg .nd circle.ring,.tsvg .nd rect.ring{fill:var(--neutral-lighter);stroke-width:3}
-.tsvg .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
+:is(.tsvg,.tmini .mm) .lk{fill:none;stroke:var(--neutral-light);stroke-opacity:.55;stroke-width:1.4}
+:is(.tsvg,.tmini .mm) .lk.l3{stroke:var(--chart-indigo);stroke-dasharray:5 4;stroke-opacity:.8}
+:is(.tsvg,.tmini .mm) .lk.hl{stroke:var(--primary);stroke-opacity:.9}
+:is(.tsvg,.tmini .mm) .nd{cursor:pointer}
+:is(.tsvg,.tmini .mm) .nd circle.ring,:is(.tsvg,.tmini .mm) .nd rect.ring{fill:var(--neutral-lighter);stroke-width:3}
+:is(.tsvg,.tmini .mm) .nd path.ring{fill:var(--neutral-lighter);stroke-width:3;stroke-linejoin:round}
+:is(.tsvg,.tmini .mm) .nd.root path.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
+:is(.tsvg,.tmini .mm) .nd path.sring{fill:none}
+:is(.tsvg,.tmini .mm) .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
 /* ⚠️ THE GLYPH IS A NESTED <svg>, SO ITS PATHS PAINT BLACK UNLESS `fill` IS SET HERE — that is why every node glyph
    read dark on a dark node. Live: a light glyph on a dark node with a severity ring; a DOWN / CRITICAL node is a solid
    disc in its severity colour with a white glyph; the entry point is white on the blue tile. */
-.tsvg .nd .gl{color:var(--page-text-color);fill:currentColor}
-.tsvg .nd.solid .gl{color:var(--topology-info-btn-text)}
-.tsvg .nd.solid circle.ring,.tsvg .nd.root.solid rect.ring{fill:var(--nd-sev)}
-.tsvg .nd.root .gl{color:var(--topology-info-btn-text)}
-.tsvg .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
-.tsvg .nd .bdg circle{fill:var(--primary)}
-.tsvg .nd .bdg text{font:600 10px Inter,sans-serif;fill:var(--page-background-color)}
-.tsvg .nd.sel .sring{display:block}
-.tsvg .nd .sring{display:none;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-dasharray:4 3}
-.tsvg .nd.dim,.tsvg .lk.dim{opacity:.18}
-.tsvg .nd.hit .sring{display:block;stroke:var(--severity-warning)}
+:is(.tsvg,.tmini .mm) .nd .gl{color:var(--page-text-color);fill:currentColor}
+:is(.tsvg,.tmini .mm) .nd.solid .gl{color:var(--topology-info-btn-text)}
+:is(.tsvg,.tmini .mm) .nd.solid circle.ring,:is(.tsvg,.tmini .mm) .nd.root.solid rect.ring{fill:var(--nd-sev)}
+:is(.tsvg,.tmini .mm) .nd.root .gl{color:var(--topology-info-btn-text)}
+:is(.tsvg,.tmini .mm) .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
+:is(.tsvg,.tmini .mm) .nd .bdg circle{fill:var(--primary)}
+:is(.tsvg,.tmini .mm) .nd .bdg text{font:600 10px Inter,sans-serif;fill:var(--page-background-color)}
+:is(.tsvg,.tmini .mm) .nd.sel .sring{display:block}
+:is(.tsvg,.tmini .mm) .nd .sring{display:none;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-dasharray:4 3}
+:is(.tsvg,.tmini .mm) .nd.dim,.tsvg .lk.dim{opacity:.18}
+:is(.tsvg,.tmini .mm) .nd.hit .sring{display:block;stroke:var(--severity-warning)}
 
 .tempty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;color:var(--primary);font-size:18px;text-align:center}
 .tempty[hidden]{display:none}
@@ -176,6 +181,10 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tmini svg.mm{display:block;width:100%;height:120px}
 .tmini.shut svg.mm{display:none}
 .tmini .mmv{fill:none;stroke:var(--primary);stroke-opacity:.5}
+/* the minimap is a scaled copy of the canvas's own nodes and links (live 10.0.1 draws the real node there, not a dot);
+   labels, IPs and count badges drop out — at minimap scale they are noise */
+.tmini .mm .lb,.tmini .mm .ipl,.tmini .mm .bdg{display:none}
+.tmini .mm .mmv{vector-effect:non-scaling-stroke}
 .tovl[hidden],.tpad[hidden],.tmini[hidden]{display:none}
 
 /* tooltip / popovers / toast */
@@ -183,6 +192,18 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .ttip b{display:block;font-weight:600}
 .ttip span{color:var(--neutral-light)}
 .ttip.on{display:block}
+/* FIELD / CONTROL HINTS = the ObserveOps DS default tooltip (get_component('tooltip'), 27 Oct 2026): the dark bubble on
+   --tooltip-background-color · --tooltip-text-color · --tooltip-box-shadow, opening TOP-START (the DS default, 73 of 94
+   uses) with an arrow at the trigger, flipping below only when there is no room above. Kept separate from #tTip on
+   purpose: the canvas's node / link cards are graph tooltips, which the DS rules out of this component. */
+.thint{position:fixed;z-index:60;pointer-events:none;max-width:300px;padding:6px 10px;border-radius:4px;
+  background:var(--tooltip-background-color);color:var(--tooltip-text-color);box-shadow:var(--tooltip-box-shadow);
+  font:400 12px/1.5 Inter,system-ui,sans-serif;white-space:normal;opacity:0;transform:translateY(2px);transition:opacity .12s,transform .12s;visibility:hidden}
+.thint.on{opacity:1;transform:none;visibility:visible}
+.thint::after{content:"";position:absolute;left:var(--hint-ax,12px);width:0;height:0;border:5px solid transparent;margin-left:-5px}
+.thint.up::after{top:100%;border-top-color:var(--tooltip-background-color)}
+.thint.down::after{bottom:100%;border-bottom-color:var(--tooltip-background-color)}
+.thint kbd{font:500 10.5px 'JetBrains Mono',monospace;background:var(--tag-bg-color);color:var(--page-text-color);border-radius:3px;padding:0 4px;margin-left:6px}
 .tpop{position:fixed;z-index:40;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;padding:10px 12px;min-width:220px;display:none;box-shadow:0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent)}
 .tpop.on{display:block}
 .tpop h4{margin:0 0 8px;font-size:12.8px;font-weight:600;color:var(--primary)}
@@ -215,10 +236,18 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tdr.on{transform:none}
 .tdr.w20{width:max(360px,20vw)}
 .tdr.w40{width:max(560px,40vw)}
-.tdr .dh{flex:0 0 50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:16px;font-weight:500;color:var(--primary)}
-.tdr .dh button{border:0;background:none;cursor:pointer;color:var(--neutral-light);font-size:15px}
-.tdr .db{flex:1 1 auto;overflow:auto;padding:0 16px 16px}
-.tdr .df{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--border-color)}
+/* drawer chrome = the ObserveOps DS drawer (get_component('drawer'), 27 Oct 2026): ONE inset (--drawer-inset, 15px)
+   shared by header, body and footer so all three align; the header is title (500 · 22px line, --page-text-color) +
+   a ✕ pinned top-right spanning the header's height, over a --border-color rule; 15px of body padding under it. */
+.tdr{--drawer-inset:15px}
+.tdr .dh{flex:0 0 auto;display:flex;align-items:stretch;justify-content:space-between;gap:12px;margin:0 var(--drawer-inset);padding:15px 0;
+  border-bottom:1px solid var(--border-color);font-size:16px;font-weight:500;line-height:22px;color:var(--page-text-color)}
+.tdr .dh > span{flex:1 1 auto;min-width:0;display:flex;align-items:center}
+.tdr .dh button{flex:0 0 auto;align-self:stretch;margin:-15px 0;padding:0 2px;border:0;background:none;cursor:pointer;color:var(--neutral-light);font-size:15px;display:grid;place-items:center;border-radius:4px}
+.tdr .dh button:hover{color:var(--page-text-color)}
+.tdr .dh button:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.tdr .db{flex:1 1 auto;overflow:auto;padding:15px var(--drawer-inset) 16px}
+.tdr .df{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px var(--drawer-inset);border-top:1px solid var(--border-color)}
 .tdr .df .sp{flex:1;color:var(--neutral-light);font-size:12px}
 .tdr .df .sp i{color:var(--severity-critical);font-style:normal}
 .dtabs{display:flex;gap:20px;border-bottom:1px solid var(--border-color);margin-bottom:12px}
@@ -230,6 +259,10 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .dlbl{font-size:12.8px;color:var(--neutral-light);margin:0 0 6px}
 .dlbl i{color:var(--severity-critical);font-style:normal}
 .dlbl .tinfo{vertical-align:middle;margin-left:2px}
+/* Create Custom View's View Group label carries an ⓘ — one flex line, or the icon wraps under the label and the two
+   inputs stop sharing a top edge */
+#cvMeta .dlbl{display:flex;align-items:center;gap:4px}
+#cvMeta .dlbl .tinfo{display:inline-flex;margin-left:2px}
 #dNew .dlbl{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .dfld{margin-bottom:18px}
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
@@ -244,6 +277,34 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tsegs button{height:30px;font-size:12.8px}
 .tsegs button.on{background:var(--neutral-lighter);color:var(--page-text-color);border-color:var(--field-border-color)}
 .dhalf{max-width:320px}
+textarea.din.dta{height:auto;min-height:86px;padding:8px 11px;resize:vertical;line-height:1.5}
+/* single-select (Icon · Shape): the drawer's own .dsel field, one choice, closes on pick */
+.ssw .din svg{transition:transform .15s;flex:0 0 auto}
+.ssw.open .din{border-color:var(--neutral-light)}
+.ssw.open .din svg{transform:rotate(180deg)}
+.ssw .dmenu button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 8px;border:0;border-radius:4px;background:none;color:var(--page-text-color);font:inherit;text-align:left;cursor:pointer}
+.ssw .dmenu button:hover{background:var(--dropdown-hover-background)}
+.ssw .dmenu button.on{font-weight:600;background:var(--code-tag-background-color)}
+.ssw .dmenu button svg{width:16px;height:16px;flex:0 0 16px;color:var(--neutral-light);fill:currentColor}   /* the canvas's own .gl rule, or a glyph with no paint of its own draws black */
+/* SHARE PICKER (27 Oct 2026, from the live Save View): Share With Users | User Profiles, then a searchable multi-select —
+   search box on top, a checkbox per name, a Clear footer. One component for Create Custom View and Save View. */
+.spw .din svg{transition:transform .15s}
+.spw.open .din{border-color:var(--neutral-light)}
+.spw.open .din svg{transform:rotate(180deg)}
+.spw .dmenu.spm{padding:0;max-height:none;overflow:visible;top:calc(100% + 4px)}
+.spm .spq{display:block;width:auto;margin:8px}
+.spm .spq input{height:32px;border-color:var(--field-border-color)}
+.spm .spq svg{top:8px}
+.spm .spl{max-height:168px;overflow:auto;padding:0 4px 4px}
+.spm .spl label{padding:7px 8px;font-size:13px}
+.spm .spl input{width:16px;height:16px;margin:0;accent-color:var(--page-text-color);color-scheme:dark}
+html:not([data-theme]) .spm .spl input{color-scheme:light}   /* light theme: native box in its light form */
+.spm .spl .on{color:var(--page-text-color);font-weight:500}
+.spm .spn{padding:10px 12px;color:var(--neutral-light);font-size:12px}
+.spm .spf{display:flex;justify-content:flex-end;padding:8px;border-top:1px solid var(--border-color)}
+.spm .spf button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid var(--field-border-color);border-radius:4px;background:var(--neutral-lightest);color:var(--page-text-color);cursor:pointer;font:inherit}
+.spm .spf button:disabled{opacity:.5;cursor:default}
+.spm .spf svg{width:12px;height:12px}
 .dsep{border-top:1px solid var(--border-color);margin:18px 0}
 .dsec2{font-size:15px;font-weight:600;margin:0 0 14px}
 .dnew{font-size:10px;font-weight:600;background:var(--chart-indigo, var(--primary));color:#fff;border-radius:3px;padding:1px 6px;letter-spacing:.03em}
@@ -281,7 +342,7 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .drng input[type=range]{width:100%;accent-color:var(--page-text-color);margin:0}
 .drng .rv{height:28px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);font:inherit;font-size:12.5px;text-align:center;width:48px;padding:0;box-sizing:border-box}
 .drng .rmm{display:flex;justify-content:space-between;font-size:11px;color:var(--neutral-light);margin-top:2px;padding-right:56px}
-.tsvg .lb .ipl{fill:var(--neutral-light);font-weight:400}
+:is(.tsvg,.tmini .mm) .lb .ipl{fill:var(--neutral-light);font-weight:400}
 .dmenu .dmn{padding:8px;color:var(--neutral-light);font-size:12px}
 
 .dck input{margin:2px 0 0;accent-color:var(--page-text-color);color-scheme:dark}
@@ -331,7 +392,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <button class="tsq" id="tSet" aria-label="Topology Settings" data-tip="Topology Settings">@@I:settings@@</button>
       <button class="tsq" id="tXml" aria-label="Export As XML" data-tip="Export As XML">@@I:export-xml@@</button>
     </span>
-    <button class="tpri" id="tCreate">Create Topology View</button>
+    <button class="tpri" id="tCreate">Create Topology</button>
   </div>
   <div class="tbody" id="tBody">
     <aside class="tside" id="tSide"></aside>
@@ -356,6 +417,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
 </div>
 
 <div class="ttip" id="tTip"></div>
+<div class="thint" id="tHint" role="tooltip"></div>
 <div class="tpop" id="tPop"></div>
 <div class="tkb" id="tKb" role="dialog" aria-label="Keyboard shortcuts"></div>
 <div class="ttoast" id="tToast"><b id="tToastT"></b><span id="tToastB"></span><button aria-label="Close" onclick="toastHide()">@@I:times@@</button></div>
@@ -400,7 +462,30 @@ html:not([data-theme]) .dck input{color-scheme:light}
 <aside class="tdr w40" id="dCv" aria-label="Create Custom View">
   <div class="dh"><span id="dCvT">Create Custom View</span><button data-close aria-label="Close">@@I:times@@</button></div>
   <div class="db">
+    <!-- Root Type (27 Oct 2026): a view is rooted at a monitor, or at a CONTAINER you describe here. Hidden in Add Entity. -->
+    <div class="dfld" id="cvTypeW"><div class="dlbl">Root Type</div><div class="tseg" id="cvType"><button data-v="monitor" class="on">Monitor</button><button data-v="container">Container</button></div></div>
+    <div id="cvMonW">
     <div class="dfld"><div class="dlbl" id="dCvL">Root Monitor <i>*</i></div><button class="din cvpick" id="cvPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select root monitor</span>@@I:chevron-down@@</button><div class="derr" id="cvPickE" hidden>Root Monitor is required</div></div>
+    </div>
+    <div id="cvCt" hidden>
+      <div class="dfld"><div class="dlbl">Name <i>*</i></div><input class="din" id="cvCtName" placeholder="Enter container name" autocomplete="off"><div class="derr" id="cvCtNameE" hidden>Name is required</div></div>
+      <div class="dfld"><div class="dlbl">Description</div><textarea class="din dta" id="cvCtDesc" rows="4" placeholder="Enter description"></textarea></div>
+      <div class="dgrid">
+        <div class="dfld"><div class="dlbl">Icon</div><div class="dsel ssw" id="cvCtIc"></div></div>
+        <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="cvCtSh"></div></div>
+      </div>
+      <div class="dfld"><div class="dlbl">IP</div><input class="din" id="cvCtIp" placeholder="Enter IP address" autocomplete="off"><div class="derr" id="cvCtIpE" hidden>Enter a valid IPv4 address</div></div>
+    </div>
+    <!-- the view's own fields (request, 27 Oct 2026) — asked up front, so Create Topology files the view in one step.
+         Hidden in Add Entity mode, which reuses this drawer for the picker alone. -->
+    <div id="cvMeta">
+      <div class="dgrid">
+        <div class="dfld"><div class="dlbl">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
+        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="Use tag to organize this topology view under a defined standalone or key-value label for better classification and access.">@@I:info-circle@@</span></div><input class="din" id="cvGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
+      </div>
+      <div class="dfld"><div class="dlbl">Security</div><div class="tseg" id="cvSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+      <div id="cvShare" class="sphost" hidden></div>
+    </div>
   </div>
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="cvReset">Reset</button><button class="tpri" id="cvCreate">Create</button></div>
 </aside>
@@ -417,10 +502,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <div class="dfld nflt"><div class="dlbl">Monitor Filter</div><div class="dsel"><button class="din" id="nMonB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nMonM"></div></div></div>
     </div>
     <div class="dfld"><div class="dlbl">Security <i>*</i></div><div class="tseg" id="nSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
-    <div id="nShare" hidden>
-      <div class="dfld"><div class="dlbl">Share With</div><div class="tseg tsegs" id="nShw"><button data-v="users" class="on">Users</button><button data-v="profiles">User Profiles</button></div></div>
-      <div class="dfld dhalf"><div class="dlbl" id="nShL">Users</div><div class="dsel"><button class="din" id="nShB" type="button"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="dmenu" id="nShM"></div></div></div>
-    </div>
+    <div id="nShare" class="sphost" hidden></div>
   </div>
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="nReset">Reset</button><button class="tpri" id="nSave">Create Topology View</button></div>
 </aside>
@@ -448,7 +530,9 @@ const TABS = [['network','Network'],['sdn','SDN'],['cloud','Cloud'],['virtualiza
    mkl › abc = the core switch linked to a D-Link device. ⚠️ Only abc's contents were visible — the other three groups
    were collapsed, so they carry no views here rather than invented ones. A view is an entry point + the monitors linked
    to it, drawn like any other topology (not a hub named after the view). Names scrubbed (cisco_core.motadata.local). */
-const CUSTOM = [
+/* the four seeded groups (mkl · test · western · view, with mkl › abc) are PARKED (request, 27 Oct 2026: the sidebar
+   starts empty — views exist only once you make one with Create Topology). `const CUSTOM = CUSTOM_SEED` brings them back. */
+const CUSTOM_SEED = [
   { grp:'mkl', views:[ { name:'abc', grp:'mkl', sec:'public', root:{ n:'cisco-core.example.com', ip:'192.0.2.2', ic:'switch', s:'warning',
       kids:[ { n:'DLink', ip:'192.0.2.40', ic:'router', s:'critical' } ] } } ] },
   { grp:'test', views:[] }, { grp:'western', views:[] }, { grp:'view', views:[] } ];
@@ -457,7 +541,8 @@ const CUSTOM = [
 const T = { tab:'network', open:{}, sel:{}, q:'', find:'', l3:false, mode:'progressive', lay:'radial',
   exp:{}, vp:{x:0,y:0,k:1}, nodes:[], links:[], pick:null, label:'name', mini:true, acc:'public', sub:true,
   shw:'users', users:[], profiles:[], lock:false, ip:false, ring:300, zmin:.1, zmax:2.5, lw:80,
-  view:CUSTOM[0].views[0], cv:{ mkl:true } };   /* opens on mkl › abc, the view the live link points at */
+  view:null, cv:{} };   /* the Custom tab opens with NO view selected and every group collapsed (request, 27 Oct 2026) —
+     the canvas shows "Select or create a Custom View to begin designing" until a view is picked */
 const $ = (id) => document.getElementById(id);
 /* ⚠️ an <svg> has no `.hidden` property (only HTML elements do) — `$('tSvg').hidden = true` set an expando and never
    touched the attribute, so a stale graph kept painting under the Custom tab's empty state (22 Oct 2026). Give the
@@ -524,9 +609,9 @@ function nodeAt(id){ let arr = TREE[T.tab], x = null; id.split('/').slice(1).for
 /* custom views */
 function customSidePaint(){
   const s = $('tSide');
-  s.innerHTML = `<div class="tcvh">Custom Views <button class="tsq" id="cvAdd" aria-label="Create Topology View" data-tip="Create Topology View">${ic('plus')}</button></div>`
+  /* no + in the header (request, 27 Oct 2026): creating a view is the toolbar's Create Topology, the one door */
+  s.innerHTML = `<div class="tcvh">Custom Views</div>`
     + `<label class="tsrch"><span>${ic('search')}</span><input id="cvQ" placeholder="Search views" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="cvTree"></div>`;
-  $('cvAdd').onclick = () => { CV.mode = 'root'; drOpen('dCv'); };
   $('cvQ').oninput = (e) => { T.q = e.target.value; cvTreePaint(); };
   cvTreePaint();
 }
@@ -540,7 +625,7 @@ function cvTreePaint(){
     if (open) { if (!vs.length) rows.push('<div class="tnone" style="padding-left:28px">No views yet</div>');
       vs.forEach((v) => rows.push(`<div class="tr${T.view===v?' on':''}" data-v="${gi}:${g.views.indexOf(v)}" style="padding-left:20px"><span class="tcv ph"></span><span class="cvdot"></span><span class="tnm">${esc(v.name)}</span></div>`)); }
   });
-  $('cvTree').innerHTML = rows.join('') || (CUSTOM.length ? '<div class="tnone">No matching views</div>' : '<div class="tcvempty">No custom views yet. Click + to create one.</div>');
+  $('cvTree').innerHTML = rows.join('') || (CUSTOM.length ? '<div class="tnone">No matching views</div>' : '<div class="tcvempty">No custom views yet. Use Create Topology to make one.</div>');
 }
 $('tSide').addEventListener('click', (e) => {
   if (T.tab !== 'custom') return; const r = e.target.closest('.tr'); if (!r) return;
@@ -554,10 +639,17 @@ function toolsPaint(){
   /* live Custom tab: the same toolbar minus Expanded/Progressive and left-to-right; creating a view is the sidebar's + */
   $('tTools').hidden = false; $('tTools2').hidden = false; $('tMode').hidden = custom; $('tModeGap').hidden = custom;
   $('tLay').querySelector('[data-l=ltr]').hidden = custom; if (custom && T.lay === 'ltr') T.lay = 'radial';
-  $('tCreate').hidden = custom && !T.design;
+  /* Custom tab with NO view open (live 10.0.1, /topology/custom, request 27 Oct 2026): the toolbar is only full screen +
+     a DISABLED Create Topology View — Layer 3, the layouts, ?, settings and export all act on a drawn view, and there
+     is none. The button wakes up once a view or a design is on the canvas. */
+  const idle = custom && !drawn;
+  /* the button is ENABLED with nothing open (request, 27 Oct 2026) and named Create Topology on the Custom tab;
+     the other tabs keep the original Create Topology View form */
+  $('tCreate').hidden = custom && !T.design && !idle; $('tCreate').disabled = false;
+  $('tCreate').textContent = custom ? 'Create Topology' : 'Create Topology View';
   /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
-  const des = custom && !!T.design;
-  $('tL3').parentElement.hidden = des; $('tLay').hidden = des; $('tHelp').hidden = des; $('tTools2').hidden = des;
+  const des = custom && !!T.design, bare = des || idle;
+  $('tL3').parentElement.hidden = bare; $('tLay').hidden = bare; $('tHelp').hidden = bare; $('tTools2').hidden = bare;
   $('tDes').hidden = !des; $('tGraph').classList.toggle('bgimg', des && !!T.design.bg); $('tGraph').style.backgroundImage = des && T.design.bg ? `url("${T.design.bg}")` : '';
   $('tFindW').hidden = !drawn;
   $('tL3').classList.toggle('on', T.l3); $('tL3').textContent = T.l3 ? 'ON' : 'OFF'; $('tL3').setAttribute('aria-pressed', T.l3);
@@ -583,6 +675,7 @@ const KB_SECT = [
   ['View', [ [['1','/','2','/','3'], 'Full / Tree / Left-to-right view'], [['Ctrl','+','Shift','+','F'], 'Toggle fullscreen'] ]],
   ['UI', [ [['M'], 'Toggle minimap'], [['i'], 'Inspect node connections'], [['Ctrl','+','F'], 'Focus search'], [['Escape'], 'Clear search / deselect'] ]],
 ];
+const CUSTOM = [];
 function kbKey(k){
   if (k === '+' || k === '/') return `<span class="pl">${k}</span>`;
   const a = { '@up':'long-arrow-up', '@down':'long-arrow-down', '@left':'long-arrow-left', '@right':'long-arrow-right' }[k];
@@ -615,7 +708,13 @@ $('tKb').addEventListener('mouseenter', () => clearTimeout(KB.t));
 $('tKb').addEventListener('mouseleave', kbLater);
 $('tHelp').onclick = () => { if (kbOpen() && KB.pin) return kbHide(); KB.pin = true; kbShow($('tHelp')); };
 $('tSet').onclick = () => drOpen('dSet');
-$('tCreate').onclick = () => drOpen('dNew');
+/* Custom tab with nothing open → Create Custom View (root + name + group + security); while designing → the view is
+   filed straight from what that drawer captured; other tabs → the Create Topology View form */
+$('tCreate').onclick = () => {
+  if (T.tab === 'custom' && !T.design) { CV.mode = 'root'; drOpen('dCv'); return; }
+  if (T.tab === 'custom' && T.design && T.design.meta) return cvSave();
+  drOpen('dNew');
+};
 
 /* ================= GRAPH ================= */
 function curRoot(){
@@ -703,7 +802,8 @@ function graphPaint(){
     /* live: only DOWN fills the shape (a VM disc, or the entry-point tile — motadataaa); critical is a red ring */
     const solid = d.s === 'down';
     const cls = 'nd' + (root ? ' root' : '') + (solid ? ' solid' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
-    const shape = root ? `<rect class="ring" x="-38" y="-38" width="76" height="76" rx="12" style="stroke:${sev}"/><rect class="sring" x="-45" y="-45" width="90" height="90" rx="16"/>`
+    const shape = d.shape ? nodeShape(d.shape, root ? 42 : 34, sev)   /* a container carries the shape it was given */
+                 : root ? `<rect class="ring" x="-38" y="-38" width="76" height="76" rx="12" style="stroke:${sev}"/><rect class="sring" x="-45" y="-45" width="90" height="90" rx="16"/>`
                        : `<circle class="ring" r="33" style="stroke:${sev}"/><circle class="sring" r="40"/>`;
     const gs = root ? 34 : 24;
     return `<g class="${cls}" data-k="${n.key}" transform="translate(${n.x},${n.y})" style="--nd-sev:${sev}">${shape}`
@@ -714,6 +814,14 @@ function graphPaint(){
       + '</g>';
   }).join('');
   vpApply(); miniPaint();
+}
+/* container shapes (Create Custom View › Container): r is the outer radius; the selection ring sits 7px outside */
+const CT_SHAPES = [ ['hexagon','Hexagon (round)'], ['circle','Circle'], ['square','Square (round)'] ];
+function nodeShape(sh, r, sev){
+  if (sh === 'circle') return `<circle class="ring" r="${r - 4}" style="stroke:${sev}"/><circle class="sring" r="${r + 3}"/>`;
+  if (sh === 'square') { const a = r - 6; return `<rect class="ring" x="${-a}" y="${-a}" width="${2*a}" height="${2*a}" rx="12" style="stroke:${sev}"/><rect class="sring" x="${-a-7}" y="${-a-7}" width="${2*a+14}" height="${2*a+14}" rx="16"/>`; }
+  const hex = (R) => 'M' + [0,1,2,3,4,5].map(i => { const t = Math.PI / 3 * i - Math.PI / 2; return (R * Math.cos(t)).toFixed(1) + ' ' + (R * Math.sin(t)).toFixed(1); }).join('L') + 'Z';
+  return `<path class="ring" d="${hex(r)}" style="stroke:${sev}"/><path class="sring" d="${hex(r + 8)}"/>`;
 }
 function monGlyph(n){ const s = MON[n] || MON.server || ''; const m = s.match(/<svg[^>]*>([\s\S]*)<\/svg>/); return m ? m[1] : ''; }
 
@@ -768,12 +876,11 @@ function tipHide(){ $('tTip').classList.remove('on'); }
 /* minimap: every node as a dot, the links, and the visible window as a rectangle */
 function miniPaint(){
   if ($('tMini').hidden) return; const m = $('tMm'), b = bbox(), W = 198, H = 120, pad = 10;
-  const k = Math.min((W - pad * 2) / (b.x1 - b.x0), (H - pad * 2) / (b.y1 - b.y0)); T.mm = { k, ox: pad - b.x0 * k + ((W - pad*2) - (b.x1 - b.x0) * k) / 2, oy: pad - b.y0 * k + ((H - pad*2) - (b.y1 - b.y0) * k) / 2 };
-  const P = (n) => [n.x * k + T.mm.ox, n.y * k + T.mm.oy];
+  /* fit the graph's own box (labels excluded) into the minimap, capped so one node fills it the way live's does */
+  const k = Math.min(1.1, (W - pad * 2) / (b.x1 - b.x0), (H - pad * 2) / (b.y1 - b.y0 - 20));
+  T.mm = { k, ox: W / 2 - ((b.x0 + b.x1) / 2) * k, oy: H / 2 - ((b.y0 + b.y1 - 20) / 2) * k };
   m.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  m.innerHTML = T.links.map(l => { const [x1,y1] = P(l.a), [x2,y2] = P(l.b); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--neutral-light);stroke-opacity:.6;stroke-width:1"/>`; }).join('')
-    + T.nodes.map(n => { const [x,y] = P(n); return `<circle cx="${x}" cy="${y}" r="${n.depth ? 2.6 : 3.4}" style="fill:${n.depth ? 'var(--severity-' + n.d.s + ', var(--neutral-light))' : 'var(--topology-info-btn-bg)'}"/>`; }).join('')
-    + '<rect class="mmv" id="tMmV"/>';
+  m.innerHTML = `<g transform="translate(${T.mm.ox} ${T.mm.oy}) scale(${k})">${$('tLinks').innerHTML}${$('tNodes').innerHTML}</g><rect class="mmv" id="tMmV"/>`;
   miniView();
 }
 function miniView(){
@@ -818,15 +925,30 @@ function popToggle(btn, html, side){
 document.addEventListener('pointerdown', (e) => { if (popFor && !e.target.closest('#tPop') && !popFor.contains(e.target)) popClose();
   if (kbOpen() && !e.target.closest('#tKb,#tHelp,#oKey')) kbHide();
   if (!e.target.closest('.dsel')) { $('nMonM').classList.remove('on'); $('dShM').classList.remove('on'); } });
-/* data-tip: a small hover card; two spaces split the label from its key ("Move Right  Right Arrow") */
-let tipT = null;
+/* data-tip → the DS tooltip (#tHint). Two spaces split a label from its key ("Move Right  Right Arrow").
+   Hover AND keyboard focus open it (the DS: "appears on focus + hover"); 320ms delay so sweeping a toolbar stays quiet. */
+let tipT = null, tipFor = null;
+function hintShow(el){
+  const t = $('tHint'), [a, k] = el.dataset.tip.split(/\s{2,}/);
+  t.innerHTML = esc(a) + (k ? `<kbd>${esc(k)}</kbd>` : '');
+  t.classList.remove('on', 'up', 'down'); t.style.left = '0px'; t.style.top = '0px';
+  const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight, gap = 8;
+  const up = r.top - h - gap >= 6;                                   /* top-start, unless it would leave the screen */
+  const left = Math.min(innerWidth - w - 6, Math.max(6, r.left + r.width / 2 - 12));   /* arrow (12px in) on the trigger's centre */
+  t.style.left = left + 'px'; t.style.top = (up ? r.top - h - gap : r.bottom + gap) + 'px';
+  t.style.setProperty('--hint-ax', Math.max(8, Math.min(w - 8, r.left + r.width / 2 - left)) + 'px');
+  t.classList.add(up ? 'up' : 'down', 'on'); tipFor = el; el.setAttribute('aria-describedby', 'tHint');
+}
+function hintHide(){ clearTimeout(tipT); $('tHint').classList.remove('on'); if (tipFor) tipFor.removeAttribute('aria-describedby'); tipFor = null; }
 document.addEventListener('mouseover', (e) => {
-  const el = e.target.closest && e.target.closest('[data-tip]'); clearTimeout(tipT); if (!el) { if (!e.target.closest('.nd')) tipHide(); return; }
-  tipT = setTimeout(() => { const t = $('tTip'), [a, k] = el.dataset.tip.split(/\s{2,}/); t.innerHTML = esc(a) + (k ? ` <kbd style="font:500 10.5px 'JetBrains Mono';background:var(--tag-bg-color);border-radius:3px;padding:0 4px;margin-left:6px">${esc(k)}</kbd>` : '');
-    const r = el.getBoundingClientRect(); t.classList.add('on'); const w = t.offsetWidth;
-    t.style.left = Math.min(innerWidth - w - 6, Math.max(6, r.left + r.width / 2 - w / 2)) + 'px'; t.style.top = (r.bottom + 6 + 30 > innerHeight ? r.top - 34 : r.bottom + 6) + 'px'; }, 320);
+  const el = e.target.closest && e.target.closest('[data-tip]'); clearTimeout(tipT);
+  if (!el) { hintHide(); if (!e.target.closest('.nd')) tipHide(); return; }
+  if (el === tipFor) return; tipT = setTimeout(() => hintShow(el), 320);
 });
-document.addEventListener('mouseout', (e) => { if (e.target.closest && e.target.closest('[data-tip]')) { clearTimeout(tipT); tipHide(); } });
+document.addEventListener('mouseout', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && !el.contains(e.relatedTarget)) hintHide(); });
+document.addEventListener('focusin', (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && e.target.matches(':focus-visible')) hintShow(el); });
+document.addEventListener('focusout', (e) => { if (e.target.closest && e.target.closest('[data-tip]')) hintHide(); });
+document.addEventListener('pointerdown', hintHide, true);
 let toastT = null;
 function toast(t, b){ $('tToastT').textContent = t; $('tToastB').textContent = b || ''; $('tToast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(toastHide, 3500); }
 function toastHide(){ $('tToast').classList.remove('on'); }
@@ -846,7 +968,7 @@ $('tScrim').onclick = drClose;
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
 $('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('#dSet [data-pane]').forEach(p => p.hidden = p.dataset.pane !== b.dataset.t); };
-['nInc','nSec'].forEach(id => segBind(id));   /* dAcc / dShw are driven by the settings draft below */
+['nInc','nSec','cvSec'].forEach(id => segBind(id));   /* dAcc / dShw are driven by the settings draft below */
 /* ---- Topology Settings: a DRAFT (SD) the drawer edits; Apply copies it onto T. ---- */
 const SET_DEF = { acc:'public', shw:'users', users:[], profiles:[], sub:true, lock:false, ip:false, ring:300, zmin:.1, zmax:2.5, lw:80 };
 const SET_USERS = ['abcdef', 'admin', 'noc-operator', 'network-lead', 'analyst'];
@@ -941,7 +1063,7 @@ $('dSetApply').onclick = () => {
 
 /* Create Topology View — the monitor filter lists every entry point the instance has */
 const ALLMON = () => { const out = []; Object.keys(TREE).forEach(k => leavesOf(TREE[k]).forEach(l => { if (!out.some(o => o.n === l.n && o.ip === l.ip)) out.push(l); })); return out; };
-let NEW = { mons:[] };
+let NEW = { mons:[], shw:'users', users:[], profiles:[] };   /* the share fields must exist at load: the Save View share picker mounts before the drawer is ever opened */
 function newReset(){
   NEW = { mons:[], shw:'users', users:[], profiles:[] }; $('nName').value = ''; $('nGrp').value = ''; segSet('nInc','include'); segSet('nSec','public'); nSharePaint();
   ['nName','nGrp'].forEach(i => $(i).classList.remove('err')); $('nNameE').hidden = $('nGrpE').hidden = true; monPaint();
@@ -979,18 +1101,47 @@ function newMode(){
   $('nNameL').textContent = d ? 'View Name' : 'Topology View Name'; $('nGrpL').textContent = d ? 'View Group' : 'Topology View Group';
   $('nName').placeholder = d ? 'Enter view name' : '';
 }
-function nSharePaint(){
-  const priv = segVal('nSec') === 'private'; $('nShare').hidden = !priv; segSet('nShw', NEW.shw);
-  $('nShL').textContent = NEW.shw === 'users' ? 'Users' : 'User Profiles';
-  const list = NEW.shw === 'users' ? SET_USERS : SET_PROFILES, picked = NEW[NEW.shw], b = $('nShB').querySelector('span');
-  b.textContent = picked.length ? picked.join(', ') : 'Select'; b.classList.toggle('ph', !picked.length);
-  $('nShM').innerHTML = list.map(u => `<label><input type="checkbox" data-u="${esc(u)}"${picked.includes(u) ? ' checked' : ''}>${esc(u)}</label>`).join('');
+/* ---- share picker: get() returns the live state {shw, users[], profiles[]} so a reset that REASSIGNS it still works */
+function spMount(host, get){
+  const h = $(host); h._get = get; h._q = '';
+  h.innerHTML = `<div class="dfld"><div class="dlbl">Share With</div><div class="tseg" data-sp="shw"><button data-v="users">Users</button><button data-v="profiles">User Profiles</button></div></div>`
+    + `<div class="dfld dhalf"><div class="dlbl" data-sp="lbl"></div><div class="dsel spw"><button class="din" type="button" data-sp="trig" aria-haspopup="listbox" aria-expanded="false"><span></span>${ic('chevron-down')}</button>`
+    + `<div class="dmenu spm" data-sp="menu"><label class="tsrch spq"><span>${ic('search')}</span><input data-sp="q" placeholder="Search" autocomplete="off"></label><div class="spl" data-sp="list" role="listbox" aria-multiselectable="true"></div>`
+    + `<div class="spf"><button type="button" data-sp="clear">${ic('times')} Clear</button></div></div></div></div>`;
+  const q = (k) => h.querySelector(`[data-sp=${k}]`);
+  q('shw').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; get().shw = b.dataset.v; h._q = ''; q('q').value = ''; spPaint(host); };
+  q('trig').onclick = () => spOpen(host, !q('menu').classList.contains('on'));
+  q('q').oninput = (e) => { h._q = e.target.value; spList(host); };
+  q('list').onchange = (e) => { const st = get(), u = e.target.dataset.u, a = st[st.shw]; st[st.shw] = e.target.checked ? [...a, u] : a.filter(x => x !== u); spPaint(host, true); };
+  q('clear').onclick = () => { const st = get(); st[st.shw] = []; spPaint(host, true); };
+  spPaint(host);
 }
+function spOpen(host, on){
+  const h = $(host), m = h.querySelector('[data-sp=menu]'), t = h.querySelector('[data-sp=trig]');
+  m.classList.toggle('on', on); h.querySelector('.spw').classList.toggle('open', on); t.setAttribute('aria-expanded', on);
+  if (on) { h._q = ''; h.querySelector('[data-sp=q]').value = ''; spList(host); setTimeout(() => h.querySelector('[data-sp=q]').focus(), 0); }
+}
+/* repaints the trigger, label, toggle and list — never the search box, so typing keeps its caret */
+function spPaint(host, keepOpen){
+  const h = $(host), st = h._get(), q = (k) => h.querySelector(`[data-sp=${k}]`);
+  [...q('shw').children].forEach(b => b.classList.toggle('on', b.dataset.v === st.shw));
+  q('lbl').textContent = st.shw === 'users' ? 'Users' : 'User Profiles';
+  const pick = st[st.shw], sp = q('trig').querySelector('span');
+  sp.textContent = pick.length ? pick.join(', ') : 'Select'; sp.classList.toggle('ph', !pick.length);
+  q('clear').disabled = !pick.length; spList(host); if (!keepOpen) spOpen(host, false);
+}
+function spList(host){
+  const h = $(host), st = h._get(), list = st.shw === 'users' ? SET_USERS : SET_PROFILES, pick = st[st.shw], f = h._q.trim().toLowerCase();
+  const rows = list.filter(u => !f || u.toLowerCase().includes(f));
+  const el = h.querySelector('[data-sp=list]'), keep = el.scrollTop;
+  el.innerHTML = rows.map(u => { const on = pick.includes(u); return `<label class="${on ? 'on' : ''}" role="option" aria-selected="${on}"><input type="checkbox" data-u="${esc(u)}"${on ? ' checked' : ''}>${esc(u)}</label>`; }).join('')
+    || `<div class="spn">No ${st.shw === 'users' ? 'users' : 'profiles'} match</div>`;
+  el.scrollTop = keep;
+}
+document.addEventListener('pointerdown', (e) => { document.querySelectorAll('.sphost').forEach(h => { if (h._get && !h.querySelector('.spw').contains(e.target)) spOpen(h.id, false); }); });
+function nSharePaint(){ $('nShare').hidden = segVal('nSec') !== 'private'; spPaint('nShare'); }
+spMount('nShare', () => NEW);
 $('nSec').addEventListener('click', () => setTimeout(nSharePaint));
-$('nShw').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; NEW.shw = b.dataset.v; nSharePaint(); };
-$('nShB').onclick = () => $('nShM').classList.toggle('on');
-$('nShM').onchange = (e) => { const u = e.target.dataset.u, a = NEW[NEW.shw]; NEW[NEW.shw] = e.target.checked ? [...a, u] : a.filter(x => x !== u); nSharePaint(); $('nShM').classList.add('on'); };
-document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#nShM,#nShB')) $('nShM').classList.remove('on'); });
 
 /* ================= CREATE CUSTOM VIEW (live 10.0.1, 22 Oct 2026) =================
    The sidebar's + opens this drawer: Root Monitor* is a grid dropdown (search · Monitor ↓ · IP · Type · Groups · Tags);
@@ -1014,6 +1165,50 @@ function cvOpen(mode){
   $('dCvL').innerHTML = (CV.mode === 'root' ? 'Root Monitor' : 'Entities') + ' <i>*</i>';
   $('cvCreate').textContent = CV.mode === 'root' ? 'Create' : 'Add';
   $('cvPickE').hidden = true; $('cvPickB').classList.remove('err'); cvField();
+  $('cvMeta').hidden = CV.mode !== 'root'; $('cvTypeW').hidden = CV.mode !== 'root'; cvMetaReset();
+}
+let CVS = { shw:'users', users:[], profiles:[] };   /* Create Custom View's share state */
+function cvSharePaint(){ $('cvShare').hidden = segVal('cvSec') !== 'private'; spPaint('cvShare'); }
+const CT_ICONS = [ ['agent','Agent'], ['docker','Container'], ['cloud','Cloud'], ['server','Server'], ['switch','Switch'], ['router','Router'], ['firewall','Firewall'], ['vm','Virtual Machine'] ];
+let CVT = { type:'monitor', ic:'agent', sh:'hexagon' };
+function cvTypePaint(){ const ct = CVT.type === 'container'; segSet('cvType', CVT.type); $('cvMonW').hidden = ct; $('cvCt').hidden = !ct; }
+function cvMetaReset(){
+  CVT = { type:'monitor', ic:'agent', sh:'hexagon' }; $('cvCtName').value = ''; $('cvCtDesc').value = ''; $('cvCtIp').value = '';
+  ['cvCtName','cvCtIp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }); cvTypePaint(); ssPaint('cvCtIc'); ssPaint('cvCtSh');
+  CVS = { shw:'users', users:[], profiles:[] };
+  $('cvName').value = ''; $('cvGrp').value = ''; segSet('cvSec', 'public'); cvSharePaint();
+  ['cvName','cvGrp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+}
+spMount('cvShare', () => CVS);
+/* single-select engine for Icon and Shape: get/set read and write CVT */
+function ssMount(id, opts, key, glyph){
+  const h = $(id); h._o = opts; h._k = key; h._g = glyph;
+  h.innerHTML = `<button class="din" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>${ic('chevron-down')}</button><div class="dmenu" role="listbox"></div>`;
+  const b = h.querySelector('.din'), m = h.querySelector('.dmenu');
+  b.onclick = () => { const on = !m.classList.contains('on'); document.querySelectorAll('.ssw .dmenu.on').forEach(x => x.classList.remove('on')); document.querySelectorAll('.ssw.open').forEach(x => x.classList.remove('open'));
+    m.classList.toggle('on', on); h.classList.toggle('open', on); b.setAttribute('aria-expanded', on); };
+  m.onclick = (e) => { const o = e.target.closest('button'); if (!o) return; CVT[key] = o.dataset.v; m.classList.remove('on'); h.classList.remove('open'); b.setAttribute('aria-expanded', false); ssPaint(id); };
+  ssPaint(id);
+}
+function ssPaint(id){
+  const h = $(id); if (!h || !h._o) return; const cur = CVT[h._k], o = h._o.find(x => x[0] === cur) || h._o[0];
+  h.querySelector('.din span').textContent = o[1];
+  h.querySelector('.dmenu').innerHTML = h._o.map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
+}
+ssMount('cvCtIc', CT_ICONS, 'ic', true); ssMount('cvCtSh', CT_SHAPES, 'sh', false);
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
+$('cvType').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; CVT.type = b.dataset.v; cvTypePaint(); };
+['cvCtName','cvCtIp'].forEach(i => $(i).addEventListener('input', () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }));
+$('cvSec').addEventListener('click', () => setTimeout(cvSharePaint));
+['cvName','cvGrp'].forEach(i => $(i).oninput = () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+/* file the design under the name / group / security Create Custom View captured */
+function cvSave(){
+  if (T.design.view) { const v = T.design.view; T.design = null; T.view = v; toast('Success', 'Topology View "' + v.name + '" saved'); goTab('custom'); return; }
+  const m = T.design.meta, gname = m.grp === '<standalone>' ? 'Standalone' : m.grp;
+  let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
+  const v = { name: m.name, grp: gname, sec: m.sec, share: m.share || null, root: { ...T.design.root, kids: T.design.kids.map(k => ({ ...k })) }, bg: T.design.bg };
+  g.views.push(v); T.design = null; T.view = v; T.cv[gname] = true;
+  toast('Success', 'Topology View "' + m.name + '" created'); goTab('custom');
 }
 function cvField(){
   const b = $('cvPickB').querySelector('span');
@@ -1046,11 +1241,33 @@ $('cvGb').onclick = (e) => {
   cvField(); $('cvPickE').hidden = true; $('cvPickB').classList.remove('err');
 };
 document.addEventListener('pointerdown', (e) => { if ($('cvGrid').classList.contains('on') && !e.target.closest('#cvGrid,#cvPickB')) cvGridOpen(false); });
-$('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); };
+$('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); if (CV.mode === 'root') cvMetaReset(); };
 const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
 $('cvCreate').onclick = () => {
-  if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); return; }
-  if (CV.mode === 'root') { T.design = { root: cvNode(CV.pick[0]), kids: [], bg: null, ct: 0 }; T.view = null; }
+  let bad = false;
+  const ct = CV.mode === 'root' && CVT.type === 'container';
+  if (ct) {
+    if (!$('cvCtName').value.trim()) { $('cvCtName').classList.add('err'); $('cvCtNameE').hidden = false; bad = true; }
+    const ipv = $('cvCtIp').value.trim();
+    if (ipv && !/^((25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(25[0-5]|2[0-4]\d|1?\d?\d)$/.test(ipv)) { $('cvCtIp').classList.add('err'); $('cvCtIpE').hidden = false; bad = true; }
+  } else if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
+  const name = $('cvName').value.trim(), grp = $('cvGrp').value.trim();
+  if (CV.mode === 'root') ['cvName','cvGrp'].forEach(i => { if (!$(i).value.trim()) { $(i).classList.add('err'); $(i + 'E').hidden = false; bad = true; } });
+  if (bad) return;
+  if (CV.mode === 'root') {
+    /* live 10.0.1: Create files the view in the sidebar AT ONCE (group opened, row selected) and opens its design canvas.
+       The view and the design share one root and one kids array, so Add Entity / Add Container land in the filed view
+       too — there is no second copy to keep in step. Create Topology then only finishes the design. */
+    const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
+    const gname = grp === '<standalone>' ? 'Standalone' : grp, kids = [];
+    const root = ct ? { n: $('cvCtName').value.trim(), ip: $('cvCtIp').value.trim(), ic: CVT.ic, s: 'unknown', shape: CVT.sh, desc: $('cvCtDesc').value.trim(), kind: 'container' }
+                    : cvNode(CV.pick[0]);
+    let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
+    const v = { name, grp: gname, sec, share, root: Object.assign(root, { kids }), bg: null };
+    g.views.push(v); T.cv[gname] = true; T.view = v;
+    T.design = { root, kids, bg: null, ct: 0, view: v, meta: { name, grp, sec, share } };
+    toast('Success', 'Topology View "' + name + '" created');
+  }
   else T.design.kids.push(...CV.pick.map(cvNode));
   CV.mode = 'root'; cvGridOpen(false); drClose(); cvTreePaint(); graphLoad();
 };
@@ -1058,7 +1275,7 @@ $('cvCreate').onclick = () => {
    canvas, a container node, monitors linked to the root. */
 $('desBg').onclick = () => $('desBgF').click();
 $('desBgF').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader();
-  r.onload = () => { T.design.bg = r.result; toolsPaint(); toast('Success', 'Background image added'); }; r.readAsDataURL(f); e.target.value = ''; };
+  r.onload = () => { T.design.bg = r.result; if (T.design.view) T.design.view.bg = r.result; toolsPaint(); toast('Success', 'Background image added'); }; r.readAsDataURL(f); e.target.value = ''; };
 $('desCt').onclick = () => { T.design.ct++; T.design.kids.push({ n:'Container ' + T.design.ct, ip:'', ic:'topology', s:'unknown' }); graphBuild(false); };
 $('desEn').onclick = () => { CV.mode = 'entity'; drOpen('dCv'); };
 

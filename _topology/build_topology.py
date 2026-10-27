@@ -46,6 +46,9 @@ MON = {
     'linux': 'monitors/operating-systems/linux.svg', 'windows': 'monitors/operating-systems/windows.svg',
     'proxmox': 'monitors/virtualization/proxmox-ve-cluster.svg', 'aws-cloud': 'monitors/aws/aws-cloud.svg',
     'azure-cloud': 'monitors/azure/azure-cloud.svg', 'oracle-cloud': 'monitors/oracle-cloud/oracle-cloud.svg', 'firewall': 'monitors/security-identity/firewall.svg',
+    # container icons for Create Custom View's Root Type = Container (27 Oct 2026)
+    'agent': 'monitors/monitoring-observability/agent.svg', 'cloud': 'monitors/other-cloud/cloud.svg',
+    'docker': 'monitors/containers-orchestration/dockercontainer.svg',
 }
 mon = {}
 for k, p in MON.items():
@@ -54,7 +57,12 @@ for k, p in MON.items():
     white = [x for x in paths if re.search(r'fill="#fff(fff)?"', x, re.I)]
     keep = white or [x for x in paths if 'fill="none"' not in x]
     ds = [re.search(r'\sd="([^"]+)"', x).group(1) for x in keep if re.search(r'\sd="', x)]
-    mon[k] = '<svg class="i" viewBox="0 0 512 512" aria-hidden="true">' + ''.join(f'<path d="{d}"/>' for d in ds) + '</svg>'
+    body = ''.join(f'<path d="{d}"/>' for d in ds)
+    # every node glyph is drawn into a 512 box; a source on another grid (dockercontainer.svg is 48) is scaled up to it,
+    # or it renders at a tenth of its size (27 Oct 2026)
+    vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', s); w = float(vb.group(1)) if vb else 512
+    if abs(w - 512) > 0.5: body = f'<g transform="scale({512 / w:.4f})">{body}</g>'
+    mon[k] = '<svg class="i" viewBox="0 0 512 512" aria-hidden="true">' + body + '</svg>'
 mon['server'] = mon['vm']
 
 # the TREE shows the product's marks in their own brand colours, as live does (request, 21 Oct 2026: "the icon

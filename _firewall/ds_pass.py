@@ -961,8 +961,8 @@ function pmGridRows(id, rows) {
         <span slot="before" class="fa-mdh-tile"><obs-icon name="secure" size="20"></obs-icon></span>
         ${(() => { const st = { up: ['Up', 'tag-green'], critical: ['Down', 'tag-red'], warning: ['Warning', 'tag-yellow'], unreachable: ['Unreachable', 'tag-purple'] }[d.status] || [d.status, 'tag-unknown'];
           return `<obs-tag slot="title" class="fa-mdh-st" variant="${st[1]}">${esc(st[0])}</obs-tag>`; })()}
-        <obs-button variant="default" squared aria-label="Refresh" data-tip="Refresh" data-mdh="refresh"><obs-icon name="sync" size="14"></obs-icon></obs-button>
-        <obs-button variant="default" squared aria-label="Full screen" data-tip="Full screen" data-mdh="full"><obs-icon name="expand" size="14"></obs-icon></obs-button>""", 'mdh header')
+        <obs-button variant="neutral-lightest" squared aria-label="Refresh" data-tip="Refresh" data-mdh="refresh"><obs-icon name="sync" size="14"></obs-icon></obs-button>
+        <obs-button variant="neutral-lightest" squared aria-label="Full screen" data-tip="Full screen" data-mdh="full"><obs-icon name="expand" size="14"></obs-icon></obs-button>""", 'mdh header')
     rep("""  if (h) h.addEventListener('back', () => go('devices', devReturn));
   const t = view.querySelector('#devTabs');""",
         """  if (h) h.addEventListener('back', () => go('devices', devReturn));
@@ -1253,7 +1253,7 @@ $('#schedDrawer').addEventListener('close', e => { if (e.target === $('#schedDra
         """:host(#tblFwInventory) a.cell-link:has(obs-icon[name=check-circle]){color:var(--secondary-green)}""", 'cred ok link 2')
     # Credential Status: "Add Credential" shown as a small secondary (default) button with a plus-circle (2026-10-19)
     rep("k === 'add' ? { text: 'Add Credential' } :", "k === 'add' ? { text: 'Add Credential', icon: 'plus-circle', iconLabel: 'Add credential' } :", 'add cred icon')
-    rep(':host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', ':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:24px;padding:0 10px;box-sizing:border-box;border:1px solid var(--default-button-border,var(--field-border-color));border-radius:var(--btn-radius,4px);background:var(--default-button-bg,var(--page-background-color));color:var(--default-button-text,var(--page-text-color));text-decoration:none;white-space:nowrap}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]):hover{background:var(--default-button-hover-bg,var(--neutral-lightest));border-color:var(--outline-button-hover-border,var(--neutral-light));text-decoration:none}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', 'add cred accent')
+    rep(':host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', ':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:24px;padding:0 10px;box-sizing:border-box;border:1px solid var(--default-button-border,var(--field-border-color));border-radius:var(--btn-radius,4px);background:var(--default-button-bg,var(--page-background-color));color:var(--default-button-text,var(--page-text-color));text-decoration:none;white-space:nowrap}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]):hover{background:var(--default-button-hover-bg,var(--neutral-lightest));border-color:var(--outline-button-hover-border,var(--neutral-light));text-decoration:none}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:28px;padding:0 10px;margin-left:-10px;border-color:transparent;background:transparent;color:var(--page-text-color);transition:background-color .12s,border-color .12s}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]):hover,:host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]):focus-visible{border-color:var(--default-button-border,var(--field-border-color));background:var(--default-button-hover-bg,var(--neutral-lightest))}:host(#tblFwInventory) a.cell-link:has(obs-icon[name=ban])', 'add cred accent')
     # Add Credential at the DS small-button size; a "New" tag on recently added firewalls (2026-10-19)
     rep(':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:24px;padding:0 10px;box-sizing:border-box;', ':host(#tblFwInventory) a.cell-link:has(obs-icon[name=plus-circle]){height:var(--btn-height,2.1rem);padding:0 15px;gap:6px;font-size:var(--text-sm,.8rem);font-weight:400;font-family:var(--font-family,inherit);line-height:1;box-sizing:border-box;', 'add cred ds small')
     rep(':host(#tblFwInventory) tbody tr.row-selected td:first-child{box-shadow:none}', ':host(#tblFwInventory) tbody tr.row-selected td:first-child{box-shadow:none}:host(#tblFwInventory) obs-tag.fa-new{margin-left:8px;flex:0 0 auto}', 'fi new tag css')
@@ -3235,11 +3235,11 @@ def view_pol_patch(t):
     ['Services', [r.svc], 'chips'], ['Log', r.log],
     ['Last update Policy Time', ruleLastUpdate(r)], ['Hits', r.hits == null ? '—' : nf(r.hits)],""",
            """    ['__sec', 'Source', 'Where the traffic comes from: the source addresses and the interface it arrives on.'],
-    ['Source Address', [r.src], 'chips'], ['Source Interface', ruleIntf(r, 'srcIntf')],
+    ['Source Address', r.src], ['Source Interface', ruleIntf(r, 'srcIntf')],
     ['__sec', 'Destination', 'Where the traffic is going: the destination addresses and the interface it leaves by.'],
-    ['Destination Address', [r.dst], 'chips'], ['Destination Interface', ruleIntf(r, 'dstIntf')],
+    ['Destination Address', r.dst], ['Destination Interface', ruleIntf(r, 'dstIntf')],
     ['__sec', 'Services', 'The protocols and ports this policy matches. Leave it as any to match all services.'],
-    ['Services', [r.svc], 'chips'], ['', ''],
+    ['Services', r.svc], ['', ''],
     ['__line'],
     ['NAT', (() => { const p = pmPendingEdit(r), n = p && p.rule && p.rule.nat; return !n ? 'No NAT' : n === 'outgoing interface' ? 'Enable NAT · Outgoing interface address' : 'Enable NAT · Dynamic IP Pool ' + n; })()],
     ['Log firewall traffic', /^on$/i.test(String(r.log)) ? 'On' : 'Off'],
@@ -3602,23 +3602,26 @@ def grid_fit_patch(t):
     anchor = "Element.prototype.attachShadow.__fa=1;})();</script>"
     assert t.count(anchor) == 1, 'grid_fit anchor'
     js = r"""
-<script>/* FA grid fit — single-line cells, a tooltip on cut text, drag-to-resize columns (FA_FIT_IDS) */
+<script>/* FA grid fit — EVERY obs-table on the page: single-line cells cut with "…" and a tooltip with the full text on hover
+   (owner, 27 Oct 2026); drag-to-resize columns stays on FA_FIT_IDS only */
 (function(){
   var FA_FIT_IDS = ['tblPmStatus'], W = {};
   var CSS = ':host(.fa-fit) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
     + ':host(.fa-fit) tbody td a.cell-link{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
-    + ':host(.fa-fit) thead th{position:sticky}'
-    + ':host(.fa-fit) .fa-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:3}'
-    + ':host(.fa-fit) .fa-rz::after{content:"";position:absolute;left:3px;top:25%;height:50%;width:1px;background:var(--border-color)}'
-    + ':host(.fa-fit) .fa-rz:hover::after,:host(.fa-fit) .fa-rz.on::after{top:0;height:100%;width:2px;left:2.5px;background:var(--primary-alt,var(--primary))}'
-    + ':host(.fa-fit) thead th:last-child .fa-rz{display:none}';
+    + ':host(.fa-fit) thead th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + ':host(.fa-fit) tbody td .cell-clip{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+    + ':host(.fa-rzon) thead th{position:sticky}'
+    + ':host(.fa-rzon) .fa-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:3}'
+    + ':host(.fa-rzon) .fa-rz::after{content:"";position:absolute;left:3px;top:25%;height:50%;width:1px;background:var(--border-color)}'
+    + ':host(.fa-rzon) .fa-rz:hover::after,:host(.fa-rzon) .fa-rz.on::after{top:0;height:100%;width:2px;left:2.5px;background:var(--primary-alt,var(--primary))}'
+    + ':host(.fa-rzon) thead th:last-child .fa-rz{display:none}';
   var sheet; try { sheet = new CSSStyleSheet(); sheet.replaceSync(CSS); } catch (e) {}
   var key = function (th) { return (th.getAttribute('data-fa-k') || th.textContent || '').trim(); };
   var tip = document.createElement('div');
   tip.className = 'fa-fit-tip';
   tip.style.cssText = 'position:fixed;z-index:2147482000;max-width:420px;padding:6px 10px;border-radius:4px;font:12px/1.4 var(--font-family,Poppins,sans-serif);'
     + 'background:var(--tooltip-background-color,var(--neutral-darkest,#1d2a3e));color:var(--tooltip-text-color,#fff);pointer-events:none;display:none;white-space:normal;word-break:break-word;box-shadow:0 4px 12px rgba(0,0,0,.25)';
-  function tipShow(el){ var r = el.getBoundingClientRect(); tip.textContent = el.textContent.trim(); tip.style.display = 'block';
+  function tipShow(el, txt){ var r = el.getBoundingClientRect(); tip.textContent = txt || el.textContent.trim(); tip.style.display = 'block';
     var tw = tip.offsetWidth, th = tip.offsetHeight, x = Math.max(8, Math.min(r.left, innerWidth - tw - 8)), y = r.bottom + 6;
     if (y + th > innerHeight - 8) y = r.top - th - 6; tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
   function tipHide(){ tip.style.display = 'none'; }
@@ -3642,18 +3645,26 @@ def grid_fit_patch(t):
   }
   function bind(host){
     if (host.__faFit || !host.shadowRoot) return; host.__faFit = 1; host.classList.add('fa-fit');
+    var rz = FA_FIT_IDS.indexOf(host.id) >= 0; if (rz) host.classList.add('fa-rzon');
     var r = host.shadowRoot; if (sheet) r.adoptedStyleSheets = [].concat(r.adoptedStyleSheets || [], [sheet]);
     if (!tip.parentNode) document.body.appendChild(tip);
     r.addEventListener('mouseover', function (e) {
-      var c = e.target.closest && e.target.closest('a.cell-link, .cell-clip, tbody td');
-      if (c && c.matches('tbody td') && c.querySelector('a.cell-link, .cell-clip, obs-tag')) c = c.querySelector('a.cell-link, .cell-clip');
-      if (c && cut(c)) tipShow(c); else tipHide();
+      /* every text cell shows its full text; a header only when it is cut; tags, buttons, menus and switches carry
+         their own label and get none */
+      var c = e.target.closest && e.target.closest('a.cell-link, .cell-clip, tbody td, thead th');
+      if (c && c.matches('tbody td') && c.querySelector('a.cell-link, .cell-clip')) c = c.querySelector('a.cell-link, .cell-clip');
+      var txt = '';
+      if (c && !(e.target.closest && e.target.closest('obs-tag, obs-button, obs-menu, obs-checkbox, obs-switch'))) {
+        /* the cell's OWN text: a status dot, a "New" tag, a switch or a button beside it is not part of what it says */
+        var k = c.cloneNode(true); k.querySelectorAll('obs-tag, obs-button, obs-menu, obs-checkbox, obs-switch, .fa-rz').forEach(function (x) { x.remove(); });
+        txt = k.textContent.replace(/\s+/g, ' ').trim();
+      }
+      if (txt && (c.matches('thead th') ? cut(c) : true)) tipShow(c, txt); else tipHide();
     });
     r.addEventListener('mouseleave', tipHide, true); host.addEventListener('mouseleave', tipHide);
-    paint(host);
-    new MutationObserver(function () { paint(host); }).observe(r, { childList: true, subtree: true });
+    if (rz) { paint(host); new MutationObserver(function () { paint(host); }).observe(r, { childList: true, subtree: true }); }
   }
-  function scan(){ FA_FIT_IDS.forEach(function (id) { var el = document.getElementById(id); if (el) bind(el); }); }
+  function scan(){ document.querySelectorAll('obs-table').forEach(bind); }
   new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('scroll', tipHide, true);
 })();</script>"""
@@ -3802,5 +3813,908 @@ t = ov_ds2_patch(t)
 
 
 assert t.count("quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'kind']) });") == 1; t = t.replace("quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'kind']) });", "quickFilters: (pmAll() ? ['device'] : []).concat(['tag', 'cat', 'kind']) });")
+def pol_kpi_patch(t):
+    """Policies Analytics gets a KPI row + a view switch (owner, 26 Oct 2026: "add new kpi card for this Policies
+    Analytics screen, help for policy overview … using the ObserveOps design system & /radio"). Five obs-kpi-card over
+    the device's whole rule base — Total (Allow / Deny) · Active · Unused · With findings (Critical / Major / Warning)
+    · Total traffic — then the DS segmented radio (obs-radio as-button, the DS's "small 2-5 always-visible exclusive
+    choices") at the head of the grid's toolbar: All · Active · Unused · With findings, each with its count. The cards
+    always describe the WHOLE rule base; the radio narrows the grid only."""
+    MK = '/* FA-POL-KPI */'
+    if MK in t:
+        return t
+    def rp(old, new):
+        nonlocal t
+        assert t.count(old) == 1, ('pol_kpi', old[:70], t.count(old)); t = t.replace(old, new)
+    rp("""  const rows = rules.slice().sort((a, b) => a.seq - b.seq).map(r => ({
+    id: r.id, seq: r.seq, name: r.name, sev: sevOf(r.finding), hits: r.hits, hitsTotal: r.hitsTotal, bytesTotal: r.bytesTotal""",
+       """  POL_RULES = rules;
+  const rows = rules.filter(polViewOk).sort((a, b) => a.seq - b.seq).map(r => ({
+    id: r.id, seq: r.seq, name: r.name, sev: sevOf(r.finding), hits: r.hits, hitsTotal: r.hitsTotal, bytesTotal: r.bytesTotal""")
+    rp("""  return `<div class="fa-stack">
+    <section class="fa-card">
+      ${stdGridHost('polGrid')}""", """  return `<div class="fa-stack">
+    ${polKpiHTML(rules)}
+    <section class="fa-card">
+      ${stdGridHost('polGrid')}""")
+    rp("""let PL_COLS = [], POL_FIELDS = [];""", """let PL_COLS = [], POL_FIELDS = [];
+""" + MK + """
+/* the view the grid shows; the KPI row always counts every rule. A rule is ACTIVE when its lifetime hit count is
+   above zero (the grid's Hit Counts column), UNUSED otherwise; it has a FINDING when its severity is not clear —
+   the same dot the Policy Name cell draws, so card, radio and grid cannot disagree. */
+let POL_VIEW = 'all', POL_RULES = [];
+/* the KPI row's design — review chrome (Option 1 stat cards · 2 KPI cards · 3 charts · 4 gauges); goes when one is picked */
+let POL_KPI_OPT = '1';
+const polIsActive = r => (r.hitsTotal || 0) > 0;
+const polHasFinding = r => sevOf(r.finding) !== 'clear';
+const POL_VIEW_TEST = { all: () => true, active: polIsActive, unused: r => !polIsActive(r), findings: polHasFinding };
+const polViewOk = r => (POL_VIEW_TEST[POL_VIEW] || POL_VIEW_TEST.all)(r);
+function polViewRadio() {
+  const n = k => POL_RULES.filter(POL_VIEW_TEST[k]).length;
+  const opts = [['all', 'All'], ['active', 'Active'], ['unused', 'Unused'], ['findings', 'With findings']]
+    .map(([value, l]) => ({ value, label: `${l} (${n(value)})` }));
+  return `<obs-radio class="fa-pol-view" as-button value="${POL_VIEW}" options='${j(opts)}' aria-label="Policy view"></obs-radio>`;
+}
+function bindPolView() {
+  const el = view.querySelector('.fa-pol-view');
+  /* obs-kpi-card's `title` prop is also the host's native title (DS gap 20): an empty title on its shadow .kpi stops
+     the browser tooltip repeating the card title */
+  view.querySelectorAll('obs-kpi-card.fa-pol-kc').forEach(k => {
+    const go = () => { const d = k.shadowRoot && k.shadowRoot.querySelector('.kpi'); if (d) d.setAttribute('title', ''); return !!d; };
+    if (!go()) setTimeout(go, 0);
+  });
+  const osw = view.querySelector('.fa-pol-optsw');
+  if (osw) { osw.value = POL_KPI_OPT; osw.addEventListener('change', e => {
+    const v = keyOf(detailOf(e)); if (v && v !== POL_KPI_OPT) { POL_KPI_OPT = v; renderContent(); } }); }
+  if (!el) return;
+  el.value = POL_VIEW;
+  el.addEventListener('change', e => {
+    const v = keyOf(detailOf(e));
+    if (!v || v === POL_VIEW || !POL_VIEW_TEST[v]) return;
+    POL_VIEW = v; renderContent();
+  });
+}
+function polKpiHTML(rules) {
+  const n = rules.length, act = rules.filter(polIsActive).length, un = n - act;
+  const allow = rules.filter(r => /allow|accept|permit/i.test(r.action || '')).length;
+  const sv = rules.map(r => sevOf(r.finding)), c = k => sv.filter(x => x === k).length;
+  const fnd = sv.filter(x => x !== 'clear').length;
+  const worst = c('critical') ? 'critical' : c('major') ? 'major' : fnd ? 'warning' : 'clear';
+  const hits = rules.reduce((s, r) => s + (r.hitsTotal || 0), 0);
+  const bytes = rules.reduce((s, r) => s + (r.bytesTotal || 0), 0);
+  const top = rules.slice().sort((a, b) => (b.bytesTotal || 0) - (a.bytesTotal || 0))[0];
+  const [bv, bu = ''] = fmtBytes(bytes).split(' ');
+  const pct = v => (n ? Math.round(v / n * 100) : 0) + '%';
+  const compact = v => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(v);
+  /* DS "Stat cards" — the Policy KPI row pattern (obs-stat-card), as Policies Management's overview: one joined card for
+     the rule base, one joined card for the findings postures, each with a severity dot (verified against the DS docs,
+     26 Oct 2026 — obs-kpi-card is the monitor-metric card, and its `title` prop pops a tooltip: DS gap 20). */
+  const summary = [
+    { label: 'Total Policies', value: nf(n), caption: `${nf(allow)} Allow · ${nf(n - allow)} Deny` },
+    { label: 'Active', severity: 'clear', value: nf(act), caption: `${nf(act)} of ${nf(n)} policies · ${compact(hits)} hits` },
+    { label: 'Unused', severity: un ? 'warning' : 'clear', value: nf(un), caption: `${nf(un)} of ${nf(n)} policies · no hits`, ...(un ? { valueSeverity: 'warning' } : {}) },
+    { label: 'Total Traffic', value: fmtBytes(bytes), caption: top ? `Top: ${top.name}` : 'No traffic' }
+  ];
+  const finds = [['Critical', 'critical'], ['Major', 'major'], ['Warning', 'warning'], ['Clean', 'clear']].map(([label, k]) =>
+    ({ label, severity: k, value: nf(c(k)), caption: `${nf(c(k))} of ${nf(n)} policies`, ...(c(k) && k !== 'clear' ? { valueSeverity: k } : {}) }));
+  const sw = `<div class="fa-pol-opt"><obs-radio class="fa-pol-optsw" as-button size="small" value="${POL_KPI_OPT}" aria-label="KPI design"
+    options='${j([{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }, { value: '3', label: 'Option 3' }, { value: '4', label: 'Option 4' }])}'></obs-radio></div>`;
+  const FS = [['Critical', 'critical'], ['Major', 'major'], ['Warning', 'warning'], ['Clean', 'clear']];
+  const [hv, hu] = (m => m ? [m[1], m[2]] : [compact(hits), ''])(/^([\d.]+)([A-Za-z]*)$/.exec(compact(hits)));
+  let body;
+  /* Options 2 · 3 follow the DS DASHBOARD recipe (26 Oct 2026, owner: "improve using the ObserveOps design system"):
+     a tile that holds a visualization (obs-progress / obs-gauge / obs-metric-list) IS an obs-widget-card — grey title
+     strip, body in the default slot — the same chrome as this device's Overview tab ("widgets are obs-widget-card, NOT a
+     generic .card div"). Every card's metric list carries FOUR rows, so the three cards fill to one height with no empty
+     band; the loose notes became rows. A value is coloured only when it carries a threshold (Unused, a non-zero finding). */
+  /* title="" on the body: obs-widget-card's `title` prop is also the host's native title attribute, so hovering the
+     card popped a tooltip repeating the header (DS gap 20, also hit here); an empty title on a descendant stops it */
+  const card = (title, inner) => widget(title, `<div class="fa-pol-cb" title="">${inner}</div>`, { cls: 'fa-pol-w', actions: '' });
+  const ml = items => `<obs-metric-list class="fa-pol-ml" items='${j(items)}'></obs-metric-list>`;
+  const sevItem = (v, label, k) => [String(v), '', label].concat(v && k !== 'clear' ? ['--severity-' + k] : []);
+  const [tv, tu = ''] = top ? fmtBytes(top.bytesTotal || 0).split(' ') : ['—'];
+  const usageMl = ml([[String(act), '', `Active · ${pct(act)}`], sevItem(un, `Unused · ${pct(un)}`, 'warning'),
+    [String(allow), '', `Allow · ${nf(n - allow)} Deny`], [String(n), '', 'Total policies']]);
+  const findMl = ml(FS.map(([label, k]) => sevItem(c(k), `${label} · ${pct(c(k))}`, k)));
+  /* the Traffic by Policy card was removed (owner, 26 Oct 2026: "remove this") from Options 2 and 3 — the
+     traffic figures are still in Option 1 and in the grid's Total Bytes column. */
+  if (POL_KPI_OPT === '2') {
+    /* Option 2 — obs-kpi-card, the DS KPI row (docs › Dashboard › KPI Card): six cards in one even row; an icon chip
+       coloured by severity (the value text stays neutral — DS rule), at most two header stats, at most three footer
+       values. Not wrapped in obs-widget-card (DS: the KPI card has no widget header). Counts, not percentages. */
+    const kc = o => `<obs-kpi-card class="fa-pol-kc" title="${esc(o.title)}" icon="${o.icon}"${o.sev ? ` severity="${o.sev}"` : ''}${
+      o.stats ? ` stats='${j(o.stats)}'` : ''}${o.values ? ` values='${j(o.values)}'` : ''}${o.value == null ? '' : ` value="${esc(o.value)}"`}${o.unit ? ` unit="${esc(o.unit)}"` : ''}></obs-kpi-card>`;
+    const of = v => ({ label: 'Policies', value: `${nf(v)} of ${nf(n)}` });
+    body = `<div class="fa-pol-kcs">${[
+      kc({ title: 'Total Policies', icon: 'secure', values: [{ label: 'Allow', value: nf(allow) }, { label: 'Deny', value: nf(n - allow) }] }),
+      kc({ title: 'Active', icon: 'check-circle', sev: act ? 'clear' : 'neutral', value: nf(act), stats: [of(act), { label: 'Hits', value: compact(hits) }] }),
+      kc({ title: 'Unused', icon: 'ban', sev: un ? 'warning' : 'clear', value: nf(un), stats: [of(un)] }),
+      kc({ title: 'Total Traffic', icon: 'traffic', value: bv, unit: bu, stats: [{ label: 'Top', value: top ? top.name : '—' }] }),
+      kc({ title: 'Findings', icon: 'exclamation-triangle', sev: worst, stats: [of(fnd)],
+           values: [['Critical', 'critical'], ['Major', 'major'], ['Warning', 'warning']].map(([label, k]) => ({ label, value: nf(c(k)) })) }),
+      kc({ title: 'Clean', icon: 'shield-check', sev: 'clear', value: nf(c('clear')), stats: [of(c('clear'))] })
+    ].join('')}</div>`;
+  } else if (POL_KPI_OPT === '3') {
+    /* Option 2 — charts, picked by the DS data-viz decision flow (26 Oct 2026, "better visualization"): a part-to-whole
+       split is a DONUT (Policy Usage, Findings by Severity — the figure in the hole, the legend names every slice), a
+       ranking is a TOP-N BAR (Traffic by policy). Drawn by DSCharts — this module's Highcharts layer, which reads every
+       colour from DS tokens (--severity-* for status, the chart palette for categories) and re-themes on light/dark. */
+    body = `<div class="fa-pol-w3 fa-pol-two">${[
+      card('Policy Usage', '<div class="fa-pol-dn">' + vizDonut([{ name: `Active ${act}`, v: act, color: '--severity-clear' }, { name: `Unused ${un}`, v: un, color: '--severity-warning' }],
+        nf(n), n === 1 ? 'Policy' : 'Policies', { h: 170, legendRight: true }) + '</div>'),
+      card('Findings by Severity', '<div class="fa-pol-dn">' + vizDonut(FS.map(([name, k]) => ({ name: `${name} ${c(k)}`, v: c(k), color: '--severity-' + k })),
+        nf(fnd), 'With findings', { h: 170, legendRight: true }) + '</div>')
+    ].join('')}</div>`;
+  } else if (POL_KPI_OPT === '4') {
+    /* Option 3 — obs-gauge groups: one dial per member, every dial in a row against the same total (all policies) */
+    const dials = list => `<div class="fa-pol-dials">${list.map(([label, v, sev]) =>
+      `<obs-gauge value="${v}" total="${n}" severity="${sev}" label="${esc(label)}"></obs-gauge>`).join('')}</div>`;
+    body = `<div class="fa-pol-w2">${[
+      card('Policy Usage', dials([['Active', act, 'clear'], ['Unused', un, 'warning']])),
+      card('Findings by Severity', dials(FS.map(([label, k]) => [label, c(k), k])))
+    ].join('')}</div>`;
+  } else {
+    body = `<div class="fa-pol-kpis">
+    <obs-stat-card class="fa-pol-stats" items='${j(summary)}'></obs-stat-card>
+    <obs-stat-card class="fa-pol-stats fa-pol-finds" items='${j(finds)}'></obs-stat-card>
+  </div>`;
+  }
+  return sw + body;
+}""")
+    rp(""" if(this.tagName==='OBS-WIDGET-CARD')""", """ if(this.tagName==='OBS-METRIC-LIST'){try{var pm=new CSSStyleSheet();pm.replaceSync(':host(.fa-pol-ml) .ml{max-width:none}:host(.fa-pol-ml) .v{width:34%}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[pm]);}catch(e){}}if(this.tagName==='OBS-TABLE'){try{var pt=new CSSStyleSheet();pt.replaceSync(':host(.fa-pol-tt) .bar-fill{background:var(--fa-series-1)!important}');r.adoptedStyleSheets=[].concat(r.adoptedStyleSheets||[],[pt]);}catch(e){}}
+ if(this.tagName==='OBS-WIDGET-CARD')""")
+    rp("      b.legend.layout = o.legendLayout || 'horizontal';", "      b.legend.layout = o.legendLayout || 'horizontal';\n      /* opt-in (Policies Analytics, 26 Oct 2026): the legend beside the donut, so a short card carries both */\n      if (o.legendRight) { b.legend.layout = 'vertical'; b.legend.align = 'right'; b.legend.verticalAlign = 'middle'; b.legend.itemMarginBottom = 6; }")
+    rp('  })), centerBig, centerSmall, { h: opts.h || 230, legendLayout: opts.legendLayout });', '  })), centerBig, centerSmall, { h: opts.h || 230, legendLayout: opts.legendLayout, legendRight: opts.legendRight });')
+    rp("""  mountStdGrid('polGrid', { columns: PL_COLS, table: 'tblRules', search: 'Search', fields: POL_FIELDS });""",
+       """  mountStdGrid('polGrid', { columns: PL_COLS, table: 'tblRules', search: 'Search', fields: POL_FIELDS });   /* the All · Active · Unused · With findings switch was removed (owner, 26 Oct 2026) */
+  bindPolView();""")
+    k = t.index('</style>', t.index('/* prototype.css */'))
+    t = t[:k] + """
+/* Policies Analytics KPI row (26 Oct 2026): two joined obs-stat-card — the rule base, then the findings postures —
+   side by side; stacked on a narrow pane */
+.fa-pol-kpis { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 3fr); gap: var(--ds-padding-md, 16px);
+  margin-bottom: var(--ds-padding-md, 16px); }
+obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }
+@media (max-width: 1366px) { .fa-pol-kpis { grid-template-columns: minmax(0, 1fr); } }
+.fa-pol-opt { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.fa-pol-kcs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--ds-padding-md, 16px); margin-bottom: var(--ds-padding-md, 16px); }
+obs-kpi-card.fa-pol-kc { display: block; min-width: 0; --kpi-card-min-height: 150px; }
+@media (max-width: 1366px) { .fa-pol-kcs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.fa-pol-w3, .fa-pol-w2 { display: grid; gap: var(--ds-padding-md, 16px); margin-bottom: var(--ds-padding-md, 16px); }
+.fa-pol-w3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fa-pol-w2 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+.fa-pol-w3.fa-pol-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fa-pol-two .fa-pol-w > .fa-card-body { padding: 8px 16px; }
+/* donut + its legend kept together and centred (the chart would otherwise stretch the full card width) */
+.fa-pol-dn { width: 100%; max-width: 340px; margin: 0 auto; }
+/* the generic card: the module's .fa-card surface (DS tokens), a 14px/500 title, 16px inset */
+.fa-pol-w3 > .fa-wc, .fa-pol-w2 > .fa-wc { margin: 0; height: 100%; }
+.fa-pol-w > .fa-card-body { padding: 12px 16px 8px; }
+.fa-pol-w.fa-wc-flush > .fa-card-body { padding: 0; }
+.fa-pol-cb { display: flex; flex-direction: column; gap: 12px; }
+obs-progress.fa-pol-seg, obs-metric-list.fa-pol-ml, obs-table.fa-pol-tt { display: block; }
+/* Traffic by Policy — ranked rows: rank · name · size + share, then the share as a small obs-progress */
+.fa-pol-rank { list-style: none; margin: 0; padding: 0 12px; display: flex; flex-direction: column; gap: 12px; }
+.fa-pol-rank li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; column-gap: 8px; row-gap: 6px; align-items: baseline; }
+.fa-pol-rk { font-size: 11px; color: var(--neutral-light); font-variant-numeric: tabular-nums; }
+.fa-pol-rn { font-size: 13px; color: var(--page-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fa-pol-rv { font-size: 13px; font-weight: 600; color: var(--page-text-color); white-space: nowrap; }
+.fa-pol-rv em { font-style: normal; font-weight: 400; font-size: 11px; color: var(--neutral-light); margin-left: 8px; }
+obs-progress.fa-pol-rb { display: block; grid-column: 2 / -1; }
+.fa-pol-w > .fa-card-body { display: flex; flex-direction: column; }
+.fa-pol-cb { flex: 1 1 auto; }
+/* the DS example's gauge row: centred both ways in the body (docs › Widget Grid › Alert Count) */
+.fa-pol-dials { flex: 1 1 auto; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 48px; padding: 4px 0; }
+@media (max-width: 1366px) { .fa-pol-w3, .fa-pol-w2 { grid-template-columns: minmax(0, 1fr); } }
+""" + t[k:]
+    return t
+t = pol_kpi_patch(t)
+
+def ov_split_patch(t):
+    """Objects + Policies overviews split into SEPARATE cards (owner, 27 Oct 2026): the paired tiles share one card
+    (Assigned + Unassigned, Unused + Unassigned), and Pending Approval stands alone and opens Policy & Object Approval."""
+    old = """  return `<div class="fa-pm-ovrow fa-pm-one"><obs-stat-card class="fa-pm-stats" items='${j(items)}'></obs-stat-card></div>`;"""
+    assert t.count(old) == 2, 'ov_split markup'
+    a = t.index(old); t = t[:a] + "  return pmOvSplit(items, [1, 2, 1]);" + t[a + len(old):]          # Policies
+    a = t.index(old); t = t[:a] + "  return pmOvSplit(items, [2, 2, 1]);" + t[a + len(old):]          # Objects
+    fn = "function pmRulesOverview(rules, dev) {"
+    assert t.count(fn) == 1, 'ov_split fn anchor'
+    helper = r"""/* the overview as SEPARATE cards (owner, 27 Oct 2026): `groups` slices the tiles into one obs-stat-card each, sized by
+   how many tiles it holds so every tile is the same width; the LAST card is Pending Approval and opens the Approval tab */
+function pmOvSplit(items, groups) {
+  let k = 0;
+  const cards = groups.map((n, gi) => {
+    const part = items.slice(k, k += n), last = gi === groups.length - 1;
+    const card = `<obs-stat-card class="fa-pm-stats" items='${j(part)}'></obs-stat-card>`;
+    return last ? `<div class="fa-pm-go" role="button" tabindex="0" data-pm-go="approval" aria-label="Open Policy &amp; Object Approval"
+      data-tip="Open Policy &amp; Object Approval">${card}</div>` : card;
+  });
+  return `<div class="fa-pm-ovrow fa-pm-split" style="grid-template-columns:${groups.map(n => `minmax(0,${n}fr)`).join(' ')}">${cards.join('')}</div>`;
+}
+function pmGoApproval() {
+  if (typeof dev1 !== 'undefined' && dev1 && dev1.tab === 'policy') { dev1.sub[dev1.tab] = STATUS_SEC; go('device', devRoute()); }
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-pm-go="approval"]')) pmGoApproval(); });
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-pm-go="approval"]')) { e.preventDefault(); pmGoApproval(); } });
+"""
+    t = t.replace(fn, helper + fn)
+    css = ".fa-pm-ovrow.fa-pm-one { grid-template-columns: minmax(0, 1fr); }"
+    assert t.count(css) == 1, 'ov_split css'
+    return t.replace(css, css + """
+.fa-pm-ovrow.fa-pm-split > obs-stat-card.fa-pm-stats, .fa-pm-go > obs-stat-card.fa-pm-stats { margin-bottom: 0; height: 100%; }
+.fa-pm-go { display: block; height: 100%; cursor: pointer; border-radius: var(--btn-radius, 4px); outline: 1px solid transparent; transition: outline-color .12s; }
+.fa-pm-go:hover, .fa-pm-go:focus-visible { outline-color: var(--primary-alt, var(--primary)); }""")
+t = ov_split_patch(t)
+
+def sb_notify_patch(t):
+    """Schedule Backup's Notify (owner, 27 Oct 2026): the DS's own obs-notify — the Notify field with a "+ Bcc" button
+    at its right, and the Bcc row with a remove ⊗ — in place of a plain input over a "+ Add Bcc" text link."""
+    old = """    ${field('Notify', `<obs-input id="fmNotify" block placeholder="Email or Mobile Number" value="${esc(f.notify)}"></obs-input>`)}
+    ${f.bcc === null
+      ? `<obs-link id="fmAddBcc" class="fa-form-add">+ Add Bcc</obs-link>`
+      : `<div class="fa-form-row-remove">
+           ${field('Bcc', `<obs-input id="fmBcc" block placeholder="Email" value="${esc(f.bcc)}"></obs-input>`)}
+           <obs-button variant="transparent" square id="fmRmBcc" aria-label="Remove Bcc" title="Remove Bcc"><obs-icon name="timesCircle" size="16"></obs-icon></obs-button>
+         </div>`}`;"""
+    new = """    <obs-notify id="fmNotify" value="${esc(f.notify)}"${f.bcc === null ? '' : ` bcc="${esc(f.bcc)}" show-bcc`}></obs-notify>`;"""
+    assert t.count(old) == 1, 'sb_notify markup'
+    t = t.replace(old, new)
+    old = """  on('#fmNotify', 'change', e => { fm.notify = detailOf(e) || ''; });
+  on('#fmBcc', 'change', e => { fm.bcc = detailOf(e) || ''; });"""
+    new = """  /* obs-notify emits input {notify, bcc} as you type and bcc-toggle when its Bcc row opens or closes; it keeps its own
+     row state, so neither event re-renders the form (that would drop the caret) */
+  on('#fmNotify', 'input', e => { const d = detailOf(e) || {}; fm.notify = d.notify || ''; if (fm.bcc !== null) fm.bcc = d.bcc || ''; });
+  on('#fmNotify', 'bcc-toggle', e => { fm.bcc = detailOf(e) ? (fm.bcc || '') : null; });"""
+    assert t.count(old) == 1, 'sb_notify bind'
+    return t.replace(old, new)
+t = sb_notify_patch(t)
+
+def ov_pair_patch(t):
+    """the paired overview tiles as ONE pass/fail-style tile (owner, 27 Oct 2026, the Compliance "Rules · 21 passed | 64
+    failed · of 85 rules evaluated" card as the reference): Objects reads "N assigned | N unassigned · of N objects",
+    Policies "N unused | N unassigned · of N policies". obs-stat-card's own pair row; its words and colours re-labelled."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'ov_pair ' + what
+        t = t.replace(a, b)
+    rp("""    { label: 'Unused', value: nf(unused), caption: nf(used) + ' used', ...(unused ? { valueSeverity: 'warning' } : {}) },
+    { label: 'Unassigned', value: nf(unasg), caption: of(unasg), ...(unasg ? { valueSeverity: 'warning' } : {}) },""",
+       """    /* both halves are findings, so both read amber (a zero reads plain) — not the DS pair's green | red */
+    { label: 'Policy Usage', passed: nf(unused), failed: nf(unasg), caption: 'of ' + nf(n) + ' policies',
+      pairWords: 'unused,unassigned', pairColors: (unused ? 'warning' : '') + ',' + (unasg ? 'warning' : '') },""", 'pol items')
+    rp("  return pmOvSplit(items, [1, 2, 1]);", "  return pmOvSplit(items, [1, 1, 1]);", 'pol groups')
+    rp("""    { label: 'Assigned', value: nf(asg), caption: mix(o => objectTags(o).includes('Assigned')), percent: n ? asg / n * 100 : 0, barSeverity: 'clear' },
+    { label: 'Unassigned', value: nf(n - asg), caption: mix(o => !objectTags(o).includes('Assigned')), percent: n ? (n - asg) / n * 100 : 0,
+      barSeverity: 'warning', ...(n - asg ? { valueSeverity: 'warning' } : {}) },""",
+       """    { label: 'Object Assignment', passed: nf(asg), failed: nf(n - asg), caption: 'of ' + nf(n) + ' objects',
+      pairWords: 'assigned,unassigned', pairColors: 'clear,' + (n - asg ? 'warning' : '') },""", 'obj items')
+    rp("  return pmOvSplit(items, [2, 2, 1]);", "  return pmOvSplit(items, [2, 1, 1]);", 'obj groups')
+    rp("""    const card = `<obs-stat-card class="fa-pm-stats" items='${j(part)}'></obs-stat-card>`;""",
+       """    const pw = part.find(x => x.pairWords);
+    const card = `<obs-stat-card class="fa-pm-stats"${pw ? ` data-pair-words="${pw.pairWords}" data-pair-colors="${pw.pairColors || ''}"` : ''} items='${j(part)}'></obs-stat-card>`;""", 'card attrs')
+    rp("""      s.forEach((el, i) => { if (w[i] && el.textContent !== w[i]) el.textContent = w[i]; }); });""",
+       """      s.forEach((el, i) => { if (w[i] && el.textContent !== w[i]) el.textContent = w[i]; });
+      /* data-pair-colors="clear,warning": a severity per half, '' leaves that half plain page ink (a zero is not a finding) */
+      if (c.hasAttribute('data-pair-colors')) { const cl = c.getAttribute('data-pair-colors').split(',');
+        row.querySelectorAll('b').forEach((b, i) => { const v = cl[i] ? `var(--severity-${cl[i]})` : 'var(--page-text-color)'; if (b.style.color !== v) b.style.color = v; }); } });""", 'colors')
+    return t
+t = ov_pair_patch(t)
+
+def obj_section_patch(t):
+    """Add / Edit Object in SECTIONS, like Add Policy (owner, 27 Oct 2026): name, description, firewall and the Object
+    Category switch on top; then the chosen category is a section heading — its title and the one-line help PMO_CATS
+    already carries — over Type and every field that depends on it."""
+    head = "const pmoDevField = (ns, f) =>"
+    assert t.count(head) == 1, 'obj_section helper anchor'
+    t = t.replace(head, "const pmoSecHead = f => (PMO_CATS[f.cat] ? pmSecHead(PMO_CATS[f.cat].label, PMO_CATS[f.cat].help) : '');\n" + head)
+    for key, what in (("ntype", 'network'), ("stype", 'service')):
+        old = """    </div><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}
+      ${pmoCatField(ns, f)}
+      ${pmSelect(ns, f, '%s', 'Type',""" % key
+        new = """    </div><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}
+      ${pmoCatField(ns, f)}
+    </div>
+    ${pmoSecHead(f)}
+    <div class="fa-grid cols-2">
+      ${pmSelect(ns, f, '%s', 'Type',""" % key
+        assert t.count(old) == 1, 'obj_section ' + what
+        t = t.replace(old, new)
+    return t
+t = obj_section_patch(t)
+
+def nat_view_patch(t):
+    """VIEW NAT POLICY (owner, 27 Oct 2026): the NAT grid's Name is a link that opens a read-only drawer laid out like
+    View Policy — the same pmViewHTML, sections for what is translated on each side, every value the row's own."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'nat_view ' + what
+        t = t.replace(a, b)
+    rp("""    { key: 'name', title: 'Name', width: 200, fixed: true },
+    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 130 }]),
+    { key: 'dstIntf'""", """    { key: 'name', title: 'Name', width: 200, fixed: true, type: 'link' },
+    ...(dev ? [] : [{ key: 'device', title: 'Firewall', width: 130 }]),
+    { key: 'dstIntf'""", 'name link')
+    rp("function viewPolicyDrawer(id) {", r"""function viewNatDrawer(id) {
+  const n = D.natRules.find(x => x.id === id); if (!n) return;
+  const tags = natTags(n);
+  openDrawer('View NAT Policy', pmViewHTML([
+    ['NAT Policy Name', n.name], ['Firewall Name', n.device],
+    ['Type', n.type], ['Hits', n.hits == null ? '—' : nf(n.hits)],
+    ['__sec', 'Source', 'Where the traffic comes from, and the address its source is translated to.'],
+    ['Source Interface', portLabel(n.device, n.srcIntf)], ['Source IP', n.srcIp],
+    ['Mapped Source IP', n.mSrcIp], ['', ''],
+    ['__sec', 'Destination', 'Where the traffic is going, and the address its destination is translated to.'],
+    ['Destination Interface', portLabel(n.device, n.dstIntf)], ['Destination IP', n.dstIp],
+    ['Mapped Destination IP', n.mDstIp], ['', ''],
+    ['__sec', 'Services', 'The protocol and port this NAT policy matches, and the port it is translated to.'],
+    ['Service', n.svc], ['Mapped Service', n.mSvc],
+    ['__line'],
+    ['Tag', tags, 'chips', tags.includes('Unused') || tags.includes('Unassigned') ? 'tag-orange' : 'tag-green', true]
+  ]), '', '40%');
+}
+function viewPolicyDrawer(id) {""", 'drawer')
+    rp("  const pmSt = view.querySelector('#tblPmStatus');", """  const pmNat = view.querySelector('#tblPmNat');
+  if (pmNat) pmNat.addEventListener('cellaction', e => { const p = detailOf(e) || {}; if (p.key === 'name' && p.id) viewNatDrawer(p.id); });
+  const pmSt = view.querySelector('#tblPmStatus');""", 'bind')
+    return t
+t = nat_view_patch(t)
+
+def apv_head_tag_patch(t):
+    """the change drawer's status tag sits IN THE HEADER, under the title (owner, 27 Oct 2026 — the Approval module's own
+    drawer as the reference). obs-drawer's `title` slot carries the title + the tag; every other drawer keeps the plain
+    title attribute, because openDrawer only fills the slot when it is given something to put under the title."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'apv_head ' + what
+        t = t.replace(a, b)
+    rp("""function openDrawer(title, body, actions, width = '52%') {
+  drawer.setAttribute('title', title);
+  drawer.setAttribute('width', width);   /* the device drawer's Activity table needs more room than a detail */
+  drawer.innerHTML = `<div>${body}</div>` +
+    (actions ? `<div slot="actions" class="fa-row">${actions}</div>` : '');""",
+       """function openDrawer(title, body, actions, width = '52%', under = '') {
+  drawer.setAttribute('title', title);
+  drawer.setAttribute('width', width);   /* the device drawer's Activity table needs more room than a detail */
+  drawer.innerHTML = `<div>${body}</div>` +
+    (actions ? `<div slot="actions" class="fa-row">${actions}</div>` : '') +
+    (under ? `<div slot="title" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0">
+      <span style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(title)}</span>
+      <span style="display:inline-flex;font-size:12px;font-weight:400;line-height:normal">${under}</span></div>` : '');""", 'openDrawer')
+    rp("""  const out = [`<div class="fa-apvd-st">${tag(st, FA_APV_TAG[a.st])}</div>`,
+    sec('Requestor info',""", """  const out = [sec('Requestor info',""", 'body tag')
+    rp("""<div class="fa-apvd">${out.join('')}</div>`, acts, '40%');""",
+       """<div class="fa-apvd">${out.join('')}</div>`, acts, '40%', tag(st, FA_APV_TAG[a.st]));""", 'pass tag')
+    return t
+t = apv_head_tag_patch(t)
+
+def apv_cancel_patch(t):
+    """Policies Management is the REQUESTER's view (owner, 27 Oct 2026): "I can only cancel the request, not approve —
+    approve is only the admin". The change drawer's Reject · Approve became one Cancel request (confirmed first); a
+    cancelled request reads Cancelled, keeps its row for the record, and leaves the Pending Approval count. Approving and
+    rejecting stay where the approver works — Option 1's Approval screen, which reads the same oo-apv-decisions."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'apv_cancel ' + what
+        t = t.replace(a, b)
+    rp("const FA_APV_TAG = { Pending: 'tag-orange', Approved: 'tag-green', Rejected: 'tag-red' };",
+       "const FA_APV_TAG = { Pending: 'tag-orange', Approved: 'tag-green', Rejected: 'tag-red', Cancelled: 'tag-unknown' };", 'tag')
+    rp("values: ['Pending Approval', 'Approved', 'Rejected'] }", "values: ['Pending Approval', 'Approved', 'Rejected', 'Cancelled'] }", 'filter')
+    rp("""  out.push(sec('Approver info', [row('Approver', a.by || '—')].concat(a.st === 'Pending' ? [] : [row('Decision', tag(a.st, FA_APV_TAG[a.st]), true)])));
+  const acts = a.st === 'Pending' && p.apv ? `<span class="fa-spacer"></span><obs-button variant="default" class="fa-apvd-rej" data-apv-dec="Rejected">Reject</obs-button><obs-button variant="primary" data-apv-dec="Approved">Approve</obs-button>` : '';""",
+       """  out.push(sec('Approver info', a.st === 'Cancelled'
+    ? [row('Approver', '—'), row('Decision', tag('Cancelled', FA_APV_TAG.Cancelled), true), row('Cancelled by', a.cancelledBy || p.by)]
+    : [row('Approver', a.by || '—')].concat(a.st === 'Pending' ? [] : [row('Decision', tag(a.st, FA_APV_TAG[a.st]), true)])));
+  const acts = a.st === 'Pending' && p.apv ? `<span class="fa-spacer"></span><obs-button variant="default" class="fa-apvd-rej" data-apv-cancel>Cancel request</obs-button>` : '';""", 'footer')
+    rp("""  drawer.querySelectorAll('obs-button[data-apv-dec]').forEach(b => b.addEventListener('click', () => {""",
+       """  drawer.querySelectorAll('obs-button[data-apv-cancel]').forEach(b => b.addEventListener('click', () => {
+    if (b.__done) return; b.__done = 1; setTimeout(() => { b.__done = 0; }, 400);   /* obs-button fires twice */
+    askConfirm({ title: 'Cancel this request?', icon: 'times-circle', confirmText: 'Cancel request',
+      body: `The request to ${p.op.toLowerCase()} ${p.newName || p.target} on ${p.device} is withdrawn. It is not sent to the approver and nothing changes on the firewall. Raise it again to bring it back.`,
+      onOk: () => {
+        let dec = {}; try { dec = JSON.parse(localStorage.getItem('oo-apv-decisions') || '{}'); } catch (e) {}
+        dec[p.apv] = { st: 'Cancelled', by: '', cancelledBy: p.by, at: new Date().toISOString() };
+        try { localStorage.setItem('oo-apv-decisions', JSON.stringify(dec)); } catch (e) {}
+        renderContent(); viewChangeDrawer(id);
+      } });
+  }));
+  drawer.querySelectorAll('obs-button[data-apv-dec]').forEach(b => b.addEventListener('click', () => {""", 'bind')
+    return t
+t = apv_cancel_patch(t)
+
+def apv_keep_patch(t):
+    """the cancel confirm's two buttons read Keep request · Cancel request — "Cancel" beside "Cancel request" is two
+    words for opposite answers. askConfirm takes an optional cancelText; every other confirm keeps obs-modal's Cancel."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'apv_keep ' + what
+        t = t.replace(a, b)
+    rp("""function askConfirm({ title, icon = 'times-circle', body, confirmText = 'Confirm', variant = 'error', onOk }) {
+  confirm.setAttribute('title', title);""", """function askConfirm({ title, icon = 'times-circle', body, confirmText = 'Confirm', cancelText = 'Cancel', variant = 'error', onOk }) {
+  confirm.setAttribute('title', title);
+  confirm.setAttribute('cancel-text', cancelText);""", 'askConfirm')
+    rp("askConfirm({ title: 'Cancel this request?', icon: 'times-circle', confirmText: 'Cancel request',",
+       "askConfirm({ title: 'Cancel this request?', icon: 'times-circle', confirmText: 'Cancel request', cancelText: 'Keep request',", 'use')
+    return t
+t = apv_keep_patch(t)
+
+def pm_spacing_patch(t):
+    """Add Policy / Add Object rhythm (owner, 27 Oct 2026: "the line alignment like other margin padding", "use universal
+    space"). Measured first: every divider INSIDE the form sits 28px under the row above it (the form's 20px gap + its own
+    8px) with 20px under it — but the one before "Reason for request" is OUTSIDE the form, so it got 8px above and 16px
+    below, and Service Object's Type -> protocol rows were 40px (20 gap + 20 margin). All three now take the form's own
+    numbers. And "Log firewall traffic" becomes a settings row — title + one line of description, an ON/OFF obs-switch
+    at the right — the shape the Create Dashboard drawer's "Default landing dashboard" uses."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'pm_spacing ' + what
+        t = t.replace(a, b)
+    rp("#pmAddDrawer .fa-pmf-logrow { display: flex; align-items: center; gap: 8px; margin-top: 16px; }",
+       """#pmAddDrawer .fa-pmf-logrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; }
+#pmAddDrawer .fa-pmf-logt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+#pmAddDrawer .fa-pmf-logt b { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--page-text-color); }
+#pmAddDrawer .fa-pmf-logt span { font-size: 12.8px; line-height: 18px; color: var(--neutral-light); }
+#pmAddDrawer .fa-pmf-logrow obs-switch { flex: 0 0 auto; }
+/* the divider before Reason for request sits outside the form: give it the form's own 28px above / 20px below */
+#pmAddDrawer .fa-pmf-form + .fa-pmsep { margin-top: 28px; }
+#pmAddDrawer .fa-pmsep + .fa-pmf-reason { margin-top: 20px; }
+/* Service Object: Type -> protocol rows on the form's 20px row gap, not 20 gap + 20 margin */
+#pmAddDrawer .fa-pmf-form > .fa-svc-rows { margin-top: 0; }""", 'css')
+    rp("""      <obs-checkbox data-${ns}="log"${f.log ? ' checked' : ''}>Log firewall traffic</obs-checkbox>
+      <obs-tooltip placement="top"><obs-icon slot="trigger" name="infoCircle" size="14" class="fa-field-info" label="About logging"></obs-icon>On: every session this policy allows or denies is logged and the logs are collected. Off: no traffic logs are collected for this policy.</obs-tooltip>""",
+       """      <div class="fa-pmf-logt"><b>Log firewall traffic</b><span>Every session this policy allows or denies is logged and collected.</span></div>
+      <obs-switch data-${ns}="log"${f.log ? ' checked' : ''} checked-text="ON" unchecked-text="OFF" aria-label="Log firewall traffic"></obs-switch>""", 'markup')
+    return t
+t = pm_spacing_patch(t)
+
+def svcg_chips_patch(t):
+    """Service Group members (owner, 27 Oct 2026: "when I select all members the dropdown shows this — wrong"): the picked
+    members were a full-width list of rows with a ⊗ each under the select, which read as a dropdown left open. They are
+    closable obs-tag chips now, wrapping under the field; a chip's ✕ (its own close event) takes the member out."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'svcg ' + what
+        t = t.replace(a, b)
+    rp("""const svcgListHTML = f => f.members.map(m => `<div class="fa-svcg-item"><span>${esc(m)}</span><button type="button" class="fa-svc-ib del" data-svcg-del="${esc(m)}" aria-label="Remove ${esc(m)}" data-tip="Remove"><obs-icon name="times-circle" size="16"></obs-icon></button></div>`).join('');""",
+       """const svcgListHTML = f => f.members.map(m => `<obs-tag closable data-svcg-del="${esc(m)}" aria-label="${esc(m)}">${esc(m)}</obs-tag>`).join('');""", 'html')
+    rp("const bindDel = () => list && list.querySelectorAll('[data-svcg-del]').forEach(b => b.addEventListener('click', () => {",
+       "const bindDel = () => list && list.querySelectorAll('[data-svcg-del]').forEach(b => b.addEventListener('close', () => {", 'bind')
+    rp(".fa-svcg-list { max-height: 200px; overflow-y: auto; }",
+       ".fa-svcg-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto; }", 'css')
+    rp(".fa-svcg-list:not(:empty) { margin-top: 1px; }", ".fa-svcg-list:not(:empty) { margin-top: 2px; }", 'css2')
+    return t
+t = svcg_chips_patch(t)
+
+def pol_finds_patch(t):
+    """Policies Analytics, Option 1 (owner, 27 Oct 2026 — the Compliance "Rules · 21 passed | 64 failed · of 85 rules
+    evaluated" card as the reference): the four severity tiles become ONE tile, "N critical | N major | N warning | N clean
+    · of N policies". obs-stat-card's pair row holds only two values, so this is that tile's own anatomy rebuilt with its
+    measurements (13px/500 label, 28px mono figures, 12.8px words, 24px dividers, 7px radius, the widget tokens). A count
+    is coloured only when it is not zero — a zero is not a finding."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'pol_finds ' + what
+        t = t.replace(a, b)
+    rp("""    <obs-stat-card class="fa-pol-stats fa-pol-finds" items='${j(finds)}'></obs-stat-card>
+  </div>`;""", """    <div class="fa-pol-fcard" role="group" aria-label="Findings: ${FS.map(([l, k]) => `${nf(c(k))} ${l.toLowerCase()}`).join(', ')}, of ${nf(n)} policies">
+      <span class="fa-pol-fk">Findings</span>
+      <div class="fa-pol-frow">${FS.map(([l, k], i) => `${i ? '<i class="fa-pol-fdv" aria-hidden="true"></i>' : ''}<b${c(k) ? ` style="color:var(--severity-${k})"` : ''}>${nf(c(k))}</b><span>${l.toLowerCase()}</span>`).join('')}</div>
+      <span class="fa-pol-flb">of ${nf(n)} ${n === 1 ? 'policy' : 'policies'}</span>
+    </div>
+  </div>`;""", 'markup')
+    rp("obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }",
+       """obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }
+.fa-pol-fcard { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; min-width: 0; height: 100%; box-sizing: border-box;
+  border: 1px solid var(--widget-border-color); border-radius: 7px; background: var(--widget-background, var(--page-background-color)); color: var(--page-text-color); }
+.fa-pol-fk { height: 18px; font-size: 13px; font-weight: 500; line-height: 18px; }
+.fa-pol-frow { display: flex; align-items: center; gap: 8px; height: 32px; min-width: 0; }
+.fa-pol-frow b { font: 600 28px/1 var(--numeric-font-family, 'JetBrains Mono', monospace); white-space: nowrap; }
+.fa-pol-frow span { font-size: 12.8px; color: var(--neutral-light); align-self: flex-end; margin: 0 0 5px; white-space: nowrap; }
+.fa-pol-fdv { flex: 0 0 1px; height: 24px; background: var(--border-color); margin: 0 6px; }
+.fa-pol-flb { height: 18px; line-height: 18px; font-size: 12px; color: var(--neutral-light); white-space: nowrap; }""", 'css')
+    return t
+t = pol_finds_patch(t)
+
+def dev_alert_rings_patch(t):
+    """the firewall header carries its ACTIVE ALERT COUNT (owner, 27 Oct 2026 — the product's own monitor header as the
+    reference: a ring per severity, the count inside in that severity's colour, the arc its share of the alerts). One
+    ring per severity that has alerts, worst first; clicking any of them opens the Active Alerts tab. Read off
+    deviceAlerts(d) — the rows that tab lists — so the header and the grid cannot disagree."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'dev_rings ' + what
+        t = t.replace(a, b)
+    rp("""        <obs-button variant="neutral-lightest" squared aria-label="Refresh" data-tip="Refresh" data-mdh="refresh">""",
+       """        ${(() => { const al = deviceAlerts(d), n = al.length, C = 2 * Math.PI * 15;
+          const sevs = [['critical', 'Critical'], ['major', 'Major'], ['warning', 'Warning'], ['clear', 'Clear']]
+            .map(([k, l]) => [k, l, al.filter(a => a.sev === k).length]).filter(x => x[2]);
+          return sevs.length ? `<span class="fa-mdh-rings">${sevs.map(([k, l, c]) => `<button type="button" class="fa-mdh-ring" data-mdh="alerts"
+            aria-label="${c} ${l.toLowerCase()} alert${c === 1 ? '' : 's'} — open Active Alerts" data-tip="${c} ${l} · open Active Alerts" style="--ring:var(--severity-${k})">
+            <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="tr"></circle>
+              <circle cx="18" cy="18" r="15" class="ar" stroke-dasharray="${(C * c / n).toFixed(2)} ${C.toFixed(2)}"></circle></svg>
+            <b>${nf(c)}</b></button>`).join('')}</span>` : ''; })()}
+        <obs-button variant="neutral-lightest" squared aria-label="Refresh" data-tip="Refresh" data-mdh="refresh">""", 'markup')
+    rp("""    if (b.dataset.mdh === 'home') go('devices', devReturn);""",
+       """    if (b.dataset.mdh === 'home') go('devices', devReturn);
+    else if (b.dataset.mdh === 'alerts') { dev1.tab = 'alerts'; go('device', devRoute()); }""", 'click')
+    rp(".fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }",
+       """.fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }
+.fa-mdh-rings { display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; }
+.fa-mdh-ring { appearance: none; position: relative; display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.fa-mdh-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.fa-mdh-ring circle { fill: none; stroke-width: 2.5; }
+.fa-mdh-ring .tr { stroke: var(--border-color); }
+.fa-mdh-ring .ar { stroke: var(--ring); stroke-linecap: round; }
+.fa-mdh-ring b { position: relative; font: 600 13px/1 var(--numeric-font-family, 'JetBrains Mono', monospace); color: var(--ring); }
+.fa-mdh-ring:hover { background: color-mix(in srgb, var(--ring) 12%, transparent); }
+.fa-mdh-ring:focus-visible { outline: 2px solid var(--primary-alt); outline-offset: 2px; }""", 'css')
+    return t
+t = dev_alert_rings_patch(t)
+
+def dev_alert_rings2_patch(t):
+    """the header rings at the PRODUCT's own numbers (owner, 27 Oct 2026, the live monitor header's markup supplied): 45px
+    circles 5px apart, an ant-progress-circle stroke of 4 on a 100 viewBox (r 48) with round caps over a --border-color
+    trail, the count an h4 in the severity's colour. CLEAR is not a ring: a --severity-clear-lightest disc with a 0.1
+    hairline, exactly as the product draws it."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'dev_rings2 ' + what
+        t = t.replace(a, b)
+    rp("const al = deviceAlerts(d), n = al.length, C = 2 * Math.PI * 15;", "const al = deviceAlerts(d), n = al.length, C = 2 * Math.PI * 48;", 'C')
+    rp("""<button type="button" class="fa-mdh-ring" data-mdh="alerts\"""", """<button type="button" class="fa-mdh-ring${k === 'clear' ? ' clr' : ''}" data-mdh="alerts\"""", 'cls')
+    rp("""<svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="tr"></circle>
+              <circle cx="18" cy="18" r="15" class="ar\"""", """<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" class="tr"></circle>
+              <circle cx="50" cy="50" r="48" class="ar\"""", 'svg')
+    rp(".fa-mdh-rings { display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; }",
+       ".fa-mdh-rings { display: inline-flex; align-items: center; gap: 5px; margin-right: 8px; }", 'gap')
+    rp("width: 36px; height: 36px; padding: 0;\n  border: 0; border-radius: 50%; background: transparent; cursor: pointer; }",
+       "width: 45px; height: 45px; padding: 0; font: inherit;\n  border: 0; border-radius: 50%; background: transparent; cursor: pointer; }\n.fa-mdh-ring.clr { background: var(--severity-clear-lightest); }", 'size')
+    rp(".fa-mdh-ring circle { fill: none; stroke-width: 2.5; }", ".fa-mdh-ring circle { fill: none; stroke-width: 4; }\n.fa-mdh-ring.clr circle { stroke-width: 0.1; }", 'stroke')
+    rp(".fa-mdh-ring b { position: relative; font: 600 13px/1 var(--numeric-font-family, 'JetBrains Mono', monospace); color: var(--ring); }",
+       ".fa-mdh-ring b { position: relative; font-size: 16px; font-weight: 600; line-height: 1; color: var(--ring); }", 'text')
+    rp(".fa-mdh-ring:hover { background: color-mix(in srgb, var(--ring) 12%, transparent); }",
+       ".fa-mdh-ring:hover { background: color-mix(in srgb, var(--ring) 12%, transparent); }\n.fa-mdh-ring.clr:hover { background: color-mix(in srgb, var(--ring) 28%, var(--severity-clear-lightest)); }", 'hover')
+    return t
+t = dev_alert_rings2_patch(t)
+
+def pol_finds_fit_patch(t):
+    """the Findings card hugs its content (owner, 27 Oct 2026: "the last extra space is removed and align all cards"): it
+    kept the 3fr column the four tiles needed, so half of it was empty. It takes max-content now and the rule-base card
+    takes the rest; the two still share one height, and below 1366px they stack as before."""
+    a = "obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }\n.fa-pol-fcard {"
+    assert t.count(a) == 1, 'pol_finds_fit'
+    return t.replace(a, "obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }\n"
+                        "@media (min-width: 1367px) { .fa-pol-kpis:has(> .fa-pol-fcard) { grid-template-columns: minmax(0, 1fr) max-content; } }\n.fa-pol-fcard {")
+t = pol_finds_fit_patch(t)
+
+def dev_head_btn_patch(t):
+    """the header's Refresh / Full screen are the product's filled icon squares (owner, 27 Oct 2026): obs-button
+    neutral-lightest — a --code-tag-background-color fill AND border, no outline. Two DS faults worked around through that
+    variant's own token (it inherits into the shadow root): in LIGHT the fill is the same #ecf1f9 as the header surface,
+    so the buttons vanished — they take the page surface there; and the bundle has no :hover for the variant at all, so
+    hover steps one ramp shade (--neutral-lighter). DS gap logged."""
+    a = ".fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }"
+    assert t.count(a) == 1, 'dev_head_btn'
+    return t.replace(a, a + """
+html:not([data-theme="dark-theme"]) .fa-dev-head obs-button[variant="neutral-lightest"] { --code-tag-background-color: var(--page-background-color); }
+.fa-dev-head obs-button[variant="neutral-lightest"]:hover { --code-tag-background-color: var(--neutral-lighter); }""")
+t = dev_head_btn_patch(t)
+
+def analytics_add_patch(t):
+    """Policies Analytics gets an "Add Policy" button (owner, 27 Oct 2026) — the very control Policies Management carries
+    (pmBar: obs-button#pmAdd data-add="policy", one delegated click -> openPmAdd), so it opens the same Add Policy drawer,
+    on this firewall, raising the same pending request."""
+    a = "  mountStdGrid('polGrid', { columns: PL_COLS, table: 'tblRules', search: 'Search', fields: POL_FIELDS });"
+    assert t.count(a) == 1, 'analytics_add'
+    return t.replace(a, "  mountStdGrid('polGrid', { columns: PL_COLS, table: 'tblRules', search: 'Search', fields: POL_FIELDS,\n    after: dev1 && dev1.tab === 'analytics' ? pmBar(null) : '' });")
+t = analytics_add_patch(t)
+
+def inv_device_link_patch(t):
+    """Firewall Inventory's Device name opens THAT firewall's own page (owner, 27 Oct 2026: "when I click the device,
+    redirect to the device explorer screen"). In the module it is openDevice(id); inside Settings (embed=settings) the
+    frame cannot draw the module, so it asks the host to open Explorer › Firewall Analyzer on device/<id>/overview."""
+    a = """        onCell: (dd, r) => {
+          if (dd.key === 'cred') {"""
+    assert t.count(a) == 1, 'inv_device_link'
+    return t.replace(a, """        onCell: (dd, r) => {
+          if (dd.key === 'name') {
+            if (document.documentElement.classList.contains('fasettings') && parent !== window) parent.postMessage({ faOpenDevice: r.id }, '*');
+            else openDevice(r.id);
+            return;
+          }
+          if (dd.key === 'cred') {""")
+t = inv_device_link_patch(t)
+
+def inv_device_click_patch(t):
+    """the Device-name link, bound to what obs-table REALLY emits (27 Oct 2026). The Device column is a severity primary
+    cell, and a click on it fires `rowclick` — never `cellaction` — so inv_device_link_patch's onCell branch never ran (a
+    hand-dispatched cellaction is what made it look working). rowclick carries only the row id and fires for the whole
+    row, so the id is kept and the navigation happens on the click that follows it — only when that click landed in the
+    Device cell (td.first-data), so a click on the IP or Vendor does not leave the page."""
+    a = "  const ti = view.querySelector('#tblFwInventory');\n"
+    assert t.count(a) == 1, 'inv_device_click'
+    return t.replace(a, a + """  if (ti && !ti.__devLink) {
+    ti.__devLink = 1; let rowId = null;
+    ti.addEventListener('rowclick', e => { rowId = rowIdOf(detailOf(e)); });
+    ti.addEventListener('click', e => {
+      const td = e.composedPath().find(n => n && n.tagName === 'TD'), id = rowId; rowId = null;
+      if (!id || !td || !td.classList.contains('first-data')) return;
+      /* Settings only: inside the module the row already opens its own inventory details page */
+      if (document.documentElement.classList.contains('fasettings') && parent !== window) parent.postMessage({ faOpenDevice: id }, '*');
+    });
+  }
+""")
+t = inv_device_click_patch(t)
+
+def obj_section2_patch(t):
+    """Add / Edit Object in two titled sections (owner, 27 Oct 2026): GENERAL holds Object Name · Description · Device
+    Name; OBJECT CATEGORY holds the Network | Service switch and, under it, Type and every field that depends on it.
+    The section was titled with the chosen category ("Network Object"); it is "Object Category" now and the help line
+    under it still follows the choice. The switch drops its own "Object Category" label — the heading says it."""
+    def rp(a, b, what, n=1):
+        nonlocal t
+        assert t.count(a) == n, 'obj_section2 ' + what + ' ' + str(t.count(a))
+        t = t.replace(a, b)
+    rp("const pmoSecHead = f => (PMO_CATS[f.cat] ? pmSecHead(PMO_CATS[f.cat].label, PMO_CATS[f.cat].help) : '');",
+       "const pmoSecHead = f => pmSecHead('Object Category', PMO_CATS[f.cat] ? PMO_CATS[f.cat].help : 'Pick what kind of object this is.');\n"
+       "const pmoGenHead = () => pmSecHead('Object details', 'Name the object and choose the firewall it is created on.');", 'heads')
+    rp("""  ? `<div class="fa-pmo-segf">${field('Object Category', `<obs-radio as-button disabled class="fa-pmo-seg" value="${f.cat}" options='${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}'></obs-radio>`)}</div>`""",
+       """  ? `<div class="fa-pmo-segf"><obs-radio as-button disabled class="fa-pmo-seg" aria-label="Object Category" value="${f.cat}" options='${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}'></obs-radio></div>`""", 'seg ro')
+    rp("""  : `<div class="fa-pmo-segf">${field('Object Category', `<obs-radio as-button id="pmoCat" class="fa-pmo-seg" options='${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}'></obs-radio>`)}</div>`;""",
+       """  : `<div class="fa-pmo-segf"><obs-radio as-button id="pmoCat" class="fa-pmo-seg" aria-label="Object Category" options='${j(Object.keys(PMO_CATS).map(k => ({ value: k, label: PMO_CATS[k].label })))}'></obs-radio></div>`;""", 'seg')
+    # the network and service bodies (the first two of three; the third is the fallback body for other kinds)
+    a = """  return `<div class="fa-pmf-form"><div class="fa-grid cols-2">
+      ${f.edit ? field('Object Name',"""
+    assert t.count(a) == 3, 'obj_section2 gen head'
+    t = t.replace(a, """  return `<div class="fa-pmf-form">${pmoGenHead()}<div class="fa-grid cols-2">
+      ${f.edit ? field('Object Name',""", 2)
+    rp("""    </div><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}
+      ${pmoCatField(ns, f)}
+    </div>
+    ${pmoSecHead(f)}
+    <div class="fa-grid cols-2">""", """    </div><div class="fa-grid cols-2 fa-pmo-devrow">${pmoDevField(ns, f)}<div aria-hidden="true"></div>
+    </div>
+    ${pmoSecHead(f)}
+    ${pmoCatField(ns, f)}
+    <div class="fa-grid cols-2">""", 'cat move', 2)
+    rp("#pmAddDrawer .fa-pmf-form > .fa-svc-rows { margin-top: 0; }",
+       "#pmAddDrawer .fa-pmf-form > .fa-svc-rows { margin-top: 0; }\n"
+       "/* a form that OPENS on a section heading: no rule above it — the drawer's header already draws one */\n"
+       "#pmAddDrawer .fa-pmf-form > .fa-pmsh:first-child { margin-top: 0; padding-top: 0; border-top: 0; }", 'css')
+    return t
+t = obj_section2_patch(t)
+
+def pol_kpi_opt1_patch(t):
+    """Policies Analytics keeps Option 1 only (owner, 27 Oct 2026: "option 2, 3, 4 remove"): the Option 1-4 switch is no
+    longer rendered, and POL_KPI_OPT — which only that switch ever changed — stays '1'. The other three branches are
+    kept and unreachable, the house pattern, so a design is one value away."""
+    a = "  return sw + body;"
+    assert t.count(a) == 1, 'pol_kpi_opt1'
+    return t.replace(a, "  return body;   /* the Option 1-4 switch (sw) is not rendered: Option 1 only (27 Oct 2026) */")
+t = pol_kpi_opt1_patch(t)
+
+def pol_id_tag_patch(t):
+    """Policies Analytics' Policy ID as a tag (owner, 27 Oct 2026 — a "dc1" code chip as the reference, fill #2B394F):
+    obs-table's own tags cell carrying the DS `main-tags` tag (its teal ink, --main-tags-text-color), with that tag's
+    fill pointed at --tag-bg-color for this table — #2b394f dark / #e3e8f2 light, the DS tag surface. The value is
+    the same number; sorting still reads it as a number."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'pol_id ' + what
+        t = t.replace(a, b)
+    rp("""    { key: 'seq', title: 'Policy ID', align: 'right', width: 110, fixed: true, sortVal: r => r.seq, cell: r => String(r.seq), render: r => esc(r.seq) },""",
+       """    { key: 'seq', title: 'Policy ID', width: 110, fixed: true, ds: { type: 'tags' }, sortVal: r => r.seq, cell: r => chip(String(r.seq), 'main-tags'), render: r => esc(r.seq) },""", 'col')
+    rp("obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }",
+       "obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }\n#tblRules { --main-tags-bg-color: var(--tag-bg-color); --main-tags-text-color: var(--neutral-light); }   /* Policy ID ink: --neutral-light, the grid's secondary text (27 Oct 2026) */", 'css')
+    return t
+t = pol_id_tag_patch(t)
+
+def if_faceplate_patch(t):
+    """the Interfaces tab opens on the device's FRONT PANEL (owner, 27 Oct 2026 — the product's own rack-unit faceplate as
+    the reference): a rack unit with an ear at each end, one socket per PHYSICAL port in ifIndex order with its link
+    light over it (green up, red down), and the device's name in a plate at the right. Tunnels and loopbacks have no
+    socket, so they are not on it. Each socket names its port, alias and state on hover. Colours are DS tokens:
+    the unit --pan-btn-border, the plate --page-background-color, the lights --severity-clear / --severity-critical."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'faceplate ' + what
+        t = t.replace(a, b)
+    rp("""    <obs-widget-card static class="fa-wc fa-wc-flush" title="Interface Overview">
+      ${stdGridHost('ifoGrid')}""", """    ${(() => { const ph = rows.filter(r => /ethernet/i.test(r.ifType)).sort((a, b) => a.ifIndex - b.ifIndex);
+      return ph.length ? `<section class="fa-fp" aria-label="${esc(section)} front panel">
+        <i class="fa-fp-ear" aria-hidden="true"></i>
+        <div class="fa-fp-ports">${ph.map(r => { const up = r.oper === 'up', lbl = `${r.raw}${r.alias ? ' · ' + r.alias : ''} · ${up ? 'Up' : 'Down'}`;
+          return `<span class="fa-fp-port${up ? '' : ' dn'}" role="img" aria-label="${esc(lbl)}" data-tip="${esc(lbl)}"><i class="fa-fp-led"></i><span class="fa-fp-jack"><i></i></span></span>`; }).join('')}</div>
+        <span class="fa-fp-name">${esc(section)}</span>
+        <i class="fa-fp-ear" aria-hidden="true"></i>
+      </section>` : ''; })()}
+    <obs-widget-card static class="fa-wc fa-wc-flush" title="Interface Overview">
+      ${stdGridHost('ifoGrid')}""", 'markup')
+    rp(".fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }", """.fa-mdh-lead { display: inline-flex; align-items: center; gap: 8px; }
+.fa-fp { display: flex; align-items: center; gap: 16px; min-height: 108px; padding: 12px 10px; border-radius: 8px; background: var(--pan-btn-border); }
+.fa-fp-ear { flex: 0 0 auto; align-self: stretch; width: 8px; display: flex; flex-direction: column; justify-content: space-between; }
+.fa-fp-ear::before, .fa-fp-ear::after { content: ""; width: 8px; height: 18px; border-radius: 4px; background: var(--page-text-color); opacity: .9; }
+.fa-fp-ports { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 8px; padding-left: 8px; }
+.fa-fp-port { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; cursor: default; }
+.fa-fp-led { width: 10px; height: 4px; border-radius: 1px; background: var(--severity-clear); }
+.fa-fp-port.dn .fa-fp-led { background: var(--severity-critical); }
+.fa-fp-jack { position: relative; width: 22px; height: 18px; border-radius: 2px; background: var(--neutral-light); box-shadow: inset 0 0 0 2px var(--neutral-lighter); }
+.fa-fp-jack i { position: absolute; left: 5px; right: 5px; bottom: 3px; height: 6px; border-radius: 1px;
+  background: repeating-linear-gradient(90deg, var(--severity-warning) 0 1px, transparent 1px 3px); }
+.fa-fp-jack::after { content: ""; position: absolute; left: 8px; right: 8px; top: 2px; height: 3px; background: var(--neutral-lighter); }
+.fa-fp-name { flex: 0 0 auto; max-width: 180px; padding: 14px 16px; border-radius: 8px; background: var(--page-background-color);
+  color: var(--page-text-color); font-size: 13px; font-weight: 600; text-align: center; word-break: break-word; }""", 'css')
+    return t
+t = if_faceplate_patch(t)
+
+def if_faceplate_ds_patch(t):
+    """the front panel on the ObserveOps DS (owner, 27 Oct 2026). The catalogue has NO faceplate / port-panel element
+    (search_components: none; it is a declared visualization gap), so it is composed from DS parts: an obs-widget-card
+    "Front Panel" — the same frame as Interface Overview under it — the DS `port` icon for each socket, an obs-severity
+    dot for each link light, an obs-tooltip per port, and the device name as an obs-tag. Only the rack unit itself (a
+    token-filled band with an ear at each end) is hand-built. The hand-drawn CSS jacks are gone."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'faceplate_ds ' + what
+        t = t.replace(a, b)
+    rp("""      return ph.length ? `<section class="fa-fp" aria-label="${esc(section)} front panel">
+        <i class="fa-fp-ear" aria-hidden="true"></i>
+        <div class="fa-fp-ports">${ph.map(r => { const up = r.oper === 'up', lbl = `${r.raw}${r.alias ? ' · ' + r.alias : ''} · ${up ? 'Up' : 'Down'}`;
+          return `<span class="fa-fp-port${up ? '' : ' dn'}" role="img" aria-label="${esc(lbl)}" data-tip="${esc(lbl)}"><i class="fa-fp-led"></i><span class="fa-fp-jack"><i></i></span></span>`; }).join('')}</div>
+        <span class="fa-fp-name">${esc(section)}</span>
+        <i class="fa-fp-ear" aria-hidden="true"></i>
+      </section>` : ''; })()}""",
+       """      const upN = ph.filter(r => r.oper === 'up').length;
+      return ph.length ? `<obs-widget-card static class="fa-wc" title="Front Panel">
+        <div class="fa-fp" role="group" aria-label="${esc(section)} front panel: ${upN} of ${ph.length} ports up">
+          <i class="fa-fp-ear" aria-hidden="true"></i>
+          <div class="fa-fp-ports">${ph.map(r => { const up = r.oper === 'up';
+            return `<obs-tooltip placement="top"><span slot="trigger" class="fa-fp-port" aria-label="${esc(r.raw)} ${up ? 'up' : 'down'}">
+                <obs-severity severity="${up ? 'up' : 'down'}" shape="dot"></obs-severity><obs-icon name="port" size="24"></obs-icon>
+                <span class="fa-fp-pn">${esc(r.raw)}</span></span>${esc(r.raw)}${r.alias ? ' · ' + esc(r.alias) : ''} · ${up ? 'Up' : 'Down'}</obs-tooltip>`; }).join('')}</div>
+          <div class="fa-fp-id"><obs-tag variant="tag-primary">${esc(section)}</obs-tag><span>${upN} of ${ph.length} ports up</span></div>
+          <i class="fa-fp-ear" aria-hidden="true"></i>
+        </div>
+      </obs-widget-card>` : ''; })()}""", 'markup')
+    a = t.index(".fa-fp { display: flex;"); b = t.index("word-break: break-word; }", a) + len("word-break: break-word; }")
+    t = t[:a] + """.fa-fp { display: flex; align-items: stretch; gap: 16px; padding: 12px; border-radius: var(--btn-radius, 4px); background: var(--neutral-lighter); }
+.fa-fp-ear { flex: 0 0 auto; width: 6px; display: flex; flex-direction: column; justify-content: space-between; }
+.fa-fp-ear::before, .fa-fp-ear::after { content: ""; width: 6px; height: 16px; border-radius: 3px; background: var(--neutral-light); }
+.fa-fp-ports { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.fa-fp-port { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; color: var(--page-text-color); cursor: default; }
+.fa-fp-pn { font-size: 11px; line-height: 14px; color: var(--neutral-light); }
+.fa-fp-id { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; font-size: 12px; color: var(--neutral-light); }""" + t[b:]
+    return t
+t = if_faceplate_ds_patch(t)
+
+def if_faceplate_off_patch(t):
+    """the front panel is REMOVED from the Interfaces tab (owner, 27 Oct 2026); Interface Overview leads the tab again.
+    The builder stays in place behind FA_FACEPLATE, so turning it back on is one value."""
+    a = "    ${(() => { const ph = rows.filter(r => /ethernet/i.test(r.ifType)).sort((a, b) => a.ifIndex - b.ifIndex);"
+    assert t.count(a) == 1, 'faceplate_off'
+    return t.replace(a, "    ${!FA_FACEPLATE ? '' : (() => { const ph = rows.filter(r => /ethernet/i.test(r.ifType)).sort((a, b) => a.ifIndex - b.ifIndex);").replace(
+        "function screenInterfaces(section) {", "const FA_FACEPLATE = false;   /* the Interfaces tab's front panel — removed on request (27 Oct 2026) */\nfunction screenInterfaces(section) {", 1)
+t = if_faceplate_off_patch(t)
+
+def if_faceplate_product_patch(t):
+    """the front panel BACK, rebuilt to the product's own switch-port view (owner, 27 Oct 2026, the live markup supplied):
+    a 110px .switch-port-view-container with a bolt in each corner, the ports in the left 90% (each a 29x29 box: a status
+    LED over the product's port glyph — its own 512-grid paths, painted with DS tokens because its three literal fills
+    are off-palette), and the monitor-info plate on the right: the device name over its vendor. A port's popover sits to
+    its right, as live. LED per state: up --severity-clear, down --severity-critical, otherwise --severity-unreachable."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'faceplate_product ' + what
+        t = t.replace(a, b)
+    rp("const FA_FACEPLATE = false;   /* the Interfaces tab's front panel — removed on request (27 Oct 2026) */",
+       "const FA_FACEPLATE = true;    /* the Interfaces tab's front panel — the product's switch-port view (27 Oct 2026) */\n"
+       "const FA_PORT_SVG = '<svg viewBox=\"0 0 512 512\" class=\"fa-sp-glyph\" aria-hidden=\"true\"><path class=\"b\" d=\"M506,491.29H6V20.71H506Z\"></path>'\n"
+       "  + '<path class=\"o\" d=\"M57.69,426.43H454.24V191.14h-69v-56.8H299.07V85.66H212.86v48.68h-86.2v56.8h-69Z\"></path>'\n"
+       "  + '<path class=\"p\" d=\"M135.25,426.35h34.49V329H135.25Zm68.93,0h34.49V329H204.18ZM342.12,329v97.36h34.49V329Zm-68.93,97.36h34.49V329H273.19Z\"></path></svg>';", 'flag')
+    a = t.index("      const upN = ph.filter(r => r.oper === 'up').length;\n      return ph.length ? `<obs-widget-card static class=\"fa-wc\" title=\"Front Panel\">")
+    b = t.index("      </obs-widget-card>` : ''; })()}", a) + len("      </obs-widget-card>` : ''; })()}")
+    t = t[:a] + """      const dv = D.devices.find(x => x.name === section), vendor = dv ? fwVendorName(dv) : '';
+      const st = r => (r.oper === 'up' ? 'up' : r.oper === 'down' ? 'down' : 'unreachable');
+      return ph.length ? `<section class="fa-sp" aria-label="${esc(section)} front panel">
+        <i class="fa-sp-bolt tl"></i><i class="fa-sp-bolt tr"></i><i class="fa-sp-bolt bl"></i><i class="fa-sp-bolt br"></i>
+        <div class="fa-sp-ports">${ph.map(r => `<obs-tooltip placement="right"><span slot="trigger" class="fa-sp-port" tabindex="0" aria-label="${esc(r.raw)} ${st(r)}">
+            <i class="fa-sp-led ${st(r)}"></i>${FA_PORT_SVG}</span>${esc(r.raw)}${r.alias ? ' · ' + esc(r.alias) : ''} · ${st(r) === 'up' ? 'Up' : st(r) === 'down' ? 'Down' : 'Unreachable'}</obs-tooltip>`).join('')}</div>
+        <div class="fa-sp-info"><h5 title="${esc(section)}">${esc(section)}</h5>${vendor ? `<h5 class="v" title="Vendor">${esc(vendor)}</h5>` : ''}</div>
+      </section>` : ''; })()}""" + t[b:]
+    a = t.index(".fa-fp { display: flex;")
+    end = ".fa-fp-id { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; font-size: 12px; color: var(--neutral-light); }"
+    b = t.index(end, a) + len(end)
+    t = t[:a] + """.fa-sp { position: relative; display: flex; align-items: stretch; height: 110px; padding: 10px 28px; border-radius: 6px; box-sizing: border-box;
+  background: var(--pan-btn-border); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -2px rgba(0, 0, 0, .05); --fa-sp-plate: var(--neutral-lighter); }
+html:not([data-theme="dark-theme"]) .fa-sp { --fa-sp-plate: var(--page-background-color); }
+.fa-sp-bolt { position: absolute; width: 8px; height: 18px; border-radius: 4px; background: var(--page-background-color); }
+html[data-theme="dark-theme"] .fa-sp-bolt { background: var(--primary); }
+.fa-sp-bolt.tl { top: 10px; left: 10px; } .fa-sp-bolt.tr { top: 10px; right: 10px; }
+.fa-sp-bolt.bl { bottom: 10px; left: 10px; } .fa-sp-bolt.br { bottom: 10px; right: 10px; }
+.fa-sp-ports { width: 90%; display: flex; flex-wrap: wrap; align-items: center; height: 100%; }
+.fa-sp-port { display: inline-flex; flex-direction: column; align-items: center; width: 29px; height: 29px; padding: 0 4px; margin-bottom: 8px; cursor: auto; }
+.fa-sp-led { width: 10px; height: 3px; margin-bottom: 4px; border-radius: 1px; background: var(--severity-unreachable); }
+.fa-sp-led.up { background: var(--severity-clear); } .fa-sp-led.down { background: var(--severity-critical); }
+.fa-sp-glyph { width: 24px; height: 22px; flex: 0 0 auto; }
+.fa-sp-glyph .b { fill: var(--neutral-light); } .fa-sp-glyph .o { fill: var(--neutral-lighter); } .fa-sp-glyph .p { fill: var(--severity-warning); }
+.fa-sp-info { flex: 1 1 auto; min-width: 0; overflow: hidden; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0 12px; background: var(--fa-sp-plate); }
+.fa-sp-info h5 { margin: 0; max-width: 100%; font-size: 13px; font-weight: 600; line-height: 18px; color: var(--primary); text-align: center; overflow-wrap: anywhere; }
+.fa-sp-info h5.v { font-weight: 400; font-size: 12px; color: var(--neutral-light); }""" + t[b:]
+    return t
+t = if_faceplate_product_patch(t)
+
+def pm_hide_cols_patch(t):
+    """Policies Management's Policies grid opens with Source Interface, Destination Interface and Last update Policy
+    Time HIDDEN (owner, 27 Oct 2026: "hide, don't remove — show option in column hide"). They stay columns: the grid's
+    eye chooser lists them unticked and ticking one brings it back; Reset Column Preference shows every column.
+    It is the grid's own saved state seeded, not a removal, so the column filters and exports still know them."""
+    a = "const gridState = {};"
+    assert t.count(a) == 1, 'pm_hide'
+    i = t.index(a); j = t.index('\n', i)
+    return t[:j] + "\ngridState.pmRulesGrid = { hidden: ['srcIntf', 'dstIntf', 'updated'] };   /* hidden by default, shown from the eye chooser (27 Oct 2026) */\ngridState.pmNatGrid = { hidden: ['srcIntf', 'dstIntf', 'mSvc', 'type'] };   /* NAT: hidden by default, shown from the eye chooser (27 Oct 2026) */" + t[j:]
+t = pm_hide_cols_patch(t)
+
+def pend_link_patch(t):
+    """the Pending Approval card reads as a LINK on hover (owner, 27 Oct 2026): its title underlines and an external-link
+    glyph (Tabler `external-link`, MIT, from free-icons) appears after it. The title is inside obs-stat-card's shadow
+    root, so the rule rides the page's attachShadow hook, scoped by a host class only that card carries."""
+    def rp(a, b, what):
+        nonlocal t
+        assert t.count(a) == 1, 'pend_link ' + what + ' ' + str(t.count(a))
+        t = t.replace(a, b)
+    rp("""    const card = `<obs-stat-card class="fa-pm-stats"${pw ?""", """    const card = `<obs-stat-card class="fa-pm-stats${last ? ' fa-pm-golink' : ''}"${pw ?""", 'class')
+    svg = ("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 "
+           "stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6%22/%3E"
+           "%3Cpath d=%22M11 13l9 -9%22/%3E%3Cpath d=%22M15 4h5v5%22/%3E%3C/svg%3E")
+    css = (':host(.fa-pm-golink) .k{overflow:visible}:host(.fa-pm-golink:hover) .k{text-decoration:underline;text-underline-offset:3px}'
+           ':host(.fa-pm-golink) .k::after{content:"";flex:0 0 14px;width:14px;height:14px;margin-left:6px;background:currentColor;opacity:0;'
+           '-webkit-mask:url("' + svg + '") center/contain no-repeat;mask:url("' + svg + '") center/contain no-repeat}'
+           ':host(.fa-pm-golink:hover) .k::after{opacity:1}')
+    a = "if(this.tagName==='OBS-STAT-CARD'){try{var sc=new CSSStyleSheet();sc.replaceSync('"
+    rp(a, a + css, 'hook')
+    return t
+t = pend_link_patch(t)
+
+def inv_link_icon_patch(t):
+    """Firewall Inventory's Device name reads as a LINK on hover, the same as the Pending Approval card (owner, 27 Oct
+    2026): a solid underline and the Tabler `external-link` glyph after the name. Rides the obs-table shadow sheet that
+    already underlines it; the glyph is a currentColor mask so it follows the theme."""
+    svg = ("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 "
+           "stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6%22/%3E"
+           "%3Cpath d=%22M11 13l9 -9%22/%3E%3Cpath d=%22M15 4h5v5%22/%3E%3C/svg%3E")
+    a = ':host(#tblFwInventory) .primary-text:hover{text-decoration:underline}'
+    assert t.count(a) == 1, 'inv_link_icon ' + str(t.count(a))
+    css = (':host(#tblFwInventory) .primary-text:hover{text-decoration:underline solid;text-underline-offset:3px}'
+           ':host(#tblFwInventory) .primary-text::after{content:"";display:inline-block;vertical-align:-2px;width:14px;height:14px;margin-left:6px;'
+           'background:currentColor;opacity:0;-webkit-mask:url("' + svg + '") center/contain no-repeat;mask:url("' + svg + '") center/contain no-repeat}'
+           ':host(#tblFwInventory) .primary-text:hover::after{opacity:1}')
+    return t.replace(a, css)
+t = inv_link_icon_patch(t)
+
+def inv_device_tab_patch(t):
+    """Settings › Firewall Inventory: the Device name opens the firewall's page in a NEW TAB (owner, 27 Oct 2026). It was
+    a postMessage asking setting.html to navigate in place. The tab is Option 1 (index.html, the page that carries the
+    module), arriving on #m=Firewall Analyzer&sub=fa:device/<id>/overview — setting-nav.js sets MOD_SUB from `sub` and
+    faInit reads the `fa:` route. Opened from the frame itself, so the click's user activation is the frame's own."""
+    for v in ('r.id', 'id'):
+        a = "parent.postMessage({ faOpenDevice: " + v + " }, '*')"
+        assert t.count(a) == 1, 'inv_device_tab ' + v + ' ' + str(t.count(a))
+        t = t.replace(a, "window.open('../index.html#m=' + encodeURIComponent('Firewall Analyzer') + '&sub=' + encodeURIComponent('fa:device/' + " + v + " + '/overview'), '_blank', 'noopener')")
+    return t
+t = inv_device_tab_patch(t)
+
+def inv_name_nodrawer_patch(t):
+    """Settings › Firewall Inventory: a click on the Device NAME opens the new tab and nothing else (owner, 27 Oct 2026:
+    the Device Info drawer was opening behind it). That drawer comes from the name-click listener (__fid, 19 Oct 2026),
+    so inside Settings it stands down — inv_device_tab_patch's tab is the name's job there. In the module it still opens."""
+    a = """        if (!path.some(n => n.classList && n.classList.contains('primary-text'))) return;
+        const name ="""
+    assert t.count(a) == 1, 'inv_name_nodrawer ' + str(t.count(a))
+    return t.replace(a, """        if (!path.some(n => n.classList && n.classList.contains('primary-text'))) return;
+        if (document.documentElement.classList.contains('fasettings') && parent !== window) return;   /* Settings: the name opens a new tab instead */
+        const name =""")
+t = inv_name_nodrawer_patch(t)
+
 open(P, 'w', encoding='utf-8').write(t)
 print('ds_pass: applied')
