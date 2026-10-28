@@ -26,7 +26,7 @@ palette = json.loads((ROOT / 'design-tokens' / 'palette.json').read_text())['col
 icons = json.loads((HERE / 'icons.json').read_text())
 
 # extra glyphs the live page did not carry on screen when it was read
-for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg'), ('lock', 'settings/security-access/lock-alt.svg'), ('image', 'common/media-device/image.svg')]:
+for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg'), ('lock', 'settings/security-access/lock-alt.svg'), ('image', 'common/media-device/image.svg'), ('link', 'common/network-connectivity/link.svg'), ('trash', 'common/actions-edit/trash.svg'), ('pencil', 'common/actions-edit/pencil.svg'), ('fileup', 'nccm/file-document/file-upload.svg')]:
     s = (ROOT / 'observeops-icons' / path).read_text()
     vb = re.search(r'viewBox="([^"]+)"', s).group(1)
     icons[name] = {'vb': vb, 'd': re.findall(r'\sd="([^"]+)"', s)}

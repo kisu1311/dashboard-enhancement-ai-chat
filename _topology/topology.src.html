@@ -74,6 +74,9 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tpri{height:34px;border-radius:4px;border:1px solid var(--primary-button-bg);background:var(--primary-button-bg);color:var(--primary-button-text);padding:0 15px;cursor:pointer;margin-left:8px}
 .tpri:hover{opacity:.9}
 .tpri[disabled]{opacity:.5;cursor:not-allowed}
+.tpri.tedit{display:inline-flex;align-items:center;gap:8px}
+.tpri.tedit[hidden]{display:none}
+.tpri.tedit svg{width:15px;height:15px}
 
 /* body — entry-point tree | graph */
 .tbody{flex:1 1 auto;display:flex;min-height:0}
@@ -133,7 +136,17 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 [hidden]{display:none!important}
 .tsvg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;user-select:none}
 .tsvg.pan{cursor:grabbing}
-:is(.tsvg,.tmini .mm) .lk{fill:none;stroke:var(--neutral-light);stroke-opacity:.55;stroke-width:1.4}
+/* links read as connectors (request, 27 Oct 2026: the root → container line "is not shown") — it was a 1.4px line at 55%
+   opacity, which all but vanished on the drawn canvas (#172336). Same token, full strength, a touch heavier. */
+:is(.tsvg,.tmini .mm) .lk{fill:none;stroke:var(--page-text-color);stroke-opacity:.75;stroke-width:1.3;stroke-linecap:round;transition:stroke .15s,stroke-width .15s}
+/* CONNECTOR HOVER (live 10.0.1, 27 Oct 2026): the line turns the topology blue and its dashes FLOW from source to
+   destination. Every link path runs M source → destination, so a falling dash-offset moves the dashes that way.
+   .lkh is an invisible 14px-wide twin under each line — a 1.3px stroke is too thin to point at. */
+.tsvg .lkh{fill:none;stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
+.tmini .mm .lkh{display:none}
+.tsvg .lkg:hover .lk{stroke:var(--topology-info-btn-hover-bg);stroke-opacity:1;stroke-width:2;stroke-dasharray:7 5;animation:lkflow .6s linear infinite}
+@keyframes lkflow{to{stroke-dashoffset:-12}}
+@media (prefers-reduced-motion:reduce){.tsvg .lkg:hover .lk{animation:none}}
 :is(.tsvg,.tmini .mm) .lk.l3{stroke:var(--chart-indigo);stroke-dasharray:5 4;stroke-opacity:.8}
 :is(.tsvg,.tmini .mm) .lk.hl{stroke:var(--primary);stroke-opacity:.9}
 :is(.tsvg,.tmini .mm) .nd{cursor:pointer}
@@ -141,6 +154,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 :is(.tsvg,.tmini .mm) .nd path.ring{fill:var(--neutral-lighter);stroke-width:3;stroke-linejoin:round}
 :is(.tsvg,.tmini .mm) .nd.root path.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
 :is(.tsvg,.tmini .mm) .nd path.sring{fill:none}
+:is(.tsvg,.tmini .mm) .nd.ct :is(path,circle,rect).ring{fill:var(--topology-info-btn-bg)}
+:is(.tsvg,.tmini .mm) .nd.ct .gl{color:var(--topology-info-btn-text)}
 :is(.tsvg,.tmini .mm) .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
 /* ⚠️ THE GLYPH IS A NESTED <svg>, SO ITS PATHS PAINT BLACK UNLESS `fill` IS SET HERE — that is why every node glyph
    read dark on a dark node. Live: a light glyph on a dark node with a severity ring; a DOWN / CRITICAL node is a solid
@@ -152,7 +167,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 :is(.tsvg,.tmini .mm) .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
 :is(.tsvg,.tmini .mm) .nd .bdg circle{fill:var(--primary)}
 :is(.tsvg,.tmini .mm) .nd .bdg text{font:600 10px Inter,sans-serif;fill:var(--page-background-color)}
-:is(.tsvg,.tmini .mm) .nd.sel .sring{display:block}
+/* no dashed ring on the selected node (request, 27 Oct 2026) — the menu and details panel already show which node it is.
+   The ring still marks a search hit (.hit, below). */
 :is(.tsvg,.tmini .mm) .nd .sring{display:none;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-dasharray:4 3}
 :is(.tsvg,.tmini .mm) .nd.dim,.tsvg .lk.dim{opacity:.18}
 :is(.tsvg,.tmini .mm) .nd.hit .sring{display:block;stroke:var(--severity-warning)}
@@ -224,7 +240,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tkb kbd{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;font:500 11px Inter;background:var(--tag-bg-color);border-radius:3px;color:var(--page-text-color)}
 .tkb kbd svg{width:12px;height:12px;fill:currentColor}
 .tkb .pl{color:var(--neutral-light);font-size:11px}
-.ttoast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:60;background:var(--secondary-green);color:var(--active-text-color);border-radius:4px;padding:10px 40px 10px 14px;min-width:280px;display:none}
+/* top-right corner, 10px off both edges (request, 28 Oct 2026) */
+.ttoast{position:fixed;top:10px;right:10px;z-index:60;background:var(--secondary-green);color:var(--active-text-color);border-radius:4px;padding:10px 40px 10px 14px;min-width:280px;display:none}
 .ttoast.on{display:block}
 .ttoast b{display:block;font-size:13px;font-weight:600}
 .ttoast button{position:absolute;right:8px;top:8px;border:0;background:none;color:inherit;cursor:pointer;font-size:13px}
@@ -247,6 +264,34 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tdr .dh button:hover{color:var(--page-text-color)}
 .tdr .dh button:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .tdr .db{flex:1 1 auto;overflow:auto;padding:15px var(--drawer-inset) 16px}
+.dbga .db{display:flex;flex-direction:column;gap:12px;padding-top:15px}
+/* drop area: a dashed DS-bordered box, 4px (btn-radius) corners, centred stack */
+.bgdz{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 16px;border:1px dashed var(--field-border-color);border-radius:4px;
+  background:var(--nav-panel-bg);color:var(--neutral-light);font-size:13px;text-align:center;cursor:pointer}
+.bgdz obs-icon{color:var(--neutral-light)}
+.bgdz .t{color:var(--page-text-color);font-weight:500}
+.bgdz .o{font-size:12px}
+.bgdz .h{font-size:12px;margin-top:2px}
+.bgdz:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.bgdz:hover,.bgdz.drag{border-color:var(--primary-color, var(--neutral-light))}
+.bgdz.drag{background:var(--neutral-lightest)}
+.bgsec{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;font-weight:500;color:var(--page-text-color)}
+.bgsec .n{font-weight:400;color:var(--neutral-light)}
+.bggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bgt{position:relative;height:130px;padding:4px;border:1px solid var(--border-color);border-radius:4px;background:var(--nav-panel-bg);cursor:pointer;display:grid;place-items:center;overflow:hidden}
+.bgt.def{background-color:var(--nav-panel-bg);background-image:radial-gradient(circle,var(--field-border-color) 1px,transparent 1.2px);background-size:14px 14px}   /* the canvas's own dot grid, smaller */
+.bgdef{font-size:12px;color:var(--neutral-light);background:var(--nav-panel-bg);padding:2px 6px;border-radius:4px}
+.bgt img{width:100%;height:100%;min-height:0;object-fit:contain;display:block}   /* a grid track sizes to its content, so max-height:100% never bites — fill the tile and let contain fit it */
+.bgt:hover{border-color:var(--neutral-light)}
+.bgt[aria-selected="true"]{border-color:var(--page-text-color);box-shadow:0 0 0 1px var(--page-text-color)}
+.bgt:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.bgt .ck{position:absolute;top:6px;left:6px;color:var(--secondary-green);display:none}
+.bgt[aria-selected="true"] .ck{display:block}
+.bgt .rm{position:absolute;top:4px;right:4px;opacity:0}
+.bgt:hover .rm,.bgt:focus-within .rm{opacity:1}
+/* the delete glyph takes the DS critical token — the same destructive red as the node menu's Delete Node (request, 28 Oct 2026);
+   set on the slotted obs-icon itself, since the button's shadow .btn colour would otherwise win by inheritance */
+.bgt .rm obs-icon{color:var(--severity-critical)}
 .tdr .df{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px var(--drawer-inset);border-top:1px solid var(--border-color)}
 .tdr .df .sp{flex:1;color:var(--neutral-light);font-size:12px}
 .tdr .df .sp i{color:var(--severity-critical);font-style:normal}
@@ -277,6 +322,51 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tsegs button{height:30px;font-size:12.8px}
 .tsegs button.on{background:var(--neutral-lighter);color:var(--page-text-color);border-color:var(--field-border-color)}
 .dhalf{max-width:320px}
+/* Add Entity — DS elements; only layout here */
+.dena .db{display:flex;flex-direction:column;min-height:0}
+.enty obs-select{display:block;max-width:325px}
+.enempty{flex:1 1 auto;display:flex;align-items:flex-start;justify-content:center;padding-top:96px;color:var(--neutral-light);font-size:13px}
+.enempty[hidden],.enbody[hidden]{display:none}
+.enbody{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.enbody .ensrch{display:block;width:290px}
+.enbody obs-table{display:block;flex:1 1 auto;min-height:0}
+.tctx{position:fixed;z-index:40;min-width:220px;padding:4px;background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;box-shadow:0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent)}
+.tctx[hidden]{display:none}
+.tctx button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;border-radius:4px;background:none;color:var(--page-text-color);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.tctx button:hover,.tctx button:focus-visible{background:var(--dropdown-hover-background);outline:0}
+.tctx svg{width:16px;height:16px;color:var(--neutral-light);flex:0 0 16px}
+.tctx button.danger,.tctx button.danger svg{color:var(--severity-critical)}
+.tctx button[hidden]{display:none}
+/* node details panel */
+.ndp{--drawer-inset:15px;flex:0 0 390px;min-width:0;display:none;flex-direction:column;background:var(--page-background-color);border-left:1px solid var(--border-color)}
+.ndp.on{display:flex}
+.ndp .db{flex:1 1 auto;overflow:auto;padding:15px var(--drawer-inset) 16px}
+.tbody.fs .ndp{display:none}
+/* header: icon tile, then name over type beside it (request, 27 Oct 2026), then ✕ — one row over a rule */
+.ndph{display:flex;align-items:center;gap:12px;padding:14px var(--drawer-inset);border-bottom:1px solid var(--border-color)}
+.ndpid{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+.ndpic{flex:0 0 40px;width:40px;height:40px;border-radius:4px;background:var(--neutral-lightest);display:grid;place-items:center}
+.ndpic svg{width:24px;height:24px}
+.ndpx{align-self:flex-start;border:0;background:none;color:var(--neutral-light);cursor:pointer;padding:2px;border-radius:4px;display:grid;place-items:center}
+.ndpx:hover{color:var(--page-text-color)}.ndpx:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.ndpx svg{width:16px;height:16px}
+.ndpn{font-size:16px;font-weight:500;line-height:22px;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ndpt{font-size:12.8px;color:var(--neutral-light);line-height:18px}
+.ndps{font-size:14px;font-weight:600;color:var(--page-text-color);margin:2px 0 12px}
+.ndpkv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px 16px;font-size:13px}
+.ndpkv .k{color:var(--neutral-light)}.ndpkv .v{color:var(--page-text-color);overflow-wrap:anywhere}
+#mcSrc{background:var(--neutral-lightest);border-color:transparent;cursor:default}
+.dcat{margin:0 0 16px}
+.dsect{position:relative;padding-top:16px;margin-top:2px}
+/* section rules are the --border-color token at half strength (request, 27 Oct 2026: "the line is very highlighted") —
+   opacity on the rule, not a new colour; both rules use the same --drawer-rule-o so they cannot drift */
+#dCv{--drawer-rule-o:.5}
+.dsect::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--border-color);opacity:var(--drawer-rule-o,1)}
+.dsect .dcatd{margin-bottom:14px}
+#cvMonH .dcatd,#cvMeta > .dcatd{margin-bottom:14px}
+.dcatt{font-size:14px;font-weight:600;color:var(--page-text-color);line-height:20px}
+.dcatd{font-size:12.8px;color:var(--neutral-light);margin:2px 0 12px;line-height:1.5}
+.dcatrule{height:1px;background:var(--border-color);margin:4px 0 18px;opacity:var(--drawer-rule-o,1)}
 textarea.din.dta{height:auto;min-height:86px;padding:8px 11px;resize:vertical;line-height:1.5}
 /* single-select (Icon · Shape): the drawer's own .dsel field, one choice, closes on pick */
 .ssw .din svg{transition:transform .15s;flex:0 0 auto}
@@ -393,12 +483,15 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <button class="tsq" id="tXml" aria-label="Export As XML" data-tip="Export As XML">@@I:export-xml@@</button>
     </span>
     <button class="tpri" id="tCreate">Create Topology</button>
+    <!-- Edit (live 10.0.1, 27 Oct 2026): LAST in the toolbar, where the primary action sits. A saved custom view reopens in
+         design mode; this slot then shows Update Topology View instead -->
+    <button class="tpri tedit" id="tEdit" hidden>@@I:pencil@@ Edit</button>
   </div>
   <div class="tbody" id="tBody">
     <aside class="tside" id="tSide"></aside>
     <div class="tgraph empty" id="tGraph" tabindex="0">
       <svg class="tsvg" id="tSvg" hidden><g id="tVp"><g id="tLinks"></g><g id="tNodes"></g></g></svg>
-      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg">@@I:image@@ Add Background Image</button><button class="tbtn" id="desCt">@@I:topology@@ Add Container</button><button class="tbtn" id="desEn">@@I:topology@@ Add Entity</button><input type="file" id="desBgF" accept="image/*" hidden></div>
+      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg">@@I:image@@ Add Background Image</button><button class="tbtn" id="desCt">@@I:topology@@ Add Container</button><button class="tbtn" id="desEn">@@I:topology@@ Add Entity</button></div>
       <div class="tempty" id="tEmpty">@@EMPTY@@<div id="tEmptyT">Please select entry point to view Topology</div></div>
       <div class="tovl" id="tOvl" hidden>
         <div class="g"><button class="tob" id="oKey" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts">@@I:keyboard@@</button><button class="tob" id="oFit" data-tip="Fit to screen" aria-label="Fit to screen">@@I:expand@@</button></div>
@@ -413,6 +506,12 @@ html:not([data-theme]) .dck input{color-scheme:light}
       </div>
       <div class="tmini" id="tMini" hidden><div class="h" id="tMiniH">Minimap @@I:chevron-down@@</div><svg class="mm" id="tMm"></svg></div>
     </div>
+    <!-- NODE DETAILS (live 10.0.1, 27 Oct 2026): clicking a node in a custom view opens this side panel — icon tile, name,
+         type, then an Info section of the node's own fields. Docked INSIDE the body, right of the canvas and under the toolbar (live 10.0.1) — the canvas narrows to make room; nothing is covered. -->
+    <aside class="ndp" id="dNd" aria-label="Node details">
+      <div class="ndph"><span class="ndpic" id="ndIc"></span><span class="ndpid"><span class="ndpn" id="ndN"></span><span class="ndpt" id="ndT"></span></span><button class="ndpx" id="ndX" aria-label="Close">@@I:times@@</button></div>
+      <div class="db"><div class="ndps" id="ndS"></div><div class="ndpkv" id="ndKv"></div></div>
+    </aside>
   </div>
 </div>
 
@@ -462,23 +561,11 @@ html:not([data-theme]) .dck input{color-scheme:light}
 <aside class="tdr w40" id="dCv" aria-label="Create Custom View">
   <div class="dh"><span id="dCvT">Create Custom View</span><button data-close aria-label="Close">@@I:times@@</button></div>
   <div class="db">
-    <!-- Root Type (27 Oct 2026): a view is rooted at a monitor, or at a CONTAINER you describe here. Hidden in Add Entity. -->
-    <div class="dfld" id="cvTypeW"><div class="dlbl">Root Type</div><div class="tseg" id="cvType"><button data-v="monitor" class="on">Monitor</button><button data-v="container">Container</button></div></div>
-    <div id="cvMonW">
-    <div class="dfld"><div class="dlbl" id="dCvL">Root Monitor <i>*</i></div><button class="din cvpick" id="cvPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select root monitor</span>@@I:chevron-down@@</button><div class="derr" id="cvPickE" hidden>Root Monitor is required</div></div>
-    </div>
-    <div id="cvCt" hidden>
-      <div class="dfld"><div class="dlbl">Name <i>*</i></div><input class="din" id="cvCtName" placeholder="Enter container name" autocomplete="off"><div class="derr" id="cvCtNameE" hidden>Name is required</div></div>
-      <div class="dfld"><div class="dlbl">Description</div><textarea class="din dta" id="cvCtDesc" rows="4" placeholder="Enter description"></textarea></div>
-      <div class="dgrid">
-        <div class="dfld"><div class="dlbl">Icon</div><div class="dsel ssw" id="cvCtIc"></div></div>
-        <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="cvCtSh"></div></div>
-      </div>
-      <div class="dfld"><div class="dlbl">IP</div><input class="din" id="cvCtIp" placeholder="Enter IP address" autocomplete="off"><div class="derr" id="cvCtIpE" hidden>Enter a valid IPv4 address</div></div>
-    </div>
     <!-- the view's own fields (request, 27 Oct 2026) — asked up front, so Create Topology files the view in one step.
          Hidden in Add Entity mode, which reuses this drawer for the picker alone. -->
     <div id="cvMeta">
+      <div class="dcatt">View Details</div>
+      <div class="dcatd">How the view is named, where it is filed in the sidebar and who can open it.</div>
       <div class="dgrid">
         <div class="dfld"><div class="dlbl">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
         <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="Use tag to organize this topology view under a defined standalone or key-value label for better classification and access.">@@I:info-circle@@</span></div><input class="din" id="cvGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
@@ -486,9 +573,77 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <div class="dfld"><div class="dlbl">Security</div><div class="tseg" id="cvSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
       <div id="cvShare" class="sphost" hidden></div>
     </div>
+    <div class="dcatrule" id="cvCatRule"></div>
+    <div id="cvMonW">
+    <div id="cvMonH"><div class="dcatt">Root Monitor</div><div class="dcatd">The monitor the view is built around. Everything else in the view links to it.</div></div>
+    <div class="dfld"><div class="dlbl" id="dCvL">Root Monitor <i>*</i></div><button class="din cvpick" id="cvPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select root monitor</span>@@I:chevron-down@@</button><div class="derr" id="cvPickE" hidden>Root Monitor is required</div></div>
+    </div>
   </div>
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="cvReset">Reset</button><button class="tpri" id="cvCreate">Create</button></div>
 </aside>
+<!-- CREATE MANUAL CONNECTION (live 10.0.1, 27 Oct 2026): click a node in a custom view → a one-row menu → this drawer.
+     Source is the clicked node (read-only); Select Child Device is the same grid dropdown as Root Monitor, listing the
+     view's other nodes that are not already connected to it. Save draws the connection as a curve. -->
+<div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcGo">@@I:link@@ Create Manual Connection</button><button type="button" role="menuitem" class="danger" id="mcDel">@@I:trash@@ Delete Node</button></div>
+<!-- ADD CONTAINER (live 10.0.1, 27 Oct 2026): the design bar's Add Container opens this drawer every time -->
+<aside class="tdr w40 dbga" id="dBgA" aria-label="Add Background Image">
+  <div class="dh"><span>Add Background Image</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <!-- composed from DS parts (28 Oct 2026): the catalogue ships no uploader, so the drop area is obs-icon + an obs-button
+         "Browse file" over a native file input; footer actions are obs-button default / primary -->
+    <div class="bgdz" id="bgDz" role="button" tabindex="0" aria-label="Upload an image">
+      <obs-icon name="cloud-upload" size="32"></obs-icon>
+      <span class="t">Drag &amp; drop an image here</span>
+      <span class="o">or</span>
+      <obs-button variant="default" size="small" id="bgBrowse">Browse file</obs-button>
+      <span class="h">PNG, JPG, GIF or SVG · shown behind the topology canvas</span>
+    </div>
+    <input type="file" id="bgF" accept="image/*" multiple hidden>
+    <div class="bgsec"><span>Choose background</span><span class="n" id="bgN"></span></div>
+    <div class="bggrid" id="bgGrid" role="listbox" aria-label="Uploaded images"></div>
+  </div>
+  <div class="df"><span class="sp"></span><obs-button variant="default" id="bgCancel">Cancel</obs-button><obs-button variant="primary" id="bgAdd" disabled>Add</obs-button></div>
+</aside>
+<aside class="tdr w40" id="dCtA" aria-label="Add Container">
+  <div class="dh"><span>Add Container</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <div class="dfld"><div class="dlbl">Name <i>*</i></div><input class="din" id="caName" placeholder="Enter container name" autocomplete="off"><div class="derr" id="caNameE" hidden>Name is required</div></div>
+    <div class="dfld"><div class="dlbl">Description</div><textarea class="din dta" id="caDesc" rows="4" placeholder="Enter description"></textarea></div>
+    <div class="dgrid">
+      <div class="dfld"><div class="dlbl">Icon</div><div class="dsel ssw" id="caIc"></div></div>
+      <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="caSh"></div></div>
+    </div>
+    <div class="dfld"><div class="dlbl">IP</div><input class="din" id="caIp" placeholder="Enter IP address" autocomplete="off"><div class="derr" id="caIpE" hidden>Enter a valid IPv4 address</div></div>
+  </div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="caCancel">Cancel</button><button class="tpri" id="caAdd">Add</button></div>
+</aside>
+<!-- ADD ENTITY (live 10.0.1, 28 Oct 2026): Select Entity (a searchable type list) → a searchable, paged, multi-select
+     table of that type's monitors → Add Entity. The monitors are the topology data's own: entry points plus the VMs and
+     hosts inside each entry point's graph. -->
+<aside class="tdr w40 dena" id="dEnA" aria-label="Add Entity">
+  <div class="dh"><span>Add Entity</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <!-- every control here is an ObserveOps DS element: obs-select (searchable, >8 options) · obs-input search · obs-table
+         (selectable, logo + status cells, its own pager) -->
+    <div class="dfld enty"><div class="dlbl">Select Entity</div><obs-select id="enTySel" placeholder="Select Entity" searchable></obs-select></div>
+    <div class="enempty" id="enEmpty">Select an entity type to view available monitors</div>
+    <div class="enbody" id="enBody" hidden>
+      <obs-input id="enQIn" class="ensrch" type="search" placeholder="Search"></obs-input>
+      <obs-table id="enTbl" selectable sticky-header page-size="50" empty-text="No records available"></obs-table>
+    </div>
+  </div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="enCancel">Cancel</button><button class="tpri" id="enAdd" disabled>Add Entity</button></div>
+</aside>
+<aside class="tdr w40" id="dMc" aria-label="Create Manual Connection">
+  <div class="dh"><span>Create Manual Connection</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <div class="dfld"><div class="dlbl">Source</div><input class="din" id="mcSrc" readonly></div>
+    <div class="dfld"><div class="dlbl">Select Child Device <i>*</i></div><button class="din cvpick" id="mcPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="derr" id="mcPickE" hidden>Select at least one child device</div></div>
+  </div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="mcCancel">Cancel</button><button class="tpri" id="mcSave">Save</button></div>
+</aside>
+<div class="cvgrid" id="mcGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="mcGq" placeholder="Search" autocomplete="off"></label>
+  <div class="cvgh"><span></span><span>Monitor ↓</span><span>IP</span><span>Type</span><span>Groups</span><span>Tags</span></div><div class="cvgb" id="mcGb"></div></div>
 <div class="cvgrid" id="cvGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="cvGq" placeholder="Search" autocomplete="off"></label>
   <div class="cvgh"><span></span><span>Monitor ↓</span><span>IP</span><span>Type</span><span>Groups</span><span>Tags</span></div><div class="cvgb" id="cvGb"></div></div>
 
@@ -507,6 +662,10 @@ html:not([data-theme]) .dck input{color-scheme:light}
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="nReset">Reset</button><button class="tpri" id="nSave">Create Topology View</button></div>
 </aside>
 
+<!-- ObserveOps design system (28 Oct 2026, Add Entity): the obs-* elements plus the full logo set — the elements bundle
+     builds in only ~33 logos, so VM / vCenter / Citrix Xen / Nutanix / Proxmox marks need the logos add-on beside it -->
+<script src="../_ds/observeops-elements.umd.js"></script>
+<script src="../_ds/observeops-logos.umd.js"></script>
 <script>
 const IC = /*@@ICONS@@*/;
 const MON = /*@@MONICONS@@*/;
@@ -562,7 +721,7 @@ function tabsPaint(){
   $('tTabs').innerHTML = TABS.map(([k, l]) => `<button class="ttab${T.tab===k?' on':''}" data-k="${k}">${l}</button>`).join('');
 }
 $('tTabs').onclick = (e) => { const b = e.target.closest('.ttab'); if (b) goTab(b.dataset.k); };
-function goTab(k){
+function goTab(k){ if (typeof ndClose === 'function') ndClose();
   if (!TABS.some(t => t[0] === k)) k = 'network';
   T.tab = k; T.q = ''; T.pick = T.sel[k] || null; T.exp = {}; T.find = ''; $('tFind').value = '';
   if (location.hash.slice(1) !== k) history.replaceState(null, '', '#' + k);
@@ -630,10 +789,15 @@ function cvTreePaint(){
 $('tSide').addEventListener('click', (e) => {
   if (T.tab !== 'custom') return; const r = e.target.closest('.tr'); if (!r) return;
   if (r.dataset.g != null) { const g = CUSTOM[+r.dataset.g]; T.cv[g.grp] = !T.cv[g.grp]; cvTreePaint(); return; }
-  const [gi, vi] = r.dataset.v.split(':').map(Number); T.design = null; T.view = CUSTOM[gi].views[vi]; cvTreePaint(); graphLoad();
+  const [gi, vi] = r.dataset.v.split(':').map(Number); T.design = null; T.view = CUSTOM[gi].views[vi]; ndClose(); cvTreePaint(); graphLoad();
 });
 
 /* ================= TOOLBAR ================= */
+/* Save / Update needs at least one node besides the root (request, 28 Oct 2026): containers and entities are both nodes,
+   so adding either one enables it — a container does not have to be connected first */
+function designLinked(){
+  const r = T.design.root; return (T.design.kids || r.kids || []).length > 0;
+}
 function toolsPaint(){
   const custom = T.tab === 'custom', drawn = !!curRoot();
   /* live Custom tab: the same toolbar minus Expanded/Progressive and left-to-right; creating a view is the sidebar's + */
@@ -645,12 +809,22 @@ function toolsPaint(){
   const idle = custom && !drawn;
   /* the button is ENABLED with nothing open (request, 27 Oct 2026) and named Create Topology on the Custom tab;
      the other tabs keep the original Create Topology View form */
-  $('tCreate').hidden = custom && !T.design && !idle; $('tCreate').disabled = false;
-  $('tCreate').textContent = custom ? 'Create Topology' : 'Create Topology View';
+  /* designing: Save / Update stays DISABLED while the canvas holds only the root monitor */
+  const linked = custom && !!T.design && designLinked();
+  $('tCreate').hidden = custom && !T.design && !idle; $('tCreate').disabled = custom && !!T.design && !linked;
+  if (custom && T.design && !linked) $('tCreate').setAttribute('aria-label', 'Add a container or an entity to save');
+  else $('tCreate').removeAttribute('aria-label');
+  /* Custom tab: nothing open → Create Topology (opens the drawer); designing a view just created → Save (request,
+     28 Oct 2026: the view is already filed, the button only finishes it); editing a saved view → Update Topology View */
+  $('tCreate').textContent = custom ? (T.design ? (T.design.edit ? 'Update Topology View' : 'Save') : 'Create Topology') : 'Create Topology View';
+  $('tEdit').hidden = !(custom && T.view && !T.design);
   /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
   const des = custom && !!T.design, bare = des || idle;
   $('tL3').parentElement.hidden = bare; $('tLay').hidden = bare; $('tHelp').hidden = bare; $('tTools2').hidden = bare;
-  $('tDes').hidden = !des; $('tGraph').classList.toggle('bgimg', des && !!T.design.bg); $('tGraph').style.backgroundImage = des && T.design.bg ? `url("${T.design.bg}")` : '';
+  /* the background belongs to the VIEW, not to design mode (bug, 28 Oct 2026: it was painted only while designing, so a
+     saved view lost its image the moment Save closed the design) — designing shows the draft's, viewing the saved view's */
+  const bg = des ? T.design.bg : (custom && T.view && drawn ? T.view.bg : null);
+  $('tDes').hidden = !des; $('tGraph').classList.toggle('bgimg', !!bg); $('tGraph').style.backgroundImage = bg ? `url("${bg}")` : '';
   $('tFindW').hidden = !drawn;
   $('tL3').classList.toggle('on', T.l3); $('tL3').textContent = T.l3 ? 'ON' : 'OFF'; $('tL3').setAttribute('aria-pressed', T.l3);
   [...$('tMode').children].forEach(b => b.classList.toggle('on', b.dataset.m === T.mode));
@@ -718,7 +892,7 @@ $('tCreate').onclick = () => {
 
 /* ================= GRAPH ================= */
 function curRoot(){
-  if (T.tab === 'custom') { if (T.design) return { ...T.design.root, kids: T.design.kids }; const v = T.view; if (!v) return null;
+  if (T.tab === 'custom') { if (T.design) return T.design.view ? T.design.root : { ...T.design.root, kids: T.design.kids }; const v = T.view; if (!v) return null;
     if (v.root) return v.root;
     /* a view made in Create Topology View: its first monitor is the entry point, the rest link to it */
     const [h, ...rest] = v.mons; return h ? { ...h, kids: rest.map(m => ({ ...m, kids: undefined })) } : null; }
@@ -740,7 +914,7 @@ function graphBuild(refit){
 const isOpen = (key) => T.mode === 'expanded' || !!T.exp[key];
 function layout(r){
   const N = [], L = [];
-  const add = (x, key, depth, parent) => { const n = { x:0, y:0, d:x, key, depth, parent, kids:[] }; N.push(n); if (parent) { parent.kids.push(n); L.push({ a:parent, b:n, links: x.links || 1, l3: !!x.l3 }); } return n; };
+  const add = (x, key, depth, parent) => { const n = { x:0, y:0, d:x, key, depth, parent, kids:[] }; N.push(n); if (parent) { parent.kids.push(n); if (!x.nolink) L.push({ a:parent, b:n, links: x.links || 1, l3: !!x.l3 }); }   /* nolink: placed beside its parent, no connector */ return n; };
   const root = add(r, 'r', 0, null);
   (r.kids || []).forEach((c, i) => { const cn = add(c, 'r/' + i, 1, root); if (c.kids && isOpen(cn.key)) c.kids.forEach((g, j) => add(g, cn.key + '/' + j, 2, cn)); });
   const kids = root.kids, n1 = kids.length;
@@ -766,6 +940,8 @@ function layout(r){
     N.forEach(n => { n.s -= root.s; });
     N.forEach(n => { const a = n.s * GAP, b = (n.depth + (n.r || 0)) * (n.depth === 2 ? LV * .62 : LV) + (n.depth === 2 ? LV * .38 : 0); if (T.lay === 'tree') { n.x = a; n.y = b; } else { n.x = b; n.y = a; } });
   }
+  /* manual connections: each node's data carries the data objects it was connected to (d.man) */
+  N.forEach(n => (n.d.man || []).forEach(t => { const m = N.find(x => x.d === t); if (m && !L.some(l => l.man && ((l.a === n && l.b === m) || (l.a === m && l.b === n)))) L.push({ a:n, b:m, links:1, man:true }); }));
   T.nodes = N; T.links = L;
 }
 function trunc(s, n = 16){ return s.length > n ? s.slice(0, 6) + '…' + s.slice(-6) : s; }
@@ -789,19 +965,24 @@ function graphPaint(){
   T.links.forEach(l => {
     const {a, b} = l, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
     const dim = sk ? (a.key === sk || b.key === sk ? '' : ' dim') : anyHit && !(hit(a) || hit(b)) ? ' dim' : '';
+    const pair = (cls, d) => `<g class="lkg"><path class="lkh" d="${d}"/><path class="${cls}" data-a="${a.key}" data-b="${b.key}" d="${d}"/></g>`;
+    if (l.man) { lk.push(pair('lk man' + dim, `M${a.x},${a.y} Q${mx + nx * len * .18},${my + ny * len * .18} ${b.x},${b.y}`)); return; }
     for (let i = 0; i < l.links; i++) { const o = l.links === 1 ? 0 : (i - (l.links - 1) / 2) * 22;
-      lk.push(`<path class="lk${dim}" data-a="${a.key}" data-b="${b.key}" d="M${a.x},${a.y} Q${mx + nx * o},${my + ny * o} ${b.x},${b.y}"/>`); }
+      lk.push(pair('lk' + dim, `M${a.x},${a.y} Q${mx + nx * o},${my + ny * o} ${b.x},${b.y}`)); }
     if (T.l3 && l.l3) lk.push(`<path class="lk l3${dim}" d="M${a.x},${a.y} Q${mx + nx * 40},${my + ny * 40} ${b.x},${b.y}"/>`);
   });
   $('tLinks').innerHTML = lk.join('');
   $('tNodes').innerHTML = T.nodes.map(n => {
-    const d = n.d, root = n.depth === 0, sev = 'var(--severity-' + (d.s || 'unknown') + ', var(--neutral-light))';
+    const d = n.d, root = n.depth === 0, ct = d.kind === 'container';
+    /* a container has no live status: it is drawn as a filled topology-blue shape with a white glyph (live 10.0.1),
+       its edge the lighter topology blue rather than a severity colour */
+    const sev = ct ? 'var(--topology-info-btn-hover-bg)' : 'var(--severity-' + (d.s || 'unknown') + ', var(--neutral-light))';
     const hidden = d.kids && d.kids.length && n.depth > 0 && !isOpen(n.key) ? d.kids.length : 0;
     const label = wrapLabel(d.n, root ? Math.round(T.lw * 26 / 80) : Math.max(4, Math.round(T.lw / 5.7)));   /* Label Width: 80px ≈ 14 chars */
     if (T.ip && d.ip && d.ip !== d.n) label.push(d.ip);   /* the entry point prints its name whole */
     /* live: only DOWN fills the shape (a VM disc, or the entry-point tile — motadataaa); critical is a red ring */
     const solid = d.s === 'down';
-    const cls = 'nd' + (root ? ' root' : '') + (solid ? ' solid' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
+    const cls = 'nd' + (root ? ' root' : '') + (ct ? ' ct' : '') + (solid ? ' solid' : '') + (T.sel.node === n.key ? ' sel' : '') + (anyHit && !hit(n) ? ' dim' : '') + (anyHit && hit(n) ? ' hit' : '');
     const shape = d.shape ? nodeShape(d.shape, root ? 42 : 34, sev)   /* a container carries the shape it was given */
                  : root ? `<rect class="ring" x="-38" y="-38" width="76" height="76" rx="12" style="stroke:${sev}"/><rect class="sring" x="-45" y="-45" width="90" height="90" rx="16"/>`
                        : `<circle class="ring" r="33" style="stroke:${sev}"/><circle class="sring" r="40"/>`;
@@ -845,7 +1026,7 @@ $('tGraph').addEventListener('wheel', (e) => { if ($('tSvg').hidden) return; e.p
 let DR = null;
 $('tSvg').addEventListener('pointerdown', (e) => {
   const g = e.target.closest('.nd'); const n = g && T.nodes.find(x => x.key === g.dataset.k);
-  DR = { n, x: e.clientX, y: e.clientY, moved: false }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
+  DR = { n, x: e.clientX, y: e.clientY, moved: false, ev: { x: e.clientX, y: e.clientY } }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
 });
 $('tSvg').addEventListener('pointermove', (e) => {
   if (!DR) return tipMove(e); const dx = e.clientX - DR.x, dy = e.clientY - DR.y; if (Math.abs(dx) + Math.abs(dy) > 3) DR.moved = true; if (!DR.moved) return;
@@ -853,13 +1034,15 @@ $('tSvg').addEventListener('pointermove', (e) => {
   if (DR.n) { DR.n.x += dx / T.vp.k; DR.n.y += dy / T.vp.k; graphPaint(); } else pan(dx, dy);
 });
 $('tSvg').addEventListener('pointerup', () => {
-  if (DR && !DR.moved && DR.n) nodeClick(DR.n);
+  if (DR && !DR.moved && DR.n) nodeClick(DR.n, DR.ev);
   else if (DR && !DR.moved && !DR.n) { T.sel.node = null; graphPaint(); }
   DR = null; $('tSvg').classList.remove('pan');
 });
 $('tSvg').addEventListener('pointerleave', tipHide);
-function nodeClick(n){
+function nodeClick(n, ev){
   T.sel.node = n.key;
+  /* the root monitor gets the menu only (request, 27 Oct 2026); any other node also opens its details panel */
+  if (T.tab === 'custom' && ev) { mcMenuOpen(n, ev); if (n.depth > 0) ndOpen(n); else ndClose(); }
   /* Progressive: a neighbour that hides children opens them; clicking an open one folds them again */
   if (T.mode === 'progressive' && n.depth > 0 && n.d.kids && n.d.kids.length) { T.exp[n.key] = !T.exp[n.key]; layout(curRoot()); }
   graphPaint();
@@ -963,7 +1146,7 @@ function drOpen(id){
   if (id === 'dCv') cvOpen(CV.mode);
   if (id === 'dNew') { newReset(); newMode(); setTimeout(() => $('nName').focus(), 220); }
 }
-function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('cvPickB').classList.remove('open'); }
+function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('mcGrid').classList.remove('on'); mcMenuClose(); $('cvPickB').classList.remove('open'); }
 $('tScrim').onclick = drClose;
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
 $('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
@@ -1162,48 +1345,55 @@ function cvMons(){
 function cvOpen(mode){
   CV.mode = mode || 'root'; CV.pick = [];
   $('dCvT').textContent = CV.mode === 'root' ? 'Create Custom View' : 'Add Entity';
-  $('dCvL').innerHTML = (CV.mode === 'root' ? 'Root Monitor' : 'Entities') + ' <i>*</i>';
+  $('dCvL').innerHTML = (CV.mode === 'root' ? 'Monitor' : 'Entities') + ' <i>*</i>';   /* the section title already says Root Monitor */
   $('cvCreate').textContent = CV.mode === 'root' ? 'Create' : 'Add';
   $('cvPickE').hidden = true; $('cvPickB').classList.remove('err'); cvField();
-  $('cvMeta').hidden = CV.mode !== 'root'; $('cvTypeW').hidden = CV.mode !== 'root'; cvMetaReset();
+  const root = CV.mode === 'root'; $('cvMonH').hidden = !root; $('cvMeta').hidden = !root; $('cvCatRule').hidden = !root; cvMetaReset();
 }
 let CVS = { shw:'users', users:[], profiles:[] };   /* Create Custom View's share state */
 function cvSharePaint(){ $('cvShare').hidden = segVal('cvSec') !== 'private'; spPaint('cvShare'); }
 const CT_ICONS = [ ['agent','Agent'], ['docker','Container'], ['cloud','Cloud'], ['server','Server'], ['switch','Switch'], ['router','Router'], ['firewall','Firewall'], ['vm','Virtual Machine'] ];
 let CVT = { type:'monitor', ic:'agent', sh:'hexagon' };
-function cvTypePaint(){ const ct = CVT.type === 'container'; segSet('cvType', CVT.type); $('cvMonW').hidden = ct; $('cvCt').hidden = !ct; }
+function cvTypePaint(){}   /* no tabs any more — the Container section is always shown under Root Monitor */
 function cvMetaReset(){
-  CVT = { type:'monitor', ic:'agent', sh:'hexagon' }; $('cvCtName').value = ''; $('cvCtDesc').value = ''; $('cvCtIp').value = '';
-  ['cvCtName','cvCtIp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }); cvTypePaint(); ssPaint('cvCtIc'); ssPaint('cvCtSh');
+  CVT = { type:'monitor', ic:'agent', sh:'hexagon' };
   CVS = { shw:'users', users:[], profiles:[] };
   $('cvName').value = ''; $('cvGrp').value = ''; segSet('cvSec', 'public'); cvSharePaint();
   ['cvName','cvGrp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
 }
 spMount('cvShare', () => CVS);
 /* single-select engine for Icon and Shape: get/set read and write CVT */
-function ssMount(id, opts, key, glyph){
-  const h = $(id); h._o = opts; h._k = key; h._g = glyph;
+function ssMount(id, opts, key, glyph, st){
+  const h = $(id); h._o = opts; h._k = key; h._g = glyph; h._st = st || (() => CVT);   /* st: whose state this dropdown writes */
   h.innerHTML = `<button class="din" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>${ic('chevron-down')}</button><div class="dmenu" role="listbox"></div>`;
   const b = h.querySelector('.din'), m = h.querySelector('.dmenu');
   b.onclick = () => { const on = !m.classList.contains('on'); document.querySelectorAll('.ssw .dmenu.on').forEach(x => x.classList.remove('on')); document.querySelectorAll('.ssw.open').forEach(x => x.classList.remove('open'));
     m.classList.toggle('on', on); h.classList.toggle('open', on); b.setAttribute('aria-expanded', on); };
-  m.onclick = (e) => { const o = e.target.closest('button'); if (!o) return; CVT[key] = o.dataset.v; m.classList.remove('on'); h.classList.remove('open'); b.setAttribute('aria-expanded', false); ssPaint(id); };
+  m.onclick = (e) => { const o = e.target.closest('button'); if (!o) return; h._st()[key] = o.dataset.v; m.classList.remove('on'); h.classList.remove('open'); b.setAttribute('aria-expanded', false); ssPaint(id); };
   ssPaint(id);
 }
 function ssPaint(id){
-  const h = $(id); if (!h || !h._o) return; const cur = CVT[h._k], o = h._o.find(x => x[0] === cur) || h._o[0];
+  const h = $(id); if (!h || !h._o) return; const cur = h._st()[h._k], o = h._o.find(x => x[0] === cur) || h._o[0];
   h.querySelector('.din span').textContent = o[1];
   h.querySelector('.dmenu').innerHTML = h._o.map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
 }
-ssMount('cvCtIc', CT_ICONS, 'ic', true); ssMount('cvCtSh', CT_SHAPES, 'sh', false);
+let CA = { ic:'agent', sh:'hexagon' };   /* Add Container's Icon/Shape state — declared before its dropdowns read it */
+ssMount('caIc', CT_ICONS, 'ic', true, () => CA); ssMount('caSh', CT_SHAPES, 'sh', false, () => CA);
+['caName','caIp'].forEach(i => $(i).addEventListener('input', () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }));
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
-$('cvType').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; CVT.type = b.dataset.v; cvTypePaint(); };
-['cvCtName','cvCtIp'].forEach(i => $(i).addEventListener('input', () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }));
+
 $('cvSec').addEventListener('click', () => setTimeout(cvSharePaint));
 ['cvName','cvGrp'].forEach(i => $(i).oninput = () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
 /* file the design under the name / group / security Create Custom View captured */
 function cvSave(){
-  if (T.design.view) { const v = T.design.view; T.design = null; T.view = v; toast('Success', 'Topology View "' + v.name + '" saved'); goTab('custom'); return; }
+  if (T.design.view) {
+    const v = T.design.view, ed = T.design.edit;
+    if (T.design.draft) {   /* first Save: the draft is filed now — its group opens and the new row is selected */
+      let g = CUSTOM.find(x => x.grp === v.grp); if (!g) { g = { grp: v.grp, views:[] }; CUSTOM.push(g); }
+      if (!g.views.includes(v)) g.views.push(v); T.cv[v.grp] = true;
+    }
+    T.design = null; T.view = v; toast('Success', 'Topology View "' + v.name + (ed ? '" updated' : '" created')); goTab('custom'); return;
+  }
   const m = T.design.meta, gname = m.grp === '<standalone>' ? 'Standalone' : m.grp;
   let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
   const v = { name: m.name, grp: gname, sec: m.sec, share: m.share || null, root: { ...T.design.root, kids: T.design.kids.map(k => ({ ...k })) }, bg: T.design.bg };
@@ -1245,39 +1435,251 @@ $('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); if (C
 const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
 $('cvCreate').onclick = () => {
   let bad = false;
-  const ct = CV.mode === 'root' && CVT.type === 'container';
-  if (ct) {
-    if (!$('cvCtName').value.trim()) { $('cvCtName').classList.add('err'); $('cvCtNameE').hidden = false; bad = true; }
-    const ipv = $('cvCtIp').value.trim();
-    if (ipv && !/^((25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(25[0-5]|2[0-4]\d|1?\d?\d)$/.test(ipv)) { $('cvCtIp').classList.add('err'); $('cvCtIpE').hidden = false; bad = true; }
-  } else if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
+  if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
   const name = $('cvName').value.trim(), grp = $('cvGrp').value.trim();
   if (CV.mode === 'root') ['cvName','cvGrp'].forEach(i => { if (!$(i).value.trim()) { $(i).classList.add('err'); $(i + 'E').hidden = false; bad = true; } });
   if (bad) return;
   if (CV.mode === 'root') {
-    /* live 10.0.1: Create files the view in the sidebar AT ONCE (group opened, row selected) and opens its design canvas.
-       The view and the design share one root and one kids array, so Add Entity / Add Container land in the filed view
-       too — there is no second copy to keep in step. Create Topology then only finishes the design. */
+    /* Create opens the design canvas on a DRAFT view (request, 28 Oct 2026, reversing 27 Oct's file-at-once): it joins
+       the sidebar only when Save is pressed. The draft and the design share one root and one kids array, so Add
+       Entity / Add Container / manual connections land in it; leaving the design without saving discards it. */
     const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
-    const gname = grp === '<standalone>' ? 'Standalone' : grp, kids = [];
-    const root = ct ? { n: $('cvCtName').value.trim(), ip: $('cvCtIp').value.trim(), ic: CVT.ic, s: 'unknown', shape: CVT.sh, desc: $('cvCtDesc').value.trim(), kind: 'container' }
-                    : cvNode(CV.pick[0]);
-    let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
+    const gname = grp === '<standalone>' ? 'Standalone' : grp;
+    const root = cvNode(CV.pick[0]);
+    /* no Container section any more (request, 28 Oct 2026) — containers come from the design bar's Add Container */
+    const kids = [];
     const v = { name, grp: gname, sec, share, root: Object.assign(root, { kids }), bg: null };
-    g.views.push(v); T.cv[gname] = true; T.view = v;
-    T.design = { root, kids, bg: null, ct: 0, view: v, meta: { name, grp, sec, share } };
-    toast('Success', 'Topology View "' + name + '" created');
+    T.view = null;   /* nothing in the sidebar is selected while the draft is open */
+    T.design = { root, kids, bg: null, ct: 0, view: v, draft: true, meta: { name, grp, sec, share } };
   }
   else T.design.kids.push(...CV.pick.map(cvNode));
   CV.mode = 'root'; cvGridOpen(false); drClose(); cvTreePaint(); graphLoad();
 };
 /* the design bar. ⚠️ What live does after each press was not captured — these are readings: an image behind the
    canvas, a container node, monitors linked to the root. */
-$('desBg').onclick = () => $('desBgF').click();
-$('desBgF').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader();
-  r.onload = () => { T.design.bg = r.result; if (T.design.view) T.design.view.bg = r.result; toolsPaint(); toast('Success', 'Background image added'); }; r.readAsDataURL(f); e.target.value = ''; };
-$('desCt').onclick = () => { T.design.ct++; T.design.kids.push({ n:'Container ' + T.design.ct, ip:'', ic:'topology', s:'unknown' }); graphBuild(false); };
-$('desEn').onclick = () => { CV.mode = 'entity'; drOpen('dCv'); };
+/* Add Background Image (request, 28 Oct 2026): a drawer instead of the bare file picker. Images uploaded this session
+   stay in BG_LIB as tiles so one can be re-picked; Add puts the picked one behind the design canvas */
+const BG_LIB = [], BG = { pick: 'def' };
+/* the first tile is always the DEFAULT CANVAS — no image (request, 28 Oct 2026); BG.pick 'def' selects it, a number an upload */
+function bgPaint(){
+  /* an UPLOADED tile carries a delete action (request, 28 Oct 2026); the default canvas cannot be deleted */
+  const del = (k) => k === 'def' ? '' : `<obs-button class="rm" variant="neutral-lighter" size="small" squared data-rm="${k}" aria-label="Delete image" data-tip="Delete image"><obs-icon name="delete" size="14"></obs-icon></obs-button>`;
+  const tile = (k, inner, lbl) => `<div class="bgt${k === 'def' ? ' def' : ''}" role="option" tabindex="0" data-i="${k}" aria-selected="${String(k) === String(BG.pick)}" aria-label="${lbl}">${inner}<obs-icon class="ck" name="check-circle" size="18"></obs-icon>${del(k)}</div>`;
+  $('bgGrid').innerHTML = tile('def', '<span class="bgdef">Default canvas</span>', 'Default canvas')
+    + BG_LIB.map((u, i) => tile(i, `<img src="${u}" alt="">`, `Image ${i + 1}`)).join('');
+  $('bgN').textContent = BG_LIB.length ? `${BG_LIB.length} uploaded` : '';
+  $('bgAdd').disabled = BG.pick == null;
+}
+/* obs-button fires a consumer's click twice (inner shadow button + host re-emit) — one call per gesture */
+let bgTapT = 0; const bgTap = (f) => (e) => { const t = performance.now(); if (t - bgTapT < 60) return; bgTapT = t; f(e); };
+function bgLoad(files){
+  [...files].filter(f => /^image\//.test(f.type)).forEach(f => { const r = new FileReader();
+    r.onload = () => { BG_LIB.push(r.result); BG.pick = BG_LIB.length - 1; bgPaint(); }; r.readAsDataURL(f); });
+}
+$('desBg').onclick = () => { const i = T.design && T.design.bg ? BG_LIB.indexOf(T.design.bg) : -1; BG.pick = i < 0 ? 'def' : i; drOpen('dBgA'); bgPaint(); };
+$('bgF').onchange = (e) => { bgLoad(e.target.files); e.target.value = ''; };
+['dragenter','dragover'].forEach(t => $('bgDz').addEventListener(t, (e) => { e.preventDefault(); $('bgDz').classList.add('drag'); }));
+['dragleave','drop'].forEach(t => $('bgDz').addEventListener(t, (e) => { e.preventDefault(); $('bgDz').classList.remove('drag'); if (t === 'drop') bgLoad(e.dataTransfer.files); }));
+const bgKey = (t) => t.dataset.i === 'def' ? 'def' : +t.dataset.i;
+/* delete goes through bgTap: obs-button double-fires, and the second click lands on the old (detached) tile after the
+   repaint — unguarded it would delete the NEXT image too. Deleting the picked image moves the pick to the default canvas;
+   the canvas itself only changes on Add, as with every other pick here */
+const bgDel = bgTap((rm) => { const i = +rm.dataset.rm; BG_LIB.splice(i, 1);
+  BG.pick = BG.pick === i ? 'def' : (typeof BG.pick === 'number' && BG.pick > i ? BG.pick - 1 : BG.pick); bgPaint(); toast('Success', 'Image deleted'); });
+$('bgGrid').onclick = (e) => { const rm = e.target.closest('[data-rm]'); if (rm) { e.stopPropagation(); if (rm.isConnected) bgDel(rm); return; }
+  const t = e.target.closest('.bgt'); if (!t) return; BG.pick = bgKey(t); bgPaint(); };
+$('bgGrid').onkeydown = (e) => { const t = e.target.closest('.bgt'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); BG.pick = bgKey(t); bgPaint(); $('bgGrid').querySelector(`[data-i="${BG.pick}"]`).focus(); } };
+/* the whole drop area opens the picker — Browse file included (its click bubbles here), one call per gesture */
+$('bgDz').addEventListener('click', bgTap(() => $('bgF').click()));
+$('bgDz').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('bgF').click(); } });
+$('bgCancel').addEventListener('click', bgTap(drClose));
+$('bgAdd').addEventListener('click', bgTap(() => { if (BG.pick == null || !T.design) return;
+  const u = BG.pick === 'def' ? null : BG_LIB[BG.pick];
+  T.design.bg = u; if (T.design.view) T.design.view.bg = u; drClose(); toolsPaint();
+  toast('Success', u ? 'Background image added' : 'Default canvas restored'); }));
+$('desCt').onclick = () => {
+  CA = { ic:'agent', sh:'hexagon' }; ['caName','caDesc','caIp'].forEach(i => $(i).value = '');
+  ['caName','caIp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+  drOpen('dCtA'); ssPaint('caIc'); ssPaint('caSh'); setTimeout(() => $('caName').focus(), 220);
+};
+$('caCancel').onclick = drClose;
+$('caAdd').onclick = () => {
+  const n = $('caName').value.trim(), ip = $('caIp').value.trim(); let bad = false;
+  if (!n) { $('caName').classList.add('err'); $('caNameE').hidden = false; bad = true; }
+  if (ip && !/^((25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(25[0-5]|2[0-4]\d|1?\d?\d)$/.test(ip)) { $('caIp').classList.add('err'); $('caIpE').hidden = false; bad = true; }
+  if (bad || !T.design) return;
+  /* drawn like a container from Create Custom View: filled blue, no connector — Create Manual Connection links it */
+  T.design.kids.push({ n, ip, ic: CA.ic, s: 'unknown', shape: CA.sh, desc: $('caDesc').value.trim(), kind: 'container', nolink: true });
+  T.design.ct++; drClose(); graphBuild(false); toast('Success', `Container "${n}" added`);
+};
+/* ADD ENTITY ---- the pool: every entry point, plus the hosts / VMs inside each entry point's own graph */
+const EN_TYPES = ['Monitor','Access Point','vCenter','VMware ESXi VM','Legacy ESXi VM','Citrix Xen VM','HyperV VM','Proxmox VE VM','KVM VM','Nutanix VM','Database'];
+let EN_POOL = null;
+function enPool(){
+  if (EN_POOL) return EN_POOL; const out = [], seen = new Set();
+  const put = (x, grp) => { const k = x.n + '|' + (x.ip || ''); if (seen.has(k)) return; seen.add(k); out.push({ key: k, n: x.n, ip: x.ip || '', ic: x.ic, s: x.s || 'unknown', grp }); };
+  Object.keys(TREE).forEach(tab => { const walk = (l, p) => l.forEach(x => { if (x.kids) return walk(x.kids, [...p, x.n]); const g = p[1] || p[0] || ''; put(x, g);
+    const w = (n) => (n.kids || []).forEach(k => { put(k, g); w(k); }); if (x.t && typeof x.t === 'object') w(x.t); }); walk(TREE[tab], []); });
+  return EN_POOL = out.sort((a, b) => a.n.localeCompare(b.n));
+}
+/* which monitors an entity type lists — read off the node's glyph and the tree group it was found under */
+function enOfType(t){
+  const vm = (re) => (m) => m.ic === 'vm' && re.test(m.grp);
+  const f = { 'Monitor': () => true, 'vCenter': (m) => m.ic === 'vcenter', 'VMware ESXi VM': vm(/VMware|vCenter/i), 'Citrix Xen VM': vm(/Citrix/i),
+    'HyperV VM': vm(/Hyper/i), 'Proxmox VE VM': vm(/Proxmox/i), 'KVM VM': vm(/KVM/i), 'Nutanix VM': vm(/Nutanix|Prism/i), 'Database': (m) => m.ic === 'database' }[t];
+  return f ? enPool().filter(f) : [];   /* Access Point · Legacy ESXi VM: nothing of that kind in this data → "No records available" */
+}
+const EN = { type:null, q:'', pick:[], page:1, size:50 };
+const enLabel = (s) => ({ up:'Enable', down:'Enable', critical:'Enable', warning:'Enable', unknown:'Enable' })[s] || 'Enable';
+function enRows(){
+  const have = T.design ? [T.design.root, ...T.design.kids].map(m => m.n + '|' + (m.ip || '')) : [];
+  const q = EN.q.trim().toLowerCase();
+  return enOfType(EN.type).filter(m => !have.includes(m.key) && (!q || (m.n + ' ' + m.ip).toLowerCase().includes(q)));
+}
+/* DS events: obs-select emits change with an ARRAY detail; obs-input emits input/change with the value; obs-table emits
+   change with the selected ids (also reflected on el.selected) */
+const enVal = (e, el) => { const d = e && e.detail; const v = Array.isArray(d) ? d[0] : d; return v != null && typeof v !== 'object' ? v : el.value; };
+/* obs-table emits change(ids) — a CustomEvent's detail is the ARGS array, so [[ids]] — and mirrors them onto el.selected as JSON */
+const enIds = (e) => { const d = e && e.detail; let v = Array.isArray(d) && Array.isArray(d[0]) ? d[0] : d; if (!Array.isArray(v)) { v = $('enTbl').selected; if (typeof v === 'string') { try { v = JSON.parse(v || '[]'); } catch { v = []; } } } return Array.isArray(v) ? v.map(String) : []; };
+$('enTySel').options = EN_TYPES.map(t => ({ value: t, label: t }));
+$('enTySel').addEventListener('change', (e) => { const t = enVal(e, $('enTySel')); if (!t || t === EN.type) return; EN.type = t; EN.q = ''; EN.pick = []; $('enQIn').value = ''; enPaint(true); });
+const enQ = (e) => { EN.q = String(enVal(e, $('enQIn')) || ''); enPaint(false); };
+$('enQIn').addEventListener('input', enQ); $('enQIn').addEventListener('change', enQ);
+$('enTbl').columns = [ { key:'n', title:'Monitor', sortable:true, primary:true }, { key:'ip', title:'IP', sortable:true }, { key:'ty', title:'Type', type:'logo', width:'70px' }, { key:'st', title:'Status', type:'status', width:'100px' } ];
+$('enTbl').addEventListener('change', (e) => { const ids = enIds(e), pool = enOfType(EN.type); EN.pick = pool.filter(m => ids.includes(m.key)); $('enAdd').disabled = !EN.pick.length; });
+function enPaint(resetSel){
+  $('enEmpty').hidden = !!EN.type; $('enBody').hidden = !EN.type;
+  if (!EN.type) { $('enAdd').disabled = true; return; }
+  const t = $('enTbl');
+  /* an icon this data names but the logo set has no mark for falls back to the generic 'vm' cube */
+  t.rows = enRows().map(m => ({ id: m.key, n: m.n, ip: m.ip || '—', ty: { name: ({ server:'vm' })[m.ic] || m.ic, variant:'color' }, st: 'enable' }));
+  if (resetSel) { t.selected = []; EN.pick = []; }
+  else t.selected = EN.pick.map(p => p.key).filter(k => enRows().some(m => m.key === k));
+  $('enAdd').disabled = !EN.pick.length;
+  setTimeout(enFit, 0);
+}
+/* obs-table's pager sits OUTSIDE its scrolling box, so the box is given the drawer's leftover height (its own max-height
+   prop): rows scroll under the sticky header and the pager stays on screen instead of falling below the drawer's fold */
+function enFit(){
+  const t = $('enTbl'), b = $('enBody'); if (!t || b.hidden || !t.shadowRoot) return;
+  const box = t.shadowRoot.querySelector('.box'); if (!box) return;
+  /* measure the pager itself — the host is flex-shrunk, so "host minus box" goes negative while the box is overgrown */
+  const pg = t.shadowRoot.querySelector('obs-pagination'), pr = pg && pg.getBoundingClientRect(), br = box.getBoundingClientRect();
+  const pager = pr ? Math.max(0, pr.bottom - br.bottom) : 0;
+  t.maxHeight = Math.max(160, b.getBoundingClientRect().bottom - br.top - pager) + 'px';
+}
+addEventListener('resize', () => { if ($('dEnA').classList.contains('on')) enFit(); });
+$('enCancel').onclick = drClose;
+$('enAdd').onclick = () => {
+  if (!EN.pick.length || !T.design) return; const n = EN.pick.length;
+  /* an entity is added UNCONNECTED, like a container (request, 28 Oct 2026): it is linked by clicking it → Create
+     Manual Connection, so nolink keeps the automatic root connector off */
+  T.design.kids.push(...EN.pick.map(m => ({ n: m.n, ip: m.ip, ic: m.ic, s: m.s, nolink: true })));
+  drClose(); graphBuild(false); toast('Success', n === 1 ? `Entity "${EN.pick[0].n}" added` : `${n} entities added`);
+};
+$('desEn').onclick = () => { Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('enTySel').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; drOpen('dEnA'); enPaint(true); };
+
+/* ================= CREATE MANUAL CONNECTION ================= */
+const MC = { src:null, pick:[] };
+function mcMenuOpen(n, ev){
+  MC.src = n; const m = $('mcMenu'); m.hidden = false;
+  $('mcDel').hidden = n.depth === 0;   /* the root monitor is what the view is built around — it cannot be deleted from it */
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(innerWidth - w - 8, ev.x + 6) + 'px'; m.style.top = Math.min(innerHeight - h - 8, ev.y + 6) + 'px';
+}
+function mcMenuClose(){ const m = $('mcMenu'); if (m) m.hidden = true; }
+document.addEventListener('pointerdown', (e) => { if (!$('mcMenu').hidden && !e.target.closest('#mcMenu')) mcMenuClose(); }, true);
+/* the view's other nodes that are not already joined to the source — the live list shows exactly those */
+function mcCands(){
+  const s = MC.src; if (!s) return [];
+  return T.nodes.filter(n => n !== s && !T.links.some(l => (l.a === s && l.b === n) || (l.a === n && l.b === s)))
+    .map(n => ({ key: n.key, n: n.d.n, ip: n.d.ip || '', ic: n.d.ic, s: n.d.s || 'unknown', node: n }));
+}
+$('mcGo').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
+function mcField(){ const b = $('mcPickB').querySelector('span'); b.textContent = MC.pick.length ? MC.pick.map(p => p.n).join(', ') : 'Select'; b.classList.toggle('ph', !MC.pick.length); }
+function mcGridPaint(){
+  const q = $('mcGq').value.trim().toLowerCase(), rows = mcCands().filter(m => !q || (m.n + ' ' + m.ip).toLowerCase().includes(q));
+  $('mcGb').innerHTML = rows.map(m => { const on = MC.pick.some(p => p.key === m.key);
+    return `<div class="cvgr" role="option" data-k="${esc(m.key)}" aria-selected="${on}"><span><input type="checkbox" tabindex="-1"${on ? ' checked' : ''}></span>`
+    + `<span class="nm"><span class="tdot s-${m.s}"></span><b>${esc(m.n)}</b></span><span>${esc(m.ip)}</span><span class="ty">${mi(m.ic)}</span><span class="gp"></span><span></span></div>`; }).join('')
+    || '<div class="cvgn">No other devices in this view to connect</div>';
+}
+function mcGridOpen(on){
+  const g = $('mcGrid'); g.classList.toggle('on', on); $('mcPickB').classList.toggle('open', on); $('mcPickB').setAttribute('aria-expanded', on);
+  if (on) { $('mcGq').value = ''; mcGridPaint(); const r = $('mcPickB').getBoundingClientRect(); g.style.left = Math.max(8, r.right - g.offsetWidth) + 'px'; g.style.top = (r.bottom + 4) + 'px'; setTimeout(() => $('mcGq').focus(), 0); }
+}
+$('mcPickB').onclick = () => mcGridOpen(!$('mcGrid').classList.contains('on'));
+$('mcGq').oninput = mcGridPaint;
+$('mcGb').onclick = (e) => { const r = e.target.closest('.cvgr'); if (!r) return; const m = mcCands().find(x => x.key === r.dataset.k); if (!m) return;
+  MC.pick = MC.pick.some(p => p.key === m.key) ? MC.pick.filter(p => p.key !== m.key) : [...MC.pick, m]; const k = $('mcGb').scrollTop; mcGridPaint(); $('mcGb').scrollTop = k; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
+document.addEventListener('pointerdown', (e) => { if ($('mcGrid').classList.contains('on') && !e.target.closest('#mcGrid,#mcPickB')) mcGridOpen(false); });
+$('mcCancel').onclick = drClose;
+$('mcSave').onclick = () => {
+  if (!MC.pick.length) { $('mcPickE').hidden = false; $('mcPickB').classList.add('err'); return; }
+  const src = MC.src.d; src.man = src.man || [];
+  MC.pick.forEach(p => { if (!src.man.includes(p.node.d)) src.man.push(p.node.d); });
+  const n = MC.pick.length; drClose(); graphBuild(false);
+  toast('Success', n === 1 ? `Connected ${MC.src.d.n} to ${MC.pick[0].n}` : `Connected ${MC.src.d.n} to ${n} devices`);
+};
+
+/* ---- Delete Node: out of its parent's list, and out of every manual connection that points at it */
+$('mcDel').onclick = () => {
+  const n = MC.src; mcMenuClose(); if (!n || n.depth === 0) return;
+  const list = n.parent && n.parent.d.kids; const i = list ? list.indexOf(n.d) : -1; if (i < 0) return;
+  list.splice(i, 1);
+  const scrub = (d) => { if (!d) return; if (d.man) d.man = d.man.filter(x => x !== n.d); (d.kids || []).forEach(scrub); };
+  scrub(curRoot());
+  if ($('dNd').classList.contains('on') && ND === n.d) ndClose();
+  T.sel.node = null; graphBuild(false); toast('Success', `Node "${n.d.n}" deleted`);
+};
+/* ---- node details */
+let ND = null;
+const ND_TYPE = (d) => d.kind === 'container' ? 'Container' : ((CT_ICONS.find(x => x[0] === d.ic) || [])[1] || (d.ic ? d.ic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Monitor'));
+function ndOpen(n){
+  const d = n.d; ND = d; const ct = d.kind === 'container';
+  $('ndIc').innerHTML = mi(d.ic); $('ndN').textContent = d.n; $('ndN').title = d.n; $('ndT').textContent = ct ? 'Container' : ND_TYPE(d);
+  $('ndS').textContent = ct ? 'Container Info' : 'Monitor Info';
+  const sh = (CT_SHAPES.find(x => x[0] === d.shape) || [])[1];
+  const rows = ct ? [['Name', d.n], ['Description', d.desc], ['IP', d.ip], ['Icon', (CT_ICONS.find(x => x[0] === d.ic) || [])[1]], ['Shape', sh]]
+                  : [['Name', d.n], ['IP', d.ip], ['Type', ND_TYPE(d)], ['Status', d.s ? d.s.charAt(0).toUpperCase() + d.s.slice(1) : ''], ['Role', n.depth === 0 ? 'Root monitor' : '']];
+  $('ndKv').innerHTML = rows.filter(r => r[1]).map(([k, v]) => `<span class="k">${esc(k)}</span><span class="v">${esc(v)}</span>`).join('');
+  $('dNd').classList.add('on');
+}
+function ndClose(){ $('dNd').classList.remove('on'); ND = null; }
+$('ndX').onclick = ndClose;
+
+/* ---- Edit: the open view becomes the design — same root and kids objects, so every change lands in the view itself */
+$('tEdit').onclick = () => {
+  const v = T.view; if (!v || !v.root) return; v.root.kids = v.root.kids || [];
+  T.design = { root: v.root, kids: v.root.kids, bg: v.bg || null, ct: v.root.kids.filter(k => k.kind === 'container').length, view: v, edit: true,
+    meta: { name: v.name, grp: v.grp, sec: v.sec, share: v.share } };
+  ndClose(); mcMenuClose(); toolsPaint(); graphLoad();
+};
+
+/* ================= DEFAULT VIEW (request, 27 Oct 2026) =================
+   The sidebar ships with one sample: Design › PMG, Public, rooted on the first monitor the Root Monitor list offers,
+   with the container Kisu (Agent · Circle) beside it — no connector, as a container is created. The group is open but
+   no view is selected, so the canvas still opens on "Select or create a Custom View". Built from cvMons() so the root
+   is a real monitor in TREE, not a made-up one. */
+/* REMOVED (request, 28 Oct 2026): the sidebar starts empty again. Kept as a function so the sample is one call away. */
+function seedDefaultView(){
+  const m = cvMons()[0]; if (!m) return;
+  const root = { n: m.n, ip: m.ip, ic: m.ic, s: m.s, kids: [ { n: 'Kisu', ip: '', ic: 'agent', s: 'unknown', shape: 'circle', desc: '', kind: 'container', nolink: true } ] };
+  CUSTOM.push({ grp: 'Design', views: [ { name: 'PMG', grp: 'Design', sec: 'public', share: null, root, bg: null } ] });
+  T.cv.Design = true;
+}
+
+/* ================= DEFAULT VIEW: Designer › PMG (request, 28 Oct 2026) =================
+   Saved by default: Public, rooted on AWS Cloud (123456789012) — looked up in cvMons() so it is the real monitor from
+   TREE — with the container kisu (Server icon, Circle) beside it, joined to the root by a manual connection. The group
+   is open but nothing is selected, so the canvas still opens on "Select or create a Custom View". */
+(function(){
+  const m = cvMons().find(x => x.n === 'AWS Cloud (123456789012)') || cvMons()[0]; if (!m) return;
+  const kisu = { n: 'kisu', ip: '', ic: 'server', s: 'unknown', shape: 'circle', desc: '', kind: 'container', nolink: true };
+  const root = { n: m.n, ip: m.ip, ic: m.ic, s: m.s, kids: [kisu], man: [kisu] };
+  CUSTOM.push({ grp: 'Designer', views: [ { name: 'PMG', grp: 'Designer', sec: 'public', share: null, root, bg: null } ] });
+  T.cv.Designer = true;
+})();
 
 /* ================= BOOT ================= */
 goTab(location.hash.slice(1) || 'network');
