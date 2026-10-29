@@ -89,6 +89,12 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 #cvMenuW[hidden]{display:none}
 /* --side-menu-bg is a DS-package token the page's token set does not carry; unset, the panel falls back to #fff in dark
    theme. Its DS values are #fff light / #07101f dark — exactly --page-background-color (gap 24) */
+/* the Custom tab's title row (request, 29 Oct 2026, reference = live's "Custom Views  +"): the toolbar's New Custom
+   Topology moved here as the + — a DS primary squared icon button. It carries the column's right divider because
+   obs-side-menu draws its own only beside the list. */
+/* live .cvh-header is px-2 py-2: title and + sit on the search box's own left/right edges (8px in; the 1px border is outside) */
+.tcvhd{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px 0;border-right:1px solid var(--border-color)}
+.tcvhd span{font-size:14px;font-weight:600;color:var(--primary)}
 .tside.cvds obs-side-menu{flex:1 1 auto;min-height:0;display:block;--side-menu-bg:var(--page-background-color)}
 .tside.cvds .tcvempty{border-right:1px solid var(--border-color);flex:1 1 auto}
 .ttree{flex:1 1 auto;overflow:auto;margin-top:12px;padding-right:4px}
@@ -335,7 +341,17 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .cvgrs{flex:1 1 auto;min-width:0;display:block;border-radius:4px}
 .cvgrs obs-select{display:block}
 .cvgrs.err{box-shadow:0 0 0 1px var(--severity-critical)}   /* obs-select has no error state — ring its wrapper */
-.cvgrw > .tbtn{flex:0 0 auto;height:34px}
+.cvgrw > .tbtn{flex:0 1 auto;height:34px}
+/* View Group is ONE BUTTON (request, 29 Oct 2026: "remove the dropdown field, show only button"). The obs-select
+   stays in the DOM, hidden, as the value store cvGrpVal / cvGrpPaint already read; the button opens the View Groups
+   drawer (pick, or create) and carries the picked path as its label. The required ring moves onto the button. */
+.cvgrs{display:none}
+/* no folder icon, and the button spans the column like the View Name input beside it (request, 29 Oct 2026) */
+.cvgrw > #cvGrpNew{flex:1 1 auto;width:100%;display:inline-flex;align-items:center;justify-content:center;max-width:100%;min-width:0}
+#cvGrpNew .i{width:16px;height:16px;flex:0 0 auto;fill:currentColor}
+#cvGrpNew .cvgbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#cvGrpNew.ph .cvgbl{color:var(--neutral-light)}
+.cvgrw:has(.cvgrs.err) > #cvGrpNew{border-color:var(--severity-critical)}
 /* View Groups drawer — stacked over Create Custom View, so it sits above that drawer and dims it with its own scrim */
 .tdr.dgrp{width:420px;z-index:33}
 .grpscrim{position:fixed;inset:0;z-index:32;background:color-mix(in srgb,var(--page-background-color) 45%,transparent);display:none}
@@ -348,7 +364,10 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .grprow{height:32px;display:flex;align-items:center;gap:6px;border-radius:4px;padding-right:6px;cursor:pointer;white-space:nowrap}
 /* hover and selected must differ (request, 28 Oct 2026): in dark --code-tag-background-color (#172336) is QUIETER than
    the hover --nav-hover-bg (#1d2a3e), so selected now takes --tag-bg-color — a step stronger in both themes — plus weight */
-.grprow:hover{background:var(--nav-hover-bg)}
+/* hover is the DS's own GROUP-LIST hover token (request, 29 Oct 2026: "improve the hover colour using the DS") —
+   --group-list-hover-bg (#172336 dark / #ecf1f9 light), one step QUIETER than the selected row's --tag-bg-color (#2b394f /
+   #e3e8f2). --nav-hover-bg (#1d2a3e) sat within a shade of the selected fill, so hover read as a second selection. */
+.grprow:hover{background:var(--group-list-hover-bg)}
 .grprow.on,.grprow.on:hover{background:var(--tag-bg-color);font-weight:500}
 .grprow:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .grpcv{flex:0 0 16px;height:16px;display:grid;place-items:center;color:var(--neutral-light);cursor:pointer}
@@ -361,6 +380,7 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .grprow:hover .grpact,.grprow:focus-within .grpact,.grprow.on .grpact{opacity:1}
 .grpview{height:28px;display:flex;align-items:center;gap:6px;color:var(--neutral-light);white-space:nowrap;cursor:default}
 .grpview obs-icon{flex:0 0 auto}
+.grpview.on{color:var(--page-text-color);font-weight:500;background:var(--tag-bg-color);border-radius:4px}   /* the view being updated */
 .grpnew{display:flex;gap:6px;align-items:flex-start;padding:2px 6px 2px 0}
 .grpnew obs-input{flex:1 1 auto;min-width:0;display:block}
 .grpnew obs-button{flex:0 0 auto}
@@ -400,15 +420,16 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .nwzm{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column}
 .nodesw .dfld{margin-bottom:0}
 .nodesw[hidden]{display:none}
-.calist{display:flex;flex-direction:column;gap:12px}
+.calist{display:flex;flex-direction:column;gap:24px}   /* more room between two containers (request, 29 Oct 2026): 12 → 24, the DS @padding-lg step */
 .caconn{display:block}
 .cahint{margin-top:4px;font-size:12px;color:var(--neutral-light)}
 /* Icon · Shape · IP on one line (request, 28 Oct 2026); Add Node is 10 points wider than the other 40vw drawers for it */
 .dgrid.dgrid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}
-#dEnA.w40{width:90%}   /* the DS drawer's LARGE multi-pane tier (get_component('drawer'): 85-96%, a step rail beside the form — the APM Application Registration shape); 90% by request, 29 Oct 2026 */
+#dEnA.w40{width:70%}   /* 70% by request, 29 Oct 2026 (90% → 60% → 70%: at 60% the connect table's headers and fields truncated) */
+#dEnA.w40.__was{width:90%}   /* the DS drawer's LARGE multi-pane tier (get_component('drawer'): 85-96%, a step rail beside the form — the APM Application Registration shape); 90% by request, 29 Oct 2026 */
 #caMore{margin-top:12px}
 #caMore obs-icon{margin-right:6px}
-.cabox{border:1px solid var(--border-color);border-radius:4px}
+.cabox{border:1px solid var(--border-color);border-radius:4px;background:var(--widget-background)}   /* the DS widget surface, the lighter-weight one (request, 29 Oct 2026: #172336 read too heavy): #0b1627 dark, #fff light */
 .cahd{display:flex;align-items:center;gap:4px;padding-right:6px}
 .cahd .cabh{flex:1 1 auto;min-width:0}
 .cabh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -559,7 +580,15 @@ textarea.din.dta{height:auto;min-height:86px;padding:8px 11px;resize:vertical;li
 .ssw .dmenu button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 8px;border:0;border-radius:4px;background:none;color:var(--page-text-color);font:inherit;text-align:left;cursor:pointer}
 .ssw .dmenu button:hover{background:var(--dropdown-hover-background)}
 .ssw .dmenu button.on{font-weight:600;background:var(--code-tag-background-color)}
-.ssw .dmenu button svg{width:16px;height:16px;flex:0 0 16px;color:var(--neutral-light);fill:currentColor}   /* the canvas's own .gl rule, or a glyph with no paint of its own draws black */
+.ssw .dmenu button svg{width:16px;height:16px;flex:0 0 16px;color:var(--neutral-light);fill:currentColor}
+/* previews (29 Oct 2026): a glyph or a shape outline before each label, the label flexes, the picked row ends in a ✓ */
+.ssw .dmenu button > span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ssw .dmenu button svg.i{width:14px;height:14px;flex:0 0 14px;color:var(--page-text-color)}
+.ssw .din > span{display:flex;align-items:center;gap:8px;min-width:0}
+.ssw .din > span b{font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ssw svg.sspv{width:18px;height:18px;flex:0 0 18px;color:var(--neutral-light);fill:currentColor}
+.ssw svg.sspv :is(path,rect,circle).ring{fill:none;stroke:currentColor!important;stroke-width:6;stroke-linejoin:round}
+.ssw .dmenu button.on svg.sspv,.ssw .din svg.sspv{color:var(--page-text-color)}   /* the canvas's own .gl rule, or a glyph with no paint of its own draws black */
 /* SHARE PICKER (27 Oct 2026, from the live Save View): Share With Users | User Profiles, then a searchable multi-select —
    search box on top, a checkbox per name, a Clear footer. One component for Create Custom View and Save View. */
 .spw .din svg{transition:transform .15s}
@@ -759,10 +788,10 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <div id="cvMeta">
       <div class="dgrid">
         <div class="dfld"><div class="dlbl">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
-        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="The sidebar group this view is filed under. Pick an existing group, or use Create New to add one.">@@I:info-circle@@</span></div><!-- View Group is the sidebar GROUP the view is filed under (request, 28 Oct 2026): a searchable list of the existing
+        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="The sidebar group this view is filed under. Use the button to pick an existing group, or create one.">@@I:info-circle@@</span></div><!-- View Group is the sidebar GROUP the view is filed under (request, 28 Oct 2026): a searchable list of the existing
              groups plus Create New, the dashboard drawer's Category pattern -->
           <div class="cvgrw"><span class="cvgrs" id="cvGrpW"><obs-select id="cvGrp" placeholder="Select" searchable="true" block></obs-select></span>
-            <button type="button" class="tbtn" id="cvGrpNew" aria-haspopup="dialog" aria-controls="dGrp">Create New</button>
+            <button type="button" class="tbtn" id="cvGrpNew" aria-haspopup="dialog" aria-controls="dGrp"><span class="cvgbl" id="cvGrpL">Select or create group</span></button>
           </div>
           <div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
       </div>
@@ -804,7 +833,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
   <obs-input id="lkIn" block placeholder="Enter label name"></obs-input>
   <div slot="footer" class="lkmdf"><obs-button variant="default" id="lkCancel">Cancel</obs-button><obs-button variant="primary" id="lkApply">Apply</obs-button></div>
 </obs-modal>
-<div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcGo">@@I:link@@ Create Manual Connection</button><button type="button" role="menuitem" class="danger" id="mcDel">@@I:trash@@ Delete Node</button></div>
+<div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcAdd">@@I:plus@@ Add Node</button><button type="button" role="menuitem" id="mcGo">@@I:link@@ Create Manual Connection</button><button type="button" role="menuitem" class="danger" id="mcDel">@@I:trash@@ Delete Node</button></div>
 <!-- ADD CONTAINER (live 10.0.1, 27 Oct 2026): the design bar's Add Container opens this drawer every time -->
 <aside class="tdr w40 dbga" id="dBgA" aria-label="Add Background Image">
   <div class="dh"><span>Add Background Image</span><button data-close aria-label="Close">@@I:times@@</button></div>
@@ -859,7 +888,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
        FROM (the root, a node on the canvas, a container or entity added in this batch), a label, and — when both ends are
        network devices — the parent / child interface and L3, the same fields Create Manual Connection asks -->
   <div class="db" data-pane="link" hidden>
-    <div class="elhint">An entity is joined to the root unless you pick another node; a container's From, To and Label are optional — left empty, it is added unconnected. Use ⇄ to swap From and To.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span></div>
+    <div class="elhint">An entity is joined to the root unless you pick another node; a container's From, To and Label are optional — left empty, it is added unconnected. The parent node connects to the child being added.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span></div>
     <!-- search on top, DS pagination at the foot (request, 29 Oct 2026): obs-input search + obs-pagination — the DS's own advice for a
          paged view that is not an obs-table ("bind total/page/page-size and reslice on pagechange / sizechange") -->
     <div class="eltools" id="elTools" hidden><obs-input id="elQ" type="search" placeholder="Search" aria-label="Search nodes"></obs-input></div>
@@ -959,7 +988,8 @@ const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>
 
 /* ================= THEME / EMBED ================= */
 const QS = new URLSearchParams(location.search);
-function setTheme(t){ if (t === 'light') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme','dark-theme'); }
+function setTheme(t){ if (t === 'light') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme','dark-theme');
+  if (typeof T !== 'undefined' && T.tab === 'custom' && document.getElementById('cvMenuW')) cvTreePaint(); }   /* the severity rings are baked colours */
 setTheme(QS.get('theme') || 'dark');
 addEventListener('message', (e) => { const d = e.data; if (d && d.topoTheme) setTheme(d.topoTheme); if (d && d.topoTab) goTab(d.topoTab); });
 $('tBack').onclick = () => { if (QS.get('embed')) parent.postMessage({ topoBack: 1 }, '*'); else history.back(); };
@@ -1015,12 +1045,25 @@ $('tSide').addEventListener('click', (e) => {
 function nodeAt(id){ let arr = TREE[T.tab], x = null; id.split('/').slice(1).forEach(i => { x = arr[+i]; arr = x && x.kids || []; }); return x; }
 
 /* custom views */
+/* a view's row leads with its ROOT MONITOR's severity ring (request, 29 Oct 2026, like the Network tree's .tdot) in
+   place of the topology glyph. obs-side-menu has no severity slot, only `logo` — a string starting data: renders as
+   <img class=r-logo> (20px), which cannot read a CSS var, so the colour is resolved from the .tdot.s-<sev> rule at
+   paint time and baked in; setTheme repaints the tree so it follows the theme. Down is a filled disc, as on the canvas. */
+function cvSevLogo(sev){
+  sev = sev || 'unknown'; const p = document.createElement('span'); p.className = 'tdot s-' + sev; p.style.position = 'absolute'; p.style.visibility = 'hidden';
+  document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove();
+  const fill = sev === 'down' ? c : 'none';
+  return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="${fill}" stroke="${c}" stroke-width="2"/></svg>`);
+}
 function customSidePaint(){
   /* the list is the DS's own obs-side-menu in tree mode (request, 28 Oct 2026: "remove Custom Views, align the list using
      the ObserveOps design system") — it owns the search box, the indents, the chevrons, the active row and its right
      divider, so the host column drops its own padding and border (.tside.cvds). No title row: the tab already says Custom. */
   const s = $('tSide'); s.classList.add('cvds');
-  s.innerHTML = `<div id="cvMenuW"></div><div class="tcvempty" id="cvEmpty" hidden>No custom views yet. Use New Custom Topology to make one.</div>`;
+  s.innerHTML = `<div class="tcvhd"><span>Custom Views</span><obs-button variant="primary" squared class="cvnewb" id="cvNew" aria-label="New Custom Topology" data-tip="New Custom Topology"><obs-icon name="plus" size="14"></obs-icon></obs-button></div>`
+    + `<div id="cvMenuW"></div><div class="tcvempty" id="cvEmpty" hidden>No custom views yet. Use + to make one.</div>`;
+  /* obs-button fires a consumer's click twice (inner shadow button + host re-emit) — one open per gesture */
+  let t0 = 0; $('cvNew').addEventListener('click', () => { const t = performance.now(); if (t - t0 < 60) return; t0 = t; CV.mode = 'root'; drOpen('dCv'); });
   cvTreePaint();
 }
 /* groups NEST (request, 28 Oct 2026): a group is a PATH, its names joined by GSEP ("pmg › Network"). The sidebar tree is
@@ -1045,10 +1088,12 @@ function cvOpenPath(p){ gParts(p).forEach((_, i, a) => { T.cv[a.slice(0, i + 1).
   :host(.cvsm) .row.leaf.active{color:var(--page-text-color);font-weight:500}
   :host(.cvsm) .row.leaf.active .chev,:host(.cvsm) .row.leaf.active .r-ic{color:var(--page-text-color)}
   :host(.cvsm) .row.leaf .leaf-chev{display:none}
-  :host(.cvsm) .row.leaf .r-ic{margin-left:-6px}`);
+  :host(.cvsm) .row.leaf .r-ic{margin-left:-6px}
+  :host(.cvsm) .row.leaf .r-logo{margin-left:-8px}`);
   const orig = Element.prototype.attachShadow;
   /* the View Groups add row's ✓ / ✕ match obs-input's 32px field box (obs-button is 35px) — scoped by :host(.grpib) */
-  const ib = new CSSStyleSheet(); ib.replaceSync(`:host(.grpib) .btn{width:32px;height:32px;min-height:32px;padding:0}`);
+  const ib = new CSSStyleSheet(); ib.replaceSync(`:host(.grpib) .btn{width:32px;height:32px;min-height:32px;padding:0}
+  :host(.cvnewb) .btn{width:24px;height:24px;min-height:24px;padding:0;box-shadow:0 1px 4px color-mix(in srgb,#000 30%,transparent)}`);   /* the live Custom Views + is a 24px ant-btn-sm with button-shadow */
   /* Link Info rows at the live tooltip's density: label 1 part / value 2 parts, 4px padding, no hover band — :host(.lkkv) only */
   const tbs = new CSSStyleSheet(); tbs.replaceSync(`:host(.ndtbl) table{min-width:0!important}`);   /* obs-table's 660px floor overflowed the details panel */
   const wcs = new CSSStyleSheet(); wcs.replaceSync(`:host(.ndw) .wkebab{display:none}`);   /* the panel's mini widgets carry no menu */
@@ -1078,7 +1123,7 @@ function cvTreePaint(){
   const build = (p, up = []) => { const n = byPath.get(p), me = uniq(gParts(p).pop()), path = [...up, me];
     /* the count is the TOP-level group's only (request, 28 Oct 2026) — a badge on every nested row repeated the same number */
     return { label: me, ...(up.length ? {} : { count: count(p) }), children: [...sort(n.kids).map(k => build(k, path)),
-      ...n.views.map(v => { const l = uniq(v.name); CV_LBL.set(l, v); if (T.view === v) { active = l; trail = path; } return { label: l, icon: 'topology' }; })] }; };
+      ...n.views.map(v => { const l = uniq(v.name); CV_LBL.set(l, v); if (T.view === v) { active = l; trail = path; } return { label: l, logo: cvSevLogo(v.root && v.root.s) }; })] }; };
   const items = sort(top).map(p => build(p));
   w.hidden = !items.length; $('cvEmpty').hidden = !!items.length;
   /* ⚠️ obs-side-menu (0.1.166) expands the active view's groups only when it MOUNTS — a later items/active change moves
@@ -1144,7 +1189,9 @@ function toolsPaint(){
   /* designing: Save / Update stays DISABLED until the root monitor is connected to a node */
   const linked = custom && !!T.design && designLinked();
   /* shown while VIEWING a saved view too (request, 28 Oct 2026): with only Edit there, a second view could not be started */
-  $('tCreate').hidden = false; $('tCreate').disabled = custom && !!T.design && !linked;
+  /* nothing being designed on the Custom tab → no toolbar button: creating is the sidebar's + (request, 29 Oct 2026);
+     while designing it comes back as Save / Update Topology View */
+  $('tCreate').hidden = custom && !T.design; $('tCreate').disabled = custom && !!T.design && !linked;
   if (custom && T.design && !linked) { const u = (T.design.kids || []).length ? designUnlinked() : [];
     $('tCreate').setAttribute('aria-label', u.length ? `Connect ${u.length === 1 ? '"' + u[0].n + '"' : u.length + ' nodes'} with Create Manual Connection to save` : 'Connect the root monitor to an entity or container to save'); }
   else $('tCreate').removeAttribute('aria-label');
@@ -1220,6 +1267,7 @@ $('tSet').onclick = () => drOpen('dSet');
    filed straight from what that drawer captured; other tabs → the Create Topology View form */
 $('tCreate').onclick = () => {
   if (T.tab === 'custom' && !T.design) { CV.mode = 'root'; drOpen('dCv'); return; }
+  if (T.tab === 'custom' && T.design && T.design.edit) { CV.mode = 'edit'; drOpen('dCv'); return; }   /* Update → the update drawer */
   if (T.tab === 'custom' && T.design && T.design.meta) return cvSave();
   drOpen('dNew');
 };
@@ -1726,6 +1774,15 @@ function cvOpen(mode){
   $('cvCreate').textContent = CV.mode === 'root' ? 'Create' : 'Add';
   $('cvPickE').hidden = true; $('cvPickB').classList.remove('err'); cvField();
   const root = CV.mode === 'root'; $('cvMonH').hidden = !root; $('cvMeta').hidden = !root; $('cvCatRule').hidden = !root; cvMetaReset();
+  $('cvMonW').hidden = false;
+  /* EDIT (request, 29 Oct 2026): Update Topology View opens this drawer as "Update Custom View" — the view's name, group and
+     security, prefilled. The root monitor cannot change on a saved view, so its whole section (and the rule above it) is hidden. */
+  if (CV.mode === 'edit' && T.design && T.design.view) {
+    const v = T.design.view; $('dCvT').textContent = 'Update Custom View'; $('cvCreate').textContent = 'Update';
+    $('cvMeta').hidden = false; $('cvCatRule').hidden = true; $('cvMonW').hidden = true;
+    $('cvName').value = v.name; cvGrpPaint(v.grp === 'Standalone' ? '' : v.grp); segSet('cvSec', v.sec || 'public');
+    if (v.share) { CVS.shw = v.share.with; CVS[v.share.with] = [...v.share.who]; } cvSharePaint();
+  }
 }
 let CVS = { shw:'users', users:[], profiles:[] };   /* Create Custom View's share state */
 function cvSharePaint(){ $('cvShare').hidden = segVal('cvSec') !== 'private'; spPaint('cvShare'); }
@@ -1755,9 +1812,13 @@ function ssMount(id, opts, key, glyph, st){
 }
 function ssPaint(id){
   const h = $(id); if (!h || !h._o) return; const cur = h._st()[h._k], o = h._o.find(x => x[0] === cur) || h._o[0];
-  h.querySelector('.din span').textContent = o[1];
+  /* a PREVIEW beside every choice and in the closed field (request, 29 Oct 2026: "better option of this selection") — the
+     Icon list shows each node glyph, the Shape list each outline, so a pick is made by sight rather than by name */
+  const pv = (v) => h._g === 'shape' ? `<svg class="sspv" viewBox="-40 -40 80 80" aria-hidden="true">${nodeShape(v, 30, 'currentColor').replace(/<(path|rect|circle) class="sring"[^>]*\/>/g, '')}</svg>`
+    : h._g ? `<svg class="sspv" viewBox="0 0 512 512" aria-hidden="true">${monGlyph(v)}</svg>` : '';
+  h.querySelector('.din span').innerHTML = pv(o[0]) + `<b>${esc(o[1])}</b>`;
   const qv = (h.querySelector('.ssq input') || {}).value || '', ql = qv.trim().toLowerCase();
-  h.querySelector('.ssl').innerHTML = h._o.filter(([, l]) => !ql || l.toLowerCase().includes(ql)).map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
+  h.querySelector('.ssl').innerHTML = h._o.filter(([, l]) => !ql || l.toLowerCase().includes(ql)).map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${pv(v)}<span>${esc(l)}</span>${v === cur ? ic('check') : ''}</button>`).join('');
 }
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
 
@@ -1784,8 +1845,9 @@ function cvGrpTree(){
     const list = par && at.get(par) ? (at.get(par).children = at.get(par).children || []) : root; list.push(node); });
   return root;
 }
-function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGrpTree(); el.value = sel ? sel + CV_ZW : ''; }
-function cvGrpPick(path){ const el = $('cvGrp'); el.value = path + CV_ZW; $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; }
+function cvGrpBtn(v){ const b = $('cvGrpNew'); if (v === undefined) v = cvGrpVal(); $('cvGrpL').textContent = v || 'Select or create group'; b.classList.toggle('ph', !v); b.setAttribute('aria-label', 'View Group: ' + (v || 'none selected')); }
+function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGrpTree(); el.value = sel ? sel + CV_ZW : ''; cvGrpBtn(sel || ''); }
+function cvGrpPick(path){ const el = $('cvGrp'); el.value = path + CV_ZW; cvGrpBtn(path); $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; }
 $('cvGrp').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const d = e.detail, v = Array.isArray(d) ? d[0] : d;
   if (typeof v === 'string' && v && !v.endsWith(CV_ZW)) setTimeout(() => cvGrpPick(v), 0); });   /* after the component has stored the leaf */
 (function cvGrpTreeWire(el){
@@ -1813,7 +1875,15 @@ const grpKids = (all, par) => all.filter(g => par ? g.startsWith(par + GSEP) && 
 const grpBtn = (a, icon, label, extra = '') => `<obs-button variant="transparent" size="small" squared data-a="${a}" aria-label="${label}" data-tip="${label}"${extra}><obs-icon name="${icon}" size="14"></obs-icon></obs-button>`;
 function grpPaint(){
   const all = cvGroups(), q = GRP.q.trim().toLowerCase(), rows = [];
-  const hit = (p) => gParts(p).pop().toLowerCase().includes(q) || grpOwn(p).some(v => v.name.toLowerCase().includes(q)) || grpKids(all, p).some(hit);
+  /* MOVING the view being updated (request, 29 Oct 2026): picking another group previews the move — the view's row leaves
+     its old group and is listed (active) under the picked one, and the view counts follow. Nothing is filed until
+     Select + Update; Cancel leaves the view where it was. */
+  const cur = GRP.cur, dest = cur && GRP.sel ? GRP.sel : '';
+  if (dest) cvGrpOpenTo(dest);
+  const inP = (g, p) => g === p || g.startsWith(p + GSEP);
+  const ownOf = (p) => cur ? grpOwn(p).filter(v => v !== cur).concat(dest === p ? [cur] : []) : grpOwn(p);
+  const cntOf = (p) => grpViews(p) - (cur && inP(cur.grp, p) ? 1 : 0) + (dest && inP(dest, p) ? 1 : 0);
+  const hit = (p) => gParts(p).pop().toLowerCase().includes(q) || ownOf(p).some(v => v.name.toLowerCase().includes(q)) || grpKids(all, p).some(hit);
   const pad = (d) => 8 + d * 20;
   /* the add row (requests, 28 Oct 2026): back to ONE compact line — the labelled block was too big. The placeholder says
      which level it makes (parent / child of a named group); the actions are DS icon buttons on the field's own height:
@@ -1824,24 +1894,27 @@ function grpPaint(){
     + `<obs-button class="grpib" variant="neutral-lighter" squared data-a="x" aria-label="Cancel" data-tip="Cancel"><obs-icon name="times" size="16"></obs-icon></obs-button></div>`;
   if (GRP.add === '') rows.push(addRow('', 0));
   const walk = (p, d) => {
-    if (q && !hit(p)) return; const ks = grpKids(all, p), own = grpOwn(p), open = !!q || !!GRP.open[p] || GRP.add === p, n = grpViews(p), nm = gParts(p).pop();
+    if (q && !hit(p)) return; const ks = grpKids(all, p), own = ownOf(p), open = !!q || !!GRP.open[p] || GRP.add === p, n = cntOf(p), nm = gParts(p).pop();
     rows.push(`<div class="grprow${GRP.sel === p ? ' on' : ''}" role="treeitem" tabindex="0" aria-selected="${GRP.sel === p}"${ks.length || own.length ? ` aria-expanded="${open}"` : ''} data-p="${esc(p)}" style="padding-left:${pad(d)}px">`
       + `<span class="grpcv${ks.length || own.length || GRP.add === p ? '' : ' ph'}" data-a="tog"><obs-icon name="${open ? 'chevron-down' : 'chevron-right'}" size="12"></obs-icon></span><obs-icon class="grpic" name="folders" size="16"></obs-icon><span class="tnm">${esc(nm)}</span>`
       + `<span class="grpn">${n ? n + (n > 1 ? ' views' : ' view') : 'Empty'}</span><span class="grpact">${grpBtn('add', 'plus', 'Add child group to ' + esc(nm))}`
-      + (n ? '' : grpBtn('del', 'delete', 'Delete empty group ' + esc(nm), ' class="del"')) + `</span></div>`);
+      + (n || grpViews(p) ? '' : grpBtn('del', 'delete', 'Delete empty group ' + esc(nm), ' class="del"')) + `</span></div>`);
     if (!open) return;
     if (GRP.add === p) rows.push(addRow(p, d + 1));
     ks.forEach(k => walk(k, d + 1));
     /* the views inside the group (request, 28 Oct 2026: "show the inside view") — read-only, under its sub-groups */
     own.filter(v => !q || v.name.toLowerCase().includes(q) || nm.toLowerCase().includes(q))
-      .forEach(v => rows.push(`<div class="grpview" role="treeitem" aria-disabled="true" style="padding-left:${pad(d + 1) + 18}px"><obs-icon name="topology" size="14"></obs-icon><span class="tnm">${esc(v.name)}</span></div>`));
+      .forEach(v => rows.push(`<div class="grpview${v === GRP.cur ? ' on' : ''}" role="treeitem" aria-disabled="true" style="padding-left:${pad(d + 1) + 18}px"><obs-icon name="topology" size="14"></obs-icon><span class="tnm">${esc(v.name)}</span></div>`));
   };
   grpKids(all, '').forEach(p => walk(p, 0));
   $('grpTree').innerHTML = rows.join('') || `<div class="grpnone">${q ? 'No matching groups' : 'No groups yet. Use New group to add one.'}</div>`;
   if (GRP.sel) $('grpUse').removeAttribute('disabled'); else $('grpUse').setAttribute('disabled', '');
   const inp = $('grpIn'); if (inp) grpInBind(inp); if (inp) setTimeout(() => { const f = inp.shadowRoot && inp.shadowRoot.querySelector('input'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }, 0);
 }
+function cvGrpOpenTo(p){ gParts(p).forEach((_, i, a) => { GRP.open[a.slice(0, i + 1).join(GSEP)] = true; }); }
 function grpOpen(){
+  /* the view being updated is marked in the tree, and its group is open so the row is on screen (request, 29 Oct 2026) */
+  GRP.cur = CV.mode === 'edit' && T.design ? T.design.view : null; if (GRP.cur) cvGrpOpenTo(GRP.cur.grp);
   GRP.sel = cvGrpVal(); GRP.q = ''; GRP.add = null; GRP.err = ''; GRP.name = ''; $('grpQ').value = '';
   if (GRP.sel) gParts(GRP.sel).slice(0, -1).forEach((_, i, a) => { GRP.open[a.slice(0, i + 1).join(GSEP)] = true; });
   grpPaint(); $('dGrp').classList.add('on'); $('grpScrim').classList.add('on');
@@ -1944,6 +2017,20 @@ document.addEventListener('pointerdown', (e) => { if ($('cvGrid').classList.cont
 $('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); if (CV.mode === 'root') cvMetaReset(); };
 const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
 $('cvCreate').onclick = () => {
+  if (CV.mode === 'edit') {   /* Update: name / group / security land on the saved view, then the design is saved as before */
+    const v = T.design && T.design.view; if (!v) return;
+    const name = $('cvName').value.trim(), grp = cvGrpVal(); let bad = false;
+    if (!name) { $('cvName').classList.add('err'); $('cvNameE').hidden = false; bad = true; }
+    if (!grp) { $('cvGrpW').classList.add('err'); $('cvGrpE').hidden = false; bad = true; }
+    if (bad) return;
+    const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
+    if (grp !== v.grp) {   /* moved to another group: out of the old one's list, into the new one's */
+      const old = CUSTOM.find(x => x.views.includes(v)); if (old) old.views.splice(old.views.indexOf(v), 1);
+      let g = CUSTOM.find(x => x.grp === grp); if (!g) { g = { grp, views:[] }; CUSTOM.push(g); } g.views.push(v); cvOpenPath(grp);
+    }
+    Object.assign(v, { name, grp, sec, share }); T.design.meta = { name, grp, sec, share };
+    CV.mode = 'root'; drClose(); cvSave(); return;
+  }
   let bad = false;
   if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
   const name = $('cvName').value.trim(), grp = cvGrpVal();
@@ -2034,7 +2121,7 @@ function caPaint(focusId){
           <div class="dfld"><div class="dlbl">IP</div><input class="din${c.err.ip ? ' err' : ''}" data-f="ip" value="${esc(c.ip)}" placeholder="Enter IP address" autocomplete="off"><div class="derr"${c.err.ip ? '' : ' hidden'}>Enter a valid IPv4 address</div></div>
         </div>
       </div></section>`; }).join('');
-  CAS.forEach(c => { ssMount('caIc' + c.id, CT_ICONS, 'ic', true, () => c); ssMount('caSh' + c.id, CT_SHAPES, 'sh', false, () => c); });
+  CAS.forEach(c => { ssMount('caIc' + c.id, CT_ICONS, 'ic', true, () => c); ssMount('caSh' + c.id, CT_SHAPES, 'sh', 'shape', () => c); });
   const tg = caTargets(), opts = tg.map((d, i) => ({ value: String(i), label: d.n + (i === 0 ? ' (root)' : '') }));
   $('caList').querySelectorAll('obs-select.caconn').forEach(el => { const c = CAS.find(x => x.id === +el.dataset.k);
     c.conn = c.conn.filter(d => tg.includes(d));   /* keep picks across a repaint */
@@ -2238,6 +2325,7 @@ const EP = { q: '' };
 /* the field styles live in the PAGE sheet, which cannot reach inside obs-table's shadow root — so the rules the injected cells
    need are adopted into it (scoped to cells marked .eltd, the IPAM table's ipmsnmtd pattern) */
 const EL_OT_CSS = `td.eltd .cell-clip{display:none}
+table{min-width:0!important}   /* obs-table's own min-width (724px) overflowed the 60% drawer — the columns are % so they fit */
 td.eltd{vertical-align:middle}
 svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .din{width:100%;height:32px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:0 11px;font:inherit;font-size:13px;outline:0;box-sizing:border-box}
@@ -2256,7 +2344,11 @@ tr.elnet .elna,tr:not(.elnet) .elifc{display:none}
 .elc.c{display:flex;justify-content:center}
 :host(.elfew) obs-pagination{display:none}`;
 function elOtCols(noif){
-  const c = [ { key: 'k', title: 'From', width: noif ? '34%' : '20%' }, { key: 'sw', title: '', width: '56px' }, { key: 'to', title: 'To', width: noif ? '34%' : '20%' },
+  /* no swap column (request, 29 Oct 2026): the direction is fixed — From is the PARENT end, To the node being added —
+     and the titles say so, pairing with the Parent / Child Interface columns */
+  /* Child first, then its Parent (request, 29 Oct 2026: "swap the column") — the row is about the node being added. The
+     first column keeps key 'k' (elOtSync reads the row's key from it); only what is drawn in the two cells swaps. */
+  const c = [ { key: 'k', title: 'Child Node (To)', width: noif ? '38%' : '22%' }, { key: 'to', title: 'Parent Node (From)', width: noif ? '38%' : '22%' },
     { key: 'lbl', title: 'Label', width: noif ? '' : '15%' } ];
   return noif ? c : c.concat([ { key: 'pi', title: 'Parent Interface', width: '17%' }, { key: 'ci', title: 'Child Interface', width: '17%' }, { key: 'l3', title: 'L3', width: '64px', align: 'center' } ]);
 }
@@ -2267,9 +2359,9 @@ function elPaint(){
   t.classList.toggle('elnoif', noif);   /* containers only → no interface columns */
   t.classList.toggle('elfew', all.length <= 10); $('elTools').hidden = all.length <= 10;   /* search + pager only past 10 rows */
   EL_ITEMS = q ? all.filter(it => (it.n + ' ' + (it.ip || '')).toLowerCase().includes(q)) : all;
-  EL_ITEMS.forEach(it => { if (!EL.get(it.k)) EL.set(it.k, { from: it.k[0] === 'c' ? '' : 't0', lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false }); });   /* a container starts unconnected */
+  EL_ITEMS.forEach(it => { if (!EL.get(it.k)) EL.set(it.k, { from: EL_FROM0 || (it.k[0] === 'c' ? '' : 't0'), lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false }); });   /* a container starts unconnected */
   t.columns = elOtCols(noif);
-  t.rows = EL_ITEMS.map(it => ({ id: it.k, k: it.k, sw: '', to: '', lbl: '', pi: '', ci: '', l3: '' }));
+  t.rows = EL_ITEMS.map(it => ({ id: it.k, k: it.k, to: '', lbl: '', pi: '', ci: '', l3: '' }));
   elOtWire(t);
   if (t.shadowRoot) t.shadowRoot.querySelectorAll('tbody tr').forEach(tr => delete tr.dataset.k);   /* a repaint refills every row — the column set may have changed */
   setTimeout(() => { elOtSync(t); elOtFit(); }, 0);
@@ -2310,15 +2402,13 @@ function elRow(row, m, st){
   const sel = `<button type="button" class="din cvpick elfrom" aria-haspopup="listbox" aria-expanded="false" aria-label="${st.rev ? 'Connect to' : 'Connect from'}"><span class="${cur ? '' : 'ph'}">${cur ? esc(cur.n) : 'Select'}</span>${ic('chevron-down')}</button>`;
   const ent = `<div class="elnm">${mi(m.ic)}<div><b title="${esc(m.n)}">${esc(m.n)}</b><small>${esc(m.ip || '—')}</small></div></div>`;
   row.classList.toggle('elrev', !!st.rev);
-  const cells = [ st.rev ? ent : sel,
-    `<obs-button variant="transparent" class="elsw squared-button" aria-label="Swap From and To" data-tip="Swap From and To"><obs-icon name="exchange" size="16"></obs-icon></obs-button>`,
-    st.rev ? sel : ent, `<obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input>`,
+  const cells = [ ent, sel, `<obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input>`,
     `<span class="elna">—</span><obs-select class="elpi elifc" searchable block placeholder="Select" aria-label="Parent interface"></obs-select>`,
     `<span class="elna">—</span><obs-select class="elci elifc" searchable block placeholder="Select" aria-label="Child interface"></obs-select>`,
     `<span class="elna">—</span><obs-checkbox class="ell3 elifc" aria-label="L3"></obs-checkbox>` ];
   row.querySelectorAll(':scope > td').forEach((td, i) => { if (i >= cells.length) return; td.classList.add('eltd');
     let c = td.querySelector(':scope > .elc'); if (!c) { c = document.createElement('div'); c.className = 'elc'; td.appendChild(c); }
-    c.className = 'elc' + (i === 1 || i === 6 ? ' c' : ''); c.innerHTML = cells[i];
+    c.className = 'elc' + (i === 5 ? ' c' : ''); c.innerHTML = cells[i];
     ['click', 'mousedown', 'keydown'].forEach(ev => c.addEventListener(ev, e => e.stopPropagation()));   /* the table must not treat a field press as a row press */ });
   if (!row.querySelector('.elpi')) { /* containers-only table: no interface cells */ }
   const fs = row.querySelector('.elfrom'), lb = row.querySelector('.ellbl');
@@ -2328,8 +2418,6 @@ function elRow(row, m, st){
   if (row.querySelector('.elpi')) { row.querySelector('.elpi').addEventListener('change', (e) => { st.pi = mcSelV(e, row.querySelector('.elpi')); });
     row.querySelector('.elci').addEventListener('change', (e) => { st.ci = mcSelV(e, row.querySelector('.elci')); });
     row.querySelector('.ell3').addEventListener('change', (e) => { st.l3 = elBool(e, row.querySelector('.ell3')); }); }
-  row.querySelector('.elsw').addEventListener('click', () => { const t = performance.now(); if (t - (st.swT || 0) < 300) return; st.swT = t;   /* obs-button double-fires */
-    st.rev = !st.rev; st.pair = ''; elRow(row, m, st); });
   elIfPaint(row, m.d, st);
 }
 /* the interface fields — only when BOTH ends are network devices, the Create Manual Connection rule */
@@ -2343,7 +2431,7 @@ function elIfPaint(row, m, st){
   ci.options = ifList(cs).map(v => ({ value: v, label: v })); ci.value = st.ci;
   row.querySelector('.ell3').checked = st.l3;
 }
-$('desEn').onclick = () => { Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('nodeKind').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; caReset(); EL.clear(); drOpen('dEnA'); enPaint(true); NODE_STEP = 'pick'; NODE_TAB = 'none'; nodeStep('pick'); };   /* opens on the Select — nothing picked yet (Option 2, 29 Oct 2026) */
+$('desEn').onclick = () => { EL_FROM0 = null; Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('nodeKind').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; caReset(); EL.clear(); drOpen('dEnA'); enPaint(true); NODE_STEP = 'pick'; NODE_TAB = 'none'; nodeStep('pick'); };   /* opens on the Select — nothing picked yet (Option 2, 29 Oct 2026) */
 
 /* ================= LINK ACTIONS (request, 28 Oct 2026) =================
    A manual connection lives on its source node's data (src.man holds the targets); its label is kept in a WeakMap
@@ -2448,6 +2536,11 @@ function mcCands(){
   return T.nodes.filter(n => n !== s && !T.links.some(l => (l.a === s && l.b === n) || (l.a === n && l.b === s)))
     .map(n => ({ key: n.key, n: n.d.n, ip: n.d.ip || '', ic: n.d.ic, s: n.d.s || 'unknown', node: n }));
 }
+/* Add Node from a node's menu (request, 29 Oct 2026): opens the same Add Node drawer, but every node added there starts
+   connected to THIS node as its parent (the connect step's Parent Node is preset; it can still be changed) */
+let EL_FROM0 = null;
+$('mcAdd').onclick = () => { mcMenuClose(); if (!MC.src || !T.design) return; const i = caTargets().indexOf(MC.src.d);
+  $('desEn').click(); EL_FROM0 = i >= 0 ? 't' + i : null; };
 $('mcGo').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; MCIF.key = ''; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
 function mcField(){ const b = $('mcPickB').querySelector('span'); b.textContent = MC.pick.length ? MC.pick.map(p => p.n).join(', ') : 'Select'; b.classList.toggle('ph', !MC.pick.length); mcIfPaint(); }
 /* interfaces: shown when the source AND the one picked child are network devices. The ports are made up per device —
