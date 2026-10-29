@@ -44532,13 +44532,17 @@ function ipmSupTree(t){
   if (!root._supCss) { const ss = new CSSStyleSheet(); ss.replaceSync(IPM_SUPTREE_CSS); root.adoptedStyleSheets = [...root.adoptedStyleSheets, ss]; root._supCss = 1; }
   const sync = () => {
     if (ipmKind() !== 'routers' || IPM.tab === 'approval') return;
-    const sup = new Map(IPM_ROUTERS.filter(r => r.kind === 'supernet' && r.subs && r.subs.length).map(r => [r.name, r]));
-    const kids = new Set(IPM_ROUTERS.flatMap(r => r.kind === 'supernet' && r.subs ? r.subs.map(k => (k.nm || k.cidr) + '|' + k.cidr) : []));
+    const onSub = IPM.tab === 'subnets';
+    const sup = onSub
+      ? new Map(IPM_DISC_SUPS.map(s => [s.cidr, { id: 'disc:' + s.rid, name: s.cidr, subs: ipmSupParts(s) }]))
+      : new Map(IPM_ROUTERS.filter(r => r.kind === 'supernet' && r.subs && r.subs.length).map(r => [r.name, r]));
+    const kids = onSub ? new Set(IPM_DISC_SUPS.flatMap(s => ipmSupParts(s).map(k => k.cidr)))
+      : new Set(IPM_ROUTERS.flatMap(r => r.kind === 'supernet' && r.subs ? r.subs.map(k => (k.nm || k.cidr) + '|' + k.cidr) : []));
     root.querySelectorAll('tbody tr').forEach(tr => {
       const pc = tr.querySelector('td.primary-cell'); if (!pc) return;
       const clip = pc.querySelector('.cell-clip'), txt = (clip ? clip.textContent : pc.textContent).trim();
       const ipTd = [...tr.children].find(td => /^\d+\.\d+\.\d+\.\d+\/\d+$/.test(td.textContent.trim()));
-      const isKid = !!ipTd && kids.has(txt + '|' + ipTd.textContent.trim());
+      const isKid = onSub ? kids.has(txt) : !!ipTd && kids.has(txt + '|' + ipTd.textContent.trim());
       if (tr.classList.contains('ipmsupkid') !== isKid) tr.classList.toggle('ipmsupkid', isKid);
       const s = !isKid && sup.get(txt), cv = pc.querySelector('.ipmsupcv');
       if (s) {
@@ -44559,6 +44563,74 @@ function ipmSupTree(t){
   t._supObs.observe(root, { childList: true, subtree: true, characterData: true }); sync();
 }
 const IPM_ROUTERS_TABS = [{ key: 'discovery', label: 'Discover Subnet' }, { key: 'approval', label: 'Subnet Approval' }];
+/* OPTION 2 (request, 29 Oct 2026): "Discover Subnet" is renamed SUBNET PROFILE, and a new DISCOVERY SUBNET tab follows it
+   carrying only the discovered subnets - the IPAM module's own Subnet Details grid, not the discovery-profile list.
+   The key 'discovery' is kept for the profile tab so every existing IPM.tab test still means the profile list. */
+const ipmRtTabs = () => IPM.opt === '2'
+  ? [{ key: 'discovery', label: 'Discovery Subnet Profile' }, { key: 'subnets', label: 'Discovered Subnet' }, { key: 'approval', label: 'Subnet Approval' }]   /* renamed again (29 Oct 2026, later) */
+  : IPM_ROUTERS_TABS;
+/* the subnets, read off _ipam/ipam.html's own model (svc.subnets, utilisation order) - [cidr, name, gateway, site, used,
+   available, reserved, util %, last scan]. A copy, not a live read: setting.html cannot reach that page's model. */
+const IPM_SUBNETS = [
+  ["198.18.0.0/24", "DC-App-Tier", "198.18.0.1", "Chennai DC", 178, 30, 11, 74, "2026-09-09 04:00"],
+  ["198.18.1.0/24", "HQ-User-Access", "198.18.1.1", "Mumbai HQ", 161, 34, 14, 69, "2026-09-09 04:00"],
+  ["198.18.14.0/24", "HQ-Servers", "198.18.14.1", "Mumbai HQ", 154, 45, 16, 67, "2026-09-09 04:00"],
+  ["198.18.20.0/24", "DC-DB-Tier", "198.18.20.1", "Chennai DC", 149, 56, 14, 64, "2026-09-09 04:00"],
+  ["198.18.24.0/24", "DEL-User-Access", "198.18.24.1", "Delhi Branch", 145, 54, 18, 64, "2026-09-09 04:00"],
+  ["198.18.26.0/28", "DEL-Management", "198.18.26.1", "Delhi Branch", 5, 5, 4, 64, "2026-09-09 04:00"],
+  ["198.18.13.0/25", "HQ-Wireless-Corp", "198.18.13.1", "Mumbai HQ", 69, 24, 11, 63, "2026-09-09 04:00"],
+  ["198.18.22.0/26", "DC-Backup", "198.18.22.1", "Chennai DC", 34, 17, 5, 63, "2026-09-09 04:00"],
+  ["198.18.17.0/25", "PUN-Wireless", "198.18.17.1", "Pune Branch", 65, 44, 8, 58, "2026-09-09 04:00"],
+  ["198.18.12.0/24", "HQ-Voice", "198.18.12.1", "Mumbai HQ", 102, 101, 19, 48, "2026-09-09 04:00"],
+  ["198.18.16.0/24", "PUN-User-Access", "198.18.16.1", "Pune Branch", 112, 95, 11, 48, "2026-09-09 04:00"],
+  ["198.18.15.0/27", "HQ-Management", "198.18.15.1", "Mumbai HQ", 13, 14, 1, 47, "2026-09-09 04:00"],
+  ["198.18.25.0/26", "DEL-Wireless", "198.18.25.1", "Delhi Branch", 25, 23, 4, 47, "2026-09-09 04:00"],
+  ["198.18.19.0/28", "PUN-Management", "198.18.19.1", "Pune Branch", 4, 7, 2, 43, "2026-09-09 04:00"],
+  ["198.18.18.0/26", "PUN-Printers", "198.18.18.1", "Pune Branch", 23, 25, 3, 42, "2026-09-09 04:00"],
+  ["198.18.21.0/25", "DC-Storage", "198.18.21.1", "Chennai DC", 41, 54, 6, 37, "2026-09-09 04:00"],
+  ["198.18.23.0/27", "DC-Out-of-Band", "198.18.23.1", "Chennai DC", 7, 16, 3, 33, "2026-09-09 04:00"],
+  ["198.18.13.128/26", "HQ-Wireless-Guest", "198.18.13.129", "Mumbai HQ", 15, 37, 4, 31, "2026-09-09 04:00"],
+  ["198.18.29.0/24", "DR-App-Tier", "198.18.29.1", "Bengaluru DR", 39, 104, 8, 29, "2026-09-09 04:00"],
+  ["198.18.30.0/25", "DR-Replication", "198.18.30.1", "Bengaluru DR", 11, 65, 7, 20, "2026-09-09 04:00"],
+  ["198.18.27.0/24", "PLANT-OT-Devices", "198.18.27.1", "Vadodara Plant", 0, 0, 1, null, "2026-09-09 04:00"],
+  ["198.18.28.0/26", "PLANT-SCADA", "198.18.28.1", "Vadodara Plant", 0, 0, 1, null, "2026-09-09 04:00"]
+];
+/* Used / Available / Reserved / Utilisation REMOVED and an Actions ⋮ added (request, 29 Oct 2026, later) */
+const IPM_SUBNET_COLS = [
+  { key: 'cidr', title: 'Subnet', width: '26%', sortable: true },
+  { key: 'name', title: 'Name', width: '26%', sortable: true },
+  { key: 'gw', title: 'Gateway', width: '30%', sortable: true },   /* Last scan REMOVED (request, 29 Oct 2026, later) */
+  { key: 'menu', title: 'Actions', width: '72px', type: 'icon', align: 'right' }
+];
+/* DISCOVERED SUPERNETS (request, 29 Oct 2026, later: "the parent shows the whole subnet, e.g. 172.16.8.2/22, and the
+   child shows it divided into /24 subnets"). One per supernet profile, keyed by its id. Addresses are RFC 2544
+   198.18.x — the range the IPAM subnets already use — not the instance's 172.16.x (the repo's scrub rule). The /24
+   children are DERIVED from the block, so the parent and its parts cannot disagree; `nm` names the ones that have one. */
+const IPM_DISC_SUPS = [
+  { rid: 'rtr-3', cidr: '198.18.32.1/22', nm: ['Core servers', 'Storage', '', 'App tier'] },
+  { rid: 'rtr-9', cidr: '198.18.36.2/23', nm: ['Management', 'Backup'], o2: true }
+];
+const ipmIp2n = s => s.split('.').reduce((v, o) => v * 256 + Number(o), 0);
+const ipmN2ip = n => [24, 16, 8, 0].map(sh => (n >>> sh) & 255).join('.');
+/* the block's /24s: network = address masked to its prefix, then 2^(24-prefix) consecutive /24s */
+const ipmSupParts = s => { const [a, q] = s.cidr.split('/'), p = Number(q), net = (ipmIp2n(a) >>> (32 - p)) * 2 ** (32 - p);
+  if (!s.parts) s.parts = Array.from({ length: 2 ** (24 - p) }, (_, i) => ({ cidr: ipmN2ip(net + i * 256) + '/24', nm: s.nm[i] || '' }));
+  return s.parts; };
+/* a supernet's first usable address, as its subnet's gateway (the IPAM model's own convention: .1 of the network) */
+const ipmSubGw = cidr => { const [a] = cidr.split('/'), o = a.split('.').map(Number); o[3] += 1; return o.join('.'); };
+/* a DISCOVERED SUPERNET (request, 29 Oct 2026, with the profile grid's own expand/collapse rows as the picture) leads
+   the grid as a heading row — its profile name, a chevron and "N subnets" (drawn by ipmSupTree) — and, while open,
+   its discovered subnets sit under it. Same open set (IPM.supOpen) the profile grid used to use. */
+const ipmSubnetRows = () => {
+  /* the parent row is the supernet's own address/prefix (not the profile name); its /24 parts sit under it while open */
+  const sups = IPM_DISC_SUPS.filter(s => (!s.o2 || IPM.opt === '2') && ipmSupParts(s).length)
+    .filter(s => ipmMatch(s.cidr, ...s.parts.map(k => k.cidr + ' ' + k.nm)))
+    .flatMap(s => [{ id: 'sup:' + s.rid, cidr: s.cidr, name: 'Supernet', gw: '', menu: '' }]
+      .concat(IPM.supOpen.has('disc:' + s.rid) ? s.parts.map((k, i) => ({ id: 'dsub:' + s.rid + ':' + i, cidr: k.cidr, name: k.nm || '\u2014', gw: ipmSubGw(k.cidr),
+        menu: { icon: 'ellipsis-v', label: 'Actions' } })) : []));
+  return sups.concat(IPM_SUBNETS.filter(s => ipmMatch(s[0], s[1], s[2], s[3])).map(s => ({
+    id: s[0], cidr: s[0], name: s[1], gw: s[2], menu: { icon: 'ellipsis-v', label: 'Actions' } })));
+};
 const IPM_ROUTER_MENU = [
   { key: 'test', label: 'Test credential', icon: 'testCredentials' },
   { key: 'edit', label: 'Edit', icon: 'pencil' },
@@ -44595,7 +44667,8 @@ const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') &
   .sort((a, b) => IPM.opt === '2' ? ipmSiteIx(a) - ipmSiteIx(b) : 0).map(r => ({
   id: r.id, name: r.name, desc: r.desc || '', type: ipmRtType(r), ip: r.ip, site: r.site, vendor: r.vendor, lastRun: r.lastRun,
   users: (r.users || []).map(u => ({ label: u, variant: 'tag-primary' })),
-  state: [{ label: IPM_ROUTER_TAG[r.status][0], variant: IPM_ROUTER_TAG[r.status][1] }],
+  /* Option 2 shows NO Stale tag (request, 29 Oct 2026) — a stale row's State cell is empty; Polling / Failed stay */
+  state: IPM.opt === '2' && r.status === 'stale' ? [] : [{ label: IPM_ROUTER_TAG[r.status][0], variant: IPM_ROUTER_TAG[r.status][1] }],
   subnets: ipmSubnetTags(r),
   /* the product's own run glyph — a play inside a circular arrow (request, 28 Sep 2026, with its SVG).
      obs-icon ships it as `restart`, the path identical, and it is what this module's Discovery Profile
@@ -44606,7 +44679,9 @@ const ipmRouterRows = () => IPM_ROUTERS.filter(r => (!r.o2 || IPM.opt === '2') &
   /* a SUPERNET profile carries its discovered child subnets (request, 8 Oct 2026): each one is a row of its own,
      directly under the supernet, indented, with its name (or CIDR) and the supernet's site — see ipmSupTree() */
   .flatMap(row => { const r = IPM_ROUTERS.find(x => x.id === row.id), kids = (r && r.kind === 'supernet' && r.subs) || [];
-    if (!kids.length) return [row];
+    /* Option 2's Discovery Subnet Profile tab lists the PROFILES only (request, 29 Oct 2026): no subnet rows under a
+       supernet and no expand/collapse — the subnets moved to the Discovered Subnet tab */
+    if (!kids.length || IPM.opt === '2') return [row];
     /* the site shows on the SUBNET rows only, never on the supernet row (request, 9 Oct 2026) — a supernet spans
        subnets that can sit at different sites; each subnet carries the site typed for it in the scan grid */
     /* …and so do State, Subnet Approval, Last run, Scheduler and the two actions (request, same day): the supernet
@@ -44637,7 +44712,7 @@ const ipmPendingRows = () => IPM_PENDING.filter(r => ipmMatch(r.cidr, r.source, 
    picker (stcPick — Is / Is not + a checkbox list, the Discovery Profile list's chips), and ＋ Filter
    lists the fields. One state per tab, so switching tabs keeps each grid's filter. */
 const IPM_FLT_FIELDS = {
-  discovery: [['site', 'Site', r => r.site], ['state', 'State', r => IPM_ROUTER_TAG[r.status][0]], ['vendor', 'Vendor / model', r => r.vendor]],
+  discovery: [['site', 'Site', r => r.site], ['state', 'State', r => IPM.opt === '2' && r.status === 'stale' ? '' : IPM_ROUTER_TAG[r.status][0]], ['vendor', 'Vendor / model', r => r.vendor]],
   approval:  [['source', 'Discovery Source', r => r.source], ['device', 'Reported By', r => r.device]],
   /* IPAM Policy (request, 30 Sep 2026, the live Metric Policy list as the picture): Policy Type · Status */
   policy:    [['ptype', 'Policy Type', r => r.policyType], ['status', 'Status', r => r.status === 'Enabled' ? 'ON' : 'OFF']]
@@ -44666,7 +44741,7 @@ const ipmChipsHTML = () => `<div class="stcchips ipmchips${IPM.flt[ipmFltKey()].
 function ipmChipPick(anchor, k){
   const t = ipmFltKey(), fld = IPM_FLT_FIELDS[t].find(x => x[0] === k), F = IPM.flt[t].f;
   const x = F[k] || (F[k] = { vals: [], op: '=' });
-  const vals = [...new Set(ipmFltData(t).map(r => String(fld[2](r))))].sort();
+  const vals = [...new Set(ipmFltData(t).map(r => String(fld[2](r))))].filter(Boolean).sort();   /* a blank value (Option 2's hidden Stale) is not a pickable choice */
   stcPick(anchor, { title: fld[1], items: vals.map(v => ({ k: v, t: v })), cur: x.vals, multi: true,
     ops: { cur: x.op, onOp: op => { x.op = op; if (x.vals.length) ipmFltRefresh(); } },
     onPick: sel => { x.vals = sel; ipmFltRefresh(); }, width: 240 });
@@ -44777,13 +44852,14 @@ const IPM_COL_DEF_HID = ['desc'];   /* hidden until asked for — the default AN
 IPM.hideCols = new Set(IPM_COL_DEF_HID);
 IPM.hideColsP = new Set();   /* IPAM Policy's own hidden columns */
 const IPM_COL_FIXED = ['name', 'discover', 'menu'];
+/* Option 2 has NO Scheduler column either (request, 29 Oct 2026) — nor the row ⋮'s Schedule; Option 1 keeps both. */
 /* Option 2 has NO Subnet Approval column (request, 9 Oct 2026) — dropped from the grid AND the column chooser; the
    Subnet Approval tab beside Discover Subnet is still where approval lives. Option 1 keeps it. */
 /* ⚠️ Vendor / model goes too: it is the width-less SLACK column, and on this grid the % widths already summed to ~100%,
    so it had been squeezed to 0px — never visible. Freeing Subnet Approval's 23% would have painted it as a 35px
    sliver of clipped text, so Option 2 drops it and LAST RUN becomes the slack column (no width) instead. */
 const ipmRouterCols = () => IPM.opt === '2'
-  ? IPM_ROUTER_COLS.filter(c => c.key !== 'subnets' && c.key !== 'vendor').map(c => c.key === 'lastRun' ? Object.assign({}, c, { width: undefined }) : c)
+  ? IPM_ROUTER_COLS.filter(c => c.key !== 'subnets' && c.key !== 'vendor' && c.key !== 'sched').map(c => c.key === 'lastRun' ? Object.assign({}, c, { width: undefined }) : c)
   : IPM_ROUTER_COLS;
 function ipmColsOpen(anchor){
   const st = { q: '' }, pol = ipmKind() === 'policy', COLS = pol ? IPP_COLS : ipmRouterCols(), HID = pol ? IPM.hideColsP : IPM.hideCols;
@@ -44809,6 +44885,9 @@ function ipmColsOpen(anchor){
 }
 function ipmRoutersBody(){
   if (IPM.tab === 'profiles') return `<div class="ipmdp">${dpListHTML()}</div>`;
+  /* Discovery Subnet (Option 2): the subnets only - search + the grid, no create button, no row actions */
+  if (IPM.tab === 'subnets') return `<obs-toolbar>${ipmToolbarSearch('Search subnets…')}</obs-toolbar>
+    ${ipmTable('No subnet matches this search', ' sortable', 'ipmname ipmic ipmmenu')}`;
   if (IPM.tab === 'approval') return `
     <p class="ipmhint">Every subnet a discovery source reports is held here until an admin approves it —
       active polling stays off until then, and rejecting one is never permanent; it simply re-queues the next time it's seen.</p>
@@ -44837,9 +44916,10 @@ function ipmRoutersBody(){
     ${/* no checkboxes and no User based role button (request, 8 Oct 2026); ipmUsers* kept unreferenced */ ipmTable('No seed router matches this filter', ' sortable' + (IPM.opt === '2' && IPM.grp ? ' group-by="site"' : ''), 'ipmname ipmacts ipmic ipmmenu' + (IPM.opt === '2' && IPM.grp ? ' ipmgrp' : ''))}`;
 }
 function ipmRoutersHTML(){
+  if (IPM.opt !== '2' && IPM.tab === 'subnets') IPM.tab = 'discovery';   /* Option 1 has no Discovery Subnet tab */
   return `<div id="ipmPage" class="ipm" data-ipm="routers">${ipmFlashHTML()}
     ${ipmHead('IP Address Manager', 'Seed routers whose ARP tables IPAM reads, and the subnets they report waiting on approval.')}
-    <obs-tabs id="routersTabs" value="${ipmEsc(IPM.tab)}" tabs='${ipmJ(IPM_ROUTERS_TABS)}'></obs-tabs>
+    <obs-tabs id="routersTabs" value="${ipmEsc(IPM.tab)}" tabs='${ipmJ(ipmRtTabs())}'></obs-tabs>
     <div id="ipmTabBody" class="ipmbody">${ipmRoutersBody()}</div></div>`;
 }
 
@@ -45521,6 +45601,7 @@ function ipmTableSpec(){
      subnet with no VLAN reads "—", as the reference does */
   /* Option 2 (request, 2 Oct 2026): NO Actions column and NO Evidence — rows are ticked instead and the bulk bar
      carries Approve / Reject (Option 1's bar), with no select-all box in the header */
+  if (IPM.tab === 'subnets') return { cols: IPM_SUBNET_COLS, rows: ipmSubnetRows(), menu: [] };
   if (IPM.tab === 'approval') return IPM.opt === '2'
     /* …and the VLAN column went again (request, 16 Oct 2026: "remove the VLAN column") */
     ? { cols: [IPM_PENDING_COLS[0]].concat(IPM_PENDING_COLS.slice(1).filter(c => c.key !== 'evidence')),
@@ -45547,7 +45628,7 @@ function ipmTablePaint(fresh){
     hs.slice(1).forEach(h => h.click());
   }, 0);
   ipmIc24Watch(t);
-  const tree = ipmKind() === 'routers' && IPM.tab !== 'approval';
+  const tree = ipmKind() === 'routers' && (IPM.tab === 'subnets' || (IPM.tab !== 'approval' && IPM.opt !== '2'));
   t.classList.toggle('ipmsuptree', tree); if (tree) ipmSupTree(t);
 }
 /* the Actions icons at 24px (request, 28 Sep 2026). Both glyphs live two shadow roots deep — the
@@ -45658,7 +45739,7 @@ function ipmTableBind(){
   });
   t.addEventListener('change', e => {
     const d = ipmDet(e);
-    if (Array.isArray(d) && ipmKind() === 'routers' && IPM.tab !== 'approval' && IPM.tab !== 'profiles') { IPM.rsel = d.map(String); return ipmUsersBtnPaint(); }
+    if (Array.isArray(d) && ipmKind() === 'routers' && IPM.tab !== 'approval' && IPM.tab !== 'profiles' && IPM.tab !== 'subnets') { IPM.rsel = d.map(String); return ipmUsersBtnPaint(); }
     if (!Array.isArray(d) || !ipmBulkOn()) return;
     /* Option 2: ONE subnet at a time (request, 2 Oct 2026: "at a time I select only a single checkbox, I don't bulk
        approve") — ticking another row moves the tick there */
@@ -45674,6 +45755,26 @@ Object.assign(STC_ICO, { undo: "M36.6,12.1c-6.5-6.5-17.4-6.5-23.9,0l-2.2,2.2v-3.
 Object.assign(STC_ICO, { 'user-circle': "M24,4c-3.9,0-7.7,1.1-10.9,3.3-3.2,2.1-5.8,5.2-7.4,8.7-1.6,3.6-2.1,7.5-1.4,11.3,.6,3.8,2.4,7.4,5,10.3,1.9,2,4.2,3.7,6.7,4.8,2.5,1.1,5.3,1.7,8,1.7s5.5-.6,8-1.7c2.5-1.1,4.8-2.7,6.7-4.8,2.6-2.9,4.4-6.4,5-10.3,.6-3.8,.1-7.8-1.4-11.3-1.6-3.6-4.1-6.6-7.4-8.7-3.2-2.1-7-3.3-10.9-3.3Zm0,36c-4.1,0-8.1-1.6-11.1-4.5,.9-2.2,2.4-4.1,4.4-5.4,2-1.3,4.3-2,6.7-2s4.7,.7,6.7,2c2,1.3,3.5,3.2,4.4,5.4-3,2.9-7,4.5-11.1,4.5Zm-4-20c0-.8,.2-1.6,.7-2.2,.4-.7,1.1-1.2,1.8-1.5,.7-.3,1.5-.4,2.3-.2,.8,.2,1.5,.5,2.1,1.1,.6,.6,.9,1.3,1.1,2.1,.2,.8,0,1.6-.2,2.3-.3,.7-.8,1.4-1.5,1.8-.7,.4-1.4,.7-2.2,.7s-2.1-.4-2.8-1.2c-.8-.8-1.2-1.8-1.2-2.8Zm17.8,12c-1.8-3.1-4.5-5.4-7.8-6.8,1-1.2,1.7-2.6,1.9-4.1,.2-1.5,0-3.1-.6-4.5-.6-1.4-1.7-2.6-3-3.4-1.3-.8-2.8-1.3-4.3-1.3s-3,.4-4.3,1.3c-1.3,.8-2.3,2-3,3.4-.6,1.4-.8,3-.6,4.5,.2,1.5,.9,2.9,1.9,4.1-3.3,1.3-6,3.7-7.8,6.8-1.4-2.4-2.2-5.2-2.2-8,0-4.2,1.7-8.3,4.7-11.3,3-3,7.1-4.7,11.3-4.7s8.3,1.7,11.3,4.7c3,3,4.7,7.1,4.7,11.3,0,2.8-.8,5.6-2.2,8Z" });   /* observeops-icons/common/users-people/user-circle.svg — IPAM's Approve as guest */
 Object.assign(STC_ICO, { 'test-credentials': "M38.2,23.4c-1,0-1.9,.3-2.6,.7l-3.8-3.5c.4-.9,.6-1.9,.6-2.9s-.1-1.5-.3-2.2l2.2-1.7c.9,.6,1.9,1,3.1,1,3,0,5.4-2.4,5.4-5.4s-2.4-5.4-5.4-5.4-5.4,2.4-5.4,5.4,0,.8,.1,1.2l-2.1,1.6c-1.3-1.2-3.1-1.9-5-1.9s-3.6,.7-4.9,1.9l-2.3-1.4c.7-2.6-.4-5.4-2.8-6.8h0c-2.9-1.8-6.7-.8-8.5,2.1-.9,1.4-1.1,3.1-.7,4.7s1.4,3,2.8,3.8c1,.6,2.1,.9,3.2,.9s2.8-.5,3.9-1.4l2.2,1.3c-.2,.7-.4,1.5-.4,2.3,0,1.5,.5,3,1.3,4.1l-7.4,6.5c-.5-.2-1.1-.3-1.6-.3-3,0-5.4,2.4-5.4,5.4s2.4,5.4,5.4,5.4,5.4-2.4,5.4-5.4-.3-1.9-.7-2.7l7.4-6.5c.2,.1,.5,.2,.7,.3l.7,8.4c-2.3,.9-3.9,3.1-3.9,5.8s2.8,6.2,6.2,6.2,6.2-2.8,6.2-6.2-2-5.3-4.6-6l-.6-7.9c1.1-.2,2.1-.7,2.9-1.3l3.7,3.5c-.2,.5-.3,1.1-.3,1.7,0,3,2.4,5.4,5.4,5.4s5.4-2.4,5.4-5.4-2.4-5.4-5.4-5.4Zm-.8-15.6c.8,0,1.5,.7,1.5,1.5s-.7,1.5-1.5,1.5-1.5-.7-1.5-1.5,.7-1.5,1.5-1.5Zm-12.4,6.3c1.9,0,3.5,1.6,3.5,3.5s-1.6,3.5-3.5,3.5-3.5-1.6-3.5-3.5,1.6-3.5,3.5-3.5Zm-14.4-2.9c-.5-.3-.9-.8-1-1.4-.1-.6,0-1.2,.3-1.7,.4-.7,1.2-1.1,2-1.1s.8,.1,1.2,.3c.5,.3,.9,.8,1,1.4,.1,.6,0,1.2-.3,1.7-.3,.5-.8,.9-1.4,1-.6,.1-1.2,0-1.7-.3Zm-.9,23.8c-.8,0-1.5-.7-1.5-1.5s.7-1.5,1.5-1.5,1.5,.7,1.5,1.5-.7,1.5-1.5,1.5Zm15.7,6.1c-1.3,0-2.3-1-2.3-2.3s1-2.3,2.3-2.3,2.3,1,2.3,2.3-1,2.3-2.3,2.3Zm12.7-10.8c-.8,0-1.5-.7-1.5-1.5s.7-1.5,1.5-1.5,1.5,.7,1.5,1.5-.7,1.5-1.5,1.5Z", 'angle-up': "M34.9,27.7c0-.3-.2-.5-.4-.7l-9-8.9c-.2-.2-.4-.4-.7-.5-.3-.1-.5-.2-.8-.2s-.5,0-.8,.2c-.3,.1-.5,.3-.7,.5l-8.9,8.9c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.5,.2,.8c.1,.3,.3,.5,.5,.7,.4,.4,.9,.6,1.5,.6s1.1-.2,1.5-.6l7.4-7.4,7.4,7.4c.4,.4,.9,.6,1.5,.6,.3,0,.5,0,.8-.2,.3-.1,.5-.3,.7-.5,.2-.2,.4-.4,.5-.7,.1-.3,.2-.5,.2-.8,0-.3,0-.6-.1-.8Z", 'angle-down': "M34.8,18.8c-.1-.3-.3-.5-.5-.7-.4-.4-.9-.6-1.5-.6s-1.1,.2-1.5,.6l-7.5,7.4-7.4-7.4c-.4-.4-.9-.6-1.5-.6s-1.1,.2-1.5,.6c-.2,.2-.4,.4-.5,.7-.1,.3-.2,.5-.2,.8s0,.5,.2,.8c.1,.3,.3,.5,.5,.7l8.8,8.8c.2,.2,.4,.4,.7,.5,.3,.1,.5,.2,.8,.2s.5,0,.8-.2c.3-.1,.5-.3,.7-.5l9-8.8c.2-.2,.4-.4,.5-.7,.1-.3,.2-.5,.2-.8s0-.5-.2-.8Z" });
 function ipmRowMenu(anchor, id){
+  /* Discovered Subnet (Option 2): the ⋮ carries one row, Delete discovered subnet, behind a confirm */
+  if (ipmKind() === 'routers' && IPM.tab === 'subnets') return stcMenu(anchor, [
+    { t: 'Delete discovered subnet', ic: 'trash-alt', del: true, fn: () => {
+      const dm = /^dsub:(.+):(\d+)$/.exec(String(id));
+      if (dm) { const s = IPM_DISC_SUPS.find(x => x.rid === dm[1]), k = s && ipmSupParts(s)[+dm[2]]; if (!k) return;
+        return ipmConfirm({ title: 'Delete ' + k.cidr + '?', icon: 'trash', confirmText: 'Delete',
+          body: `${ipmEsc(k.cidr)} is removed from the subnets discovered under ${ipmEsc(s.cidr)}.`,
+          onOk: () => { s.parts.splice(+dm[2], 1); IPM.flash = { title: 'Discovered subnet deleted', body: k.cidr + ' has been removed.' }; stMainPaint(); } }); }
+      const m = /^sub:(.+):(\d+)$/.exec(String(id));
+      if (m) { const r = IPM_ROUTERS.find(x => String(x.id) === m[1]), k = r && r.subs[+m[2]]; if (!k) return;
+        return ipmConfirm({ title: 'Delete ' + k.cidr + '?', icon: 'trash', confirmText: 'Delete',
+          body: `${ipmEsc(k.cidr)} is removed from the subnets discovered under ${ipmEsc(r.name)}.`,
+          onOk: () => { r.subs.splice(+m[2], 1); IPM.flash = { title: 'Discovered subnet deleted', body: k.cidr + ' has been removed.' }; stMainPaint(); } }); }
+      const s = IPM_SUBNETS.find(x => x[0] === id); if (!s) return;
+      ipmConfirm({ title: 'Delete ' + s[0] + '?', icon: 'trash', confirmText: 'Delete',
+        body: `${ipmEsc(s[0])} (${ipmEsc(s[1])}) is removed from the discovered subnets. It is not blacklisted — it re-appears the next time a discovery profile reports it.`,
+        onOk: () => { IPM_SUBNETS.splice(IPM_SUBNETS.indexOf(s), 1);
+          IPM.flash = { title: 'Discovered subnet deleted', body: s[0] + ' has been removed.' }; stMainPaint(); } });
+    } }
+  ], { right: true, cover: true });
   /* Approve and Approve as guest OPEN Add IP Address Discovery with the subnet's CIDR as its IP/CIDR
      (request, 29 Sep 2026); saving that panel is what approves it. Reject keeps its confirm. */
   if (ipmKind() === 'routers' && IPM.tab === 'approval') return stcMenu(anchor, [
@@ -45707,7 +45808,8 @@ function ipmRowMenu(anchor, id){
     { t: 'Edit', ic: 'pencil', fn: () => ipmRowAction('edit', id) },   /* was Edit Seed Router (30 Sep 2026) — the source's own label */
     /* verified against the source (30 Sep 2026): its ⋮ reads Edit · Schedule · Delete, and Schedule opens the
        scheduler FORM directly, titled "<IP> Scheduler", on the profile's window (see ipmSchedDirect) */
-    { t: 'Schedule', ic: 'schedule', fn: () => ipmSchedDirect(id) },
+    /* not in Option 2 (request, 29 Oct 2026: remove the scheduler action and the Scheduler column) */
+    ...(IPM.opt === '2' ? [] : [{ t: 'Schedule', ic: 'schedule', fn: () => ipmSchedDirect(id) }]),
     { t: 'Delete Discovery Profile', ic: 'trash-alt', del: true, fn: () => ipmRowAction('delete', id) }   /* renamed from Remove Seed Router (30 Sep 2026) */
   ], { right: true, cover: true });
 }
@@ -45776,7 +45878,7 @@ function ipmRowAction(key, id){
     body: 'A single read is attempted with the profile assigned to this device. Nothing else is collected.' });
   if (key === 'edit') {
     const r = IPM_ROUTERS.find(x => x.id === id); if (!r) return;
-    ipmArOpen(); Object.assign(IPM.ar, { kind: r.kind || 'ipv4', netAddr: r.ip, target: 'cidr', targetValue: r.ip, site: r.site, profile: [r.profile], editId: id, supName: r.name && r.name !== r.ip ? r.name : '', supDesc: r.desc || '' }); ipmArPaint();
+    ipmArOpen(); Object.assign(IPM.ar, { kind: r.kind || 'ipv4', netAddr: r.ip, target: 'cidr', targetValue: r.ip, site: r.site, profile: [r.profile], editId: id, supName: r.name && r.name !== r.ip ? r.name : '', supDesc: r.desc || '', gateway: r.gateway || '' }); ipmArPaint();
   }
 }
 function ipmDecide(id, approve){
@@ -45882,7 +45984,7 @@ const IPM_AR_TARGET = [{ key: 'cidr', label: 'IP/CIDR' }, { key: 'csv', label: '
 const ipmSiteOpts = cur => [...new Set(IPM_SITES.concat(cur ? [cur] : []))].map(x => ipmOpt(x));
 const IPM_AR_EXCLUDE = [{ key: 'ip', label: 'IP' }, { key: 'iprange', label: 'IP Range' }];
 const ipmArDefaults = () => ({ target: 'cidr', targetValue: '', manualIps: '', excludeMode: 'ip', collectorType: 'Collector', collector: '',
-  site: '', profile: [], retryCount: '2', pingCheck: true, notify: '', editId: null, kind: 'ipv4', devices: [], netAddr: '', netMask: '255.255.0.0/16', supName: '', supDesc: '', scan: null, scanKey: '', subs: [], subSel: [], subQ: '' });
+  site: '', profile: [], retryCount: '2', gateway: '', pingCheck: true, notify: '', editId: null, kind: 'ipv4', devices: [], netAddr: '', netMask: '255.255.0.0/16', supName: '', supDesc: '', scan: null, scanKey: '', subs: [], subSel: [], subQ: '' });
 /* the panel's TYPE rail (request, 6 Oct 2026, with APM › Application Registration's Host/VM · Docker · Kubernetes rail as the
    reference): IPv4 Subnet is the form that was here; Discover Subnet is ONE field, Select Devices (Firewall · Switch · Router) */
 const IPM_AR_KINDS = [{ key: 'ipv4', label: 'IPv4 Subnet', icon: 'ip',
@@ -46029,6 +46131,26 @@ function ipmNetAddrOpts(cur){
   const o = IPM_ROUTERS.filter(r => !r.o2 || IPM.opt === '2').map(r => ({ value: r.ip, label: `${r.ip} — ${r.name} (${r.site})` }));
   if (cur && !o.some(x => x.value === cur)) o.unshift({ value: cur, label: cur });
   return o;
+}
+/* NETWORK MASK AUTO-FILLS from the picked Network address (request, 29 Oct 2026). The mask list runs /8 to /23, so:
+   a supernet profile takes the smallest listed prefix that covers every subnet it already carries; any other address
+   takes its classful default, clamped into the list (A → /8, B → /16, C → /23 — /24 is not offered). It stays a
+   suggestion: the mask select is still editable afterwards. */
+function ipmAutoMask(addr){
+  const r = IPM_ROUTERS.find(x => x.ip === addr);
+  const n = s => s.split('.').reduce((v, o) => v * 256 + Number(o), 0);
+  let p;
+  if (r && r.subs && r.subs.length) {
+    const ns = r.subs.map(s => { const [a, q] = s.cidr.split('/'); return [n(a), n(a) + 2 ** (32 - Number(q)) - 1]; });
+    const lo = Math.min(...ns.map(x => x[0])), hi = Math.max(...ns.map(x => x[1]));
+    for (p = 23; p > 8 && Math.floor(lo / 2 ** (32 - p)) !== Math.floor(hi / 2 ** (32 - p)); p--);
+  } else {
+    const f = Number(String(addr).split('.')[0]);
+    p = f < 128 ? 8 : f < 192 ? 16 : 23;
+  }
+  p = Math.max(8, Math.min(23, p));
+  const m = [24, 16, 8, 0].map(sh => ((0xffffffff << (32 - p)) >>> sh) & 255).join('.');
+  return m + '/' + p;
 }
 function ipmSupQueue(){
   const d = IPM.ar; if (!d || d.kind !== 'supernet') return;
@@ -46186,6 +46308,11 @@ function ipmArPaint(){
     <div id="arTargetArea" style="display:contents">${ipmArTargetHTML(d)}</div>`}
     ${''}</div>`;
   const common = `
+    ${IPM.opt === '2'
+      /* GATEWAY IP above the collector row (request, 29 Oct 2026) — optional, alone in the left column with an empty cell
+         beside it, so Collector Type | Collectors keep sharing their row */
+      ? `${ipmField('Gateway IP', `<obs-input id="arGateway" block placeholder="e.g. 192.168.1.1" value="${ipmEsc(d.gateway || '')}"></obs-input>`)}<div aria-hidden="true"></div>`
+      : ''}
     ${ipmField('Collector Type', `<obs-select id="arCollectorType" block options='${ipmJ([ipmOpt('Collector')])}' value="${ipmEsc(d.collectorType)}"></obs-select>`, null, true)}
     ${ipmField('Collectors', `<obs-select id="arCollector" block placeholder="Select" options='${ipmJ(IPM_SITES.map(s => ipmOpt(s)))}' value="${ipmEsc(d.collector)}"></obs-select>`, null, true)}
     ${ipmField('Credential Profiles', `<obs-select id="arProfile" block multiple allow-clear placeholder="Select" options='${ipmJ(ipmProfiles())}' value="${ipmEsc(d.profile.join(','))}"></obs-select>`,
@@ -46218,7 +46345,7 @@ function ipmArPaint(){
   const help = IPM.opt === '2' && !d.fromPending;   /* the approve flow needs no help card (29 Sep 2026) */
   const rail = help ? `<nav class="ipmkind" aria-label="Discovery type">${IPM_AR_KINDS.map(k => `<button type="button" class="ipmkindi${d.kind === k.key ? ' on' : ''}" data-kind="${k.key}"${d.editId && d.kind !== k.key ? ' disabled' : ''}><span>${ipmEsc(k.label)}</span></button>`).join('')}</nav>` : '';
   const disc = help && d.kind === 'discover';
-  const discBody = `<div class="ip-form">${ipmArNameHTML(d, 'Discovery name', 'e.g. Core routers', 'What this device discovery covers')}<div class="span-2">${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}</div>${ipmNotifyHTML(d) /* Notify + Bcc on Discover Subnet too (request, 9 Oct 2026) */}</div>`;
+  const discBody = `<div class="ip-form">${ipmArNameHTML(d, 'Discovery name', 'e.g. Core routers', 'What this device discovery covers')}${ipmField('Gateway IP', `<obs-input id="arGateway" block placeholder="e.g. 192.168.1.1" value="${ipmEsc(d.gateway || '')}"></obs-input>`) /* beside Select Devices (request, 29 Oct 2026: above, then side by side); shares d.gateway with the IPv4 form */}${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}${ipmNotifyHTML(d) /* Notify + Bcc on Discover Subnet too (request, 9 Oct 2026) */}</div>`;
   const foot = `<div class="ip-row ipmfoot"><span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
       ${d.fromPending
         /* opened from Subnet Approval (request, 29 Sep 2026): the footer DECIDES the subnet — Reject | Approve —
@@ -46291,7 +46418,9 @@ function ipmArBind(){
   bindTarget();
   on('#arProfile', 'change', e => { IPM.ar.profile = ipmArr(ipmDet(e)); });
   on('#arDevices', 'change', e => { IPM.ar.devices = ipmArr(ipmDet(e)); });
-  on('#arNetAddr', 'change', e => { IPM.ar.netAddr = ipmVal(e); ipmSupQueue(); });
+  on('#arNetAddr', 'change', e => { IPM.ar.netAddr = ipmVal(e);
+    if (IPM.ar.netAddr) { IPM.ar.netMask = ipmAutoMask(IPM.ar.netAddr); const mk = P.querySelector('#arNetMask'); if (mk) mk.value = IPM.ar.netMask; }   /* auto-fill the mask */
+    ipmSupQueue(); });
   on('#arSupName', 'input', e => { IPM.ar.supName = ipmVal(e); });
   on('#arSupDesc', 'input', e => { IPM.ar.supDesc = ipmVal(e); });
   on('#arNetMask', 'change', e => { IPM.ar.netMask = ipmVal(e) || IPM.ar.netMask; ipmSupQueue(); });
@@ -46311,6 +46440,7 @@ function ipmArBind(){
     el.options = ipmSiteOpts(txt); el.value = txt;
   });
   on('#arRetryCount', 'input', e => { IPM.ar.retryCount = ipmVal(e); });
+  on('#arGateway', 'input', e => { IPM.ar.gateway = ipmVal(e); });
   on('#arSiteIn', 'input', e => { IPM.ar.site = ipmVal(e); });
   on('#arBcc', 'input', e => { IPM.ar.bcc = ipmVal(e); });
   on('#arBccX', 'click', () => { IPM.ar.showBcc = false; IPM.ar.bcc = ''; ipmArPaint(); });
@@ -46349,7 +46479,7 @@ function ipmArBind(){
     }
     if (d.editId) {
       const r = IPM_ROUTERS.find(x => x.id === d.editId);
-      if (r) Object.assign(r, { ip: d.targetValue || r.ip, site: d.site || r.site, profile: d.profile[0] || r.profile }, d.supName.trim() ? { name: d.supName.trim() } : {}, { desc: d.supDesc.trim() });
+      if (r) Object.assign(r, { ip: d.targetValue || r.ip, site: d.site || r.site, profile: d.profile[0] || r.profile }, d.supName.trim() ? { name: d.supName.trim() } : {}, { desc: d.supDesc.trim(), gateway: (d.gateway || '').trim() });
       IPM.flash = { title: 'Seed router updated', body: (r ? r.name : name) + ' has been saved.' };
     } else if (d.fromPending) {
       /* saving a panel opened from Subnet Approval approves that subnet — as a guest, or not */

@@ -163,6 +163,7 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 :is(.tsvg,.tmini .mm) .nd path.ring{fill:var(--neutral-lighter);stroke-width:3;stroke-linejoin:round}
 :is(.tsvg,.tmini .mm) .nd.root path.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
 :is(.tsvg,.tmini .mm) .nd path.sring{fill:none}
+:is(.tsvg,.tmini .mm) .nd path.ring.sharp{stroke-linejoin:miter;stroke-miterlimit:4}   /* Hexagon / Rectangle / Diamond … keep their corners; Hexagon (round) does not */
 :is(.tsvg,.tmini .mm) .nd.ct :is(path,circle,rect).ring{fill:var(--topology-info-btn-bg)}
 :is(.tsvg,.tmini .mm) .nd.ct .gl{color:var(--topology-info-btn-text)}
 :is(.tsvg,.tmini .mm) .nd.root rect.ring{fill:var(--topology-info-btn-bg);stroke-width:4}
@@ -175,6 +176,12 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 :is(.tsvg,.tmini .mm) .nd.root .gl{color:var(--topology-info-btn-text)}
 :is(.tsvg,.tmini .mm) .nd text.lb{font:600 12px Inter,sans-serif;fill:var(--primary);paint-order:stroke;stroke:var(--nav-panel-bg);stroke-width:3px;stroke-linejoin:round}
 :is(.tsvg,.tmini .mm) .nd .bdg circle{fill:var(--primary)}
+.tsvg .nd .ndact{opacity:0;cursor:pointer;transition:opacity .12s}
+.tsvg .nd:hover .ndact,.tsvg .nd.sel .ndact{opacity:1}
+.tsvg .nd .ndact circle{fill:var(--topology-info-btn-bg);stroke:var(--page-background-color);stroke-width:2}
+.tsvg .nd .ndact path{stroke:var(--active-text-color);stroke-width:2;stroke-linecap:round;fill:none}
+.tsvg .nd .ndact:hover circle{fill:var(--topology-info-btn-hover-bg)}
+.tmini .mm .ndact{display:none}
 :is(.tsvg,.tmini .mm) .nd .bdg text{font:600 10px Inter,sans-serif;fill:var(--page-background-color)}
 /* no dashed ring on the selected node (request, 27 Oct 2026) — the menu and details panel already show which node it is.
    The ring still marks a search hit (.hit, below). */
@@ -370,12 +377,29 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .dena .db[hidden]{display:none}
 .dena .db[data-pane="container"]:not([hidden]){display:block}
 .nodesw{flex:0 0 auto;padding:15px var(--drawer-inset) 0}
+.nwz{flex:1 1 auto;min-height:0;display:flex}
+.nwzr{flex:0 0 240px;border-right:1px solid var(--border-color);padding:0;overflow:auto}
+/* the step rail = the product's own report-wizard menu (live 10.0.1 .selection-menu, request 29 Oct 2026): full-width rows,
+   no connector, a 24px OUTLINED number (--primary on the current step, --neutral-regular otherwise), --neutral-light text,
+   the current row on a band; a done step shows a ✓ and what it was ("Select Node : Container") */
+.nstm{list-style:none;margin:0;padding:0}
+.nstm li{display:flex;align-items:center;gap:8px;min-height:40px;padding:8px var(--drawer-inset);color:var(--neutral-light);font-size:13px;line-height:1.35}
+.nstm li .n{flex:0 0 24px;width:24px;height:24px;border-radius:50%;border:1px solid var(--neutral-regular);display:grid;place-items:center;font-size:12px}
+.nstm li .n svg{width:12px;height:12px;fill:currentColor}
+.nstm li.on{background:var(--neutral-lightest)}
+.nstm li.on .n{border-color:var(--primary);color:var(--primary)}
+.nstm li.done{cursor:pointer}
+.nstm li.done:hover{background:var(--nav-hover-bg)}
+.nstm li.done .n{border-color:var(--primary);background:var(--primary);color:var(--page-background-color)}
+.nstm li .v{color:var(--page-text-color)}
+.nstm li.dis{cursor:default}
+.nwzm{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column}
 .calist{display:flex;flex-direction:column;gap:12px}
 .caconn{display:block}
 .cahint{margin-top:4px;font-size:12px;color:var(--neutral-light)}
 /* Icon · Shape · IP on one line (request, 28 Oct 2026); Add Node is 10 points wider than the other 40vw drawers for it */
 .dgrid.dgrid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}
-#dEnA.w40{width:max(640px,50vw)}
+#dEnA.w40{width:90%}   /* the DS drawer's LARGE multi-pane tier (get_component('drawer'): 85-96%, a step rail beside the form — the APM Application Registration shape); 90% by request, 29 Oct 2026 */
 #caMore{margin-top:12px}
 #caMore obs-icon{margin-right:6px}
 .cabox{border:1px solid var(--border-color);border-radius:4px}
@@ -395,25 +419,23 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .elhint{font-size:12.8px;color:var(--neutral-light);margin-bottom:12px}
 /* ONE table (request, 29 Oct 2026): the interface fields are columns, not a second line under the row. table-layout:fixed
    takes its widths from the <th>s; the wrapper scrolls sideways if the drawer is narrower than the columns */
-.elwrap{border:1px solid var(--border-color);border-radius:4px;overflow:auto;min-height:0;flex:0 1 auto}
-.eltbl{width:100%;min-width:1040px;table-layout:fixed;border-collapse:collapse}
-.eltbl th{position:sticky;top:0;z-index:1;background:var(--page-background-color);text-align:left;font-size:12.8px;font-weight:600;text-transform:uppercase;color:var(--page-text-color);padding:8px 10px;border-bottom:1px solid var(--border-color);white-space:nowrap}
-.eltbl td{padding:8px 10px;vertical-align:middle;border-bottom:1px solid var(--border-color)}
-.eltbl tr:last-child td{border-bottom:0}
-.eltbl tbody tr:hover td{background:var(--nav-hover-bg)}
-.eltbl obs-select,.eltbl obs-input{display:block;min-width:0}
-.eltbl th.c{text-align:center}.eltbl td.c{text-align:center}
+.eltools{flex:0 0 auto;margin-bottom:12px}
+.eltools[hidden]{display:none}
+.eltools obs-input{display:inline-block}
+#elTbl{display:block;flex:0 1 auto;min-height:0;width:100%}
 .elnm{display:flex;align-items:center;gap:8px;min-width:0}
 .elnm svg{width:18px;height:18px;flex:0 0 18px}
 .elnm div{min-width:0}
-.elnm b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elnm b{display:block;font-weight:500;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .elnm small{display:block;font-size:12px;color:var(--neutral-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .elna{color:var(--neutral-light)}
+/* only containers being added → no interface columns (a container is never a network device); back with any entity */
+.dena:has(.eltbl.elnoif) .elifh{display:none}
 .eltbl td.c obs-button{display:inline-block}
 .elsw obs-icon{display:inline-flex;color:var(--neutral-light)}
 .elsw:hover obs-icon{color:var(--page-text-color)}
 .elnet .elna,.eltbl tr:not(.elnet) .elifc{display:none}
-#dEnA.w40.elwide{width:max(1100px,75vw)}
+
 .nodesw obs-radio{display:inline-block}
 .enty obs-select{display:block;max-width:325px}
 .enempty{flex:1 1 auto;display:flex;align-items:flex-start;justify-content:center;padding-top:96px;color:var(--neutral-light);font-size:13px}
@@ -519,6 +541,8 @@ textarea.din.dta{height:auto;min-height:86px;padding:8px 11px;resize:vertical;li
 .ssw .din svg{transition:transform .15s;flex:0 0 auto}
 .ssw.open .din{border-color:var(--neutral-light)}
 .ssw.open .din svg{transform:rotate(180deg)}
+.ssw .dmenu .ssq{display:block;margin:2px 0 6px}
+.ssw .dmenu .ssq input{width:100%}
 .ssw .dmenu button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 8px;border:0;border-radius:4px;background:none;color:var(--page-text-color);font:inherit;text-align:left;cursor:pointer}
 .ssw .dmenu button:hover{background:var(--dropdown-hover-background)}
 .ssw .dmenu button.on{font-weight:600;background:var(--code-tag-background-color)}
@@ -794,6 +818,10 @@ html:not([data-theme]) .dck input{color-scheme:light}
      as-button, not tabs) picks which kind of node; each keeps its own form and its own primary button. -->
 <aside class="tdr w40 dena" id="dEnA" aria-label="Add Node">
   <div class="dh"><span id="nodeTtl">Add Node</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <!-- a STEPPER, not a second drawer (request, 29 Oct 2026, the Create Custom Report reference): DS obs-steps as a left rail
+       (direction=vertical, size=small, clickable — its own "left-rail wizard" variant); the panes change beside it -->
+  <div class="nwz"><nav class="nwzr" aria-label="Steps"><ul class="nstm" id="nodeSteps" role="menu"></ul></nav>
+  <div class="nwzm">
   <div class="nodesw" id="nodeSw"><obs-radio id="nodeTabs" as-button options='[{"value":"container","label":"Container"},{"value":"entity","label":"Entity"}]' value="container" aria-label="Node type"></obs-radio></div>
   <div class="db" data-pane="entity" hidden>
     <!-- every control here is an ObserveOps DS element: obs-select (searchable, >8 options) · obs-input search · obs-table
@@ -816,10 +844,17 @@ html:not([data-theme]) .dck input{color-scheme:light}
        FROM (the root, a node on the canvas, a container or entity added in this batch), a label, and — when both ends are
        network devices — the parent / child interface and L3, the same fields Create Manual Connection asks -->
   <div class="db" data-pane="link" hidden>
-    <div class="elhint">Each entity is joined to the root unless you pick another node — use ⇄ to swap From and To. Interfaces and L3 apply when both ends are network devices.</div>
-    <div class="elwrap"><table class="eltbl"><thead><tr><th style="width:20%">From</th><th style="width:48px" aria-label="Swap"></th><th style="width:20%">To</th><th style="width:15%">Label</th><th style="width:17%">Parent Interface</th><th style="width:17%">Child Interface</th><th class="c" style="width:7%">L3</th></tr></thead><tbody id="elGrid"></tbody></table></div>
+    <div class="elhint">An entity is joined to the root unless you pick another node; a container's From, To and Label are optional — left empty, it is added unconnected. Use ⇄ to swap From and To.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span></div>
+    <!-- search on top, DS pagination at the foot (request, 29 Oct 2026): obs-input search + obs-pagination — the DS's own advice for a
+         paged view that is not an obs-table ("bind total/page/page-size and reslice on pagechange / sizechange") -->
+    <div class="eltools" id="elTools" hidden><obs-input id="elQ" type="search" placeholder="Search" aria-label="Search nodes"></obs-input></div>
+    <!-- the REAL obs-table (request, 29 Oct 2026, the IPAM "Add IP Address Discovery" Supernet table as the reference): its header,
+         row lines, hover and its own pager are the DS's; the form fields are placed into its cells after it renders (elOtSync),
+         exactly how that table puts its "Enter subnet name" inputs in. Search + pager show only past 10 rows. -->
+    <obs-table id="elTbl" class="eltbl elot" page-size="10" header-style="default" row-key="id" empty-text="No nodes match the search"></obs-table>
   </div>
-  <div class="df"><span class="sp"></span><button class="tbtn" id="nodeBack" hidden>Back</button><button class="tbtn" id="enCancel">Cancel</button><button class="tpri" id="caAdd">Add Container</button></div>
+  </div></div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="nodeBack" hidden>Back</button><button class="tbtn" id="enCancel">Reset</button><button class="tpri" id="caAdd">Add Container</button></div>
 </aside>
 <aside class="tdr w40" id="dMc" aria-label="Create Manual Connection">
   <div class="dh"><span>Create Manual Connection</span><button data-close aria-label="Close">@@I:times@@</button></div>
@@ -836,6 +871,10 @@ html:not([data-theme]) .dck input{color-scheme:light}
   </div>
   <div class="df"><span class="sp"></span><button class="tbtn" id="mcCancel">Cancel</button><button class="tpri" id="mcSave">Save</button></div>
 </aside>
+<!-- the connect step's From / To picker (29 Oct 2026): the SAME grid dropdown as the canvas Create Manual Connection —
+     Search · Monitor · IP · Type · Groups — one shared element, anchored to whichever row's field opened it; single pick -->
+<div class="cvgrid" id="elFGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="elFq" placeholder="Search" autocomplete="off"></label>
+  <div class="cvgh"><span></span><span>Monitor ↓</span><span>IP</span><span>Type</span><span>Groups</span><span></span></div><div class="cvgb" id="elFb"></div></div>
 <div class="cvgrid" id="mcGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="mcGq" placeholder="Search" autocomplete="off"></label>
   <div class="cvgh"><span></span><span>Monitor ↓</span><span>IP</span><span>Type</span><span>Groups</span><span>Tags</span></div><div class="cvgb" id="mcGb"></div></div>
 <div class="cvgrid" id="cvGrid" role="listbox"><label class="tsrch cvgs"><span>@@I:search@@</span><input id="cvGq" placeholder="Search" autocomplete="off"></label>
@@ -1282,15 +1321,29 @@ function graphPaint(){
       + (d.badge ? `<text x="0" y="24" text-anchor="middle" style="font:600 10px Inter;fill:currentColor" class="gl">${esc(d.badge)}</text>` : '')
       + `<text class="lb" x="0" y="${root ? 56 : 50}" text-anchor="middle">${label.map((t, i) => `<tspan x="0" dy="${i ? 14 : 0}"${T.ip && d.ip && i === label.length - 1 && t === d.ip ? ' class="ipl"' : ''}>${esc(t)}</tspan>`).join('')}</text>`
       + (hidden ? `<g class="bdg" transform="translate(25,-25)"><circle r="11"/><text text-anchor="middle" y="3.5">${hidden}</text></g>` : '')
+      /* the ACTIONS handle (request, 29 Oct 2026): a + at the bottom-right, shown on hover — it opens Create Manual Connection /
+         Delete Node; a plain click on the node now opens its details. Custom tab, and ONLY after Edit (design mode, request 29 Oct 2026) — viewing a saved view shows no + */
+      + (T.tab === 'custom' && T.design ? `<g class="ndact" transform="translate(${root ? 32 : 26},${root ? 32 : 26})" role="button" aria-label="Node actions"><circle r="11"/><path d="M-5 0H5M0 -5V5"/></g>` : '')
       + '</g>';
   }).join('');
   vpApply(); miniPaint();
 }
 /* container shapes (Create Custom View › Container): r is the outer radius; the selection ring sits 7px outside */
-const CT_SHAPES = [ ['hexagon','Hexagon (round)'], ['circle','Circle'], ['square','Square (round)'] ];
+/* the live list (request, 29 Oct 2026): Hexagon (round) · Hexagon · Ellipse · Rectangle · Diamond · Octagon · Star · Triangle —
+   Circle and Square (round) stay, so views already drawn with them keep their shape */
+const CT_SHAPES = [ ['hexagon','Hexagon (round)'], ['hexagon-sharp','Hexagon'], ['circle','Circle'], ['ellipse','Ellipse'], ['square','Square (round)'],
+  ['rectangle','Rectangle'], ['diamond','Diamond'], ['octagon','Octagon'], ['star','Star'], ['triangle','Triangle'] ];
 function nodeShape(sh, r, sev){
   if (sh === 'circle') return `<circle class="ring" r="${r - 4}" style="stroke:${sev}"/><circle class="sring" r="${r + 3}"/>`;
   if (sh === 'square') { const a = r - 6; return `<rect class="ring" x="${-a}" y="${-a}" width="${2*a}" height="${2*a}" rx="12" style="stroke:${sev}"/><rect class="sring" x="${-a-7}" y="${-a-7}" width="${2*a+14}" height="${2*a+14}" rx="16"/>`; }
+  /* every other shape is ONE path, so the existing .ring / .sring rules (fill, severity stroke, selection ring) apply as-is */
+  const poly = (n, R, rot = -Math.PI / 2, dy = 0) => 'M' + Array.from({ length: n }, (_, i) => { const t = rot + 2 * Math.PI / n * i; return (R * Math.cos(t)).toFixed(1) + ' ' + (R * Math.sin(t) + dy).toFixed(1); }).join('L') + 'Z';
+  const star = (R) => 'M' + Array.from({ length: 10 }, (_, i) => { const t = -Math.PI / 2 + Math.PI / 5 * i, q = i % 2 ? R * .48 : R; return (q * Math.cos(t)).toFixed(1) + ' ' + (q * Math.sin(t) + R * .08).toFixed(1); }).join('L') + 'Z';
+  const ell = (rx, ry) => `M${-rx} 0A${rx} ${ry} 0 1 0 ${rx} 0A${rx} ${ry} 0 1 0 ${-rx} 0Z`;
+  const rectP = (w, h) => `M${-w} ${-h}H${w}V${h}H${-w}Z`;
+  const P = { 'hexagon-sharp': (R) => poly(6, R), ellipse: (R) => ell(R * 1.25, R * .78), rectangle: (R) => rectP(R * 1.2, R * .78),
+    diamond: (R) => poly(4, R * 1.08), octagon: (R) => poly(8, R * .96, -Math.PI / 2 + Math.PI / 8), star: (R) => star(R * 1.1), triangle: (R) => poly(3, R * 1.15, -Math.PI / 2, R * .22) }[sh];
+  if (P) return `<path class="ring${sh === 'ellipse' ? '' : ' sharp'}" d="${P(r)}" style="stroke:${sev}"/><path class="sring" d="${P(r + 8)}"/>`;
   const hex = (R) => 'M' + [0,1,2,3,4,5].map(i => { const t = Math.PI / 3 * i - Math.PI / 2; return (R * Math.cos(t)).toFixed(1) + ' ' + (R * Math.sin(t)).toFixed(1); }).join('L') + 'Z';
   return `<path class="ring" d="${hex(r)}" style="stroke:${sev}"/><path class="sring" d="${hex(r + 8)}"/>`;
 }
@@ -1321,33 +1374,37 @@ $('tSvg').addEventListener('pointerdown', (e) => {
   if (e.target.closest('.lkc')) return;   /* a label chip and its buttons handle their own clicks */
   const g = e.target.closest('.nd'); const n = g && T.nodes.find(x => x.key === g.dataset.k);
   const lg = !n && e.target.closest('.lkg[data-li]');
-  DR = { n, lk: lg ? +lg.dataset.li : null, x: e.clientX, y: e.clientY, moved: false, ev: { x: e.clientX, y: e.clientY } }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
+  const act = !!(n && e.target.closest('.ndact'));   /* the + handle: a press there is never a drag */
+  DR = { n, act, lk: lg ? +lg.dataset.li : null, x: e.clientX, y: e.clientY, moved: false, ev: { x: e.clientX, y: e.clientY } }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
 });
 $('tSvg').addEventListener('pointermove', (e) => {
   if (!DR) return tipMove(e); const dx = e.clientX - DR.x, dy = e.clientY - DR.y; if (Math.abs(dx) + Math.abs(dy) > 3) DR.moved = true; if (!DR.moved) return;
   DR.x = e.clientX; DR.y = e.clientY; tipHide();
+  if (DR.act) return;
   if (DR.n) { DR.n.x += dx / T.vp.k; DR.n.y += dy / T.vp.k; graphPaint(); } else pan(dx, dy);
 });
 $('tSvg').addEventListener('pointerup', () => {
-  if (DR && !DR.moved && DR.n) nodeClick(DR.n, DR.ev);
+  if (DR && !DR.moved && DR.n && DR.act) { T.sel.node = DR.n.key; ndClose(); lkMenuClose(); lkInfoClose(); mcMenuOpen(DR.n, DR.ev); graphPaint(); }
+  else if (DR && !DR.moved && DR.n) nodeClick(DR.n, DR.ev);
   else if (DR && !DR.moved && DR.lk != null && T.tab === 'custom') lkClick(T.links[DR.lk], DR.ev);
   else if (DR && !DR.moved && !DR.n) { T.sel.node = null; T.sel.link = null; graphPaint(); }
   DR = null; $('tSvg').classList.remove('pan');
 });
 $('tSvg').addEventListener('pointerleave', tipHide);
-/* right-click a node on the Custom tab → its details panel (and no browser menu); the action menu closes */
+/* right-click a node on the Custom tab → its action menu (and no browser menu); a click is the details panel */
 $('tSvg').addEventListener('contextmenu', (e) => {
   if (T.tab !== 'custom') return; const g = e.target.closest('.nd'), n = g && T.nodes.find(x => x.key === g.dataset.k);
   if (!n) { const lg = e.target.closest('.lkg[data-li]'), l = lg && T.links[+lg.dataset.li];
     if (l && l.man) { e.preventDefault(); DR = null; mcMenuClose(); ndClose(); lkInfoClose(); T.sel.node = null; lkMenuShow(l, { x: e.clientX, y: e.clientY }); graphPaint(); }
     return; }
-  e.preventDefault(); DR = null; $('tSvg').classList.remove('pan'); mcMenuClose(); lkMenuClose();
-  T.sel.node = n.key; T.sel.link = null; ndOpen(n); graphPaint();
+  e.preventDefault(); if (!T.design) return;   /* actions exist only while editing (Edit); viewing, a right-click does nothing */
+  DR = null; $('tSvg').classList.remove('pan'); lkMenuClose(); ndClose();
+  T.sel.node = n.key; T.sel.link = null; mcMenuOpen(n, { x: e.clientX, y: e.clientY }); graphPaint();   /* right-click = the action menu, like the + */
 });
 function nodeClick(n, ev){
   T.sel.node = n.key;
-  /* a CLICK opens the action menu only; the details panel is the RIGHT-click (request, 28 Oct 2026) */
-  if (T.tab === 'custom' && ev) { lkMenuClose(); mcMenuOpen(n, ev); }
+  /* a CLICK opens the details panel (request, 29 Oct 2026 — it opened the action menu); the actions are the hover + and the right-click */
+  if (T.tab === 'custom' && ev) { lkMenuClose(); mcMenuClose(); lkInfoClose(); ndOpen(n); }
   /* Progressive: a neighbour that hides children opens them; clicking an open one folds them again */
   if (T.mode === 'progressive' && n.depth > 0 && n.d.kids && n.d.kids.length) { T.exp[n.key] = !T.exp[n.key]; layout(curRoot()); }
   graphPaint();
@@ -1451,7 +1508,7 @@ function drOpen(id){
   if (id === 'dCv') cvOpen(CV.mode);
   if (id === 'dNew') { newReset(); newMode(); setTimeout(() => $('nName').focus(), 220); }
 }
-function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('grpScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('mcGrid').classList.remove('on'); mcMenuClose(); $('cvPickB').classList.remove('open'); }
+function drClose(){ if (typeof elFOpen === 'function' && $('elFGrid').classList.contains('on')) elFOpen(null); document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('grpScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('mcGrid').classList.remove('on'); mcMenuClose(); $('cvPickB').classList.remove('open'); }
 $('tScrim').onclick = drClose;
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
 $('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
@@ -1670,17 +1727,22 @@ spMount('cvShare', () => CVS);
 /* single-select engine for Icon and Shape: get/set read and write CVT */
 function ssMount(id, opts, key, glyph, st){
   const h = $(id); h._o = opts; h._k = key; h._g = glyph; h._st = st || (() => CVT);   /* st: whose state this dropdown writes */
-  h.innerHTML = `<button class="din" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>${ic('chevron-down')}</button><div class="dmenu" role="listbox"></div>`;
+  const srch = opts.length > 8;   /* a long list gets a Search box (the live Shape dropdown; the DS select's own >8 rule) */
+  h.innerHTML = `<button class="din" type="button" aria-haspopup="listbox" aria-expanded="false"><span></span>${ic('chevron-down')}</button><div class="dmenu" role="listbox">`
+    + (srch ? `<label class="tsrch ssq"><span>${ic('search')}</span><input placeholder="Search" autocomplete="off"></label>` : '') + `<div class="ssl"></div></div>`;
   const b = h.querySelector('.din'), m = h.querySelector('.dmenu');
   b.onclick = () => { const on = !m.classList.contains('on'); document.querySelectorAll('.ssw .dmenu.on').forEach(x => x.classList.remove('on')); document.querySelectorAll('.ssw.open').forEach(x => x.classList.remove('open'));
-    m.classList.toggle('on', on); h.classList.toggle('open', on); b.setAttribute('aria-expanded', on); };
+    m.classList.toggle('on', on); h.classList.toggle('open', on); b.setAttribute('aria-expanded', on);
+    const q = m.querySelector('.ssq input'); if (q) { q.value = ''; ssPaint(id); if (on) setTimeout(() => q.focus(), 0); } };
+  const qi = m.querySelector('.ssq input'); if (qi) qi.oninput = () => ssPaint(id);
   m.onclick = (e) => { const o = e.target.closest('button'); if (!o) return; h._st()[key] = o.dataset.v; m.classList.remove('on'); h.classList.remove('open'); b.setAttribute('aria-expanded', false); ssPaint(id); };
   ssPaint(id);
 }
 function ssPaint(id){
   const h = $(id); if (!h || !h._o) return; const cur = h._st()[h._k], o = h._o.find(x => x[0] === cur) || h._o[0];
   h.querySelector('.din span').textContent = o[1];
-  h.querySelector('.dmenu').innerHTML = h._o.map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
+  const qv = (h.querySelector('.ssq input') || {}).value || '', ql = qv.trim().toLowerCase();
+  h.querySelector('.ssl').innerHTML = h._o.filter(([, l]) => !ql || l.toLowerCase().includes(ql)).map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
 }
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
 
@@ -1691,9 +1753,40 @@ const CV_GRP_NEW = [];
 const cvGroups = () => { const all = new Set();
   [...CUSTOM.map(g => g.grp), ...CV_GRP_NEW].forEach(p => gParts(p).forEach((_, i, a) => all.add(a.slice(0, i + 1).join(GSEP))));
   return [...all].sort((a, b) => a.localeCompare(b)); };   /* sorted as paths, so a sub-group lands right under its parent */
-const cvGrpVal = () => { const v = $('cvGrp').value; return typeof v === 'string' ? v.trim() : ''; };
-function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGroups().map(g => ({ value: g, label: g })); el.value = sel || ''; }
-$('cvGrp').addEventListener('change', () => { $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; });
+/* View Group as a TREE (request, 29 Oct 2026, Option 1): obs-select's own option groups — a group with sub-groups is a
+   branch (chevron) with its children indented under it, the reference's shape; all open whenever the menu opens.
+   Two things the component does not do, done here, both scoped to this one select:
+   · a BRANCH is a group too (PMG holds PMG › ux and can hold views itself), but obs-select only toggles a branch — so a
+     press on a branch's NAME (not its chevron) selects that group; its path is rebuilt from the rows' indent levels;
+   · the closed field shows the FULL PATH ("PMG › ux", not "ux"): the stored value carries a zero-width marker (CV_ZW), so
+     the component finds no option for it and prints the raw value — cvGrpVal strips the marker. */
+const CV_ZW = '​';
+const cvGrpVal = () => { const v = $('cvGrp').value; return typeof v === 'string' ? v.split(CV_ZW).join('').trim() : ''; };
+function cvGrpTree(){
+  const root = [], at = new Map();
+  cvGroups().forEach(path => { const parts = gParts(path), par = parts.slice(0, -1).join(GSEP);
+    const node = { value: path, label: parts[parts.length - 1] }; at.set(path, node);
+    const list = par && at.get(par) ? (at.get(par).children = at.get(par).children || []) : root; list.push(node); });
+  return root;
+}
+function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGrpTree(); el.value = sel ? sel + CV_ZW : ''; }
+function cvGrpPick(path){ const el = $('cvGrp'); el.value = path + CV_ZW; $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; }
+$('cvGrp').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const d = e.detail, v = Array.isArray(d) ? d[0] : d;
+  if (typeof v === 'string' && v && !v.endsWith(CV_ZW)) setTimeout(() => cvGrpPick(v), 0); });   /* after the component has stored the leaf */
+(function cvGrpTreeWire(el){
+  const go = () => { const r = el.shadowRoot; if (!r) return setTimeout(go, 50);
+    /* open every branch each time the menu opens */
+    new MutationObserver(() => { const br = [...r.querySelectorAll('button.mopt.branch')];
+      if (!br.length) { el._grpDone = false; return; } if (el._grpDone) return; el._grpDone = true;
+      el._auto = true; br.forEach(b => { const ch = b.querySelector('.tchev'); if (!ch || !ch.classList.contains('open')) b.click(); }); el._auto = false; }).observe(r, { childList: true, subtree: true });
+    /* a branch's name selects it — capture, so the component's own toggle never sees the press */
+    r.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button.mopt.branch'); if (!b || el._auto || e.target.closest('.tchev')) return;   /* the auto-open's own clicks are not picks */
+      const rows = [...r.querySelectorAll('button.mopt.tnode')], stack = [];
+      for (const row of rows) { const lv = Math.round((parseFloat(row.style.paddingLeft) - 12) / 18), lb = row.textContent.trim();
+        stack.length = lv; stack[lv] = lb; if (row === b) break; }
+      e.stopPropagation(); e.preventDefault(); cvGrpPick(stack.join(GSEP));
+      r.querySelector('button.trig').click(); }, true); };   /* the trigger toggles — a second press closes the open menu */
+  go(); })($('cvGrp'));
 /* VIEW GROUPS drawer (request, 28 Oct 2026) — replaces the Create New popover. GRP.add is the parent a new group is
    being typed under ('' = top level, null = none open). Deleting is offered only for a group with no views anywhere
    under it, and takes its (equally empty) sub-groups with it. */
@@ -1925,10 +2018,6 @@ function caPaint(focusId){
           <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="caSh${k}"></div></div>
           <div class="dfld"><div class="dlbl">IP</div><input class="din${c.err.ip ? ' err' : ''}" data-f="ip" value="${esc(c.ip)}" placeholder="Enter IP address" autocomplete="off"><div class="derr"${c.err.ip ? '' : ' hidden'}>Enter a valid IPv4 address</div></div>
         </div>
-        <!-- Create Manual Connection at create time (request, 28 Oct 2026): the nodes picked here are joined to the container
-             as it is added, so it arrives connected and the view can be saved without a second step -->
-        <div class="dfld"><div class="dlbl">Create Manual Connection</div><obs-select class="caconn" data-k="${k}" multiple searchable block placeholder="Select nodes to connect"></obs-select>
-          <div class="cahint">Optional — joins this container to nodes already on the canvas. A container left unconnected stops the view being saved.</div></div>
       </div></section>`; }).join('');
   CAS.forEach(c => { ssMount('caIc' + c.id, CT_ICONS, 'ic', true, () => c); ssMount('caSh' + c.id, CT_SHAPES, 'sh', false, () => c); });
   const tg = caTargets(), opts = tg.map((d, i) => ({ value: String(i), label: d.n + (i === 0 ? ' (root)' : '') }));
@@ -1972,7 +2061,7 @@ const EL = new Map();   /* entity key → { from, lbl, pi, ci, l3, pair } — ke
 const caFilled = (c) => !!(c.n.trim() || c.desc.trim() || c.ip.trim());
 function nodeAddPaint(){
   const nc = CAS.filter(caFilled).length, ne = EN.pick.length, b = $('caAdd');
-  if (ne && NODE_STEP === 'pick') { b.textContent = 'Next'; b.disabled = false; return; }   /* entities get a connect step first */
+  if (NODE_STEP === 'pick') { b.textContent = 'Next'; b.disabled = !nc && !ne; return; }   /* step 1 always reads Next, disabled until a container has details or an entity is ticked (29 Oct 2026) */
   b.textContent = nc && ne ? `Add ${nc + ne} Nodes` : nc ? (nc > 1 ? `Add ${nc} Containers` : 'Add Container') : ne ? (ne > 1 ? `Add ${ne} Entities` : 'Add Entity')
     : NODE_TAB === 'entity' ? 'Add Entity' : 'Add Container';
   b.disabled = !nc && !ne && NODE_TAB === 'entity';   /* on Container an empty press still shows "Name is required" */
@@ -1983,16 +2072,15 @@ $('caAdd').onclick = () => {
   let bad = false;
   list.forEach(c => { c.err = { n: !c.n.trim(), ip: !!c.ip.trim() && !CA_IP.test(c.ip.trim()) }; if (c.err.n || c.err.ip) { c.open = true; bad = true; } });   /* an error never hides inside a shut box */
   if (bad) { if (NODE_STEP !== 'pick') nodeStep('pick'); caPaint(); if (NODE_TAB !== 'container') nodeTab('container'); return; }
-  if (EN.pick.length && NODE_STEP === 'pick') return nodeStep('link');   /* Next → connect the picked entities */
+  if (NODE_STEP === 'pick' && (cs.length || EN.pick.length)) return nodeStep('link');   /* Next → connect what is being added */
   const tg = caTargets(), caN = new Map(), enN = new Map();   /* the canvas BEFORE anything is pushed — "from" indexes into it */
   /* added with nolink — a container linked by its box's picks, an entity by its row on the connect step; Save waits for the rest */
   cs.forEach(c => { const node = { n: c.n.trim(), ip: c.ip.trim(), ic: c.ic, s: 'unknown', shape: c.sh, desc: c.desc.trim(), kind: 'container', nolink: true };
-    if (c.conn.length) node.man = c.conn.slice();   /* the connections picked in the box — drawn as manual connections */
     T.design.kids.push(node); T.design.ct++; caN.set(c.id, node); });
   EN.pick.forEach(m => { const node = { n: m.n, ip: m.ip, ic: m.ic, s: m.s, nolink: true }; T.design.kids.push(node); enN.set(m.key, node); });
   const from = (v) => !v ? null : v[0] === 't' ? tg[+v.slice(1)] : v[0] === 'c' ? caN.get(+v.slice(1)) : enN.get(v.slice(1));
-  EN.pick.forEach(m => { const st = EL.get(m.key); let src = st && from(st.from), tgt = enN.get(m.key); if (!src || src === tgt) return;
-    if (st.rev) [src, tgt] = [tgt, src];   /* swapped: the entity is the source */
+  elItems().forEach(it => { const st = EL.get(it.k); let src = st && from(st.from), tgt = from(it.k); if (!src || !tgt || src === tgt) return;
+    if (st.rev) [src, tgt] = [tgt, src];   /* swapped: the new node is the source */
     src.man = src.man || []; if (!src.man.includes(tgt)) src.man.push(tgt);
     if (st.lbl.trim()) { let l = LK_LBL.get(src); if (!l) LK_LBL.set(src, l = new Map()); l.set(tgt, st.lbl.trim()); }
     if (isNet(src) && isNet(tgt) && (st.pi || st.ci || st.l3)) { let f = LK_IF.get(src); if (!f) LK_IF.set(src, f = new Map()); f.set(tgt, { pi: st.pi, ci: st.ci, l3: st.l3 }); } });
@@ -2058,15 +2146,58 @@ function enFit(){
   t.maxHeight = Math.max(160, b.getBoundingClientRect().bottom - br.top - pager) + 'px';
 }
 addEventListener('resize', () => { if ($('dEnA').classList.contains('on')) enFit(); });
-$('enCancel').onclick = drClose;
+/* Reset (request, 29 Oct 2026 — it was Cancel; the drawer's × closes it): clears the CURRENT step only.
+   Step 2 → every row back to its default (container From empty, entity From = root, no label / interfaces / swap);
+   step 1 → the container boxes and the ticked entities. */
+/* ---- the From / To grid: rows are elSources (the canvas, then this batch's containers and entities), groups read off the
+   monitor tree (cvMons) — a container has none. Picking sets the row's other end and closes; picking the CURRENT row clears it. */
+let EF = null;
+function elFOpen(ctx){
+  const g = $('elFGrid'); if (EF) EF.btn.classList.remove('open'), EF.btn.setAttribute('aria-expanded', 'false');
+  EF = ctx; g.classList.toggle('on', !!ctx); if (!ctx) return;
+  ctx.btn.classList.add('open'); ctx.btn.setAttribute('aria-expanded', 'true'); $('elFq').value = ''; elFPaint();
+  const r = ctx.btn.getBoundingClientRect(), h = g.offsetHeight;
+  g.style.left = Math.max(8, Math.min(r.left, innerWidth - g.offsetWidth - 8)) + 'px';
+  g.style.top = (r.bottom + 4 + h > innerHeight - 8 ? Math.max(8, r.top - 4 - h) : r.bottom + 4) + 'px';   /* flips above near the floor */
+  setTimeout(() => $('elFq').focus(), 0);
+}
+function elFPaint(){
+  if (!EF) return; const q = $('elFq').value.trim().toLowerCase(), mons = new Map(cvMons().map(x => [x.key, x]));
+  const rows = EF.opts.map(o => { const d = o.d, mm = mons.get(d.n + '|' + (d.ip || '')); return { v: o.v, n: o.n, ip: d.ip || '', ic: d.ic, s: d.s || 'unknown', grp: mm ? mm.grp : [] }; })
+    .filter(r => !q || (r.n + ' ' + r.ip + ' ' + r.grp.join(' ')).toLowerCase().includes(q));
+  $('elFb').innerHTML = rows.map(r => { const on = r.v === EF.st.from;
+    return `<div class="cvgr" role="option" data-v="${esc(r.v)}" aria-selected="${on}"><span><input type="checkbox" tabindex="-1"${on ? ' checked' : ''}></span>`
+    + `<span class="nm"><span class="tdot s-${r.s}"></span><b>${esc(r.n)}</b></span><span>${esc(r.ip)}</span><span class="ty">${mi(r.ic)}</span>`
+    + `<span class="gp">${r.grp.length ? `<span>${esc(r.grp[0])}</span>` + (r.grp.length > 1 ? `<span>+${r.grp.length - 1}</span>` : '') : ''}</span><span></span></div>`; }).join('')
+    || '<div class="cvgn">No nodes match</div>';
+}
+$('elFq').oninput = elFPaint;
+$('elFb').onclick = (e) => { const r = e.target.closest('.cvgr'); if (!r || !EF) return; const { row, m, st } = EF, v = r.dataset.v;
+  st.from = st.from === v ? '' : v; elFOpen(null); elRow(row, m, st); };
+document.addEventListener('pointerdown', (e) => { if ($('elFGrid').classList.contains('on') && !e.composedPath().some(n => n.classList && (n.id === 'elFGrid' || n.classList.contains('elfrom')))) elFOpen(null); });   /* composedPath: the field lives in obs-table's shadow root */
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('elFGrid').classList.contains('on')) { e.stopImmediatePropagation(); elFOpen(null); } }, true);
+$('enCancel').onclick = () => {
+  if (NODE_STEP === 'link') { elItems().forEach(it => EL.delete(it.k)); elPaint(); nodeAddPaint(); return; }
+  caReset(); EN.pick = []; if (EN.type) enPaint(true); EL.clear(); nodeAddPaint();
+};
 /* ---- step 2: connect the picked entities (request, 29 Oct 2026) */
+/* the rail: step 1 names what was picked once it is done ("Node : 2 Containers, 1 Entity"), the report reference's shape */
+function nodeStepsPaint(){
+  const nc = CAS.filter(caFilled).length, ne = EN.pick.length, link = NODE_STEP === 'link';
+  const what = [nc ? (nc > 1 ? nc + ' Containers' : 'Container') : '', ne ? (ne > 1 ? ne + ' Entities' : 'Entity') : ''].filter(Boolean).join(', ');
+  const el = $('nodeSteps'); el.items = [ { label: link && what ? 'Node : ' + what : 'Select Node' }, { label: 'Create Manual Connection' } ]; el.active = link ? 1 : 0;   /* kept as state */
+  const row = (i, label, val, st) => `<li role="menuitem" data-i="${i}" class="${st}"${st === 'dis' ? ' aria-disabled="true"' : ''}${st === 'on' ? ' aria-current="step"' : ''}>`
+    + `<span class="n">${st === 'done' ? ic('check') : i + 1}</span><span>${esc(label)}${val ? ` : <span class="v">${esc(val)}</span>` : ''}</span></li>`;
+  el.innerHTML = row(0, 'Select Node', link ? what : '', link ? 'done' : 'on') + row(1, 'Create Manual Connection', '', link ? 'on' : 'dis');
+}
+$('nodeSteps').addEventListener('click', (e) => { const li = e.target.closest('li.done'); if (li && li.dataset.i === '0' && NODE_STEP === 'link') nodeStep('pick'); });   /* a done step goes back; a future one is inert */
 function nodeStep(st){
   NODE_STEP = st; const link = st === 'link';
-  $('nodeSw').hidden = link; $('nodeBack').hidden = !link; $('dEnA').classList.toggle('elwide', link); $('nodeTtl').textContent = link ? 'Connect Entities' : 'Add Node';
-  if (link) { document.querySelectorAll('#dEnA [data-pane]').forEach(p => p.hidden = p.dataset.pane !== 'link'); elPaint(); nodeAddPaint(); }
-  else nodeTab(NODE_TAB);
+  $('nodeSw').hidden = link; $('nodeBack').hidden = !link; nodeStepsPaint();
+  if (link) { document.querySelectorAll('#dEnA [data-pane]').forEach(p => p.hidden = p.dataset.pane !== 'link'); EP.q = ''; $('elQ').value = ''; $('elTbl').page = 1; elPaint(); nodeAddPaint(); }
+  else { nodeTab(NODE_TAB); nodeStepsPaint(); }
 }
-$('nodeBack').onclick = () => { nodeStep('pick'); nodeTab('entity'); };
+$('nodeBack').onclick = () => nodeStep('pick');   /* back to whichever tab was showing */
 /* where an entity can connect FROM: the canvas (root first), a container in this batch, another entity in this batch */
 function elSources(){
   return [ ...caTargets().map((d, i) => ({ v: 't' + i, n: d.n + (i === 0 ? ' (root)' : ''), d })),
@@ -2074,41 +2205,112 @@ function elSources(){
     ...EN.pick.map(m => ({ v: 'e' + m.key, n: m.n + ' (new)', d: m })) ];
 }
 const elBool = (e, el) => { const d = e.detail, v = Array.isArray(d) ? d[0] : d; return typeof v === 'boolean' ? v : !!el.checked; };
-function elPaint(){
-  $('elGrid').innerHTML = EN.pick.map(m => `<tr class="elrow" data-k="${esc(m.key)}"></tr>`).join('');
-  $('elGrid').querySelectorAll('.elrow').forEach(row => { const m = EN.pick.find(x => x.key === row.dataset.k); if (!m) return;
-    let st = EL.get(m.key); if (!st) EL.set(m.key, st = { from: 't0', lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false });
-    elRow(row, m, st); });
+/* what the connect step lists: every filled container box, then every ticked entity — keyed like elSources ('c'+id / 'e'+key) */
+const elItems = () => [ ...CAS.filter(caFilled).map(c => ({ k: 'c' + c.id, n: c.n.trim(), ip: c.ip.trim(), ic: c.ic, d: { n: c.n.trim(), ic: c.ic, kind: 'container' } })),
+  ...EN.pick.map(m => ({ k: 'e' + m.key, n: m.n, ip: m.ip, ic: m.ic, d: m })) ];
+/* the connect step's search + page (29 Oct 2026). EL keeps every row's answers, so paging and searching never lose an edit */
+const EP = { q: '' };
+/* the field styles live in the PAGE sheet, which cannot reach inside obs-table's shadow root — so the rules the injected cells
+   need are adopted into it (scoped to cells marked .eltd, the IPAM table's ipmsnmtd pattern) */
+const EL_OT_CSS = `td.eltd .cell-clip{display:none}
+td.eltd{vertical-align:middle}
+svg.i{width:1em;height:1em;display:block;fill:currentColor}
+.din{width:100%;height:32px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:0 11px;font:inherit;font-size:13px;outline:0;box-sizing:border-box}
+.din:focus{border-color:var(--neutral-light)}
+.cvpick{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;text-align:left}
+.cvpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cvpick span.ph{color:var(--neutral-light)}
+.cvpick svg{flex:0 0 auto}.cvpick.open svg{transform:rotate(180deg)}
+.elnm{display:flex;align-items:center;gap:8px;min-width:0}
+.elnm svg{width:18px;height:18px;flex:0 0 18px}
+.elnm div{min-width:0}
+.elnm b{display:block;font-weight:500;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elnm small{display:block;font-size:12px;color:var(--neutral-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elna{color:var(--neutral-light)}
+tr.elnet .elna,tr:not(.elnet) .elifc{display:none}
+.elc obs-select,.elc obs-input{display:block;min-width:0}
+.elc.c{display:flex;justify-content:center}
+:host(.elfew) obs-pagination{display:none}`;
+function elOtCols(noif){
+  const c = [ { key: 'k', title: 'From', width: noif ? '34%' : '20%' }, { key: 'sw', title: '', width: '56px' }, { key: 'to', title: 'To', width: noif ? '34%' : '20%' },
+    { key: 'lbl', title: 'Label', width: noif ? '' : '15%' } ];
+  return noif ? c : c.concat([ { key: 'pi', title: 'Parent Interface', width: '17%' }, { key: 'ci', title: 'Child Interface', width: '17%' }, { key: 'l3', title: 'L3', width: '64px', align: 'center' } ]);
 }
+let EL_ITEMS = [];   /* the rows the table holds — a tr finds its item by the key printed (hidden) in its first cell */
+function elPaint(){
+  if ($('elFGrid').classList.contains('on')) elFOpen(null);
+  const all = elItems(), q = EP.q.trim().toLowerCase(), t = $('elTbl'), noif = !all.some(it => it.k[0] === 'e');
+  t.classList.toggle('elnoif', noif);   /* containers only → no interface columns */
+  t.classList.toggle('elfew', all.length <= 10); $('elTools').hidden = all.length <= 10;   /* search + pager only past 10 rows */
+  EL_ITEMS = q ? all.filter(it => (it.n + ' ' + (it.ip || '')).toLowerCase().includes(q)) : all;
+  EL_ITEMS.forEach(it => { if (!EL.get(it.k)) EL.set(it.k, { from: it.k[0] === 'c' ? '' : 't0', lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false }); });   /* a container starts unconnected */
+  t.columns = elOtCols(noif);
+  t.rows = EL_ITEMS.map(it => ({ id: it.k, k: it.k, sw: '', to: '', lbl: '', pi: '', ci: '', l3: '' }));
+  elOtWire(t);
+  if (t.shadowRoot) t.shadowRoot.querySelectorAll('tbody tr').forEach(tr => delete tr.dataset.k);   /* a repaint refills every row — the column set may have changed */
+  setTimeout(() => { elOtSync(t); elOtFit(); }, 0);
+}
+/* fill every rendered row; re-run whenever obs-table re-renders (a page turn, a page-size change) */
+function elOtSync(t){
+  const r = t.shadowRoot; if (!r) return;
+  r.querySelectorAll('tbody tr').forEach(tr => { const td0 = tr.querySelector(':scope > td'); if (!td0) return;
+    const k = (td0.querySelector('.cell-clip') || td0).textContent.trim(), it = EL_ITEMS.find(x => x.k === k); if (!it) return;
+    if (tr.dataset.k === k && tr.querySelector('.elc')) return;   /* already filled — our own writes re-trigger the observer */
+    tr.dataset.k = k; elRow(tr, it, EL.get(k)); });
+}
+function elOtWire(t){
+  if (t._elw) return; t._elw = 1;
+  const go = () => { const r = t.shadowRoot; if (!r) return setTimeout(go, 50);
+    const ss = new CSSStyleSheet(); ss.replaceSync(EL_OT_CSS); r.adoptedStyleSheets = [...r.adoptedStyleSheets, ss];
+    new MutationObserver(() => elOtSync(t)).observe(r, { childList: true, subtree: true, characterData: true }); elOtSync(t); elOtFit(); };
+  go();
+}
+/* the table's own box scrolls; its pager sits under the box, so the box gets the pane's leftover height (enFit's approach) */
+function elOtFit(){
+  const t = $('elTbl'), pane = t.closest('.db'); if (!t.shadowRoot || !pane || pane.hidden) return;
+  const box = t.shadowRoot.querySelector('.box'); if (!box) return;
+  const pg = t.shadowRoot.querySelector('obs-pagination'), pr = pg && pg.offsetHeight ? pg.getBoundingClientRect().height : 0, br = box.getBoundingClientRect();
+  const h = Math.max(160, pane.getBoundingClientRect().bottom - 16 - br.top - pr) + 'px';
+  t.maxHeight = h;
+  /* with a pager (>10 rows) the box also FILLS that height, so the pager sits on the pane's floor whatever a page holds
+     (request, 29 Oct 2026); with no pager the table hugs its rows */
+  box.style.minHeight = t.classList.contains('elfew') ? '' : h;
+}
+$('elQ').addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; EP.q = String(enVal(e, $('elQ')) || ''); $('elTbl').page = 1; elPaint(); });
+addEventListener('resize', () => { if (NODE_STEP === 'link' && $('dEnA').classList.contains('on')) elOtFit(); });
 /* one row. "from" is the OTHER end's id; rev flips the direction (request, 29 Oct 2026): the entity becomes the source and the
    picked node the target — so the dropdown moves to the To column and the entity to From. Re-rendered per swap, row only. */
 function elRow(row, m, st){
-  const opts = elSources().filter(o => o.v !== 'e' + m.key); if (!opts.some(o => o.v === st.from)) st.from = 't0';
-  const sel = `<obs-select class="elfrom" searchable block placeholder="Select" aria-label="${st.rev ? 'Connect to' : 'Connect from'}"></obs-select>`;
+  const opts = elSources().filter(o => o.v !== m.k); if (st.from && !opts.some(o => o.v === st.from)) st.from = m.k[0] === 'c' ? '' : 't0';
+  const cur = opts.find(o => o.v === st.from);
+  const sel = `<button type="button" class="din cvpick elfrom" aria-haspopup="listbox" aria-expanded="false" aria-label="${st.rev ? 'Connect to' : 'Connect from'}"><span class="${cur ? '' : 'ph'}">${cur ? esc(cur.n) : 'Select'}</span>${ic('chevron-down')}</button>`;
   const ent = `<div class="elnm">${mi(m.ic)}<div><b title="${esc(m.n)}">${esc(m.n)}</b><small>${esc(m.ip || '—')}</small></div></div>`;
   row.classList.toggle('elrev', !!st.rev);
-  row.innerHTML = `<td>${st.rev ? ent : sel}</td>`
-    + `<td class="c"><obs-button variant="transparent" class="elsw squared-button" aria-label="Swap From and To" data-tip="Swap From and To"><obs-icon name="exchange" size="16"></obs-icon></obs-button></td>`
-    + `<td>${st.rev ? sel : ent}</td>`
-    + `<td><obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input></td>`
-    + `<td><span class="elna">—</span><obs-select class="elpi elifc" searchable block placeholder="Select" aria-label="Parent interface"></obs-select></td>`
-    + `<td><span class="elna">—</span><obs-select class="elci elifc" searchable block placeholder="Select" aria-label="Child interface"></obs-select></td>`
-    + `<td class="c"><span class="elna">—</span><obs-checkbox class="ell3 elifc" aria-label="L3"></obs-checkbox></td>`;
+  const cells = [ st.rev ? ent : sel,
+    `<obs-button variant="transparent" class="elsw squared-button" aria-label="Swap From and To" data-tip="Swap From and To"><obs-icon name="exchange" size="16"></obs-icon></obs-button>`,
+    st.rev ? sel : ent, `<obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input>`,
+    `<span class="elna">—</span><obs-select class="elpi elifc" searchable block placeholder="Select" aria-label="Parent interface"></obs-select>`,
+    `<span class="elna">—</span><obs-select class="elci elifc" searchable block placeholder="Select" aria-label="Child interface"></obs-select>`,
+    `<span class="elna">—</span><obs-checkbox class="ell3 elifc" aria-label="L3"></obs-checkbox>` ];
+  row.querySelectorAll(':scope > td').forEach((td, i) => { if (i >= cells.length) return; td.classList.add('eltd');
+    let c = td.querySelector(':scope > .elc'); if (!c) { c = document.createElement('div'); c.className = 'elc'; td.appendChild(c); }
+    c.className = 'elc' + (i === 1 || i === 6 ? ' c' : ''); c.innerHTML = cells[i];
+    ['click', 'mousedown', 'keydown'].forEach(ev => c.addEventListener(ev, e => e.stopPropagation()));   /* the table must not treat a field press as a row press */ });
+  if (!row.querySelector('.elpi')) { /* containers-only table: no interface cells */ }
   const fs = row.querySelector('.elfrom'), lb = row.querySelector('.ellbl');
-  fs.options = opts.map(o => ({ value: o.v, label: o.n })); fs.value = st.from; lb.value = st.lbl;
-  fs.addEventListener('change', (e) => { const v = mcSelV(e, fs); if (!v || v === st.from) return; st.from = v; elIfPaint(row, m, st); });
+  lb.value = st.lbl;
+  fs.addEventListener('click', () => elFOpen($('elFGrid').classList.contains('on') && EF && EF.btn === fs ? null : { btn: fs, row, m, st, opts }));
   lb.addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; st.lbl = String(enVal(e, lb) || ''); });
-  row.querySelector('.elpi').addEventListener('change', (e) => { st.pi = mcSelV(e, row.querySelector('.elpi')); });
-  row.querySelector('.elci').addEventListener('change', (e) => { st.ci = mcSelV(e, row.querySelector('.elci')); });
-  row.querySelector('.ell3').addEventListener('change', (e) => { st.l3 = elBool(e, row.querySelector('.ell3')); });
+  if (row.querySelector('.elpi')) { row.querySelector('.elpi').addEventListener('change', (e) => { st.pi = mcSelV(e, row.querySelector('.elpi')); });
+    row.querySelector('.elci').addEventListener('change', (e) => { st.ci = mcSelV(e, row.querySelector('.elci')); });
+    row.querySelector('.ell3').addEventListener('change', (e) => { st.l3 = elBool(e, row.querySelector('.ell3')); }); }
   row.querySelector('.elsw').addEventListener('click', () => { const t = performance.now(); if (t - (st.swT || 0) < 300) return; st.swT = t;   /* obs-button double-fires */
     st.rev = !st.rev; st.pair = ''; elRow(row, m, st); });
-  elIfPaint(row, m, st);
+  elIfPaint(row, m.d, st);
 }
 /* the interface fields — only when BOTH ends are network devices, the Create Manual Connection rule */
 function elIfPaint(row, m, st){
   const o = elSources().find(x => x.v === st.from), on = !!(o && isNet(o.d) && isNet(m));
-  row.classList.toggle('elnet', on); if (!on) return;   /* not a network pair → the three cells read "—" */
+  row.classList.toggle('elnet', on); if (!on || !row.querySelector('.elpi')) return;   /* not a network pair → the three cells read "—" */
   const [ps, cs] = st.rev ? [m, o.d] : [o.d, m];   /* the parent interface is always the SOURCE end's */
   const pair = ps.n + '→' + cs.n; if (st.pair !== pair) Object.assign(st, { pi: '', ci: '', l3: false, pair });
   const pi = row.querySelector('.elpi'), ci = row.querySelector('.elci');

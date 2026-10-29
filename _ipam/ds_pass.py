@@ -2791,5 +2791,12 @@ t = t.replace(_a, "const DS_FIT = new Set(['tblSubnets', 'tblSupernet', 'tblIps'
 _a = """  { title: 'VLAN', width: 90, cell: r => esc(r.vlan || '\u2014') },\n"""
 assert t.count(_a) == 1, 'vlan col'
 t = t.replace(_a, '')
+# §: subnet detail header drops the "Site > <site>" tag (28 Oct 2026); the row is empty after it, so it goes too
+_a = """        <div class="ip-sdtags">
+          <obs-tag>Site &gt; ${esc(s.site)}</obs-tag>
+        </div>
+"""
+assert t.count(_a) == 1, 'sd site tag'
+t = t.replace(_a, '')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)
