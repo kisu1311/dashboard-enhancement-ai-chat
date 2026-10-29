@@ -43,7 +43,7 @@ function pageTitle(file) {
   return t;
 }
 
-const NOT_OPTIONS = ['setting.html', 'topology.html'];   /* module pages, not options (topology.html: 22 Oct 2026) */
+const NOT_OPTIONS = ['setting.html', 'topology.html', 'topology2.html'];   /* topology2.html: Topology Option 2 (29 Oct 2026) — module pages, not options (topology.html: 22 Oct 2026) */
 
 function sync() {
   const htmlFiles = fs

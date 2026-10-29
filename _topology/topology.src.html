@@ -39,6 +39,8 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tdiv{width:1px;height:25px;background:var(--border-color)}
 .thd h1{margin:0;display:flex;align-items:center;gap:8px;font-size:20px;font-weight:500;color:var(--primary)}
 .thd h1 svg{font-size:22px}
+.thd .tsp{flex:1 1 auto}
+.thd #tOpt{display:inline-block}
 
 /* row 2 — tabs · toolbar (live: 43px; tab 12.8px, padding 12/0/8, 20px apart, active 500 + 4px underline) */
 .tbar{flex:0 0 44px;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--border-color)}
@@ -82,6 +84,13 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tbody{flex:1 1 auto;display:flex;min-height:0}
 .tside{flex:0 0 257px;width:257px;min-width:0;overflow:hidden;display:flex;flex-direction:column;border-right:1px solid var(--border-color);padding:8px 0 8px 8px;min-height:0}
 .tside .tsrch{width:auto;margin-right:8px}
+.tside.cvds{padding:0;border-right:0}   /* obs-side-menu owns its padding + right divider — the host adds neither */
+#cvMenuW{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+#cvMenuW[hidden]{display:none}
+/* --side-menu-bg is a DS-package token the page's token set does not carry; unset, the panel falls back to #fff in dark
+   theme. Its DS values are #fff light / #07101f dark — exactly --page-background-color (gap 24) */
+.tside.cvds obs-side-menu{flex:1 1 auto;min-height:0;display:block;--side-menu-bg:var(--page-background-color)}
+.tside.cvds .tcvempty{border-right:1px solid var(--border-color);flex:1 1 auto}
 .ttree{flex:1 1 auto;overflow:auto;margin-top:12px;padding-right:4px}
 .tr{height:27px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;border-radius:4px;padding-right:6px}
 .tr:hover{background:var(--left-menu-hover-bg)}
@@ -311,6 +320,40 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 #dNew .dlbl{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .dfld{margin-bottom:18px}
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+.cvgrw{position:relative;display:flex;gap:8px;align-items:center}
+.cvgrs{flex:1 1 auto;min-width:0;display:block;border-radius:4px}
+.cvgrs obs-select{display:block}
+.cvgrs.err{box-shadow:0 0 0 1px var(--severity-critical)}   /* obs-select has no error state — ring its wrapper */
+.cvgrw > .tbtn{flex:0 0 auto;height:34px}
+/* View Groups drawer — stacked over Create Custom View, so it sits above that drawer and dims it with its own scrim */
+.tdr.dgrp{width:420px;z-index:33}
+.grpscrim{position:fixed;inset:0;z-index:32;background:color-mix(in srgb,var(--page-background-color) 45%,transparent);display:none}
+.grpscrim.on{display:block}
+.dgrp .db{display:flex;flex-direction:column;gap:12px}
+.grptb{display:flex;gap:8px;align-items:center}
+.grptb .grpq{flex:1 1 auto;min-width:0;display:block}
+#grpTop obs-icon{margin-right:6px}
+.grptree{display:flex;flex-direction:column;gap:2px}
+.grprow{height:32px;display:flex;align-items:center;gap:6px;border-radius:4px;padding-right:6px;cursor:pointer;white-space:nowrap}
+/* hover and selected must differ (request, 28 Oct 2026): in dark --code-tag-background-color (#172336) is QUIETER than
+   the hover --nav-hover-bg (#1d2a3e), so selected now takes --tag-bg-color — a step stronger in both themes — plus weight */
+.grprow:hover{background:var(--nav-hover-bg)}
+.grprow.on,.grprow.on:hover{background:var(--tag-bg-color);font-weight:500}
+.grprow:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.grpcv{flex:0 0 16px;height:16px;display:grid;place-items:center;color:var(--neutral-light);cursor:pointer}
+.grpcv.ph{visibility:hidden}
+.grpic{flex:0 0 auto;color:var(--neutral-light)}
+.grprow.on .grpic{color:var(--page-text-color)}
+.grprow .tnm{flex:0 1 auto}
+.grpn{flex:0 0 auto;margin-left:auto;color:var(--neutral-light);font-size:12px}
+.grpact{flex:0 0 auto;display:flex;gap:2px;opacity:0}
+.grprow:hover .grpact,.grprow:focus-within .grpact,.grprow.on .grpact{opacity:1}
+.grpview{height:28px;display:flex;align-items:center;gap:6px;color:var(--neutral-light);white-space:nowrap;cursor:default}
+.grpview obs-icon{flex:0 0 auto}
+.grpnew{display:flex;gap:6px;align-items:flex-start;padding:2px 6px 2px 0}
+.grpnew obs-input{flex:1 1 auto;min-width:0;display:block}
+.grpnew obs-button{flex:0 0 auto}
+.grpnone{color:var(--neutral-light);padding:6px 8px}
 .din{width:100%;height:34px;border:1px solid var(--field-border-color);border-radius:4px;background:transparent;color:var(--page-text-color);padding:0 11px;font:inherit;outline:0}
 .din:focus{border-color:var(--neutral-light)}
 .din.err{border-color:var(--severity-critical)}
@@ -324,6 +367,54 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .dhalf{max-width:320px}
 /* Add Entity — DS elements; only layout here */
 .dena .db{display:flex;flex-direction:column;min-height:0}
+.dena .db[hidden]{display:none}
+.dena .db[data-pane="container"]:not([hidden]){display:block}
+.nodesw{flex:0 0 auto;padding:15px var(--drawer-inset) 0}
+.calist{display:flex;flex-direction:column;gap:12px}
+.caconn{display:block}
+.cahint{margin-top:4px;font-size:12px;color:var(--neutral-light)}
+/* Icon · Shape · IP on one line (request, 28 Oct 2026); Add Node is 10 points wider than the other 40vw drawers for it */
+.dgrid.dgrid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}
+#dEnA.w40{width:max(640px,50vw)}
+#caMore{margin-top:12px}
+#caMore obs-icon{margin-right:6px}
+.cabox{border:1px solid var(--border-color);border-radius:4px}
+.cahd{display:flex;align-items:center;gap:4px;padding-right:6px}
+.cahd .cabh{flex:1 1 auto;min-width:0}
+.cabh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cabh{width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;border:0;background:none;color:var(--page-text-color);font:inherit;font-weight:500;cursor:pointer;text-align:left;border-radius:4px}
+.cabh:hover{background:var(--nav-hover-bg)}
+.cabh:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.cabh obs-icon{display:inline-flex;color:var(--neutral-light);transition:transform .15s}
+.cabox.shut .cabh obs-icon{transform:rotate(-90deg)}
+.cabox:not(.shut) .cahd{border-bottom:1px solid var(--border-color)}
+.cabox:not(.shut) .cabh{border-radius:4px 4px 0 0}
+.cabb{padding:16px 12px 0}
+.cabox.shut .cabb{display:none}
+/* step 2 — connect the picked entities (29 Oct 2026). A grid, not obs-table: every cell is an editable DS control */
+.elhint{font-size:12.8px;color:var(--neutral-light);margin-bottom:12px}
+/* ONE table (request, 29 Oct 2026): the interface fields are columns, not a second line under the row. table-layout:fixed
+   takes its widths from the <th>s; the wrapper scrolls sideways if the drawer is narrower than the columns */
+.elwrap{border:1px solid var(--border-color);border-radius:4px;overflow:auto;min-height:0;flex:0 1 auto}
+.eltbl{width:100%;min-width:1040px;table-layout:fixed;border-collapse:collapse}
+.eltbl th{position:sticky;top:0;z-index:1;background:var(--page-background-color);text-align:left;font-size:12.8px;font-weight:600;text-transform:uppercase;color:var(--page-text-color);padding:8px 10px;border-bottom:1px solid var(--border-color);white-space:nowrap}
+.eltbl td{padding:8px 10px;vertical-align:middle;border-bottom:1px solid var(--border-color)}
+.eltbl tr:last-child td{border-bottom:0}
+.eltbl tbody tr:hover td{background:var(--nav-hover-bg)}
+.eltbl obs-select,.eltbl obs-input{display:block;min-width:0}
+.eltbl th.c{text-align:center}.eltbl td.c{text-align:center}
+.elnm{display:flex;align-items:center;gap:8px;min-width:0}
+.elnm svg{width:18px;height:18px;flex:0 0 18px}
+.elnm div{min-width:0}
+.elnm b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elnm small{display:block;font-size:12px;color:var(--neutral-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elna{color:var(--neutral-light)}
+.eltbl td.c obs-button{display:inline-block}
+.elsw obs-icon{display:inline-flex;color:var(--neutral-light)}
+.elsw:hover obs-icon{color:var(--page-text-color)}
+.elnet .elna,.eltbl tr:not(.elnet) .elifc{display:none}
+#dEnA.w40.elwide{width:max(1100px,75vw)}
+.nodesw obs-radio{display:inline-block}
 .enty obs-select{display:block;max-width:325px}
 .enempty{flex:1 1 auto;display:flex;align-items:flex-start;justify-content:center;padding-top:96px;color:var(--neutral-light);font-size:13px}
 .enempty[hidden],.enbody[hidden]{display:none}
@@ -337,8 +428,41 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tctx svg{width:16px;height:16px;color:var(--neutral-light);flex:0 0 16px}
 .tctx button.danger,.tctx button.danger svg{color:var(--severity-critical)}
 .tctx button[hidden]{display:none}
+.tctx obs-icon{flex:0 0 16px;color:var(--neutral-light)}
+.tctx button.danger obs-icon{color:var(--severity-critical)}
+/* a selected manual connection: the hover look, held */
+:is(.tsvg,.tmini .mm) .lk.l3m{stroke:var(--topology-info-btn-hover-bg);stroke-opacity:1;stroke-width:3.5}   /* an L3 manual connection: a heavy solid blue line (live 10.0.1) */
+.tsvg .lk.sel{stroke:var(--topology-info-btn-hover-bg);stroke-opacity:1;stroke-width:2;stroke-dasharray:7 5}
+/* link label chip — an HTML chip in a foreignObject at the curve's midpoint; edit / remove show on hover */
+.lklbl{overflow:visible;pointer-events:none}
+.lklbl .lkc{position:relative;display:inline-flex;align-items:center;max-width:140px;padding:0 6px;border:1px solid var(--field-border-color);border-radius:4px;background:var(--dropdown-background);color:var(--page-text-color);font-size:11px;line-height:16px;white-space:nowrap;pointer-events:auto;cursor:default}
+.lklbl .lkc span{overflow:hidden;text-overflow:ellipsis}
+.lklbl .lkb{position:absolute;top:-8px;width:15px;height:15px;border:0;border-radius:50%;display:none;place-items:center;cursor:pointer;color:var(--active-text-color);padding:0}
+.lklbl .lkc:hover .lkb,.lklbl .lkc:focus-within .lkb{display:grid}
+.lklbl .lkb.ed{right:9px;background:var(--topology-info-btn-hover-bg)}
+.lklbl .lkb.rm{right:-7px;background:var(--severity-critical)}
+.lklbl .lkb svg{width:8px;height:8px}
+.lkmdf{display:flex;justify-content:flex-end;gap:8px}
+#lkMd .dlbl{margin-bottom:6px}
+.ndctt{font-size:12.8px;color:var(--neutral-light)}
+.ndtabs[hidden]{display:none}
+.lkinfo{position:fixed;z-index:40;width:min(700px,calc(100vw - 16px));background:var(--dropdown-background);border:1px solid var(--field-border-color);border-radius:4px;box-shadow:var(--tooltip-box-shadow, 0 8px 24px color-mix(in srgb,var(--page-background-color) 60%,transparent))}
+.lkinfo[hidden]{display:none}
+.lkinfo .lih{display:flex;align-items:center;gap:6px;margin:0 8px;padding:8px 0;border-bottom:1px solid var(--field-border-color);font-size:15px;font-weight:600;color:var(--page-text-color)}
+.lkinfo .lih obs-icon{display:inline-flex;color:var(--page-text-color)}
+.lkinfo .lic{display:grid;grid-template-columns:1fr 1fr;padding:4px 0 8px}
+.lkinfo .lis{min-width:0;padding:0 8px 0 4px}
+.lkinfo .lis + .lis{border-left:1px solid var(--field-border-color);padding-left:8px}
+.lkinfo .lit{margin:4px 0 4px 4px;font-size:14px;font-weight:600;color:var(--page-text-color)}
+.lkinfo .lin{display:flex;align-items:center;gap:8px;min-width:0;padding-left:4px;margin-bottom:8px}
+.lkinfo .lin obs-link{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lkinfo obs-key-value{display:block}
+/* the arrow to the point clicked — on the bottom edge (card above), or the top edge when flipped below */
+.lkinfo .liar{position:absolute;left:var(--liar,50%);bottom:-6px;width:10px;height:10px;margin-left:-5px;background:var(--dropdown-background);border-right:1px solid var(--field-border-color);border-bottom:1px solid var(--field-border-color);transform:rotate(45deg)}
+.lkinfo.below .liar{bottom:auto;top:-6px;transform:rotate(225deg)}
+#mcIfW obs-select{display:block}
 /* node details panel */
-.ndp{--drawer-inset:15px;flex:0 0 390px;min-width:0;display:none;flex-direction:column;background:var(--page-background-color);border-left:1px solid var(--border-color)}
+.ndp{--drawer-inset:15px;flex:0 0 clamp(520px,35vw,760px);min-width:0;display:none;flex-direction:column;background:var(--page-background-color);border-left:1px solid var(--border-color)}
 .ndp.on{display:flex}
 .ndp .db{flex:1 1 auto;overflow:auto;padding:15px var(--drawer-inset) 16px}
 .tbody.fs .ndp{display:none}
@@ -353,6 +477,29 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .ndpn{font-size:16px;font-weight:500;line-height:22px;color:var(--page-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ndpt{font-size:12.8px;color:var(--neutral-light);line-height:18px}
 .ndps{font-size:14px;font-weight:600;color:var(--page-text-color);margin:2px 0 12px}
+.ndpn{display:flex;align-items:center;gap:6px}
+.ndpn #ndN{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.ndpm{flex:0 1 auto;min-width:0;font-size:12.8px;font-weight:400;color:var(--neutral-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ndpt{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.ndtabs{display:block;flex:0 0 auto;margin:0 var(--drawer-inset)}
+.ndsec{padding:4px 0 12px;border-bottom:1px solid var(--border-color);margin-bottom:12px}
+.ndsec:last-child{border-bottom:0}
+.ndsec h4{margin:0 0 6px;font-size:14px;font-weight:600;color:var(--page-text-color)}
+.ndsec obs-key-value{display:block}
+.ndmh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ndmg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ndmg.list{grid-template-columns:1fr}
+.ndmg obs-widget-card{display:block;height:180px}
+.ndme{height:100%;display:grid;place-items:center;color:var(--neutral-light);font-size:13px}
+.ndmc{width:100%;height:100%;display:block}
+.ndmc .ax{font-size:10px;fill:var(--neutral-light)}
+.ndmc .gl{stroke:var(--border-color);stroke-width:1}
+.ndmc .ln{fill:none;stroke-width:1.5}
+.ndml{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--neutral-light);padding:2px 0 0 4px}
+.ndml i{width:10px;height:2px;border-radius:1px}
+.ndpad{display:flex;flex-direction:column;gap:12px}
+.ndpad obs-table{display:block}
+.ndpad obs-input{display:block;max-width:260px}
 .ndpkv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px 16px;font-size:13px}
 .ndpkv .k{color:var(--neutral-light)}.ndpkv .v{color:var(--page-text-color);overflow-wrap:anywhere}
 #mcSrc{background:var(--neutral-lightest);border-color:transparent;cursor:default}
@@ -458,6 +605,11 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <button class="tback" id="tBack" aria-label="Back">@@I:chevron-left@@</button>
     <span class="tdiv"></span>
     <h1>@@I:topology@@ Topology</h1>
+    <!-- Option 1 / Option 2 (request, 29 Oct 2026): review chrome, like the License page's switch — topology.src.html is
+         Option 1, topology2.src.html its clone; each has its own root page (topology.html / topology2.html). Picking the
+         other option opens that page on the same tab; nothing else is carried across. -->
+    <span class="tsp"></span>
+    <obs-radio id="tOpt" as-button size="small" options='[{"value":"1","label":"Option 1"},{"value":"2","label":"Option 2"}]' value="1" aria-label="Design option"></obs-radio>
   </div>
   <div class="tbar">
     <nav class="ttabs" id="tTabs"></nav>
@@ -482,7 +634,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <button class="tsq" id="tSet" aria-label="Topology Settings" data-tip="Topology Settings">@@I:settings@@</button>
       <button class="tsq" id="tXml" aria-label="Export As XML" data-tip="Export As XML">@@I:export-xml@@</button>
     </span>
-    <button class="tpri" id="tCreate">Create Topology</button>
+    <button class="tpri" id="tCreate">New Custom Topology</button>
     <!-- Edit (live 10.0.1, 27 Oct 2026): LAST in the toolbar, where the primary action sits. A saved custom view reopens in
          design mode; this slot then shows Update Topology View instead -->
     <button class="tpri tedit" id="tEdit" hidden>@@I:pencil@@ Edit</button>
@@ -491,7 +643,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <aside class="tside" id="tSide"></aside>
     <div class="tgraph empty" id="tGraph" tabindex="0">
       <svg class="tsvg" id="tSvg" hidden><g id="tVp"><g id="tLinks"></g><g id="tNodes"></g></g></svg>
-      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg">@@I:image@@ Add Background Image</button><button class="tbtn" id="desCt">@@I:topology@@ Add Container</button><button class="tbtn" id="desEn">@@I:topology@@ Add Entity</button></div>
+      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg">@@I:image@@ Add Background Image</button><button class="tbtn" id="desEn">@@I:topology@@ Add Node</button></div>
       <div class="tempty" id="tEmpty">@@EMPTY@@<div id="tEmptyT">Please select entry point to view Topology</div></div>
       <div class="tovl" id="tOvl" hidden>
         <div class="g"><button class="tob" id="oKey" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts">@@I:keyboard@@</button><button class="tob" id="oFit" data-tip="Fit to screen" aria-label="Fit to screen">@@I:expand@@</button></div>
@@ -509,8 +661,12 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <!-- NODE DETAILS (live 10.0.1, 27 Oct 2026): clicking a node in a custom view opens this side panel — icon tile, name,
          type, then an Info section of the node's own fields. Docked INSIDE the body, right of the canvas and under the toolbar (live 10.0.1) — the canvas narrows to make room; nothing is covered. -->
     <aside class="ndp" id="dNd" aria-label="Node details">
-      <div class="ndph"><span class="ndpic" id="ndIc"></span><span class="ndpid"><span class="ndpn" id="ndN"></span><span class="ndpt" id="ndT"></span></span><button class="ndpx" id="ndX" aria-label="Close">@@I:times@@</button></div>
-      <div class="db"><div class="ndps" id="ndS"></div><div class="ndpkv" id="ndKv"></div></div>
+      <!-- the live 10.0.1 monitor panel (request, 28 Oct 2026; read off /topology/custom/monitors/…): header = icon tile ·
+           severity dot · name | IP | vendor · group tag +N; then Summary · Polling Info · Triggered Policies · Action History.
+           DS parts: obs-severity, obs-tag, obs-tabs, obs-key-value, obs-widget-card, obs-table, obs-radio, obs-input. -->
+      <div class="ndph"><span class="ndpic" id="ndIc"></span><span class="ndpid"><span class="ndpn"><span id="ndSev"></span><span id="ndN"></span><span class="ndpm" id="ndM"></span></span><span class="ndpt" id="ndT"></span></span><button class="ndpx" id="ndX" aria-label="Close">@@I:times@@</button></div>
+      <obs-tabs id="ndTabs" class="ndtabs" value="summary" tabs='[{"key":"summary","label":"Summary"},{"key":"poll","label":"Polling Info"},{"key":"pol","label":"Triggered Policies"},{"key":"hist","label":"Action History"}]'></obs-tabs>
+      <div class="db" id="ndB"></div>
     </aside>
   </div>
 </div>
@@ -520,7 +676,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
 <div class="tpop" id="tPop"></div>
 <div class="tkb" id="tKb" role="dialog" aria-label="Keyboard shortcuts"></div>
 <div class="ttoast" id="tToast"><b id="tToastT"></b><span id="tToastB"></span><button aria-label="Close" onclick="toastHide()">@@I:times@@</button></div>
-<div class="tscrim" id="tScrim"></div>
+<div class="tscrim" id="tScrim"></div><div class="grpscrim" id="grpScrim"></div>
 
 <aside class="tdr w40" id="dSet" aria-label="Topology Settings">
   <div class="dh"><span>Topology Settings <small class="dsub" id="dSetFor"></small></span><button data-close aria-label="Close">@@I:times@@</button></div>
@@ -564,11 +720,14 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <!-- the view's own fields (request, 27 Oct 2026) — asked up front, so Create Topology files the view in one step.
          Hidden in Add Entity mode, which reuses this drawer for the picker alone. -->
     <div id="cvMeta">
-      <div class="dcatt">View Details</div>
-      <div class="dcatd">How the view is named, where it is filed in the sidebar and who can open it.</div>
       <div class="dgrid">
         <div class="dfld"><div class="dlbl">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
-        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="Use tag to organize this topology view under a defined standalone or key-value label for better classification and access.">@@I:info-circle@@</span></div><input class="din" id="cvGrp" placeholder="<standalone> or <key:value>" autocomplete="off"><div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
+        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="The sidebar group this view is filed under. Pick an existing group, or use Create New to add one.">@@I:info-circle@@</span></div><!-- View Group is the sidebar GROUP the view is filed under (request, 28 Oct 2026): a searchable list of the existing
+             groups plus Create New, the dashboard drawer's Category pattern -->
+          <div class="cvgrw"><span class="cvgrs" id="cvGrpW"><obs-select id="cvGrp" placeholder="Select" searchable="true" block></obs-select></span>
+            <button type="button" class="tbtn" id="cvGrpNew" aria-haspopup="dialog" aria-controls="dGrp">Create New</button>
+          </div>
+          <div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
       </div>
       <div class="dfld"><div class="dlbl">Security</div><div class="tseg" id="cvSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
       <div id="cvShare" class="sphost" hidden></div>
@@ -581,9 +740,33 @@ html:not([data-theme]) .dck input{color-scheme:light}
   </div>
   <div class="df"><span class="sp"><i>*</i> fields are mandatory</span><button class="tbtn" id="cvReset">Reset</button><button class="tpri" id="cvCreate">Create</button></div>
 </aside>
+<!-- VIEW GROUPS (request, 28 Oct 2026): Create New beside View Group opens this stacked drawer over Create Custom View
+     (it replaced a popover). The whole group tree: pick one for the view, add a child group under any group (+ on the
+     row) or a top-level one (New group), and delete a group that holds no views (trash shows only on those). -->
+<aside class="tdr dgrp" id="dGrp" aria-label="View Groups">
+  <div class="dh"><span>View Groups</span><button type="button" id="grpX" aria-label="Close">@@I:times@@</button></div>
+  <div class="db">
+    <!-- every control is a DS part (request, 28 Oct 2026): obs-input search, obs-button + obs-icon actions -->
+    <div class="grptb"><obs-input id="grpQ" class="grpq" type="search" placeholder="Search groups" block></obs-input>
+      <obs-button variant="default" id="grpTop" data-tip="Adds a top-level group. To put a group inside another, use + on that group."><obs-icon name="plus" size="14"></obs-icon>New parent group</obs-button></div>
+    <div class="grptree" id="grpTree" role="tree" aria-label="View groups"></div>
+  </div>
+  <div class="df"><span class="sp"></span><obs-button variant="default" id="grpCancel">Cancel</obs-button><obs-button variant="primary" id="grpUse" disabled>Select</obs-button></div>
+</aside>
 <!-- CREATE MANUAL CONNECTION (live 10.0.1, 27 Oct 2026): click a node in a custom view → a one-row menu → this drawer.
      Source is the clicked node (read-only); Select Child Device is the same grid dropdown as Root Monitor, listing the
      view's other nodes that are not already connected to it. Save draws the connection as a curve. -->
+<!-- LINK ACTIONS (request, 28 Oct 2026): click a manual connection → Add Label / Delete Link; Add Label is the DS
+     obs-modal (Label Name*, Cancel · Apply). A label sits on the line's midpoint as a chip; hover shows edit / remove. -->
+<!-- LINK INFO (request, 28 Oct 2026, live 10.0.1): clicking a network link (one saved with interfaces) opens this card —
+     Source | Target, each a DS obs-key-value (plain) with the Interface Status as its status tag. -->
+<div class="lkinfo" id="lkInfo" role="dialog" aria-label="Link Info" hidden></div>
+<div class="tctx" id="lkMenu" role="menu" hidden><button type="button" role="menuitem" id="lkLbl"><obs-icon name="tag" size="16"></obs-icon><span>Add Label</span></button><button type="button" role="menuitem" class="danger" id="lkDel"><obs-icon name="delete" size="16"></obs-icon>Delete Link</button></div>
+<obs-modal id="lkMd" title="Add Label" width="480">
+  <div class="dlbl">Label Name <i>*</i></div>
+  <obs-input id="lkIn" block placeholder="Enter label name"></obs-input>
+  <div slot="footer" class="lkmdf"><obs-button variant="default" id="lkCancel">Cancel</obs-button><obs-button variant="primary" id="lkApply">Apply</obs-button></div>
+</obs-modal>
 <div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcGo">@@I:link@@ Create Manual Connection</button><button type="button" role="menuitem" class="danger" id="mcDel">@@I:trash@@ Delete Node</button></div>
 <!-- ADD CONTAINER (live 10.0.1, 27 Oct 2026): the design bar's Add Container opens this drawer every time -->
 <aside class="tdr w40 dbga" id="dBgA" aria-label="Add Background Image">
@@ -604,25 +787,15 @@ html:not([data-theme]) .dck input{color-scheme:light}
   </div>
   <div class="df"><span class="sp"></span><obs-button variant="default" id="bgCancel">Cancel</obs-button><obs-button variant="primary" id="bgAdd" disabled>Add</obs-button></div>
 </aside>
-<aside class="tdr w40" id="dCtA" aria-label="Add Container">
-  <div class="dh"><span>Add Container</span><button data-close aria-label="Close">@@I:times@@</button></div>
-  <div class="db">
-    <div class="dfld"><div class="dlbl">Name <i>*</i></div><input class="din" id="caName" placeholder="Enter container name" autocomplete="off"><div class="derr" id="caNameE" hidden>Name is required</div></div>
-    <div class="dfld"><div class="dlbl">Description</div><textarea class="din dta" id="caDesc" rows="4" placeholder="Enter description"></textarea></div>
-    <div class="dgrid">
-      <div class="dfld"><div class="dlbl">Icon</div><div class="dsel ssw" id="caIc"></div></div>
-      <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="caSh"></div></div>
-    </div>
-    <div class="dfld"><div class="dlbl">IP</div><input class="din" id="caIp" placeholder="Enter IP address" autocomplete="off"><div class="derr" id="caIpE" hidden>Enter a valid IPv4 address</div></div>
-  </div>
-  <div class="df"><span class="sp"></span><button class="tbtn" id="caCancel">Cancel</button><button class="tpri" id="caAdd">Add</button></div>
-</aside>
 <!-- ADD ENTITY (live 10.0.1, 28 Oct 2026): Select Entity (a searchable type list) → a searchable, paged, multi-select
      table of that type's monitors → Add Entity. The monitors are the topology data's own: entry points plus the VMs and
      hosts inside each entry point's graph. -->
-<aside class="tdr w40 dena" id="dEnA" aria-label="Add Entity">
-  <div class="dh"><span>Add Entity</span><button data-close aria-label="Close">@@I:times@@</button></div>
-  <div class="db">
+<!-- ADD NODE (request, 28 Oct 2026): Add Entity and Add Container in ONE drawer — a DS segmented switch (obs-radio
+     as-button, not tabs) picks which kind of node; each keeps its own form and its own primary button. -->
+<aside class="tdr w40 dena" id="dEnA" aria-label="Add Node">
+  <div class="dh"><span id="nodeTtl">Add Node</span><button data-close aria-label="Close">@@I:times@@</button></div>
+  <div class="nodesw" id="nodeSw"><obs-radio id="nodeTabs" as-button options='[{"value":"container","label":"Container"},{"value":"entity","label":"Entity"}]' value="container" aria-label="Node type"></obs-radio></div>
+  <div class="db" data-pane="entity" hidden>
     <!-- every control here is an ObserveOps DS element: obs-select (searchable, >8 options) · obs-input search · obs-table
          (selectable, logo + status cells, its own pager) -->
     <div class="dfld enty"><div class="dlbl">Select Entity</div><obs-select id="enTySel" placeholder="Select Entity" searchable></obs-select></div>
@@ -632,13 +805,34 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <obs-table id="enTbl" selectable sticky-header page-size="50" empty-text="No records available"></obs-table>
     </div>
   </div>
-  <div class="df"><span class="sp"></span><button class="tbtn" id="enCancel">Cancel</button><button class="tpri" id="enAdd" disabled>Add Entity</button></div>
+  <div class="db" data-pane="container">
+    <!-- one expand / collapse box PER container (requests, 28 Oct 2026), and "Add another container" below the last — so
+         several containers go on the canvas in one Add. The box is not a DS component (the DS ships no collapse panel) —
+         built from DS parts: a bordered panel on DS tokens, a header button with the DS chevron obs-icon. Painted by caPaint. -->
+    <div class="calist" id="caList"></div>
+    <obs-button variant="default" id="caMore"><obs-icon name="plus" size="14"></obs-icon>Add another container</obs-button>
+  </div>
+  <!-- step 2 of an Entity add (request, 29 Oct 2026): Next shows ONLY the ticked entities, each with where it connects
+       FROM (the root, a node on the canvas, a container or entity added in this batch), a label, and — when both ends are
+       network devices — the parent / child interface and L3, the same fields Create Manual Connection asks -->
+  <div class="db" data-pane="link" hidden>
+    <div class="elhint">Each entity is joined to the root unless you pick another node — use ⇄ to swap From and To. Interfaces and L3 apply when both ends are network devices.</div>
+    <div class="elwrap"><table class="eltbl"><thead><tr><th style="width:20%">From</th><th style="width:48px" aria-label="Swap"></th><th style="width:20%">To</th><th style="width:15%">Label</th><th style="width:17%">Parent Interface</th><th style="width:17%">Child Interface</th><th class="c" style="width:7%">L3</th></tr></thead><tbody id="elGrid"></tbody></table></div>
+  </div>
+  <div class="df"><span class="sp"></span><button class="tbtn" id="nodeBack" hidden>Back</button><button class="tbtn" id="enCancel">Cancel</button><button class="tpri" id="caAdd">Add Container</button></div>
 </aside>
 <aside class="tdr w40" id="dMc" aria-label="Create Manual Connection">
   <div class="dh"><span>Create Manual Connection</span><button data-close aria-label="Close">@@I:times@@</button></div>
   <div class="db">
     <div class="dfld"><div class="dlbl">Source</div><input class="din" id="mcSrc" readonly></div>
     <div class="dfld"><div class="dlbl">Select Child Device <i>*</i></div><button class="din cvpick" id="mcPickB" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ph">Select</span>@@I:chevron-down@@</button><div class="derr" id="mcPickE" hidden>Select at least one child device</div></div>
+    <!-- network devices (switch / router) on BOTH ends (request, 28 Oct 2026, live 10.0.1): the connection names the
+         interface it runs between, and can be marked L3 — DS obs-select (searchable) + obs-checkbox -->
+    <div id="mcIfW" hidden>
+      <div class="dfld"><div class="dlbl">Select Parent Interface</div><obs-select id="mcPIf" searchable block placeholder="Select"></obs-select></div>
+      <div class="dfld"><div class="dlbl">Select Child Interface</div><obs-select id="mcCIf" searchable block placeholder="Select"></obs-select></div>
+      <div class="dfld"><obs-checkbox id="mcL3">Select if L3.</obs-checkbox></div>
+    </div>
   </div>
   <div class="df"><span class="sp"></span><button class="tbtn" id="mcCancel">Cancel</button><button class="tpri" id="mcSave">Save</button></div>
 </aside>
@@ -734,6 +928,7 @@ function leavesOf(list, out = []){ list.forEach(x => x.kids ? leavesOf(x.kids, o
 function sidePaint(){
   const s = $('tSide');
   if (T.tab === 'custom') return customSidePaint();
+  s.classList.remove('cvds');
   s.innerHTML = `<label class="tsrch"><span>${ic('search')}</span><input id="tQ" placeholder="Search" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="tTree"></div>`;
   $('tQ').oninput = (e) => { T.q = e.target.value; treePaint(); };
   treePaint();
@@ -767,37 +962,120 @@ function nodeAt(id){ let arr = TREE[T.tab], x = null; id.split('/').slice(1).for
 
 /* custom views */
 function customSidePaint(){
-  const s = $('tSide');
-  /* no + in the header (request, 27 Oct 2026): creating a view is the toolbar's Create Topology, the one door */
-  s.innerHTML = `<div class="tcvh">Custom Views</div>`
-    + `<label class="tsrch"><span>${ic('search')}</span><input id="cvQ" placeholder="Search views" value="${esc(T.q)}" autocomplete="off"></label><div class="ttree" id="cvTree"></div>`;
-  $('cvQ').oninput = (e) => { T.q = e.target.value; cvTreePaint(); };
+  /* the list is the DS's own obs-side-menu in tree mode (request, 28 Oct 2026: "remove Custom Views, align the list using
+     the ObserveOps design system") — it owns the search box, the indents, the chevrons, the active row and its right
+     divider, so the host column drops its own padding and border (.tside.cvds). No title row: the tab already says Custom. */
+  const s = $('tSide'); s.classList.add('cvds');
+  s.innerHTML = `<div id="cvMenuW"></div><div class="tcvempty" id="cvEmpty" hidden>No custom views yet. Use New Custom Topology to make one.</div>`;
   cvTreePaint();
 }
+/* groups NEST (request, 28 Oct 2026): a group is a PATH, its names joined by GSEP ("pmg › Network"). The sidebar tree is
+   built from the paths of every group holding a view, plus their ancestors; a group shows its sub-groups, then its views. */
+const GSEP = ' › ';
+const gParts = (p) => String(p).split(GSEP);
+function cvOpenPath(p){ gParts(p).forEach((_, i, a) => { T.cv[a.slice(0, i + 1).join(GSEP)] = true; }); }
+/* obs-side-menu's tree rows, restyled from inside its shadow root (request, 28 Oct 2026: "improve the hover effect" /
+   "these two views are the same alignment"). Scoped to :host(.cvsm) so no other side menu is touched (gap 26):
+   - a VIEW is indented 6px further than a GROUP at the same depth (leaf 34+16(d-1) vs group 12+16d), so a view sat 6px
+     right of its sibling sub-group — the view's icon is pulled back 6px onto the group chevron's column;
+   - a view has nothing inside it, so its tree chevron is not drawn (request, 28 Oct 2026);
+   - hover and active were full-bleed squares, and in dark the active fill (#172336) was QUIETER than hover (#1d2a3e).
+     Both now paint on an inset rounded plate (the search box's own 8px gutter, 4px radius) — hover --nav-hover-bg,
+     active --tag-bg-color, one step stronger in both themes. A ::before plate keeps the inline padding (the indent)
+     untouched. */
+(() => { const css = new CSSStyleSheet(); css.replaceSync(`
+  :host(.cvsm) .row{position:relative;isolation:isolate;background:transparent!important}
+  :host(.cvsm) .row::before{content:"";position:absolute;inset:1px 8px;border-radius:4px;z-index:-1;transition:background .12s}
+  :host(.cvsm) .row:not(.active):hover::before{background:var(--nav-hover-bg)}
+  :host(.cvsm) .row.leaf.active::before{background:var(--tag-bg-color)}
+  :host(.cvsm) .row.leaf.active{color:var(--page-text-color);font-weight:500}
+  :host(.cvsm) .row.leaf.active .chev,:host(.cvsm) .row.leaf.active .r-ic{color:var(--page-text-color)}
+  :host(.cvsm) .row.leaf .leaf-chev{display:none}
+  :host(.cvsm) .row.leaf .r-ic{margin-left:-6px}`);
+  const orig = Element.prototype.attachShadow;
+  /* the View Groups add row's ✓ / ✕ match obs-input's 32px field box (obs-button is 35px) — scoped by :host(.grpib) */
+  const ib = new CSSStyleSheet(); ib.replaceSync(`:host(.grpib) .btn{width:32px;height:32px;min-height:32px;padding:0}`);
+  /* Link Info rows at the live tooltip's density: label 1 part / value 2 parts, 4px padding, no hover band — :host(.lkkv) only */
+  const tbs = new CSSStyleSheet(); tbs.replaceSync(`:host(.ndtbl) table{min-width:0!important}`);   /* obs-table's 660px floor overflowed the details panel */
+  const wcs = new CSSStyleSheet(); wcs.replaceSync(`:host(.ndw) .wkebab{display:none}`);   /* the panel's mini widgets carry no menu */
+  const kvs = new CSSStyleSheet(); kvs.replaceSync(`:host(.lkkv) .kv.v-plain td{padding:4px 4px;font-size:13px}:host(.lkkv) .k{width:33.33%}:host(.lkkv) .kv.v-plain tr:hover td.val{background:none}`);
+  Element.prototype.attachShadow = function(o){ const r = orig.call(this, o);
+    if (this.tagName === 'OBS-SIDE-MENU') r.adoptedStyleSheets = [...r.adoptedStyleSheets, css];
+    if (this.tagName === 'OBS-BUTTON') r.adoptedStyleSheets = [...r.adoptedStyleSheets, ib];
+    if (this.tagName === 'OBS-KEY-VALUE') r.adoptedStyleSheets = [...r.adoptedStyleSheets, kvs];
+    if (this.tagName === 'OBS-TABLE') r.adoptedStyleSheets = [...r.adoptedStyleSheets, tbs];
+    if (this.tagName === 'OBS-WIDGET-CARD') r.adoptedStyleSheets = [...r.adoptedStyleSheets, wcs];
+    return r; };
+})();
+/* obs-side-menu selects by LABEL, so two views with one name (PMG under Design and under Designer) would light together.
+   Each repeat gets trailing zero-width spaces — invisible, but unique — and CV_LBL maps the label back to its view. */
+const CV_LBL = new Map();
 function cvTreePaint(){
-  const q = T.q.trim().toLowerCase(), rows = [];
-  CUSTOM.forEach((g, gi) => {
-    const vs = g.views.filter(v => !q || v.name.toLowerCase().includes(q));
-    if (q && !vs.length && !g.grp.toLowerCase().includes(q)) return;
-    const open = q ? true : !!T.cv[g.grp];
-    rows.push(`<div class="tr" data-g="${gi}"><span class="tcv">${open?ic('chevron-down'):ic('chevron-right')}</span><span class="tnm">${esc(g.grp)}</span></div>`);
-    if (open) { if (!vs.length) rows.push('<div class="tnone" style="padding-left:28px">No views yet</div>');
-      vs.forEach((v) => rows.push(`<div class="tr${T.view===v?' on':''}" data-v="${gi}:${g.views.indexOf(v)}" style="padding-left:20px"><span class="tcv ph"></span><span class="cvdot"></span><span class="tnm">${esc(v.name)}</span></div>`)); }
-  });
-  $('cvTree').innerHTML = rows.join('') || (CUSTOM.length ? '<div class="tnone">No matching views</div>' : '<div class="tcvempty">No custom views yet. Use Create Topology to make one.</div>');
+  const w = $('cvMenuW'); if (!w) return; CV_LBL.clear();
+  const byPath = new Map(), node = (p) => { if (!byPath.has(p)) byPath.set(p, { kids: new Set(), views: [] }); return byPath.get(p); }, top = new Set();
+  CUSTOM.forEach(g => { if (!g.views.length) return; const a = gParts(g.grp);
+    a.forEach((_, i) => { const p = a.slice(0, i + 1).join(GSEP); node(p); (i ? node(a.slice(0, i).join(GSEP)).kids : top).add(p); });
+    node(g.grp).views.push(...g.views); });
+  const seen = {}, uniq = (l) => { seen[l] = (seen[l] || 0) + 1; return l + '​'.repeat(seen[l] - 1); };
+  const sort = (set) => [...set].sort((a, b) => gParts(a).pop().localeCompare(gParts(b).pop()));
+  let active = '';
+  const count = (p) => { const n = byPath.get(p); return n.views.length + [...n.kids].reduce((t, k) => t + count(k), 0); };
+  let trail = [];
+  const build = (p, up = []) => { const n = byPath.get(p), me = uniq(gParts(p).pop()), path = [...up, me];
+    /* the count is the TOP-level group's only (request, 28 Oct 2026) — a badge on every nested row repeated the same number */
+    return { label: me, ...(up.length ? {} : { count: count(p) }), children: [...sort(n.kids).map(k => build(k, path)),
+      ...n.views.map(v => { const l = uniq(v.name); CV_LBL.set(l, v); if (T.view === v) { active = l; trail = path; } return { label: l, icon: 'topology' }; })] }; };
+  const items = sort(top).map(p => build(p));
+  w.hidden = !items.length; $('cvEmpty').hidden = !!items.length;
+  /* ⚠️ obs-side-menu (0.1.166) expands the active view's groups only when it MOUNTS — a later items/active change moves
+     the highlight but leaves the groups shut — so the element is rebuilt with both as attributes (gap 25) */
+  w.innerHTML = `<obs-side-menu id="cvMenu" class="cvsm" mode="tree" placeholder="Search views" items="${esc(JSON.stringify(items))}" active="${esc(active)}"></obs-side-menu>`;
+  $('cvMenu').addEventListener('select', (e) => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail, v = CV_LBL.get(d && d.label);
+    if (!v) return; T.design = null; T.view = v; ndClose(); graphLoad(); });
+  cvMenuOpen($('cvMenu'), trail);
+  cvMenuOpenAll($('cvMenu'));
 }
-$('tSide').addEventListener('click', (e) => {
-  if (T.tab !== 'custom') return; const r = e.target.closest('.tr'); if (!r) return;
-  if (r.dataset.g != null) { const g = CUSTOM[+r.dataset.g]; T.cv[g.grp] = !T.cv[g.grp]; cvTreePaint(); return; }
-  const [gi, vi] = r.dataset.v.split(':').map(Number); T.design = null; T.view = CUSTOM[gi].views[vi]; ndClose(); cvTreePaint(); graphLoad();
-});
+/* every group starts OPEN (request, 28 Oct 2026: "set this view by default") — the component opens only the first group and
+   the active path, so the rest are opened by clicking their rows, one per render, until none is shut */
+function cvMenuOpenAll(m, n = 0){
+  if (!m.isConnected || n > 60) return;
+  if (!m.shadowRoot) return setTimeout(() => cvMenuOpenAll(m, n + 1), 0);
+  const r = m.shadowRoot.querySelector('[role=treeitem][aria-expanded="false"]');
+  if (!r) return; r.click(); setTimeout(() => cvMenuOpenAll(m, n + 1), 0);
+}
+/* …and on mount it opens only the TOP-level ancestor (gap 25), so the deeper groups on the active view's path are opened
+   by clicking their rows, one per render */
+function cvMenuOpen(m, trail, i = 0, tries = 0){
+  if (i >= trail.length || !m.isConnected || tries > 20) return;
+  const rows = m.shadowRoot ? [...m.shadowRoot.querySelectorAll('[role=treeitem][aria-expanded]')] : [];
+  const r = rows.find(x => [...x.querySelectorAll('span')].some(sp => sp.textContent === trail[i]));
+  if (!r) return setTimeout(() => cvMenuOpen(m, trail, i, tries + 1), 0);
+  if (r.getAttribute('aria-expanded') === 'false') r.click();
+  setTimeout(() => cvMenuOpen(m, trail, i + 1), 0);
+}
 
 /* ================= TOOLBAR ================= */
-/* Save / Update needs at least one node besides the root (request, 28 Oct 2026): containers and entities are both nodes,
-   so adding either one enables it — a container does not have to be connected first */
-function designLinked(){
-  const r = T.design.root; return (T.design.kids || r.kids || []).length > 0;
+/* Save / Update needs the ROOT CONNECTED to at least one entity or container (request, 28 Oct 2026 — the third reading:
+   adding a node is not enough, since entities and containers both arrive unlinked). A link counts either way round —
+   a manual connection made from the root, or from the node to the root — plus any child still drawn with an automatic
+   connector (an entity added before 28 Oct). */
+/* Save needs EVERY node on the canvas joined to the root (request, 28 Oct 2026): a container or entity is added
+   unconnected, and the view cannot be saved until a manual connection (directly or through another node) reaches it.
+   Walks the drawn edges both ways — automatic parent→kid links (no nolink) and manual connections. */
+function designUnlinked(){
+  const r = T.design.root, all = [], walk = (x) => (x.kids || []).forEach(k => { if (!all.includes(k)) { all.push(k); walk(k); } });
+  walk(r); (T.design.kids || []).forEach(k => { if (!all.includes(k)) { all.push(k); walk(k); } });
+  const nb = (x) => { const out = [...(x.man || [])];
+    if (x !== r && !x.nolink && (r.kids || []).includes(x)) out.push(r);
+    (x.kids || []).forEach(k => { if (!k.nolink) out.push(k); });
+    if (x === r) (r.kids || []).forEach(k => { if (!k.nolink) out.push(k); });
+    all.forEach(o => { if ((o.man || []).includes(x)) out.push(o); (o.kids || []).forEach(k => { if (k === x && !k.nolink) out.push(o); }); });
+    return out; };
+  const seen = new Set([r]), q = [r];
+  while (q.length) nb(q.shift()).forEach(y => { if (!seen.has(y)) { seen.add(y); q.push(y); } });
+  return all.filter(k => !seen.has(k));
 }
+function designLinked(){ const kids = T.design.kids || T.design.root.kids || []; return kids.length > 0 && !designUnlinked().length; }
 function toolsPaint(){
   const custom = T.tab === 'custom', drawn = !!curRoot();
   /* live Custom tab: the same toolbar minus Expanded/Progressive and left-to-right; creating a view is the sidebar's + */
@@ -809,14 +1087,16 @@ function toolsPaint(){
   const idle = custom && !drawn;
   /* the button is ENABLED with nothing open (request, 27 Oct 2026) and named Create Topology on the Custom tab;
      the other tabs keep the original Create Topology View form */
-  /* designing: Save / Update stays DISABLED while the canvas holds only the root monitor */
+  /* designing: Save / Update stays DISABLED until the root monitor is connected to a node */
   const linked = custom && !!T.design && designLinked();
-  $('tCreate').hidden = custom && !T.design && !idle; $('tCreate').disabled = custom && !!T.design && !linked;
-  if (custom && T.design && !linked) $('tCreate').setAttribute('aria-label', 'Add a container or an entity to save');
+  /* shown while VIEWING a saved view too (request, 28 Oct 2026): with only Edit there, a second view could not be started */
+  $('tCreate').hidden = false; $('tCreate').disabled = custom && !!T.design && !linked;
+  if (custom && T.design && !linked) { const u = (T.design.kids || []).length ? designUnlinked() : [];
+    $('tCreate').setAttribute('aria-label', u.length ? `Connect ${u.length === 1 ? '"' + u[0].n + '"' : u.length + ' nodes'} with Create Manual Connection to save` : 'Connect the root monitor to an entity or container to save'); }
   else $('tCreate').removeAttribute('aria-label');
   /* Custom tab: nothing open → Create Topology (opens the drawer); designing a view just created → Save (request,
      28 Oct 2026: the view is already filed, the button only finishes it); editing a saved view → Update Topology View */
-  $('tCreate').textContent = custom ? (T.design ? (T.design.edit ? 'Update Topology View' : 'Save') : 'Create Topology') : 'Create Topology View';
+  $('tCreate').textContent = custom ? (T.design ? (T.design.edit ? 'Update Topology View' : 'Save') : 'New Custom Topology') : 'Create Topology View';
   $('tEdit').hidden = !(custom && T.view && !T.design);
   /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
   const des = custom && !!T.design, bare = des || idle;
@@ -966,7 +1246,17 @@ function graphPaint(){
     const {a, b} = l, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
     const dim = sk ? (a.key === sk || b.key === sk ? '' : ' dim') : anyHit && !(hit(a) || hit(b)) ? ' dim' : '';
     const pair = (cls, d) => `<g class="lkg"><path class="lkh" d="${d}"/><path class="${cls}" data-a="${a.key}" data-b="${b.key}" d="${d}"/></g>`;
-    if (l.man) { lk.push(pair('lk man' + dim, `M${a.x},${a.y} Q${mx + nx * len * .18},${my + ny * len * .18} ${b.x},${b.y}`)); return; }
+    if (l.man) { const cx = mx + nx * len * .18, cy = my + ny * len * .18, li = T.links.indexOf(l), sel = T.sel.link === lkKey(l) ? ' sel' : '';
+      const fi = lkIf(l), l3m = fi && fi.l3 ? ' l3m' : '', ttl = fi && (fi.pi || fi.ci) ? `<title>${esc((fi.pi || '—') + ' ↔ ' + (fi.ci || '—') + (fi.l3 ? ' · L3' : ''))}</title>` : '';
+      lk.push(`<g class="lkg" data-li="${li}">${ttl}<path class="lkh" d="M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}"/><path class="lk man${dim}${sel}${l3m}" data-a="${a.key}" data-b="${b.key}" d="M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}"/></g>`);
+      /* the label LIES ALONG the line (request, 28 Oct 2026): at the curve's midpoint, turned to the tangent there — for a
+         quadratic at t=.5 that is simply b−a — and flipped past ±90° so the text never reads upside down. No tooltip:
+         the chip already shows the text, and the hint painted a second copy over it. */
+      const t = lkLabel(l); if (t) { const px = .25 * a.x + .5 * cx + .25 * b.x, py = .25 * a.y + .5 * cy + .25 * b.y;
+        let ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; if (ang > 90) ang -= 180; else if (ang <= -90) ang += 180;   /* range (−90°, 90°]: a vertical label always reads top to bottom */
+        lk.push(`<g class="lklbl" transform="translate(${px} ${py}) rotate(${ang.toFixed(1)})"><foreignObject x="-100" y="-11" width="200" height="22" style="overflow:visible"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;height:22px"><div class="lkc" data-li="${li}"><span>${esc(t)}</span>`
+          + `<button type="button" class="lkb ed" data-la="ed" aria-label="Edit label">${ic('pencil')}</button><button type="button" class="lkb rm" data-la="rm" aria-label="Remove label">${ic('times')}</button></div></div></foreignObject></g>`); }
+      return; }
     for (let i = 0; i < l.links; i++) { const o = l.links === 1 ? 0 : (i - (l.links - 1) / 2) * 22;
       lk.push(pair('lk' + dim, `M${a.x},${a.y} Q${mx + nx * o},${my + ny * o} ${b.x},${b.y}`)); }
     if (T.l3 && l.l3) lk.push(`<path class="lk l3${dim}" d="M${a.x},${a.y} Q${mx + nx * 40},${my + ny * 40} ${b.x},${b.y}"/>`);
@@ -1025,8 +1315,13 @@ $('tGraph').addEventListener('wheel', (e) => { if ($('tSvg').hidden) return; e.p
 /* drag: a node moves; empty canvas pans. Pointer capture keeps a fast drag that leaves the canvas going. */
 let DR = null;
 $('tSvg').addEventListener('pointerdown', (e) => {
+  /* only a plain primary press is a click: a right-click — on a Mac a two-finger tap or Ctrl+click — fires pointerdown /
+     pointerup as well as contextmenu, and was opening the action menu on top of the details panel */
+  if (e.button !== 0 || (e.ctrlKey && e.pointerType === 'mouse')) { DR = null; return; }
+  if (e.target.closest('.lkc')) return;   /* a label chip and its buttons handle their own clicks */
   const g = e.target.closest('.nd'); const n = g && T.nodes.find(x => x.key === g.dataset.k);
-  DR = { n, x: e.clientX, y: e.clientY, moved: false, ev: { x: e.clientX, y: e.clientY } }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
+  const lg = !n && e.target.closest('.lkg[data-li]');
+  DR = { n, lk: lg ? +lg.dataset.li : null, x: e.clientX, y: e.clientY, moved: false, ev: { x: e.clientX, y: e.clientY } }; $('tSvg').setPointerCapture(e.pointerId); if (!n) $('tSvg').classList.add('pan');
 });
 $('tSvg').addEventListener('pointermove', (e) => {
   if (!DR) return tipMove(e); const dx = e.clientX - DR.x, dy = e.clientY - DR.y; if (Math.abs(dx) + Math.abs(dy) > 3) DR.moved = true; if (!DR.moved) return;
@@ -1035,14 +1330,24 @@ $('tSvg').addEventListener('pointermove', (e) => {
 });
 $('tSvg').addEventListener('pointerup', () => {
   if (DR && !DR.moved && DR.n) nodeClick(DR.n, DR.ev);
-  else if (DR && !DR.moved && !DR.n) { T.sel.node = null; graphPaint(); }
+  else if (DR && !DR.moved && DR.lk != null && T.tab === 'custom') lkClick(T.links[DR.lk], DR.ev);
+  else if (DR && !DR.moved && !DR.n) { T.sel.node = null; T.sel.link = null; graphPaint(); }
   DR = null; $('tSvg').classList.remove('pan');
 });
 $('tSvg').addEventListener('pointerleave', tipHide);
+/* right-click a node on the Custom tab → its details panel (and no browser menu); the action menu closes */
+$('tSvg').addEventListener('contextmenu', (e) => {
+  if (T.tab !== 'custom') return; const g = e.target.closest('.nd'), n = g && T.nodes.find(x => x.key === g.dataset.k);
+  if (!n) { const lg = e.target.closest('.lkg[data-li]'), l = lg && T.links[+lg.dataset.li];
+    if (l && l.man) { e.preventDefault(); DR = null; mcMenuClose(); ndClose(); lkInfoClose(); T.sel.node = null; lkMenuShow(l, { x: e.clientX, y: e.clientY }); graphPaint(); }
+    return; }
+  e.preventDefault(); DR = null; $('tSvg').classList.remove('pan'); mcMenuClose(); lkMenuClose();
+  T.sel.node = n.key; T.sel.link = null; ndOpen(n); graphPaint();
+});
 function nodeClick(n, ev){
   T.sel.node = n.key;
-  /* the root monitor gets the menu only (request, 27 Oct 2026); any other node also opens its details panel */
-  if (T.tab === 'custom' && ev) { mcMenuOpen(n, ev); if (n.depth > 0) ndOpen(n); else ndClose(); }
+  /* a CLICK opens the action menu only; the details panel is the RIGHT-click (request, 28 Oct 2026) */
+  if (T.tab === 'custom' && ev) { lkMenuClose(); mcMenuOpen(n, ev); }
   /* Progressive: a neighbour that hides children opens them; clicking an open one folds them again */
   if (T.mode === 'progressive' && n.depth > 0 && n.d.kids && n.d.kids.length) { T.exp[n.key] = !T.exp[n.key]; layout(curRoot()); }
   graphPaint();
@@ -1081,7 +1386,7 @@ new ResizeObserver(() => { if ($('tSvg').hidden) return; if (T.needFit && $('tGr
 addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); $('tFs').click(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && !$('tSvg').hidden) { e.preventDefault(); $('tFind').focus(); return; }
-  if (e.key === 'Escape') { if ($('cvGrid').classList.contains('on')) { cvGridOpen(false); return; } if (document.querySelector('.tdr.on')) { drClose(); return; } if (kbOpen()) { kbHide(); return; } if (popOpen()) { popClose(); return; }
+  if (e.key === 'Escape') { if ($('cvGrid').classList.contains('on')) { cvGridOpen(false); return; } if ($('dGrp').classList.contains('on')) { grpClose(); return; } if (document.querySelector('.tdr.on')) { drClose(); return; } if (kbOpen()) { kbHide(); return; } if (popOpen()) { popClose(); return; }
     if ($('tBody').classList.contains('fs')) { $('tFs').click(); return; } if (T.find) { T.find = ''; $('tFind').value = ''; $('tFind').blur(); graphPaint(); return; }
     if (T.sel.node || T.insp) { T.sel.node = null; T.insp = false; graphPaint(); return; } }
   if (/INPUT|TEXTAREA/.test(document.activeElement.tagName) || document.querySelector('.tdr.on') || $('tSvg').hidden) return;
@@ -1146,7 +1451,7 @@ function drOpen(id){
   if (id === 'dCv') cvOpen(CV.mode);
   if (id === 'dNew') { newReset(); newMode(); setTimeout(() => $('nName').focus(), 220); }
 }
-function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('mcGrid').classList.remove('on'); mcMenuClose(); $('cvPickB').classList.remove('open'); }
+function drClose(){ document.querySelectorAll('.tdr.on').forEach(d => d.classList.remove('on')); $('tScrim').classList.remove('on'); $('grpScrim').classList.remove('on'); $('cvGrid').classList.remove('on'); $('mcGrid').classList.remove('on'); mcMenuClose(); $('cvPickB').classList.remove('open'); }
 $('tScrim').onclick = drClose;
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = drClose);
 $('dSetTabs').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('dSetTabs').children].forEach(x => x.classList.toggle('on', x === b));
@@ -1273,7 +1578,7 @@ $('nSave').onclick = () => {
   const v = T.design ? { name, grp: gname, sec, share, root: { ...T.design.root, kids: T.design.kids.map(k => ({ ...k })) }, bg: T.design.bg }
                      : { name, grp: gname, sec, share, mons: mons.map(m => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s })) };
   g.views.push(v); T.design = null;
-  drClose(); T.view = v; T.cv[gname] = true; toast('Success', 'Topology View "' + name + '" created'); goTab('custom');
+  drClose(); T.view = v; cvOpenPath(gname); toast('Success', 'Topology View "' + name + '" created'); goTab('custom');
 };
 
 /* ---- the same drawer, two shapes: from a design it is live's SAVE VIEW (View Name · View Group · Security, and
@@ -1358,8 +1663,8 @@ function cvTypePaint(){}   /* no tabs any more — the Container section is alwa
 function cvMetaReset(){
   CVT = { type:'monitor', ic:'agent', sh:'hexagon' };
   CVS = { shw:'users', users:[], profiles:[] };
-  $('cvName').value = ''; $('cvGrp').value = ''; segSet('cvSec', 'public'); cvSharePaint();
-  ['cvName','cvGrp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+  $('cvName').value = ''; cvGrpPaint(''); segSet('cvSec', 'public'); cvSharePaint();
+  $('cvName').classList.remove('err'); $('cvNameE').hidden = true; $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true;
 }
 spMount('cvShare', () => CVS);
 /* single-select engine for Icon and Shape: get/set read and write CVT */
@@ -1377,27 +1682,124 @@ function ssPaint(id){
   h.querySelector('.din span').textContent = o[1];
   h.querySelector('.dmenu').innerHTML = h._o.map(([v, l]) => `<button type="button" role="option" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-selected="${v === cur}">${h._g ? `<svg viewBox="0 0 512 512">${monGlyph(v)}</svg>` : ''}${esc(l)}</button>`).join('');
 }
-let CA = { ic:'agent', sh:'hexagon' };   /* Add Container's Icon/Shape state — declared before its dropdowns read it */
-ssMount('caIc', CT_ICONS, 'ic', true, () => CA); ssMount('caSh', CT_SHAPES, 'sh', false, () => CA);
-['caName','caIp'].forEach(i => $(i).addEventListener('input', () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; }));
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
 
 $('cvSec').addEventListener('click', () => setTimeout(cvSharePaint));
-['cvName','cvGrp'].forEach(i => $(i).oninput = () => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
+$('cvName').oninput = () => { $('cvName').classList.remove('err'); $('cvNameE').hidden = true; };
+/* View Group: the groups already in the sidebar, plus any created here this session (a group with no view yet) */
+const CV_GRP_NEW = [];
+const cvGroups = () => { const all = new Set();
+  [...CUSTOM.map(g => g.grp), ...CV_GRP_NEW].forEach(p => gParts(p).forEach((_, i, a) => all.add(a.slice(0, i + 1).join(GSEP))));
+  return [...all].sort((a, b) => a.localeCompare(b)); };   /* sorted as paths, so a sub-group lands right under its parent */
+const cvGrpVal = () => { const v = $('cvGrp').value; return typeof v === 'string' ? v.trim() : ''; };
+function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGroups().map(g => ({ value: g, label: g })); el.value = sel || ''; }
+$('cvGrp').addEventListener('change', () => { $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; });
+/* VIEW GROUPS drawer (request, 28 Oct 2026) — replaces the Create New popover. GRP.add is the parent a new group is
+   being typed under ('' = top level, null = none open). Deleting is offered only for a group with no views anywhere
+   under it, and takes its (equally empty) sub-groups with it. */
+const GRP = { sel:'', q:'', open:{}, add:null, err:'', name:'' };
+const grpViews = (p) => CUSTOM.reduce((n, g) => n + (g.grp === p || g.grp.startsWith(p + GSEP) ? g.views.length : 0), 0);
+const grpOwn = (p) => CUSTOM.filter(g => g.grp === p).flatMap(g => g.views);   /* the views filed directly in p */
+const grpKids = (all, par) => all.filter(g => par ? g.startsWith(par + GSEP) && gParts(g).length === gParts(par).length + 1 : gParts(g).length === 1)
+  .sort((a, b) => gParts(a).pop().localeCompare(gParts(b).pop()));
+const grpBtn = (a, icon, label, extra = '') => `<obs-button variant="transparent" size="small" squared data-a="${a}" aria-label="${label}" data-tip="${label}"${extra}><obs-icon name="${icon}" size="14"></obs-icon></obs-button>`;
+function grpPaint(){
+  const all = cvGroups(), q = GRP.q.trim().toLowerCase(), rows = [];
+  const hit = (p) => gParts(p).pop().toLowerCase().includes(q) || grpOwn(p).some(v => v.name.toLowerCase().includes(q)) || grpKids(all, p).some(hit);
+  const pad = (d) => 8 + d * 20;
+  /* the add row (requests, 28 Oct 2026): back to ONE compact line — the labelled block was too big. The placeholder says
+     which level it makes (parent / child of a named group); the actions are DS icon buttons on the field's own height:
+     ✓ is the primary (filled), ✕ the quiet neutral fill. No `required` attribute — it raised the browser's own
+     "Please fill in this field" tooltip; the empty check is the field's own DS error message. */
+  const addRow = (par, d) => `<div class="grpnew" style="padding-left:${pad(d)}px"><obs-input id="grpIn" block value="${esc(GRP.name)}" placeholder="${par ? 'New child group in ' + esc(gParts(par).pop()) : 'New parent group name'}"${GRP.err ? ` error error-message="${esc(GRP.err)}"` : ''}></obs-input>`
+    + `<obs-button class="grpib" variant="primary" squared data-a="ok" aria-label="Add group" data-tip="Add group"><obs-icon name="check" size="16"></obs-icon></obs-button>`
+    + `<obs-button class="grpib" variant="neutral-lighter" squared data-a="x" aria-label="Cancel" data-tip="Cancel"><obs-icon name="times" size="16"></obs-icon></obs-button></div>`;
+  if (GRP.add === '') rows.push(addRow('', 0));
+  const walk = (p, d) => {
+    if (q && !hit(p)) return; const ks = grpKids(all, p), own = grpOwn(p), open = !!q || !!GRP.open[p] || GRP.add === p, n = grpViews(p), nm = gParts(p).pop();
+    rows.push(`<div class="grprow${GRP.sel === p ? ' on' : ''}" role="treeitem" tabindex="0" aria-selected="${GRP.sel === p}"${ks.length || own.length ? ` aria-expanded="${open}"` : ''} data-p="${esc(p)}" style="padding-left:${pad(d)}px">`
+      + `<span class="grpcv${ks.length || own.length || GRP.add === p ? '' : ' ph'}" data-a="tog"><obs-icon name="${open ? 'chevron-down' : 'chevron-right'}" size="12"></obs-icon></span><obs-icon class="grpic" name="folders" size="16"></obs-icon><span class="tnm">${esc(nm)}</span>`
+      + `<span class="grpn">${n ? n + (n > 1 ? ' views' : ' view') : 'Empty'}</span><span class="grpact">${grpBtn('add', 'plus', 'Add child group to ' + esc(nm))}`
+      + (n ? '' : grpBtn('del', 'delete', 'Delete empty group ' + esc(nm), ' class="del"')) + `</span></div>`);
+    if (!open) return;
+    if (GRP.add === p) rows.push(addRow(p, d + 1));
+    ks.forEach(k => walk(k, d + 1));
+    /* the views inside the group (request, 28 Oct 2026: "show the inside view") — read-only, under its sub-groups */
+    own.filter(v => !q || v.name.toLowerCase().includes(q) || nm.toLowerCase().includes(q))
+      .forEach(v => rows.push(`<div class="grpview" role="treeitem" aria-disabled="true" style="padding-left:${pad(d + 1) + 18}px"><obs-icon name="topology" size="14"></obs-icon><span class="tnm">${esc(v.name)}</span></div>`));
+  };
+  grpKids(all, '').forEach(p => walk(p, 0));
+  $('grpTree').innerHTML = rows.join('') || `<div class="grpnone">${q ? 'No matching groups' : 'No groups yet. Use New group to add one.'}</div>`;
+  if (GRP.sel) $('grpUse').removeAttribute('disabled'); else $('grpUse').setAttribute('disabled', '');
+  const inp = $('grpIn'); if (inp) grpInBind(inp); if (inp) setTimeout(() => { const f = inp.shadowRoot && inp.shadowRoot.querySelector('input'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }, 0);
+}
+function grpOpen(){
+  GRP.sel = cvGrpVal(); GRP.q = ''; GRP.add = null; GRP.err = ''; GRP.name = ''; $('grpQ').value = '';
+  if (GRP.sel) gParts(GRP.sel).slice(0, -1).forEach((_, i, a) => { GRP.open[a.slice(0, i + 1).join(GSEP)] = true; });
+  grpPaint(); $('dGrp').classList.add('on'); $('grpScrim').classList.add('on');
+}
+function grpClose(){ $('dGrp').classList.remove('on'); $('grpScrim').classList.remove('on'); hintHide(); $('cvGrpNew').focus(); }
+function grpAddSave(){
+  const n = GRP.name.replace(/›/g, '').trim(), par = GRP.add;
+  if (!n) { GRP.err = 'Group Name is required'; grpPaint(); return; }
+  const full = par ? par + GSEP + n : n, dup = cvGroups().find(g => g.toLowerCase() === full.toLowerCase());
+  if (dup) { GRP.err = 'A group with this name already exists here'; grpPaint(); return; }
+  CV_GRP_NEW.push(full); if (par) GRP.open[par] = true; GRP.sel = full; GRP.add = null; GRP.err = ''; GRP.name = ''; grpPaint();
+}
+function grpAddOpen(par){ GRP.add = par; GRP.err = ''; GRP.name = ''; if (par) GRP.open[par] = true; grpPaint(); }
+function grpAddCancel(){ GRP.add = null; GRP.err = ''; GRP.name = ''; grpPaint(); }
+function grpDel(p){
+  if (grpViews(p)) return; const under = (g) => g === p || g.startsWith(p + GSEP);
+  for (let i = CV_GRP_NEW.length - 1; i >= 0; i--) if (under(CV_GRP_NEW[i])) CV_GRP_NEW.splice(i, 1);
+  for (let i = CUSTOM.length - 1; i >= 0; i--) if (under(CUSTOM[i].grp)) CUSTOM.splice(i, 1);   /* empty by construction */
+  if (GRP.sel && under(GRP.sel)) GRP.sel = '';
+  if (under(cvGrpVal())) cvGrpPaint(''); else cvGrpPaint(cvGrpVal());
+  grpPaint(); cvTreePaint();
+}
+/* obs-button fires a consumer's click twice (inner shadow button + host re-emit), and grpPaint rebuilds the tree in
+   between — so every handler goes through grpTap: one call per gesture */
+let grpTapT = 0; const grpTap = (f) => (e) => { const t = performance.now(); if (t - grpTapT < 60) return; grpTapT = t; f(e); };
+$('cvGrpNew').onclick = grpOpen;
+$('grpX').onclick = $('grpScrim').onclick = grpClose;
+$('grpCancel').addEventListener('click', grpTap(grpClose));
+$('grpUse').addEventListener('click', grpTap(() => { if (!GRP.sel) return; cvGrpPaint(GRP.sel); $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; grpClose(); }));
+$('grpTop').addEventListener('click', grpTap(() => grpAddOpen('')));
+/* obs-input emits its own `input` (value in detail) and then the native `input` bubbles out of its shadow root with no
+   value — only the component's event is read, or the native one wipes what was typed */
+const grpQ = (e) => { if (!(e instanceof CustomEvent)) return; GRP.q = String(enVal(e, $('grpQ')) || ''); grpPaint(); };
+$('grpQ').addEventListener('input', grpQ); $('grpQ').addEventListener('change', grpQ);
+$('grpTree').addEventListener('click', grpTap((e) => {
+  const a = e.target.closest('[data-a]'), r = e.target.closest('.grprow');
+  if (a && a.dataset.a === 'ok') return grpAddSave();
+  if (a && a.dataset.a === 'x') return grpAddCancel();
+  if (!r) return; const p = r.dataset.p;
+  if (a && a.dataset.a === 'tog') { GRP.open[p] = !GRP.open[p]; return grpPaint(); }
+  if (a && a.dataset.a === 'add') return grpAddOpen(p);
+  if (a && a.dataset.a === 'del') return grpDel(p);
+  GRP.sel = p; grpPaint();
+}));
+$('grpTree').addEventListener('dblclick', (e) => { const r = e.target.closest('.grprow'); if (r && !e.target.closest('[data-a]')) { GRP.sel = r.dataset.p; grpTapT = 0; $('grpUse').click(); } });
+$('grpTree').addEventListener('keydown', (e) => {
+  if (e.target.id === 'grpIn') { if (e.key === 'Enter') { e.preventDefault(); grpAddSave(); } else if (e.key === 'Escape') { e.stopPropagation(); grpAddCancel(); } return; }
+  const r = e.target.closest('.grprow'); if (r && (e.key === 'Enter' || e.key === ' ') && e.target === r) { e.preventDefault(); GRP.sel = r.dataset.p; grpPaint(); }
+});
+/* bound on the field itself: a Vue custom element's emitted events do not bubble, so a listener on #grpTree never hears them */
+function grpInBind(inp){ inp.addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; GRP.name = String(enVal(e, inp) || '');
+  if (GRP.err) { GRP.err = ''; inp.removeAttribute('error'); inp.removeAttribute('error-message'); } }); }
 /* file the design under the name / group / security Create Custom View captured */
 function cvSave(){
   if (T.design.view) {
     const v = T.design.view, ed = T.design.edit;
     if (T.design.draft) {   /* first Save: the draft is filed now — its group opens and the new row is selected */
       let g = CUSTOM.find(x => x.grp === v.grp); if (!g) { g = { grp: v.grp, views:[] }; CUSTOM.push(g); }
-      if (!g.views.includes(v)) g.views.push(v); T.cv[v.grp] = true;
+      if (!g.views.includes(v)) g.views.push(v); cvOpenPath(v.grp);
     }
     T.design = null; T.view = v; toast('Success', 'Topology View "' + v.name + (ed ? '" updated' : '" created')); goTab('custom'); return;
   }
   const m = T.design.meta, gname = m.grp === '<standalone>' ? 'Standalone' : m.grp;
   let g = CUSTOM.find(x => x.grp === gname); if (!g) { g = { grp: gname, views:[] }; CUSTOM.push(g); }
   const v = { name: m.name, grp: gname, sec: m.sec, share: m.share || null, root: { ...T.design.root, kids: T.design.kids.map(k => ({ ...k })) }, bg: T.design.bg };
-  g.views.push(v); T.design = null; T.view = v; T.cv[gname] = true;
+  g.views.push(v); T.design = null; T.view = v; cvOpenPath(gname);
   toast('Success', 'Topology View "' + m.name + '" created'); goTab('custom');
 }
 function cvField(){
@@ -1436,8 +1838,9 @@ const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
 $('cvCreate').onclick = () => {
   let bad = false;
   if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
-  const name = $('cvName').value.trim(), grp = $('cvGrp').value.trim();
-  if (CV.mode === 'root') ['cvName','cvGrp'].forEach(i => { if (!$(i).value.trim()) { $(i).classList.add('err'); $(i + 'E').hidden = false; bad = true; } });
+  const name = $('cvName').value.trim(), grp = cvGrpVal();
+  if (CV.mode === 'root') { if (!name) { $('cvName').classList.add('err'); $('cvNameE').hidden = false; bad = true; }
+    if (!grp) { $('cvGrpW').classList.add('err'); $('cvGrpE').hidden = false; bad = true; } }
   if (bad) return;
   if (CV.mode === 'root') {
     /* Create opens the design canvas on a DRAFT view (request, 28 Oct 2026, reversing 27 Oct's file-at-once): it joins
@@ -1497,20 +1900,106 @@ $('bgAdd').addEventListener('click', bgTap(() => { if (BG.pick == null || !T.des
   const u = BG.pick === 'def' ? null : BG_LIB[BG.pick];
   T.design.bg = u; if (T.design.view) T.design.view.bg = u; drClose(); toolsPaint();
   toast('Success', u ? 'Background image added' : 'Default canvas restored'); }));
-$('desCt').onclick = () => {
-  CA = { ic:'agent', sh:'hexagon' }; ['caName','caDesc','caIp'].forEach(i => $(i).value = '');
-  ['caName','caIp'].forEach(i => { $(i).classList.remove('err'); $(i + 'E').hidden = true; });
-  drOpen('dCtA'); ssPaint('caIc'); ssPaint('caSh'); setTimeout(() => $('caName').focus(), 220);
-};
-$('caCancel').onclick = drClose;
+/* Add Node › Container: CAS holds one record per box; caPaint rebuilds the list from it (the fields write back on input,
+   so a rebuild never loses typing). Each box has its own Icon / Shape dropdown, mounted on its own record. */
+let CAS = [], caSeq = 0;
+const caNew = () => ({ id: ++caSeq, n:'', desc:'', ic:'agent', sh:'hexagon', ip:'', open:true, err:{}, conn:[] });
+/* the nodes a new container can be connected to at create time: everything already on the design canvas, root first */
+function caTargets(){ if (!T.design) return []; const out = [T.design.root], walk = (x) => (x.kids || []).forEach(k => { if (!out.includes(k)) { out.push(k); walk(k); } });
+  walk(T.design.root); (T.design.kids || []).forEach(k => { if (!out.includes(k)) { out.push(k); walk(k); } }); return out; }
+const CA_IP = /^((25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(25[0-5]|2[0-4]\d|1?\d?\d)$/;
+function caPaint(focusId){
+  const many = CAS.length > 1;
+  $('caList').innerHTML = CAS.map((c, i) => {
+    const k = c.id, title = c.n.trim() || 'Container ' + (i + 1);
+    return `<section class="cabox${c.open ? '' : ' shut'}" data-k="${k}">
+      <div class="cahd"><button type="button" class="cabh" data-a="tog" aria-expanded="${c.open}" aria-controls="caB${k}"><obs-icon name="chevron-down" size="14"></obs-icon><span>${esc(title)}</span></button>
+        ${many ? `<obs-button class="carm" variant="transparent" size="small" squared data-a="rm" aria-label="Remove ${esc(title)}" data-tip="Remove container"><obs-icon name="delete" size="14"></obs-icon></obs-button>` : ''}</div>
+      <div class="cabb" id="caB${k}">
+        <div class="dgrid">
+          <div class="dfld"><div class="dlbl">Name <i>*</i></div><input class="din${c.err.n ? ' err' : ''}" data-f="n" value="${esc(c.n)}" placeholder="Enter container name" autocomplete="off"><div class="derr"${c.err.n ? '' : ' hidden'}>Name is required</div></div>
+          <div class="dfld"><div class="dlbl">Description</div><input class="din" data-f="desc" value="${esc(c.desc)}" placeholder="Enter description" autocomplete="off"></div>
+        </div>
+        <div class="dgrid dgrid3">
+          <div class="dfld"><div class="dlbl">Icon</div><div class="dsel ssw" id="caIc${k}"></div></div>
+          <div class="dfld"><div class="dlbl">Shape</div><div class="dsel ssw" id="caSh${k}"></div></div>
+          <div class="dfld"><div class="dlbl">IP</div><input class="din${c.err.ip ? ' err' : ''}" data-f="ip" value="${esc(c.ip)}" placeholder="Enter IP address" autocomplete="off"><div class="derr"${c.err.ip ? '' : ' hidden'}>Enter a valid IPv4 address</div></div>
+        </div>
+        <!-- Create Manual Connection at create time (request, 28 Oct 2026): the nodes picked here are joined to the container
+             as it is added, so it arrives connected and the view can be saved without a second step -->
+        <div class="dfld"><div class="dlbl">Create Manual Connection</div><obs-select class="caconn" data-k="${k}" multiple searchable block placeholder="Select nodes to connect"></obs-select>
+          <div class="cahint">Optional — joins this container to nodes already on the canvas. A container left unconnected stops the view being saved.</div></div>
+      </div></section>`; }).join('');
+  CAS.forEach(c => { ssMount('caIc' + c.id, CT_ICONS, 'ic', true, () => c); ssMount('caSh' + c.id, CT_SHAPES, 'sh', false, () => c); });
+  const tg = caTargets(), opts = tg.map((d, i) => ({ value: String(i), label: d.n + (i === 0 ? ' (root)' : '') }));
+  $('caList').querySelectorAll('obs-select.caconn').forEach(el => { const c = CAS.find(x => x.id === +el.dataset.k);
+    c.conn = c.conn.filter(d => tg.includes(d));   /* keep picks across a repaint */
+    el.options = opts; el.value = c.conn.map(d => String(tg.indexOf(d))).join(',');
+    el.addEventListener('change', (e) => { const d = e.detail, v = Array.isArray(d) && d.length === 1 && Array.isArray(d[0]) ? d[0] : d;
+      const ids = Array.isArray(v) ? v.map(x => String((x && x.value) ?? x)) : String(v || el.value || '').split(',').filter(Boolean);
+      c.conn = ids.map(i => tg[+i]).filter(Boolean); }); });
+  nodeAddPaint();
+  const f = focusId && $('caList').querySelector(`.cabox[data-k="${focusId}"] [data-f="n"]`); if (f) setTimeout(() => f.focus(), 0);
+}
+const caOf = (el) => CAS.find(c => c.id === +el.closest('.cabox').dataset.k);
+$('caList').addEventListener('input', (e) => { const f = e.target.dataset.f; if (!f) return; const c = caOf(e.target); c[f] = e.target.value;
+  if (c.err[f]) { c.err[f] = false; e.target.classList.remove('err'); e.target.nextElementSibling.hidden = true; }
+  if (f === 'n') { const t = e.target.closest('.cabox').querySelector('.cabh span'); t.textContent = c.n.trim() || 'Container ' + (CAS.indexOf(c) + 1); }
+  nodeAddPaint(); });
+let caTapT = 0;
+$('caList').addEventListener('click', (e) => { const a = e.target.closest('[data-a]'); if (!a) return; const c = caOf(a);
+  if (a.dataset.a === 'tog') { c.open = !c.open; return caPaint(); }
+  if (a.dataset.a === 'rm') { const t = performance.now(); if (t - caTapT < 60) return; caTapT = t;   /* obs-button double-fires */
+    CAS = CAS.filter(x => x !== c); caPaint(); } });
+$('caMore').addEventListener('click', () => { const t = performance.now(); if (t - caTapT < 60) return; caTapT = t;
+  const c = caNew(); CAS.push(c); caPaint(c.id); });
+function caReset(){ caSeq = 0; CAS = [caNew()]; caPaint(); }
+/* Add Node: which tab is showing decides the pane and the footer's primary */
+function nodeTab(k){
+  const t = k === 'container' ? 'container' : 'entity';
+  document.querySelectorAll('#dEnA [data-pane]').forEach(p => p.hidden = p.dataset.pane !== t);
+  NODE_TAB = t; nodeAddPaint();
+  if ($('nodeTabs').value !== t) $('nodeTabs').value = t;
+  if (t === 'entity') setTimeout(enFit, 0); else setTimeout(() => { const f = $('caList').querySelector('[data-f="n"]'); if (f) f.focus(); }, 0);
+}
+$('nodeTabs').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const d = e.detail, v = Array.isArray(d) ? d[0] : d; nodeTab(v && typeof v === 'object' ? (v.value || v.key) : v); });
+/* ONE Add for the whole drawer (request, 28 Oct 2026): it adds what is filled in on BOTH tabs — every container box
+   with anything typed in it, plus the entities ticked in the table. Two buttons let containers typed on one tab be
+   silently dropped by the other tab's Add. A container box left completely empty is ignored. */
+let NODE_TAB = 'container';
+let NODE_STEP = 'pick';   /* 'pick' (tabs) → 'link' (connect the picked entities) */
+const EL = new Map();   /* entity key → { from, lbl, pi, ci, l3, pair } — kept across Back / Next */
+const caFilled = (c) => !!(c.n.trim() || c.desc.trim() || c.ip.trim());
+function nodeAddPaint(){
+  const nc = CAS.filter(caFilled).length, ne = EN.pick.length, b = $('caAdd');
+  if (ne && NODE_STEP === 'pick') { b.textContent = 'Next'; b.disabled = false; return; }   /* entities get a connect step first */
+  b.textContent = nc && ne ? `Add ${nc + ne} Nodes` : nc ? (nc > 1 ? `Add ${nc} Containers` : 'Add Container') : ne ? (ne > 1 ? `Add ${ne} Entities` : 'Add Entity')
+    : NODE_TAB === 'entity' ? 'Add Entity' : 'Add Container';
+  b.disabled = !nc && !ne && NODE_TAB === 'entity';   /* on Container an empty press still shows "Name is required" */
+}
 $('caAdd').onclick = () => {
-  const n = $('caName').value.trim(), ip = $('caIp').value.trim(); let bad = false;
-  if (!n) { $('caName').classList.add('err'); $('caNameE').hidden = false; bad = true; }
-  if (ip && !/^((25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(25[0-5]|2[0-4]\d|1?\d?\d)$/.test(ip)) { $('caIp').classList.add('err'); $('caIpE').hidden = false; bad = true; }
-  if (bad || !T.design) return;
-  /* drawn like a container from Create Custom View: filled blue, no connector — Create Manual Connection links it */
-  T.design.kids.push({ n, ip, ic: CA.ic, s: 'unknown', shape: CA.sh, desc: $('caDesc').value.trim(), kind: 'container', nolink: true });
-  T.design.ct++; drClose(); graphBuild(false); toast('Success', `Container "${n}" added`);
+  if (!T.design) return;
+  const cs = CAS.filter(caFilled), list = cs.length || EN.pick.length ? cs : CAS;   /* nothing anywhere → validate the boxes */
+  let bad = false;
+  list.forEach(c => { c.err = { n: !c.n.trim(), ip: !!c.ip.trim() && !CA_IP.test(c.ip.trim()) }; if (c.err.n || c.err.ip) { c.open = true; bad = true; } });   /* an error never hides inside a shut box */
+  if (bad) { if (NODE_STEP !== 'pick') nodeStep('pick'); caPaint(); if (NODE_TAB !== 'container') nodeTab('container'); return; }
+  if (EN.pick.length && NODE_STEP === 'pick') return nodeStep('link');   /* Next → connect the picked entities */
+  const tg = caTargets(), caN = new Map(), enN = new Map();   /* the canvas BEFORE anything is pushed — "from" indexes into it */
+  /* added with nolink — a container linked by its box's picks, an entity by its row on the connect step; Save waits for the rest */
+  cs.forEach(c => { const node = { n: c.n.trim(), ip: c.ip.trim(), ic: c.ic, s: 'unknown', shape: c.sh, desc: c.desc.trim(), kind: 'container', nolink: true };
+    if (c.conn.length) node.man = c.conn.slice();   /* the connections picked in the box — drawn as manual connections */
+    T.design.kids.push(node); T.design.ct++; caN.set(c.id, node); });
+  EN.pick.forEach(m => { const node = { n: m.n, ip: m.ip, ic: m.ic, s: m.s, nolink: true }; T.design.kids.push(node); enN.set(m.key, node); });
+  const from = (v) => !v ? null : v[0] === 't' ? tg[+v.slice(1)] : v[0] === 'c' ? caN.get(+v.slice(1)) : enN.get(v.slice(1));
+  EN.pick.forEach(m => { const st = EL.get(m.key); let src = st && from(st.from), tgt = enN.get(m.key); if (!src || src === tgt) return;
+    if (st.rev) [src, tgt] = [tgt, src];   /* swapped: the entity is the source */
+    src.man = src.man || []; if (!src.man.includes(tgt)) src.man.push(tgt);
+    if (st.lbl.trim()) { let l = LK_LBL.get(src); if (!l) LK_LBL.set(src, l = new Map()); l.set(tgt, st.lbl.trim()); }
+    if (isNet(src) && isNet(tgt) && (st.pi || st.ci || st.l3)) { let f = LK_IF.get(src); if (!f) LK_IF.set(src, f = new Map()); f.set(tgt, { pi: st.pi, ci: st.ci, l3: st.l3 }); } });
+  const nc = cs.length, ne = EN.pick.length, one = nc + ne === 1 ? (cs[0] ? cs[0].n.trim() : EN.pick[0].n) : '';
+  drClose(); graphBuild(false); toolsPaint();
+  const loose = designUnlinked().length;
+  toast('Success', one ? `${nc ? 'Container' : 'Entity'} "${one}" added${loose ? ' — connect it to save' : ''}` : `${nc + ne} nodes added${loose ? ' — connect them to save' : ''}`);
 };
 /* ADD ENTITY ---- the pool: every entry point, plus the hosts / VMs inside each entry point's own graph */
 const EN_TYPES = ['Monitor','Access Point','vCenter','VMware ESXi VM','Legacy ESXi VM','Citrix Xen VM','HyperV VM','Proxmox VE VM','KVM VM','Nutanix VM','Database'];
@@ -1546,16 +2035,16 @@ $('enTySel').addEventListener('change', (e) => { const t = enVal(e, $('enTySel')
 const enQ = (e) => { EN.q = String(enVal(e, $('enQIn')) || ''); enPaint(false); };
 $('enQIn').addEventListener('input', enQ); $('enQIn').addEventListener('change', enQ);
 $('enTbl').columns = [ { key:'n', title:'Monitor', sortable:true, primary:true }, { key:'ip', title:'IP', sortable:true }, { key:'ty', title:'Type', type:'logo', width:'70px' }, { key:'st', title:'Status', type:'status', width:'100px' } ];
-$('enTbl').addEventListener('change', (e) => { const ids = enIds(e), pool = enOfType(EN.type); EN.pick = pool.filter(m => ids.includes(m.key)); $('enAdd').disabled = !EN.pick.length; });
+$('enTbl').addEventListener('change', (e) => { const ids = enIds(e), pool = enOfType(EN.type); EN.pick = pool.filter(m => ids.includes(m.key)); nodeAddPaint(); });
 function enPaint(resetSel){
   $('enEmpty').hidden = !!EN.type; $('enBody').hidden = !EN.type;
-  if (!EN.type) { $('enAdd').disabled = true; return; }
+  if (!EN.type) { nodeAddPaint(); return; }
   const t = $('enTbl');
   /* an icon this data names but the logo set has no mark for falls back to the generic 'vm' cube */
   t.rows = enRows().map(m => ({ id: m.key, n: m.n, ip: m.ip || '—', ty: { name: ({ server:'vm' })[m.ic] || m.ic, variant:'color' }, st: 'enable' }));
   if (resetSel) { t.selected = []; EN.pick = []; }
   else t.selected = EN.pick.map(p => p.key).filter(k => enRows().some(m => m.key === k));
-  $('enAdd').disabled = !EN.pick.length;
+  nodeAddPaint();
   setTimeout(enFit, 0);
 }
 /* obs-table's pager sits OUTSIDE its scrolling box, so the box is given the drawer's leftover height (its own max-height
@@ -1570,14 +2059,151 @@ function enFit(){
 }
 addEventListener('resize', () => { if ($('dEnA').classList.contains('on')) enFit(); });
 $('enCancel').onclick = drClose;
-$('enAdd').onclick = () => {
-  if (!EN.pick.length || !T.design) return; const n = EN.pick.length;
-  /* an entity is added UNCONNECTED, like a container (request, 28 Oct 2026): it is linked by clicking it → Create
-     Manual Connection, so nolink keeps the automatic root connector off */
-  T.design.kids.push(...EN.pick.map(m => ({ n: m.n, ip: m.ip, ic: m.ic, s: m.s, nolink: true })));
-  drClose(); graphBuild(false); toast('Success', n === 1 ? `Entity "${EN.pick[0].n}" added` : `${n} entities added`);
+/* ---- step 2: connect the picked entities (request, 29 Oct 2026) */
+function nodeStep(st){
+  NODE_STEP = st; const link = st === 'link';
+  $('nodeSw').hidden = link; $('nodeBack').hidden = !link; $('dEnA').classList.toggle('elwide', link); $('nodeTtl').textContent = link ? 'Connect Entities' : 'Add Node';
+  if (link) { document.querySelectorAll('#dEnA [data-pane]').forEach(p => p.hidden = p.dataset.pane !== 'link'); elPaint(); nodeAddPaint(); }
+  else nodeTab(NODE_TAB);
+}
+$('nodeBack').onclick = () => { nodeStep('pick'); nodeTab('entity'); };
+/* where an entity can connect FROM: the canvas (root first), a container in this batch, another entity in this batch */
+function elSources(){
+  return [ ...caTargets().map((d, i) => ({ v: 't' + i, n: d.n + (i === 0 ? ' (root)' : ''), d })),
+    ...CAS.filter(caFilled).map(c => ({ v: 'c' + c.id, n: c.n.trim() + ' (new container)', d: { n: c.n.trim(), ic: c.ic, kind: 'container' } })),
+    ...EN.pick.map(m => ({ v: 'e' + m.key, n: m.n + ' (new)', d: m })) ];
+}
+const elBool = (e, el) => { const d = e.detail, v = Array.isArray(d) ? d[0] : d; return typeof v === 'boolean' ? v : !!el.checked; };
+function elPaint(){
+  $('elGrid').innerHTML = EN.pick.map(m => `<tr class="elrow" data-k="${esc(m.key)}"></tr>`).join('');
+  $('elGrid').querySelectorAll('.elrow').forEach(row => { const m = EN.pick.find(x => x.key === row.dataset.k); if (!m) return;
+    let st = EL.get(m.key); if (!st) EL.set(m.key, st = { from: 't0', lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false });
+    elRow(row, m, st); });
+}
+/* one row. "from" is the OTHER end's id; rev flips the direction (request, 29 Oct 2026): the entity becomes the source and the
+   picked node the target — so the dropdown moves to the To column and the entity to From. Re-rendered per swap, row only. */
+function elRow(row, m, st){
+  const opts = elSources().filter(o => o.v !== 'e' + m.key); if (!opts.some(o => o.v === st.from)) st.from = 't0';
+  const sel = `<obs-select class="elfrom" searchable block placeholder="Select" aria-label="${st.rev ? 'Connect to' : 'Connect from'}"></obs-select>`;
+  const ent = `<div class="elnm">${mi(m.ic)}<div><b title="${esc(m.n)}">${esc(m.n)}</b><small>${esc(m.ip || '—')}</small></div></div>`;
+  row.classList.toggle('elrev', !!st.rev);
+  row.innerHTML = `<td>${st.rev ? ent : sel}</td>`
+    + `<td class="c"><obs-button variant="transparent" class="elsw squared-button" aria-label="Swap From and To" data-tip="Swap From and To"><obs-icon name="exchange" size="16"></obs-icon></obs-button></td>`
+    + `<td>${st.rev ? sel : ent}</td>`
+    + `<td><obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input></td>`
+    + `<td><span class="elna">—</span><obs-select class="elpi elifc" searchable block placeholder="Select" aria-label="Parent interface"></obs-select></td>`
+    + `<td><span class="elna">—</span><obs-select class="elci elifc" searchable block placeholder="Select" aria-label="Child interface"></obs-select></td>`
+    + `<td class="c"><span class="elna">—</span><obs-checkbox class="ell3 elifc" aria-label="L3"></obs-checkbox></td>`;
+  const fs = row.querySelector('.elfrom'), lb = row.querySelector('.ellbl');
+  fs.options = opts.map(o => ({ value: o.v, label: o.n })); fs.value = st.from; lb.value = st.lbl;
+  fs.addEventListener('change', (e) => { const v = mcSelV(e, fs); if (!v || v === st.from) return; st.from = v; elIfPaint(row, m, st); });
+  lb.addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; st.lbl = String(enVal(e, lb) || ''); });
+  row.querySelector('.elpi').addEventListener('change', (e) => { st.pi = mcSelV(e, row.querySelector('.elpi')); });
+  row.querySelector('.elci').addEventListener('change', (e) => { st.ci = mcSelV(e, row.querySelector('.elci')); });
+  row.querySelector('.ell3').addEventListener('change', (e) => { st.l3 = elBool(e, row.querySelector('.ell3')); });
+  row.querySelector('.elsw').addEventListener('click', () => { const t = performance.now(); if (t - (st.swT || 0) < 300) return; st.swT = t;   /* obs-button double-fires */
+    st.rev = !st.rev; st.pair = ''; elRow(row, m, st); });
+  elIfPaint(row, m, st);
+}
+/* the interface fields — only when BOTH ends are network devices, the Create Manual Connection rule */
+function elIfPaint(row, m, st){
+  const o = elSources().find(x => x.v === st.from), on = !!(o && isNet(o.d) && isNet(m));
+  row.classList.toggle('elnet', on); if (!on) return;   /* not a network pair → the three cells read "—" */
+  const [ps, cs] = st.rev ? [m, o.d] : [o.d, m];   /* the parent interface is always the SOURCE end's */
+  const pair = ps.n + '→' + cs.n; if (st.pair !== pair) Object.assign(st, { pi: '', ci: '', l3: false, pair });
+  const pi = row.querySelector('.elpi'), ci = row.querySelector('.elci');
+  pi.options = ifList(ps).map(v => ({ value: v, label: v })); pi.value = st.pi;
+  ci.options = ifList(cs).map(v => ({ value: v, label: v })); ci.value = st.ci;
+  row.querySelector('.ell3').checked = st.l3;
+}
+$('desEn').onclick = () => { Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('enTySel').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; caReset(); EL.clear(); drOpen('dEnA'); enPaint(true); NODE_STEP = 'pick'; nodeStep('pick'); nodeTab('container'); };   /* opens on Container (request, 28 Oct 2026) */
+
+/* ================= LINK ACTIONS (request, 28 Oct 2026) =================
+   A manual connection lives on its source node's data (src.man holds the targets); its label is kept in a WeakMap
+   keyed by the source and the target objects, so it follows the connection through a re-layout and dies with it. */
+const LK_LBL = new WeakMap();
+const LK_IF = new WeakMap();   /* src → Map(target → {pi, ci, l3}) — the interfaces a network connection runs between */
+const lkIf = (l) => { const [s, t] = lkEnds(l), m = LK_IF.get(s); return (m && m.get(t)) || null; };
+const lkEnds = (l) => (l.a.d.man || []).includes(l.b.d) ? [l.a.d, l.b.d] : [l.b.d, l.a.d];
+const lkKey = (l) => { const [s, t] = lkEnds(l); return s.n + '→' + t.n; };
+const lkLabel = (l) => { const [s, t] = lkEnds(l), m = LK_LBL.get(s); return (m && m.get(t)) || ''; };
+const lkSet = (l, v) => { const [s, t] = lkEnds(l); let m = LK_LBL.get(s); if (!m) LK_LBL.set(s, m = new Map()); v ? m.set(t, v) : m.delete(t); };
+let LK = null;
+/* a click on a NETWORK link (saved with interfaces) shows its Link Info; any other manual link opens the actions menu.
+   The actions stay one right-click away on every link. */
+function lkClick(l, ev){
+  if (!l || !l.man) return; LK = l; T.sel.link = lkKey(l); T.sel.node = null; mcMenuClose(); ndClose(); lkInfoClose(); graphPaint();
+  /* ONE click shows both (request, 28 Oct 2026): a network link's Link Info above the point, the actions menu below it */
+  if (lkIf(l)) { lkInfoShow(l, ev); lkMenuShow(l, ev, true); return; }
+  lkMenuShow(l, ev);
+}
+const lkSpeed = (ifn) => !ifn ? '' : /^Te/i.test(ifn) ? '10 Gbps' : /^Gi/i.test(ifn) ? '1 Gbps' : '100 Mbps';
+/* Link Info — the live 10.0.1 tooltip (request, 28 Oct 2026, its markup pasted): 700px, the network-discovery mark +
+   "Link Info" over a rule, then Source | Target halves (the target ruled off on the left), each a severity dot + the device
+   as an underlined link, then label (1 part) / value (2 parts) rows with no borders and blank empties. It sits ABOVE the
+   point clicked with an arrow to it (tippy placement top), flipping below when there is no room. DS parts: obs-icon,
+   obs-severity, obs-link, obs-key-value (plain, rows compacted by the :host(.lkkv) sheet), obs-tag for L3. */
+function lkInfoShow(l, ev){
+  const [s, t] = lkEnds(l), fi = lkIf(l) || {};
+  const side = (title, d, ifn, k) => `<section class="lis"><h6 class="lit">${title}</h6>`
+    + `<div class="lin"><obs-severity severity="${esc(d.s || 'unknown')}"></obs-severity><obs-link data-nd="${k}">${esc(d.n)}</obs-link></div>`
+    + `<obs-key-value class="lkkv" variant="plain" columns="1" items="${esc(JSON.stringify([['Monitor', d.n], ['Interface', ifn || 'N/A'], ['Interface Alias', ''],
+        ifn ? ['Interface Status', 'Up', null, 'up'] : ['Interface Status', ''], ['Interface IP', ''], ['Speed', lkSpeed(ifn)], ['In Traffic', ''], ['Out Traffic', '']]))}"></obs-key-value></section>`;
+  const c = $('lkInfo');
+  c.innerHTML = `<div class="lih"><obs-icon name="network-discovery" size="18"></obs-icon><span>Link Info</span>${fi.l3 ? '<obs-tag variant="tag-primary">L3</obs-tag>' : ''}</div>`
+    + `<div class="lic">${side('Source', s, fi.pi, 'a')}${side('Target', t, fi.ci, 'b')}</div><i class="liar"></i>`;
+  c.hidden = false; LKI = l;
+  const w = c.offsetWidth, h = c.offsetHeight, left = Math.max(8, Math.min(innerWidth - w - 8, ev.x - w / 2));
+  const up = ev.y - h - 12 >= 8, top = up ? ev.y - h - 12 : Math.min(innerHeight - h - 8, ev.y + 12);
+  c.style.left = left + 'px'; c.style.top = top + 'px'; c.classList.toggle('below', !up);
+  c.style.setProperty('--liar', Math.max(14, Math.min(w - 14, ev.x - left)) + 'px');
+}
+let LKI = null;
+$('lkInfo').addEventListener('click', (e) => {
+  const a = e.target.closest('obs-link[data-nd]'); if (!a || !LKI) return;
+  const d = lkEnds(LKI)[a.dataset.nd === 'a' ? 0 : 1], n = T.nodes.find(x => x.d === d); lkInfoClose(); if (n) { T.sel.node = n.key; ndOpen(n); graphPaint(); }
+});
+function lkInfoClose(){ $('lkInfo').hidden = true; }
+document.addEventListener('pointerdown', (e) => { if (!$('lkInfo').hidden && !e.target.closest('#lkInfo,#lkMenu')) lkInfoClose(); }, true);
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && (!$('lkInfo').hidden || !$('lkMenu').hidden)) { lkInfoClose(); lkMenuClose(); e.stopImmediatePropagation(); } }, true);
+function lkMenuShow(l, ev, keepInfo){
+  LK = l; T.sel.link = lkKey(l); if (!keepInfo) lkInfoClose();
+  const m = $('lkMenu'); m.querySelector('#lkLbl span').textContent = lkLabel(l) ? 'Edit Label' : 'Add Label'; m.hidden = false;
+  m.style.left = Math.min(innerWidth - m.offsetWidth - 8, ev.x + 6) + 'px'; const infoBelow = keepInfo && $('lkInfo').classList.contains('below');
+  m.style.top = (infoBelow ? Math.max(8, ev.y - m.offsetHeight - 6) : Math.min(innerHeight - m.offsetHeight - 8, ev.y + 6)) + 'px';
+}
+function lkMenuClose(){ $('lkMenu').hidden = true; }
+document.addEventListener('pointerdown', (e) => { if (!$('lkMenu').hidden && !e.target.closest('#lkMenu,#lkInfo')) lkMenuClose(); }, true);
+let lkVal = '', lkTapT = 0;
+const lkTap = (f) => (e) => { const t = performance.now(); if (t - lkTapT < 60) return; lkTapT = t; f(e); };   /* obs-button double-fires */
+function lkMdOpen(l){
+  LK = l; lkMenuClose(); lkInfoClose(); lkVal = lkLabel(l); const md = $('lkMd'), inp = $('lkIn');
+  md.setAttribute('title', lkVal ? 'Edit Label' : 'Add Label');
+  inp.value = lkVal; inp.removeAttribute('error'); inp.removeAttribute('error-message');
+  /* obs-modal 0.1.166 opens only once unless hide() settles it first (gap recorded for the widget editor) */
+  const dlg = () => md.shadowRoot && md.shadowRoot.querySelector('dialog');
+  const tryOpen = (n) => { try { md.hide(); } catch (_) {} md.show();
+    setTimeout(() => { if (!(dlg() && dlg().open) && n < 4) return tryOpen(n + 1);   /* the reopen race: settle and show again */
+      const f = inp.shadowRoot && inp.shadowRoot.querySelector('input'); if (f) f.focus(); }, 40); };
+  setTimeout(() => tryOpen(0), 0);
+}
+function lkMdClose(){ try { $('lkMd').hide(); } catch (_) {} }
+$('lkIn').addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; lkVal = String(enVal(e, $('lkIn')) || ''); $('lkIn').removeAttribute('error'); $('lkIn').removeAttribute('error-message'); });
+$('lkIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); lkApply(); } });
+function lkApply(){
+  const v = lkVal.trim(); if (!v) { $('lkIn').setAttribute('error', ''); $('lkIn').setAttribute('error-message', 'Label Name is required'); return; }
+  const had = !!lkLabel(LK); lkSet(LK, v); lkMdClose(); graphPaint(); toast('Success', had ? 'Label updated' : 'Label added');
+}
+$('lkApply').addEventListener('click', lkTap(lkApply));
+$('lkCancel').addEventListener('click', lkTap(lkMdClose));
+$('lkLbl').onclick = () => lkMdOpen(LK);
+$('lkDel').onclick = () => {
+  const l = LK; lkMenuClose(); lkInfoClose(); if (!l) return; const [s, t] = lkEnds(l);
+  s.man = (s.man || []).filter(x => x !== t); lkSet(l, ''); T.sel.link = null; LK = null;
+  graphBuild(false); toolsPaint(); toast('Success', `Link ${s.n} – ${t.n} deleted`);
 };
-$('desEn').onclick = () => { Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('enTySel').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; drOpen('dEnA'); enPaint(true); };
+$('tLinks').addEventListener('click', (e) => { const b = e.target.closest('.lkb'); if (!b) return; const l = T.links[+b.closest('.lkc').dataset.li]; if (!l) return;
+  if (b.dataset.la === 'ed') lkMdOpen(l); else { lkSet(l, ''); graphPaint(); toast('Success', 'Label removed'); } });
 
 /* ================= CREATE MANUAL CONNECTION ================= */
 const MC = { src:null, pick:[] };
@@ -1595,8 +2221,29 @@ function mcCands(){
   return T.nodes.filter(n => n !== s && !T.links.some(l => (l.a === s && l.b === n) || (l.a === n && l.b === s)))
     .map(n => ({ key: n.key, n: n.d.n, ip: n.d.ip || '', ic: n.d.ic, s: n.d.s || 'unknown', node: n }));
 }
-$('mcGo').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
-function mcField(){ const b = $('mcPickB').querySelector('span'); b.textContent = MC.pick.length ? MC.pick.map(p => p.n).join(', ') : 'Select'; b.classList.toggle('ph', !MC.pick.length); }
+$('mcGo').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; MCIF.key = ''; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
+function mcField(){ const b = $('mcPickB').querySelector('span'); b.textContent = MC.pick.length ? MC.pick.map(p => p.n).join(', ') : 'Select'; b.classList.toggle('ph', !MC.pick.length); mcIfPaint(); }
+/* interfaces: shown when the source AND the one picked child are network devices. The ports are made up per device —
+   Gi0/n-n, 6–10 of them, in a stable shuffled order seeded by the device name (the live lists are unsorted too). */
+const NET_IC = ['switch', 'router', 'firewall'];
+const isNet = (d) => !!d && d.kind !== 'container' && NET_IC.includes(d.ic);   /* a container wearing a router icon is not a device */
+function ifList(d){ let h = 0; for (const ch of String(d.n)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const r = () => (h = (h * 1103515245 + 12345) >>> 0) / 4294967296, n = 6 + Math.floor(r() * 5), a = [];
+  for (let i = 1; i <= n; i++) a.push(`Gi0/${i}-${i}`); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const MCIF = { pi:'', ci:'', l3:false, key:'' };
+function mcIfPaint(){
+  const c = MC.pick.length === 1 ? MC.pick[0].node.d : null, on = !!(MC.src && isNet(MC.src.d) && isNet(c)), w = $('mcIfW');
+  w.hidden = !on; if (!on) return;
+  const key = MC.src.d.n + '→' + c.n; if (MCIF.key === key) return;   /* same pair: keep what was picked */
+  Object.assign(MCIF, { pi:'', ci:'', l3:false, key });
+  $('mcPIf').options = ifList(MC.src.d).map(v => ({ value: v, label: v })); $('mcPIf').value = '';
+  $('mcCIf').options = ifList(c).map(v => ({ value: v, label: v })); $('mcCIf').value = '';
+  $('mcL3').checked = false;
+}
+const mcSelV = (e, el) => { const d = e.detail, v = Array.isArray(d) ? d[0] : d; return v != null && typeof v !== 'object' ? String(v) : (el.value || ''); };
+$('mcPIf').addEventListener('change', (e) => { MCIF.pi = mcSelV(e, $('mcPIf')); });
+$('mcCIf').addEventListener('change', (e) => { MCIF.ci = mcSelV(e, $('mcCIf')); });
+$('mcL3').addEventListener('change', (e) => { const d = e.detail, v = Array.isArray(d) ? d[0] : d; MCIF.l3 = typeof v === 'boolean' ? v : !!$('mcL3').checked; });
 function mcGridPaint(){
   const q = $('mcGq').value.trim().toLowerCase(), rows = mcCands().filter(m => !q || (m.n + ' ' + m.ip).toLowerCase().includes(q));
   $('mcGb').innerHTML = rows.map(m => { const on = MC.pick.some(p => p.key === m.key);
@@ -1618,7 +2265,8 @@ $('mcSave').onclick = () => {
   if (!MC.pick.length) { $('mcPickE').hidden = false; $('mcPickB').classList.add('err'); return; }
   const src = MC.src.d; src.man = src.man || [];
   MC.pick.forEach(p => { if (!src.man.includes(p.node.d)) src.man.push(p.node.d); });
-  const n = MC.pick.length; drClose(); graphBuild(false);
+  if (!$('mcIfW').hidden) { const t = MC.pick[0].node.d; let m = LK_IF.get(src); if (!m) LK_IF.set(src, m = new Map()); m.set(t, { pi: MCIF.pi, ci: MCIF.ci, l3: MCIF.l3 }); }
+  const n = MC.pick.length; drClose(); graphBuild(false); toolsPaint();   /* Save re-checks the connections */
   toast('Success', n === 1 ? `Connected ${MC.src.d.n} to ${MC.pick[0].n}` : `Connected ${MC.src.d.n} to ${n} devices`);
 };
 
@@ -1630,19 +2278,90 @@ $('mcDel').onclick = () => {
   const scrub = (d) => { if (!d) return; if (d.man) d.man = d.man.filter(x => x !== n.d); (d.kids || []).forEach(scrub); };
   scrub(curRoot());
   if ($('dNd').classList.contains('on') && ND === n.d) ndClose();
-  T.sel.node = null; graphBuild(false); toast('Success', `Node "${n.d.n}" deleted`);
+  T.sel.node = null; graphBuild(false); toolsPaint(); toast('Success', `Node "${n.d.n}" deleted`);
 };
 /* ---- node details */
 let ND = null;
 const ND_TYPE = (d) => d.kind === 'container' ? 'Container' : ((CT_ICONS.find(x => x[0] === d.ic) || [])[1] || (d.ic ? d.ic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Monitor'));
+/* ---- the monitor details panel — default data, made up where the topology data has none and stable per device ---- */
+function ndPath(d){ let found = null; const walk = (a, p) => a.forEach(x => { if (found) return; if (x.kids) walk(x.kids, [...p, x.n]); else if (x.n === d.n) found = p; });
+  Object.values(TREE).forEach(t => walk(t, [])); return found || []; }
+const ND_VENDOR = { switch:'Cisco Systems', router:'Cisco Systems', firewall:'Fortinet', 'vmware-esxi':'VMware', vm:'VMware', linux:'Linux', windows:'Microsoft' };
+const ND_OID = { switch:'.1.3.6.1.4.1.9.1.696', router:'.1.3.6.1.4.1.9.1.1208', firewall:'.1.3.6.1.4.1.12356.101.1.10004' };
+function ndHash(s){ let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return () => (h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0) / 4294967296; }
+function ndMeta(d){
+  const p = ndPath(d), net = isNet(d), type = ND_TYPE(d), vendor = p[2] || ND_VENDOR[d.ic] || '';
+  const grp = p.length >= 2 ? p.slice(0, 3).join(' > ') : (net ? `Network > ${type}${vendor ? ' > ' + vendor : ''}` : type);
+  const more = net ? ['Network', 'Network > ' + type] : [];
+  return { vendor, grp, more, type, net, oid: ND_OID[d.ic] || '', disc: net ? 'REMOTE' : 'AGENT' };
+}
+const ndFmt = (t) => { const d = new Date(t), z = (n) => String(n).padStart(2, '0'), h = d.getHours() % 12 || 12;
+  return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }) + ` ${h}:${z(d.getMinutes())}:${z(d.getSeconds())} ${d.getHours() < 12 ? 'AM' : 'PM'}`; };
+/* a small line chart for the panel's metric widgets — the DS ships no chart (a declared gap); colours are tokens */
+function ndChart(r, max, unit, color, counter){
+  const pts = [], W = 300, H = 120, L = 34, B = 18, now = Date.now();
+  for (let i = 0; i < 60; i++) pts.push(r());
+  const x = (i) => L + i * (W - L - 6) / 59, y = (v) => 6 + (H - B - 6) * (1 - v / max);
+  const d = pts.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v * max).toFixed(1)).join('');
+  const ticks = [0, 1, 2, 3].map(k => { const t = new Date(now - (45 - k * 15) * 60000); return [L + (k * 15 + 0) * (W - L - 6) / 59, String(t.getHours()).padStart(2,'0') + ':' + String(Math.floor(t.getMinutes() / 15) * 15).padStart(2,'0')]; });
+  return `<svg class="ndmc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(counter)}">`
+    + `<line class="gl" x1="${L}" x2="${W - 6}" y1="6" y2="6"/><line class="gl" x1="${L}" x2="${W - 6}" y1="${H - B}" y2="${H - B}"/>`
+    + `<text class="ax" x="${L - 4}" y="10" text-anchor="end">${max}${unit}</text><text class="ax" x="${L - 4}" y="${H - B}" text-anchor="end">0${unit === ' ms' ? '' : unit}</text>`
+    + ticks.map(([tx, l]) => `<text class="ax" x="${tx}" y="${H - 4}" text-anchor="middle">${l}</text>`).join('')
+    + `<path class="ln" d="${d}" stroke="${color}"/></svg><div class="ndml"><i style="background:${color}"></i>${esc(counter)}</div>`;
+}
+let NDS = { tab:'summary', grid:true, pol:'metric', node:null };
+function ndSummary(d, n){
+  const m = ndMeta(d), r = ndHash(d.n + '|metrics');
+  const kv = (items) => `<obs-key-value variant="plain" columns="1" items="${esc(JSON.stringify(items))}"></obs-key-value>`;
+  const loss = () => { const v = r(); return v > .93 ? .4 + r() * .6 : 0; }, lat = () => .25 + r() * .35 + (r() > .9 ? .3 : 0);
+  return `<section class="ndsec"><h4>Monitor Info</h4>${kv([['Name', d.n], ['Host Name', d.n], ['IP', d.ip || ''], ['OID', m.oid], ['Type', m.type],
+        ['Group', m.grp + (m.more.length ? ' +' + m.more.length : '')], ['Motadata Collector', ''], ...(n.depth === 0 ? [['Role', 'Root monitor']] : [])])}</section>`
+    + `<section class="ndsec"><h4>System Info</h4>${kv([['object.type', m.type], ['object.ip', d.ip || ''], ['object.host', d.n], ['object.discovery.method', m.disc], ['started.time', '0 day 0 hour 0 minute 1 seconds']])}</section>`
+    + `<section class="ndsec"><h4>Tag Info</h4>${kv([['Tags', '']])}</section>`
+    + `<section class="ndsec"><div class="ndmh"><h4>Metrics</h4><obs-radio id="ndGridSw" as-button size="small" options='[{"value":"grid","label":"Grid"},{"value":"list","label":"List"}]' value="${NDS.grid ? 'grid' : 'list'}"></obs-radio></div>`
+    + `<div class="ndmg${NDS.grid ? '' : ' list'}">`
+    + `<obs-widget-card class="ndw" static title="CPU (%)"><div class="ndme">No data found</div></obs-widget-card>`
+    + `<obs-widget-card class="ndw" static title="Memory (%)"><div class="ndme">No data found</div></obs-widget-card>`
+    + `<obs-widget-card class="ndw" static title="Packet Loss (%)">${ndChart(loss, 8, '%', 'var(--chart-neon-purple)', 'ping.packet.lost.percent.avg')}</obs-widget-card>`
+    + `<obs-widget-card class="ndw" static title="Latency">${ndChart(() => lat() / 1.6, 1.6, ' ms', 'var(--chart-lime-green)', 'ping.latency.ms.avg')}</obs-widget-card>`
+    + `</div></section>`;
+}
+function ndPaint(){
+  const n = NDS.node; if (!n) return; const d = n.d, m = ndMeta(d), b = $('ndB');
+  if (NDS.tab === 'summary') { b.innerHTML = ndSummary(d, n);
+    const sw = $('ndGridSw'); if (sw) sw.addEventListener('change', (e) => { const v = Array.isArray(e.detail) ? e.detail[0] : e.detail; NDS.grid = (v || sw.value) !== 'list'; b.querySelector('.ndmg').classList.toggle('list', !NDS.grid); });
+    return; }
+  if (NDS.tab === 'poll') {
+    const t = Date.now() - 60000 * (2 + Math.floor(ndHash(d.n)() * 8)), rows = (m.net ? ['Network Device Config', 'Network Connection', 'Availability', 'Object Status', 'Network Interface'] : ['Availability', 'Object Status', 'System'])
+      .map((g, i) => ({ id: i, g, t: /Connection|Object Status/.test(g) ? '' : ndFmt(t) }));
+    b.innerHTML = `<div class="ndpad"><obs-table class="ndtbl" id="ndPoll" empty-text="No records available"></obs-table></div>`;
+    const tb = $('ndPoll'); tb.columns = [{ key:'g', title:'Metric Group' }, { key:'t', title:'Last Poll Time' }]; tb.rows = rows; return; }
+  if (NDS.tab === 'pol') {
+    b.innerHTML = `<div class="ndpad">${m.net ? `<obs-radio id="ndPolSw" as-button size="small" options='[{"value":"metric","label":"Metric"},{"value":"ncm","label":"Network Config"}]' value="${NDS.pol}"></obs-radio>` : ''}<obs-table class="ndtbl" id="ndPol" page-size="50" empty-text="No records available"></obs-table></div>`;
+    const tb = $('ndPol'); tb.columns = [{ key:'p', title:'Policy Name' }, { key:'v', title:'Value' }]; tb.rows = [];
+    const sw = $('ndPolSw'); if (sw) sw.addEventListener('change', (e) => { const v = Array.isArray(e.detail) ? e.detail[0] : e.detail; NDS.pol = v || sw.value; });
+    return; }
+  b.innerHTML = `<div class="ndpad"><obs-input id="ndHQ" type="search" placeholder="Search"></obs-input><obs-table class="ndtbl" id="ndHist" page-size="50" empty-text="No records available"></obs-table></div>`;
+  const tb = $('ndHist'); tb.columns = [{ key:'a', title:'Action', width:'20%' }, { key:'s', title:'Status', width:'20%' }, { key:'t', title:'Timestamp', width:'20%' }, { key:'u', title:'Executed By', width:'20%' }, { key:'r', title:'Result', width:'20%' }]; tb.rows = [];
+}
+$('ndTabs').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const v = Array.isArray(e.detail) ? e.detail[0] : e.detail; NDS.tab = (v && typeof v === 'object' ? v.key : v) || 'summary'; ndPaint(); });
 function ndOpen(n){
   const d = n.d; ND = d; const ct = d.kind === 'container';
-  $('ndIc').innerHTML = mi(d.ic); $('ndN').textContent = d.n; $('ndN').title = d.n; $('ndT').textContent = ct ? 'Container' : ND_TYPE(d);
-  $('ndS').textContent = ct ? 'Container Info' : 'Monitor Info';
-  const sh = (CT_SHAPES.find(x => x[0] === d.shape) || [])[1];
-  const rows = ct ? [['Name', d.n], ['Description', d.desc], ['IP', d.ip], ['Icon', (CT_ICONS.find(x => x[0] === d.ic) || [])[1]], ['Shape', sh]]
-                  : [['Name', d.n], ['IP', d.ip], ['Type', ND_TYPE(d)], ['Status', d.s ? d.s.charAt(0).toUpperCase() + d.s.slice(1) : ''], ['Role', n.depth === 0 ? 'Root monitor' : '']];
-  $('ndKv').innerHTML = rows.filter(r => r[1]).map(([k, v]) => `<span class="k">${esc(k)}</span><span class="v">${esc(v)}</span>`).join('');
+  $('ndIc').innerHTML = mi(d.ic); $('ndN').textContent = d.n; $('ndN').title = d.n;
+  $('ndSev').innerHTML = ct ? '' : `<obs-severity severity="${esc(d.s || 'unknown')}"></obs-severity>`;
+  NDS.node = n; NDS.tab = 'summary'; $('ndTabs').value = 'summary';
+  if (ct) {   /* a container has no live data: its own fields, no tabs */
+    $('ndM').textContent = ''; $('ndT').innerHTML = '<span class="ndctt">Container</span>'; $('ndTabs').hidden = true;
+    const sh = (CT_SHAPES.find(x => x[0] === d.shape) || [])[1];
+    const rows = [['Name', d.n], ['Description', d.desc || ''], ['IP', d.ip || ''], ['Icon', (CT_ICONS.find(x => x[0] === d.ic) || [])[1] || ''], ['Shape', sh || '']];
+    $('ndB').innerHTML = `<section class="ndsec"><h4>Container Info</h4><obs-key-value variant="plain" columns="1" items="${esc(JSON.stringify(rows))}"></obs-key-value></section>`;
+  } else {
+    const m = ndMeta(d);
+    $('ndM').textContent = '| ' + [d.ip, m.vendor].filter(Boolean).join(' | ');
+    $('ndT').innerHTML = `<obs-tag variant="tag-primary">${esc(m.grp)}</obs-tag>` + (m.more.length ? `<obs-tag variant="tag-primary" data-tip="${esc(m.more.join(', '))}">+${m.more.length}</obs-tag>` : '');
+    $('ndTabs').hidden = false; ndPaint();
+  }
   $('dNd').classList.add('on');
 }
 function ndClose(){ $('dNd').classList.remove('on'); ND = null; }
@@ -1681,8 +2400,67 @@ function seedDefaultView(){
   T.cv.Designer = true;
 })();
 
+/* ================= DEFAULT VIEWS: PMG › ux (request, 28 Oct 2026) =================
+   Two more saved by default, as built on screen:
+   · kisu — rooted on cisco-core.example.com, with the entity 169.254.1.167 and the container "router" (Router icon,
+     Circle), both joined to the root by a manual connection;
+   · UX design flow — rooted on core-oa1, with the container "agent" (Agent icon, Hexagon) joined to it.
+   Roots and the entity are looked up in TREE (cvMons / the leaves), so their IP, glyph and status are the real ones. */
+(function(){
+  const mons = cvMons(), mon = (n) => mons.find(x => x.n === n);
+  const leaf = (n) => { let f = null; const walk = (a) => a.forEach(x => { if (!f && x.n === n && x.ip) f = x; if (x.kids) walk(x.kids); }); Object.values(TREE).forEach(walk); return f; };
+  const views = [];
+  const cc = mon('cisco-core.example.com'),
+    /* the entity lives inside the 203.0.113.32 host's graph, not the module tree — its record as data.json carries it */
+    vm = leaf('169.254.1.167') || { n: '169.254.1.167', ip: '169.254.1.167', ic: 'vm', s: 'unknown' };
+  if (cc) {
+    const ent = vm ? { n: vm.n, ip: vm.ip, ic: vm.ic, s: vm.s, nolink: true } : null;
+    const rt = { n: 'router', ip: '', ic: 'router', s: 'unknown', shape: 'circle', desc: '', kind: 'container', nolink: true };
+    const kids = [ent, rt].filter(Boolean);
+    const root = { n: cc.n, ip: cc.ip, ic: cc.ic, s: cc.s, kids, man: kids.slice() };
+    /* + the switch 6506-4-282, joined to the root by a network link (request, 28 Oct 2026): source 6506-4-282 Gi0/2-2 →
+       target cisco-core Gi0/3-3, not L3 — so clicking it shows Link Info and the actions */
+    const sw = { n: '6506-4-282', ip: '192.0.2.28', ic: 'switch', s: 'clear', nolink: true, man: [root] };
+    kids.push(sw);
+    LK_IF.set(sw, new Map([[root, { pi: 'Gi0/2-2', ci: 'Gi0/3-3', l3: false }]]));
+    LK_LBL.set(sw, new Map([[root, 'kisu']]));   /* …labelled "kisu" (request, 28 Oct 2026) */
+    views.push({ name: 'kisu', grp: 'PMG › ux', sec: 'public', share: null, root, bg: null });
+  }
+  const oa = mon('core-oa1');
+  if (oa) {
+    const ag = { n: 'agent', ip: '', ic: 'agent', s: 'unknown', shape: 'hexagon', desc: '', kind: 'container', nolink: true };
+    views.push({ name: 'UX design flow', grp: 'PMG › ux', sec: 'public', share: null, root: { n: oa.n, ip: oa.ip, ic: oa.ic, s: oa.s, kids: [ag], man: [ag] }, bg: null });
+  }
+  if (views.length) CUSTOM.push({ grp: 'PMG › ux', views });
+})();
+
+/* ================= DEFAULT VIEW: ring topology › ring 1 (request, 28 Oct 2026) =================
+   Read off the live view /topology/custom/monitors/…?viewId=… (build 8.2.9) and scrubbed: the firewall root (critical) with
+   four switches on network links (interfaces + one L3 ring link between two of them) and four agent containers. Names
+   kept, addresses moved to documentation ranges, the firewall's host to example.com. */
+(function(){
+  const root = { n: 'fg-firewall.example.com', ip: '203.0.113.41', ic: 'firewall', s: 'critical', kids: [], man: [] };
+  const sw = (n, ip) => ({ n, ip, ic: 'switch', s: 'clear', nolink: true });
+  const s24 = sw('SW-00524', '198.51.100.21'), s40 = sw('SW-00540', '198.51.100.37'), s41 = sw('SW-00541', '198.51.100.38'), s15 = sw('SW-00515', '198.51.100.12');
+  const ct = (n) => ({ n, ip: '', ic: 'agent', s: 'unknown', shape: 'hexagon', desc: '', kind: 'container', nolink: true });
+  const tests = ['test1', 'test2', 'test3', 'test4'].map(ct);
+  root.kids.push(s24, s40, s41, s15, ...tests);
+  root.man.push(s24, s40, s41, s15, ...tests);
+  const ifs = (src, tgt, pi, ci, l3) => { let m = LK_IF.get(src); if (!m) LK_IF.set(src, m = new Map()); m.set(tgt, { pi, ci, l3: !!l3 }); };
+  ifs(root, s24, 'port1', 'Gi0/4-4'); ifs(root, s40, 'port2', 'Gi0/2-2'); ifs(root, s41, 'IPsec-To-Cisco-41', 'Gi0/1-1'); ifs(root, s15, 'port3', 'Gi0/5-5');
+  s41.man = [s40]; ifs(s41, s40, 'Gi0/1-1', 'Gi0/2-2', true);   /* the ring: an L3 link between two switches */
+  CUSTOM.push({ grp: 'ring topology', views: [ { name: 'ring 1', grp: 'ring topology', sec: 'public', share: null, root, bg: null } ] });
+})();
+
 /* ================= BOOT ================= */
 goTab(location.hash.slice(1) || 'network');
+/* ---- Option 1 / Option 2 switch (29 Oct 2026) */
+const TOPO_OPT = '1', TOPO_OPT_FILE = { '1': 'topology.html', '2': 'topology2.html' };
+$('tOpt').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const d = e.detail, v = String(Array.isArray(d) ? d[0] : d);
+  if (!TOPO_OPT_FILE[v] || v === TOPO_OPT) return;
+  /* inside topology.html / topology2.html (the root pages, one per option) the HOST changes page; opened on its own, the frame does */
+  if (parent !== window) parent.postMessage({ topoOpt: v, tab: location.hash.slice(1) }, '*');
+  else location.href = TOPO_OPT_FILE[v] + location.search + location.hash; });
 </script>
 <script>
 /* AGENTATION (dev-only) — one toolbar on screen: the host hides its own while this frame shows */

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build _topology/topology.html from topology.src.html.
+"""Build _topology/topology.html from topology.src.html, and topology2.html (Option 2) from topology2.src.html.
 
     python3 _topology/build_topology.py
 
@@ -18,15 +18,13 @@ import json, re, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent                      # /ObseverOps
-SRC = HERE / 'topology.src.html'
-OUT = HERE / 'topology.html'
 
 tokens = (ROOT / 'design-tokens' / 'observeops-tokens.css').read_text()
 palette = json.loads((ROOT / 'design-tokens' / 'palette.json').read_text())['colors']
 icons = json.loads((HERE / 'icons.json').read_text())
 
 # extra glyphs the live page did not carry on screen when it was read
-for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg'), ('lock', 'settings/security-access/lock-alt.svg'), ('image', 'common/media-device/image.svg'), ('link', 'common/network-connectivity/link.svg'), ('trash', 'common/actions-edit/trash.svg'), ('pencil', 'common/actions-edit/pencil.svg'), ('fileup', 'nccm/file-document/file-upload.svg')]:
+for name, path in [('times', 'common/shapes-symbols/times.svg'), ('check', 'common/status-severity-health/check.svg'), ('lock', 'settings/security-access/lock-alt.svg'), ('image', 'common/media-device/image.svg'), ('link', 'common/network-connectivity/link.svg'), ('trash', 'common/actions-edit/trash.svg'), ('pencil', 'common/actions-edit/pencil.svg'), ('fileup', 'nccm/file-document/file-upload.svg'), ('folder', 'common/file-document/folders.svg')]:
     s = (ROOT / 'observeops-icons' / path).read_text()
     vb = re.search(r'viewBox="([^"]+)"', s).group(1)
     icons[name] = {'vb': vb, 'd': re.findall(r'\sd="([^"]+)"', s)}
@@ -95,13 +93,17 @@ empty = (HERE / 'empty.svg').read_text()
 empty = re.sub(r'\s(fill|stroke)="(#[0-9a-fA-F]{3,6})"', lambda m: f' style="{m.group(1)}:{tok(m.group(2))}"', empty)
 empty = re.sub(r'\sdata-v-[0-9a-f]+=""', '', empty)
 
-html = SRC.read_text()
-html = html.replace('/*@@TOKENS@@*/', tokens)
-html = html.replace('/*@@ICONS@@*/', json.dumps({k: ui(k) for k in icons}))
-html = html.replace('/*@@MONICONS@@*/', json.dumps(mon))
-html = html.replace('/*@@MONCOLOR@@*/', json.dumps(monc))
-html = html.replace('@@EMPTY@@', empty)
-html = html.replace('/*@@DATA@@*/', (HERE / 'data.json').read_text())
-html = re.sub(r'@@I:([a-z0-9-]+)@@', lambda m: ui(m.group(1)), html)
-OUT.write_text(html)
-print('wrote', OUT, len(html), 'bytes')
+# Option 1 (topology.src.html) and its clone Option 2 (topology2.src.html, 29 Oct 2026) — same inlining for both
+for SRC, OUT in [(HERE / 'topology.src.html', HERE / 'topology.html'), (HERE / 'topology2.src.html', HERE / 'topology2.html')]:
+    if not SRC.exists():
+        continue
+    html = SRC.read_text()
+    html = html.replace('/*@@TOKENS@@*/', tokens)
+    html = html.replace('/*@@ICONS@@*/', json.dumps({k: ui(k) for k in icons}))
+    html = html.replace('/*@@MONICONS@@*/', json.dumps(mon))
+    html = html.replace('/*@@MONCOLOR@@*/', json.dumps(monc))
+    html = html.replace('@@EMPTY@@', empty)
+    html = html.replace('/*@@DATA@@*/', (HERE / 'data.json').read_text())
+    html = re.sub(r'@@I:([a-z0-9-]+)@@', lambda m: ui(m.group(1)), html)
+    OUT.write_text(html)
+    print('wrote', OUT, len(html), 'bytes')
