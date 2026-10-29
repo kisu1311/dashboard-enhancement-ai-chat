@@ -1319,7 +1319,7 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
    drawer (pick, or create) and carries the picked path as its label. The required ring moves onto the button. */
 .cvgrs{display:none}
 /* no folder icon, and the button spans the column like the View Name input beside it (request, 29 Oct 2026) */
-.cvgrw > #cvGrpNew{flex:1 1 auto;width:100%;display:inline-flex;align-items:center;justify-content:center;max-width:100%;min-width:0}
+.cvgrw > #cvGrpNew{flex:1 1 auto;width:100%;display:inline-flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 11px;max-width:100%;min-width:0}   /* text left, on the View Name input's own 11px inset (request, 29 Oct 2026) */
 #cvGrpNew .i{width:16px;height:16px;flex:0 0 auto;fill:currentColor}
 #cvGrpNew .cvgbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #cvGrpNew.ph .cvgbl{color:var(--neutral-light)}
@@ -1374,6 +1374,9 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .dena .db[data-pane="container"]:not([hidden]){display:block}
 .nodesw{flex:0 0 auto;padding:15px var(--drawer-inset) 0}
 .nwz{flex:1 1 auto;min-height:0;display:flex}
+.elmore{margin-top:12px}
+/* CREATE MANUAL CONNECTION is this drawer's connect table on its own (request, 29 Oct 2026): no step rail */
+#dEnA.connmode .nwzr{display:none}
 .nwzr{flex:0 0 240px;border-right:1px solid var(--border-color);padding:0;overflow:auto}
 /* the step rail = the product's own report-wizard menu (live 10.0.1 .selection-menu, request 29 Oct 2026): full-width rows,
    no connector, a 24px OUTLINED number (--primary on the current step, --neutral-regular otherwise), --neutral-light text,
@@ -1675,7 +1678,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <button class="tpri" id="tCreate">New Custom Topology</button>
     <!-- Edit (live 10.0.1, 27 Oct 2026): LAST in the toolbar, where the primary action sits. A saved custom view reopens in
          design mode; this slot then shows Update Topology View instead -->
-    <button class="tpri tedit" id="tEdit" hidden><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z"/></svg> Edit</button>
+    <button class="tbtn tdet" id="tDet" hidden>View details</button><button class="tpri tedit" id="tEdit" hidden><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z"/></svg> Edit</button>
   </div>
   <div class="tbody" id="tBody">
     <aside class="tside" id="tSide"></aside>
@@ -1805,7 +1808,13 @@ html:not([data-theme]) .dck input{color-scheme:light}
   <obs-input id="lkIn" block placeholder="Enter label name"></obs-input>
   <div slot="footer" class="lkmdf"><obs-button variant="default" id="lkCancel">Cancel</obs-button><obs-button variant="primary" id="lkApply">Apply</obs-button></div>
 </obs-modal>
-<div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcAdd"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"/></svg> Add Node</button><button type="button" role="menuitem" id="mcGo"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M21.3,34.8c-.5,0-1,.1-1.4,.5l-3.6,3.5c-.9,.9-2.2,1.5-3.5,1.5s-2.6-.5-3.5-1.5c-.9-.9-1.5-2.2-1.5-3.5s.5-2.6,1.5-3.5l9.1-9.2c.9-.9,2.1-1.4,3.4-1.5,1.3,0,2.5,.4,3.4,1.3l.2,.2c.4,.4,.9,.6,1.4,.6,.5,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4,0-.5-.2-1-.6-1.4-.1-.1-.2-.3-.4-.4-1.7-1.5-3.9-2.3-6.2-2.2s-4.4,1-6,2.6L6.4,28.9c-1.6,1.7-2.4,4-2.4,6.3,0,2.3,1,4.5,2.6,6.2,1.6,1.6,3.9,2.6,6.2,2.6,2.3,0,4.6-.8,6.3-2.4l3.5-3.4c.3-.4,.5-.9,.5-1.4,0-.5-.2-1-.5-1.4-.3-.4-.8-.6-1.3-.6ZM41.4,6.6c-1.7-1.7-4-2.6-6.4-2.6s-4.7,.9-6.4,2.6l-3.5,3.4c-.3,.4-.5,.9-.5,1.4,0,.5,.2,1,.5,1.4s.8,.6,1.3,.6c.5,0,1-.1,1.4-.5l3.5-3.5c.9-.9,2.2-1.5,3.5-1.5s2.6,.5,3.5,1.5c.9,.9,1.5,2.2,1.5,3.5s-.5,2.6-1.5,3.5l-9.1,9.2c-.9,.9-2.1,1.4-3.4,1.5-1.3,0-2.5-.4-3.4-1.3l-.2-.2c-.4-.4-.9-.6-1.4-.6-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4,0,.5,.2,1,.6,1.4,.1,.1,.3,.3,.5,.4,1.7,1.5,3.9,2.3,6.2,2.2,2.3,0,4.4-1,6-2.6l9.2-9.2c1.7-1.7,2.7-4,2.7-6.4,0-2.4-.9-4.7-2.6-6.4Z"/></svg> Create Manual Connection</button><button type="button" role="menuitem" class="danger" id="mcDel"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M41.4,12.6c-.4-.4-.9-.6-1.4-.6h-8v-2c0-1.6-.7-3.1-1.7-4.3-1.1-1.1-2.7-1.7-4.3-1.7h-4c-1.6,0-3.1,.7-4.3,1.7-1.1,1.1-1.7,2.7-1.7,4.3v2H8c-.6,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4,.9,.6,1.4,.6h2v22c0,1.6,.7,3.1,1.7,4.3,1.1,1.1,2.7,1.7,4.3,1.7h16c1.6,0,3.1-.7,4.3-1.7,1.1-1.1,1.7-2.7,1.7-4.3V16h2c.6,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4Zm-21.4-2.6c0-.6,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h4c.6,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v2h-8v-2Zm14,28c0,.6-.2,1-.6,1.4s-.9,.6-1.4,.6H16c-.6,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V16h20v22Z"/></svg> Delete Node</button></div>
+<div class="tctx" id="cvRowMenu" role="menu" hidden><button type="button" role="menuitem" id="cvRmRen"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z"/></svg> Rename</button><button type="button" role="menuitem" id="cvRmMove"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M38,11h-12.6l-.6-2c-.4-1.2-1.2-2.2-2.2-2.9-1-.7-2.2-1.1-3.5-1.1H10c-1.6,0-3.1,.6-4.2,1.8s-1.8,2.7-1.8,4.2v26c0,1.6,.6,3.1,1.8,4.2,1.1,1.1,2.7,1.8,4.2,1.8h28c1.6,0,3.1-.6,4.2-1.8,1.1-1.1,1.8-2.7,1.8-4.2V17c0-1.6-.6-3.1-1.8-4.2-1.1-1.1-2.7-1.8-4.2-1.8Zm2,26c0,.5-.2,1-.6,1.4-.4,.4-.9,.6-1.4,.6H10c-.5,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V11c0-.5,.2-1,.6-1.4s.9-.6,1.4-.6h9.1c.4,0,.8,.1,1.2,.4,.3,.2,.6,.6,.7,1l1.1,3.3c.1,.4,.4,.7,.7,1,.3,.2,.8,.4,1.2,.4h14c.5,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v20Z"/></svg> Move to group</button><button type="button" role="menuitem" id="cvRmGRen" hidden><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M42.4,13.6l-8-8c-.8-.8-2.1-.8-2.8,0l-6,6L5.5,31.6c-.4,.4-.5,.9-.5,1.4v7.9c0,1.1,.9,2,2,2H15c.5,0,1-.2,1.4-.5l25.9-26c.8-.8,.8-2.1,0-2.8ZM14.1,39h-5.1v-5.1L26.9,15.9l5.1,5.1L14.1,39Zm20.8-20.8l-5.1-5.1,3.2-3.2,5.1,5.1-3.2,3.2Z"/></svg> Rename group</button></div>
+<obs-modal id="cvRnMd" title="Rename View" width="480">
+  <div class="dlbl" id="cvRnL">View Name <i>*</i></div>
+  <obs-input id="cvRnIn" block placeholder="Enter view name"></obs-input>
+  <div slot="footer" class="lkmdf"><obs-button variant="default" id="cvRnCancel">Cancel</obs-button><obs-button variant="primary" id="cvRnSave">Save</obs-button></div>
+</obs-modal>
+<div class="tctx" id="mcMenu" role="menu" hidden><button type="button" role="menuitem" id="mcAdd"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M38,22h-12V10c0-.5-.2-1-.6-1.4-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4v12H10c-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4c.4,.4,.9,.6,1.4,.6h12v12c0,.5,.2,1,.6,1.4s.9,.6,1.4,.6,1-.2,1.4-.6,.6-.9,.6-1.4v-12h12c.5,0,1-.2,1.4-.6s.6-.9,.6-1.4-.2-1-.6-1.4-.9-.6-1.4-.6Z"/></svg> Add Node</button><button type="button" role="menuitem" id="mcGo"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M21.3,34.8c-.5,0-1,.1-1.4,.5l-3.6,3.5c-.9,.9-2.2,1.5-3.5,1.5s-2.6-.5-3.5-1.5c-.9-.9-1.5-2.2-1.5-3.5s.5-2.6,1.5-3.5l9.1-9.2c.9-.9,2.1-1.4,3.4-1.5,1.3,0,2.5,.4,3.4,1.3l.2,.2c.4,.4,.9,.6,1.4,.6,.5,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4,0-.5-.2-1-.6-1.4-.1-.1-.2-.3-.4-.4-1.7-1.5-3.9-2.3-6.2-2.2s-4.4,1-6,2.6L6.4,28.9c-1.6,1.7-2.4,4-2.4,6.3,0,2.3,1,4.5,2.6,6.2,1.6,1.6,3.9,2.6,6.2,2.6,2.3,0,4.6-.8,6.3-2.4l3.5-3.4c.3-.4,.5-.9,.5-1.4,0-.5-.2-1-.5-1.4-.3-.4-.8-.6-1.3-.6ZM41.4,6.6c-1.7-1.7-4-2.6-6.4-2.6s-4.7,.9-6.4,2.6l-3.5,3.4c-.3,.4-.5,.9-.5,1.4,0,.5,.2,1,.5,1.4s.8,.6,1.3,.6c.5,0,1-.1,1.4-.5l3.5-3.5c.9-.9,2.2-1.5,3.5-1.5s2.6,.5,3.5,1.5c.9,.9,1.5,2.2,1.5,3.5s-.5,2.6-1.5,3.5l-9.1,9.2c-.9,.9-2.1,1.4-3.4,1.5-1.3,0-2.5-.4-3.4-1.3l-.2-.2c-.4-.4-.9-.6-1.4-.6-.5,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4,0,.5,.2,1,.6,1.4,.1,.1,.3,.3,.5,.4,1.7,1.5,3.9,2.3,6.2,2.2,2.3,0,4.4-1,6-2.6l9.2-9.2c1.7-1.7,2.7-4,2.7-6.4,0-2.4-.9-4.7-2.6-6.4Z"/></svg> Create Manual Connection</button><button type="button" id="mcGoOld" hidden></button><button type="button" role="menuitem" class="danger" id="mcDel"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M41.4,12.6c-.4-.4-.9-.6-1.4-.6h-8v-2c0-1.6-.7-3.1-1.7-4.3-1.1-1.1-2.7-1.7-4.3-1.7h-4c-1.6,0-3.1,.7-4.3,1.7-1.1,1.1-1.7,2.7-1.7,4.3v2H8c-.6,0-1,.2-1.4,.6-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4,.9,.6,1.4,.6h2v22c0,1.6,.7,3.1,1.7,4.3,1.1,1.1,2.7,1.7,4.3,1.7h16c1.6,0,3.1-.7,4.3-1.7,1.1-1.1,1.7-2.7,1.7-4.3V16h2c.6,0,1-.2,1.4-.6,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4Zm-21.4-2.6c0-.6,.2-1,.6-1.4,.4-.4,.9-.6,1.4-.6h4c.6,0,1,.2,1.4,.6,.4,.4,.6,.9,.6,1.4v2h-8v-2Zm14,28c0,.6-.2,1-.6,1.4s-.9,.6-1.4,.6H16c-.6,0-1-.2-1.4-.6-.4-.4-.6-.9-.6-1.4V16h20v22Z"/></svg> Delete Node</button></div>
 <!-- ADD CONTAINER (live 10.0.1, 27 Oct 2026): the design bar's Add Container opens this drawer every time -->
 <aside class="tdr w40 dbga" id="dBgA" aria-label="Add Background Image">
   <div class="dh"><span>Add Background Image</span><button data-close aria-label="Close"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M35.4,32.6l-8.6-8.6,8.6-8.6c.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6l-8.6,8.6L15.5,12.6c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6c-.4,.4-.6,.9-.6,1.4s.2,1,.6,1.4l8.6,8.6-8.6,8.6c-.2,.2-.3,.4-.5,.6-.1,.2-.2,.5-.2,.7s0,.5,.2,.7c.1,.2,.2,.5,.5,.6,.2,.2,.4,.3,.6,.5,.2,.1,.5,.2,.7,.2s.5,0,.7-.2c.2-.1,.5-.2,.6-.5l8.6-8.6,8.6,8.6c.2,.2,.4,.3,.6,.5,.2,.1,.5,.2,.7,.2s.5,0,.7-.2c.2-.1,.5-.2,.6-.5,.2-.2,.3-.4,.5-.6,.1-.2,.2-.5,.2-.7s0-.5-.2-.7h.2c-.1-.2-.2-.5-.5-.6Z"/></svg></button></div>
@@ -1860,7 +1869,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
        FROM (the root, a node on the canvas, a container or entity added in this batch), a label, and — when both ends are
        network devices — the parent / child interface and L3, the same fields Create Manual Connection asks -->
   <div class="db" data-pane="link" hidden>
-    <div class="elhint">An entity is joined to the root unless you pick another node; a container's From, To and Label are optional — left empty, it is added unconnected. The parent node connects to the child being added.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span></div>
+    <div class="elhint" id="elHint">An entity is joined to the root unless you pick another node; a container's From, To and Label are optional — left empty, it is added unconnected. The parent node connects to the child being added.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span></div>
     <!-- search on top, DS pagination at the foot (request, 29 Oct 2026): obs-input search + obs-pagination — the DS's own advice for a
          paged view that is not an obs-table ("bind total/page/page-size and reslice on pagechange / sizechange") -->
     <div class="eltools" id="elTools" hidden><obs-input id="elQ" type="search" placeholder="Search" aria-label="Search nodes"></obs-input></div>
@@ -1868,6 +1877,8 @@ html:not([data-theme]) .dck input{color-scheme:light}
          row lines, hover and its own pager are the DS's; the form fields are placed into its cells after it renders (elOtSync),
          exactly how that table puts its "Enter subnet name" inputs in. Search + pager show only past 10 rows. -->
     <obs-table id="elTbl" class="eltbl elot" page-size="10" header-style="default" row-key="id" empty-text="No nodes match the search"></obs-table>
+    <!-- Create Manual Connection mode only (request, 29 Oct 2026): another row — the DS default button + plus glyph -->
+    <div class="elmore" id="elMoreW" hidden><obs-button variant="default" id="elMore"><obs-icon name="plus" size="14"></obs-icon>Connection</obs-button></div>
   </div>
   </div></div>
   <div class="df"><span class="sp"></span><button class="tbtn" id="nodeBack" hidden>Back</button><button class="tbtn" id="enCancel">Reset</button><button class="tpri" id="caAdd">Add Container</button></div>
@@ -2850,10 +2861,23 @@ function cvOpenPath(p){ gParts(p).forEach((_, i, a) => { T.cv[a.slice(0, i + 1).
    - hover and active were full-bleed squares, and in dark the active fill (#172336) was QUIETER than hover (#1d2a3e).
      Both now paint on an inset rounded plate (the search box's own 8px gutter, 4px radius) — hover --nav-hover-bg,
      active --tag-bg-color, one step stronger in both themes. A ::before plate keeps the inline padding (the indent)
-     untouched. */
+     untouched.
+   Margins (request, 29 Oct 2026, "improve the margin using the DS"): the rows box takes the search field's own 8px gutter,
+   so the plate still spans the search box edge to edge but the row's chevron / ring / count sit 12px (@padding-sm) inside
+   it — they were 4px in, hard against the plate's edge, while the search field's icon sits 12px in. */
 (() => { const css = new CSSStyleSheet(); css.replaceSync(`
   :host(.cvsm) .row{position:relative;isolation:isolate;background:transparent!important}
-  :host(.cvsm) .row::before{content:"";position:absolute;inset:1px 8px;border-radius:4px;z-index:-1;transition:background .12s}
+  :host(.cvsm) .rows{padding:0 8px}
+  :host(.cvsm) .cvrm{margin-left:auto;flex:0 0 22px;width:22px;height:22px;display:grid;place-items:center;border:0;border-radius:4px;background:none;color:var(--neutral-light);cursor:pointer;opacity:0;padding:0}
+  :host(.cvsm) .row:hover .cvrm,:host(.cvsm) .cvrm.open,:host(.cvsm) .cvrm:focus-visible{opacity:1}
+  :host(.cvsm) .cvrm:hover,:host(.cvsm) .cvrm.open{background:var(--dropdown-hover-background);color:var(--page-text-color)}
+  :host(.cvsm) .cvrm svg{width:14px;height:14px;fill:currentColor}
+  :host(.cvsm) .cvren{flex:1 1 auto;min-width:0;height:24px;border:1px solid var(--neutral-light);border-radius:4px;background:var(--page-background-color);color:var(--page-text-color);font:inherit;font-size:13px;padding:0 6px;outline:0}
+  :host(.cvsm) .cvren.err{border-color:var(--severity-critical)}
+  :host(.cvsm) .row.cvdragging{opacity:.45}
+  :host(.cvsm) .row.cvdrop::before{background:var(--tag-bg-color)!important;box-shadow:inset 0 0 0 1px var(--primary)}
+  :host(.cvsm) .row.leaf:focus-visible{outline:none}:host(.cvsm) .row.leaf:focus-visible::before{box-shadow:inset 0 0 0 1px var(--neutral-light)}
+  :host(.cvsm) .row::before{content:"";position:absolute;inset:1px 0;border-radius:4px;z-index:-1;transition:background .12s}
   :host(.cvsm) .row:not(.active):hover::before{background:var(--nav-hover-bg)}
   :host(.cvsm) .row.leaf.active::before{background:var(--tag-bg-color)}
   :host(.cvsm) .row.leaf.active{color:var(--page-text-color);font-weight:500}
@@ -2880,8 +2904,83 @@ function cvOpenPath(p){ gParts(p).forEach((_, i, a) => { T.cv[a.slice(0, i + 1).
 /* obs-side-menu selects by LABEL, so two views with one name (PMG under Design and under Designer) would light together.
    Each repeat gets trailing zero-width spaces — invisible, but unique — and CV_LBL maps the label back to its view. */
 const CV_LBL = new Map();
+/* a ⋮ on every VIEW row, put into obs-side-menu's own rows (it has no row-action slot); re-added whenever it re-renders */
+function cvRowActs(el){
+  const add = () => { const r = el.shadowRoot; if (!r) return setTimeout(add, 50);
+    /* GROUP rows get a ⋮ too (request, 29 Oct 2026: rename a view group) — Rename group */
+    r.querySelectorAll('.row.group').forEach(row => { if (row.querySelector('.cvrm')) return; const gl = row.querySelector('.lbl'), p = gl && CV_GLBL.get(gl.textContent);
+      if (!p) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Actions for group ' + gParts(p).pop()); b.innerHTML = ic('ellipsis-v');
+      ['pointerdown', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation()));
+      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenu(null, b, p); }); row.appendChild(b);
+      gl.addEventListener('dblclick', (e) => { e.stopPropagation(); e.preventDefault(); cvInlineRenG(row, p); });
+      row.tabIndex = row.tabIndex >= 0 ? row.tabIndex : 0; row.addEventListener('keydown', (e) => { if (e.key === 'F2' && e.target === row) { e.preventDefault(); cvInlineRenG(row, p); } }); });
+    r.querySelectorAll('.row.leaf').forEach(row => { if (row.querySelector('.cvrm')) return; const lbl = row.querySelector('.lbl'), v = lbl && CV_LBL.get(lbl.textContent);
+      if (!v) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Actions for ' + v.name); b.innerHTML = ic('ellipsis-v');
+      ['pointerdown', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation()));
+      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenu(v, b); }); row.appendChild(b);
+      /* OPTION 3 — direct in the sidebar (request, 29 Oct 2026): double-click the name (or F2) renames in place; drag the row
+         onto another group to move it */
+      lbl.addEventListener('dblclick', (e) => { e.stopPropagation(); e.preventDefault(); cvInlineRen(row, v); });
+      row.tabIndex = row.tabIndex >= 0 ? row.tabIndex : 0;
+      row.addEventListener('keydown', (e) => { if (e.key === 'F2') { e.preventDefault(); cvInlineRen(row, v); } });
+      row.draggable = true;
+      row.addEventListener('dragstart', (e) => { if (row.querySelector('.cvren')) return e.preventDefault(); CVDRAG = v; row.classList.add('cvdragging');
+        e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', v.name); } catch (_) {} });
+      row.addEventListener('dragend', () => { CVDRAG = null; row.classList.remove('cvdragging'); r.querySelectorAll('.cvdrop').forEach(x => x.classList.remove('cvdrop')); }); });
+    /* every GROUP row is a drop target while a view is being dragged */
+    r.querySelectorAll('.row.group').forEach(row => { if (row._cvdz) return; row._cvdz = 1; const lbl = row.querySelector('.lbl');
+      const path = () => lbl && CV_GLBL.get(lbl.textContent);
+      row.addEventListener('dragover', (e) => { if (!CVDRAG || !path()) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.classList.add('cvdrop'); });
+      row.addEventListener('dragleave', () => row.classList.remove('cvdrop'));
+      row.addEventListener('drop', (e) => { e.preventDefault(); row.classList.remove('cvdrop'); const v = CVDRAG, to = path(); CVDRAG = null; if (!v || !to) return;
+        if (to === v.grp) return; cvMoveView(v, to); cvTreePaint(); toast('Success', 'Topology View "' + v.name + '" moved to ' + to); }); }); };
+  add(); if (!el._cvra) { el._cvra = 1; const go = () => el.shadowRoot ? new MutationObserver(add).observe(el.shadowRoot, { childList: true, subtree: true }) : setTimeout(go, 50); go(); }
+}
+let CVRM = null, CVDRAG = null;
+/* inline rename: the label becomes a field inside the row — Enter / click-away saves, Esc cancels */
+function cvInlineRen(row, v){
+  const lbl = row.querySelector('.lbl'); if (!lbl || row.querySelector('.cvren')) return; cvRowMenuClose();
+  const inp = document.createElement('input'); inp.className = 'cvren'; inp.value = v.name; inp.setAttribute('aria-label', 'View name');
+  lbl.hidden = true; lbl.after(inp); row.draggable = false;
+  ['click', 'pointerdown', 'mousedown', 'dblclick'].forEach(ev => inp.addEventListener(ev, e => e.stopPropagation()));
+  let done = false;
+  const end = (save) => { if (done) return; const n = inp.value.trim();
+    if (save && n !== v.name) {
+      const err = !n ? 'View Name is required' : cvNameTaken(v, n, v.grp) ? 'A view with this name already exists in this group' : '';
+      if (err) { inp.classList.add('err'); inp.title = err; toast('Error', err); setTimeout(() => inp.focus(), 0); return; }
+      done = true; v.name = n; cvTreePaint(); toast('Success', 'Topology View renamed to "' + n + '"'); return; }
+    done = true; inp.remove(); lbl.hidden = false; row.draggable = true; };
+  inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); end(true); } else if (e.key === 'Escape') { e.preventDefault(); end(false); } });
+  inp.addEventListener('blur', () => setTimeout(() => end(true), 0));
+  setTimeout(() => { inp.focus(); inp.select(); }, 0);
+}
+/* Option 2: a group's name renames in place too (double-click / F2), the view rows' Option 3 behaviour */
+function cvInlineRenG(row, p){
+  const lbl = row.querySelector('.lbl'); if (!lbl || row.querySelector('.cvren')) return; cvRowMenuClose();
+  const inp = document.createElement('input'); inp.className = 'cvren'; inp.value = gParts(p).pop(); inp.setAttribute('aria-label', 'Group name');
+  lbl.hidden = true; lbl.after(inp);
+  ['click', 'pointerdown', 'mousedown', 'dblclick'].forEach(ev => inp.addEventListener(ev, e => e.stopPropagation()));
+  let done = false;
+  const end = (save) => { if (done) return; const n = inp.value.trim();
+    if (save && n !== gParts(p).pop()) { const err = cvGrpRename(p, n);
+      if (err) { inp.classList.add('err'); inp.title = err; toast('Error', err); setTimeout(() => inp.focus(), 0); return; }
+      done = true; cvTreePaint(); toast('Success', 'Group renamed to "' + n + '"'); return; }
+    done = true; inp.remove(); lbl.hidden = false; };
+  inp.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); end(true); } else if (e.key === 'Escape') { e.preventDefault(); end(false); } });
+  inp.addEventListener('blur', () => setTimeout(() => end(true), 0));
+  setTimeout(() => { inp.focus(); inp.select(); }, 0);
+}
+function cvRowMenu(v, btn, g){
+  const m = $('cvRowMenu'); if (CVRM && CVRM.btn === btn && !m.hidden) return cvRowMenuClose();
+  cvRowMenuClose(); CVRM = { v, btn, g }; btn.classList.add('open');
+  $('cvRmRen').hidden = $('cvRmMove').hidden = !!g; $('cvRmGRen').hidden = !g; m.hidden = false;
+  const r = btn.getBoundingClientRect(); m.style.left = Math.min(innerWidth - m.offsetWidth - 8, r.right - m.offsetWidth) + 'px';
+  m.style.top = Math.min(innerHeight - m.offsetHeight - 8, r.bottom + 4) + 'px';
+}
+function cvRowMenuClose(){ const m = $('cvRowMenu'); if (m) m.hidden = true; if (CVRM) CVRM.btn.classList.remove('open'); CVRM = null; }
+const CV_GLBL = new Map();   /* a group row's (uniq) label → its path, so a drop knows which group it landed on */
 function cvTreePaint(){
-  const w = $('cvMenuW'); if (!w) return; CV_LBL.clear();
+  const w = $('cvMenuW'); if (!w) return; CV_LBL.clear(); CV_GLBL.clear();
   const byPath = new Map(), node = (p) => { if (!byPath.has(p)) byPath.set(p, { kids: new Set(), views: [] }); return byPath.get(p); }, top = new Set();
   CUSTOM.forEach(g => { if (!g.views.length) return; const a = gParts(g.grp);
     a.forEach((_, i) => { const p = a.slice(0, i + 1).join(GSEP); node(p); (i ? node(a.slice(0, i).join(GSEP)).kids : top).add(p); });
@@ -2891,7 +2990,7 @@ function cvTreePaint(){
   let active = '';
   const count = (p) => { const n = byPath.get(p); return n.views.length + [...n.kids].reduce((t, k) => t + count(k), 0); };
   let trail = [];
-  const build = (p, up = []) => { const n = byPath.get(p), me = uniq(gParts(p).pop()), path = [...up, me];
+  const build = (p, up = []) => { const n = byPath.get(p), me = uniq(gParts(p).pop()), path = [...up, me]; CV_GLBL.set(me, p);
     /* the count is the TOP-level group's only (request, 28 Oct 2026) — a badge on every nested row repeated the same number */
     return { label: me, ...(up.length ? {} : { count: count(p) }), children: [...sort(n.kids).map(k => build(k, path)),
       ...n.views.map(v => { const l = uniq(v.name); CV_LBL.set(l, v); if (T.view === v) { active = l; trail = path; } return { label: l, logo: cvSevLogo(v.root && v.root.s) }; })] }; };
@@ -2903,6 +3002,7 @@ function cvTreePaint(){
   $('cvMenu').addEventListener('select', (e) => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail, v = CV_LBL.get(d && d.label);
     if (!v) return; T.design = null; T.view = v; ndClose(); graphLoad(); });
   cvMenuOpen($('cvMenu'), trail);
+  cvRowActs($('cvMenu'));
   cvMenuOpenAll($('cvMenu'));
 }
 /* every group starts OPEN (request, 28 Oct 2026: "set this view by default") — the component opens only the first group and
@@ -2969,7 +3069,7 @@ function toolsPaint(){
   /* Custom tab: nothing open → Create Topology (opens the drawer); designing a view just created → Save (request,
      28 Oct 2026: the view is already filed, the button only finishes it); editing a saved view → Update Topology View */
   $('tCreate').textContent = custom ? (T.design ? (T.design.edit ? 'Update Topology View' : 'Save') : 'New Custom Topology') : 'Create Topology View';
-  $('tEdit').hidden = !(custom && T.view && !T.design);
+  $('tEdit').hidden = !(custom && T.view && !T.design); $('tDet').hidden = $('tEdit').hidden;   /* View details rides with Edit (29 Oct 2026) */
   /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
   const des = custom && !!T.design, bare = des || idle;
   $('tL3').parentElement.hidden = bare; $('tLay').hidden = bare; $('tHelp').hidden = bare; $('tTools2').hidden = bare;
@@ -3038,7 +3138,8 @@ $('tSet').onclick = () => drOpen('dSet');
    filed straight from what that drawer captured; other tabs → the Create Topology View form */
 $('tCreate').onclick = () => {
   if (T.tab === 'custom' && !T.design) { CV.mode = 'root'; drOpen('dCv'); return; }
-  if (T.tab === 'custom' && T.design && T.design.edit) { CV.mode = 'edit'; drOpen('dCv'); return; }   /* Update → the update drawer */
+  /* Update Topology View saves DIRECTLY again (request, 29 Oct 2026) — the Update Custom View drawer (CV.mode 'edit' in
+     cvOpen / cvCreate, and its View Groups move preview) is kept but nothing opens it now */
   if (T.tab === 'custom' && T.design && T.design.meta) return cvSave();
   drOpen('dNew');
 };
@@ -3548,8 +3649,9 @@ function cvOpen(mode){
   $('cvMonW').hidden = false;
   /* EDIT (request, 29 Oct 2026): Update Topology View opens this drawer as "Update Custom View" — the view's name, group and
      security, prefilled. The root monitor cannot change on a saved view, so its whole section (and the rule above it) is hidden. */
-  if (CV.mode === 'edit' && T.design && T.design.view) {
-    const v = T.design.view; $('dCvT').textContent = 'Update Custom View'; $('cvCreate').textContent = 'Update';
+  const ev = CV.mode === 'edit' ? (CV.target || (T.design && T.design.view)) : null;
+  if (ev) {
+    const v = ev; $('dCvT').textContent = 'Update Custom View'; $('cvCreate').textContent = 'Update';
     $('cvMeta').hidden = false; $('cvCatRule').hidden = true; $('cvMonW').hidden = true;
     $('cvName').value = v.name; cvGrpPaint(v.grp === 'Standalone' ? '' : v.grp); segSet('cvSec', v.sec || 'public');
     if (v.share) { CVS.shw = v.share.with; CVS[v.share.with] = [...v.share.who]; } cvSharePaint();
@@ -3594,7 +3696,7 @@ function ssPaint(id){
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.ssw')) document.querySelectorAll('.ssw').forEach(h => { h.classList.remove('open'); h.querySelector('.dmenu').classList.remove('on'); }); });
 
 $('cvSec').addEventListener('click', () => setTimeout(cvSharePaint));
-$('cvName').oninput = () => { $('cvName').classList.remove('err'); $('cvNameE').hidden = true; };
+$('cvName').oninput = () => { $('cvName').classList.remove('err'); $('cvNameE').hidden = true; $('cvNameE').textContent = 'View Name is required'; };
 /* View Group: the groups already in the sidebar, plus any created here this session (a group with no view yet) */
 const CV_GRP_NEW = [];
 const cvGroups = () => { const all = new Set();
@@ -3668,7 +3770,7 @@ function grpPaint(){
     if (q && !hit(p)) return; const ks = grpKids(all, p), own = ownOf(p), open = !!q || !!GRP.open[p] || GRP.add === p, n = cntOf(p), nm = gParts(p).pop();
     rows.push(`<div class="grprow${GRP.sel === p ? ' on' : ''}" role="treeitem" tabindex="0" aria-selected="${GRP.sel === p}"${ks.length || own.length ? ` aria-expanded="${open}"` : ''} data-p="${esc(p)}" style="padding-left:${pad(d)}px">`
       + `<span class="grpcv${ks.length || own.length || GRP.add === p ? '' : ' ph'}" data-a="tog"><obs-icon name="${open ? 'chevron-down' : 'chevron-right'}" size="12"></obs-icon></span><obs-icon class="grpic" name="folders" size="16"></obs-icon><span class="tnm">${esc(nm)}</span>`
-      + `<span class="grpn">${n ? n + (n > 1 ? ' views' : ' view') : 'Empty'}</span><span class="grpact">${grpBtn('add', 'plus', 'Add child group to ' + esc(nm))}`
+      + `<span class="grpn">${n ? n + (n > 1 ? ' views' : ' view') : 'Empty'}</span><span class="grpact">${grpBtn('ren', 'pencil', 'Rename group ' + esc(nm))}${grpBtn('add', 'plus', 'Add child group to ' + esc(nm))}`
       + (n || grpViews(p) ? '' : grpBtn('del', 'delete', 'Delete empty group ' + esc(nm), ' class="del"')) + `</span></div>`);
     if (!open) return;
     if (GRP.add === p) rows.push(addRow(p, d + 1));
@@ -3683,14 +3785,16 @@ function grpPaint(){
   const inp = $('grpIn'); if (inp) grpInBind(inp); if (inp) setTimeout(() => { const f = inp.shadowRoot && inp.shadowRoot.querySelector('input'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }, 0);
 }
 function cvGrpOpenTo(p){ gParts(p).forEach((_, i, a) => { GRP.open[a.slice(0, i + 1).join(GSEP)] = true; }); }
+const MOVE = { v: null };   /* the row menu's Move to group: the View Groups drawer on its own, filing on Move */
 function grpOpen(){
   /* the view being updated is marked in the tree, and its group is open so the row is on screen (request, 29 Oct 2026) */
-  GRP.cur = CV.mode === 'edit' && T.design ? T.design.view : null; if (GRP.cur) cvGrpOpenTo(GRP.cur.grp);
-  GRP.sel = cvGrpVal(); GRP.q = ''; GRP.add = null; GRP.err = ''; GRP.name = ''; $('grpQ').value = '';
+  GRP.cur = MOVE.v || (CV.mode === 'edit' && $('dCv').classList.contains('on') ? (CV.target || (T.design && T.design.view)) : null); if (GRP.cur) cvGrpOpenTo(GRP.cur.grp);
+  $('grpUse').textContent = MOVE.v ? 'Move' : 'Select';
+  GRP.sel = MOVE.v ? MOVE.v.grp : cvGrpVal(); GRP.q = ''; GRP.add = null; GRP.err = ''; GRP.name = ''; $('grpQ').value = '';
   if (GRP.sel) gParts(GRP.sel).slice(0, -1).forEach((_, i, a) => { GRP.open[a.slice(0, i + 1).join(GSEP)] = true; });
   grpPaint(); $('dGrp').classList.add('on'); $('grpScrim').classList.add('on');
 }
-function grpClose(){ $('dGrp').classList.remove('on'); $('grpScrim').classList.remove('on'); hintHide(); $('cvGrpNew').focus(); }
+function grpClose(){ MOVE.v = null; $('dGrp').classList.remove('on'); $('grpScrim').classList.remove('on'); hintHide(); $('cvGrpNew').focus(); }
 function grpAddSave(){
   const n = GRP.name.replace(/›/g, '').trim(), par = GRP.add;
   if (!n) { GRP.err = 'Group Name is required'; grpPaint(); return; }
@@ -3714,7 +3818,9 @@ let grpTapT = 0; const grpTap = (f) => (e) => { const t = performance.now(); if 
 $('cvGrpNew').onclick = grpOpen;
 $('grpX').onclick = $('grpScrim').onclick = grpClose;
 $('grpCancel').addEventListener('click', grpTap(grpClose));
-$('grpUse').addEventListener('click', grpTap(() => { if (!GRP.sel) return; cvGrpPaint(GRP.sel); $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; grpClose(); }));
+$('grpUse').addEventListener('click', grpTap(() => { if (!GRP.sel) return;
+  if (MOVE.v) { const v = MOVE.v, to = GRP.sel, from = v.grp; cvMoveView(v, to); grpClose(); cvTreePaint();
+    toast('Success', to === from ? 'Topology View "' + v.name + '" is already in ' + to : 'Topology View "' + v.name + '" moved to ' + to); return; } cvGrpPaint(GRP.sel); $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; grpClose(); }));
 $('grpTop').addEventListener('click', grpTap(() => grpAddOpen('')));
 /* obs-input emits its own `input` (value in detail) and then the native `input` bubbles out of its shadow root with no
    value — only the component's event is read, or the native one wipes what was typed */
@@ -3726,6 +3832,7 @@ $('grpTree').addEventListener('click', grpTap((e) => {
   if (a && a.dataset.a === 'x') return grpAddCancel();
   if (!r) return; const p = r.dataset.p;
   if (a && a.dataset.a === 'tog') { GRP.open[p] = !GRP.open[p]; return grpPaint(); }
+  if (a && a.dataset.a === 'ren') return cvGrpRenOpen(p);
   if (a && a.dataset.a === 'add') return grpAddOpen(p);
   if (a && a.dataset.a === 'del') return grpDel(p);
   GRP.sel = p; grpPaint();
@@ -3787,20 +3894,28 @@ $('cvGb').onclick = (e) => {
 document.addEventListener('pointerdown', (e) => { if ($('cvGrid').classList.contains('on') && !e.target.closest('#cvGrid,#cvPickB')) cvGridOpen(false); });
 $('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); if (CV.mode === 'root') cvMetaReset(); };
 const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
+/* RENAME + MOVE a saved view (request, 29 Oct 2026, both doors chosen): a ⋮ on each view row of the sidebar (Rename ·
+   Move to group) and View details beside Edit on the open view (the Update Custom View drawer: name, group, security). */
+function cvMoveView(v, grp){   /* out of the old group's list, into the new one's */
+  if (!grp || grp === v.grp) return;
+  const old = CUSTOM.find(x => x.views.includes(v)); if (old) old.views.splice(old.views.indexOf(v), 1);
+  let g = CUSTOM.find(x => x.grp === grp); if (!g) { g = { grp, views:[] }; CUSTOM.push(g); } g.views.push(v); v.grp = grp; cvOpenPath(grp);
+}
+const cvNameTaken = (v, name, grp) => CUSTOM.some(g => g.grp === grp && g.views.some(x => x !== v && x.name.toLowerCase() === name.toLowerCase()));
 $('cvCreate').onclick = () => {
   if (CV.mode === 'edit') {   /* Update: name / group / security land on the saved view, then the design is saved as before */
-    const v = T.design && T.design.view; if (!v) return;
+    const v = CV.target || (T.design && T.design.view); if (!v) return;
     const name = $('cvName').value.trim(), grp = cvGrpVal(); let bad = false;
+    if (name && cvNameTaken(v, name, grp)) { $('cvName').classList.add('err'); $('cvNameE').textContent = 'A view with this name already exists in this group'; $('cvNameE').hidden = false; bad = true; }
     if (!name) { $('cvName').classList.add('err'); $('cvNameE').hidden = false; bad = true; }
     if (!grp) { $('cvGrpW').classList.add('err'); $('cvGrpE').hidden = false; bad = true; }
     if (bad) return;
     const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
-    if (grp !== v.grp) {   /* moved to another group: out of the old one's list, into the new one's */
-      const old = CUSTOM.find(x => x.views.includes(v)); if (old) old.views.splice(old.views.indexOf(v), 1);
-      let g = CUSTOM.find(x => x.grp === grp); if (!g) { g = { grp, views:[] }; CUSTOM.push(g); } g.views.push(v); cvOpenPath(grp);
-    }
-    Object.assign(v, { name, grp, sec, share }); T.design.meta = { name, grp, sec, share };
-    CV.mode = 'root'; drClose(); cvSave(); return;
+    cvMoveView(v, grp);
+    Object.assign(v, { name, grp, sec, share });
+    CV.mode = 'root'; CV.target = null; drClose();
+    if (T.design) { T.design.meta = { name, grp, sec, share }; cvSave(); return; }
+    cvTreePaint(); toast('Success', 'Topology View "' + name + '" updated'); return;
   }
   let bad = false;
   if (!CV.pick.length) { $('cvPickE').textContent = CV.mode === 'root' ? 'Root Monitor is required' : 'Select at least one entity'; $('cvPickE').hidden = false; $('cvPickB').classList.add('err'); bad = true; }
@@ -3919,6 +4034,11 @@ function caReset(){ caSeq = 0; CAS = [caNew()]; caPaint(); }
 /* Add Node: which tab is showing decides the pane and the footer's primary */
 function nodeTab(k){
   const t = k === 'container' || k === 'entity' ? k : 'none';
+  /* ONE TYPE AT A TIME (request, 29 Oct 2026, as Option 1): moving between Container and Entity drops what the other had */
+  if (NODE_TAB !== t && t !== 'none') {
+    if (t === 'entity') { caReset(); [...EL.keys()].filter(k => k[0] === 'c').forEach(k => EL.delete(k)); }
+    else { EN.pick = []; $('enTbl').selected = []; [...EL.keys()].filter(k => k[0] === 'e').forEach(k => EL.delete(k)); }
+  }
   document.querySelectorAll('#dEnA [data-pane]').forEach(p => p.hidden = p.dataset.pane !== t);
   NODE_TAB = t; nodeAddPaint();
   if (t === 'entity') setTimeout(enFit, 0); else if (t === 'container') setTimeout(() => { const f = $('caList').querySelector('[data-f="n"]'); if (f) f.focus(); }, 0);
@@ -3926,8 +4046,9 @@ function nodeTab(k){
 /* the categorised Select: group rows are tree branches the component draws COLLAPSED — both are opened each time the
    menu opens (the IPAM page's ipmExpandGroups pattern), so the reader sees the two categories and every option at once */
 const NODE_CT = '__container';
-const nodeKindOpts = () => [ { value: 'grp-c', label: 'Container', children: [ { value: NODE_CT, label: 'Container' } ] },
-  { value: 'grp-e', label: 'Entity', children: EN_TYPES.map(t => ({ value: t, label: t })) } ];
+/* Entity first (request, 29 Oct 2026 — the Option 1 change, applied here too) */
+const nodeKindOpts = () => [ { value: 'grp-e', label: 'Entity', children: EN_TYPES.map(t => ({ value: t, label: t })) },
+  { value: 'grp-c', label: 'Container', children: [ { value: NODE_CT, label: 'Container' } ] } ];
 (function grpOpen(el){ const sync = () => { const r = el.shadowRoot; if (!r) return; const br = [...r.querySelectorAll('button.mopt.branch')];
     if (!br.length) { el._grpDone = false; return; } if (el._grpDone) return; el._grpDone = true;
     br.forEach(b => { const ch = b.querySelector('.tchev'); if (!ch || !ch.classList.contains('open')) b.click(); }); };
@@ -3945,6 +4066,8 @@ const EL = new Map();   /* entity key → { from, lbl, pi, ci, l3, pair } — ke
 const caFilled = (c) => !!(c.n.trim() || c.desc.trim() || c.ip.trim());
 function nodeAddPaint(){
   const nc = CAS.filter(caFilled).length, ne = EN.pick.length, b = $('caAdd');
+  if (CONN.on) { const n = CONN.rows.filter(r => { const st = EL.get('x' + r.id); return st && st.to && st.from && st.to !== st.from; }).length;
+    b.textContent = n > 1 ? `Create ${n} Connections` : 'Create Connection'; b.disabled = !n; return; }
   if (NODE_STEP === 'pick') { b.textContent = 'Next'; b.disabled = !nc && !ne; return; }   /* step 1 always reads Next, disabled until a container has details or an entity is ticked (29 Oct 2026) */
   b.textContent = nc && ne ? `Add ${nc + ne} Nodes` : nc ? (nc > 1 ? `Add ${nc} Containers` : 'Add Container') : ne ? (ne > 1 ? `Add ${ne} Entities` : 'Add Entity')
     : NODE_TAB === 'entity' ? 'Add Entity' : 'Add Container';
@@ -3952,6 +4075,15 @@ function nodeAddPaint(){
 }
 $('caAdd').onclick = () => {
   if (!T.design) return;
+  if (CONN.on) {   /* connect existing nodes: src.man, label and interfaces, exactly as the Add flow writes them */
+    const tg = caTargets(); let n = 0;
+    CONN.rows.forEach(r => { const st = EL.get('x' + r.id); if (!st || !st.to || !st.from) return;
+      const src = tg[+st.from.slice(1)], tgt = tg[+st.to.slice(1)]; if (!src || !tgt || src === tgt) return;
+      src.man = src.man || []; if (!src.man.includes(tgt)) { src.man.push(tgt); n++; }
+      if (st.lbl.trim()) { let l = LK_LBL.get(src); if (!l) LK_LBL.set(src, l = new Map()); l.set(tgt, st.lbl.trim()); }
+      if (isNet(src) && isNet(tgt) && (st.pi || st.ci || st.l3)) { let f = LK_IF.get(src); if (!f) LK_IF.set(src, f = new Map()); f.set(tgt, { pi: st.pi, ci: st.ci, l3: st.l3 }); } });
+    connEnd(); drClose(); graphBuild(false); toolsPaint(); toast('Success', n === 1 ? 'Connection created' : n + ' connections created'); return;
+  }
   const cs = CAS.filter(caFilled), list = cs.length || EN.pick.length ? cs : CAS;   /* nothing anywhere → validate the boxes */
   let bad = false;
   list.forEach(c => { c.err = { n: !c.n.trim(), ip: !!c.ip.trim() && !CA_IP.test(c.ip.trim()) }; if (c.err.n || c.err.ip) { c.open = true; bad = true; } });   /* an error never hides inside a shut box */
@@ -4046,9 +4178,9 @@ function elFOpen(ctx){
 }
 function elFPaint(){
   if (!EF) return; const q = $('elFq').value.trim().toLowerCase(), mons = new Map(cvMons().map(x => [x.key, x]));
-  const rows = EF.opts.map(o => { const d = o.d, mm = mons.get(d.n + '|' + (d.ip || '')); return { v: o.v, n: o.n, ip: d.ip || '', ic: d.ic, s: d.s || 'unknown', grp: mm ? mm.grp : [] }; })
+  const fld = EF.f || 'from', rows = EF.opts.map(o => { const d = o.d, mm = mons.get(d.n + '|' + (d.ip || '')); return { v: o.v, n: o.n, ip: d.ip || '', ic: d.ic, s: d.s || 'unknown', grp: mm ? mm.grp : [] }; })
     .filter(r => !q || (r.n + ' ' + r.ip + ' ' + r.grp.join(' ')).toLowerCase().includes(q));
-  $('elFb').innerHTML = rows.map(r => { const on = r.v === EF.st.from;
+  $('elFb').innerHTML = rows.map(r => { const on = r.v === EF.st[fld];
     return `<div class="cvgr" role="option" data-v="${esc(r.v)}" aria-selected="${on}"><span><input type="checkbox" tabindex="-1"${on ? ' checked' : ''}></span>`
     + `<span class="nm"><span class="tdot s-${r.s}"></span><b>${esc(r.n)}</b></span><span>${esc(r.ip)}</span><span class="ty">${mi(r.ic)}</span>`
     + `<span class="gp">${r.grp.length ? `<span>${esc(r.grp[0])}</span>` + (r.grp.length > 1 ? `<span>+${r.grp.length - 1}</span>` : '') : ''}</span><span></span></div>`; }).join('')
@@ -4056,10 +4188,11 @@ function elFPaint(){
 }
 $('elFq').oninput = elFPaint;
 $('elFb').onclick = (e) => { const r = e.target.closest('.cvgr'); if (!r || !EF) return; const { row, m, st } = EF, v = r.dataset.v;
-  st.from = st.from === v ? '' : v; elFOpen(null); elRow(row, m, st); };
+  const fld = EF.f || 'from'; st[fld] = st[fld] === v ? '' : v; elFOpen(null); elRow(row, m, st); nodeAddPaint(); };
 document.addEventListener('pointerdown', (e) => { if ($('elFGrid').classList.contains('on') && !e.composedPath().some(n => n.classList && (n.id === 'elFGrid' || n.classList.contains('elfrom')))) elFOpen(null); });   /* composedPath: the field lives in obs-table's shadow root */
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('elFGrid').classList.contains('on')) { e.stopImmediatePropagation(); elFOpen(null); } }, true);
 $('enCancel').onclick = () => {
+  if (CONN.on) { CONN.rows.forEach(r => EL.delete('x' + r.id)); CONN.rows = [connNew()]; elPaint(); nodeAddPaint(); return; }
   if (NODE_STEP === 'link') { elItems().forEach(it => EL.delete(it.k)); elPaint(); nodeAddPaint(); return; }
   caReset(); EN.pick = []; if (EN.type) enPaint(true); EL.clear(); nodeAddPaint();
 };
@@ -4089,7 +4222,12 @@ function elSources(){
 }
 const elBool = (e, el) => { const d = e.detail, v = Array.isArray(d) ? d[0] : d; return typeof v === 'boolean' ? v : !!el.checked; };
 /* what step 2 lists: every filled container box, then every ticked entity — keyed like elSources ('c'+id / 'e'+key) */
-const elItems = () => [ ...CAS.filter(caFilled).map(c => ({ k: 'c' + c.id, n: c.n.trim(), ip: c.ip.trim(), ic: c.ic, d: { n: c.n.trim(), ic: c.ic, kind: 'container' } })),
+/* CONN — the node menu's Create Manual Connection (request, 29 Oct 2026): the same table, one row per connection between
+   nodes ALREADY on the canvas. A row's Child Node is a picker too (st.to); + Connection adds a row. */
+const CONN = { on: false, rows: [], seq: 0 };
+const connNew = () => ({ id: ++CONN.seq });
+const elItems = () => CONN.on ? CONN.rows.map(r => { const k = 'x' + r.id, st = EL.get(k), d = st && st.to ? caTargets()[+st.to.slice(1)] : null;
+    return { k, conn: true, n: d ? d.n : '', ip: d ? d.ip || '' : '', ic: d ? d.ic : '', d }; }) : [ ...CAS.filter(caFilled).map(c => ({ k: 'c' + c.id, n: c.n.trim(), ip: c.ip.trim(), ic: c.ic, d: { n: c.n.trim(), ic: c.ic, kind: 'container' } })),
   ...EN.pick.map(m => ({ k: 'e' + m.key, n: m.n, ip: m.ip, ic: m.ic, d: m })) ];
 /* the connect step's search + page (29 Oct 2026). EL keeps every row's answers, so paging and searching never lose an edit */
 const EP = { q: '' };
@@ -4119,18 +4257,22 @@ function elOtCols(noif){
      and the titles say so, pairing with the Parent / Child Interface columns */
   /* Child first, then its Parent (request, 29 Oct 2026: "swap the column") — the row is about the node being added. The
      first column keeps key 'k' (elOtSync reads the row's key from it); only what is drawn in the two cells swaps. */
-  const c = [ { key: 'k', title: 'Child Node (To)', width: noif ? '38%' : '22%' }, { key: 'to', title: 'Parent Node (From)', width: noif ? '38%' : '22%' },
+  /* Create Manual Connection (CONN): the PARENT is fixed — the node it was opened from — and leads; the child is picked
+     (request, 29 Oct 2026). Same columns, the two titles in the other order. */
+  const [t0, t1] = CONN.on ? ['Parent Node (From)', 'Child Node (To)'] : ['Child Node (To)', 'Parent Node (From)'];
+  const c = [ { key: 'k', title: t0, width: noif ? '38%' : '22%', sortable: false }, { key: 'to', title: t1, width: noif ? '38%' : '22%', sortable: false },
     { key: 'lbl', title: 'Label', width: noif ? '' : '15%' } ];
   return noif ? c : c.concat([ { key: 'pi', title: 'Parent Interface', width: '17%' }, { key: 'ci', title: 'Child Interface', width: '17%' }, { key: 'l3', title: 'L3', width: '64px', align: 'center' } ]);
 }
 let EL_ITEMS = [];   /* the rows the table holds — a tr finds its item by the key printed (hidden) in its first cell */
 function elPaint(){
   if ($('elFGrid').classList.contains('on')) elFOpen(null);
-  const all = elItems(), q = EP.q.trim().toLowerCase(), t = $('elTbl'), noif = !all.some(it => it.k[0] === 'e');
+  const all = elItems(), q = EP.q.trim().toLowerCase(), t = $('elTbl'), noif = !CONN.on && !all.some(it => it.k[0] === 'e');
   t.classList.toggle('elnoif', noif);   /* containers only → no interface columns */
   t.classList.toggle('elfew', all.length <= 10); $('elTools').hidden = all.length <= 10;   /* search + pager only past 10 rows */
   EL_ITEMS = q ? all.filter(it => (it.n + ' ' + (it.ip || '')).toLowerCase().includes(q)) : all;
-  EL_ITEMS.forEach(it => { if (!EL.get(it.k)) EL.set(it.k, { from: EL_FROM0 || (it.k[0] === 'c' ? '' : 't0'), lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false }); });   /* a container starts unconnected */
+  EL_ITEMS.forEach(it => { if (!EL.get(it.k)) EL.set(it.k, { to: '', from: EL_FROM0 || (it.k[0] === 'c' ? '' : 't0'), lbl: '', pi: '', ci: '', l3: false, pair: '', rev: false }); });   /* a container starts unconnected */
+  if (CONN.on) EL_ITEMS = elItems();   /* a connection row reads its Child from EL, which the line above may just have seeded */
   t.columns = elOtCols(noif);
   t.rows = EL_ITEMS.map(it => ({ id: it.k, k: it.k, to: '', lbl: '', pi: '', ci: '', l3: '' }));
   elOtWire(t);
@@ -4168,12 +4310,17 @@ addEventListener('resize', () => { if (NODE_STEP === 'link' && $('dEnA').classLi
 /* one row. "from" is the OTHER end's id; rev flips the direction (request, 29 Oct 2026): the entity becomes the source and the
    picked node the target — so the dropdown moves to the To column and the entity to From. Re-rendered per swap, row only. */
 function elRow(row, m, st){
-  const opts = elSources().filter(o => o.v !== m.k); if (st.from && !opts.some(o => o.v === st.from)) st.from = m.k[0] === 'c' ? '' : 't0';
+  if (m.conn) { const d = st.to ? caTargets()[+st.to.slice(1)] : null; m = Object.assign(m, { d, n: d ? d.n : '', ip: d ? d.ip || '' : '', ic: d ? d.ic : '' }); }
+  const opts = elSources().filter(o => o.v !== m.k && (!m.conn || o.v !== st.to)); if (st.from && !opts.some(o => o.v === st.from)) st.from = m.k[0] === 'c' ? '' : 't0';
   const cur = opts.find(o => o.v === st.from);
   const sel = `<button type="button" class="din cvpick elfrom" aria-haspopup="listbox" aria-expanded="false" aria-label="${st.rev ? 'Connect to' : 'Connect from'}"><span class="${cur ? '' : 'ph'}">${cur ? esc(cur.n) : 'Select'}</span>${ic('chevron-down')}</button>`;
-  const ent = `<div class="elnm">${mi(m.ic)}<div><b title="${esc(m.n)}">${esc(m.n)}</b><small>${esc(m.ip || '—')}</small></div></div>`;
+  const toCur = m.conn && st.to ? elSources().find(o => o.v === st.to) : null;
+  const ent = m.conn ? `<button type="button" class="din cvpick elfrom elto" aria-haspopup="listbox" aria-expanded="false" aria-label="Connect to"><span class="${toCur ? '' : 'ph'}">${toCur ? esc(toCur.n) : 'Select child node'}</span>${ic('chevron-down')}</button>`
+    : `<div class="elnm">${mi(m.ic)}<div><b title="${esc(m.n)}">${esc(m.n)}</b><small>${esc(m.ip || '—')}</small></div></div>`;
   row.classList.toggle('elrev', !!st.rev);
-  const cells = [ ent, sel, `<obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input>`,
+  /* CONN: the parent is shown, not picked — a fixed cell like Add Node's child cell; the child picker follows it */
+  const par = m.conn ? (cur ? `<div class="elnm">${mi(cur.d.ic)}<div><b title="${esc(cur.d.n)}">${esc(cur.d.n)}</b><small>${esc(cur.d.ip || '—')}</small></div></div>` : '—') : '';
+  const cells = [ m.conn ? par : ent, m.conn ? ent : sel, `<obs-input class="ellbl" block placeholder="Add label" aria-label="Label"></obs-input>`,
     `<span class="elna">—</span><obs-select class="elpi elifc" searchable block placeholder="Select" aria-label="Parent interface"></obs-select>`,
     `<span class="elna">—</span><obs-select class="elci elifc" searchable block placeholder="Select" aria-label="Child interface"></obs-select>`,
     `<span class="elna">—</span><obs-checkbox class="ell3 elifc" aria-label="L3"></obs-checkbox>` ];
@@ -4182,9 +4329,11 @@ function elRow(row, m, st){
     c.className = 'elc' + (i === 5 ? ' c' : ''); c.innerHTML = cells[i];
     ['click', 'mousedown', 'keydown'].forEach(ev => c.addEventListener(ev, e => e.stopPropagation()));   /* the table must not treat a field press as a row press */ });
   if (!row.querySelector('.elpi')) { /* containers-only table: no interface cells */ }
-  const fs = row.querySelector('.elfrom'), lb = row.querySelector('.ellbl');
+  const fs = row.querySelector('.elfrom:not(.elto)'), lb = row.querySelector('.ellbl'), ts = row.querySelector('.elto');
+  if (ts) ts.addEventListener('click', () => elFOpen($('elFGrid').classList.contains('on') && EF && EF.btn === ts ? null
+    : { btn: ts, row, m, st, f: 'to', opts: elSources().filter(o => o.v !== st.from) }));
   lb.value = st.lbl;
-  fs.addEventListener('click', () => elFOpen($('elFGrid').classList.contains('on') && EF && EF.btn === fs ? null : { btn: fs, row, m, st, opts }));
+  if (fs) fs.addEventListener('click', () => elFOpen($('elFGrid').classList.contains('on') && EF && EF.btn === fs ? null : { btn: fs, row, m, st, opts }));
   lb.addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; st.lbl = String(enVal(e, lb) || ''); });
   if (row.querySelector('.elpi')) { row.querySelector('.elpi').addEventListener('change', (e) => { st.pi = mcSelV(e, row.querySelector('.elpi')); });
     row.querySelector('.elci').addEventListener('change', (e) => { st.ci = mcSelV(e, row.querySelector('.elci')); });
@@ -4202,7 +4351,9 @@ function elIfPaint(row, m, st){
   ci.options = ifList(cs).map(v => ({ value: v, label: v })); ci.value = st.ci;
   row.querySelector('.ell3').checked = st.l3;
 }
-$('desEn').onclick = () => { EL_FROM0 = null; Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('nodeKind').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; caReset(); EL.clear(); drOpen('dEnA'); enPaint(true); NODE_STEP = 'pick'; NODE_TAB = 'none'; nodeStep('pick'); };   /* opens on the Select — nothing picked yet (Option 2, 29 Oct 2026) */
+$('desEn').onclick = () => { connEnd(); EL_FROM0 = null; Object.assign(EN, { type:null, q:'', pick:[], page:1 }); $('nodeKind').value = ''; $('enQIn').value = ''; $('enTbl').selected = []; caReset(); EL.clear(); drOpen('dEnA'); NODE_STEP = 'pick'; NODE_TAB = 'none';
+  /* opens with ENTITY selected (request, 29 Oct 2026 — Option 1's default, applied here): the first entity type is picked */
+  EN.type = EN_TYPES[0]; $('nodeKind').value = EN.type; enPaint(true); nodeStep('pick'); nodeTab('entity'); };
 
 /* ================= LINK ACTIONS (request, 28 Oct 2026) =================
    A manual connection lives on its source node's data (src.man holds the targets); its label is kept in a WeakMap
@@ -4281,6 +4432,49 @@ function lkApply(){
   const had = !!lkLabel(LK); lkSet(LK, v); lkMdClose(); graphPaint(); toast('Success', had ? 'Label updated' : 'Label added');
 }
 $('lkApply').addEventListener('click', lkTap(lkApply));
+/* row menu actions */
+document.addEventListener('pointerdown', (e) => { if (CVRM && !e.composedPath().some(n => n.id === 'cvRowMenu' || (n.classList && n.classList.contains('cvrm')))) cvRowMenuClose(); }, true);
+let CVRN = { v: null, g: '', val: '' };
+/* RENAME A GROUP (request, 29 Oct 2026): the group's own name (the last part of its path) changes; every view and sub-group
+   under it follows, and so do the open / selected states that are keyed by path */
+function cvGrpRename(p, n){
+  n = n.replace(/›/g, '').trim(); const par = gParts(p).slice(0, -1).join(GSEP), np = par ? par + GSEP + n : n;
+  if (!n) return 'Group Name is required';
+  if (np !== p && cvGroups().some(g => g.toLowerCase() === np.toLowerCase())) return 'A group with this name already exists here';
+  if (np === p) return '';
+  const mv = (x) => x === p ? np : x.startsWith(p + GSEP) ? np + x.slice(p.length) : x;
+  CUSTOM.forEach(g => { g.grp = mv(g.grp); g.views.forEach(v => { v.grp = mv(v.grp); }); });
+  CV_GRP_NEW.forEach((x, i) => { CV_GRP_NEW[i] = mv(x); });
+  [T.cv, GRP.open].forEach(o => Object.keys(o).forEach(k => { const nk = mv(k); if (nk !== k) { o[nk] = o[k]; delete o[k]; } }));
+  if (GRP.sel) GRP.sel = mv(GRP.sel); const cur = cvGrpVal(); if (cur && mv(cur) !== cur) cvGrpPaint(mv(cur));
+  return '';
+}
+function cvRnOpen(title, val){
+  const md = $('cvRnMd'), inp = $('cvRnIn'); md.setAttribute('title', title); $('cvRnL').innerHTML = (CVRN.g ? 'Group Name' : 'View Name') + ' <i>*</i>';
+  inp.setAttribute('placeholder', CVRN.g ? 'Enter group name' : 'Enter view name'); inp.value = val; inp.removeAttribute('error'); inp.removeAttribute('error-message');
+  const dlg = () => md.shadowRoot && md.shadowRoot.querySelector('dialog');
+  const tryOpen = (n) => { try { md.hide(); } catch (_) {} md.show();   /* obs-modal 0.1.166 reopen race, as lkMdOpen */
+    setTimeout(() => { if (!(dlg() && dlg().open) && n < 4) return tryOpen(n + 1); const f = inp.shadowRoot && inp.shadowRoot.querySelector('input'); if (f) { f.focus(); f.select(); } }, 40); };
+  setTimeout(() => tryOpen(0), 0); }
+$('cvRmRen').onclick = () => { const v = CVRM && CVRM.v; cvRowMenuClose(); if (!v) return; CVRN = { v, g: '', val: v.name }; cvRnOpen('Rename View', v.name); };
+const cvGrpRenOpen = (p) => { CVRN = { v: null, g: p, val: gParts(p).pop() }; cvRnOpen('Rename Group', CVRN.val); };
+$('cvRmGRen').onclick = () => { const p = CVRM && CVRM.g; cvRowMenuClose(); if (p) cvGrpRenOpen(p); };
+$('cvRmMove').onclick = () => { const v = CVRM && CVRM.v; cvRowMenuClose(); if (!v) return; MOVE.v = v; grpOpen(); };
+$('cvRnIn').addEventListener('input', (e) => { if (!(e instanceof CustomEvent)) return; CVRN.val = String(enVal(e, $('cvRnIn')) || ''); $('cvRnIn').removeAttribute('error'); $('cvRnIn').removeAttribute('error-message'); });
+function cvRnSave(){
+  if (CVRN.g) { const p = CVRN.g, err = cvGrpRename(p, CVRN.val);
+    if (err) { $('cvRnIn').setAttribute('error', ''); $('cvRnIn').setAttribute('error-message', err); return; }
+    try { $('cvRnMd').hide(); } catch (_) {} cvTreePaint(); if ($('dGrp').classList.contains('on')) grpPaint();
+    toast('Success', 'Group renamed to "' + CVRN.val.trim() + '"'); CVRN.g = ''; return; }
+  const v = CVRN.v, n = CVRN.val.trim(); if (!v) return;
+  const err = !n ? 'View Name is required' : cvNameTaken(v, n, v.grp) ? 'A view with this name already exists in this group' : '';
+  if (err) { $('cvRnIn').setAttribute('error', ''); $('cvRnIn').setAttribute('error-message', err); return; }
+  v.name = n; try { $('cvRnMd').hide(); } catch (_) {} cvTreePaint(); toast('Success', 'Topology View renamed to "' + n + '"');
+}
+$('cvRnIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cvRnSave(); } });
+$('cvRnSave').addEventListener('click', lkTap(cvRnSave));
+$('cvRnCancel').addEventListener('click', lkTap(() => { try { $('cvRnMd').hide(); } catch (_) {} }));
+$('tDet').onclick = () => { if (!T.view) return; CV.target = T.view; CV.mode = 'edit'; drOpen('dCv'); };
 $('lkCancel').addEventListener('click', lkTap(lkMdClose));
 $('lkLbl').onclick = () => lkMdOpen(LK);
 $('lkDel').onclick = () => {
@@ -4312,7 +4506,18 @@ function mcCands(){
 let EL_FROM0 = null;
 $('mcAdd').onclick = () => { mcMenuClose(); if (!MC.src || !T.design) return; const i = caTargets().indexOf(MC.src.d);
   $('desEn').click(); EL_FROM0 = i >= 0 ? 't' + i : null; };
-$('mcGo').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; MCIF.key = ''; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
+const EL_HINT0 = $('elHint').innerHTML;
+function connEnd(){ $('elHint').innerHTML = EL_HINT0; CONN.on = false; CONN.rows = []; $('dEnA').classList.remove('connmode'); $('nodeTtl').textContent = 'Add Node'; $('elMoreW').hidden = true; }
+$('mcGo').onclick = () => { mcMenuClose(); if (!MC.src || !T.design) return; const i = caTargets().indexOf(MC.src.d);
+  $('desEn').click(); EL_FROM0 = i >= 0 ? 't' + i : null;
+  CONN.on = true; CONN.seq = 0; CONN.rows = [connNew()]; $('dEnA').classList.add('connmode'); $('nodeTtl').textContent = 'Create Manual Connection';
+  $('elHint').innerHTML = 'Every connection runs from the node you started on. Pick the child node for each row; + Connection adds another row.<span class="elifh"> Interfaces and L3 apply when both ends are network devices.</span>';
+  $('elMoreW').hidden = false; nodeStep('link'); $('nodeBack').hidden = true; };
+let elMoreT = 0;
+$('elMore').addEventListener('click', () => { const t = performance.now(); if (t - elMoreT < 60) return; elMoreT = t;   /* obs-button double-fires */
+  CONN.rows.push(connNew()); elPaint(); nodeAddPaint(); });
+/* the old single-pair Create Manual Connection drawer (dMc) — kept, now unreferenced from the node menu */
+$('mcGoOld').onclick = () => { mcMenuClose(); if (!MC.src) return; MC.pick = []; MCIF.key = ''; drOpen('dMc'); $('mcSrc').value = MC.src.d.n; mcField(); $('mcPickE').hidden = true; $('mcPickB').classList.remove('err'); };
 function mcField(){ const b = $('mcPickB').querySelector('span'); b.textContent = MC.pick.length ? MC.pick.map(p => p.n).join(', ') : 'Select'; b.classList.toggle('ph', !MC.pick.length); mcIfPaint(); }
 /* interfaces: shown when the source AND the one picked child are network devices. The ports are made up per device —
    Gi0/n-n, 6–10 of them, in a stable shuffled order seeded by the device name (the live lists are unsorted too). */
