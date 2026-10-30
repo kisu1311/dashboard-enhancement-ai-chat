@@ -4716,5 +4716,23 @@ def inv_name_nodrawer_patch(t):
         const name =""")
 t = inv_name_nodrawer_patch(t)
 
+def dev_head_align_patch(t):
+    """The firewall header lines up with the tab row and the cards (owner, 30 Oct 2026): obs-page-header's default
+    8px padding on every side put the home button 8px right of everything below it. Vertical padding is kept."""
+    a = ".fa-card.fa-dev-head { overflow: visible; position: relative; z-index: 5; }"
+    if 'obs-page-header.fa-mdh { --page-header-padding' in t: return t
+    assert t.count(a) == 1, 'dev_head_align ' + str(t.count(a))
+    return t.replace(a, a + "\n.fa-dev-head obs-page-header.fa-mdh { --page-header-padding: 8px 0; }")
+t = dev_head_align_patch(t)
+
+def dev_head_bleed_patch(t):
+    """The firewall header's hairline and the tab row's underline run to the app sidebar (owner, 30 Oct 2026); the
+    content inside them keeps its place (the blocks cancel .fa-content's side inset and pad it back)."""
+    a = '#devTabs { --tabs-inset: var(--fa-padding-md); margin-top: calc(-1 * var(--fa-padding-md)); }'
+    if "the firewall header's two lines meet the app sidebar" in t: return t
+    assert t.count(a) == 1, 'dev_head_bleed ' + str(t.count(a))
+    return t.replace(a, a + '\n/* the firewall header\'s two lines meet the app sidebar (owner, 30 Oct 2026, with the Dashboard header as the picture: "the\n   line will be connected to the sidebar"): the header block and the tab row cancel .fa-content\'s side inset and pad it back\n   inside, so both rules run edge to edge while the name, the buttons and the tab labels stay exactly where they were. */\n.fa-card.fa-dev-head { margin-left: calc(-1 * var(--fa-padding-md)); margin-right: calc(-1 * var(--fa-padding-md));\n  padding-left: var(--fa-padding-md); padding-right: var(--fa-padding-md); }\n.fa-devtabs { margin-left: calc(-1 * var(--fa-padding-md)); margin-right: calc(-1 * var(--fa-padding-md)); }\n.fa-devtabs.is-logs { padding-right: var(--fa-padding-md); }\n#devTabs { --tabs-inset: var(--fa-padding-md); }   /* tab labels on the same edge as the home button and the cards (owner, 30 Oct 2026) */')
+t = dev_head_bleed_patch(t)
+
 open(P, 'w', encoding='utf-8').write(t)
 print('ds_pass: applied')

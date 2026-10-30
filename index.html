@@ -17200,7 +17200,7 @@ function selectModule(i){
   /* Firewall Analyzer — the vendored module (`_firewall/firewall.html`), iframe in embed mode. */
   if (m.name === 'Firewall Analyzer'){ showView('firewall'); faInit(); return; }
   /* Topology — the vendored module (`_topology/topology.html`), iframe in embed mode (21 Oct 2026). */
-  if (m.name === 'Topology'){ if (!TOPO_HOME) { topoGo(); return; } showView('topology'); topoInit(); return; }
+  if (m.name === 'Topology'){ showView('topology'); topoInit(); return; }
   /* Compliance — the live module's three tabs, `cpl*` block below (6 Oct 2026). */
   if (m.name === 'Compliance'){ showView('compliance'); cplInit(MOD_SUB); MOD_SUB = ''; return; }
   setIco(document.getElementById('modHeadIc'), m.icon);
@@ -18179,21 +18179,13 @@ function ipamTheme(){ return document.documentElement.getAttribute('data-theme')
 const IPAM_TAB_HASH = { 'Overview': 'overview', 'Subnet Details': 'subnets', 'Supernet': 'supernet', 'IP Details': 'ips', 'Rogue Detection': 'rogue' };
 function ipamTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('IPAM'); }
 /* Firewall Analyzer — built on first open like IPAM; follows the theme over postMessage ({faTheme}). */
-function faBuildV(){ try { return sessionStorage.faV || (sessionStorage.faV = String(Date.now())); } catch (e) { return '1'; } }
+/* FA_BUILD changes whenever the _firewall/*.html files do (30 Oct 2026): the session stamp alone kept serving the
+   cached old frame after an edit for the rest of the browser tab's life. Bump it with every firewall change. */
+const FA_BUILD = '20261030o';
+function faBuildV(){ try { return FA_BUILD + '.' + (sessionStorage.faV || (sessionStorage.faV = String(Date.now()))); } catch (e) { return FA_BUILD; } }
 /* Topology — built on first open; an Explorer child row (Network · SDN · … · Custom) names the tab in MOD_SUB,
    and an open frame only has its hash moved (the page routes on hashchange). Theme follows over postMessage. */
 const TOPO_TAB_HASH = { 'Network':'network', 'SDN':'sdn', 'Cloud':'cloud', 'Virtualization':'virtualization', 'HCI':'hci', 'Custom':'custom' };
-/* ══ TOPOLOGY IS ITS OWN PAGE (22 Oct 2026) — topology.html, like setting.html ══
-   On any page but topology.html a Topology door navigates there (with the tab and the page to come back to);
-   on topology.html itself the module opens in place. */
-const TOPO_HOME = /(^|\/)topology\.html$/.test(location.pathname);
-function topoGo(){
-  let tab = ''; try { tab = TOPO_TAB_HASH[MOD_SUB] || ''; MOD_SUB = ''; } catch (e) {}
-  const here = location.pathname.split('/').pop() || 'index.html';
-  let from = here;
-  if (here === 'setting.html') { from = new URLSearchParams(location.search).get('from') || 'index.html'; if (!/^[\w.\-]+\.html$/.test(from) || from === 'setting.html') from = 'index.html'; }
-  location.href = 'topology.html?from=' + encodeURIComponent(from) + (tab ? '#tab=' + tab : '');
-}
 function topoTab(label){ try { MOD_SUB = label; } catch (e) {} selectModuleByName('Topology'); }
 function topoInit(){
   const h = document.getElementById('topoHost'); if (!h) return;
@@ -18209,11 +18201,23 @@ function topoInit(){
 }
 /* the module header's ‹ inside the frame: back to the Dashboard, the way the live arrow leaves the module */
 addEventListener('message', (e) => { if (e.data && e.data.topoBack) selectModuleByName('Dashboards'); });
+/* Firewall Analyzer Option 1 / 2 / 3 (30 Oct 2026): three copies of the module (_firewall/firewall.html,
+   firewall2.html, firewall3.html, made by _firewall/make_options.py). The switch in the frame's header posts
+   {faOpt}; the host swaps the frame's file in place — same view, no page change. */
+let FA_OPT = '1';   /* opens on Option 1 (firewall2.html) */
+/* RENUMBERED 30 Oct 2026 (owner): the old Option 2 is Option 1 (the default), the old Option 3 is Option 2, and the
+   old Option 1 — firewall.html, the generated file Settings also loads — is Option 3. Only the labels moved, not the files. */
+const FA_OPT_FILE = { '1': 'firewall2.html', '2': 'firewall3.html', '3': 'firewall.html' };
+function faSrc(o){ return '_firewall/' + FA_OPT_FILE[o] + '?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV(); }   /* &v: a fresh copy each browser session, stable within it */
+addEventListener('message', (e) => { const o = e.data && e.data.faOpt; if (!FA_OPT_FILE[o] || o === FA_OPT) return;
+  FA_OPT = o; const f = document.querySelector('#faHost iframe'); if (f) f.src = f.dataset.src = faSrc(o); });
 function faInit(){
-  const h = document.getElementById('faHost'); if (!h || h.querySelector('iframe')) return;
+  const h = document.getElementById('faHost'); if (!h) return;
+  const was = h.querySelector('iframe');
+  if (was) return;
   const f = document.createElement('iframe');
   f.setAttribute('aria-label', 'Firewall Analyzer'); f.className = 'fafr';   /* aria-label, not title: the tooltip engine turns a title into a chip floating over the module */
-  f.src = '_firewall/firewall.html?embed=1&theme=' + ipamTheme() + '&v=' + faBuildV();   /* &v: a fresh copy each browser session, stable within it (Agentation keys notes by URL) */
+  f.src = f.dataset.src = faSrc(FA_OPT);
   h.appendChild(f);
   new MutationObserver(() => {
     try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch(e){}

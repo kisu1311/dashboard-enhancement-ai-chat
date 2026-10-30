@@ -227,6 +227,9 @@ obs-stat-card.fa-pm-stats { display: block; margin-bottom: var(--ds-padding-md, 
 /* the firewall header card clipped the time-range picker's open panel to its own 61px (overflow:hidden on .fa-card) —
    the header lets it out and sits above the tabs and the tab body it opens over */
 .fa-card.fa-dev-head { overflow: visible; position: relative; z-index: 5; }
+/* the firewall header lines up with the tab row and the cards (owner, 30 Oct 2026: "fix this alignment"): obs-page-header pads
+   itself 8px on every side by default, which inside the already-inset card put the home button 8px right of the tabs below */
+.fa-dev-head obs-page-header.fa-mdh { --page-header-padding: 8px 0; }
 /* the header is 61px whether or not this tab carries the 35px time-range picker (Flow · Logs · Policies Analytics do,
    the rest do not) — without it the tab row jumped 7px between tabs */
 /* section.… outranks the later `.fa-card.fa-dev-head { min-height: 0 }` (same weight, later in the sheet) */
@@ -2295,6 +2298,14 @@ obs-tooltip:has(> .fa-vbtn) { position: relative; z-index: 10; }
 html[data-theme="dark-theme"] body { --common-main-bg: var(--page-background-color); --common-widget-bg: var(--widget-background); }
 /* the tab row: flush under the header's hairline, tabs on the header content's left edge, its own rule under it */
 #devTabs { --tabs-inset: var(--fa-padding-md); margin-top: calc(-1 * var(--fa-padding-md)); }
+/* the firewall header's two lines meet the app sidebar (owner, 30 Oct 2026, with the Dashboard header as the picture: "the
+   line will be connected to the sidebar"): the header block and the tab row cancel .fa-content's side inset and pad it back
+   inside, so both rules run edge to edge while the name, the buttons and the tab labels stay exactly where they were. */
+.fa-card.fa-dev-head { margin-left: calc(-1 * var(--fa-padding-md)); margin-right: calc(-1 * var(--fa-padding-md));
+  padding-left: var(--fa-padding-md); padding-right: var(--fa-padding-md); }
+.fa-devtabs { margin-left: calc(-1 * var(--fa-padding-md)); margin-right: calc(-1 * var(--fa-padding-md)); }
+.fa-devtabs.is-logs { padding-right: var(--fa-padding-md); }
+#devTabs { --tabs-inset: var(--fa-padding-md); }   /* tab labels on the home button's / cards' edge (owner, 30 Oct 2026) */
 .fa-flow-pair > .fa-wc + .fa-wc { margin-top: 0; }
 /* A GRID CARD runs its grid edge to edge, and its title, search box, pills, header text, cell text and
    pager share ONE left edge: the title strip's own 10px (+1px card border). Reference: the product's
@@ -2598,7 +2609,7 @@ obs-progress.fa-pol-rb { display: block; grid-column: 2 / -1; }
     <!-- ── module title strip: obs-page-header ── -->
     <div class="fa-titlebar">
       <!-- the heading alone, as the product's APM page: no count pill, no subtitle (owner, 2026-09-16) -->
-      <obs-page-header id="pageHeader" heading="Firewall Analyzer">
+      <obs-page-header id="pageHeader" heading="Firewall Analyzer"><!--FAOPT:BEGIN--><obs-radio id="faOpt" as-button size="small" options='[{"value":"1","label":"Option 1"},{"value":"2","label":"Option 2"},{"value":"3","label":"Option 3"}]' value="3" aria-label="Design option" style="margin-right:8px"></obs-radio><!--FAOPT:END-->
         <obs-date-time-picker kind="range" size="lg" bordered></obs-date-time-picker>
         
         <span id="btnPrimarySlot"></span>
@@ -31871,5 +31882,5 @@ openFromHash(bootIface);
   })();
 })();
 </script>
-</body>
+<script>/*FAOPT-JS:BEGIN*/(function(){const CUR="3",F={"1":"firewall2.html","2":"firewall3.html","3":"firewall.html"};function bind(){const r=document.getElementById("faOpt");if(!r)return;try{r.value=CUR;}catch(e){}r.addEventListener("change",function(e){if(!(e instanceof CustomEvent))return;const d=e.detail,v=String(Array.isArray(d)?d[0]:d);if(!F[v]||v===CUR)return;if(parent!==window)parent.postMessage({faOpt:v},"*");else location.href=F[v]+location.search+location.hash;});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();})();/*FAOPT-JS:END*/</script></body>
 </html>

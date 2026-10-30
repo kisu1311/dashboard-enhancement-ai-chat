@@ -20,6 +20,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Auto-connect variant pages
         run: node _sync_variants.js
+      # Shrink the PUBLISHED copy only (strips comments + whitespace, renames nothing).
+      # index.html goes ~3 MB -> ~1.5 MB; the source on main keeps every comment.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Minify site for Pages
+        run: |
+          npm install --no-save --no-package-lock html-minifier-terser@7.2.0 terser@5.36.0
+          node _build/minify-site.mjs .
+          rm -rf node_modules
       - uses: actions/configure-pages@v5
         with:
           enablement: true

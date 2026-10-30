@@ -1736,6 +1736,50 @@ html[data-theme="light"] .sfoot::before{background:var(--border)}
 #collapseArrow{transition:transform .18s;transform-origin:28.5px 24px}
 .sidebar.open #collapseArrow{transform:scaleX(-1)}
 
+/* ══ OPTION 11 — THE SIDEBAR RESTYLED AFTER A REFERENCE ADMIN RAIL (request, 29 Oct 2026, a
+   MedSurg-Supply screenshot as the picture). What was taken is the SHAPE; colours stay this file's
+   tokens and every glyph is one the rail already had, apart from two Lucide strokes noted below.
+   ⚠️ GROUPS ARE NAMED, NOT JUST SPACED. `renderMenu` emits `.sglbl` captions (Overview · Monitor ·
+   Analyze · Admin) where it used to emit a bare `.sgroup-gap`. The pinned bands still use the gap.
+   ⚠️ THE SELECTED ROW IS A TINT + A LEFT BAR, NOT A SOLID PILL. `--pill` inverted the row (light fill,
+   ink text) — the loudest thing in the rail for a state you already know. `::before` hangs in the
+   row's 8px left margin so it lines up on the rail edge without moving the glyph off 22.5.
+   ⚠️ COLLAPSE STAYS AN ICON BESIDE THE WORDMARK (a footer row was tried and reverted the same day).
+   ⚠️ THE AVATAR LEFT THE ICON ROW for a full identity row (name · "My profile · Admin" · ⇅), the
+   last line of the rail, which is where `#userPop` opens from. The icon row is three controls now. */
+:root{--sb-on-bg:color-mix(in srgb,var(--blue) 20%,transparent);--sb-on-fg:#9dbaff;--sb-on-bar:#7aa2ff}
+html[data-theme="light"]{--sb-on-bg:color-mix(in srgb,var(--blue) 11%,transparent);--sb-on-fg:#1d4ed8;--sb-on-bar:#2563eb}
+#sidebar .sitem.on{background:var(--sb-on-bg);color:var(--sb-on-fg);font-weight:600}
+#sidebar .smenu .sitem.on::before{content:'';position:absolute;left:-8px;top:6px;bottom:6px;width:3px;
+  border-radius:0 3px 3px 0;background:var(--sb-on-bar)}
+#sidebar .sitem.on .hm,#sidebar .sitem.pin.on .lbl .pd{color:var(--sb-on-fg)}
+#sidebar .sitem.on .beta{background:color-mix(in srgb,var(--sb-on-fg) 18%,transparent);color:var(--sb-on-fg)}
+/* group captions — read like the reference's "Overview / Sales"; gone in the 64px rail */
+.sglbl{font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--text-dim);
+  padding:6px 15px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.smenu > .sglbl:not(:first-child){padding-top:10px}
+.sidebar:not(.open) .sglbl{font-size:0;height:0;padding:0;margin:10px auto;width:24px}
+/* the wordmark gets a second line, like "Admin portal" under the reference's name */
+.strigger .bwrap{display:flex;flex-direction:column;min-width:0;line-height:1.2;margin-left:4px}
+.strigger .bwrap .brand{opacity:1}
+.strigger .bsub{font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar:not(.open) .strigger .bwrap{display:none}
+/* footer: three icons spread across the row, then Collapse, then identity */
+.sidebar.open .sfoot > .squick{justify-content:space-around;margin:0 0 4px;padding-bottom:8px;
+  border-bottom:1px solid rgba(255,255,255,.08)}
+html[data-theme="light"] .sidebar.open .sfoot > .squick{border-bottom-color:var(--border)}
+#sidebar .strcol .ic{width:16px;height:16px}
+#sidebar .strcol .ic,#sidebar .sfoot .sid .chev{fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+#sidebar .sfoot .sid{margin-top:4px;padding-top:7px;padding-bottom:7px;border-radius:8px}
+#sidebar .sfoot .sid .miniav{flex:0 0 30px;width:30px;height:30px;margin-left:2px;font-size:11px}
+#sidebar .sfoot .sid .lbl{flex:1}
+#sidebar .sfoot .sid .nm{font-size:13px;font-weight:600}
+#sidebar .sfoot .sid .sub{max-width:140px;font-size:11px}
+#sidebar .sfoot .sid .chev{flex:0 0 16px;width:16px;height:16px;color:var(--text-dim);margin-left:auto}
+.sidebar:not(.open) .sfoot .sid .chev{display:none}
+.sidebar:not(.open) .sfoot .sid .miniav{flex-basis:24px;width:24px;height:24px;margin-left:0}
+
 /* ---------- Main / views ---------- */
 .main{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)}
 .view{flex:1;display:none;flex-direction:column;min-height:0}
@@ -7991,15 +8035,9 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
        word lives in `data-tip`, which is how every other icon control in this rail works. -->
   <div class="strigger" onclick="toggleSidebar()" title="Expand / collapse">
     <span class="brandmark" aria-label="ObserveOps"><!--LOGO--></span>
-    <span class="brand">ObserveOps</span>
-    <button class="strcol" id="collapseBtn" data-tip="Collapse sidebar"
-            onclick="event.stopPropagation();toggleSidebar()">
-      <svg class="ic" viewBox="0 0 48 48" fill="currentColor">
-        <path fill-rule="evenodd" d="M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Zm0 3.6c-.8 0-1.4.6-1.4 1.4v22c0 .8.6 1.4 1.4 1.4h26c.8 0 1.4-.6 1.4-1.4V13c0-.8-.6-1.4-1.4-1.4H11Z"/>
-        <path d="M16.2 9.5h3.4v29h-3.4z"/>
-        <g id="collapseArrow"><path d="M26.5 17.6 32.9 24l-6.4 6.4-2.4-2.4 4-4-4-4 2.4-2.4Z"/></g>
-      </svg>
-    </button>
+    <span class="bwrap"><span class="brand">ObserveOps</span><span class="bsub">Motadata AIOps</span></span>
+    <!-- ⚠️ COLLAPSE IS BACK BESIDE THE WORDMARK, ICON ONLY (request, 29 Oct 2026: "set the top behind the logo, show only expand/collapse icon") — the footer row it replaced is gone. Lucide `chevrons-left`; stroke comes from CSS (`.strcol .ic`), not attributes. -->
+    <button class="strcol" id="collapseBtn" data-tip="Collapse sidebar" aria-label="Collapse sidebar" onclick="event.stopPropagation();toggleSidebar()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg></button>
   </div>
   <div class="stop">
     <!-- ⚠️ IRIS LEADS, SEARCH FOLLOWS (request, 9 Sep 2026: "the AI icon will be show big and
@@ -8111,8 +8149,8 @@ body.uxdrag,body.uxdrag *{cursor:ew-resize!important;user-select:none!important}
            was their only call site, and the menu is one attribute away if it is wanted back. -->
       <div class="sq" id="sbHealth" data-tip="Health Monitoring" onmouseenter="mfHide()" onclick="showView('health')"><svg class="ic" viewBox="0 0 48 48" id="sbHealthIc"></svg><span class="lbl">Health</span></div>
       <div class="sq" id="sbBell" data-tip="Notification" onmouseenter="sbNotifOpen()" onmouseleave="sbNotifLater()" onclick="togglePop('notifPop',event)"><span class="iwrap"><svg class="ic" viewBox="0 0 48 48" id="sbBellIc"></svg><span class="ibadge" id="nbadge">71</span></span><span class="lbl">Notifications</span></div>
-      <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">kishan.patel@example.com</span></span></div>
     </div>
+    <div class="sitem sid" id="sbUser" data-tip="Kishan Patel" onclick="togglePop('userPop',event)"><span class="miniav">KP</span><span class="lbl"><span class="nm">Kishan Patel</span><span class="sub" id="sbUserSub">My profile · Admin</span></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></div>
     <!-- ⚠️ WHAT'S NEW IS ITS OWN LABELLED LINE AGAIN, ABOVE THE ICON ROW (request, 10 Sep 2026:
          "the what's new icon will be show in new line like <Option 10>"). It was folded into the
          footer's icon row with the Magnific restyle; the label and the version chip are what make
@@ -10079,6 +10117,8 @@ function renderMenu(){
      "when i pin the dashboard it is explorer sub module so it will be show properly").
      ⚠️ `pinsOut` / `dashOut` make it idempotent, which is what lets the same call sit on both
      emit paths without a row's band ever being written twice. */
+  const GROUP_LBL = { work:'Monitor', analyse:'Analyze', admin:'Admin' };   /* Option 11 captions */
+  const cap = t => '<div class="sglbl">' + t + '</div>';
   const pinsFor = name => {
     let out = '';
     if (!pinsOut && RAIL_PINS.length && name === PIN_UNDER){  out += railPinsHTML();     pinsOut = true; }
@@ -10098,7 +10138,7 @@ function renderMenu(){
        when their parent is at the TOP. That is the DEFAULT case, not an edge case: `RAIL_HOME`
        ships as `'Dashboard'`, so this is the path a pinned board normally takes.
        ⚠️ `pinsFor` is the same call the loop makes and is idempotent, so nothing renders twice. */
-    html += railRowHTML(RAIL[homeIdx], homeIdx) + pinsFor(RAIL_HOME) + '<div class="sgroup-gap"></div>';
+    html += cap('Overview') + railRowHTML(RAIL[homeIdx], homeIdx) + pinsFor(RAIL_HOME);
   }
   else if (homePin)
     html += railPinsHTML(RAIL_HOME) + '<div class="sgroup-gap"></div>';
@@ -10109,7 +10149,7 @@ function renderMenu(){
        does not leave its divider behind pointing at nothing. */
     if (RAIL_HIDDEN.has(r.name)) return;
     if (i === homeIdx) return;                 /* already at the top */
-    if (last !== null && r.group !== last) html += '<div class="sgroup-gap"></div>';
+    if (r.group !== last) html += cap(GROUP_LBL[r.group] || r.group);
     last = r.group;
     /* ⚠️ AFTER the row, and with NO HAIRLINE of its own. Both bands used to be emitted BEFORE
        their anchor and fenced by `sgroup-gap`, because back then they sat between two groups
@@ -11216,7 +11256,7 @@ function toggleSidebar(){
   if (b){
     b.setAttribute('data-tip', sbPinned? 'Collapse sidebar':'Expand sidebar');
     b.removeAttribute('title');            /* a title is adopted once; keep data-tip authoritative */
-    const lb = b.querySelector('.lbl'); if (lb) lb.textContent = sbPinned? 'Collapse':'Expand';
+    const lb = b.querySelector('.lbl'); if (lb) lb.textContent = sbPinned? 'Collapse sidebar':'Expand sidebar';
   }
   renderMenu();                                  /* sections only fold while the rail is open */
   requestAnimationFrame(()=>{ if(!trashed) fitCanvas(); });
@@ -11592,7 +11632,7 @@ function doLogout(){
 }
 function doLogin(){
   const d = document.getElementById('soutS'); if (d) d.remove();
-  toast('Signed back in as ' + ((document.querySelector('#sbUser .lbl')||{}).textContent||'admin').trim());
+  toast('Signed back in as ' + ((document.querySelector('#sbUser .nm')||{}).textContent||'admin').trim());
 }
 
 /* ================= Health screens (live /health/ tabs + tables) ================= */

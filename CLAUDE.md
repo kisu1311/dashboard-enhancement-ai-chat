@@ -977,6 +977,86 @@ Option 1. Answered: **embed a scrubbed copy, on its own rail entry**.
   a 2px page-coloured gap under every group row and above one that follows a data row.
 - **§99 (7 Oct 2026)** — the Supernet grid joins `DS_FIT`, so its pager is pinned to the foot of the screen like Subnet Details.
 
+## Firewall Analyzer Option 1 / 2 / 3 (30 Oct 2026)
+
+> **Settings › Firewall Analyzer no longer lists Policies Management** (30 Oct 2026, owner): removed from `ST_TREE` in
+> `setting-nav.js` and its `ST_PAGES` entry in `setting.html` commented out. It lives on the firewall page (tab in
+> Option 1, button + drawer in Option 2). Settings › Firewall Analyzer is Firewall Inventory alone.
+
+> ⚠️ **RENUMBERED LATER THE SAME DAY — the labels moved, the files did not.** **Option 1 = `firewall2.html`** (the
+> Policies Management tab + rail, **opens by default**, `FA_OPT = '1'`), **Option 2 = `firewall3.html`** (the Policies Management button + 95% drawer), **Option 3 = `firewall.html`** (the original; Settings › Firewall Analyzer
+> still loads it). `FA_OPT_FILE` in `index.html` and each page's switch (`value` + `CUR` + `F` map) carry the mapping.
+> **Everything below that says "Option 2" means `firewall2.html` and "Option 3" means `firewall3.html`** — written before
+> the renumbering and left as written. `make_options.py` is outdated (see its docstring) — don't run it.
+
+Request: *"the Firewall analyzer module will be copy and create as option 2 & 3"*. `_firewall/firewall2.html` and
+`firewall3.html` are **byte copies of `firewall.html`**, made by `python3 _firewall/make_options.py`, which also puts an
+`obs-radio as-button` **Option 1 · 2 · 3** switch in each page header (before the time picker). Picking one posts
+`{faOpt}` to the host; `index.html` (`FA_OPT` / `FA_OPT_FILE` / `faSrc`) swaps `#faHost`'s iframe in place.
+- ⚠️ **Re-running `make_options.py` OVERWRITES Options 2 and 3 with Option 1.** Once they diverge, edit them directly;
+  after a `build_firewall.py` rebuild use `make_options.py --one` (re-adds the switch to `firewall.html` only).
+- ⚠️ Only `index.html` swaps the frame; `setting.html` / `topology*.html` carry Option 1's `faInit` copy unchanged.
+- **The firewall page header lines up and its lines meet the sidebar** (30 Oct 2026, all three options, and kept by
+  `ds_pass.py`'s `dev_head_align_patch` + `dev_head_bleed_patch`): `obs-page-header.fa-mdh` drops its default 8px side
+  padding (the home button sat 8px right of the tabs), and `.fa-dev-head` + `.fa-devtabs` cancel `.fa-content`'s 16px
+  side inset and pad it back inside, so the hairline under the name and the tab underline run edge to edge (the
+  Dashboard header's look) while the name and buttons keep their x. **The tab labels sit on the SAME edge as the home
+  button and the cards** (`#devTabs --tabs-inset: var(--fa-padding-md)`, i.e. 16px from the sidebar — asked for three
+  times on 30 Oct 2026 before it was pinned down with a question; they used to sit 16px further in).
+- **Option 3 = Option 2's Policies Management, opened from a button instead of a tab** (30 Oct 2026). `firewall3.html`
+  was re-copied from `firewall2.html` (only the switch value differs), then: the Policies Management tab is removed;
+  Policies Analytics carries a **Policies Management** `obs-button` right after **Add Policy** (`pmBarInner`,
+  `#pmOpenMgmt`); it opens `obs-drawer#pmMgmtDrawer` at **95%** width, titled with the firewall's name, holding an iframe
+  of the same page in **`?embed=pm`** mode (`html.fapmonly` hides the module title, firewall header and tab row) on
+  `#device/<id>/policy/objects` — so the rail, the four sections, Add/Edit/Push and their own drawers work unchanged.
+  The frame cancels the drawer body's padding (rail flush to the drawer edge, labels on the title's edge, divider meeting
+  the header line) and the drawer header's line is widened to the panel edges (attachShadow hook, `:host(#pmMgmtDrawer)`).
+  The inner frame loads no second Agentation toolbar. ⚠️ The frame is a second copy of the page: a change made inside
+  shows in Policies Analytics after the next load.
+- ⚠️ **`FA_BUILD` in `index.html` must be bumped whenever a `_firewall/*.html` file changes** (30 Oct 2026). The frame
+  URL's `&v=` was a per-tab session stamp only, so an edited firewall page kept loading from cache for the rest of the
+  browser tab's life — two "it's still wrong" reports this session were the old cached file.
+- Option 2's Policies rail meets the tab underline: `.fa-devtabs + .fa-pmr-split { margin-top:-10px }` cancels the
+  page stack's 10px gap (`.fa-stack { gap:10px }`), and `.fa-pm-main` takes the 10px back as its own top padding.
+- **Policies Management is a per-firewall TAB in Option 2** (30 Oct 2026, superseding an Explorer row built and removed
+  the same day — "you add wrong flow for side"). `firewall2.html`'s device tab row carries `{ key:'policy', label:
+  'Policies Management' }` again, after Interfaces: that firewall's own Objects · Policies · NAT Policies · Approval.
+  Options 1 / 3 and Settings › Firewall Analyzer › Policies Management are unchanged. Explorer's Firewall Analyzer
+  row has no children.
+- **Its four sections are a left rail, not a second tab row** (30 Oct 2026, design "C · Section rail" picked from a
+  mockup page, then flattened on request — no Configuration / Changes groups): on a single firewall
+  `screenPolicyManagement` renders `.fa-pm-split` — an `obs-side-menu mode="list" search="false"` (220px column) of
+  Objects · Policies · NAT Policies · Approval, each with that firewall's own count (`pmRailItems`), beside the content.
+  `select` goes through the same `choose()` as the old tabs, so the route still names the section. `list`, not
+  `sections`: the DS's flat-list form, flush with the tab row (sections indents leaves as group children). The
+  all-firewalls Settings screen (no `dev`) keeps the `obs-tabs` row.
+  The row is `.fa-pmr-split` and sits **flush against the app sidebar** — it cancels `.fa-content`'s left and bottom
+  inset (`--fa-padding-md`), the header and grids keep theirs. ⚠️ **NOT `.fa-pm-split`**: that is already the KPI
+  cards row's class, and the first build's negative margins pulled the cards onto the grid below.
+  **The rail's look (Options 2 + 3, 30 Oct 2026, from the "C · Section rail" mockup):** no lines between rows, the active
+  row an inset rounded fill (8px side margin, 4px radius), labels on the 16px page edge (8 margin + 8 padding), and the
+  counts as plain muted monospaced figures, right-aligned — the count is still the DS `obs-tag`, its fill cleared by
+  setting `--tag-bg-color: transparent` on `.count` (custom properties reach its shadow root). All of it is one adopted
+  sheet in the `OBS-SIDE-MENU` branch of the page's attachShadow hook, scoped `:host(.fa-pm-tabs)`, so the Logs tree's
+  side menu is untouched.
+- **Policies Analytics (Options 2 + 3) and Option 2's Policies Management → Policies carry Status + Total Hit Count**
+  (30 Oct 2026): Status = `polIsActive` (Active green / Unused yellow tag — a tag because the DS table's severity cell
+  reads ONE severity per row and its dot cell has no label); Total Hit Count = `polHits30` (lifetime hits × 30 / whole
+  days monitored, capped) as a fill-less `fa-count` tag (OBS-TAG hook) + a "30 days" tag. ⚠️ `obs-table` ignores a
+  column `width` given as a bare number — the PM Policies grid split evenly at 172px and cut names until its widths were
+  passed as `px` strings.
+- **New Option 2 (`firewall3.html`) — Policies Analytics has a Pending Approval card** (30 Oct 2026): `polApvCardHTML()`
+  appends Policies Management's own card (`obs-stat-card.fa-pm-golink` in a `.fa-pm-go[data-pm-go="approval"]`
+  wrapper — underline + external-link icon on hover, from the OBS-STAT-CARD hook) as the third card of the default KPI
+  row; `pmGoApproval()` on the Analytics tab opens the Policies Management drawer straight on Approval
+  (`pmMgmtOpen(STATUS_SEC)` → `#device/<id>/policy/status`). Counts = `pendingOf(name)`, waiting = `faApvOf().st === 'Pending'`.
+
+## The live site is minified on deploy (30 Oct 2026)
+
+`.github/workflows/deploy.yml` runs `_build/minify-site.mjs` on the PUBLISHED copy only — comments + whitespace out,
+nothing renamed (`mangle:false`), a file that fails is left as is. `index.html` ~3 MB → ~1.5 MB (it took ~7.7 s to
+load before). The source on `main` keeps every comment; never run the script on the working tree.
+
 ## Topology module in Option 1 — cloned from the live build with Playwright (21 Oct 2026)
 
 Request: *"create new topology file and connect the current file — go to `https://172.16.15.199/topology/network`

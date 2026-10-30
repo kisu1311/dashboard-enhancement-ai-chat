@@ -44994,11 +44994,11 @@ function ipmDhcpHTML(){
       <obs-button variant="primary" id="btnAddDhcp">Create DHCP Server Profile</obs-button></obs-toolbar>
     ${ipmTable('No DHCP server profile matches this filter', ' sortable', 'ipmname ipmic ipmmenu')}</div></div>`;
 }
-const ipmDhDefaults = () => ({ name: '', description: '', ip: '', port: '67', timeout: '0', serverType: '', credential: '', editId: null, err: {} });
+const ipmDhDefaults = () => ({ name: '', description: '', ip: '', port: '67', timeout: '0', serverType: '', collector: '', credential: '', editId: null, err: {} });
 function ipmDhOpen(id){
   const r = id && IPM_DHCP.find(x => x.id === id);
   IPM.dh = r ? Object.assign(ipmDhDefaults(), { name: r.name, description: r.description, ip: r.ip, port: String(r.port),
-    serverType: r.serverType || '', credential: r.credential || '', editId: id }) : ipmDhDefaults();
+    serverType: r.serverType || '', collector: r.collector || '', credential: r.credential || '', editId: id }) : ipmDhDefaults();
   ipmDhPaint();
 }
 /* a required field with an inline error — the credential drawer's shape (ipmCrField) */
@@ -45013,6 +45013,11 @@ function ipmDhPaint(){
     ${ipmDhField('port', 'Port', `<obs-input id="dhPort" type="number" block value="${ipmEsc(d.port)}"></obs-input>`, true)}
     ${ipmDhField('timeout', 'Timeout (in sec)', `<obs-input id="dhTimeout" type="number" block value="${ipmEsc(d.timeout)}"></obs-input>`, true)}
     ${ipmDhField('serverType', 'DHCP Server Type', `<obs-select id="dhType" block placeholder="Select" options='${ipmJ(types)}' value="${ipmEsc(d.serverType)}"></obs-select>`, true)}
+    ${/* COLLECTORS (request, 29 Oct 2026) — the collector IPAM reads this DHCP server through, the same six sites the
+         Discover IPv4 Subnet form offers. Alone in the left column with an empty cell beside it, so Select Credential and
+         Create Credential Profile keep sharing their row */ ''}
+    ${ipmDhField('collector', 'Collectors', `<obs-select id="dhColl" block placeholder="Select" options='${ipmJ(IPM_SITES.map(s => ipmOpt(s)))}' value="${ipmEsc(d.collector)}"></obs-select>`, true)}
+    <div aria-hidden="true"></div>
     ${ipmDhField('credential', 'Select Credential', `<obs-select id="dhCred" block placeholder="Select" options='${ipmJ(ipmProfiles())}' value="${ipmEsc(d.credential)}"></obs-select>`)}
     <div class="ipmcredbtn"><obs-button variant="default" id="dhCredNew">Create Credential Profile</obs-button></div>
   </div>`;
@@ -45023,6 +45028,7 @@ function ipmDhPaint(){
   const P = document.getElementById('ipmDr'), on = (sel, ev, fn) => { const el = P.querySelector(sel); if (el) el.addEventListener(ev, fn); };
   [['#dhName', 'name'], ['#dhDesc', 'description'], ['#dhIp', 'ip'], ['#dhPort', 'port'], ['#dhTimeout', 'timeout']].forEach(([sel, k]) => on(sel, 'input', e => { d[k] = ipmVal(e); }));
   on('#dhType', 'change', e => { d.serverType = ipmVal(e); });
+  on('#dhColl', 'change', e => { d.collector = ipmVal(e); });
   on('#dhCred', 'change', e => { d.credential = ipmVal(e); });
   on('#dhCredNew', 'click', () => ipmTap(ipmCrOpen));
   on('#dhReset', 'click', () => ipmTap(() => { const id = d.editId; if (id) ipmDhOpen(id); else { IPM.dh = ipmDhDefaults(); ipmDhPaint(); } }));
@@ -45036,8 +45042,9 @@ function ipmDhSave(){
   if (!String(d.port).trim()) e.port = 'Port is required';
   if (!String(d.timeout).trim()) e.timeout = 'Timeout is required';
   if (!d.serverType) e.serverType = 'DHCP Server Type is required';
+  if (!d.collector) e.collector = 'Collectors is required';
   d.err = e; if (Object.keys(e).length) return ipmDhPaint();
-  const rec = { name: n, description: d.description.trim(), ip: d.ip.trim(),   /* on edit the IP field is disabled, so this is the saved IP */ port: Number(d.port) || 0, serverType: d.serverType, credential: d.credential };
+  const rec = { name: n, description: d.description.trim(), ip: d.ip.trim(),   /* on edit the IP field is disabled, so this is the saved IP */ port: Number(d.port) || 0, serverType: d.serverType, collector: d.collector, credential: d.credential };
   if (d.editId) { Object.assign(IPM_DHCP.find(r => r.id === d.editId) || {}, rec); IPM.flash = { title: 'DHCP server profile updated', body: n + ' has been saved.' }; }
   else { IPM_DHCP.push(Object.assign({ id: 'dhcp-' + Date.now(), lastSync: '—', origin: 'manual' }, rec)); IPM.flash = { title: 'DHCP server profile created', body: n + ' has been added.' }; }
   ipmPanelClose(); stMainPaint();
@@ -46760,7 +46767,7 @@ ST_PAGES['Firewall Analyzer › Firewall Inventory'] = faSetPage('fwinventory');
 ST_PAGES['Firewall Analyzer › Firewall Templates'] = faSetPage('fwtemplates');
 /* Policies Management moved here from the firewall's tab row (15 Oct 2026). It is a per-firewall screen, so the frame
    opens it on the first firewall and the module draws a Firewall picker in place of its header (embed=settings). */
-ST_PAGES['Firewall Analyzer › Policies Management'] = faSetPage('device/fw-01/policy/objects');   /* opens on Objects, the first tab (owner, 16 Oct 2026) */
+/* ST_PAGES['Firewall Analyzer › Policies Management'] — removed from Settings (owner, 30 Oct 2026); the page stays reachable on the firewall page */   /* opens on Objects, the first tab (owner, 16 Oct 2026) */
 new MutationObserver(() => document.querySelectorAll('.stfafr').forEach(f => {
   try { f.contentWindow.postMessage({ faTheme: ipamTheme() }, '*'); } catch (e) {} }))
   .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
