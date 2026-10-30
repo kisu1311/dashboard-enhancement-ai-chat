@@ -1106,6 +1106,12 @@ svg.i{width:1em;height:1em;display:block;fill:currentColor}
 .tdes{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:6;display:flex;gap:8px}
 .tdes .tbtn{display:inline-flex;align-items:center;gap:8px;height:34px;background:var(--neutral-lighter)}
 .tdes .tbtn svg{font-size:16px}
+/* editing a SAVED view (request, 30 Oct 2026): the Add Node bar hides and comes back only while the pointer is in the
+   bottom strip of the canvas (or the button has keyboard focus). A view being created keeps it always on. */
+.tdes{transition:opacity .18s ease,transform .18s ease}
+.tgraph.desauto .tdes{opacity:0;pointer-events:none;transform:translate(-50%,6px)}
+.tgraph.desauto.desnear .tdes,.tgraph.desauto .tdes:focus-within{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){.tdes{transition:none}}
 .tgraph.bgimg{background-size:cover;background-position:center}
 .tcvempty{padding:220px 12px 0;text-align:center;color:var(--page-text-color);font-size:13px;line-height:1.6}
 #dNew.dNewD .nflt{display:none}
@@ -1597,6 +1603,7 @@ html:not([data-theme]) .spm .spl input{color-scheme:light}   /* light theme: nat
 .drow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .drt{font-size:13px;font-weight:500;color:var(--primary)}
 .drd{font-size:12px;color:var(--neutral-light);margin-top:3px}
+#dBgB{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;white-space:nowrap}#dBgB svg{width:14px;height:14px;flex:0 0 14px}
 .tsw2{flex:0 0 40px;height:20px;border-radius:100px;border:0;background:var(--neutral-lighter);position:relative;cursor:pointer}
 .tsw2::before{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--neutral-light);transition:left .15s}
 .tsw2.on{background:var(--severity-clear)}
@@ -1671,7 +1678,7 @@ html:not([data-theme]) .dck input{color-scheme:light}
     <aside class="tside" id="tSide"></aside>
     <div class="tgraph empty" id="tGraph" tabindex="0">
       <svg class="tsvg" id="tSvg" hidden><g id="tVp"><g id="tLinks"></g><g id="tNodes"></g></g></svg>
-      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desBg"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M31,20c1.7,0,3-1.3,3-3s-1.3-3-3-3-3,1.3-3,3,1.3,3,3,3Zm7-14H10c-2.2,0-4,1.8-4,4v28c0,2.2,1.8,4,4,4h28c2.2,0,4-1.8,4-4V10c0-2.2-1.8-4-4-4Zm0,32H10v-7l8-6.4,8.8,7c.8,.6,1.9,.6,2.7-.1l2.6-2.6,6,6v3.2Zm0-8.8l-4.6-4.6c-.8-.8-2-.8-2.8,0l-2.7,2.7-8.6-6.9c-.7-.6-1.8-.6-2.5,0l-6.8,5.4V10h28V29.2Z"/></svg> Add Background Image</button><button class="tbtn" id="desEn"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M44.2,33h-3.1v-2.9c0-3.8-1.9-5.8-5.5-5.8h-5.3v-2.5c0-1-.8-1.8-1.8-1.8h-2.7v-4.9h3.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8h-10.2c-1,0-1.8,.8-1.8,1.8V13.3c0,1,.8,1.8,1.8,1.8h3.3v4.9h-2.5c-1,0-1.8,.8-1.8,1.8v2.5h-5.4c-3.7,0-5.5,1.9-5.5,5.8v2.9H3.8c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8H14c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8h-3.3v-2.9c0-2,.4-2.2,2-2.2h5.4v1.7c0,1,.8,1.8,1.8,1.8h8.6c1,0,1.8-.8,1.8-1.8v-1.7h5.3c1.6,0,2,.2,2,2.2v2.9h-3.6c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8h10.2c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8Zm-32,3.5v5.7H5.5v-5.7h6.7ZM20.8,11.5V5.8h6.7v5.7h-6.7Zm6,16.2h-5.1v-4.3h5.1v4.3Zm15.7,14.4h-6.7v-5.7h6.7v5.7Z"/></svg> Add Node</button></div>
+      <div class="tdes" id="tDes" hidden><button class="tbtn" id="desEn"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M44.2,33h-3.1v-2.9c0-3.8-1.9-5.8-5.5-5.8h-5.3v-2.5c0-1-.8-1.8-1.8-1.8h-2.7v-4.9h3.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8h-10.2c-1,0-1.8,.8-1.8,1.8V13.3c0,1,.8,1.8,1.8,1.8h3.3v4.9h-2.5c-1,0-1.8,.8-1.8,1.8v2.5h-5.4c-3.7,0-5.5,1.9-5.5,5.8v2.9H3.8c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8H14c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8h-3.3v-2.9c0-2,.4-2.2,2-2.2h5.4v1.7c0,1,.8,1.8,1.8,1.8h8.6c1,0,1.8-.8,1.8-1.8v-1.7h5.3c1.6,0,2,.2,2,2.2v2.9h-3.6c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8h10.2c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8Zm-32,3.5v5.7H5.5v-5.7h6.7ZM20.8,11.5V5.8h6.7v5.7h-6.7Zm6,16.2h-5.1v-4.3h5.1v4.3Zm15.7,14.4h-6.7v-5.7h6.7v5.7Z"/></svg> Add Node</button></div>
       <div class="tempty" id="tEmpty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 262 240" fill="none"><g opacity="0.25"><path d="M119.271 89.5977C119.329 89.4802 119.389 89.3601 119.454 89.2426H87.6814C87.7963 89.1565 87.9085 89.0599 88.0208 88.9685C90.684 86.7544 92.8302 84.1121 94.2898 81.1774H124.807C122.687 83.7753 120.828 86.5925 119.269 89.5977H119.271Z" style="fill:var(--neutral-regular)"></path><path d="M239.18 192.705C237.781 196 234.512 198.311 230.71 198.311H210.966L206.606 200.645C203.483 202.318 199.632 201.266 197.781 198.311H69.8671C64.7835 198.311 60.6634 194.188 60.6634 189.107V157.01C60.6634 151.927 64.7835 147.809 69.8671 147.809H129.24C126.582 145.313 124.207 142.525 122.16 139.493C122.214 139.577 122.269 139.661 122.327 139.744H28.9663C23.8854 139.744 19.7626 135.624 19.7626 130.54V98.4438C19.7626 98.0208 19.7914 97.6005 19.8488 97.1906C15.5068 98.3759 11.6164 100.397 8.45717 103.023C3.23262 107.371 0.000244141 113.373 0.000244141 120C0.000244141 133.256 12.9298 144.003 28.8723 144.003H30.8123C35.2039 144.003 39.3658 144.817 43.0916 146.277H50.1125C51.089 146.277 51.8801 147.068 51.8801 148.042V151.59C56.7209 155.88 59.6869 161.653 59.6869 167.997C59.6869 174.342 56.4572 180.627 51.23 184.969C46.0055 189.311 38.7835 192 30.8123 192H28.8723C20.901 192 13.6817 194.687 8.45717 199.031C3.23262 203.376 0.000244141 209.373 0.000244141 216C0.000244141 229.256 12.9298 240 28.8723 240H232.225C240.196 240 247.415 237.316 252.64 232.969C257.864 228.627 261.097 222.632 261.097 216C261.097 204.739 251.765 195.29 239.18 192.705ZM127.334 213.997C127.334 214.976 126.543 215.765 125.569 215.765H68.2979C67.3214 215.765 66.5303 214.974 66.5303 213.997V206.441C66.5303 205.462 67.324 204.674 68.2979 204.674H125.569C126.546 204.674 127.334 205.465 127.334 206.441V213.997Z" style="fill:var(--neutral-regular)"></path><path d="M232.225 96.0001H224.737C217.987 96.0001 211.781 94.0784 206.867 90.8486C209.974 97.2794 211.718 104.496 211.718 112.118C211.718 124.128 207.397 135.131 200.214 143.648C200.112 143.765 200.016 143.883 199.914 144H232.222C240.193 144 247.413 141.313 252.637 136.969C257.862 132.627 261.094 126.624 261.094 119.997C261.094 106.742 248.165 95.9975 232.222 95.9975L232.225 96.0001ZM237.267 137.316C237.267 138.29 236.475 139.084 235.499 139.084H220.081C219.105 139.084 218.314 138.29 218.314 137.316V129.757C218.314 128.781 219.107 127.992 220.081 127.992H235.499C236.478 127.992 237.267 128.783 237.267 129.757V137.316Z" style="fill:var(--neutral-regular)"></path><path d="M0 24C0 17.3734 3.23238 11.3734 8.45692 7.03133C13.6815 2.68669 20.9008 0 28.8721 0H232.225C248.167 0 261.097 10.7441 261.097 24C261.097 30.6266 257.864 36.6292 252.64 40.9713C247.415 45.3133 240.196 48 232.225 48H225.329V39.8799C225.329 34.799 221.209 30.6762 216.128 30.6762H55.2846C50.201 30.6762 46.0809 34.799 46.0809 39.8799V48H28.8747C12.9295 48 0 37.2533 0 24Z" style="fill:var(--neutral-regular)"></path><path d="M237.507 70.8304C237.507 79.4936 230.481 86.5171 221.817 86.5171C217.12 86.5171 212.901 84.4518 210.029 81.1803H216.128C221.209 81.1803 225.329 77.0602 225.329 71.9792V55.538C232.303 57.1307 237.507 63.3709 237.507 70.8304Z" style="fill:var(--neutral-regular)"></path><path d="M51.4442 167.282C51.4442 175.945 44.4207 182.969 35.7575 182.969C27.0943 182.969 20.0708 175.945 20.0708 167.282C20.0708 159.585 25.6139 153.183 32.9246 151.849V155.6C32.9246 156.577 33.7157 157.368 34.6896 157.368H47.9168C50.1204 160.068 51.4442 163.52 51.4442 167.282Z" style="fill:var(--neutral-regular)"></path></g><g opacity="0.5"><path d="M216.128 30.6763H55.2847C50.2012 30.6763 46.0811 34.799 46.0811 39.8799V71.9765C46.0811 77.0575 50.2012 81.1776 55.2847 81.1776H124.81C133.786 70.1828 147.449 63.1593 162.755 63.1593C178.06 63.1593 191.726 70.1828 200.705 81.1776H216.128C221.209 81.1776 225.329 77.0575 225.329 71.9765V39.8799C225.329 34.799 221.209 30.6763 216.128 30.6763ZM73.3474 70.0366C65.5562 70.0366 59.2377 63.718 59.2377 55.9269C59.2377 48.1358 65.5562 41.8199 73.3474 41.8199C81.1385 41.8199 87.4544 48.1358 87.4544 55.9269C87.4544 63.718 81.1385 70.0366 73.3474 70.0366Z" style="fill:var(--neutral-regular)"></path></g><path d="M216.128 81.9634H200.335L200.1 81.6762C190.899 70.4073 177.285 63.9451 162.755 63.9451C148.225 63.9451 134.617 70.4073 125.416 81.6762L125.181 81.9634H55.285C49.7785 81.9634 45.2981 77.4856 45.2981 71.9791V39.8825C45.2981 34.3759 49.7785 29.8955 55.285 29.8955H216.128C221.635 29.8955 226.113 34.3759 226.113 39.8825V71.9791C226.113 77.4856 221.632 81.9634 216.128 81.9634ZM201.076 80.3968H216.128C220.771 80.3968 224.546 76.6214 224.546 71.9791V39.8825C224.546 35.2402 220.771 31.4621 216.128 31.4621H55.285C50.6427 31.4621 46.8647 35.2402 46.8647 39.8825V71.9791C46.8647 76.6214 50.6427 80.3968 55.285 80.3968H124.439C133.933 68.9425 147.875 62.3785 162.755 62.3785C177.635 62.3785 191.577 68.9425 201.076 80.3968Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M87.4545 55.9269C87.4545 63.718 81.1386 70.0365 73.3474 70.0365C65.5563 70.0365 59.2378 63.718 59.2378 55.9269C59.2378 48.1358 65.5563 41.8198 73.3474 41.8198C81.1386 41.8198 87.4545 48.1358 87.4545 55.9269Z" style="fill:var(--neutral-regular)"></path></g><path d="M73.3473 70.8198C65.1358 70.8198 58.4543 64.1383 58.4543 55.9268C58.4543 47.7153 65.1358 41.0365 73.3473 41.0365C81.5588 41.0365 88.2376 47.7153 88.2376 55.9268C88.2376 64.1383 81.5588 70.8198 73.3473 70.8198ZM73.3473 42.6057C66 42.6057 60.0209 48.5822 60.0209 55.9294C60.0209 63.2767 66 69.2558 73.3473 69.2558C80.6945 69.2558 86.6711 63.2767 86.6711 55.9294C86.6711 48.5822 80.6945 42.6057 73.3473 42.6057Z" style="fill:var(--neutral-regular)"></path><path d="M200.791 45.7468H97.1175C96.6841 45.7468 96.3342 45.3969 96.3342 44.9635C96.3342 44.53 96.6841 44.1802 97.1175 44.1802H200.791C201.225 44.1802 201.574 44.53 201.574 44.9635C201.574 45.3969 201.225 45.7468 200.791 45.7468Z" style="fill:var(--neutral-regular)"></path><path d="M170.204 54.8145H97.1175C96.6841 54.8145 96.3342 54.4646 96.3342 54.0312C96.3342 53.5978 96.6841 53.2479 97.1175 53.2479H170.204C170.637 53.2479 170.987 53.5978 170.987 54.0312C170.987 54.4646 170.637 54.8145 170.204 54.8145Z" style="fill:var(--neutral-regular)"></path><path d="M129.661 66.1959H97.1175C96.6841 66.1959 96.3342 65.846 96.3342 65.4126C96.3342 64.9791 96.6841 64.6293 97.1175 64.6293H129.661C130.094 64.6293 130.444 64.9791 130.444 65.4126C130.444 65.846 130.094 66.1959 129.661 66.1959Z" style="fill:var(--neutral-regular)"></path><g opacity="0.5"><path d="M197.541 197.903L182.846 170.47L181.692 171.086C178.433 172.833 174.373 171.603 172.627 168.345L168.551 160.739C166.65 160.964 164.713 161.081 162.752 161.081C149.783 161.081 137.995 156.039 129.238 147.807H69.8643C64.7807 147.807 60.6606 151.927 60.6606 157.008V189.105C60.6606 194.185 64.7807 198.308 69.8643 198.308H197.776C197.692 198.175 197.614 198.039 197.538 197.901L197.541 197.903ZM87.9296 187.167C80.1385 187.167 73.8199 180.851 73.8199 173.06C73.8199 165.269 80.1385 158.95 87.9296 158.95C95.7207 158.95 102.037 165.269 102.037 173.06C102.037 180.851 95.7207 187.167 87.9296 187.167Z" style="fill:var(--neutral-regular)"></path></g><g opacity="0.5"><path d="M239.914 157.011V189.107C239.914 194.188 235.791 198.311 230.71 198.311H210.964L212.408 197.535C215.669 195.789 216.896 191.731 215.149 188.467L200.452 161.037L201.603 160.42C204.864 158.674 206.092 154.614 204.342 151.355L202.441 147.807H230.708C235.789 147.807 239.911 151.927 239.911 157.008L239.914 157.011Z" style="fill:var(--neutral-regular)"></path></g><path d="M199.183 199.097H69.8644C64.3579 199.097 59.8774 194.616 59.8774 189.11V157.013C59.8774 151.507 64.3579 147.029 69.8644 147.029H129.548L129.776 147.24C138.736 155.663 150.449 160.3 162.755 160.3C164.65 160.3 166.569 160.188 168.462 159.964L168.992 159.901L173.319 167.977C174.065 169.368 175.308 170.387 176.82 170.846C178.332 171.303 179.932 171.144 181.324 170.4L183.167 169.413L198.23 197.535C198.295 197.658 198.368 197.781 198.444 197.901L199.183 199.097ZM69.8644 148.593C65.2221 148.593 61.444 152.368 61.444 157.011V189.107C61.444 193.749 65.2221 197.527 69.8644 197.527H196.449L182.525 171.53L182.063 171.778C180.303 172.721 178.282 172.922 176.368 172.345C174.454 171.765 172.883 170.478 171.94 168.715L168.115 161.58C166.334 161.77 164.535 161.867 162.755 161.867C150.152 161.867 138.152 157.157 128.93 148.593H69.8644Z" style="fill:var(--neutral-regular)"></path><path d="M230.71 199.097H207.846L212.039 196.849C214.914 195.308 216 191.715 214.46 188.841L199.394 160.721L201.235 159.734C202.627 158.987 203.645 157.744 204.104 156.232C204.561 154.721 204.402 153.12 203.655 151.731L201.136 147.029H230.71C236.217 147.029 240.697 151.509 240.697 157.013V189.11C240.697 194.616 236.217 199.097 230.71 199.097ZM213.854 197.53H230.71C235.352 197.53 239.131 193.752 239.131 189.11V157.013C239.131 152.371 235.352 148.595 230.71 148.595H203.752L205.037 150.99C205.982 152.749 206.183 154.773 205.603 156.684C205.026 158.598 203.736 160.17 201.977 161.115L201.517 161.363L215.843 188.102C217.585 191.355 216.668 195.334 213.856 197.53H213.854Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M102.037 173.06C102.037 180.851 95.7211 187.167 87.93 187.167C80.1389 187.167 73.8203 180.851 73.8203 173.06C73.8203 165.269 80.1389 158.95 87.93 158.95C95.7211 158.95 102.037 165.269 102.037 173.06Z" style="fill:var(--neutral-regular)"></path></g><path d="M87.9298 187.95C79.7183 187.95 73.0369 181.271 73.0369 173.06C73.0369 164.848 79.7183 158.167 87.9298 158.167C96.1413 158.167 102.82 164.848 102.82 173.06C102.82 181.271 96.1413 187.95 87.9298 187.95ZM87.9298 159.736C80.5826 159.736 74.6034 165.715 74.6034 173.063C74.6034 180.41 80.5826 186.386 87.9298 186.386C95.2771 186.386 101.254 180.41 101.254 173.063C101.254 165.715 95.2771 159.736 87.9298 159.736Z" style="fill:var(--neutral-regular)"></path><path d="M145.841 162.877H111.697C111.264 162.877 110.914 162.527 110.914 162.094C110.914 161.661 111.264 161.311 111.697 161.311H145.841C146.274 161.311 146.624 161.661 146.624 162.094C146.624 162.527 146.274 162.877 145.841 162.877Z" style="fill:var(--neutral-regular)"></path><path d="M159 171.945H111.697C111.264 171.945 110.914 171.595 110.914 171.162C110.914 170.729 111.264 170.379 111.697 170.379H159C159.433 170.379 159.783 170.729 159.783 171.162C159.783 171.595 159.433 171.945 159 171.945Z" style="fill:var(--neutral-regular)"></path><path d="M173.583 183.326H111.7C111.267 183.326 110.917 182.976 110.917 182.543C110.917 182.11 111.267 181.76 111.7 181.76H173.583C174.016 181.76 174.366 182.11 174.366 182.543C174.366 182.976 174.016 183.326 173.583 183.326Z" style="fill:var(--neutral-regular)"></path><g opacity="0.5"><path d="M113.796 112.12C113.796 103.856 115.843 96.0705 119.457 89.2428H28.9661C23.8852 89.2428 19.7625 93.3629 19.7625 98.4465V130.54C19.7625 135.624 23.8852 139.744 28.9661 139.744H122.326C116.943 131.88 113.796 122.371 113.796 112.12ZM47.0288 128.6C39.2376 128.6 32.9217 122.285 32.9217 114.493C32.9217 106.702 39.2376 100.386 47.0288 100.386C54.8199 100.386 61.1384 106.702 61.1384 114.493C61.1384 122.285 54.8199 128.6 47.0288 128.6Z" style="fill:var(--neutral-regular)"></path></g><path d="M123.812 140.53H28.9664C23.4599 140.53 18.9795 136.05 18.9795 130.543V98.4491C18.9795 92.9426 23.4599 88.4622 28.9664 88.4622H120.758L120.149 89.611C116.504 96.4961 114.58 104.282 114.58 112.123C114.58 121.883 117.483 131.285 122.974 139.306L123.812 140.53ZM28.9664 90.0261C24.3241 90.0261 20.5461 93.8042 20.5461 98.4465V130.54C20.5461 135.183 24.3241 138.961 28.9664 138.961H120.867C115.724 130.953 113.013 121.705 113.013 112.12C113.013 104.457 114.794 96.8486 118.175 90.0261H28.9664Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M61.1386 114.493C61.1386 122.285 54.82 128.6 47.0289 128.6C39.2378 128.6 32.9219 122.285 32.9219 114.493C32.9219 106.702 39.2378 100.386 47.0289 100.386C54.82 100.386 61.1386 106.702 61.1386 114.493Z" style="fill:var(--neutral-regular)"></path></g><path d="M47.0288 129.384C38.8199 129.384 32.1384 122.705 32.1384 114.493C32.1384 106.282 38.8173 99.6031 47.0288 99.6031C55.2402 99.6031 61.9217 106.282 61.9217 114.493C61.9217 122.705 55.2402 129.384 47.0288 129.384ZM47.0288 101.172C39.6815 101.172 33.705 107.149 33.705 114.496C33.705 121.843 39.6815 127.82 47.0288 127.82C54.376 127.82 60.3551 121.843 60.3551 114.496C60.3551 107.149 54.376 101.172 47.0288 101.172Z" style="fill:var(--neutral-regular)"></path><path d="M107.136 104.311H70.7992C70.3657 104.311 70.0159 103.961 70.0159 103.527C70.0159 103.094 70.3657 102.744 70.7992 102.744H107.136C107.569 102.744 107.919 103.094 107.919 103.527C107.919 103.961 107.569 104.311 107.136 104.311Z" style="fill:var(--neutral-regular)"></path><path d="M103.126 113.381H70.7992C70.3657 113.381 70.0159 113.031 70.0159 112.598C70.0159 112.165 70.3657 111.815 70.7992 111.815H103.126C103.559 111.815 103.909 112.165 103.909 112.598C103.909 113.031 103.559 113.381 103.126 113.381Z" style="fill:var(--neutral-regular)"></path><path d="M103.342 124.763H70.7992C70.3657 124.763 70.0159 124.413 70.0159 123.979C70.0159 123.546 70.3657 123.196 70.7992 123.196H103.342C103.776 123.196 104.126 123.546 104.126 123.979C104.126 124.413 103.776 124.763 103.342 124.763Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M196.188 112.12C196.188 130.585 181.22 145.554 162.755 145.554C144.29 145.554 129.324 130.585 129.324 112.12C129.324 93.6554 144.29 78.6893 162.755 78.6893C181.22 78.6893 196.188 93.6554 196.188 112.12Z" style="fill:var(--neutral-regular)"></path></g><path d="M162.755 146.337C143.891 146.337 128.541 130.987 128.541 112.12C128.541 93.2533 143.888 77.906 162.755 77.906C181.622 77.906 196.972 93.2533 196.972 112.12C196.972 130.987 181.622 146.337 162.755 146.337ZM162.755 79.4752C144.752 79.4752 130.107 94.1201 130.107 112.123C130.107 130.125 144.752 144.773 162.755 144.773C180.757 144.773 195.405 130.125 195.405 112.123C195.405 94.1201 180.757 79.4752 162.755 79.4752Z" style="fill:var(--neutral-regular)"></path><g opacity="0.5"><path d="M162.755 63.1618C135.716 63.1618 113.797 85.0809 113.797 112.12C113.797 139.159 135.716 161.081 162.755 161.081C164.718 161.081 166.653 160.963 168.554 160.739C181.22 159.245 192.408 152.916 200.217 143.647C207.397 135.13 211.721 124.128 211.721 112.117C211.721 85.0782 189.799 63.1592 162.757 63.1592L162.755 63.1618ZM162.755 145.553C144.29 145.553 129.324 130.585 129.324 112.12C129.324 93.6553 144.29 78.6892 162.755 78.6892C181.22 78.6892 196.188 93.6553 196.188 112.12C196.188 130.585 181.22 145.553 162.755 145.553Z" style="fill:var(--neutral-regular)"></path></g><path d="M162.755 161.867C135.327 161.867 113.013 139.551 113.013 112.123C113.013 84.6945 135.327 62.3812 162.755 62.3812C190.183 62.3812 212.504 84.6945 212.504 112.123C212.504 123.838 208.353 135.217 200.817 144.157C192.632 153.875 181.206 160.042 168.648 161.522C166.695 161.752 164.713 161.869 162.757 161.869L162.755 161.867ZM162.755 63.9452C136.191 63.9452 114.58 85.5562 114.58 112.12C114.58 138.684 136.191 160.298 162.755 160.298C164.65 160.298 166.569 160.185 168.462 159.961C180.624 158.527 191.689 152.556 199.616 143.144C206.917 134.486 210.935 123.467 210.935 112.12C210.935 85.5562 189.321 63.9452 162.752 63.9452H162.755Z" style="fill:var(--neutral-regular)"></path><g opacity="0.75"><path d="M212.407 197.538L206.606 200.645C203.347 202.394 199.285 201.165 197.54 197.903L182.846 170.47L200.454 161.039L215.151 188.47C216.898 191.731 215.668 195.791 212.41 197.538H212.407Z" style="fill:var(--neutral-regular)"></path></g><path d="M203.455 202.227C202.726 202.227 201.995 202.12 201.28 201.903C199.366 201.324 197.794 200.037 196.851 198.274L181.789 170.152L200.776 159.982L215.841 188.102C217.789 191.739 216.415 196.282 212.778 198.23L206.977 201.337C205.875 201.927 204.671 202.227 203.455 202.227ZM183.909 170.791L198.233 197.533C198.979 198.927 200.222 199.945 201.734 200.402C203.246 200.859 204.846 200.7 206.238 199.953L212.039 196.846C214.914 195.306 216 191.713 214.46 188.838L200.133 162.099L183.906 170.791H183.909Z" style="fill:var(--neutral-regular)"></path><path d="M201.606 160.423L200.454 161.042L182.846 170.473L181.695 171.091C178.436 172.838 174.374 171.608 172.629 168.35L168.554 160.744C171.358 160.413 174.092 159.846 176.731 159.06C183.264 157.12 189.227 153.849 194.306 149.564C196.439 147.765 198.418 145.786 200.217 143.65L204.345 151.358C206.094 154.616 204.864 158.679 201.606 160.423Z" style="fill:var(--neutral-regular)"></path><path d="M179.927 122.762C180.823 123.658 180.823 125.112 179.927 126.005L176.648 129.293C175.745 130.188 174.29 130.188 173.395 129.293L164.376 120.266C163.481 119.371 162.027 119.371 161.134 120.266L152.115 129.285C151.22 130.18 149.765 130.18 148.872 129.285L145.593 126.005C144.698 125.11 144.698 123.655 145.593 122.762L154.611 113.744C155.507 112.849 155.507 111.394 154.611 110.501L145.585 101.483C144.69 100.588 144.69 99.1332 145.585 98.2299L148.872 94.9505C149.768 94.0549 151.222 94.0549 152.115 94.9505L161.134 103.969C162.037 104.864 163.483 104.864 164.387 103.969L173.405 94.9505C174.301 94.0549 175.755 94.0549 176.648 94.9505L179.927 98.2299C180.823 99.1254 180.823 100.58 179.927 101.473L170.909 110.491C170.013 111.394 170.013 112.841 170.909 113.744L179.927 122.762Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M125.736 204.674H68.1306C67.2465 204.674 66.53 205.39 66.53 206.274V214.167C66.53 215.051 67.2465 215.768 68.1306 215.768H125.736C126.62 215.768 127.337 215.051 127.337 214.167V206.274C127.337 205.39 126.62 204.674 125.736 204.674Z" style="fill:var(--neutral-regular)"></path></g><path d="M125.736 216.551H68.1306C66.8173 216.551 65.7468 215.483 65.7468 214.167V206.274C65.7468 204.961 66.8147 203.89 68.1306 203.89H125.736C127.05 203.89 128.12 204.958 128.12 206.274V214.167C128.12 215.48 127.052 216.551 125.736 216.551ZM68.1306 205.457C67.6816 205.457 67.3134 205.822 67.3134 206.274V214.167C67.3134 214.616 67.6789 214.984 68.1306 214.984H125.736C126.185 214.984 126.554 214.619 126.554 214.167V206.274C126.554 205.825 126.188 205.457 125.736 205.457H68.1306Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M235.663 127.992H219.909C219.025 127.992 218.308 128.709 218.308 129.593V137.486C218.308 138.37 219.025 139.086 219.909 139.086H235.663C236.547 139.086 237.264 138.37 237.264 137.486V129.593C237.264 128.709 236.547 127.992 235.663 127.992Z" style="fill:var(--neutral-regular)"></path></g><path d="M235.666 139.867H219.909C218.596 139.867 217.525 138.799 217.525 137.483V129.59C217.525 128.277 218.593 127.206 219.909 127.206H235.666C236.979 127.206 238.05 128.274 238.05 129.59V137.483C238.05 138.796 236.982 139.867 235.666 139.867ZM219.909 128.773C219.46 128.773 219.092 129.138 219.092 129.59V137.483C219.092 137.932 219.457 138.3 219.909 138.3H235.666C236.115 138.3 236.483 137.935 236.483 137.483V129.59C236.483 129.141 236.118 128.773 235.666 128.773H219.909Z" style="fill:var(--neutral-regular)"></path><g opacity="0.25"><path d="M50.277 146.274H34.5224C33.6383 146.274 32.9219 146.991 32.9219 147.875V155.768C32.9219 156.652 33.6383 157.368 34.5224 157.368H50.277C51.161 157.368 51.8775 156.652 51.8775 155.768V147.875C51.8775 146.991 51.161 146.274 50.277 146.274Z" style="fill:var(--neutral-regular)"></path></g><path d="M50.2794 158.151H34.5222C33.2089 158.151 32.1384 157.084 32.1384 155.768V147.875C32.1384 146.561 33.2063 145.491 34.5222 145.491H50.2794C51.5927 145.491 52.6632 146.559 52.6632 147.875V155.768C52.6632 157.081 51.5953 158.151 50.2794 158.151ZM34.5222 147.057C34.0731 147.057 33.705 147.423 33.705 147.875V155.768C33.705 156.217 34.0705 156.585 34.5222 156.585H50.2794C50.7285 156.585 51.0966 156.219 51.0966 155.768V147.875C51.0966 147.426 50.7311 147.057 50.2794 147.057H34.5222Z" style="fill:var(--neutral-regular)"></path><path d="M200.405 144.003H199.917C200.018 143.885 200.115 143.768 200.217 143.65L200.405 144.003Z" style="fill:var(--neutral-regular)"></path><path d="M200.219 143.65C200.117 143.768 200.021 143.885 199.919 144.003H200.407L200.219 143.65Z" style="fill:var(--neutral-regular)"></path></svg><div id="tEmptyT">Please select entry point to view Topology</div></div>
       <div class="tovl" id="tOvl" hidden>
         <div class="g"><button class="tob" id="oKey" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts"><svg class="i" viewBox="0 0 576 512" aria-hidden="true"><path d="M528 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h480c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm16 336c0 8.823-7.177 16-16 16H48c-8.823 0-16-7.177-16-16V112c0-8.823 7.177-16 16-16h480c8.823 0 16 7.177 16 16v288zM168 268v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-336 80v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm384 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zM120 188v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-96 152v-8c0-6.627-5.373-12-12-12H180c-6.627 0-12 5.373-12 12v8c0 6.627 5.373 12 12 12h216c6.627 0 12-5.373 12-12z"/></svg></button><button class="tob" id="oFit" data-tip="Fit to screen" aria-label="Fit to screen"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 14.8284V18C12 19.1046 11.1046 20 10 20C8.89543 20 8 19.1046 8 18L8 10C8 8.89543 8.89543 8 10 8L18 8C19.1046 8 20 8.89543 20 10C20 11.1046 19.1046 12 18 12H14.8284L19.4142 16.5858C20.1953 17.3668 20.1953 18.6332 19.4142 19.4142C18.6332 20.1953 17.3668 20.1953 16.5858 19.4142L12 14.8284ZM30 12C28.8954 12 28 11.1046 28 10C28 8.89543 28.8954 8 30 8H38C39.1046 8 40 8.89543 40 10V18C40 19.1046 39.1046 20 38 20C36.8954 20 36 19.1046 36 18V14.8284L31.4142 19.4142C30.6332 20.1953 29.3668 20.1953 28.5858 19.4142C27.8047 18.6332 27.8047 17.3668 28.5858 16.5858L33.1716 12H30ZM10 28C11.1046 28 12 28.8954 12 30L12 33.1716L16.5858 28.5858C17.3668 27.8047 18.6332 27.8047 19.4142 28.5858C20.1953 29.3668 20.1953 30.6332 19.4142 31.4142L14.8284 36H18C19.1046 36 20 36.8954 20 38C20 39.1046 19.1046 40 18 40H10C9.46957 40 8.96086 39.7893 8.58579 39.4142C8.21071 39.0391 8 38.5304 8 38L8 30C8 28.8954 8.89543 28 10 28ZM28.5858 31.4142C27.8047 30.6332 27.8047 29.3668 28.5858 28.5858C29.3668 27.8047 30.6332 27.8047 31.4142 28.5858L36 33.1716V30C36 28.8954 36.8954 28 38 28C39.1046 28 40 28.8954 40 30V38C40 39.1046 39.1046 40 38 40H30C28.8954 40 28 39.1046 28 38C28 36.8954 28.8954 36 30 36H33.1716L28.5858 31.4142Z"/></svg></button></div>
@@ -1737,6 +1744,12 @@ html:not([data-theme]) .dck input{color-scheme:light}
       <div class="dsep"></div>
       <div class="dsec dsec2">Labels</div>
       <div class="dgrid"><div class="drng" id="rLw"></div></div>
+      <!-- Background Image (request, 30 Oct 2026): moved here from the canvas's design bar. Custom tab only — the image
+           belongs to the open custom view. The button opens the same Add Background Image drawer, over this one. -->
+      <div id="dBgW" hidden><div class="dsep"></div>
+        <div class="dsec dsec2">Background Image</div>
+        <div class="drow"><div><div class="drt" id="dBgT">Default canvas</div><div class="drd">Shown behind this custom view's topology.</div></div>
+          <button class="tbtn" id="dBgB" type="button"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M31,20c1.7,0,3-1.3,3-3s-1.3-3-3-3-3,1.3-3,3,1.3,3,3,3Zm7-14H10c-2.2,0-4,1.8-4,4v28c0,2.2,1.8,4,4,4h28c2.2,0,4-1.8,4-4V10c0-2.2-1.8-4-4-4Zm0,32H10v-7l8-6.4,8.8,7c.8,.6,1.9,.6,2.7-.1l2.6-2.6,6,6v3.2Zm0-8.8l-4.6-4.6c-.8-.8-2-.8-2.8,0l-2.7,2.7-8.6-6.9c-.7-.6-1.8-.6-2.5,0l-6.8,5.4V10h28V29.2Z"/></svg> <span id="dBgBL">Add Background Image</span></button></div></div>
     </div>
   </div>
   <div class="df"><span class="sp"></span><button class="tbtn" id="dSetReset">Reset to Defaults</button><button class="tpri" id="dSetApply">Apply</button></div>
@@ -1749,15 +1762,15 @@ html:not([data-theme]) .dck input{color-scheme:light}
          Hidden in Add Entity mode, which reuses this drawer for the picker alone. -->
     <div id="cvMeta">
       <div class="dgrid">
-        <div class="dfld"><div class="dlbl">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
-        <div class="dfld"><div class="dlbl">View Group <i>*</i> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="The sidebar group this view is filed under. Use the button to pick an existing group, or create one."><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M24,22c-.6,0-1.1,.2-1.4,.6s-.6,.9-.6,1.4v8c0,.6,.2,1.1,.6,1.4s.9,.6,1.4,.6,1.1-.2,1.4-.6,.6-.9,.6-1.4v-8c0-.6-.2-1.1-.6-1.4s-.9-.6-1.4-.6Zm.8-7.8c-.5-.2-1.1-.2-1.5,0-.3,0-.5,.2-.7,.4s-.3,.4-.4,.7c0,.2-.2,.5-.2,.8s0,.6,.2,.8c0,.3,.3,.5,.5,.7s.4,.3,.7,.4c.3,0,.7,.2,1,0,.3,0,.7-.2,1-.3,.3-.2,.5-.4,.7-.8,.2-.3,.2-.6,.3-1,0-.6-.2-1.1-.6-1.4-.2-.2-.4-.3-.7-.4h-.2Zm17.8,2.3c-1.1-2.4-2.5-4.7-4.4-6.5-1.9-1.9-4.1-3.3-6.5-4.4s-5.1-1.5-7.6-1.5c-4,0-7.8,1.1-11.2,3.3s-5.8,5.3-7.4,9-1.9,7.7-1.1,11.6c.8,3.9,2.7,7.4,5.4,10.3,2.8,2.8,6.4,4.7,10.3,5.4,3.9,.8,7.9,.4,11.6-1.1,3.6-1.5,6.8-4.1,9-7.4,2.2-3.3,3.3-7.2,3.3-11.2s-.5-5.3-1.5-7.6h0Zm-7.2,19.1c-3.1,3.1-7.1,4.7-11.4,4.7s-6.3-1-8.9-2.7c-2.7-1.7-4.7-4.3-5.9-7.2-1.2-3-1.5-6.1-1-9.3,.6-3.2,2.1-6,4.4-8.2s5.1-3.7,8.2-4.4c3.2-.6,6.3-.3,9.3,1,3,1.2,5.4,3.2,7.2,5.9s2.7,5.7,2.7,8.9-1.7,8.3-4.7,11.4h0Z"/></svg></span></div><!-- View Group is the sidebar GROUP the view is filed under (request, 28 Oct 2026): a searchable list of the existing
+        <div class="dfld"><div class="dlbl" id="cvNameL">View Name <i>*</i></div><input class="din" id="cvName" placeholder="Enter view name" autocomplete="off"><div class="derr" id="cvNameE" hidden>View Name is required</div></div>
+        <div class="dfld"><div class="dlbl" id="cvGrpLb"><span id="cvGrpLt">View Group <i>*</i></span> <span class="tinfo" tabindex="0" role="img" aria-label="About View Group" data-tip="The sidebar group this view is filed under. Use the button to pick an existing group, or create one."><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M24,22c-.6,0-1.1,.2-1.4,.6s-.6,.9-.6,1.4v8c0,.6,.2,1.1,.6,1.4s.9,.6,1.4,.6,1.1-.2,1.4-.6,.6-.9,.6-1.4v-8c0-.6-.2-1.1-.6-1.4s-.9-.6-1.4-.6Zm.8-7.8c-.5-.2-1.1-.2-1.5,0-.3,0-.5,.2-.7,.4s-.3,.4-.4,.7c0,.2-.2,.5-.2,.8s0,.6,.2,.8c0,.3,.3,.5,.5,.7s.4,.3,.7,.4c.3,0,.7,.2,1,0,.3,0,.7-.2,1-.3,.3-.2,.5-.4,.7-.8,.2-.3,.2-.6,.3-1,0-.6-.2-1.1-.6-1.4-.2-.2-.4-.3-.7-.4h-.2Zm17.8,2.3c-1.1-2.4-2.5-4.7-4.4-6.5-1.9-1.9-4.1-3.3-6.5-4.4s-5.1-1.5-7.6-1.5c-4,0-7.8,1.1-11.2,3.3s-5.8,5.3-7.4,9-1.9,7.7-1.1,11.6c.8,3.9,2.7,7.4,5.4,10.3,2.8,2.8,6.4,4.7,10.3,5.4,3.9,.8,7.9,.4,11.6-1.1,3.6-1.5,6.8-4.1,9-7.4,2.2-3.3,3.3-7.2,3.3-11.2s-.5-5.3-1.5-7.6h0Zm-7.2,19.1c-3.1,3.1-7.1,4.7-11.4,4.7s-6.3-1-8.9-2.7c-2.7-1.7-4.7-4.3-5.9-7.2-1.2-3-1.5-6.1-1-9.3,.6-3.2,2.1-6,4.4-8.2s5.1-3.7,8.2-4.4c3.2-.6,6.3-.3,9.3,1,3,1.2,5.4,3.2,7.2,5.9s2.7,5.7,2.7,8.9-1.7,8.3-4.7,11.4h0Z"/></svg></span></div><!-- View Group is the sidebar GROUP the view is filed under (request, 28 Oct 2026): a searchable list of the existing
              groups plus Create New, the dashboard drawer's Category pattern -->
           <div class="cvgrw"><span class="cvgrs" id="cvGrpW"><obs-select id="cvGrp" placeholder="Select" searchable="true" block></obs-select></span>
             <button type="button" class="tbtn" id="cvGrpNew" aria-haspopup="dialog" aria-controls="dGrp"><span class="cvgbl" id="cvGrpL">Select or create group</span></button>
           </div>
           <div class="derr" id="cvGrpE" hidden>View Group is required</div></div>
       </div>
-      <div class="dfld"><div class="dlbl">Security</div><div class="tseg" id="cvSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
+      <div class="dfld" id="cvSecW"><div class="dlbl">Security</div><div class="tseg" id="cvSec"><button data-v="public" class="on">Public</button><button data-v="private">Private</button></div></div>
       <div id="cvShare" class="sphost" hidden></div>
     </div>
     <div class="dcatrule" id="cvCatRule"></div>
@@ -2889,14 +2902,17 @@ function cvRowActs(el){
   const add = () => { const r = el.shadowRoot; if (!r) return setTimeout(add, 50);
     /* GROUP rows get a ⋮ too (request, 29 Oct 2026: rename a view group) — Rename group */
     r.querySelectorAll('.row.group').forEach(row => { if (row.querySelector('.cvrm')) return; const gl = row.querySelector('.lbl'), p = gl && CV_GLBL.get(gl.textContent);
-      if (!p) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Actions for group ' + gParts(p).pop()); b.innerHTML = ic('ellipsis-v');
+      if (!p) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Edit group ' + gParts(p).pop()); b.setAttribute('data-tip', 'Edit group name & parent'); b.innerHTML = ic('pencil');
+      /* group rows too (request, 30 Oct 2026): the ⋮ held one row, Rename group — the ✎ opens it directly */
       ['pointerdown', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation()));
-      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenu(null, b, p); }); row.appendChild(b);
+      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenuClose(); CV.gt = p; CV.mode = 'gedit'; drOpen('dCv'); }); row.appendChild(b);
        });
     r.querySelectorAll('.row.leaf').forEach(row => { if (row.querySelector('.cvrm')) return; const lbl = row.querySelector('.lbl'), v = lbl && CV_LBL.get(lbl.textContent);
-      if (!v) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Actions for ' + v.name); b.innerHTML = ic('ellipsis-v');
+      if (!v) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cvrm'; b.setAttribute('aria-label', 'Edit ' + v.name); b.setAttribute('data-tip', 'Edit name & view group'); b.innerHTML = ic('pencil');
+      /* the view row's ⋮ (Rename · Move to group) became ONE ✎ (request, 30 Oct 2026): it opens Update Custom View —
+         View Name · View Group · Security — which does both. cvRowMenu stays for group rows. */
       ['pointerdown', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation()));
-      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenu(v, b); }); row.appendChild(b); }); };
+      b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); cvRowMenuClose(); CV.target = v; CV.mode = 'edit'; drOpen('dCv'); }); row.appendChild(b); }); };
   add(); if (!el._cvra) { el._cvra = 1; const go = () => el.shadowRoot ? new MutationObserver(add).observe(el.shadowRoot, { childList: true, subtree: true }) : setTimeout(go, 50); go(); }
 }
 let CVRM = null;
@@ -2992,26 +3008,34 @@ function toolsPaint(){
   /* shown while VIEWING a saved view too (request, 28 Oct 2026): with only Edit there, a second view could not be started */
   /* nothing being designed on the Custom tab → no toolbar button: creating is the sidebar's + (request, 29 Oct 2026);
      while designing it comes back as Save / Update Topology View */
-  $('tCreate').hidden = custom && !T.design; $('tCreate').disabled = custom && !!T.design && !linked;
+  $('tCreate').hidden = custom && (!T.design || (T.design.edit && !dsgDirty())); $('tCreate').disabled = custom && !!T.design && !linked;
   if (custom && T.design && !linked) { const u = (T.design.kids || []).length ? designUnlinked() : [];
     $('tCreate').setAttribute('aria-label', u.length ? `Connect ${u.length === 1 ? '"' + u[0].n + '"' : u.length + ' nodes'} with Create Manual Connection to save` : 'Connect the root monitor to an entity or container to save'); }
   else $('tCreate').removeAttribute('aria-label');
   /* Custom tab: nothing open → Create Topology (opens the drawer); designing a view just created → Save (request,
      28 Oct 2026: the view is already filed, the button only finishes it); editing a saved view → Update Topology View */
   $('tCreate').textContent = custom ? (T.design ? (T.design.edit ? 'Update Topology View' : 'Save') : 'New Custom Topology') : 'Create Topology View';
-  $('tEdit').hidden = !(custom && T.view && !T.design); $('tDet').hidden = $('tEdit').hidden;   /* View details rides with Edit (29 Oct 2026) */
+  /* no Edit button (request, 30 Oct 2026): an opened view IS editable (viewEditable), and View details is gone too (30 Oct 2026) */
+  $('tEdit').hidden = true; $('tDet').hidden = true;
   /* designing (live 10.0.1): the toolbar is find · full screen · Create Topology View, the add bar sits under the canvas */
-  const des = custom && !!T.design, bare = des || idle;
+  /* an opened saved view is editable by default (30 Oct 2026), so it keeps the VIEW toolbar — Layer 3 · layouts · ? ·
+     full screen · settings · export (request: "show the default action"); only a brand-new draft stays bare */
+  const des = custom && !!T.design, bare = idle || (des && !T.design.edit);
   $('tL3').parentElement.hidden = bare; $('tLay').hidden = bare; $('tHelp').hidden = bare; $('tTools2').hidden = bare;
   /* the background belongs to the VIEW, not to design mode (bug, 28 Oct 2026: it was painted only while designing, so a
      saved view lost its image the moment Save closed the design) — designing shows the draft's, viewing the saved view's */
   const bg = des ? T.design.bg : (custom && T.view && drawn ? T.view.bg : null);
-  $('tDes').hidden = !des; $('tGraph').classList.toggle('bgimg', !!bg); $('tGraph').style.backgroundImage = bg ? `url("${bg}")` : '';
+  $('tDes').hidden = !des; $('tGraph').classList.toggle('desauto', des && !!T.design.edit); if (!(des && T.design.edit)) $('tGraph').classList.remove('desnear'); $('tGraph').classList.toggle('bgimg', !!bg); $('tGraph').style.backgroundImage = bg ? `url("${bg}")` : '';
   $('tFindW').hidden = !drawn;
   $('tL3').classList.toggle('on', T.l3); $('tL3').textContent = T.l3 ? 'ON' : 'OFF'; $('tL3').setAttribute('aria-pressed', T.l3);
   [...$('tMode').children].forEach(b => b.classList.toggle('on', b.dataset.m === T.mode));
   [...$('tLay').children].forEach(b => b.classList.toggle('on', b.dataset.l === T.lay));
 }
+/* the "bottom area" is the last 96px of the canvas — measured per move, so it follows a resized or full-screen canvas */
+const DES_NEAR = 96;
+$('tGraph').addEventListener('pointermove', (e) => { const g = $('tGraph'); if (!g.classList.contains('desauto')) return;
+  const r = g.getBoundingClientRect(); g.classList.toggle('desnear', e.clientY >= r.bottom - DES_NEAR); });
+$('tGraph').addEventListener('pointerleave', () => $('tGraph').classList.remove('desnear'));
 $('tL3').onclick = () => { T.l3 = !T.l3; toolsPaint(); graphPaint(); };
 $('tMode').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; T.mode = b.dataset.m; T.exp = {}; toolsPaint(); graphBuild(true); };
 $('tLay').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; T.lay = b.dataset.l; toolsPaint(); graphBuild(true); };
@@ -3084,6 +3108,7 @@ function curRoot(){
 }
 function graphLoad(){ graphBuild(true); }
 function graphBuild(refit){
+  viewEditable();
   const r = curRoot(), g = $('tGraph');
   const show = r && r !== 'none';
   $('tSvg').hidden = !show; $('tOvl').hidden = !show; $('tPad').hidden = !show; $('tMini').hidden = !show || !T.mini;
@@ -3191,7 +3216,7 @@ function graphPaint(){
       + (T.tab === 'custom' && T.design ? `<g class="ndact" transform="translate(${root ? 32 : 26},${root ? 32 : 26})" role="button" aria-label="Node actions"><circle r="11"/><path d="M-5 0H5M0 -5V5"/></g>` : '')
       + '</g>';
   }).join('');
-  vpApply(); miniPaint();
+  vpApply(); miniPaint(); dsgSavePaint();
 }
 /* container shapes (Create Custom View › Container): r is the outer radius; the selection ring sits 7px outside */
 /* the live list (request, 29 Oct 2026): Hexagon (round) · Hexagon · Ellipse · Rectangle · Diamond · Octagon · Star · Triangle —
@@ -3394,7 +3419,14 @@ function setOpen(){
   SD = {}; Object.keys(SET_DEF).forEach(k => SD[k] = Array.isArray(T[k]) ? [...T[k]] : T[k]);
   const r = curRoot(); $('dSetFor').textContent = r && T.tab !== 'custom' ? '(' + r.n + ')' : r ? '(' + r.n + ')' : '';
   $('dSubW').hidden = T.tab !== 'network';
-  $('dShE').hidden = true; setPaint(); prevPaint();
+  $('dShE').hidden = true; setPaint(); prevPaint(); setBgPaint();
+}
+/* the Background Image row of Visualization Settings — only for a custom view being designed (every open view is) */
+function setBgPaint(){
+  const on = T.tab === 'custom' && !!T.design; $('dBgW').hidden = !on; if (!on) return;
+  const has = !!T.design.bg;
+  $('dBgT').textContent = has ? 'Custom image' : 'Default canvas';
+  $('dBgBL').textContent = has ? 'Change Background Image' : 'Add Background Image';
 }
 function setPaint(){
   segSet('dAcc', SD.acc); segSet('dShw', SD.shw); $('dShare').hidden = SD.acc !== 'private';
@@ -3575,6 +3607,8 @@ function cvOpen(mode){
   $('dCvL').innerHTML = (CV.mode === 'root' ? 'Monitor' : 'Entities') + ' <i>*</i>';   /* the section title already says Root Monitor */
   $('cvCreate').textContent = CV.mode === 'root' ? 'Create' : 'Add';
   $('cvPickE').hidden = true; $('cvPickB').classList.remove('err'); cvField();
+  CV.gx = null; $('cvNameL').innerHTML = 'View Name <i>*</i>'; $('cvGrpLt').innerHTML = 'View Group <i>*</i>'; $('cvSecW').hidden = false;
+  $('cvName').placeholder = 'Enter view name'; $('cvGrpLb').querySelector('.tinfo').setAttribute('data-tip', 'The sidebar group this view is filed under. Use the button to pick an existing group, or create one.');
   const root = CV.mode === 'root'; $('cvMonH').hidden = !root; $('cvMeta').hidden = !root; $('cvCatRule').hidden = !root; cvMetaReset();
   $('cvMonW').hidden = false;
   /* EDIT (request, 29 Oct 2026): Update Topology View opens this drawer as "Update Custom View" — the view's name, group and
@@ -3586,7 +3620,25 @@ function cvOpen(mode){
     $('cvName').value = v.name; cvGrpPaint(v.grp === 'Standalone' ? '' : v.grp); segSet('cvSec', v.sec || 'public');
     if (v.share) { CVS.shw = v.share.with; CVS[v.share.with] = [...v.share.who]; } cvSharePaint();
   }
+  /* GROUP EDIT (request, 30 Oct 2026: "the view group name change flow is the same as the topology name change flow — open
+     the same sidebar"): the group row's ✎ opens THIS drawer as Update View Group — Group Name + Parent Group (move the
+     group, with its sub-groups and views, under another group, or to the top level). Security belongs to views, so it hides. */
+  if (CV.mode === 'gedit' && CV.gt) {
+    const p = CV.gt, par = gParts(p).slice(0, -1).join(GSEP); CV.gx = p;
+    $('dCvT').textContent = 'Update View Group'; $('cvCreate').textContent = 'Update';
+    $('cvMeta').hidden = false; $('cvCatRule').hidden = true; $('cvMonW').hidden = true;
+    $('cvNameL').innerHTML = 'Group Name <i>*</i>'; $('cvGrpLt').innerHTML = 'Parent Group';
+    $('cvGrpLb').querySelector('.tinfo').setAttribute('data-tip', 'The group this group sits under. Pick (Top level) to move it to the top of the sidebar. Its sub-groups and views move with it.');
+    $('cvName').placeholder = 'Enter group name'; $('cvNameE').textContent = 'Group Name is required';
+    $('cvName').value = gParts(p).pop(); cvGrpPaint(par || CV_TOP);
+    /* Security on a GROUP (request, 30 Oct 2026): stored per group path; changing it applies to every view in the group
+       and its sub-groups, so the group's setting is what its views actually carry */
+    const gs = GRP_SEC[p] || { sec: 'public', share: null }; segSet('cvSec', gs.sec);
+    if (gs.share) { CVS.shw = gs.share.with; CVS[gs.share.with] = [...gs.share.who]; } cvSharePaint();
+  }
 }
+const CV_TOP = '(Top level)';
+const GRP_SEC = {};   /* group path → { sec, share } — Update View Group's Security */
 let CVS = { shw:'users', users:[], profiles:[] };   /* Create Custom View's share state */
 function cvSharePaint(){ $('cvShare').hidden = segVal('cvSec') !== 'private'; spPaint('cvShare'); }
 const CT_ICONS = [ ['agent','Agent'], ['docker','Container'], ['cloud','Cloud'], ['server','Server'], ['switch','Switch'], ['router','Router'], ['firewall','Firewall'], ['vm','Virtual Machine'] ];
@@ -3642,13 +3694,14 @@ const cvGroups = () => { const all = new Set();
 const CV_ZW = '​';
 const cvGrpVal = () => { const v = $('cvGrp').value; return typeof v === 'string' ? v.split(CV_ZW).join('').trim() : ''; };
 function cvGrpTree(){
-  const root = [], at = new Map();
-  cvGroups().forEach(path => { const parts = gParts(path), par = parts.slice(0, -1).join(GSEP);
+  const root = [], at = new Map(), gx = CV.gx;
+  if (gx) root.push({ value: CV_TOP, label: CV_TOP });   /* Update View Group: a group may move to the top level */
+  cvGroups().filter(g => !gx || (g !== gx && !g.startsWith(gx + GSEP))).forEach(path => { const parts = gParts(path), par = parts.slice(0, -1).join(GSEP);
     const node = { value: path, label: parts[parts.length - 1] }; at.set(path, node);
     const list = par && at.get(par) ? (at.get(par).children = at.get(par).children || []) : root; list.push(node); });
   return root;
 }
-function cvGrpBtn(v){ const b = $('cvGrpNew'); if (v === undefined) v = cvGrpVal(); $('cvGrpL').textContent = v || 'Select or create group'; b.classList.toggle('ph', !v); b.setAttribute('aria-label', 'View Group: ' + (v || 'none selected')); }
+function cvGrpBtn(v){ const b = $('cvGrpNew'); if (v === undefined) v = cvGrpVal(); $('cvGrpL').textContent = v || (CV.gx ? CV_TOP : 'Select or create group'); b.classList.toggle('ph', !v); b.setAttribute('aria-label', 'View Group: ' + (v || 'none selected')); }
 function cvGrpPaint(sel){ const el = $('cvGrp'); el.options = cvGrpTree(); el.value = sel ? sel + CV_ZW : ''; cvGrpBtn(sel || ''); }
 function cvGrpPick(path){ const el = $('cvGrp'); el.value = path + CV_ZW; cvGrpBtn(path); $('cvGrpW').classList.remove('err'); $('cvGrpE').hidden = true; }
 $('cvGrp').addEventListener('change', (e) => { if (!(e instanceof CustomEvent)) return; const d = e.detail, v = Array.isArray(d) ? d[0] : d;
@@ -3822,7 +3875,7 @@ $('cvGb').onclick = (e) => {
   cvField(); $('cvPickE').hidden = true; $('cvPickB').classList.remove('err');
 };
 document.addEventListener('pointerdown', (e) => { if ($('cvGrid').classList.contains('on') && !e.target.closest('#cvGrid,#cvPickB')) cvGridOpen(false); });
-$('cvReset').onclick = () => { CV.pick = []; cvField(); cvGridOpen(false); if (CV.mode === 'root') cvMetaReset(); };
+$('cvReset').onclick = () => { if (CV.mode === 'gedit') return cvOpen('gedit'); CV.pick = []; cvField(); cvGridOpen(false); if (CV.mode === 'root') cvMetaReset(); };
 const cvNode = (m) => ({ n:m.n, ip:m.ip, ic:m.ic, s:m.s });
 /* RENAME + MOVE a saved view (request, 29 Oct 2026, both doors chosen): a ⋮ on each view row of the sidebar (Rename ·
    Move to group) and View details beside Edit on the open view (the Update Custom View drawer: name, group, security). */
@@ -3833,6 +3886,20 @@ function cvMoveView(v, grp){   /* out of the old group's list, into the new one'
 }
 const cvNameTaken = (v, name, grp) => CUSTOM.some(g => g.grp === grp && g.views.some(x => x !== v && x.name.toLowerCase() === name.toLowerCase()));
 $('cvCreate').onclick = () => {
+  if (CV.mode === 'gedit') {
+    const p = CV.gt; if (!p) return;
+    const name = $('cvName').value.replace(/›/g, '').trim(), pv = cvGrpVal(), par = pv === CV_TOP ? '' : pv;
+    const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
+    const was = GRP_SEC[p] || { sec: 'public', share: null };
+    const err = cvGrpMove(p, par, name);
+    if (err) { $('cvName').classList.add('err'); $('cvNameE').textContent = err; $('cvNameE').hidden = false; return; }
+    const np = par ? par + GSEP + name : name;
+    GRP_SEC[np] = { sec, share };
+    if (sec !== was.sec || JSON.stringify(share) !== JSON.stringify(was.share))
+      CUSTOM.forEach(g => g.views.forEach(v => { if (v.grp === np || v.grp.startsWith(np + GSEP)) Object.assign(v, { sec, share: share && { with: share.with, who: [...share.who] } }); }));
+    CV.mode = 'root'; CV.gt = null; CV.gx = null; drClose(); cvTreePaint(); if ($('dGrp').classList.contains('on')) grpPaint();
+    toast('Success', 'View Group "' + name + '" updated'); return;
+  }
   if (CV.mode === 'edit') {   /* Update: name / group / security land on the saved view, then the design is saved as before */
     const v = CV.target || (T.design && T.design.view); if (!v) return;
     const name = $('cvName').value.trim(), grp = cvGrpVal(); let bad = false;
@@ -3844,7 +3911,10 @@ $('cvCreate').onclick = () => {
     cvMoveView(v, grp);
     Object.assign(v, { name, grp, sec, share });
     CV.mode = 'root'; CV.target = null; drClose();
-    if (T.design) { T.design.meta = { name, grp, sec, share }; cvSave(); return; }
+    /* a saved view is always open in edit mode now (30 Oct 2026), so renaming/moving it from the sidebar's ✎ must NOT
+       save the open design — only an unsaved draft is filed here, as before */
+    if (T.design && T.design.draft && T.design.view === v) { T.design.meta = { name, grp, sec, share }; cvSave(); return; }
+    if (T.design && T.design.view === v) T.design.meta = { name, grp, sec, share };
     cvTreePaint(); toast('Success', 'Topology View "' + name + '" updated'); return;
   }
   let bad = false;
@@ -3890,7 +3960,13 @@ function bgLoad(files){
   [...files].filter(f => /^image\//.test(f.type)).forEach(f => { const r = new FileReader();
     r.onload = () => { BG_LIB.push(r.result); BG.pick = BG_LIB.length - 1; bgPaint(); }; r.readAsDataURL(f); });
 }
-$('desBg').onclick = () => { const i = T.design && T.design.bg ? BG_LIB.indexOf(T.design.bg) : -1; BG.pick = i < 0 ? 'def' : i; drOpen('dBgA'); bgPaint(); };
+/* opened from Topology Settings › Visualization Settings (30 Oct 2026): the picker opens OVER the settings drawer
+   (no drClose), so Cancel / Add return to it with its unapplied draft intact */
+$('dBgB').onclick = () => { if (!T.design) return; const i = T.design.bg ? BG_LIB.indexOf(T.design.bg) : -1; BG.pick = i < 0 ? 'def' : i;
+  if (T.design.bg && i < 0) { BG_LIB.push(T.design.bg); BG.pick = BG_LIB.length - 1; }
+  $('dBgA').classList.add('on'); bgPaint(); };
+const bgBack = () => { $('dBgA').classList.remove('on'); if (!$('dSet').classList.contains('on')) drClose(); else setBgPaint(); };
+$('dBgA').querySelector('[data-close]').onclick = bgBack;
 $('bgF').onchange = (e) => { bgLoad(e.target.files); e.target.value = ''; };
 ['dragenter','dragover'].forEach(t => $('bgDz').addEventListener(t, (e) => { e.preventDefault(); $('bgDz').classList.add('drag'); }));
 ['dragleave','drop'].forEach(t => $('bgDz').addEventListener(t, (e) => { e.preventDefault(); $('bgDz').classList.remove('drag'); if (t === 'drop') bgLoad(e.dataTransfer.files); }));
@@ -3906,10 +3982,10 @@ $('bgGrid').onkeydown = (e) => { const t = e.target.closest('.bgt'); if (t && (e
 /* the whole drop area opens the picker — Browse file included (its click bubbles here), one call per gesture */
 $('bgDz').addEventListener('click', bgTap(() => $('bgF').click()));
 $('bgDz').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('bgF').click(); } });
-$('bgCancel').addEventListener('click', bgTap(drClose));
+$('bgCancel').addEventListener('click', bgTap(bgBack));
 $('bgAdd').addEventListener('click', bgTap(() => { if (BG.pick == null || !T.design) return;
   const u = BG.pick === 'def' ? null : BG_LIB[BG.pick];
-  T.design.bg = u; if (T.design.view) T.design.view.bg = u; drClose(); toolsPaint();
+  T.design.bg = u; if (T.design.view) T.design.view.bg = u; bgBack(); toolsPaint();
   toast('Success', u ? 'Background image added' : 'Default canvas restored'); }));
 /* Add Node › Container: CAS holds one record per box; caPaint rebuilds the list from it (the fields write back on input,
    so a rebuild never loses typing). Each box has its own Icon / Shape dropdown, mounted on its own record. */
@@ -4355,6 +4431,22 @@ document.addEventListener('pointerdown', (e) => { if (CVRM && !e.composedPath().
 let CVRN = { v: null, g: '', val: '' };
 /* RENAME A GROUP (request, 29 Oct 2026): the group's own name (the last part of its path) changes; every view and sub-group
    under it follows, and so do the open / selected states that are keyed by path */
+/* rename AND/OR re-parent a group (Update View Group): every path under it moves with it */
+function cvGrpMove(p, par, n){
+  n = String(n || '').replace(/›/g, '').trim(); if (!n) return 'Group Name is required';
+  if (par && (par === p || par.startsWith(p + GSEP))) return 'A group cannot move under itself';
+  const np = par ? par + GSEP + n : n;
+  if (np === p) return '';
+  if (cvGroups().some(g => g.toLowerCase() === np.toLowerCase() && g !== p)) return 'A group with this name already exists here';
+  const mv = (x) => x === p ? np : x.startsWith(p + GSEP) ? np + x.slice(p.length) : x;
+  CUSTOM.forEach(g => { g.grp = mv(g.grp); g.views.forEach(v => { v.grp = mv(v.grp); }); });
+  CV_GRP_NEW.forEach((x, i) => { CV_GRP_NEW[i] = mv(x); });
+  [T.cv, GRP.open, GRP_SEC].forEach(o => Object.keys(o).forEach(k => { const nk = mv(k); if (nk !== k) { o[nk] = o[k]; delete o[k]; } }));
+  if (GRP.sel) GRP.sel = mv(GRP.sel); cvOpenPath(np);
+  /* the OLD parent stays: groups are derived from the paths in use, so moving its only sub-group out would delete it */
+  const op = gParts(p).slice(0, -1).join(GSEP); if (op && !cvGroups().includes(op)) CV_GRP_NEW.push(op);
+  return '';
+}
 function cvGrpRename(p, n){
   n = n.replace(/›/g, '').trim(); const par = gParts(p).slice(0, -1).join(GSEP), np = par ? par + GSEP + n : n;
   if (!n) return 'Group Name is required';
@@ -4581,12 +4673,32 @@ function ndOpen(n){
 function ndClose(){ $('dNd').classList.remove('on'); ND = null; }
 $('ndX').onclick = ndClose;
 
+/* ---- an open saved view is EDITABLE by default (request, 30 Oct 2026: "remove the Edit action — by default the view is
+   editable"). graphBuild calls this first, so every door that opens a view (sidebar row, Save, a tab switch) lands in
+   edit mode with no Edit press. The #tEdit handler below is kept, unreferenced by the UI (the button is always hidden). */
+function viewEditable(){
+  if (T.tab !== 'custom' || T.design || !T.view || !T.view.root) return;
+  const v = T.view; v.root.kids = v.root.kids || [];
+  T.design = { root: v.root, kids: v.root.kids, bg: v.bg || null, ct: v.root.kids.filter(k => k.kind === 'container').length, view: v, edit: true,
+    meta: { name: v.name, grp: v.grp, sec: v.sec, share: v.share } };
+  T.design.sig = dsgSig();
+}
+/* ---- Update Topology View appears only once the view has CHANGED (request, 30 Oct 2026), and goes again on save.
+   The signature is the view's own data (root, kids, connections, labels, background) — layout positions live on the
+   graph's node records, not on the data, so panning, zooming or switching layout does not count as a change. */
+function dsgSig(){
+  const d = T.design; if (!d) return ''; const seen = new WeakSet();
+  return JSON.stringify({ r: d.root, k: d.kids, bg: d.bg || null }, (k, x) => {
+    if (x && typeof x === 'object') { if (seen.has(x)) return '#'; seen.add(x); } return x; });
+}
+function dsgDirty(){ return !!(T.design && T.design.edit && T.design.sig != null && dsgSig() !== T.design.sig); }
+function dsgSavePaint(){ if (T.tab === 'custom' && T.design && T.design.edit) $('tCreate').hidden = !dsgDirty(); }
 /* ---- Edit: the open view becomes the design — same root and kids objects, so every change lands in the view itself */
 $('tEdit').onclick = () => {
   const v = T.view; if (!v || !v.root) return; v.root.kids = v.root.kids || [];
   T.design = { root: v.root, kids: v.root.kids, bg: v.bg || null, ct: v.root.kids.filter(k => k.kind === 'container').length, view: v, edit: true,
     meta: { name: v.name, grp: v.grp, sec: v.sec, share: v.share } };
-  ndClose(); mcMenuClose(); toolsPaint(); graphLoad();
+  T.design.sig = dsgSig(); ndClose(); mcMenuClose(); toolsPaint(); graphLoad();
 };
 
 /* ================= DEFAULT VIEW (request, 27 Oct 2026) =================
