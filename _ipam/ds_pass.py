@@ -2798,5 +2798,14 @@ _a = """        <div class="ip-sdtags">
 """
 assert t.count(_a) == 1, 'sd site tag'
 t = t.replace(_a, '')
+# ── §101 · no Gateway column in the subnet grids (request, 30 Oct 2026). Like §100's VLAN, SUBNET_COLS is shared by
+# Subnet Details and the Supernet tab, so it leaves both; the gateway stays in the subnet detail header and the edit form.
+_a = """  { title: 'Gateway', width: 120, cls: 'mono', cell: r => esc(r.gw) },\n"""
+assert t.count(_a) == 1, 'gateway col'
+t = t.replace(_a, '')
+# ── §102 · the IP detail panel's "Where it lives" drops its Gateway row (request, 30 Oct 2026)
+_a = """      ['Gateway', `<code class="ip-num">${esc(x.gw)}</code>`],\n"""
+assert t.count(_a) == 1, 'ip panel gateway'
+t = t.replace(_a, '')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

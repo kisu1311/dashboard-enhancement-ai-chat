@@ -46087,7 +46087,7 @@ const IPM_SUP_COLS = [
 /* the typed columns: key in IPM_SUP_COLS → field on the subnet record, placeholder. Each gets a real <input>. */
 const IPM_SUP_IN = [{ col: 'nm', f: 'nm', ph: 'Enter subnet name', lb: 'Subnet name' },
                     { col: 'stIn', f: 'siteIn', ph: 'Enter site', lb: 'Site' }]
-  .map(x => ({ ...x, idx: 1 + IPM_SUP_COLS.findIndex(c => c.key === x.col) }));   /* +1 for the checkbox cell */
+  .map(x => ({ ...x, idx: IPM_SUP_COLS.findIndex(c => c.key === x.col) }));   /* no checkbox cell since 30 Oct 2026 */
 const IPM_SUP_NM_CSS = 'td.ipmsnmtd .cell-clip{display:none}' +
   'input.ipmsnm{width:100%;max-width:320px;box-sizing:border-box;height:28px;padding:0 8px;border:1px solid var(--field-border-color,var(--border-color));border-radius:4px;' +
   'background:var(--page-background-color);color:var(--page-text-color);font:inherit;font-size:12.5px;outline:0}' +
@@ -46172,7 +46172,7 @@ function ipmSupQueue(){
     d.scan = 'run'; ipmSupPaint();
     ipmSupT = setTimeout(() => {
       if (IPM.ar !== d || d.scanKey !== key) return;
-      d.subs = ipmSupFind(a, +String(d.netMask).split('/')[1]); d.subSel = d.subs.filter(x => x._new).map(x => x.id);
+      d.subs = ipmSupFind(a, +String(d.netMask).split('/')[1]); d.subSel = d.subs.map(x => x.id);   /* no checkboxes (30 Oct 2026): every discovered subnet is saved */
       d.scan = 'done'; ipmSupPaint();
     }, 1800);
   }, 600);
@@ -46180,9 +46180,9 @@ function ipmSupQueue(){
 function ipmSupResHTML(d){
   if (d.scan === 'run') return `<div class="ipmsupwait" role="status"><span class="ipmsupspin" aria-hidden="true"></span>Discovering subnets in ${ipmEsc(String(d.netAddr).trim())}/${ipmEsc(String(d.netMask).split('/')[1])}<span class="ipmsupdots">…</span></div>`;
   if (d.scan !== 'done') return '';
-  return `<div class="ipmsuphd"><div class="ipmsupt"><b>${d.subs.length} subnet${d.subs.length === 1 ? '' : 's'} found</b><span id="arSupN">${d.subSel.length} selected</span></div>
+  return `<div class="ipmsuphd"><div class="ipmsupt"><b>${d.subs.length} subnet${d.subs.length === 1 ? '' : 's'} found</b></div>
     <obs-input id="arSupQ" type="search" placeholder="Search" value="${ipmEsc(d.subQ)}"></obs-input></div>
-    <obs-table id="arSupTbl" class="ipmname ipmsel" selectable sortable hide-selection-info page-size="10" empty-text="No subnet matches the search"></obs-table>`;
+    <obs-table id="arSupTbl" class="ipmname" sortable page-size="10" empty-text="No subnet matches the search"></obs-table>`;
 }
 function ipmSupRows(d){ const q = d.subQ.trim().toLowerCase();
   return d.subs.filter(x => !q || (x.cidr + ' ' + x.mask + ' ' + x.state[0].label + ' ' + (x.nm || '') + ' ' + (x.siteIn || '')).toLowerCase().includes(q)); }
@@ -46192,11 +46192,9 @@ function ipmSupPaint(){
 }
 function ipmSupBind(){
   const d = IPM.ar, t = document.getElementById('arSupTbl'); if (!d || !t) return;
-  t.columns = IPM_SUP_COLS; t.rows = ipmSupRows(d); t.selected = JSON.stringify(d.subSel); ipmSupNames(t, d);
-  t.addEventListener('change', e => { const v = ipmDet(e); if (!Array.isArray(v)) return; d.subSel = v.map(String);
-    const n = document.getElementById('arSupN'); if (n) n.textContent = d.subSel.length + ' selected'; });
+  t.columns = IPM_SUP_COLS; t.rows = ipmSupRows(d); ipmSupNames(t, d);
   const q = document.getElementById('arSupQ');
-  if (q) q.addEventListener('input', e => { d.subQ = ipmVal(e); t.rows = ipmSupRows(d); t.selected = JSON.stringify(d.subSel); });
+  if (q) q.addEventListener('input', e => { d.subQ = ipmVal(e); t.rows = ipmSupRows(d); });
 }
 
 /* from a pending subnet's Approve / Approve as guest: the panel opens on IP/CIDR with that subnet's CIDR, and
@@ -46345,14 +46343,14 @@ function ipmArPaint(){
     ${ipmField('Supernet name', `<obs-input id="arSupName" block placeholder="e.g. Mumbai campus" value="${ipmEsc(d.supName)}"></obs-input>`)}
     ${ipmField('Description', `<obs-input id="arSupDesc" block placeholder="What this supernet covers" value="${ipmEsc(d.supDesc)}"></obs-input>`)}
     ${ipmField('Network address', `<obs-select id="arNetAddr" block searchable="true" placeholder="Select a discovered subnet"${d.editId ? ' disabled' : ''} options='${ipmJ(ipmNetAddrOpts(d.netAddr))}' value="${ipmEsc(d.netAddr)}"></obs-select>`, null, true)}
-    ${ipmField('Network mask', ` <obs-select id="arNetMask" block searchable="true"${d.editId ? ' disabled' : ''} options='${ipmJ(IPM_MASK_OPTS)}' value="${ipmEsc(d.netMask)}"></obs-select>`, null, true)}</div>
+    ${ipmField('Network mask', ` <obs-select id="arNetMask" block disabled placeholder="Auto-filled from the network address" options='${ipmJ(IPM_MASK_OPTS)}' value="${d.netAddr ? ipmEsc(d.netMask) : ''}"></obs-select>`, null, true)}</div>
     <div id="arSupRes" class="ipmsup">${ipmSupResHTML(d)}</div>`;
   /* EDIT opens the full Create layout too (request, 8 Oct 2026) — rail + form + help card — with the profile's own
      kind (IPv4 Subnet) lit and the other two kinds disabled: a saved profile's type cannot change */
   const help = IPM.opt === '2' && !d.fromPending;   /* the approve flow needs no help card (29 Sep 2026) */
   const rail = help ? `<nav class="ipmkind" aria-label="Discovery type">${IPM_AR_KINDS.map(k => `<button type="button" class="ipmkindi${d.kind === k.key ? ' on' : ''}" data-kind="${k.key}"${d.editId && d.kind !== k.key ? ' disabled' : ''}><span>${ipmEsc(k.label)}</span></button>`).join('')}</nav>` : '';
   const disc = help && d.kind === 'discover';
-  const discBody = `<div class="ip-form">${ipmArNameHTML(d, 'Discovery name', 'e.g. Core routers', 'What this device discovery covers')}${ipmField('Gateway IP', `<obs-input id="arGateway" block placeholder="e.g. 192.168.1.1" value="${ipmEsc(d.gateway || '')}"></obs-input>`) /* beside Select Devices (request, 29 Oct 2026: above, then side by side); shares d.gateway with the IPv4 form */}${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}${ipmNotifyHTML(d) /* Notify + Bcc on Discover Subnet too (request, 9 Oct 2026) */}</div>`;
+  const discBody = `<div class="ip-form">${ipmArNameHTML(d, 'Discovery name', 'e.g. Core routers', 'What this device discovery covers')}${'' /* Gateway IP REMOVED from Discover Subnet (request, 30 Oct 2026); the IPv4 Subnet form keeps it */}${ipmField('Select Devices', `<obs-select id="arDevices" block multiple allow-clear placeholder="Select" options='${ipmJ(IPM_AR_DEVICES.map(x => ipmOpt(x)))}' value="${ipmEsc(d.devices.join(','))}"></obs-select>`, null, true)}${ipmNotifyHTML(d) /* Notify + Bcc on Discover Subnet too (request, 9 Oct 2026) */}</div>`;
   const foot = `<div class="ip-row ipmfoot"><span class="ip-req"><i class="req">&#42;</i> fields are mandatory</span><span class="ip-spacer"></span>
       ${d.fromPending
         /* opened from Subnet Approval (request, 29 Sep 2026): the footer DECIDES the subnet — Reject | Approve —
@@ -46430,7 +46428,8 @@ function ipmArBind(){
     ipmSupQueue(); });
   on('#arSupName', 'input', e => { IPM.ar.supName = ipmVal(e); });
   on('#arSupDesc', 'input', e => { IPM.ar.supDesc = ipmVal(e); });
-  on('#arNetMask', 'change', e => { IPM.ar.netMask = ipmVal(e) || IPM.ar.netMask; ipmSupQueue(); });
+  /* the mask is DISABLED and derived from the network address (request, 30 Oct 2026) — empty with its placeholder
+     until an address is picked; #arNetAddr's handler writes it */
   ipmSupBind();
   ipmExpandGroups(P.querySelector('#arNetMask'));
   ipmClearAlways(P.querySelector('#arDevices'));
@@ -46475,7 +46474,7 @@ function ipmArBind(){
       if (!/^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(a)) { toast(a ? 'Enter a valid IPv4 network address' : 'Enter the network address'); return; }
       const p = +String(d.netMask).split('/')[1];
       if (d.scan !== 'done') { toast(d.scan === 'run' ? 'Wait for the subnet discovery to finish' : 'Enter the network address and mask to discover its subnets'); return; }
-      if (!d.subSel.length) { toast('Select at least one subnet to save'); return; }
+      if (!d.subSel.length) { toast('No subnets were found to save'); return; }
       const n = d.subSel.length;
       /* the discovered supernet JOINS the grid as a Supernet profile, its ticked subnets as its child rows (8 Oct 2026) */
       IPM_ROUTERS.push({ id: 'rtr-' + Date.now(), name: d.supName.trim() || a + '/' + p, desc: d.supDesc.trim(), ip: a + '/' + p, site: 'Other', vendor: '—',
