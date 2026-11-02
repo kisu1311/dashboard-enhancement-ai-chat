@@ -24096,7 +24096,11 @@ function pmObjectsOverview(objs, dev) {
     return `${nf(one)} object${one === 1 ? '' : 's'} · ${nf(g)} group${g === 1 ? '' : 's'}`; };
   const items = [
     { label: 'Total Objects', value: nf(n), caption: dev ? mix(() => true) : new Set(objs.map(o => o.device)).size + ' firewalls' },   /* per-firewall tab (30 Oct 2026) */
-    { label: 'Addresses', value: nf(cnt('Address')), caption: nf(cnt('Address group')) + ' address groups' },
+    /* by Object Category (owner, 2 Nov 2026: Addresses left the row; Network & Service objects as ONE pair card, "merge like
+       Object Assignment"): both halves plain page ink — a category split is a count, not a finding */
+    (() => { const nw = objs.filter(o => objCategory(o) === 'Network Object').length, sv = n - nw;
+      return { label: 'Object Category', passed: nf(nw), failed: nf(sv), caption: 'of ' + nf(n) + ' objects',
+        pairWords: 'network,service', pairColors: ',' }; })(),
     /* the caption says what the count is MADE OF (it repeated the figure above it), the bar shows its share of the total
        (owner, 20 Oct 2026: "improve 34 of 47 objects") — both counts, no % */
     { label: 'Object Assignment', passed: nf(asg), failed: nf(n - asg), caption: 'of ' + nf(n) + ' objects',
@@ -24107,7 +24111,7 @@ function pmObjectsOverview(objs, dev) {
       return { label: 'Pending Approval', value: nf(wait.length),
         caption: `of ${nf(pend.length)} change${pend.length === 1 ? '' : 's'} in all` }; })()
   ];
-  return pmOvSplit(items, [2, 1, 1]);
+  return pmOvSplit(items, [1, 1, 1, 1]);
 }
 
 /* NAT RULES — Management's third view, in the columns of the owner's product screenshot. A reading: no bulk
