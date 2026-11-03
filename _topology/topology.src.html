@@ -1860,10 +1860,10 @@ function cvOpen(mode){
     $('cvGrpLb').querySelector('.tinfo').setAttribute('data-tip', 'The group this group sits under. Pick (Top level) to move it to the top of the sidebar. Its sub-groups and views move with it.');
     $('cvName').placeholder = 'Enter group name'; $('cvNameE').textContent = 'Group Name is required';
     $('cvName').value = gParts(p).pop(); cvGrpPaint(par || CV_TOP);
-    /* Security on a GROUP (request, 30 Oct 2026): stored per group path; changing it applies to every view in the group
-       and its sub-groups, so the group's setting is what its views actually carry */
-    const gs = GRP_SEC[p] || { sec: 'public', share: null }; segSet('cvSec', gs.sec);
-    if (gs.share) { CVS.shw = gs.share.with; CVS[gs.share.with] = [...gs.share.who]; } cvSharePaint();
+    /* NO Security on a GROUP (request, 3 Nov 2026: "remove Security — show it only on topology view, not in group view").
+       Security belongs to a view; the group drawer is Group Name + Parent Group only. (It carried a group-level Security
+       from 30 Oct that cascaded onto every view; GRP_SEC is kept and still moves with a rename, but nothing writes it.) */
+    $('cvSecW').hidden = true; $('cvShare').hidden = true;
   }
 }
 const CV_TOP = '(Top level)';
@@ -2118,14 +2118,8 @@ $('cvCreate').onclick = () => {
   if (CV.mode === 'gedit') {
     const p = CV.gt; if (!p) return;
     const name = $('cvName').value.replace(/›/g, '').trim(), pv = cvGrpVal(), par = pv === CV_TOP ? '' : pv;
-    const sec = segVal('cvSec'), share = sec === 'private' ? { with: CVS.shw, who: [...CVS[CVS.shw]] } : null;
-    const was = GRP_SEC[p] || { sec: 'public', share: null };
     const err = cvGrpMove(p, par, name);
     if (err) { $('cvName').classList.add('err'); $('cvNameE').textContent = err; $('cvNameE').hidden = false; return; }
-    const np = par ? par + GSEP + name : name;
-    GRP_SEC[np] = { sec, share };
-    if (sec !== was.sec || JSON.stringify(share) !== JSON.stringify(was.share))
-      CUSTOM.forEach(g => g.views.forEach(v => { if (v.grp === np || v.grp.startsWith(np + GSEP)) Object.assign(v, { sec, share: share && { with: share.with, who: [...share.who] } }); }));
     CV.mode = 'root'; CV.gt = null; CV.gx = null; drClose(); cvTreePaint(); if ($('dGrp').classList.contains('on')) grpPaint();
     toast('Success', 'View Group "' + name + '" updated'); return;
   }
