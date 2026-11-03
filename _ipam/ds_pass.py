@@ -2799,7 +2799,7 @@ _a = """        <div class="ip-sdtags">
 assert t.count(_a) == 1, 'sd site tag'
 t = t.replace(_a, '')
 # ── §101 · no Gateway column in the subnet grids (request, 30 Oct 2026). Like §100's VLAN, SUBNET_COLS is shared by
-# Subnet Details and the Supernet tab, so it leaves both; the gateway stays in the subnet detail header and the edit form.
+# Subnet Details and the Supernet tab, so it leaves both. (§103 later removed the gateway from the header and the form too.)
 _a = """  { title: 'Gateway', width: 120, cls: 'mono', cell: r => esc(r.gw) },\n"""
 assert t.count(_a) == 1, 'gateway col'
 t = t.replace(_a, '')
@@ -2807,5 +2807,16 @@ t = t.replace(_a, '')
 _a = """      ['Gateway', `<code class="ip-num">${esc(x.gw)}</code>`],\n"""
 assert t.count(_a) == 1, 'ip panel gateway'
 t = t.replace(_a, '')
+# ── §103 · no Gateway anywhere in IPAM (request, 2 Nov 2026): the subnet detail header's "| gateway <ip> |", the DHCP
+# scope form's Gateway field and the word in the Edit subnet confirm. (§101/§102 removed the grid column and panel row.)
+_a = '          <span class="ip-sdmeta">| gateway ${esc(s.gw)} | ${esc(s.vlan || \'no VLAN\')} |</span>'
+assert t.count(_a) == 1, 'gw §103'
+t = t.replace(_a, '          <span class="ip-sdmeta">| ${esc(s.vlan || \'no VLAN\')} |</span>')
+_a = '    ${field(\'Gateway\', `<obs-input id="fGw" block placeholder="198.18.1.1" value="${esc(d.gw)}"></obs-input>`)}\n'
+assert t.count(_a) == 1, 'gw §103'
+t = t.replace(_a, '')
+_a = 'The address range, gateway and DHCP scope come from the device'
+assert t.count(_a) == 1, 'gw §103'
+t = t.replace(_a, 'The address range and DHCP scope come from the device')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

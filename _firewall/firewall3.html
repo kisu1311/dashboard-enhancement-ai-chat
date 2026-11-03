@@ -2571,6 +2571,8 @@ obs-stat-card.fa-pol-stats { display: block; min-width: 0; height: 100%; }
 @media (min-width: 1367px) { .fa-pol-kpis:has(> .fa-pol-fcard) { grid-template-columns: minmax(0, 1fr) max-content; } }
 /* with the Pending Approval card (Option 2): summary · findings · approval on one row */
 @media (min-width: 1367px) { .fa-pol-kpis:has(> .fa-pol-apv) { grid-template-columns: minmax(0, 1fr) max-content minmax(220px, max-content); } }
+/* Findings card removed (2 Nov 2026): summary · approval only */
+@media (min-width: 1367px) { .fa-pol-kpis:has(> .fa-pol-apv):not(:has(> .fa-pol-fcard)) { grid-template-columns: minmax(0, 1fr) minmax(220px, max-content); } }
 .fa-pol-fcard { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; min-width: 0; height: 100%; box-sizing: border-box;
   border: 1px solid var(--widget-border-color); border-radius: 7px; background: var(--widget-background, var(--page-background-color)); color: var(--page-text-color); }
 .fa-pol-fk { height: 18px; font-size: 13px; font-weight: 500; line-height: 18px; }
@@ -25502,8 +25504,8 @@ function screenPolicy(section = 'All rules', dev) {
   const cols = [
     { key: 'seq', title: 'Policy ID', width: 110, fixed: true, ds: { type: 'tags' }, sortVal: r => r.seq, cell: r => chip(String(r.seq), 'main-tags'), render: r => esc(r.seq) },
     { key: 'name', title: 'Policy Name', width: 320, sortVal: r => r.name,
-      ds: { type: 'severity', primary: true },
-      render: r => `<span class="cell-sev"><obs-severity severity="${esc(r.sev)}" shape="dot"></obs-severity>${esc(r.name)}</span>` },
+      /* no severity dot (owner, 2 Nov 2026: "remove the severity") — the name alone */
+      ds: { primary: true }, cell: r => r.name, render: r => esc(r.name) },
     /* a TAG, not a dot: the DS table's severity cell reads ONE severity per row (the finding's), and its dot cell has no label */
     { key: 'status', title: 'Status', width: 140, sortVal: r => r.status,
       ds: { type: 'tags' }, cell: r => chip(r.status, r.status === 'Active' ? 'tag-green' : 'tag-yellow'),
@@ -25667,11 +25669,7 @@ function polKpiHTML(rules) {
   } else {
     body = `<div class="fa-pol-kpis">
     <obs-stat-card class="fa-pol-stats" items='${j(summary)}'></obs-stat-card>
-    <div class="fa-pol-fcard" role="group" aria-label="Findings: ${FS.map(([l, k]) => `${nf(c(k))} ${l.toLowerCase()}`).join(', ')}, of ${nf(n)} policies">
-      <span class="fa-pol-fk">Findings</span>
-      <div class="fa-pol-frow">${FS.map(([l, k], i) => `${i ? '<i class="fa-pol-fdv" aria-hidden="true"></i>' : ''}<b${c(k) ? ` style="color:var(--severity-${k})"` : ''}>${nf(c(k))}</b><span>${l.toLowerCase()}</span>`).join('')}</div>
-      <span class="fa-pol-flb">of ${nf(n)} ${n === 1 ? 'policy' : 'policies'}</span>
-    </div>
+    <!-- the Findings card was removed (owner, 2 Nov 2026: "remove the severity with severity card") -->
     ${polApvCardHTML()}
   </div>`;
   }
