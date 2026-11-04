@@ -14962,5 +14962,37 @@ answers). Most of it is already committed and live. **Do not add more** — use 
 documentation ranges in anything new, and scrub the existing ones when a task next touches
 those blocks.
 
+## APM is its own page — `apm.html` (4 Nov 2026)
+
+Request: *"the APM module file is an individual file like setting.html, because when I change it I have to change
+several files"*. Same shape as `setting.html` / `topology.html`:
+- **`apm.html`** is a copy of `index.html` (Option 1's chrome) that boots on APM (`BOOT` block before `_variants.js`:
+  `?from=<page>` = where to go back, `#sub=<tab>` = the APM tab). **The whole `apx*` / `aps*` module — CSS, the
+  `#view-apm` section and the script — lives ONLY here.** Edit APM in this one file.
+- **`index.html`** no longer carries any of it; `selectModule`'s APM branch calls **`apmGo()`**, which navigates to
+  `apm.html?from=<this page>#sub=<MOD_SUB>`. Any other module from `apm.html` goes back to `<from>#m=<module>`,
+  routed by `setting-nav.js`. `setting.html` / `topology.html` reach APM via `index.html#m=APM Explorer` (two hops).
+- `_sync_variants.js`'s `NOT_OPTIONS` lists `apm.html` (not a switcher row).
+- ⚠️ **Option 1's chrome now exists in four files** (`index.html`, `setting.html`, `topology.html`, `apm.html`) — a
+  sidebar/header change is a four-file change. Only APM changes are single-file.
+- ⚠️ **Never write `apx*/aps*` in a JS comment** — the `*/` ends the comment and silently kills the whole script
+  block (`selectModuleByName is not defined`). Found by `node --check` on each block.
+- Verified with Playwright over http: index → APM (Explorer tab) → Dashboards → APM again, no page errors.
+
+## APM Services tab — Cards and List, cloned from the live build (4 Nov 2026)
+
+`index.html` only, namespace `aps*` (beside the `apx*` Explorer block). Read off `http://10.20.41.132:3000/apm/services`
+(build 10.0.1, user's Chrome session). `APX.tab === 0` now renders `apsPaint()` instead of the placeholder; the time chip
+follows the tab (`apxChipPaint`: Services 1h, Explorer 30m). Cards view: group bars (business service filled, "Not in a
+business service" dashed) with Avg RT / Throughput / Errors rollups, 3-across service cards. List view: PDF · CSV · Filter
+squares, the Event Source · Type · + Filter chip row, a six-column grid with group rows. Sparklines are hand SVG
+(Catmull-Rom area, per-instance gradient ids); colours: cards `--sparkline-color-response-time/-throughput` (exactly
+live), list RT `--primary-color` (exactly live), list TP `--chart-golden-yellow` and error bars `--severity-critical`
+(live #C09724 / #F04E3E are off-palette — nearest tokens). ⚠️ Scrubbed 172.16.15.x → 192.0.2.x. ⚠️ Inferred: curve
+shapes, Collapse = fold all groups, card/row click is a stub.
+Figures are a snapshot of the live screen.
+**Group by** (4 Nov, later): the live menu's four options — None (flat grid, live order) · Business Service · Type (`java`) · Health (Major / Warning / Clear) — as `APS_BY`, each with the live rollups; services are one `APS_SVC` record so the groupings cannot disagree. Collapse state is keyed per grouping.
+**No data** (4 Nov): a slot with no live series renders `apsNd()` — Option 1 a hatched dashed box reading "No data", Option 2 a dashed ghost curve + baseline with a small "No data" label; Option 3 a faint filled trend silhouette with "No data" centred behind Tabler's chart-line glyph (and Option 2's card indent + 30% guide line); ⚠️ **RENUMBERED the same day: Option 1 = a copy of the hatched box (was Option 4), Option 2 = the hatched box (was 1), Option 3 = the ghost curve (was 2), Option 4 = the group container (was 3)** — everything above that says Option 1/2/3 means 2/3/4 now; Options 1 and 2 render identically until 1 gets its own branch (the code tests `APS.nd` '3' / '4'); switched by `#apsNdOpt` (obs-radio in the module title row, Services tab only — the chart switch `#apxChOpt` shows on Explorer only). Zero errors is a different state: a dashed baseline. Cards under a group start on the chevron's line (`.apsgh + .apsgrid{margin-left:13px}`).
+
 ## Handoff
 Latest session state is in [HANDOFF.md](HANDOFF.md) — read it first.
