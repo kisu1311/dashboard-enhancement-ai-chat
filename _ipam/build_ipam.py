@@ -23,6 +23,7 @@ addEventListener('message',function(e){var d=e.data;if(d&&d.ipamTheme)r.setAttri
 html.ipembed .ip-shell{height:100vh}</style>
 '''
 t=t.replace('<head>\n','<head>\n'+embed,1)
+_i=t.rfind('</body>'); t=t[:_i]+'<script src="../_ds/colresize.js"></script>   <!-- adjustable column widths, every table (5 Nov 2026) -->\n'+t[_i:]
 open(sys.argv[2] if len(sys.argv)>2 else '_ipam/ipam.html','w',encoding='utf-8').write(t)
 print(len(pre),'prefixes mapped')
 # then the DS pass (obs-table / obs-metric-list / obs-key-value readouts)

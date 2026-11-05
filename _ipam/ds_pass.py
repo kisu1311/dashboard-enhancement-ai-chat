@@ -2818,5 +2818,25 @@ t = t.replace(_a, '')
 _a = 'The address range, gateway and DHCP scope come from the device'
 assert t.count(_a) == 1, 'gw §103'
 t = t.replace(_a, 'The address range and DHCP scope come from the device')
+# ── §104 · the top-right time-range picker (5 Nov 2026): its preset menu opens LEFTWARD from the picker's right edge
+# (it is the last thing in the header, so `left:0` ran it off the screen), and the six sub-day presets
+# Last 5 Mins … Last 12 Hours are gone (request). mapPickerRangeToTrendKey still accepts their keys.
+for _k in ['-5m', '-15m', '-30m', '-1h', '-6h', '-12h']:
+    _a = [l for l in t.split('\n') if ('{ k: "%s", t: "Last ' % _k) in l]
+    assert len(_a) == 1, 'preset ' + _k
+    t = t.replace(_a[0] + '\n', '')
+_a = ".panel{position:absolute;left:0;top:40px;z-index:20;min-width:200px;"
+assert t.count(_a) == 1, 'picker panel'
+t = t.replace(_a, ":host(#tlPicker) .panel:not(.tmenu){left:auto;right:0}" + _a)
+# ── §105 · the subnet detail page loses Poll now (header) and IP History loses its Filters button (request, 5 Nov 2026).
+# Both bindings are null-guarded. The IP Details tab keeps its own funnel.
+_a = "      ${act('sdPoll', 'sync', 'Poll now')}\n"
+assert t.count(_a) == 1, 'sdPoll'
+t = t.replace(_a, '')
+_a = """      <obs-tooltip placement="left"><obs-button slot="trigger" variant="neutral-lightest" squared
+          id="sdHistFilterToggle" aria-label="Filters"><obs-icon name="filter" size="16"></obs-icon></obs-button>Filters</obs-tooltip>
+"""
+assert t.count(_a) == 1, 'sdHist filter'
+t = t.replace(_a, '')
 open(path, 'w', encoding='utf-8').write(t)
 print('ds pass ok', path)

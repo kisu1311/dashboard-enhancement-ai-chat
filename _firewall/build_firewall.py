@@ -44,6 +44,8 @@ html.fasettings .fa-sections,html.fasettings #dpHeader{display:none!important}</
 '''
 assert '<head>\n' in t
 t = t.replace('<head>\n', '<head>\n' + embed, 1)
+if 'colresize.js' not in t:
+    _i = t.rfind('</body>'); t = t[:_i] + '<script src="../_ds/colresize.js"></script>   <!-- adjustable column widths, every table (5 Nov 2026) -->\n' + t[_i:]
 open(OUT, 'w', encoding='utf-8').write(t)
 left = re.findall(r'(?<![0-9.])(?:10|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d+\.\d+\.\d+', t)
 print(len(pre), 'prefixes mapped ·', len(left), 'private addresses left', left[:5])

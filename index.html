@@ -7712,6 +7712,14 @@ html[data-theme="light"] .wcm .ctr{color:var(--text)}
 .wcm .ctr span{flex:0 0 auto;padding:0 6px;border-radius:4px;background:var(--chip);color:var(--text-dim);font:500 11px/18px Inter,sans-serif}
 .wcm .v{font:600 30px/1.1 "JetBrains Mono",monospace;color:var(--white);letter-spacing:-.5px}
 .wcm .vr{display:flex;align-items:center;gap:10px;margin-top:8px;min-width:0}
+/* one header row: the comparison line and the value share a CENTRE line (request, 5 Nov 2026) */
+.wcm .wch{display:flex;align-items:center;gap:12px;min-width:0}
+/* the Avg chip and the comparison line share ONE line (request, 5 Nov 2026) */
+.wcm .wchl{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px}
+.wcm .wchl > .ctr{flex:0 0 auto;margin:0}
+.wcm .wchl > .vs{flex:1 1 auto;min-width:0}
+/* value first, then the change pill, the pill sitting on the value's BASELINE (request, 5 Nov 2026) */
+.wcm .wch > .vr,.cwcmp .wcm .wch > .vr{flex:0 0 auto;margin-top:0;align-items:baseline}
 .wcm .vr .v{flex:0 0 auto}
 .wcm .pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;padding:0 7px;border-radius:4px;font:600 11.5px/19px "JetBrains Mono",monospace}
 .wcm .pill.up{color:var(--green);background:color-mix(in srgb,var(--green) 16%,transparent)}
@@ -19768,11 +19776,13 @@ function wCmp(w){
   const path = arr => arr.map((q, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(q).toFixed(1)}`).join('');
   const tp = path(d.cur), ln = w.cmpLine !== false, view = w.cmpView || 'Area';
   /* the counter it reads, on the board card — the editor preview already titles itself with it */
-  const ctr = w.ctr && !w.axes ? `<div class="ctr" title="${w.ctr}">${w.ctr}<span>${w.agg || 'Avg'}</span></div>` : '';
+  /* the counter NAME was removed on request (5 Nov 2026) — the widget title already names it; only the aggregation chip stays */
+  const ctr = w.ctr && !w.axes ? `<div class="ctr" title="${w.ctr}"><span>${w.agg || 'Avg'}</span></div>` : '';
   /* the counter and what it is compared with read as ONE header (request, 30 Oct 2026), and the change pill
      sits on the value's own line, right after the figure it qualifies */
-  return `<div class="wcm">${ctr}<div class="vs">vs ${fmt(p)} ${per[2]}</div>` +
-    `<div class="vr"><div class="v">${fmt(v)}</div>${pill}</div>` +
+  /* the value + change pill sit TOP RIGHT, beside the counter / comparison line (request, 5 Nov 2026) */
+  return `<div class="wcm"><div class="wch"><div class="wchl">${ctr}<div class="vs">vs ${fmt(p)} ${per[2]}</div></div>` +
+    `<div class="vr"><div class="v">${fmt(v)}</div>${pill}</div></div>` +
     `<div class="sp">` + wHcBox('cmp', { cur:d.cur, prev:d.prev, n:d.n, now:d.now, acc:d.acc, u, c, ln, axes:!!w.axes, ax:w.cmpAx !== false, xt:w.cmpXtOn ? (w.cmpXt || 'Time') : '', yt:w.cmpYtOn ? (w.cmpYt || w.ctr || 'Value') : '', zt:w.cmpZtOn ? (w.cmpZt || (w.agg || 'Avg') + ' · ' + per[0] + ' vs ' + per[1]) : '', grid:w.cmpGrid !== false, lw:w.cmpLw || 2, win:w.cmpWin, pts:!!w.cmpPts, ps:w.cmpPs || 4,
                                        acc0:d.acc, names:[per[0], per[1]], view }, `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` +
       `<path d="${tp} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".16"/>` +
@@ -23335,7 +23345,7 @@ function tsBind(){
     if(e.target.classList.contains('thandle')) return; tsStart('m', e); });
 }
 const W_CATALOG = [
-  ['Graph', [['Chart','line'],['Top N','hbars'],['Gauge','donut'],['Grid','table'],['Pie','donut'],['Query Value','big'],['Compare Value','cmp'],['Numeric Grid','table'],['Sankey','flow']]],
+  ['Graph', [['Chart','line'],['Top N','hbars'],['Gauge','donut'],['Grid','table'],['Pie','donut'],['Query Value','big'],['Trend Compare','cmp'],['Numeric Grid','table'],['Sankey','flow']]],
   ['Alert / Availability', [['Heat Map','heat'],['Stream','rows'],['Active Alert','rows']]],
   ['Map', [['Tree Map','heat'],['Map','heat']]],
   /* ⚠️ AI CARD SITS IN THE PRODUCT'S OWN "AI / ML" CATEGORY (request, 27 Aug 2026,
@@ -23440,7 +23450,7 @@ const W_TILE_SVG = {
 W_TILE_SVG['AI Card'] = W_AICARD_SVG;
 /* ⚠️ A SECOND DRAWN ENTRY — the product has no Compare Value tile either. Same conventions as the AI Card's:
    100×50, `fill="none"` root, this file's tokens, monochrome like the harvested set, no <defs> ids. */
-W_TILE_SVG['Compare Value'] = '<svg viewBox="0 0 100 50" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+W_TILE_SVG['Trend Compare'] = '<svg viewBox="0 0 100 50" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">' +
   '<rect x="20" y="6" width="24" height="9" rx="1.5" fill="var(--text-dim)"/>' +
   '<rect x="20" y="18" width="12" height="5" rx="1.5" fill="var(--text-dim2)"/>' +
   '<rect x="35" y="19" width="26" height="3" rx="1.5" fill="var(--chip)"/>' +
@@ -23497,7 +23507,7 @@ function wArt(label, uid){
 /* the row lists store a vis key, not a catalogue label — map it back to the artwork */
 const AW_ART_OF = { line:'Chart', hbars:'Top N', table:'Grid', rows:'Stream', donut:'Gauge',
                     big:'Query Value', heat:'Heat Map', flow:'Sankey', text:'Free Text',
-                    aicard:'AI Card', cmp:'Compare Value' };
+                    aicard:'AI Card', cmp:'Trend Compare' };
 /* the hover action rail, copied from the live drawer: Predefined rows expose
    count · move · add · clone; User Define rows are yours, so they also get edit and
    delete. Nothing is shown until the row is hovered. */
@@ -34502,7 +34512,7 @@ const CW_VIZ = [
 /* ⚠️ NO "Timeline Preference" TAB on Compare Value (request, 26 Oct 2026: "remove this"). The card keeps its own
    timeline — "Compare with" on the Style tab — and ignores the board's range. Its Window (`cmpWin`, CMP_WIN) stays in
    the model at the 24-hour default; the tab's cmp branch in cwPanelHTML is unreachable and kept to restore it. */
-CW_VIZ.push({k:'cmp', n:'Compare Value', vis:'cmp', tabs:['Style'],
+CW_VIZ.push({k:'cmp', n:'Trend Compare', vis:'cmp', tabs:['Style'],
              src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM'], off:[]});
 CW_VIZ.push({k:'freetext', n:'Free Text', vis:'freetext', tabs:[], src:[], off:[]});
 
@@ -36648,9 +36658,10 @@ function cwPreview(){
     return;
   }
   if (CW.viz === 'cmp'){
-    const q = CW.rows.find(r => r.ctr), t = (CW.name.trim() || (q ? q.ctr : 'Compare Value'));
-    document.getElementById('cwPrev').innerHTML = '<div class="cwcmp"><div class="t">' +
-      t.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' + wCmp(Object.assign(cwCmpW(), {axes:true})) + '</div>';
+    /* the preview no longer titles itself with the COUNTER (request, 5 Nov 2026) — only a typed Widget Name shows */
+    const t = CW.name.trim();
+    document.getElementById('cwPrev').innerHTML = '<div class="cwcmp">' + (t ? '<div class="t">' +
+      t.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' : '') + wCmp(Object.assign(cwCmpW(), {axes:true})) + '</div>';
     wHcMount();
     return;
   }
@@ -36934,7 +36945,7 @@ function cwSave(place){
     if (CW.edit){
       const w0 = (WIDGETS[CW.edit.g] || [])[CW.edit.i];
       if (w0){ histDo('Edit widget \u201c' + name + '\u201d'); Object.assign(w0, draft); w0.title = name; renderCanvas(); }
-      cwClose(); toast('\u2713 "' + name + '" updated \u2014 Compare Value \u00b7 vs ' + CMP_WITH[cmpKey(draft.cmpWith)][0]);
+      cwClose(); toast('\u2713 "' + name + '" updated \u2014 Trend Compare \u00b7 vs ' + CMP_WITH[cmpKey(draft.cmpWith)][0]);
       return;
     }
     if (!W_USER.some(u => u[0] === name)) W_USER.unshift([name, 'cmp']);
@@ -39439,5 +39450,6 @@ apvRender();
   });
 })();
 </script>
+<script src="_ds/colresize.js"></script>   <!-- adjustable column widths, every table (5 Nov 2026) -->
 </body>
 </html>
