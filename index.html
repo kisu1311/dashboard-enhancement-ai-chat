@@ -7705,6 +7705,29 @@ body.aidockr .aidockghost{display:block}
    card's loudest thing, the change pill says which way and how much, the dashed line is the period it is
    compared with. Every colour is a token, so it inverts with the theme. */
 .wcm{flex:1;min-height:0;display:flex;flex-direction:column}
+/* Trend Compare OPTION 2 — Today | compared | Change row (it is the legend), chart, Min·Avg·Max·P95 table */
+.wcm2 .wc2r{display:flex;gap:16px}
+.wcm2 .wc2r > div{display:grid;gap:6px;min-width:0;align-content:start}
+.wcm2 .wc2r .l{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wcm2 .wc2r .l i{flex:0 0 16px;height:0;border-top:2px solid var(--blue)}
+.wcm2 .wc2r .l i.d{border-top:2px dashed var(--text-dim)}
+.wcm2.wc2leg .wc2r .l i{display:none}
+.wcm3 .wc2t .wc3k{display:inline-block;width:12px;height:0;border-top:2px solid;vertical-align:middle;margin-right:8px}
+.wcm3 .wc2t td:first-child{max-width:0;width:34%;overflow:hidden;text-overflow:ellipsis}
+.wcm2 .wc2r .n{font:600 26px/1 "JetBrains Mono",monospace;color:var(--white);letter-spacing:-.5px;white-space:nowrap}
+.wcm2 .wc2r .n.y{color:var(--text-dim)}
+.wcm2 .wc2r small{font-size:14px;font-weight:500;color:var(--text-dim);margin-left:2px}
+.wcm2 .wc2r .ch{display:flex;align-items:center;gap:8px}   /* label and change on ONE line (6 Nov 2026) */
+.wcm2 .wc2r .pill{font-size:13px;line-height:26px;padding:0 9px}
+.wcm.wcm2 .sp{margin-top:12px;flex:1 1 0;min-height:56px}   /* the chart gives way; the legend and table never shrink, so they are never clipped */
+.wcm2 > .wc2r,.wcm2 > .lg,.wcm2 > .wc2t{flex:0 0 auto}
+.wcm2 .wc2t{width:100%;border-collapse:collapse;margin-top:12px;font-variant-numeric:tabular-nums}
+.wcm2 .wc2t th,.wcm2 .wc2t td{padding:7px 0;text-align:right;border-top:1px solid var(--border-soft);font:12.5px "JetBrains Mono",monospace;color:var(--white);white-space:nowrap}
+.wcm2 .wc2t th{border-top:0;padding-top:0;font:500 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.wcm2 .wc2t th:first-child,.wcm2 .wc2t td:first-child{text-align:left;font-family:Inter,sans-serif;color:var(--text-dim)}
+.wcm2 .wc2t td small{font-size:11px;color:var(--text-dim);margin-left:1px}
+.wcm2 .wc2t tr.ch td{color:var(--text-dim)}
+.wcm2 .wc2t tr.ch td.g{color:var(--green)}.wcm2 .wc2t tr.ch td.r{color:var(--red)}
 /* the counter (request, 26 Oct 2026): #ffffff, semibold, a step LARGER than the "vs …" line (12px) — 13.5px on an
    20px line so the Agg chip still centres on it. #ffffff is dark theme only; light keeps --text (white on a white card) */
 .wcm .ctr{display:flex;align-items:center;gap:8px;margin:-2px 0 2px;font:600 13.5px/20px "JetBrains Mono",monospace;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -7730,6 +7753,7 @@ html[data-theme="light"] .wcm .ctr{color:var(--text)}
 .wcm .sp svg{width:100%;height:100%;display:block;overflow:visible}
 .wcm .sp .dot{position:absolute;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 2px var(--card)}
 .wcm .lg{display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:11px;color:var(--text-dim)}
+.wcm .lg span b{margin-left:6px;font:600 11.5px "JetBrains Mono",monospace;color:var(--white);font-variant-numeric:tabular-nums}
 .wcm .lg span{display:inline-flex;align-items:center;gap:6px}
 .wcm .lg i{width:14px;border-top:2px solid var(--text-dim)}
 .wcm .lg i.d{border-top-style:dashed}
@@ -19759,6 +19783,8 @@ function wCmpData(w){
   return { prev, cur: cur.slice(0, now + 1), n, now, acc };
 }
 function wCmp(w){
+  if (w.cmpopt === 2) return wCmp2(w);
+  if (w.cmpopt === 3) return wCmp3(w);   /* option 3: TWO counters on one timeline (6 Nov 2026) */
   const d = wCmpData(w), u = w.u || '', c = w.color || 'var(--blue)';
   const pr = CMP_WITH[cmpKey(w.cmpWith)], per = ['Today', pr[1], pr[2]];
   const fmt = v => d.acc ? Math.round(v).toLocaleString() : v.toFixed(1) + u;
@@ -19789,8 +19815,88 @@ function wCmp(w){
       (ln ? `<path d="${path(d.prev)}" fill="none" stroke="var(--text-dim)" stroke-width="1.4" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>` : '') +
       `<path d="${tp}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>` +
       `<i class="dot" style="left:${(X(d.now) / W * 100).toFixed(2)}%;top:${(Y(v) / H * 100).toFixed(2)}%;background:${c}"></i>`) + `</div>` +
-    (w.cmpLeg === false ? '' : `<div class="lg${view === 'Column' ? ' bar' : ''}"><span><i style="border-top-color:${c};--lg-c:${c}"></i>${per[0]}</span>` +
-      (ln ? `<span><i class="d"></i>${per[1]}</span>` : '') + `</div>`) + `</div>`;
+    (w.cmpLeg === false ? '' : `<div class="lg${view === 'Column' ? ' bar' : ''}"><span><i style="border-top-color:${c};--lg-c:${c}"></i>${per[0]}<b>${fmt(v)}</b></span>` +
+      (ln ? `<span><i class="d"></i>${per[1]}<b>${fmt(p)}</b></span>` : '')   /* each legend entry carries its value now (6 Nov 2026) */ + `</div>`) + `</div>`;
+}
+/* ── Trend Compare · OPTION 2 (request, 6 Nov 2026: "option 2 only — the visualization like option 5" of the CPU card
+   options page). Same data (wCmpData) and the same Highcharts box as option 1; what differs is the read:
+   a Today | <compared> | Change row that doubles as the legend, the chart, then Min · Avg · Max · P95 for both
+   periods with the change underneath. The change is ABSOLUTE (pts for a percent counter): "1.4 pts" is the
+   honest gap between two percents, "-5%" is a percent of a percent. "An increase is Bad" still flips its colour. */
+function wCmp2(w){
+  const d = wCmpData(w), u = w.u || '', c = w.color || 'var(--blue)';
+  const pr = CMP_WITH[cmpKey(w.cmpWith)], per = ['Today', pr[1]];
+  const pct = u === '%', fmt = v => d.acc ? Math.round(v).toLocaleString() : v.toFixed(1);
+  const unit = d.acc ? '' : u.trim();
+  const goodOf = df => ((w.cmpUp || 'Good') === 'Good') ? df > 0 : df < 0;
+  const dfmt = df => d.acc ? Math.abs(Math.round(df)).toLocaleString() : Math.abs(df).toFixed(1) + (pct ? ' pts' : u);
+  const v = d.cur[d.now], p = d.prev[d.now], diff = d.acc ? Math.round(v) - Math.round(p) : +(v - p).toFixed(1);
+  const pill = diff === 0 ? '<span class="pill flat">– 0</span>'
+             : `<span class="pill ${goodOf(diff) ? 'up' : 'dn'}">${diff > 0 ? '▲' : '▼'} ${dfmt(diff)}</span>`;
+  const st = a => { const o = [...a].sort((x, y) => x - y); return [o[0], a.reduce((x, y) => x + y, 0) / a.length, o[o.length - 1], o[Math.floor(.95 * (o.length - 1))]]; };
+  const A = st(d.cur), B = st(d.prev.slice(0, d.cur.length));
+  const cell = q => `<td>${fmt(q)}${unit ? '<small>' + unit + '</small>' : ''}</td>`;
+  const tbl = `<table class="wc2t"><tr><th></th><th>Min</th><th>Avg</th><th>Max</th><th>P95</th></tr>` +
+    `<tr><td>${per[0]}</td>${A.map(cell).join('')}</tr><tr><td>${per[1]}</td>${B.map(cell).join('')}</tr>` +
+    `<tr class="ch"><td>Change</td>${A.map((q, k) => { const df = d.acc ? Math.round(q) - Math.round(B[k]) : +(q - B[k]).toFixed(1);
+      return `<td class="${df === 0 ? '' : goodOf(df) ? 'g' : 'r'}">${df === 0 ? '0' : (df > 0 ? '+' : '−') + (d.acc ? Math.abs(df).toLocaleString() : Math.abs(df).toFixed(1))}</td>`; }).join('')}</tr></table>`;
+  const ln = w.cmpLine !== false, view = w.cmpView || 'Area', W = 300, H = 60;
+  const all = d.prev.concat(d.cur), mx = Math.max(...all), mn = d.acc ? 0 : Math.min(...all) * .85;
+  const X = i => i / (d.n - 1) * W, Y = q => H - 2 - (q - mn) / ((mx - mn) || 1) * (H - 6);
+  const path = a => a.map((q, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(q).toFixed(1)}`).join('');
+  const val = q => `${fmt(q)}${unit ? '<small>' + unit + '</small>' : ''}`;
+  /* Legend on/off like option 1 (6 Nov 2026): on, the legend sits under the chart with each value and the row above
+     drops its swatches so the key is drawn once; off, the row's swatches are the key again */
+  const leg = w.cmpLeg !== false;
+  const lg = leg ? `<div class="lg${view === 'Column' ? ' bar' : ''}"><span><i style="border-top-color:${c};--lg-c:${c}"></i>${per[0]}<b>${fmt(v)}${unit}</b></span>` +
+      (ln ? `<span><i class="d"></i>${per[1]}<b>${fmt(p)}${unit}</b></span>` : '') + `</div>` : '';
+  return `<div class="wcm wcm2${leg ? ' wc2leg' : ''}"><div class="wc2r">` +
+      /* the Today / compared values left the top row (request, 6 Nov 2026) — the legend under the chart carries them;
+         the change moved to the left edge */
+      `<div class="ch"><span class="l">Change · ${w.agg || 'Avg'}</span>${pill}</div></div>` +
+    `<div class="sp">` + wHcBox('cmp', { cur:d.cur, prev:d.prev, n:d.n, now:d.now, acc:d.acc, u, c, ln, axes:!!w.axes, ax:w.cmpAx !== false, xt:'', yt:'', zt:'', grid:w.cmpGrid !== false, lw:w.cmpLw || 2, win:w.cmpWin, pts:!!w.cmpPts, ps:w.cmpPs || 4,
+                                       acc0:d.acc, names:[per[0], per[1]], view }, `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` +
+      `<path d="${path(d.cur)} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".16"/>` +
+      (ln ? `<path d="${path(d.prev)}" fill="none" stroke="var(--text-dim)" stroke-width="1.4" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>` : '') +
+      `<path d="${path(d.cur)}" fill="none" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`) + `</div>` + lg + (w.cmpTbl === false ? '' : tbl) + `</div>`;
+}
+/* ── Trend Compare · OPTION 3 — "Counter Compare" (request, 6 Nov 2026: "option 2 compares one counter across two
+   periods; option 3 compares TWO counters on a single timeline"). Same read as option 2 — a gap row, the chart, the
+   legend with values, Min · Avg · Max · P95 — but the two lines are counter A and counter B over the same window,
+   and the row is the GAP between them, which has no better/worse colour: neither counter is the baseline. */
+const cmpSeedOf = (ctr, src) => { let h = 7; for (const ch of ctr + src) h = (h * 31 + ch.charCodeAt(0)) % 100003; return h; };
+const cmpUnitOf = ctr => /percent/.test(ctr) ? '%' : /\.ms$|response\.time/.test(ctr) ? ' ms' : '';
+function wCmp3(w){
+  const ctrA = w.ctr || 'Counter A', ctrB = w.ctr2 || 'Counter B';
+  const d = wCmpData(w), dB = wCmpData(Object.assign({}, w, { seed:cmpSeedOf(ctrB, w.src || 'Metric'), trend:1.1 + (cmpSeedOf(ctrB, w.src || 'Metric') % 41) / 100 }));   /* its own seed AND trend, so B never mirrors A */
+  const A = d.cur, B = dB.cur.slice(0, A.length), c = w.color || 'var(--blue)', c2 = 'var(--chart-golden-yellow, #f5bc18)';
+  const u = w.u || cmpUnitOf(ctrA), uB = cmpUnitOf(ctrB), same = u === uB, unit = d.acc ? '' : u.trim();
+  const fmt = v => d.acc ? Math.round(v).toLocaleString() : v.toFixed(1);
+  const val = (q, un) => `${fmt(q)}${un.trim() ? '<small>' + un.trim() + '</small>' : ''}`;
+  const v = A[d.now], p = B[d.now], gap = d.acc ? Math.round(v) - Math.round(p) : +(v - p).toFixed(1);
+  const gapTxt = (gap > 0 ? '+' : gap < 0 ? '−' : '') + (d.acc ? Math.abs(gap).toLocaleString() : Math.abs(gap).toFixed(1) + (u === '%' ? ' pts' : u));
+  const st = a => { const o = [...a].sort((x, y) => x - y); return [o[0], a.reduce((x, y) => x + y, 0) / a.length, o[o.length - 1], o[Math.floor(.95 * (o.length - 1))]]; };
+  const SA = st(A), SB = st(B);
+  const cell = (q, un) => `<td>${fmt(q)}${un.trim() && !d.acc ? '<small>' + un.trim() + '</small>' : ''}</td>`;
+  const tbl = `<table class="wc2t"><tr><th></th><th>Min</th><th>Avg</th><th>Max</th><th>P95</th></tr>` +
+    `<tr><td><i class="wc3k" style="border-top-color:${c}"></i>${ctrA}</td>${SA.map(q => cell(q, u)).join('')}</tr>` +
+    `<tr><td><i class="wc3k" style="border-top-color:${c2}"></i>${ctrB}</td>${SB.map(q => cell(q, uB)).join('')}</tr>` +
+    (same ? `<tr class="ch"><td>Gap</td>${SA.map((q, k) => { const df = +(q - SB[k]).toFixed(1); return `<td>${df > 0 ? '+' : df < 0 ? '−' : ''}${Math.abs(df).toFixed(1)}</td>`; }).join('')}</tr>` : '') + `</table>`;
+  const view = w.cmpView || 'Area', leg = w.cmpLeg !== false, W = 300, H = 60;
+  const all = A.concat(B), mx = Math.max(...all), mn = d.acc ? 0 : Math.min(...all) * .85;
+  const X = i => i / (d.n - 1) * W, Y = q => H - 2 - (q - mn) / ((mx - mn) || 1) * (H - 6);
+  const path = a => a.map((q, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(q).toFixed(1)}`).join('');
+  const lg = leg ? `<div class="lg${view === 'Column' ? ' bar' : ''}"><span><i style="border-top-color:${c};--lg-c:${c}"></i>${ctrA}<b>${fmt(v)}${unit}</b></span>` +
+      `<span><i style="border-top-color:${c2};border-top-style:solid;--lg-c:${c2}"></i>${ctrB}<b>${fmt(p)}${d.acc ? '' : uB.trim()}</b></span></div>` : '';
+  /* the gap is only meaningful in the same unit — two different units get the window instead */
+  const head = same ? `<div class="ch"><span class="l">Gap · ${w.agg || 'Avg'}</span><span class="pill flat">${gapTxt}</span></div>`
+                    : `<div class="ch"><span class="l">${cmpWin(w.cmpWin)[0]}</span></div>`;
+  return `<div class="wcm wcm2 wcm3${leg ? ' wc2leg' : ''}"><div class="wc2r">${head}</div>` +
+    `<div class="sp">` + wHcBox('cmp', { cur:A, prev:B, n:d.n, now:d.now, acc:d.acc, u, c, c2, ln:true, axes:!!w.axes, ax:w.cmpAx !== false, xt:'', yt:'', zt:'', grid:w.cmpGrid !== false, lw:w.cmpLw || 2, win:w.cmpWin, pts:!!w.cmpPts, ps:w.cmpPs || 4,
+                                       acc0:d.acc, names:[ctrA, ctrB], view }, `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` +
+      `<path d="${path(A)} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".16"/>` +
+      `<path d="${path(B)}" fill="none" stroke="${c2}" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
+      `<path d="${path(A)}" fill="none" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`) + `</div>` + lg + (w.cmpTbl === false ? '' : tbl) + `</div>`;
 }
 function wBars(seed,color,w){ const r=rng(seed+wShift*13),W=560,H=120,n=14,bw=W/n, vals=[];
   for(let i=0;i<n;i++) vals.push(0.14+r()*0.82);
@@ -20124,7 +20230,11 @@ function wHcCmp(d){
   /* ⚠️ COLUMN VIEW DRAWS BOTH PERIODS AS BARS (request, 26 Oct 2026: "when I select the bar chart the old and new both
      show as bars") — side by side per hour, the compared period in the neutral tone so today still leads. A dashed line
      over a bar chart read as a third, unrelated thing. */
-  if (d.ln) o.series.push(vt === 'column'
+  if (d.ln && d.c2) o.series.push(vt === 'column'   /* option 3: counter B, its own colour, solid */
+    ? { type:'column', name:d.names[1], color:d.c2, zIndex:0, data:d.prev }
+    : { type:'spline', name:d.names[1], color:d.c2, lineWidth:d.lw || 2, zIndex:1, data:d.prev, step:d.view === 'Step' ? 'left' : undefined,
+        marker:d.pts ? { enabled:true, symbol:'circle', radius:d.ps || 4, lineWidth:0, fillColor:d.c2 } : { enabled:false } });
+  else if (d.ln) o.series.push(vt === 'column'
     ? { type:'column', name:d.names[1], color:'color-mix(in srgb, var(--neutral-light) 55%, transparent)', zIndex:0, data:d.prev }
     : { type:'spline', name:d.names[1], color:'var(--neutral-light)', lineWidth:Math.max(1, (d.lw || 2) - .5),
         dashStyle:'ShortDash', zIndex:1, data:d.prev, step:d.view === 'Step' ? 'left' : undefined,
@@ -20780,6 +20890,13 @@ const AS_STREAM = `<table style="width:100%;font-size:11px">
 
 UNGROUPED.add('Application Performance');
 BOARDS['Application Performance'] = { tabs: [''], widgets: [[
+  /* the three Trend Compare designs side by side, by default (request, 6 Nov 2026) — option 1, option 2 with its table,
+     option 3 — Counter Compare, CPU against memory — without. They lead the board (request, 6 Nov 2026: "show on top first"). Same counter and seed, so the three read the same numbers. */
+  ...[1, 2, 3].map(o => ({ t:'cmp', title:o === 3 ? 'CPU vs memory' : 'system.cpu.percent', span:4, h:310, seed:42902, trend:.89, color:'#14b8a6', acc:false,   /* the seed and colour the editor gives this counter */
+      ctr:'system.cpu.percent', agg:'Avg', src:'Metric', u:'%',
+      cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
+      cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4,
+      cmpTbl:o !== 3, cmpopt:o, ctr2:o === 3 ? 'system.memory.used.percent' : '' })),
   { t:'honey', title:'Infrastructure Heatmap', span:4, rows:2, seed:8801, n:132,
     pal:[[.62,'#9b1c1c','Critical'],[.72,'#a855f7','Unreachable'],[1,'#e0857a','Major']] },
   { t:'donuts', title:'Monitor Availability', span:4, h:150, items:[
@@ -22420,7 +22537,7 @@ function renderCanvas(){
           /* ⚠️ `wft` DOES NOT REMOVE THE HEADER, IT MAKES IT AN OVERLAY — see the CSS. The
              header is where `⋮` and the AI ✦ live, so deleting it for a Free Text widget
              would take Edit / Clone / Remove with it and strand the widget on the board. */
-          if(w.t!=='freetext') return card('', w.rows?0:w.h, wBody(w, gi, i));
+          if(w.t!=='freetext') return card(w.t==='cmp' && w.cmpopt>1 ? ' wcmp' + w.cmpopt : '', w.rows?0:w.h, wBody(w, gi, i));   /* .wcmp2 = Trend Compare option 2's hook */
           return `<div class="widget${w.t==='freetext'?' wft'+(w.ftopt===2?' wft2':'')+(cwFtBg(w.bg||'Transparent')==='transparent'?' wftbare':''):''}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${w.rows?0:w.h}" style="${dims}"><div class="whead">${WGRIP}${w.title}${extra}${w.t==='freetext'?'':tb}${dots}</div><div class="wbody">${wBody(w, gi, i)}</div>${WGRIPS}</div>`;
         }).join('') + `</div>`
       : `<div class="dgrid12" style="gap:${gap}px" ondragover="wDragOverGroup(event,${gi})" ondrop="wDrop(event,${gi},-1)" ondragleave="wDragLeave(event)">`
@@ -23581,7 +23698,12 @@ function awRender(){
            configuration is a sentence you type on the card itself, which is exactly what
            the reference does (clicking the tile drops the card, then you write the prompt
            into it). `Empty group` is the precedent for a tile that does its own thing. */
-        items.map((t, i)=> t[1] === 'freetext'
+        items.map((t, i)=> t[1] === 'cmp'
+          /* Trend Compare is three numbered tiles: option 1, option 2, and option 3 — a copy of option 2 (see `CW_CMP_OPT`) */
+          ? [1, 2, 3].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');cwOpenViz('${t[0]}', ${o})" ` +
+              `data-tip="${o === 3 ? 'Counter Compare — two counters on one timeline' : 'Trend Compare — design option ' + o}"><span class="awgn">${o}</span>` +
+              `<span class="awart">${wArt(t[0], 'c'+gi+'x'+i+'o'+o)}</span><span>${o === 3 ? 'Counter Compare' : t[0]}</span></button>`).join('')
+          : t[1] === 'freetext'
           /* Free Text is two numbered tiles — option 1 and its clone, option 2 (see `CW_FT_OPT`) */
           /* ⚠️ DESIGN OPTION 1 MOVED TO THE OPTION 2 PAGE (15 Oct 2026: "the free text will be move in dashboard option 2");
              `[1, 2]` brings it back here */
@@ -23710,7 +23832,7 @@ function awAdd(title, vis, ft){
     aicard:aicdNew(title),
     /* ⚠️ `ft` doubles as Compare Value's options — the editor passes its query and Style choices through it */
     cmp:Object.assign({t:'cmp', title, span:4, h:310, seed, color:'var(--blue)', acc:true, trend:1.13,
-                       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4}, ft || {})
+                       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true}, ft || {})
   };
   histDo(`Add widget “${title}”`);
   WIDGETS[curG].push(map[t]);
@@ -34820,7 +34942,7 @@ const CW = { open:false, edit:null, viz:'chart', tab:'Style', src:'Metric',
           /* the widget's own time range, and the marker's threshold — both were rendered as
              controls that toasted their own value and changed nothing */
           range:'Follow dashboard', mk:90,
-          cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4 } };
+          cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true } };
 
 function cwBlank(){ return { ctr:'', agg:'Avg', sf:'Everywhere', src:'', by:'' }; }
 function cwSrcOf(k){ return CW_SRC.find(s => s.k === k) || CW_SRC[0]; }
@@ -34840,14 +34962,15 @@ function cwOpen(gi, i){
          "Update" would blank the text that is on the board. `CW.ft` is assigned AFTER the
          block below resets it — see the `cwFtLoad` call at the end of cwOpen. */
       if (w.t === 'freetext') CW_FT_OPT = w.ftopt === 2 ? 2 : 1;
+      if (w.t === 'cmp') CW_CMP_OPT = [2, 3].includes(w.cmpopt) ? w.cmpopt : 1;
       /* ⚠️ EDITING A Compare Value REOPENS ITS OWN QUERY AND STYLE — "Update" re-binds the card to what the
          form shows, so opening on the default counter would silently re-point it */
       if (w.t === 'cmp'){ CW.cmpLoad = {cmpWith:cmpKey(w.cmpWith), cmpAs:w.cmpAs||'Percent',
                                         cmpUp:w.cmpUp||'Good', cmpLine:w.cmpLine !== false, cmpView:w.cmpView||'Area',
                                         cmpLeg:w.cmpLeg !== false, cmpAx:w.cmpAx !== false, cmpGrid:w.cmpGrid !== false, cmpLw:w.cmpLw || 2,
                                         cmpXtOn:!!w.cmpXtOn, cmpXt:w.cmpXt || '', cmpYtOn:!!w.cmpYtOn, cmpYt:w.cmpYt || '',
-                                        cmpZtOn:!!w.cmpZtOn, cmpZt:w.cmpZt || '', cmpGr:w.cmpGr || 5, cmpGu:w.cmpGu || 'Minute', cmpWin:CMP_WIN[w.cmpWin] ? w.cmpWin : '24h', cmpPts:!!w.cmpPts, cmpPs:w.cmpPs || 4};
-                          CW.cmpQ = w.ctr ? {src:w.src||'Metric', ctr:w.ctr, agg:w.agg||'Avg'} : null; }
+                                        cmpZtOn:!!w.cmpZtOn, cmpZt:w.cmpZt || '', cmpGr:w.cmpGr || 5, cmpGu:w.cmpGu || 'Minute', cmpWin:CMP_WIN[w.cmpWin] ? w.cmpWin : '24h', cmpPts:!!w.cmpPts, cmpPs:w.cmpPs || 4, cmpTbl:w.cmpTbl !== false};
+                          CW.cmpQ = w.ctr ? {src:w.src||'Metric', ctr:w.ctr, agg:w.agg||'Avg', ctr2:w.ctr2||'', agg2:w.agg2||'Avg'} : null; }
       if (w.t === 'freetext') CW.ftLoad = {text:w.text||'', size:w.size||'Auto',
                                            color:w.color||'Default', align:w.align||'center',
                                            valign:w.valign||'middle', bg:w.bg||'Default',
@@ -34876,14 +34999,16 @@ function cwOpen(gi, i){
   CW.ft.preset = CW_FT_PRESET[0][0];
   CW.style = { shape:0, rotation:0, legend:false, xt:false, yt:false, zt:false, lw:2, points:false, psz:4,
                sort:'Descending', limit:10, markers:false, range:'Follow dashboard', mk:90,
-               cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4 };
+               cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true };
   if (CW.cmpLoad){ Object.assign(CW.style, CW.cmpLoad); CW.cmpLoad = null; }
   CW.tab = 'Style';
   /* The live editor opens with a counter ALREADY selected (system.cpu.percent / Avg /
      Everywhere) so the preview draws and the create buttons are live from the first
      frame — it does not open in an error state. Same on create and on edit. */
   CW.rows[0].ctr = cwSrcOf(CW.src).ctr[0];
-  if (CW.cmpQ){ CW.src = CW.cmpQ.src; CW.rows[0].ctr = CW.cmpQ.ctr; CW.rows[0].agg = CW.cmpQ.agg; CW.cmpQ = null; }
+  if (CW.cmpQ){ CW.src = CW.cmpQ.src; CW.rows[0].ctr = CW.cmpQ.ctr; CW.rows[0].agg = CW.cmpQ.agg;
+    if (CW.cmpQ.ctr2) CW.rows.push(Object.assign(cwBlank(), { ctr:CW.cmpQ.ctr2, agg:CW.cmpQ.agg2 }));
+    CW.cmpQ = null; }
   if (CW.ftLoad){ CW.ft = CW.ftLoad; CW.ftLoad = null; }
   /* ⚠️ DERIVED HERE, FOR BOTH PATHS. A widget being edited carries no `preset` of its own
      (it is not persisted), so the tile it lights comes from the style it was saved with — and a
@@ -34958,6 +35083,8 @@ function cwRender(){
   /* Compare Value reads its own Compare-with range, never the dashboard's — so the editor
      header's inherited-range chip would be false there (same reasoning as Free Text). */
   document.getElementById('cwModal').classList.toggle('cwcmpm', CW.viz === 'cmp');
+  document.getElementById('cwModal').classList.toggle('cwcmp2', CW.viz === 'cmp' && CW_CMP_OPT === 2);   /* Trend Compare OPTION 2 hook */
+  document.getElementById('cwModal').classList.toggle('cwcmp3', CW.viz === 'cmp' && CW_CMP_OPT === 3);   /* OPTION 3 hook — a copy of 2 for now */
   document.getElementById('cwModal').classList.toggle('cwft2', cwFtOn() && CW_FT_OPT === 2);   /* Free Text OPTION 2 — a clone of option 1 for now; this class is its hook */
   if (cwFtOn()){
     document.getElementById('cwTabs').innerHTML = '';
@@ -35015,13 +35142,20 @@ function cwPickViz(k){
    number, carried as `CW_FT_OPT` while editing and stamped on the widget as `ftopt`, with `#cwModal.cwft2` and
    `.widget.wft2` as the hooks it will diverge through. Review chrome, like the Empty group options. */
 let CW_FT_OPT = 1;
+/* Trend Compare is two numbered tiles too (request, 6 Nov 2026: "copy and create as option 2"); option 2 is a
+   clone of option 1 for now, carried as CW_CMP_OPT while editing and stamped on the widget as `cmpopt`. Its hooks:
+   #cwModal.cwcmp2 in the editor and .wcmp2 on the board widget. */
+let CW_CMP_OPT = 1;
 function cwOpenViz(name, opt){
+  CW_CMP_OPT = [2, 3].includes(opt) ? opt : 1;
   /* design 1 moved to the Option 2 page (15 Oct 2026), so a caller that names no option gets design 2 (16 Oct 2026) */
   CW_FT_OPT = opt === 1 ? 1 : 2;
   if (typeof closeAwDrawer === 'function') closeAwDrawer();
   cwOpen();
   const v = CW_VIZ.find(x => x.n.toLowerCase() === String(name).toLowerCase());
   if (v){ CW.viz = v.k; }
+  /* Counter Compare compares TWO counters, so it opens with a second row already on a different counter */
+  if (CW.viz === 'cmp' && CW_CMP_OPT === 3 && CW.rows.length < 2) CW.rows.push(Object.assign(cwBlank(), { ctr:cwSrcOf(CW.src).ctr[2] || cwSrcOf(CW.src).ctr[1] }));
   /* deliberately does NOT prefill the name — the live editor leaves Widget Name empty
      with its placeholder even when you arrive from a type tile */
   cwRender();
@@ -35133,12 +35267,15 @@ function cwPanelHTML(viz){
        period always drawn — and `cmpAs` / `cmpUp` / `cmpLine` stay in the model, so a saved card still renders.
        CHART VIEW took their place: only the shapes this card can draw (CMP_VIEWS), as a segmented obs-radio. */
     return '<div class="cwcmpp">' +
-      f('Compare with', '<obs-date-time-picker id="cwCmpTr" kind="range" bordered aria-label="Compare with"></obs-date-time-picker>') +
+      (CW_CMP_OPT === 3 ? '' : f('Compare with', '<obs-date-time-picker id="cwCmpTr" kind="range" bordered aria-label="Compare with"></obs-date-time-picker>')) +   /* Counter Compare reads ONE timeline */
       f('Chart view', '<obs-radio class="cwcmpseg cwcmpwt" data-k="cmpView" as-button aria-label="Chart view" options="' +
         JSON.stringify(CMP_VIEW_PICK).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>') +
       /* Display options (request, 26 Oct 2026: "the today & yesterday is the legend — add a legend on/off, or other
          options if supported"). The Chart style's own atoms (cwTogHTML, the Line Width track), so the two read alike. */
-      '<div class="cwgrid cwcmpopt">' + '<div class="cwf"><div class="k">Legend</div>' + cwCmpSw('cmpLeg') + '</div>' +
+      '<div class="cwgrid cwcmpopt">' + (CW_CMP_OPT > 1
+        /* option 2's Today | compared | Change row IS its legend, so its switch here is the summary table under the chart (6 Nov 2026) */
+        ? '<div class="cwf"><div class="k">Legend</div>' + cwCmpSw('cmpLeg') + '</div><div class="cwf"><div class="k">Table</div>' + cwCmpSw('cmpTbl') + '</div>'
+        : '<div class="cwf"><div class="k">Legend</div>' + cwCmpSw('cmpLeg') + '</div>') +
       /* ⚠️ GRID LINES WAS REMOVED HERE (request, 26 Oct 2026) and Z-Axis Title took its slot — the Chart style's own
          set. `cmpGrid` stays in the model (default on), so the dotted guides are always drawn. */
       cwCmpTitleHTML('Z') +
@@ -36851,7 +36988,8 @@ function cwCmpW(){
            cmpWith:CW.style.cmpWith, cmpAs:CW.style.cmpAs, cmpUp:CW.style.cmpUp, cmpLine:CW.style.cmpLine, cmpView:CW.style.cmpView,
            cmpLeg:CW.style.cmpLeg, cmpAx:CW.style.cmpAx, cmpGrid:CW.style.cmpGrid, cmpLw:CW.style.cmpLw,
            cmpXtOn:CW.style.cmpXtOn, cmpXt:CW.style.cmpXt, cmpYtOn:CW.style.cmpYtOn, cmpYt:CW.style.cmpYt,
-           cmpZtOn:CW.style.cmpZtOn, cmpZt:CW.style.cmpZt, cmpGr:CW.style.cmpGr, cmpGu:CW.style.cmpGu, cmpWin:CW.style.cmpWin, cmpPts:CW.style.cmpPts, cmpPs:CW.style.cmpPs };
+           cmpZtOn:CW.style.cmpZtOn, cmpZt:CW.style.cmpZt, cmpGr:CW.style.cmpGr, cmpGu:CW.style.cmpGu, cmpWin:CW.style.cmpWin, cmpPts:CW.style.cmpPts, cmpPs:CW.style.cmpPs, cmpTbl:CW.style.cmpTbl !== false, cmpopt:CW_CMP_OPT,
+           ctr2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).ctr || '') : '', agg2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).agg || 'Avg') : '' };
 }
 /* ── validate + save ───────────────────────────────────────────────────────── */
 /* A dashboard cannot hold two widgets with the same name, so the editor blocks a
@@ -36950,7 +37088,9 @@ function cwSave(place){
     }
     if (!W_USER.some(u => u[0] === name)) W_USER.unshift([name, 'cmp']);
     cwClose();
-    if (place) awAdd(name, 'cmp', draft);
+    /* option 2 carries a value row, legend and a 4-row table under the chart — at the 310px default the table was cut off
+       (6 Nov 2026), so it is placed taller. Create only: an edit never resizes a widget the user has sized. */
+    if (place) awAdd(name, 'cmp', draft.cmpopt > 1 ? Object.assign({}, draft, {h: draft.cmpTbl === false ? 330 : 470}) : draft);
     else toast('\u2713 "' + name + '" saved to User Define \u2014 add it from Add New Widget when you need it');
     return;
   }
