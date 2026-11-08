@@ -6,7 +6,7 @@
 <title>Motadata ObserveOps — Sidebar & Header Actions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 /* ============ Design tokens (measured on live build 8.2.6 @192.0.2.71) ============ */
 :root{
@@ -7734,6 +7734,56 @@ body.aidockr .aidockghost{display:block}
 .wcm4 .wc4v .d{font:600 12px "JetBrains Mono",monospace;color:var(--text-dim);text-shadow:0 1px 8px var(--card)}
 .wcm4 .wc4v .d.g{color:var(--green)}.wcm4 .wc4v .d.r{color:var(--red)}
 .wcm4 .wc4v .d em{font:400 11.5px Inter,sans-serif;color:var(--text-dim);font-style:normal;margin-left:4px}
+/* THE TEXT ON THE CHART, on the DS type (request, 7 Nov 2026: "the text on the chart — change the font size, make it bold,
+   using the obs design system") — options 4 · 5 · 6. The max/min labels and the change figure take --chart-font-family /
+   --numeric-font-family at 600 and a size up (10.5 → 12px, 12 → 13.5px), in --page-text-color; the comparison sentence
+   takes --chart-legend-color at 500. The fallbacks are those tokens' own values, for a surface outside the DS scope. */
+.wcm4 .wc4ax{font:600 12px/16px var(--chart-font-family,'JetBrains Mono',monospace);color:var(--page-text-color,var(--text))}
+.wcm4 .wc4v .d{font:600 13.5px/18px var(--numeric-font-family,'JetBrains Mono',monospace)}
+.wcm4 .wc4v .d em{font:500 12.5px/18px Inter,sans-serif;color:var(--chart-legend-color,var(--text-dim))}
+/* options 4·5·6 (request, 7 Nov 2026): the chart steps BACK and the centre value steps FORWARD — the chart is context,
+   the figure is the answer. Opacity on the chart layer only, so the value, the change chip and the axis read-outs keep
+   full strength; the value grows, goes bold and carries a wider halo of the card colour so it lifts off the wave. */
+.wcm4 .wc4s{opacity:.4}
+.wcm4 .wc4v .n{font-weight:700;font-size:42px;text-shadow:0 0 8px var(--wc4bg,var(--card)),0 0 18px var(--wc4bg,var(--card)),0 0 30px var(--wc4bg,var(--card))}
+.wcm4 .wc4v .n small{font-size:20px;font-weight:600}
+/* Trend Compare OPTION 5 (7 Nov 2026: "in 5 option this text will not highlight") — the change figure is not painted
+   red / green; it reads in the line's own neutral ink, on the board (.wcmp5) and in the editor preview (.cwcmp5). */
+.wcmp5 .wcm4 .wc4v .d.g,.wcmp6 .wcm4 .wc4v .d.g,.wcmp5 .wcm4 .wc4v .d.r,.wcmp6 .wcm4 .wc4v .d.r,#cwModal.cwcmp5 .wcm4 .wc4v .d.g,#cwModal.cwcmp6 .wcm4 .wc4v .d.g,#cwModal.cwcmp5 .wcm4 .wc4v .d.r,#cwModal.cwcmp6 .wcm4 .wc4v .d.r{color:var(--text-dim)}
+/* OPTION 5 — the change line sits ON the wave and the dashed compared line, which ran straight through the text
+   (request, 7 Nov 2026: "this text is not visualization, fix this"). It gets a chip in the card's own surface — the
+   same --wc4bg fill the max/min labels use, opaque here so no line shows through — and its ink steps up from
+   --text-dim to --text so it reads at a glance. 4px corners (@btn-radius). */
+.wcmp5 .wcm4 .wc4v .d,.wcmp6 .wcm4 .wc4v .d,#cwModal.cwcmp5 .wcm4 .wc4v .d,#cwModal.cwcmp6 .wcm4 .wc4v .d{display:inline-flex;align-items:baseline;gap:6px;padding:3px 10px;border-radius:var(--btn-radius,4px);
+  background:color-mix(in srgb,var(--wc4bg,var(--card)) 55%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  border:1px solid var(--border-soft);text-shadow:none;color:var(--text)}
+/* ^ frosted, not solid (request, 7 Nov 2026: "the text box is show blur effect") — the chart behind is blurred rather than
+   hidden, so the chip stays readable without cutting a hard block out of the wave. */
+.wcmp5 .wcm4 .wc4v .d.g,.wcmp6 .wcm4 .wc4v .d.g,.wcmp5 .wcm4 .wc4v .d.r,.wcmp6 .wcm4 .wc4v .d.r,#cwModal.cwcmp5 .wcm4 .wc4v .d.g,#cwModal.cwcmp6 .wcm4 .wc4v .d.g,#cwModal.cwcmp5 .wcm4 .wc4v .d.r,#cwModal.cwcmp6 .wcm4 .wc4v .d.r{color:var(--text)}
+.wcmp5 .wcm4 .wc4v .d em,.wcmp6 .wcm4 .wc4v .d em,#cwModal.cwcmp5 .wcm4 .wc4v .d em,#cwModal.cwcmp6 .wcm4 .wc4v .d em{margin-left:0;color:var(--text-dim)}
+/* Trend Compare OPTION 6 — the summary card: header (figure · change pill · comparison), chart, stats row. Nothing is
+   written over the chart. See wCmp6. */
+.wcm.wc6{display:flex;flex-direction:column;gap:6px;height:100%;min-height:120px}
+.wc6h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
+.wc6h .n{font:600 26px/1 "JetBrains Mono",monospace;letter-spacing:-.5px}
+.wc6h .n small{font-size:14px;margin-left:2px}
+.wc6h .pl{font:600 11.5px/20px "JetBrains Mono",monospace;padding:0 7px;border-radius:var(--btn-radius,4px);color:var(--text-dim);
+  background:color-mix(in srgb,var(--text-dim) 14%,transparent);white-space:nowrap}
+.wc6h .pl.g{color:var(--severity-clear);background:color-mix(in srgb,var(--severity-clear) 16%,transparent)}
+.wc6h .pl.r{color:var(--severity-critical);background:color-mix(in srgb,var(--severity-critical) 16%,transparent)}
+.wc6h .vs{font-size:11.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.wc6c{position:relative;flex:1 1 auto;min-height:40px}
+.wc6c svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wc6dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--c);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
+.wc6st{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden}
+.wc6st b{font:600 11.5px "JetBrains Mono",monospace;color:var(--text);margin-left:4px}
+.wc6st .sp{flex:1}
+.wc6st .k{display:inline-flex;align-items:center;gap:5px}
+.wc6st .k i{width:10px;height:2px;border-radius:1px}
+.wc6st .k i.ds{background:repeating-linear-gradient(90deg,var(--text-dim) 0 3px,transparent 3px 5px)}
+#cwModal.cwcmp6 .cwcmp .wc6{padding:4px 12px 10px}
+#cwModal.cwcmp6 .cwcmp .wc6h .n{font-size:40px}#cwModal.cwcmp6 .cwcmp .wc6h .n small{font-size:20px}
 .wcm3 .wc2t .wc3k{display:inline-block;width:12px;height:0;border-top:2px solid;vertical-align:middle;margin-right:8px}
 .wcm3 .wc2t td:first-child{max-width:0;width:34%;overflow:hidden;text-overflow:ellipsis}
 .wcm2 .wc2r .n{font:600 26px/1 "JetBrains Mono",monospace;color:var(--white);letter-spacing:-.5px;white-space:nowrap}
@@ -7763,6 +7813,10 @@ html[data-theme="light"] .wcm .ctr{color:var(--text)}
 .wcm .wchl{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px}
 .wcm .wchl > .ctr{flex:0 0 auto;margin:0}
 .wcm .wchl > .vs{flex:1 1 auto;min-width:0}
+.wcm .wch.wchv{gap:14px;align-items:baseline}   /* option 1: value · pill · comparison sentence · Avg tag LAST, all on one BASELINE (request, 7 Nov 2026) */
+.wcm .wch.wchv > .wchl{align-items:baseline}
+.wcm .wch.wchv .vr .v{font-weight:700}   /* the value is BOLD (request, 7 Nov 2026) — JetBrains Mono 700 added to the font link */
+.wcm .wch.wchv > .wchl > .vs{flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* value first, then the change pill, the pill sitting on the value's BASELINE (request, 5 Nov 2026) */
 .wcm .wch > .vr,.cwcmp .wcm .wch > .vr{flex:0 0 auto;margin-top:0;align-items:baseline}
 .wcm .vr .v{flex:0 0 auto}
@@ -19782,6 +19836,9 @@ const CMP_VIEW_PICK = [['Area','Area','<path d="M7.74,29.6l-3.35-3.16v7.87h39.39
   /* widgetTypeHorizontalBar · StackedArea · StackedVerticalBar · StackedHorizontalBar — verbatim from the DS build (localhost:3000) */
   ['Bar','Horizontal Bar','<path d="M4.83,35.23c-.46,0-.83-.37-.83-.83V3.6c0-.46.37-.83.83-.83s.83.37.83.83v30.8c0,.46-.37.83-.83.83Z" style="fill:var(--chart-line-type-icon, currentColor)"></path><rect x="7.91" y="15.7" width="18.95" height="6.6" rx="1.1" ry="1.1" style="opacity:0.6;fill:var(--chart-type-icon, currentColor)"></rect><rect x="7.91" y="26.7" width="28.43" height="6.6" rx="1.1" ry="1.1" style="opacity:0.4;fill:var(--chart-type-icon, currentColor)"></rect><rect x="7.7" y="4.7" width="36.3" height="6.6" rx="1.1" ry="1.1" style="opacity:0.8;fill:var(--chart-type-icon, currentColor)"></rect>'], ['Stacked Area','Stacked Area','<path d="M4.39,20.02l8.55-9.57,8.17,7.21,8.61-13.12,6.84,8.39,6.64-4.61v25.78H4.39v-14.07Z" style="opacity:0.3;fill:var(--chart-type-icon, currentColor)"></path><path d="M4.39,31.11l8.74-6.85,7.14,5.6,8.81-11.46,7.66,7.52,6.44-4.04v12.21H4.39v-2.98Z" style="opacity:0.4;fill:var(--chart-type-icon, currentColor)"></path><path d="M4.93,20.35c-.19,0-.38-.07-.53-.2-.33-.3-.37-.81-.07-1.14l8.08-9.16c.29-.33.8-.37,1.14-.08l7.39,6.41,8.11-12.17c.14-.21.38-.35.63-.36.25-.01.5.1.67.3l6.52,8.03,5.31-3.86c.36-.26.87-.18,1.13.18.26.36.18.87-.18,1.13l-5.93,4.31c-.35.25-.83.19-1.1-.14l-6.31-7.77-8.01,12.02c-.13.19-.33.32-.56.35-.23.03-.46-.04-.64-.19l-7.48-6.48-7.55,8.56c-.16.18-.38.27-.61.27Z" style="opacity:0.8;fill:var(--chart-type-icon, currentColor)"></path><path d="M5.47,31.12c-.24,0-.48-.11-.64-.31-.28-.35-.21-.86.14-1.13l7.54-5.93c.29-.23.7-.23.99,0l6.38,4.91,8.67-10.7c.14-.18.36-.29.59-.3.23,0,.45.07.61.24l7.09,7.09,5.38-3.42c.37-.24.88-.13,1.12.25.24.38.13.88-.25,1.12l-5.93,3.77c-.32.2-.74.16-1.01-.11l-6.91-6.91-8.6,10.62c-.28.34-.77.4-1.12.13l-6.51-5.01-7.05,5.54c-.15.12-.32.17-.5.17Z" style="opacity:0.8;fill:var(--chart-type-icon, currentColor)"></path><path d="M42.11,34.9H5.89c-1.04,0-1.89-.85-1.89-1.89V3.91c0-.45.36-.81.81-.81s.81.36.81.81v29.1c0,.15.12.27.27.27h36.23c.15,0,.27-.12.27-.27V8.22c0-.45.36-.81.81-.81s.81.36.81.81v24.79c0,1.04-.85,1.89-1.89,1.89Z" style="fill:var(--chart-type-icon, currentColor)"></path>'],
   ['Stacked Column','Stacked Vertical Bar','<path d="M43.2,34.33H4.8c-.44,0-.8-.36-.8-.8s.36-.8.8-.8h38.4c.44,0,.8.36.8.8s-.36.8-.8.8Z" style="fill:var(--chart-line-type-icon, currentColor)"></path><path d="M31.47,23.93v6.4h6.4v-6.4h-6.4ZM10.13,30.33h6.4v-6.4h-6.4v6.4ZM20.8,30.33h6.4v-3.2h-6.4v3.2Z" style="opacity:0.8;fill:var(--chart-type-icon, currentColor)"></path><path d="M31.47,14.33v9.6h6.4v-9.6h-6.4ZM10.13,23.93h6.4v-8.53h-6.4v8.53ZM20.8,27.13h6.4v-6.4h-6.4v6.4Z" style="opacity:0.6;fill:var(--chart-type-icon, currentColor)"></path><path d="M15.47,3.67h-4.27c-.59,0-1.07.48-1.07,1.07v10.67h6.4V4.73c0-.59-.48-1.07-1.07-1.07ZM36.8,5.8h-4.27c-.59,0-1.07.48-1.07,1.07v7.47h6.4v-7.47c0-.59-.48-1.07-1.07-1.07ZM26.13,13.27h-4.27c-.59,0-1.07.48-1.07,1.07v6.4h6.4v-6.4c0-.59-.48-1.07-1.07-1.07Z" style="opacity:0.4;fill:var(--chart-type-icon, currentColor)"></path>'], ['Stacked Bar','Stacked Horizontal Bar','<path d="M4.83,35.23c-.46,0-.83-.37-.83-.83V3.6c0-.46.37-.83.83-.83s.83.37.83.83v30.8c0,.46-.37.83-.83.83Z" style="fill:var(--chart-line-type-icon, currentColor)"></path><path d="M12.1,15.7h-4.4v6.6h4.4v-6.6ZM15.4,4.7h-7.7v6.6h7.7v-6.6ZM7.7,26.7v6.6h8.8v-6.6H7.7Z" style="opacity:0.8;fill:var(--chart-type-icon, currentColor)"></path><path d="M27.5,4.7h-12.1v6.6h12.1v-6.6ZM20.9,15.7h-8.8v6.6h8.8v-6.6ZM16.5,26.7v6.6h13.2v-6.6h-13.2Z" style="opacity:0.6;fill:var(--chart-type-icon, currentColor)"></path><path d="M42.9,4.7h-15.4v6.6h15.4c.61,0,1.1-.49,1.1-1.1v-4.4c0-.61-.49-1.1-1.1-1.1ZM30.8,21.2v-4.4c0-.61-.49-1.1-1.1-1.1h-8.8v6.6h8.8c.61,0,1.1-.49,1.1-1.1ZM39.6,26.7h-9.9v6.6h9.9c.61,0,1.1-.49,1.1-1.1v-4.4c0-.61-.49-1.1-1.1-1.1Z" style="opacity:0.4;fill:var(--chart-type-icon, currentColor)"></path>']]
+  /* Stacked Column / Stacked Bar are no longer offered (request, 7 Nov 2026: "remove"). A card saved with either still
+     renders — CMP_VIEWS keeps them, as it keeps Step. */
+  .filter(([v]) => v !== 'Stacked Column' && v !== 'Stacked Bar')
   .map(([v, label, g]) => ({ value:v, label, icon:'<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + g + '</svg>' }));
 const CMP_LEGACY = { 'Yesterday':'yesterday', 'Last week':'last.week', 'Previous period':'-24h' };
 const cmpKey = k => CMP_WITH[k] ? k : (CMP_LEGACY[k] || 'yesterday');
@@ -19812,7 +19869,10 @@ function wCmpData(w){
 }
 function wCmp(w){
   if (w.cmpopt === 2) return wCmp2(w);
-  if (w.cmpopt === 4) return wCmp4(w);   /* option 4: the RUM metric-tile read (6 Nov 2026) */
+  /* option 6 = Option 5's design, always as Area (request, 7 Nov 2026: "whole card as in picture"). The summary card
+     (wCmp6) it briefly was is kept, unreferenced. */
+  if (w.cmpopt === 6) return wCmp4(Object.assign({}, w, {cmpView:'Area'}));
+  if (w.cmpopt >= 4) return wCmp4(w);   /* options 5 and 6 are copies of option 4 (7 Nov 2026) — their hooks are .wcmp5 / .wcmp6. option 4: the RUM metric-tile read (6 Nov 2026) */
   if (w.cmpopt === 3) return wCmp3(w);   /* option 3: TWO counters on one timeline (6 Nov 2026) */
   const d = wCmpData(w), u = w.u || '', c = w.color || 'var(--blue)';
   const pr = CMP_WITH[cmpKey(w.cmpWith)], per = ['Today', pr[1], pr[2]];
@@ -19836,8 +19896,10 @@ function wCmp(w){
   /* the counter and what it is compared with read as ONE header (request, 30 Oct 2026), and the change pill
      sits on the value's own line, right after the figure it qualifies */
   /* the value + change pill sit TOP RIGHT, beside the counter / comparison line (request, 5 Nov 2026) */
-  return `<div class="wcm"><div class="wch"><div class="wchl">${ctr}<div class="vs">vs ${fmt(p)} ${per[2]}</div></div>` +
-    `<div class="vr"><div class="v">${fmt(v)}</div>${pill}</div></div>` +
+  /* the value LEADS the header, left, before the comparison sentence (request, 7 Nov 2026: "the value will set left side
+     and before the text 'vs 27.3% yesterday at this hour'") — option 1, board and editor alike */
+  return `<div class="wcm"><div class="wch wchv"><div class="vr"><div class="v">${fmt(v)}</div>${pill}</div>` +
+    `<div class="wchl"><div class="vs">vs ${fmt(p)} ${per[2]}</div>${ctr}</div></div>` +
     `<div class="sp">` + wHcBox('cmp', { cur:d.cur, prev:d.prev, n:d.n, now:d.now, acc:d.acc, u, c, ln, axes:!!w.axes, ax:w.cmpAx !== false, xt:w.cmpXtOn ? (w.cmpXt || 'Time') : '', yt:w.cmpYtOn ? (w.cmpYt || w.ctr || 'Value') : '', zt:w.cmpZtOn ? (w.cmpZt || (w.agg || 'Avg') + ' · ' + per[0] + ' vs ' + per[1]) : '', grid:w.cmpGrid !== false, lw:w.cmpLw || 2, win:w.cmpWin, pts:!!w.cmpPts, ps:w.cmpPs || 4,
                                        acc0:d.acc, names:[per[0], per[1]], view }, `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` +
       `<path d="${tp} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".16"/>` +
@@ -19951,6 +20013,27 @@ function wCmp4(w){
   const hi = Math.max(...all), lo = Math.min(...all), at = q => Math.min(96, Math.max(14, Y(q) / H * 100));
   const ax = `<span class="wc4ax" style="top:${at(hi).toFixed(1)}%">${fmt(hi)}${u ? ' ' + u.trim() : ''}</span>` +
     (at(lo) - at(hi) > 16 ? `<span class="wc4ax" style="top:${at(lo).toFixed(1)}%">${fmt(lo)}${u ? ' ' + u.trim() : ''}</span>` : '');
+  /* OPTION 5 (request, 7 Nov 2026: "the bar chart view shows 2 types of chart at a time" / Bar drew columns): a column or
+     bar view draws BOTH periods as bars — the compared period a faint bar beside (column) or under (bar) the current one —
+     so there is no dashed line over the bars; and Bar is HORIZONTAL, one row per point, oldest at the top. */
+  const o5 = w.cmpopt === 5 && cols, hz = o5 && /Bar/.test(view);
+  if (o5){
+    const pc = w.cmpLine !== false, rows = d.cur.map((q, i) => [q, d.prev[i]]);
+    let g = '';
+    if (hz){
+      const bh = H / d.n, XW = q => (q - mn) / ((mx - mn) || 1) * W * .72;
+      rows.forEach(([q, r], i) => { const y0 = i * bh;
+        if (pc) g += `<rect x="0" y="${(y0 + bh * .12).toFixed(2)}" width="${XW(r).toFixed(1)}" height="${(bh * .76).toFixed(2)}" fill="var(--text-dim)" opacity=".18"/>`;
+        g += `<rect x="0" y="${(y0 + bh * (pc ? .3 : .15)).toFixed(2)}" width="${XW(q).toFixed(1)}" height="${(bh * (pc ? .4 : .7)).toFixed(2)}" fill="${c}" opacity=".35"/>`; });
+    } else {
+      rows.forEach(([q, r], i) => { const x0 = i * bw;
+        if (pc) g += `<rect x="${(x0 + bw * .12).toFixed(1)}" y="${Y(r).toFixed(1)}" width="${(bw * .36).toFixed(1)}" height="${(H - Y(r)).toFixed(1)}" fill="var(--text-dim)" opacity=".2"/>`;
+        g += `<rect x="${(x0 + bw * (pc ? .5 : .15)).toFixed(1)}" y="${Y(q).toFixed(1)}" width="${(bw * (pc ? .36 : .7)).toFixed(1)}" height="${(H - Y(q)).toFixed(1)}" fill="${c}" opacity=".3"/>`; });
+    }
+    return `<div class="wcm wcm4"><svg class="wc4s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">` + g + `</svg>` + (hz ? '' : ax) +
+      `<div class="wc4v" role="img" aria-label="${fmt(v)}${u} now, ${dtxt} vs ${fmt(p)}${u} ${pr[2]}"><span class="n" style="color:${c}">${fmt(v)}<small>${u.trim()}</small></span>` +
+        `<span class="d ${diff === 0 ? '' : good ? 'g' : 'r'}">${dtxt} <em>vs ${fmt(p)}${u} ${pr[2]}</em></span></div></div>`;
+  }
   const body = cols
     ? d.cur.map((q, i) => `<rect x="${(i * bw + bw * .15).toFixed(1)}" y="${Y(q).toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${(H - Y(q)).toFixed(1)}" fill="${c}" opacity=".28"/>`).join('')
     : (view === 'Line' ? '' : `<path d="${sm(cur)} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".2"/>`) +
@@ -19959,6 +20042,53 @@ function wCmp4(w){
       (w.cmpLine !== false ? `<path d="${sm(P(d.prev))}" fill="none" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke" opacity=".7"/>` : '') + body + `</svg>` + ax +
     `<div class="wc4v" role="img" aria-label="${fmt(v)}${u} now, ${dtxt} vs ${fmt(p)}${u} ${pr[2]}"><span class="n" style="color:${c}">${fmt(v)}<small>${u.trim()}</small></span>` +
       `<span class="d ${diff === 0 ? '' : good ? 'g' : 'r'}">${dtxt} <em>vs ${fmt(p)}${u} ${pr[2]}</em></span></div></div>`;
+}
+/* ── Trend Compare · OPTION 6 — the summary card (request, 7 Nov 2026: "in option 6 improve the feature and visualization,
+   your idea"). Option 4 writes its figure and change ON the wave, where the lines run through the text. This one stacks:
+   · a HEADER — the figure in the counter's colour, the change as a tinted pill (green when it moved the good way, red
+     when not — `cmpUp` decides which way is good), the comparison sentence, and a two-swatch key;
+   · the CHART below it, never under text — today as an area (or line / columns), the compared period dashed, and a
+     DIFFERENCE BAND shading the gap between them in the same green / red, so WHEN today ran better or worse is visible,
+     not just the last value; a "now" dot marks the latest point (HTML, so the stretched SVG cannot squash it);
+   · a STATS ROW — today's peak, low and average.
+   Band and stats each have a switch (Style tab). Colours are tokens; the band is a 22% wash so the lines stay on top. */
+function wCmp6(w){
+  const d = wCmpData(w), u = w.u || '', c = w.color || 'var(--blue)', pr = CMP_WITH[cmpKey(w.cmpWith)];
+  const fmt = v => d.acc ? Math.round(v).toLocaleString() : v.toFixed(1), uu = u.trim();
+  const v = d.cur[d.now], p = d.prev[d.now], diff = d.acc ? Math.round(v) - Math.round(p) : +(v - p).toFixed(1);
+  const up = (w.cmpUp || 'Good') === 'Good', good = up ? diff > 0 : diff < 0;
+  const dtxt = diff === 0 ? '– 0' : (diff > 0 ? '▲ ' : '▼ ') + (d.acc ? Math.abs(diff).toLocaleString() : Math.abs(diff).toFixed(1) + (u === '%' ? ' pts' : u));
+  const view = w.cmpView || 'Area', cols = /Column|Bar/.test(view), band = w.cmpBand !== false, stats = w.cmpStats !== false;
+  const W = 300, H = 100, all = d.prev.concat(d.cur), lo0 = Math.min(...all), hi0 = Math.max(...all), pad = (hi0 - lo0) * .12;
+  /* scaled to the DATA, not to zero — a level counter sitting at 23–63% otherwise leaves the bottom third of the plot empty
+     and flattens the gap the band exists to show. A running total (acc) keeps its zero baseline. */
+  const mx = hi0 + pad, mn = d.acc ? 0 : Math.max(0, lo0 - pad);
+  const X = i => i / (d.n - 1) * W, Y = q => H - 2 - (q - mn) / ((mx - mn) || 1) * (H - 6);
+  const GOOD = 'var(--severity-clear)', BAD = 'var(--severity-critical)';
+  let g = '';
+  if (cols){
+    const bw = W / d.n, pc = w.cmpLine !== false;
+    d.cur.forEach((q, i) => { const r = d.prev[i], x0 = i * bw;
+      if (pc) g += `<rect x="${(x0 + bw * .12).toFixed(1)}" y="${Y(r).toFixed(1)}" width="${(bw * .36).toFixed(1)}" height="${(H - Y(r)).toFixed(1)}" fill="var(--text-dim)" opacity=".22"/>`;
+      const better = up ? q >= r : q <= r;
+      g += `<rect x="${(x0 + bw * (pc ? .5 : .15)).toFixed(1)}" y="${Y(q).toFixed(1)}" width="${(bw * (pc ? .36 : .7)).toFixed(1)}" height="${(H - Y(q)).toFixed(1)}" fill="${band ? (better ? GOOD : BAD) : c}" opacity="${band ? .55 : .45}"/>`; });
+  } else {
+    if (band) for (let i = 0; i < d.now; i++){   /* one quad per step; its colour is the sign of the gap at the step's middle */
+      const a = d.cur[i], b = d.cur[i + 1], a2 = d.prev[i], b2 = d.prev[i + 1], m = (a + b) / 2 - (a2 + b2) / 2;
+      g += `<polygon points="${X(i).toFixed(1)},${Y(a).toFixed(1)} ${X(i+1).toFixed(1)},${Y(b).toFixed(1)} ${X(i+1).toFixed(1)},${Y(b2).toFixed(1)} ${X(i).toFixed(1)},${Y(a2).toFixed(1)}" fill="${(up ? m >= 0 : m <= 0) ? GOOD : BAD}" opacity=".22"/>`; }
+    const line = d.cur.map((q, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(q).toFixed(1)).join(' ');
+    if (view !== 'Line' && !band) g += `<path d="${line} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".16"/>`;
+    if (w.cmpLine !== false) g += `<path d="${d.prev.map((q, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(q).toFixed(1)).join(' ')}" fill="none" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke" opacity=".8"/>`;
+    g += `<path d="${line}" fill="none" stroke="${c}" stroke-width="${Math.max(1.4, (w.cmpLw || 2) * .9)}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`;
+  }
+  const dot = cols ? '' : `<i class="wc6dot" style="left:${(X(d.now) / W * 100).toFixed(2)}%;top:${(Y(v) / H * 100).toFixed(2)}%;--c:${c}"></i>`;
+  const avg = d.cur.reduce((a, b) => a + b, 0) / d.cur.length;
+  const st = stats ? `<div class="wc6st"><span>Peak <b>${fmt(Math.max(...d.cur))}${uu}</b></span><span>Low <b>${fmt(Math.min(...d.cur))}${uu}</b></span>` +
+    `<span>Avg <b>${fmt(avg)}${uu}</b></span><span class="sp"></span><span class="k"><i style="background:${c}"></i>Now</span><span class="k"><i class="ds"></i>${pr[0]}</span></div>` : '';
+  return `<div class="wcm wc6"><div class="wc6h" role="img" aria-label="${fmt(v)}${u} now, ${dtxt} vs ${fmt(p)}${u} ${pr[2]}">` +
+      `<span class="n" style="color:${c}">${fmt(v)}<small>${uu}</small></span>` +
+      `<span class="pl ${diff === 0 ? '' : good ? 'g' : 'r'}">${dtxt}</span><span class="vs">vs ${fmt(p)}${u} ${pr[2]}</span></div>` +
+    `<div class="wc6c"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${g}</svg>${dot}</div>` + st + `</div>`;
 }
 function wBars(seed,color,w){ const r=rng(seed+wShift*13),W=560,H=120,n=14,bw=W/n, vals=[];
   for(let i=0;i<n;i++) vals.push(0.14+r()*0.82);
@@ -20959,11 +21089,12 @@ UNGROUPED.add('Application Performance');
 BOARDS['Application Performance'] = { tabs: [''], widgets: [[
   /* the three Trend Compare designs side by side, by default (request, 6 Nov 2026) — option 1, option 2 with its table,
      option 3 — Counter Compare, CPU against memory — without. They lead the board (request, 6 Nov 2026: "show on top first"). Same counter and seed, so the three read the same numbers. */
-  ...[1, 2, 3].map(o => ({ t:'cmp', title:o === 3 ? 'CPU vs memory' : 'system.cpu.percent', span:4, h:310, seed:42902, trend:.89, color:'#14b8a6', acc:false,   /* the seed and colour the editor gives this counter */
+  ...[1, 2, 3, 4, 5, 6].map(o => ({ t:'cmp', title:o === 3 ? 'CPU vs memory' : 'system.cpu.percent', span:4, h:o >= 4 ? 190 : 310,   /* options 5 and 6 join option 4 on the second row, under options 2 and 3 (request, 7 Nov 2026) */ seed:42902, trend:.89, color:'#14b8a6', acc:false,   /* the seed and colour the editor gives this counter */
       ctr:'system.cpu.percent', agg:'Avg', src:'Metric', u:'%',
-      cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
-      cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4,
-      cmpTbl:o !== 3, cmpopt:o, ctr2:o === 3 ? 'system.memory.used.percent' : '' })),
+      cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:o === 5 ? 'Column' : 'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
+      cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true,
+      /* option 4 (the RUM-style tile) joins them by default, the 4th card — it lands under option 1 (request, 7 Nov 2026) */
+      cmpTbl:o < 3, cmpopt:o, ctr2:o === 3 ? 'system.memory.used.percent' : '' })),
   { t:'honey', title:'Infrastructure Heatmap', span:4, rows:2, seed:8801, n:132,
     pal:[[.62,'#9b1c1c','Critical'],[.72,'#a855f7','Unreachable'],[1,'#e0857a','Major']] },
   { t:'donuts', title:'Monitor Availability', span:4, h:150, items:[
@@ -21009,6 +21140,11 @@ BOARDS['Application Performance'] = { tabs: [''], widgets: [[
                {key:'monitor',title:'Monitor',width:'18%'},{key:'start',title:'Start Time',width:'18%'}],
       rows:AS_ROWS.map((r, i) => ({ id:i, policy:r[0], ptype:r[1], metric:r[2], sevl:r[3], sev:r[3].toLowerCase(), monitor:r[4], start:r[5] })) } },
 ]] };
+/* "Application Performance action" — a copy of the board above (request, 7 Nov 2026: "copy the Application Performance
+   dashboard and create Application Performance action"). A DEEP copy, so editing one board never reaches the other;
+   it lives in its own BOARDS slot and is flat like its source. */
+UNGROUPED.add('Application Performance action');
+BOARDS['Application Performance action'] = JSON.parse(JSON.stringify(BOARDS['Application Performance']));
 /* ── "Payment Business Dashboard" — built from the widgets this page already has ─────────
    (request, 23 Sep 2026: "create a new dashboard using free text, empty group and other
    widgets", with a finance board as the reference — NEFT / RTGS bands, KPI tiles, bar charts.)
@@ -22595,7 +22731,7 @@ function renderCanvas(){
              dashboard's range, which it does not follow */
           const tl = w.t === 'cmp' ? cmpPill(w.cmpWith) : trSelIdx>=0?TR_PRESETS[trSelIdx][1]:'custom';
           const card = (cls, h, body) => `<div class="widget wds${cls}" ${dnd} data-g="${gi}" data-i="${i}" data-h="${h}" style="${dims}">` +
-            `<obs-widget-card class="wdscard${/wcmp4/.test(cls) ? ' wdsfl' : ''}" static title="${String(w.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" time="${tl}"><div class="wbody">${body}</div></obs-widget-card>` +
+            `<obs-widget-card class="wdscard${/wcmp[456]/.test(cls) ? ' wdsfl' : ''}" static title="${String(w.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" time="${tl}"><div class="wbody">${body}</div></obs-widget-card>` +
             `<div class="wdsact">${dots}</div>${WGRIPS}</div>`;
           if(w.t==='stat') return card(' wstat', w.h||0, `<div class="v" style="color:${w.vc}">${w.v}</div><div class="k">${w.k}</div><div class="delta" style="color:${w.dc}">${w.d}</div>
             <div class="statsp">${wMini((gi+1)*97+i*31, w.sc||w.vc)}</div>`);
@@ -23767,7 +23903,7 @@ function awRender(){
            into it). `Empty group` is the precedent for a tile that does its own thing. */
         items.map((t, i)=> t[1] === 'cmp'
           /* Trend Compare is three numbered tiles: option 1, option 2, and option 3 — a copy of option 2 (see `CW_CMP_OPT`) */
-          ? [1, 2, 3, 4].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');cwOpenViz('${t[0]}', ${o})" ` +
+          ? [1, 2, 3, 4, 5, 6].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');cwOpenViz('${t[0]}', ${o})" ` +
               `data-tip="${o === 3 ? 'Counter Compare — two counters on one timeline' : 'Trend Compare — design option ' + o}"><span class="awgn">${o}</span>` +
               `<span class="awart">${wArt(t[0], 'c'+gi+'x'+i+'o'+o)}</span><span>${o === 3 ? 'Counter Compare' : t[0]}</span></button>`).join('')
           : t[1] === 'freetext'
@@ -23899,7 +24035,7 @@ function awAdd(title, vis, ft){
     aicard:aicdNew(title),
     /* ⚠️ `ft` doubles as Compare Value's options — the editor passes its query and Style choices through it */
     cmp:Object.assign({t:'cmp', title, span:4, h:310, seed, color:'var(--blue)', acc:true, trend:1.13,
-                       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true}, ft || {})
+                       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true, cmpTbl:true}, ft || {})
   };
   histDo(`Add widget “${title}”`);
   WIDGETS[curG].push(map[t]);
@@ -25588,7 +25724,7 @@ const MICON = {
    status, archived) off these names rather than duplicating the list. */
 const DASH_GROUPS = [
   { name:'PMG', items:[
-    ['Log Statistics','sys',0], ['Application Performance','mine',0], ['ui_pmg','mine',0] ]},
+    ['Log Statistics','sys',0], ['Application Performance','mine',0], ['Application Performance action','mine',0], ['ui_pmg','mine',0] ]},
   { name:'Network', items:[
     ['Network NOC Wall','shared',0], ['WAN Link Health','mine',1] ]},
   { name:'Infrastructure', items:[
@@ -25627,6 +25763,7 @@ const MD_META = {
   'Virtualization Overview': { own:'Rakesh Rathod',  acc:['Rakesh Rathod','Infra'],  pub:1, upd:'2mo ago' },
   'Storage Utilisation':     { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:0, upd:'11mo ago' },
   'Container Fleet':         { own:'Sneha Patil',    acc:['Sneha Patil'],            pub:1, upd:'2mo ago' },
+  'Application Performance action': { own:'Kishan Patel', acc:['Kishan Patel'], pub:1, upd:'just now' },
   'ui_pmg':                  { own:'Kishan Patel',   acc:['Kishan Patel'],           pub:1, upd:'just now' },
   'Payment Business Dashboard': { own:'Kishan Patel', acc:['Kishan Patel','Finance Ops'], pub:1, upd:'just now' },
 };
@@ -35009,7 +35146,7 @@ const CW = { open:false, edit:null, viz:'chart', tab:'Style', src:'Metric',
           /* the widget's own time range, and the marker's threshold — both were rendered as
              controls that toasted their own value and changed nothing */
           range:'Follow dashboard', mk:90,
-          cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true } };
+          cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true, cmpTbl:true } };
 
 function cwBlank(){ return { ctr:'', agg:'Avg', sf:'Everywhere', src:'', by:'' }; }
 function cwSrcOf(k){ return CW_SRC.find(s => s.k === k) || CW_SRC[0]; }
@@ -35029,14 +35166,14 @@ function cwOpen(gi, i){
          "Update" would blank the text that is on the board. `CW.ft` is assigned AFTER the
          block below resets it — see the `cwFtLoad` call at the end of cwOpen. */
       if (w.t === 'freetext') CW_FT_OPT = w.ftopt === 2 ? 2 : 1;
-      if (w.t === 'cmp') CW_CMP_OPT = [2, 3, 4].includes(w.cmpopt) ? w.cmpopt : 1;
+      if (w.t === 'cmp') CW_CMP_OPT = [2, 3, 4, 5, 6].includes(w.cmpopt) ? w.cmpopt : 1;
       /* ⚠️ EDITING A Compare Value REOPENS ITS OWN QUERY AND STYLE — "Update" re-binds the card to what the
          form shows, so opening on the default counter would silently re-point it */
       if (w.t === 'cmp'){ CW.cmpLoad = {cmpWith:cmpKey(w.cmpWith), cmpAs:w.cmpAs||'Percent',
                                         cmpUp:w.cmpUp||'Good', cmpLine:w.cmpLine !== false, cmpView:w.cmpView||'Area',
                                         cmpLeg:w.cmpLeg !== false, cmpAx:w.cmpAx !== false, cmpGrid:w.cmpGrid !== false, cmpLw:w.cmpLw || 2,
                                         cmpXtOn:!!w.cmpXtOn, cmpXt:w.cmpXt || '', cmpYtOn:!!w.cmpYtOn, cmpYt:w.cmpYt || '',
-                                        cmpZtOn:!!w.cmpZtOn, cmpZt:w.cmpZt || '', cmpGr:w.cmpGr || 5, cmpGu:w.cmpGu || 'Minute', cmpWin:CMP_WIN[w.cmpWin] ? w.cmpWin : '24h', cmpPts:!!w.cmpPts, cmpPs:w.cmpPs || 4, cmpTbl:w.cmpTbl !== false};
+                                        cmpZtOn:!!w.cmpZtOn, cmpZt:w.cmpZt || '', cmpGr:w.cmpGr || 5, cmpGu:w.cmpGu || 'Minute', cmpWin:CMP_WIN[w.cmpWin] ? w.cmpWin : '24h', cmpPts:!!w.cmpPts, cmpPs:w.cmpPs || 4, cmpBand:w.cmpBand !== false, cmpStats:w.cmpStats !== false, cmpTbl:w.cmpTbl !== false};
                           CW.cmpQ = w.ctr ? {src:w.src||'Metric', ctr:w.ctr, agg:w.agg||'Avg', ctr2:w.ctr2||'', agg2:w.agg2||'Avg'} : null; }
       if (w.t === 'freetext') CW.ftLoad = {text:w.text||'', size:w.size||'Auto',
                                            color:w.color||'Default', align:w.align||'center',
@@ -35066,7 +35203,7 @@ function cwOpen(gi, i){
   CW.ft.preset = CW_FT_PRESET[0][0];
   CW.style = { shape:0, rotation:0, legend:false, xt:false, yt:false, zt:false, lw:2, points:false, psz:4,
                sort:'Descending', limit:10, markers:false, range:'Follow dashboard', mk:90,
-               cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpTbl:true };
+               cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true, cmpTbl:true };
   if (CW.cmpLoad){ Object.assign(CW.style, CW.cmpLoad); CW.cmpLoad = null; }
   CW.tab = 'Style';
   /* The live editor opens with a counter ALREADY selected (system.cpu.percent / Avg /
@@ -35152,7 +35289,9 @@ function cwRender(){
   document.getElementById('cwModal').classList.toggle('cwcmpm', CW.viz === 'cmp');
   document.getElementById('cwModal').classList.toggle('cwcmp2', CW.viz === 'cmp' && CW_CMP_OPT === 2);   /* Trend Compare OPTION 2 hook */
   document.getElementById('cwModal').classList.toggle('cwcmp3', CW.viz === 'cmp' && CW_CMP_OPT === 3);   /* OPTION 3 hook — Counter Compare */
-  document.getElementById('cwModal').classList.toggle('cwcmp4', CW.viz === 'cmp' && CW_CMP_OPT === 4);   /* OPTION 4 hook — a copy of 2 for now */
+  document.getElementById('cwModal').classList.toggle('cwcmp4', CW.viz === 'cmp' && CW_CMP_OPT >= 4);   /* OPTION 4 hook — options 5 and 6 are copies of it, so they carry it too */
+  document.getElementById('cwModal').classList.toggle('cwcmp5', CW.viz === 'cmp' && CW_CMP_OPT === 5);   /* OPTION 5 hook — a copy of 4 for now (7 Nov 2026) */
+  document.getElementById('cwModal').classList.toggle('cwcmp6', CW.viz === 'cmp' && CW_CMP_OPT === 6);   /* OPTION 6 hook — a copy of 4 for now (7 Nov 2026) */
   document.getElementById('cwModal').classList.toggle('cwft2', cwFtOn() && CW_FT_OPT === 2);   /* Free Text OPTION 2 — a clone of option 1 for now; this class is its hook */
   if (cwFtOn()){
     document.getElementById('cwTabs').innerHTML = '';
@@ -35215,7 +35354,7 @@ let CW_FT_OPT = 1;
    #cwModal.cwcmp2 in the editor and .wcmp2 on the board widget. */
 let CW_CMP_OPT = 1;
 function cwOpenViz(name, opt){
-  CW_CMP_OPT = [2, 3, 4].includes(opt) ? opt : 1;
+  CW_CMP_OPT = [2, 3, 4, 5, 6].includes(opt) ? opt : 1;
   /* design 1 moved to the Option 2 page (15 Oct 2026), so a caller that names no option gets design 2 (16 Oct 2026) */
   CW_FT_OPT = opt === 1 ? 1 : 2;
   if (typeof closeAwDrawer === 'function') closeAwDrawer();
@@ -35223,6 +35362,8 @@ function cwOpenViz(name, opt){
   const v = CW_VIZ.find(x => x.n.toLowerCase() === String(name).toLowerCase());
   if (v){ CW.viz = v.k; }
   /* Counter Compare compares TWO counters, so it opens with a second row already on a different counter */
+  /* Option 5 opens on Column — its bar view is its default (request, 7 Nov 2026) */
+  if (CW.viz === 'cmp' && CW_CMP_OPT === 5) CW.style.cmpView = 'Column';
   if (CW.viz === 'cmp' && CW_CMP_OPT === 3 && CW.rows.length < 2) CW.rows.push(Object.assign(cwBlank(), { ctr:cwSrcOf(CW.src).ctr[2] || cwSrcOf(CW.src).ctr[1] }));
   /* deliberately does NOT prefill the name — the live editor leaves Widget Name empty
      with its placeholder even when you arrive from a type tile */
@@ -35336,17 +35477,19 @@ function cwPanelHTML(viz){
        CHART VIEW took their place: only the shapes this card can draw (CMP_VIEWS), as a segmented obs-radio. */
     return '<div class="cwcmpp">' +
       (CW_CMP_OPT === 3 ? '' : f('Compare with', '<obs-date-time-picker id="cwCmpTr" kind="range" bordered aria-label="Compare with"></obs-date-time-picker>')) +   /* Counter Compare reads ONE timeline */
-      f('Chart view', '<obs-radio class="cwcmpseg cwcmpwt" data-k="cmpView" as-button aria-label="Chart view" options="' +
-        JSON.stringify(CMP_VIEW_PICK).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>') +
+      /* OPTION 6 has no Chart view (request, 7 Nov 2026: "remove the chart view, show by default this chart") — it always
+         draws Option 5's area design */
+      (CW_CMP_OPT === 6 ? '' : f('Chart view', '<obs-radio class="cwcmpseg cwcmpwt" data-k="cmpView" as-button aria-label="Chart view" options="' +
+        JSON.stringify(CMP_VIEW_PICK).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>')) +
       /* Display options (request, 26 Oct 2026: "the today & yesterday is the legend — add a legend on/off, or other
          options if supported"). The Chart style's own atoms (cwTogHTML, the Line Width track), so the two read alike. */
-      '<div class="cwgrid cwcmpopt">' + (CW_CMP_OPT === 4 ? '' : CW_CMP_OPT > 1
+      '<div class="cwgrid cwcmpopt">' + (CW_CMP_OPT >= 4 ? '' : CW_CMP_OPT > 1
         /* option 2's Today | compared | Change row IS its legend, so its switch here is the summary table under the chart (6 Nov 2026) */
         ? '<div class="cwf"><div class="k">Legend</div>' + cwCmpSw('cmpLeg') + '</div><div class="cwf"><div class="k">Table</div>' + cwCmpSw('cmpTbl') + '</div>'
         : '<div class="cwf"><div class="k">Legend</div>' + cwCmpSw('cmpLeg') + '</div>') +
       /* ⚠️ GRID LINES WAS REMOVED HERE (request, 26 Oct 2026) and Z-Axis Title took its slot — the Chart style's own
          set. `cmpGrid` stays in the model (default on), so the dotted guides are always drawn. */
-      (CW_CMP_OPT === 4 ? '' : cwCmpTitleHTML('Z') +
+      (CW_CMP_OPT >= 4 ? '' : cwCmpTitleHTML('Z') +
       cwCmpTitleHTML('X') + cwCmpTitleHTML('Y')) +   /* option 4 draws no legend, table or axes (6 Nov 2026) */
       '<div class="cwf"><div class="k">Line Width</div><div class="cwrange">' +
       '<span class="cwslot"><input type="range" min="1" max="4" value="' + (CW.style.cmpLw || 2) +
@@ -35354,12 +35497,18 @@ function cwPanelHTML(viz){
       '<span class="cwlwv">' + (CW.style.cmpLw || 2) + '</span></div></div>' +
       /* Points + Point Size (request, 26 Oct 2026, the Chart style's own pair): a row of their own, Points on the left.
          Point Size shows only while Points is ON — hidden by visibility, so the row never changes height. */
-      '<div class="cwf cwcmppt"><div class="k">Points</div>' + cwCmpSw('cmpPts') + '</div>' +
+      /* OPTION 5 has no Points / Point Size (request, 7 Nov 2026: "in option 5 remove the [Points] action") — its tile draws
+         no point markers, so the switch would control nothing. The grid's own closing tag stays outside the condition. */
+      (CW_CMP_OPT >= 5 ? '' : CW_CMP_OPT === 6
+        /* OPTION 6 — its two own parts get switches in place of Points (7 Nov 2026) */
+        ? '<div class="cwf"><div class="k">Difference band</div>' + cwCmpSw('cmpBand') + '</div>' +
+          '<div class="cwf"><div class="k">Stats row</div>' + cwCmpSw('cmpStats') + '</div>'
+        : '<div class="cwf cwcmppt"><div class="k">Points</div>' + cwCmpSw('cmpPts') + '</div>' +
       '<div class="cwf' + (CW.style.cmpPts ? '' : ' off') + '" id="cwCmpPsF"><div class="k">Point Size</div><div class="cwrange">' +
       '<span class="cwslot"><input type="range" min="1" max="10" value="' + (CW.style.cmpPs || 4) +
       '" aria-label="Point Size" oninput="CW.style.cmpPs=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value;cwPreview()" />' +
       '<span class="cwticks">' + '<i></i>'.repeat(10) + '</span></span>' +
-      '<span class="cwlwv">' + (CW.style.cmpPs || 4) + '</span></div></div></div>' +
+      '<span class="cwlwv">' + (CW.style.cmpPs || 4) + '</span></div></div>') + '</div>' +
       /* Granularity (request, 26 Oct 2026, with the product's own field as the picture): a required step — a number and
          its unit, the unit a searchable DS obs-select over Second · Minute · Hour · Day · Month. It is the bucket size the
          series is drawn at; stored as cmpGr / cmpGu. LAST in the panel, after Line Width (request, 26 Oct 2026). */
@@ -37056,7 +37205,7 @@ function cwCmpW(){
            cmpWith:CW.style.cmpWith, cmpAs:CW.style.cmpAs, cmpUp:CW.style.cmpUp, cmpLine:CW.style.cmpLine, cmpView:CW.style.cmpView,
            cmpLeg:CW.style.cmpLeg, cmpAx:CW.style.cmpAx, cmpGrid:CW.style.cmpGrid, cmpLw:CW.style.cmpLw,
            cmpXtOn:CW.style.cmpXtOn, cmpXt:CW.style.cmpXt, cmpYtOn:CW.style.cmpYtOn, cmpYt:CW.style.cmpYt,
-           cmpZtOn:CW.style.cmpZtOn, cmpZt:CW.style.cmpZt, cmpGr:CW.style.cmpGr, cmpGu:CW.style.cmpGu, cmpWin:CW.style.cmpWin, cmpPts:CW.style.cmpPts, cmpPs:CW.style.cmpPs, cmpTbl:CW.style.cmpTbl !== false, cmpopt:CW_CMP_OPT,
+           cmpZtOn:CW.style.cmpZtOn, cmpZt:CW.style.cmpZt, cmpGr:CW.style.cmpGr, cmpGu:CW.style.cmpGu, cmpWin:CW.style.cmpWin, cmpPts:CW.style.cmpPts, cmpPs:CW.style.cmpPs, cmpTbl:CW.style.cmpTbl !== false, cmpBand:CW.style.cmpBand !== false, cmpStats:CW.style.cmpStats !== false, cmpopt:CW_CMP_OPT,
            ctr2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).ctr || '') : '', agg2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).agg || 'Avg') : '' };
 }
 /* ── validate + save ───────────────────────────────────────────────────────── */
@@ -37158,7 +37307,7 @@ function cwSave(place){
     cwClose();
     /* option 2 carries a value row, legend and a 4-row table under the chart — at the 310px default the table was cut off
        (6 Nov 2026), so it is placed taller. Create only: an edit never resizes a widget the user has sized. */
-    if (place) awAdd(name, 'cmp', draft.cmpopt === 4 ? Object.assign({}, draft, {h:190}) : draft.cmpopt > 1 ? Object.assign({}, draft, {h: draft.cmpTbl === false ? 330 : 470}) : draft);
+    if (place) awAdd(name, 'cmp', draft.cmpopt >= 4 ? Object.assign({}, draft, {h:190}) : draft.cmpopt > 1 ? Object.assign({}, draft, {h: draft.cmpTbl === false ? 330 : 470}) : draft);
     else toast('\u2713 "' + name + '" saved to User Define \u2014 add it from Add New Widget when you need it');
     return;
   }
