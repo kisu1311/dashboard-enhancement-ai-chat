@@ -14994,5 +14994,88 @@ Figures are a snapshot of the live screen.
 **Group by** (4 Nov, later): the live menu's four options — None (flat grid, live order) · Business Service · Type (`java`) · Health (Major / Warning / Clear) — as `APS_BY`, each with the live rollups; services are one `APS_SVC` record so the groupings cannot disagree. Collapse state is keyed per grouping.
 **No data** (4 Nov): a slot with no live series renders `apsNd()` — Option 1 a hatched dashed box reading "No data", Option 2 a dashed ghost curve + baseline with a small "No data" label; Option 3 a faint filled trend silhouette with "No data" centred behind Tabler's chart-line glyph (and Option 2's card indent + 30% guide line); ⚠️ **RENUMBERED the same day: Option 1 = a copy of the hatched box (was Option 4), Option 2 = the hatched box (was 1), Option 3 = the ghost curve (was 2), Option 4 = the group container (was 3)** — everything above that says Option 1/2/3 means 2/3/4 now; Options 1 and 2 render identically until 1 gets its own branch (the code tests `APS.nd` '3' / '4'); switched by `#apsNdOpt` (obs-radio in the module title row, Services tab only — the chart switch `#apxChOpt` shows on Explorer only). Zero errors is a different state: a dashed baseline. Cards under a group start on the chevron's line (`.apsgh + .apsgrid{margin-left:13px}`).
 
+## Dashboard filter — Monitor · Group · Tag in the header (Option 1, 8 Nov 2026)
+
+`#dashFlt` sits left of the time chip: three DS quick-filter pills, `obs-select trigger="button" multiple searchable`
+(the product Monitor list's Groups · Types · Severity pattern), plus a **Clear** link once anything is picked.
+`DF_OPTS` (canned, scrubbed), `DF[board]` (state per board), `dfInit` / `dfApply` / `dfClear`; `pickDash` is wrapped to
+repaint it per board. ⚠️ Filtering is a re-seed of the board's data (`wShift++`, the time-range mechanism) — visible, not
+real. The pill's change detail is `[[values]]`. Pills are capped at 180px with an ellipsis (OBS-SELECT hook,
+`:host(.dfpill)`), and the row is `flex:0 0 auto` so the title gives way, not the pills.
+
+## Top N in the Create Widget editor — cloned from live 10.0.1 (Option 1, 8 Nov 2026)
+
+Driven with Playwright on the lab `/dashboard` → Create Widget → Top N (harvest scripts in the session scratch dir).
+Its own `<script>` block right after the Heat Map one: `TN_TILE` (the nine Style tiles, product art verbatim), `TN_TYPES`,
+`TN_ROWS` (the live screen's ten values, hosts scrubbed), `tnHTML(spec)` — ONE renderer for the preview and the board
+widget `t:'tn'` — plus `cwTnSpec` / `cwTnTabs` / `cwTnPanel`. State lives on `CW.style` (`tn`, `tnVal`, `tnDl`, `tnHfs`,
+`tnSpk`, `tnOrd`, `tnCnt`, `tnSticky`, `tnHide`, `tnDn`); the widget carries `tn` (spec) + `tnq` (style) so Edit reopens it.
+- Styles and their fields (live): Area / Line — Rotation · Legend · X/Y/Z-Axis Title · Line Width · Points; Horizontal /
+  Vertical Bar — … · Values; Pie — Rotation · Legend · Data Labels; Gauge · Packed Bubble · Tree View — none; Grid —
+  Header Font Size (Small/Medium/Large) · Sparkline Chart **and a fourth tab, Column Setting** (counter · monitor ·
+  object.type/vendor/ip/host/discovery.method, the object.* hidden by default, Display Name, Configure).
+- Sorting = Counter (`<counter>.<agg>`) · Top | Last · Count (10). Timeline Preference = Use Custom Sticky Timeline.
+  Result By opens on Monitor.
+- **The Style tab is on the DS** (8 Nov 2026): the nine tiles are `obs-radio as-button` with an icon per option (the
+  DS's "segmented with icons", class `cwcmpwt` like Trend Compare's Chart view, so the attachShadow hook makes it
+  icon-only with tooltips); toggles `obs-switch`; Rotation `obs-input type=number block` (120px — `block` makes its
+  shadow .grp follow the host); Header Font Size `obs-radio as-button`. Bound in `cwTnBind`; a switch repaints only the
+  preview, a tile rebuilds the panel. ⚠️ Line Width stays the hand slider — the DS has no slider.
+- **The preview is Highcharts 10 on the live config** (8 Nov 2026, read off the lab chart through its Vue component —
+  `window.Highcharts` is not exposed there): Area · Line · both Bars · Pie · Packed Bubble · Tree View go through
+  `tnHcCfg` / `tnHcMount` (font var(--chart-font-family), axis var(--bottom-line-color), grid var(--chart-grid-line-color),
+  .65rem labels, 11px square legend symbols, shared HTML tooltip, bars at pointPadding .32). Packed Bubble / Tree View load
+  `highcharts-more` + `modules/treemap` beside W_HC_SRC. Gauge and Grid are plain HTML on live and stay `tnSVG`, which is
+  also every type's offline fallback. Rotation = x-axis label rotation (pie: startAngle); Z-Axis Title = the subtitle.
+- ⚠️ Not built: the live source row's **SLO** tab (no SLO source exists in `CW_SRC`); Configure toasts; Sticky Timeline
+  stores its switch only; Rotation turns the plot. Chart colours are DS chart tokens.
+
+## Click a widget to select it — a floating action toolbar (Option 1, 8 Nov 2026)
+
+Dynatrace's pattern. A click on a widget's body selects it (a teal inset frame) and docks `#wTb` centred on its top border:
+**Edit · ✦ AI summary · Full screen · Clone · ⋮** (8 Nov 2026: the frequent four on the bar, no drag handle —
+the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with class `wmtb`, which hides the `.wmtbx` rows
+(AI, Edit, Clone, Full) so it carries only Share · Export as CSV · Move · Remove; the header ⋮ still opens the full menu.
+`wSelect` / `wTbPlace` / `wTbAct` / `wTbMore` / `wTbDrag` / `wSelClear`; Tabler glyphs in `WTB_IC`.
+- ⚠️ The frame is a `::after` with an **inset** box-shadow above the card, NOT an `outline`: an outside outline on a
+  first-row widget was clipped by the board scroller (reported), and an inset outline paints under `obs-widget-card`.
+- ⚠️ The toolbar is `position:fixed` on `#view-dashboard`, not inside the widget, for the same clip; it follows scroll /
+  resize and straddles the top edge on every row (first row included — its upper half sits over the timeline strip); it docks INSIDE only when the edge has scrolled out of the board.
+- Skipped: ⋮ / ✦, grips, links, buttons, fields, the version preview, a click ending a text selection. The select is
+  deferred 230ms and `dblclick` cancels it (Free Text edits by double-click). Esc closes the ⋮ menu first, then the
+  selection; a click outside clears it. Beyond the live product.
+
+## Heat Map in the Create Widget editor — cloned from live 10.0.1 (Option 1, 8 Nov 2026)
+
+Request: copy the live Create Widget → **Heat Map** screen "with all features, same margin, padding and alignment".
+Driven with **Playwright** on `https://172.16.13.94/dashboard` (login in the session scratch dir; the instance
+redirects to `/setup/` until `.setup-skip-link` is clicked, and the SPA needs a retry loop to mount). Namespace
+`cwHm*` / `HM_*` / `.cwhm*` / `.hmx*`, its own `<script>` block right after the `cw*` block; `#cwModal.cwhm` hides
+`.cwq` / `.cwsrc` and shows `#cwHmQ`.
+
+- **One data group at a time** (live): Metric · Availability · Alert · APM · RUM · SLO buttons are disabled while a
+  group exists; the group's ⊗ (hover, top-right) removes it → `#cwModal.cwhm0` = centred **Please Select Group**,
+  both create buttons disabled. Opens on **Alert / Policy Type Metric**. Each group's field row is the live one
+  (`HM_GRP`); **Source** is disabled until a Source Filter is picked.
+- **Style tab only**: Plain / With-host tiles (the product's own glyphs, harvested), **Show Counts** (obs-switch →
+  "657 | Total"), **Select Color Palette** for Metric/APM/RUM/SLO; SLO has no tiles.
+- **`hmHTML(spec)` is ONE renderer for the preview and the board** — Create & Add places a `t:'hm'` widget carrying
+  `hm` (spec) + `hmq` (the whole editor state, so Edit reopens it). The honeycomb is the live CSS: 38×44.19 clip-path
+  hex, 40px box, margin `2px 2px -9.54px`, odd rows offset by a 22px float with a repeating `shape-outside`.
+  ⚠️ The gradient's opaque band sits **2px inside** each odd row — edge-to-edge bands let rounding offset every row
+  from row 5 down.
+- Dropdowns reuse `cwFtDD`'s state/markup (`cwHmDD`); keys are registered into `DD_OWN`, and **`ddSet` now passes
+  the key as a second argument** (existing setters ignore it).
+- ⚠️ Divergences, stated: addresses RFC 5737 / example.com; the five palettes are DS chart tokens softened toward
+  `--text-color-common-secondary` (the live palette hexes are not in the dev token file); Policy / Policy Tag lists
+  trimmed; the 4px-lower labels live draws on Policy · Policy Tag · Severity are aligned here; the preview caps at 250
+  hexes like live while Total counts all 657.
+- **Shape: Hexagon · Circle · Square** (8 Nov 2026, beyond live): a labelled `Shape` tile row under the style tiles
+  (`HM_SHAPE`, `cwHmShape`, `CW.hm.shape`, default `hex`), shown for every group incl. SLO. `hmHTML` adds `shp-circle` /
+  `shp-square` to `.hmx`; those drop the hex clip-path, the negative row overlap and the odd-row float, so cells sit on a
+  plain 42px grid. It rides in the spec, so the board widget and Edit keep it.
+  ⚠️ **Shape leads the panel** and the Plain / With-names tiles sit under it, labelled **View** (the tab is already
+  called Style), drawn in the chosen shape by `hmTile(kind, shape)` so a square map never shows hexagon tiles.
+
 ## Handoff
 Latest session state is in [HANDOFF.md](HANDOFF.md) — read it first.
