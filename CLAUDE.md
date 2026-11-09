@@ -14023,6 +14023,12 @@ rebuilt, not invented. What the live editor does and this reproduces:
 - **Query builder** across the bottom: a **coloured source tab down the left edge**, then
   **Counter\*** · **Aggregation\*** · **Source Filter** · **Source** · **Result By** · **Σ**
   · **⊕**, with a **Filters** row beneath. ⊕ adds another counter row; extra rows carry ⊗.
+- **The query row is on the DS** (9 Nov 2026): Counter · Aggregation · Source Filter · Result By are `obs-select block` (Counter
+  `searchable`), Source is `obs-input`, Σ / ＋ / ⊗ are `obs-button squared` with `obs-icon` sigma / plus / times-circle (Σ on =
+  `variant="primary"`), Filters is `obs-input` under the DS `filter` glyph. `cwRowsBind()` (called after the rows paint) sets
+  values as properties and binds `change` / `input`. The `.cwqbtn` class stays on the buttons, so Gauge's / Sankey's hide
+  rules still apply. Shadow hooks: `.cwqbtn .btn` 32×32 (DS gap 32 — squared is 35×35), `.cwqsel.err .trig` red for an empty
+  Counter, `.cwfilin .ip` padded past the glyph (obs-input renders no prefix icon).
 - **The 8 data sources, confirmed live**: Metric · Availability · Log · Flow · Alert · APM ·
   NetRoute · RUM. Switching source **clears the counters**, because counters belong to a source.
 - Footer: **Reset · Create Widget / Update Widget**.
@@ -14994,14 +15000,28 @@ Figures are a snapshot of the live screen.
 **Group by** (4 Nov, later): the live menu's four options — None (flat grid, live order) · Business Service · Type (`java`) · Health (Major / Warning / Clear) — as `APS_BY`, each with the live rollups; services are one `APS_SVC` record so the groupings cannot disagree. Collapse state is keyed per grouping.
 **No data** (4 Nov): a slot with no live series renders `apsNd()` — Option 1 a hatched dashed box reading "No data", Option 2 a dashed ghost curve + baseline with a small "No data" label; Option 3 a faint filled trend silhouette with "No data" centred behind Tabler's chart-line glyph (and Option 2's card indent + 30% guide line); ⚠️ **RENUMBERED the same day: Option 1 = a copy of the hatched box (was Option 4), Option 2 = the hatched box (was 1), Option 3 = the ghost curve (was 2), Option 4 = the group container (was 3)** — everything above that says Option 1/2/3 means 2/3/4 now; Options 1 and 2 render identically until 1 gets its own branch (the code tests `APS.nd` '3' / '4'); switched by `#apsNdOpt` (obs-radio in the module title row, Services tab only — the chart switch `#apxChOpt` shows on Explorer only). Zero errors is a different state: a dashed baseline. Cards under a group start on the chevron's line (`.apsgh + .apsgrid{margin-left:13px}`).
 
-## Dashboard filter — Monitor · Group · Tag in the header (Option 1, 8 Nov 2026)
+## Dashboard filter — the DS filter bar in the header (Option 1, 8–9 Nov 2026)
 
-`#dashFlt` sits left of the time chip: three DS quick-filter pills, `obs-select trigger="button" multiple searchable`
-(the product Monitor list's Groups · Types · Severity pattern), plus a **Clear** link once anything is picked.
-`DF_OPTS` (canned, scrubbed), `DF[board]` (state per board), `dfInit` / `dfApply` / `dfClear`; `pickDash` is wrapped to
-repaint it per board. ⚠️ Filtering is a re-seed of the board's data (`wShift++`, the time-range mechanism) — visible, not
-real. The pill's change detail is `[[values]]`. Pills are capped at 180px with an ellipsis (OBS-SELECT hook,
-`:host(.dfpill)`), and the row is `flex:0 0 auto` so the title gives way, not the pills.
+**Placement (9 Nov 2026, request):** the bar lives in its own row `#dashFltRow` UNDER the timeline strip, hidden at
+load, and the header carries its on/off — `#dfTog`, a DS `obs-button squared` with `obs-icon filter` before Full screen,
+`variant` swapped to `primary` while the row shows (the Monitor list's filter-active look). `dfTog()` toggles, refits the
+canvas, and its tooltip counts active filters, so a hidden row still says it is filtering. Filters survive hiding.
+`#dashFlt` (inside that row) is ONE `obs-filters kind="bar"` with `quick-filters` — the DS's "bar + quick filters"
+variant (the product Monitors/Inventory row): **Monitor · Group · Tag** are standing grey category pills, a set pill reads
+`field = value` (+N) with an ×, **+ Filter** adds Severity · Type · Vendor · Status · Host Name · IP Address, and the bar
+shows its own **Clear All**. (9 Nov 2026: replaced three `obs-select` button pills, on request.)
+`DF_FIELDS` ([key, label, quick?, values] — canned, scrubbed), `DF[board]` (state per board, keyed by field), `dfInit` /
+`dfApply`; `pickDash` is wrapped to repaint it per board. The `change` payload is `[{conditions:[{field, operator, value}],
+match}]`. ⚠️ Filtering is a re-seed of the board's data (`wShift++`, the time-range mechanism) — visible, not real.
+
+## Trend Compare options 4 · 5 · 6 — the numbers are named (Option 1, 9 Nov 2026)
+
+Request: *"i can't understand the with legend"* — the faded chart carried two bare numbers (`63.1 %`, `23.0 %`) and a
+dashed line with no key. `wCmp4` (which renders all three options) now prints **Peak** / **Low** before them and a key in
+the top-right corner: **— Now** (line, or a bar swatch in a column view) and **┄ Yesterday** (the compare period's legend
+name, `CMP_WITH[…][1]`; a grey bar swatch on Option 5's twin bars), hidden when the compare line is switched off.
+⚠️ Peak / Low are now the **current period's** extremes (the series the big figure belongs to) — they used to be the max /
+min over BOTH periods, so the board's Peak reads 58.5 % where the bare label read 63.1 %.
 
 ## Top N in the Create Widget editor — cloned from live 10.0.1 (Option 1, 8 Nov 2026)
 
@@ -15027,6 +15047,40 @@ widget `t:'tn'` — plus `cwTnSpec` / `cwTnTabs` / `cwTnPanel`. State lives on `
   .65rem labels, 11px square legend symbols, shared HTML tooltip, bars at pointPadding .32). Packed Bubble / Tree View load
   `highcharts-more` + `modules/treemap` beside W_HC_SRC. Gauge and Grid are plain HTML on live and stay `tnSVG`, which is
   also every type's offline fallback. Rotation = x-axis label rotation (pie: startAngle); Z-Axis Title = the subtitle.
+- **Legend Position** (9 Nov 2026, request — the product's own pie widget as the picture): Right (default) · Bottom ·
+  Left, an `obs-radio as-button` under the switches, kept in its box but hidden while Legend is OFF. Right / Left are a
+  vertical Highcharts legend 30% of the widget wide, centred, one entry per line, long names ellipsised; Pie entries
+  read `name: value%`. Bottom is the old centred row. `CW.style.tnLegPos` → spec `legPos`.
+  The position control is three Tabler layout icons (icon-only `cwcmpwt` segment), drawn like Free Text's Alignment
+  segment through the OBS-RADIO hook (`:host(.cwtnlpr)`: 38×30 cells on --panel-2, hairlines, selected = --chip / --white). **The Right / Left legend is
+  resizable** (Dynatrace's `legend-resize-line`, from a pasted tile): `tnGrip` puts a 7px × 40px `.tnlgrip` handle (centred; 40px since 9 Nov 2026) on the
+  legend's inner edge (a line on hover, teal while dragging); a drag calls `chart.update({legend:{width}})` live,
+  clamped 96px … 60% of the widget, and saves to `CW.style.tnLegW` in the editor / the widget's own `tn.legW` on the
+  board. Double-click resets to 30%. The strip stops click / dragstart so it never selects or drags the widget.
+  **All three positions** (9 Nov 2026): Right and Left drag the width; **Bottom** gets the same handle turned horizontal
+  (`.tnlgrip.h`, 40×7, centred above the legend, row-resize) that sets the legend's HEIGHT (`tnLegH`: H px = floor(H/18)
+  rows, so ceil(n/rows) columns — taller = fewer, wider columns with full names; too short and Highcharts pages it).
+  Saved as `tnLegH` / `tn.legH`, re-applied on mount; double-click resets.
+- **The board's "Top … by Alert Count" pies and bars are linked to Top N** (9 Nov 2026): `back` maps `pie` / `hbars` →
+  `topn` (they opened as Gauge); Edit loads `CW.tnData` = the widget's own rows (monitor → count, unit '') and opens on
+  Pie (legend Right) or Horizontal Bar. `tnRows` uses `spec.rows` when present, and every format string in `tnHcCfg`
+  takes `spec.unit` (default %), so Update saves a real `t:'tn'` widget that keeps its data.
+- **Chart's Style tab is on the DS too** (9 Nov 2026, same pattern): `obs-radio.cwchwt` (icon-only `cwcmpwt`, CW_SHAPE
+  art), `obs-switch.cwchsw`, `obs-input.cwchrot`, bound in `cwChartBind`; Points rebuilds (adds Point Size).
+  ⚠️ CW_SHAPE[0] (Area) is the SELECTED-state art (all fills var(--page-background-color)) — invisible unselected, so the
+  segment draws Top N's `TN_TILE.Area` instead.
+- **Eight more styles from highcharts.com/demo** (9 Nov 2026, beyond live; each demo's own config read with Playwright out of
+  its `about:srcdoc` frame): Donut · Semi-circle Donut · Funnel · Pyramid · Radial Bar · Polar Column · Lollipop · Variable Pie,
+  APPENDED to `TN_TYPES` as 9–16 so every existing index (Grid = 6, the `k<=3` field set) is untouched. `tnHc` also loads
+  `modules/funnel` · `variable-pie` · `dumbbell` · `lollipop` (lollipop extends dumbbell — order matters). Tiles: the DS has
+  no glyph for any of the eight (checked against `list_icons`, 643 names), so they are DRAWN in the product's own chart-type
+  tile language (48×38, fills in `--chart-type-icon` at .8/.6/.4, outlines in `--chart-line-type-icon`) — which is what makes
+  the hook's selected state invert them like the nine product tiles. (They were Tabler/Hugeicons line icons for a day.) the segment is tighter and WRAPS (`:host(.cwtnwt)` in the OBS-RADIO
+  hook) so 17 tiles never run off the panel. Fields: Donut / Semi / Variable Pie = Pie's; Funnel / Pyramid = Legend + Data
+  Labels (no Rotation), labels inside the bands; Radial Bar = Rotation only (value labels piled up at the ring starts);
+  Polar Column = Rotation + Values; Lollipop = the bar fields. Offline, each falls back to its nearest `tnSVG` sibling.
+  Divergences: Variable Pie's `zMin` sits just under the smallest value (from 0 the near-equal rows are one radius); the
+  demos' v11 `borderRadius:'50%'` is not in Highcharts 10.3.3.
 - ⚠️ Not built: the live source row's **SLO** tab (no SLO source exists in `CW_SRC`); Configure toasts; Sticky Timeline
   stores its switch only; Rotation turns the plot. Chart colours are DS chart tokens.
 
@@ -15044,6 +15098,35 @@ the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with cla
 - Skipped: ⋮ / ✦, grips, links, buttons, fields, the version preview, a click ending a text selection. The select is
   deferred 230ms and `dblclick` cancels it (Free Text edits by double-click). Esc closes the ⋮ menu first, then the
   selection; a click outside clears it. Beyond the live product.
+
+## Grid · Gauge · Sankey in the Create Widget editor — cloned from live 10.0.1 (Option 1, 9 Nov 2026)
+
+Harvested with Playwright on the lab `/dashboard` → Create Widget (scripts + screenshots in the session scratch dir `gg/`).
+All three used to fall through to `cwPanelHTML`'s generic "Style options for …" placeholder. Their own `<script>` block
+sits right after Top N's, namespace `gg*` / `GG_*` / `.gg*`; style lives on `CW.style.gg*` (`ggSt()` seeds defaults).
+- **Grid**: tabs Style · Column Setting · Timeline Preference; sources gain **SLO** (new `CW_SRC` entry, Grid only).
+  Style = two tiles (drawn in the product's chart-type tile art since 9 Nov 2026 — `TN_TILE.Grid` and `GG_VL_TILE`), **Grid** (table, MONITOR first, through `tnHTML` with `monFirst:true`) → Header Font Size, and
+  **Value list** (big mono value + name) → Sorting Top/Last. Column Setting reuses Top N's `.tncs*` markup.
+- **Gauge**: tabs Style · Threshold · Timeline Preference; the query row drops **Result By and ⊕** (`#cwModal.cwggau`).
+  Style = **Metric** (Font Size · Text Align · Icon · Icon Position · Metric Trend Background) or **Gauge** (a 270° arc;
+  Font Size only). Threshold = Critical · Major · Warning · Clear rows: operator (`obs-select`, the live five), value
+  (`obs-input`), colour (the editor's `cwFtDD` picker, keys `ggc0..3` in `DD_OWN`). A matching row colours the value / arc.
+- **Sankey**: Flow only (opens on `volume.bytes`); Style = the Result By list (source.ip, destination.ip), reordered by
+  its grip; the query row's Result By reads `source.ip (+1)` and has no Σ / ⊕ (`#cwModal.cwggsk`). Flow's `by` list gained
+  `destination.ip`. Preview flows scrubbed to 192.0.2.x → 198.51.100.x.
+- One renderer `ggHTML(spec)` for the preview and the board widget `t:'gg'` (`w.gg` spec + `w.ggq` editor state, so Edit
+  reopens it). `cwOpenViz` now moves to a type's first valid source (it used to leave Sankey on Metric).
+- ⚠️ Divergences: Icon offers this page's `ICONS` keys, not the product's ~700 names; the trend background is a canned curve.
+- **The Chart preview is Highcharts on the live config** (9 Nov 2026, from the live editor's own chart DOM): `cwChMount` /
+  `cwChHcCfg` after cwPreview's SVG (kept as the offline fallback). An `areaspline` in `TN_PAL[0]` (#14B8A6) with a
+  colour→transparent gradient, a 5-minute series over the range (`tlA..tlB`), grid `--chart-grid-line-color`, axis lines
+  `--bottom-line-color`, 0.65rem labels, datetime x labels, and the live tooltip (bold `Sat, Jul 11, 2026 12:30:00 PM`, then
+  swatch · counter · bold value). The 8 tiles = Area · Line · Horizontal Bar · Vertical Bar + the stacked four
+  (`CW_CH_TYPES`); Rotation, Legend, X/Y/Z titles, Line Width, Points/Point Size, Σ (dashed mean) and Markers all drive it.
+  ⚠️ `tooltip.outside` must stay false — an outside tooltip sits on `<body>` under the modal's z-index.
+- ⚠️ **Not built yet** (seen on the live Chart editor): Chart's **Granularity\* + Metric Grid** fields and the Filters row's
+  **Pre Filters / Post Filters** popover (All/Any group matching · Include · Counter · Operator · Value · Add New Group ·
+  Reset · Clear · Apply).
 
 ## Heat Map in the Create Widget editor — cloned from live 10.0.1 (Option 1, 8 Nov 2026)
 

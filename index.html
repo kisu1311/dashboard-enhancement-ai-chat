@@ -7745,6 +7745,15 @@ body.aidockr .aidockghost{display:block}
    the figure is the answer. Opacity on the chart layer only, so the value, the change chip and the axis read-outs keep
    full strength; the value grows, goes bold and carries a wider halo of the card colour so it lifts off the wave. */
 .wcm4 .wc4s{opacity:.4}
+/* the named Peak / Low labels and the corner key (9 Nov 2026) */
+.wcm4 .wc4ax i{font:500 10.5px Inter,sans-serif;font-style:normal;color:var(--chart-legend-color,var(--text-dim));margin-right:5px}
+.wcm4 .wc4k{position:absolute;top:8px;right:10px;z-index:1;display:flex;gap:12px;font:500 10.5px/14px Inter,sans-serif;color:var(--chart-legend-color,var(--text-dim))}
+.wcm4 .wc4k > span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.wcm4 .wc4k b{display:inline-block;width:14px;height:0}
+.wcm4 .wc4k b.ln{border-top:2px solid var(--c)}
+.wcm4 .wc4k b.ds{border-top:1.5px dashed var(--text-dim)}
+.wcm4 .wc4k b.bar{width:8px;height:8px;border-radius:1px;background:var(--c);opacity:.6}
+.wcm4 .wc4k b.bar.pv{background:var(--text-dim);opacity:.45}
 .wcm4 .wc4v .n{font-weight:700;font-size:42px;text-shadow:0 0 8px var(--wc4bg,var(--card)),0 0 18px var(--wc4bg,var(--card)),0 0 30px var(--wc4bg,var(--card))}
 .wcm4 .wc4v .n small{font-size:20px;font-weight:600}
 /* Trend Compare OPTION 5 (7 Nov 2026: "in 5 option this text will not highlight") — the change figure is not painted
@@ -8128,8 +8137,10 @@ html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:
 .pagehead.lhd .lhstar.faved{color:var(--lh-star)}
 .pagehead.lhd .lhright{flex:0 0 auto;display:flex;align-items:center}
 .pagehead.lhd .lhtr{display:inline-flex;align-items:center;padding:0 8px;font-size:13.6px;line-height:1.5}
-.pagehead.lhd .lhflt{display:flex;align-items:center;gap:8px;margin:0 8px 0 auto;flex:0 0 auto}
-.pagehead.lhd .lhflt:empty{display:none}
+/* the dashboard filter row, under the timeline strip; its left edge is the canvas's own inset */
+.dfrow{flex:0 0 auto;padding:6px var(--pb-x,14px) 0;min-width:0}
+.dfrow[hidden]{display:none}
+.dfrow obs-filters{display:block}
 .pagehead.lhd .lhflt .dfclr{border:0;background:transparent;color:var(--lh-ink2,var(--text-dim));font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline;white-space:nowrap}
 .pagehead.lhd .lhchip{display:flex;align-items:center;height:auto;padding:8px;gap:0;border:0;border-radius:4px;background:var(--lh-chip);
   color:var(--lh-text);font:inherit;cursor:pointer;transition:none}
@@ -10075,6 +10086,9 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 .cwprev .ph b{color:var(--text-dim);font-weight:600}
 .cwpb{flex:1;min-height:0;display:grid;place-items:center;padding:12px;overflow:hidden}
 .cwpb svg{max-width:100%;max-height:100%}
+.cwpb.cwchon{display:block;padding:4px 6px 0 10px}
+.cwpb.cwchon .cwchc{width:100%;height:100%}
+.cwpb.cwchon svg{max-width:none;max-height:none}
 .cwset{flex:1 1 42%;min-width:0;border:1px solid var(--border);border-radius:8px;background:var(--card);
   display:flex;flex-direction:column;overflow:hidden}
 .cwnames{display:flex;gap:16px;padding:16px 14px 4px}
@@ -10159,18 +10173,13 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
   background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 .cwqf input::placeholder{color:var(--muted)}
 .cwqf.err select,.cwqf.err input{border-color:var(--red)}
-.cwqbtn{flex:0 0 auto;width:30px;height:30px;border-radius:5px;border:1px solid var(--border);background:var(--panel-2);
-  color:var(--text-dim);cursor:pointer;display:grid;place-items:center;font-size:13px}
-.cwqbtn:hover{border-color:var(--cwa);color:var(--cwa)}
-.cwqbtn.rm:hover{border-color:var(--red);color:var(--red)}
-/* Σ is a toggle, so it has to look pressed — otherwise the second click reads as a no-op */
-.cwqbtn.on{border-color:var(--cwa);color:var(--cwa);background:var(--sel)}
-.cwfil{display:flex;align-items:center;gap:9px;padding:0 9px;height:30px;border-radius:5px;
-  background:var(--panel-2);border:1px solid var(--border)}
-.cwfil:focus-within{border-color:var(--cwa)}
-.cwfil svg{width:13px;height:13px;fill:var(--muted);flex:0 0 13px}
-.cwfil input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:12px}
-.cwfil input::placeholder{color:var(--muted)}
+/* Σ / ＋ / ⊗ are squared DS icon buttons now (9 Nov 2026); the host only needs to hold its size in the flex row */
+obs-button.cwqbtn{flex:0 0 auto}
+.cwqf obs-select,.cwqf obs-input{display:block;min-width:0}
+/* Filters: the DS input across the row, the DS filter glyph laid over its left inset (obs-input renders no icon of its
+   own — its prefix-icon is a recorded v0.1.166 defect), the inner field padded past it through the shadow hook */
+.cwfil{position:relative;display:block;height:auto;padding:0;border:0;background:none}
+.cwfil > obs-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);z-index:1;color:var(--neutral-light);pointer-events:none;font-size:14px}
 
 /* data-source buttons */
 .cwsrc{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:7px;padding:11px 16px 0}
@@ -10352,10 +10361,61 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 .tninfo{display:inline-grid;place-items:center;width:13px;height:13px;border:1px solid currentColor;border-radius:50%;font:600 9px/1 Inter,sans-serif;font-style:normal;margin-left:4px;cursor:help}
 .tnpair{display:flex;gap:24px}
 /* the DS tile segment sits where the hand-built row did, 15px over the fields; Rotation is a narrow number field */
-.cwtnwt{display:block;margin-bottom:15px}
-.cwtng obs-input.cwtnrot{display:block;width:120px}
+.cwtnwt,.cwchwt{display:block;margin-bottom:15px}
+.cwtng obs-input.cwtnrot,.cwtng obs-input.cwchrot{display:block;width:120px}
+/* Legend Position only while the legend is ON — its box stays, so the panel never jumps */
+.cwtnlp.off{visibility:hidden}
 .tng1{grid-template-columns:1fr}
 .tncs{display:flex;flex-direction:column;font-size:12.5px}
+/* ══ Grid · Gauge · Sankey editor (9 Nov 2026, the gg* block) ══ */
+.ggp{display:grid;grid-template-columns:1fr;gap:16px;margin-top:20px}
+.ggp.gg2{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;row-gap:16px}
+.ggp .cwf.wide{grid-column:1/-1}
+.ggp .cwf > .k{margin-bottom:7px}
+.ggseg{display:inline-block}
+.ggprev{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;overflow:auto}
+/* Grid · Value list: the value large in mono, the name beside it */
+.ggvl{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 12px;margin:auto 0}
+.ggvlr{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:baseline;gap:16px;width:min(100%,560px)}
+.ggvlv{font:600 34px/1 var(--numeric-font-family, 'JetBrains Mono', monospace);color:var(--page-text-color, var(--text));text-align:right}
+.ggvlv i{font-style:normal;font-size:15px;margin-left:2px}
+.ggvln{font-size:12px;font-weight:500;color:var(--page-text-color, var(--text));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Gauge · Metric — the value fills the pane; Font Size scales it (--ggk) */
+.ggmet{position:relative;flex:1 1 auto;display:flex;align-items:center;padding:12px 16px;min-height:120px;overflow:hidden}
+.ggmet.al-center{justify-content:center}.ggmet.al-right{justify-content:flex-end}
+.ggmv{position:relative;display:flex;align-items:center;gap:12px}
+.ggmn{font:600 calc(64px * var(--ggk,1))/1 var(--chart-font-family, inherit);color:var(--ggc, var(--page-text-color, var(--text)));letter-spacing:.02em}
+.ggmn i{font-style:normal;font-size:.45em;margin-left:2px}
+.ggmic{display:inline-grid;place-items:center;color:var(--ggc, var(--text-dim))}
+.ggmic .ggmics{width:calc(40px * var(--ggk,1));height:calc(40px * var(--ggk,1))}
+.ggtrend{position:absolute;left:0;right:0;bottom:0;width:100%;height:42%;pointer-events:none}
+.gggau{flex:1 1 auto;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px}
+.gggau svg{width:100%;height:100%;max-height:100%}
+/* Gauge · Threshold rows — severity label · operator · value · colour */
+.ggth{display:flex;flex-direction:column;gap:12px}
+.ggthr{display:grid;grid-template-columns:140px minmax(0,1fr) minmax(0,1.2fr) 76px;align-items:center;gap:0;border:1px solid var(--border);border-radius:4px;overflow:visible}
+.ggths{align-self:stretch;display:grid;place-items:center;font:500 12.5px/1 'JetBrains Mono',monospace;color:var(--sev);
+  background:color-mix(in srgb,var(--sev) 18%,transparent);border-radius:3px 0 0 3px;min-height:38px}
+.ggthr obs-select,.ggthr obs-input{min-width:0;padding:0 6px}
+.ggthc{padding:0 6px;min-width:0}.ggthc .cwftdd{max-width:none}
+/* the live colour cell is a swatch and a chevron — no name, no hex code */
+.ggthc .cwftddt > span,.ggthc .cwftddt > .cwftddv{display:none}
+.ggthc .cwftddt{justify-content:space-between;gap:6px}
+/* Sankey · the Result By list, reordered by its grip */
+.ggsklist{display:flex;flex-direction:column;gap:6px;max-width:348px}
+.ggski{display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 10px;border-radius:4px;background:var(--panel-2);font-size:13px;color:var(--text)}
+.ggskg{color:var(--text-dim);cursor:grab;display:grid;place-items:center}
+.ggsk{display:flex;flex-direction:column;gap:9px;padding:14px 10px}
+.ggskr{display:grid;grid-template-columns:20px minmax(0,1fr) auto 20px;align-items:center;height:34px;background:var(--chip);border-radius:2px;
+  font:12px/1 'JetBrains Mono',monospace;color:var(--text)}
+.ggskr i{display:block;height:100%}.ggskr .a{padding-left:6px}.ggskr .b{padding-right:2px;text-align:right}
+/* the query row: Gauge has no Result By / ⊕, Sankey no Σ / ⊕ */
+#cwModal.cwggau .cwqf.rb,#cwModal.cwggau .cwqbtn:not(.rm) + .cwqbtn{display:none}
+#cwModal.cwggsk .cwqbtn{display:none}
+.ggskby{width:100%;height:30px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid var(--border);border-radius:5px;background:var(--panel-2);color:var(--text);font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.ggskby span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ggskby b{font-weight:500;color:var(--text-dim)}
+.ggskby svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
 .tncsh,.tncsr{display:grid;grid-template-columns:1fr 212px 92px 76px;align-items:center;gap:10px}
 .tncsh{color:var(--text-dim);padding-bottom:6px}
 .tncsr{min-height:56px}
@@ -10370,6 +10430,16 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 .tnhcw{padding:0}
 .tnhc{position:relative;flex:1 1 auto;min-height:0;width:100%;height:100%;overflow:hidden}
 .tnhc > .tn{position:absolute;inset:0}
+/* a short 20px handle centred on the legend (request, 9 Nov 2026: the full-height line was too long) — the legend is
+   verticalAlign middle, so the widget's middle is the legend's middle */
+.tnlgrip{position:absolute;top:calc(50% - 20px);height:40px;width:7px;cursor:col-resize;z-index:3;touch-action:none}
+.tnlgrip::after{content:"";position:absolute;left:3px;top:0;bottom:0;width:1px;border-radius:1px;background:var(--border-color,var(--border));opacity:0;transition:opacity .12s}
+.tnhc:hover .tnlgrip::after{opacity:1}
+/* Bottom legend: the same handle turned horizontal — 20px wide, centred, above the legend, sets its height */
+.tnlgrip.h{top:auto;left:calc(50% - 20px);width:40px;height:7px;cursor:row-resize}
+.tnlgrip.h::after{left:0;right:0;top:3px;bottom:auto;width:auto;height:1px}
+.tnlgrip.h:hover::after,.tnlgrip.h.on::after{height:2px;top:2.5px;left:0;width:auto}
+.tnlgrip:hover::after,.tnlgrip.on::after{opacity:1;width:2px;left:2.5px;background:var(--primary)}   /* DS active accent (--primary: #e3e8f2 dark / #111c2c light) — 9 Nov 2026 */
 
 
 .cwfoot{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:12px 16px;border-top:1px solid var(--border);
@@ -13738,7 +13808,6 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
           <!-- DASHBOARD FILTER (8 Nov 2026, request): Monitor · Group · Tag, left of the time chip. Built from the DS —
                the product's own quick-filter pills, `obs-select trigger="button" multiple searchable` (the Monitor list's
                Groups · Types · Severity pattern). Filled + bound by dfInit / dfBind. -->
-          <div class="lhflt" id="dashFlt"></div>
           <div class="lhtr">
             <!-- ⊗ is the live picker's clear control: it puts the range back to the default (Today),
                  which is what `trSet(TR_HOME)` does on boot. It stops the click so the popover the
@@ -13768,6 +13837,9 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
             </div>
           </div>
           <div class="lhbtns">
+            <!-- the filter row's on/off (9 Nov 2026): a DS icon button, filled --primary while the row shows — the
+                 product Monitor list's filter-button-active look. dfTog() shows / hides #dashFltRow under the timeline. -->
+            <obs-button class="lhsq" id="dfTog" variant="neutral-lightest" squared data-tip="Show filters" aria-label="Show filters" aria-pressed="false" onclick="dsTap(this)&&dfTog()"><obs-icon name="filter" size="17"></obs-icon></obs-button>
             <obs-button class="lhsq" id="fsBtn" variant="neutral-lightest" squared data-tip="Full Screen" aria-label="Full Screen" onclick="dsTap(this)&&toggleFS()"><obs-icon name="fullscreen" size="17"></obs-icon></obs-button>
             <!-- the live Export renders the board to an image (`handleExport`, html2canvas); the ⋮ menu's
                  Export-as-image row is the same action, so this goes through the same `dmAct('img')` -->
@@ -13787,6 +13859,8 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
         </div>
         <div class="tmarks" id="tmarks"></div>
       </div>
+      <!-- DASHBOARD FILTER ROW (9 Nov 2026): the DS filter bar under the timeline, shown by the header's filter icon -->
+      <div class="dfrow" id="dashFltRow" hidden><div id="dashFlt"></div></div>
       <div class="dwrap">
         <aside class="dpanel hid" id="dpanel">
           <div class="dtabs">
@@ -20225,9 +20299,16 @@ function wCmp4(w){
   const cur = P(d.cur), bw = W / d.n;
   /* left-side max and min — the plotted data's own extremes, each at its height (% of the box, so the
      stretched SVG cannot distort the text); the min is dropped when it would sit on the max */
-  const hi = Math.max(...all), lo = Math.min(...all), at = q => Math.min(96, Math.max(14, Y(q) / H * 100));
-  const ax = `<span class="wc4ax" style="top:${at(hi).toFixed(1)}%">${fmt(hi)}${u ? ' ' + u.trim() : ''}</span>` +
-    (at(lo) - at(hi) > 16 ? `<span class="wc4ax" style="top:${at(lo).toFixed(1)}%">${fmt(lo)}${u ? ' ' + u.trim() : ''}</span>` : '');
+  /* ⚠️ THE TWO NUMBERS ARE NAMED NOW (request, 9 Nov 2026: "i can't understand … with legend"): they were bare
+     "63.1 %" / "23.0 %" with nothing saying what they measure. They are the CURRENT period's peak and low (the solid
+     line / bright bars — the series the big figure belongs to), each prefixed Peak / Low, and a key in the top-right
+     corner says which mark is now and which is the compared period. */
+  const hi = Math.max(...d.cur), lo = Math.min(...d.cur), at = q => Math.min(96, Math.max(14, Y(q) / H * 100)), uu4 = u ? ' ' + u.trim() : '';
+  const ax = `<span class="wc4ax" style="top:${at(hi).toFixed(1)}%"><i>Peak</i>${fmt(hi)}${uu4}</span>` +
+    (at(lo) - at(hi) > 16 ? `<span class="wc4ax" style="top:${at(lo).toFixed(1)}%"><i>Low</i>${fmt(lo)}${uu4}</span>` : '');
+  const pcShown = w.cmpLine !== false, barKey = /Column|Bar/.test(w.cmpView || 'Area');
+  const key = `<span class="wc4k"><span><b class="${barKey ? 'bar' : 'ln'}" style="--c:${c}"></b>Now</span>` +
+    (pcShown ? `<span><b class="${barKey && w.cmpopt === 5 ? 'bar pv' : 'ds'}"></b>${pr[1]}</span>` : '') + `</span>`;
   /* OPTION 5 (request, 7 Nov 2026: "the bar chart view shows 2 types of chart at a time" / Bar drew columns): a column or
      bar view draws BOTH periods as bars — the compared period a faint bar beside (column) or under (bar) the current one —
      so there is no dashed line over the bars; and Bar is HORIZONTAL, one row per point, oldest at the top. */
@@ -20245,7 +20326,7 @@ function wCmp4(w){
         if (pc) g += `<rect x="${(x0 + bw * .12).toFixed(1)}" y="${Y(r).toFixed(1)}" width="${(bw * .36).toFixed(1)}" height="${(H - Y(r)).toFixed(1)}" fill="var(--text-dim)" opacity=".2"/>`;
         g += `<rect x="${(x0 + bw * (pc ? .5 : .15)).toFixed(1)}" y="${Y(q).toFixed(1)}" width="${(bw * (pc ? .36 : .7)).toFixed(1)}" height="${(H - Y(q)).toFixed(1)}" fill="${c}" opacity=".3"/>`; });
     }
-    return `<div class="wcm wcm4"><svg class="wc4s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">` + g + `</svg>` + (hz ? '' : ax) +
+    return `<div class="wcm wcm4"><svg class="wc4s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">` + g + `</svg>` + (hz ? '' : ax) + key +
       `<div class="wc4v" role="img" aria-label="${fmt(v)}${u} now, ${dtxt} vs ${fmt(p)}${u} ${pr[2]}"><span class="n" style="color:${c}">${fmt(v)}<small>${u.trim()}</small></span>` +
         `<span class="d ${diff === 0 ? '' : good ? 'g' : 'r'}">${dtxt} <em>vs ${fmt(p)}${u} ${pr[2]}</em></span></div></div>`;
   }
@@ -20254,7 +20335,7 @@ function wCmp4(w){
     : (view === 'Line' ? '' : `<path d="${sm(cur)} L${X(d.now).toFixed(1)},${H} L0,${H} Z" fill="${c}" opacity=".2"/>`) +
       `<path d="${sm(cur)}" fill="none" stroke="${c}" stroke-width="1.6" vector-effect="non-scaling-stroke" opacity=".7"/>`;
   return `<div class="wcm wcm4"><svg class="wc4s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">` +
-      (w.cmpLine !== false ? `<path d="${sm(P(d.prev))}" fill="none" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke" opacity=".7"/>` : '') + body + `</svg>` + ax +
+      (w.cmpLine !== false ? `<path d="${sm(P(d.prev))}" fill="none" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke" opacity=".7"/>` : '') + body + `</svg>` + ax + key +
     `<div class="wc4v" role="img" aria-label="${fmt(v)}${u} now, ${dtxt} vs ${fmt(p)}${u} ${pr[2]}"><span class="n" style="color:${c}">${fmt(v)}<small>${u.trim()}</small></span>` +
       `<span class="d ${diff === 0 ? '' : good ? 'g' : 'r'}">${dtxt} <em>vs ${fmt(p)}${u} ${pr[2]}</em></span></div></div>`;
 }
@@ -21230,6 +21311,7 @@ function wBody(w, gi, i){
   if(w.t==='honey') return wHoney(w.seed,w.n,w.pal);
   if(w.t==='hm')    return hmHTML(w.hm || {});
   if(w.t==='tn')    return tnHTML(w.tn || {});
+  if(w.t==='gg')    return '<div class="ggprev">' + ggHTML(w.gg || {}) + '</div>';
   if(w.t==='donuts')return wDonuts(w.items);
   if(w.t==='pie')   return wPie(w.items);
   if(w.t==='hbars') return wHBars(w.items,w.max,w.color);
@@ -24218,7 +24300,7 @@ function awUserDel(name){
 }
 /* Option 1 keeps widgets per GROUP as rich objects, so this maps Option 2's
    vis keys onto the types renderCanvas() knows and appends to the open group. */
-const AW_VIS = { tn:'tn', hm:'hm', line:'spark', hbars:'bars', donut:'gauge', table:'table',
+const AW_VIS = { tn:'tn', gg:'gg', hm:'hm', line:'spark', hbars:'bars', donut:'gauge', table:'table',
                  big:'stat', flow:'bars', heat:'honey', rows:'table', text:'note',
                  /* the one vis key that maps to itself — an AI Card has no chart shape to
                     fall back to, and without this a saved one would re-add as a sparkline */
@@ -24254,6 +24336,7 @@ function awAdd(title, vis, ft){
     /* Heat Map from the editor — `ft` carries its spec, rendered by the editor's own hmHTML */
     hm:Object.assign({t:'hm', title, span:6, h:230}, ft || {}),
     tn:Object.assign({t:'tn', title, span:6, h:310}, ft || {}),
+    gg:Object.assign({t:'gg', title, span:6, h:310}, ft || {}),
     /* ⚠️ `ft` doubles as Compare Value's options — the editor passes its query and Style choices through it */
     cmp:Object.assign({t:'cmp', title, span:4, h:310, seed, color:'var(--blue)', acc:true, trend:1.13,
                        cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true, cmpTbl:true}, ft || {})
@@ -25517,7 +25600,7 @@ function wDuplicate(){ closeOverlays(); if(curW<0) return;
   while (cwNameTaken(name)) name = 'Copy of ' + base + ' (' + (n++) + ')';
   cwOpen();                                  /* create mode — a clone is a NEW widget */
   const back = {spark:'chart', bars:'topn', table:'grid', honey:'heat', hm:'heat', tn:'topn', gauge:'gauge',
-                note:'grid', pie:'gauge', hbars:'topn', donuts:'gauge'};
+                note:'grid', pie:'topn', hbars:'topn', donuts:'gauge'};
   CW.viz  = back[src.t] || 'chart';
   CW.name = name;
   const v = cwVizOf(CW.viz), ok = (v.src || []).filter(s => (v.off || []).indexOf(s) < 0);
@@ -25663,36 +25746,62 @@ function openCMenu(ev,id){ ev.stopPropagation(); closeOverlays(); const m=docume
    in this prototype that is a re-seed of the board's data (the same mechanism a time-range change uses, wShift),
    so the change is visible; nothing else is filtered for real. State is per board (DF[board]); Clear resets it.
    ⚠️ Names are scrubbed (example.com / neutral groups); the lists are canned. */
-const DF_OPTS = {
-  mon:['brocade-san-01.example.com','f5-loadbalancer.example.com','fg-firewall.example.com','ospf1.example.com','huawei-switch-01',
-       'cisco2960.example.com','ospfjunos-01','web-01.example.com','db-01.example.com','esx-host-01.example.com'],
-  grp:['Network','Network > Switch','Network > Firewall','Server > Linux','Server > Windows','Cloud > AWS Cloud','Virtualization > VMware ESXi','Database'],
-  tag:['env:prod','env:test','type:vm','type:s3','app:checkout','region:ap-south-1','team:noc']
-};
-const DF_LBL = { mon:'Monitor', grp:'Group', tag:'Tag' };
+/* the filterable fields: the first three are STANDING quick-filter pills, the rest are added from '+ Filter'
+   (request, 9 Nov 2026: "add more filter option") — the DS bar's own default set, scrubbed and canned */
+const DF_FIELDS = [
+  ['monitor','Monitor',true, ['brocade-san-01.example.com','f5-loadbalancer.example.com','fg-firewall.example.com','ospf1.example.com','huawei-switch-01',
+                              'cisco2960.example.com','ospfjunos-01','web-01.example.com','db-01.example.com','esx-host-01.example.com']],
+  ['group','Group',true, ['Network','Network > Switch','Network > Firewall','Server > Linux','Server > Windows','Cloud > AWS Cloud','Virtualization > VMware ESXi','Database']],
+  ['tag','Tag',true, ['env:prod','env:test','type:vm','type:s3','app:checkout','region:ap-south-1','team:noc']],
+  ['severity','Severity',false, ['Down','Unreachable','Critical','Major','Warning','Clear']],
+  ['type','Type',false, ['Linux','Windows','Cisco Switch','Firewall','Load Balancer','AWS EC2','VMware ESXi','MySQL']],
+  ['vendor','Vendor',false, ['Cisco','Fortinet','F5','Huawei','Juniper','Brocade','VMware','Microsoft']],
+  ['status','Status',false, ['Up','Down','Unreachable','Maintenance','Disabled']],
+  ['host','Host Name',false, ['web-01','db-01','app-01','esx-host-01','core-sw-01','edge-fw-01']],
+  ['ip','IP Address',false, ['192.0.2.10','192.0.2.43','192.0.2.58','198.51.100.21','198.51.100.106','203.0.113.7']]
+];
+const DF_LBL = Object.fromEntries(DF_FIELDS.map(f => [f[0], f[1]]));
 const DF = {};
-function dfCur(){ let b = ''; try { b = dashState.cur; } catch (e) {} return DF[b] || (DF[b] = { mon:[], grp:[], tag:[] }); }
+function dfCur(){ let b = ''; try { b = dashState.cur; } catch (e) {} return DF[b] || (DF[b] = Object.fromEntries(DF_FIELDS.map(f => [f[0], []]))); }
 function dfInit(){
+  /* ⚠️ ON THE DS's OWN FILTER (request, 9 Nov 2026: "update using obs design system"): `obs-filters kind="bar"` with
+     `quick-filters` — the DS's "bar + quick filters" variant, as on the product Monitors/Inventory list: the quick
+     fields are STANDING grey category pills, a set pill becomes field = value (+N) with an ×, and '+ Filter' adds any
+     other field. It replaced three obs-select button triggers. The change payload is {conditions, match}. */
   const h = document.getElementById('dashFlt'); if (!h) return;
-  const f = dfCur(), any = f.mon.length + f.grp.length + f.tag.length;
-  h.innerHTML = Object.keys(DF_LBL).map(k => '<obs-select class="dfpill" data-k="' + k + '" trigger="button" multiple searchable="true" ' +
-      'placeholder="' + DF_LBL[k] + '" aria-label="Filter by ' + DF_LBL[k].toLowerCase() + '" value="' + f[k].join(',').replace(/"/g,'&quot;') + '" options="' +
-      JSON.stringify(DF_OPTS[k].map(v => ({ value:v, label:v }))).replace(/"/g,'&quot;') + '"></obs-select>').join('') +
-    (any ? '<button class="dfclr" onclick="dfClear()">Clear</button>' : '');
-  h.querySelectorAll('obs-select.dfpill').forEach(el => el.addEventListener('change', e => {
-    const d = e.detail, v = Array.isArray(d) ? (Array.isArray(d[0]) ? d[0] : d) : (typeof d === 'string' ? d.split(',').filter(Boolean) : []);
-    const k = el.dataset.k, cur = dfCur(); if (JSON.stringify(cur[k]) === JSON.stringify(v)) return;
-    cur[k] = v.slice(); dfApply();
-  }));
+  const f = dfCur();
+  const fields = DF_FIELDS.map(x => ({ key:x[0], label:x[1], type:'enum', values:x[3] }));
+  const value = DF_FIELDS.filter(x => f[x[0]].length).map(x => ({ field:x[0], operator:f[x[0]].length > 1 ? 'in' : '=', value:f[x[0]].length > 1 ? f[x[0]] : f[x[0]][0] }));
+  const j = o => JSON.stringify(o).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  h.innerHTML = '<obs-filters kind="bar" class="dfbar" aria-label="Filter the dashboard" fields="' + j(fields) + '" value="' + j(value) +
+    '" quick-filters="' + j(DF_FIELDS.filter(x => x[2]).map(x => x[0])) + '"></obs-filters>';
+  h.querySelector('obs-filters').addEventListener('change', e => {
+    let d = e.detail; if (Array.isArray(d) && d.length === 1 && d[0] && !Array.isArray(d[0]) && d[0].conditions) d = d[0];
+    const conds = Array.isArray(d) ? (Array.isArray(d[0]) ? d[0] : d) : (d && d.conditions) || [];
+    const next = Object.fromEntries(DF_FIELDS.map(x => [x[0], []]));
+    conds.forEach(c => { const k = c.field || c.operand; if (!next[k]) return;
+      const v = Array.isArray(c.value) ? c.value : String(c.value || '').split(',').filter(Boolean); next[k].push(...v); });
+    const cur = dfCur(); if (JSON.stringify(next) === JSON.stringify(Object.fromEntries(DF_FIELDS.map(x => [x[0], cur[x[0]]])))) return;
+    Object.assign(cur, next); dfApply();
+  });
+}
+let DF_ON = false;
+function dfTog(on){
+  DF_ON = on === undefined ? !DF_ON : !!on;
+  const row = document.getElementById('dashFltRow'), b = document.getElementById('dfTog');
+  if (row) row.hidden = !DF_ON;
+  if (b){ b.setAttribute('variant', DF_ON ? 'primary' : 'neutral-lightest'); b.setAttribute('aria-pressed', DF_ON);
+    const n = Object.values(dfCur()).reduce((a, v) => a + v.length, 0);
+    b.dataset.tip = (DF_ON ? 'Hide filters' : 'Show filters') + (n ? ' · ' + n + ' active' : ''); b.setAttribute('aria-label', b.dataset.tip); }
+  if (typeof fitCanvas === 'function') fitCanvas();
 }
 function dfApply(){
-  const f = dfCur(), n = f.mon.length + f.grp.length + f.tag.length;
+  dfTog(DF_ON);
+  const f = dfCur(), on = DF_FIELDS.filter(x => f[x[0]].length);
   wShift++; renderCanvas();
-  const clr = document.querySelector('#dashFlt .dfclr');
-  if (!!clr !== !!n) dfInit();
-  toast(n ? 'Filtered by ' + Object.keys(DF_LBL).filter(k => f[k].length).map(k => DF_LBL[k] + ' (' + f[k].length + ')').join(' · ') : 'Filter cleared');
+  toast(on.length ? 'Filtered by ' + on.map(x => x[1] + ' (' + f[x[0]].length + ')').join(' · ') : 'Filter cleared');
 }
-function dfClear(){ const f = dfCur(); f.mon = []; f.grp = []; f.tag = []; dfInit(); dfApply(); }
+function dfClear(){ const f = dfCur(); DF_FIELDS.forEach(x => f[x[0]] = []); dfInit(); dfApply(); }
 /* ── CLICK A WIDGET TO SELECT IT — a floating action toolbar on its top edge (Option 1, 8 Nov 2026) ───────────
    The Dynatrace pattern (request with its screenshots): a click on a widget's body selects it — a teal frame — and
    docks a small toolbar centred on the widget's top border: SIZE chip · drag handle · Full screen · Clone · Edit · ⋮.
@@ -35092,8 +35201,8 @@ acHistRender();
     <div class="cwqb">
       <div id="cwRows"></div>
       <div class="cwfil">
-        <svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></svg>
-        <input id="cwFilters" placeholder="Filters" oninput="CW.filters=this.value" />
+        <obs-icon name="filter" aria-hidden="true"></obs-icon>
+        <obs-input id="cwFilters" class="cwfilin" block placeholder="Filters" aria-label="Filters"></obs-input>
       </div>
     </div>
   </div>
@@ -35160,11 +35269,11 @@ acHistRender();
 const CW_VIZ = [
   {k:'chart',  n:'Chart',         vis:'line',  tabs:['Style','Sorting','Markers','Timeline Preference'],
    src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM'], off:['Availability']},
-  {k:'grid',   n:'Grid',          vis:'rows',  tabs:['Style','Sorting','Timeline Preference'],
-   src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM'], off:[]},
+  {k:'grid',   n:'Grid',          vis:'rows',  tabs:['Style','Column Setting','Timeline Preference'],
+   src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM','SLO'], off:[]},
   {k:'topn',   n:'Top N',         vis:'hbars', tabs:['Style','Sorting','Timeline Preference'],
    src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM'], off:[]},
-  {k:'gauge',  n:'Gauge',         vis:'donut', tabs:['Style','Timeline Preference'],
+  {k:'gauge',  n:'Gauge',         vis:'donut', tabs:['Style','Threshold','Timeline Preference'],
    src:['Metric','Availability','Log','Flow','Alert','APM','NetRoute','RUM'], off:[]},
   {k:'heat',   n:'Heat Map',      vis:'heat',  tabs:['Style'],
    src:['Metric','Availability','Alert','APM','RUM','SLO'], off:[]},
@@ -35459,7 +35568,7 @@ const CW_SRC = [
    ctr:['monitor.up.count','monitor.down.count','monitor.unreachable.count','monitor.maintenance.count']},
   {k:'Log',          c:'#a855f7', ink:'#1e0b2e', by:['source','severity','host'],
    ctr:['log.event.count','log.bytes','log.severity.count']},
-  {k:'Flow',         c:'#84cc16', ink:'#13230a', by:['destination.country','source.ip','application'],
+  {k:'Flow',         c:'#84cc16', ink:'#13230a', by:['source.ip','destination.ip','destination.country','application'],
    ctr:['volume.bytes','volume.packets','flow.count']},
   {k:'Alert',        c:'#f2504b', ink:'#2c0a09', by:['severity','policy','monitor'],
    ctr:['alert.count','alert.duration.sec','alert.severity.count']},
@@ -35468,7 +35577,10 @@ const CW_SRC = [
   {k:'NetRoute',     c:'#fb923c', ink:'#2a1405', by:['netroute.name','hop','destination'],
    ctr:['netroute.latency.ms','netroute.packet.loss.percent','netroute.hop.count']},
   {k:'RUM',          c:'#06b6d4', ink:'#052b33', by:['page','browser','country'],
-   ctr:['rum.page.load.ms','rum.session.count','rum.error.count']}
+   ctr:['rum.page.load.ms','rum.session.count','rum.error.count']},
+  /* SLO — the live Grid's ninth source (9 Nov 2026); only Grid lists it */
+  {k:'SLO',          c:'var(--chart-fuchsia)', ink:'var(--bg)', by:['slo','slo.group','monitor'],
+   ctr:['slo.achieved.percent','slo.error.budget.left.percent','slo.violation.count']}
 ];
 const CW_AGG = ['Avg','Sum','Min','Max','Last','Count'];
 const CW_SF  = ['Everywhere','Monitor','Monitor Group','Tag'];
@@ -35511,14 +35623,21 @@ function cwOpen(gi, i){
     if (w){ CW.edit = {g:gi, i:i}; CW.name = w.title || ''; CW.desc = '';
       /* map the board's render type back onto a visualization */
       const back = {spark:'chart', bars:'topn', table:'grid', honey:'heat', hm:'heat', tn:'topn', gauge:'gauge', note:'grid',
-                    pie:'gauge', hbars:'topn', donuts:'gauge', freetext:'freetext', cmp:'cmp', hm:'heat'};
-      CW.viz = back[w.t] || 'chart';
+                    pie:'topn', hbars:'topn', donuts:'gauge', freetext:'freetext', cmp:'cmp', hm:'heat'};
+      CW.viz = w.t === 'gg' && w.gg ? w.gg.viz : (back[w.t] || 'chart');
+      CW.ggLoad = w.t === 'gg' ? (w.ggq || null) : null;   /* Grid / Gauge / Sankey reopen their own style */
       /* ⚠️ EDITING ONE LOADS ITS OWN DRAFT, or Edit Widget would open on an empty form and
          "Update" would blank the text that is on the board. `CW.ft` is assigned AFTER the
          block below resets it — see the `cwFtLoad` call at the end of cwOpen. */
       if (w.t === 'freetext') CW_FT_OPT = w.ftopt === 2 ? 2 : 1;
       CW.hmLoad = w.t === 'hm' ? (w.hmq || null) : null;
-      CW.tnLoad = w.t === 'tn' ? (w.tnq || null) : null;   /* Top N reopens its style, sorting and columns */   /* Heat Map reopens its own group, fields and style */
+      CW.tnLoad = w.t === 'tn' ? (w.tnq || null) : null;   /* Top N reopens its style, sorting and columns */
+      /* ⚠️ THE BOARD's "Top … by Alert Count" PIES AND BARS ARE TOP N WIDGETS (request, 9 Nov 2026: "this widget is
+         Top N, make it link"). They opened as a Gauge; now Edit opens Top N on Pie / Horizontal Bar with the legend on
+         the right and the widget's OWN rows (monitor → alert count, no % unit), so Update keeps its data. */
+      CW.tnData = w.t === 'tn' ? (w.tn && w.tn.rows ? { rows:w.tn.rows, unit:w.tn.unit, ctr:w.tn.ctr } : null)
+                : (w.t === 'pie' || w.t === 'hbars') ? { rows:(w.items || []).map(x => [+x[1], String(x[0])]), unit:'', ctr:'alert.count' } : null;
+      if (w.t === 'pie' || w.t === 'hbars') CW.tnLoad = { tn:w.t === 'pie' ? 4 : 2, legend:w.t === 'pie', tnLegPos:'Right', tnCnt:10 };   /* Heat Map reopens its own group, fields and style */
       if (w.t === 'cmp') CW_CMP_OPT = [2, 3, 4, 5, 6].includes(w.cmpopt) ? w.cmpopt : 1;
       /* ⚠️ EDITING A Compare Value REOPENS ITS OWN QUERY AND STYLE — "Update" re-binds the card to what the
          form shows, so opening on the default counter would silently re-point it */
@@ -35535,7 +35654,7 @@ function cwOpen(gi, i){
                                            hdr:!!w.hdr, orient:w.orient||'h'};
     }
   } else {
-    CW.name = ''; CW.desc = ''; CW.viz = 'chart';
+    CW.name = ''; CW.desc = ''; CW.viz = 'chart'; CW.tnData = null;
   }
   CW.src = 'Metric'; CW.filters = ''; CW.rows = [cwBlank()];
   /* the Free Text draft. `align:'center'` is the live editor's own default — its middle
@@ -35569,6 +35688,7 @@ function cwOpen(gi, i){
   if (CW.ftLoad){ CW.ft = CW.ftLoad; CW.ftLoad = null; }
   cwHmInit(CW.edit ? CW.hmLoad : null); CW.hmLoad = null;
   if (CW.edit && CW.tnLoad) Object.assign(CW.style, CW.tnLoad); CW.tnLoad = null;
+  if (CW.edit && CW.ggLoad) Object.assign(CW.style, JSON.parse(JSON.stringify(CW.ggLoad))); CW.ggLoad = null;
   /* ⚠️ DERIVED HERE, FOR BOTH PATHS. A widget being edited carries no `preset` of its own
      (it is not persisted), so the tile it lights comes from the style it was saved with — and a
      style matching none of them falls back to the first, which is what keeps one always lit. */
@@ -35618,7 +35738,9 @@ function cwRender(){
   document.getElementById('cwSave').textContent  = CW.edit ? 'Update Widget' : 'Create Widget';
   document.getElementById('cwName').value = CW.name;
   document.getElementById('cwDesc').value = CW.desc;
-  document.getElementById('cwFilters').value = CW.filters;
+  { const fi = document.getElementById('cwFilters'); fi.value = CW.filters || '';
+    if (!fi._b){ fi._b = 1; const h = e => { const v = Array.isArray(e.detail) ? e.detail[0] : e.detail; CW.filters = typeof v === 'string' ? v : (fi.value || ''); };
+      fi.addEventListener('input', h); fi.addEventListener('change', h); } }
   /* the widget inherits the dashboard's range — read it off the page head */
   const tl = document.getElementById('tcLabel'), ts = document.getElementById('tcStamp');
   document.getElementById('cwTLabel').textContent = tl ? tl.textContent.trim() : 'Today';
@@ -35660,20 +35782,24 @@ function cwRender(){
   if (cwHmOn()){ cwHmRender(); return; }
 
   /* right-panel tabs come from the visualization */
-  const vtabs = cwTnOn() ? cwTnTabs() : viz.tabs;    /* Top N's Grid style adds a Column Setting tab */
+  const vtabs = cwTnOn() ? cwTnTabs() : cwGgOn() ? GG_TAB[CW.viz] : viz.tabs;    /* Top N's Grid style adds a Column Setting tab */
   if (vtabs.indexOf(CW.tab) < 0) CW.tab = vtabs[0];
-  if (cwTnOn()) CW.rows.forEach(r => { if (!r.by) r.by = src.by.includes('monitor') ? 'monitor' : src.by[0]; });  /* live opens on Result By Monitor */
+  if (cwTnOn() || CW.viz === 'grid') CW.rows.forEach(r => { if (!r.by) r.by = src.by.includes('monitor') ? 'monitor' : src.by[0]; });  /* live opens on Result By Monitor */
   document.getElementById('cwTabs').innerHTML = vtabs.map(t =>
     '<button class="cwtb' + (t===CW.tab?' on':'') + '" onclick="cwTab(\'' + t + '\')">' + t + '</button>').join('');
-  document.getElementById('cwBody').innerHTML = cwTnOn() ? cwTnPanel() : cwPanelHTML(viz);
+  document.getElementById('cwBody').innerHTML = cwTnOn() ? cwTnPanel() : cwGgOn() ? cwGgPanel() : cwPanelHTML(viz);
+  if (cwGgOn()) cwGgBind();
   if (CW.viz === 'cmp') cwCmpBind();
   if (cwTnOn()) cwTnBind();
+  if (CW.viz === 'chart' && CW.tab === 'Style') cwChartBind();
 
   /* query builder */
   const qt = document.getElementById('cwQTab');
   qt.style.background = src.c; qt.style.color = src.ink;
   document.getElementById('cwQTabT').textContent = src.k;
   document.getElementById('cwRows').innerHTML = CW.rows.map((r, n) => cwRowHTML(r, n, src)).join('');
+  cwRowsBind();
+  cwGgRows();   /* Gauge drops Result By and ⊕; Sankey shows its Style-tab order as Result By */
   /* only the sources this visualization offers, and the ones it greys out */
   document.getElementById('cwSrc').innerHTML = (viz.src || CW_SRC.map(s=>s.k)).map(k => {
     const off = (viz.off || []).indexOf(k) >= 0;
@@ -35701,6 +35827,8 @@ function cwPickViz(k){
   if (ok.length && ok.indexOf(CW.src) < 0){
     CW.src = ok[0];
     CW.rows.forEach(r => { r.ctr = ''; r.by = ''; });
+    /* Grid / Gauge / Sankey open with the source's first counter selected, as live does (Sankey: volume.bytes) */
+    if (cwGgOn()) CW.rows[0].ctr = cwSrcOf(CW.src).ctr[0];
   }
   cwRender();
 }
@@ -35722,7 +35850,10 @@ function cwOpenViz(name, opt){
   if (typeof closeAwDrawer === 'function') closeAwDrawer();
   cwOpen();
   const v = CW_VIZ.find(x => x.n.toLowerCase() === String(name).toLowerCase());
-  if (v){ CW.viz = v.k; }
+  if (v){ CW.viz = v.k;
+    /* a type that does not offer the open source (Sankey is Flow-only) moves to its first one, with that source's first counter */
+    const okS = (v.src || []).filter(x => (v.off || []).indexOf(x) < 0);
+    if (okS.length && okS.indexOf(CW.src) < 0){ CW.src = okS[0]; CW.rows = [Object.assign(cwBlank(), { ctr:cwSrcOf(CW.src).ctr[0] })]; } }
   /* Counter Compare compares TWO counters, so it opens with a second row already on a different counter */
   /* Option 5 opens on Column — its bar view is its default (request, 7 Nov 2026) */
   if (CW.viz === 'cmp' && CW_CMP_OPT === 5) CW.style.cmpView = 'Column';
@@ -35882,29 +36013,32 @@ function cwPanelHTML(viz){
   }
   /* Style — the shape tiles are Chart-only in the live editor */
   let h = '';
+  /* ⚠️ CHART's STYLE TAB IS ON THE DS (request, 9 Nov 2026 — Top N's panel as the pattern): the shape tiles are
+     `obs-radio as-button` with the product's chart-type art per option (icon-only `cwcmpwt` segment, name as tooltip),
+     the toggles `obs-switch`, Rotation `obs-input type=number`. Line Width stays the editor's slider — the DS has none.
+     Bound in cwChartBind; a switch repaints only the preview, Points rebuilds (it adds Point Size). */
   if (CW.viz === 'chart'){
-    h += '<div class="cwvars">' + CW_SHAPE.map((s, n) =>
-      '<button class="cwvar' + (n===CW.style.shape?' on':'') + '" title="' + s[0] + '" onclick="cwStyle(\'shape\',' + n + ')">' +
-      s[1] + '</button>').join('') + '</div>';
-    h += '<div class="cwgrid">' +
-      '<div class="cwf"><div class="k">Rotation</div><div class="cwrot">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"/></svg>' +
-      '<input type="number" min="0" max="360" value="' + CW.style.rotation + '" onchange="cwStyle(\'rotation\',+this.value)" />' +
-      '<span class="deg">°</span></div></div>' +
-      cwTogHTML('legend','Legend') +
-      cwTogHTML('xt','X-Axis Title') + cwTogHTML('yt','Y-Axis Title') +
-      cwTogHTML('zt','Z-Axis Title') +
-      '<div class="cwf wide"><div class="k">Line Width</div><div class="cwrange">' +
+    const sw = (key, label) => '<div class="cwf"><div class="k">' + label + '</div><obs-switch class="cwchsw" data-k="' + key + '"' +
+      (CW.style[key] ? ' checked' : '') + ' checked-text="ON" unchecked-text="OFF"></obs-switch></div>';
+    const opts = CW_SHAPE.map((x, n) => ({ value:String(n), label:x[0],
+      /* ⚠️ CW_SHAPE[0] (Area) was harvested in its SELECTED state — every fill is var(--page-background-color), so off the
+         lit cell it paints the page colour and vanishes. Top N's TN_TILE.Area is the same art in its resting colours. */
+      icon:'<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + (n === 0 && typeof TN_TILE !== 'undefined' ? TN_TILE.Area : x[1]).replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>' }));
+    h += '<obs-radio class="cwcmpseg cwcmpwt cwchwt" as-button aria-label="Chart style" options="' +
+      JSON.stringify(opts).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>';
+    h += '<div class="cwgrid cwtng">' +
+      '<div class="cwf"><div class="k">Rotation</div><obs-input class="cwchrot" block type="number" value="' + (CW.style.rotation || 0) +
+        '" addon-after="°" aria-label="Rotation"></obs-input></div>' +
+      sw('legend','Legend') + sw('xt','X-Axis Title') + sw('yt','Y-Axis Title') + sw('zt','Z-Axis Title') +
+      '<div class="cwf"><div class="k">Line Width</div><div class="cwrange">' +
       '<span class="cwslot"><input type="range" min="1" max="6" value="' + CW.style.lw +
-      '" oninput="cwStyle(\'lw\',+this.value)" /><span class="cwticks">' +
+      '" aria-label="Line Width" oninput="CW.style.lw=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value;cwPreview()" /><span class="cwticks">' +
       '<i></i><i></i><i></i><i></i><i></i><i></i></span></span>' +
       '<span class="cwlwv">' + CW.style.lw + '</span></div></div>' +
-      cwTogHTML('points','Points') +
-      /* Point Size (request, 26 Oct 2026, the live Chart editor as the picture): beside Points, shown only while Points
-         is ON — a 1–10 track on the Line Width slider's own atoms. It sizes the dots the preview draws. */
+      sw('points','Points') +
       (CW.style.points ? '<div class="cwf"><div class="k">Point Size</div><div class="cwrange">' +
         '<span class="cwslot"><input type="range" min="1" max="10" value="' + (CW.style.psz || 4) +
-        '" aria-label="Point Size" oninput="cwStyle(\'psz\',+this.value)" /><span class="cwticks">' + '<i></i>'.repeat(10) + '</span></span>' +
+        '" aria-label="Point Size" oninput="CW.style.psz=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value;cwPreview()" /><span class="cwticks">' + '<i></i>'.repeat(10) + '</span></span>' +
         '<span class="cwlwv">' + (CW.style.psz || 4) + '</span></div></div>' : '') + '</div>';
     return h;
   }
@@ -37330,31 +37464,49 @@ function cwSum(n){
 
 /* ── query rows ────────────────────────────────────────────────────────────── */
 function cwRowHTML(r, n, src){
-  const sel = (val, list, on, cls) =>
-    '<select onchange="cwSet(' + n + ',\'' + cls + '\',this.value)">' +
-    (on ? '' : '<option value="">' + (cls==='ctr' ? 'Select Counter' : 'Select') + '</option>') +
-    list.map(o => '<option' + (o===val?' selected':'') + '>' + o + '</option>').join('') + '</select>';
+  /* ON THE DS (request, 9 Nov 2026): the four dropdowns are obs-select (block, so they fill their column — the shadow .sel
+     is otherwise a fixed 240px), Source is obs-input, Σ / ＋ / ⊗ are squared icon obs-buttons. Values are set as
+     PROPERTIES and change bound with addEventListener in cwRowsBind — a custom element's inline on-attribute is inert.
+     Counter is searchable (the product dropdown is searchable by default; its list is long). */
+  const J = v => JSON.stringify(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const sel = (k, list, ph, lab, search) => '<obs-select class="cwqsel' + (k === 'ctr' && !r.ctr ? ' err' : '') + '" data-n="' + n + '" data-k="' + k + '" block' + (search ? ' searchable="true"' : '') +
+    ' placeholder="' + ph + '" aria-label="' + lab + '" options="' + J(list.map(o => ({ value:o, label:o }))) + '"></obs-select>';
+  const btn = (cls, variant, icon, tip, call) => '<obs-button class="cwqbtn ' + cls + '" squared variant="' + variant + '" aria-label="' + tip + '" data-tip="' + tip +
+    '" onclick="dsTap(this)&&' + call + '"><obs-icon name="' + icon + '"></obs-icon></obs-button>';
   return '<div class="cwqr">' +
-    '<div class="cwqf c' + (!r.ctr ? ' err' : '') + '"><div class="k">Counter <b>*</b></div>' + sel(r.ctr, src.ctr, false, 'ctr') + '</div>' +
-    '<div class="cwqf a"><div class="k">Aggregation <b>*</b></div>' + sel(r.agg, CW_AGG, true, 'agg') + '</div>' +
-    '<div class="cwqf sf"><div class="k">Source Filter</div>' + sel(r.sf, CW_SF, true, 'sf') + '</div>' +
-    '<div class="cwqf s"><div class="k">Source</div>' +
-      '<input value="' + (r.src||'').replace(/"/g,'&quot;') + '" placeholder="Everywhere" oninput="cwSet(' + n + ',\'src\',this.value)" /></div>' +
-    '<div class="cwqf rb"><div class="k">Result By</div>' + sel(r.by, src.by, false, 'by') + '</div>' +
-    '<button class="cwqbtn' + (r.sum?' on':'') + '" title="' + (r.sum?'Remove the summary series':'Add a summary row (Σ)') +
-      '" onclick="cwSum(' + n + ')">Σ</button>' +
-    (n === 0
-      ? '<button class="cwqbtn" title="Add another counter to this widget" onclick="cwAddRow()">＋</button>'
-      : '<button class="cwqbtn rm" title="Remove this counter" onclick="cwDelRow(' + n + ')">⊗</button>') +
+    '<div class="cwqf c' + (!r.ctr ? ' err' : '') + '"><div class="k">Counter <b>*</b></div>' + sel('ctr', src.ctr, 'Select Counter', 'Counter', true) + '</div>' +
+    '<div class="cwqf a"><div class="k">Aggregation <b>*</b></div>' + sel('agg', CW_AGG, 'Select', 'Aggregation') + '</div>' +
+    '<div class="cwqf sf"><div class="k">Source Filter</div>' + sel('sf', CW_SF, 'Select', 'Source Filter') + '</div>' +
+    '<div class="cwqf s"><div class="k">Source</div><obs-input class="cwqin" data-n="' + n + '" data-k="src" block placeholder="Everywhere" aria-label="Source" value="' +
+      String(r.src || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-input></div>' +
+    '<div class="cwqf rb"><div class="k">Result By</div>' + sel('by', src.by, 'Select', 'Result By') + '</div>' +
+    btn('sum' + (r.sum ? ' on' : ''), r.sum ? 'primary' : 'default', 'sigma', r.sum ? 'Remove the summary series' : 'Add a summary row (Σ)', 'cwSum(' + n + ')') +
+    (n === 0 ? btn('add', 'default', 'plus', 'Add another counter to this widget', 'cwAddRow()')
+             : btn('rm', 'default', 'times-circle', 'Remove this counter', 'cwDelRow(' + n + ')')) +
     '</div>';
 }
+/* the row's DS controls: values as properties (options exist by then), change → cwSet */
+function cwRowsBind(){
+  const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  document.querySelectorAll('#cwRows obs-select.cwqsel').forEach(el => {
+    const n = +el.dataset.n, k = el.dataset.k, r = CW.rows[n]; if (!r) return;
+    el.value = r[k] || '';
+    el.addEventListener('change', e => { const v = det(e); if (v != null && v !== r[k]) cwSet(n, k, v); });
+  });
+  document.querySelectorAll('#cwRows obs-input.cwqin').forEach(el => {
+    const n = +el.dataset.n, h = e => { const v = det(e); cwSet(n, 'src', typeof v === 'string' ? v : (el.value || '')); };
+    el.addEventListener('input', h); el.addEventListener('change', h);
+  });
+}
 function cwSet(n, k, v){ CW.rows[n][k] = v; cwPreview(); cwValid();
-  if (k === 'ctr'){ const el = document.querySelectorAll('.cwqf.c')[n]; if (el) el.classList.toggle('err', !v); } }
+  if (k === 'ctr'){ const el = document.querySelectorAll('.cwqf.c')[n]; if (el){ el.classList.toggle('err', !v);
+    const so = el.querySelector('obs-select'); if (so) so.classList.toggle('err', !v); } } }
 function cwAddRow(){ CW.rows.push(cwBlank()); cwRender(); }
 function cwDelRow(n){ CW.rows.splice(n, 1); cwRender(); }
 
 /* ── preview ───────────────────────────────────────────────────────────────── */
 function cwPreview(){
+  { const h0 = document.getElementById('cwPrev'); if (h0) h0.classList.remove('cwchon'); }   /* only the Chart preview fills the pane edge to edge */
   if (cwHmOn()){ cwHmPreview(); return; }
   /* ⚠️ FREE TEXT PREVIEWS THE WIDGET ITSELF, not a chart — so the preview pane and the board
      MUST render through one function (`ftHTML`), or what you approve and what lands on the
@@ -37383,9 +37535,11 @@ function cwPreview(){
     return;
   }
   if (cwTnOn()){ document.getElementById('cwPrev').innerHTML = tnHTML(cwTnSpec()); tnHcMount(); return; }
+  if (cwGgOn()){ document.getElementById('cwPrev').innerHTML = '<div class="ggprev">' + ggHTML(cwGgSpec()) + '</div>'; return; }
   const viz = cwVizOf(CW.viz), src = cwSrcOf(CW.src), c = src.c;
   const ctr = CW.rows.map(r => r.ctr).filter(Boolean);
   const host = document.getElementById('cwPrev');
+  host.classList.remove('cwchon');
   const w = 460, h = 210, lw = CW.style.lw || 2;
   /* the live preview carries a % scale down the left and time labels along the bottom,
      with faint gridlines — a bare line reads as a sketch, not as the widget */
@@ -37477,6 +37631,77 @@ function cwPreview(){
   host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + (h + (CW.style.legend ? 20 : 0)) + '" width="100%">' +
     (CW.style.rotation ? '<g transform="rotate(' + CW.style.rotation + ' ' + (w/2) + ' ' + (h/2) + ')">' : '<g>') +
     inner + '</g>' + legend + '</svg>';
+  if (CW.viz === 'chart') cwChMount(host);   /* the live preview is Highcharts — the SVG above is the offline fallback */
+}
+/* ══ CHART PREVIEW ON HIGHCHARTS — the live 10.0.1 config (request, 9 Nov 2026: "same to same" with /dashboard) ══════
+   Read off the live editor's own chart DOM: an `areaspline` in the palette's first colour (#14B8A6 = --chart-vivid-teal)
+   with a vertical gradient from the colour to transparent, one point every 5 minutes from the range's start to now,
+   y gridlines in --chart-grid-line-color, both axis lines in --bottom-line-color, labels 0.65rem in --page-text-color,
+   y as "N%", x as Highcharts' own datetime labels ("9. Nov", "02:00" …), and an HTML tooltip: the timestamp in bold,
+   then a 8px square swatch · the counter · the bold value. The eight Style tiles map onto live's series types:
+   Area · Line · Horizontal Bar · Vertical Bar and their four stacked twins. Every Style control drives it. */
+const CW_CH_TYPES = [['areaspline',''],['spline',''],['bar',''],['column',''],['areaspline','normal'],['spline','normal'],['bar','normal'],['column','normal']];
+let CW_CHC = null;
+function cwChFmt(t){
+  const d = new Date(t), D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p = n => String(n).padStart(2, '0'), h = d.getHours() % 12 || 12;
+  return D[d.getDay()] + ', ' + M[d.getMonth()] + ' ' + p(d.getDate()) + ', ' + d.getFullYear() + ' ' + p(h) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + (d.getHours() < 12 ? 'AM' : 'PM');
+}
+/* deterministic per counter: a level around 48, ±6 of jitter and an occasional dip — the live CPU series' shape */
+function cwChSeries(seed, t0, t1, pct){
+  let x = seed * 9301 % 233280 || 7; const r = () => (x = (x * 9301 + 49297) % 233280) / 233280;
+  const out = [], step = 300000, base = pct ? 44 + r() * 10 : 300 + r() * 600;
+  for (let t = t0; t <= t1; t += step){ const j = (r() - .5) * (pct ? 12 : base * .3), dip = r() < .04 ? -(pct ? 8 : base * .3) * r() : 0;
+    out.push([t, +Math.max(0, base + j + dip).toFixed(2)]); }
+  return out;
+}
+function cwChHcCfg(){
+  const st = CW.style, rows = CW.rows.filter(r => r.ctr), ty = CW_CH_TYPES[st.shape || 0] || CW_CH_TYPES[0];
+  const t1 = typeof tlB === 'number' ? tlB : Date.now(), t0 = typeof tlA === 'number' ? tlA : (d => { d.setHours(0,0,0,0); return +d; })(new Date());
+  const lab = { color:'var(--page-text-color)', fontSize:'0.65rem' };
+  const ser = rows.map((r, i) => { const nm = r.ctr + '.' + String(r.agg || 'Avg').toLowerCase(), pct = /percent/.test(r.ctr);
+    return { name:nm, pct, data:cwChSeries(97 + i * 41 + r.ctr.length * 13, t0, t1, pct), color:TN_PAL[i % TN_PAL.length] }; });
+  const pctAll = ser.length && ser.every(x => x.pct), U = pctAll ? '%' : '';
+  if (ser.length && rows.some(r => r.sum)){
+    const d = ser[0].data.map((p, k) => [p[0], +(ser.reduce((a, x) => a + x.data[k][1], 0) / ser.length).toFixed(2)]);
+    ser.push({ name:'Σ summary', data:d, color:'var(--neutral-light)', dashStyle:'Dash', fillOpacity:0, type:ty[0] === 'areaspline' ? 'spline' : undefined });
+  }
+  const area = ty[0] === 'areaspline';
+  return {
+    chart:{ type:ty[0], backgroundColor:'transparent', style:{ fontFamily:'var(--chart-font-family)' }, spacing:[10, 10, 6, 0], animation:false },
+    time:{ useUTC:false }, title:{ text:null }, credits:{ enabled:false }, exporting:{ enabled:false },
+    subtitle:st.zt ? { text:ser.map(x => x.name).join(', '), align:'right', style:{ color:'var(--neutral-light)', fontSize:'11px' } } : { text:null },
+    caption:{ text:null },
+    legend:{ enabled:!!st.legend, align:'center', verticalAlign:'bottom', symbolWidth:11, symbolHeight:11, symbolRadius:1,
+      itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' }, itemHoverStyle:{ color:'var(--page-text-color)' } },
+    xAxis:{ type:'datetime', lineColor:'var(--bottom-line-color)', lineWidth:1, tickLength:0, gridLineWidth:0,
+      labels:{ style:lab, rotation:-(+st.rotation || 0) || 0 }, title:{ text:st.xt ? 'Time' : null, style:lab }, crosshair:false },
+    yAxis:{ min:0, gridLineColor:'var(--chart-grid-line-color)', lineColor:'var(--bottom-line-color)', lineWidth:1, stackLabels:{ enabled:false },
+      labels:{ format:'{value}' + U, style:lab }, title:{ text:st.yt ? (ser[0] ? ser[0].name : 'Value') : null, style:lab },
+      plotLines:st.markers ? [{ value:+st.mk || 0, color:'var(--severity-major)', width:1.5, dashStyle:'Dash', zIndex:5,
+        label:{ text:(+st.mk || 0) + U, align:'right', style:{ color:'var(--severity-major)', fontSize:'0.65rem' } } }] : [] },
+    tooltip:{ useHTML:true, shared:true, outside:false, backgroundColor:'var(--chart-tooltip-background)', borderColor:'var(--border-color)', borderWidth:1, borderRadius:10,
+      shadow:true, padding:8, style:{ color:'var(--page-text-color)', fontFamily:'var(--chart-font-family)', fontSize:'12px' },
+      formatter(){ return '<div style="font-weight:700;font-size:11px">' + cwChFmt(this.x) + '</div>' + (this.points || [this.point]).map(pt =>
+        '<div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-top:6px"><svg height="8" width="8" style="flex:0 0 8px;margin-right:4px"><rect width="8" height="8" fill="' + pt.color + '"/></svg>' +
+        '<span style="margin-right:auto">' + pt.series.name + '</span><b style="margin-left:24px;font-size:13px">' + pt.y + U + '</b></div>').join(''); } },
+    plotOptions:{ series:{ animation:false, lineWidth:+st.lw || 2, stacking:ty[1] || undefined, borderWidth:0, states:{ inactive:{ opacity:1 } },
+        marker:{ enabled:!!st.points, symbol:'circle', radius:+st.psz || 4, states:{ hover:{ radius:6, lineWidth:3 } } } },
+      areaspline:{ fillOpacity:1 }, bar:{ maxPointWidth:50 }, column:{ maxPointWidth:50 } },
+    series:ser.map(x => Object.assign({ name:x.name, data:x.data, color:x.color }, x.dashStyle ? { dashStyle:x.dashStyle } : {}, x.type ? { type:x.type } : {},
+      area && !x.dashStyle ? { fillColor:{ linearGradient:{ x1:0, y1:0, x2:0, y2:1 }, stops:[[0, x.color], [1, 'color-mix(in srgb,' + x.color + ' 0%,transparent)']] } } : {}))
+  };
+}
+function cwChMount(host){
+  if (!CW.rows.some(r => r.ctr)) return;            /* no counter: the SVG's empty axes frame stays, as before */
+  wHc().then(H => {
+    if (!CW.open || CW.viz !== 'chart' || !host.isConnected) return;
+    if (CW_CHC){ try { CW_CHC.destroy(); } catch (e) {} CW_CHC = null; }
+    host.classList.add('cwchon'); host.innerHTML = '<div class="cwchc"></div>';
+    const el = host.firstChild; CW_CHC = H.chart(el, cwChHcCfg());
+    const ro = new ResizeObserver(() => { if (CW_CHC && CW_CHC.renderTo === el && el.offsetWidth) CW_CHC.setSize(el.offsetWidth, el.offsetHeight, false); });
+    ro.observe(el);
+  }).catch(() => {});
 }
 
 /* The Compare Value card the editor would place, built from the form. The seed comes from the counter's name
@@ -37674,6 +37899,18 @@ function cwSave(place){
     /* option 2 carries a value row, legend and a 4-row table under the chart — at the 310px default the table was cut off
        (6 Nov 2026), so it is placed taller. Create only: an edit never resizes a widget the user has sized. */
     if (place) awAdd(name, 'cmp', draft.cmpopt >= 4 ? Object.assign({}, draft, {h:190}) : draft.cmpopt > 1 ? Object.assign({}, draft, {h: draft.cmpTbl === false ? 330 : 470}) : draft);
+    else toast('\u2713 "' + name + '" saved to User Define \u2014 add it from Add New Widget when you need it');
+    return;
+  }
+  /* Grid / Gauge / Sankey carry their spec (ggHTML) and the editor state (ggq), like Top N */
+  if (cwGgOn()){
+    const spec = cwGgSpec(), q = {}; Object.keys(CW.style).filter(k => /^gg/.test(k)).forEach(k => q[k] = JSON.parse(JSON.stringify(CW.style[k])));
+    if (CW.edit){ const w0 = (WIDGETS[CW.edit.g] || [])[CW.edit.i];
+      if (w0){ histDo('Edit widget \u201c' + name + '\u201d'); w0.t = 'gg'; w0.gg = spec; w0.ggq = q; w0.title = name; renderCanvas(); }
+      cwClose(); toast('\u2713 "' + name + '" updated \u2014 ' + viz.n); return; }
+    if (!W_USER.some(u => u[0] === name)) W_USER.unshift([name, viz.vis]);
+    cwClose();
+    if (place) awAdd(name, 'gg', { gg:spec, ggq:q, span:CW.viz === 'gauge' ? 4 : 6, h:CW.viz === 'gauge' ? 230 : 310 });
     else toast('\u2713 "' + name + '" saved to User Define \u2014 add it from Add New Widget when you need it');
     return;
   }
@@ -38076,9 +38313,13 @@ function cwHmSave(place){
    Sorting = Counter (<counter>.<agg>) · Top | Last · Count (10). Timeline Preference = Use Custom Sticky Timeline.
    ⚠️ ONE renderer (`tnHTML`) for the preview and the board widget (`t:'tn'`), so what you set is what lands.
    ⚠️ Divergences, stated: hosts scrubbed to example.com / RFC 5737; the ten values are the live screen's own. */
-const TN_TILE = {"Area": "<svg viewBox=\"0 0 48 38\"><path d=\"M7.74,29.6l-3.35-3.16v7.87h39.39V14.07l-5.86,6.56-4.26-4.38-5.83,8.57-5.03-4.87-5.65,8.87-4.5-4.01-4.92,4.76v.02Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path><path d=\"M8.66,22.55h-.06c-.26-.02-.5-.15-.63-.37l-3.7-5.65c-.25-.38-.14-.89.24-1.13s.89-.14,1.13.24l3.1,4.74,3.55-4.1c.14-.17.35-.27.57-.29.22-.02.44.06.6.21l3.54,3.19,4.8-7.4c.13-.21.36-.34.61-.37.25-.03.5.07.67.25l4.05,4.15,4.99-8.43c.14-.24.38-.38.66-.4.26,0,.53.1.7.31l4.38,5.66,4.63-7.72c.23-.39.73-.51,1.12-.29s.51.73.29,1.12l-5.25,8.75c-.14.23-.38.38-.66.4-.29.02-.53-.1-.7-.31l-4.37-5.66-4.92,8.3c-.13.22-.35.36-.61.4-.26.03-.5-.06-.69-.24l-4.08-4.19-4.76,7.34c-.13.2-.34.33-.58.36-.24.04-.48-.04-.66-.2l-3.64-3.27-3.71,4.29c-.15.18-.38.29-.62.29Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M43.14,35.14H5.91c-1.06,0-1.91-.86-1.91-1.91V3.68c0-.46.37-.82.82-.82s.82.37.82.82v29.54c0,.15.12.28.28.28h37.23c.46,0,.82.37.82.82s-.37.82-.82.82h0Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "Line": "<svg viewBox=\"0 0 48 38\"><path d=\"M4.8,33.61c-.12,0-.25-.03-.36-.09-.39-.2-.54-.69-.34-1.08l5.97-11.56c.11-.21.3-.36.54-.42.24-.05.48,0,.67.15l3.46,2.76,3.85-8.58c.1-.24.32-.41.58-.46s.52.04.71.22l2.68,2.67,5.45-9.3c.14-.25.41-.4.7-.4h0c.29,0,.54.15.7.4l5.19,8.86,3.63-8.1c.18-.4.66-.58,1.06-.4.4.18.58.66.4,1.06l-4.27,9.52c-.12.28-.39.46-.69.48-.3,0-.58-.13-.73-.39l-5.29-9.02-5.29,9.02c-.12.21-.34.36-.59.39-.25.04-.5-.05-.67-.23l-2.59-2.58-3.79,8.47c-.1.23-.3.39-.54.45s-.5,0-.69-.15l-3.5-2.79-5.52,10.7c-.14.28-.42.43-.71.43h0Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M5.87,34.2c-.3,0-.6-.18-.73-.49-.17-.41,0-.88.42-1.05l11.5-4.99,3.29-5.48c.16-.27.46-.42.78-.38l5.27.6,1.54-6.78c.08-.31.32-.55.65-.61s.64.09.81.36l5.33,8.5,3.57-5.12c.25-.36.75-.46,1.11-.2.36.26.45.75.2,1.11l-4.27,6.12c-.15.22-.38.34-.68.34-.27,0-.51-.15-.66-.37l-4.94-7.89-1.28,5.6c-.1.4-.46.67-.87.62l-5.46-.62-3.15,5.25c-.09.14-.21.26-.37.32l-11.73,5.1c-.1.05-.21.07-.31.07l-.02-.02Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "HorizontalBar": "<svg viewBox=\"0 0 48 38\"><path d=\"M4.83,35.23c-.46,0-.83-.37-.83-.83V3.6c0-.46.37-.83.83-.83s.83.37.83.83v30.8c0,.46-.37.83-.83.83Z\" style=\"fill: var(--chart-line-type-icon);\"></path><rect x=\"7.91\" y=\"15.7\" width=\"18.95\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"7.91\" y=\"26.7\" width=\"28.43\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><rect x=\"7.7\" y=\"4.7\" width=\"36.3\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect></svg>", "VerticalBar": "<svg viewBox=\"0 0 48 38\"><path d=\"M43.2,34.33H4.8c-.44,0-.8-.36-.8-.8s.36-.8.8-.8h38.4c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path><rect x=\"20.39\" y=\"15.4\" width=\"6.4\" height=\"14.93\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"31.05\" y=\"9\" width=\"6.4\" height=\"21.33\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><rect x=\"9.72\" y=\"3.67\" width=\"6.4\" height=\"26.67\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect></svg>", "Pie": "<svg viewBox=\"0 0 48 38\"><path d=\"M37.97,20.9c0,3.14-.73,4.89-2.48,7.5s-3.69,4.38-6.59,5.58-5.5,1.72-8.58,1.11-5.74-1.89-7.96-4.11c-2.22-2.22-3.69-4.62-4.3-7.7-.61-3.08-.44-5.77.76-8.67,1.2-2.9,2.86-5.04,5.47-6.78,2.61-1.74,4.49-2.61,7.63-2.61l.26,15.78,15.78-.1h0Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M22.87,4.27c-.61,0-1.22.04-1.82.1-2.49.29-4.89,1.17-6.99,2.57-2.61,1.74-4.64,4.22-5.84,7.12-1.2,2.9-1.52,6.09-.9,9.17.61,3.08,2.12,5.91,4.34,8.12,2.22,2.22,5.05,3.73,8.12,4.34,3.08.61,6.27.3,9.17-.9s5.38-3.23,7.12-5.84c1.4-2.1,2.28-4.5,2.57-6.99.07-.6.1-1.21.1-1.82h-15.87s0-15.87,0-15.87ZM36.79,21.96c-.28,2.13-1.04,4.18-2.25,5.98-1.54,2.31-3.74,4.11-6.3,5.17-2.57,1.06-5.39,1.34-8.11.8s-5.23-1.88-7.19-3.84c-1.96-1.96-3.3-4.47-3.84-7.19-.54-2.72-.26-5.55.8-8.11,1.06-2.57,2.86-4.76,5.17-6.3,1.8-1.2,3.85-1.97,5.98-2.25v15.75h15.75-.01ZM40.9,16.04c-.17-1.46-.54-2.89-1.1-4.25-.8-1.92-1.97-3.67-3.44-5.15-1.47-1.47-3.22-2.64-5.15-3.44-1.36-.56-2.79-.93-4.25-1.1-.6-.07-1.21-.1-1.82-.1v15.87h15.87c0-.61-.04-1.22-.1-1.82h-.01ZM26.95,16.04V3.94c1.22.16,2.41.48,3.55.95,1.7.71,3.25,1.74,4.56,3.04,1.3,1.3,2.34,2.85,3.04,4.56.47,1.14.79,2.34.95,3.55h-12.11,0Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "TopN Solid Gauge View": "<svg viewBox=\"0 0 48 38\"><path d=\"M23.83,2.87c3.32,0,6.31.68,9.08,2.51,2.77,1.82,4.95,4.42,6.27,7.46l-9.42,3.15c-.45-1.05-1.21-1.95-2.16-2.58-.96-.63-2.45-1.04-3.59-1.04l-.17-9.51Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M38.94,12.25c1.51,3.49,1.81,7.39.84,11.07-.97,3.68-2.62,6.2-5.65,8.5-3.03,2.3-6.75,3.51-10.55,3.45-3.8-.06-6.82-1.3-9.78-3.7l6.46-7.36c1.02.83,2.29,1.29,3.6,1.31,1.31.02,2.86-.37,3.9-1.17,1.05-.79,2.26-2.59,2.59-3.86s.23-2.62-.29-3.82l8.88-4.42Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M24,2C14.61,2,7,9.61,7,19s7.61,17,17,17,17-7.61,17-17S33.39,2,24,2ZM24.91,3.87c5.61.33,10.38,3.7,12.72,8.49l-6.79,3.14c-1.14-2.23-3.34-3.82-5.93-4.13V3.87ZM29.87,19c0,3.24-2.63,5.87-5.87,5.87s-5.87-2.63-5.87-5.87,2.63-5.87,5.87-5.87,5.87,2.63,5.87,5.87ZM8.82,19c0-8.08,6.31-14.66,14.27-15.13v7.5c-3.82.45-6.78,3.69-6.78,7.63,0,2.13.87,4.06,2.27,5.46l-4.74,5.8c-3.07-2.78-5.02-6.78-5.02-11.25ZM24,34.18c-3.26,0-6.27-1.04-8.74-2.78l4.76-5.82c1.16.71,2.52,1.12,3.98,1.12,4.25,0,7.69-3.44,7.69-7.69,0-.62-.08-1.22-.22-1.79l6.86-3.17c.54,1.56.85,3.22.85,4.96,0,8.38-6.8,15.18-15.18,15.18Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "Grid": "<svg width=\"48\" height=\"40\" viewBox=\"0 0 48 40\"><path d=\"M41.17,4.93H6.81c-1.27,0-2.3.93-2.3,2.09v5.55h38.94v-5.55c0-1.15-1.03-2.09-2.3-2.09h0Z\" style=\"opacity: 0.2; fill: var(--chart-type-icon);\"></path><path d=\"M39.55,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM14,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM26.22,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M30.87,12.57H4.52v20.25c0,1.24,1.03,2.25,2.3,2.25h34.36c1.27,0,2.3-1.01,2.3-2.25V12.57h-12.61Z\" style=\"opacity: 0.1; fill: var(--chart-type-icon);\"></path><path d=\"M41.65,4.51H6.35c-1.3,0-2.35,1.06-2.35,2.35v26.28c0,1.3,1.06,2.35,2.35,2.35h35.3c1.3,0,2.35-1.06,2.35-2.35V6.86c0-1.3-1.06-2.35-2.35-2.35ZM16.94,34.32H6.35c-.65,0-1.18-.52-1.18-1.18v-5.1h11.76v6.28h0ZM16.94,26.87H5.18v-6.28h11.76v6.28ZM16.94,19.41H5.18v-6.28h11.76v6.28ZM16.94,11.97H5.18v-5.1c0-.65.52-1.18,1.18-1.18h10.59v6.28h0ZM29.89,34.32h-11.76v-6.28h11.76v6.28ZM29.89,26.87h-11.76v-6.28h11.76v6.28ZM29.89,19.41h-11.76v-6.28h11.76v6.28ZM29.89,11.97h-11.76v-6.28h11.76v6.28ZM42.83,33.15c0,.65-.52,1.18-1.18,1.18h-10.59v-6.28h11.76v5.1h0ZM42.83,26.87h-11.76v-6.28h11.76v6.28ZM42.83,19.41h-11.76v-6.28h11.76v6.28ZM42.83,11.97h-11.76v-6.28h10.59c.65,0,1.18.52,1.18,1.18v5.1h0Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path d=\"M8.45,17.84h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11ZM14,30.07h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM14,22.29h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path></svg>", "Packed Bubble Chart": "<svg width=\"48\" height=\"39\" viewBox=\"0 0 48 39\" fill=\"none\"><path d=\"M6.46725 32.7967C6.51972 33.3124 6.92969 33.7224 7.44541 33.7749L7.55769 33.7806H40.4423C41.0098 33.7806 41.4765 33.3493 41.5328 32.7967L41.5385 32.6844V7.1075C41.5385 6.50211 41.0477 6.01134 40.4423 6.01134V4.5498C41.8549 4.5498 43 5.69492 43 7.1075V32.6844C43 34.097 41.8549 35.2421 40.4423 35.2421H7.55769C6.14512 35.2421 5 34.097 5 32.6844V7.1075C5 5.69492 6.14512 4.5498 7.55769 4.5498V6.01134C6.9523 6.01134 6.46154 6.50211 6.46154 7.1075V32.6844L6.46725 32.7967ZM40.4423 4.5498V6.01134H7.55769V4.5498H40.4423Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path opacity=\"0.4\" d=\"M35.207 27.0537C36.459 27.0539 37.4736 28.0693 37.4736 29.3213C37.4734 30.5731 36.4589 31.5877 35.207 31.5879C33.955 31.5879 32.9397 30.5733 32.9395 29.3213C32.9395 28.0691 33.9549 27.0537 35.207 27.0537ZM13.0879 8.2041C14.501 8.2041 15.6464 9.34961 15.6465 10.7627C15.6465 12.1758 14.501 13.3213 13.0879 13.3213C11.6748 13.3212 10.5293 12.1758 10.5293 10.7627C10.5294 9.34965 11.6748 8.20416 13.0879 8.2041ZM30.3252 9.24023C31.452 9.24023 32.366 10.1535 32.3662 11.2803C32.3662 12.4072 31.4521 13.3213 30.3252 13.3213C29.1985 13.321 28.2852 12.4071 28.2852 11.2803C28.2854 10.1537 29.1986 9.24048 30.3252 9.24023Z\" style=\"fill: var(--chart-type-icon);\"></path><path opacity=\"0.8\" d=\"M26.21 24.7676C27.3367 24.7676 28.2507 25.6809 28.251 26.8076C28.251 27.9345 27.3369 28.8486 26.21 28.8486C25.0832 28.8484 24.1699 27.9344 24.1699 26.8076C24.1702 25.681 25.0834 24.7678 26.21 24.7676ZM33.4492 15.6543C35.3451 15.6545 36.8818 17.1919 36.8818 19.0879C36.8816 20.9837 35.345 22.5203 33.4492 22.5205C31.5532 22.5205 30.0158 20.9838 30.0156 19.0879C30.0156 17.1918 31.5531 15.6543 33.4492 15.6543Z\" style=\"fill: var(--chart-type-icon);\"></path><path opacity=\"0.6\" d=\"M15.1289 24.1377C17.0248 24.1379 18.5615 25.6753 18.5615 27.5713C18.5613 29.4671 17.0247 31.0037 15.1289 31.0039C13.2329 31.0039 11.6955 29.4672 11.6953 27.5713C11.6953 25.6752 13.2328 24.1377 15.1289 24.1377ZM21.2471 12.1016C23.9376 12.1017 26.1182 14.2831 26.1182 16.9736C26.118 19.664 23.9375 21.8446 21.2471 21.8447C18.5565 21.8447 16.3751 19.6641 16.375 16.9736C16.375 14.283 18.5565 12.1016 21.2471 12.1016Z\" style=\"fill: var(--chart-type-icon);\"></path></svg>", "Tree View": "<svg viewBox=\"0 0 48 38\"><polygon points=\"34 15.56 32.36 15.56 21.28 15.56 21.28 4.44 5 4.44 5 33.56 20.67 33.56 22.28 33.56 33 33.56 33 29.54 43 29.54 43 15.56 34 15.56\" style=\"opacity: 0.1; fill: var(--chart-type-icon);\"></polygon><path d=\"M33.36,33.56h9.64v-4.67h-9.64v4.67ZM21.67,4.44v10.74h21.33V4.44h-21.33Z\" style=\"opacity: 0.2; fill: var(--chart-type-icon);\"></path><path d=\"M22.33,3.44H4v31.11h40V3.44h-21.67ZM20.66,32.89H5.67V5.11h15v27.78ZM32.33,32.89h-10v-16.67h10v16.67ZM42.33,32.89h-8.31v-3.33h8.31v3.33ZM42.33,27.88h-8.31v-11.65h8.31v11.65ZM42.33,14.52h-20V5.11h20v9.41Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"};
+const TN_TILE = {"Area": "<svg viewBox=\"0 0 48 38\"><path d=\"M7.74,29.6l-3.35-3.16v7.87h39.39V14.07l-5.86,6.56-4.26-4.38-5.83,8.57-5.03-4.87-5.65,8.87-4.5-4.01-4.92,4.76v.02Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path><path d=\"M8.66,22.55h-.06c-.26-.02-.5-.15-.63-.37l-3.7-5.65c-.25-.38-.14-.89.24-1.13s.89-.14,1.13.24l3.1,4.74,3.55-4.1c.14-.17.35-.27.57-.29.22-.02.44.06.6.21l3.54,3.19,4.8-7.4c.13-.21.36-.34.61-.37.25-.03.5.07.67.25l4.05,4.15,4.99-8.43c.14-.24.38-.38.66-.4.26,0,.53.1.7.31l4.38,5.66,4.63-7.72c.23-.39.73-.51,1.12-.29s.51.73.29,1.12l-5.25,8.75c-.14.23-.38.38-.66.4-.29.02-.53-.1-.7-.31l-4.37-5.66-4.92,8.3c-.13.22-.35.36-.61.4-.26.03-.5-.06-.69-.24l-4.08-4.19-4.76,7.34c-.13.2-.34.33-.58.36-.24.04-.48-.04-.66-.2l-3.64-3.27-3.71,4.29c-.15.18-.38.29-.62.29Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M43.14,35.14H5.91c-1.06,0-1.91-.86-1.91-1.91V3.68c0-.46.37-.82.82-.82s.82.37.82.82v29.54c0,.15.12.28.28.28h37.23c.46,0,.82.37.82.82s-.37.82-.82.82h0Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "Line": "<svg viewBox=\"0 0 48 38\"><path d=\"M4.8,33.61c-.12,0-.25-.03-.36-.09-.39-.2-.54-.69-.34-1.08l5.97-11.56c.11-.21.3-.36.54-.42.24-.05.48,0,.67.15l3.46,2.76,3.85-8.58c.1-.24.32-.41.58-.46s.52.04.71.22l2.68,2.67,5.45-9.3c.14-.25.41-.4.7-.4h0c.29,0,.54.15.7.4l5.19,8.86,3.63-8.1c.18-.4.66-.58,1.06-.4.4.18.58.66.4,1.06l-4.27,9.52c-.12.28-.39.46-.69.48-.3,0-.58-.13-.73-.39l-5.29-9.02-5.29,9.02c-.12.21-.34.36-.59.39-.25.04-.5-.05-.67-.23l-2.59-2.58-3.79,8.47c-.1.23-.3.39-.54.45s-.5,0-.69-.15l-3.5-2.79-5.52,10.7c-.14.28-.42.43-.71.43h0Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M5.87,34.2c-.3,0-.6-.18-.73-.49-.17-.41,0-.88.42-1.05l11.5-4.99,3.29-5.48c.16-.27.46-.42.78-.38l5.27.6,1.54-6.78c.08-.31.32-.55.65-.61s.64.09.81.36l5.33,8.5,3.57-5.12c.25-.36.75-.46,1.11-.2.36.26.45.75.2,1.11l-4.27,6.12c-.15.22-.38.34-.68.34-.27,0-.51-.15-.66-.37l-4.94-7.89-1.28,5.6c-.1.4-.46.67-.87.62l-5.46-.62-3.15,5.25c-.09.14-.21.26-.37.32l-11.73,5.1c-.1.05-.21.07-.31.07l-.02-.02Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "HorizontalBar": "<svg viewBox=\"0 0 48 38\"><path d=\"M4.83,35.23c-.46,0-.83-.37-.83-.83V3.6c0-.46.37-.83.83-.83s.83.37.83.83v30.8c0,.46-.37.83-.83.83Z\" style=\"fill: var(--chart-line-type-icon);\"></path><rect x=\"7.91\" y=\"15.7\" width=\"18.95\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"7.91\" y=\"26.7\" width=\"28.43\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><rect x=\"7.7\" y=\"4.7\" width=\"36.3\" height=\"6.6\" rx=\"1.1\" ry=\"1.1\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect></svg>", "VerticalBar": "<svg viewBox=\"0 0 48 38\"><path d=\"M43.2,34.33H4.8c-.44,0-.8-.36-.8-.8s.36-.8.8-.8h38.4c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path><rect x=\"20.39\" y=\"15.4\" width=\"6.4\" height=\"14.93\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"31.05\" y=\"9\" width=\"6.4\" height=\"21.33\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><rect x=\"9.72\" y=\"3.67\" width=\"6.4\" height=\"26.67\" rx=\"1.07\" ry=\"1.07\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect></svg>", "Pie": "<svg viewBox=\"0 0 48 38\"><path d=\"M37.97,20.9c0,3.14-.73,4.89-2.48,7.5s-3.69,4.38-6.59,5.58-5.5,1.72-8.58,1.11-5.74-1.89-7.96-4.11c-2.22-2.22-3.69-4.62-4.3-7.7-.61-3.08-.44-5.77.76-8.67,1.2-2.9,2.86-5.04,5.47-6.78,2.61-1.74,4.49-2.61,7.63-2.61l.26,15.78,15.78-.1h0Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M22.87,4.27c-.61,0-1.22.04-1.82.1-2.49.29-4.89,1.17-6.99,2.57-2.61,1.74-4.64,4.22-5.84,7.12-1.2,2.9-1.52,6.09-.9,9.17.61,3.08,2.12,5.91,4.34,8.12,2.22,2.22,5.05,3.73,8.12,4.34,3.08.61,6.27.3,9.17-.9s5.38-3.23,7.12-5.84c1.4-2.1,2.28-4.5,2.57-6.99.07-.6.1-1.21.1-1.82h-15.87s0-15.87,0-15.87ZM36.79,21.96c-.28,2.13-1.04,4.18-2.25,5.98-1.54,2.31-3.74,4.11-6.3,5.17-2.57,1.06-5.39,1.34-8.11.8s-5.23-1.88-7.19-3.84c-1.96-1.96-3.3-4.47-3.84-7.19-.54-2.72-.26-5.55.8-8.11,1.06-2.57,2.86-4.76,5.17-6.3,1.8-1.2,3.85-1.97,5.98-2.25v15.75h15.75-.01ZM40.9,16.04c-.17-1.46-.54-2.89-1.1-4.25-.8-1.92-1.97-3.67-3.44-5.15-1.47-1.47-3.22-2.64-5.15-3.44-1.36-.56-2.79-.93-4.25-1.1-.6-.07-1.21-.1-1.82-.1v15.87h15.87c0-.61-.04-1.22-.1-1.82h-.01ZM26.95,16.04V3.94c1.22.16,2.41.48,3.55.95,1.7.71,3.25,1.74,4.56,3.04,1.3,1.3,2.34,2.85,3.04,4.56.47,1.14.79,2.34.95,3.55h-12.11,0Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "TopN Solid Gauge View": "<svg viewBox=\"0 0 48 38\"><path d=\"M23.83,2.87c3.32,0,6.31.68,9.08,2.51,2.77,1.82,4.95,4.42,6.27,7.46l-9.42,3.15c-.45-1.05-1.21-1.95-2.16-2.58-.96-.63-2.45-1.04-3.59-1.04l-.17-9.51Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M38.94,12.25c1.51,3.49,1.81,7.39.84,11.07-.97,3.68-2.62,6.2-5.65,8.5-3.03,2.3-6.75,3.51-10.55,3.45-3.8-.06-6.82-1.3-9.78-3.7l6.46-7.36c1.02.83,2.29,1.29,3.6,1.31,1.31.02,2.86-.37,3.9-1.17,1.05-.79,2.26-2.59,2.59-3.86s.23-2.62-.29-3.82l8.88-4.42Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M24,2C14.61,2,7,9.61,7,19s7.61,17,17,17,17-7.61,17-17S33.39,2,24,2ZM24.91,3.87c5.61.33,10.38,3.7,12.72,8.49l-6.79,3.14c-1.14-2.23-3.34-3.82-5.93-4.13V3.87ZM29.87,19c0,3.24-2.63,5.87-5.87,5.87s-5.87-2.63-5.87-5.87,2.63-5.87,5.87-5.87,5.87,2.63,5.87,5.87ZM8.82,19c0-8.08,6.31-14.66,14.27-15.13v7.5c-3.82.45-6.78,3.69-6.78,7.63,0,2.13.87,4.06,2.27,5.46l-4.74,5.8c-3.07-2.78-5.02-6.78-5.02-11.25ZM24,34.18c-3.26,0-6.27-1.04-8.74-2.78l4.76-5.82c1.16.71,2.52,1.12,3.98,1.12,4.25,0,7.69-3.44,7.69-7.69,0-.62-.08-1.22-.22-1.79l6.86-3.17c.54,1.56.85,3.22.85,4.96,0,8.38-6.8,15.18-15.18,15.18Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "Grid": "<svg width=\"48\" height=\"40\" viewBox=\"0 0 48 40\"><path d=\"M41.17,4.93H6.81c-1.27,0-2.3.93-2.3,2.09v5.55h38.94v-5.55c0-1.15-1.03-2.09-2.3-2.09h0Z\" style=\"opacity: 0.2; fill: var(--chart-type-icon);\"></path><path d=\"M39.55,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM14,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM26.22,7.84h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M30.87,12.57H4.52v20.25c0,1.24,1.03,2.25,2.3,2.25h34.36c1.27,0,2.3-1.01,2.3-2.25V12.57h-12.61Z\" style=\"opacity: 0.1; fill: var(--chart-type-icon);\"></path><path d=\"M41.65,4.51H6.35c-1.3,0-2.35,1.06-2.35,2.35v26.28c0,1.3,1.06,2.35,2.35,2.35h35.3c1.3,0,2.35-1.06,2.35-2.35V6.86c0-1.3-1.06-2.35-2.35-2.35ZM16.94,34.32H6.35c-.65,0-1.18-.52-1.18-1.18v-5.1h11.76v6.28h0ZM16.94,26.87H5.18v-6.28h11.76v6.28ZM16.94,19.41H5.18v-6.28h11.76v6.28ZM16.94,11.97H5.18v-5.1c0-.65.52-1.18,1.18-1.18h10.59v6.28h0ZM29.89,34.32h-11.76v-6.28h11.76v6.28ZM29.89,26.87h-11.76v-6.28h11.76v6.28ZM29.89,19.41h-11.76v-6.28h11.76v6.28ZM29.89,11.97h-11.76v-6.28h11.76v6.28ZM42.83,33.15c0,.65-.52,1.18-1.18,1.18h-10.59v-6.28h11.76v5.1h0ZM42.83,26.87h-11.76v-6.28h11.76v6.28ZM42.83,19.41h-11.76v-6.28h11.76v6.28ZM42.83,11.97h-11.76v-6.28h10.59c.65,0,1.18.52,1.18,1.18v5.1h0Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path d=\"M8.45,17.84h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11ZM14,30.07h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11ZM14,22.29h-5.55c-.61,0-1.11.5-1.11,1.11s.5,1.11,1.11,1.11h5.55c.61,0,1.11-.5,1.11-1.11s-.5-1.11-1.11-1.11Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path></svg>", "Packed Bubble Chart": "<svg width=\"48\" height=\"39\" viewBox=\"0 0 48 39\" fill=\"none\"><path d=\"M6.46725 32.7967C6.51972 33.3124 6.92969 33.7224 7.44541 33.7749L7.55769 33.7806H40.4423C41.0098 33.7806 41.4765 33.3493 41.5328 32.7967L41.5385 32.6844V7.1075C41.5385 6.50211 41.0477 6.01134 40.4423 6.01134V4.5498C41.8549 4.5498 43 5.69492 43 7.1075V32.6844C43 34.097 41.8549 35.2421 40.4423 35.2421H7.55769C6.14512 35.2421 5 34.097 5 32.6844V7.1075C5 5.69492 6.14512 4.5498 7.55769 4.5498V6.01134C6.9523 6.01134 6.46154 6.50211 6.46154 7.1075V32.6844L6.46725 32.7967ZM40.4423 4.5498V6.01134H7.55769V4.5498H40.4423Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path opacity=\"0.4\" d=\"M35.207 27.0537C36.459 27.0539 37.4736 28.0693 37.4736 29.3213C37.4734 30.5731 36.4589 31.5877 35.207 31.5879C33.955 31.5879 32.9397 30.5733 32.9395 29.3213C32.9395 28.0691 33.9549 27.0537 35.207 27.0537ZM13.0879 8.2041C14.501 8.2041 15.6464 9.34961 15.6465 10.7627C15.6465 12.1758 14.501 13.3213 13.0879 13.3213C11.6748 13.3212 10.5293 12.1758 10.5293 10.7627C10.5294 9.34965 11.6748 8.20416 13.0879 8.2041ZM30.3252 9.24023C31.452 9.24023 32.366 10.1535 32.3662 11.2803C32.3662 12.4072 31.4521 13.3213 30.3252 13.3213C29.1985 13.321 28.2852 12.4071 28.2852 11.2803C28.2854 10.1537 29.1986 9.24048 30.3252 9.24023Z\" style=\"fill: var(--chart-type-icon);\"></path><path opacity=\"0.8\" d=\"M26.21 24.7676C27.3367 24.7676 28.2507 25.6809 28.251 26.8076C28.251 27.9345 27.3369 28.8486 26.21 28.8486C25.0832 28.8484 24.1699 27.9344 24.1699 26.8076C24.1702 25.681 25.0834 24.7678 26.21 24.7676ZM33.4492 15.6543C35.3451 15.6545 36.8818 17.1919 36.8818 19.0879C36.8816 20.9837 35.345 22.5203 33.4492 22.5205C31.5532 22.5205 30.0158 20.9838 30.0156 19.0879C30.0156 17.1918 31.5531 15.6543 33.4492 15.6543Z\" style=\"fill: var(--chart-type-icon);\"></path><path opacity=\"0.6\" d=\"M15.1289 24.1377C17.0248 24.1379 18.5615 25.6753 18.5615 27.5713C18.5613 29.4671 17.0247 31.0037 15.1289 31.0039C13.2329 31.0039 11.6955 29.4672 11.6953 27.5713C11.6953 25.6752 13.2328 24.1377 15.1289 24.1377ZM21.2471 12.1016C23.9376 12.1017 26.1182 14.2831 26.1182 16.9736C26.118 19.664 23.9375 21.8446 21.2471 21.8447C18.5565 21.8447 16.3751 19.6641 16.375 16.9736C16.375 14.283 18.5565 12.1016 21.2471 12.1016Z\" style=\"fill: var(--chart-type-icon);\"></path></svg>", "Tree View": "<svg viewBox=\"0 0 48 38\"><polygon points=\"34 15.56 32.36 15.56 21.28 15.56 21.28 4.44 5 4.44 5 33.56 20.67 33.56 22.28 33.56 33 33.56 33 29.54 43 29.54 43 15.56 34 15.56\" style=\"opacity: 0.1; fill: var(--chart-type-icon);\"></polygon><path d=\"M33.36,33.56h9.64v-4.67h-9.64v4.67ZM21.67,4.44v10.74h21.33V4.44h-21.33Z\" style=\"opacity: 0.2; fill: var(--chart-type-icon);\"></path><path d=\"M22.33,3.44H4v31.11h40V3.44h-21.67ZM20.66,32.89H5.67V5.11h15v27.78ZM32.33,32.89h-10v-16.67h10v16.67ZM42.33,32.89h-8.31v-3.33h8.31v3.33ZM42.33,27.88h-8.31v-11.65h8.31v11.65ZM42.33,14.52h-20V5.11h20v9.41Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>", "Donut": "<svg viewBox=\"0 0 48 38\"><path d=\"M24.00,4.00 A15,15 0 0,1 33.64,30.49 L29.46,25.51 A8.5,8.5 0 0,0 24.00,10.50 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M33.64,30.49 A15,15 0 0,1 9.90,24.13 L16.01,21.91 A8.5,8.5 0 0,0 29.46,25.51 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M9.90,24.13 A15,15 0 0,1 24.00,4.00 L24.00,10.50 A8.5,8.5 0 0,0 16.01,21.91 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><circle cx=\"24\" cy=\"19\" r=\"15.8\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></circle><circle cx=\"24\" cy=\"19\" r=\"7.7\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></circle></svg>", "Semi Donut": "<svg viewBox=\"0 0 48 38\"><path d=\"M4.00,31.00 A20,20 0 0,1 17.16,12.21 L20.24,20.66 A11,11 0 0,0 13.00,31.00 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M17.16,12.21 A20,20 0 0,1 36.86,15.68 L31.07,22.57 A11,11 0 0,0 20.24,20.66 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M36.86,15.68 A20,20 0 0,1 44.00,31.00 L35.00,31.00 A11,11 0 0,0 31.07,22.57 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M3.20,31.00 A20.8,20.8 0 0,1 44.80,31.00\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path><path d=\"M3.2,33.6 H44.8\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path></svg>", "Funnel": "<svg viewBox=\"0 0 48 38\"><path d=\"M5,4 H43 L37.4,12 H10.6 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M11.3,13 H36.7 L31.1,21 H16.9 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M17.6,22 H30.4 L28,26 V34 H20 V26 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M4.2,3.2 H43.8 L28.8,26.2 V34.8 H19.2 V26.2 Z\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path></svg>", "Pyramid": "<svg viewBox=\"0 0 48 38\"><path d=\"M24,4.6 L29.3,13 H18.7 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M18.1,14 H29.9 L35.6,23 H12.4 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M11.8,24 H36.2 L42,33.4 H6 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M24,3 L43.6,34.6 H4.4 Z\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path></svg>", "Radial Bar": "<svg viewBox=\"0 0 48 38\"><path d=\"M24.00,4.90 A14.6,14.6 0 1,1 9.40,19.50\" style=\"fill: none; stroke: var(--chart-type-icon); opacity: 0.8; stroke-width: 3.6; stroke-linecap: round;\"></path><path d=\"M24.00,9.90 A9.6,9.6 0 1,1 20.72,28.52\" style=\"fill: none; stroke: var(--chart-type-icon); opacity: 0.6; stroke-width: 3.6; stroke-linecap: round;\"></path><path d=\"M24.00,14.90 A4.6,4.6 0 0,1 27.52,22.46\" style=\"fill: none; stroke: var(--chart-type-icon); opacity: 0.4; stroke-width: 3.6; stroke-linecap: round;\"></path><path d=\"M24,2.6 V36.4\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path></svg>", "Polar Column": "<svg viewBox=\"0 0 48 38\"><path d=\"M24.00,19.00 L24.00,4.00 A15,15 0 0,1 36.99,11.50 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M24.00,19.00 L32.66,14.00 A10,10 0 0,1 32.66,24.00 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M24.00,19.00 L35.26,25.50 A13,13 0 0,1 24.00,32.00 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M24.00,19.00 L24.00,26.50 A7.5,7.5 0 0,1 17.50,22.75 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M24.00,19.00 L14.04,24.75 A11.5,11.5 0 0,1 14.04,13.25 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M24.00,19.00 L16.21,14.50 A9,9 0 0,1 24.00,10.00 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><circle cx=\"24\" cy=\"19\" r=\"16\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></circle></svg>", "Lollipop": "<svg viewBox=\"0 0 48 38\"><rect x=\"10.20\" y=\"9.00\" width=\"1.6\" height=\"23.20\" rx=\".8\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></rect><circle cx=\"11.00\" cy=\"9.00\" r=\"3.4\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></circle><rect x=\"18.90\" y=\"15.00\" width=\"1.6\" height=\"17.20\" rx=\".8\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></rect><circle cx=\"19.70\" cy=\"15.00\" r=\"3.4\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></circle><rect x=\"27.50\" y=\"11.50\" width=\"1.6\" height=\"20.70\" rx=\".8\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></rect><circle cx=\"28.30\" cy=\"11.50\" r=\"3.4\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></circle><rect x=\"36.20\" y=\"20.00\" width=\"1.6\" height=\"12.20\" rx=\".8\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></rect><circle cx=\"37.00\" cy=\"20.00\" r=\"3.4\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></circle><path d=\"M4.8,33.4 H43.2\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path><path d=\"M4.8,3.6 V33.4\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></path></svg>", "Variable Pie": "<svg viewBox=\"0 0 48 38\"><path d=\"M24.00,3.00 A16,16 0 0,1 39.04,24.47 L27.01,20.09 A3.2,3.2 0 0,0 24.00,15.80 Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M35.28,23.10 A12,12 0 0,1 19.90,30.28 L22.91,22.01 A3.2,3.2 0 0,0 27.01,20.09 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M19.14,32.34 A14.2,14.2 0 0,1 10.66,14.14 L20.99,17.91 A3.2,3.2 0 0,0 22.91,22.01 Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path><path d=\"M14.60,15.58 A10,10 0 0,1 24.00,9.00 L24.00,15.80 A3.2,3.2 0 0,0 20.99,17.91 Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><circle cx=\"24\" cy=\"19\" r=\"2.4\" style=\"fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;\"></circle></svg>"};
 const TN_TYPES = [['Area','Area'],['Line','Line'],['HorizontalBar','Horizontal Bar'],['VerticalBar','Vertical Bar'],['Pie','Pie'],
-  ['TopN Solid Gauge View','Gauge'],['Grid','Grid'],['Packed Bubble Chart','Packed Bubble'],['Tree View','Tree View']];
+  ['TopN Solid Gauge View','Gauge'],['Grid','Grid'],['Packed Bubble Chart','Packed Bubble'],['Tree View','Tree View'],
+  /* added 9 Nov 2026 from highcharts.com/demo (read with Playwright: pie-donut · pie-semi-circle · funnel · pyramid ·
+     polar-radial-bar · polar · lollipop · variable-radius-pie) — beyond the live product */
+  ['Donut','Donut'],['Semi Donut','Semi-circle Donut'],['Funnel','Funnel'],['Pyramid','Pyramid'],
+  ['Radial Bar','Radial Bar'],['Polar Column','Polar Column'],['Lollipop','Lollipop'],['Variable Pie','Variable Pie']];
 const TN_ROWS = [[55.72,'brocade-san-01.example.com-192.0.2.195'],[54.18,'f5-loadbalancer.example.com-192.0.2.203'],
   [53.57,'fg-firewall.example.com-192.0.2.196'],[53.12,'ospf1.example.com-192.0.2.43'],[52.89,'huawei-switch-192.0.2.58'],
   [52.87,'cisco2960.example.com-192.0.2.33'],[52.86,'ospfjunos-192.0.2.142'],[52.83,'brocade-san-02.example.com-192.0.2.106'],
@@ -38089,7 +38330,7 @@ const TN_COLS = ['monitor','object.type','object.vendor','object.ip','object.hos
 const tnEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const tnCut = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
 function tnRows(s){
-  const r = TN_ROWS.slice().sort((a, b) => s.order === 'Last' ? a[0] - b[0] : b[0] - a[0]);
+  const r = (Array.isArray(s.rows) && s.rows.length ? s.rows : TN_ROWS).slice().sort((a, b) => s.order === 'Last' ? a[0] - b[0] : b[0] - a[0]);
   return r.slice(0, Math.max(1, Math.min(r.length, +s.count || 10)));
 }
 /* the area/line/vertical-bar frame: % axis on the left, one label per monitor along the floor */
@@ -38115,7 +38356,9 @@ function tnCurve(pts){   /* Catmull-Rom → cubic Béziers, the live series is a
   return d;
 }
 function tnSVG(s){
-  s = s || {}; const rows = tnRows(s), ty = s.type || 'Area', ctr = s.ctr || 'system.cpu.percent.avg';
+  s = s || {}; const rows = tnRows(s), ctr = s.ctr || 'system.cpu.percent.avg';
+  const ty = ({ 'Donut':'Pie', 'Semi Donut':'Pie', 'Variable Pie':'Pie', 'Funnel':'HorizontalBar', 'Pyramid':'HorizontalBar',
+    'Radial Bar':'HorizontalBar', 'Polar Column':'VerticalBar', 'Lollipop':'VerticalBar' })[s.type] || s.type || 'Area';
   const leg = s.legend ? '<div class="tnleg"><i style="background:var(--chart-vivid-teal)"></i>' + tnEsc(ctr) + '</div>' : '';
   const ax = (s.xt ? '<div class="tnxt">' + tnEsc(s.by || 'Monitor') + '</div>' : '') ;
   const yt = s.yt ? '<div class="tnyt">' + tnEsc(ctr) + '</div>' : '';
@@ -38165,9 +38408,11 @@ function tnSVG(s){
     /* object.* columns are hidden by default, as the live Column Setting ships them; unhiding one draws it */
     const hide = s.hide || {}, hid = c => c in hide ? hide[c] : TN_COLS.indexOf(c) > 0;
     const ip = r => (r[1].match(/\d+\.\d+\.\d+\.\d+/) || ['—'])[0];
-    const cols = [[ctr, r => r[0] + '%'], ['monitor', r => r[1]], ['object.type', () => 'Network'],
+    const lead = [[ctr, r => r[0] + '%'], ['monitor', r => r[1]]];
+    if (s.monFirst) lead.reverse();   /* the Grid widget puts MONITOR first, as live does; Top N's own grid keeps the value first */
+    const cols = lead.concat([['object.type', () => 'Network'],
       ['object.vendor', r => r[1].split(/[.-]/)[0].replace(/\d+$/, '')], ['object.ip', ip],
-      ['object.host', r => r[1].split('-192')[0]], ['object.discovery.method', () => 'SNMP']].filter(c => !hid(c[0]));
+      ['object.host', r => r[1].split('-192')[0]], ['object.discovery.method', () => 'SNMP']]).filter(c => !hid(c[0]));
     const spark = r => { const pts = Array.from({length:12}, (_, k) => r[0] - 6 + 6 * Math.sin(k * .9 + r[0])).map((v, k) => (k * 6) + ',' + (18 - (v - 44) / 18 * 16).toFixed(1));
       return '<svg viewBox="0 0 66 20" class="tnspk"><polyline points="' + pts.join(' ') + '" fill="none" stroke="var(--chart-vivid-teal)" stroke-width="1.5"/></svg>'; };
     return '<div class="tn tngrid tnh' + (s.hfs || 'Small')[0] + '"><table><thead><tr>' + cols.map(c => '<th>' + tnEsc((s.dn && s.dn[c[0]]) || c[0]) + '</th>').join('') +
@@ -38190,7 +38435,8 @@ function tnSVG(s){
    tokens, a shared HTML tooltip on var(--chart-tooltip-background). Gauge and Grid are plain HTML on live too, so they keep
    tnSVG. ⚠️ tnSVG is drawn first and stays until Highcharts has loaded (offline = the hand-drawn version). Packed Bubble
    needs highcharts-more and Tree View the treemap module — fetched once, beside the core W_HC_SRC. */
-const TN_HC = ['Area','Line','HorizontalBar','VerticalBar','Pie','Packed Bubble Chart','Tree View'];
+const TN_HC = ['Area','Line','HorizontalBar','VerticalBar','Pie','Packed Bubble Chart','Tree View',
+  'Donut','Semi Donut','Funnel','Pyramid','Radial Bar','Polar Column','Lollipop','Variable Pie'];
 function tnHTML(s){
   s = s || {};
   if (!TN_HC.includes(s.type || 'Area')) return tnSVG(s);
@@ -38199,13 +38445,15 @@ function tnHTML(s){
 let tnHcP = null;
 function tnHc(){
   return wHc().then(H => {
-    if (H.seriesTypes.packedbubble && H.seriesTypes.treemap) return H;
-    if (!tnHcP) tnHcP = ['highcharts-more.js','modules/treemap.js'].reduce((pr, f) => pr.then(() => new Promise((ok, no) => {
+    if (H.seriesTypes.packedbubble && H.seriesTypes.treemap && H.seriesTypes.funnel && H.seriesTypes.variablepie && H.seriesTypes.lollipop) return H;
+    /* lollipop extends dumbbell, which needs highcharts-more — so the order matters */
+    if (!tnHcP) tnHcP = ['highcharts-more.js','modules/treemap.js','modules/funnel.js','modules/variable-pie.js','modules/dumbbell.js','modules/lollipop.js'].reduce((pr, f) => pr.then(() => new Promise((ok, no) => {
       const sc = document.createElement('script'); sc.src = W_HC_SRC.replace('highcharts.js', f); sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); })), Promise.resolve());
     return tnHcP.then(() => H);
   });
 }
 function tnHcCfg(s){
+  const U = s.unit == null ? '%' : s.unit;
   const rows = tnRows(s), ty = s.type || 'Area', ctr = s.ctr || 'system.cpu.percent.avg', by = s.by || 'monitor';
   const PAL = TN_PAL, lab = { color:'var(--page-text-color)', fontSize:'0.65rem' };
   const base = {
@@ -38213,11 +38461,19 @@ function tnHcCfg(s){
     title:{ text:null }, credits:{ enabled:false }, exporting:{ enabled:false }, colors:PAL,
     subtitle:s.zt ? { text:ctr, align:'right', verticalAlign:'top', style:{ color:'var(--neutral-light)', fontSize:'11px', fontWeight:'500' } } : { text:null },
     caption:{ text:null },
-    legend:{ enabled:!!s.legend, align:'center', symbolWidth:11, symbolHeight:11, symbolRadius:1,
-      itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' }, itemHoverStyle:{ color:'var(--page-text-color)' } },
+    /* Legend Position (request, 9 Nov 2026, the product's own pie widget as the picture): Right / Left stack the entries
+       one per line beside the plot, centred, in a column 30% of the widget wide — a long name ellipsises rather than
+       wrapping; Bottom is the live editor's centred row. */
+    legend:(lp => lp === 'Bottom'
+      ? { enabled:!!s.legend, align:'center', verticalAlign:'bottom', layout:'horizontal', symbolWidth:11, symbolHeight:11, symbolRadius:1, maxHeight:s.legH || undefined,
+          navigation:{ activeColor:'var(--page-text-color)', inactiveColor:'var(--neutral-light)', style:{ color:'var(--page-text-color)', fontSize:'0.65rem' } },
+          itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' }, itemHoverStyle:{ color:'var(--page-text-color)' } }
+      : { enabled:!!s.legend, align:lp === 'Left' ? 'left' : 'right', verticalAlign:'middle', layout:'vertical', width:s.legW || '30%', itemMarginBottom:8,
+          symbolWidth:11, symbolHeight:11, symbolRadius:1, x:lp === 'Left' ? 8 : -8,
+          itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem', textOverflow:'ellipsis' }, itemHoverStyle:{ color:'var(--page-text-color)' } })(s.legPos || 'Right'),
     tooltip:{ useHTML:true, shared:true, backgroundColor:'var(--chart-tooltip-background)', borderColor:'var(--border-color)', borderWidth:1, borderRadius:10,
       style:{ color:'var(--page-text-color)', fontFamily:'var(--chart-font-family)' }, headerFormat:'<b>{point.key}</b><br/>',
-      pointFormat:'<span style="color:{point.color}">●</span> ' + ctr + ': <b>{point.y}%</b>' },
+      pointFormat:'<span style="color:{point.color}">●</span> ' + ctr + ': <b>{point.y}' + U + '</b>' },
     plotOptions:{ series:{ animation:false, borderWidth:0, lineWidth:+s.lw || 2,
         marker:{ enabled:!!s.points, symbol:'circle', radius:4, lineWidth:2 },
         dataLabels:{ color:'var(--page-text-color)', style:{ fontWeight:'normal', textOutline:'none', fontSize:'0.65rem' } } },
@@ -38226,41 +38482,137 @@ function tnHcCfg(s){
   if (ty === 'Pie'){
     return Object.assign(base, { chart:Object.assign(base.chart, { type:'pie' }),
       plotOptions:Object.assign(base.plotOptions, { pie:{ startAngle:+s.rotation || 0, showInLegend:!!s.legend, cursor:'pointer',
-        dataLabels:{ enabled:!!s.dlabels, format:'{point.y}%', color:'var(--page-text-color)', style:{ fontWeight:'normal', fontFamily:"'JetBrains Mono', monospace", fontSize:'10px', textOutline:'none' } } } }),
+        dataLabels:{ enabled:!!s.dlabels, format:'{point.y}' + U, color:'var(--page-text-color)', style:{ fontWeight:'normal', fontFamily:"'JetBrains Mono', monospace", fontSize:'10px', textOutline:'none' } } } }),
       tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'<b>{point.key}</b><br/>' }),
+      legend:Object.assign(base.legend, { labelFormat:'{name}: {y}' + U }),
       series:[{ name:ctr, data:rows.map(r => ({ name:r[1], y:r[0] })) }] });
+  }
+  /* ── the Highcharts demo types (9 Nov 2026). Each keeps the demo's own geometry; paint is this file's tokens. ── */
+  const pieDl = { enabled:!!s.dlabels, format:'{point.y}' + U, color:'var(--page-text-color)', style:{ fontWeight:'normal', fontFamily:"'JetBrains Mono', monospace", fontSize:'10px', textOutline:'none' } };
+  const pieLike = (type, o, data) => Object.assign(base, { chart:Object.assign(base.chart, { type }),
+    plotOptions:Object.assign(base.plotOptions, { [type]:Object.assign({ showInLegend:!!s.legend, cursor:'pointer', borderWidth:0, dataLabels:pieDl }, o) }),
+    tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'<b>{point.key}</b><br/>' }),
+    legend:Object.assign(base.legend, { labelFormat:'{name}: {y}' + U }),
+    series:[{ name:ctr, data:data || rows.map(r => ({ name:r[1], y:r[0] })) }] });
+  /* pie-donut: the demo's outer ring (size 80%, innerSize 60%) */
+  if (ty === 'Donut') return pieLike('pie', { startAngle:+s.rotation || 0, size:'80%', innerSize:'60%' });
+  /* pie-semi-circle: startAngle -90 → endAngle 90, centred low at 75% so the arc fills the box, innerSize 50% */
+  if (ty === 'Semi Donut') return pieLike('pie', { startAngle:-90 + (+s.rotation || 0), endAngle:90 + (+s.rotation || 0), center:['50%','75%'], size:'110%', innerSize:'50%' });
+  /* variable-radius-pie: innerSize 20%, minPointSize 10 — the radius (z) is the value. zMin sits just under the smallest
+     value, because Top N rows are close together and from 0 every slice would be the same radius */
+  if (ty === 'Variable Pie'){
+    const vs = rows.map(r => r[0]), lo = Math.min(...vs), hi = Math.max(...vs);
+    return pieLike('variablepie', { startAngle:+s.rotation || 0, innerSize:'20%', minPointSize:10, zMin:Math.max(0, lo - (hi - lo || 1)) },
+      rows.map(r => ({ name:r[1], y:r[0], z:r[0] })));
+  }
+  /* funnel (neck 30% × 25%) and pyramid, width 80% as the demos. Labels sit INSIDE the bands: the demo's outside labels
+     with soft connectors need ~200px beside the shape, which a widget with a side legend does not have */
+  if (ty === 'Funnel' || ty === 'Pyramid'){
+    const t = ty.toLowerCase();
+    return pieLike(t, Object.assign({ width:'80%', center:['50%','50%'],
+      dataLabels:Object.assign({}, pieDl, { inside:true, color:'var(--page-background-color)', style:Object.assign({}, pieDl.style, { fontWeight:'600' }) }) },
+      t === 'funnel' ? { neckWidth:'30%', neckHeight:'25%' } : {}));
+  }
+  /* polar-radial-bar: an inverted polar column, pane 85% with a 20% hole, ending at 270°; names right-aligned at the
+     start of each ring. polar: a polar column, one wedge per monitor, pointPlacement between */
+  if (ty === 'Radial Bar' || ty === 'Polar Column'){
+    const radial = ty === 'Radial Bar', rot = +s.rotation || 0;
+    return Object.assign(base, { chart:Object.assign(base.chart, { type:'column', polar:true, inverted:radial }), legend:{ enabled:false },
+      pane:radial ? { size:'85%', innerSize:'20%', startAngle:rot, endAngle:rot + 270, background:[] } : { startAngle:rot, endAngle:rot + 360, background:[] },
+      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'<b>{point.key}</b><br/>' }),
+      xAxis:{ categories:rows.map(r => tnCut(r[1], radial ? 18 : 16)), tickInterval:1, lineWidth:0,
+        gridLineWidth:radial ? 0 : 1, gridLineColor:'var(--chart-grid-line-color)',
+        labels:radial ? { align:'right', useHTML:true, allowOverlap:true, step:1, x:-8, y:3, style:lab } : { style:lab } },
+      yAxis:{ min:0, lineWidth:0, gridLineWidth:radial ? 0 : 1, gridLineColor:'var(--chart-grid-line-color)', endOnTick:true, showLastLabel:true,
+        labels:{ enabled:!(radial || s.values), style:lab, format:'{value}' + U }, title:{ text:null } },
+      plotOptions:Object.assign(base.plotOptions, { column:{ colorByPoint:true, borderWidth:0, pointPadding:0, groupPadding:radial ? .15 : 0,
+        pointPlacement:radial ? undefined : 'between',
+        dataLabels:{ enabled:!radial && !!s.values, format:'{y}' + U, color:'var(--page-text-color)', style:{ fontWeight:'normal', textOutline:'none', fontSize:'0.6rem' } } } }),
+      series:[{ name:ctr, data:rows.map(r => r[0]) }] });
   }
   if (ty === 'Tree View'){
     return Object.assign(base, { chart:Object.assign(base.chart, { margin:[2, 0, 2, 0], spacing:[0, 0, 0, 0] }), legend:{ enabled:false },
-      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'', pointFormat:'<b>{point.name}</b><br/>{point.value}%' }),
+      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'', pointFormat:'<b>{point.name}</b><br/>{point.value}' + U }),
       plotOptions:{ treemap:{ colorByPoint:true } },
       series:[{ type:'treemap', layoutAlgorithm:'squarified', alternateStartingDirection:true, borderWidth:0, name:ctr,
         dataLabels:{ enabled:true, useHTML:true, style:{ color:'white', textOutline:'none', fontWeight:'normal' },
-          format:'<div style="text-align:center;font-family:JetBrains Mono,monospace"><div style="font-size:14px;font-weight:600">{point.value}%</div><div style="font-size:9px;opacity:.9">{point.short}</div></div>' },
+          format:'<div style="text-align:center;font-family:JetBrains Mono,monospace"><div style="font-size:14px;font-weight:600">{point.value}' + U + '</div><div style="font-size:9px;opacity:.9">{point.short}</div></div>' },
         data:rows.map(r => ({ name:r[1], short:tnCut(r[1], 22), value:r[0] })) }] });
   }
   if (ty === 'Packed Bubble Chart'){
     return Object.assign(base, { chart:Object.assign(base.chart, { type:'packedbubble' }), legend:{ enabled:false },
-      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'', pointFormat:'<b>{point.name}</b><br/>{point.value}%' }),
+      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'', pointFormat:'<b>{point.name}</b><br/>{point.value}' + U }),
       plotOptions:{ packedbubble:{ colorByPoint:true, zMin:0, minSize:'50%', maxSize:'52%',   /* live: near-equal discs, values are within 4% */ marker:{ fillOpacity:.5, lineWidth:1 },
         layoutAlgorithm:{ splitSeries:false, gravitationalConstant:0.04, enableSimulation:false },
         dataLabels:{ enabled:true, format:'{point.short}', style:{ color:'var(--page-text-color)', textOutline:'none', fontWeight:'normal', fontSize:'0.6rem' } } } },
       series:[{ name:ctr, data:rows.map(r => ({ name:r[1], short:tnCut(r[1].split(/[.-]/)[0], 9), value:r[0] })) }] });
   }
-  const area = ty === 'Area', horiz = ty === 'HorizontalBar';
+  const area = ty === 'Area', horiz = ty === 'HorizontalBar', lolli = ty === 'Lollipop';
   return Object.assign(base, {
-    chart:Object.assign(base.chart, { type:area ? 'areaspline' : ty === 'Line' ? 'spline' : horiz ? 'bar' : 'column' }),
+    chart:Object.assign(base.chart, { type:area ? 'areaspline' : ty === 'Line' ? 'spline' : horiz ? 'bar' : lolli ? 'lollipop' : 'column' }),
     xAxis:{ categories:rows.map(r => r[1]), lineColor:'var(--bottom-line-color)', tickLength:0, gridLineColor:'var(--chart-grid-line-color)',
-      labels:{ style:lab, rotation:+s.rotation || 0, formatter:function(){ return horiz ? this.value : tnCut(String(this.value), 13); } },
+      labels:{ style:lab, rotation:lolli && !s.rotation ? undefined : +s.rotation || 0, formatter:function(){ return horiz ? this.value : tnCut(String(this.value), 13); } },
       title:{ text:s.xt ? by : null, style:{ color:'var(--page-text-color)' } } },
-    yAxis:{ min:area || ty.endsWith('Bar') ? 0 : null, lineWidth:1, lineColor:'var(--bottom-line-color)', gridLineColor:'var(--chart-grid-line-color)',
-      labels:{ style:lab, format:'{value}%' }, title:{ text:s.yt ? ctr : null, style:{ color:'var(--page-text-color)', fontWeight:'500' } } },
+    yAxis:{ min:area || lolli || ty.endsWith('Bar') ? 0 : null, lineWidth:1, lineColor:'var(--bottom-line-color)', gridLineColor:'var(--chart-grid-line-color)',
+      labels:{ style:lab, format:'{value}' + U }, title:{ text:s.yt ? ctr : null, style:{ color:'var(--page-text-color)', fontWeight:'500' } } },
     plotOptions:Object.assign(base.plotOptions, {
       areaspline:{ fillColor:{ linearGradient:{ x1:0, y1:0, x2:0, y2:1 }, stops:[[0, 'color-mix(in srgb, var(--chart-vivid-teal) 85%, transparent)'], [1, 'color-mix(in srgb, var(--chart-vivid-teal) 4%, transparent)']] } },
       /* live bars are a third of their slot (measured off the lab preview) */
-      bar:{ maxPointWidth:50, pointPadding:0.32, groupPadding:0, dataLabels:{ enabled:!!s.values, format:'{y}%' } },
-      column:{ maxPointWidth:50, pointPadding:0.32, groupPadding:0, dataLabels:{ enabled:!!s.values, format:'{y}%' } } }),
+      bar:{ maxPointWidth:50, pointPadding:0.32, groupPadding:0, dataLabels:{ enabled:!!s.values, format:'{y}' + U } },
+      column:{ maxPointWidth:50, pointPadding:0.32, groupPadding:0, dataLabels:{ enabled:!!s.values, format:'{y}' + U } },
+      /* lollipop: a 1px stem in the series colour and a 6px head (demo defaults, read off highcharts.com/demo/lollipop) */
+      lollipop:{ connectorWidth:Math.max(1, (+s.lw || 2) - 1), marker:{ enabled:true, radius:6, lineWidth:0 }, dataLabels:{ enabled:!!s.values, format:'{y}' + U, y:-8 } } }),
     series:[{ name:ctr, data:rows.map(r => r[0]) }] });
+}
+/* ── THE LEGEND IS RESIZABLE (request, 9 Nov 2026, Dynatrace's tile markup as the reference: a `legend-resize-line`
+   between the graph area and a vertical legend). A Right / Left legend gets a 7px drag strip on its inner edge — a 1px
+   line on hover, col-resize cursor; dragging re-sizes Highcharts' legend live (chart.update, no redraw animation) and the
+   plot gives up / takes back the width. Clamped 96px … 60% of the widget. The width is kept: in the editor on
+   CW.style.tnLegW (so Create carries it), on the board on the widget's own spec. Double-click goes back to 30%. */
+/* Bottom legend height → layout: H px holds floor(H/18) rows, so the entries take ceil(n/rows) columns across the
+   plot — taller = fewer, wider columns (full names), shorter = more columns; below one row's worth it pages */
+function tnLegH(c, v){
+  const n = (c.series[0] && c.series[0].points ? c.series[0].points.length : (c.series || []).length) || 1;
+  const rows = Math.max(1, Math.floor((v - 6) / 18)), cols = Math.max(1, Math.ceil(n / rows));
+  c.update({ legend:{ maxHeight:v, itemWidth:Math.floor((c.plotWidth || c.chartWidth * .9) / cols) } }, true, false, false);
+}
+function tnGripPlace(el, c){
+  const g = el.querySelector(':scope > .tnlgrip'); if (!g || !c.legend || !c.legend.group) return;
+  const al = c.options.legend.align, gx = c.legend.group.translateX, gy = c.legend.group.translateY;
+  if (al === 'center'){ g.style.left = ''; g.style.top = Math.round(gy - 10) + 'px'; return; }   /* Bottom: above the legend */
+  g.style.top = ''; g.style.left = Math.round(al === 'right' ? gx - 10 : gx + (c.legend.legendWidth || 0) + 4) + 'px';
+}
+function tnGrip(el, c, sp){
+  if (!sp.legend || !c.legend || !c.legend.group) return;
+  const pos = sp.legPos || 'Right', bottom = pos === 'Bottom', right = pos === 'Right';
+  const g = document.createElement('div'); g.className = 'tnlgrip' + (bottom ? ' h' : ''); g.setAttribute('role', 'separator');
+  g.setAttribute('aria-orientation', bottom ? 'horizontal' : 'vertical');
+  g.setAttribute('aria-label', bottom ? 'Resize legend height' : 'Resize legend width');
+  g.title = (bottom ? 'Drag to set the legend height' : 'Drag to resize the legend') + ' · double-click to reset';
+  el.appendChild(g); tnGripPlace(el, c);
+  const key = bottom ? 'legH' : 'legW', skey = bottom ? 'tnLegH' : 'tnLegW';
+  const save = v => {
+    if (el.closest('#cwPrev')){ CW.style[skey] = v; return; }
+    const wg = el.closest('.widget[data-g][data-i]'); if (!wg) return;
+    const m = (WIDGETS[+wg.dataset.g] || [])[+wg.dataset.i]; if (m && m.tn){ m.tn[key] = v; if (m.tnq) m.tnq[skey] = v; }
+    el.dataset.tns = JSON.stringify(Object.assign({}, sp, { [key]:v }));
+  };
+  g.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation(); g.setPointerCapture(e.pointerId); g.classList.add('on');
+    const r = el.getBoundingClientRect();
+    const mv = ev => {
+      let v;
+      if (bottom){ v = Math.round(Math.max(24, Math.min(r.height * .6, r.bottom - ev.clientY - 8))); tnLegH(c, v); }
+      else { v = Math.round(Math.max(96, Math.min(r.width * .6, right ? r.right - ev.clientX - 8 : ev.clientX - r.left - 8))); c.update({ legend:{ width:v } }, true, false, false); }
+      tnGripPlace(el, c); g.dataset.v = v;
+    };
+    const up = () => { g.removeEventListener('pointermove', mv); g.removeEventListener('pointerup', up); g.classList.remove('on');
+      if (g.dataset.v) save(+g.dataset.v); };
+    g.addEventListener('pointermove', mv); g.addEventListener('pointerup', up);
+  });
+  g.addEventListener('dblclick', e => { e.stopPropagation();
+    c.update({ legend:bottom ? { maxHeight:null, itemWidth:null } : { width:'30%' } }, true, false, false); tnGripPlace(el, c); save(0); });
+  g.addEventListener('dragstart', e => e.preventDefault()); g.addEventListener('click', e => e.stopPropagation());
 }
 function tnHcMount(){
   if (!document.querySelector('.tnhc:not([data-hcon])')) return;
@@ -38270,8 +38622,10 @@ function tnHcMount(){
       let sp; try { sp = JSON.parse(el.dataset.tns); } catch (e) { return; }
       el.dataset.hcon = '1'; el.innerHTML = '';
       const c = H.chart(el, tnHcCfg(sp));
-      c.tnRo = new ResizeObserver(() => { if (el.offsetWidth && (c.chartWidth !== el.offsetWidth || c.chartHeight !== el.offsetHeight)) c.setSize(el.offsetWidth, el.offsetHeight, false); });
+      c.tnRo = new ResizeObserver(() => { if (el.offsetWidth && (c.chartWidth !== el.offsetWidth || c.chartHeight !== el.offsetHeight)){ c.setSize(el.offsetWidth, el.offsetHeight, false); tnGripPlace(el, c); } });
       c.tnRo.observe(el);
+      if (sp.legend && sp.legPos === 'Bottom' && sp.legH) tnLegH(c, sp.legH);   /* a saved height re-applies its layout */
+      tnGrip(el, c, sp);
     });
   }).catch(() => {});
 }
@@ -38280,10 +38634,14 @@ function cwTnOn(){ return CW.viz === 'topn'; }
 function cwTnSpec(){
   const st = CW.style, r0 = CW.rows.find(r => r.ctr) || CW.rows[0] || {};
   return { type:TN_TYPES[st.tn || 0][0], rotation:st.rotation || 0, legend:!!st.legend, xt:!!st.xt, yt:!!st.yt, zt:!!st.zt,
-    lw:st.lw || 2, points:!!st.points, values:!!st.tnVal, dlabels:!!st.tnDl, hfs:st.tnHfs || 'Small', spark:!!st.tnSpk,
+    lw:st.lw || 2, points:!!st.points, legPos:st.tnLegPos || 'Right', legW:st.tnLegW || 0, legH:st.tnLegH || 0, values:!!st.tnVal, dlabels:!!st.tnDl, hfs:st.tnHfs || 'Small', spark:!!st.tnSpk,
     order:st.tnOrd || 'Top', count:st.tnCnt || 10, sticky:!!st.tnSticky, hide:st.tnHide || {}, dn:st.tnDn || {},
-    ctr:(r0.ctr || 'system.cpu.percent') + '.' + String(r0.agg || 'Avg').toLowerCase(), by:r0.by || 'Monitor' };
+    ctr:CW.tnData && CW.tnData.ctr ? CW.tnData.ctr : (r0.ctr || 'system.cpu.percent') + '.' + String(r0.agg || 'Avg').toLowerCase(), by:r0.by || 'Monitor',
+    rows:CW.tnData ? CW.tnData.rows : null, unit:CW.tnData ? CW.tnData.unit : '%' };
 }
+/* Legend Position as ICONS (request, 9 Nov 2026) — Tabler layout-sidebar-right · layout-bottombar · layout-sidebar
+   (MIT, free-icons/), the icon-only DS segment (class cwcmpwt: label kept for screen readers, name as a tooltip) */
+const TN_LP = [['Right','M15 4l0 16'], ['Bottom','M4 15l16 0'], ['Left','M9 4l0 16']];
 function cwTnTabs(){ return (CW.style.tn || 0) === 6 ? ['Style','Column Setting','Sorting','Timeline Preference'] : ['Style','Sorting','Timeline Preference']; }
 function cwTnPanel(){
   const st = CW.style, k = st.tn || 0;
@@ -38321,6 +38679,9 @@ function cwTnPanel(){
     icon:'<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + TN_TILE[t[0]].replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>' }));
   let h = '<obs-radio class="cwcmpseg cwcmpwt cwtnwt" data-k="tn" as-button aria-label="Top N style" options="' +
     JSON.stringify(opts).replace(/&/g,'&amp;').replace(/"/g, '&quot;') + '"></obs-radio>';
+  const lpos = '<div class="cwf wide cwtnlp' + (st.legend ? '' : ' off') + '"><div class="k">Legend Position</div><obs-radio class="cwcmpwt cwtnlpr" as-button aria-label="Legend Position" options="' +
+    JSON.stringify(TN_LP.map(([v, d]) => ({ value:v, label:v, icon:'<svg width="18" height="18" viewBox="0 0 24 24" style="display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round">' +
+      '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="' + d + '"/></svg>' }))).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio></div>';
   const rot = '<div class="cwf"><div class="k">Rotation</div><obs-input class="cwtnrot" block type="number" value="' + (st.rotation || 0) +
     '" addon-after="°" aria-label="Rotation"></obs-input></div>';
   if (k <= 3){
@@ -38328,9 +38689,16 @@ function cwTnPanel(){
     if (k <= 1) h += '<div class="cwf"><div class="k">Line Width</div><div class="cwrange"><span class="cwslot"><input type="range" min="1" max="6" value="' + (st.lw || 2) +
       '" aria-label="Line Width" oninput="CW.style.lw=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value;cwPreview()" /><span class="cwticks"><i></i><i></i><i></i><i></i><i></i><i></i></span></span><span class="cwlwv">' + (st.lw || 2) + '</span></div></div>' + sw('points','Points');
     else h += sw('tnVal','Values');
-    return h + '</div>';
+    return h + lpos + '</div>';
   }
-  if (k === 4) return h + '<div class="cwgrid cwtng">' + rot + '<div class="tnpair">' + sw('legend','Legend') + sw('tnDl','Data Labels') + '</div></div>';
+  /* 4 Pie · 9 Donut · 10 Semi Donut · 16 Variable Pie share Pie's fields; Funnel / Pyramid drop Rotation (they do not turn) */
+  if ([4, 9, 10, 16].includes(k)) return h + '<div class="cwgrid cwtng">' + rot + '<div class="tnpair">' + sw('legend','Legend') + sw('tnDl','Data Labels') + '</div>' + lpos + '</div>';
+  if (k === 11 || k === 12) return h + '<div class="cwgrid cwtng"><div class="tnpair">' + sw('legend','Legend') + sw('tnDl','Data Labels') + '</div>' + lpos + '</div>';
+  /* Radial Bar / Polar Column: Rotation turns the pane; Values labels each bar */
+  if (k === 13) return h + '<div class="cwgrid cwtng">' + rot + '</div>';   /* value labels pile up at the ring starts — the tooltip carries them */
+  if (k === 14) return h + '<div class="cwgrid cwtng">' + rot + sw('tnVal','Values') + '</div>';
+  /* Lollipop: the bar fields */
+  if (k === 15) return h + '<div class="cwgrid cwtng">' + rot + sw('legend','Legend') + sw('xt','X-Axis Title') + sw('yt','Y-Axis Title') + sw('zt','Z-Axis Title') + sw('tnVal','Values') + lpos + '</div>';
   if (k === 6) return h + '<div class="cwgrid cwtng tng1"><div class="cwf"><div class="k">Header Font Size</div><obs-radio class="cwtnhfs" as-button aria-label="Header Font Size" options="' +
       JSON.stringify(['Small','Medium','Large'].map(o => ({value:o, label:o}))).replace(/"/g,'&quot;') + '"></obs-radio></div>' +
       sw('tnSpk','Sparkline Chart') + '</div>';
@@ -38342,20 +38710,234 @@ function cwTnBind(){
   const b = document.getElementById('cwBody'); if (!b || !cwTnOn()) return;
   const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
   b.querySelectorAll('obs-switch.cwtnsw').forEach(el => el.addEventListener('change', () => {
-    const k = el.dataset.k; CW.style[k] = !CW.style[k]; el.checked = CW.style[k]; cwPreview(); }));
+    const k = el.dataset.k; CW.style[k] = !CW.style[k]; el.checked = CW.style[k];
+    if (k === 'legend'){ const lp = b.querySelector('.cwtnlp'); if (lp) lp.classList.toggle('off', !CW.style.legend); }
+    cwPreview(); }));
   const r = b.querySelector('obs-radio.cwtnwt');
   if (r){ r.value = String(CW.style.tn || 0);
     customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
       (r.shadowRoot ? [...r.shadowRoot.querySelectorAll('label.opt')] : []).forEach((l, n) => { if (TN_TYPES[n]) l.title = TN_TYPES[n][1]; }); }, 0));
     r.addEventListener('change', e => { const v = det(e); if (v != null && +v !== (CW.style.tn || 0)) cwStyle('tn', +v); }); }
+  const lr = b.querySelector('obs-radio.cwtnlpr');
+  if (lr){ lr.value = CW.style.tnLegPos || 'Right';
+    customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
+      (lr.shadowRoot ? [...lr.shadowRoot.querySelectorAll('label.opt')] : []).forEach((l, n) => { if (TN_LP[n]) l.title = 'Legend ' + TN_LP[n][0].toLowerCase(); }); }, 0));
+    lr.addEventListener('change', e => { const v = det(e); if (v){ CW.style.tnLegPos = v; lr.value = v; cwPreview(); } }); }
   const hf = b.querySelector('obs-radio.cwtnhfs');
   if (hf){ hf.value = CW.style.tnHfs || 'Small';
     hf.addEventListener('change', e => { const v = det(e); if (v){ CW.style.tnHfs = v; hf.value = v; cwPreview(); } }); }
   const ro = b.querySelector('obs-input.cwtnrot');
   if (ro) ro.addEventListener('change', e => { const v = +(det(e) ?? ro.value) || 0; CW.style.rotation = Math.max(0, Math.min(360, v)); cwPreview(); });
 }
+function cwChartBind(){
+  const b = document.getElementById('cwBody'); if (!b) return;
+  const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  b.querySelectorAll('obs-switch.cwchsw').forEach(el => el.addEventListener('change', () => {
+    const k = el.dataset.k; CW.style[k] = !CW.style[k]; el.checked = CW.style[k];
+    if (k === 'points') cwRender(); else cwPreview(); }));
+  const r = b.querySelector('obs-radio.cwchwt');
+  if (r){ r.value = String(CW.style.shape || 0);
+    customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
+      (r.shadowRoot ? [...r.shadowRoot.querySelectorAll('label.opt')] : []).forEach((l, n) => { if (CW_SHAPE[n]) l.title = CW_SHAPE[n][0]; }); }, 0));
+    r.addEventListener('change', e => { const v = det(e); if (v != null && +v !== (CW.style.shape || 0)){ CW.style.shape = +v; r.value = String(v); cwPreview(); } }); }
+  const ro = b.querySelector('obs-input.cwchrot');
+  if (ro) ro.addEventListener('change', e => { const v = +(det(e) ?? ro.value) || 0; CW.style.rotation = Math.max(0, Math.min(360, v)); cwPreview(); });
+}
 function cwTnHide(c, v){ CW.style.tnHide = Object.assign({}, CW.style.tnHide, {[c]:v}); cwPreview(); }
 function cwTnDn(c, v){ CW.style.tnDn = Object.assign({}, CW.style.tnDn, {[c]:v.trim()}); cwPreview(); }
+</script>
+<script>
+/* ═══ GRID · GAUGE · SANKEY in the Create Widget editor — cloned from live 10.0.1 (9 Nov 2026) ═══════════════════
+   Read with Playwright on the lab /dashboard → Create Widget (harvest in the session scratch dir). Until now the three
+   fell through to cwPanelHTML's generic "Style options for …" placeholder. Namespace `gg*` / `GG_*` / `.gg*`.
+   What the live screens have, and what this builds:
+     Grid   — tabs Style · Column Setting · Timeline Preference. Style = two tiles, Grid (a table) and Value list
+              (big value + name per row). Grid → Header Font Size Small/Medium/Large; Value list → Sorting Top/Last.
+              Its source row adds SLO. The preview table is Top N's own Grid renderer (tnHTML type 'Grid').
+     Gauge  — tabs Style · Threshold · Timeline Preference. Style = two tiles, Metric (the value) and Gauge (an arc).
+              Metric → Font Size · Text Align · Icon · Icon Position · Metric Trend Background; Gauge → Font Size.
+              Threshold = Critical · Major · Warning · Clear, each an operator (Equals · Less Than · Greater Than ·
+              Less Than or Equal · Greater Than or Equal), a value and a colour. The query row has no Result By and no ⊕.
+     Sankey — tabs Style · Timeline Preference. Style = the Result By list (source.ip, destination.ip), reorderable by
+              its grip. Flow only; the query row's Result By reads "source.ip (+1)", with no Σ and no ⊕.
+   Timeline Preference = Use Custom Sticky Timeline (all three).
+   ON THE DS: tiles / font size / align / icon position / sorting are `obs-radio as-button` (icon tiles use the icon-only
+   `cwcmpwt` segment), switches `obs-switch`, Icon and the threshold operator `obs-select`, the value `obs-input`. The
+   threshold colour is the editor's own colour dropdown (cwFtDD, with its canvas), registered in DD_OWN.
+   ⚠️ Divergences, stated: addresses scrubbed to RFC 5737; Icon offers this page's own ICONS registry, not the product's
+   ~700-name list; a threshold colours the gauge value when it matches (live ships the same rows, all 0.00). */
+const GG_VIZ = ['grid','gauge','sankey'];
+const GG_TAB = { grid:['Style','Column Setting','Timeline Preference'], gauge:['Style','Threshold','Timeline Preference'],
+                 sankey:['Style','Timeline Preference'] };
+const GG_I = (d, w) => '<svg width="' + (w || 22) + '" height="' + (w || 22) + '" viewBox="0 0 24 24" style="display:block;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round">' +
+  d.split('|').map(p => '<path d="' + p + '"/>').join('') + '</svg>';
+/* Tabler (MIT, free-icons/): table · list-numbers · number-123 · gauge · arrow-bar-left · arrow-bar-right */
+/* Grid style tiles in the product's chart-type tile art (request, 9 Nov 2026 "improve using obs"): Grid is the
+   product's own Grid tile (TN_TILE), Value list is drawn in the same language — value block .8/.6/.4 + a label bar,
+   hairline rules in --chart-line-type-icon — so the cwcmpwt hook inverts it when selected, like every other tile */
+const GG_VL_TILE = '<svg viewBox="0 0 48 38"><rect x="6" y="5.2" width="11" height="5" rx="1.1" style="opacity: 0.8; fill: var(--chart-type-icon);"></rect><rect x="21" y="6.4" width="20" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,11.5 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="12.8" width="11" height="5" rx="1.1" style="opacity: 0.6; fill: var(--chart-type-icon);"></rect><rect x="21" y="14.0" width="16" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,19.1 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="20.4" width="11" height="5" rx="1.1" style="opacity: 0.6; fill: var(--chart-type-icon);"></rect><rect x="21" y="21.6" width="12" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,26.7 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="28.0" width="11" height="5" rx="1.1" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><rect x="21" y="29.2" width="8" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect></svg>';
+const GG_TILE = svg => '<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + svg.replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>';
+const GG_IC = {
+  table:'M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14|M3 10h18|M10 3v18',
+  list:'M11 6h9|M11 12h9|M12 18h8|M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4|M6 10v-6l-2 2',
+  num:'M3 10l2 -2v8|M9 8h3a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 0 -1 1v2a1 1 0 0 0 1 1h3|M17 8h2.5a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1 -1.5 1.5h-1.5h1.5a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1 -1.5 1.5h-2.5',
+  gauge:'M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0|M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M13.41 10.59l2.59 -2.59|M7 12a5 5 0 0 1 5 -5',
+  left:'M4 12l10 0|M4 12l4 4|M4 12l4 -4|M20 4l0 16', right:'M20 12l-10 0|M20 12l-4 4|M20 12l-4 -4|M4 4l0 16',
+  grip:'M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0|M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0'
+};
+const GG_SEV = [['Critical','var(--severity-critical)'], ['Major','var(--severity-major)'], ['Warning','var(--severity-warning)'], ['Clear','var(--severity-clear)']];
+const GG_OPS = ['Equals','Less Than','Greater Than','Less Than or Equal','Greater Than or Equal'];
+const GG_SIZE = { Small:1, Medium:1.25, Large:1.5 };
+/* the live Sankey preview's ten flows, scrubbed: 192.168.1.x → 192.0.2.x, 10.x → 198.51.100.x */
+const GG_FLOWS = [['192.0.2.139','198.51.100.134'],['192.0.2.158','198.51.100.219'],['192.0.2.197','198.51.100.213'],
+  ['192.0.2.93','198.51.100.7'],['192.0.2.222','198.51.100.98'],['192.0.2.81','198.51.100.21'],['192.0.2.235','198.51.100.154'],
+  ['192.0.2.129','198.51.100.246'],['192.0.2.62','198.51.100.34'],['192.0.2.221','198.51.100.145']];
+function cwGgOn(){ return GG_VIZ.includes(CW.viz); }
+function ggSt(){   /* the three types' style lives on CW.style under gg*, with its defaults filled in */
+  const s = CW.style;
+  if (s.ggGrid == null) Object.assign(s, { ggGrid:0, ggHfs:'Small', ggOrd:'Top', ggGau:0, ggFs:'Small', ggAl:'left', ggIc:'', ggIp:'left',
+    ggTrend:false, ggSticky:false, ggSk:['source.ip','destination.ip'], ggHide:{}, ggDn:{},
+    ggTh:GG_SEV.map(x => ({ op:'', v:'0.00', c:x[0] })) });
+  return s;
+}
+function cwGgSpec(){
+  const s = ggSt(), r0 = CW.rows.find(r => r.ctr) || CW.rows[0] || {};
+  return { viz:CW.viz, grid:s.ggGrid, hfs:s.ggHfs, ord:s.ggOrd, gau:s.ggGau, fs:s.ggFs, al:s.ggAl, ic:s.ggIc, ip:s.ggIp,
+    trend:!!s.ggTrend, sticky:!!s.ggSticky, sk:s.ggSk.slice(), hide:Object.assign({}, s.ggHide), dn:Object.assign({}, s.ggDn),
+    th:JSON.parse(JSON.stringify(s.ggTh)),
+    ctr:(r0.ctr || 'system.cpu.percent') + '.' + String(r0.agg || 'Avg').toLowerCase(), by:r0.by || 'monitor', val:49.46 };
+}
+/* which threshold row (if any) the value meets — the first match wins, Critical first */
+function ggThHit(th, v){
+  const t = (th || []).find(x => { if (!x.op) return false; const n = +x.v;
+    return x.op === 'Equals' ? v === n : x.op === 'Less Than' ? v < n : x.op === 'Greater Than' ? v > n : x.op === 'Less Than or Equal' ? v <= n : v >= n; });
+  return t ? t.c : null;
+}
+function ggColor(c){ const sev = GG_SEV.find(x => x[0] === c); return sev ? sev[1] : c; }
+/* ── ONE renderer for the preview and the board widget (`t:'gg'`) ── */
+function ggHTML(s){
+  s = s || {};
+  if (s.viz === 'grid'){
+    const rows = TN_ROWS.slice().sort((a, b) => s.ord === 'Last' ? a[0] - b[0] : b[0] - a[0]);
+    if (!s.grid) return tnHTML({ type:'Grid', monFirst:true, hfs:s.hfs, ctr:s.ctr, by:s.by, hide:s.hide, dn:s.dn, rows:TN_ROWS, unit:'%' });
+    return '<div class="ggvl">' + rows.map(r => '<div class="ggvlr"><span class="ggvlv">' + r[0].toFixed(2) + '<i>%</i></span><span class="ggvln">' + tnEsc(r[1]) + '</span></div>').join('') + '</div>';
+  }
+  if (s.viz === 'gauge'){
+    const k = GG_SIZE[s.fs] || 1, v = s.val || 49.46, hit = ggThHit(s.th, v);
+    const col = hit ? ggColor(hit) : null;
+    if (s.gau){
+      const R = 90, C = Math.PI * R, sweep = 0.75, len = 2 * Math.PI * R * sweep, f = Math.max(0, Math.min(1, v / 100));
+      return '<div class="gggau"><svg viewBox="0 0 240 216" preserveAspectRatio="xMidYMid meet">' +
+        '<circle cx="120" cy="120" r="' + R + '" fill="none" stroke="var(--progress-bar-bg)" stroke-width="22" stroke-dasharray="' + len.toFixed(1) + ' 999" transform="rotate(135 120 120)"/>' +
+        '<circle cx="120" cy="120" r="' + R + '" fill="none" stroke="' + (col || 'var(--chart-vivid-teal)') + '" stroke-width="22" stroke-dasharray="' + (len * f).toFixed(1) + ' 999" transform="rotate(135 120 120)"/>' +
+        '<circle cx="120" cy="120" r="70" fill="none" stroke="var(--border-color)" stroke-width="2" stroke-dasharray="' + (2 * Math.PI * 70 * sweep).toFixed(1) + ' 999" transform="rotate(135 120 120)"/>' +
+        '<text x="120" y="' + (128 + 4 * k) + '" text-anchor="middle" font-size="' + (30 * k).toFixed(0) + '" font-weight="600" fill="' + (col || 'var(--page-text-color)') + '" style="font-family:var(--chart-font-family)">' + v.toFixed(2) + '%</text></svg></div>';
+    }
+    const icon = s.ic && typeof ICONS !== 'undefined' && ICONS[s.ic] ? '<span class="ggmic">' + ico(s.ic, 'ggmics') + '</span>' : '';
+    const trend = s.trend ? '<svg class="ggtrend" viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 44 C20 40 30 30 50 34 S80 20 100 26 S140 12 160 20 S190 8 200 10 L200 60 L0 60Z" fill="color-mix(in srgb,' + (col || 'var(--chart-vivid-teal)') + ' 12%,transparent)"/><path d="M0 44 C20 40 30 30 50 34 S80 20 100 26 S140 12 160 20 S190 8 200 10" fill="none" stroke="' + (col || 'var(--chart-vivid-teal)') + '" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>' : '';
+    return '<div class="ggmet al-' + (s.al || 'left') + ' ip-' + (s.ip || 'left') + '" style="--ggk:' + k + (col ? ';--ggc:' + col : '') + '">' + trend +
+      '<div class="ggmv">' + (s.ip !== 'right' ? icon : '') + '<span class="ggmn">' + v.toFixed(2) + '<i>%</i></span>' + (s.ip === 'right' ? icon : '') + '</div></div>';
+  }
+  if (s.viz === 'sankey'){
+    return '<div class="ggsk">' + GG_FLOWS.map((f, i) => '<div class="ggskr"><i style="background:' + TN_PAL[i % TN_PAL.length] + '"></i>' +
+      '<span class="a">' + f[0] + '</span><span class="b">' + f[1] + '</span><i style="background:' + TN_PAL[(i + 1) % TN_PAL.length] + '"></i></div>').join('') + '</div>';
+  }
+  return '';
+}
+function ggSeg(cls, k, opts, label, icons){
+  return '<obs-radio class="' + cls + '" data-k="' + k + '" as-button aria-label="' + label + '" options="' +
+    JSON.stringify(opts.map(o => Array.isArray(o) ? { value:o[0], label:o[1], icon:o[2] } : { value:o, label:o }))
+      .replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>';
+}
+const ggF = (k, body, cls) => '<div class="cwf' + (cls ? ' ' + cls : '') + '"><div class="k">' + k + '</div>' + body + '</div>';
+function ggSw(k){ const s = ggSt(); return '<obs-switch class="ggsw" data-k="' + k + '"' + (s[k] ? ' checked' : '') + ' checked-text="ON" unchecked-text="OFF"></obs-switch>'; }
+function cwGgPanel(){
+  const s = ggSt(), v = CW.viz;
+  if (CW.tab === 'Timeline Preference')
+    return '<div class="ggp">' + ggF('Use Custom Sticky Timeline <i class="tninfo" data-tip="Pin this widget to its own time range instead of the dashboard\'s">i</i>', ggSw('ggSticky')) + '</div>';
+  if (CW.tab === 'Column Setting'){
+    const cols = [s.ggGrid ? 'monitor' : 'monitor', cwGgSpec().ctr].concat(TN_COLS.slice(1));
+    return '<div class="tncs"><div class="tncsh"><span>Column Name</span><span>Display Name</span><span>Hide Column</span><span></span></div>' +
+      cols.map((c, i) => { const hid = c in s.ggHide ? s.ggHide[c] : i >= 2;
+        return '<div class="tncsr"><span class="tncsn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>' + tnEsc(c) + '</span>' +
+          '<input class="tncsd" placeholder="Display Name" value="' + tnEsc(s.ggDn[c] || '') + '" onchange="ggSet(\'ggDn\',\'' + c + '\',this.value.trim())" />' +
+          '<label class="tncsck"><input type="checkbox"' + (hid ? ' checked' : '') + ' onchange="ggSet(\'ggHide\',\'' + c + '\',this.checked)" /></label>' +
+          '<button class="tncsc" onclick="toast(\'Configure column — formatting for ' + c + '\')">Configure</button></div>'; }).join('') + '</div>';
+  }
+  if (CW.tab === 'Threshold'){
+    return '<div class="ggth">' + s.ggTh.map((t, i) =>
+      '<div class="ggthr"><span class="ggths" style="--sev:' + GG_SEV[i][1] + '">' + GG_SEV[i][0] + '</span>' +
+      '<obs-select class="ggthop" data-i="' + i + '" block placeholder="Select" aria-label="' + GG_SEV[i][0] + ' operator" options="' +
+        JSON.stringify(GG_OPS.map(o => ({ value:o, label:o }))).replace(/"/g,'&quot;') + '"></obs-select>' +
+      '<obs-input class="ggthv" data-i="' + i + '" block type="number" value="' + tnEsc(t.v) + '" aria-label="' + GG_SEV[i][0] + ' value"></obs-input>' +
+      '<span class="ggthc">' + cwFtDD('ggc' + i, GG_SEV, t.c, true, true) + '</span></div>').join('') + '</div>';
+  }
+  /* Style */
+  if (v === 'grid'){
+    let h = ggSeg('cwcmpseg cwcmpwt ggtile', 'ggGrid', [['0','Grid',GG_TILE(TN_TILE.Grid)], ['1','Value list',GG_TILE(GG_VL_TILE)]], 'Grid style');
+    return h + '<div class="ggp">' + (s.ggGrid
+      ? ggF('Sorting', ggSeg('ggseg', 'ggOrd', ['Top','Last'], 'Sorting'))
+      : ggF('Header Font Size', ggSeg('ggseg', 'ggHfs', ['Small','Medium','Large'], 'Header Font Size'))) + '</div>';
+  }
+  if (v === 'gauge'){
+    let h = ggSeg('cwcmpseg cwcmpwt ggtile', 'ggGau', [['0','Metric',GG_I(GG_IC.num)], ['1','Gauge',GG_I(GG_IC.gauge)]], 'Gauge style');
+    if (s.ggGau) return h + '<div class="ggp">' + ggF('Font Size', ggSeg('ggseg', 'ggFs', ['Small','Medium','Large'], 'Font Size')) + '</div>';
+    const al = CW_FT_ALIGN.map(a => [a[0], a[1], '<svg width="18" height="18" viewBox="0 0 48 48" style="display:block;fill:currentColor"><path d="' + a[2] + '"/></svg>']);
+    const icons = typeof ICONS !== 'undefined' ? Object.keys(ICONS).sort() : [];
+    return h + '<div class="ggp gg2">' +
+      ggF('Font Size', ggSeg('ggseg', 'ggFs', ['Small','Medium','Large'], 'Font Size')) +
+      ggF('Text Align', ggSeg('ggseg cwcmpwt ggic', 'ggAl', al, 'Text Align')) +
+      ggF('Icon', '<obs-select class="ggicon" block searchable="true" placeholder="Select" aria-label="Icon" options="' +
+        JSON.stringify([{ value:'', label:'None' }].concat(icons.map(n => ({ value:n, label:n })))).replace(/"/g,'&quot;') + '"></obs-select>') +
+      ggF('Icon Position', ggSeg('ggseg cwcmpwt ggic', 'ggIp', [['left','Icon left',GG_I(GG_IC.left, 18)], ['right','Icon right',GG_I(GG_IC.right, 18)]], 'Icon Position')) +
+      ggF('Metric Trend Background', ggSw('ggTrend'), 'wide') + '</div>';
+  }
+  /* sankey — Result By, in flow order; drag the grip to reorder */
+  return '<div class="ggp"><div class="cwf wide"><div class="k">Result By</div><div class="ggsklist">' + s.ggSk.map((b, i) =>
+    '<div class="ggski" draggable="true" data-i="' + i + '" ondragstart="ggSkDrag(event,' + i + ')" ondragover="event.preventDefault()" ondrop="ggSkDrop(event,' + i + ')">' +
+    '<span>' + tnEsc(b) + '</span><span class="ggskg" data-tip="Drag to reorder" aria-hidden="true">' + GG_I(GG_IC.grip, 16) + '</span></div>').join('') + '</div></div></div>';
+}
+function ggSet(map, k, v){ const s = ggSt(); s[map] = Object.assign({}, s[map], { [k]:v }); cwPreview(); }
+let GG_DRAG = -1;
+function ggSkDrag(e, i){ GG_DRAG = i; e.dataTransfer.effectAllowed = 'move'; }
+function ggSkDrop(e, i){ e.preventDefault(); const s = ggSt(); if (GG_DRAG < 0 || GG_DRAG === i) return;
+  const a = s.ggSk.slice(), [m] = a.splice(GG_DRAG, 1); a.splice(i, 0, m); s.ggSk = a; GG_DRAG = -1; cwRender(); }
+/* a threshold colour comes back from the editor's colour dropdown */
+function ggThColor(val, key){ const s = ggSt(), i = +String(key).slice(3); s.ggTh[i] = Object.assign({}, s.ggTh[i], { c:val }); cwRender(); }
+function ggThPaint(){ cwRender(); }
+[0,1,2,3].forEach(i => { if (typeof DD_OWN !== 'undefined') DD_OWN['ggc' + i] = { paint:'ggThPaint', set:'ggThColor' }; });
+/* bind the DS controls — a custom element's inline on-attribute is inert */
+function cwGgBind(){
+  const b = document.getElementById('cwBody'); if (!b || !cwGgOn()) return;
+  const s = ggSt(), det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  const rebuild = ['ggGrid','ggGau'];
+  b.querySelectorAll('obs-radio[data-k]').forEach(r => { const k = r.dataset.k; r.value = String(s[k]);
+    if (r.classList.contains('cwcmpwt')) customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
+      (r.shadowRoot ? [...r.shadowRoot.querySelectorAll('label.opt')] : []).forEach(l => { const t = l.textContent.trim(); if (t) l.title = t; }); }, 0));
+    r.addEventListener('change', e => { let val = det(e); if (val == null) return;
+      if (k === 'ggGrid' || k === 'ggGau') val = +val;
+      if (s[k] === val) return; s[k] = val; r.value = String(val);
+      if (rebuild.includes(k)) cwRender(); else cwPreview(); }); });
+  b.querySelectorAll('obs-switch.ggsw').forEach(el => el.addEventListener('change', () => {
+    const k = el.dataset.k; s[k] = !s[k]; el.checked = s[k]; cwPreview(); }));
+  const ic = b.querySelector('obs-select.ggicon');
+  if (ic){ ic.value = s.ggIc || ''; ic.addEventListener('change', e => { s.ggIc = det(e) || ''; cwPreview(); }); }
+  b.querySelectorAll('obs-select.ggthop').forEach(el => { const i = +el.dataset.i; if (s.ggTh[i].op) el.value = s.ggTh[i].op;
+    el.addEventListener('change', e => { s.ggTh[i] = Object.assign({}, s.ggTh[i], { op:det(e) || '' }); cwPreview(); }); });
+  b.querySelectorAll('obs-input.ggthv').forEach(el => { const i = +el.dataset.i;
+    el.addEventListener('change', e => { const v = det(e) ?? el.value; s.ggTh[i] = Object.assign({}, s.ggTh[i], { v:String(v) }); cwPreview(); }); });
+}
+/* the query row: Gauge has no Result By and no ⊕; Sankey's Result By is the Style list, shown as "first (+n)" */
+function cwGgRows(){
+  const m = document.getElementById('cwModal'); if (!m) return;
+  m.classList.toggle('cwggau', CW.viz === 'gauge'); m.classList.toggle('cwggsk', CW.viz === 'sankey');
+  if (CW.viz !== 'sankey') return;
+  const sk = ggSt().ggSk;
+  document.querySelectorAll('#cwRows .cwqf.rb').forEach(f => {
+    f.innerHTML = '<div class="k">Result By</div><button class="ggskby" onclick="cwTab(\'Style\')" data-tip="Set the order on the Style tab">' +
+      '<span>' + tnEsc(sk[0] || '') + '</span>' + (sk.length > 1 ? '<b>(+' + (sk.length - 1) + ')</b>' : '') +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6l6 -6"/></svg></button>'; });
+}
 </script>
 
 
@@ -40382,7 +40964,16 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
     'OBS-LOGO':':host([name="wireless-controller"]) > *{visibility:hidden}:host([name="wireless-controller"]){background:url("data:image/svg+xml,%3Csvg%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20d%3D%22M130.32%20218.73a31.52%2031.52%200%201031.52%2031.52%2031.52%2031.52%200%2000-31.52-31.52zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9zM256%20218.73a31.52%2031.52%200%201031.52%2031.52A31.52%2031.52%200%2000256%20218.73zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9zm125.68-44.42a31.52%2031.52%200%201031.52%2031.52%2031.52%2031.52%200%2000-31.52-31.52zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9z%22%20fill%3D%22%23f58520%22%2F%3E%3Cpath%20d%3D%22M345.84%20110.47a9.31%209.31%200%201013.47-12.85%20140.61%20140.61%200%2000-102.71-44A142.27%20142.27%200%2000152%2099.61a9.31%209.31%200%201013.72%2012.59%20123.6%20123.6%200%200190.85-40%20122.19%20122.19%200%200189.27%2038.27zM131.74%2078a9.29%209.29%200%20006.73-2.87A163.34%20163.34%200%2001374%2074.37a9.31%209.31%200%201013.37-13%20182%20182%200%2000-262.37.91A9.3%209.3%200%2000131.74%2078zm124.86%2023.8a103%20103%200%2000-77.52%2035.2%209.31%209.31%200%201014%2012.26%2084.35%2084.35%200%2001124.62-2.63%209.31%209.31%200%200013.48-12.84%20102%20102%200%2000-74.58-31.97zM435%20177.1H77.05a21.51%2021.51%200%2000-21.48%2021.48v102.94A21.51%2021.51%200%200077.05%20323h119.63v28.86h-24.47a9.3%209.3%200%2000-7.52%203.83l-69%2094.82-.1.15-.19.29c-.09.13-.17.27-.25.4l-.18.33c-.07.14-.14.28-.2.43a3.13%203.13%200%2000-.15.32%206%206%200%2000-.26.71c0%20.12-.07.23-.1.35a3.59%203.59%200%2000-.12.47c0%20.11%200%20.23-.07.35a4.51%204.51%200%2000-.08.53v.3a8.06%208.06%200%20000%20.85v40.7a9.31%209.31%200%20009.31%209.31h304a9.31%209.31%200%20009.31-9.31v-45.48a9.31%209.31%200%2000-1.88-5.61l-67.83-90a9.28%209.28%200%2000-7.43-3.71h-21.76V323H435a21.51%2021.51%200%200021.48-21.48V198.58A21.51%2021.51%200%2000435%20177.1zm-37%20310.28H112.5V465.3h285.41zm-63.16-116.9l57.4%2076.2H121.48l55.52-76.2zM215.3%20351.86V323h83.79v28.86zm222.51-50.34a2.87%202.87%200%2001-2.86%202.86H77.05a2.87%202.87%200%2001-2.86-2.86V198.58a2.87%202.87%200%20012.86-2.86H435a2.87%202.87%200%20012.86%202.86z%22%20fill%3D%22%232f81c4%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}',
     /* Compare Value › Chart view = the DS's icon-only widget-type segment (localhost:3000/radio · "Visualization style
        picker"): 6px side padding, no icon gap, the label kept for screen readers only, the checked glyph in the page colour */
-    'OBS-RADIO':':host(.cwcmpwt) .rg.seg .opt{padding:0 6px}:host(.cwcmpwt) .rg.seg .ic{margin-right:0}:host(.cwcmpwt) .rg.seg .opt > span:not(.ic){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}:host(.cwcmpwt) .rg.seg .opt.on{--chart-type-icon:var(--page-background-color);--chart-line-type-icon:var(--page-background-color)}',
+    'OBS-RADIO':':host(.cwcmpwt) .rg.seg .opt{padding:0 6px}:host(.cwtnwt) .rg.seg{display:flex;flex-wrap:wrap;max-width:100%;width:fit-content}:host(.cwtnwt) .rg.seg .opt{padding:0 5px;border-left:1px solid var(--border-color,#e3e8f2);border-top:1px solid var(--border-color,#e3e8f2);margin:-1px 0 0 -1px}:host(.cwcmpwt) .rg.seg .ic{margin-right:0}:host(.cwcmpwt) .rg.seg .opt > span:not(.ic){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}:host(.cwcmpwt) .rg.seg .opt.on{--chart-type-icon:var(--page-background-color);--chart-line-type-icon:var(--page-background-color)}' +
+      /* Top N › Legend Position (9 Nov 2026, request: "improve … the reference is Free Text"): the same DS radio, drawn
+         like Free Text's Alignment segment — 38×30 cells on --panel-2 with hairline separators, the selected cell the
+         neutral --chip fill (a state, not the teal action colour), 15px glyphs in --text-dim → --white */
+      ':host(.cwtnlpr) .rg.seg{gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;width:max-content}' +
+      ':host(.cwtnlpr) .rg.seg .opt{width:38px;height:30px;min-width:0;padding:0;margin:0;display:grid;place-items:center;border:0;border-radius:0;border-right:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);box-shadow:none}' +
+      ':host(.cwtnlpr) .rg.seg .opt:last-child{border-right:0}:host(.cwtnlpr) .rg.seg .opt:hover{background:var(--hover);color:var(--text)}' +
+      ':host(.cwtnlpr) .rg.seg .opt.on{background:var(--chip);color:var(--white)}:host(.cwtnlpr) .rg.seg .ic svg{width:15px;height:15px}',
+    'OBS-INPUT':':host(.cwfilin) .ip{padding-left:32px}',
+    'OBS-BUTTON':':host(.cwqbtn) .btn{width:32px;min-width:32px;height:32px;min-height:32px;padding:0}:host(.cwqbtn.rm:hover) .btn{color:var(--severity-critical);border-color:var(--severity-critical)}',
     'OBS-MODAL':':host(.apv-ok) .title{color:var(--secondary-green)}:host(.apv-no) .title{color:var(--secondary-red)}',
     /* Approval's Columns chooser: the eye trigger takes the toolbar squares' own neutral-lightest fill (the select's icon
        trigger is the outlined default button, so it stood apart from PDF / CSV beside it); its column names take the page
@@ -40390,6 +40981,8 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
     'OBS-SELECT':':host(#apvCols) .t-icon{background:var(--code-tag-background-color);border-color:var(--code-tag-background-color);color:var(--neutral-button-text)}:host(#apvCols) .t-icon:hover,:host(#apvCols) .t-icon.open{border-color:var(--neutral-light);color:var(--page-text-color)}:host(#apvCols) .cc-row{color:var(--page-text-color)}' +
       /* Compare Value › Granularity unit fills its half of the row (the shadow .sel carries its own fixed width) */
       ':host(.cwcmpgu){display:block;width:100%}:host(.cwcmpgu) .sel{width:100%;max-width:none}' +
+      /* Create Widget query row: a missing Counter marks its trigger like the live required field */
+      ':host(.cwqsel.err) .trig{border-color:var(--severity-critical)}' +
       /* the dashboard filter pills: a picked value never widens the pill past 180px — it ellipsises */
       ':host(.dfpill) .t-btn{max-width:180px}:host(.dfpill) .t-btn > span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
     /* Compare Value › Compare with: the preset list escapes the scrolling settings pane — fixed with auto offsets keeps
