@@ -10069,6 +10069,14 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 
 /* visualization radio row */
 .cwviz{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:0;padding:10px 16px 0}
+/* the widget-type side menu (obs-side-menu mode="list"). The component owns its right divider, padding and scroll fade,
+   so the column only sets its width (DS sizing: ~15%) — no border, no padding. */
+.cwlay{flex:1 1 auto;min-height:0;display:flex}
+.cwnav{flex:0 0 210px;min-height:0;display:flex}
+.cwnav obs-side-menu{flex:1 1 auto;min-height:0;height:100%}
+.cwcol{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column}
+/* 11 Nov 2026: back to the old tab row on request — the side menu is parked (cwNavPaint still fills it, hidden). */
+#cwModal .cwnav{display:none}
 .cwvz{padding:5px 12px;border:1px solid var(--border);border-right-width:0;background:var(--card);color:var(--text-dim);
   font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .cwvz:first-child{border-radius:5px 0 0 5px}
@@ -10087,7 +10095,8 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 .cwpb{flex:1;min-height:0;display:grid;place-items:center;padding:12px;overflow:hidden}
 .cwpb svg{max-width:100%;max-height:100%}
 .cwpb.cwchon{display:block;padding:4px 6px 0 10px}
-.cwpb.cwchon .cwchc{width:100%;height:100%}
+.cwpb.cwchon .cwchc{width:100%;height:100%;position:relative}
+.cwchc:hover .tnlgrip::after{opacity:1}
 .cwpb.cwchon svg{max-width:none;max-height:none}
 .cwset{flex:1 1 42%;min-width:0;border:1px solid var(--border);border-radius:8px;background:var(--card);
   display:flex;flex-direction:column;overflow:hidden}
@@ -10335,6 +10344,7 @@ obs-button.cwqbtn{flex:0 0 auto}
 .tngv{font:500 10px var(--chart-font-family,'JetBrains Mono'),monospace;fill:var(--page-text-color,var(--text))}
 .tngl{max-width:100%;font-size:12px;font-weight:600;color:var(--page-text-color,var(--text));text-decoration:underline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-6px}
 .tngrid{padding:0;overflow:auto}
+.tngridds obs-table{display:block}
 .tngrid table{width:100%;border-collapse:collapse;table-layout:fixed}
 .tngrid th{text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:.2px;color:var(--page-text-color,var(--text));padding:6px 8px;border-bottom:1px solid var(--border-color,var(--border));position:sticky;top:0;background:inherit}
 .tngrid.tnhS th{font-size:10.5px}.tngrid.tnhM th{font-size:12px}.tngrid.tnhL th{font-size:13.5px}
@@ -10374,12 +10384,16 @@ obs-button.cwqbtn{flex:0 0 auto}
 .ggp .cwf > .k{margin-bottom:7px}
 .ggseg{display:inline-block}
 .ggprev{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;overflow:auto}
-/* Grid · Value list: the value large in mono, the name beside it */
-.ggvl{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 12px;margin:auto 0}
-.ggvlr{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:baseline;gap:16px;width:min(100%,560px)}
-.ggvlv{font:600 34px/1 var(--numeric-font-family, 'JetBrains Mono', monospace);color:var(--page-text-color, var(--text));text-align:right}
-.ggvlv i{font-style:normal;font-size:15px;margin-left:2px}
-.ggvln{font-size:12px;font-weight:500;color:var(--page-text-color, var(--text));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Grid · Value list — rebuilt on the live 10.0.1 markup (11 Nov 2026, request, the product's own DOM pasted): each row is
+   an ant-row flex, justify-center, items-end, `py-2 mt-2 mb-4`; the value is an ant-col-7 (7/24 = 29.17%) right-aligned with
+   pr-3, font-600, its unit an <h4 class="self-end m-1">; the name an ant-col-5 (5/24 = 20.83%), text-xs, pl-3, ellipsised
+   with the full name in `title`. Rows start at the top (w-full h-full), not centred in the widget. */
+.ggvl{padding:0 8px;width:100%}
+.ggvlr{display:flex;justify-content:center;align-items:flex-end;padding:8px 0;margin:8px 0 16px}
+.ggvlv{flex:0 0 29.1667%;max-width:29.1667%;padding-right:12px;text-align:right;min-width:0;display:flex;justify-content:flex-end;align-items:flex-end;
+  font:600 34px/1 var(--numeric-font-family, 'JetBrains Mono', monospace);color:var(--page-text-color, var(--text));white-space:nowrap;overflow:hidden}
+.ggvlv i{font-style:normal;font-weight:600;font-size:14px;line-height:1;margin:4px;align-self:flex-end}
+.ggvln{flex:0 0 20.8333%;max-width:20.8333%;padding-left:12px;min-width:0;font-size:12px;line-height:16px;color:var(--page-text-color, var(--text));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Gauge · Metric — the value fills the pane; Font Size scales it (--ggk) */
 .ggmet{position:relative;flex:1 1 auto;display:flex;align-items:center;padding:12px 16px;min-height:120px;overflow:hidden}
 .ggmet.al-center{justify-content:center}.ggmet.al-right{justify-content:flex-end}
@@ -25758,7 +25772,12 @@ const DF_FIELDS = [
   ['vendor','Vendor',false, ['Cisco','Fortinet','F5','Huawei','Juniper','Brocade','VMware','Microsoft']],
   ['status','Status',false, ['Up','Down','Unreachable','Maintenance','Disabled']],
   ['host','Host Name',false, ['web-01','db-01','app-01','esx-host-01','core-sw-01','edge-fw-01']],
-  ['ip','IP Address',false, ['192.0.2.10','192.0.2.43','192.0.2.58','198.51.100.21','198.51.100.106','203.0.113.7']]
+  ['ip','IP Address',false, ['192.0.2.10','192.0.2.43','192.0.2.58','198.51.100.21','198.51.100.106','203.0.113.7']],
+  /* 10 Nov 2026 (request): four more '+ Filter' fields. Values are canned, like the rest of this table. */
+  ['bsvc','Business Service',false, ['Checkout','Payments','Customer Portal','Order Management','Internal IT']],
+  ['site','Location / Site',false, ['Ahmedabad DC','Mumbai DR','Bengaluru Branch','AWS ap-south-1','Head Office']],
+  ['collector','Collector',false, ['Default Collector','collector-dc-01','collector-dr-01','collector-branch-01','collector-cloud-01']],
+  ['app','Application / Instance',false, ['Apache','Nginx','IIS','MySQL','PostgreSQL','Oracle','Tomcat','Kafka']]
 ];
 const DF_LBL = Object.fromEntries(DF_FIELDS.map(f => [f[0], f[1]]));
 const DF = {};
@@ -35178,6 +35197,10 @@ acHistRender();
     <div class="cwstamp" id="cwStamp"></div>
     <button class="cwx" title="Close  Esc" onclick="cwClose()">✕</button>
   </div>
+  <!-- ⚠️ THE WIDGET TYPES ARE A DS SIDE MENU (11 Nov 2026, request: "update using localhost:3000/side-menu"): an
+       obs-side-menu mode="list" column down the left of the editor, searchable, one DS glyph per type. The old radio row
+       (#cwViz) is still painted by cwRender — hidden — so nothing that reads it breaks. -->
+  <div class="cwlay"><div class="cwnav" id="cwNav"></div><div class="cwcol">
   <div class="cwviz" id="cwViz"></div>
   <div class="cwmain">
     <!-- no header strip: the live preview panel is just the chart -->
@@ -35208,6 +35231,7 @@ acHistRender();
   </div>
   <div class="cwsrc" id="cwSrc"></div>
   <div class="cwhmq" id="cwHmQ"></div>
+  </div></div>
   <div class="cwfoot">
     <span class="cwerr" id="cwErr"></span>
     <span class="sp"></span>
@@ -35599,6 +35623,11 @@ const CW_SHAPE = [
   ["spline", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M4.8,33.61c-.12,0-.25-.03-.36-.09-.39-.2-.54-.69-.34-1.08l5.97-11.56c.11-.21.3-.36.54-.42.24-.05.48,0,.67.15l3.46,2.76,3.85-8.58c.1-.24.32-.41.58-.46s.52.04.71.22l2.68,2.67,5.45-9.3c.14-.25.41-.4.7-.4h0c.29,0,.54.15.7.4l5.19,8.86,3.63-8.1c.18-.4.66-.58,1.06-.4.4.18.58.66.4,1.06l-4.27,9.52c-.12.28-.39.46-.69.48-.3,0-.58-.13-.73-.39l-5.29-9.02-5.29,9.02c-.12.21-.34.36-.59.39-.25.04-.5-.05-.67-.23l-2.59-2.58-3.79,8.47c-.1.23-.3.39-.54.45s-.5,0-.69-.15l-3.5-2.79-5.52,10.7c-.14.28-.42.43-.71.43h0Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M5.87,34.2c-.3,0-.6-.18-.73-.49-.17-.41,0-.88.42-1.05l11.5-4.99,3.29-5.48c.16-.27.46-.42.78-.38l5.27.6,1.54-6.78c.08-.31.32-.55.65-.61s.64.09.81.36l5.33,8.5,3.57-5.12c.25-.36.75-.46,1.11-.2.36.26.45.75.2,1.11l-4.27,6.12c-.15.22-.38.34-.68.34-.27,0-.51-.15-.66-.37l-4.94-7.89-1.28,5.6c-.1.4-.46.67-.87.62l-5.46-.62-3.15,5.25c-.09.14-.21.26-.37.32l-11.73,5.1c-.1.05-.21.07-.31.07l-.02-.02Z\" style=\"opacity: 0.5; fill: var(--chart-type-icon);\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
   ["hbar-stacked", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M4.83,35.23c-.46,0-.83-.37-.83-.83V3.6c0-.46.37-.83.83-.83s.83.37.83.83v30.8c0,.46-.37.83-.83.83Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path d=\"M12.1,15.7h-4.4v6.6h4.4v-6.6ZM15.4,4.7h-7.7v6.6h7.7v-6.6ZM7.7,26.7v6.6h8.8v-6.6H7.7Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M27.5,4.7h-12.1v6.6h12.1v-6.6ZM20.9,15.7h-8.8v6.6h8.8v-6.6ZM16.5,26.7v6.6h13.2v-6.6h-13.2Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M42.9,4.7h-15.4v6.6h15.4c.61,0,1.1-.49,1.1-1.1v-4.4c0-.61-.49-1.1-1.1-1.1ZM30.8,21.2v-4.4c0-.61-.49-1.1-1.1-1.1h-8.8v6.6h8.8c.61,0,1.1-.49,1.1-1.1ZM39.6,26.7h-9.9v6.6h9.9c.61,0,1.1-.49,1.1-1.1v-4.4c0-.61-.49-1.1-1.1-1.1Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path></svg>"],
   ["column-stacked", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M43.2,34.33H4.8c-.44,0-.8-.36-.8-.8s.36-.8.8-.8h38.4c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path><path d=\"M31.47,23.93v6.4h6.4v-6.4h-6.4ZM10.13,30.33h6.4v-6.4h-6.4v6.4ZM20.8,30.33h6.4v-3.2h-6.4v3.2Z\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></path><path d=\"M31.47,14.33v9.6h6.4v-9.6h-6.4ZM10.13,23.93h6.4v-8.53h-6.4v8.53ZM20.8,27.13h6.4v-6.4h-6.4v6.4Z\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></path><path d=\"M15.47,3.67h-4.27c-.59,0-1.07.48-1.07,1.07v10.67h6.4V4.73c0-.59-.48-1.07-1.07-1.07ZM36.8,5.8h-4.27c-.59,0-1.07.48-1.07,1.07v7.47h6.4v-7.47c0-.59-.48-1.07-1.07-1.07ZM26.13,13.27h-4.27c-.59,0-1.07.48-1.07,1.07v6.4h6.4v-6.4c0-.59-.48-1.07-1.07-1.07Z\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></path></svg>"],
+  ["step line", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M8,26 H14 V18 H20 V22 H26 V10 H32 V15 H38 V7 H42\" style=\"opacity: .8; fill: none; stroke: var(--chart-type-icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;\"></path><path d=\"M8,30 H15 V27 H22 V29 H29 V24 H36 V26 H42\" style=\"opacity: .45; fill: none; stroke: var(--chart-type-icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
+  ["area range", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M8,20 C13,12 18,14 23,10 S33,6 41,9 L41,22 C34,20 30,25 23,24 S13,29 8,28 Z\" style=\"opacity: .3; fill: var(--chart-type-icon);\"></path><path d=\"M8,24 C13,20 18,20 23,17 S33,13 41,15\" style=\"opacity: .8; fill: none; stroke: var(--chart-type-icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
+  ["percentage area", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M6.5,33 V22 C14,18 20,25 28,20 S38,17 42,19 V33 Z\" style=\"opacity: .8; fill: var(--chart-type-icon);\"></path><path d=\"M6.5,22 V13 C14,10 20,16 28,12 S38,9 42,11 V19 C38,17 34,15 28,20 S14,18 6.5,22 Z\" style=\"opacity: .5; fill: var(--chart-type-icon);\"></path><path d=\"M6.5,13 V5 H42 V11 C38,9 34,8 28,12 S14,10 6.5,13 Z\" style=\"opacity: .25; fill: var(--chart-type-icon);\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
+  ["streamgraph", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><path d=\"M7,19 C12,15 16,9 22,11 S32,16 42,12 V20 C34,22 30,21 24,22 S12,22 7,19 Z\" style=\"opacity: .8; fill: var(--chart-type-icon);\"></path><path d=\"M7,19 C12,22 18,22 24,22 S34,22 42,20 V25 C35,29 30,26 24,28 S12,24 7,19 Z\" style=\"opacity: .5; fill: var(--chart-type-icon);\"></path><path d=\"M7,19 C12,24 18,24 24,28 S35,29 42,25 V29 C34,33 28,30 22,32 S12,26 7,19 Z\" style=\"opacity: .3; fill: var(--chart-type-icon);\"></path><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
+  ["column range", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 48 38\"><rect x=\"8\" y=\"16\" width=\"4.4\" height=\"12\" rx=\"1\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect><rect x=\"14.5\" y=\"10\" width=\"4.4\" height=\"14\" rx=\"1\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"21\" y=\"14\" width=\"4.4\" height=\"9\" rx=\"1\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><rect x=\"27.5\" y=\"6\" width=\"4.4\" height=\"16\" rx=\"1\" style=\"opacity: 0.8; fill: var(--chart-type-icon);\"></rect><rect x=\"34\" y=\"12\" width=\"4.4\" height=\"11\" rx=\"1\" style=\"opacity: 0.6; fill: var(--chart-type-icon);\"></rect><rect x=\"40.5\" y=\"9\" width=\"4.4\" height=\"8\" rx=\"1\" style=\"opacity: 0.4; fill: var(--chart-type-icon);\"></rect><path d=\"M43.2,34.73H5.87c-1.03,0-1.87-.84-1.87-1.87V4.07c0-.44.36-.8.8-.8s.8.36.8.8v28.8c0,.14.12.27.27.27h37.33c.44,0,.8.36.8.8s-.36.8-.8.8Z\" style=\"fill: var(--chart-line-type-icon);\"></path></svg>"],
 ];
 
 /* ── state ─────────────────────────────────────────────────────────────────── */
@@ -35732,6 +35761,27 @@ function cwNameFocus(sel){
 }
 
 /* ── render ────────────────────────────────────────────────────────────────── */
+/* one DS glyph per widget type (each checked in list_icons) */
+const CW_VIZ_IC = { chart:'chart-line', grid:'grid-table', topn:'bars', gauge:'utilization-gauge', heat:'th-large', sankey:'flow',
+  map:'map', stream:'stream-status', anom:'outlier', fore:'forecast', alerts:'alert', events:'history', cmp:'compare', freetext:'file-alt' };
+/* the element is created once and only its `items` / `active` are moved, so its search text and scroll survive a re-render.
+   ⚠️ While EDITING it lists the current type alone: a widget's visualization cannot change after it is created, and the
+   side menu has no disabled-row state. */
+function cwNavPaint(){
+  const host = document.getElementById('cwNav'); if (!host) return;
+  let m = host.querySelector('obs-side-menu');
+  if (!m){
+    host.innerHTML = '<obs-side-menu mode="list" placeholder="Search widget types" aria-label="Widget type"></obs-side-menu>';
+    m = host.firstChild;
+    m.addEventListener('select', e => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail, lb = d && (d.label || d);
+      const v = CW_VIZ.find(x => x.n === lb); if (v && v.k !== CW.viz) cwPickViz(v.k); });
+  }
+  const list = CW.edit ? CW_VIZ.filter(v => v.k === CW.viz) : CW_VIZ;
+  const items = JSON.stringify(list.map(v => ({ label:v.n, icon:CW_VIZ_IC[v.k] || 'widget-view' })));
+  if (m.getAttribute('items') !== items) m.setAttribute('items', items);
+  const act = cwVizOf(CW.viz).n;
+  if (m.getAttribute('active') !== act){ m.setAttribute('active', act); try { m.active = act; } catch (e) {} }
+}
 function cwRender(){
   const viz = cwVizOf(CW.viz), src = cwSrcOf(CW.src);
   document.getElementById('cwTitle').textContent = CW.edit ? 'Edit Widget' : 'Create Widget';
@@ -35747,6 +35797,7 @@ function cwRender(){
   document.getElementById('cwStamp').innerHTML = (typeof tlA === 'number')
     ? trFmtShort(tlA) + '<br>' + trFmtShort(tlB) : '';
 
+  cwNavPaint();
   /* visualization row — every type except the current one is disabled while editing */
   document.getElementById('cwViz').innerHTML = CW_VIZ.map(v => {
     const on = v.k === CW.viz, off = CW.edit && !on;
@@ -35857,6 +35908,12 @@ function cwOpenViz(name, opt){
   /* Counter Compare compares TWO counters, so it opens with a second row already on a different counter */
   /* Option 5 opens on Column — its bar view is its default (request, 7 Nov 2026) */
   if (CW.viz === 'cmp' && CW_CMP_OPT === 5) CW.style.cmpView = 'Column';
+  /* ⚠️ A NEW CHART OPENS ON THREE COUNTERS (request, 11 Nov 2026: "show the 3 counter value for better chart visualization").
+     With one series the stacked, percentage, streamgraph and range views read as a single blob; three show what each view
+     is for. CPU · memory · disk — all Metric percents, so they share one % axis. The two extra rows are ordinary query rows:
+     ⊗ removes either. ⚠️ A divergence from live 10.0.1, which opens Chart on system.cpu.percent alone. */
+  if (CW.viz === 'chart' && !CW.edit && CW.src === 'Metric' && CW.rows.length === 1 && CW.rows[0].ctr === 'system.cpu.percent')
+    ['system.memory.used.percent', 'system.disk.used.percent'].forEach(c => CW.rows.push(Object.assign(cwBlank(), { ctr:c })));
   if (CW.viz === 'cmp' && CW_CMP_OPT === 3 && CW.rows.length < 2) CW.rows.push(Object.assign(cwBlank(), { ctr:cwSrcOf(CW.src).ctr[2] || cwSrcOf(CW.src).ctr[1] }));
   /* deliberately does NOT prefill the name — the live editor leaves Widget Name empty
      with its placeholder even when you arrive from a type tile */
@@ -36024,7 +36081,7 @@ function cwPanelHTML(viz){
       /* ⚠️ CW_SHAPE[0] (Area) was harvested in its SELECTED state — every fill is var(--page-background-color), so off the
          lit cell it paints the page colour and vanishes. Top N's TN_TILE.Area is the same art in its resting colours. */
       icon:'<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + (n === 0 && typeof TN_TILE !== 'undefined' ? TN_TILE.Area : x[1]).replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>' }));
-    h += '<obs-radio class="cwcmpseg cwcmpwt cwchwt" as-button aria-label="Chart style" options="' +
+    h += '<obs-radio class="cwcmpseg cwcmpwt cwtnwt cwchwt" as-button aria-label="Chart style" options="' +
       JSON.stringify(opts).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio>';
     h += '<div class="cwgrid cwtng">' +
       '<div class="cwf"><div class="k">Rotation</div><obs-input class="cwchrot" block type="number" value="' + (CW.style.rotation || 0) +
@@ -36039,7 +36096,12 @@ function cwPanelHTML(viz){
       (CW.style.points ? '<div class="cwf"><div class="k">Point Size</div><div class="cwrange">' +
         '<span class="cwslot"><input type="range" min="1" max="10" value="' + (CW.style.psz || 4) +
         '" aria-label="Point Size" oninput="CW.style.psz=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value;cwPreview()" /><span class="cwticks">' + '<i></i>'.repeat(10) + '</span></span>' +
-        '<span class="cwlwv">' + (CW.style.psz || 4) + '</span></div></div>' : '') + '</div>';
+        '<span class="cwlwv">' + (CW.style.psz || 4) + '</span></div></div>' : '') +
+      /* Legend Position (11 Nov 2026, request) — Top N's control, reused: Bottom (default, the live chart's) · Right · Left.
+         A vertical legend's width and a bottom legend's height are dragged on the chart (tnGrip); double-click resets. */
+      (CW.style.legend && typeof TN_LP !== 'undefined' ? '<div class="cwf wide"><div class="k">Legend Position</div><obs-radio class="cwcmpwt cwtnlpr cwchlpr" as-button aria-label="Legend Position" options="' +
+        JSON.stringify(['Bottom','Right','Left'].map(v => [v, (TN_LP.find(x => x[0] === v) || [])[1]]).map(([v, d]) => ({ value:v, label:v, icon:'<svg width="18" height="18" viewBox="0 0 24 24" style="display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round">' +
+          '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="' + d + '"/></svg>' }))).replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"></obs-radio></div>' : '') + '</div>';
     return h;
   }
   return '<div class="cwhint">Style options for <b>' + cwVizOf(CW.viz).n + '</b>. The live editor shows a different ' +
@@ -37641,6 +37703,30 @@ function cwPreview(){
    then a 8px square swatch · the counter · the bold value. The eight Style tiles map onto live's series types:
    Area · Line · Horizontal Bar · Vertical Bar and their four stacked twins. Every Style control drives it. */
 const CW_CH_TYPES = [['areaspline',''],['spline',''],['bar',''],['column',''],['areaspline','normal'],['spline','normal'],['bar','normal'],['column','normal']];
+/* 11 Nov 2026 (request, from highcharts.com/demo — beyond live): Step line · Scatter · Area range + line · Percentage area ·
+   Streamgraph · Threshold zones · Column range, APPENDED as 8–14 so every existing shape index keeps its meaning. The third
+   slot names the mode cwChHcCfg branches on. Range types need highcharts-more, Streamgraph its module (cwChHc). */
+/* Scatter and Threshold Zones were built and REMOVED on request the same day (11 Nov 2026); their `scatter` / `zones`
+   branches in cwChHcCfg are kept and unreachable — one entry here, in CW_SHAPE and in CW_CH_NAMES brings either back. */
+CW_CH_TYPES.push(['line','','step'],['arearange','','range'],['areaspline','percent','pct'],
+  ['streamgraph','','stream'],['columnrange','','crange']);
+let cwChHcP = null;
+function cwChHc(){
+  return (typeof tnHc === 'function' ? tnHc() : wHc()).then(H => {
+    if (H.seriesTypes.streamgraph) return H;
+    if (!cwChHcP) cwChHcP = new Promise((ok, no) => { const sc = document.createElement('script');
+      sc.src = W_HC_SRC.replace('highcharts.js', 'modules/streamgraph.js'); sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    return cwChHcP.then(() => H);
+  });
+}
+/* min / avg / max per bucket — what a range chart draws instead of one value per sample */
+function cwChBucket(data, ms){
+  const out = []; let cur = null;
+  data.forEach(([t, v]) => { const k = Math.floor(t / ms) * ms;
+    if (!cur || cur.k !== k){ cur = { k, lo:v, hi:v, sum:0, n:0 }; out.push(cur); }
+    cur.lo = Math.min(cur.lo, v); cur.hi = Math.max(cur.hi, v); cur.sum += v; cur.n++; });
+  return out.map(b => ({ t:b.k, lo:b.lo, hi:b.hi, avg:+(b.sum / b.n).toFixed(2) }));
+}
 let CW_CHC = null;
 function cwChFmt(t){
   const d = new Date(t), D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -37648,9 +37734,11 @@ function cwChFmt(t){
   return D[d.getDay()] + ', ' + M[d.getMonth()] + ' ' + p(d.getDate()) + ', ' + d.getFullYear() + ' ' + p(h) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + (d.getHours() < 12 ? 'AM' : 'PM');
 }
 /* deterministic per counter: a level around 48, ±6 of jitter and an occasional dip — the live CPU series' shape */
-function cwChSeries(seed, t0, t1, pct){
+/* the three counters a new Chart opens on sit at their own levels (11 Nov 2026), or they tangle into one band */
+const CW_CH_LVL = { 'system.cpu.percent':52, 'system.memory.used.percent':72, 'system.disk.used.percent':30 };
+function cwChSeries(seed, t0, t1, pct, lvl){
   let x = seed * 9301 % 233280 || 7; const r = () => (x = (x * 9301 + 49297) % 233280) / 233280;
-  const out = [], step = 300000, base = pct ? 44 + r() * 10 : 300 + r() * 600;
+  const out = [], step = 300000, base = lvl != null ? (r(), lvl) : pct ? 44 + r() * 10 : 300 + r() * 600;
   for (let t = t0; t <= t1; t += step){ const j = (r() - .5) * (pct ? 12 : base * .3), dip = r() < .04 ? -(pct ? 8 : base * .3) * r() : 0;
     out.push([t, +Math.max(0, base + j + dip).toFixed(2)]); }
   return out;
@@ -37660,46 +37748,74 @@ function cwChHcCfg(){
   const t1 = typeof tlB === 'number' ? tlB : Date.now(), t0 = typeof tlA === 'number' ? tlA : (d => { d.setHours(0,0,0,0); return +d; })(new Date());
   const lab = { color:'var(--page-text-color)', fontSize:'0.65rem' };
   const ser = rows.map((r, i) => { const nm = r.ctr + '.' + String(r.agg || 'Avg').toLowerCase(), pct = /percent/.test(r.ctr);
-    return { name:nm, pct, data:cwChSeries(97 + i * 41 + r.ctr.length * 13, t0, t1, pct), color:TN_PAL[i % TN_PAL.length] }; });
+    return { name:nm, pct, data:cwChSeries(97 + i * 41 + r.ctr.length * 13, t0, t1, pct, CW_CH_LVL[r.ctr]), color:TN_PAL[i % TN_PAL.length] }; });
   const pctAll = ser.length && ser.every(x => x.pct), U = pctAll ? '%' : '';
   if (ser.length && rows.some(r => r.sum)){
     const d = ser[0].data.map((p, k) => [p[0], +(ser.reduce((a, x) => a + x.data[k][1], 0) / ser.length).toFixed(2)]);
     ser.push({ name:'Σ summary', data:d, color:'var(--neutral-light)', dashStyle:'Dash', fillOpacity:0, type:ty[0] === 'areaspline' ? 'spline' : undefined });
   }
-  const area = ty[0] === 'areaspline';
+  const mode = ty[2] || '', area = ty[0] === 'areaspline' && mode !== 'pct';
+  if (mode === 'range' || mode === 'crange' || mode === 'stream' || mode === 'pct'){ const k = ser.findIndex(x => x.name === 'Σ summary'); if (k >= 0) ser.splice(k, 1); }
+  const thr = st.markers ? (+st.mk || 0) : (pctAll ? 50 : Math.round(Math.max(1, ...ser.flatMap(x => x.data.map(p => p[1]))) * .8));
+  let seriesOut;
+  if (mode === 'range' || mode === 'crange'){
+    seriesOut = [];
+    ser.forEach(x => { const b = cwChBucket(x.data, mode === 'range' ? 900000 : 3600000);
+      /* the avg line goes first and the band links to it — one legend entry per counter, and hiding it hides both */
+      if (mode === 'range') seriesOut.push({ name:x.name, type:'spline', data:b.map(q => [q.t, q.avg]), color:x.color, zIndex:2 });
+      seriesOut.push(Object.assign({ name:x.name + (mode === 'range' ? ' · min–max' : ''), type:mode === 'range' ? 'arearange' : 'columnrange',
+        data:b.map(q => [q.t, q.lo, q.hi]), color:x.color, lineWidth:0,
+        fillColor:'color-mix(in srgb,' + x.color + ' 28%,transparent)', marker:{ enabled:false } }, mode === 'range' ? { linkedTo:':previous' } : {})); });
+  } else {
+    seriesOut = ser.map(x => Object.assign({ name:x.name, data:x.data, color:x.color }, x.dashStyle ? { dashStyle:x.dashStyle } : {}, x.type ? { type:x.type } : {},
+      mode === 'step' ? { step:'left' } : {},
+      mode === 'zones' && !x.dashStyle ? { zones:[{ value:thr, color:x.color }, { color:'var(--severity-critical)' }] } : {},
+      mode === 'pct' || mode === 'stream' ? { fillColor:'color-mix(in srgb,' + x.color + ' ' + (mode === 'pct' ? 55 : 70) + '%,transparent)', lineWidth:1 } : {},
+      area && !x.dashStyle ? { fillColor:{ linearGradient:{ x1:0, y1:0, x2:0, y2:1 }, stops:[[0, x.color], [1, 'color-mix(in srgb,' + x.color + ' 0%,transparent)']] } } : {}));
+  }
+  const one = (mode === 'pct' || mode === 'stream') && ser.length < 2;
   return {
     chart:{ type:ty[0], backgroundColor:'transparent', style:{ fontFamily:'var(--chart-font-family)' }, spacing:[10, 10, 6, 0], animation:false },
     time:{ useUTC:false }, title:{ text:null }, credits:{ enabled:false }, exporting:{ enabled:false },
     subtitle:st.zt ? { text:ser.map(x => x.name).join(', '), align:'right', style:{ color:'var(--neutral-light)', fontSize:'11px' } } : { text:null },
-    caption:{ text:null },
-    legend:{ enabled:!!st.legend, align:'center', verticalAlign:'bottom', symbolWidth:11, symbolHeight:11, symbolRadius:1,
-      itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' }, itemHoverStyle:{ color:'var(--page-text-color)' } },
+    caption:one ? { text:'Add a second counter (⊕) — this view compares counters\' shares', align:'right', style:{ color:'var(--neutral-light)', fontSize:'11px' } } : { text:null },
+    legend:(lp => lp === 'Bottom'
+      ? { enabled:!!st.legend, align:'center', verticalAlign:'bottom', layout:'horizontal', symbolWidth:11, symbolHeight:11, symbolRadius:1, maxHeight:st.chLegH || undefined,
+          navigation:{ activeColor:'var(--page-text-color)', inactiveColor:'var(--neutral-light)', style:{ color:'var(--page-text-color)', fontSize:'0.65rem' } },
+          itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem' }, itemHoverStyle:{ color:'var(--page-text-color)' } }
+      : { enabled:!!st.legend, align:lp === 'Left' ? 'left' : 'right', verticalAlign:'middle', layout:'vertical', width:st.chLegW || '25%', itemMarginBottom:8,
+          symbolWidth:11, symbolHeight:11, symbolRadius:1, x:lp === 'Left' ? 8 : -8,
+          itemStyle:{ color:'var(--chart-legend-color)', fontWeight:'normal', fontSize:'0.65rem', textOverflow:'ellipsis' }, itemHoverStyle:{ color:'var(--page-text-color)' } })(st.chLegPos || 'Bottom'),
     xAxis:{ type:'datetime', lineColor:'var(--bottom-line-color)', lineWidth:1, tickLength:0, gridLineWidth:0,
       labels:{ style:lab, rotation:-(+st.rotation || 0) || 0 }, title:{ text:st.xt ? 'Time' : null, style:lab }, crosshair:false },
-    yAxis:{ min:0, gridLineColor:'var(--chart-grid-line-color)', lineColor:'var(--bottom-line-color)', lineWidth:1, stackLabels:{ enabled:false },
-      labels:{ format:'{value}' + U, style:lab }, title:{ text:st.yt ? (ser[0] ? ser[0].name : 'Value') : null, style:lab },
-      plotLines:st.markers ? [{ value:+st.mk || 0, color:'var(--severity-major)', width:1.5, dashStyle:'Dash', zIndex:5,
+    yAxis:{ min:mode === 'stream' ? undefined : 0, max:mode === 'pct' ? 100 : undefined, visible:mode !== 'stream', gridLineColor:'var(--chart-grid-line-color)', lineColor:'var(--bottom-line-color)', lineWidth:1, stackLabels:{ enabled:false },
+      labels:{ format:'{value}' + (mode === 'pct' ? '%' : U), style:lab }, title:{ text:st.yt ? (ser[0] ? ser[0].name : 'Value') : null, style:lab },
+      plotLines:mode === 'zones' && !st.markers ? [{ value:thr, color:'var(--severity-critical)', width:1, dashStyle:'Dash', zIndex:5,
+        label:{ text:'threshold ' + thr + U, align:'right', style:{ color:'var(--severity-critical)', fontSize:'0.65rem' } } }] : st.markers ? [{ value:+st.mk || 0, color:'var(--severity-major)', width:1.5, dashStyle:'Dash', zIndex:5,
         label:{ text:(+st.mk || 0) + U, align:'right', style:{ color:'var(--severity-major)', fontSize:'0.65rem' } } }] : [] },
-    tooltip:{ useHTML:true, shared:true, outside:false, backgroundColor:'var(--chart-tooltip-background)', borderColor:'var(--border-color)', borderWidth:1, borderRadius:10,
+    tooltip:{ useHTML:true, shared:mode !== 'scatter', outside:false, backgroundColor:'var(--chart-tooltip-background)', borderColor:'var(--border-color)', borderWidth:1, borderRadius:10,
       shadow:true, padding:8, style:{ color:'var(--page-text-color)', fontFamily:'var(--chart-font-family)', fontSize:'12px' },
       formatter(){ return '<div style="font-weight:700;font-size:11px">' + cwChFmt(this.x) + '</div>' + (this.points || [this.point]).map(pt =>
         '<div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-top:6px"><svg height="8" width="8" style="flex:0 0 8px;margin-right:4px"><rect width="8" height="8" fill="' + pt.color + '"/></svg>' +
-        '<span style="margin-right:auto">' + pt.series.name + '</span><b style="margin-left:24px;font-size:13px">' + pt.y + U + '</b></div>').join(''); } },
+        '<span style="margin-right:auto">' + pt.series.name + '</span><b style="margin-left:24px;font-size:13px">' + (pt.point && pt.point.low != null ? pt.point.low + U + ' – ' + pt.point.high + U
+          : pt.y + U + (mode === 'pct' && pt.percentage != null ? ' · ' + pt.percentage.toFixed(1) + '%' : '')) + '</b></div>').join(''); } },
     plotOptions:{ series:{ animation:false, lineWidth:+st.lw || 2, stacking:ty[1] || undefined, borderWidth:0, states:{ inactive:{ opacity:1 } },
-        marker:{ enabled:!!st.points, symbol:'circle', radius:+st.psz || 4, states:{ hover:{ radius:6, lineWidth:3 } } } },
-      areaspline:{ fillOpacity:1 }, bar:{ maxPointWidth:50 }, column:{ maxPointWidth:50 } },
-    series:ser.map(x => Object.assign({ name:x.name, data:x.data, color:x.color }, x.dashStyle ? { dashStyle:x.dashStyle } : {}, x.type ? { type:x.type } : {},
-      area && !x.dashStyle ? { fillColor:{ linearGradient:{ x1:0, y1:0, x2:0, y2:1 }, stops:[[0, x.color], [1, 'color-mix(in srgb,' + x.color + ' 0%,transparent)']] } } : {}))
+        marker:{ enabled:!!st.points || mode === 'scatter', symbol:'circle', radius:+st.psz || 4, states:{ hover:{ radius:6, lineWidth:3 } } } },
+      areaspline:{ fillOpacity:1 }, bar:{ maxPointWidth:50 }, column:{ maxPointWidth:50 },
+      scatter:{ marker:{ radius:+st.psz || 3 } }, columnrange:{ borderRadius:2, maxPointWidth:24 }, arearange:{ fillOpacity:1 } },
+    series:seriesOut
   };
 }
 function cwChMount(host){
   if (!CW.rows.some(r => r.ctr)) return;            /* no counter: the SVG's empty axes frame stays, as before */
-  wHc().then(H => {
+  ((CW_CH_TYPES[CW.style.shape || 0] || [])[2] ? cwChHc() : wHc()).then(H => {
     if (!CW.open || CW.viz !== 'chart' || !host.isConnected) return;
     if (CW_CHC){ try { CW_CHC.destroy(); } catch (e) {} CW_CHC = null; }
     host.classList.add('cwchon'); host.innerHTML = '<div class="cwchc"></div>';
     const el = host.firstChild; CW_CHC = H.chart(el, cwChHcCfg());
-    const ro = new ResizeObserver(() => { if (CW_CHC && CW_CHC.renderTo === el && el.offsetWidth) CW_CHC.setSize(el.offsetWidth, el.offsetHeight, false); });
+    const lsp = { legend:!!CW.style.legend, legPos:CW.style.chLegPos || 'Bottom', sk:'ch' };
+    if (lsp.legend && typeof tnGrip === 'function'){ if (lsp.legPos === 'Bottom' && CW.style.chLegH) tnLegH(CW_CHC, CW.style.chLegH); tnGrip(el, CW_CHC, lsp); }
+    const ro = new ResizeObserver(() => { if (CW_CHC && CW_CHC.renderTo === el && el.offsetWidth){ CW_CHC.setSize(el.offsetWidth, el.offsetHeight, false); if (typeof tnGripPlace === 'function') tnGripPlace(el, CW_CHC); } });
     ro.observe(el);
   }).catch(() => {});
 }
@@ -38415,6 +38531,18 @@ function tnSVG(s){
       ['object.host', r => r[1].split('-192')[0]], ['object.discovery.method', () => 'SNMP']]).filter(c => !hid(c[0]));
     const spark = r => { const pts = Array.from({length:12}, (_, k) => r[0] - 6 + 6 * Math.sin(k * .9 + r[0])).map((v, k) => (k * 6) + ',' + (18 - (v - 44) / 18 * 16).toFixed(1));
       return '<svg viewBox="0 0 66 20" class="tnspk"><polyline points="' + pts.join(' ') + '" fill="none" stroke="var(--chart-vivid-teal)" stroke-width="1.5"/></svg>'; };
+    /* ⚠️ ON THE DS (11 Nov 2026, request "update using obs design system"): the table is `obs-table` — sortable columns,
+       its own row hover and sticky header, and its `sparkline` cell for the Sparkline Chart switch. Header Font Size is
+       carried by a host class the OBS-TABLE shadow hook reads (:host(.tnhS|M|L) th). The hand-built <table> below is
+       kept as the fallback for a page without the DS bundle. */
+    if (typeof customElements !== 'undefined' && customElements.get('obs-table')){
+      const j = o => JSON.stringify(o).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      const dcols = cols.map((c, k) => ({ key:'c' + k, title:(s.dn && s.dn[c[0]]) || c[0], sortable:true }));
+      if (s.spark) dcols.push({ key:'spk', title:'', type:'sparkline', sortable:false, width:'110px' });
+      const drows = rows.map((r, n) => { const o = { id:'r' + n }; cols.forEach((c, k) => o['c' + k] = String(c[1](r)));
+        if (s.spark) o.spk = Array.from({length:12}, (_, k) => +(r[0] - 6 + 6 * Math.sin(k * .9 + r[0])).toFixed(2)); return o; });
+      return '<div class="tn tngrid tngridds"><obs-table class="tnhds tnh' + (s.hfs || 'Small')[0] + '" sticky-header header-style="default" columns="' + j(dcols) + '" rows="' + j(drows) + '"></obs-table></div>';
+    }
     return '<div class="tn tngrid tnh' + (s.hfs || 'Small')[0] + '"><table><thead><tr>' + cols.map(c => '<th>' + tnEsc((s.dn && s.dn[c[0]]) || c[0]) + '</th>').join('') +
       (s.spark ? '<th></th>' : '') + '</tr></thead><tbody>' + rows.map(r => '<tr>' + cols.map(c => '<td>' + tnEsc(c[1](r)) + '</td>').join('') +
       (s.spark ? '<td>' + spark(r) + '</td>' : '') + '</tr>').join('') + '</tbody></table></div>';
@@ -38572,7 +38700,7 @@ function tnHcCfg(s){
 /* Bottom legend height → layout: H px holds floor(H/18) rows, so the entries take ceil(n/rows) columns across the
    plot — taller = fewer, wider columns (full names), shorter = more columns; below one row's worth it pages */
 function tnLegH(c, v){
-  const n = (c.series[0] && c.series[0].points ? c.series[0].points.length : (c.series || []).length) || 1;
+  const n = (c.legend && c.legend.allItems && c.legend.allItems.length) || (c.series[0] && c.series[0].points ? c.series[0].points.length : (c.series || []).length) || 1;
   const rows = Math.max(1, Math.floor((v - 6) / 18)), cols = Math.max(1, Math.ceil(n / rows));
   c.update({ legend:{ maxHeight:v, itemWidth:Math.floor((c.plotWidth || c.chartWidth * .9) / cols) } }, true, false, false);
 }
@@ -38590,7 +38718,7 @@ function tnGrip(el, c, sp){
   g.setAttribute('aria-label', bottom ? 'Resize legend height' : 'Resize legend width');
   g.title = (bottom ? 'Drag to set the legend height' : 'Drag to resize the legend') + ' · double-click to reset';
   el.appendChild(g); tnGripPlace(el, c);
-  const key = bottom ? 'legH' : 'legW', skey = bottom ? 'tnLegH' : 'tnLegW';
+  const key = bottom ? 'legH' : 'legW', skey = (sp.sk || 'tn') + (bottom ? 'LegH' : 'LegW');
   const save = v => {
     if (el.closest('#cwPrev')){ CW.style[skey] = v; return; }
     const wg = el.closest('.widget[data-g][data-i]'); if (!wg) return;
@@ -38611,7 +38739,7 @@ function tnGrip(el, c, sp){
     g.addEventListener('pointermove', mv); g.addEventListener('pointerup', up);
   });
   g.addEventListener('dblclick', e => { e.stopPropagation();
-    c.update({ legend:bottom ? { maxHeight:null, itemWidth:null } : { width:'30%' } }, true, false, false); tnGripPlace(el, c); save(0); });
+    c.update({ legend:bottom ? { maxHeight:null, itemWidth:null } : { width:sp.sk === 'ch' ? '25%' : '30%' } }, true, false, false); tnGripPlace(el, c); save(0); });
   g.addEventListener('dragstart', e => e.preventDefault()); g.addEventListener('click', e => e.stopPropagation());
 }
 function tnHcMount(){
@@ -38729,16 +38857,30 @@ function cwTnBind(){
   const ro = b.querySelector('obs-input.cwtnrot');
   if (ro) ro.addEventListener('change', e => { const v = +(det(e) ?? ro.value) || 0; CW.style.rotation = Math.max(0, Math.min(360, v)); cwPreview(); });
 }
+const CW_CH_NAMES = ['Area','Line','Horizontal Bar','Vertical Bar','Stacked Area','Stacked Line','Stacked Horizontal Bar','Stacked Vertical Bar',
+  'Step Line','Area Range','Percentage Area','Streamgraph','Column Range'];
 function cwChartBind(){
   const b = document.getElementById('cwBody'); if (!b) return;
   const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
   b.querySelectorAll('obs-switch.cwchsw').forEach(el => el.addEventListener('change', () => {
     const k = el.dataset.k; CW.style[k] = !CW.style[k]; el.checked = CW.style[k];
-    if (k === 'points') cwRender(); else cwPreview(); }));
+    if (k === 'points' || k === 'legend') cwRender(); else cwPreview(); }));
+  const lr = b.querySelector('obs-radio.cwchlpr');
+  if (lr){ lr.value = CW.style.chLegPos || 'Bottom';
+    lr.addEventListener('change', e => { const v = det(e); if (v && v !== (CW.style.chLegPos || 'Bottom')){ CW.style.chLegPos = v; lr.value = v; cwPreview(); } }); }
   const r = b.querySelector('obs-radio.cwchwt');
   if (r){ r.value = String(CW.style.shape || 0);
     customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
-      (r.shadowRoot ? [...r.shadowRoot.querySelectorAll('label.opt')] : []).forEach((l, n) => { if (CW_SHAPE[n]) l.title = CW_SHAPE[n][0]; }); }, 0));
+      /* 11 Nov 2026 (request): each tile names its chart type on hover through the page's own tooltip (a native `title`
+         inside the shadow root was slow and read "area-spline"). Bound per label because the delegated engine sees only
+         the host; see the note on the icon span below. */
+      (r.shadowRoot ? [...r.shadowRoot.querySelectorAll('label.opt')] : []).forEach((l, n) => { if (!CW_CH_NAMES[n]) return;
+        /* the tip is anchored on the icon span: the label also carries the type's name as hidden text, which the
+           engine's redundancy test reads as "already visible" and suppresses */
+        const t = l.querySelector('.ic') || l;
+        l.removeAttribute('title'); t.setAttribute('data-tip', CW_CH_NAMES[n]);
+        l.addEventListener('mouseenter', () => { if (typeof tipShow === 'function') tipShow(t); });
+        l.addEventListener('mouseleave', () => { if (typeof tipHide === 'function') tipHide(); }); }); }, 0));
     r.addEventListener('change', e => { const v = det(e); if (v != null && +v !== (CW.style.shape || 0)){ CW.style.shape = +v; r.value = String(v); cwPreview(); } }); }
   const ro = b.querySelector('obs-input.cwchrot');
   if (ro) ro.addEventListener('change', e => { const v = +(det(e) ?? ro.value) || 0; CW.style.rotation = Math.max(0, Math.min(360, v)); cwPreview(); });
@@ -38775,7 +38917,9 @@ const GG_I = (d, w) => '<svg width="' + (w || 22) + '" height="' + (w || 22) + '
 /* Grid style tiles in the product's chart-type tile art (request, 9 Nov 2026 "improve using obs"): Grid is the
    product's own Grid tile (TN_TILE), Value list is drawn in the same language — value block .8/.6/.4 + a label bar,
    hairline rules in --chart-line-type-icon — so the cwcmpwt hook inverts it when selected, like every other tile */
-const GG_VL_TILE = '<svg viewBox="0 0 48 38"><rect x="6" y="5.2" width="11" height="5" rx="1.1" style="opacity: 0.8; fill: var(--chart-type-icon);"></rect><rect x="21" y="6.4" width="20" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,11.5 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="12.8" width="11" height="5" rx="1.1" style="opacity: 0.6; fill: var(--chart-type-icon);"></rect><rect x="21" y="14.0" width="16" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,19.1 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="20.4" width="11" height="5" rx="1.1" style="opacity: 0.6; fill: var(--chart-type-icon);"></rect><rect x="21" y="21.6" width="12" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><path d="M6,26.7 H42" style="fill: none; stroke: var(--chart-line-type-icon); stroke-width: 1; stroke-linecap: round;"></path><rect x="6" y="28.0" width="11" height="5" rx="1.1" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect><rect x="21" y="29.2" width="8" height="2.6" rx="1.3" style="opacity: 0.4; fill: var(--chart-type-icon);"></rect></svg>';
+/* Value list tile: the product's own glyph (supplied 11 Nov 2026), harvested in its SELECTED state (fills
+   var(--page-background-color)) and re-pointed at the resting tile tokens, which the segment's selected state inverts. */
+const GG_VL_TILE = '<svg viewBox="0 0 48 38"><path d="M29.86,11.13h12.38c.97,0,1.76-.79,1.76-1.76s-.79-1.76-1.76-1.76h-12.38c-.97,0-1.76.79-1.76,1.76s.79,1.76,1.76,1.76ZM42.24,27.71h-12.38c-.97,0-1.76.79-1.76,1.76s.79,1.76,1.76,1.76h12.38c.97,0,1.76-.79,1.76-1.76s-.79-1.76-1.76-1.76Z" style="opacity: 0.6; fill: var(--chart-type-icon);"></path><path d="M6.33,25.53c-.56.44-1.33.84-2.33,1.16v2.42c.68-.21,1.25-.43,1.69-.65.44-.22.91-.52,1.4-.89v7.07h2.98v-10.78h-2.43c-.31.67-.74,1.24-1.3,1.68ZM6.33,4.89c-.56.44-1.33.84-2.33,1.16v2.42c.68-.21,1.25-.43,1.69-.65.44-.22.91-.52,1.4-.89v7.08h2.98V3.21h-2.43c-.31.67-.74,1.24-1.3,1.68ZM16.87,8.81c-1.41,1.05-2.37,1.95-2.89,2.73-.52.78-.83,1.59-.93,2.47h8.86v-2.41h-4.61c.27-.26.51-.47.7-.64.2-.17.59-.46,1.19-.86,1-.7,1.68-1.35,2.06-1.94.38-.59.57-1.21.57-1.85,0-.61-.16-1.16-.49-1.64s-.78-.85-1.36-1.09c-.58-.23-1.42-.36-2.42-.36s-1.77.12-2.33.37c-.57.25-1,.62-1.31,1.07-.31.46-.53,1.11-.64,1.94l2.95.23c.09-.59.23-1.01.48-1.25.25-.23.57-.36.93-.36s.67.12.9.35c.23.22.36.51.36.83,0,.3-.12.62-.36.95-.23.33-.79.82-1.66,1.46ZM21.07,28.55c-.65-.68-1.45-1.01-2.4-1.01-.48,0-.91.09-1.28.26-.37.17-.73.43-1.09.79.1-1.14.23-1.88.43-2.22.26-.48.63-.73,1.11-.73.26,0,.49.1.67.26.17.16.31.46.38.86l2.93-.36h0c-.17-.58-.42-1.06-.74-1.43-.32-.37-.73-.65-1.22-.85-.49-.2-1.16-.3-2-.3-1.42,0-2.54.44-3.35,1.33-.8.89-1.21,2.3-1.21,4.21,0,1.31.19,2.36.58,3.15.4.79.9,1.37,1.54,1.73.64.36,1.49.54,2.56.54.88,0,1.62-.15,2.2-.44.58-.3,1.04-.73,1.37-1.31.33-.58.49-1.21.49-1.91,0-1.04-.32-1.89-.98-2.57ZM18.87,32.53c-.27.3-.59.44-.98.44-.42,0-.78-.17-1.06-.49-.28-.32-.43-.78-.43-1.35h.01c0-.57.15-1,.42-1.31.27-.31.63-.46,1.03-.46s.73.15,1,.47c.27.32.41.78.41,1.37s-.12,1.03-.4,1.32Z" style="fill: var(--chart-line-type-icon);"></path></svg>';
 const GG_TILE = svg => '<svg width="28" height="22" viewBox="0 0 48 38" style="display:block">' + svg.replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>';
 const GG_IC = {
   table:'M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14|M3 10h18|M10 3v18',
@@ -38820,7 +38964,7 @@ function ggHTML(s){
   if (s.viz === 'grid'){
     const rows = TN_ROWS.slice().sort((a, b) => s.ord === 'Last' ? a[0] - b[0] : b[0] - a[0]);
     if (!s.grid) return tnHTML({ type:'Grid', monFirst:true, hfs:s.hfs, ctr:s.ctr, by:s.by, hide:s.hide, dn:s.dn, rows:TN_ROWS, unit:'%' });
-    return '<div class="ggvl">' + rows.map(r => '<div class="ggvlr"><span class="ggvlv">' + r[0].toFixed(2) + '<i>%</i></span><span class="ggvln">' + tnEsc(r[1]) + '</span></div>').join('') + '</div>';
+    return '<div class="ggvl">' + rows.map(r => '<div class="ggvlr"><span class="ggvlv" title="' + r[0].toFixed(2) + '%">' + r[0].toFixed(2) + '<i>%</i></span><span class="ggvln" title="' + tnEsc(r[1]) + '">' + tnEsc(r[1]) + '</span></div>').join('') + '</div>';
   }
   if (s.viz === 'gauge'){
     const k = GG_SIZE[s.fs] || 1, v = s.val || 49.46, hit = ggThHit(s.th, v);
@@ -40958,7 +41102,7 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
   const CSS = { 'OBS-WIDGET-CARD':':host(.wdscard) .wkebab{display:none}:host(.wdsfl) .wbody{padding:0}:host(.apxwc) .wkebab{visibility:hidden;pointer-events:none}:host(.wdscard) .wactions{padding-right:48px}',
     /* Approval: the grid fills the screen and its pager sits at the foot (the box is sized by apvFit → --apv-h);
        the Approve / Reject notes title in green / red, as the live dialogs do */
-    'OBS-TABLE':':host(#apvTable) .box{display:flex;flex-direction:column;height:var(--apv-h,auto);max-height:var(--apv-h,none);overflow:auto}:host(#apvTable) .box > table{flex:0 0 auto}:host(#apvTable) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}:host(#apvTable) tbody td .cell-clip{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:host(#apvTable) tbody tr{cursor:pointer}:host(#apvTable) .pager{margin-top:auto;position:sticky;bottom:0;z-index:2;background:var(--page-background-color);flex:0 0 auto}',
+    'OBS-TABLE':':host(.tnhS) thead th{font-size:10.5px}:host(.tnhM) thead th{font-size:12px}:host(.tnhL) thead th{font-size:13.5px}:host(#apvTable) .box{display:flex;flex-direction:column;height:var(--apv-h,auto);max-height:var(--apv-h,none);overflow:auto}:host(#apvTable) .box > table{flex:0 0 auto}:host(#apvTable) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}:host(#apvTable) tbody td .cell-clip{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:host(#apvTable) tbody tr{cursor:pointer}:host(#apvTable) .pager{margin-top:auto;position:sticky;bottom:0;z-index:2;background:var(--page-background-color);flex:0 0 auto}',
     /* the DS logo set has no wireless controller (obs-logo would draw its "no-icon" ?), so that name paints the product's
        own colour mark instead — the stock glyph hidden, the harvested svg as the host's background */
     'OBS-LOGO':':host([name="wireless-controller"]) > *{visibility:hidden}:host([name="wireless-controller"]){background:url("data:image/svg+xml,%3Csvg%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20d%3D%22M130.32%20218.73a31.52%2031.52%200%201031.52%2031.52%2031.52%2031.52%200%2000-31.52-31.52zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9zM256%20218.73a31.52%2031.52%200%201031.52%2031.52A31.52%2031.52%200%2000256%20218.73zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9zm125.68-44.42a31.52%2031.52%200%201031.52%2031.52%2031.52%2031.52%200%2000-31.52-31.52zm0%2044.42a12.9%2012.9%200%201112.9-12.9%2012.92%2012.92%200%2001-12.9%2012.9z%22%20fill%3D%22%23f58520%22%2F%3E%3Cpath%20d%3D%22M345.84%20110.47a9.31%209.31%200%201013.47-12.85%20140.61%20140.61%200%2000-102.71-44A142.27%20142.27%200%2000152%2099.61a9.31%209.31%200%201013.72%2012.59%20123.6%20123.6%200%200190.85-40%20122.19%20122.19%200%200189.27%2038.27zM131.74%2078a9.29%209.29%200%20006.73-2.87A163.34%20163.34%200%2001374%2074.37a9.31%209.31%200%201013.37-13%20182%20182%200%2000-262.37.91A9.3%209.3%200%2000131.74%2078zm124.86%2023.8a103%20103%200%2000-77.52%2035.2%209.31%209.31%200%201014%2012.26%2084.35%2084.35%200%2001124.62-2.63%209.31%209.31%200%200013.48-12.84%20102%20102%200%2000-74.58-31.97zM435%20177.1H77.05a21.51%2021.51%200%2000-21.48%2021.48v102.94A21.51%2021.51%200%200077.05%20323h119.63v28.86h-24.47a9.3%209.3%200%2000-7.52%203.83l-69%2094.82-.1.15-.19.29c-.09.13-.17.27-.25.4l-.18.33c-.07.14-.14.28-.2.43a3.13%203.13%200%2000-.15.32%206%206%200%2000-.26.71c0%20.12-.07.23-.1.35a3.59%203.59%200%2000-.12.47c0%20.11%200%20.23-.07.35a4.51%204.51%200%2000-.08.53v.3a8.06%208.06%200%20000%20.85v40.7a9.31%209.31%200%20009.31%209.31h304a9.31%209.31%200%20009.31-9.31v-45.48a9.31%209.31%200%2000-1.88-5.61l-67.83-90a9.28%209.28%200%2000-7.43-3.71h-21.76V323H435a21.51%2021.51%200%200021.48-21.48V198.58A21.51%2021.51%200%2000435%20177.1zm-37%20310.28H112.5V465.3h285.41zm-63.16-116.9l57.4%2076.2H121.48l55.52-76.2zM215.3%20351.86V323h83.79v28.86zm222.51-50.34a2.87%202.87%200%2001-2.86%202.86H77.05a2.87%202.87%200%2001-2.86-2.86V198.58a2.87%202.87%200%20012.86-2.86H435a2.87%202.87%200%20012.86%202.86z%22%20fill%3D%22%232f81c4%22%2F%3E%3C%2Fsvg%3E") center/contain no-repeat}',

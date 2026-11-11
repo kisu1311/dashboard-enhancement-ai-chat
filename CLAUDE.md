@@ -15010,6 +15010,7 @@ canvas, and its tooltip counts active filters, so a hidden row still says it is 
 variant (the product Monitors/Inventory row): **Monitor · Group · Tag** are standing grey category pills, a set pill reads
 `field = value` (+N) with an ×, **+ Filter** adds Severity · Type · Vendor · Status · Host Name · IP Address, and the bar
 shows its own **Clear All**. (9 Nov 2026: replaced three `obs-select` button pills, on request.)
+**10 Nov 2026:** + Filter also offers **Business Service · Location / Site · Collector · Application / Instance** (canned values, appended to `DF_FIELDS`).
 `DF_FIELDS` ([key, label, quick?, values] — canned, scrubbed), `DF[board]` (state per board, keyed by field), `dfInit` /
 `dfApply`; `pickDash` is wrapped to repaint it per board. The `change` payload is `[{conditions:[{field, operator, value}],
 match}]`. ⚠️ Filtering is a re-seed of the board's data (`wShift++`, the time-range mechanism) — visible, not real.
@@ -15124,6 +15125,27 @@ sits right after Top N's, namespace `gg*` / `GG_*` / `.gg*`; style lives on `CW.
   swatch · counter · bold value). The 8 tiles = Area · Line · Horizontal Bar · Vertical Bar + the stacked four
   (`CW_CH_TYPES`); Rotation, Legend, X/Y/Z titles, Line Width, Points/Point Size, Σ (dashed mean) and Markers all drive it.
   ⚠️ `tooltip.outside` must stay false — an outside tooltip sits on `<body>` under the modal's z-index.
+- **Seven more Chart styles from highcharts.com/demo** (11 Nov 2026, beyond live), appended to `CW_SHAPE` / `CW_CH_TYPES` as 8–12
+  (the third slot is the mode): Step line · Area range + line (15-min min–max band + avg) · Percentage area · Streamgraph ·
+  Column range (hourly min–max). **Scatter and Threshold zones were added and removed on request the same day.** Range types load
+  highcharts-more and Streamgraph its module (`cwChHc`). Tiles are drawn in the product's chart-type tile art (the DS has no
+  glyphs for them); the segment wraps (`cwtnwt`). Percentage area and Streamgraph say "add a second counter" with one counter.
+  Preview only — a placed chart widget is unchanged.
+- **A new Chart opens on three counters** (11 Nov 2026, request): system.cpu.percent · system.memory.used.percent ·
+  system.disk.used.percent, each at its own level (`CW_CH_LVL` 52 / 72 / 30%) so the multi-series views read. Divergence from
+  live (one counter). Edit mode and non-Metric sources are untouched; ⊗ removes the extra rows.
+- **Chart has Legend Position** (11 Nov 2026, request): Top N's control and drag handle reused — Bottom (default) · Right · Left,
+  shown while Legend is ON (the switch now rebuilds the panel). `CW.style.chLegPos` / `chLegW` / `chLegH`; `tnGrip` takes
+  `sp.sk` ('ch' → chLeg*), and `tnLegH` now counts LEGEND ITEMS (it counted series[0]'s points — hundreds on a time series).
+- **The Grid table is `obs-table`** (11 Nov 2026, "update using obs design system"): `tnHTML`'s Grid branch — so the Grid widget
+  AND Top N's Grid style — renders `obs-table sticky-header` with sortable columns and its own `sparkline` cell; Header Font Size
+  is a host class (`tnhS/M/L`) read by the OBS-TABLE shadow hook. The hand-built table stays as the no-bundle fallback.
+- **The widget types are an `obs-side-menu mode="list"`** (11 Nov 2026, request — localhost:3000/side-menu): a 210px searchable
+  column down the left of the editor (`.cwlay` › `#cwNav` + `.cwcol`), one DS glyph per type (`CW_VIZ_IC`, all in list_icons).
+  `cwNavPaint` creates it once and only moves `items`/`active`; `select` → `cwPickViz`. Edit mode lists the current type alone
+  (the menu has no disabled row); Free Text hides it, as it hid the old row. `#cwViz` is still painted, hidden.
+- **Value list follows the live 10.0.1 markup** (11 Nov 2026): rows justify-center, value col 7/24 right-aligned, name col 5/24
+  (ellipsis + title), `py-2 mt-2 mb-4`, top-aligned.
 - ⚠️ **Not built yet** (seen on the live Chart editor): Chart's **Granularity\* + Metric Grid** fields and the Filters row's
   **Pre Filters / Post Filters** popover (All/Any group matching · Include · Counter · Operator · Value · Add New Group ·
   Reset · Clear · Apply).
