@@ -10053,6 +10053,11 @@ textarea.acta::placeholder{color:var(--muted)}
 body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 /* the label is the point, but it is the first thing to go if the board gets narrow */
 @media (max-width:1280px){ .cwfab span{display:none} .cwfab obs-icon{margin-right:0} }
+/* Create Widget 2 (11 Nov 2026): a second entry point into a COPY of the whole create flow (CW_FLOW = 2),
+   stacked 48px above the first so the two never share a spot. Every .cwfab rule (show-on-dashboard, the AI-card
+   dodge, the version-preview hide) reaches it through the shared class; only its height differs. */
+#cwFab2{bottom:120px}
+body.ntfbr #cwFab2{bottom:calc(var(--ntf-bh,0px) + 80px)}
 #cwScrim{position:fixed;inset:0;z-index:200004;background:rgba(4,10,20,.62);opacity:0;pointer-events:none;transition:opacity .18s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 #cwScrim.on{opacity:1;pointer-events:auto}
 #cwModal{position:fixed;inset:18px;z-index:200005;background:var(--panel);border:1px solid var(--border);
@@ -10076,7 +10081,9 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
 .cwnav obs-side-menu{flex:1 1 auto;min-height:0;height:100%}
 .cwcol{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column}
 /* 11 Nov 2026: back to the old tab row on request — the side menu is parked (cwNavPaint still fills it, hidden). */
-#cwModal .cwnav{display:none}
+/* …but Create Widget 2 (CW_FLOW 2, #cwModal.cwf2) keeps the side menu and drops the tab row (11 Nov 2026). */
+#cwModal:not(.cwf2) .cwnav,#cwModal.cwft .cwnav{display:none}
+#cwModal.cwf2 .cwviz{display:none}
 .cwvz{padding:5px 12px;border:1px solid var(--border);border-right-width:0;background:var(--card);color:var(--text-dim);
   font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .cwvz:first-child{border-radius:5px 0 0 5px}
@@ -12681,7 +12688,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
    stopped loading it — so the Formatting help modal fell back to the DS's LIGHT defaults in dark theme.
    Copied verbatim from setting.html (dark block, light block, the Inter/card re-point), selectors
    narrowed to the three elements on this page. Change one copy, change both. */
-#view-apm,#view-approval,#apvDrawer,#apvModal,#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,.highcharts-tooltip-container{
+#view-apm,#view-approval,#apvDrawer,#apvModal,#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,#cwFab2,.highcharts-tooltip-container{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -13073,7 +13080,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
   --widget-box-shadow:#000;
   --widget-type-selector-border-color:'transparent';
 }
-html[data-theme="light"] #view-apm,html[data-theme="light"] #view-approval,html[data-theme="light"] #apvDrawer,html[data-theme="light"] #apvModal,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] .highcharts-tooltip-container{
+html[data-theme="light"] #view-apm,html[data-theme="light"] #view-approval,html[data-theme="light"] #apvDrawer,html[data-theme="light"] #apvModal,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] #cwFab2,html[data-theme="light"] .highcharts-tooltip-container{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
@@ -24106,6 +24113,7 @@ const W_TYPE_ICON = {
 };
 let awMode = 'create';
 function openAwDrawer(){
+  CW_FLOW = 1; if (typeof cwFlowPaint === 'function') cwFlowPaint();   /* cwFabGo(2) re-sets it after */
   awMode = 'create';
   document.getElementById('awSearch').value = '';
   awTab('create');
@@ -35186,6 +35194,9 @@ acHistRender();
 <obs-button class="cwfab" id="cwFab" variant="primary" data-tip="Create a widget on this dashboard" aria-label="Create a widget on this dashboard" onclick="dsTap(this)&&cwFabGo()">
   <obs-icon name="plus" size="14"></obs-icon><span>Create Widget</span>
 </obs-button>
+<obs-button class="cwfab" id="cwFab2" variant="primary" data-tip="Create a widget — flow option 2" aria-label="Create a widget, flow option 2" onclick="dsTap(this)&&cwFabGo(2)">
+  <obs-icon name="plus" size="14"></obs-icon><span>Create Widget 2</span>
+</obs-button>
 
 <div id="cwScrim" onclick="cwClose()"></div>
 <div id="cwModal" role="dialog" aria-label="Create Widget">
@@ -35646,6 +35657,7 @@ function cwVizOf(k){ return CW_VIZ.find(v => v.k === k) || CW_VIZ[0]; }
 
 /* ── open / close ──────────────────────────────────────────────────────────── */
 function cwOpen(gi, i){
+  if (gi != null){ CW_FLOW = 1; cwFlowPaint(); }   /* editing a placed widget is flow 1 — see CW_FLOW */
   CW.edit = null;
   if (typeof gi === 'number' && typeof i === 'number'){
     const w = (WIDGETS[gi] || [])[i];
@@ -35771,7 +35783,7 @@ function cwNavPaint(){
   const host = document.getElementById('cwNav'); if (!host) return;
   let m = host.querySelector('obs-side-menu');
   if (!m){
-    host.innerHTML = '<obs-side-menu mode="list" placeholder="Search widget types" aria-label="Widget type"></obs-side-menu>';
+    host.innerHTML = '<obs-side-menu mode="list" search="false" aria-label="Widget type"></obs-side-menu>';
     m = host.firstChild;
     m.addEventListener('select', e => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail, lb = d && (d.label || d);
       const v = CW_VIZ.find(x => x.n === lb); if (v && v.k !== CW.viz) cwPickViz(v.k); });
@@ -35864,13 +35876,37 @@ function cwRender(){
 /* The FAB opens the Add New Widget drawer — same as the live product's create-widget
    button — and targets the LAST group so the widget lands at the end of the board, which
    is where the end-of-board add tile appends too. On a flat board there is one group. */
-function cwFabGo(){
+/* ⚠️ CREATE WIDGET HAS TWO FLOWS (request, 11 Nov 2026: copy the Create Widget button and its whole flow as
+   option 2, shown as "Create Widget 2"). Flow 2 is a COPY BY CONSTRUCTION, not pasted code — the Add New Widget
+   drawer and the editor are the same functions, so the two cannot drift until something is asked for. CW_FLOW is
+   which button opened the flow; it rides on #awDrawer and #cwModal as .cwf2, the hooks flow 2 diverges through
+   (CSS: `#cwModal.cwf2 …`; JS: `if (CW_FLOW === 2)`). Every other door into the flow (add tile, group ＋, `W`,
+   a widget's Edit) is flow 1. */
+let CW_FLOW = 1;
+function cwFlowPaint(){
+  ['awDrawer', 'cwModal'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.toggle('cwf2', CW_FLOW === 2); });
+}
+function cwFabGo(flow){
   curG = Math.max(0, TABS.length - 1);
   openAwDrawer();
+  CW_FLOW = flow === 2 ? 2 : 1; cwFlowPaint();
+}
+/* ⚠️ ONLY CHART CARRIES THE THREE SEEDED COUNTERS (request, 11 Nov 2026: "only in the chart type show 3 counter, other
+   chart type single counter"). Moving to Chart adds memory + disk under a lone cpu row; moving to any other type trims the
+   UNTOUCHED trio back to cpu alone. A query the user built (different counters, or rows added/removed) is never touched. */
+const CW_CH_SEED = ['system.cpu.percent', 'system.memory.used.percent', 'system.disk.used.percent'];
+function cwChSeed(){
+  if (CW.edit || CW.src !== 'Metric') return;
+  const ctrs = CW.rows.map(r => r.ctr);
+  if (CW.viz === 'chart'){
+    if (ctrs.length === 1 && ctrs[0] === CW_CH_SEED[0])
+      CW_CH_SEED.slice(1).forEach(c => CW.rows.push(Object.assign(cwBlank(), { ctr:c })));
+  } else if (ctrs.join() === CW_CH_SEED.join()) CW.rows.length = 1;
 }
 function cwPickViz(k){
   if (CW.edit) return;
   CW.viz = k;
+  cwChSeed();
   /* the offered sources change with the type — Sankey is Flow-only, Stream is Alert-only.
      If the current source is no longer offered (or is greyed out) move to the first valid
      one and drop the counters, which belong to a source. */
@@ -35912,8 +35948,7 @@ function cwOpenViz(name, opt){
      With one series the stacked, percentage, streamgraph and range views read as a single blob; three show what each view
      is for. CPU · memory · disk — all Metric percents, so they share one % axis. The two extra rows are ordinary query rows:
      ⊗ removes either. ⚠️ A divergence from live 10.0.1, which opens Chart on system.cpu.percent alone. */
-  if (CW.viz === 'chart' && !CW.edit && CW.src === 'Metric' && CW.rows.length === 1 && CW.rows[0].ctr === 'system.cpu.percent')
-    ['system.memory.used.percent', 'system.disk.used.percent'].forEach(c => CW.rows.push(Object.assign(cwBlank(), { ctr:c })));
+  cwChSeed();
   if (CW.viz === 'cmp' && CW_CMP_OPT === 3 && CW.rows.length < 2) CW.rows.push(Object.assign(cwBlank(), { ctr:cwSrcOf(CW.src).ctr[2] || cwSrcOf(CW.src).ctr[1] }));
   /* deliberately does NOT prefill the name — the live editor leaves Widget Name empty
      with its placeholder even when you arrive from a type tile */

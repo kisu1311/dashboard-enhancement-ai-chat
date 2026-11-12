@@ -15131,6 +15131,7 @@ sits right after Top N's, namespace `gg*` / `GG_*` / `.gg*`; style lives on `CW.
   highcharts-more and Streamgraph its module (`cwChHc`). Tiles are drawn in the product's chart-type tile art (the DS has no
   glyphs for them); the segment wraps (`cwtnwt`). Percentage area and Streamgraph say "add a second counter" with one counter.
   Preview only — a placed chart widget is unchanged.
+- **Only Chart carries the three counters** (11 Nov 2026): `cwChSeed()` runs on open and on every type switch — Chart adds memory + disk under a lone cpu row, any other type trims the untouched trio back to cpu. A query the user changed is left alone.
 - **A new Chart opens on three counters** (11 Nov 2026, request): system.cpu.percent · system.memory.used.percent ·
   system.disk.used.percent, each at its own level (`CW_CH_LVL` 52 / 72 / 30%) so the multi-series views read. Divergence from
   live (one counter). Edit mode and non-Metric sources are untouched; ⊗ removes the extra rows.
@@ -15149,6 +15150,16 @@ sits right after Top N's, namespace `gg*` / `GG_*` / `.gg*`; style lives on `CW.
 - ⚠️ **Not built yet** (seen on the live Chart editor): Chart's **Granularity\* + Metric Grid** fields and the Filters row's
   **Pre Filters / Post Filters** popover (All/Any group matching · Include · Counter · Operator · Value · Add New Group ·
   Reset · Clear · Apply).
+
+## Create Widget 2 — a second copy of the whole create flow (Option 1, 11 Nov 2026)
+
+Request: copy the Create Widget button and its flow as option 2, shown as "Create Widget 2". `#cwFab2` (same `.cwfab`
+class, `bottom:120px`, so it stacks 48px above `#cwFab` and inherits every show / dodge / hide rule) calls `cwFabGo(2)`.
+⚠️ **A copy by construction, not pasted code**: the Add New Widget drawer and the editor are the same functions; `CW_FLOW`
+(1|2) records which button opened the flow and `cwFlowPaint()` puts **`.cwf2`** on `#awDrawer` and `#cwModal` — the hooks
+flow 2 diverges through. `openAwDrawer()` resets it to 1 (so the add tile, group ＋ and `W` are flow 1) and `cwOpen(gi,i)`
+resets it when editing a placed widget. ⚠️ Not stamped on the saved widget, so Edit always reopens flow 1.
+**Its one divergence (11 Nov 2026):** flow 2's editor lists the widget types in the `obs-side-menu` column (`#cwNav`) and hides the tab row; flow 1 keeps the tab row. Two CSS rules on `.cwf2`; Free Text hides the menu in both.
 
 ## Heat Map in the Create Widget editor — cloned from live 10.0.1 (Option 1, 8 Nov 2026)
 
