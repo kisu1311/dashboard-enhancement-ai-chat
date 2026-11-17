@@ -17213,6 +17213,26 @@ obs-banner.mralimh[hidden]{display:none!important}   /* an author display rule b
 .mrasel{height:32px}
 .mraauth{display:flex;gap:8px;align-items:center}
 .mradsg{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:16px;margin:0 0 16px}
+/* connector icon upload (request, 17 Nov 2026) */
+.mraicz{display:flex;align-items:center;gap:12px;min-height:64px;padding:12px 16px;border:1px dashed var(--field-border-color,var(--border));border-radius:4px;background:var(--page-background-color,transparent);cursor:pointer;transition:border-color .15s,background .15s}
+/* hover / active follow obs-input's own rules (read out of _ds): hover → --neutral-light border, focus / drag-over → --primary; no tint (request, 17 Nov 2026) */
+.mraicz:hover{border-color:var(--neutral-light,var(--text-dim))}
+.mraicz:focus-visible,.mraicz.drag,.mraicz:active{border-color:var(--primary,var(--white));outline:none}
+.mraicz.on{border-style:solid;cursor:default;background:transparent}
+.mraicz.on:hover{border-color:var(--field-border-color,var(--border));background:transparent}
+.mraicz.err{border-color:var(--secondary-red,var(--red))}
+.mraicg{flex:0 0 auto;color:var(--neutral-light,var(--text-dim))}
+.mraicpv{flex:0 0 40px;width:40px;height:40px;border-radius:4px;border:1px solid var(--field-border-color,var(--border));display:grid;place-items:center;overflow:hidden}
+.mraicpv img{width:100%;height:100%;object-fit:contain}
+.mraict{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:12.8px;line-height:18px}
+.mraict b{font-weight:500;color:var(--page-text-color)}
+.mraict u{color:var(--primary,var(--white));text-decoration:underline;text-underline-offset:2px}   /* obs-link's colour (--primary), not the Ant-only --primary-color cyan */
+.mraict > span{color:var(--neutral-light,var(--text-dim));font-size:12px}
+.mraict > span.err{color:var(--secondary-red,var(--red))}
+.mraicbt{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+#mraFormDs .mrahint.err{color:var(--secondary-red,var(--red))}
+.mrati.up{background:transparent;overflow:hidden}
+.mrati.up img{width:100%;height:100%;object-fit:contain}
 .mradsf{display:flex;flex-direction:column;gap:5px;min-width:0;margin:0 0 16px}   /* 5px = obs-input's own label→field and field→help gap */
 .mradsg .mradsf{margin:0}
 .mradsf.full{grid-column:1 / -1}
@@ -17414,7 +17434,8 @@ obs-banner.mralimh[hidden]{display:none!important}   /* an author display rule b
 #mycHd:not(.mycidc){display:block}#mycHd{--page-header-padding:0}   /* the id rule must not out-rank .mycidc's flex (6 Nov 2026) */
 #mycFormDs > #mycHd{margin:0 0 24px}
 #mycFormDs > #mycHd.mycidet{margin-bottom:0;padding:12px}
-.mycuse{display:flex;align-items:center;gap:16px;padding:14px 0;margin:0 0 24px;border-bottom:1px solid color-mix(in srgb, var(--border-color) 50%, transparent)}   /* the rule at half strength (request, 12 Nov 2026: it was too strong) */   /* Use in chats, outside the card on a ruled row (12 Nov 2026) */
+.mycuse{display:flex;align-items:center;gap:16px;padding:12px 16px;margin:0 0 24px;border:1px solid var(--border-color);border-radius:4px}   /* a bordered box like the identity card above, no rule underneath (request, 17 Nov 2026) */   /* the rule at half strength (request, 12 Nov 2026: it was too strong) */   /* Use in chats, outside the card on a ruled row (12 Nov 2026) */
+.mycidc + .mycuse{margin-top:12px}   /* two boxes, not one stuck to the other (17 Nov 2026) */
 .mycuset{flex:1 1 auto;min-width:0;display:grid;gap:2px}
 .mycuset b{font-size:14px;font-weight:600;line-height:20px;color:var(--page-text-color)}
 .mycuset span{font-size:12.8px;line-height:18px;color:var(--neutral-light)}
@@ -51893,7 +51914,9 @@ const mraOptHTML = () => `<div class="mraopt" role="radiogroup" aria-label="Desi
 function mraOpt(o){ if (MRA.opt === o) return; MRA.opt = o; stMainPaint(); }
 const mraEsc = s => stEsc(s == null ? '' : s);
 const mraStar = () => stSvg('sparkling-star', 'star');
-function mraTile(k, lg){
+function mraTile(k, lg, icon){
+  /* an icon uploaded in the manual Add Connector form (request, 17 Nov 2026) wins over the brand / ? tile */
+  if (icon) return `<span class="mrati${lg?' lg':''} up"><img src="${icon}" alt=""></span>`;
   const b = MRA_BRAND[k];
   if (!b) return `<span class="mrati${lg?' lg':''} q">?</span>`;
   return `<span class="mrati${lg?' lg':''}" style="background:${MRA_TILE[k]}"><svg viewBox="${b[0]}">${b[1]}</svg></span>`;
@@ -51912,7 +51935,14 @@ const mraSignIn1 = r => r.auth === 0 ? 'No sign-in' : r.org ? 'Org-managed' : 'U
    That extension point REPLACES the built-in set rather than adding to it — safe here because nothing
    else on setting.html renders an obs-logo (checked); say so before adding one elsewhere on this page.
    ⚠️ Status maps through the DS status table: Available → green, Off → red (the DS's own `off`). ── */
-function mraLogoName(k){ return 'mra-' + (MRA_BRAND[k] ? k : 'q'); }
+function mraLogoName(k, r){
+  /* an uploaded icon is registered as its own obs-logo name through the same extension point (request, 17 Nov 2026) */
+  if (r && r.icon){ mraLogosReg(); const L = globalThis.__OBS_LOGOS__.LOGOS, nm = 'mra-u' + r.id;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><image href="${r.icon}" width="24" height="24" preserveAspectRatio="xMidYMid meet"/></svg>`;
+    if (L[nm] !== svg){ L[nm] = r._iconSvg = svg;
+      try { globalThis.dispatchEvent(new Event('obs-logos-loaded')); } catch(e){} }
+    return nm; }
+  return 'mra-' + (MRA_BRAND[k] ? k : 'q'); }
 function mraLogosReg(){
   if (globalThis.__OBS_LOGOS__ && globalThis.__OBS_LOGOS__.mra) return;
   const tile = (bg, inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" style="fill:${bg}"/>${inner}</svg>`;
@@ -51988,7 +52018,7 @@ function mraConnAfter1Rows(t){
   const q = MRA.pg.q.trim().toLowerCase();
   t.rows = MRA.rows.filter(r => (!q || [r.n, r.url, mraSignIn1(r), r.on?'Available':'Off'].join(' ').toLowerCase().includes(q)) && cgPass('mra', r))
     .sort((a, b) => a.n.localeCompare(b.n, undefined, { sensitivity:'base' }))
-    .map(r => ({ id:r.id, logo:{ name:mraLogoName(r.k), size:22, title:r.n }, n:r.n, url:r.url, sign:mraSignIn1(r), roles: mraRoleTags(r.roles), on: !!r.on }));
+    .map(r => ({ id:r.id, logo:{ name:mraLogoName(r.k, r), size:22, title:r.n }, n:r.n, url:r.url, sign:mraSignIn1(r), roles: mraRoleTags(r.roles), on: !!r.on }));
 }
 function mraConnHTML(){
   /* request, 3 Nov 2026: every Option 1 change applies to Option 2 too - both options share the grid, the DS form and its defaults; Option 2 keeps only its own Add Connector drawer (connector rail + form in one) */
@@ -51998,7 +52028,7 @@ function mraConnHTML(){
     .sort((a, b) => P.sort * a.n.localeCompare(b.n, undefined, { sensitivity:'base' }));
   const page = rows.slice((P.page - 1) * P.size, P.page * P.size);
   const tr = page.map(r => `<tr>
-      <td class="nm">${mraTile(r.k)}<span>${mraEsc(r.n)}</span></td>
+      <td class="nm">${mraTile(r.k, false, r.icon)}<span>${mraEsc(r.n)}</span></td>
       <td title="${mraEsc(r.url)}">${mraEsc(r.url)}</td>
       <td class="${r.auth === 0 ? 'mradim' : ''}">${mraSignIn(r)}</td>
       <td class="c ${r.on ? 'mraok' : 'mradim'}">${r.on ? 'Available' : 'Off'}</td>
@@ -52150,6 +52180,7 @@ function mraFormBodyDS(F, v){
     ${v.k ? `<!-- a connector from the list (request, 5 Nov 2026): name, description and URL come from the server, so they are a read-only card -->
     ${mycIdentHTML(v, false, { id:'mraIdc', copyId:'mraCopyUrl', bare:true, chip: true, cls: 'mraidfo2' })}`   <!-- name, description and URL only: no tags, no Enabled switch (request, 6 Nov 2026) -->
     : `<!-- Set Up Manually: the three fields, editable, as they always were -->
+    ${mraIconFieldHTML(v)}
     <div class="mradsg">${inp('n', 'Connector Name', v.n, { req:1 })}${inp('d', 'Description', v.d)}${inp('url', 'MCP URL', v.url, { req:1, full:1, ro:F.edit })}</div>
     <obs-divider class="mradsdiv"></obs-divider>`}
     <h4 class="mradsh">Access</h4>
@@ -52203,6 +52234,40 @@ function mraAuthGrowHTML(F, v, lab){
       ${card(0, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8 11v-5a4 4 0 0 1 8 0"/></svg>`, 'No sign-in', 'The server is open; anyone with the role can use it.')}
       ${card(1, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/></svg>`, 'Sign in', 'People sign in to the server before they can use it.', inner)}</div>${det}</div></div>`;
 }
+/* ── Icon upload, Set Up Manually only (request, 17 Nov 2026) ── the DS ships no upload / image-picker component, so it is
+   composed from obs-button + obs-icon over a native file input (Settings › My Profile's picture works the same way).
+   The picked file is rasterised to a 96px square PNG before it is stored on the connector (v.icon), so the model stays small;
+   the grid, the cards and My Connectors all draw it through mraTile / mraLogoName. A connector from the list keeps its brand mark. */
+const MRA_ICON_OK = /^image\/(png|jpe?g|svg\+xml|webp|gif)$/;
+function mraIconFieldHTML(v){
+  /* one box (request, 17 Nov 2026): the whole field is a drop area — click or drop an image. The DS has no upload / dropzone
+     component (search_components: none), so it is built from DS tokens; Replace / Remove are obs-buttons. */
+  if (v.icon) return `<div class="mradsf mraicf"><span class="mradsl">Icon</span><div class="mraicz on" id="mraIcZ">
+    <span class="mraicpv"><img src="${v.icon}" alt="Connector icon"></span>
+    <span class="mraict"><b>Icon added</b><span id="mraIcHint">Shown beside the connector in the list and in chats.</span></span>
+    <span class="mraicbt"><obs-button id="mraIcUp" variant="default" size="small">Replace</obs-button>
+      <obs-button id="mraIcRm" variant="default" size="small" class="squared-button" data-tip="Remove the icon" aria-label="Remove the icon"><obs-icon name="delete"></obs-icon></obs-button></span>
+    <input type="file" id="mraIcIn" accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif" hidden></div></div>`;
+  return `<div class="mradsf mraicf"><span class="mradsl">Icon</span><div class="mraicz" id="mraIcZ" role="button" tabindex="0" aria-label="Upload connector icon">
+    <obs-icon name="image" class="mraicg"></obs-icon>
+    <span class="mraict"><b>Drop an image here or <u>browse</u></b><span id="mraIcHint">PNG, JPG or SVG, up to 1 MB</span></span>
+    <input type="file" id="mraIcIn" accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif" hidden></div></div>`;
+}
+function mraIconPick(f){
+  const h = document.getElementById('mraIcHint');
+  if (!f) return;
+  if (!MRA_ICON_OK.test(f.type)){ if (h){ h.textContent = 'That file is not an image. Choose a PNG, JPG or SVG.'; h.classList.add('err'); h.closest('.mraicz').classList.add('err'); } return; }
+  if (f.size > 1048576){ if (h){ h.textContent = 'That image is over 1 MB. Choose a smaller file.'; h.classList.add('err'); h.closest('.mraicz').classList.add('err'); } return; }
+  const rd = new FileReader();
+  rd.onload = () => { const im = new Image(); im.onload = () => {
+      const S = 96, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+      const k = Math.min(S / (im.naturalWidth || S), S / (im.naturalHeight || S)), w = (im.naturalWidth || S) * k, hh = (im.naturalHeight || S) * k;
+      x.drawImage(im, (S - w) / 2, (S - hh) / 2, w, hh);
+      MRA.f.v.icon = c.toDataURL('image/png'); mraFormPaint(); };
+    im.onerror = () => { if (h){ h.textContent = 'That image could not be read.'; h.classList.add('err'); } };
+    im.src = rd.result; };
+  rd.readAsDataURL(f);
+}
 function mraAuthPick(k){ if (MRA.f.v.auth !== k){ MRA.f.v.auth = k; mraFormPaint(); } }
 function mraFormBindDS(){
   const root = document.getElementById('mraFormDs'); if (!root) return;
@@ -52228,6 +52293,17 @@ function mraFormBindDS(){
   if (og){ og.options = [{ value:'org', label:'Org-managed' }, { value:'own', label:'User-managed' }]; og.value = MRA.f.v.org ? 'org' : 'own';
     og.addEventListener('change', e => { const d = det(e), k = (d && d.value != null) ? d.value : d; const org = k === 'org';
       if (org !== MRA.f.v.org){ MRA.f.v.org = org; mraFormPaint(); } }); }
+  const ici = document.getElementById('mraIcIn'), icu = document.getElementById('mraIcUp'), icr = document.getElementById('mraIcRm');
+  if (ici){ ici.addEventListener('change', () => { mraIconPick(ici.files && ici.files[0]); ici.value = ''; }); }
+  if (icu) icu.addEventListener('click', () => stTap(() => ici && ici.click()));
+  const icz = document.getElementById('mraIcZ');
+  if (icz && !icz.classList.contains('on')){
+    icz.addEventListener('click', () => ici && ici.click());
+    icz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ici && ici.click(); } }); }
+  if (icz){ icz.addEventListener('dragover', e => { e.preventDefault(); icz.classList.add('drag'); });
+    icz.addEventListener('dragleave', () => icz.classList.remove('drag'));
+    icz.addEventListener('drop', e => { e.preventDefault(); icz.classList.remove('drag'); mraIconPick(e.dataTransfer.files && e.dataTransfer.files[0]); }); }
+  if (icr) icr.addEventListener('click', () => stTap(() => { delete MRA.f.v.icon; mraFormPaint(); }));
   const dt = document.getElementById('mraDetDs'); if (dt) dt.addEventListener('click', () => stTap(mraDetect));
   /* the card's MCP URL copies on click; the copy mark shows on hover (request, 5 Nov 2026 — as My Connectors' card) */
   const cu = document.getElementById('mraCopyUrl'); if (cu){ const go = () => { try { navigator.clipboard.writeText(MRA.f.v.url); } catch(e){} toast('MCP URL copied'); };
@@ -52345,6 +52421,7 @@ function mraSave(){
   /* Option 1 (request, 2 Nov 2026): a new connector arrives Enabled ON - the drawer has no Availability control, the grid's
      Enabled switch is where it is turned off. Option 2 keeps its form's own Availability choice. */
   else { v.on = true; MRA.rows.push(Object.assign(v, { id: MRA.seq++ })); toast(v.n + ' added'); }
+  const sr = MRA.rows.find(r => r.n === v.n); if (sr) mraLogoName(sr.k, sr);   /* register an uploaded icon before the grid asks for it */
   stcDrClose(); stMainPaint();
 }
 
@@ -52917,7 +52994,7 @@ function mycHTML(){
       : `<obs-link class="myctl" data-id="${r.id}" aria-label="${T[1].length} tools of ${mraEsc(r.n)} - open details">${T[1].length} tools</obs-link>`;
     const items = mycItems(r, s, u);
     const a = `<obs-menu class="mycmenu" data-id="${r.id}" aria-label="Actions for ${mraEsc(r.n)}"${items.length ? '' : ' disabled'} items="${mraEsc(JSON.stringify(items))}"></obs-menu>`;
-    const cell = { n:`<td class="nm"><span class="nmw">${mraTile(r.k)}<a href="#" class="mycnm" data-id="${r.id}" aria-label="Open ${mraEsc(r.n)} details">${mraEsc(r.n)}</a></span></td>`, url:`<td title="${mraEsc(r.url)}">${mraEsc(r.url)}</td>`,
+    const cell = { n:`<td class="nm"><span class="nmw">${mraTile(r.k, false, r.icon)}<a href="#" class="mycnm" data-id="${r.id}" aria-label="Open ${mraEsc(r.n)} details">${mraEsc(r.n)}</a></span></td>`, url:`<td title="${mraEsc(r.url)}">${mraEsc(r.url)}</td>`,
       sign:`<td${r.auth === 0 ? ' class="mycdim"' : ''}>${mraSignIn1(r)}</td>`, on:`<td>${sw}</td>`, st:`<td class="${s.c}">${s.t}</td>`, tools:`<td>${tools}</td>`, act:`<td class="c">${a}</td>` };
     return `<tr>${COLS.map(c => cell[c[0]]).join('')}</tr>`;
   }).join('');
@@ -52998,20 +53075,20 @@ function mycIdentHTML(r, sw, o = {}){
   const ch = o.chip || o.chipRow;
   const url = `<span class="mycidl${ch ? ' mycidch' : ''}" id="${o.copyId || 'mycCopyUrl'}" role="button" tabindex="0" data-tip="Copy MCP URL" aria-label="Copy MCP URL ${mraEsc(r.url)}"><obs-icon class="mycidlk" name="link" size="${ch ? 12 : 14}"></obs-icon><span class="mycidt">${mraEsc(ch ? r.url.replace(/^https?:\/\//, '') : r.url)}</span>${ch ? '' : '<obs-icon name="copy" size="14"></obs-icon>'}</span>`;
   /* o.center: Option 4 — centred column: logo · name · description · one pill (link + URL | copy) (6 Nov 2026, from the supplied card) */
-  if (o.center) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc4${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true)}<div class="mycidm">
+  if (o.center) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc4${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true, r.icon)}<div class="mycidm">
       <b class="mycidn">${mraEsc(r.n)}</b>
       ${r.d ? `<span class="mycidd">${mraEsc(r.d)}</span>` : ''}</div>
       <div class="mycid4p"><span class="mycid4u"><obs-icon name="link" size="12"></obs-icon><span class="mycidt">${mraEsc(r.url)}</span></span><span class="mycid4c" id="${o.copyId || 'mycCopyUrl'}" role="button" tabindex="0" data-tip="Copy MCP URL" aria-label="Copy MCP URL ${mraEsc(r.url)}"><obs-icon name="copy" size="13"></obs-icon></span></div></div>`;
   /* o.rail: Option 3 — the logo in its own left panel, then name · description · URL with a copy button (6 Nov 2026) */
-  if (o.rail) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc3${o.cls ? ' ' + o.cls : ''}"><div class="mycid3l">${mraTile(r.k, true)}</div><div class="mycidm">
+  if (o.rail) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc3${o.cls ? ' ' + o.cls : ''}"><div class="mycid3l">${mraTile(r.k, true, r.icon)}</div><div class="mycidm">
       <b class="mycidn">${mraEsc(r.n)}</b>
       ${r.d ? `<span class="mycidd">${mraEsc(r.d)}</span>` : ''}
       <div class="mycid3u"><span class="mycid3p" id="${o.copyId || 'mycCopyUrl'}" role="button" tabindex="0" data-tip="Copy MCP URL" aria-label="Copy MCP URL ${mraEsc(r.url)}"><obs-icon name="link" size="12"></obs-icon><span class="mycidt">${mraEsc(r.url.replace(/^https?:\/\//, ''))}</span><obs-icon class="mycid3pc" name="copy" size="12"></obs-icon></span></div></div></div>`;   /* one pill: link · host/path · copy (request, 6 Nov 2026) */
   /* o.tagsIn (Connector details, request 12 Nov 2026): the URL chip at the right end of the name's line, the two tags at the right end of the description's line */
-  if (o.tagsIn) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc2${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true)}<div class="mycidm">
+  if (o.tagsIn) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc2${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true, r.icon)}<div class="mycidm">
       <div class="mycidnr mycidsb"><b class="mycidn">${mraEsc(r.n)}</b>${url}</div>
       <div class="mycidnr mycidsb"><span class="mycidd">${mraEsc(r.d || '')}</span><div class="mycidr"><obs-tag class="mycidtg mycidt18" variant="tag-primary">${mraSignIn1(r)}</obs-tag><obs-tag class="mycidtg mycidt18" variant="${stV}">${st.t}</obs-tag></div></div></div></div>`;
-  return `<div id="${o.id || 'mycHd'}" class="mycidc${o.chip ? ' mycidc2' : ''}${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true)}<div class="mycidm">
+  return `<div id="${o.id || 'mycHd'}" class="mycidc${o.chip ? ' mycidc2' : ''}${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true, r.icon)}<div class="mycidm">
       ${o.chip ? `<div class="mycidnr"><b class="mycidn">${mraEsc(r.n)}</b>${url}</div>` : `<b class="mycidn">${mraEsc(r.n)}</b>`}
       ${r.d ? `<span class="mycidd">${mraEsc(r.d)}</span>` : ''}
       ${o.chip ? '' : `<div class="mycidu">${url}</div>`}</div>
