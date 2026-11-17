@@ -149,7 +149,7 @@
   var items = VARIANTS.map(function (v, i) {
     var on = v.file === here;
     var kbd = vsKey(i) ? '<span class="vs-kbd">' + vsKey(i) + '</span>' : '';
-    return '<a class="vs-item' + (on ? ' on' : '') + '" href="' + encodeURI(v.file) + '">' +
+    return '<a class="vs-item' + (on ? ' on' : '') + '" href="' + encodeURI(v.file) + '" onclick="this.href=this.getAttribute(\'href\').split(\'#\')[0]+location.hash">' +
            '<span class="vs-tick">✓</span><span>' + v.label + '</span>' + kbd + '</a>';
   }).join('');
 
@@ -200,7 +200,8 @@
     var v = VARIANTS[idx];
     if (!v || v.file === here) return;        /* already here — do nothing */
     e.preventDefault();
-    location.href = encodeURI(v.file);
+    /* the screen travels with you: the URL hash names it (url router in setting-nav.js, 17 Nov 2026) */
+    location.href = encodeURI(v.file) + location.hash;
   });
 
   document.body.appendChild(root);

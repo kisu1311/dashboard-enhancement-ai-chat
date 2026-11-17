@@ -155,18 +155,112 @@ const ST_TREE = [
   avPaint();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avPaint);
 
-  /* arriving back from setting.html: #m=<module>[&sub=<tab>] or #v=<view> */
-  var p = new URLSearchParams((location.hash || '').replace(/^#/, ''));
-  var m = p.get('m'), v = p.get('v'), sub = p.get('sub');
-  if (!m && !v) return;
-  setTimeout(function () {
-    try {
-      if (m) {
-        if (sub) { try { MOD_SUB = sub; } catch (e) {} }
-        if (m !== 'Dashboards' && typeof selectModuleByName === 'function') selectModuleByName(m);
-      } else if (v && typeof showView === 'function') showView(v);
-    } finally {
-      history.replaceState(null, '', location.pathname + location.search);
+})();
+
+/* ══ EVERY SCREEN HAS ITS OWN URL (17 Nov 2026) ══════════════════════════════════════════════════
+   Request: "when I click any screen the URL is the same — when I share a link it opens the default screen".
+   The URL HASH now names the screen you are on, is kept current as you navigate (pushState, so Back /
+   Forward walk between screens), and a link carrying it opens that screen:
+     option pages   #m=<module>&sub=<tab>   ·   #d=<dashboard>   ·   #v=<view>[&tab=<n>]
+     setting.html   #st=<category>|<page>          apm.html   #sub=<tab>          topology.html   #tab=<tab>
+   ⚠️ COMPOSED FROM STATE, NOT WIRED INTO EACH CALLER. There are hundreds of doors (rail, flyouts, pins,
+   shortcuts, the AI panel, drawers); a sync after every click / key plus a slow interval catches all of
+   them, and a door added later is covered for free. Every read is try/catch'd: the fourteen options carry
+   different subsets of these globals, and a missing one only drops that part of the hash.
+   ⚠️ setting.html / topology.html / apm.html already ROUTE FROM their hash at boot; they only had to stop
+   clearing it. The option pages apply it here (urApply), on load, on Back/Forward and on a pasted hash. */
+(function () {
+  var page = (location.pathname.split('/').pop() || 'index.html');
+  if (/^(mira|Global_ai)\.html$/.test(page)) return;   /* own routing / single screen */
+  var KIND = page === 'setting.html' ? 'st' : page === 'apm.html' ? 'apm' : /^topology\d*\.html$/.test(page) ? 'topo' : 'opt';
+  var busy = false, ready = false;
+  function T(f, d) { try { var v = f(); return v == null ? d : v; } catch (e) { return d; } }
+  function onView(id) { var el = document.getElementById('view-' + id); return !!(el && el.classList.contains('on')); }
+  function frameHash(host) {
+    return T(function () { var f = document.querySelector('#' + host + ' iframe'); return f.contentWindow.location.hash.replace(/^#/, ''); }, '')
+        || T(function () { var f = document.querySelector('#' + host + ' iframe'); return (f.getAttribute('src') || '').split('#')[1] || ''; }, '');
+  }
+  function keyOf(map, val) { return T(function () { return Object.keys(map).find(function (k) { return map[k] === val; }); }, ''); }
+  function enc(o) {
+    return Object.keys(o).filter(function (k) { return o[k] !== '' && o[k] != null; })
+      .map(function (k) { return k + '=' + encodeURIComponent(o[k]).replace(/%7C/gi, '|').replace(/%20/g, '+'); }).join('&');
+  }
+
+  /* ---- the current screen → a hash (no leading #); null = say nothing, leave the URL alone ---- */
+  function compose() {
+    if (KIND === 'st') {
+      if (!onView('settings')) return null;
+      var st = T(function () { return ST; }, null); if (!st || st.full) return null;
+      return 'st=' + encodeURIComponent(st.cat || '') + '|' + encodeURIComponent(st.page || '');
     }
-  }, 0);
+    if (KIND === 'apm') return enc({ sub: T(function () { return APX_TABS[APX.tab]; }, '') }) || null;
+    if (KIND === 'topo') { var th = frameHash('topoHost').split('/')[0]; return th ? 'tab=' + th : null; }
+
+    var v = T(function () { return document.querySelector('.view.on').id.replace(/^view-/, ''); }, '');
+    if (!v) return null;
+    if (v === 'dashboard') return enc({ d: T(function () { return dashState.cur; }, '') }) || 'm=Dashboards';
+    if (v === 'logexp') return enc({ m: 'Log Explorer', sub: T(function () { return LX.tab === 'ls' ? 'Log Search' : 'Overview'; }, '') });
+    if (v === 'monitor') return enc({ m: 'Monitors', sub: T(function () { return MN_TABS[mnTab]; }, '') });
+    if (v === 'compliance') return enc({ m: 'Compliance', sub: T(function () { return CPLS.tab; }, '') });
+    if (v === 'ipam') return enc({ m: 'IPAM', sub: keyOf(T(function () { return IPAM_TAB_HASH; }, {}), frameHash('ipamHost').split('/')[0]) });
+    if (v === 'firewall') return 'm=' + encodeURIComponent('Firewall Analyzer');
+    if (v === 'topology') return enc({ m: 'Topology', sub: keyOf(T(function () { return TOPO_TAB_HASH; }, {}), frameHash('topoHost').split('/')[0]) });
+    if (v === 'module') return enc({ m: T(function () { return MODULES[activeModule].name; }, ''),
+                                     sub: T(function () { var s = document.getElementById('modSub'); return s && !s.hidden ? s.textContent : ''; }, '') });
+    if (v === 'health') return enc({ v: 'health', tab: T(function () { return healthTab ? String(healthTab) : ''; }, '') });
+    if (v === 'settings') return null;   /* navigates to setting.html, which owns its own URL */
+    return 'v=' + encodeURIComponent(v);
+  }
+
+  /* ---- a hash → that screen (option pages; the other three route from their hash at boot) ---- */
+  function urApply(h) {
+    var p = new URLSearchParams(h.replace(/^#/, ''));
+    var m = p.get('m'), v = p.get('v'), sub = p.get('sub') || '', d = p.get('d');
+    if (!m && !v && !d) return false;
+    busy = true;
+    try {
+      if (d || m === 'Dashboards') {
+        if (!onView('dashboard') && typeof selectModuleByName === 'function') selectModuleByName('Dashboards');
+        if (d && T(function () { return dashState.cur; }, d) !== d && typeof pickDash === 'function') { try { pickDash(d); } catch (e) {} }
+      } else if (m) {
+        try { MOD_SUB = sub; } catch (e) {}
+        if (typeof selectModuleByName === 'function') selectModuleByName(m);
+        if (m === 'Log Explorer' && typeof lxTab === 'function') lxTab(sub === 'Log Search' ? 'ls' : 'ov');
+        if (m === 'Compliance' && sub && typeof cplTab === 'function') cplTab(sub);
+        if (m === 'Monitors' && sub && typeof mnPick === 'function') { var i = T(function () { return MN_TABS.indexOf(sub); }, -1); if (i >= 0) mnPick(i); }
+      } else if (v === 'manage' && typeof openManage === 'function') openManage();
+      else if (typeof showView === 'function' && document.getElementById('view-' + v)) {
+        showView(v);
+        if (v === 'health' && typeof setHealthTab === 'function') setHealthTab(+p.get('tab') || 0);
+      }
+    } catch (e) {} finally { busy = false; }
+    return true;
+  }
+
+  var last = location.hash.replace(/^#/, '');
+  function sync() {
+    if (busy || !ready) return;
+    var h = compose(); if (h == null || h === last) return;
+    var url = location.pathname + location.search + (h ? '#' + h : '');
+    if (last === '') history.replaceState(null, '', url); else history.pushState(null, '', url);
+    last = h;
+  }
+  function soon() { setTimeout(sync, 80); setTimeout(sync, 600); }
+  ['click', 'keyup', 'change'].forEach(function (t) { document.addEventListener(t, soon, true); });
+  setInterval(sync, 1200);   /* timers, drawers and the AI panel navigate without a click of their own */
+
+  function onNav() {
+    var h = location.hash.replace(/^#/, ''); if (h === last) return;
+    last = h;
+    if (KIND === 'opt') { if (!urApply(h)) location.reload(); } else location.reload();
+  }
+  addEventListener('popstate', onNav);
+  addEventListener('hashchange', onNav);
+
+  function boot() {
+    if (KIND === 'opt' && last) urApply(last);
+    ready = true; last = ''; sync();   /* canonicalise: the URL now names the screen on show */
+  }
+  if (document.readyState === 'complete') setTimeout(boot, 0);
+  else addEventListener('load', function () { setTimeout(boot, 0); });
 })();

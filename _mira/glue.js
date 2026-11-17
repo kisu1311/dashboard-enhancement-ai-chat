@@ -36,6 +36,7 @@ function show(id){
   var chat=$('.mira-chat'); if(chat) chat.classList.toggle('is-talking',id!=='new');
   var ttl=$('.mira-crumb.is-current',node); document.title=(ttl&&id!=='new'?ttl.textContent.trim()+' · ':'')+'Mira';
   if(id==='new'){ var d=$('.mira-home-date',node); if(d) d.textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}); }
+  hdPaint(node,id);
   effPaint(); toBottom();
   var ta=$('.mira-composer-input',node); if(ta){ try{ta.focus({preventScroll:true})}catch(e){} }
 }
@@ -60,7 +61,7 @@ function dragSide(e){ var as=$('aside.mira-sidebar'); if(as.classList.contains('
   document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); }
 
 /* ── popups ── */
-function closePops(){ if(MX.pop){ MX.pop.remove(); MX.pop=null; }
+function closePops(){ if(MX.pop){ MX.pop.remove(); MX.pop=null; } $$('.mx-hdt.open').forEach(function(b){ b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
   $$('.mira-chat-menu-list').forEach(function(m){m.remove()});
   $$('.mira-chat-menu-button').forEach(function(b){ b.classList.remove('is-open'); b.setAttribute('aria-expanded','false'); }); }
 function headMenu(btn){ var open=btn.classList.contains('is-open'); closePops(); if(open) return;
@@ -89,19 +90,36 @@ function titleOf(id){ var a=rowOf(id); return a?$('.mira-recent-name',a).textCon
 function rename(id){ closePops(); var a=rowOf(id); if(!a) return; var nm=$('.mira-recent-name',a), old=nm.textContent.trim();
   var inp=document.createElement('input'); inp.className='mx-rename'; inp.value=old; nm.textContent=''; nm.appendChild(inp); inp.focus(); inp.select();
   var done=function(ok){ inp.onblur=null; var v=(ok&&inp.value.trim())||old; nm.textContent=v; a.title=v;
-    var p=MX.panes[id]; if(p){ var c=$('.mira-crumb.is-current',p); if(c){ c.textContent=v; c.title=v; } } if(MX.cur===id) document.title=v+' · Mira'; };
+    var p=MX.panes[id]; if(p){ var c=$('.mira-crumb.is-current',p); if(c){ c.textContent=v; c.title=v; } } if(MX.cur===id){ document.title=v+' · Mira'; var hn=$('#mxPane .mx-hdn'); if(hn) hn.textContent=v; } };
   inp.onclick=function(e){e.preventDefault();e.stopPropagation()};
   inp.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter') done(true); else if(e.key==='Escape') done(false); };
   inp.onblur=function(){done(true)}; }
-function del(id){ closePops(); var a=rowOf(id); if(a) a.closest('li').remove(); delete MX.panes[id]; if(MX.cur===id) show('new'); toast('Chat deleted'); }
+function del(id){ closePops(); var a=rowOf(id); if(a) a.closest('li').remove(); delete MX.panes[id]; bandPaint(); if(MX.cur===id) show('new'); toast('Chat deleted'); }
 function link(id){ closePops(); copy(location.href.split('#')[0]+'#/c/'+id,'Chat link copied'); }
-function searchTog(force){ var as=$('aside.mira-sidebar'); if(as.classList.contains('is-collapsed')) sideTog();
-  var cur=$('.mira-sidebar-search'), btn=$('[data-testid="mira-search-chats"]'), on=force!==undefined?force:!cur;
-  if(cur&&!on){ cur.remove(); filter(''); } 
-  if(!cur&&on){ var s=first('search'); $('.mira-sidebar-actions').insertAdjacentElement('afterend',s); cur=s; }
-  btn.setAttribute('aria-pressed',on?'true':'false'); if(on){ var i=$('input',cur); i.value=''; i.focus(); } }
-function filter(q){ q=q.trim().toLowerCase(); var n=0; $$('.mira-recents-list > li').forEach(function(li){ var hit=!q||li.textContent.toLowerCase().indexOf(q)>=0; li.classList.toggle('mx-hide',!hit); if(hit) n++; });
-  var nm=$('.mx-nomatch'); if(!n&&q){ if(!nm){ nm=document.createElement('div'); nm.className='mx-nomatch'; $('.mira-recents-list').insertAdjacentElement('afterend',nm); } nm.textContent='No chats match “'+q+'”'; } else if(nm) nm.remove(); }
+/* Search chats is the DS search field (obs-input type=search), always on screen in the sidebar (request, 17 Nov 2026).
+   It replaced a "Search chats" row that toggled a hand-built box. ⌘K focuses it; Esc clears it. */
+function srchMount(){ if($('.mx-srch')) return; var row=$('[data-testid="mira-search-chats"]'); if(!row) return;
+  var w=document.createElement('div'); w.className='mx-srch';
+  w.innerHTML='<obs-input class="mx-srchi" type="search" placeholder="Search..." aria-label="Search chats (⌘K)" allow-clear></obs-input><kbd class="mx-srchk">⌘K</kbd>';
+  row.insertAdjacentElement('afterend',w); row.classList.add('mx-hide');
+  var inp=$('obs-input',w); srchSkin(inp);
+  inp.addEventListener('input',function(e){ var v=e.detail&&e.detail.length!==undefined?e.detail[0]:inp.value; filter(String(v==null?'':v)); w.classList.toggle('has-q',!!String(v||'')); }); }
+/* the DS field, re-laid inside its own shadow root (request, 17 Nov 2026): the magnifier leads instead of trailing, the
+   box is a soft filled pill on the --mira tokens, and the ⌘K hint sits at its right edge. Adopted, so it is the DS
+   element's own markup and behaviour — only its skin changes. */
+function srchSkin(o){ var go=function(){ var sh=o.shadowRoot; if(!sh||!sh.querySelector('.ip')){ return setTimeout(go,30); } if(sh.__mx) return; sh.__mx=1;
+  var c=new CSSStyleSheet(); c.replaceSync('.root,.grp{width:100%}.ip{height:32px;padding:0 44px 0 10px;gap:8px;border:1px solid var(--mira-ask-line);border-radius:var(--btn-radius,4px);background:var(--mira-row-hover);transition:border-color .15s,background .15s}'+
+    '.ip:hover{border-color:var(--mira-kbd-edge)}.ip:focus-within{border-color:var(--mira-accent-45);background:var(--mira-ask-face)}'+
+    '.adorn.suf{order:-1;margin:0;color:var(--mira-text-muted)}.field{font-size:13px}.field::placeholder{color:var(--mira-text-muted)}');
+  sh.adoptedStyleSheets=sh.adoptedStyleSheets.concat([c]); }; go(); }
+function srchField(){ var o=$('.mx-srch obs-input'); return o&&o.shadowRoot?o.shadowRoot.querySelector('input'):null; }
+function searchTog(force){ var as=$('aside.mira-sidebar'); if(as.classList.contains('is-collapsed')) sideTog(); srchMount();
+  var o=$('.mx-srch obs-input'); if(!o) return;
+  if(force===false){ o.value=''; filter(''); $('.mx-srch').classList.remove('has-q'); return; }
+  var i=srchField(); if(i){ try{ i.focus(); i.select(); }catch(e){} } }
+setTimeout(srchMount,0);
+function filter(q){ q=q.trim().toLowerCase(); var n=0; $$('.mira-recents-list > li:not(.mx-band)').forEach(function(li){ var hit=!q||li.textContent.toLowerCase().indexOf(q)>=0; li.classList.toggle('mx-hide',!hit); if(hit) n++; });
+  var nm=$('.mx-nomatch'); if(!n&&q){ if(!nm){ nm=document.createElement('div'); nm.className='mx-nomatch'; $('.mira-recents-list').insertAdjacentElement('afterend',nm); } nm.textContent='No chats match “'+q+'”'; } else if(nm) nm.remove(); bandVis(); }
 function sideTog(){ var as=$('aside.mira-sidebar'), col=as.classList.contains('is-collapsed');
   if(!col){ MX.side=document.createDocumentFragment(); while(as.firstChild) MX.side.appendChild(as.firstChild); MX.sideW=as.style.width; as.innerHTML=tpl('sidec').innerHTML; as.classList.add('is-collapsed'); as.style.width=''; dress(as); }
   else { as.textContent=''; as.appendChild(MX.side); MX.side=null; as.classList.remove('is-collapsed'); as.style.width=MX.sideW||'18rem'; } }
@@ -147,7 +165,12 @@ function send(){ if(MX.play){ MX.play.finish(true); return; }
 var STOP_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em"><path d="M5 7a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -10"/></svg>';
 function matrix(){ var m=document.createElement('span'); m.className='mira-dot-matrix'; m.setAttribute('data-v-cfad4f7c',''); m.setAttribute('aria-hidden','true'); m.style.cssText='width:20px;height:20px;grid-template-columns:repeat(4,1fr);gap:2.5px';
   for(var i=0;i<16;i++){ var d=document.createElement('span'); d.className='mira-dot'; d.setAttribute('data-v-cfad4f7c',''); m.appendChild(d); } tick(); var tile=document.createElement('span'); tile.className='mx-dmtile'; tile.setAttribute('aria-hidden','true'); tile.appendChild(m); return tile; }
-var DM=[[[0],[1],[2],[3],[7],[11],[15],[14],[13],[12],[8],[4],[5],[6],[10],[9]],[[0,4,8,12],[1,5,9,13],[2,6,10,14],[3,7,11,15]],[[5,6,9,10],[1,4,7,8,11,14],[0,3,12,15],[1,4,7,8,11,14],[5,6,9,10]],[[0],[1,4],[2,5,8],[3,6,9,12],[7,10,13],[11,14],[15]]];
+/* ONE creation animation (request 17 Nov 2026 — it cycled four unrelated patterns: ring, sweep, pulse, diagonal).
+   The 4x4 grid is BUILT: cells lay in one at a time, bottom row first, left to right, like bricks; it holds full
+   for a beat, then clears and builds again. Cumulative states, so every frame is the build so far.             */
+var DM=(function(){ var order=[12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3], st=[], cur=[];
+  order.forEach(function(i){ cur=cur.concat(i); st.push(cur); });
+  st.push(cur,cur,cur,cur); st.push([],[]); return [st]; })();
 function tick(){ if(MX.tick) return; var pat=0,st=0; MX.tick=setInterval(function(){ var ms=$$('.mira-dot-matrix'), ts=$$('.mira-live-time[data-mx-t0]');
     if(!ms.length&&!ts.length){ clearInterval(MX.tick); MX.tick=null; return; }
     var on=DM[pat][st]; st++; if(st>=DM[pat].length){ st=0; pat=(pat+1)%DM.length; }
@@ -190,7 +213,7 @@ function fileChat(t,src){ var id='n'+(++MX.seq), node=first(src||'c1');
   var c=$('.mira-crumb.is-current',node); c.textContent=t; c.title=t; var cost=$('.mira-cost-chip',node); if(cost){ for(var n=cost.firstChild;n;n=n.nextSibling) if(n.nodeType===3) n.nodeValue='$0.00'; }
   $('.mira-thread-list',node).textContent=''; MX.panes[id]=node;
   var ul=$('.mira-recents-list'); if(!ul){ sideTog(); ul=$('.mira-recents-list'); }
-  var li=first('row'); var a=$('a',li); a.setAttribute('data-mx-chat',id); a.title=t; a.classList.remove('is-active'); $('.mira-recent-name',a).textContent=t; ul.insertBefore(li,ul.firstChild);
+  var li=first('row'); var a=$('a',li); a.setAttribute('data-mx-chat',id); a.title=t; a.classList.remove('is-active'); $('.mira-recent-name',a).textContent=t; ul.insertBefore(li,ul.firstChild); MX.at[id]=Date.now(); bandPaint();
   return id; }
 function startReplay(q){ var id=fileChat('Runbook Creation','c3'), pane=MX.panes[id];
   var msgs=[].slice.call($('.mira-thread-list',tpl('c3').content).children).map(function(m){ return m.cloneNode(true); });
@@ -256,7 +279,8 @@ function askCard(pane,onSend,onChat){
     else if(!inp&&(e.key==='ArrowLeft'||e.key==='Backspace')&&step){ e.preventDefault(); step--; paint(); } };
   dock(pane,wrap); paint(); }
 
-function askCardTabs(pane,onSend,onChat){   /* the live tabbed card — kept, unreferenced since 16 Nov 2026 */
+function askCardTabs(pane,onSend,onChat){   /* the live tabbed card — the create-runbook card again since 17 Nov 2026: three questions
+     (Runbook · Target · Action) + Review, never the live run's four, and no ✦ mark in its head (request) */
   var Q=[{k:'Runbook',text:'What should the runbook do?',kind:'text',ph:'For example: collect disk usage, restart a service, or clear a cache.',v:''},
          {k:'Target',text:'Which monitor or host should it run on?',kind:'text',ph:'Type your answer…',v:''},
          {k:'Action',text:'Should it only collect information, or change something?',kind:'choice',rows:[['Collect information only','Read state and return evidence without changing the target.',1],['Change something','Apply a remediation on the target.',0]],pick:0,typed:''}];
@@ -269,14 +293,14 @@ function askCardTabs(pane,onSend,onChat){   /* the live tabbed card — kept, un
     return '<div class="mira-ask-question"> '+esc(q.text)+'</div><div class="mira-ask-choices mira-ask-options" role="listbox" tabindex="0" aria-label="'+esc(q.text)+'">'+q.rows.map(function(r,i){ return '<button type="button" role="option" class="mira-ask-choice'+(q.pick===i?' is-picked is-focused':'')+'" aria-selected="'+(q.pick===i)+'" data-mx-pick="'+i+'"><span class="mira-ask-number" aria-hidden="true">'+(i+1)+'</span><span class="mira-ask-choice-body"><span class="mira-ask-choice-label">'+esc(r[0])+'</span><span class="mira-ask-choice-description">'+esc(r[1])+'</span></span>'+(r[2]?'<span class="mira-ask-recommended">Recommended</span>':'')+'</button>'; }).join('')+
       '<label class="mira-ask-typed'+(q.pick<0?' is-picked is-focused':'')+'"><span class="mira-ask-number" aria-hidden="true">'+(q.rows.length+1)+'</span><input type="text" class="mira-ask-typed-input" placeholder="Type your own answer…" aria-label="Type your own answer…" maxlength="1000" autocomplete="off" value="'+esc(q.typed)+'"></label></div>'; }
   function paint(focus){ var rev=cur===Q.length, ch=!rev&&Q[cur].kind==='choice', ok=Q.every(ans);
-    var card=el(frame('<div class="mira-ask-head"><span class="mira-ask-mark" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 2.5c.7 5 4.5 8.8 9.5 9.5-5 .7-8.8 4.5-9.5 9.5-.7-5-4.5-8.8-9.5-9.5 5-.7 8.8-4.5 9.5-9.5z" fill="currentColor"/></svg></span><p class="mira-ask-intro">Tell me what you want the runbook to do, and I’ll build and test it on a real monitor.</p></div><div class="mira-ask-tabs" role="tablist" aria-label="Questions">'+tabs()+'</div>'+body(),
+    var card=el(frame('<div class="mira-ask-head"><p class="mira-ask-intro">Tell me what you want the runbook to do, and I’ll build and test it on a real monitor.</p></div><div class="mira-ask-tabs" role="tablist" aria-label="Questions">'+tabs()+'</div>'+body(),
       ch?[[['1','3'],'pick'],[['Tab'],'next'],[['Esc'],'chat instead']]:[[['↵'],'send'],[['Tab'],'next'],[['Esc'],'chat instead']],
       '<button type="button" class="mira-ask-button is-ghost" data-mx-ask="chat"> Chat about this </button>'+(rev?'<button type="button" class="mira-ask-button is-primary" data-mx-ask="send"'+(ok?'':' disabled')+'> Send answers </button>':'<button type="button" class="mira-ask-button is-secondary" data-mx-ask="next"> Next </button>'),"Mira's questions"));
     card.setAttribute('data-v-44a5716c',''); card.classList.add('mx-dock'); if(host.parentNode) host.parentNode.replaceChild(card,host); host=card; wire();
     if(focus!==false&&isCur(pane)){ var i=$('.mira-ask-text-input',host)||(Q[cur]&&Q[cur].pick<0?$('.mira-ask-typed-input',host):null)||host; try{ i.focus({preventScroll:true}); if(i.value) i.setSelectionRange(i.value.length,i.value.length); }catch(e){} toBottom(); } }
   function ticks(){ var t=$('.mira-ask-tabs',host); if(t){ t.innerHTML=tabs(); sc(t); } }
   function go(i){ cur=Math.max(0,Math.min(Q.length,i)); paint(); }
-  function send(){ if(!Q.every(ans)){ go(Q.findIndex(function(q){return !ans(q)})); return; } onSend(Q.map(function(q){ return [q.k,ans(q)]; })); }
+  function send(){ if(!Q.every(ans)){ go(Q.findIndex(function(q){return !ans(q)})); return; } onSend(Q.map(function(q){ return [q.k,ans(q),q.text]; })); }
   function wire(){
     host.onclick=function(e){ var b=e.target.closest('[data-mx-tab]'); if(b){ go(+b.getAttribute('data-mx-tab')); return; }
       b=e.target.closest('[data-mx-pick]'); if(b){ Q[cur].pick=+b.getAttribute('data-mx-pick'); paint(); setTimeout(function(){ if(host.isConnected&&cur<Q.length&&Q[cur].kind==='choice') go(cur+1); },260); return; }
@@ -288,6 +312,51 @@ function askCardTabs(pane,onSend,onChat){   /* the live tabbed card — kept, un
       else if(e.key==='Enter'){ e.preventDefault(); if(cur===Q.length) send(); else if(ans(Q[cur])) go(cur+1); }
       else if(!inp&&cur<Q.length&&Q[cur].kind==='choice'&&/^[1-9]$/.test(e.key)){ var n=+e.key-1, q=Q[cur]; if(n<q.rows.length){ q.pick=n; paint(); setTimeout(function(){ if(host.isConnected&&cur<Q.length) go(cur+1); },260); } else if(n===q.rows.length){ e.preventDefault(); var t=$('.mira-ask-typed-input',host); if(t) t.focus(); } } }; }
   dock(pane,host); paint(); }
+
+/* the create-runbook question card (request, 17 Nov 2026): the tabbed card's FLOW — Runbook · Target · Action · Review,
+   any step reachable, Review then Send answers — in Ask AI's clarifier SHELL: ‹ · question · n / 3 · ✕, the subtitle,
+   the 2px progress track, then a compact step strip, the answer, and Skip · Next. Rows are Ask AI's numbered rows. */
+var CQ_FWD='<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>', CQ_ARR='<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 18 6-6-6-6"/></svg>';
+var CQ_TICK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+function askCardSteps(pane,onSend,onChat){
+  var Q=[{k:'Runbook',q:'What should the runbook do?',sub:'Tell me what you want the runbook to do, and I’ll build and test it on a real monitor.',ph:'For example: collect disk usage, restart a service, or clear a cache.',v:''},
+         {k:'Target',q:'Which monitor or host should it run on?',sub:'I’ll test it there before anything is delivered.',ph:'Type your answer…',v:''},
+         {k:'Action',q:'Should it only collect information, or change something?',sub:'Collecting is read-only; a change applies a remediation on the target.',
+          rows:[['Collect information only','Read state and return evidence without changing the target.',1],['Change something','Apply a remediation on the target.',0]],pick:0,typed:''}];
+  var N=Q.length, cur=0, wrap=document.createElement('div'); wrap.className='mx-aicq mx-cqsteps'; wrap.tabIndex=-1;
+  function ans(x){ return x.rows?(x.pick<0?x.typed.trim():x.rows[x.pick][0]):x.v.trim(); }
+  function strip(){ return '<div class="mx-cqst" role="tablist" aria-label="Questions">'+Q.concat([{k:'Review'}]).map(function(x,i){ var d=i<N&&!!ans(x);
+      return '<button type="button" role="tab" class="mx-cqtab'+(i===cur?' on':'')+(d?' done':'')+'" aria-selected="'+(i===cur)+'" data-cq-tab="'+i+'"><span class="mx-cqtk" aria-hidden="true">'+(d?CQ_TICK:'')+'</span>'+x.k+'</button>'; }).join('')+'</div>'; }
+  /* minimal, after n8n's agent question card (Mobbin, request 17 Nov 2026): the question in bold, the answer, and ONE footer —
+     ‹ n of 3 › on the left, Skip · Next on the right. No subtitle, progress bar, step strip or ✕; Esc still chats instead.
+     A row shows its arrow only on hover / when picked; Review is the step after the third question. */
+  function paint(){ var rev=cur===N, x=Q[cur], ok=Q.every(ans);
+    var head=rev?'Review your answers':x.q;
+    var h='<div class="aicq mx-min" role="group" aria-label="'+esc(head)+'"><div class="mx-mq">'+esc(head)+'</div>';
+    if(rev) h+='<ol class="mx-cqrv">'+Q.map(function(y,i){ var a=ans(y); return '<li data-cq-tab="'+i+'" title="Change this answer"><div class="mx-cqrq">'+esc(y.k)+'</div><div class="mx-cqra'+(a?'':' miss')+'">'+esc(a||'Not answered yet')+'</div></li>'; }).join('')+'</ol>';
+    else if(x.rows) h+=x.rows.map(function(r,i){ return '<button class="aicqo'+(x.pick===i?' on':'')+'" type="button" data-cq-i="'+i+'"><span class="aicqi">'+(i+1)+'</span><span class="mx-mol">'+esc(r[0])+(r[2]?'<em> · Recommended</em>':'')+'</span><span class="mx-moa">'+CQ_ARR+'</span></button>'; }).join('')+
+      '<label class="aicqf'+(x.pick<0?' on':'')+'"><span class="aicqp">'+CQ_PEN+'</span><input value="'+esc(x.typed)+'" placeholder="Something else" maxlength="1000" autocomplete="off"></label>';
+    else h+='<label class="aicqf mx-cqonly"><input value="'+esc(x.v)+'" placeholder="'+esc(x.ph)+'" maxlength="1000" autocomplete="off" aria-label="'+esc(x.q)+'"></label>';
+    h+='<div class="mx-mf"><span class="mx-mpg"><button type="button" data-cq="back" aria-label="Previous"'+(cur?'':' disabled')+'>'+CQ_BACK+'</button><span>'+(rev?'Review':(cur+1)+' of '+N)+'</span><button type="button" data-cq="fwd" aria-label="Next step"'+(rev?' disabled':'')+'>'+CQ_FWD+'</button></span><span class="mx-msp"></span>'+
+      (rev?'<button class="mx-mb is-pri" type="button" data-cq="send"'+(ok?'':' disabled')+'>Send answers</button>'
+          :'<button class="mx-mb" type="button" data-cq="skip">Skip</button><button class="mx-mb is-pri" type="button" data-cq="next"'+(ans(x)?'':' disabled')+'>'+(cur===N-1?'Review':'Next')+'</button>')+'</div></div>';
+    wrap.innerHTML=h;
+    if(isCur(pane)){ var f=$('.aicqf input',wrap); if(f&&!x.rows) { try{ f.focus({preventScroll:true}); f.setSelectionRange(f.value.length,f.value.length); }catch(e){} } else try{ ($('.aicqo.on',wrap)||wrap).focus({preventScroll:true}); }catch(e){} toBottom(); } }
+  function go(i){ cur=Math.max(0,Math.min(N,i)); paint(); }
+  function send(){ if(!Q.every(ans)){ go(Q.findIndex(function(y){ return !ans(y); })); return; } onSend(Q.map(function(y){ return [y.k,ans(y),y.q]; })); }
+  function sync(){ var x=Q[cur]; if(!x) return; var nb=$('[data-cq=next]',wrap); if(nb) nb.disabled=!ans(x); var s=$('.mx-cqst',wrap); if(s) s.outerHTML=strip(); }
+  wrap.onclick=function(e){ var b=e.target.closest('[data-cq-tab]'); if(b){ go(+b.getAttribute('data-cq-tab')); return; }
+    b=e.target.closest('[data-cq-i]'); if(b){ Q[cur].pick=+b.getAttribute('data-cq-i'); paint(); setTimeout(function(){ if(wrap.isConnected&&cur<N&&Q[cur].rows) go(cur+1); },220); return; }
+    b=e.target.closest('[data-cq]'); if(!b||b.disabled) return; var a=b.getAttribute('data-cq');
+    if(a==='back') go(cur-1); else if(a==='fwd') go(cur+1); else if(a==='x') onChat(); else if(a==='next'||a==='skip') go(cur+1); else if(a==='send') send(); };
+  wrap.oninput=function(e){ var x=Q[cur]; if(!x||!e.target.matches('.aicqf input')) return;
+    if(x.rows){ x.typed=e.target.value; x.pick=x.typed.trim()?-1:0; $$('.aicqo',wrap).forEach(function(r,i){ r.classList.toggle('on',i===x.pick); }); $('.aicqf',wrap).classList.toggle('on',x.pick<0); } else x.v=e.target.value; sync(); };
+  wrap.onkeydown=function(e){ e.stopPropagation(); var inp=e.target.matches&&e.target.matches('input');
+    if(e.key==='Escape'){ e.preventDefault(); onChat(); }
+    else if(e.key==='Tab'){ e.preventDefault(); go(e.shiftKey?cur-1:(cur+1)%(N+1)); }
+    else if(e.key==='Enter'){ e.preventDefault(); if(cur===N) send(); else if(ans(Q[cur])) go(cur+1); }
+    else if(!inp&&cur<N&&Q[cur].rows&&/^[1-9]$/.test(e.key)){ var n=+e.key-1; if(n<Q[cur].rows.length){ var r=$$('.aicqo',wrap)[n]; if(r) r.click(); } else if(n===Q[cur].rows.length){ e.preventDefault(); $('.aicqf input',wrap).focus(); } } };
+  dock(pane,wrap); paint(); }
 
 function deliverCard(pane,onGo){
   var c=el('<article class="mira-deliver" role="group" tabindex="-1" aria-label="Deliver '+RB+'"><header class="mira-deliver-head"><span class="mira-deliver-icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></span><div class="mira-deliver-heading"><h2 class="mira-deliver-title"> Deliver '+RB+' </h2><span class="mira-deliver-sub">Passed on motadata · assigns it, does not run it</span></div></header><ul class="mira-deliver-monitors" aria-label="Where it goes"><li class="mira-deliver-monitor"><svg class="mira-deliver-tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="mira-deliver-name">motadata</span><span class="mira-deliver-chip is-ok">tested</span></li></ul><footer class="mira-deliver-foot"><button type="button" class="mira-ask-button is-primary"> Deliver to 1 monitor </button></footer></article>');
@@ -335,8 +404,16 @@ function startRunbook(q){ var id=fileChat('Runbook Creation','c4'), pane=MX.pane
 function qaRecord(rec,a){ var CK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
   /* only the record's BODY is replaced, so the card box (.mira-card-record) keeps its border and padding */
   var card=$('.mira-card-record',rec)||rec, body=$('.mira-card-record-body',card); if(body){ [].slice.call(card.children).forEach(function(k){ if(k!==body) k.remove(); }); rec=body; }
-  rec.innerHTML='<div class="mx-qa"><div class="mx-qa-h"><span class="mx-qa-ck">'+CK+'</span><span>Answered '+a.length+' question'+(a.length===1?'':'s')+'</span></div><ol class="mx-qa-l">'+
-    a.map(function(x){ return '<li><div class="mx-qa-q">'+esc(x[2]||x[0])+'</div><div class="mx-qa-a'+(x[1]?'':' is-skip')+'">'+(x[1]?esc(x[1]):'Skipped')+'</div></li>'; }).join('')+'</ol></div>'; }
+  /* AI-tool shape (request, 17 Nov 2026): a header you can fold — ✓ · Answered N questions · the answers in one line
+     while folded · chevron — over one row per question: the topic as a small label, the question muted, the answer in a
+     soft filled block. Opens expanded; the fold is a real <button>. */
+  var CV='<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+  rec.innerHTML='<div class="mx-qa is-open"><button type="button" class="mx-qa-h" aria-expanded="true"><span class="mx-qa-ck">'+CK+'</span><span class="mx-qa-t">Answered '+a.length+' question'+(a.length===1?'':'s')+'</span>'+
+    '<span class="mx-qa-sum">'+a.map(function(x){ return esc(x[1]||'Skipped'); }).join(' · ')+'</span><span class="mx-qa-cv">'+CV+'</span></button><ol class="mx-qa-l">'+
+    /* minimal rows (request, 17 Nov 2026): the question muted, the answer under it in plain text — no number, chip, box or rule */
+    a.map(function(x){ return '<li><div class="mx-qa-q">'+esc(x[2]||x[0])+'</div><div class="mx-qa-a'+(x[1]?'':' is-skip')+'">'+(x[1]?esc(x[1]):'Skipped')+'</div></li>'; }).join('')+'</ol></div>';
+  var box=rec.querySelector('.mx-qa'), hb=box.querySelector('.mx-qa-h');
+  hb.onclick=function(){ var o=box.classList.toggle('is-open'); hb.setAttribute('aria-expanded',o); }; }
 /* Ask AI's Gemini fade (index.html aitw*): each word fades in where it stands, 38ms apart. Real spaces stay as text
    nodes so innerText / copy read normally; code and SVG are left whole. */
 function wordFade(root){ if(!root||root.__wf) return; root.__wf=1; var n=0, w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), list=[], t;
@@ -346,7 +423,7 @@ function wordFade(root){ if(!root||root.__wf) return; root.__wf=1; var n=0, w=do
       var s=document.createElement('span'); s.className='mx-w'; s.style.animationDelay=(n++*38)+'ms'; s.textContent=p; f.appendChild(s); });
     t.parentNode.replaceChild(f,t); }); }
 function rbAsk(pane){ var R=pane.__rb; R.wait='ask';
-  askCard(pane,function(a){ undock(pane); R.wait=null; var rec=R.k1[1], ls=$$('.mira-card-record-line',rec);
+  askCardSteps(pane,function(a){ undock(pane); R.wait=null; var rec=R.k1[1], ls=$$('.mira-card-record-line',rec);
       qaRecord(rec,a); rec.classList.remove('mx-hide'); wordFade(rec); actShow(R.A1); R.ans=a; rbBuild(pane); },
     function(){ undock(pane); R.wait='chat'; actShow(R.A1); var ta=$('.mira-composer-input',pane); if(ta) ta.focus(); }); }
 function rbBuild(pane){ var R=pane.__rb; seg(pane,async function(P){ var k=addMsg(P,R.A2), f1=k[2], main=$('.mira-forge-main',f1), keep=main.innerHTML;
@@ -421,6 +498,83 @@ function railMore(btn){ closePops(); var m=first('hmenu'); m.classList.add('mx-p
   [['Approval','index.html#v=approval'],['What’s new','https://docs.motadata.com/motadata-aiops-docs/'],['Health Monitoring','index.html#v=health']].forEach(function(r,i){ var b=it[i]; if(!b) return; b.classList.remove('is-danger'); var sv=$('svg',b); b.textContent=' '+r[0]+' '; if(sv&&i<2) b.insertBefore(sv,b.firstChild); b.setAttribute('data-mx-go',r[1]); });
   document.body.appendChild(m); var r=btn.getBoundingClientRect(); m.style.left=(r.right+8)+'px'; m.style.top=Math.max(8,r.bottom-m.offsetHeight)+'px'; MX.pop=m; MX.popFor=btn; }
 
+
+
+/* ── chat history: date bands + ages, Ask AI's list shape (request, 17 Nov 2026) ──────────────────────────
+   Each chat carries a time (MX.at). The three recorded chats are seeded RELATIVE TO LOAD, so Today / Yesterday /
+   a dated band are populated whenever the page is opened; a chat filed from a sent message is stamped now. */
+MX.at = MX.at || {}; (function(){ var H=3600e3, D=24*H, n=Date.now(); MX.at.c3=n-2*H; MX.at.c1=n-D-3*H; MX.at.c2=n-2*D-5*H; })();
+function bandOf(t){ var d=new Date(t), now=new Date(), a=new Date(now.getFullYear(),now.getMonth(),now.getDate()), b=new Date(d.getFullYear(),d.getMonth(),d.getDate()), k=Math.round((a-b)/864e5);
+  if(k<=0) return 'Today'; if(k===1) return 'Yesterday';
+  var s=d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); return d.getFullYear()===now.getFullYear()?s:s+', '+d.getFullYear(); }
+function ageOf(t){ var m=Math.max(0,(Date.now()-t)/6e4); if(m<1) return 'now'; if(m<60) return Math.floor(m)+'m'; var h=m/60; if(h<24) return Math.floor(h)+'h';
+  var d=h/24; if(d<7) return Math.floor(d)+'d'; if(d<365) return Math.floor(d/7)+'w'; return Math.floor(d/365)+'y'; }
+function bandPaint(){ var ul=$('.mira-recents-list')||(MX.side&&MX.side.querySelector('.mira-recents-list')); if(!ul) return;
+  [].slice.call(ul.querySelectorAll('.mx-band')).forEach(function(b){ b.remove(); });
+  var lis=[].slice.call(ul.children).filter(function(li){ return li.querySelector('.mira-side-row.is-chat'); });
+  lis.forEach(function(li){ var a=li.querySelector('.mira-side-row.is-chat'), id=a.getAttribute('data-mx-chat'); if(!MX.at[id]) MX.at[id]=Date.now(); });
+  lis.sort(function(x,y){ return MX.at[y.querySelector('a').getAttribute('data-mx-chat')]-MX.at[x.querySelector('a').getAttribute('data-mx-chat')]; }).forEach(function(li){ ul.appendChild(li); });
+  var last=null; lis.forEach(function(li){ var a=li.querySelector('a'), t=MX.at[a.getAttribute('data-mx-chat')], bd=bandOf(t);
+    var ag=a.querySelector('.mx-age'); if(!ag){ ag=document.createElement('span'); ag.className='mx-age'; a.appendChild(ag); } ag.textContent=ageOf(t); ag.title=new Date(t).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'});
+    if(bd!==last){ var h=document.createElement('li'); h.className='mx-band'; h.setAttribute('aria-hidden','true'); h.textContent=bd; ul.insertBefore(h,li); last=bd; } });
+  bandVis(); }
+function bandVis(){ var ul=$('.mira-recents-list'); if(!ul) return; var cur=null, any=false;
+  [].slice.call(ul.children).forEach(function(li){ if(li.classList.contains('mx-band')){ if(cur) cur.classList.toggle('mx-hide',!any); cur=li; any=false; } else if(!li.classList.contains('mx-hide')) any=true; });
+  if(cur) cur.classList.toggle('mx-hide',!any); }
+
+/* Sidebar foot: the usage meter lives INSIDE the user row, under the name (request, 17 Nov 2026) — one compact row
+   instead of a usage card over a user row. Figures and bar width are read off the live usage block, then it is hidden. */
+function footMount(){ var u=$('.mira-usage'), row=$('.mira-user'); if(!u||!row||$('.mx-uu',row)) return;
+  var spent=($('.mira-usage-spent',u)||{}).textContent||'', fig=($('.mira-usage-figures',u)||{}).textContent||'', tot=(fig.split('/')[1]||'').trim().replace(/\.00$/,''),
+    w=(($('.mira-usage-bar span',u)||{style:{}}).style.width)||'0%', tone=u.classList.contains('is-reached')?' is-reached':u.classList.contains('is-warning')?' is-warning':'';
+  var role=$('.mira-user-role',row); var m=document.createElement('span'); m.className='mx-uu'+tone; m.title=u.getAttribute('title')||'';
+  m.innerHTML='<span class="mx-uub"><i style="width:'+w+'"></i></span><span class="mx-uut">'+esc(spent.trim())+' of '+esc(tot)+'</span>';
+  if(role) role.replaceWith(m); else $('.mira-user-text',row).appendChild(m); u.classList.add('mx-hide'); }
+setTimeout(footMount,0);
+/* ── chat header: history · (new chat) · <chat name ⌄> (request, 17 Nov 2026) ──────────────────────────────
+   Replaces the "Mira / New chat" crumbs with Ask AI's header shape: a history button that shows / hides the chat
+   list, a new-chat pencil once you are in a chat, and the chat's name as a trigger that opens Rename · Delete ·
+   CONVERSATIONS. Icons: Tabler history / edit / chevron-down, verbatim. */
+var HD_HIST='<svg viewBox="0 0 24 24"><path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>',
+  HD_NEW='<svg viewBox="0 0 24 24"><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415"/><path d="M16 5l3 3"/></svg>',
+  HD_CV='<svg viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg>';
+/* the panel toggle is the product's own sidebar-collapse / -expand glyph (48 grid, filled), not a clock (request, 17 Nov 2026) */
+var HD_SBP='M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Zm0 3.6c-.8 0-1.4.6-1.4 1.4v22c0 .8.6 1.4 1.4 1.4h26c.8 0 1.4-.6 1.4-1.4V13c0-.8-.6-1.4-1.4-1.4H11ZM16.2 9.5h3.4v29h-3.4z', HD_SB=function(open){ return '<svg class="mx-fill" viewBox="0 0 48 48"><path d="'+HD_SBP+(open?'M30.5 17.6 24.1 24l6.4 6.4 2.4-2.4-4-4 4-4-2.4-2.4Z':'M26.5 17.6 32.9 24l-6.4 6.4-2.4-2.4 4-4-4-4 2.4-2.4Z')+'"/></svg>'; };
+function hdRows(){ var r=$$('.mira-side-row.is-chat'); if(!r.length&&MX.side) r=[].slice.call(MX.side.querySelectorAll('.mira-side-row.is-chat')); return r; }
+function hdRow(id){ return hdRows().filter(function(a){ return a.getAttribute('data-mx-chat')===id; })[0]; }
+function hdTitle(id){ if(id==='new') return 'New chat'; var a=hdRow(id); return a?$('.mira-recent-name',a).textContent.trim():(($('.mira-crumb.is-current',MX.panes[id]||document)||{}).textContent||'Chat').trim(); }
+function hdPaint(node,id){ var nav=$('.mira-crumbs',node); if(!nav) return; var h=$('.mx-hd',nav);
+  if(!h){ h=document.createElement('div'); h.className='mx-hd'; nav.insertBefore(h,nav.firstChild); }
+  var t=hdTitle(id);
+  var sbOpen=!(($('aside.mira-sidebar')||{classList:{contains:function(){return 0}}}).classList.contains('is-collapsed')), sbLab=sbOpen?'Collapse sidebar':'Expand sidebar';
+  h.innerHTML='<button type="button" class="mx-hdb" data-mx-hd="hist" aria-label="'+sbLab+'" data-mx-tip="'+sbLab+'">'+HD_SB(sbOpen)+'</button>'+
+    (id!=='new'?'<button type="button" class="mx-hdb" data-mx-hd="new" aria-label="Start a new chat" data-mx-tip="Start a new chat">'+HD_NEW+'</button>':'')+
+    '<button type="button" class="mx-hdt" data-mx-hd="menu" aria-haspopup="menu" aria-expanded="false" data-mx-tip="Rename, delete or switch conversation"><span class="mx-hdn">'+esc(t)+'</span>'+HD_CV+'</button>'; }
+function hdMenu(btn){ var open=btn.classList.contains('open'); closePops(); if(open) return; var id=MX.cur, m=document.createElement('div'); m.className='mx-pop mx-hdm'; m.setAttribute('role','menu');
+  m.innerHTML=(id!=='new'?'<button type="button" data-mx-hm="rename">Rename chat</button><button type="button" class="is-danger" data-mx-hm="del">Delete chat</button><hr>':'')+
+    '<div class="mx-hdmh">Conversations</div>'+hdRows().map(function(a){ var c=a.getAttribute('data-mx-chat'); return '<button type="button" class="mx-hdmc'+(c===id?' on':'')+'" data-mx-hm-c="'+c+'">'+esc($('.mira-recent-name',a).textContent.trim())+'</button>'; }).join('')+
+    (hdRows().length?'':'<div class="mx-hdme">No conversations yet</div>');
+  document.body.appendChild(m); var r=btn.getBoundingClientRect(); m.style.left=r.left+'px'; m.style.top=(r.bottom+6)+'px';
+  btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); MX.pop=m; MX.popFor=btn; hdTipHide();
+  var _cp=closePops; }
+function hdRename(id){ closePops(); var b=$('#mxPane .mx-hdt'), n=b&&$('.mx-hdn',b); if(!n) return; var old=n.textContent;
+  var inp=document.createElement('input'); inp.className='mx-rename mx-hdin'; inp.value=old; b.replaceWith(inp); inp.focus(); inp.select();
+  var done=function(ok){ inp.onblur=null; var v=(ok&&inp.value.trim())||old; var a=hdRow(id); if(a){ $('.mira-recent-name',a).textContent=v; a.title=v; }
+    var p=MX.panes[id]; if(p){ var c=$('.mira-crumb.is-current',p); if(c){ c.textContent=v; c.title=v; } } document.title=v+' · Mira'; inp.replaceWith(b); n.textContent=v; };
+  inp.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter') done(true); else if(e.key==='Escape') done(false); }; inp.onblur=function(){ done(true); }; }
+function hdDel(id){ closePops(); var a=hdRow(id); if(a) a.closest('li').remove(); delete MX.panes[id]; bandPaint(); show('new'); toast('Chat deleted'); }
+function hdTipHide(){ if(MX.hdtip){ MX.hdtip.remove(); MX.hdtip=null; } }
+document.addEventListener('mouseover',function(e){ var b=e.target.closest&&e.target.closest('[data-mx-tip]'); if(!b){ hdTipHide(); return; } if(MX.hdtip&&MX.hdtip.__for===b) return; hdTipHide();
+  if(b.classList.contains('open')) return; var t=document.createElement('div'); t.className='mx-hdtip'; t.textContent=b.getAttribute('data-mx-tip'); t.__for=b; document.body.appendChild(t);
+  var r=b.getBoundingClientRect(); t.style.left=Math.max(8,r.left)+'px'; t.style.top=(r.bottom+8)+'px'; MX.hdtip=t; });
+document.addEventListener('click',function(e){ var t=e.target, b;
+  if((b=t.closest('[data-mx-hd]'))){ e.stopImmediatePropagation(); var k=b.getAttribute('data-mx-hd'); hdTipHide();
+    if(k==='hist'){ closePops(); sideTog(); hdPaint($('#mxPane').firstElementChild,MX.cur); } else if(k==='new'){ closePops(); show('new'); } else hdMenu(b); return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm]'))){ e.stopImmediatePropagation(); var a=b.getAttribute('data-mx-hm'); if(a==='rename') hdRename(MX.cur); else hdDel(MX.cur); return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm-c]'))){ e.stopImmediatePropagation(); closePops(); show(b.getAttribute('data-mx-hm-c')); return; }
+},true);
+
+setTimeout(bandPaint,0);
 /* ── wiring ── */
 var RAIL={'Dashboards':'index.html','Monitors':'index.html#m=Monitors','Alerts':'index.html#m=Alerts','SLO BETA':'index.html#m=SLO','Explorer':'index.html#m=Metric Explorer','Reports':'index.html#m=Reports','Settings':'setting.html?from=mira.html','Search':'index.html','Approval':'index.html#v=approval','Health Monitoring':'index.html#v=health'};
 document.addEventListener('click',function(e){
@@ -437,7 +591,7 @@ document.addEventListener('click',function(e){
   if((b=t.closest('.mira-side-row.is-chat'))){ e.preventDefault(); show(b.getAttribute('data-mx-chat')); return; }
   if(t.closest('[data-testid="mira-new-chat"], .mira-brand')){ show('new'); return; }
   if(t.closest('[data-testid="mira-search-chats"]')){ searchTog(); return; }
-  if(t.closest('[aria-label="Collapse sidebar"], [aria-label="Expand sidebar"]')){ sideTog(); return; }
+  if(t.closest('[aria-label="Collapse sidebar"], [aria-label="Expand sidebar"]')){ sideTog(); hdPaint($('#mxPane').firstElementChild,MX.cur); return; }
   if(t.closest('.mira-user')){ location.href='setting.html?from=mira.html#st=My Account|My Profile'; return; }
   if((b=t.closest('.mira-group-head, button.mira-step-row, .mira-json-toggle'))){ toggle(b); return; }
   if((b=t.closest('[data-mx-say]'))){ var pn=MX.panes[MX.cur], sy=b.getAttribute('data-mx-say'); if(MX.busy||!pn||!pn.__rb) return; if(/^run/i.test(sy)){ if(pn.__rb.wait==='run'||pn.__rb.wait==='run-later') rbRun(pn,sy==='run'?'run':sy); } else { if(pn.__rb.ns) pn.__rb.ns.remove(); reply(sy); } return; }

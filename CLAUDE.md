@@ -739,6 +739,25 @@ arrival runs `selectModuleByName` / `showView` and clears the hash.
   `setting.html`); **`dsconf.py` / `licconf.py`** default to `setting.html`.
 - ⚠️ `git checkout a216064 -- setting.js` brings the old single file back if this is ever unwound.
 
+## Every screen has its own URL (17 Nov 2026)
+
+Request: the URL never changed between screens, so a shared link always opened the default screen. A router in
+**`setting-nav.js`** (loaded by every option page, `setting.html`, `topology.html`, `apm.html`) keeps the **hash** naming the
+screen on show and opens it from a link:
+
+| page | hash |
+|---|---|
+| option pages | `#d=<dashboard>` · `#m=<module>&sub=<tab>` (Log Explorer · Monitors · Compliance · IPAM · Topology · placeholder modules) · `#v=<view>[&tab=<n>]` (approval · health · manage) |
+| `setting.html` | `#st=<category>|<page>` (its boot already read it; now it stays current) |
+| `apm.html` · `topology.html` | `#sub=<tab>` · `#tab=<tab>` (topology read from the frame's own hash) |
+
+- Composed FROM STATE (`compose()`), not wired into callers: a sync after every click / key / change plus a 1.2s interval, so
+  any door — rail, flyout, pin, shortcut, AI panel — is covered. `pushState`, so Back / Forward walk screens (`urApply` in place
+  on option pages, reload elsewhere). Every read is try/catch'd — the options carry different globals.
+- The variant switcher carries the hash, so switching option keeps the screen.
+- ⚠️ Not in the URL: drawers / modals / popovers, a Settings full page (create/edit), Firewall's sub-route, the open widget
+  editor. `mira.html` and `Global_ai.html` are skipped (Mira has its own `#/c/<id>`).
+
 ## IPAM module in Option 1 — the source page, vendored (30 Sep 2026)
 
 Request: copy the main IPAM module from `divyam-shah29.github.io/IPAM-UI/ipam-standalone.html` into
@@ -12382,6 +12401,17 @@ figures, and APM's split row on Option 4 has no rule above it.
 - ⚠️ **Probe traps hit this round:** a `setTimeout` callback that throws is OUTSIDE the probe's try, so the run printed `NO PROBE OUTPUT` and looked like a broken page — wrap the timer body too. And writing `\x60` from Python into PART 1 produced a real backtick that ended the CSS template literal; `node --check` named it at once.
 - ⚠️ **Stale probes, not regressions:** `o24b` / `opt24probe` / `m5`–`m8` still assert the pre-15-Sep designs (the toggle's left edge, "170 of 5,000", bordered record fields, the ring's tone on tile glyphs) and now also the old add-on figures (NCCM 1%, Flow 0). `stbehave` **21/21 × 13 pages** and conformance **100 × 4 scenes, 96 × 2** after this batch.
 
+#### Option 7 is the default; the other designs sit in one dropdown (17 Nov 2026)
+
+`setting.html`. Request: *"option 7 is done, the other options stay available but combined in a group"* — asked; answered
+**"7 + dropdown of others"**. `LIC.opt` boots on `'7'` (`LIC_OPT_MAIN`); the header switcher is one **Option 7** segment
+(`#licOpt`, obs-radio cut from `LIC_OPTS`) plus an **Other options** `obs-select#licOptMore.licoptm` (Options 1 · 2 · 4 · 5 · 6,
+options / value set as properties in `licAfter`, 140px via the OBS-SELECT shadow hook). Picking another design un-lights the
+segment and names itself in the dropdown. ⚠️ Every older "Option 1 is the default" note and probe on this page is stale.
+Same request: Option 7's usage figure is one line, **170 of 5,000 devices** (no "Devices in use" caption, no % pill — the
+share stays in the aria-label; `.lic7c` / `.lic7p` kept unreferenced), and the History modal's date range dropped its `→`
+and `· N days` (two stacked dates).
+
 ### `_verify/licconf.py` — the License analogue of `dsconf.py`
 
 Same isolation trick, pointed at `#licPage`, with six scenes (both tabs, plus Options 2, 4 and 5 and Option 5's EPS tab — Option 3's scene went with Option 3) — **100/100 on all six** after the
@@ -15218,6 +15248,20 @@ user's Chrome; **nothing was sent, renamed or deleted on the instance**.
      pruned CSS and killed every animation on the page — `build_mira.py` now strips it. The live tabbed card below is kept as `askCardTabs`, unreferenced. What it replaced:: tabs Runbook · Target · Action · Review with ticks,
      text questions, a choice question (1–3 keys, Recommended, "Type your own answer…"), a Review list, Chat about this /
      Next / **Send answers**; ↵ / Tab / Esc as live. Answers fill the *You answered 3 questions* record.
+  ⚠️ **17 Nov 2026 — the card is the live TABBED card again** (`askCardTabs`; `askCard`, the Ask AI clarifier, is kept
+     unreferenced), on request after seeing the live lab Mira ask **four** LLM-generated questions (Runbook · Target ·
+     Monitors · Checks). Ours stays at **three** (Runbook · Target · Action) + Review, and the head's **✦ mark is removed**.
+     **Later 17 Nov 2026 — `askCardSteps` replaces it in `rbAsk`**: the tabbed FLOW (Runbook · Target · Action · Review,
+     any step clickable, Tab / Esc / ↵ / 1–N as before) in Ask AI's clarifier SHELL (‹ · question · n / 3 · ✕, subtitle,
+     2px progress, a `.mx-cqst` step strip with done ticks, then the field / numbered rows with a second line and
+     Recommended, Skip · Next; Review lists the answers and ends in Send answers). `askCardTabs` is kept, unreferenced.
+     **Then made minimal, after n8n's agent question card (Mobbin):** the bold question, the answer, and one footer —
+     `‹ n of 3 ›` left, Skip · Next right (Next reads *Review* on step 3, Review ends in Send answers). Subtitle, progress
+     bar, step strip and ✕ are gone (Esc still chats instead); option rows drop their second line, show `· Recommended`
+     inline and an arrow only on hover / when picked. CSS `.mx-min .mx-*`.
+     The answered record (`qaRecord`) is now an AI-tool summary: a foldable `<button>` header (✓ · Answered N questions ·
+     the answers in one line while folded · chevron), then numbered rows — topic label + muted question over the answer
+     in a soft block with a green left edge (Skipped: italic, neutral edge). Opens expanded.
   3. Mira builds: the runbook card walks **Draft ready → It breaks the runbook rules (line 16 / line 19) → That name is
      taken → Could not test it**, then the Diagnostic card **Saving and compiling (scan band) → Saved and compiled →
      Delivering**, then *Test passed* → the **delivery card docks** → *Delivering…* → *Delivery approved* record →
@@ -15229,6 +15273,30 @@ user's Chrome; **nothing was sent, renamed or deleted on the instance**.
   ⚠️ **Inferred**: the pacing; the intermediate card states are timed, not event-driven; "Chat about this" / Esc on the
   question card just hands back the composer (live may post a message); "Change something" and typed answers are
   accepted but the build that follows is always the recorded one.
+- **17 Nov 2026 chrome pass (all in `_mira/glue.*` + `mira.html`)**: the New chat greeting's ✦ + date row is hidden;
+  the hero composer's rim is `--field-border-color` warming to the accent (it faded to 3%); the sidebar foot is ONE card
+  (usage · hairline · user row). **The header crumbs are gone** — `hdPaint` puts Ask AI's shape in `.mira-crumbs`:
+  🕘 **history** (shows / hides the chat list — `sideTog`; a collapsed sidebar is now width 0 with NOTHING left behind) ·
+  ✎ **Start a new chat** (only inside a chat; the sidebar's own New chat row is hidden) · the **chat name ⌄** →
+  `hdMenu`: Rename chat · Delete chat · CONVERSATIONS (switch). Tabler history / edit / chevron-down. Tooltips are
+  `.mx-hdtip` (data-mx-tip). The **chat list carries date bands + ages** (`bandPaint`: Today · Yesterday · Nov 15 …,
+  `2h` / `1d`, hidden on row hover for the ⋯); the three recorded chats' times are seeded relative to load (`MX.at`),
+  a filed chat is stamped now; `filter` skips bands and `bandVis` hides empty ones.
+  **Then**: the header's first button is the product's own **sidebar-collapse / -expand glyph** (`HD_SB`, filled, 48 grid;
+  label + tooltip follow the state) instead of a clock, kept in step from both toggles. **Search chats is
+  `obs-input type="search"`** (`srchMount`), always on screen where the "Search chats" row was (row hidden); the page now
+  loads `_ds/observeops-elements.umd.js` (build_mira.py too). Its `input` event (detail[0]) drives `filter`; ⌘K focuses
+  the shadow `<input>`; a ⌘K hint sits left of the DS's own suffix magnifier and hides while focused / typed in.
+  **Then (same day)**: the search field is re-skinned INSIDE the DS element (`srchSkin` adopts a sheet into the
+  obs-input's shadow root: magnifier `order:-1` so it leads, a soft filled 8px-radius box on the --mira tokens,
+  placeholder "Search...") and a ⌘K hint (`.mx-srchk`) sits at its right edge, hidden once something is typed —
+  this supersedes the note below that removed the chip.
+  **Later**: the hand-built ⌘K chip beside the search field is gone (the DS has no keycap; ⌘K stays as a shortcut, named
+  in the field's tooltip). The header's ⋯ "Chat options" button and the rule under the header are hidden (Copy link
+  survives only in each sidebar row's ⋯). The footer is ONE row (`footMount`): avatar · name · a 4px usage meter with
+  "$0.59 of $10" under the name; the usage block is read for its figures / tone, then hidden; the role line is replaced.
+  ⚠️ `window.resize` → `closePops()` (line ~542), so a headless screenshot closes any open menu — set
+  `window.__mxKeep=1` in the probe.
 - **Step-by-step replay (16 Nov 2026, from a supplied screenshot of the live working state)**: typing **create runbook**
   in a New chat files a new *Runbook Creation* chat and plays `c3` back as live streams it — *Working on your request… · Ns*
   (`.mira-live-line`, shimmer), then each thinking group OPEN with the dot-matrix mark and a *Working · Used the

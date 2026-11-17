@@ -15198,7 +15198,7 @@ html[data-theme="light"] .licx,html[data-theme="light"] .lic4:not(.lic5){--licen
 .lic6sg em{min-width:34px;text-align:right;font-style:normal;font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:12px;color:var(--page-text-color)}
 /* Option 7's usage figure (9 Oct 2026): a KPI block — what it counts as a caption, then the used figure large with the
    total quiet beside it and the share as a pill tinted in the entitlement's tone */
-.lic7fig{margin-left:auto;margin-right:16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:0 0 auto}
+.lic7fig{margin-left:auto;margin-right:16px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;flex:0 0 auto}
 .lic7c{font-size:12px;color:var(--neutral-light);white-space:nowrap}
 .lic7v{display:flex;align-items:baseline;gap:6px;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.1}
 .lic7v b{font-size:20px;font-weight:600;color:var(--page-text-color)}
@@ -42104,6 +42104,7 @@ function lxLtPaint(){
        page CSS cannot reach inside the component, and this hook is how every other shadow rule in
        this file lands. Scoped by a host class so no other `obs-select` on any screen is touched. */
     'obs-select':    /* Connector details' group permission: one fixed trigger width, whatever the value (request, 12 Nov 2026) */
+                     ':host(.licoptm){display:inline-block;width:140px}:host(.licoptm) .sel{width:140px}:host(.licoptm) .trig{min-height:0;height:28px}:host(.licoptm) .trig,:host(.licoptm) .trig *{font-size:12.8px}' +   /* License: the "Other options" dropdown beside the Option 7 segment (17 Nov 2026) */
                      ':host(.mycgps){display:inline-block;width:120px}:host(.mycgps) .sel{width:120px}:host(.mycgps) .trig,:host(.mycgps) .trig *{font-size:13px;font-weight:400}' +   /* the standard DS dropdown field (request, 12 Nov 2026 — was trigger="button"), one fixed 120px width; its box is a hardcoded 240px otherwise, and it would inherit the group title's 18px/600 */
                      ':host(.mradsin) .trig{border-color:var(--field-border-color)}:host(.mradsin) .trig,:host(.mradsin) .trig *{font-size:14px}' +   /* Mira connector form */
                      ':host(.mraurng) .sel{width:100%}:host(.mraurng) .trig{min-height:35px;border-color:transparent;background:var(--code-tag-background-color);padding-left:8px}:host(.mraurng) .trig::before{content:var(--uk,"");font-size:12px;font-weight:600;line-height:18px;padding:0 6px;border-radius:4px;background:var(--timerange-background-color,var(--neutral-lighter));flex:0 0 auto}:host(.mraurng) .mlbl{display:flex;align-items:center;width:100%}:host(.mraurng) .opts .mopt .mlbl::after{margin-left:auto;font-size:12px;font-weight:600;line-height:18px;padding:0 6px;border-radius:4px;background:var(--timerange-background-color,var(--neutral-lighter))}:host(.mraurng) .opts .mopt:nth-child(1) .mlbl::after{content:"30d"}:host(.mraurng) .opts .mopt:nth-child(2) .mlbl::after{content:"60d"}:host(.mraurng) .opts .mopt:nth-child(3) .mlbl::after{content:"90d"}' +
@@ -49475,7 +49476,7 @@ ST_PAGES['Agentic AI › AI Provider'] = { html: agOvHTML, after: agOvAfter };
    true of a plain STRING payload and would hand back its first character — obs-input's `input`
    detail is `[value]` today, but the guard costs nothing.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
-const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false, drw:null, opt:'1', ovDemo:null, ovAction:null, act4:false };
+const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false, drw:null, opt:'7', ovDemo:null, ovAction:null, act4:false };
 /* the two design options for this screen. ⚠️ REVIEW CHROME, like `Setting/`'s Scale switcher —
    it exists so both designs can be compared in one build and goes when one is picked. */
 /* ⚠️ OPTION 3 IS OUT OF THE SWITCHER (request, 14 Sep 2026: "remove option 3"). The labels of the rest
@@ -49485,6 +49486,10 @@ const LIC = { tab:'usage', range:30, hist:null, hrange:30, code:'', busy:false, 
 const LIC_OPTS = [{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' },
                   { value:'4', label:'Option 4' }, { value:'5', label:'Option 5' },
                   { value:'6', label:'Option 6' }, { value:'7', label:'Option 7' }];
+/* ⚠️ OPTION 7 IS THE PICKED DESIGN AND THE DEFAULT (request, 17 Nov 2026: "option 7 is done, the other options stay available
+   but combined in a group" — asked; answered "7 + dropdown of others"). The switcher is ONE "Option 7" segment plus an
+   "Other options" obs-select holding the rest; LIC_OPTS stays the single list both are cut from. */
+const LIC_OPT_MAIN = '7';
 /* Option 6 is a CLONE of Option 4 (request, 8 Oct 2026) — same builders; every Option 4 test asks licO4() so the two
    cannot drift until something is asked for Option 6 alone (then branch on LIC.opt === '6' there) */
 const licO4 = () => LIC.opt === '4' || LIC.opt === '6' || LIC.opt === '7';
@@ -49629,7 +49634,8 @@ function licHeadHTML(){
     <span slot="before" class="lichmk">${agIc('file-certificate', 26)}</span>
     <obs-tag slot="title" variant="${active ? 'tag-green' : 'tag-red'}">${active ? 'Active' : 'Expired'}</obs-tag>
     <span class="lichact">
-      <obs-radio id="licOpt" as-button size="small" options="${agJ(LIC_OPTS)}" value="${LIC.opt}"></obs-radio>
+      <obs-radio id="licOpt" as-button size="small" options="${agJ(LIC_OPTS.filter(o => o.value === LIC_OPT_MAIN))}" value="${LIC.opt === LIC_OPT_MAIN ? LIC_OPT_MAIN : ''}"></obs-radio>
+      <obs-select id="licOptMore" class="licoptm" placeholder="Other options" aria-label="Other design options"></obs-select>
       <obs-button variant="default" onclick="agTap(licExport)">${agIc('download', 14)}Export</obs-button>
       ${/* ⚠️ NOT ON OPTION 4 (request, 15 Sep 2026: "remove this in option 4, top right") — its licence card carries its
          own Upgrade Now, which opens the same Activation Code modal, so nothing becomes unreachable */ ''}
@@ -50225,8 +50231,9 @@ function lic6Fig(q, tone){
   const f = q.total ? Math.min(100, q.used / q.total * 100) : 0, pc = f > 0 && f < 1 ? '<1' : f < 10 && Math.round(f * 10) % 10 ? f.toFixed(1) : String(Math.round(f));
   const on = f > 0 ? Math.max(1, Math.ceil(f / 10)) : 0;
   if (LIC.opt === '7') return `<span class="lic7fig" style="--lic6-t:var(${tone})" role="img" aria-label="${licFmt(q.used)} of ${licFmt(q.total)} ${stEsc(q.unit)} in use, ${pc}%">
-    <span class="lic7c">${stEsc(q.unit.charAt(0).toUpperCase() + q.unit.slice(1))} in use</span>
-    <span class="lic7v"><b>${licFmt(q.used)}</b><span class="t">of ${licFmt(q.total)}</span><span class="lic7p">${pc}%</span></span></span>`;
+    ${/* one line, "170 of 5,000 devices" (request, 17 Nov 2026) — the "Devices in use" caption and the share pill are gone;
+       the share stays in the aria-label. .lic7c / .lic7p are kept, unreferenced */ ''}
+    <span class="lic7v"><b>${licFmt(q.used)}</b><span class="t">of ${licFmt(q.total)} ${stEsc(q.unit)}</span></span></span>`;
   return `<span class="lic6fig" style="--lic6-t:var(${tone})" role="img" aria-label="${licFmt(q.used)} of ${licFmt(q.total)} ${stEsc(q.unit)} used, ${pc}%">
     <span class="lic6fl"><b>${licFmt(q.used)}</b><span class="t">/ ${licFmt(q.total)}</span></span>
     <span class="lic6fc">${stEsc(q.unit)} in use · <em>${pc}%</em></span>
@@ -50857,7 +50864,7 @@ function licHistMdBodyHTML(){
       <span class="lichxr">
         <span class="lichrng">Range
           <obs-radio id="licHMRange" as-button size="small" options="${agJ(LIC_RANGES)}" value="${days}"></obs-radio></span>
-        <span class="lichxd"><span>${licFull(w.start)} →</span><span>${licFull(w.end)} · ${days} days</span></span>
+        <span class="lichxd"><span>${licFull(w.start)}</span><span>${licFull(w.end)}</span></span>
         <obs-button variant="primary" onclick="agTap(licHistCsv)">${agIc('export-csv', 14)}Export as CSV</obs-button>
         <obs-button class="lichxx" variant="neutral-lightest" aria-label="Close" data-tip="Close" onclick="agTap(licHistMdClose)">${agIc('times', 14)}</obs-button>
       </span>
@@ -51360,7 +51367,11 @@ function licAfter(){
      table, and there is no open detail row or caret to lose at the moment you change design. */
   const op = document.getElementById('licOpt');
   if (op){ op.addEventListener('change', e => { const v = String(licVal(e)); if (v && v !== LIC.opt){ LIC.opt = v; stMainPaint(); } });
-           licRadioSync('licOpt', LIC.opt); }
+           licRadioSync('licOpt', LIC.opt === LIC_OPT_MAIN ? LIC_OPT_MAIN : ''); }
+  /* the other designs, grouped in one DS dropdown; obs-select takes options / value as PROPERTIES */
+  const om = document.getElementById('licOptMore');
+  if (om){ om.options = LIC_OPTS.filter(o => o.value !== LIC_OPT_MAIN); om.value = LIC.opt === LIC_OPT_MAIN ? '' : LIC.opt;
+           om.addEventListener('change', e => { const d = licVal(e), v = String((d && d.value != null) ? d.value : d || ''); if (v && v !== LIC.opt){ LIC.opt = v; stMainPaint(); } }); }
   /* one listener for the life of the page, not one per paint */
   if (window.matchMedia && !LIC.mq){ LIC.mq = window.matchMedia(LIC_MQ); LIC.mq.addEventListener('change', licColsSync); }
   const tb = document.getElementById('licTable');

@@ -119,13 +119,26 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
 /* answered-questions record, Claude's shape */
 .mx-qa{font-size:13px;line-height:1.45;width:100%}
 .mira-card-record-body:has(> .mx-qa){display:block}
-.mx-qa-h{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--page-text-color)}
-.mx-qa-ck{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:color-mix(in srgb,var(--secondary-green) 18%,transparent);color:var(--secondary-green)}
+.mx-qa-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;font-weight:600;color:var(--page-text-color);border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.mx-qa-h:hover{background:color-mix(in srgb,var(--page-text-color) 5%,transparent)}
+.mx-qa-h:focus-visible{outline:2px solid var(--neutral-light);outline-offset:1px}
+.mx-qa-t{flex:0 0 auto}
+.mx-qa-sum{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;color:var(--neutral-light);font-size:12.5px}
+.mx-qa.is-open .mx-qa-sum{visibility:hidden}
+.mx-qa-cv{display:grid;place-items:center;width:18px;height:18px;color:var(--neutral-light);transition:transform .15s;transform:rotate(-90deg)}
+.mx-qa.is-open .mx-qa-cv{transform:none}
+.mx-qa-cv svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mx-qa-ck{flex:0 0 18px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:color-mix(in srgb,var(--secondary-green) 18%,transparent);color:var(--secondary-green)}
 .mx-qa-ck svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.mx-qa-l{list-style:none;margin:10px 0 0 8px;padding:0 0 0 17px;border-left:1px solid var(--border-color);display:flex;flex-direction:column;gap:10px}
-.mx-qa-q{color:var(--neutral-light);font-size:12.5px}
-.mx-qa-a{color:var(--page-text-color);margin-top:2px}
-.mx-qa-a.is-skip{color:var(--neutral-light);font-style:italic}
+.mx-qa-l{list-style:none;margin:12px 0 0;padding:0;display:none;flex-direction:column;gap:12px}
+.mx-qa.is-open .mx-qa-l{display:flex}
+.mx-qa-l li{display:flex;gap:10px;align-items:flex-start}
+.mx-qa-n{flex:0 0 18px;height:18px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--border-color);color:var(--neutral-light);font-size:10.5px;font-weight:600;margin-top:1px}
+.mx-qa-b{flex:1 1 auto;min-width:0}
+.mx-qa-q{color:var(--neutral-light);font-size:12.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mx-qa-k{font-size:10.5px;font-weight:600;letter-spacing:.02em;padding:1px 6px;border-radius:4px;background:color-mix(in srgb,var(--page-text-color) 8%,transparent);color:var(--page-text-color)}
+.mx-qa-a{color:var(--page-text-color);margin-top:6px;padding:7px 10px;border-radius:6px;background:color-mix(in srgb,var(--page-text-color) 5%,transparent);border-left:2px solid var(--secondary-green);overflow-wrap:anywhere}
+.mx-qa-a.is-skip{color:var(--neutral-light);font-style:italic;border-left-color:var(--border-color)}
 /* spacing pass (request, 16 Nov 2026: "more space / alignment"): roomier card, the header's 8px rhythm, 16px between
    the progress track and the answer, a 44px input, and the footer buttons ending on the input's right edge. */
 .mx-aicq .aicq{padding:18px 20px 16px}
@@ -135,3 +148,181 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
 .mx-aicq .aicqf.mx-cqonly{height:44px;padding:0 14px;margin:0}
 .mx-aicq .aicqd{padding:16px 0 0;gap:10px}
 .mx-aicq .aicqd .aicqsk{height:30px;padding:0 14px;border-radius:var(--ai-r)}
+
+/* New chat greeting: no ✦ tile + date row above the title (request, 17 Nov 2026) */
+.mira-home .mira-home-day{display:none}
+
+/* New chat composer: its 1px rim was a gradient from 14% to 3% white, so the sides and bottom all but vanished
+   (request, 17 Nov 2026). The rim is the field-border token down the sides, warming to the accent at the foot. */
+body .is-hero .mira-composer-frame{background:linear-gradient(180deg,var(--field-border-color),var(--field-border-color) 55%,var(--mira-accent-45))}
+/* Sidebar foot: usage and the user row were two separate boxes; one card now, split by a hairline (request, 17 Nov 2026) */
+body .mira-sidebar-foot:not(#_){margin:16px 4px 0;padding:0 4px 4px;background:var(--mira-row-hover);border:1px solid var(--mira-panel-edge);border-radius:12px}
+body .mira-sidebar-foot > .mira-usage{margin:0 -4px 4px;padding:12px 14px;background:transparent;border:0;border-bottom:1px solid var(--mira-panel-edge);border-radius:0}
+body .mira-sidebar-foot > .mira-user{padding:6px 8px}
+body .mira-sidebar-foot > .mira-user:hover{box-shadow:none;background:var(--mira-surface-raised)}
+
+/* Collapsed Mira sidebar: hide the whole column — no strip of + / search icons — and leave only the expand button,
+   floated into the top-left of the page header, before the crumbs (request, 17 Nov 2026). */
+body aside.mira-sidebar.is-collapsed:not(#_){width:0;min-width:0;padding:0;border:0;overflow:visible;position:relative;z-index:5}
+body aside.mira-sidebar.is-collapsed:not(#_) > :not(.mira-sidebar-head){display:none}
+body aside.mira-sidebar.is-collapsed:not(#_) > .mira-sidebar-head{position:absolute;left:14px;top:24px;padding:0;margin:0;width:auto;height:auto;border:0;background:none}
+body:has(aside.mira-sidebar.is-collapsed) .mira-crumbs{padding-left:28px}
+
+/* ── chat header (request, 17 Nov 2026): no "Mira /" crumbs — history · new chat · <chat name ⌄>, Ask AI's shape ── */
+body .mira-crumbs > .mira-crumb, body .mira-crumbs > .mira-crumb-sep{display:none}
+.mx-hd{display:flex;align-items:center;gap:6px;min-width:0}
+.mx-hdb{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;padding:0;border:0;border-radius:6px;cursor:pointer;color:var(--mira-text-toned);background:var(--mira-row-hover)}
+.mx-hdb:hover{color:var(--mira-text-strong);background:var(--mira-surface-raised)}
+.mx-hdb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
+.mx-hdt{display:flex;align-items:center;gap:4px;min-width:0;max-width:min(520px,60vw);height:30px;padding:0 6px 0 8px;margin-left:2px;border:0;border-radius:6px;cursor:pointer;font:inherit;font-size:15px;font-weight:600;color:var(--mira-text-strong);background:transparent}
+.mx-hdt:hover,.mx-hdt.open{background:var(--mira-row-hover)}
+.mx-hdn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-hdt svg{flex:0 0 15px;width:15px;height:15px;fill:none;stroke:var(--mira-text-muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mx-hdb:focus-visible,.mx-hdt:focus-visible{outline:2px solid var(--mira-accent);outline-offset:1px}
+.mx-hdin{height:30px;min-width:240px;padding:0 8px;font:inherit;font-size:15px;font-weight:600;color:var(--mira-text-strong);background:var(--mira-ask-face);border:1px solid var(--mira-accent-55);border-radius:6px;outline:0}
+.mx-hdtip{position:fixed;z-index:3000;padding:6px 10px;font-size:12.5px;line-height:1.3;color:var(--mira-text-strong);background:var(--mira-surface-raised);border:1px solid var(--mira-panel-edge);border-radius:6px;pointer-events:none;white-space:nowrap}
+.mx-hdm{position:fixed;z-index:3000;min-width:240px;max-width:320px;max-height:60vh;overflow:auto;padding:4px;background:var(--mira-surface-raised);border:1px solid var(--mira-panel-edge);border-radius:8px;box-shadow:var(--mira-ask-shadow)}
+.mx-hdm button{display:block;width:100%;padding:7px 10px;border:0;border-radius:5px;background:none;font:inherit;font-size:13px;text-align:left;color:var(--mira-text-strong);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-hdm button:hover{background:var(--mira-row-hover)}
+.mx-hdm button.is-danger{color:var(--mira-ask-danger)}
+.mx-hdm button.mx-hdmc.on{font-weight:600;background:var(--mira-row-hover)}
+.mx-hdm hr{margin:4px 2px;border:0;border-top:1px solid var(--mira-panel-edge)}
+.mx-hdmh{padding:8px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mira-text-muted)}
+.mx-hdme{padding:6px 10px 8px;font-size:12.5px;color:var(--mira-text-muted)}
+/* the history button now opens and shuts the list, so a collapsed sidebar leaves nothing behind */
+body aside.mira-sidebar.is-collapsed:not(#_) > .mira-sidebar-head{display:none}
+body:has(aside.mira-sidebar.is-collapsed) .mira-crumbs{padding-left:0}
+/* New chat lives in the header now (request, 17 Nov 2026) */
+body .mira-sidebar-actions .mira-side-row.is-new{display:none}
+/* chat history: date bands + ages (request, 17 Nov 2026) */
+.mira-recents-list > li.mx-band{list-style:none;padding:14px 12px 6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mira-text-muted)}
+.mira-recents-list > li.mx-band:first-child{padding-top:4px}
+.mira-side-row.is-chat .mx-age{flex:0 0 auto;margin-left:auto;padding-left:8px;font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--mira-text-muted)}
+.mira-recent:hover .mx-age,.mira-recent:focus-within .mx-age{visibility:hidden}
+
+/* Search chats = obs-input type=search (request, 17 Nov 2026); the ⌘K hint sits inside its right edge until you type */
+.mx-srch{position:relative;margin:4px 4px 6px}
+.mx-srch obs-input{display:block;width:100%}
+.mx-srchk{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;padding:0 5px;font-size:10.5px;font-weight:500;line-height:16px;font-family:inherit;color:var(--mira-text-muted);border:1px solid var(--mira-kbd-edge);border-radius:4px}
+.mx-srch.has-q .mx-srchk{display:none}
+
+.mx-hdb svg.mx-fill{width:17px;height:17px;fill:currentColor;stroke:none}
+
+/* Header: no ⋯ "Chat options" button (Rename / Delete live in the chat-name menu now) and no rule under the header
+   (request, 17 Nov 2026) */
+body .mira-chat-header > .mira-chat-menu{display:none}
+body .mira-chat-header.is-page:not(#_){border-bottom-color:transparent}
+
+/* the usage meter under the user's name (request, 17 Nov 2026) */
+body .mira-sidebar-foot:not(#_){padding:4px}
+body .mira-sidebar-foot > .mira-user{padding:8px}
+.mx-uu{display:flex;align-items:center;gap:8px;min-width:0;margin-top:3px}
+.mx-uub{flex:1 1 auto;min-width:40px;height:4px;overflow:hidden;border-radius:999px;background:var(--mira-ask-line)}
+.mx-uub i{display:block;height:100%;border-radius:999px;background:var(--mira-accent)}
+.mx-uu.is-warning .mx-uub i{background:var(--mira-ask-warn)}
+.mx-uu.is-reached .mx-uub i{background:var(--mira-ask-danger)}
+.mx-uut{flex:0 0 auto;font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--mira-text-muted)}
+
+/* sidebar resize: the hover highlight is a 40px handle centred on the edge, not a full-height line (request, 17 Nov 2026).
+   The grab area is still the whole edge; it also stays lit while dragging. */
+body .mira-sidebar-resize:hover::after, body.mx-drag .mira-sidebar-resize::after{position:absolute;content:"";left:2px;top:50%;bottom:auto;width:3px;height:40px;transform:translateY(-50%);border-radius:999px;background:var(--mira-accent)}
+
+/* Hero composer control row: one 12px inset on all four sides, and send on the 32px height the + and the effort pill
+   use, so the four controls share a top and bottom edge (was 16px left / 12px right, send 38x36). 17 Nov 2026. */
+body .is-hero .mira-composer-actions:not(#_){padding:10px 12px 12px 12px}
+body .is-hero .mira-submit:not(#_){width:32px;min-width:32px;height:32px;border-radius:10px}
+
+/* "↵ to send": the ↵ glyph sits high in its own line box, so the row reads uneven though the boxes share a centre.
+   The hint is a centred flex row and the ↵ a 4px keycap (the ⌘K chip's shape) that centres the glyph itself. 17 Nov 2026. */
+body .mira-composer-hint:not(#_){display:inline-flex;align-items:center;gap:6px;line-height:18px}
+body .mira-composer-hint:not(#_) kbd{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;font-size:11px;line-height:1;color:var(--mira-text-toned);background:var(--mira-row-hover);border:1px solid var(--mira-ask-line);border-radius:var(--btn-radius,4px)}
+
+/* Send button + "↵ to send" appear only once the composer has text (Ask Iris's rule). Derived from the textarea's own
+   :placeholder-shown, so every path that fills or clears it is covered with no JS. The busy Stop button (.is-busy) is exempt:
+   hiding the only way to interrupt a run would be the worst possible moment. 17 Nov 2026. */
+body .mira-composer-box:has(.mira-composer-input:placeholder-shown) .mira-composer-hint:not(#_),
+body .mira-composer-box:has(.mira-composer-input:placeholder-shown) .mira-submit:not(.is-busy):not(#_){display:none}
+
+/* The busy Stop button: no accent glow (that is the SEND button's, and under a dark chip it bled a purple smear onto the
+   composer's bottom edge), a hairline instead, and a SOLID 12px rounded square centred in the chip, the stop mark every chat
+   product uses. The hollow 1em outline read as an empty checkbox. 17 Nov 2026. */
+body .mira-submit.is-busy:not(#_){box-shadow:inset 0 0 0 1px var(--mira-ask-line)!important;opacity:1}
+body .mira-submit.is-busy:not(#_):hover{background:var(--mira-row-hover)!important}
+body .mira-submit.is-busy:not(#_) .anticon{display:grid;place-items:center;font-size:12px;line-height:0}
+body .mira-submit.is-busy:not(#_) .anticon svg{display:block;width:12px;height:12px}
+body .mira-submit.is-busy:not(#_) .anticon svg path{fill:currentColor;stroke:currentColor}
+
+/* the create-runbook card's step strip + Review + the Action rows' second line, all on the clarifier's own tokens
+   (the .mx-aicq block above). 17 Nov 2026. */
+.mx-cqsteps .mx-cqst{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.mx-cqsteps .mx-cqtab{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 8px;border:1px solid var(--border-soft);border-radius:var(--ai-r,8px);background:transparent;color:var(--text-dim);font:inherit;font-size:12.5px;cursor:pointer}
+.mx-cqsteps .mx-cqtab:hover{background:var(--hover-side);color:var(--text)}
+.mx-cqsteps .mx-cqtab.on{background:var(--sel);border-color:var(--track);color:var(--white);font-weight:600}
+.mx-cqsteps .mx-cqtk{flex:0 0 14px;width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--track);display:grid;place-items:center}
+.mx-cqsteps .mx-cqtab.on .mx-cqtk{box-shadow:inset 0 0 0 1.5px var(--ai)}
+.mx-cqsteps .mx-cqtab.done .mx-cqtk{background:var(--mira-ask-done);box-shadow:none;color:var(--mira-ask-done-ink)}
+.mx-cqsteps .mx-cqtk svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.mx-cqsteps .mx-cqo2{align-items:flex-start;padding:10px}
+.mx-cqsteps .mx-cqob{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;line-height:20px}
+.mx-cqsteps .mx-cqob small{font-size:12px;line-height:1.4;color:var(--muted)}
+.mx-cqsteps .mx-cqrec{flex:0 0 auto;align-self:center;height:20px;padding:0 8px;border-radius:999px;display:inline-grid;place-items:center;background:var(--ai-soft);color:var(--ai-2);font-size:11px;font-weight:500}
+.mx-cqsteps .mx-cqrv{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mx-cqsteps .mx-cqrv li{display:flex;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.mx-cqsteps .mx-cqrv li:hover{background:var(--hover-side)}
+.mx-cqsteps .mx-cqrq{font-size:12px;color:var(--muted);line-height:1.4}
+.mx-cqsteps .mx-cqra{margin-top:2px;color:var(--white);font-weight:500;line-height:1.4}
+.mx-cqsteps .mx-cqra.miss{color:var(--muted);font-style:italic;font-weight:400}
+
+/* the minimal question card (n8n's shape, 17 Nov 2026): question · answer · one footer. On the clarifier's tokens. */
+.mx-aicq .aicq.mx-min{padding:16px 16px 12px;border-radius:12px}
+.mx-min .mx-mq{margin:0 0 12px;padding:0 2px;font-size:14px;font-weight:600;line-height:1.45;color:var(--white)}
+.mx-min .aicqo{gap:10px;padding:9px 10px}
+.mx-min .mx-mol{flex:1 1 auto;min-width:0;text-align:left}
+.mx-min .mx-mol em{font-style:normal;color:var(--muted)}
+.mx-min .mx-moa{flex:0 0 22px;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--ai);color:var(--ai-fg);opacity:0;transition:opacity .12s}
+.mx-min .aicqo:hover .mx-moa,.mx-min .aicqo.on .mx-moa,.mx-min .aicqo:focus-visible .mx-moa{opacity:1}
+.mx-min .mx-moa svg,.mx-min .mx-mpg svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.mx-min .aicqf.mx-cqonly{margin:0}
+.mx-min .mx-cqrv{gap:0}
+.mx-min .mx-cqrv li{display:block;padding:8px 10px}
+.mx-min .mx-cqra{margin-top:1px}
+.mx-min .mx-mf{display:flex;align-items:center;gap:8px;margin:12px -16px 0;padding:10px 16px 0;border-top:1px solid var(--border-soft)}
+.mx-min .mx-mpg{display:inline-flex;align-items:center;gap:2px;font:400 12px/1 inherit;font-family:inherit;color:var(--muted)}
+.mx-min .mx-mpg span{min-width:40px;text-align:center;font-variant-numeric:tabular-nums}
+.mx-min .mx-mpg button{width:24px;height:24px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:var(--text-dim);cursor:pointer;padding:0}
+.mx-min .mx-mpg button:hover:not(:disabled){background:var(--hover-side);color:var(--text)}
+.mx-min .mx-mpg button:disabled{opacity:.35;cursor:default}
+.mx-min .mx-msp{flex:1 1 auto}
+.mx-min .mx-mb{height:28px;padding:0 12px;border:1px solid var(--border-soft);border-radius:var(--ai-r,8px);background:transparent;color:var(--text);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.mx-min .mx-mb:hover:not(:disabled){background:var(--hover-side)}
+.mx-min .mx-mb.is-pri{background:var(--ai);border-color:var(--ai);color:var(--ai-fg)}
+.mx-min .mx-mb.is-pri:hover:not(:disabled){background:var(--ai-h)}
+.mx-min .mx-mb:disabled{opacity:.4;cursor:default}
+
+/* Hero placeholder (17 Nov 2026): it read as typed text — muted ink at 17px is close to the real text. It is the muted
+   ink pulled 55% back toward the composer face, and the caret takes the accent so it stops merging with the first glyph. */
+body .is-hero .mira-composer-input:not(#_)::placeholder{color:color-mix(in srgb,var(--mira-text-muted) 45%,var(--mira-ask-face));opacity:1;font-weight:400}
+body .is-hero .mira-composer-input:not(#_){caret-color:var(--mira-accent)}
+
+/* the group head's chevron (17 Nov 2026): it was --mira-text-dimmed, the faintest ink, so beside the animated title it only
+   read once hover lightened the row. It takes the head's own colour now (muted at rest, toned on hover), visible always. */
+body .mira-group-head .mira-step-chevron:not(#_){color:inherit;opacity:0;transition:opacity .12s,transform .2s;font-size:12px;display:inline-grid;place-items:center;width:14px;height:14px}
+body .mira-group-head .mira-step-chevron:not(#_) svg{width:12px;height:12px}
+/* …and it shows only while the head is hovered or keyboard-focused (request, 17 Nov 2026); the box is kept, so nothing reflows. */
+body .mira-group-head:hover .mira-step-chevron:not(#_),body .mira-group-head:focus-visible .mira-step-chevron:not(#_){opacity:.9}
+
+/* the reply's ✦ avatar tile is gone (request, 17 Nov 2026): display:none, so the turn's 16px column gap goes with it and
+   the reply starts on the column's own left edge. (liveFor still toggles its visibility — harmless on a hidden node.) */
+body .mira-turn-mark:not(#_){display:none}
+
+/* the answered record, minimal (17 Nov 2026): rows hang under the title (18px tick + 8px gap), question muted over a
+   plain answer; the gap between rows beats the gap inside one. */
+.mx-qa .mx-qa-l:not(#_){margin:10px 0 0;padding:0 0 0 26px;gap:10px}
+.mx-qa .mx-qa-l:not(#_) li{display:block}
+.mx-qa .mx-qa-q:not(#_){display:block;font-size:12.5px;line-height:1.4;color:var(--neutral-light)}
+.mx-qa .mx-qa-a:not(#_){margin-top:2px;padding:0;border:0;background:none;border-radius:0;font-size:13.5px;font-weight:500;line-height:1.45;color:var(--page-text-color)}
+.mx-qa .mx-qa-a.is-skip:not(#_){font-weight:400;color:var(--neutral-light)}
+
+/* the reply actions row (copy · 👍 · 👎 · regenerate · tokens · cost · time) is always shown (request, 17 Nov 2026) —
+   the product fades it in only on hover. .mx-hide still hides it while a reply is still streaming. */
+body .mira-message-actions-row:not(#_){opacity:1}
