@@ -1,0 +1,137 @@
+/* collapsed thinking groups / steps: the live app unmounts these, the snapshot keeps them */
+.mira-group-head[aria-expanded="false"] ~ .mira-group-fold{display:none!important}
+button.mira-step-row[aria-expanded="false"] ~ .mira-step-reasoning,
+button.mira-step-row[aria-expanded="false"] ~ .mira-tool-body{display:none!important}
+.mira-json-toggle[aria-expanded="false"] ~ *{display:none}
+.mira-json-line:has(> .mira-json-toggle[aria-expanded="false"]) ~ .mira-json-children{display:none}
+.mira-json-line:has(> .mira-json-toggle[aria-expanded="false"])::after{content:" … "; opacity:.6}
+/* popups placed by the glue script */
+.mx-pop{position:fixed!important;z-index:5000;margin:0!important;transform:none!important}
+.mx-tip{position:fixed!important;z-index:5001;pointer-events:none;visibility:visible!important;opacity:1!important;transform:none!important}
+.mx-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:6000;padding:8px 14px;border-radius:6px;
+  font:500 12.5px/1.4 Inter,sans-serif;background:var(--primary);color:var(--page-background-color);
+  opacity:0;transition:opacity .16s;pointer-events:none}
+.mx-toast.on{opacity:1}
+.mx-rename{font:inherit;color:inherit;background:transparent;border:1px solid var(--border-color);border-radius:4px;
+  padding:1px 5px;min-width:0;width:100%;outline:none}
+.mx-rename:focus{border-color:var(--primary-alt)}
+.mx-hide{display:none!important}
+.mx-nomatch{padding:10px 12px;font-size:12px;color:var(--neutral-light)}
+.splitpanes__splitter{cursor:col-resize}
+body.mx-drag, body.mx-drag *{cursor:col-resize!important;user-select:none!important}
+a.mira-side-row{text-decoration:none}
+/* the group head is inline-flex on a baseline: the dot matrix (a grid with no text) has no baseline of its own, so
+   while it leads the head the whole row dropped 8.5px below the turn mark. Top-align the head instead. */
+.mira-group-head{vertical-align:top}
+/* the product rail is Option 1's sidebar in a shadow root (#mxRail); it is position:fixed, and the content already
+   carries the live rail's 53px of padding. Expanded, the content yields the open width instead. */
+.mainLayoutContent{transition:padding-left .18s}
+body.mx-railopen .mainLayoutContent{padding-left:240px!important}
+/* the working dot matrix sits in a tile the size and look of the turn mark (30px, request 16 Nov 2026). The head grows
+   to the tile's height, so it is pulled up by the turn body's 3px top padding to stay centred on the mark. */
+.mx-dmtile{display:flex;flex:0 0 30px;align-items:center;justify-content:center;width:30px;height:30px;box-sizing:border-box;
+  background:transparent;border:0}   /* no box (request, 16 Nov 2026): only the dots show; the 30px slot keeps the row aligned */
+.mira-group-head:has(> .mx-dmtile){margin-top:-5px;column-gap:10px}
+/* the thinking group's title animates like Ask AI's label in index.html (`.aildl`, request 16 Nov 2026): while the
+   group works the title writes itself in behind a mask with the brand ramp leading it, then the band loops through
+   it; each new step re-writes it (`.mx-fresh`). When the group lands on "Thought for …, used …" that title writes in
+   once (`.mx-dia-once`) and the class comes off, so the head's own colour and hover come back. Same tokens, stops and
+   @property trick as .aildl; the trough is the head's own muted text colour. */
+@property --mx-sweep{syntax:'<percentage>';inherits:false;initial-value:-14%}
+@property --mx-reveal{syntax:'<percentage>';inherits:false;initial-value:120%}
+.mira-group-title.mx-dia,.mira-group-title.mx-dia-once{--mx-sweep:114%;--mx-reveal:120%;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 var(--mx-reveal),transparent var(--mx-reveal));
+  mask-image:linear-gradient(90deg,#000 0,#000 var(--mx-reveal),transparent var(--mx-reveal));
+  background-image:linear-gradient(90deg,var(--mira-text-muted) 0%,var(--mira-text-muted) calc(var(--mx-sweep) - 14%),
+    rgb(76,177,254) calc(var(--mx-sweep) - 14%),rgb(115,30,251) calc(var(--mx-sweep) + 1.4%),rgb(249,17,227) calc(var(--mx-sweep) + 14%),
+    var(--mira-text-muted) calc(var(--mx-sweep) + 14%),var(--mira-text-muted) 100%);
+  background-size:100% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent}
+.mira-group-title.mx-dia{animation:mxdia 2.4s linear infinite}
+.mira-group-title.mx-dia.mx-fresh{animation:mxwrite 1.2s ease-in-out 1 forwards,mxdiain .5s ease-out 1 forwards,mxdia 2.4s linear 1.2s infinite}
+.mira-group-title.mx-dia-once{animation:mxwrite 1.4s ease-in-out 1 forwards,mxdiain .5s ease-out 1 forwards}
+@keyframes mxwrite{from{--mx-sweep:-14%;--mx-reveal:-6%}to{--mx-sweep:114%;--mx-reveal:122%}}
+@keyframes mxdia{from{--mx-sweep:-14%}to{--mx-sweep:114%}}
+@keyframes mxdiain{from{opacity:.56;filter:blur(6px);transform:translateY(5px)}to{opacity:1;filter:blur(0);transform:none}}
+@media (prefers-reduced-motion:reduce){.mira-group-title.mx-dia,.mira-group-title.mx-dia-once{animation:none;background:none;color:inherit;-webkit-mask-image:none;mask-image:none}}
+/* the question card is Ask AI's clarifier (index.html `.aicq*`, request 16 Nov 2026), its CSS copied verbatim and its
+   tokens resolved from index.html's .aipanel scope in both themes, declared on the dock wrapper only. */
+.mx-aicq{--border-soft:#131f31;--card:#0b1627;--text-dim:#8e9fbc;--hover-side:#22314a;--text:#cad3e2;--white:#e3e8f2;--muted:#6a7fa0;--track:#485975;--ai:#cad3e2;--sel:#12233a;--chip:#2b394f;--ai-soft:rgba(202,211,226,.13);--ai-2:#cad3e2;--ai-fg:#0b1627;--border:#1d2a3e;--ai-line:rgba(202,211,226,.34);--ai-r:999px;--ai-h:#e3e8f2}
+body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#ffffff;--text-dim:#7186a8;--hover-side:#eef2f8;--text:#1d2a3e;--white:#111c2c;--muted:#7186a8;--track:#8fa3c2;--ai:#1d2a3e;--sel:#e0ebf5;--chip:#e3e8f2;--ai-soft:rgba(29,42,62,.09);--ai-2:#1d2a3e;--ai-fg:#ffffff;--border:#e3e8f2;--ai-line:rgba(29,42,62,.26);--ai-r:999px;--ai-h:#111c2c}
+.mx-aicq .aicq{margin:0;padding:14px 14px 12px;font-size:12.8px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.mx-aicq .aicqf input{font-size:12.8px}
+.aicq { margin: 2px 0px 16px; padding: 12px 13px 11px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--card); }
+.aicqh { display: flex; align-items: center; gap: 9px; margin-bottom: 3px; }
+.aicqb { width: 24px; height: 24px; flex: 0 0 24px; border: 0px; border-radius: 6px; background: transparent; color: var(--text-dim); cursor: pointer; display: grid; place-items: center; padding: 0px; }
+.aicqb:hover:not(:disabled) { background: var(--hover-side); color: var(--text); }
+.aicqb:disabled { opacity: 0.38; cursor: default; }
+.aicqb svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 1.875; stroke-linecap: round; stroke-linejoin: round; }
+.aicqt { flex: 1 1 0%; min-width: 0px; font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--white); }
+.aicqn { flex: 0 0 auto; font: 400 11.5px / 1 "JetBrains Mono", monospace; color: var(--muted); }
+.aicqn b { color: var(--text); font-weight: 500; }
+.aicqpg { height: 2px; border-radius: 2px; background: var(--track); margin: 0px 0px 10px; overflow: hidden; }
+.aicqpg i { display: block; height: 100%; border-radius: 2px; background: var(--ai); transition: width 0.22s; }
+@media (prefers-reduced-motion: reduce){
+.aicqpg i { transition: none; }
+}
+.aicqs { margin: 0px 0px 8px 33px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+.aicqo, .aicqf { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0px; border-radius: 8px; background: transparent; color: var(--text); font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12.8px; text-align: left; cursor: pointer; margin-bottom: 1px; }
+.aicqo:hover, .aicqf:hover { background: var(--hover-side); }
+.aicqo.on, .aicqf.on { background: var(--sel); }
+.aicqi { flex: 0 0 20px; width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; background: var(--chip); color: var(--text-dim); font: 500 11px / 1 "JetBrains Mono", monospace; }
+.aicqo:hover .aicqi { background: var(--ai-soft); color: var(--ai-2); }
+.aicqo.on .aicqi { background: var(--ai); color: var(--ai-fg); }
+.aicqp { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; color: var(--muted); }
+.aicqp svg { width: 13px; height: 13px; fill: none; stroke: currentcolor; stroke-width: 2.31; stroke-linecap: round; stroke-linejoin: round; }
+.aicqd .aicqsk { flex: 0 0 auto; height: 26px; padding: 0px 11px; border: 0px; border-radius: 6px; background: var(--chip); color: var(--text-dim); font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12px; cursor: pointer; }
+.aicqd .aicqsk:hover { background: var(--hover-side); color: var(--text); }
+.aicqc { width: 24px; height: 24px; flex: 0 0 24px; border: 0px; border-radius: 6px; background: transparent; color: var(--text-dim); cursor: pointer; display: grid; place-items: center; }
+.aicqc:hover { background: var(--hover-side); color: var(--text); }
+.aicqc svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 1.875; stroke-linecap: round; stroke-linejoin: round; }
+.aicqr { flex: 0 0 15px; width: 15px; height: 15px; border-radius: 50%; border: 1.6px solid var(--track); display: grid; place-items: center; transition: border-color 0.12s; }
+.aicqo.on .aicqr, .aicqf.on .aicqr { border-color: var(--ai); }
+.aicqo.on .aicqr::after, .aicqf.on .aicqr::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ai); }
+.aicqf input { flex: 1 1 0%; min-width: 0px; border: 0px; background: transparent; color: var(--text); font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12.8px; outline: none; }
+.aicqf input::placeholder { color: var(--muted); }
+.aicqa { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 9px; }
+.aicqsk { border: 0px; background: transparent; color: var(--muted); font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12.5px; cursor: pointer; padding: 6px 4px; }
+.aicqsk:hover { color: var(--text); }
+.aicqck { flex: 0 0 20px; width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; background: var(--chip); color: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.aicqck svg { width: 12px; height: 12px; fill: none; stroke: currentcolor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.aicqo:hover .aicqck { background: var(--ai-soft); box-shadow: inset 0 0 0 1px var(--ai-line); }
+.aicqo.on .aicqck { background: var(--ai); color: var(--ai-fg); box-shadow: none; }
+.aicqd { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px 12px 2px; }
+.aicqok { height: 30px; padding: 0px 14px; border: 0px; border-radius: var(--ai-r); background: var(--ai); color: var(--ai-fg); font-style: inherit; font-variant: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+.aicqok:hover { background: var(--ai-h); }
+.aicqok:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ai-soft); }
+.aicqok span { min-width: 17px; height: 17px; padding: 0px 5px; border-radius: 9px; background: color-mix(in srgb,var(--ai-fg) 22%,transparent); display: inline-grid; place-items: center; font-size: 11px; font-weight: 600; }
+.aicqx { height: 30px; padding: 0px 16px; border: 0px; border-radius: var(--ai-r); background: var(--ai); color: var(--ai-fg); font-style: inherit; font-variant: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.aicqx:hover { background: var(--ai-h); }
+/* a question with no options is one input field: a bordered box (no pencil, it IS the answer), focus ring in the
+   AI accent; Next/Send is the clarifier's own .aicqok. */
+.mx-aicq .aicqf.mx-cqonly{cursor:text;margin:2px 0 0;padding:0 12px;height:40px;border:1px solid var(--border);border-radius:8px;background:transparent}
+.mx-aicq .aicqf.mx-cqonly:hover{background:transparent;border-color:var(--track)}
+.mx-aicq .aicqf.mx-cqonly:focus-within{border-color:var(--ai-line);box-shadow:0 0 0 3px var(--ai-soft)}
+.mx-aicq .aicqok:disabled{opacity:.45;cursor:default}
+/* word fade (Ask AI's aitwfade: opacity only, .42s, cubic-bezier(.2,0,0,1)) */
+.mx-w{animation:mxwf .42s cubic-bezier(.2,0,0,1) both}
+@keyframes mxwf{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.mx-w{animation:none}}
+/* answered-questions record, Claude's shape */
+.mx-qa{font-size:13px;line-height:1.45;width:100%}
+.mira-card-record-body:has(> .mx-qa){display:block}
+.mx-qa-h{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--page-text-color)}
+.mx-qa-ck{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:color-mix(in srgb,var(--secondary-green) 18%,transparent);color:var(--secondary-green)}
+.mx-qa-ck svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.mx-qa-l{list-style:none;margin:10px 0 0 8px;padding:0 0 0 17px;border-left:1px solid var(--border-color);display:flex;flex-direction:column;gap:10px}
+.mx-qa-q{color:var(--neutral-light);font-size:12.5px}
+.mx-qa-a{color:var(--page-text-color);margin-top:2px}
+.mx-qa-a.is-skip{color:var(--neutral-light);font-style:italic}
+/* spacing pass (request, 16 Nov 2026: "more space / alignment"): roomier card, the header's 8px rhythm, 16px between
+   the progress track and the answer, a 44px input, and the footer buttons ending on the input's right edge. */
+.mx-aicq .aicq{padding:18px 20px 16px}
+.mx-aicq .aicqh{margin-bottom:4px}
+.mx-aicq .aicqs{margin-bottom:14px}
+.mx-aicq .aicqpg{margin-bottom:16px}
+.mx-aicq .aicqf.mx-cqonly{height:44px;padding:0 14px;margin:0}
+.mx-aicq .aicqd{padding:16px 0 0;gap:10px}
+.mx-aicq .aicqd .aicqsk{height:30px;padding:0 14px;border-radius:var(--ai-r)}

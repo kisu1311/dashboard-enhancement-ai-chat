@@ -1,3 +1,17 @@
+# Handoff — 2026-11-16 (latest)
+
+## Latest — `mira.html`, the live Mira assistant page cloned
+
+`mira.html` is a generated clone of live `/ai-assistant/mira` (build 10.0.1) with three chats — *Runbook Creation* (newest, opens first), *WhatsApp Alert
+Integration Runbook* and *Runbook Creation (UI)* — and every action wired by a glue script (`_mira/glue.js`).
+Door: the **Mira** row on Option 1's rail.
+**create runbook** in a New chat is now the interactive flow from the newest live run — docked question card,
+build with card states, delivery card, then **run** → run-approval card. 43-check headless probe passes. Details, scrub map and the list of inferred behaviours:
+`CLAUDE.md` → *"Mira — the live assistant page, cloned"*. **Not committed.**
+
+Open items: the canned reply / Delete-without-confirm are inferred; the door exists in `index.html` only
+(`setting.html`, `topology.html`, `apm.html` carry the same rail without it).
+
 # Handoff — 2026-09-26 (latest)
 
 ## Latest — Settings moved into its own page, `setting.html`

@@ -100,7 +100,7 @@ pattern"* is the map; in file order:
 the product's own AI assistant screen, built from a capture. It demonstrates no sidebar, carries none
 of the shared modules, and does **not** load `setting.js`, so it is outside every "all fourteen
 pages" statement below — including `stbehave.py`'s auto-discovery, which keys off that script tag.
-It IS in the switcher (key **`M`**) and on Option 1's rail. See *Global AI* below.
+It IS in the switcher (key **`M`**) and on **Option 2's** rail (`#sbGlobalAI`, after Ask AI) — moved there from Option 1 (and Option 1's copies in `setting.html` / `topology*.html` / `apm.html`) on 16 Nov 2026. See *Global AI* below.
 ⚠️ **IT IS STILL THE LAST ROW OF THE SWITCHER, and that took a hand edit.** `_sync_variants.js`
 APPENDS, so Option 14 landed after it and was moved back up; and `VS_LETTERS` gained `'v'` BEFORE
 `'m'` rather than after it, so Global AI keeps the initial it was chosen for. Any fifteenth OPTION
@@ -15192,6 +15192,89 @@ redirects to `/setup/` until `.setup-skip-link` is clicked, and the SPA needs a 
   plain 42px grid. It rides in the spec, so the board widget and Edit keep it.
   ⚠️ **Shape leads the panel** and the Plain / With-names tiles sit under it, labelled **View** (the tab is already
   called Style), drawn in the chosen shape by `hmTile(kind, shape)` so a square map never shows hexagon tiles.
+
+## Mira — the live assistant page, cloned (`mira.html`, 16 Nov 2026)
+
+Request: add the flow at the lab's `/ai-assistant/mira#/c/<id>` "with all action same", with **only two chats** in the
+history — *WhatsApp Alert Integration Runbook* and *Runbook Creation (UI)*. Harvested from live build 10.0.1 in the
+user's Chrome; **nothing was sent, renamed or deleted on the instance**.
+
+- **A third chat, *Runbook Creation* (the newest live one), was added the same day on request** — first in the list (`c3`). **The page opens on New chat** (since 16 Nov 2026, on request); `#/c/c1` / `#/c/c2` /
+  `#/c/c3` open a chat directly. Five Code buttons, two code files (`c3-0`, `c3-2`).
+  The monthly-usage figure is the newest capture's ($0.59) everywhere.
+- **"create runbook" is now an INTERACTIVE flow (16 Nov 2026, from 21 supplied screenshots of the newest live run,
+  chat `e7e9eeab…`, harvested as template `c4`)** — it supersedes the step-by-step replay below for that prompt
+  (`startReplay` is kept, unreferenced). Typing **create runbook** in a New chat:
+  1. *Working on your request… · Ns* → the thinking group plays open (product dot-matrix, live *Working · …* title built
+     from the steps so far) → *Answer the questions below and I'll build the runbook.*
+  2. **The question card DOCKS in place of the composer** (`askCard`). ⚠️ **Since 16 Nov 2026 it is Ask AI's clarifier**
+     (index.html `.aicq*`, CSS verbatim, tokens resolved from `.aipanel` per theme on `.mx-aicq`): ‹ · question · n / 3 · ✕,
+     subtitle, 2px progress, then EITHER numbered rows (pick answers and advances; 1–N keys) + *Something else…* + Skip for
+     a question with options (Action), OR one bordered input + Skip + Next/Send for a question with none (Runbook, Target —
+     their live form; the invented suggestions were removed on request). Three steps, no Review.
+     **The answered record is Claude's shape** (`qaRecord`): ✓ *Answered 3 questions*, then each question muted with the
+     answer under it on a thin rule (*Skipped* in italics). **Step rows and the record fade in word by word** (`wordFade`,
+     Ask AI's `aitwfade`, 38ms apart). ⚠️ The capture's own `*{animation:none!important}` freeze rule had leaked into the
+     pruned CSS and killed every animation on the page — `build_mira.py` now strips it. The live tabbed card below is kept as `askCardTabs`, unreferenced. What it replaced:: tabs Runbook · Target · Action · Review with ticks,
+     text questions, a choice question (1–3 keys, Recommended, "Type your own answer…"), a Review list, Chat about this /
+     Next / **Send answers**; ↵ / Tab / Esc as live. Answers fill the *You answered 3 questions* record.
+  3. Mira builds: the runbook card walks **Draft ready → It breaks the runbook rules (line 16 / line 19) → That name is
+     taken → Could not test it**, then the Diagnostic card **Saving and compiling (scan band) → Saved and compiled →
+     Delivering**, then *Test passed* → the **delivery card docks** → *Delivering…* → *Delivery approved* record →
+     *Delivered* card (Run / Open) + **next-step chips**.
+  4. Typing **run** (or the Run button / chip) → runbook card → the **run-approval card docks** (↵ run · Esc later,
+     Cancel) → *Ran … on motadata* + the filesystem table.
+  The three docked cards are rebuilt from the product's own Vue templates (read out of its bundle); `window.MX_SC` (a
+  class → scoped `data-v-*` map the builder derives from the CSS) and `sc()` stamp the attributes the product CSS needs.
+  ⚠️ **Inferred**: the pacing; the intermediate card states are timed, not event-driven; "Chat about this" / Esc on the
+  question card just hands back the composer (live may post a message); "Change something" and typed answers are
+  accepted but the build that follows is always the recorded one.
+- **Step-by-step replay (16 Nov 2026, from a supplied screenshot of the live working state)**: typing **create runbook**
+  in a New chat files a new *Runbook Creation* chat and plays `c3` back as live streams it — *Working on your request… · Ns*
+  (`.mira-live-line`, shimmer), then each thinking group OPEN with the dot-matrix mark and a *Working · Used the
+  runbook-guide skill* title while its steps arrive one at a time (800 ms), then cards and text; the send button is a Stop
+  (Tabler `player-stop`) meanwhile. It pauses where the recorded run has its second prompt and continues when you type
+  **run**. Stop or switching chat lands the current turn at once. `playQueue` / `playMsg` / `playGroup` / `mkPlay` in
+  `_mira/glue.js`. ⚠️ Inferred: the dot-matrix is 4×4 with a diagonal sweep (the live markup was not captured — the CSS
+  classes are the product's), the *Working · …* wording for tool and thought steps, the pacing, and question cards appear
+  already answered (the unanswered card state was not captured).
+- **The product rail is OPTION 1's sidebar (16 Nov 2026, request: "fix this sidebar like the dashboard sidebar
+  Option 1")** — the cloned live rail is replaced by `#mxRail`, a shadow root holding index.html's rendered `#sidebar`
+  plus the CSS that styles it (collapsed and open), with **Mira as the lit row**. `_mira/o1rail.py` converts that CSS for
+  the shadow root (`:root`/`html`→`:host`, `html[data-theme="light"]`→`:host(.light)`, `body.x`→`:host(.x)`) from a
+  headless dump of index.html (`sb.json` / `sb.css`, scratch). The shadow root keeps Option 1's tokens and the Mira page's
+  product CSS from colliding. Wired: tooltips (Option 1's tipbox shape), the expand/collapse button (content yields 240px
+  via `body.mx-railopen`), each row → its module on `index.html` / `topology.html` / `apm.html` / `setting.html`, Search →
+  Mira's own Search chats, ⋯ → Approval / What's new / Health. ⚠️ **It is a snapshot**: a change to Option 1's sidebar
+  needs the dump re-run and a rebuild. ⚠️ **Not wired**: the collapsed rail's hover sub-menus and the open rail's
+  expandable children (the chevrons) — rows navigate instead; the bell only toasts.
+- **`mira.html` is GENERATED** (1.3 MB): the live DOM verbatim + the product's own stylesheet pruned to the rules this
+  screen uses (`<style id="mira-live-css">`, light on `:root`, dark on `body[data-theme="dark-theme"]`) + a hand-written
+  glue layer (`mx*`, `<style id="mira-glue">`). Sources in **`_mira/`**: `glue.js` · `glue.css` · `head.html` ·
+  `tail.html` · `build_mira.py` · `prune_css.py`. ⚠️ The raw snapshots are NOT in the repo (they carry lab addresses);
+  a rebuild needs a re-harvest, so small fixes go in `mira.html` AND `_mira/glue.*`.
+- **Not an option**: in `_sync_variants.js`'s `NOT_OPTIONS`, and it does not load `_variants.js` (the pill would sit on
+  the composer). Door: a **Mira** row on Option 1's rail (`#sbMira`, `index.html` only). Its own rail goes back to
+  `index.html#m=<module>` / `setting.html?from=mira.html`; a `#m=`/`#v=` hash arriving here is forwarded to `index.html`.
+- **What works** (glue, event-delegated): switch chat (panes are kept per chat, so sent messages persist) · New chat
+  (⇧⌘O, brand) · Search chats (⌘K, inline filter) · collapse / expand / drag-resize the Mira sidebar · row ⋮ and header ⋯
+  (Rename inline · Copy link · Delete) · thinking groups, steps and JSON nodes expand · copy request / response / code ·
+  **Code** opens the right-hand split (drag the splitter, Close, Esc) · Open / Open in Settings › Runbooks →
+  `setting.html#st=Plugin Library|Runbook` · user row → My Profile · effort picker (Low…Max) · 👍/👎 · Regenerate ·
+  scroll-to-latest · the + button's "Add context: coming soon" tip · send (Enter) with a first message filing a new chat.
+- ⚠️ **Scrubbed**: `10.20.41.111` → `192.0.2.111`, `172.16.14.60` → `192.0.2.60`, the resolved public IP →
+  `203.0.113.141`, the WhatsApp recipient → `+91 9876543210`, the code header's e-mail → `example.com`.
+- ⚠️ **Inferred, stated**: the reply to a sent message is canned ("this is a prototype…") with a 1.5 s Thinking beat;
+  Delete removes at once (the live confirm was not opened); effort bars for High/XHigh/Max all light three; Regenerate
+  replays the thinking beat; the product rail's expand toggle, What's New and the bell are inert (they toast).
+- ⚠️ **How the harvest got out of the page**: the instance's CSP blocks `fetch` to localhost and the extension truncates
+  returns at ~1,000 chars, but there is **no `form-action` directive** — a `text/plain` form POST to a local
+  `http.server` carried 1 MB snapshots in one go. ⚠️ Any click that navigates (Open, the user row) wipes `window` state:
+  post snapshots before clicking unknown buttons.
+- ⚠️ **Scoped CSS needs the wrapper's `data-v-*` attributes** — a hand-made `.mira-pane` div had none and the column
+  grew to 3,789px; the builder keeps the original element. Snapshot folds can also carry a stale inline `height:85px`.
+- Verified: a 35-check headless probe (34 pass; the 35th matched its own source) and screenshots of every state, dark
+  and light.
 
 ## Handoff
 Latest session state is in [HANDOFF.md](HANDOFF.md) — read it first.
