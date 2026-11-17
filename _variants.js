@@ -39,14 +39,15 @@
        bottom-right corner. Bottom-LEFT is not free either — that is the dashboard
        panel footer and, when the rail is expanded, the user row. Dimmed until hover
        so a dev-only control never competes with the product UI. */
-    /* BOTTOM CENTRE (annotation, 15 Aug 2026). It used to sit bottom-right at bottom:126px,
+    /* TOP CENTRE since 17 Nov 2026 (request: "show in top"); the menu drops DOWN and the caret points down.
+       Was: BOTTOM CENTRE (annotation, 15 Aug 2026). It used to sit bottom-right at bottom:126px,
        stacked above the "＋ Add widget" FAB — but the AI panel is docked on that same right
        edge, so the pill landed on top of the chat's own composer and follow-up chips.
        Centre is the one strip of the viewport no docked chrome owns: the canvas is behind it,
        the rail is left, the panel is right, the FAB is bottom-right.
        ⚠️ translateX(-50%) on the switch means the MENU can no longer anchor to right:0 —
        it centres too (see .vs-menu). */
-    '.vs-switch{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:12px;opacity:.55;transition:opacity .15s;}',
+    '.vs-switch{position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:12px;opacity:.55;transition:opacity .15s;}',
     '.vs-switch:hover,.vs-switch.open{opacity:1;}',
     '.vs-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;cursor:pointer;',
     '  background:var(--pop,#1d2a3e);color:var(--text,#cad3e2);border:1px solid var(--border,#1d2a3e);',
@@ -56,7 +57,7 @@
     '.vs-btn .vs-car{opacity:.65;font-size:10px;transition:transform .15s;}',
     '.vs-switch.open .vs-car{transform:rotate(180deg);}',
     /* centred over the pill, since the pill itself is now centred */
-    '.vs-menu{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 8px);min-width:230px;display:none;overflow:hidden;',
+    '.vs-menu{position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);min-width:230px;display:none;overflow:hidden;',
     '  background:var(--pop,#1d2a3e);border:1px solid var(--border,#1d2a3e);border-radius:var(--radius,8px);',
     '  box-shadow:var(--shadow,0 12px 40px rgba(0,0,0,.55));}',
     '.vs-switch.open .vs-menu{display:block;}',
@@ -157,7 +158,7 @@
   root.innerHTML =
     '<div class="vs-btn"><span class="vs-dot"></span>' +
     '<span>' + (current ? current.label : 'Variants') + '</span>' +
-    '<span class="vs-car">▲</span></div>' +
+    '<span class="vs-car">▼</span></div>' +
     '<div class="vs-menu"><div class="vs-head">Visualization variants</div>' + items +
     '<div class="vs-foot">Press ' + VARIANTS.map(function (v, i) { return vsKey(i); }).filter(Boolean).join(' · ') +
     ' to switch</div></div>';

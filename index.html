@@ -10058,6 +10058,12 @@ body:has(#view-dashboard.on) .cwfab{display:inline-flex}
    dodge, the version-preview hide) reaches it through the shared class; only its height differs. */
 #cwFab2{bottom:120px}
 body.ntfbr #cwFab2{bottom:calc(var(--ntf-bh,0px) + 80px)}
+/* …and since 17 Nov 2026 it lives in the Add New Widget drawer's header instead (#awF2): pushed right, ✕ after it. */
+#awDrawer .ddhead .awf2{margin-left:auto;font-weight:500}
+#awDrawer .ddhead .awf2 svg{width:13px;height:13px}
+#awDrawer .ddhead .awf2:hover{border-color:var(--text-dim)}
+#awDrawer .ddhead .awf2.on{background:var(--action);border-color:var(--action);color:var(--action-fg)}
+#awDrawer .ddhead .awf2 + .ddx{margin-left:0}
 #cwScrim{position:fixed;inset:0;z-index:200004;background:rgba(4,10,20,.62);opacity:0;pointer-events:none;transition:opacity .18s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 #cwScrim.on{opacity:1;pointer-events:auto}
 #cwModal{position:fixed;inset:18px;z-index:200005;background:var(--panel);border:1px solid var(--border);
@@ -13761,7 +13767,8 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
      replacing Option 1's flat 8-tile library. -->
 <div id="awScrim" onclick="closeAwDrawer()"></div>
 <aside id="awDrawer" role="dialog" aria-label="Add New Widget">
-  <div class="ddhead">Add New Widget<button class="ddx" onclick="closeAwDrawer()" data-tip="Close">✕</button></div>
+  <div class="ddhead">Add New Widget<!-- Create Widget 2 (17 Nov 2026): moved here from the floating #cwFab2 — toggles CW_FLOW 2 for this drawer visit -->
+    <button class="btn awf2" id="awF2" type="button" aria-pressed="false" data-tip="Use flow option 2 — the editor lists widget types in a side menu" onclick="awFlow2Tog()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Create Widget 2</button><button class="ddx" onclick="closeAwDrawer()" data-tip="Close">✕</button></div>
   <div class="awtabs">
     <button class="awtab on" id="awtC" onclick="awTab('create')">Create Widget</button>
     <button class="awtab" id="awtP" onclick="awTab('predef')">Predefined</button>
@@ -35192,9 +35199,7 @@ acHistRender();
 <obs-button class="cwfab" id="cwFab" variant="primary" data-tip="Create a widget on this dashboard" aria-label="Create a widget on this dashboard" onclick="dsTap(this)&&cwFabGo()">
   <obs-icon name="plus" size="14"></obs-icon><span>Create Widget</span>
 </obs-button>
-<obs-button class="cwfab" id="cwFab2" variant="primary" data-tip="Create a widget — flow option 2" aria-label="Create a widget, flow option 2" onclick="dsTap(this)&&cwFabGo(2)">
-  <obs-icon name="plus" size="14"></obs-icon><span>Create Widget 2</span>
-</obs-button>
+<!-- #cwFab2 (Create Widget 2) moved into the Add New Widget drawer's header on 17 Nov 2026 — see #awF2. -->
 
 <div id="cwScrim" onclick="cwClose()"></div>
 <div id="cwModal" role="dialog" aria-label="Create Widget">
@@ -35883,7 +35888,12 @@ function cwRender(){
 let CW_FLOW = 1;
 function cwFlowPaint(){
   ['awDrawer', 'cwModal'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.toggle('cwf2', CW_FLOW === 2); });
+  const b = document.getElementById('awF2');
+  if (b){ b.classList.toggle('on', CW_FLOW === 2); b.setAttribute('aria-pressed', CW_FLOW === 2 ? 'true' : 'false'); }
 }
+/* The drawer header's "Create Widget 2" button (17 Nov 2026) — a toggle, lit while flow 2 is on. openAwDrawer()
+   resets to flow 1, so every visit starts on flow 1 and the choice applies to that visit only. */
+function awFlow2Tog(){ CW_FLOW = CW_FLOW === 2 ? 1 : 2; cwFlowPaint(); }
 function cwFabGo(flow){
   curG = Math.max(0, TABS.length - 1);
   openAwDrawer();
