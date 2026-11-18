@@ -1639,7 +1639,9 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
    AI accent; Next/Send is the clarifier's own .aicqok. */
 .mx-aicq .aicqf.mx-cqonly{cursor:text;margin:2px 0 0;padding:0 12px;height:40px;border:1px solid var(--border);border-radius:8px;background:transparent}
 .mx-aicq .aicqf.mx-cqonly:hover{background:transparent;border-color:var(--track)}
-.mx-aicq .aicqf.mx-cqonly:focus-within{border-color:var(--ai-line);box-shadow:0 0 0 3px var(--ai-soft)}
+/* focus is the BORDER alone (request, 18 Nov 2026): the 3px soft ring round the field read as a blur. The line takes the accent. */
+/* --ai-line is 34% ink, the same weight as the hover border (--track), so without the ring nothing said "active": the line is the full accent */
+.mx-aicq .aicqf.mx-cqonly:focus-within{border-color:var(--ai);box-shadow:none}
 .mx-aicq .aicqok:disabled{opacity:.45;cursor:default}
 /* word fade (Ask AI's aitwfade: opacity only, .42s, cubic-bezier(.2,0,0,1)) */
 .mx-w{animation:mxwf .42s cubic-bezier(.2,0,0,1) both}
@@ -1648,9 +1650,27 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
 /* answered-questions record, Claude's shape */
 .mx-qa{font-size:13px;line-height:1.45;width:100%}
 .mira-card-record-body:has(> .mx-qa){display:block}
-.mx-qa-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;font-weight:600;color:var(--page-text-color);border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.mx-qa-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;font-weight:600;color:var(--page-text-color);border-radius:11px;padding:12px 14px;margin:-12px -14px;width:calc(100% + 28px)}
+/* the hover fills the CARD, edge to edge (request, 18 Nov 2026: "the hover shows a line, bad"). It was a 5% tint on the header's
+   own tight box, 10px inside the card on every side, so it drew a second rounded box inside the first. The header now carries
+   the card's 12px 14px padding as its own and cancels it with a negative margin; 11px is the card's 12px radius inside its 1px line. */
+.mx-qa.is-open .mx-qa-h{border-radius:11px 11px 0 0;margin-bottom:0}
+/* ⚠️ THE BOXLESS RECORD IS OPTION 2, NOT A REPLACEMENT (request, 18 Nov 2026: "the last change is option 2, the removed one is
+   option 1"). OPTION 1 is the card above - border, fill, padding, a hover that fills it edge to edge, the chevron at the far
+   right - and is the default. OPTION 2 (.mx-qa2, added by qaRecord when qaOpt() is '2') drops the card: the record is a line
+   in the thread, tick · Answered 3 questions · the answers · chevron, the chevron right after the text, and the header hugs
+   its words so the hover is a small pill. Open, its one-line summary is removed rather than hidden - a hidden box still held
+   the chevron out at the far end of the line. */
+body .mira-card-record.mira-card-record:has(.mx-qa2){padding:0;border:0;border-radius:0;background:none}
+.mx-qa2 .mx-qa-h{border-radius:6px;padding:4px 8px;margin:-4px -8px;display:inline-flex;width:auto;max-width:calc(100% + 16px)}
+.mx-qa2.is-open .mx-qa-h{border-radius:6px;margin-bottom:-4px}
+.mx-qa2 .mx-qa-h:focus-visible{outline-offset:1px}
+/* Option 2 carries NO one-line summary (request, 18 Nov 2026): the answers appearing and vanishing beside the title on every
+   open / close read as noise. Collapsed it is tick · Answered 3 questions · chevron; the answers are one click away. */
+.mx-qa2 .mx-qa-sum{display:none}
+.mx-qa-h{transition:background .12s}
 .mx-qa-h:hover{background:color-mix(in srgb,var(--page-text-color) 5%,transparent)}
-.mx-qa-h:focus-visible{outline:2px solid var(--neutral-light);outline-offset:1px}
+.mx-qa-h:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
 .mx-qa-t{flex:0 0 auto}
 .mx-qa-sum{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;color:var(--neutral-light);font-size:12.5px}
 .mx-qa.is-open .mx-qa-sum{visibility:hidden}
@@ -1678,6 +1698,184 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
 .mx-aicq .aicqd{padding:16px 0 0;gap:10px}
 .mx-aicq .aicqd .aicqsk{height:30px;padding:0 14px;border-radius:var(--ai-r)}
 
+
+/* the group's chevron shows BY DEFAULT once the thought has FINISHED (request, 18 Nov 2026). It was hover / focus only
+   (17 Nov). While the title is still being written - working, and the final title's write-in - it stays hidden, hover
+   included, then fades in. The two :not() ids are there to outrank the 17 Nov rule, which carries one. */
+body .mira-group-head .mira-step-chevron:not(#_):not(#__){opacity:.9;transition:opacity .2s,transform .2s}
+body .mira-group-head .mira-group-title.mx-dia~.mira-step-chevron:not(#_):not(#__),
+body .mira-group-head .mira-group-title.mx-dia-once~.mira-step-chevron:not(#_):not(#__){opacity:0}
+
+/* ── the run-result card, simplified and on the ObserveOps design-system tokens (request, 18 Nov 2026) ─────────────
+   It was a 16px-radius card on the --mira-* palette: a tinted 38px icon tile, a green 16px title, and the raw output
+   always open in a second bordered box. It is ONE quiet row now, after the tool-result rows in Lindy and Zapier's
+   agents (Mobbin): status glyph · title · the run line · chevron. The output is folded behind the row and opens on
+   click / Enter / Space; a FAILED run opens by itself, because its error is the thing to read.
+   Colours are DS tokens only: --widget-background, --border-color, --page-text-color, --neutral-light,
+   --secondary-green / --secondary-red for the status glyph, --code-tag-background-color behind the output. */
+body .mira-run.mx-run{font-size:13px;color:var(--page-text-color);background:var(--widget-background);border:1px solid var(--border-color);border-radius:8px;box-shadow:none}
+/* the product tints the card's border per state (three classes deep) - the frame stays the DS border; the glyph carries the state */
+body .mira-run.mx-run.mx-run{border-color:var(--border-color)}
+body .mira-run.mx-run .mira-run-head{flex-wrap:nowrap;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;outline:0}
+body .mira-run.mx-run .mira-run-head:hover{background:var(--code-tag-background-color)}
+body .mira-run.mx-run .mira-run-head:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
+body .mira-run.mx-run .mira-run-icon{flex:0 0 18px;height:18px;border-radius:0;background:none;color:var(--secondary-green)}
+body .mira-run.mx-run .mira-run-icon.is-bad{color:var(--secondary-red)}
+body .mira-run.mx-run .mira-run-icon svg{width:16px;height:16px}
+body .mira-run.mx-run .mira-run-heading{flex:1 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:10px;row-gap:2px}
+body .mira-run.mx-run .mira-run-title{font-size:13.5px;font-weight:500;letter-spacing:0;color:var(--page-text-color)}
+body .mira-run.mx-run .mira-run-sub{font-size:12px;color:var(--neutral-light)}
+.mx-run-cv{flex:0 0 14px;width:14px;height:14px;color:var(--neutral-light);transition:transform .2s}
+.mx-run-cv svg{display:block;width:14px;height:14px}
+.mira-run.mx-run.is-open .mx-run-cv{transform:rotate(90deg)}
+body .mira-run.mx-run .mira-run-body{display:none;row-gap:0;padding:0;border-top:1px solid var(--border-color)}
+body .mira-run.mx-run.is-open .mira-run-body{display:flex}
+body .mira-run.mx-run .mira-run-output,body .mira-run.mx-run .mira-run-error-text{max-height:260px;padding:10px 12px;font-family:var(--numeric-font-family);font-size:12px;line-height:1.6;color:var(--page-text-color);background:var(--code-tag-background-color);border:0;border-radius:0}
+body .mira-run.mx-run .mira-run-error{background:none;border:0;border-radius:0}
+body .mira-run.mx-run .mira-run-error-head{color:var(--secondary-red);border-bottom:1px solid var(--border-color)}
+body .mira-run.mx-run .mira-run-line{border-color:var(--border-color)}
+body .mira-run.mx-run .mira-run-note{padding:10px 12px;color:var(--neutral-light)}
+body .mira-run.mx-run .mira-run-foot{padding:8px 12px;background:none;border-top:1px solid var(--border-color)}
+
+/* Option 2's result table: a bordered frame (asked for - the product grid itself is borderless), and the Show all / Show fewer row */
+body .mira-md .mira-table-wrap.mx-otblw{border:1px solid var(--border-color);border-radius:8px;overflow-x:auto;overflow-y:hidden;background:var(--widget-background)}
+/* left-aligned on the first column's text edge - the grid's cells carry 12px of left padding (request, 18 Nov 2026; it was centred) */
+.mx-otblmore{display:flex;align-items:center;justify-content:flex-start;gap:6px;width:100%;height:36px;padding:0 12px;border:0;border-top:1px solid var(--border-color);
+  background:none;color:var(--neutral-light);font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.mx-otblmore:hover{color:var(--page-text-color);background:var(--code-tag-background-color)}
+.mx-otblmore:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
+.mx-otblmore svg{width:12px;height:12px;transform:rotate(90deg);transition:transform .2s}
+.mx-otblmore.is-open svg{transform:rotate(-90deg)}
+
+/* the Ask AI clarifier's Review step: one row per question - the question muted, its answer under it, a pen on hover */
+.mx-aicq .aicqo.mx-rvrow{align-items:flex-start;text-align:left}
+.mx-aicq .mx-rvtx{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.mx-aicq .mx-rvq{font-size:12px;color:var(--muted)}
+.mx-aicq .mx-rva{font-weight:500;color:var(--text);overflow-wrap:anywhere}
+.mx-aicq .mx-rva.is-skip{font-style:italic;font-weight:400;color:var(--muted)}
+.mx-aicq .mx-rved{opacity:0;transition:opacity .12s;align-self:center}
+.mx-aicq .mx-rvrow:hover .mx-rved,.mx-aicq .mx-rvrow:focus-visible .mx-rved{opacity:1}
+.mx-aicq .mx-rvfoot{justify-content:flex-end}
+
+/* the clarifier, Option 2 (askCardV2) - see its note in the script. Colours are the clarifier's own tokens (.mx-aicq). */
+.mx-cl .mx-clc{margin:0;padding:4px 16px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-size:14px;line-height:1.4}
+.mx-cl .mx-clh{display:flex;align-items:center;gap:8px;min-height:46px}
+.mx-cl .mx-clt{flex:1 1 auto;min-width:0;font-size:14.5px;font-weight:500;color:var(--white)}
+.mx-cl .mx-clnav{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;color:var(--muted);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mx-cl .mx-clnav button,.mx-cl .mx-clx{flex:0 0 24px;width:24px;height:24px;padding:0;display:grid;place-items:center;border:0;border-radius:6px;background:none;color:var(--text-dim);cursor:pointer}
+.mx-cl .mx-clnav button:hover:not(:disabled),.mx-cl .mx-clx:hover{background:var(--hover-side);color:var(--text)}
+.mx-cl .mx-clnav button:disabled{opacity:.38;cursor:default}
+.mx-cl .mx-clh svg,.mx-cl .mx-cln svg,.mx-cl .mx-cled svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.mx-cl .mx-cln svg,.mx-cl .mx-cled svg{width:14px;height:14px}
+.mx-cl .mx-clo{display:flex;align-items:center;gap:12px;width:100%;padding:9px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.mx-cl .mx-clo~.mx-clo,.mx-cl .mx-clo~.mx-clf{border-top:1px solid var(--border)}
+.mx-cl .mx-cln{flex:0 0 28px;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:var(--chip);color:var(--text-dim);font:500 13px/1 "JetBrains Mono",monospace}
+.mx-cl .mx-clo:hover .mx-cln{background:var(--ai-soft);color:var(--ai-2)}
+.mx-cl .mx-clo.on .mx-cln{background:var(--ai);color:var(--ai-fg)}
+.mx-cl .mx-cltx{display:flex;flex-direction:column;gap:1px;flex:1 1 auto;min-width:0}
+.mx-cl .mx-cltx b{font-weight:500;color:var(--white);overflow-wrap:anywhere}
+.mx-cl .mx-cltx i{font-style:normal;font-size:12.8px;color:var(--muted)}
+.mx-cl .mx-cltx b.is-skip{font-weight:400;font-style:italic;color:var(--muted)}
+.mx-cl .mx-cled{flex:0 0 auto;color:var(--muted);opacity:0;transition:opacity .12s}
+.mx-cl .mx-clo:hover .mx-cled,.mx-cl .mx-clo:focus-visible .mx-cled{opacity:1}
+.mx-cl .mx-clo:focus-visible,.mx-cl .mx-clsk:focus-visible,.mx-cl .mx-clnav button:focus-visible,.mx-cl .mx-clx:focus-visible{outline:2px solid var(--ai-line);outline-offset:2px;border-radius:6px}
+.mx-cl .mx-clf{display:flex;align-items:center;gap:12px;padding:9px 0;cursor:text}
+.mx-cl .mx-clf input{flex:1 1 auto;min-width:0;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}
+.mx-cl .mx-clf input::placeholder{color:var(--muted)}
+.mx-cl .mx-clsk{flex:0 0 auto;height:28px;padding:0 12px;border:0;border-radius:7px;background:var(--chip);color:var(--text);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.mx-cl .mx-clsk:hover{background:var(--hover-side)}
+.mx-cl .mx-clsk.is-go{background:var(--ai);color:var(--ai-fg)}
+.mx-cl .mx-clsk.is-go:hover{background:var(--ai-h)}
+.mx-cl .mx-clend{justify-content:space-between;cursor:default}
+.mx-cl .mx-clhint{font-size:12.8px;color:var(--muted)}
+
+/* "Recommended", at the right end of an option row in both clarifier options - shown only when the option carries the flag */
+.mx-aicq .mx-rec{flex:0 0 auto;margin-left:auto;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--text-dim);font-size:11.5px;font-weight:500;line-height:1.5;white-space:nowrap}
+.mx-aicq .aicqo.on .mx-rec,.mx-aicq .mx-clo.on .mx-rec{color:var(--text)}
+
+/* ── the runbook card, Option 2 (.mx-forge2) - see forgeDress in the script for what it is and why ── */
+body .mira-forge.mx-forge2{font-size:13px;color:var(--page-text-color);background:var(--widget-background);border:1px solid var(--border-color);border-radius:8px;box-shadow:none}
+body .mira-forge.mx-forge2 .mira-forge-head{flex-wrap:nowrap;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-icon{flex:0 0 18px;height:18px;border-radius:0;background:none;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-icon svg{width:16px;height:16px}
+body .mira-forge.mx-forge2 .mira-forge-heading{flex:1 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+body .mira-forge.mx-forge2 .mira-forge-title{font-size:14px;font-weight:600;letter-spacing:0;color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-chips{gap:0;align-items:baseline}
+body .mira-forge.mx-forge2 .mira-forge-chip{padding:0;border:0;border-radius:0;background:none;font-size:12px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-chip+.mira-forge-chip::before{content:"\00b7";margin:0 6px}
+body .mira-forge.mx-forge2 .mira-forge-tag{font-family:var(--numeric-font-family);font-size:11.5px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-code{display:none}
+body .mira-forge.mx-forge2 .mira-forge-main{row-gap:8px;padding:14px}
+/* the stepper */
+body .mira-forge.mx-forge2 .mira-forge-stages{flex-wrap:nowrap;gap:0;align-items:center;margin-bottom:4px;font-size:12.5px}
+body .mira-forge.mx-forge2 .mira-forge-stages li{display:flex;flex:1 1 0;align-items:center;gap:7px;min-width:0;font-weight:400;color:var(--neutral-light);white-space:nowrap}
+body .mira-forge.mx-forge2 .mira-forge-stages li:last-child{flex:0 0 auto}
+body .mira-forge.mx-forge2 .mira-forge-stages li:not(:last-child)::after{content:"";flex:1 1 auto;min-width:12px;height:1px;margin:0 10px 0 3px;background:var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-done{color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-done:not(:last-child)::after{background:var(--secondary-green)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-now{font-weight:600;color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-failed{font-weight:600;color:var(--secondary-red)}
+.mx-forge2 .mx-fst{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--border-color)}
+.mx-forge2 .mx-fst svg{width:11px;height:11px;fill:none;stroke:var(--widget-background);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.mx-forge2 li.is-done .mx-fst{border-color:var(--secondary-green);background:var(--secondary-green)}
+.mx-forge2 li.is-failed .mx-fst{border-color:var(--secondary-red);background:var(--secondary-red)}
+.mx-forge2 li.is-now .mx-fst{border-color:var(--page-text-color)}
+.mx-forge2 li.is-now .mx-fst::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--page-text-color);animation:mxfst 1.4s ease-in-out infinite}
+@keyframes mxfst{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.mx-forge2 li.is-now .mx-fst::before{animation:none}}
+/* the message */
+body .mira-forge.mx-forge2 .mira-forge-where{font-size:12px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-headline{margin-top:0;font-size:15px;font-weight:600;line-height:1.35;letter-spacing:0;color:var(--page-text-color)}
+body .mira-forge.mx-forge2.is-fail .mira-forge-headline{color:var(--secondary-red)}
+body .mira-forge.mx-forge2.is-pass .mira-forge-headline{color:var(--secondary-green)}
+body .mira-forge.mx-forge2 .mira-forge-sub{margin:-4px 0 0;font-size:13px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-problems{row-gap:6px;padding:2px 0 2px 10px;font-family:inherit;font-size:12.5px;color:var(--page-text-color);background:none;border-left:2px solid var(--secondary-red);border-radius:0}
+body .mira-forge.mx-forge2 .mira-forge-problem-line{padding:0 6px;border-radius:4px;background:var(--code-tag-background-color);color:var(--page-text-color);font-family:var(--numeric-font-family);font-size:11.5px;text-decoration:none}
+/* the footer */
+body .mira-forge.mx-forge2 .mira-forge-foot{gap:2px;padding:6px 8px;background:none;border-top:1px solid var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-foot .mira-forge-button{height:28px;padding:0 8px;font-size:12.5px;font-weight:500;color:var(--neutral-light);background:none;border:0;border-radius:6px}
+body .mira-forge.mx-forge2 .mira-forge-foot .mira-forge-button:hover{color:var(--page-text-color);background:var(--code-tag-background-color)}
+
+/* the runbook card, Option 3 (.mx-forge3 on top of .mx-forge2): no steps - one progress line and one status chip. See forge3. */
+body .mira-forge.mx-forge2.mx-forge3 .mira-forge-stages{display:none}
+body .mira-forge.mx-forge2.mx-forge3 .mira-forge-head{border-bottom:0}
+.mx-forge3 .mx-fprog{height:3px;background:var(--border-color);overflow:hidden}
+.mx-forge3 .mx-fprog.is-none{height:1px}
+.mx-forge3 .mx-fprog i{display:block;flex:0 0 auto;width:0;height:100%;background:var(--secondary-green);transition:width .45s cubic-bezier(.2,0,0,1),background-color .2s}
+.mx-forge3 .mx-fprog.is-none i{width:0!important}
+.mx-forge3 .mx-fprog.is-failed i{background:var(--secondary-red)}
+.mx-forge3 .mx-fstat{display:inline-flex;align-self:flex-start;align-items:center;gap:7px;height:24px;padding:0 10px 0 9px;border-radius:999px;background:var(--code-tag-background-color);color:var(--page-text-color);font-size:12px;font-weight:500;white-space:nowrap}
+.mx-forge3 .mx-fstat i{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:var(--secondary-green)}
+.mx-forge3 .mx-fstat.is-now i{background:var(--page-text-color);animation:mxfst 1.4s ease-in-out infinite}
+.mx-forge3 .mx-fstat.is-failed{color:var(--secondary-red)}
+.mx-forge3 .mx-fstat.is-failed i{background:var(--secondary-red)}
+@media (prefers-reduced-motion:reduce){.mx-forge3 .mx-fstat.is-now i{animation:none}.mx-forge3 .mx-fprog i{transition:none}}
+
+/* ⚠️ THE STEPPER IN A NARROW CARD (reported 18 Nov 2026 with the stage dragged to ~300px: the four labels ran into each other and
+   into the marks). The labels are nowrap text in equal shares, so below ~520px of CARD width they cannot fit. The card is a
+   container, and under that width the stepper keeps all four marks and their line but names ONLY ONE step - the one in hand, the
+   one that failed, or (between stages) the last one finished. A label is a bare text node, so it is hidden with font-size:0 on
+   its <li> rather than by wrapping it; the mark and the line are sized in px and are not affected. Option 3 has no stepper. */
+body .mira-forge.mx-forge2{container-type:inline-size;container-name:mxforge}
+@container mxforge (max-width:520px){
+  body .mira-forge.mx-forge2 .mira-forge-stages li{font-size:0;gap:0}
+  body .mira-forge.mx-forge2 .mira-forge-stages li:not(:last-child)::after{min-width:8px;margin:0 6px}
+  body .mira-forge.mx-forge2 .mira-forge-stages li.is-now,
+  body .mira-forge.mx-forge2 .mira-forge-stages li.is-failed,
+  body .mira-forge.mx-forge2 .mira-forge-stages:not(:has(.is-now,.is-failed)) li.is-done:not(:has(~ li.is-done)){font-size:12.5px;gap:7px;flex:1 0 auto}
+  body .mira-forge.mx-forge2 .mira-forge-stages li:last-child{flex:0 0 auto}
+}
+
+/* the code INSIDE the card, under its footer (Options 2 and 3) - see codeInline in the script */
+.mx-fcode{border-top:1px solid var(--border-color)}
+body .mx-fcode .mira-code-pane{background:none}
+body .mx-fcode .mira-code-pane-head{height:36px;padding:0 6px 0 14px;border-bottom:1px solid var(--border-color)}
+body .mx-fcode .mira-code-pane-title{font-size:12px}
+body .mx-fcode .mira-code-pane-name{color:var(--page-text-color)}
+body .mx-fcode .mira-code-pane-ext{color:var(--neutral-light)}
+body .mx-fcode .mira-code-pane-body{max-height:320px;padding:10px 0;font-family:var(--numeric-font-family);font-size:12px;background:var(--code-tag-background-color)}
+body .mx-fcode .mira-code-pane-n{flex:0 0 42px;padding-right:12px;color:var(--neutral-light)}
+body .mx-fcode .mira-code-pane-code{color:var(--page-text-color)}
 </style>
 </head>
 <body data-theme="dark-theme">
@@ -2473,7 +2671,101 @@ function toast(t){ var el=$('.mx-toast'); if(!el){ el=document.createElement('di
 function copy(text,msg){ var done=function(){toast(msg||'Copied')};
   if(navigator.clipboard&&window.isSecureContext){ navigator.clipboard.writeText(text).then(done,done); return; }
   var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;opacity:0;left:-999px'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy')}catch(e){} ta.remove(); done(); }
-function dress(root){ $$('button[aria-label]:not([title])',root).forEach(function(b){ if(!b.textContent.trim()) b.title=b.getAttribute('aria-label'); }); }
+/* the run-result card is one row that folds its output (request, 18 Nov 2026) - see the CSS note. A failed run opens itself. */
+/* ⚠️ THE ONE-ROW RUN CARD IS OPTION 2, NOT A REPLACEMENT (request, 18 Nov 2026: "the last change is option 2, the current UI is
+   not removed"). OPTION 1 - the product's own card - is the default and is untouched: every Option 2 rule is scoped to .mx-run,
+   which only runDress adds. Option 2 is picked with ?run=2 on the URL, localStorage 'mx-run-opt' = '2', or MX.runOpt (the
+   artifact's component stage sets that). */
+function runOpt(){ if(MX.runOpt) return MX.runOpt; try{ if(/[?&]run=2(&|$)/.test(location.search)||localStorage.getItem('mx-run-opt')==='2') return '2'; }catch(e){} return '1'; }
+function runDress(root){ if(runOpt()!=='2') return; $$('.mira-run',root).forEach(function(c){ var h=$('.mira-run-head',c); if(!h||c.__mxrun) return; c.__mxrun=1; c.classList.add('mx-run');
+    if(!$('.mx-run-cv',h)){ var cv=document.createElement('span'); cv.className='mx-run-cv'; cv.setAttribute('aria-hidden','true');
+      cv.innerHTML='<svg viewBox="0 0 48 48"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>'; h.appendChild(cv); }
+    var open=c.classList.contains('is-failed')||c.classList.contains('is-stopped'); c.classList.toggle('is-open',open);
+    h.setAttribute('role','button'); h.tabIndex=0; h.setAttribute('aria-expanded',open);
+    var tg=function(){ var o=c.classList.toggle('is-open'); h.setAttribute('aria-expanded',o); };
+    h.onclick=tg; h.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); tg(); } }; }); }
+/* OPTION 2 ONLY (request, 18 Nov 2026: "show this in short with table view in option 2 only"): a result table in the thread is
+   the design system's own grid, obs-table, five rows to a page with its pager - an eleven-row filesystem list no longer pushes the
+   answer off the screen. The markdown table stays in the DOM, hidden, so copy / Option 1 are untouched. Columns and rows are set as
+   PROPERTIES (the element ignores them as attributes once mounted); a column spec's heading is `title`. */
+var TBL_PAGE=5;
+function tblDress(root){ if(runOpt()!=='2'||!window.customElements||!customElements.get('obs-table')) return;
+  $$('.mira-table-wrap',root).forEach(function(w){ var t=$('table',w); if(!t||w.__mxtbl) return; w.__mxtbl=1;
+    /* ⚠️ two obs-table 0.1.166 defects, both already in design-system-gaps (49, 45): align:'right' right-aligns the cells and
+       leaves the HEADER left (tblSkin adopts the fix into its shadow root), and columns split evenly, so a long numeric
+       heading is cut - a right-aligned column gets a width from its heading (a px STRING; a bare number is ignored). */
+    var cols=$$('thead th',t).map(function(th,i){ var ti=th.textContent.trim(), al=th.getAttribute('align')||'left', c={key:'c'+i,title:ti,align:al,sortable:true};
+      /* every column is sized from its own content - the heading (12px caps) or its longest cell, whichever is wider */
+      /* MEASURED, not estimated: the heading is 12px/600 caps with .25px tracking and 28px of padding in this bundle, a cell 13px */
+      var hw=tblTW(ti.toUpperCase(),'600 12px '+TBL_FF())+ti.length*.25+36, cw=0;
+      $$('tbody tr',t).forEach(function(tr){ var td=tr.children[i]; if(td) cw=Math.max(cw,tblTW(td.textContent.trim(),'13px '+TBL_FF())+34); });
+      c.__w=Math.ceil(Math.max(56,hw,cw)); return c; });
+    /* ...then FITTED to the message column, so the grid never scrolls sideways: any excess comes off the widest text column.
+       obs-table adds its 32px of cell padding to a width, so the spec is the wanted box minus that. The wrap is display:none
+       while its message is still hidden, so the room is read off the thread. */
+    var host=w.closest('.mira-thread-list')||w.parentElement, room=(w.clientWidth||(host&&host.clientWidth)||720)-2, sum=0, wide=null;
+    cols.forEach(function(c){ sum+=c.__w; if(c.align!=='right'&&(!wide||c.__w>wide.__w)) wide=c; });
+    if(wide&&sum>room) wide.__w=Math.max(120,wide.__w-(sum-room));
+    cols.forEach(function(c){ c.width=Math.max(24,c.__w-32)+'px'; delete c.__w; });
+    var rows=$$('tbody tr',t).map(function(tr,r){ var o={id:'r'+r}; $$('td',tr).forEach(function(td,i){ o['c'+i]=td.textContent.trim(); }); return o; });
+    if(!cols.length||!rows.length) return;
+    /* NO PAGER (request, 18 Nov 2026: "don't show pagination, fix it another way, and add a table border"): a long table shows its
+       first five rows and ONE quiet row under them - Show all N rows / Show fewer rows - inside a bordered frame. Sorting is off
+       while it is cut short, because sorting five of eleven rows would look like the whole answer. */
+    var g=document.createElement('obs-table'); g.className='mx-otbl'; g.setAttribute('page-size',0);
+    var long=rows.length>TBL_PAGE, open=!long;
+    function put(){ g.columns=cols.map(function(c){ var o={}; for(var k in c) o[k]=c[k]; o.sortable=open; return o; }); g.rows=open?rows:rows.slice(0,TBL_PAGE); }
+    t.classList.add('mx-hide'); w.classList.add('mx-otblw'); w.appendChild(g); put(); tblSkin(g);
+    if(long){ var b=document.createElement('button'); b.type='button'; b.className='mx-otblmore';
+      var lab=function(){ b.innerHTML='<span>'+(open?'Show fewer rows':'Show all '+rows.length+' rows')+'</span><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
+        b.setAttribute('aria-expanded',open); b.classList.toggle('is-open',open); };
+      b.onclick=function(){ open=!open; put(); lab(); }; lab(); w.appendChild(b); } }); }
+var TBL_CV=null; function tblTW(s,font){ TBL_CV=TBL_CV||document.createElement('canvas').getContext('2d'); TBL_CV.font=font; return TBL_CV.measureText(s).width; }
+function TBL_FF(){ return getComputedStyle(document.body).fontFamily||'sans-serif'; }
+function tblSkin(g){ var n=0; (function go(){ var sr=g.shadowRoot; if(!sr){ if(n++<40) setTimeout(go,50); return; }
+    try{ var s=new CSSStyleSheet(); s.replaceSync('.grid th.al-right{text-align:right}.grid th.al-center{text-align:center}'+
+      /* the bundle asks for Poppins, which this page does not load - the grid takes the thread's own face; a long cell ends in an ellipsis */
+      ':host{font-family:inherit}.grid,.grid th,.grid td,.pager,.pager *{font-family:inherit}.grid td{text-overflow:ellipsis}'+
+      /* the frame is the wrap's: the grid's own first and last lines would double it */
+      '.grid thead th{border-top:0}.grid tbody tr:last-child td{border-bottom:0}'); sr.adoptedStyleSheets=[].concat(sr.adoptedStyleSheets,[s]); }catch(e){} })(); }
+/* ── the runbook card, OPTION 2 (request, 18 Nov 2026: "everything so far is option 1 - create option 2: the whole process, minimalist,
+   user friendly, easy to understand, simple") ─────────────────────────────────────────────────────────────────────────────
+   OPTION 1 - the product's own card - is the default and is untouched: every Option 2 rule is scoped to .mx-forge2, which only
+   forgeDress adds. What Option 2 changes is how the SAME facts are shown:
+     head     one line: the runbook's glyph, its name, "SSH · Read-only" as plain text, the Draft tag. No icon tile, no pills.
+     process  the four stages as a STEPPER you can read at a glance - a tick when a step is done, a pulsing dot on the step in
+              hand, a cross where it failed, an empty ring for what is still to come - joined by a line. It was four words in a row.
+     message  one plain headline and one sentence under it; problems as a short list, the line number as a small tag.
+     gone     the code silhouette (decoration - the Code button still opens the real code) and the tinted footer.
+   Colours are the ObserveOps design-system tokens the page already carries. Picked with ?forge=2, localStorage 'mx-forge-opt' =
+   '2', or MX.forgeOpt (the artifact's component stage sets that). The tick and cross are the product's own glyphs (TICK, CQ_X). */
+/* OPTION 3 is Option 2's card with NO STEPS AT ALL (request, 18 Nov 2026: "show the whole process without steps, something
+   different" - its first build, four bar segments with the stage names, was still a stepper). The process is now two things:
+     one line of progress  a 3px bar under the header that fills as the work moves on (it animates between states), green,
+                           red when a stage fails;
+     one status chip       a dot and the stage in hand in words - Writing…, Compiling…, Compiling failed, Delivering… -
+                           above the headline. The dot pulses while Mira is working.
+   The four stage names are not shown; the <ol> stays in the DOM (hidden) and is what both parts are read from, so they
+   cannot disagree with Options 1 and 2. ?forge=3 / 'mx-forge-opt' = '3' / MX.forgeOpt. */
+function forgeOpt(){ if(MX.forgeOpt) return MX.forgeOpt; try{ var m=/[?&]forge=([23])(&|$)/.exec(location.search), s=localStorage.getItem('mx-forge-opt'); if(m) return m[1]; if(s==='2'||s==='3') return s; }catch(e){} return '1'; }
+var FST_OK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>', FST_X='<svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+function forgeDress(root){ var fo=forgeOpt(); if(fo==='1'||!root) return; var list=$$('.mira-forge',root); if(root.classList&&root.classList.contains('mira-forge')) list.push(root);
+  list.forEach(function(c){ if(!$('.mira-forge-head',c)) return; c.classList.add('mx-forge2'); c.classList.toggle('mx-forge3',fo==='3');
+    $$('.mira-forge-stages li',c).forEach(function(li){ if($('.mx-fst',li)) return; var s=document.createElement('span'); s.className='mx-fst'; s.setAttribute('aria-hidden','true');
+      s.innerHTML=li.classList.contains('is-done')?FST_OK:li.classList.contains('is-failed')?FST_X:''; li.insertBefore(s,li.firstChild); });
+    if(fo==='3') forge3(c); }); }
+function forge3(c){ var lis=$$('.mira-forge-stages li',c), body=$('.mira-forge-body',c), main=$('.mira-forge-main',c), bar=$('.mx-fprog',c);
+  if(!bar&&body){ bar=document.createElement('div'); bar.className='mx-fprog'; bar.setAttribute('aria-hidden','true'); bar.innerHTML='<i></i>'; body.parentNode.insertBefore(bar,body); }
+  var old=main&&$('.mx-fstat',main); if(old) old.remove(); if(!bar) return;
+  if(!lis.length){ bar.classList.add('is-none'); return; } bar.classList.remove('is-none');
+  var name=function(li){ return li.textContent.replace(/\s+/g,' ').trim(); }, done=0, now=null, bad=null;
+  lis.forEach(function(li){ if(li.classList.contains('is-done')) done++; else if(li.classList.contains('is-failed')) bad=bad||li; else if(li.classList.contains('is-now')) now=now||li; });
+  var cur=bad||now, pct=Math.round((done+(cur?.5:0))/lis.length*100), st=bad?'is-failed':now?'is-now':'is-done';
+  /* a lone flex child would take the whole track - the fill is sized with width:% */
+  bar.firstChild.style.width=pct+'%'; bar.classList.toggle('is-failed',!!bad);
+  var chip=document.createElement('div'); chip.className='mx-fstat '+st; chip.setAttribute('role','status');
+  chip.innerHTML='<i aria-hidden="true"></i><span>'+esc(bad?name(bad)+' failed':now?name(now)+'…':done&&done<lis.length?name(lis[done-1]):'Done')+'</span>'; if(main) main.insertBefore(chip,main.firstChild); }
+function dress(root){ runDress(root); tblDress(root); forgeDress(root); $$('button[aria-label]:not([title])',root).forEach(function(b){ if(!b.textContent.trim()) b.title=b.getAttribute('aria-label'); }); }
 function first(id){ return tpl(id).content.firstElementChild.cloneNode(true); }
 function thread(){ return $('#mxPane .mira-thread-scroll'); }
 function toBottom(){ var t=thread(); if(t){ t.scrollTop=t.scrollHeight; scrollBtn(); } }
@@ -2496,11 +2788,38 @@ function show(id){
   var ta=$('.mira-composer-input',node); if(ta){ try{ta.focus({preventScroll:true})}catch(e){} }
 }
 function toggle(btn){ var o=btn.getAttribute('aria-expanded')==='true'; btn.setAttribute('aria-expanded',o?'false':'true');
-  var ch=btn.querySelector('.mira-step-chevron'); if(ch) ch.classList.toggle('is-open',!o); }
+  var ch=btn.querySelector('.mira-step-chevron'); if(ch) ch.classList.toggle('is-open',!o);
+  if(!o&&btn.classList.contains('mira-group-head')) refade(btn.closest('.mira-activity-group'));
+  else if(!o&&btn.classList.contains('mira-step-row')) fadeIn(btn.nextElementSibling); }
+/* the word fade plays EVERY time a thinking group is opened, not only the first (request, 18 Nov 2026): steps that were
+   never faded are wrapped now, then every word's animation is restarted, 38ms apart across the whole group. */
+/* ⚠️ EVERY DETAILS VIEW FADES ITS TEXT IN EVERY TIME IT OPENS (request, 18 Nov 2026: "the text animation shows only the first time").
+   One helper for all of them: words not yet wrapped are wrapped, then every word ON SCREEN gets its animation restarted, 38ms
+   apart from the first. Used by the answered record's list and by a step row's detail; a thinking group has refade. */
+function fadeIn(root){ if(!root) return; root.__wf=0; wordFade(root); var ws=$$('.mx-w',root); ws.forEach(function(w){ w.style.animation='none'; }); void root.offsetWidth;
+  var n=0; ws.forEach(function(w){ w.style.animation=''; w.style.animationDelay=(w.offsetParent?n++*38:0)+'ms'; }); }
+function refade(g){ if(!g) return; $$('.mira-group-step',g).forEach(function(s){ wordFade(s); });
+  var ws=$$('.mx-w',g); ws.forEach(function(w){ w.style.animation='none'; }); void g.offsetWidth;
+  /* only the words on screen take a turn - a step's folded detail is wrapped too and must not push the delays out */
+  var n=0; ws.forEach(function(w){ w.style.animation=''; w.style.animationDelay=(w.offsetParent?n++*38:0)+'ms'; }); }
 
 /* ── the Code panel (right-hand split) ── */
-function closeCode(){ var sp=$('.mira-split'); if(!sp) return; $$('.splitpanes__splitter, .mira-pane.is-preview',sp).forEach(function(e){e.remove()}); $('#mxPane').style.width='100%'; }
-function openCode(key){ var t=tpl('code-'+key); if(!t) return; var sp=$('.mira-split'); closeCode();
+function closeCode(){ var sp=$('.mira-split'); if(!sp) return; $$('.splitpanes__splitter, .mira-pane.is-preview',sp).forEach(function(e){e.remove()}); $('#mxPane').style.width='100%'; codeInlineOff(); }
+/* ⚠️ IN OPTIONS 2 AND 3 THE CODE OPENS INSIDE THE CARD, UNDER ITS FOOTER (request, 18 Nov 2026: "the code will be shown at the
+   bottom, below the card's content - not outside"). Two earlier shapes, both wrong for these options: the product's RIGHT-hand
+   split leaves the chat a 280px column in which the card collides with itself, and a bottom split of the whole page (built the
+   same day, removed) was still a second panel outside the card. Now the Code button is a toggle - Code / Hide code - and the
+   source is a section of the card itself: a slim head (name · copy · close) over the lines, 320px tall at most, scrolling inside.
+   One card's code is open at a time. Option 1 keeps the product's right-hand split. */
+function codeBottom(){ return forgeOpt()!=='1'; }
+function codeInlineOff(){ $$('.mx-fcode').forEach(function(x){ var c=x.closest('.mira-forge'), b=c&&$('[data-mx-code]',c); if(b){ b.textContent=' Code '; b.setAttribute('aria-expanded','false'); } x.remove(); }); }
+function codeInline(card,key,keep){ var open=$('.mx-fcode',card); if(open){ if(!keep) codeInlineOff(); return; }
+  var t=tpl('code-'+key), sec=t&&$('.mira-code-pane',t.content); if(!sec) return; codeInlineOff();
+  var w=document.createElement('div'); w.className='mx-fcode'; w.appendChild(sec.cloneNode(true)); card.appendChild(w); dress(w);
+  var b=$('[data-mx-code]',card); if(b){ b.textContent=' Hide code '; b.setAttribute('aria-expanded','true'); }
+  /* bring it into view by scrolling the THREAD only - scrollIntoView would move every ancestor scroller, the host page included */
+  var sc=thread(); if(sc){ var d=w.getBoundingClientRect().bottom-sc.getBoundingClientRect().bottom+12; if(d>0) sc.scrollTop+=d; } }
+function openCode(key,card,keep){ var t=tpl('code-'+key); if(!t) return; if(card&&codeBottom()){ codeInline(card,key,keep); return; } var sp=$('.mira-split'); closeCode();
   var s=document.createElement('div'); s.className='splitpanes__splitter';
   var p=t.content.firstElementChild.cloneNode(true);
   $('#mxPane').style.width='34.8087%'; p.style.width='65.1913%'; sp.appendChild(s); sp.appendChild(p); dress(p); }
@@ -2706,34 +3025,115 @@ var CQ_BACK='<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>', CQ_X='<
 function askCard(pane,onSend,onChat){
   var Q=[{k:'Runbook',q:'What should the runbook do?',sub:'Tell me what you want the runbook to do, and I’ll build and test it on a real monitor.',opts:[],ph:'For example: collect disk usage, restart a service, or clear a cache.'},
          {k:'Target',q:'Which monitor or host should it run on?',sub:'I’ll test it there before anything is delivered.',opts:[],ph:'Type your answer…'},
-         {k:'Action',q:'Should it only collect information, or change something?',sub:'Collecting is read-only; a change applies a remediation on the target.',opts:['Collect information only','Change something']}];
+         {k:'Action',q:'Should it only collect information, or change something?',sub:'Collecting is read-only; a change applies a remediation on the target.',opts:['Collect information only','Change something'],rec:0}];   /* rec = the recommended option's index */
   Q.forEach(function(x){ x.sel=x.opts.length?0:-1; x.free=''; });   /* a question with no options is ONE input field (request, 16 Nov 2026) */
-  var step=0, wrap=document.createElement('div'); wrap.className='mx-aicq';
+  /* ⚠️ A REVIEW STEP AFTER THE LAST QUESTION (request, 18 Nov 2026: "when I give the answers it does not show the review of the
+     questions and answers, or a way to change one - add this flow"). The card used to send from the third question. Now the
+     last question leads to Review: every question with its answer, each row opens that question again, and Send answers is
+     the only thing that sends. An answer changed from Review returns to Review, not through the later questions again. */
+  var step=0, seen=false, wrap=document.createElement('div'); wrap.className='mx-aicq';
   function ans(x){ return x.sel<0?x.free.trim():x.opts[x.sel]; }
   function only(x){ return !x.opts.length; }
-  function paint(){ var x=Q[step];
+  function send(){ onSend(Q.map(function(x){ return [x.k,ans(x)||x.opts[0]||'',x.q]; })); }
+  function paintReview(){
+    wrap.innerHTML='<div class="aicq" role="group" aria-label="Review your answers"><div class="aicqh"><button class="aicqb" type="button" data-cq="back" title="Previous question">'+CQ_BACK+'</button>'+
+      '<span class="aicqt">Review your answers</span><span class="aicqn">Review</span><button class="aicqc" type="button" data-cq="x" title="Chat instead">'+CQ_X+'</button></div>'+
+      '<div class="aicqs">Check each answer before I build the runbook. Pick one to change it.</div><div class="aicqpg"><i style="width:100%"></i></div>'+
+      Q.map(function(x,i){ var a=ans(x)||x.opts[0]||''; return '<button class="aicqo mx-rvrow" type="button" data-cq-rv="'+i+'" title="Change this answer"><span class="aicqi">'+(i+1)+'</span>'+
+        '<span class="mx-rvtx"><span class="mx-rvq">'+esc(x.q)+'</span><span class="mx-rva'+(a?'':' is-skip')+'">'+esc(a||'Skipped')+'</span></span><span class="aicqp mx-rved" aria-hidden="true">'+CQ_PEN+'</span></button>'; }).join('')+
+      '<div class="aicqd mx-rvfoot"><button class="aicqok" type="button" data-cq="send">Send answers</button></div></div>';
+    if(isCur(pane)){ try{ ($('[data-cq=send]',wrap)||wrap).focus({preventScroll:true}); }catch(e){} toBottom(); } }
+  function paint(){ if(step>=Q.length){ paintReview(); return; } var x=Q[step];
     wrap.innerHTML='<div class="aicq" role="group" aria-label="'+esc(x.q)+'"><div class="aicqh"><button class="aicqb" type="button" data-cq="back"'+(step?'':' disabled')+' title="Previous question">'+CQ_BACK+'</button>'+
       '<span class="aicqt">'+esc(x.q)+'</span><span class="aicqn"><b>'+(step+1)+'</b> / '+Q.length+'</span><button class="aicqc" type="button" data-cq="x" title="Chat instead">'+CQ_X+'</button></div>'+
       '<div class="aicqs">'+esc(x.sub)+'</div><div class="aicqpg"><i style="width:'+Math.round((step+1)/Q.length*100)+'%"></i></div>'+
-      x.opts.map(function(o,i){ return '<button class="aicqo'+(x.sel===i?' on':'')+'" type="button" data-cq-i="'+i+'"><span class="aicqi">'+(i+1)+'</span>'+esc(o)+'</button>'; }).join('')+
+      x.opts.map(function(o,i){ return '<button class="aicqo'+(x.sel===i?' on':'')+'" type="button" data-cq-i="'+i+'"><span class="aicqi">'+(i+1)+'</span>'+esc(o)+(x.rec===i?'<span class="mx-rec">Recommended</span>':'')+'</button>'; }).join('')+
       (only(x)?'<label class="aicqf mx-cqonly"><input value="'+esc(x.free)+'" placeholder="'+esc(x.ph)+'" maxlength="1000" autocomplete="off" aria-label="'+esc(x.q)+'"></label>'
         :'<label class="aicqf'+(x.sel<0?' on':'')+'"><span class="aicqp">'+CQ_PEN+'</span><input value="'+esc(x.free)+'" placeholder="Something else…" maxlength="1000" autocomplete="off"></label>')+
-      '<div class="aicqd"><button class="aicqsk" type="button" data-cq="skip">Skip</button>'+(only(x)?'<button class="aicqok" type="button" data-cq="next"'+(x.free.trim()?'':' disabled')+'>'+(step===Q.length-1?'Send':'Next')+'</button>':'')+'</div></div>';
+      '<div class="aicqd"><button class="aicqsk" type="button" data-cq="skip">Skip</button>'+(only(x)?'<button class="aicqok" type="button" data-cq="next"'+(x.free.trim()?'':' disabled')+'>'+(seen||step===Q.length-1?'Review':'Next')+'</button>':'')+'</div></div>';
     if(isCur(pane)){ var f=x.sel<0?$('.aicqf input',wrap):$('.aicqo.on',wrap); if(f&&f.tagName==='INPUT') try{ f.setSelectionRange(f.value.length,f.value.length); }catch(e){} try{ (f||wrap).focus({preventScroll:true}); }catch(e){} toBottom(); } }
-  function next(){ if(step<Q.length-1){ step++; paint(); } else onSend(Q.map(function(x){ return [x.k,ans(x)||x.opts[0]||'',x.q]; })); }
+  function next(){ if(seen||step>=Q.length-1){ seen=true; step=Q.length; } else step++; paint(); }
   wrap.tabIndex=-1;
-  wrap.onclick=function(e){ var b=e.target.closest('[data-cq-i]'); if(b){ Q[step].sel=+b.getAttribute('data-cq-i'); $$('.aicqo',wrap).forEach(function(r){ r.classList.toggle('on',r===b); }); $('.aicqf',wrap).classList.remove('on'); setTimeout(next,180); return; }
+  wrap.onclick=function(e){ var rv=e.target.closest('[data-cq-rv]'); if(rv){ step=+rv.getAttribute('data-cq-rv'); paint(); return; }
+    var b=e.target.closest('[data-cq-i]'); if(b){ Q[step].sel=+b.getAttribute('data-cq-i'); $$('.aicqo',wrap).forEach(function(r){ r.classList.toggle('on',r===b); }); $('.aicqf',wrap).classList.remove('on'); setTimeout(next,180); return; }
     b=e.target.closest('[data-cq]'); if(!b) return; var a=b.getAttribute('data-cq');
+    if(a==='send'){ send(); return; }
     if(a==='back'&&step){ step--; paint(); } else if(a==='x') onChat(); else if(a==='next'){ if(Q[step].free.trim()) next(); } else if(a==='skip'){ if(!only(Q[step])&&Q[step].sel<0&&!Q[step].free.trim()) Q[step].sel=0; next(); } };
-  wrap.oninput=function(e){ if(!e.target.matches('.aicqf input')) return; var x=Q[step]; x.free=e.target.value; if(only(x)){ var nb=$('[data-cq=next]',wrap); if(nb) nb.disabled=!x.free.trim(); return; } x.sel=x.free.trim()?-1:0;
+  wrap.oninput=function(e){ if(!e.target.matches('.aicqf input')||step>=Q.length) return; var x=Q[step]; x.free=e.target.value; if(only(x)){ var nb=$('[data-cq=next]',wrap); if(nb) nb.disabled=!x.free.trim(); return; } x.sel=x.free.trim()?-1:0;
     $$('.aicqo',wrap).forEach(function(r,i){ r.classList.toggle('on',i===x.sel); }); $('.aicqf',wrap).classList.toggle('on',x.sel<0); };
   wrap.onkeydown=function(e){ e.stopPropagation(); var inp=e.target.matches&&e.target.matches('input');
     if(e.key==='Escape'){ e.preventDefault(); onChat(); }
+    else if(step>=Q.length){ if(e.key==='Enter'){ if(e.target.closest&&e.target.closest('[data-cq-rv]')) return; e.preventDefault(); send(); }
+      else if(/^[1-9]$/.test(e.key)&&+e.key<=Q.length){ e.preventDefault(); step=+e.key-1; paint(); }
+      else if(e.key==='ArrowLeft'||e.key==='Backspace'){ e.preventDefault(); step=Q.length-1; paint(); } }
     else if(e.key==='Enter'){ e.preventDefault(); if(!inp||Q[step].free.trim()) next(); }
     else if(!inp&&/^[1-9]$/.test(e.key)){ var n=+e.key-1; if(n<Q[step].opts.length){ var r=$$('.aicqo',wrap)[n]; if(r) r.click(); } else if(n===Q[step].opts.length){ e.preventDefault(); $('.aicqf input',wrap).focus(); } }
     else if(!inp&&(e.key==='ArrowLeft'||e.key==='Backspace')&&step){ e.preventDefault(); step--; paint(); } };
   dock(pane,wrap); paint(); }
 
+/* ── the clarifier, OPTION 2 (request, 18 Nov 2026, from a supplied reference card) ────────────────────────────────────────
+   The Ask AI clarifier re-laid, as a SECOND option - askCard above is kept as it is. What changed, part for part:
+     head     the question in plain weight on the left; ‹ n of 3 › and ✕ on the right. No back button on the left, no subtitle,
+              no progress bar.
+     rows     a 28px number chip, the option, and its one-line meaning under it; a hairline between rows.
+     last row a pen chip, the free-text field ("Something else", or the example when the question has no options) and ONE button:
+              Skip while the field is empty, Next / Review once something is typed.
+     below    nothing - the composer is hidden while the card is open, like every other docked card (it was kept as
+              "Or reply directly…" at first, and removed on request the same day).
+   Nothing is preselected and Skip really skips (the record says Skipped). The Review step and its rule are askCard's: every
+   answer listed, a row reopens its question, an edited answer returns to Review, and Send answers is the only thing that sends. */
+function askCardV2(pane,onSend,onChat){
+  var Q=[{k:'Runbook',q:'What should the runbook do?',ph:'For example: collect disk usage, restart a service, or clear a cache.',rows:[]},
+         {k:'Target',q:'Which monitor or host should it run on?',ph:'Type a monitor or host name',rows:[]},
+         {k:'Action',q:'Should it only collect information, or change something?',ph:'Something else',
+          /* a row's third value marks it RECOMMENDED: the tag sits at the row's right end (request, 18 Nov 2026) */
+          rows:[['Collect information only','Read state and return evidence without changing the target.',1],['Change something','Apply a remediation on the target.',0]]}];
+  Q.forEach(function(x){ x.sel=-1; x.free=''; });
+  var N=Q.length, step=0, seen=false, wrap=document.createElement('div'); wrap.className='mx-aicq mx-cl'; wrap.tabIndex=-1;
+  var ta=$('.mira-composer-input',pane), ph0=ta?ta.placeholder:'';
+  function ans(x){ return x.sel>=0?x.rows[x.sel][0]:x.free.trim(); }
+  function close(){ if(ta){ ta.placeholder=ph0; ta.removeEventListener('keydown',direct,true); } }
+  function send(){ close(); onSend(Q.map(function(x){ return [x.k,ans(x),x.q]; })); }
+  function chat(){ close(); onChat(); }
+  function direct(e){ if(e.key==='Enter'&&!e.shiftKey&&ta.value.trim()) chat(); }
+  function goLabel(){ return seen||step===N-1?'Review':'Next'; }
+  function head(t,mid,canBack,canFwd){ return '<div class="mx-clh"><span class="mx-clt">'+esc(t)+'</span><span class="mx-clnav"><button type="button" data-cq="back" aria-label="Previous question"'+(canBack?'':' disabled')+'>'+CQ_BACK+'</button><span>'+mid+'</span>'+
+    '<button type="button" data-cq="fwd" aria-label="Next question"'+(canFwd?'':' disabled')+'>'+CQ_FWD+'</button></span><button type="button" class="mx-clx" data-cq="x" aria-label="Chat instead" title="Chat instead">'+CQ_X+'</button></div>'; }
+  function paint(){ var h, rev=step>=N;
+    if(rev){ h=head('Review your answers','Review',true,false)+Q.map(function(x,i){ var a=ans(x);
+        return '<button type="button" class="mx-clo rv" data-cq-rv="'+i+'" title="Change this answer"><span class="mx-cln">'+(i+1)+'</span><span class="mx-cltx"><i>'+esc(x.q)+'</i><b'+(a?'':' class="is-skip"')+'>'+esc(a||'Skipped')+'</b></span>'+
+          '<span class="mx-cled" aria-hidden="true">'+CQ_PEN+'</span></button>'; }).join('')+
+        '<div class="mx-clf mx-clend"><span class="mx-clhint">Pick an answer to change it</span><button type="button" class="mx-clsk is-go" data-cq="send">Send answers</button></div>'; }
+    else { var x=Q[step], typed=x.sel<0&&!!x.free.trim();
+      h=head(x.q,(step+1)+' of '+N,step>0,true)+x.rows.map(function(r,i){ return '<button type="button" class="mx-clo'+(x.sel===i?' on':'')+'" data-cq-i="'+i+'"><span class="mx-cln">'+(i+1)+'</span><span class="mx-cltx"><b>'+esc(r[0])+'</b><i>'+esc(r[1])+'</i></span>'+(r[2]?'<span class="mx-rec">Recommended</span>':'')+'</button>'; }).join('')+
+        '<label class="mx-clf"><span class="mx-cln">'+CQ_PEN+'</span><input value="'+esc(x.free)+'" placeholder="'+esc(x.ph)+'" maxlength="1000" autocomplete="off" aria-label="'+esc(x.rows.length?'Something else':x.q)+'">'+
+        '<button type="button" class="mx-clsk'+(typed?' is-go':'')+'" data-cq="'+(typed?'next':'skip')+'">'+(typed?goLabel():'Skip')+'</button></label>'; }
+    wrap.innerHTML='<div class="mx-clc" role="group" aria-label="'+esc(rev?'Review your answers':Q[step].q)+'">'+h+'</div>';
+    if(isCur(pane)){ var f=rev?$('[data-cq=send]',wrap):(Q[step].rows.length?($('.mx-clo.on',wrap)||wrap):$('.mx-clf input',wrap));
+      try{ (f||wrap).focus({preventScroll:true}); if(f&&f.tagName==='INPUT') f.setSelectionRange(f.value.length,f.value.length); }catch(e){} toBottom(); } }
+  function next(){ if(seen||step>=N-1){ seen=true; step=N; } else step++; paint(); }
+  wrap.onclick=function(e){ var b=e.target.closest('[data-cq-rv]'); if(b){ step=+b.getAttribute('data-cq-rv'); paint(); return; }
+    b=e.target.closest('[data-cq-i]'); if(b){ var x=Q[step]; x.sel=+b.getAttribute('data-cq-i'); x.free=''; $$('.mx-clo',wrap).forEach(function(r){ r.classList.toggle('on',r===b); }); setTimeout(function(){ if(wrap.isConnected) next(); },180); return; }
+    b=e.target.closest('[data-cq]'); if(!b||b.disabled) return; var a=b.getAttribute('data-cq'); e.preventDefault();
+    if(a==='send') send(); else if(a==='x') chat(); else if(a==='back'){ step=Math.max(0,step-1); paint(); } else if(a==='fwd'||a==='next') next();
+    else if(a==='skip'){ Q[step].sel=-1; Q[step].free=''; next(); } };
+  wrap.oninput=function(e){ var x=Q[step]; if(!x||!e.target.matches('.mx-clf input')) return; x.free=e.target.value; var typed=!!x.free.trim(); if(typed) x.sel=-1;
+    $$('.mx-clo',wrap).forEach(function(r,i){ r.classList.toggle('on',i===x.sel); });
+    var b=$('.mx-clsk',wrap), go=typed&&x.sel<0; b.textContent=go?goLabel():'Skip'; b.setAttribute('data-cq',go?'next':'skip'); b.classList.toggle('is-go',go); };
+  wrap.onkeydown=function(e){ e.stopPropagation(); var inp=e.target.matches&&e.target.matches('input'), btn=e.target.closest&&e.target.closest('button');
+    if(e.key==='Escape'){ e.preventDefault(); chat(); return; }
+    if(step>=N){ if(e.key==='Enter'){ if(btn) return; e.preventDefault(); send(); }
+      else if(/^[1-9]$/.test(e.key)&&+e.key<=N){ e.preventDefault(); step=+e.key-1; paint(); }
+      else if(e.key==='ArrowLeft'||e.key==='Backspace'){ e.preventDefault(); step=N-1; paint(); } return; }
+    var x=Q[step];
+    if(e.key==='Enter'){ if(btn) return; e.preventDefault(); if(ans(x)) next(); }
+    else if(!inp&&/^[1-9]$/.test(e.key)){ var n=+e.key-1; if(n<x.rows.length){ var r=$$('.mx-clo',wrap)[n]; if(r) r.click(); } else if(n===x.rows.length){ e.preventDefault(); $('.mx-clf input',wrap).focus(); } }
+    else if(!inp&&e.key==='ArrowLeft'&&step){ e.preventDefault(); step--; paint(); }
+    else if(!inp&&e.key==='ArrowRight'){ e.preventDefault(); next(); } };
+  /* the chat box is HIDDEN while the questions are open (request, 18 Nov 2026: "at question / answer time don't show the chat box").
+     It was kept under the card as "Or reply directly…", after the reference. dock() hides it, like every other card; ✕ / Esc
+     still hand it back. */
+  dock(pane,wrap); paint(); }
 function askCardTabs(pane,onSend,onChat){   /* the live tabbed card — the create-runbook card again since 17 Nov 2026: three questions
      (Runbook · Target · Action) + Review, never the live run's four, and no ✦ mark in its head (request) */
   var Q=[{k:'Runbook',text:'What should the runbook do?',kind:'text',ph:'For example: collect disk usage, restart a service, or clear a cache.',v:''},
@@ -2834,7 +3234,7 @@ function forgeSet(card,o){ var T=['is-fail','is-pass','is-quiet','is-warn'], sil
   sc(main);
   if(o.tag) $('.mira-forge-tag',card).textContent=o.tag;
   if(o.chips){ var ch=$('.mira-forge-chips',card); ch.innerHTML=o.chips.map(function(c){ return '<span class="mira-forge-chip'+(c==='Read-only'?' is-ok':'')+'">'+c+'</span>'; }).join(''); sc(ch); }
-  var ob=$$('.mira-forge-foot .mira-forge-button',card)[1]; if(ob) ob.classList.toggle('mx-hide',!o.open); }
+  var ob=$$('.mira-forge-foot .mira-forge-button',card)[1]; if(ob) ob.classList.toggle('mx-hide',!o.open); forgeDress(card); }
 var ST=function(a,b,c,d){ return [[a[0],a[1]],[b[0],b[1]],[c[0],c[1]],[d[0],d[1]]]; };
 function sumTitle(steps){ var th=0,sk=[],tl=[]; steps.forEach(function(s){ var r=$('.mira-step-row',s); if(!r) return;
     if(r.classList.contains('is-static')){ var m=/Reading the\s+(.+?)\s+skill/.exec(r.textContent.replace(/\s+/g,' ')); if(m) sk.push('used the '+m[1]+' skill'); return; }
@@ -2856,6 +3256,9 @@ function startRunbook(q){ var id=fileChat('Runbook Creation','c4'), pane=MX.pane
 
 /* the answered-questions record, Claude's shape (request, 16 Nov 2026): a check + "Answered 3 questions", then each
    question in muted text with the answer under it, on a thin rule. A skipped answer says so in italics. */
+/* Option 1 = the record in its card (default); Option 2 = the boxless line. Picked with ?qa=2, localStorage 'mx-qa-opt' = '2',
+   or MX.qaOpt (the artifact's component stage sets that). See the CSS note. */
+function qaOpt(){ if(MX.qaOpt) return MX.qaOpt; try{ if(/[?&]qa=2(&|$)/.test(location.search)||localStorage.getItem('mx-qa-opt')==='2') return '2'; }catch(e){} return '1'; }
 function qaRecord(rec,a){ var CK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
   /* only the record's BODY is replaced, so the card box (.mira-card-record) keeps its border and padding */
   var card=$('.mira-card-record',rec)||rec, body=$('.mira-card-record-body',card); if(body){ [].slice.call(card.children).forEach(function(k){ if(k!==body) k.remove(); }); rec=body; }
@@ -2863,22 +3266,29 @@ function qaRecord(rec,a){ var CK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-
      while folded · chevron — over one row per question: the topic as a small label, the question muted, the answer in a
      soft filled block. Opens expanded; the fold is a real <button>. */
   var CV='<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
-  rec.innerHTML='<div class="mx-qa is-open"><button type="button" class="mx-qa-h" aria-expanded="true"><span class="mx-qa-ck">'+CK+'</span><span class="mx-qa-t">Answered '+a.length+' question'+(a.length===1?'':'s')+'</span>'+
+  /* ⚠️ COLLAPSED BY DEFAULT (request, 18 Nov 2026) - it opened expanded. Folded, the header already carries the answers on one
+     line, so the record reads at a glance and the thread stays short; a click opens the question-by-question list. */
+  rec.innerHTML='<div class="mx-qa'+(qaOpt()==='2'?' mx-qa2':'')+'"><button type="button" class="mx-qa-h" aria-expanded="false"><span class="mx-qa-ck">'+CK+'</span><span class="mx-qa-t">Answered '+a.length+' question'+(a.length===1?'':'s')+'</span>'+
     '<span class="mx-qa-sum">'+a.map(function(x){ return esc(x[1]||'Skipped'); }).join(' · ')+'</span><span class="mx-qa-cv">'+CV+'</span></button><ol class="mx-qa-l">'+
     /* minimal rows (request, 17 Nov 2026): the question muted, the answer under it in plain text — no number, chip, box or rule */
     a.map(function(x){ return '<li><div class="mx-qa-q">'+esc(x[2]||x[0])+'</div><div class="mx-qa-a'+(x[1]?'':' is-skip')+'">'+(x[1]?esc(x[1]):'Skipped')+'</div></li>'; }).join('')+'</ol></div>';
   var box=rec.querySelector('.mx-qa'), hb=box.querySelector('.mx-qa-h');
-  hb.onclick=function(){ var o=box.classList.toggle('is-open'); hb.setAttribute('aria-expanded',o); }; }
+  hb.onclick=function(){ var o=box.classList.toggle('is-open'); hb.setAttribute('aria-expanded',o); if(o) fadeIn(box.querySelector('.mx-qa-l')); }; }
 /* Ask AI's Gemini fade (index.html aitw*): each word fades in where it stands, 38ms apart. Real spaces stay as text
    nodes so innerText / copy read normally; code and SVG are left whole. */
 function wordFade(root){ if(!root||root.__wf) return; root.__wf=1; var n=0, w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), list=[], t;
-  while((t=w.nextNode())){ if(!t.nodeValue.trim()||t.parentNode.closest('svg,code,pre,.mx-dmtile')) continue; list.push(t); }
+  while((t=w.nextNode())){ if(!t.nodeValue.trim()||t.parentNode.closest('svg,code,pre,.mx-dmtile,.mx-otblmore,.mx-w')) continue; list.push(t); }
   list.forEach(function(t){ var f=document.createDocumentFragment(); t.nodeValue.split(/(\s+)/).forEach(function(p){ if(!p) return;
       if(/^\s+$/.test(p)){ f.appendChild(document.createTextNode(p)); return; }
       var s=document.createElement('span'); s.className='mx-w'; s.style.animationDelay=(n++*38)+'ms'; s.textContent=p; f.appendChild(s); });
     t.parentNode.replaceChild(f,t); }); }
+/* ⚠️ THE FLOW'S QUESTION CARD FOLLOWS THE OPTION (18 Nov 2026 - it was missed: Option 2 of the flow opened on the SAME minimal
+   card as Option 1, so the two looked identical until the answers were sent). Option 1 keeps askCardSteps; Option 2 uses the
+   clarifier's Option 2, askCardV2 - numbered rows with their meaning, Recommended, one Skip / Next button, and its Review
+   step. Both hand back the same [topic, answer, question] rows. ?ask=2 / localStorage 'mx-ask-opt' = '2' / MX.askOpt. */
+function askOpt(){ if(MX.askOpt) return MX.askOpt; try{ if(/[?&]ask=2(&|$)/.test(location.search)||localStorage.getItem('mx-ask-opt')==='2') return '2'; }catch(e){} return '1'; }
 function rbAsk(pane){ var R=pane.__rb; R.wait='ask';
-  askCardSteps(pane,function(a){ undock(pane); R.wait=null; var rec=R.k1[1], ls=$$('.mira-card-record-line',rec);
+  (askOpt()==='2'?askCardV2:askCardSteps)(pane,function(a){ undock(pane); R.wait=null; var rec=R.k1[1], ls=$$('.mira-card-record-line',rec);
       qaRecord(rec,a); rec.classList.remove('mx-hide'); wordFade(rec); actShow(R.A1); R.ans=a; rbBuild(pane); },
     function(){ undock(pane); R.wait='chat'; actShow(R.A1); var ta=$('.mira-composer-input',pane); if(ta) ta.focus(); }); }
 function rbBuild(pane){ var R=pane.__rb; seg(pane,async function(P){ var k=addMsg(P,R.A2), f1=k[2], main=$('.mira-forge-main',f1), keep=main.innerHTML;
@@ -3051,9 +3461,9 @@ document.addEventListener('click',function(e){
   if((b=t.closest('.mira-group-head, button.mira-step-row, .mira-json-toggle'))){ toggle(b); return; }
   if((b=t.closest('[data-mx-say]'))){ var pn=MX.panes[MX.cur], sy=b.getAttribute('data-mx-say'); if(MX.busy||!pn||!pn.__rb) return; if(/^run/i.test(sy)){ if(pn.__rb.wait==='run'||pn.__rb.wait==='run-later') rbRun(pn,sy==='run'?'run':sy); } else { if(pn.__rb.ns) pn.__rb.ns.remove(); reply(sy); } return; }
   if(t.closest('[data-mx-open]')){ location.href='setting.html?from=mira.html#st=Plugin Library|Runbook'; return; }
-  if((b=t.closest('.mira-forge-problem-line'))){ var cb=b.closest('.mira-forge').querySelector('[data-mx-code]'); if(cb) openCode(cb.getAttribute('data-mx-code')); return; }
-  if((b=t.closest('.mira-forge-button'))){ var k=b.getAttribute('data-mx-code'); if(k) openCode(k); else location.href='setting.html?from=mira.html#st=Plugin Library|Runbook'; return; }
-  if(t.closest('.mira-code-pane-head [aria-label="Close"]')){ closeCode(); return; }
+  if((b=t.closest('.mira-forge-problem-line'))){ var cb=b.closest('.mira-forge').querySelector('[data-mx-code]'); if(cb) openCode(cb.getAttribute('data-mx-code'),b.closest('.mira-forge'),true); return; }
+  if((b=t.closest('.mira-forge-button'))){ var k=b.getAttribute('data-mx-code'); if(k) openCode(k,b.closest('.mira-forge')); else location.href='setting.html?from=mira.html#st=Plugin Library|Runbook'; return; }
+  if(t.closest('.mira-code-pane-head [aria-label="Close"]')){ if(t.closest('.mx-fcode')) codeInlineOff(); else closeCode(); return; }
   if(t.closest('[aria-label="Copy code"]')){ copy($$('.mira-code-pane-code').map(function(l){return l.textContent}).join('\n'),'Code copied'); return; }
   if((b=t.closest('[aria-label="Copy request"], [aria-label="Copy response"]'))){ var blk=b.closest('.mira-tool-block-head');
     if(blk){ copy(blk.nextElementSibling?blk.nextElementSibling.innerText:'','Copied'); return; }

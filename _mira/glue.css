@@ -110,7 +110,9 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
    AI accent; Next/Send is the clarifier's own .aicqok. */
 .mx-aicq .aicqf.mx-cqonly{cursor:text;margin:2px 0 0;padding:0 12px;height:40px;border:1px solid var(--border);border-radius:8px;background:transparent}
 .mx-aicq .aicqf.mx-cqonly:hover{background:transparent;border-color:var(--track)}
-.mx-aicq .aicqf.mx-cqonly:focus-within{border-color:var(--ai-line);box-shadow:0 0 0 3px var(--ai-soft)}
+/* focus is the BORDER alone (request, 18 Nov 2026): the 3px soft ring round the field read as a blur. The line takes the accent. */
+/* --ai-line is 34% ink, the same weight as the hover border (--track), so without the ring nothing said "active": the line is the full accent */
+.mx-aicq .aicqf.mx-cqonly:focus-within{border-color:var(--ai);box-shadow:none}
 .mx-aicq .aicqok:disabled{opacity:.45;cursor:default}
 /* word fade (Ask AI's aitwfade: opacity only, .42s, cubic-bezier(.2,0,0,1)) */
 .mx-w{animation:mxwf .42s cubic-bezier(.2,0,0,1) both}
@@ -119,9 +121,27 @@ body:not([data-theme="dark-theme"]) .mx-aicq{--border-soft:#e3e8f2;--card:#fffff
 /* answered-questions record, Claude's shape */
 .mx-qa{font-size:13px;line-height:1.45;width:100%}
 .mira-card-record-body:has(> .mx-qa){display:block}
-.mx-qa-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;font-weight:600;color:var(--page-text-color);border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.mx-qa-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;font-weight:600;color:var(--page-text-color);border-radius:11px;padding:12px 14px;margin:-12px -14px;width:calc(100% + 28px)}
+/* the hover fills the CARD, edge to edge (request, 18 Nov 2026: "the hover shows a line, bad"). It was a 5% tint on the header's
+   own tight box, 10px inside the card on every side, so it drew a second rounded box inside the first. The header now carries
+   the card's 12px 14px padding as its own and cancels it with a negative margin; 11px is the card's 12px radius inside its 1px line. */
+.mx-qa.is-open .mx-qa-h{border-radius:11px 11px 0 0;margin-bottom:0}
+/* ⚠️ THE BOXLESS RECORD IS OPTION 2, NOT A REPLACEMENT (request, 18 Nov 2026: "the last change is option 2, the removed one is
+   option 1"). OPTION 1 is the card above - border, fill, padding, a hover that fills it edge to edge, the chevron at the far
+   right - and is the default. OPTION 2 (.mx-qa2, added by qaRecord when qaOpt() is '2') drops the card: the record is a line
+   in the thread, tick · Answered 3 questions · the answers · chevron, the chevron right after the text, and the header hugs
+   its words so the hover is a small pill. Open, its one-line summary is removed rather than hidden - a hidden box still held
+   the chevron out at the far end of the line. */
+body .mira-card-record.mira-card-record:has(.mx-qa2){padding:0;border:0;border-radius:0;background:none}
+.mx-qa2 .mx-qa-h{border-radius:6px;padding:4px 8px;margin:-4px -8px;display:inline-flex;width:auto;max-width:calc(100% + 16px)}
+.mx-qa2.is-open .mx-qa-h{border-radius:6px;margin-bottom:-4px}
+.mx-qa2 .mx-qa-h:focus-visible{outline-offset:1px}
+/* Option 2 carries NO one-line summary (request, 18 Nov 2026): the answers appearing and vanishing beside the title on every
+   open / close read as noise. Collapsed it is tick · Answered 3 questions · chevron; the answers are one click away. */
+.mx-qa2 .mx-qa-sum{display:none}
+.mx-qa-h{transition:background .12s}
 .mx-qa-h:hover{background:color-mix(in srgb,var(--page-text-color) 5%,transparent)}
-.mx-qa-h:focus-visible{outline:2px solid var(--neutral-light);outline-offset:1px}
+.mx-qa-h:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
 .mx-qa-t{flex:0 0 auto}
 .mx-qa-sum{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;color:var(--neutral-light);font-size:12.5px}
 .mx-qa.is-open .mx-qa-sum{visibility:hidden}
@@ -326,3 +346,181 @@ body .mira-turn-mark:not(#_){display:none}
 /* the reply actions row (copy · 👍 · 👎 · regenerate · tokens · cost · time) is always shown (request, 17 Nov 2026) —
    the product fades it in only on hover. .mx-hide still hides it while a reply is still streaming. */
 body .mira-message-actions-row:not(#_){opacity:1}
+
+/* the group's chevron shows BY DEFAULT once the thought has FINISHED (request, 18 Nov 2026). It was hover / focus only
+   (17 Nov). While the title is still being written - working, and the final title's write-in - it stays hidden, hover
+   included, then fades in. The two :not() ids are there to outrank the 17 Nov rule, which carries one. */
+body .mira-group-head .mira-step-chevron:not(#_):not(#__){opacity:.9;transition:opacity .2s,transform .2s}
+body .mira-group-head .mira-group-title.mx-dia~.mira-step-chevron:not(#_):not(#__),
+body .mira-group-head .mira-group-title.mx-dia-once~.mira-step-chevron:not(#_):not(#__){opacity:0}
+
+/* ── the run-result card, simplified and on the ObserveOps design-system tokens (request, 18 Nov 2026) ─────────────
+   It was a 16px-radius card on the --mira-* palette: a tinted 38px icon tile, a green 16px title, and the raw output
+   always open in a second bordered box. It is ONE quiet row now, after the tool-result rows in Lindy and Zapier's
+   agents (Mobbin): status glyph · title · the run line · chevron. The output is folded behind the row and opens on
+   click / Enter / Space; a FAILED run opens by itself, because its error is the thing to read.
+   Colours are DS tokens only: --widget-background, --border-color, --page-text-color, --neutral-light,
+   --secondary-green / --secondary-red for the status glyph, --code-tag-background-color behind the output. */
+body .mira-run.mx-run{font-size:13px;color:var(--page-text-color);background:var(--widget-background);border:1px solid var(--border-color);border-radius:8px;box-shadow:none}
+/* the product tints the card's border per state (three classes deep) - the frame stays the DS border; the glyph carries the state */
+body .mira-run.mx-run.mx-run{border-color:var(--border-color)}
+body .mira-run.mx-run .mira-run-head{flex-wrap:nowrap;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;outline:0}
+body .mira-run.mx-run .mira-run-head:hover{background:var(--code-tag-background-color)}
+body .mira-run.mx-run .mira-run-head:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
+body .mira-run.mx-run .mira-run-icon{flex:0 0 18px;height:18px;border-radius:0;background:none;color:var(--secondary-green)}
+body .mira-run.mx-run .mira-run-icon.is-bad{color:var(--secondary-red)}
+body .mira-run.mx-run .mira-run-icon svg{width:16px;height:16px}
+body .mira-run.mx-run .mira-run-heading{flex:1 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:10px;row-gap:2px}
+body .mira-run.mx-run .mira-run-title{font-size:13.5px;font-weight:500;letter-spacing:0;color:var(--page-text-color)}
+body .mira-run.mx-run .mira-run-sub{font-size:12px;color:var(--neutral-light)}
+.mx-run-cv{flex:0 0 14px;width:14px;height:14px;color:var(--neutral-light);transition:transform .2s}
+.mx-run-cv svg{display:block;width:14px;height:14px}
+.mira-run.mx-run.is-open .mx-run-cv{transform:rotate(90deg)}
+body .mira-run.mx-run .mira-run-body{display:none;row-gap:0;padding:0;border-top:1px solid var(--border-color)}
+body .mira-run.mx-run.is-open .mira-run-body{display:flex}
+body .mira-run.mx-run .mira-run-output,body .mira-run.mx-run .mira-run-error-text{max-height:260px;padding:10px 12px;font-family:var(--numeric-font-family);font-size:12px;line-height:1.6;color:var(--page-text-color);background:var(--code-tag-background-color);border:0;border-radius:0}
+body .mira-run.mx-run .mira-run-error{background:none;border:0;border-radius:0}
+body .mira-run.mx-run .mira-run-error-head{color:var(--secondary-red);border-bottom:1px solid var(--border-color)}
+body .mira-run.mx-run .mira-run-line{border-color:var(--border-color)}
+body .mira-run.mx-run .mira-run-note{padding:10px 12px;color:var(--neutral-light)}
+body .mira-run.mx-run .mira-run-foot{padding:8px 12px;background:none;border-top:1px solid var(--border-color)}
+
+/* Option 2's result table: a bordered frame (asked for - the product grid itself is borderless), and the Show all / Show fewer row */
+body .mira-md .mira-table-wrap.mx-otblw{border:1px solid var(--border-color);border-radius:8px;overflow-x:auto;overflow-y:hidden;background:var(--widget-background)}
+/* left-aligned on the first column's text edge - the grid's cells carry 12px of left padding (request, 18 Nov 2026; it was centred) */
+.mx-otblmore{display:flex;align-items:center;justify-content:flex-start;gap:6px;width:100%;height:36px;padding:0 12px;border:0;border-top:1px solid var(--border-color);
+  background:none;color:var(--neutral-light);font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.mx-otblmore:hover{color:var(--page-text-color);background:var(--code-tag-background-color)}
+.mx-otblmore:focus-visible{outline:2px solid var(--neutral-light);outline-offset:-2px}
+.mx-otblmore svg{width:12px;height:12px;transform:rotate(90deg);transition:transform .2s}
+.mx-otblmore.is-open svg{transform:rotate(-90deg)}
+
+/* the Ask AI clarifier's Review step: one row per question - the question muted, its answer under it, a pen on hover */
+.mx-aicq .aicqo.mx-rvrow{align-items:flex-start;text-align:left}
+.mx-aicq .mx-rvtx{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.mx-aicq .mx-rvq{font-size:12px;color:var(--muted)}
+.mx-aicq .mx-rva{font-weight:500;color:var(--text);overflow-wrap:anywhere}
+.mx-aicq .mx-rva.is-skip{font-style:italic;font-weight:400;color:var(--muted)}
+.mx-aicq .mx-rved{opacity:0;transition:opacity .12s;align-self:center}
+.mx-aicq .mx-rvrow:hover .mx-rved,.mx-aicq .mx-rvrow:focus-visible .mx-rved{opacity:1}
+.mx-aicq .mx-rvfoot{justify-content:flex-end}
+
+/* the clarifier, Option 2 (askCardV2) - see its note in the script. Colours are the clarifier's own tokens (.mx-aicq). */
+.mx-cl .mx-clc{margin:0;padding:4px 16px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-size:14px;line-height:1.4}
+.mx-cl .mx-clh{display:flex;align-items:center;gap:8px;min-height:46px}
+.mx-cl .mx-clt{flex:1 1 auto;min-width:0;font-size:14.5px;font-weight:500;color:var(--white)}
+.mx-cl .mx-clnav{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;color:var(--muted);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mx-cl .mx-clnav button,.mx-cl .mx-clx{flex:0 0 24px;width:24px;height:24px;padding:0;display:grid;place-items:center;border:0;border-radius:6px;background:none;color:var(--text-dim);cursor:pointer}
+.mx-cl .mx-clnav button:hover:not(:disabled),.mx-cl .mx-clx:hover{background:var(--hover-side);color:var(--text)}
+.mx-cl .mx-clnav button:disabled{opacity:.38;cursor:default}
+.mx-cl .mx-clh svg,.mx-cl .mx-cln svg,.mx-cl .mx-cled svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.mx-cl .mx-cln svg,.mx-cl .mx-cled svg{width:14px;height:14px}
+.mx-cl .mx-clo{display:flex;align-items:center;gap:12px;width:100%;padding:9px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.mx-cl .mx-clo~.mx-clo,.mx-cl .mx-clo~.mx-clf{border-top:1px solid var(--border)}
+.mx-cl .mx-cln{flex:0 0 28px;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:var(--chip);color:var(--text-dim);font:500 13px/1 "JetBrains Mono",monospace}
+.mx-cl .mx-clo:hover .mx-cln{background:var(--ai-soft);color:var(--ai-2)}
+.mx-cl .mx-clo.on .mx-cln{background:var(--ai);color:var(--ai-fg)}
+.mx-cl .mx-cltx{display:flex;flex-direction:column;gap:1px;flex:1 1 auto;min-width:0}
+.mx-cl .mx-cltx b{font-weight:500;color:var(--white);overflow-wrap:anywhere}
+.mx-cl .mx-cltx i{font-style:normal;font-size:12.8px;color:var(--muted)}
+.mx-cl .mx-cltx b.is-skip{font-weight:400;font-style:italic;color:var(--muted)}
+.mx-cl .mx-cled{flex:0 0 auto;color:var(--muted);opacity:0;transition:opacity .12s}
+.mx-cl .mx-clo:hover .mx-cled,.mx-cl .mx-clo:focus-visible .mx-cled{opacity:1}
+.mx-cl .mx-clo:focus-visible,.mx-cl .mx-clsk:focus-visible,.mx-cl .mx-clnav button:focus-visible,.mx-cl .mx-clx:focus-visible{outline:2px solid var(--ai-line);outline-offset:2px;border-radius:6px}
+.mx-cl .mx-clf{display:flex;align-items:center;gap:12px;padding:9px 0;cursor:text}
+.mx-cl .mx-clf input{flex:1 1 auto;min-width:0;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}
+.mx-cl .mx-clf input::placeholder{color:var(--muted)}
+.mx-cl .mx-clsk{flex:0 0 auto;height:28px;padding:0 12px;border:0;border-radius:7px;background:var(--chip);color:var(--text);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.mx-cl .mx-clsk:hover{background:var(--hover-side)}
+.mx-cl .mx-clsk.is-go{background:var(--ai);color:var(--ai-fg)}
+.mx-cl .mx-clsk.is-go:hover{background:var(--ai-h)}
+.mx-cl .mx-clend{justify-content:space-between;cursor:default}
+.mx-cl .mx-clhint{font-size:12.8px;color:var(--muted)}
+
+/* "Recommended", at the right end of an option row in both clarifier options - shown only when the option carries the flag */
+.mx-aicq .mx-rec{flex:0 0 auto;margin-left:auto;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--text-dim);font-size:11.5px;font-weight:500;line-height:1.5;white-space:nowrap}
+.mx-aicq .aicqo.on .mx-rec,.mx-aicq .mx-clo.on .mx-rec{color:var(--text)}
+
+/* ── the runbook card, Option 2 (.mx-forge2) - see forgeDress in the script for what it is and why ── */
+body .mira-forge.mx-forge2{font-size:13px;color:var(--page-text-color);background:var(--widget-background);border:1px solid var(--border-color);border-radius:8px;box-shadow:none}
+body .mira-forge.mx-forge2 .mira-forge-head{flex-wrap:nowrap;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-icon{flex:0 0 18px;height:18px;border-radius:0;background:none;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-icon svg{width:16px;height:16px}
+body .mira-forge.mx-forge2 .mira-forge-heading{flex:1 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+body .mira-forge.mx-forge2 .mira-forge-title{font-size:14px;font-weight:600;letter-spacing:0;color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-chips{gap:0;align-items:baseline}
+body .mira-forge.mx-forge2 .mira-forge-chip{padding:0;border:0;border-radius:0;background:none;font-size:12px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-chip+.mira-forge-chip::before{content:"\00b7";margin:0 6px}
+body .mira-forge.mx-forge2 .mira-forge-tag{font-family:var(--numeric-font-family);font-size:11.5px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-code{display:none}
+body .mira-forge.mx-forge2 .mira-forge-main{row-gap:8px;padding:14px}
+/* the stepper */
+body .mira-forge.mx-forge2 .mira-forge-stages{flex-wrap:nowrap;gap:0;align-items:center;margin-bottom:4px;font-size:12.5px}
+body .mira-forge.mx-forge2 .mira-forge-stages li{display:flex;flex:1 1 0;align-items:center;gap:7px;min-width:0;font-weight:400;color:var(--neutral-light);white-space:nowrap}
+body .mira-forge.mx-forge2 .mira-forge-stages li:last-child{flex:0 0 auto}
+body .mira-forge.mx-forge2 .mira-forge-stages li:not(:last-child)::after{content:"";flex:1 1 auto;min-width:12px;height:1px;margin:0 10px 0 3px;background:var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-done{color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-done:not(:last-child)::after{background:var(--secondary-green)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-now{font-weight:600;color:var(--page-text-color)}
+body .mira-forge.mx-forge2 .mira-forge-stages li.is-failed{font-weight:600;color:var(--secondary-red)}
+.mx-forge2 .mx-fst{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--border-color)}
+.mx-forge2 .mx-fst svg{width:11px;height:11px;fill:none;stroke:var(--widget-background);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.mx-forge2 li.is-done .mx-fst{border-color:var(--secondary-green);background:var(--secondary-green)}
+.mx-forge2 li.is-failed .mx-fst{border-color:var(--secondary-red);background:var(--secondary-red)}
+.mx-forge2 li.is-now .mx-fst{border-color:var(--page-text-color)}
+.mx-forge2 li.is-now .mx-fst::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--page-text-color);animation:mxfst 1.4s ease-in-out infinite}
+@keyframes mxfst{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.mx-forge2 li.is-now .mx-fst::before{animation:none}}
+/* the message */
+body .mira-forge.mx-forge2 .mira-forge-where{font-size:12px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-headline{margin-top:0;font-size:15px;font-weight:600;line-height:1.35;letter-spacing:0;color:var(--page-text-color)}
+body .mira-forge.mx-forge2.is-fail .mira-forge-headline{color:var(--secondary-red)}
+body .mira-forge.mx-forge2.is-pass .mira-forge-headline{color:var(--secondary-green)}
+body .mira-forge.mx-forge2 .mira-forge-sub{margin:-4px 0 0;font-size:13px;color:var(--neutral-light)}
+body .mira-forge.mx-forge2 .mira-forge-problems{row-gap:6px;padding:2px 0 2px 10px;font-family:inherit;font-size:12.5px;color:var(--page-text-color);background:none;border-left:2px solid var(--secondary-red);border-radius:0}
+body .mira-forge.mx-forge2 .mira-forge-problem-line{padding:0 6px;border-radius:4px;background:var(--code-tag-background-color);color:var(--page-text-color);font-family:var(--numeric-font-family);font-size:11.5px;text-decoration:none}
+/* the footer */
+body .mira-forge.mx-forge2 .mira-forge-foot{gap:2px;padding:6px 8px;background:none;border-top:1px solid var(--border-color)}
+body .mira-forge.mx-forge2 .mira-forge-foot .mira-forge-button{height:28px;padding:0 8px;font-size:12.5px;font-weight:500;color:var(--neutral-light);background:none;border:0;border-radius:6px}
+body .mira-forge.mx-forge2 .mira-forge-foot .mira-forge-button:hover{color:var(--page-text-color);background:var(--code-tag-background-color)}
+
+/* the runbook card, Option 3 (.mx-forge3 on top of .mx-forge2): no steps - one progress line and one status chip. See forge3. */
+body .mira-forge.mx-forge2.mx-forge3 .mira-forge-stages{display:none}
+body .mira-forge.mx-forge2.mx-forge3 .mira-forge-head{border-bottom:0}
+.mx-forge3 .mx-fprog{height:3px;background:var(--border-color);overflow:hidden}
+.mx-forge3 .mx-fprog.is-none{height:1px}
+.mx-forge3 .mx-fprog i{display:block;flex:0 0 auto;width:0;height:100%;background:var(--secondary-green);transition:width .45s cubic-bezier(.2,0,0,1),background-color .2s}
+.mx-forge3 .mx-fprog.is-none i{width:0!important}
+.mx-forge3 .mx-fprog.is-failed i{background:var(--secondary-red)}
+.mx-forge3 .mx-fstat{display:inline-flex;align-self:flex-start;align-items:center;gap:7px;height:24px;padding:0 10px 0 9px;border-radius:999px;background:var(--code-tag-background-color);color:var(--page-text-color);font-size:12px;font-weight:500;white-space:nowrap}
+.mx-forge3 .mx-fstat i{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:var(--secondary-green)}
+.mx-forge3 .mx-fstat.is-now i{background:var(--page-text-color);animation:mxfst 1.4s ease-in-out infinite}
+.mx-forge3 .mx-fstat.is-failed{color:var(--secondary-red)}
+.mx-forge3 .mx-fstat.is-failed i{background:var(--secondary-red)}
+@media (prefers-reduced-motion:reduce){.mx-forge3 .mx-fstat.is-now i{animation:none}.mx-forge3 .mx-fprog i{transition:none}}
+
+/* ⚠️ THE STEPPER IN A NARROW CARD (reported 18 Nov 2026 with the stage dragged to ~300px: the four labels ran into each other and
+   into the marks). The labels are nowrap text in equal shares, so below ~520px of CARD width they cannot fit. The card is a
+   container, and under that width the stepper keeps all four marks and their line but names ONLY ONE step - the one in hand, the
+   one that failed, or (between stages) the last one finished. A label is a bare text node, so it is hidden with font-size:0 on
+   its <li> rather than by wrapping it; the mark and the line are sized in px and are not affected. Option 3 has no stepper. */
+body .mira-forge.mx-forge2{container-type:inline-size;container-name:mxforge}
+@container mxforge (max-width:520px){
+  body .mira-forge.mx-forge2 .mira-forge-stages li{font-size:0;gap:0}
+  body .mira-forge.mx-forge2 .mira-forge-stages li:not(:last-child)::after{min-width:8px;margin:0 6px}
+  body .mira-forge.mx-forge2 .mira-forge-stages li.is-now,
+  body .mira-forge.mx-forge2 .mira-forge-stages li.is-failed,
+  body .mira-forge.mx-forge2 .mira-forge-stages:not(:has(.is-now,.is-failed)) li.is-done:not(:has(~ li.is-done)){font-size:12.5px;gap:7px;flex:1 0 auto}
+  body .mira-forge.mx-forge2 .mira-forge-stages li:last-child{flex:0 0 auto}
+}
+
+/* the code INSIDE the card, under its footer (Options 2 and 3) - see codeInline in the script */
+.mx-fcode{border-top:1px solid var(--border-color)}
+body .mx-fcode .mira-code-pane{background:none}
+body .mx-fcode .mira-code-pane-head{height:36px;padding:0 6px 0 14px;border-bottom:1px solid var(--border-color)}
+body .mx-fcode .mira-code-pane-title{font-size:12px}
+body .mx-fcode .mira-code-pane-name{color:var(--page-text-color)}
+body .mx-fcode .mira-code-pane-ext{color:var(--neutral-light)}
+body .mx-fcode .mira-code-pane-body{max-height:320px;padding:10px 0;font-family:var(--numeric-font-family);font-size:12px;background:var(--code-tag-background-color)}
+body .mx-fcode .mira-code-pane-n{flex:0 0 42px;padding-right:12px;color:var(--neutral-light)}
+body .mx-fcode .mira-code-pane-code{color:var(--page-text-color)}
