@@ -15346,3 +15346,37 @@ user's Chrome; **nothing was sent, renamed or deleted on the instance**.
 
 ## Handoff
 Latest session state is in [HANDOFF.md](HANDOFF.md) — read it first.
+
+## Trend Compare → "Single Value", and it follows the board's time range (Option 1, 18 Nov 2026)
+
+Request: remove the widget's own "Compare with" timeline — the time range is global (the header chip). `cmpPer()` /
+`cmpCur()` / `cmpWin()` now derive both periods from `trSelIdx` / `tlA..tlB`: **Today → Today vs Yesterday**, **Last 12
+Hours → last 12 h vs the previous 12 h**, This Week → vs last week, custom → vs the previous period of the same length.
+`cmpWin()` picks a step (1 min … 1 day) for ≤30 points; the data re-seeds per range; the x labels end at `tlB`. The editor
+shows the header time chip again for this type, and the Style tab's first row is an `obs-banner` note (`cmpNoteHTML`)
+saying how the two periods pair. The board badge shows the board's range. `cmpWith` / `cmpWin` stay in saved cards and
+are ignored; `CMP_WITH` / the picker-binding code are kept, unreachable. **Display name is "Single Value"** (drawer tile,
+editor tab, `W_TILE_SVG` key, toasts); the internal key stays `cmp`. Comments still say "Trend Compare".
+- **Editor header time range = `obs-date-time-picker kind="range" bordered`** (`#cwTr`, 18 Nov 2026), for every widget type
+  (hidden on Free Text). It edits the DASHBOARD range: a pick → `trSet` / custom → tlA/tlB, then `cwRender`. `cwTrSync()`
+  (called from cwRender) restores the board's preset by clicking its row in the shadow root (no value setter), with
+  `cwTrQuiet` muting the echo. The two stamps beside it stay ours (`trFmtLive`, 12px `--neutral-light`) — the picker's
+  `show-range` resolves against the real clock while this board runs on `TL_NOW`. Single Value's chart view is Area · Line
+  only, with the page tooltip on each icon (`data-tip-force` skips `tipRedundant` for the sr-only label).
+- **Single Value legend (18 Nov 2026)**: option 1's chart + legend sit in `.wcmb`, a size container — the legend hides when
+  the widget is under 150px tall (Bottom) or 380px wide (Right/Left) and returns when resized larger. Legend Position
+  (Bottom · Right · Left, `cmpLegPos`, the Chart editor's icon segment) shows under the Legend switch; Right/Left draw a
+  `.wcmgrip` that drags the legend width (`cmpLegW`, 96px…60%, double-click resets to 25%), saved to the draft or widget.
+- **Chart editor legend block (18 Nov 2026)**: the Legend switch moved below Points (a full-width `.cwchlegsw` row); while ON,
+  Legend Position and **Legend Font Size** (`obs-radio.cwchlfs`, `CW_CH_LFS`: Auto · Small 11 · Medium 13 · Large 15px,
+  `CW.style.chLegFs`) sit side by side. Auto (default) = `cwChLfsPx` from the chart width (10 / 11 / 12px at <520 / <1000 /
+  wider), re-resolved by the preview's ResizeObserver. Editor preview only — the placed chart widget does not read it yet.
+- **Bottom legend height actually follows the drag (18 Nov 2026)**: `tnLegH` turns any height the items don't fill into
+  legend padding (split above/below), so the legend box = the dragged height and the handle stays under the pointer;
+  one column becomes a centred vertical list. Single Value's Bottom legend has its own horizontal `.wcmgrip.h`
+  (`--lgh` / `cmpLegH`, 20px…60%, double-click resets).
+- **Mira AI › MCP Connector: the Icon upload field is gone (18 Nov 2026)** — from Set Up Manually and from Edit of a manual
+  connector (`setting.html`). `mraIconFieldHTML` / `mraIconPick` and the `.mraic*` CSS are kept, unreferenced; their
+  bindings in `mraFormBindDS` were already null-guarded. A connector saved with an icon still draws it (`v.icon`).
+- **Connector card description is one line (18 Nov 2026)** — `.mycidx .mycidd` nowrap + ellipsis, full text as its `data-tip`; applies to every `tagsIn` card (View / Edit / Add Connector, My Connectors).
+- **Every page tooltip (`.tipbox`) uses the DS Tooltip colours (18 Nov 2026)** — 18 pages: dark `rgba(43,57,79,.9)` / `#cad3e2`, light `#172336` / `#fff`, the DS shadow, no border, 4px radius (`--tt-*` declared on `.tipbox`; list rows and keycaps follow `--tt-fg`). Charts' Highcharts tooltips are not `.tipbox` and are unchanged.

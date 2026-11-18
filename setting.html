@@ -1106,6 +1106,15 @@ html[data-theme="light"] .sbmck input{color-scheme:light}
   background:var(--pop);border:1px solid var(--border);color:var(--text);
   font-size:11.5px;font-weight:500;line-height:1.4;box-shadow:var(--pop-shadow);
   opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s}
+/* ⚠️ THE DS TOOLTIP's COLOURS (request, 18 Nov 2026: "all tooltip colour using the ObserveOps design system") — the Tooltip
+   registry's default dark bubble: --tooltip-background-color (dark rgba(43,57,79,.9) · light #172336 = --neutral-darker),
+   --tooltip-text-color (#cad3e2 = --page-text-color · light #fff), --tooltip-box-shadow; no border; @btn-radius 4px.
+   Declared here because these pages do not load the DS token sheet. It was this page's popover surface (--pop + border). */
+.tipbox{--tt-bg:rgba(43,57,79,.9);--tt-fg:#cad3e2;--tt-sh:0 2px 8px rgba(0,0,0,.5);
+  background:var(--tt-bg);color:var(--tt-fg);border-color:transparent;box-shadow:var(--tt-sh);border-radius:4px}
+html[data-theme="light"] .tipbox{--tt-bg:#172336;--tt-fg:#fff;--tt-sh:0 2px 8px rgba(0,0,0,.15)}
+.tipbox.tipbox .tipli + .tipli{border-top-color:color-mix(in srgb, var(--tt-fg) 14%, transparent)}
+.tipbox.tipbox .tipk{background:color-mix(in srgb, var(--tt-fg) 16%, transparent);color:color-mix(in srgb, var(--tt-fg) 75%, transparent)}
 .tipbox.on{opacity:1;transform:none}
 /* list mode — the reference's shape: one row per item, hairline between, no bullets */
 .tipbox.tiplist{padding:4px;max-width:320px;display:flex;flex-direction:column}
@@ -17395,6 +17404,7 @@ obs-banner.mralimh[hidden]{display:none!important}   /* an author display rule b
 .myca+.myca,.mycdim+.myca{margin-left:12px}
 .mycacts{display:inline-flex;align-items:center;justify-content:flex-end;white-space:nowrap}
 .stcdr.mycdr{width:765px}
+.stcdr:not(.mrasplit):not(.mrawide):is(:has(#mraFormDs),:has(#mraView)){width:765px}   /* Add / Edit Connector as wide as the Connector drawer (request, 18 Nov 2026) */
 .cgfrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
 /* the standing pills are the product Monitors list's Groups · Types · Severity (and IPAM's §9 pills):
    the DS default-button tokens re-pointed at the + Filter chip fill, so fill = edge, no outline, no chevron */
@@ -17448,6 +17458,42 @@ obs-banner.mralimh[hidden]{display:none!important}   /* an author display rule b
 #mycHd:not(.mycidc){display:block}#mycHd{--page-header-padding:0}   /* the id rule must not out-rank .mycidc's flex (6 Nov 2026) */
 #mycFormDs > #mycHd{margin:0 0 24px}
 #mycFormDs > #mycHd.mycidet{margin-bottom:0;padding:12px}
+#mycFormDs:not([data-dt]) > #mycHd.mycidet{margin-bottom:24px}
+#mraIdc.mycidet,#mraVwIdc.mycidet{padding:12px}   /* MCP Connector's cards = the My Connectors details card (18 Nov 2026) */   /* the Reconnect / Set up drawer uses the details card too (18 Nov 2026) — it keeps the setup form's 24px before Headers */
+
+/* ── the connector card, everywhere (18 Nov 2026) — .mycidx ── */
+/* colours + alignment from the supplied card (18 Nov 2026): a deeper card on its own hairline, a lifted logo tile, the right column's
+   two lines on the SAME line boxes as name / description (24 / 20) so each pair shares a baseline, and a plain green toggle */
+.mycidc.mycidx{display:block;padding:0;gap:0;background:var(--common-widget-bg,var(--neutral-lightest));border:1px solid var(--field-border-color,var(--border-color));border-radius:4px}
+#mraFormDs > .mycidc.mycidx,#mycFormDs > .mycidc.mycidx,#mraView > .mycidc.mycidx{padding:0;margin:0 0 24px}
+.mycidx .mycidxt{display:flex;align-items:center;gap:16px;padding:16px}
+.mycidx .mrati.lg{flex:0 0 48px;width:48px;height:48px;border-radius:4px;background:var(--field-border-color,var(--neutral-lighter))}
+.mycidx .mrati.lg svg{width:24px;height:24px}
+.mycidx .mycidm{flex:1 1 auto;min-width:0;display:grid;gap:2px;align-content:center}
+.mycidx .mycidn{font-size:18px;font-weight:600;line-height:24px;color:var(--page-text-color)}
+.mycidx .mycidd{font-size:14px;line-height:20px;color:var(--neutral-light);display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* ONE line, the rest truncated; the full text is the hover tip (request, 18 Nov 2026) */
+.mycidx .mycidm{min-width:0}
+.mycidx .mycidxr{flex:0 0 auto;min-width:0;max-width:60%;display:grid;gap:2px;justify-items:end;align-content:center;text-align:right}
+.mycidx .mycidxs{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:24px;font-size:14px;white-space:nowrap;max-width:100%}
+.mycidx .mycidxst{display:inline-flex;align-items:center;gap:6px;font-weight:500;color:var(--neutral-light)}
+.mycidx .mycidxst i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.mycidx .mycidxst.ok{color:var(--secondary-green)}.mycidx .mycidxst.bad{color:var(--secondary-red)}
+.mycidx .mycidxsep{color:var(--neutral-light);opacity:.5}
+.mycidx .mycidxsi{display:inline-flex;align-items:center;gap:6px;color:var(--neutral-light)}
+.mycidx .mycidxsi obs-icon{display:inline-flex}
+.mycidx .mycidxu{max-width:280px;height:20px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--numeric-font-family,'JetBrains Mono',monospace);font-size:13px;color:var(--neutral-light);cursor:pointer}
+.mycidx .mycidxu:hover,.mycidx .mycidxu:focus-visible{color:var(--page-text-color);text-decoration:underline;text-underline-offset:3px;outline:none}
+.mycidx .mycidxb{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-top:1px solid var(--field-border-color,var(--border-color));font-size:14px;color:var(--neutral-light)}
+.mycidx .mycidxb b{font-weight:600;color:var(--page-text-color)}
+/* the bottom row is its own, deeper band (18 Nov 2026, from the supplied card): DS --widget-background (#0b1627) under the card's
+   --common-widget-bg (#172336) in dark; in light both of those are white, so the band takes --neutral-lightest (#ecf1f9) */
+.mycidc.mycidx .mycidxb{background:var(--widget-background);border-radius:0 0 3px 3px}
+html[data-theme="light"] .mycidc.mycidx .mycidxb{background:var(--neutral-lightest)}
+.mycidc.mycidx .mycidd{font-weight:400}.mycidc.mycidx .mycidxt{align-items:flex-start}.mycidc.mycidx .mycidm,.mycidc.mycidx .mycidxr{gap:2px;min-height:48px;align-content:center}   /* a description that wraps grows the text DOWN, so the status stays on the name's line and the URL on the description's first line */.mycidc.mycidx .mycidn{font-size:18px;font-weight:600;line-height:24px}   /* out-rank .mycidc .mycidm / .mycidc .mycidn so the name and the status share one line box */
+.mycidx .mycidxb .stsw .lb{display:none}   /* a plain toggle, as supplied — the state is the knob and the fill */
+.mycidx .mycidxb .stsw{margin-top:0;width:40px;min-width:40px}
+.mycidx .mycidxb .stsw.on{background:var(--secondary-green)}
+.mycidx .mycidxb .stsw.on::after{background:#fff;left:calc(100% - 19.5px)}
 .mycuse{display:flex;align-items:center;gap:16px;padding:12px 16px;margin:0 0 24px;border:1px solid var(--border-color);border-radius:4px}   /* a bordered box like the identity card above, no rule underneath (request, 17 Nov 2026) */   /* the rule at half strength (request, 12 Nov 2026: it was too strong) */   /* Use in chats, outside the card on a ruled row (12 Nov 2026) */
 .mycidc + .mycuse{margin-top:12px}   /* two boxes, not one stuck to the other (17 Nov 2026) */
 .mycuset{flex:1 1 auto;min-width:0;display:grid;gap:2px}
@@ -22843,6 +22889,7 @@ function tipSeenText(el){
 const TIP_KEYCAP = /\s{2,}\S+$/;                 /* "Label  ⌘K" — the keycap tail tipShow renders */
 function tipRedundant(el, txt){
   if (TIP_KEYCAP.test(txt)) return false;        /* a tip that carries a shortcut always shows */
+  if (el.scrollWidth > el.clientWidth + 1) return false;   /* truncated text (ellipsis) — the tip is the only place the rest is readable (18 Nov 2026) */
   const own = tipSeenText(el).toLowerCase();
   return !!own && own.indexOf(txt.replace(/\s+/g,' ').trim().toLowerCase()) === 0;
 }
@@ -52059,7 +52106,7 @@ function mraConnHTML(){
 }
 /* Row actions are the DS context menu (obs-menu ⋯, as My Connectors) — request, 2 Nov 2026, replacing
    the hand-built stcMenu. mraMenu is kept, unreferenced. Both icon names render in the vendored bundle. */
-const MRA_ROW_ACTS = [{ key:'edit', label:'Edit Connector', icon:'pencil' }, { key:'del', label:'Delete Connector', icon:'trash-alt', danger:true }];
+const MRA_ROW_ACTS = [{ key:'edit', label:'Edit Connector', icon:'pencil' }, { key:'del', label:'Remove Connector', icon:'trash-alt', danger:true }];
 function mraConnAfter(){
   return mraConnAfter1();
   document.querySelectorAll('#stMain obs-menu.mramenu').forEach(m => m.addEventListener('select', e => {
@@ -52080,7 +52127,7 @@ function mraView(id){
   const fld = (label, val, o = {}) => `<div class="mradsf${o.full ? ' full' : ''}">${lab(label, o.req)}<obs-input class="mradsin" block disabled aria-label="${label}" value="${mraEsc(val)}"></obs-input></div>`;
   const tags = (r.roles && r.roles.length ? r.roles : ['—']).map(x => `<obs-tag>${mraEsc(x)}</obs-tag>`).join('');
   /* name · description · MCP URL as the Add / Edit form's own identity card (request, 18 Nov 2026) — the same builder, so the two cannot drift */
-  const body = `<div id="mraView" class="mraview">${mycIdentHTML(r, false, { id:'mraVwIdc', copyId:'mraVwCopy', bare:true, chip:true, cls:'mraidfo2' })}<div class="mradsg">
+  const body = `<div id="mraView" class="mraview">${mycIdentHTML(r, false, { id:'mraVwIdc', copyId:'mraVwCopy', tagsIn:true, status:[r.on ? 'Enabled' : 'Disabled', r.on ? 'ok' : 'off'] })}<div class="mradsg">
       ${fld('Sign In', mraSignIn1(r), { req:1 })}${fld('Status', r.on ? 'Enable' : 'Disable')}
       <div class="mradsf">${lab('Roles', 1)}<div class="mravtags">${tags}</div></div>
       ${r.auth && r.org ? fld('Redirect URL', MRA.redirect, { full:1 }) : ''}
@@ -52094,14 +52141,15 @@ function mraView(id){
 function mraMenu(ev, id){
   stcMenu(ev.currentTarget, [
     { t:'Edit Connector', ic:'pencil', fn:() => mraForm(id) },
-    { t:'Delete Connector', ic:'trash-alt', del:true, fn:() => mraDelete(id) }
+    { t:'Remove Connector', ic:'trash-alt', del:true, fn:() => mraDelete(id) }
   ], { right:true });
 }
 function mraDelete(id){
   const r = MRA.rows.find(x => x.id === id); if (!r) return;
-  stcConfirm('Delete ' + r.n + '?', `The connector is removed for everyone, and chats can no longer call <b>${mraEsc(r.n)}</b>.`, 'Delete', () => {
-    MRA.rows = MRA.rows.filter(x => x.id !== id); stMainPaint(); toast(r.n + ' deleted');
-  });
+  /* the DS confirm (obs-modal variant="confirm", the shared #ipmCf instance) — was the hand-built stcConfirm box (18 Nov 2026) */
+  ipmConfirm({ title: 'Remove ' + r.n + '?', icon: 'trash', confirmText: 'Remove', variant: 'error',
+    body: `The connector is removed for everyone, and chats can no longer call <b>${mraEsc(r.n)}</b>.`,
+    onOk: () => { MRA.rows = MRA.rows.filter(x => x.id !== id); stMainPaint(); toast(r.n + ' removed'); } });
 }
 
 /* ── Add Connector — the template picker (935px on live) ─────────────────────────────────── */
@@ -52216,11 +52264,12 @@ function mraFormBodyDS(F, v){
   const inp = (k, label, val, o = {}) => `<div class="mradsf${E[k] ? ' err' : ''}${o.full ? ' full' : ''}">${lab(label, o.req)}<obs-input class="mradsin" data-mk="${k}" block aria-label="${label}"${o.ro ? ' readonly' : ''}${o.type ? ` type="${o.type}"` : ''}${o.ph ? ` placeholder="${mraEsc(o.ph)}"` : ''} value="${mraEsc(val)}"></obs-input>${ex(k)}</div>`;
   const html = `<div id="mraFormDs">
     <!-- the connector block as an identity card (request, 5 Nov 2026 — like My Connectors' Set Up card): its logo, then the three fields -->
-    ${(v.k || F.edit) ? `<!-- a connector from the list — and, on Edit, a manual one too (request, 18 Nov 2026: name and URL are not edited after creation, shown as this card) (request, 5 Nov 2026): name, description and URL come from the server, so they are a read-only card -->
-    ${(F.edit && !v.k) ? mraIconFieldHTML(v) : ''}${mycIdentHTML(v, false, { id:'mraIdc', copyId:'mraCopyUrl', bare:true, chip: true, cls: 'mraidfo2' })}`   <!-- name, description and URL only: no tags, no Enabled switch (request, 6 Nov 2026) -->
-    : `<!-- Set Up Manually: the three fields, editable, as they always were -->
-    ${mraIconFieldHTML(v)}
-    <div class="mradsg">${inp('n', 'Connector Name', v.n, { req:1 })}${inp('d', 'Description', v.d)}${inp('url', 'MCP URL', v.url, { req:1, full:1 })}   <!-- editable on Edit too (request, 18 Nov 2026): a manual connector's URL can change --></div>
+    ${(v.k || F.edit || F.more) ? `<!-- a connector from the list — and, on Edit, a manual one too (request, 18 Nov 2026: name and URL are not edited after creation, shown as this card) (request, 5 Nov 2026): name, description and URL come from the server, so they are a read-only card -->
+    ${mycIdentHTML(v, false, { id:'mraIdc', copyId:'mraCopyUrl', tagsIn:true, status:false })}`   <!-- name, description and URL only: no tags, no Enabled switch (request, 6 Nov 2026) -->
+    : `<!-- Set Up Manually: the three fields, editable, as they always were. The Icon upload field was REMOVED (request, 18 Nov 2026:
+         "remove the icon upload option") — here and on Edit. mraIconFieldHTML / mraIconPick are kept, unreferenced; a connector
+         saved with an icon still draws it (mraTile reads v.icon). -->
+    <div class="mradsg">${inp('n', 'Connector Name', v.n, { req:1, ph:'e.g. GitHub' })}${inp('d', 'Description', v.d, { ph:'What this connector lets chats do' })}${inp('url', 'MCP URL', v.url, { req:1, full:1, ph:'https://mcp.example.com/mcp' })}   <!-- editable on Edit too (request, 18 Nov 2026): a manual connector's URL can change --></div>
     <obs-divider class="mradsdiv"></obs-divider>`}
     <h4 class="mradsh">Access</h4>
     <div class="mradsf${E.roles ? ' err' : ''}">${lab('Roles', 1)}<obs-select id="mraRolesDs" class="agadvsel mradsin" aria-label="Roles" block multiple placeholder="Select" options="${J(MRA.roles.map(r => ({ value:r, text:r })))}" value="${mraEsc(v.roles.join(','))}"></obs-select>${ex('roles')}
@@ -52241,6 +52290,9 @@ function mraFormBodyDS(F, v){
   /* Option 2's rail drawer (request, 3 Nov 2026): Access and Authentication stay hidden until "Detect authentication"
      beside the MCP URL has asked the server how it signs people in - then they open with that answer selected. */
   /* every field shows from the start (request, 5 Nov 2026) — Access and Authentication no longer wait for a detect */
+  /* Set Up Manually is two steps (request, 18 Nov 2026): Icon · Name · Description · MCP URL first, and Continue in the footer
+     reveals Access and Authentication. Templates and Edit are unaffected — their identity is already known. */
+  if (mraGated(F)){ const i = html.indexOf('<obs-divider class="mradsdiv"></obs-divider>'); if (i > 0) return html.slice(0, i) + '</div>'; }
   return html;
 }
 /* the Recommended tag (request, 5 Nov 2026): on the choice that matches what the server expects — known for a connector from the
@@ -52355,12 +52407,22 @@ function mraFormBindDS(){
   const cp = document.getElementById('mraCopyDs'); if (cp) cp.addEventListener('click', () => stTap(() => mraCopy(MRA.redirect, cp)));
   const rs = document.getElementById('mraResetDs'); if (rs) rs.addEventListener('click', () => stTap(mraFormReset));
   const sv = document.getElementById('mraSaveDs'); if (sv) sv.addEventListener('click', () => stTap(mraSave));
+  const co = document.getElementById('mraContDs'); if (co) co.addEventListener('click', () => stTap(mraContinue));
+  const ts = document.getElementById('mraTestDs'); if (ts) ts.addEventListener('click', () => stTap(mraTest));
+}
+/* Test (request, 18 Nov 2026): shown only for Sign in + Org-managed — the one case where the org enters a client ID and secret
+   it can check before saving. Canned: it validates the two fields, then reports a passing sign-in after a short beat. */
+function mraTest(){
+  const F = MRA.f; if (!F || F.testing) return;
+  if (!F.cid.trim() || !F.sec.trim()){ F.tried = true; mraFormPaint(); toast('Enter the client ID and secret to test the sign in'); return; }
+  F.testing = true; mraFormPaint();
+  setTimeout(() => { if (MRA.f !== F) return; F.testing = false; mraFormPaint(); toast('Sign in test passed — the client ID and secret were accepted'); }, 1200);
 }
 function mraFormPaint(open){
   const F = MRA.f, v = F.v, err = k => F.tried && mraErr()[k] ? ' err' : '';
   if (true){   /* both options (request, 3 Nov 2026); the old Option 2 form below is kept, unreferenced */
     const body = mraFormBodyDS(F, v);
-    const foot = `<span id="mraFormFt" class="mradsft"><span class="mand"><b>*</b> fields are mandatory</span><obs-button id="mraResetDs" variant="default">Reset</obs-button><obs-button id="mraSaveDs" variant="primary">${F.edit ? 'Update Connector' : 'Add Connector'}</obs-button></span>`;
+    const foot = `<span id="mraFormFt" class="mradsft"><span class="mand"><b>*</b> fields are mandatory</span><obs-button id="mraResetDs" variant="default">Reset</obs-button>${mraGated(F) ? '' : v.auth === 1 && v.org ? `<obs-button id="mraTestDs" variant="default"${F.testing ? ' disabled' : ''}>${F.testing ? 'Testing…' : 'Test'}</obs-button>` : ''}${mraGated(F) ? '<obs-button id="mraContDs" variant="primary">Next</obs-button>' : `<obs-button id="mraSaveDs" variant="primary">${F.edit ? 'Update Connector' : 'Add Connector'}</obs-button>`}</span>`;
     if (F.split){
       const t = MRA_TPL.find(x => x.k === MRA.rs);
       const hd = `<div class="mrapnh"><b>${t ? mraEsc(t.n) : 'Custom connector'}</b><p>${t ? 'Filled in from the ' + mraEsc(t.n) + ' template - everything stays yours to change: the address, the authentication, the name.' : 'Enter the server yourself: its address, how people authenticate and who may use it.'}${t ? ` <a href="${t.doc}" target="_blank" rel="noopener noreferrer">Documentation</a>` : ''}</p></div>`;
@@ -52451,7 +52513,16 @@ function mraDetect(){
     const sign = MRA_TPL.some(t => t.url === F.v.url.trim()) ? 1 : 0; F.v.auth = sign; F.detAuth = sign; F.detected = true; F.detUrl = F.v.url.trim(); mraFormPaint();
     toast(sign ? 'This server asks people to sign in' : 'This server needs no sign-in'); }, 900);
 }
-function mraFormReset(){ MRA.f.v = JSON.parse(JSON.stringify(MRA.f.base)); MRA.f.cid = MRA.f.sec = ''; MRA.f.tried = false; MRA.f.detected = false; mraFormPaint(); }
+function mraGated(F){ return !!F && !F.edit && !F.v.k && !F.more; }
+/* Continue: the identity has to be valid before the rest opens — the same name / URL rules Save applies */
+function mraContinue(){
+  const F = MRA.f; if (!F) return; const e = mraErr();
+  if (e.n || e.url){ F.tried = true; mraFormPaint(); return; }
+  F.more = true; F.tried = false; mraFormPaint();
+  setTimeout(() => { const h = [...document.querySelectorAll('#mraFormDs .mradsh')].find(x => x.textContent.trim() === 'Access');
+    const sc = h && h.closest('#stcDrB, #mraSpF'); if (h && sc) sc.scrollTop = h.offsetTop - 16; }, 0);
+}
+function mraFormReset(){ MRA.f.more = false; MRA.f.v = JSON.parse(JSON.stringify(MRA.f.base)); MRA.f.cid = MRA.f.sec = ''; MRA.f.tried = false; MRA.f.detected = false; mraFormPaint(); }
 function mraCopy(t, btn){ try { navigator.clipboard.writeText(t); } catch(e){} toast('Redirect URL copied');
   const ic = btn && btn.querySelector('obs-icon'); if (!ic) return;   // the button answers for 1.5s: ✓ + "Copied"
   ic.setAttribute('name', 'check'); btn.dataset.tip = 'Copied'; clearTimeout(btn._cpT);
@@ -52871,11 +52942,11 @@ function mraLimMdEl(){
 /* the record summary pane — the same facts Option 1 lists, given a shape: who, how much, of what, until when */
 function mraLimSumHTML(r, user){
   const ini = ((r.first || '')[0] || user[0] || '?').toUpperCase() + ((r.last || '')[0] || '').toUpperCase();
-  const st = r.state === 'new' ? ['Limit not set','tag-primary'] : r.state === 'off' ? ['Blocked','tag-red'] : ['AI on','tag-green'];
+  const st = r.state === 'new' ? ['Limit not set','tag-primary'] : r.state === 'off' ? ['Blocked','tag-red'] : null;   /* the "AI on" tag was removed on request (18 Nov 2026) — only Blocked / Limit not set are worth a tag */
   const pct = r.limit ? Math.min(100, r.cost / r.limit * 100) : 0;
   const row = (k, v) => `<div class="mralimxr"><span>${k}</span><b>${v}</b></div>`;
   return `<div class="mralimxid"><span class="mralimxav">${mraEsc(ini)}</span><div class="mralimxnm"><b>${mraEsc([r.first, r.last].filter(Boolean).join(' ') || user)}</b><span>${mraEsc(r.email || user)}</span></div></div>
-    <div class="mralimxtg"><obs-tag variant="tag-primary">${mraEsc(r.role)}</obs-tag><obs-tag variant="${st[1]}">${st[0]}</obs-tag></div>
+    <div class="mralimxtg"><obs-tag variant="tag-primary">${mraEsc(r.role)}</obs-tag>${st ? `<obs-tag variant="${st[1]}">${st[0]}</obs-tag>` : ''}</div>
     <div class="mralimxsec">This month</div>
     <div class="mralimxfig"><b>${mra$(r.cost)}</b><span>of ${r.limit === null ? 'no limit set' : mra$(r.limit)}</span></div>
     ${r.limit === null ? '' : `<span class="mraubar mralimxbar"><i style="width:${pct}%;background:${pct >= 100 ? 'var(--severity-critical)' : pct >= 80 ? 'var(--severity-warning)' : 'var(--primary)'}"></i></span>`}
@@ -53058,14 +53129,14 @@ function mycHTML(){
 function mycItems(r, s, u){
   /* the row actions follow the connector's state (request, 3 Nov 2026):
      not connected (never set up, or a sign-in connector not signed in) → Connect, which opens the Set Up drawer;
-     connected, No sign-in  → Update (the same drawer: headers, then Connect) · Disconnect;
+     connected, No sign-in  → Reconnect (the same drawer: headers, then Connect) · Disconnect;
      connected, Sign in     → Refresh (re-opens the session and re-reads the tools - a backend step) · Disconnect.
      "Set up", "Sign in" and "Sign in again" are gone - Connect and Refresh cover them. */
   const disc = { key:'disc', label:'Disconnect', icon:'power-off', danger:true };
   if (s.k === 'admin') return u.set ? [disc] : [];   /* "Your setup is kept" removed on request (3 Nov 2026) */
   if (s.k === 'none' || s.k === 'out') return [{ key:'setup', label:'Connect', icon:'plug' }];
   return r.auth === 1 ? [{ key:'refresh', label:'Refresh', icon:'sync', disabled: !!u.busy }, disc]
-                      : [{ key:'setup', label:'Update', icon:'pencil' }, disc];
+                      : [{ key:'setup', label:'Reconnect', icon:'plug' }, disc];   /* "Update" renamed Reconnect (request, 18 Nov 2026) */
 }
 function mycAfter(){
   cgBind(document.getElementById('mycPage'), 'myc', () => stMainPaint());
@@ -53128,9 +53199,20 @@ function mycIdentHTML(r, sw, o = {}){
       ${r.d ? `<span class="mycidd">${mraEsc(r.d)}</span>` : ''}
       <div class="mycid3u"><span class="mycid3p" id="${o.copyId || 'mycCopyUrl'}" role="button" tabindex="0" data-tip="Copy MCP URL" aria-label="Copy MCP URL ${mraEsc(r.url)}"><obs-icon name="link" size="12"></obs-icon><span class="mycidt">${mraEsc(r.url.replace(/^https?:\/\//, ''))}</span><obs-icon class="mycid3pc" name="copy" size="12"></obs-icon></span></div></div></div>`;   /* one pill: link · host/path · copy (request, 6 Nov 2026) */
   /* o.tagsIn (Connector details, request 12 Nov 2026): the URL chip at the right end of the name's line, the two tags at the right end of the description's line */
-  if (o.tagsIn) return `<div id="${o.id || 'mycHd'}" class="mycidc mycidc2${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true, r.icon)}<div class="mycidm">
-      <div class="mycidnr mycidsb"><b class="mycidn">${mraEsc(r.n)}</b>${url}</div>
-      <div class="mycidnr mycidsb"><span class="mycidd">${mraEsc(r.d || '')}</span><div class="mycidr"><obs-tag class="mycidtg mycidt18" variant="tag-primary">${mraSignIn1(r)}</obs-tag><obs-tag class="mycidtg mycidt18" variant="${stV}">${st.t}</obs-tag></div></div></div></div>`;
+  /* o.tagsIn — THE connector card, everywhere (request, 18 Nov 2026, from a supplied card): logo · name over description on the
+     left; on the right a status dot + word · a lock + how people sign in, the URL under it as plain mono text (click copies);
+     o.swRow adds a ruled bottom row "Use in chats — chats can call this connector's tools" with the switch.
+     o.status: [label, tone] where tone is 'ok' | 'bad' | 'off'; omitted → this user's connection state; false → no status. */
+  if (o.tagsIn){
+    const sTone = o.status === undefined ? (st.k === 'ok' ? 'ok' : st.k === 'admin' ? 'bad' : 'off') : o.status && o.status[1];
+    const sLbl = o.status === undefined ? st.t : o.status && o.status[0];
+    const lk = r.auth === 0 ? 'lock-alt-open' : 'lock-alt';   /* ⚠️ 'lock' is not a DS icon (renders nothing) — the lock-alt pair is */
+    return `<div id="${o.id || 'mycHd'}" class="mycidc mycidx${o.cls ? ' ' + o.cls : ''}"><div class="mycidxt">${mraTile(r.k, true, r.icon)}<div class="mycidm">
+      <b class="mycidn">${mraEsc(r.n)}</b>${r.d ? `<span class="mycidd" data-tip="${mraEsc(r.d)}">${mraEsc(r.d)}</span>` : ''}</div>
+      <div class="mycidxr"><div class="mycidxs">${sLbl ? `<span class="mycidxst ${sTone}"><i></i>${mraEsc(sLbl)}</span><span class="mycidxsep">·</span>` : ''}<span class="mycidxsi">${mraSignIn1(r)}</span></div>
+      <span class="mycidxu" id="${o.copyId || 'mycCopyUrl'}" role="button" tabindex="0" data-tip="Copy MCP URL" aria-label="Copy MCP URL ${mraEsc(r.url)}">${mraEsc((r.url || '').replace(/^https?:\/\//, ''))}</span></div></div>
+      ${o.swRow ? `<div class="mycidxb"><span><b>Use in chats</b> — chats can call this connector's tools</span>${mycSwHTML(r)}</div>` : ''}</div>`;
+  }
   return `<div id="${o.id || 'mycHd'}" class="mycidc${o.chip ? ' mycidc2' : ''}${o.cls ? ' ' + o.cls : ''}">${mraTile(r.k, true, r.icon)}<div class="mycidm">
       ${o.chip ? `<div class="mycidnr"><b class="mycidn">${mraEsc(r.n)}</b>${url}</div>` : `<b class="mycidn">${mraEsc(r.n)}</b>`}
       ${r.d ? `<span class="mycidd">${mraEsc(r.d)}</span>` : ''}
@@ -53178,8 +53260,7 @@ function mycDetailPaint(open){
     : `<div class="myctl">Tools are listed once ${mraEsc(r.n)} is connected.</div>`;
   /* request, 12 Nov 2026: the card is Add Connector's (name + URL chip, description; the tags stay right), and Use in chats left the
      card for its own ruled row under it — title + one line of help left, the switch right */
-  const body = `<div id="mycFormDs" data-dt="1">${mycIdentHTML(r, false, { chip:true, tagsIn:true, cls:'mycidet' })}
-    <div class="mycuse"><div class="mycuset"><b>Use in chats</b><span>Your chats can call this connector's tools while this is on.</span></div>${mycSwHTML(r)}</div>
+  const body = `<div id="mycFormDs" data-dt="1">${mycIdentHTML(r, false, { tagsIn:true, swRow:true })}
     ${o2 ? '' : `<h4 class="mradsh mychh">Actions</h4><div class="mycdta">${btns || '<span class="myctl">No actions — your administrator has turned this connector off.</span>'}</div>`}
     <h4 class="mradsh mychh mycth">Tools<span class="mycthb">${refr ? `<obs-button id="mycDtRefr" class="mycrfb" variant="transparent" size="small"${refr.disabled ? ' aria-busy="true"' : ''} data-tip="Read this connector's tools again"><obs-icon name="sync"${refr.disabled ? ' class="mycspin"' : ''}></obs-icon>Refresh</obs-button>` : ''}</span></h4>${tools}</div>`;
   const foot = `<span id="mycFormFt" class="mradsft"><span class="mand"></span><obs-button id="mycDtReset" variant="default" data-tip="Put every tool back to its default permission">Reset</obs-button>${o2 ? btns : ''}</span>`;   /* Option 1: the actions sit in the footer, bottom right, beside Reset (request, 6 Nov 2026) */   /* Close → Reset (request, 5 Nov 2026); ✕ and Esc still close */
@@ -53260,7 +53341,7 @@ function mycPaint(open){
   /* the connector's logo, name and MCP URL lead the BODY (request, 5 Nov 2026) — the drawer header reads "Connector" */
   /* Option B, the identity card (request, 5 Nov 2026 — chosen from the four on the comparison page): one framed object —
      logo, name, how people sign in and the connection state as DS tags, the MCP URL with a copy button */
-  const ident = mycIdentHTML(r);
+  const ident = mycIdentHTML(r, false, { tagsIn:true });   /* the same card as the details drawer (request, 18 Nov 2026): URL chip top right, tags under it */
   const body = `<div id="mycFormDs">
     ${ident}
     ${kind === 'own' ? `    <div class="mradsg">${inp('cid', 'Client ID', F.cid, { req:1, err:'Enter the client ID', ph:'Enter the client ID' })}${inp('sec', 'Client Secret', F.sec, { req:1, type:'password', err:'Enter the client secret', ph:'Enter the client secret' })}</div>
