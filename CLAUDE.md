@@ -1634,6 +1634,14 @@ panel) · **Site Separation Rules** · **Approved Vendor List**. Then, on reques
 - ⚠️ Add IP Address Discovery stays a hand-built stacked panel (as in the source): its Create
   Credential Profile opens this module's `stcDr` drawer, which a top-layer obs-drawer would cover.
 - Site Separation Rules is `sortable="false"` — the row order IS the priority.
+- **Discovered Subnet › Discovered By** (19 Nov 2026): a fourth column (`disc`, obs-table `link` cell). A single device is
+  plain text; several show the first device over an underlined **View More** (the product's own MAC cell). The link cell
+  renders text only, so a multi row's value is `{text, href:'javascript:void(0)'}` and `ipmDiscSheet` (adopted into the
+  table's shadow root, host class `ipmdisc`) draws "View More" as `a[href]::after`. ⚠️ A `\n` + `::first-line` was tried —
+  a link's underline cannot be taken off its first line. View More opens `#ipmDb`, a popover on `<body>` anchored under
+  the link (300px): an `obs-table` (`#ipmDbTbl`) of Device · Status (a `tags` cell, Passed / Failed — unreachable counts as Failed), no search. `.ipmdbt` re-points the table's page tokens onto the Tooltip surface (DS gap #79);
+  it wears the DS Tooltip tokens (`--tooltip-background-color` / `-text-color` / `-box-shadow`, no border) over an opaque page-colour base (dark's tooltip token is 90% opaque — DS gap #78). Click-away / Esc / resize close it. It replaced an obs-modal Devices · Status grid. Devices are DERIVED (`ipmDiscBy`):
+  the site's seed routers plus 0–3 hashed switches (`>>>`, not `>>` — a signed shift named one `BEN-undefined-01`).
 - Divergences: addresses remapped to RFC 5737; Device Count is 0 (no IP estate here); toolbar
   eye/PDF/CSV toast; Inter, not Poppins.
 
@@ -15129,6 +15137,144 @@ the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with cla
 - Skipped: ⋮ / ✦, grips, links, buttons, fields, the version preview, a click ending a text selection. The select is
   deferred 230ms and `dblclick` cancels it (Free Text edits by double-click). Esc closes the ⋮ menu first, then the
   selection; a click outside clears it. Beyond the live product.
+- **19 Nov 2026: Clone moved into ⋮, and a Chart view button took its place** (the DS's own `<obs-icon name="chart" size="16">`, not a Tabler glyph). Shown only when
+  `wTbViews(m)` has alternatives: a Single Value card gets the editor's own `CMP_VIEW_PICK` (Area · Line — it offered all seven of
+  `CMP_VIEW_ALL` for an hour and that was reverted on request; option 6 has it too since 19 Nov 2026), a Top N widget its 17 `TN_TYPES` styles. **The board's "Top … by Alert Count" pies and horizontal
+  bars get the same 17** (the editor already opens them as Top N); picking one converts the card to `t:'tn'` with its own
+  rows, the way the editor's Update does (`tn.auto` lets later picks re-default legend / values). Heatmap, ring clusters
+  and the Alert Stream table have no other view and get no button. `#wTbViewPop` holds an **`obs-radio as-button`** (`#wTbViewR`,
+  classes `cwcmpwt cwtnwt` — the editor's icon-only, wrapping chart-type segment, names as page tooltips) inside a shell
+  built from the DS Popover's rich-panel tokens (the bundle has no `obs-popover`); picking one goes through `histDo` (⌘Z undoes), redraws and re-selects the widget. Esc / click-away closes it first.
+  `CMP_VIEW_PICK` is now `CMP_VIEW_ALL` filtered, so the editor still offers only Area · Line.
+- **Edge ＋ on the selected widget (19 Nov 2026, Dynatrace's dashboard tiles as the reference).** With a widget selected,
+  pointing within 28px of its left / right / bottom edge shows `#wAddEdge` (an `obs-icon plus` square) on that edge's
+  middle; hovering it draws `#wAddGhost`, a dashed teal slot where the new widget will land; clicking opens `#wAddMenu`
+  — an `obs-input` search over **Create** (`CW_VIZ` with its `CW_VIZ_IC` DS glyphs → `cwOpenViz`, the editor's Create & Add
+  places it) and **Library** (`W_PREDEF` + `W_USER` → `awAdd` at once). `AW_AT {g, i, side, span, near}` is the insertion
+  point, read once by `awPlace()` from `awAdd` / `awAddAiCard`; `cwClose` disarms it on the next tick (cwSave places
+  synchronously first) and `openAwDrawer` clears it. ⚠️ **Placement is ORDER, not coordinates**: the board is an auto-flow
+  12-column grid, so Left inserts before the widget and Right / Bottom after it, at the widget's own span; the ghost shows
+  where the grid will actually put it (next row start when a row-end widget has no room). Esc / click-away close the menu
+  first and keep the selection. The panel shells are hand-built on DS Popover tokens (the bundle has no obs-popover).
+  ⚠️ **Only a LIBRARY pick lands at the edge spot.** A Create type opens the editor and **Create & Add puts it at the bottom
+  of the dashboard** (last group, `AW_AT` cleared) — request + pick, 19 Nov 2026, so the editor behaves the same from every door.
+  **And the editor's Create Widget button adds it too** (`cwSave` forces `place` when not editing) — it used to save to User
+  Define only; both buttons now save AND place the widget at the bottom.
+- **A Chart from the editor lands as the chart you built** (19 Nov 2026, reported "I can't add this widget — wrong widget").
+  It used to place the generic one-line `t:'spark'` whatever the preview showed. Now `cwSave` stores
+  `{t:'ch', ch:{style, rows}}` (the editor's Chart style + counters), `chHTML` renders a `.chw` host and `chMount` draws it
+  with the SAME `cwChHcCfg(spec)` (it takes an optional saved spec now; none = the live draft) — called beside
+  `tnHcMount` in `renderCanvas` and full screen; charts whose host is gone are destroyed. Edit reopens it on Chart with its
+  own counters (`CW.chLoad`) and Update rewrites `w.ch`. The toolbar's Chart view popover offers it the editor's 13
+  `CW_SHAPE` styles (a pick sets `w.ch.style.shape`, ⌘Z undoes). **A new Chart opens with its legend ON** (19 Nov 2026) — set in
+  `cwChSeed` when the untouched trio is seeded, so the shared `CW.style.legend:false` default (Top N reads it) is unchanged.
+  **Disk is the minimal series**, held between **0.2% and 0.5%** (`CW_CH_LVL` 0.35 + the `CW_CH_RNG` clamp) — a flat line on the
+  floor, like the live clickhouse.memory.tracking.bytes line. **Application Performance ships with it**: a `t:'ch'` "minima vaue
+  show" (span 6, h 300, legend on) is the last widget of its seed, after Alert Stream.
+  **These three counters are drawn in BYTES, not %** (19 Nov 2026): `CW_CH_BYTES` gives each a byte range — cpu 800 GB–1 TB,
+  memory 480–640 GB, disk 200–500 KB (so disk runs flat on the floor); `cwBytes` (binary, 1 KB = 1024 B) formats the axis, the
+  tooltip and marker labels, and a byte axis steps in powers of two (0 · 256 GB · 512 GB · 768 GB · 1 TB). The 0.2–0.5% disk
+  range (`CW_CH_RNG`) is superseded for these counters; any counter not in `CW_CH_BYTES` keeps its % / plain behaviour.
+  **A counter too small to see becomes a DOT STRIP** (19 Nov 2026, Plausible's "Leads" row as the reference): in
+  `cwChHcCfg`, a series whose peak is under 2% of the chart's peak leaves the main axis for an
+  invisible second y-axis spanning the whole plot (min 0 / max 14, dots at y:1, `zIndex:6`) so the dots run INSIDE
+  the plot along its floor (a strip under the plot was built first and corrected the same day) — one `scatter` dot per hour (`cwChBucket` avg), radius 3–7px by value,
+  the number above it in the series' own unit, and the unit appended to its legend name (`… · KB`). Only for line / area /
+  column / step / zones with 2+ counters; stacked, range, percentage and horizontal views keep one axis.
+  ⚠️ The strip series must set `lineWidth:0` and `marker.enabled:true` itself — `plotOptions.series` sets Line Width and
+  Points for every series, and the first build drew the strip as a joined line with no dots.
+  **One tooltip**: the dots have `enableMouseTracking:false`; the shared tooltip adds each strip counter's value at the hovered
+  time from its own 5-minute series (a separate dot tooltip read "1 B" — the dot's plot y, not its value). `chart.alignTicks:false`
+  keeps the main axis on its 256 GB steps.
+  **Several tiny counters stack as lanes**: lane i sits at y = 1 + 1.8·i on the strip axis (max = max(18, 10 + 1.8·n)), each in its
+  own colour and unit (KB / MB) — verified with three (disk KB, network KB, swap MB) without crowding the main areas.
+  Lanes are in **descending order** (19 Nov 2026): `minorSer` is sorted smallest-first so the floor lane holds the smallest
+  counter and the biggest sits on top; the tooltip rows and the legend (`legendIndex`) list them biggest first.
+- **Chart Legend Position has Auto** (19 Nov 2026, first option, Single Value's focus-auto glyph; the default for new charts and
+  both seeded widgets). `cwChLegAuto(W, H)`: W < 380 or H < 160 → hidden; W ≥ 900 and W ≥ 4.5·H → Right; else Bottom, hidden
+  below 240px. `cwChHcCfg` resolves it from `spec.w/h` (board) or the preview box (editor); both ResizeObservers re-resolve
+  on resize (the board updates only when the answer changes). No drag grip in Auto. ⚠️ A short widget still crowds its dot
+  lanes — Auto frees the legend's space, it does not thin the lanes.
+- **Labels and tooltip · Text truncation** (19 Nov 2026, Dynatrace's control as the picture): a section under the legend controls
+  in Chart's Style tab — `obs-radio.cwchtr` A… · A…B · …B (end / middle / start, default end, `CW.style.chTrunc`), each segment
+  with its page tooltip ("Truncate text at the end" …). `cwChCut(t, how)` shortens a counter name past `CW_CH_TRUNC_N` (24)
+  characters in the legend (`labelFormatter`) and the tooltip rows; a dot lane keeps its ` · KB` unit whole.
+- **Text truncation is in every chart editor** (19 Nov 2026): `cwTruncHTML()` / `cwTruncBind()` serve Chart, Top N (not Grid — a
+  table) and Single Value, all on `CW.style.chTrunc`. Top N cuts its row names in `tnHcCfg` (spec `trunc`), so legend, tooltip and
+  axis follow; Single Value cuts `ctrA` / `ctrB` (card field `cmpTrunc`).
+  It has an **ON/OFF switch** (`obs-switch.cwchtrsw`, `CW.style.chTruncOn`, default ON); OFF hides the three modes and
+  `cwTruncMode()` returns 'none', so every name shows whole. No divider and no "Labels and tooltip" heading (both removed on
+  request); the switch and the modes sit side by side on the panel's two-column `.cwgrid` — **Text truncation** (switch) under
+  Legend Position, **Truncate at** (A… · A…B · …B) under Legend Font Size, both left edges measured equal.
+  **It reaches every text in the chart** (19 Nov 2026): legend, tooltip, X/Y-axis titles and the Z-axis subtitle at 24
+  characters, axis category labels (Top N's monitor names) at `CW_CH_TRUNC_AX` = 16 in the chosen mode; OFF shows all whole.
+- **Step Line and Area Range are no longer offered** (19 Nov 2026): `CW_CH_HIDE = [8, 9]` filters it from the editor's style tiles and the toolbar's
+  chart-view popover; it stays in `CW_SHAPE` so later indices (saved widgets' `shape`) do not move. Tile tooltips map through the
+  filtered list.
+- **Every board widget's legend shows / hides with its size** (19 Nov 2026): Highcharts legends (pies, Top N, wHcMount charts) go
+  through `wLegFit(c, el)` on mount and on resize — a side legend needs a 420×120 chart box, a bottom one 300×180
+  (`W_LEG_MIN`); a legend the widget was saved WITHOUT never appears; the resize grip hides with it (`.wleghid`). HTML legends
+  (heatmap key `.wdshl`, Single Value `.lg` / `.wc4k`) hide via `.widget.wlegoff`, set by `wLegObs`'s ResizeObserver
+  (`wLegTog`: under 300 wide or 160 tall). ⚠️ `W_LEG_RO` is a `var` — renderCanvas runs in init() before a `let` there
+  would initialise. ⚠️ Fixed the same day: Single Value's `ctrA` called `cwChCut` from an EARLIER script block, which threw
+  on the board's first render and stopped every Highcharts widget loading — guarded with `typeof`.
+- **Legend entry ⋮ — more actions** (19 Nov 2026, Dynatrace's dashboard legend as the picture): hovering a Highcharts legend
+  entry on a board widget shows `#wLegMore` (Tabler dots-vertical, fixed, always 6px AFTER the entry; `wLegRoom` pulls a right-side legend 30px in on board widgets so it fits); it opens `#wLegMenu` (`.cmenu`)
+  with ONLY what works here: **Copy name** · **Show only this** · **Hide / Show** · **Show all** (when any is hidden) and, on
+  monitor widgets (Top N by monitor, the "… Monitors by Alert Count" pies / bars), **Filter dashboard by · Monitor <name>**,
+  which sets the dashboard filter (`dfCur().monitor`, opens the filter row, re-renders). Not copied: Fields, Visual options,
+  Set color, Add link, Open with…. Show / hide is on the chart, so a board re-render shows every entry again. HTML legends
+  (heatmap key, Single Value keys) have no ⋮. Entry → item by DOM order = `legend.allItems`. Esc / click-away close it.
+  **A legend click solos** (19 Nov 2026): click = show only that entry; click it again = show all; click another = solo
+  that one. A capture-phase document listener stops Highcharts' own toggle; board widgets and the editor preview.
+  **The ⋮ menu is now Copy name · Ask AI** (19 Nov 2026): Show only this / Hide / Show all and Filter dashboard by were removed
+  from the menu (their `wlmAct` branches are kept, unreachable). **Ask AI** (`wlmAsk`, Tabler sparkles) opens the chat with a
+  `KPI · <name>` chip, asks "Explain <name>", and answers about THAT entry only, from the chart's own numbers: latest ·
+  average · peak / low with times · change over the range · steady vs swinging (a series), or value · share · rank (a pie
+  slice). Byte counters format through `cwBytes`.
+  **Change chart view** (third row, the toolbar's own `obs-icon chart`; only when `wTbViews` has alternatives) turns the
+  menu into the Chart view picker IN PLACE (`wlmViews`: the same DS segment); a pick runs `wTbViewPick(v, true)` — the
+  `noSel` flag changes the widget without selecting it or opening the toolbar.
+  **Every widget legend has the ⋮** (19 Nov 2026): also the HTML keys — Single Value `.lg` / `.wc4k` entries and the
+  heatmap's `obs-severity-legend` (entries reached via `composedPath`). `wlmHtmlItem` matches an entry to its widget chart's
+  series by name (Ask AI reads real numbers, unit from the widget's counter) or makes a stub with the printed value.
+  Each style tile in the Chart view picker (legend menu and toolbar) names itself on hover; a Chart widget's tiles read
+  `CW_CH_NAMES` ("Horizontal Bar"), not `CW_SHAPE`'s internal keys ("hbar").
+- **Dot size follows the printed number** (19 Nov 2026): a dot's radius comes from its value rounded as its label prints it,
+  in 5 steps (3–7px) between the lane's lowest and highest printed value — equal labels, equal dots; a flat lane is 5px.
+- **Top N has the Chart editor's legend controls** (19 Nov 2026): Legend Position gains **Auto** (first, `cwChLegAuto` from the
+  chart box) and **Legend Font Size** (Auto · Small · Medium · Large, `CW.style.tnLegFs` → spec `legFs`, `cwChLfsPx`) sits
+  beside it on the panel's two columns, above Text truncation. Auto position / font re-resolve on resize in `tnHcMount`; Auto
+  has no drag handle and skips `wLegFit`. Default position stays Right, so existing Top N widgets are unchanged.
+  Its Area / Line / Bar fields follow the Chart editor's order: Rotation · X / Y / Z titles · Line Width · Points (or Values),
+  then **Legend on its own row**, then Legend Position | Legend Font Size; with Legend OFF those rows are `display:none`
+  (`.cwtnlp.off` used `visibility:hidden`, which left a blank gap above Text truncation).
+- **Top N value labels scale with the widget** (19 Nov 2026): `tnDls(w, h)` = round(min(w, 1.5·h) / 50) clamped 10–20px, used by
+  every data / value label in `tnHcCfg` (pie-likes, funnel, pyramid, bars, polar, tree view); `tnHcMount` re-applies it when the
+  size changes (`c.tnDl0`).
+- **Lollipop is no longer offered** (19 Nov 2026): `TN_HIDE = ['Lollipop']` filters the Top N style tiles, the toolbar /
+  legend Chart view picker and option 2's groups; it stays in `TN_TYPES` so saved indices do not move.
+- **The Create / Edit Widget editor is on `--bg`** (19 Nov 2026, "#07101F overall"): `#cwModal{--panel:var(--bg);--card:var(--bg)}`
+  — #07101f dark, #ffffff light; the modal and its preview / settings / query panels all share it, the borders separate them.
+- **The Create Widget editor's spacing is the live 10.0.1 editor's** (19 Nov 2026, measured on the lab's /dashboard → Create
+  Widget → Top N): preview **55%** / settings **45%** with an **8px** gap (`.cwmain{gap:8px;padding:8px 14px}`), the query block
+  directly under them, the source buttons **12px** below it on the panels' left edge (`.cwsrc` padding 12px 14px 0).
+  Top N's vertical-axis names are capped to their share of the plot width so neighbours never overlap.
+- **Dot-lane numbers auto-hide** (19 Nov 2026): the lane's dataLabels formatter returns null when a lane is under 22px tall
+  (2+ lanes) or dots are under 22px apart — re-evaluated on every redraw, so resizing brings them back. Dots and tooltip stay.
+  **Application Performance also ships "multipan minimal value show"** (span 12, h 440 — at half width / 300px the three lanes
+  crowded into the areas; under "minima vaue show"): cpu + memory areas and
+  three lanes — disk, `system.network.in.bytes` (40–90 KB) and `system.swap.used.bytes` (2–6 MB), both added to `CW_SRC` Metric
+  and `CW_CH_BYTES`.
+  ⚠️ `chHTML` lives beside `wBody` — defined with `chMount` (a later script block) it was undefined at the board's first
+  render and the ReferenceError aborted the whole render.
+  **When the row is full, the widget SPLITS** (`waePlan`, same day): Left / Right with no free columns halves the widget
+  — it keeps the larger half, the new one takes the other half on that side (one history step; ⌘Z restores the width).
+  With free columns at the row's end the new widget takes them (up to the widget's width); Bottom never splits. The
+  ghost shows exactly that slot, labelled `New widget · takes N of M columns`, and the added widget flashes. ⚠️ The span
+  is MEASURED from the box — computed `grid-column-end` does not report `span N` here, so reading it gave 12 for every
+  widget. **The selection frame, ＋, ghost and flash are `--primary`** (the DS active colour, #e3e8f2 dark / #111c2c light,
+  picked over the cyan `--primary-color` and `--info-text`); the DS has no "selected widget" token — they were teal.
 
 ## Grid · Gauge · Sankey in the Create Widget editor — cloned from live 10.0.1 (Option 1, 9 Nov 2026)
 
@@ -15380,3 +15526,4 @@ editor tab, `W_TILE_SVG` key, toasts); the internal key stays `cmp`. Comments st
   bindings in `mraFormBindDS` were already null-guarded. A connector saved with an icon still draws it (`v.icon`).
 - **Connector card description is one line (18 Nov 2026)** — `.mycidx .mycidd` nowrap + ellipsis, full text as its `data-tip`; applies to every `tagsIn` card (View / Edit / Add Connector, My Connectors).
 - **Every page tooltip (`.tipbox`) uses the DS Tooltip colours (18 Nov 2026)** — 18 pages: dark `rgba(43,57,79,.9)` / `#cad3e2`, light `#172336` / `#fff`, the DS shadow, no border, 4px radius (`--tt-*` declared on `.tipbox`; list rows and keycaps follow `--tt-fg`). Charts' Highcharts tooltips are not `.tipbox` and are unchanged.
+- **Mira AI actions report through a DS-styled toast (19 Nov 2026)** — `obsToast(msg, kind)` in `setting.html` (all 33 `toast()` calls from `const MRA` to `mycResync` route to it): top-right stack (max 3), a SOLID card with a bold title over the message (request 19 Nov 2026, the product's "Successful / … updated successfully!" notice): **Successful** (and *In progress* for info) on `--success-button-bg`, **Failed** (warning + error) on `--error-button-bg`, ink `--success/error-button-text` in light and `--page-background-color` in dark (the DS dark pair is unreadable — gap #77), `obs-icon` glyph + ✕, auto-dismiss 3.2s (5s warning/error), pauses on hover. Kind is inferred from the sentence when omitted. ⚠️ The DS has no toast element — a declared gap (central log #76). ⚠️ `obs-icon` names `warning` / `info` render nothing; use `exclamation-triangle` / `info-circle`. `#obsToast` is in the four scoped DS token openers. The rest of the page still uses the old `toast()`.
