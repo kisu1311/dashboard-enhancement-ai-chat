@@ -264,3 +264,40 @@ const ST_TREE = [
   if (document.readyState === 'complete') setTimeout(boot, 0);
   else addEventListener('load', function () { setTimeout(boot, 0); });
 })();
+
+/* ══ EVERY SLIDER ON EVERY PAGE, PAINTED IN DS TOKENS (request, 20 Nov 2026: "update overall … using the obs design
+   system", pointing at the Create Widget editor's Line Width slider) ══════════════════════════════════════════════
+   ⚠️ THE DS SHIPS NO SLIDER — `search_components` returns only the time-range scrubber, so this is a DECLARED GAP
+   (central log: design-system-gaps/component-gaps.md). Asked first; the answer was "keep the slider, DS tokens".
+   It lives HERE because this is the one file every option page + setting.html + topology + apm already loads.
+     track  = DS --progress-bar-bg   (#2b394f dark / #e3e8f2 light)
+     fill + thumb = DS --primary     (#e3e8f2 dark / #111c2c light) — the active colour every DS control uses
+     thumb ring = the page's own --bg, so the knob reads as cut out of the surface it sits on
+   ⚠️ The fill needs `--rp` (the value as a %), which CSS cannot read off an <input>: a delegated `input` listener keeps
+   it current and a MutationObserver seeds every slider a page renders later (drawers, the widget editor, …). */
+(function(){
+  if (document.getElementById('ds-range')) return;
+  const st = document.createElement('style'); st.id = 'ds-range';
+  st.textContent =
+    ':root{--dsr-track:#2b394f;--dsr-fill:#e3e8f2}' +
+    'html[data-theme="light"]{--dsr-track:#e3e8f2;--dsr-fill:#111c2c}' +
+    'html input[type="range"]{-webkit-appearance:none;appearance:none;background:transparent;height:18px;margin:0;cursor:pointer;accent-color:auto}' +
+    'html input[type="range"]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--dsr-fill) 0 var(--rp,50%),var(--dsr-track) var(--rp,50%) 100%)}' +
+    'html input[type="range"]::-moz-range-track{height:4px;border-radius:2px;background:var(--dsr-track)}' +
+    'html input[type="range"]::-moz-range-progress{height:4px;border-radius:2px;background:var(--dsr-fill)}' +
+    'html input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-5px;border-radius:50%;background:var(--dsr-fill);border:2px solid var(--bg,transparent);box-sizing:border-box;transition:transform .12s}' +
+    'html input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--dsr-fill);border:2px solid var(--bg,transparent);box-sizing:border-box}' +
+    'html input[type="range"]:hover::-webkit-slider-thumb{transform:scale(1.15)}' +
+    'html input[type="range"]:focus{outline:none}' +
+    'html input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--dsr-fill) 35%,transparent)}' +
+    'html input[type="range"]:disabled{opacity:.45;cursor:not-allowed}';
+  document.head.appendChild(st);
+  const fill = el => { const mn = +el.min || 0, mx = el.max === '' ? 100 : +el.max, v = +el.value;
+    el.style.setProperty('--rp', (mx > mn ? (v - mn) / (mx - mn) * 100 : 0) + '%'); };
+  const seed = root => (root.querySelectorAll ? root.querySelectorAll('input[type="range"]') : []).forEach(fill);
+  document.addEventListener('input', e => { if (e.target && e.target.type === 'range') fill(e.target); }, true);
+  document.addEventListener('change', e => { if (e.target && e.target.type === 'range') fill(e.target); }, true);
+  const go = () => { seed(document); new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
+    if (n.nodeType !== 1) return; if (n.type === 'range') fill(n); else seed(n); }))).observe(document.body, { childList:true, subtree:true }); };
+  document.body ? go() : document.addEventListener('DOMContentLoaded', go);
+})();

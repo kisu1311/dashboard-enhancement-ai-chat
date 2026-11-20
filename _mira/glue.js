@@ -762,7 +762,43 @@ function hdPaint(node,id){ var nav=$('.mira-crumbs',node); if(!nav) return; var 
   h.innerHTML='<button type="button" class="mx-hdb" data-mx-hd="hist" aria-label="'+sbLab+'" data-mx-tip="'+sbLab+'">'+HD_SB(sbOpen)+'</button>'+
     (id!=='new'?'<button type="button" class="mx-hdb" data-mx-hd="new" aria-label="Start a new chat" data-mx-tip="Start a new chat">'+HD_NEW+'</button>':'')+
     '<button type="button" class="mx-hdt" data-mx-hd="menu" aria-haspopup="menu" aria-expanded="false" data-mx-tip="Rename, delete or switch conversation"><span class="mx-hdn">'+esc(t)+'</span>'+HD_CV+'</button>'; }
-function hdMenu(btn){ var open=btn.classList.contains('open'); closePops(); if(open) return; var id=MX.cur, m=document.createElement('div'); m.className='mx-pop mx-hdm'; m.setAttribute('role','menu');
+/* The chat-name menu is Ask AI's conversation dropdown (request, 20 Nov 2026, Ask Iris's menu as the picture):
+   a "Search AI chats…" box, date bands, a speech-bubble mark per row (filled on the open chat), when it happened on
+   the right — swapped for ✎ / 🗑 on hover — and "Show all N ›" when there are more than HD_CAP. Rename / Delete moved
+   onto the rows; the search repaints the LIST only, so the field keeps its focus and caret. Icons: Lucide, verbatim. */
+var HD_CAP=6, HD_I={
+  chat:'<svg viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>',
+  pen:'<svg viewBox="0 0 24 24"><path d="M13 21h8"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>',
+  bin:'<svg viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  srch:'<svg viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+  hist:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
+  go:'<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>' };
+/* today reads as elapsed time, any other day as the clock time — Ask AI's aiChatWhen */
+function hdWhen(t){ if(!t) return ''; var m=Math.round((Date.now()-t)/6e4);
+  if(bandOf(t)==='Today'){ if(m<1) return 'just now'; if(m<60) return m+' min'+(m===1?'':'s')+' ago'; var h=Math.round(m/60); return h+' hour'+(h===1?'':'s')+' ago'; }
+  var d=new Date(t), hh=d.getHours(), ap=hh>=12?'pm':'am'; hh=hh%12||12; return hh+':'+String(d.getMinutes()).padStart(2,'0')+' '+ap; }
+function hdChats(){ return hdRows().map(function(a){ var c=a.getAttribute('data-mx-chat'); return {id:c,n:$('.mira-recent-name',a).textContent.trim(),t:MX.at[c]||Date.now()}; }).sort(function(x,y){ return y.t-x.t; }); }
+function hdListHTML(q){ var all=hdChats(), rx=q?new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'):null, l=all.filter(function(c){ return !rx||rx.test(c.n); }).slice(0,HD_CAP);
+  if(!l.length) return '<div class="mx-hdme">'+(q?'No chat matches “'+esc(q)+'”.':'No conversations yet. A chat is listed here once you ask it something.')+'</div>';
+  var out='', bd=null; l.forEach(function(c){ var g=bandOf(c.t); if(g!==bd){ bd=g; out+='<div class="mx-hdmg">'+esc(g)+'</div>'; }
+    out+='<div class="mx-hdmc'+(c.id===MX.cur?' on':'')+'" role="menuitem" tabindex="0" data-mx-hm-c="'+c.id+'"><span class="cb">'+HD_I.chat+'</span><span class="nm">'+esc(c.n)+'</span>'+
+      '<span class="wh">'+esc(hdWhen(c.t))+'</span><span class="ac"><i data-mx-hm-r="'+c.id+'" data-mx-tip="Rename">'+HD_I.pen+'</i><i class="dl" data-mx-hm-d="'+c.id+'" data-mx-tip="Delete">'+HD_I.bin+'</i></span></div>'; });
+  return out; }
+function hdMenuHTML(){ var n=hdRows().length;
+  return '<label class="mx-hdms">'+HD_I.srch+'<input type="text" placeholder="Search AI chats…" aria-label="Search AI chats" data-mx-hm-q></label><div class="mx-hdml">'+hdListHTML('')+'</div>'+
+    (n>HD_CAP?'<hr><button type="button" class="mx-hdma" data-mx-hm="all"><span class="cb">'+HD_I.hist+'</span><span class="nm">Show all</span><span class="wh">'+n+'</span>'+HD_I.go+'</button>':''); }
+function hdMenu(btn){ var open=btn.classList.contains('open'); closePops(); if(open) return; var m=document.createElement('div'); m.className='mx-pop mx-hdm'; m.setAttribute('role','menu');
+  m.innerHTML=hdMenuHTML(); document.body.appendChild(m); var r=btn.getBoundingClientRect(); m.style.left=r.left+'px'; m.style.top=(r.bottom+6)+'px';
+  btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); MX.pop=m; MX.popFor=btn; hdTipHide(); var q=$('input',m); if(q) q.focus(); }
+/* ✎ renames the row IN PLACE and does not switch chat (Ask AI's rule) */
+function hdRowRen(id,i){ var row=i.closest('.mx-hdmc'), nm=$('.nm',row), old=nm.textContent, inp=document.createElement('input'); inp.className='mx-hdmin'; inp.value=old;
+  hdTipHide(); row.classList.add('ren'); nm.replaceWith(inp); inp.focus(); inp.select();
+  var done=function(ok){ inp.onblur=null; var v=(ok&&inp.value.trim())||old, a=hdRow(id); if(a){ $('.mira-recent-name',a).textContent=v; a.title=v; }
+    var p=MX.panes[id]; if(p){ var c=$('.mira-crumb.is-current',p); if(c){ c.textContent=v; c.title=v; } }
+    if(id===MX.cur){ document.title=v+' · Mira'; var h=$('#mxPane .mx-hdn'); if(h) h.textContent=v; } nm.textContent=v; inp.replaceWith(nm); row.classList.remove('ren'); };
+  inp.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter') done(true); else if(e.key==='Escape') done(false); }; inp.onblur=function(){ done(true); }; }
+/* the previous Rename · Delete · CONVERSATIONS menu, kept unreferenced */
+function hdMenuOld(btn){ var open=btn.classList.contains('open'); closePops(); if(open) return; var id=MX.cur, m=document.createElement('div'); m.className='mx-pop mx-hdm'; m.setAttribute('role','menu');
   m.innerHTML=(id!=='new'?'<button type="button" data-mx-hm="rename">Rename chat</button><button type="button" class="is-danger" data-mx-hm="del">Delete chat</button><hr>':'')+
     '<div class="mx-hdmh">Conversations</div>'+hdRows().map(function(a){ var c=a.getAttribute('data-mx-chat'); return '<button type="button" class="mx-hdmc'+(c===id?' on':'')+'" data-mx-hm-c="'+c+'">'+esc($('.mira-recent-name',a).textContent.trim())+'</button>'; }).join('')+
     (hdRows().length?'':'<div class="mx-hdme">No conversations yet</div>');
@@ -782,10 +818,15 @@ document.addEventListener('mouseover',function(e){ var b=e.target.closest&&e.tar
 document.addEventListener('click',function(e){ var t=e.target, b;
   if((b=t.closest('[data-mx-hd]'))){ e.stopImmediatePropagation(); var k=b.getAttribute('data-mx-hd'); hdTipHide();
     if(k==='hist'){ closePops(); sideTog(); hdPaint($('#mxPane').firstElementChild,MX.cur); } else if(k==='new'){ closePops(); show('new'); } else hdMenu(b); return; }
-  if((b=t.closest('.mx-hdm [data-mx-hm]'))){ e.stopImmediatePropagation(); var a=b.getAttribute('data-mx-hm'); if(a==='rename') hdRename(MX.cur); else hdDel(MX.cur); return; }
-  if((b=t.closest('.mx-hdm [data-mx-hm-c]'))){ e.stopImmediatePropagation(); closePops(); show(b.getAttribute('data-mx-hm-c')); return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm]'))){ e.stopImmediatePropagation(); var a=b.getAttribute('data-mx-hm'); if(a==='all'){ closePops(); var as=$('aside.mira-sidebar'); if(as&&as.classList.contains('is-collapsed')){ sideTog(); hdPaint($('#mxPane').firstElementChild,MX.cur); } } else if(a==='rename') hdRename(MX.cur); else hdDel(MX.cur); return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm-r]'))){ e.stopImmediatePropagation(); hdRowRen(b.getAttribute('data-mx-hm-r'),b); return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm-d]'))){ e.stopImmediatePropagation(); hdTipHide(); var did=b.getAttribute('data-mx-hm-d'); if(did===MX.cur) hdDel(did); else { var ra=hdRow(did); if(ra) ra.closest('li').remove(); delete MX.panes[did]; bandPaint(); var l=$('.mx-hdm .mx-hdml'), q=$('.mx-hdm [data-mx-hm-q]'); if(l) l.innerHTML=hdListHTML(q?q.value:''); toast('Chat deleted'); } return; }
+  if((b=t.closest('.mx-hdm [data-mx-hm-c]'))){ e.stopImmediatePropagation(); if(b.classList.contains('ren')) return; closePops(); show(b.getAttribute('data-mx-hm-c')); return; }
+  if(t.closest('.mx-hdm')&&!t.closest('[data-mx-hm]')){ e.stopImmediatePropagation(); return; }
 },true);
 
+document.addEventListener('input',function(e){ var q=e.target.closest&&e.target.closest('.mx-hdm [data-mx-hm-q]'); if(!q) return; var l=$('.mx-hdm .mx-hdml'); if(l) l.innerHTML=hdListHTML(q.value); });
+document.addEventListener('keydown',function(e){ var r=e.target.closest&&e.target.closest('.mx-hdm .mx-hdmc'); if(r&&e.key==='Enter'&&!r.classList.contains('ren')){ e.preventDefault(); closePops(); show(r.getAttribute('data-mx-hm-c')); } },true);
 setTimeout(bandPaint,0);
 /* ── wiring ── */
 var RAIL={'Dashboards':'index.html','Monitors':'index.html#m=Monitors','Alerts':'index.html#m=Alerts','SLO BETA':'index.html#m=SLO','Explorer':'index.html#m=Metric Explorer','Reports':'index.html#m=Reports','Settings':'setting.html?from=mira.html','Search':'index.html','Approval':'index.html#v=approval','Health Monitoring':'index.html#v=health'};

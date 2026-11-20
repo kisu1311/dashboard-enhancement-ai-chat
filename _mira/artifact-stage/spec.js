@@ -17,6 +17,23 @@ function specFF(target){ document.body.classList.add('mx-spec-ff'); startRunbook
     else if(R.wait==='run') rbRun(pane,'run'); },40); }
 function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'; MX.qaOpt='2'; MX.forgeOpt=/o3/.test(v)?'3':'2'; MX.askOpt='2'; }   /* o3 = Option 3 of the runbook card (segments) */   /* any '…o2' variant is Option 2: the one-row run card, the grid, the boxless record */
   if(o.theme==='light') document.body.removeAttribute('data-theme'); else document.body.setAttribute('data-theme','dark-theme');
+  if(key==='brand'){ document.body.classList.add('mx-spec-brand'); if(v==='o2') document.body.classList.add('mxb2'); show('new');
+    /* the brand stage draws the screen at 2x with transform:scale(2) on <body>, and a transformed body is the containing block of
+       its position:fixed children - so a popup placed at a button's on-screen rect (already 2x) was scaled AGAIN and opened far
+       below and right of it (request, 20 Nov 2026: "fix this alignment", the chat menu). Halve every fixed popup's left/top. */
+    var MXB_S=2, mxbFix=function(el){ if(el.nodeType!==1||el.parentNode!==document.body||getComputedStyle(el).position!=='fixed') return; var k=el.style.left+'|'+el.style.top; if(el.__mxbk===k) return;
+      if(/px$/.test(el.style.left)) el.style.left=parseFloat(el.style.left)/MXB_S+'px'; if(/px$/.test(el.style.top)) el.style.top=parseFloat(el.style.top)/MXB_S+'px'; el.__mxbk=el.style.left+'|'+el.style.top; };
+    new MutationObserver(function(ms){ ms.forEach(function(m){ if(m.type==='childList') m.addedNodes.forEach(mxbFix); else mxbFix(m.target); }); }).observe(document.body,{childList:true,attributes:true,subtree:true,attributeFilter:['style']});
+    return; }   /* Brand category (20 Nov 2026): the Mira mark, at 2x, beside the search field and the chat header */
+  if(key==='chatmenu'){ document.body.classList.add('mx-spec-page','mx-spec-menu'); window.__mxKeep=true; show('new'); if(/^o[2-5]$/.test(v)) mxcInit(v);   /* __mxKeep: a stage resize must not close the menu */   /* Sidebar category: the New chat menu (Search AI chats + the dated list), opened */
+    setTimeout(function(){ var hb=$('#mxPane [data-mx-hd="menu"]'); if(hb) hb.click(); },350);
+    /* keep the open menu UNDER its button (request, 20 Nov 2026: "fix this alignment"): the menu is position:fixed and was placed
+       once, at open; when the stage frame settles to another width afterwards the pane re-centres and the button moves, but the
+       menu stayed put (the page's resize handler, which would close it, is held off by __mxKeep). Re-anchor it on every resize. */
+    var re=function(){ if(!MX.pop||!MX.popFor) return; if(MX.pop.classList.contains('mxc')){ mxcPlace(MX.pop,MX.popFor); return; } var r=MX.popFor.getBoundingClientRect(); MX.pop.style.left=r.left+'px'; MX.pop.style.top=(r.bottom+6)+'px'; };
+    window.addEventListener('resize',re); try{ new ResizeObserver(re).observe(document.body); new ResizeObserver(re).observe($('#mxPane')); }catch(e){} return; }
+  if(key==='sidebar'){ show('new'); if(/^o2/.test(v)) mxsInit(v); if(/tog/.test(v)) mxsTog(v); return; }   /* Option 2: pin, group and filter on the chat list - spec-sidebar.js */   /* Sidebar category (20 Nov 2026): the whole mira.html screen as it opens - product rail, Mira sidebar, chat panel and hero - shown at a chosen screen size (a crop to the sidebar read as broken) */
+  if(key==='artifact'){ document.body.classList.add('mx-spec-page'); mxaSpec(v); return; }   /* UI visualization · Artifact view - spec-artifact.js; the FULL page: sidebar, header, hero */
   if(key==='page'){ document.body.classList.add('mx-spec-page'); show(/^c[123]$/.test(v)?v:'new'); return; }
   document.body.classList.add('mx-spec');
   if(key==='flow'){ show('new'); startRunbook('create runbook'); return; }

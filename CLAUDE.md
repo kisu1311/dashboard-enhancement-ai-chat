@@ -15156,8 +15156,10 @@ the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with cla
   12-column grid, so Left inserts before the widget and Right / Bottom after it, at the widget's own span; the ghost shows
   where the grid will actually put it (next row start when a row-end widget has no room). Esc / click-away close the menu
   first and keep the selection. The panel shells are hand-built on DS Popover tokens (the bundle has no obs-popover).
-  ⚠️ **Only a LIBRARY pick lands at the edge spot.** A Create type opens the editor and **Create & Add puts it at the bottom
-  of the dashboard** (last group, `AW_AT` cleared) — request + pick, 19 Nov 2026, so the editor behaves the same from every door.
+  ⚠️ **SUPERSEDED 20 Nov 2026 — a Create type now lands at the ＋ spot too** ("the widget is not added at the add position"):
+  `waePick` keeps `AW_AT` armed while the editor is open; every Save path ends in `awAdd → awPlace`, and `cwClose` disarms it
+  next tick. The FAB / drawer doors never set `AW_AT`, so they still add at the bottom. (Was: Create & Add put it at the
+  bottom, 19 Nov 2026.)
   **And the editor's Create Widget button adds it too** (`cwSave` forces `place` when not editing) — it used to save to User
   Define only; both buttons now save AND place the widget at the bottom.
 - **A Chart from the editor lands as the chart you built** (19 Nov 2026, reported "I can't add this widget — wrong widget").
@@ -15379,6 +15381,11 @@ redirects to `/setup/` until `.setup-skip-link` is clicked, and the SPA needs a 
   `--text-color-common-secondary` (the live palette hexes are not in the dev token file); Policy / Policy Tag lists
   trimmed; the 4px-lower labels live draws on Policy · Policy Tag · Severity are aligned here; the preview caps at 250
   hexes like live while Total counts all 657.
+- **View 3 · Weekday × hour** (20 Nov 2026, beyond live — the Skald traffic "Each weekday, hour by hour" heat map as the
+  reference): `hmWeek(s)` when `style === 'week'` — Mon→Sun × 00→23 rounded cells in the chosen palette (`hmShade`), hours
+  labelled every 3rd, a Fewer → More ramp with the busiest count, and hatched "not shown" cells for the rest of today after
+  `TL_NOW` (never counted as zero). Counts are seeded per group, the unit is the group's (alerts, slow traces…). Shape is
+  hidden for it and the palette is offered for every group; hover uses the heat map's own card (`.hmwc[data-t]`).
 - **Shape: Hexagon · Circle · Square** (8 Nov 2026, beyond live): a labelled `Shape` tile row under the style tiles
   (`HM_SHAPE`, `cwHmShape`, `CW.hm.shape`, default `hex`), shown for every group incl. SLO. `hmHTML` adds `shp-circle` /
   `shp-square` to `.hmx`; those drop the hex clip-path, the negative row overlap and the odd-row float, so cells sit on a
@@ -15548,3 +15555,68 @@ editor tab, `W_TILE_SVG` key, toasts); the internal key stays `cmp`. Comments st
 - **Connector card description is one line (18 Nov 2026)** — `.mycidx .mycidd` nowrap + ellipsis, full text as its `data-tip`; applies to every `tagsIn` card (View / Edit / Add Connector, My Connectors).
 - **Every page tooltip (`.tipbox`) uses the DS Tooltip colours (18 Nov 2026)** — 18 pages: dark `rgba(43,57,79,.9)` / `#cad3e2`, light `#172336` / `#fff`, the DS shadow, no border, 4px radius (`--tt-*` declared on `.tipbox`; list rows and keycaps follow `--tt-fg`). Charts' Highcharts tooltips are not `.tipbox` and are unchanged.
 - **Mira AI actions report through a DS-styled toast (19 Nov 2026)** — `obsToast(msg, kind)` in `setting.html` (all 33 `toast()` calls from `const MRA` to `mycResync` route to it): top-right stack (max 3), a SOLID card with a bold title over the message (request 19 Nov 2026, the product's "Successful / … updated successfully!" notice): **Successful** (and *In progress* for info) on `--success-button-bg`, **Failed** (warning + error) on `--error-button-bg`, ink `--success/error-button-text` in light and `--page-background-color` in dark (the DS dark pair is unreadable — gap #77), `obs-icon` glyph + ✕, auto-dismiss 3.2s (5s warning/error), pauses on hover. Kind is inferred from the sentence when omitted. ⚠️ The DS has no toast element — a declared gap (central log #76). ⚠️ `obs-icon` names `warning` / `info` render nothing; use `exclamation-triangle` / `info-circle`. `#obsToast` is in the four scoped DS token openers. The rest of the page still uses the old `toast()`.
+
+## Map in the Create Widget editor — cloned from live 10.0.1 (Option 1, 20 Nov 2026)
+
+Read off the lab's `/dashboard` "kisu" widget and its Edit Widget screen. Map joined `GG_VIZ` (the Grid / Gauge / Sankey
+family), so it saves as `t:'gg'` with `gg.viz:'map'`, `gg.map` = the Style tile, and Edit reopens it. Renderer = `mpHTML`
++ `mpMount()` (called from cwPreview, renderCanvas and full screen); block sits after `cwGgRows`.
+- **Style = the live three tiles** (art harvested; tiles 1 and 3 share it live): **Map** = Highcharts Maps (Miller,
+  `map` + `mapbubble`, + / − buttons as live), **Tree Map** = Highcharts treemap in the chart palette (resolved colours —
+  `var()` painted every tile black), **Tile map** = Leaflet (cdnjs 1.9.4).
+- **Query opens on the live one** (`mpSeedQuery`): Flow · volume.bytes · Avg · Result By destination.country; Σ hidden
+  (`#cwModal.cwggmap`), ⊕ kept. Tooltip: country bold, then `volume.bytes.avg   1.05 KB` (`cwBytes`).
+- **`_maps/world.topo.js`** = Highcharts map-collection 2.3.0 `custom/world.topo.json`, vendored as `window.MP_WORLD`
+  (a .js, because file:// blocks fetch). Live uses a custom "World with India disputed areas" map — not public.
+- ⚠️ Bubbles are placed by each country's `hc-middle-lat/lon`, not `joinBy` — a joined bubble lands on the geometry
+  centroid, which puts France and the Netherlands in the ocean (overseas territories).
+- ⚠️ Tile map's basemap is the SAME vendored outline drawn as Leaflet vectors (topojson-client from jsDelivr), not raster
+  tiles: live's OSM tiles answer "Access blocked" and CARTO's answered "API KEY REQUIRED" from file://. Antimeridian
+  rings (Russia, Fiji) are shifted +360 or they draw a band across the map.
+- ⚠️ Values are seeded per country (hubs in `MP_HUBS`), not the instance's. Highcharts / Leaflet still need network.
+- **The editor's preview + settings row is `flex:0 1 818.242px`** (request, 20 Nov 2026, the live editor's height) — every
+  widget type: it no longer grows to fill a tall screen; it still shrinks on a short one (451px at 1600×950). The query
+  block sits right under it and the spare room falls below the source buttons, as live. Free Text keeps its own
+  `#cwModal.cwft .cwmain{flex:1 1 auto}`.
+
+## Every slider is painted in DS tokens (all pages, 20 Nov 2026)
+
+The DS has no value slider (gap 82), so `setting-nav.js` — loaded by every option page, setting.html, topology and apm —
+injects `<style id="ds-range">` for every `input[type="range"]`: track `--progress-bar-bg`, fill + 14px thumb `--primary`,
+thumb ring the page `--bg`. The fill needs `--rp` (value as %): a delegated `input`/`change` listener and a
+MutationObserver keep it current. ⚠️ A value set from code (not by the user) does not fire `input` — call the change
+event or set `--rp` yourself. `mira.html` does not load setting-nav.js and keeps its native slider.
+
+## Mira AI Prompt — two numbered tiles in the drawer (20 Nov 2026)
+
+The Add New Widget drawer's AI / ML section shows **Mira AI Prompt 1** and **2** (`awgopt` badges). `awAddMira(opt)` stores
+`w.mira.opt`; `miraTileHTML` renders option 2 (`miraTileHTML2`, the Mira composer) when `(m.opt || mrOpt()) === '2'`, so two
+tiles on one board can differ. The edge-＋ menu and "Recently used" still drop the default (`mrOpt()`, option 1 unless
+`?mr=2`). Recently used now drops the tile — it used to call `cwOpenViz('Mira AI Prompt')`, which has no such type.
+- **An edge-＋ widget added LEFT / RIGHT takes its neighbour's pixel height** (20 Nov 2026): `waePick` stores `h` / `rows`
+  on `AW_AT`; `awPlace` copies `h` only for left / right and only when the neighbour has no `rows`. ⚠️ Copying `rows` was
+  tried and reverted the same day ("it is added full height") — beside a `rows:2` heatmap the new widget became the full
+  band. Below a widget, or beside a `rows` widget, the new one keeps its type's own height.
+- **Option 2 opens an "Edit Mira AI widget" popup before converting** (20 Nov 2026, Dynatrace's prompt-tile editor as the
+  reference). `miraTileRun` routes option-2 tiles to `miraEdOpen`: a draft copy is built by `miraMake` (split out of
+  `miraBuild`, same rules as option 1) and shown large on the left; the right side holds Prompt + Regenerate, Widget
+  name, Visualization (`MRE_VIEWS`: Bar/Column/Pie/Donut for Top N, Area/Line/Column for a chart), What Mira built and
+  follow-up prompts. Nothing on the board changes until **Add to dashboard** (`miraEdAdd`, one history step); Cancel /
+  ✕ / Esc / scrim keep the tile with its prompt. Frame `#mreRoot.mre` is hand-built on tokens inside `#view-dashboard`;
+  controls are obs-button / obs-input / obs-radio. ⚠️ `obs-icon name="refresh"` does not exist in 0.1.166 — `sync` does.
+  ⚠️ **SUPERSEDED THE SAME DAY**: the prompt builds the widget in place on BOTH options again; the popup opens only from
+  **Edit** on a built option-2 widget (`cwOpen` routes it to `miraEdOpen(mid, true)`, no regeneration, footer Reset ·
+  Update Widget, Esc / ✕ / scrim leave the widget as it was). The popup is now laid out like the Create Widget editor:
+  inset 18px, `.cwhead` with the board's stamps, `.cwmain` with the preview (55%) and settings (45%) 8px apart, Widget
+  Name in `.cwnames`, tabs Prompt (prompt, Regenerate, follow-ups) and Style (Visualization, What Mira built), `.cwfoot`.
+  Then: follow-up rows on `--code-tag-background-color` (hover `--neutral-button-bg`), no border; Regenerate is an obs-button
+  primary in the AI accent (`.mreai` re-points `--primary-button-*` to `--ai-2` / `--ai`); the Style tab's Chart view is the
+  toolbar's own list (`wTbViews`: 11 Chart styles, 16 Top N styles, icon segment with name tooltips) and Chart options
+  (`miraEdOptsHTML`): Legend · Legend position · Points (chart) or Values / Data labels (Top N).
+  The edge-＋ add menu lists both designs too — **Mira AI prompt 1** and **Mira AI prompt 2** (`waeItems`, `opt` passed into the
+  new tile's `mira.opt`), so option 2 no longer needs `?mr=2` from that door.
+  **A Top N Mira widget's Style tab IS the Create Widget editor's Top N Style panel** (`miraEdTnPanel`): `cwTnPanel()` +
+  `cwTruncHTML()` rendered against `MRE.st` (a CW.style-shaped copy built by `miraEdTnSt`, CW.style swapped and restored), bound
+  by `miraEdTnBind` (never cwTnBind / cwStyle, which drive the editor), and written back to `w.tn` by `miraEdTnApply`. Chart
+  widgets keep the simple Chart view + options. The preview re-mounts Highcharts a tick and 600ms later — a mount started by
+  the replaced paint could resolve first and leave the SVG fallback (a plain pie with a bottom legend) on screen.
