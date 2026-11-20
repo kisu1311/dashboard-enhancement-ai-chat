@@ -12497,11 +12497,17 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
 .stcsize svg{width:11px;height:11px;fill:currentColor;color:var(--text-dim)}
 .stcpinfo{margin-left:auto;color:var(--text)}
 /* ── popover menu (row ⋮, column chooser, pickers) ────────────────────────────── */
-.stcmenu{position:fixed;z-index:100005;min-width:190px;max-width:420px;background:var(--pop);border:1px solid var(--pop-line);border-radius:4px;
+/* ⚠️ EVERY ACTION POPUP IN SETTINGS IS ON THE DS ACTION-DROPDOWN SURFACE (request, 20 Nov 2026: "overall Settings module, the popup
+   action bg colour from the ObserveOps design system"). The three tokens, at the dev-token values for each theme, declared page-wide
+   so a menu appended to <body> has them too (the scoped DS token blocks also carry them). Used by the hand-built stcMenu below and,
+   through the attachShadow sheet, by every obs-menu - row ⋮ menus, obs-table row actions, header menus. Gap #81. */
+:root{--action-dropdown-backgroud:#1d2a3e;--action-dropdown-text:#cad3e2;--action-dropdown-hover-bg:#172336}
+html[data-theme="light"]{--action-dropdown-backgroud:#fff;--action-dropdown-text:#7186a8;--action-dropdown-hover-bg:#e3e8f2}
+.stcmenu{position:fixed;z-index:100005;min-width:190px;max-width:420px;background:var(--action-dropdown-backgroud,var(--pop));border:1px solid var(--pop-line);border-radius:4px;
          box-shadow:var(--pop-shadow);padding:4px 0;font-size:12.8px;color:var(--text)}
 .stcmi{display:flex;align-items:center;gap:8px;height:32px;padding:0 21px 0 14px;cursor:pointer;white-space:nowrap}
 .stcmi svg{width:14px;height:14px;fill:currentColor;color:var(--text-dim);flex:0 0 14px}
-.stcmi:hover{background:var(--pop-item-hover);color:var(--white)}
+.stcmi:hover{background:var(--action-dropdown-hover-bg,var(--pop-item-hover));color:var(--white)}
 .stcmi.del:hover{color:var(--red)}
 .stcmi.ok,.stcmi.ok svg,.stcmi.ok:hover,.stcmi.ok:hover svg{color:var(--severity-clear,var(--green))}   /* an approve row */
 /* …and inside a cover menu too, where the hover rule repainted the glyph white — the .del rule's own shape */
@@ -12865,7 +12871,7 @@ html[data-theme="light"] #view-settings,html[data-theme="light"] .stcmenu,html[d
   --layout-header-padding:0 12px;
   --left-menu-arrow-color:rgba(255, 255, 255, 0.65);
   --left-menu-arrow-opacity:0.7;
-  --left-menu-hover-bg:#172336;
+  --left-menu-hover-bg:#172336; --action-dropdown-backgroud:#1d2a3e; --action-dropdown-text:var(--page-text-color); --action-dropdown-hover-bg:var(--left-menu-hover-bg);
   --left-menu-text-color:rgba(255, 255, 255, 0.65);
   --left-menu-text-color-hover:rgba(255, 255, 255, 0.8);
   --left-menu-text-hover-color:white;
@@ -13234,7 +13240,7 @@ html[data-theme="light"] #obsToast,html[data-theme="light"] #mraFormDs,html[data
   --input-text-color:#1d2a3e;
   --left-menu-arrow-color:#6a7fa0;
   --left-menu-arrow-opacity:1;
-  --left-menu-hover-bg:#ecf1f9;
+  --left-menu-hover-bg:#ecf1f9; --action-dropdown-backgroud:var(--page-background-color); --action-dropdown-text:var(--neutral-regular); --action-dropdown-hover-bg:var(--neutral-lighter);
   --left-menu-text-color:#2b394f;
   --left-menu-text-color-hover:#111c2c;
   --left-menu-text-hover-color:#111c2c;
@@ -17179,6 +17185,7 @@ obs-banner.mralimh[hidden]{display:none!important}   /* an author display rule b
 .mradirg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .mradirc{position:relative;display:flex;gap:14px;align-items:flex-start;min-width:0;padding:16px;border:1px solid var(--border);border-radius:4px;background:var(--card);cursor:pointer}
 .mradirc:hover,.mradirc:focus-visible{border-color:var(--text-dim);outline:0}
+.mradirc.cfg{cursor:default}.mradirc.cfg:hover{border-color:var(--border)}   /* a configured card is not an action (20 Nov 2026) */
 .mradirb{min-width:0;flex:1 1 auto}
 .mradirn{display:flex;align-items:center;gap:6px;min-height:28px;padding-right:40px}.mradirc.cfg .mradirn{padding-right:96px}   /* only the title row clears the corner action; the description takes the full card width (5 Nov 2026) */
 .mradirn b{font-size:14px;font-weight:600;color:var(--white)}
@@ -42236,6 +42243,12 @@ function lxLtPaint(){
                      '.val-pop,.t-badge,.pill,.pill-pop,.menu,.cbx{border-radius:4px}' +
       ':host(.agadvsel),:host(.agadvsel) .sel{width:100%}',
     'obs-menu':      '.menu,:host([bordered]) .dots{border-radius:4px}' +
+                     /* the DS action-dropdown surface (request, 20 Nov 2026 - My Connectors' row menu first): obs-menu paints its panel
+                        with --page-background-color, which over the grid is the grid's own colour, so the popup did not read as one */
+                     /* …then for EVERY obs-menu in Settings (20 Nov 2026). An inline list (#mraUDlFmt) keeps its own flat look. */
+                     '.menu:not(.inline){background:var(--action-dropdown-backgroud,var(--page-background-color))}' +
+                     '.mitem:not(.dis):not(.danger):not(.positive):not(.sel){color:var(--action-dropdown-text,var(--page-text-color))}' +
+                     '.mitem:not(.dis):hover{background:var(--action-dropdown-hover-bg,var(--neutral-lighter))}' +
                      /* the Download panel's format list (16 Nov 2026): the inline menu draws its own bordered 200px box —
                         inside a panel that is already the box it runs flat and full width, rows on the panel's 16px inset */
                      ':host(#mraUDlFmt) .menu.inline{display:block;min-width:0;border:0;padding:0 8px;background:transparent;box-shadow:none}',
@@ -52252,7 +52265,9 @@ function mraConnHTML(){
 }
 /* Row actions are the DS context menu (obs-menu ⋯, as My Connectors) — request, 2 Nov 2026, replacing
    the hand-built stcMenu. mraMenu is kept, unreferenced. Both icon names render in the vendored bundle. */
-const MRA_ROW_ACTS = [{ key:'edit', label:'Edit Connector', icon:'pencil' }, { key:'del', label:'Remove Connector', icon:'trash-alt', danger:true }];
+/* ⚠️ EDIT CONNECTOR LEFT THE ROW MENU (request, 20 Nov 2026: "remove the edit action") - Remove Connector is the only row action.
+   The 'edit' branch in the select handlers below is kept, so it is one entry away if it is wanted back. */
+const MRA_ROW_ACTS = [{ key:'del', label:'Remove Connector', icon:'trash-alt', danger:true }];
 function mraConnAfter(){
   return mraConnAfter1();
   document.querySelectorAll('#stMain obs-menu.mramenu').forEach(m => m.addEventListener('select', e => {
@@ -52361,18 +52376,24 @@ function mraPkListHTML(){
      card does the same. ⚠️ "Verified" = the vendor's own MCP server (every MRA_TPL row is); "by" = the brand.
      The ↗ documentation corner went — the action owns that corner, as in the reference. */
   const card = (t, cfg) => {
-    const act = cfg ? `mraForm(${byK.get(t.k).id})` : `mraFromTpl('${t.k}')`;
-    return `<div class="mradirc${cfg ? ' cfg' : ''}" role="button" tabindex="0" onclick="${act}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${act}}">
+    /* ⚠️ A CONFIGURED card no longer opens the edit form (request, 20 Nov 2026: "remove the edit action in the connector") - it
+       is a plain card with its Configured tag: no click, no keyboard stop, no hover. Only an Available card is an action. */
+    const act = `mraFromTpl('${t.k}')`;
+    return cfg ? `<div class="mradirc cfg">` : `<div class="mradirc" role="button" tabindex="0" onclick="${act}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${act}}">`;
+  };
+  const cardIn = (t, cfg) => {
+    const act = `mraFromTpl('${t.k}')`;
+    return `
       ${mraTile(t.k, true)}<div class="mradirb"><div class="mradirn"><b>${t.n}</b></div>
       <p>${mraEsc(t.d)}</p><span class="by">by ${t.n}</span></div>
-      ${cfg ? `<obs-tag class="mradircfg" variant="tag-green" data-tip="${t.n} is configured - open it to edit">Configured</obs-tag>`
+      ${cfg ? `<obs-tag class="mradircfg" variant="tag-green">Configured</obs-tag>`
             : `<button class="mradira" data-tip="Add ${t.n}" aria-label="Add ${t.n}" onclick="event.stopPropagation();${act}">${stcSvg('plus')}</button>`}</div>`;
   };
   /* EVERY connector is listed (request, 5 Nov 2026 — reverses 3 Nov's "configured ones are not offered"): a configured one
      carries a Configured tag where the ＋ was, and opening it edits the saved connector */
   if (!hit.length) return `<div class="mrapkempty">No servers match “${mraEsc(MRA.tq)}”. Use <b>Set Up Manually</b> to add any MCP server by its address.</div>`;
   /* two sections (request, 5 Nov 2026): what can still be added, then what is already configured */
-  const sec = (title, list, cfg) => list.length ? `<div class="mrapksec">${title} <obs-tag>${list.length}</obs-tag></div><div class="mradirg">${list.map(t => card(t, cfg)).join('')}</div>` : '';
+  const sec = (title, list, cfg) => list.length ? `<div class="mrapksec">${title} <obs-tag>${list.length}</obs-tag></div><div class="mradirg">${list.map(t => card(t, cfg) + cardIn(t, cfg)).join('')}</div>` : '';
   return sec('Available', free, false) + sec('Configured', have, true);
 }
 function mraFromTpl(k){ const t = MRA_TPL.find(x => x.k === k); mraForm(null, { k, n:t.n, url:t.url, d:t.d, auth:1, org:false, roles:[], on:false }); }
@@ -53276,13 +53297,14 @@ function mycItems(r, s, u){
   /* the row actions follow the connector's state (request, 3 Nov 2026):
      not connected (never set up, or a sign-in connector not signed in) → Connect, which opens the Set Up drawer;
      connected, No sign-in  → Reconnect (the same drawer: headers, then Connect) · Disconnect;
-     connected, Sign in     → Refresh (re-opens the session and re-reads the tools - a backend step) · Disconnect.
-     "Set up", "Sign in" and "Sign in again" are gone - Connect and Refresh cover them. */
+     connected, Sign in     → Reconnect (re-opens the session and re-reads the tools - a backend step; was "Refresh") · Disconnect.
+     "Set up", "Sign in" and "Sign in again" are gone - Connect and Reconnect cover them. */
   const disc = { key:'disc', label:'Disconnect', icon:'power-off', danger:true };
   if (s.k === 'admin') return u.set ? [disc] : [];   /* "Your setup is kept" removed on request (3 Nov 2026) */
   if (s.k === 'none' || s.k === 'out') return [{ key:'setup', label:'Connect', icon:'plug' }];
-  return r.auth === 1 ? [{ key:'refresh', label:'Refresh', icon:'sync', disabled: !!u.busy }, disc]
-                      : [{ key:'setup', label:'Reconnect', icon:'plug' }, disc];   /* "Update" renamed Reconnect (request, 18 Nov 2026) */
+  /* "Refresh" renamed Reconnect (request, 20 Nov 2026) - it re-opens the session, which is what the toast already said */
+  return r.auth === 1 ? [{ key:'refresh', label:'Reconnect', icon:'sync', disabled: !!u.busy }, disc]
+                      : [{ key:'setup', label:'Reconnect', icon:'sync' }, disc];   /* one Reconnect icon for both kinds (request, 20 Nov 2026) - plug is Connect's */   /* "Update" renamed Reconnect (request, 18 Nov 2026) */
 }
 function mycAfter(){
   cgBind(document.getElementById('mycPage'), 'myc', () => stMainPaint());

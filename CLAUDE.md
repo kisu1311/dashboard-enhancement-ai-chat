@@ -15493,6 +15493,10 @@ user's Chrome; **nothing was sent, renamed or deleted on the instance**.
   **Code** opens the right-hand split (drag the splitter, Close, Esc) · Open / Open in Settings › Runbooks →
   `setting.html#st=Plugin Library|Runbook` · user row → My Profile · effort picker (Low…Max) · 👍/👎 · Regenerate ·
   scroll-to-latest · the + button's "Add context: coming soon" tip · send (Enter) with a first message filing a new chat.
+- **The Mira sidebar's own collapse button and its foot (the admin · usage card) are hidden** (request, 20 Nov 2026), in
+  `_mira/glue.css` and `mira.html`'s glue style: `.mira-icon-button[aria-label="Collapse sidebar"]` inside the sidebar and
+  `.mira-sidebar-foot`. The chat header's panel toggle is the one way to collapse / expand the chat list. ⚠️ Consequence: the
+  monthly usage figure and the user row (→ My Profile) are no longer on this page; the rail's avatar still reaches the profile.
 - ⚠️ **Scrubbed**: `10.20.41.111` → `192.0.2.111`, `172.16.14.60` → `192.0.2.60`, the resolved public IP →
   `203.0.113.141`, the WhatsApp recipient → `+91 9876543210`, the code header's e-mail → `example.com`.
 - ⚠️ **Inferred, stated**: the reply to a sent message is canned ("this is a prototype…") with a 1.5 s Thinking beat;
