@@ -15238,6 +15238,8 @@ the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with cla
   **Every widget legend has the ⋮** (19 Nov 2026): also the HTML keys — Single Value `.lg` / `.wc4k` entries and the
   heatmap's `obs-severity-legend` (entries reached via `composedPath`). `wlmHtmlItem` matches an entry to its widget chart's
   series by name (Ask AI reads real numbers, unit from the widget's counter) or makes a stub with the printed value.
+  ⚠️ `#wLegMenu` lives in `#view-dashboard`, not `<body>` — outside the scoped DS token block its obs-radio picker painted
+  the DS's LIGHT defaults (gap #80).
   Each style tile in the Chart view picker (legend menu and toolbar) names itself on hover; a Chart widget's tiles read
   `CW_CH_NAMES` ("Horizontal Bar"), not `CW_SHAPE`'s internal keys ("hbar").
 - **Dot size follows the printed number** (19 Nov 2026): a dot's radius comes from its value rounded as its label prints it,
@@ -15252,6 +15254,21 @@ the widget itself is still draggable). The toolbar's ⋮ opens `#wMenu` with cla
 - **Top N value labels scale with the widget** (19 Nov 2026): `tnDls(w, h)` = round(min(w, 1.5·h) / 50) clamped 10–20px, used by
   every data / value label in `tnHcCfg` (pie-likes, funnel, pyramid, bars, polar, tree view); `tnHcMount` re-applies it when the
   size changes (`c.tnDl0`).
+- **Text truncation fits the legend's real room** (19 Nov 2026, "also in the legend and chart text"): `legFit(chart, name, mode,
+  keep)` shortens every legend entry to what fits — a side legend's own width (half the chart when it has none), a bottom
+  legend's share of the chart width — at the legend's font size, in the chosen mode, leaving room for the ": 117" / " · KB"
+  it also prints. Used by Top N (all styles), Chart widgets and the board's plain pies ('end'). 'none' = whole names.
+- **Mira AI prompt widget** (19 Nov 2026, Dynatrace's "Prompt" tile as the reference): the edge-+ add menu's first Create row,
+  **Mira AI prompt**, places a `t:'mira'` "Untitled tile" at the edge spot (`mid` id). **The prompt lives IN the tile** (request,
+  same day: "not as a sidebar"): a prompt box (focused), three suggestions that fill it, **Generate widget** (disabled until
+  text; Enter also runs) → the tile shows "Mira AI is building this widget…" + the prompt + Cancel → after 1.6s the tile
+  BECOMES a real `tn` / `ch` widget (`miraBuild` reads a few words: top N / over time / severity / pie / cpu…), so Edit, chart
+  view and legend menus work on it. Delegated listeners (`miraTileRun`); typing never re-renders; the widget's `draggable` is
+  off while the box has focus; board shortcuts are stopped while typing. The side panel (`miraOpen` / `miraPaint`, `.mrp*`) is
+  kept and unreferenced. **Also in the Add New Widget drawer**: an AI / ML tile, **Mira AI Prompt** (first in that section,
+  the sparkles mark as its art), which `awAddMira()` drops at the end of the board with the prompt box focused.
+- **Semi Donut fits its plot** (19 Nov 2026): the demo's `size:'110%'` (of the plot's smaller side) let the arc and its labels run
+  under a side legend; a `render` event now sizes it to fit the plot's width (less ~70px a side for labels) AND height.
 - **Lollipop is no longer offered** (19 Nov 2026): `TN_HIDE = ['Lollipop']` filters the Top N style tiles, the toolbar /
   legend Chart view picker and option 2's groups; it stays in `TN_TYPES` so saved indices do not move.
 - **The Create / Edit Widget editor is on `--bg`** (19 Nov 2026, "#07101F overall"): `#cwModal{--panel:var(--bg);--card:var(--bg)}`
