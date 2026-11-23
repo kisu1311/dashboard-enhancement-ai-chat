@@ -1,0 +1,617 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ObserveOps Module Work</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the product's own sidebar on the left (Dashboard_with_AI_Chat/index.html, Option 1, open state: same rows,
+   order, icons, sizes and colours), the work built for the picked module on the right. */
+:root{
+  --bg:#fff; --text:#1d2a3e; --muted:#6a7fa0; --line:#e3e8f2; --tag:#e3e8f2;
+  --ok:#14b053; --warn:#f47c22; --accent:#14b8a6;
+  /* the sidebar's own tokens, light */
+  --rail:#F6F9FC; --rail-line:#e3e8f2; --rail-text:#24344d; --rail-dim:#5b6b85; --rail-hover:#ecf1f9;
+  --pill:#24344d; --ink:#f4f7fb; --field:#fff;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#07101f; --text:#cad3e2; --muted:#8e9fbc; --line:#1d2a3e; --tag:#2b394f; --ok:#36d576; --warn:#fa9950; --accent:#14b8a6;
+    --rail:#172336; --rail-line:#1d2a3e; --rail-text:#cad3e2; --rail-dim:#8a9ab0; --rail-hover:#22314a; --pill:#c9d4e4; --ink:#172336; --field:#0c1728; color-scheme:dark }
+}
+:root[data-theme="dark"]{ --bg:#07101f; --text:#cad3e2; --muted:#8e9fbc; --line:#1d2a3e; --tag:#2b394f; --ok:#36d576; --warn:#fa9950; --accent:#14b8a6;
+  --rail:#172336; --rail-line:#1d2a3e; --rail-text:#cad3e2; --rail-dim:#8a9ab0; --rail-hover:#22314a; --pill:#c9d4e4; --ink:#172336; --field:#0c1728; color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.5 var(--sans)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100%}
+
+/* ── the sidebar: 240px, 56px head, 32px rows 10px apart, 4px radius ── */
+.rail{background:var(--rail);color:var(--rail-text);border-right:1px solid var(--rail-line);
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+  padding-left:env(safe-area-inset-left, 0px)}
+.shead{flex:0 0 56px;display:flex;align-items:center;position:relative}
+.strig{flex:1;min-width:0;height:56px;display:flex;align-items:center;gap:11px;padding:0 18px;border:0;background:none;cursor:pointer;text-align:left;color:var(--rail-text)}
+.strcol{flex:0 0 32px;width:32px;height:32px;margin-right:10px;display:grid;place-items:center;border:0;border-radius:4px;background:none;color:var(--rail-dim);cursor:pointer}
+.strcol:hover{background:var(--rail-hover);color:var(--rail-text)}
+.strcol svg{width:18px;height:18px;fill:currentColor}
+.strcol g{transition:transform .18s;transform-origin:28.5px 24px;transform:scaleX(-1)}
+/* collapsed: the 53px icon rail. The mark gives way to the expand button when the rail is hovered or focused. */
+@media (min-width:761px){
+.app.is-railmin{grid-template-columns:53px minmax(0,1fr)}
+.is-railmin .strig{position:absolute;inset:0;padding:0;justify-content:center;pointer-events:none}
+.is-railmin .strig b{display:none}
+.is-railmin .strcol{margin:0 auto;opacity:0;position:relative}
+.is-railmin .strcol g{transform:none}
+.is-railmin .rail:hover .strcol,.is-railmin .strcol:focus-visible{opacity:1}
+.is-railmin .rail:hover .strig,.is-railmin .shead:focus-within .strig{opacity:0}
+.is-railmin .mod{width:32px;margin:0 auto 10px;padding:0;justify-content:center}
+.is-railmin .mod .nm,.is-railmin .mod .ct,.is-railmin .mod .chev,.is-railmin .kids,.is-railmin .find input{display:none}
+.is-railmin .find{width:32px;margin:0 auto 10px;padding:0;justify-content:center;cursor:pointer}
+.is-railmin .sfoot::before{margin:0 14px 10px}
+}
+.strig svg{width:24px;height:24px;flex:0 0 24px}
+.strig b{font-size:14px;font-weight:600}
+.smenu{flex:1 1 auto;min-height:0;overflow-y:auto;padding-bottom:8px}
+.sfoot{flex:0 0 auto;padding-top:10px;margin-top:auto}
+.sfoot::before{content:"";display:block;height:0;border-top:1px solid var(--rail-line);margin:0 14px 10px}
+.gap{height:0;margin:0}
+.mod{display:flex;align-items:center;gap:11px;width:calc(100% - 20px);height:32px;margin:0 10px 10px;padding:0 8px;
+  border:0;border-radius:4px;background:none;color:var(--rail-text);text-align:left;cursor:pointer}
+.mod:hover{background:var(--rail-hover)}
+.mod svg.ic{width:18px;height:18px;flex:0 0 18px;fill:currentColor}
+.mod .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px}
+.mod .ct{font:500 11px var(--mono);color:var(--rail-dim);font-variant-numeric:tabular-nums}
+.mod.zero .ct{display:none}
+.mod .chev{width:14px;height:14px;flex:0 0 14px;fill:currentColor;color:var(--rail-dim);transition:transform .15s}
+.mod.exp.open .chev{transform:rotate(90deg)}
+.mod.on{background:var(--pill);color:var(--ink)}
+.mod.on .ct{color:var(--ink);opacity:.85}
+.beta{font:600 9.5px var(--sans);letter-spacing:.05em;padding:1px 5px;border-radius:3px;background:var(--rail-hover);color:var(--rail-dim)}
+.mod.on .beta{background:none;color:var(--ink)}
+.kids .mod{padding-left:37px;margin-bottom:4px}
+.kids{padding-bottom:6px}
+.find{display:flex;align-items:center;gap:11px;height:32px;margin:0 10px 10px;padding:0 8px;border-radius:4px;background:var(--field);color:var(--rail-text)}
+.find:focus-within{outline:1px solid var(--accent)}
+.find svg{width:18px;height:18px;flex:0 0 18px;fill:currentColor}
+.find input{flex:1;min-width:0;border:0;background:none;outline:0;color:var(--rail-text);font-size:13px;font-weight:500}
+.find input::placeholder{color:var(--rail-text);opacity:1}
+.find input:focus::placeholder{color:var(--rail-dim)}
+
+/* ── main ── */
+.main{min-width:0;padding-block:24px 48px;padding-left:28px;padding-right:max(28px, env(safe-area-inset-right, 0px));max-width:1240px}
+.head{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.eyebrow{color:var(--muted);font-size:12px}
+h1{margin:2px 0 0;font:600 22px/1.25 var(--sans);text-wrap:balance}
+.sum{color:var(--muted);margin-top:4px}
+
+.sec{margin-top:26px}
+.sech{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.sech button{border:0;background:none;padding:0;cursor:pointer;font:600 14px var(--sans)}
+.sech button:hover{text-decoration:underline}
+.sech span{color:var(--muted);font-size:12px}
+
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 20px;padding:14px 0;border-bottom:1px solid var(--line)}
+.item .ti{font-weight:600;font-size:14px}
+.meta{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:3px}
+.kind{background:var(--tag);color:var(--text);border-radius:4px;padding:1px 7px;font-size:11.5px}
+.st{display:inline-flex;align-items:center;gap:6px}
+.st i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.st.live i{background:var(--ok)} .st.wip i{background:var(--warn)}
+.date{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.note{grid-column:1;margin-top:6px;max-width:68ch;overflow-wrap:anywhere}
+.file{grid-column:1;margin-top:6px;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.open{grid-column:2;grid-row:1;align-self:start;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  border:1px solid var(--line);border-radius:4px;color:var(--text);text-decoration:none;font-weight:500;white-space:nowrap}
+.open:hover{border-color:var(--accent)}
+.open svg{width:14px;height:14px}
+
+/* ── live component stage (Mira AI) ── */
+.stage{margin-top:22px}
+.stage h2{margin:0;font:600 15px var(--sans)}
+.stage .sub{color:var(--muted);margin-top:2px;max-width:70ch}
+.cbuild{font:500 11.5px var(--mono);white-space:nowrap}
+/* two panes: the component list on the left, the picked component (its options, then the stage) on the right */
+.cgrid{display:grid;grid-template-columns:212px minmax(0,1fr);gap:20px;margin-top:16px;align-items:start}
+.clist{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:8px;padding:6px}
+.ctab{display:flex;align-items:center;gap:8px;min-height:34px;padding:5px 10px;border:0;border-radius:4px;background:none;cursor:pointer;font-weight:500;text-align:left}
+.ctab span{flex:1;min-width:0}
+.ctab i{font:500 11px var(--mono);font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums}
+.ctab:hover{background:var(--tag)}
+/* category headings in the component list (Mira AI: Chat · UI visualization) */
+.ccat{padding:10px 10px 4px;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ccat:first-child{padding-top:4px}
+.ctab.on{background:var(--pill);color:var(--ink)}
+.ctab.on i{color:var(--ink);opacity:.8}
+.cmain{min-width:0}
+.chead{display:flex;align-items:flex-start;gap:12px 20px;flex-wrap:wrap}
+.chead .tx{flex:1;min-width:220px}
+.ctitle{font:600 17px/1.3 var(--sans)}
+.cact{display:flex;align-items:center;gap:8px}
+/* options: one tab per variant, on a rule, so a component can carry many */
+.cvars{display:flex;flex-wrap:wrap;gap:0 4px;margin-top:12px;border-bottom:1px solid var(--line)}
+.cvars button{height:34px;padding:0 12px;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.cvars button:hover{color:var(--text)}
+.cvars button.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.cvars .n{font:500 11px var(--mono);color:var(--muted);margin-right:6px}
+/* options are grouped (request, 23 Nov 2026: 13 numbered tabs on three lines read as confusing and took the space).
+   The tab row holds one tab per option - the text before the first " · " of a label - with a count when it has states;
+   that option's states sit on ONE chip row under it, labelled State, the option's name no longer repeated in each. */
+.cvars .gc{margin-left:6px;padding:0 5px;border-radius:8px;background:var(--tag);font:500 10.5px/16px var(--mono);color:var(--muted)}
+.cvars button.on .gc{color:var(--text)}
+.cstates{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:12px;color:var(--muted)}
+.cstates .lab{margin-right:2px}
+.cstates button{height:26px;padding:0 10px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--muted);font:500 12px var(--sans);cursor:pointer;white-space:nowrap}
+.cstates button:hover{color:var(--text);border-color:var(--muted)}
+.cstates button.on{background:var(--pill);border-color:var(--pill);color:var(--ink)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{height:28px;padding:0 10px;border:0;border-right:1px solid var(--line);background:none;cursor:pointer;font-size:12.5px;white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--tag);font-weight:600}
+.replay{height:28px;padding:0 12px;border:1px solid var(--line);border-radius:4px;background:none;cursor:pointer;font-weight:500}
+.replay:hover{border-color:var(--accent)}
+/* the description is ONE line, cut with an ellipsis, and a chevron at its end opens / closes the whole text (request,
+   20 Nov 2026). The chevron shows only when the line is actually cut, or while it is open. */
+.cdescw{display:flex;align-items:flex-start;gap:4px;margin-top:3px;max-width:76ch}
+.cdesc{flex:1;min-width:0;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdescw.is-open .cdesc{white-space:normal}
+.cdesct{flex:0 0 auto;display:grid;place-items:center;width:20px;height:20px;margin-top:0;padding:0;border:0;border-radius:4px;background:none;color:var(--muted);cursor:pointer}
+.cdesct:hover{color:var(--text);background:var(--tag)}.cdesct svg{width:14px;height:14px;transition:transform .15s}.cdescw.is-open .cdesct svg{transform:rotate(180deg)}
+/* the stage is resizable: drag its right edge, bottom edge or corner. The size is remembered per browser. */
+.cframe{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);height:660px;width:100%;max-width:100%;min-width:320px;min-height:280px}
+.cframe.is-drag iframe{pointer-events:none}
+.cframe.is-drag{border-color:var(--accent)}
+.rz{position:absolute;z-index:2;touch-action:none}
+.rz::after{content:"";position:absolute;background:var(--accent);opacity:0;transition:opacity .12s}
+.rz:hover::after,.cframe.is-drag .rz::after{opacity:1}
+.rz-r{top:0;right:0;bottom:14px;width:8px;cursor:ew-resize}
+.rz-r::after{top:0;bottom:0;right:0;width:2px}
+.rz-b{left:0;right:14px;bottom:0;height:8px;cursor:ns-resize}
+.rz-b::after{left:0;right:0;bottom:0;height:2px}
+.rz-c{right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:
+  linear-gradient(135deg,transparent 0 50%,var(--muted) 50% 58%,transparent 58% 70%,var(--muted) 70% 78%,transparent 78%)}
+.rz-c::after{display:none}
+.csize{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:4px;background:none;cursor:pointer;font:500 11.5px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.csize:hover{border-color:var(--accent);color:var(--text)}
+.cframe iframe{display:block;width:100%;height:100%;border:0}
+/* a stage with a fixed viewport (Setting: 1920 x 1080) renders at that size and is scaled to the frame's width */
+.cframe.is-vp iframe{position:absolute;left:0;top:0;transform-origin:0 0}
+.cvp{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-top:12px;font-size:12px;color:var(--muted)}
+.cvp input{width:64px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--text);font:500 12px var(--mono);font-variant-numeric:tabular-nums}
+.cvp input:focus{outline:0;border-color:var(--accent)}
+.cvp button{height:28px;padding:0 9px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--muted);font:500 11.5px var(--mono);cursor:pointer;white-space:nowrap}
+.cvp button:hover{color:var(--text);border-color:var(--muted)}
+.cvp button.on{background:var(--pill);border-color:var(--pill);color:var(--ink)}
+.cvp .lab{margin-right:2px}
+.cmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted)}
+.listh{margin:34px 0 0;font:600 15px var(--sans)}
+
+.blank{margin-top:26px;padding:28px 0;color:var(--muted);max-width:60ch}
+.blank b{display:block;color:var(--text);font-size:14px;margin-bottom:4px}
+.warnline{margin-top:14px;color:var(--warn);font-size:12px}
+
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--rail-line);padding-bottom:6px;
+    padding-left:max(6px, env(safe-area-inset-left, 0px));padding-right:max(6px, env(safe-area-inset-right, 0px))}
+  .strig{padding:0 10px}
+  .strcol{display:none}
+  .smenu{display:flex;flex-wrap:wrap;overflow:visible;padding:0 4px}
+  .smenu .find{flex:1 0 100%;margin:0 6px 10px}
+  .kids{display:contents}
+  .mod,.kids .mod{width:auto;margin:0 6px 8px;padding:0 10px}
+  .mod.zero,.mod.exp,.gap{display:none}
+  .sfoot{padding:0 4px;margin:0}
+  .sfoot::before{display:none}
+  .main{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:18px 40px}
+  .cgrid{grid-template-columns:minmax(0,1fr);gap:14px}
+  .clist{flex-direction:row;flex-wrap:wrap;gap:4px}
+  .ctab{min-height:30px}
+  .ctab i{display:none}
+  .ccat{flex:1 0 100%;padding:6px 4px 2px}
+  .item{grid-template-columns:minmax(0,1fr)}
+  .open{grid-column:1;grid-row:auto;justify-self:start;margin-top:8px}
+}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="shead">
+    <button class="strig" data-m="all" title="All work">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.9922 9.99629V0.167969C19.0183 1.00752 22.981 4.97021 23.8205 9.99629H13.9922Z" fill="#F37564"></path><path d="M23.9888 12.2574C23.8545 18.7612 18.5373 24 12 24C5.46269 24 0 18.6269 0 12C0 11.3172 0.0559702 10.6455 0.16791 9.99624C1.10821 4.41045 5.91045 0.123134 11.7426 0V4.95895C8.68656 5.0709 6.12314 7.15298 5.29478 9.98504C5.10448 10.6119 5.00373 11.2836 5.00373 11.9888C5.00373 15.8731 8.13808 19.0186 12 19.0186C12.694 19.0186 13.3657 18.9179 14.0038 18.7276C16.8134 17.8881 18.8843 15.3134 18.9962 12.2462H24L23.9888 12.2574Z" fill="currentColor"></path></svg>
+      <b>ObserveOps</b>
+    </button>
+    <button class="strcol" id="railBtn" title="Collapse sidebar" aria-label="Collapse sidebar">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill-rule="evenodd" d="M11 8h26a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Zm0 3.6c-.8 0-1.4.6-1.4 1.4v22c0 .8.6 1.4 1.4 1.4h26c.8 0 1.4-.6 1.4-1.4V13c0-.8-.6-1.4-1.4-1.4H11Z"></path><path d="M16.2 9.5h3.4v29h-3.4z"></path><g><path d="M26.5 17.6 32.9 24l-6.4 6.4-2.4-2.4 4-4-4-4 2.4-2.4Z"></path></g></svg>
+    </button>
+    </div>
+    <nav class="smenu" id="nav" aria-label="Modules"></nav>
+    <div class="sfoot" id="foot"></div>
+  </aside>
+  <main class="main">
+    <div class="head">
+      <div class="eyebrow" id="eyebrow"></div>
+      <h1 id="title"></h1>
+      <div class="sum" id="sum"></div>
+    </div>
+    <div id="note"></div>
+    <section class="stage" id="stage" hidden>
+      <h2>Components</h2>
+      <div class="sub"><span id="cIntro"></span><span class="cbuild" id="cBuild"></span></div>
+      <div class="cgrid">
+        <nav class="clist" id="cTabs" aria-label="Components"></nav>
+        <div class="cmain">
+          <div class="chead">
+            <div class="tx"><div class="ctitle" id="cTitle"></div><div class="cdescw" id="cDescW"><div class="cdesc" id="cDesc"></div><button type="button" class="cdesct" id="cDescT" aria-expanded="false" aria-controls="cDesc" title="Show the full description" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg></button></div></div>
+            <div class="cact" id="cAct"></div>
+          </div>
+          <div class="cvars" id="cBar" role="tablist" aria-label="Options"></div>
+          <div class="cstates" id="cStates" role="group" aria-label="State" hidden></div>
+          <div class="cvp" id="cVp" hidden></div>
+          <div class="cframe" id="cBox"><iframe id="cFrame" title="Mira component stage"></iframe><div class="cmsg" id="cMsg">Loading the Mira components…</div><div class="rz rz-r" data-rz="r" title="Drag to change the width"></div><div class="rz rz-b" data-rz="b" title="Drag to change the height"></div><div class="rz rz-c" data-rz="c" title="Drag to resize"></div></div>
+        </div>
+      </div>
+    </section>
+    <div id="body"></div>
+  </main>
+</div>
+
+<script>
+/* Icons are the sidebar's own, read out of the rendered page. */
+var ICO = {"mira-ai": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2.5c.7 5 4.5 8.8 9.5 9.5-5 .7-8.8 4.5-9.5 9.5-.7-5-4.5-8.8-9.5-9.5 5-.7 8.8-4.5 9.5-9.5z\" fill=\"currentColor\"><\/path><\/svg>", "dashboard": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M19.5,26.7H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5v-12.2h12.2v12.2Zm26.5-15.7h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2v-12.2h12.2v12.2ZM19.5,2H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5V5.5h12.2v12.2ZM44.2,2h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2V5.5h12.2v12.2Z\"><\/path><\/svg>", "monitor": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M4.6 16.6H43.4C44.4 16.6 45.2 15.8 45.2 14.8V3.49995C45.2 2.49995 44.4 1.69995 43.4 1.69995H4.6C3.6 1.69995 2.8 2.49995 2.8 3.49995V14.9C2.8 15.9 3.6 16.7 4.6 16.7V16.6ZM37.9 7.89995H36.7L34.6 6.59995C34.2 6.29995 33.6 6.29995 33.2 6.59995L30.8 7.89995L28.1 5.49995H41.7V13.4H23.2C23.6 13.4 23.9 13.2 24.1 12.9L27.3 8.69995L29.7 10.8C30.1 11.2 30.8 11.3 31.3 11L33.8 9.69995L35.5 10.8C35.7 10.9 36 11 36.3 11H38C38.8 11 39.4 10.4 39.4 9.59995C39.4 8.79995 38.8 8.19995 38 8.19995L37.9 7.89995ZM6.4 5.29995H26.3C26.3 5.29995 26.1 5.49995 26 5.59995L22.7 9.79995L19.6 7.19995C19.1 6.79995 18.4 6.79995 17.9 7.19995L16.4 8.19995H10.6C9.8 8.19995 9.2 8.79995 9.2 9.59995C9.2 10.4 9.8 11 10.6 11H16.8C17.1 11 17.4 11 17.6 10.8L18.5 10.2L21.9 13.1C22.1 13.3 22.4 13.4 22.7 13.4H6.4V5.29995ZM44 42.7H30.2V38.4C30.2 37.4 29.4 36.5999 28.4 36.5999H25.7V33.9H43.3C44.3 33.9 45.1 33.0999 45.1 32.0999V20.7C45.1 19.7 44.3 18.9 43.3 18.9H4.6C3.6 18.9 2.8 19.7 2.8 20.7V32.0999C2.8 33.0999 3.6 33.9 4.6 33.9H22.2V36.5999H19.5C18.5 36.5999 17.7 37.4 17.7 38.4V42.7H4C3 42.7 2.2 43.5 2.2 44.5C2.2 45.5 3 46.2999 4 46.2999H44C45 46.2999 45.8 45.5 45.8 44.5C45.8 43.5 45 42.7 44 42.7ZM37.9 25.2H36.7L34.6 23.9C34.2 23.6 33.6 23.6 33.2 23.9L30.8 25.2L28.1 22.7999H41.7V30.7H23.2C23.6 30.7 23.9 30.5 24.1 30.2L27.3 26L29.7 28.1C30.1 28.5 30.8 28.5999 31.3 28.2999L33.8 27L35.5 28.1C35.7 28.2 36 28.2999 36.3 28.2999H38C38.8 28.2999 39.4 27.7 39.4 26.9C39.4 26.1 38.8 25.5 38 25.5L37.9 25.2ZM6.4 30.5V22.6H26.3C26.3 22.6 26.1 22.8 26 22.9L22.7 27.1L19.6 24.5C19.1 24.1 18.4 24.1 17.9 24.5L16.4 25.5H10.6C9.8 25.5 9.2 26.1 9.2 26.9C9.2 27.7 9.8 28.2999 10.6 28.2999H16.8C17.1 28.2999 17.4 28.3 17.6 28.1L18.5 27.5L21.9 30.4C22.1 30.6 22.4 30.7 22.7 30.7H6.4V30.5ZM26.8 42.7999H21.3V40.2999H26.8V42.7999Z\"><\/path><\/svg>", "alert": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M24.2,45c2.2,0,3.9-1.7,4.1-3.9h-8.1c.1,2.1,1.9,3.9,4.1,3.9Zm16.6-10.2l-3.1-3.3v-10.8c0-6.4-3.7-12.8-12-13.6v-2.4c0-1-.8-1.8-1.8-1.8s-1.8,.8-1.8,1.8v2.4c-8.3,.8-12,7.2-12,13.6v10.8l-3.1,3.2c-.5,.5-.6,1.3-.3,1.9,.3,.6,.9,1.1,1.6,1.1h31.1c.7,0,1.3-.4,1.6-1.1,.3-.6,.1-1.4-.3-1.9Zm-28.3-.5l.7-.8c.3-.3,.5-.8,.5-1.2v-11.5c0-4.9,2.7-10.2,10.2-10.2s10.2,5.2,10.2,10.2v11.5c0,.5,.2,1,.6,1.3l.7,.7H12.5Z\"><\/path><\/svg>", "slo": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M16 23C22.0751 23 27 27.9249 27 34C27 40.0751 22.0751 45 16 45C9.92487 45 5 40.0751 5 34C5 27.9249 9.92487 23 16 23ZM16 27C12.134 27 9 30.134 9 34C9 37.866 12.134 41 16 41C19.866 41 23 37.866 23 34C23 30.134 19.866 27 16 27ZM31 3C31.5304 3 32.039 3.21086 32.4141 3.58594L42.4141 13.5859C42.7891 13.961 43 14.4696 43 15V35C43 37.2091 41.2091 39 39 39H28.002C28.522 37.7531 28.8499 36.408 28.957 35H39V19H29C27.8954 19 27 18.1046 27 17V7H15V21.041C13.5922 21.1481 12.2468 21.4762 11 21.9961V7C11 4.79086 12.7909 3 15 3H31ZM15 29C16.1046 29 17 29.8954 17 31V33H19C20.1046 33 21 33.8954 21 35C21 36.1046 20.1046 37 19 37H15C13.8954 37 13 36.1046 13 35V31C13 29.8954 13.8954 29 15 29ZM31 15H38.1719L31 7.82812V15Z\"><\/path><\/svg>", "explorer": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M24 4C35.0457 4 44 12.9543 44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24C4 12.9543 12.9543 4 24 4ZM24 8C15.1634 8 8 15.1634 8 24C8 32.8366 15.1634 40 24 40C32.8366 40 40 32.8366 40 24C40 15.1634 32.8366 8 24 8ZM30.2119 15.1621C30.9636 14.8401 31.8358 15.0078 32.4141 15.5859C32.9921 16.1642 33.1599 17.0365 32.8379 17.7881L28.6387 27.5879C28.4364 28.0598 28.0598 28.4363 27.5879 28.6387L17.7881 32.8379C17.0365 33.16 16.1642 32.9921 15.5859 32.4141C15.0077 31.8358 14.84 30.9636 15.1621 30.2119L19.3613 20.4121C19.5636 19.9401 19.9401 19.5636 20.4121 19.3613L30.2119 15.1621ZM22.7227 22.7227L20.8066 27.1924L25.2764 25.2764L27.1924 20.8066L22.7227 22.7227Z\"><\/path><\/svg>", "topology": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M44.2,33h-3.1v-2.9c0-3.8-1.9-5.8-5.5-5.8h-5.3v-2.5c0-1-.8-1.8-1.8-1.8h-2.7v-4.9h3.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8h-10.2c-1,0-1.8,.8-1.8,1.8V13.3c0,1,.8,1.8,1.8,1.8h3.3v4.9h-2.5c-1,0-1.8,.8-1.8,1.8v2.5h-5.4c-3.7,0-5.5,1.9-5.5,5.8v2.9H3.8c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8H14c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8h-3.3v-2.9c0-2,.4-2.2,2-2.2h5.4v1.7c0,1,.8,1.8,1.8,1.8h8.6c1,0,1.8-.8,1.8-1.8v-1.7h5.3c1.6,0,2,.2,2,2.2v2.9h-3.6c-1,0-1.8,.8-1.8,1.8v9.2c0,1,.8,1.8,1.8,1.8h10.2c1,0,1.8-.8,1.8-1.8v-9.2c0-1-.8-1.8-1.8-1.8Zm-32,3.5v5.7H5.5v-5.7h6.7ZM20.8,11.5V5.8h6.7v5.7h-6.7Zm6,16.2h-5.1v-4.3h5.1v4.3Zm15.7,14.4h-6.7v-5.7h6.7v5.7Z\"><\/path><\/svg>", "compliance": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M28.6,18.6c-.6,0-1,.2-1.4,.6h0l-5.4,5.4-1.8-1.8c-.4-.4-.9-.6-1.4-.6s-1,.2-1.4,.6-.6,.9-.6,1.4,.2,1,.6,1.4l3.2,3.2c.2,.2,.4,.4,.7,.5,.3,0,.5,.2,.8,.2s.6,0,.8-.2c.3,0,.5-.3,.7-.5l6.9-6.9c.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4-.9-.6-1.4-.6Zm11.2-10.6c0-.3-.3-.5-.6-.7-.2-.2-.5-.3-.8-.4h-.9c-2.1,.5-4.4,.5-6.5,0s-4.2-1.3-6-2.6c-.4-.2-.8-.4-1.1-.4s-.8,0-1.1,.4c-1.8,1.2-3.8,2.1-6,2.6-2.1,.5-4.4,.5-6.5,0h-.9c-.3,0-.6,.2-.8,.4-.2,.2-.4,.4-.6,.7s-.2,.6-.2,.9v14.9c0,2.9,.7,5.7,2,8.3,1.3,2.6,3.2,4.8,5.5,6.4l7.3,5.2c.4,.3,.8,.4,1.1,.4s.9,0,1.1-.4l7.3-5.2c2.4-1.7,4.2-3.9,5.5-6.4,1.3-2.6,2-5.3,2-8.3V8.9c0-.3,0-.6-.2-.9Zm-3.8,15.8c0,2.2-.6,4.5-1.5,6.4-1,2-2.5,3.7-4.3,5l-6.1,4.4-6.1-4.4c-1.8-1.3-3.3-3-4.3-5-1-2-1.5-4.2-1.5-6.4V11.1c4.2,.4,8.4-.6,12-2.8,3.6,2.2,7.8,3.1,12,2.8v12.6h-.2Z\"><\/path><\/svg>", "ipam": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M32.7861 41.769C33.8905 41.7692 34.7861 42.6646 34.7861 43.769C34.7861 44.8735 33.8905 45.7688 32.7861 45.769H4.23145C3.12688 45.769 2.23145 44.8736 2.23145 43.769C2.23145 42.6645 3.12688 41.769 4.23145 41.769H32.7861Z\"><\/path><path d=\"M21.5186 13.2144C22.6228 13.2148 23.5186 14.11 23.5186 15.2144C23.5184 16.3186 22.6227 17.2139 21.5186 17.2144H8.625C7.99035 17.2144 7.3814 17.4668 6.93262 17.9155C6.48383 18.3643 6.23145 18.9732 6.23145 19.6079V32.7866C6.23151 33.4212 6.48389 34.0303 6.93262 34.479C7.38135 34.9274 7.99058 35.1802 8.625 35.1802H28.3936C29.028 35.18 29.6373 34.9276 30.0859 34.479C30.5346 34.0303 30.7861 33.4211 30.7861 32.7866V26.4829C30.7861 25.3784 31.6817 24.483 32.7861 24.4829C33.8905 24.4831 34.7861 25.3785 34.7861 26.4829V32.7866C34.7861 34.482 34.1128 36.1083 32.9141 37.3071C31.7153 38.5059 30.0889 39.18 28.3936 39.1802H8.625C6.9296 39.1802 5.30242 38.5059 4.10352 37.3071C2.90479 36.1083 2.23151 34.482 2.23145 32.7866V19.6079C2.23145 17.9124 2.90458 16.2854 4.10352 15.0864C5.30244 13.8875 6.92948 13.2144 8.625 13.2144H21.5186Z\"><\/path><path d=\"M10.8213 18.7056C11.9256 18.7058 12.8213 19.6012 12.8213 20.7056V31.688C12.8212 32.7923 11.9256 33.6877 10.8213 33.688C9.71676 33.688 8.82136 32.7925 8.82129 31.688V20.7056C8.82129 19.601 9.71672 18.7056 10.8213 18.7056Z\"><\/path><path d=\"M20.7051 18.7056C22.2549 18.7056 23.741 19.3216 24.8369 20.4175C25.9328 21.5134 26.5488 22.9995 26.5488 24.5493C26.5488 26.0992 25.9328 27.5862 24.8369 28.6821C23.741 29.7777 22.2547 30.393 20.7051 30.3931H19.4102V31.688C19.4101 32.7925 18.5147 33.688 17.4102 33.688C16.3057 33.6879 15.4102 32.7924 15.4102 31.688V20.7056C15.4102 19.6011 16.3057 18.7057 17.4102 18.7056H20.7051ZM19.4102 26.3931H20.7051C21.194 26.393 21.663 26.1987 22.0088 25.853C22.3545 25.5073 22.5488 25.0382 22.5488 24.5493C22.5488 24.0603 22.3545 23.5914 22.0088 23.2456C21.663 22.8999 21.194 22.7056 20.7051 22.7056H19.4102V26.3931Z\"><\/path><path d=\"M35.5322 8.34033C36.015 8.34041 36.4894 8.46767 36.9072 8.70947C37.3251 8.95134 37.6715 9.29962 37.9121 9.71826C38.1526 10.1369 38.2788 10.6114 38.2773 11.0942C38.2759 11.5771 38.1474 12.0511 37.9043 12.4683L35.5322 16.5864L33.1592 12.4683C32.9161 12.0511 32.7876 11.5771 32.7861 11.0942C32.7847 10.6114 32.9109 10.1369 33.1514 9.71826C33.3919 9.29965 33.7384 8.95134 34.1562 8.70947C34.5742 8.4676 35.0493 8.34033 35.5322 8.34033ZM35.5322 9.99756C35.2409 9.99756 34.9608 10.1129 34.7549 10.3188C34.5491 10.5247 34.4337 10.8041 34.4336 11.0952C34.4336 11.3863 34.5492 11.6657 34.7549 11.8716C34.9608 12.0775 35.2409 12.1938 35.5322 12.1938C35.8234 12.1937 36.1027 12.0774 36.3086 11.8716C36.5143 11.6656 36.6299 11.3863 36.6299 11.0952C36.6298 10.8041 36.5144 10.5247 36.3086 10.3188C36.1027 10.113 35.8234 9.99767 35.5322 9.99756Z\"><\/path><path d=\"M35.5322 2.23096C41.1858 2.23119 45.7686 6.81564 45.7686 12.4692C45.7681 18.1225 41.1855 22.7053 35.5322 22.7056C29.8788 22.7056 25.2954 18.1226 25.2949 12.4692C25.2949 6.8155 29.8785 2.23096 35.5322 2.23096ZM35.5322 6.23193C32.0876 6.23193 29.2949 9.02464 29.2949 12.4692C29.2954 15.9135 32.0879 18.7056 35.5322 18.7056C38.9764 18.7053 41.7681 15.9133 41.7686 12.4692C41.7686 9.02478 38.9766 6.23216 35.5322 6.23193Z\"><\/path><\/svg>", "firewall-analyzer": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 512 512\" fill=\"currentColor\"><path d=\"M463.65,277.68a174.71,174.71,0,0,1-25.36,67.67,225.28,225.28,0,0,0-33.82-126.88,179.57,179.57,0,0,0-67.59,177.64,207.07,207.07,0,0,1-33.82-67.7,120.33,120.33,0,0,0,11.49,138.66,114.48,114.48,0,0,0,161.57,10.46,113.16,113.16,0,0,0,9.48-9.36C524.84,424.61,501.91,316.84,463.65,277.68Zm0,0,0,0v0Zm-137.9,12.53q2.61-6.85,5.7-13.46h-2.13V227.83h34.4A200.11,200.11,0,0,1,382.94,209H320.46l-.58,0H278.6V160.21H395v39.63a20.69,20.69,0,0,1,18.81,0V32.28A26.31,26.31,0,0,0,387.56,6H32.27A26.33,26.33,0,0,0,6,32.32v372.3a26.31,26.31,0,0,0,26.28,26.25H271.62a142,142,0,0,1-4.37-18.81H160.13V363.19H267.94a140.93,140.93,0,0,1,10.66-33.08V295.53h45.17C324.39,293.74,325,292,325.71,290.18ZM310.47,141.4H160.13V92.51H310.47Zm-50.73,18.81V209H109.4V160.21ZM395,141.4H329.28V92.51H395ZM278.6,24.81h109A7.49,7.49,0,0,1,395,32.32V73.7H278.6Zm-169.16,0h150.3V73.7H109.41Zm-84.63,7.5a7.51,7.51,0,0,1,7.52-7.5H90.59V73.7H24.81Zm0,60.2H141.32V141.4H24.81Zm0,67.7H90.59V209H24.81Zm0,67.62H141.32v48.84H24.81Zm0,67.67H90.59v48.86H24.81ZM141.32,412.06h-109a7.34,7.34,0,0,1-5.3-2.18,7.52,7.52,0,0,1-2.21-5.35V363.19H141.32Zm118.34-67.7H109.4V295.5H259.66Zm50.81-67.67H269.6l-.4,0H160.13V227.83H310.47Z\"><\/path><\/svg>", "apm": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M42,5.1H6c-2.2,0-4,1.8-4,4V31.3c0,2.2,1.8,4,4,4h11v4.1h-3c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8h20.1c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-3.2v-4.1h11.2c2.2,0,4-1.8,4-4V9.1c0-2.2-1.8-4-4-4Zm-14.7,34.2h-6.8v-4.1h6.8v4.1Zm15.1-8.1c0,.2-.2,.4-.4,.4H6c-.2,0-.4-.2-.4-.4V9.1c0-.2,.2-.4,.4-.4H42c.2,0,.4,.2,.4,.4V31.3ZM17.9,14.8c-.6-.8-1.7-1-2.5-.4l-5.1,3.8c-.5,.3-.7,.9-.7,1.4s.3,1.1,.7,1.4l5.1,3.8c.3,.2,.7,.3,1.1,.3,.5,0,1.1-.2,1.4-.7,.6-.8,.4-1.9-.4-2.5l-3.2-2.3,3.2-2.3c.8-.6,1-1.7,.4-2.5Zm20,3.4l-5.1-3.8c-.8-.6-1.9-.4-2.5,.4-.6,.8-.4,1.9,.4,2.5l3.2,2.3-3.2,2.3c-.8,.6-1,1.7-.4,2.5,.3,.5,.9,.7,1.4,.7s.7-.1,1.1-.3l5.1-3.8c.5-.3,.7-.9,.7-1.4s-.3-1.1-.7-1.4Zm-10.4-4.9c-.9-.5-1.9-.2-2.4,.7l-5.2,9.4c-.5,.9-.2,1.9,.7,2.4,.3,.2,.6,.2,.9,.2,.6,0,1.2-.3,1.5-.9l5.2-9.4c.5-.9,.2-1.9-.7-2.4Z\"><\/path><\/svg>", "report": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M16.6,31.8h14.6c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-14.6c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8Zm7.7-6.5c4.7,0,8.6-3.9,8.6-8.6s-.1-1.6-.3-2.4c-.1-.4-.4-.8-.9-1-.4-.2-.9-.3-1.3-.1l-2.2,.7,1.2-2c.5-.8,.2-1.9-.6-2.4-1.3-.8-2.9-1.2-4.4-1.2-4.7,0-8.6,3.9-8.6,8.6s3.9,8.6,8.6,8.6Zm0-13.7c.3,0,.7,0,1,0l-2.5,4.2c-.4,.6-.3,1.4,.1,2,.4,.6,1.2,.8,1.9,.6l4.6-1.4c-.2,2.6-2.4,4.7-5.1,4.7s-5.1-2.3-5.1-5.1,2.3-5.1,5.1-5.1Zm-7.7,26.8h14.6c1,0,1.8-.8,1.8-1.8s-.8-1.8-1.8-1.8h-14.6c-1,0-1.8,.8-1.8,1.8s.8,1.8,1.8,1.8ZM37.7,2.2H10.3c-1,0-1.8,.8-1.8,1.8V44c0,1,.8,1.8,1.8,1.8h27.4c1,0,1.8-.8,1.8-1.8V4c0-1-.8-1.8-1.8-1.8Zm-1.8,40H12V5.8h23.9V42.2Z\"><\/path><\/svg>", "setting": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\"><path fill=\"currentColor\" d=\"M24,16.55c-4.11,0-7.45,3.34-7.45,7.45s3.34,7.45,7.45,7.45,7.45-3.34,7.45-7.45-3.34-7.45-7.45-7.45Zm0,10.91c-1.9,0-3.45-1.55-3.45-3.45s1.55-3.45,3.45-3.45,3.45,1.55,3.45,3.45-1.55,3.45-3.45,3.45Zm15.29,2.79c.08-.18,.21-.33,.37-.44,.16-.11,.35-.17,.54-.17h.16c1.51,0,2.92-.59,3.98-1.65,1.07-1.06,1.65-2.48,1.65-3.99s-.59-2.92-1.65-3.98c-1.06-1.07-2.48-1.65-3.99-1.65h-.3c-.2,0-.38-.06-.55-.17-.1-.07-.19-.15-.25-.24-.03-.12-.07-.24-.12-.36-.08-.18-.1-.39-.07-.58,.04-.2,.13-.38,.25-.51l.11-.11c.53-.53,.94-1.14,1.22-1.83,.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16-.7-1.3-1.22-1.83c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.29-1.3,.7-1.83,1.22l-.09,.09c-.14,.14-.32,.23-.52,.27-.2,.03-.4,.01-.6-.08-.18-.08-.33-.2-.44-.37-.11-.16-.17-.35-.17-.54v-.16c0-1.48-.6-2.94-1.65-3.98-1.06-1.06-2.48-1.65-3.99-1.65s-2.92,.59-3.98,1.65c-1.06,1.06-1.65,2.48-1.65,3.99v.3c0,.2-.06,.39-.17,.55-.07,.1-.15,.19-.24,.26-.12,.03-.24,.07-.36,.12-.18,.08-.39,.11-.58,.07-.2-.04-.38-.13-.5-.25l-.11-.11c-.53-.53-1.14-.94-1.83-1.22-1.38-.57-2.94-.57-4.32,0-.69,.28-1.3,.7-1.83,1.22-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83l.1,.1c.14,.14,.23,.32,.27,.52,.04,.2,.01,.4-.07,.58-.02,.04-.03,.08-.05,.12-.07,.19-.19,.35-.36,.47-.16,.12-.36,.18-.51,.19h-.16c-1.51,0-2.92,.59-3.99,1.65-1.06,1.06-1.65,2.48-1.65,3.98s.59,2.92,1.65,3.99,2.48,1.65,3.99,1.65h.3c.19,0,.38,.06,.55,.17,.16,.11,.29,.26,.37,.46,.08,.18,.1,.38,.07,.58-.04,.2-.13,.38-.26,.51l-.1,.11c-.53,.53-.94,1.14-1.22,1.83-.28,.69-.43,1.41-.43,2.16s.14,1.47,.43,2.16c.29,.69,.7,1.3,1.22,1.83,.53,.53,1.14,.94,1.83,1.22,1.37,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.23l.09-.09c.14-.14,.32-.23,.52-.27,.2-.03,.4-.01,.58,.07,.04,.02,.08,.03,.12,.05,.19,.07,.35,.19,.47,.36,.12,.16,.18,.36,.19,.51v.16c0,1.5,.59,2.92,1.65,3.99,1.06,1.06,2.48,1.65,3.98,1.65s2.92-.59,3.99-1.65c1.06-1.07,1.65-2.48,1.65-3.98v-.3c0-.2,.06-.38,.17-.55,.11-.16,.26-.29,.46-.38,.18-.08,.38-.1,.58-.07,.2,.04,.38,.13,.5,.25l.11,.11c.53,.53,1.14,.94,1.83,1.22,1.38,.57,2.95,.57,4.32,0,.69-.28,1.3-.7,1.83-1.22s.94-1.14,1.22-1.83c.29-.69,.43-1.41,.43-2.16s-.14-1.47-.43-2.16c-.28-.69-.7-1.3-1.22-1.83l-.09-.09c-.14-.14-.23-.33-.27-.52-.04-.2-.01-.4,.07-.58v-.02Zm-1.83-3.78c-.81,.54-1.45,1.29-1.83,2.19-.4,.92-.52,1.92-.34,2.9,.18,.99,.64,1.89,1.36,2.62l.11,.11c.15,.15,.27,.33,.35,.53,.08,.2,.13,.42,.13,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53s-.33,.27-.54,.36c-.39,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36l-.13-.13c-.72-.7-1.62-1.17-2.6-1.34-.99-.18-1.99-.06-2.89,.34-.9,.38-1.66,1.02-2.2,1.83-.54,.82-.83,1.76-.83,2.75v.31c0,.43-.17,.85-.48,1.16-.61,.61-1.7,.61-2.31,0-.31-.31-.48-.72-.48-1.16v-.21c-.02-1.01-.35-1.97-.93-2.79-.57-.8-1.36-1.41-2.28-1.76-.9-.39-1.89-.5-2.85-.32-.99,.18-1.89,.64-2.62,1.36l-.11,.11c-.15,.15-.33,.27-.53,.36-.4,.16-.85,.17-1.25,0-.2-.08-.38-.2-.53-.36-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.54l.12-.12c.7-.72,1.17-1.62,1.35-2.6,.18-.99,.06-1.99-.34-2.89-.39-.9-1.02-1.66-1.83-2.2-.82-.54-1.77-.83-2.75-.83h-.31c-.44,0-.85-.17-1.16-.48-.31-.31-.48-.72-.48-1.16s.17-.85,.48-1.16c.31-.31,.72-.48,1.16-.48h.21c1.01-.02,1.97-.35,2.79-.93,.8-.57,1.41-1.36,1.76-2.28,.38-.9,.5-1.89,.32-2.85-.18-.99-.64-1.89-1.36-2.62l-.11-.11c-.15-.15-.27-.33-.35-.53-.08-.2-.12-.41-.12-.63s.04-.43,.12-.63c.08-.2,.2-.38,.36-.53,.15-.15,.33-.27,.53-.36,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.35l.13,.13c.72,.7,1.62,1.17,2.6,1.34,.85,.16,1.72,.09,2.53-.19,.18-.02,.35-.07,.51-.14,.9-.39,1.66-1.02,2.2-1.83,.54-.82,.83-1.76,.83-2.75v-.31c0-.43,.17-.85,.48-1.16,.61-.61,1.7-.61,2.31,0,.3,.31,.48,.73,.48,1.16v.17c0,.98,.29,1.92,.83,2.74,.54,.81,1.3,1.45,2.18,1.83,.92,.4,1.92,.52,2.91,.34,.99-.18,1.89-.64,2.62-1.36l.11-.11c.15-.15,.33-.27,.53-.35,.4-.17,.85-.17,1.25,0,.2,.08,.38,.2,.53,.36,.15,.15,.27,.33,.36,.53,.08,.2,.12,.41,.12,.63s-.04,.43-.12,.63c-.08,.2-.2,.38-.36,.53l-.12,.12c-.7,.72-1.17,1.62-1.35,2.61-.15,.85-.09,1.72,.2,2.53,.02,.17,.07,.35,.14,.51,.38,.9,1.02,1.66,1.83,2.2,.82,.54,1.76,.83,2.75,.83h.31c.44,0,.85,.17,1.16,.48s.48,.72,.48,1.16-.17,.85-.48,1.16-.72,.48-1.16,.48h-.17c-.98,0-1.93,.29-2.74,.83Z\"><\/path><\/svg>", "search": "<svg aria-hidden=\"true\" viewBox=\"0 0 48 48\"><path fill=\"currentColor\" d=\"M43.4,40.6l-7.4-7.3c2.9-3.6,4.3-8.2,3.9-12.8-.4-4.6-2.5-8.9-5.9-11.9-3.4-3-7.9-4.7-12.5-4.6s-9,2-12.2,5.2c-3.2,3.2-5.2,7.7-5.3,12.3s1.5,9,4.6,12.5c3,3.4,7.3,5.5,11.9,5.9s9.1-1,12.8-3.9l7.3,7.3c.2,.2,.4,.4,.7,.5s.5,.2,.8,.2,.6,0,.8-.2c.3,0,.5-.3,.7-.5,.4-.4,.6-.9,.6-1.4s-.2-1-.6-1.4h0Zm-11.5-8.6c-2.7,2.7-6.2,4.1-9.9,4.1s-5.4-.9-7.8-2.4c-2.3-1.5-4.1-3.7-5.1-6.3-1-2.6-1.3-5.3-.8-8.1,.6-2.7,1.9-5.2,3.8-7.1,2-2,4.5-3.3,7.1-3.8,2.7-.6,5.5-.3,8.1,.8s4.8,2.9,6.3,5.1c1.5,2.3,2.4,5,2.4,7.8s-1.4,7.2-4.1,9.9Z\"><\/path><\/svg>", "all": "<svg class=\"ic\" aria-hidden=\"true\" viewBox=\"0 0 48 48\" fill=\"currentColor\"><path d=\"M19.5,26.7H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5v-12.2h12.2v12.2Zm26.5-15.7h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8v-15.7c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2v-12.2h12.2v12.2ZM19.5,2H3.8c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7H5.5V5.5h12.2v12.2ZM44.2,2h-15.7c-1,0-1.8,.8-1.8,1.8v15.7c0,1,.8,1.8,1.8,1.8h15.7c1,0,1.8-.8,1.8-1.8V3.8c0-1-.8-1.8-1.8-1.8Zm-1.8,15.7h-12.2V5.5h12.2v12.2Z\"><\/path><\/svg>"};
+var CHEV = '<svg class="chev" viewBox="0 0 48 48" aria-hidden="true"><path d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"></path></svg>';
+var ICO_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" /><path d="M11 13l9 -9" /><path d="M15 4h5v5" /></svg>';
+
+/* The sidebar of Dashboard_with_AI_Chat/index.html, row for row. 'gap' is its group spacing; Explorer opens its list. */
+var MENU = [
+  ['mira-ai','Mira AI'], ['all','All work'],
+  ['dashboard','Dashboard'], ['monitor','Monitor'], 'gap',
+  ['alert','Alert'], ['slo','SLO','BETA'], 'gap',
+  ['explorer','Explorer'], ['topology','Topology'], ['compliance','Compliance'], ['ipam','IPAM'],
+  ['firewall-analyzer','Firewall Analyzer'], ['apm','APM'], ['report','Report']
+];
+var KIDS = [['metric-explorer','Metric Explorer'],['nccm','NCCM'],['netroute','NetRoute'],['log','Log'],['rum','RUM'],['flow','Flow'],['trap','Trap'],['audit','Audit']];
+var FOOT = [['setting','Setting']];
+var ORDER = [], MOD = {};
+MENU.concat(FOOT).forEach(function(m){
+  if (m === 'gap' || m[0] === 'all') return;
+  if (m[0] === 'explorer'){ KIDS.forEach(function(k){ ORDER.push(k[0]); MOD[k[0]] = { name:k[1], kid:true }; }); return; }
+  ORDER.push(m[0]); MOD[m[0]] = { name:m[1] };
+});
+
+var S = { rows:[], state:'loading', cur:'all', q:'', stale:false, exp:false };
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function safeUrl(u){ return typeof u === 'string' && /^https:\/\//i.test(u) ? u : ''; }
+function fmtDate(d){
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ''); if (!m) return '';
+  return (+m[3]) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m[2]-1] + ' ' + m[1];
+}
+function count(slug){ return S.rows.filter(function(r){ return r.module === slug; }).length; }
+function plural(n, w){ return n + ' ' + w + (n === 1 ? '' : 's'); }
+
+function rowHTML(m, kid){
+  var slug = m[0], n = slug === 'all' ? S.rows.length : count(slug);
+  return '<button class="mod' + (n ? '' : ' zero') + (S.cur === slug ? ' on' : '') + '" data-m="' + slug + '" title="' + esc(m[1]) + '">'
+    + (kid ? '' : (ICO[slug] || '')) + '<span class="nm">' + esc(m[1]) + (m[2] ? '<span class="beta">' + m[2] + '</span>' : '') + '</span>'
+    + '<span class="ct">' + n + '</span></button>';
+}
+function paintNav(){
+  var nav = document.getElementById('nav'), keep = document.activeElement && document.activeElement.id === 'find';
+  var h = '<label class="find">' + (ICO.search || '') + '<input id="find" type="search" placeholder="Search" aria-label="Search work" value="' + esc(S.q) + '"></label>';
+  var kidOn = MOD[S.cur] && MOD[S.cur].kid, open = S.exp || kidOn;
+  MENU.forEach(function(m){
+    if (m === 'gap'){ h += '<div class="gap"></div>'; return; }
+    if (m[0] === 'explorer'){
+      var n = KIDS.reduce(function(a, k){ return a + count(k[0]); }, 0);
+      h += '<button class="mod exp' + (open ? ' open' : '') + '" data-exp="1" aria-expanded="' + (open ? 'true' : 'false') + '">' + (ICO.explorer || '')
+        + '<span class="nm">Explorer</span>' + (n ? '<span class="ct">' + n + '</span>' : '') + CHEV + '</button>';
+      h += '<div class="kids"' + (open ? '' : ' hidden') + '>' + KIDS.map(function(k){ return rowHTML(k, true); }).join('') + '</div>';
+      return;
+    }
+    h += rowHTML(m);
+  });
+  nav.innerHTML = h;
+  document.getElementById('foot').innerHTML = FOOT.map(function(m){ return rowHTML(m); }).join('');
+  if (keep){ var f = document.getElementById('find'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
+}
+
+function itemHTML(r){
+  var st = String(r.status || 'Local'), cls = /live/i.test(st) ? ' live' : /progress/i.test(st) ? ' wip' : '';
+  var u = safeUrl(r.url);
+  return '<article class="item"><div><div class="ti">' + esc(r.title) + '</div>'
+    + '<div class="meta">' + (r.kind ? '<span class="kind">' + esc(r.kind) + '</span>' : '')
+    + '<span class="st' + cls + '"><i></i>' + esc(st) + '</span>'
+    + (fmtDate(r.date) ? '<span class="date">' + fmtDate(r.date) + '</span>' : '') + '</div></div>'
+    + (r.note ? '<div class="note">' + esc(r.note) + '</div>' : '')
+    + (r.file ? '<div class="file">' + esc(r.file) + '</div>' : '') + '</article>';
+}
+function byDate(a, b){ return String(b.date || '').localeCompare(String(a.date || '')) || String(a.title || '').localeCompare(String(b.title || '')); }
+
+/* ── Mira AI: the live component stage. mira-stage.html is the real mira.html with a driver that opens it on one
+   component and state; it is loaded into the frame again for every pick, so each one starts clean. ── */
+var COMPONENTS = [
+  { k:'flow', t:'Create runbook flow', d:'The whole flow, start to finish. It begins by itself: answer the three questions, send, approve the delivery, then type run and approve the run. Option 2 uses every new design: the new question card with Review, the answered record without its box, the runbook card as a stepper, the one-row run result card and the short bordered table.', vs:[['','Option 1'],['o2','Option 2']] },
+  { k:'working', t:'Working line', d:'The shimmer line with a running seconds count, shown the moment a prompt is sent.', vs:[['','Working on your request'],['thinking','Thinking']] },
+  { k:'thinking', t:'Thinking group', d:'Plays open with the dot-matrix mark. Steps arrive one at a time and the title updates as they land, then it folds.', vs:[['','Playing'],['done','Finished, folded'],['open','Finished, open']] },
+  { k:'wordfade', t:'Word-by-word fade', d:'Text fades in one word at a time, 38 ms apart. Option 2 shows the run result as the one-row card and the result table as a bordered design-system grid: five rows, then Show all.', vs:[['','Option 1'],['o2','Option 2']] },
+  { k:'question', t:'Question card', d:'Docks in place of the composer. Answer and send to see the answered record appear above it.', vs:[['','Minimal steps'],['tabs','Tabbed'],['ask','Ask AI clarifier · Option 1'],['ask2','Ask AI clarifier · Option 2']] },
+  { k:'record', t:'Answered record', d:'The summary left in the thread after the questions, collapsed by default. Option 1 keeps it in its card. Option 2 is the minimal one, with no box.', vs:[['','Option 1 · Collapsed'],['open','Option 1 · Open'],['skipped','Option 1 · Skipped answer'],['o2','Option 2 · Collapsed'],['o2-open','Option 2 · Open'],['o2-skipped','Option 2 · Skipped answer']] },
+  { k:'runbook', t:'Runbook card', d:'The build states the card walks through while Mira writes and fixes the runbook. Option 1 is the current card. Option 2 shows the process as a stepper with one plain message. Option 3 has no steps: one progress line and a status chip saying what Mira is doing.', vs:[['','Option 1 · Play all states'],['draft','Option 1 · Draft ready'],['rules','Option 1 · Breaks the rules'],['taken','Option 1 · Name taken'],['untested','Option 1 · Could not test'],['o2','Option 2 · Play all states'],['o2-draft','Option 2 · Draft ready'],['o2-rules','Option 2 · Breaks the rules'],['o2-taken','Option 2 · Name taken'],['o2-untested','Option 2 · Could not test'],['o3','Option 3 · Play all states'],['o3-draft','Option 3 · Draft ready'],['o3-rules','Option 3 · Breaks the rules'],['o3-taken','Option 3 · Name taken'],['o3-untested','Option 3 · Could not test']] },
+  { k:'diagnostic', t:'Diagnostic card', d:'Saving and compiling, then saved, then delivering. It is the same card as the Runbook card, so it has the same three options: Option 1 is the current card with the moving scan band, Option 2 is the stepper, Option 3 is the progress line with a status chip.', vs:[['','Option 1 · Play all states'],['saving','Option 1 · Saving and compiling'],['saved','Option 1 · Saved and compiled'],['delivering','Option 1 · Delivering'],['o2','Option 2 · Play all states'],['o2-saving','Option 2 · Saving and compiling'],['o2-saved','Option 2 · Saved and compiled'],['o2-delivering','Option 2 · Delivering'],['o3','Option 3 · Play all states'],['o3-saving','Option 3 · Saving and compiling'],['o3-saved','Option 3 · Saved and compiled'],['o3-delivering','Option 3 · Delivering']] },
+  { k:'runresult', t:'Run result card', d:'Option 1 is the current card. Option 2 is one quiet row on the design-system colours: click the row to open the raw output, and a failed run opens by itself.', vs:[['','Option 1 · Passed'],['o1-failed','Option 1 · Failed'],['o2','Option 2 · Passed, folded'],['o2-open','Option 2 · Passed, open'],['o2-failed','Option 2 · Failed']] },
+  { k:'deliver', t:'Delivery card', d:'Shown in its place in the thread. Approve the delivery to continue the flow.', vs:[['card','Approval'],['delivered','Delivered and next steps']] },
+  { k:'run', t:'Run approval', d:'Shown in its place in the thread. Enter runs, Esc defers.', vs:[['card','Approval'],['result','Run result · Option 1'],['result-o2','Run result · Option 2']] },
+  { k:'page', t:'Full page', d:'The whole assistant page: chat list with date bands, search, header menu, composer and effort picker.', vs:[['','New chat'],['c3','Runbook Creation'],['c1','WhatsApp Alert'],['c2','Runbook Creation (UI)']] },
+  /* Sidebar (20 Nov 2026): the Mira sidebar on its own - the UI visualization / Artifact view category was removed on request */
+  { k:'sidebar', cat:'Sidebar', t:'Mira sidebar', vp:[1920,1080], d:'The Mira screen as it opens, at a real screen size. Option 1 is the chat list as it is. Option 2 adds PIN, GROUP and FILTER on one text edge (Claude, ChatGPT, Sana, Dropbox Dash on Mobbin), in three sections - Pinned, Groups, then Recent (every chat, newest first) - each opening and closing from its title (Pinned \u2304 / Pinned \u203a, ChatGPT\'s). Rows carry no date or time: hover a chat for Ask AI\'s preview card - its name, what it did, and N messages \u00b7 when. Three tiers: small uppercase section titles, groups with a folder and a count pill, and chats - inside a group they hang off a guide line. Groups follow Topology\'s View Group flow, all inside the sidebar - nothing opens: New group puts a name row with \u2713 / \u2715 at the top of Groups; hovering a group gives rename (in place) and \u22ef (Ungroup, Delete when empty). Groups are one level - no group inside a group. In a chat\'s \u22ef menu, hovering Move to group opens a list of every group (the current one ticked), then New group\u2026 and Remove from group; picking a group moves the chat at once. Filter: Pinned, and a time range.', vs:[['','Option 1'],['o2','Option 2'],['o2-menu','Option 2 \u00b7 Chat actions'],['o2-move','Option 2 \u00b7 Move to group'],['o2-newgroup','Option 2 \u00b7 New group'],['o2-filter','Option 2 \u00b7 Filter'],['o2-filter2','Option 2 \u00b7 Filter \u00b7 Option 2'],['o2-filter3','Option 2 \u00b7 Filter \u00b7 Option 3'],['o2-gsec','Option 2 \u00b7 Group action on title'],['o2-gsec-new','Option 2 \u00b7 Group action \u00b7 New group'],['tog','Collapse in sidebar'],['tog-col','Collapse in sidebar \u00b7 Collapsed'],['o2-tog','Option 2 \u00b7 Collapse in sidebar']] },
+  { k:'chatmenu', cat:'Sidebar', t:'Chat switcher', d:'The menu under the chat name in the header (New chat ▾), open: a Search AI chats box, then the chats in their date bands (Today, Yesterday, Nov 18) with a chat mark and when each happened. Type to filter; hover a row to rename or delete it; click the chat name to close and reopen it. Options 2-5 are new ideas from Mobbin (Klarna, Dropbox Dash, Klaviyo, Langdock, Canva AI, ElevenLabs): previews, a command palette, Recent | Pinned tabs, and search inside conversations.', vs:[['o1','Option 1'],['o2','Option 2 \u00b7 Previews'],['o3','Option 3 \u00b7 Command palette'],['o4','Option 4 \u00b7 Recent | Pinned'],['o5','Option 5 \u00b7 Smart search']] },
+  /* Brand (20 Nov 2026): the Mira mark - Option 2 improved from Mobbin (Gemini, Langdock, Plane, Customer.io, Plain) */
+  { k:'brand', cat:'Brand', t:'Mira brand mark', d:'The Mira mark at the top of the sidebar, shown at 2x beside the search field and the chat header. Option 1 is the mark as it is: it sits 8px above the chat header, ALPHA is 8.5px capitals in an outlined pill, and the tile carries a border and a glow. Option 2 follows Gemini, Langdock, Plane, Customer.io and Plain (Mobbin): the brand row on the same line as the chat header, a flat 24px tile on the search field\'s left edge, the name at 15px, Alpha as a readable sentence-case tag in a quiet tint, and a hover state - it is the Mira home button.', vs:[['','Option 1'],['o2','Option 2']] }
+];
+/* Dashboard - the components the module-work stage shows for the Dashboard module (dash-stage.html, built from index.html) */
+var DASH_COMPONENTS = [
+  { k:'mira', t:'Mira AI prompt tile', d:'The tile Add widget › Mira AI prompt puts on the board. Option 1 is the current tile. Option 2 is the Mira AI New chat composer, in the tile: the centred question, the hero prompt box with + and the violet send button, and the Mira next-step chips as suggestions. It fits the tile at any size. Type a prompt or pick a suggestion, then Generate.', vs:[['','Option 1'],['o2','Option 2']] },
+  { k:'cvtn', t:'Chart view picker', d:'The widget toolbar\'s Chart view popover, on a Top N widget with its 17 views. Option 1 is the current picker, icons only. Option 2 names every view and groups them by what the chart is for. Option 3 is the simplest: four suggested views as large named tiles, and the rest one click away under All views. Option 4 follows Dynatrace: one searchable list, a name on every row, suggested views first. Pick a view to redraw the widget.', vs:[['','Option 1'],['o2','Option 2'],['o3','Option 3'],['o4','Option 4 · Dynatrace style']] },
+  { k:'wtbintro', t:'Widget toolbar onboarding', d:'How a first-time user learns the toolbar that appears when a widget is clicked (Edit, Ask AI, Full screen, Chart view, More). It shows once, then never again. Option 1 is the step-by-step tour: one bubble under each button in turn, 1 of 5 with Skip and Next. Option 2 puts a word under each icon for the first three opens. Option 3 is a small New - What are these? pill beside the toolbar that opens the list. Option 4 is the list card: every button with one line and Got it.', vs:[['','Option 1 · Step-by-step tour'],['o2','Option 2 · Labels under icons'],['o3','Option 3 · Compact pill'],['o4','Option 4 · List card']] },
+  { k:'cvcard', t:'Chart view · Single Value', d:'The same popover on a Single Value card, which can be drawn two ways (Area, Line).', vs:[['','Option 1'],['o2','Option 2'],['o3','Option 3'],['o4','Option 4 · Dynatrace style']] }
+];
+/* Setting - setting-stage.html: Settings › Discovery Profile › Create (Other › Backup, Commvault) with the help card in two options */
+var SET_COMPONENTS = [
+  { k:'help', t:'Discovery help card', d:'Settings › Discovery Profile › Create, for Other › Backup (Commvault). Option 1 is the current card: it floats over the top-right of the form, so at 1280px it covers the Collectors field. Option 2 is a guidance column beside the form that never covers it - supported models as tags, prerequisites as a numbered list - and a strip above the form when the screen is narrow. Pick a screen size, or type any width and height, to see both.', vs:[['','Option 1'],['o2','Option 2']] }
+];
+/* one stage per module that has one; each keeps its own component pick, and each stage file is cached on its own */
+var STAGES = {
+  'mira-ai':  { file:'mira-stage.html', spec:'__MXSPEC', comps:COMPONENTS, name:'Mira', cat0:'Chat', intro:'Every Mira component running live, with its animation.' },
+  'dashboard':{ file:'dash-stage.html', spec:'__DVSPEC', comps:DASH_COMPONENTS, name:'Dashboard', intro:'The Dashboard module\'s components running live on a real board.' },
+  'setting':  { file:'setting-stage.html', spec:'__SVSPEC', comps:SET_COMPONENTS, name:'Setting', vp:[1920,1080], intro:'Settings screens running live, built from the ObserveOps design system.' }
+};
+var CS = { k:'flow', v:'', th:'', live:false, mod:null, sel:{}, files:{} };
+function ST(){ return STAGES[CS.mod]; }
+function SC(){ return ST().comps; }
+function SF(){ var f = ST().file; return CS.files[f] || (CS.files[f] = { html:null, req:null, err:false, at:0, chk:null }); }
+function isDark(){ var t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+function stagePaint(){
+  var c = SC().filter(function(x){ return x.k === CS.k; })[0] || SC()[0], th = CS.th || (isDark() ? 'dark' : 'light');
+  document.getElementById('cIntro').textContent = ST().intro + ' Pick a component on the left, then one of its options. The stage is interactive. ';
+  document.getElementById('cFrame').title = ST().name + ' component stage';
+  var cat0 = ST().cat0, prevCat = null;
+  document.getElementById('cTabs').innerHTML = SC().map(function(x){ var cat = cat0 ? (x.cat || cat0) : '', hd = cat && cat !== prevCat ? '<div class="ccat">' + esc(cat) + '</div>' : ''; prevCat = cat; return hd + '<button class="ctab' + (x.k === CS.k ? ' on' : '') + '" data-c="' + x.k + '"><span>' + esc(x.t) + '</span>' + (x.vs.length > 1 ? '<i title="' + x.vs.length + ' options">' + x.vs.length + '</i>' : '') + '</button>'; }).join('');
+  var bar = document.getElementById('cBar');
+  var gs = vGroups(c), g0 = gs.filter(function(g){ return g.items.some(function(it){ return it.v === CS.v; }); })[0] || gs[0], sts = document.getElementById('cStates');
+  bar.hidden = !c.vs.length;
+  bar.innerHTML = gs.map(function(g){ var on = g === g0, one = g.items.length === 1;
+    return '<button role="tab" aria-selected="' + on + '" class="' + (on ? 'on' : '') + '" data-vg="' + esc(g.name) + '">' + esc(one ? g.items[0].label : g.name) + (one ? '' : '<span class="gc">' + g.items.length + '</span>') + '</button>'; }).join('');
+  sts.hidden = !g0 || g0.items.length < 2;
+  sts.innerHTML = sts.hidden ? '' : '<span class="lab">State</span>' + g0.items.map(function(it){ var on = it.v === CS.v;
+    return '<button aria-pressed="' + on + '" class="' + (on ? 'on' : '') + '" data-v="' + it.v + '">' + esc(it.state) + '</button>'; }).join('');
+  document.getElementById('cAct').innerHTML = '<span class="seg"><button class="' + (th === 'dark' ? 'on' : '') + '" data-th="dark">Dark</button><button class="' + (th === 'light' ? 'on' : '') + '" data-th="light">Light</button></span>'
+    + '<button class="csize" id="cSize" data-rzreset="1" title="Stage size. Click to reset"></button><button class="replay" data-replay="1">Replay</button>';
+  vpFit(); rzLabel(); vpPaint();
+  document.getElementById('cTitle').textContent = c.t;
+  document.getElementById('cDesc').textContent = c.d; descReset();
+}
+
+/* a component's options, grouped by the text before the first " · " of each label; the rest is the state ("Default" when none) */
+function vGroups(c){ var out = [], by = {};
+  c.vs.forEach(function(v){ var i = v[1].indexOf(' · '), name = i < 0 ? v[1] : v[1].slice(0, i), st = i < 0 ? 'Default' : v[1].slice(i + 3);
+    if (!by[name]){ by[name] = { name:name, items:[] }; out.push(by[name]); } by[name].items.push({ v:v[0], label:v[1], state:st }); });
+  return out; }
+/* the state last picked inside each option, so going back to an option returns to where you were */
+CS.gsel = {};
+
+/* the one-line description: collapsed on every component switch, the chevron shown only when the text is cut */
+function descFit(){ var w=document.getElementById('cDescW'), d=document.getElementById('cDesc'), t=document.getElementById('cDescT'); if(!w||!d||!t) return;
+  var open=w.classList.contains('is-open'); t.hidden=!open&&d.scrollWidth<=d.clientWidth+1; }
+function descReset(){ var w=document.getElementById('cDescW'), t=document.getElementById('cDescT'); if(!w) return; w.classList.remove('is-open');
+  t.setAttribute('aria-expanded','false'); t.title='Show the full description'; requestAnimationFrame(descFit); }
+document.addEventListener('click',function(e){ var t=e.target.closest('#cDescT'); if(!t) return; var w=document.getElementById('cDescW'), o=w.classList.toggle('is-open');
+  t.setAttribute('aria-expanded',String(o)); t.title=o?'Show less':'Show the full description'; descFit(); });
+window.addEventListener('resize',descFit);
+function stageFetch(){ return fetch(ST().file, { cache:'no-cache' }).then(function(r){ if (!r.ok) throw new Error('load'); return r.text(); }); }
+/* which build of the Mira stage is on screen - so 'I cannot see the change' has an answer you can read */
+function stageBuild(){ var m = /<meta name="mx-build" content="([^"]+)"/.exec(SF().html || ''), el = document.getElementById('cBuild'); if (el) el.textContent = m ? 'Stage build ' + m[1] : ''; }
+function stageLoad(){
+  var f = document.getElementById('cFrame'), msg = document.getElementById('cMsg'), F = SF(), mod = CS.mod;
+  if (F.err){ msg.hidden = false; msg.textContent = 'The component stage could not be loaded. Reload the page to try again.'; return; }
+  if (!F.html){
+    msg.hidden = false; msg.textContent = 'Loading the ' + ST().name + ' components…';
+    if (!F.req) F.req = stageFetch()
+      .then(function(t){ F.html = t; F.at = Date.now(); if (CS.mod === mod){ stageBuild(); if (S.cur === mod) stageLoad(); } })
+      .catch(function(){ F.err = true; if (CS.mod === mod) stageLoad(); });
+    return;
+  }
+  /* The stage file is republished far more often than this page is reopened, and a browser will happily keep serving the copy
+     it fetched an hour ago. So: every load asks the server whether it changed (cache:'no-cache' is a cheap revalidation, not
+     a re-download), and a stage that has been in memory for 20s is checked again in the background and swapped in if newer. */
+  if (!F.chk && Date.now() - F.at > 20000){
+    F.chk = stageFetch().then(function(t){ F.chk = null; F.at = Date.now(); if (t !== F.html){ F.html = t; if (CS.mod === mod){ stageBuild(); if (S.cur === mod) stageLoad(); } } })
+      .catch(function(){ F.chk = null; F.at = Date.now(); });
+  }
+  var spec = { key:CS.k, v:CS.v, theme:CS.th || (isDark() ? 'dark' : 'light') }, sv = ST().spec;
+  msg.hidden = true; stageBuild();
+  f.srcdoc = F.html.replace('<head>', function(){ return '<head><script>window.' + sv + '=' + JSON.stringify(spec) + '<\/script>'; });
+  CS.live = true;
+}
+function stageSync(){
+  var on = !!STAGES[S.cur], el = document.getElementById('stage');
+  if (on && CS.mod !== S.cur){
+    if (CS.mod) CS.sel[CS.mod] = { k:CS.k, v:CS.v };
+    CS.mod = S.cur; var s = CS.sel[S.cur], c0 = SC()[0];
+    CS.k = s ? s.k : c0.k; CS.v = s ? s.v : (c0.vs.length ? c0.vs[0][0] : '');
+    el.hidden = false; rzApply(); stagePaint(); stageLoad(); rzLabel(); return;
+  }
+  if (on === !el.hidden) return;
+  el.hidden = !on;
+  if (on){ stagePaint(); stageLoad(); rzLabel(); }
+  else if (CS.live){ document.getElementById('cFrame').srcdoc = ''; CS.live = false; }
+}
+/* stage size: drag the right edge, the bottom edge or the corner */
+var RZ = { w:0, h:660 };   /* w 0 = fill the column */
+function rzApply(){ var b = document.getElementById('cBox'); b.style.width = RZ.w ? RZ.w + 'px' : ''; b.style.maxWidth = RZ.w ? 'none' : ''; b.style.height = RZ.h + 'px'; vpFit(); rzLabel(); }
+/* fixed-viewport stages: the frame renders at vp[0] x vp[1] and is scaled by width; the frame's height follows the ratio */
+/* the screen size a fixed-viewport stage renders at - any size, big to small (request, 19 Nov 2026), remembered per module */
+var VP_PRESETS = [[1280,720],[1366,768],[1440,900],[1536,864],[1600,900],[1680,1050],[1920,1080]];
+/* a component can carry its own screen size (Mira sidebar, 20 Nov 2026); otherwise the stage's, if it has one */
+function vpComp(){ var st = CS.mod && STAGES[CS.mod]; if (!st) return null; return st.comps.filter(function(x){ return x.k === CS.k; })[0] || null; }
+function vpDef(){ var st = CS.mod && STAGES[CS.mod], c = vpComp(); return (c && c.vp) || (st && st.vp) || null; }
+function vpKey(){ var c = vpComp(); return CS.mod + (c && c.vp ? '-' + c.k : ''); }
+function vpGet(){ var d = vpDef(); if (!d) return null; CS.vpSize = CS.vpSize || {}; var k = vpKey();
+  if (!CS.vpSize[k]){ var s0 = null; try { s0 = JSON.parse(localStorage.getItem('mw-vp-' + k) || 'null'); } catch (e) {}
+    CS.vpSize[k] = (s0 && s0[0] >= 320 && s0[1] >= 240) ? s0 : d.slice(); }
+  return CS.vpSize[k]; }
+function vpSet(w, h){ var v = vpGet(); if (!v) return; v[0] = Math.max(320, Math.min(3840, Math.round(w) || v[0])); v[1] = Math.max(240, Math.min(2160, Math.round(h) || v[1]));
+  try { localStorage.setItem('mw-vp-' + vpKey(), JSON.stringify(v)); } catch (e) {} vpFit(); vpPaint(); rzLabel(); }
+function vpPaint(){ var el = document.getElementById('cVp'), v = vpGet(); if (!el) return; el.hidden = !v; if (!v) return;
+  el.innerHTML = '<span class="lab">Screen</span><input id="cVpW" type="number" min="320" max="3840" aria-label="Screen width" value="' + v[0] + '"><span>\u00d7</span>' +
+    '<input id="cVpH" type="number" min="240" max="2160" aria-label="Screen height" value="' + v[1] + '">' +
+    VP_PRESETS.map(function(p){ return '<button data-vp="' + p[0] + 'x' + p[1] + '" class="' + (p[0] === v[0] && p[1] === v[1] ? 'on' : '') + '">' + p[0] + '\u00d7' + p[1] + '</button>'; }).join(''); }
+document.addEventListener('change', function(e){ if (e.target.id === 'cVpW' || e.target.id === 'cVpH') vpSet(+document.getElementById('cVpW').value, +document.getElementById('cVpH').value); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.target.id === 'cVpW' || e.target.id === 'cVpH')) e.target.blur(); });
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-vp]'); if (!b) return; var p = b.getAttribute('data-vp').split('x'); vpSet(+p[0], +p[1]); });
+function vpFit(){ var b = document.getElementById('cBox'), f = document.getElementById('cFrame'), vp = vpGet();
+  if (!b || !f) return; b.classList.toggle('is-vp', !!vp);
+  if (!vp){ f.style.width = f.style.height = f.style.transform = f.style.left = f.style.top = ''; b.style.height = RZ.h + 'px'; return; }
+  /* the frame is sized freely (drag any edge or corner, 20 Nov 2026); the screen keeps its resolution and is scaled to FIT
+     inside it, centred - it used to set the frame's height from the screen's ratio and hide the bottom handles */
+  b.style.height = RZ.h + 'px';
+  var bw = b.clientWidth, bh = b.clientHeight, s = Math.min(bw / vp[0], bh / vp[1]);
+  f.style.width = vp[0] + 'px'; f.style.height = vp[1] + 'px'; f.style.transform = 'scale(' + s + ')';
+  f.style.left = Math.max(0, Math.round((bw - vp[0] * s) / 2)) + 'px'; f.style.top = Math.max(0, Math.round((bh - vp[1] * s) / 2)) + 'px'; }
+function rzLabel(){ var b = document.getElementById('cBox'), l = document.getElementById('cSize'); if (!b || !l) return;
+  var r = b.getBoundingClientRect(), vp = vpGet();
+  /* a sized screen: the frame's own size, then the screen and the scale it is shown at */
+  l.textContent = vp ? Math.round(r.width) + ' \u00d7 ' + Math.round(r.height) + ' \u00b7 ' + vp[0] + ' \u00d7 ' + vp[1] + ' at ' + Math.round(Math.min(b.clientWidth / vp[0], b.clientHeight / vp[1]) * 100) + '%' : Math.round(r.width) + ' \u00d7 ' + Math.round(r.height); }
+function rzSave(){ try { localStorage.setItem('mw-stage-size', JSON.stringify(RZ)); } catch (e) {} }
+try { var rz0 = JSON.parse(localStorage.getItem('mw-stage-size') || 'null'); if (rz0 && rz0.h){ RZ.w = +rz0.w || 0; RZ.h = Math.max(280, Math.min(1600, +rz0.h)); } } catch (e) {}
+rzApply();
+document.addEventListener('pointerdown', function(e){
+  var hd = e.target.closest('.rz'); if (!hd) return;
+  var box = document.getElementById('cBox'), mode = hd.getAttribute('data-rz'), r = box.getBoundingClientRect();
+  /* width runs from 320px past the column out to the window's edge (20 Nov 2026: it was capped at the column, so a frame
+     that starts full width could never be dragged wider and only its height seemed to change) */
+  var col = box.parentElement.getBoundingClientRect().width, max = Math.max(col, document.documentElement.clientWidth - r.left - 16), x0 = e.clientX, y0 = e.clientY;
+  e.preventDefault(); box.classList.add('is-drag'); try { hd.setPointerCapture(e.pointerId); } catch (er) {}
+  function mv(ev){
+    if (mode !== 'b'){ var w = Math.max(320, Math.min(max, r.width + ev.clientX - x0)); RZ.w = Math.abs(w - col) <= 1 ? 0 : Math.round(w); }
+    if (mode !== 'r') RZ.h = Math.round(Math.max(280, Math.min(1600, r.height + ev.clientY - y0)));
+    rzApply();
+  }
+  function up(){ hd.removeEventListener('pointermove', mv); hd.removeEventListener('pointerup', up); hd.removeEventListener('pointercancel', up); box.classList.remove('is-drag'); rzSave(); }
+  hd.addEventListener('pointermove', mv); hd.addEventListener('pointerup', up); hd.addEventListener('pointercancel', up);
+});
+window.addEventListener('resize', function(){ vpFit(); rzLabel(); });
+try { new ResizeObserver(function(){ vpFit(); rzLabel(); }).observe(document.getElementById('cBox')); } catch (e) {}
+
+document.addEventListener('click', function(e){
+  var b = e.target.closest('#stage button'); if (!b) return;
+  if (b.hasAttribute('data-c')){ CS.k = b.getAttribute('data-c'); var c = SC().filter(function(x){ return x.k === CS.k; })[0]; CS.v = c.vs.length ? c.vs[0][0] : ''; }
+  else if (b.hasAttribute('data-vg')){ var cg = SC().filter(function(x){ return x.k === CS.k; })[0], gn = b.getAttribute('data-vg'), g = vGroups(cg).filter(function(x){ return x.name === gn; })[0];
+    if (!g) return; var kept = CS.gsel[CS.k + '|' + gn]; CS.v = g.items.some(function(it){ return it.v === kept; }) ? kept : g.items[0].v; }
+  else if (b.hasAttribute('data-v')) CS.v = b.getAttribute('data-v');
+  if (b.hasAttribute('data-v') || b.hasAttribute('data-vg')){ var cc = SC().filter(function(x){ return x.k === CS.k; })[0];
+    vGroups(cc).forEach(function(g){ if (g.items.some(function(it){ return it.v === CS.v; })) CS.gsel[CS.k + '|' + g.name] = CS.v; }); }
+  else if (b.hasAttribute('data-th')) CS.th = b.getAttribute('data-th');
+  else if (b.hasAttribute('data-rzreset')){ RZ.w = 0; RZ.h = 660; rzApply(); rzSave(); return; }
+  else if (!b.hasAttribute('data-replay')) return;
+  stagePaint(); stageLoad();
+});
+
+function paintMain(){
+  stageSync();
+  var all = S.cur === 'all', m = MOD[S.cur];
+  document.getElementById('eyebrow').textContent = all ? 'ObserveOps prototypes' : (m.kid ? 'Explorer module' : 'Module');
+  document.getElementById('title').textContent = all ? 'All work' : m.name;
+  var q = S.q.trim().toLowerCase();
+  var rows = S.rows.filter(function(r){
+    if (!all && r.module !== S.cur) return false;
+    if (!q) return true;
+    return [r.title, r.note, r.kind, r.file, (MOD[r.module] || {}).name].join(' ').toLowerCase().indexOf(q) >= 0;
+  }).sort(byDate);
+
+  var sum = document.getElementById('sum'), body = document.getElementById('body');
+  document.getElementById('note').innerHTML = S.stale ? '<div class="warnline">The list cannot be reached right now, so it may be out of date.</div>' : '';
+
+  /* a module with a stage (Mira AI, Dashboard) shows its components live there, so it carries no list of rows */
+  if (STAGES[S.cur]){ var nc = STAGES[S.cur].comps.length; sum.textContent = nc + ' live component' + (nc === 1 ? '' : 's'); body.innerHTML = ''; return; }
+  if (S.state === 'loading'){ sum.textContent = 'Loading the work list…'; body.innerHTML = ''; return; }
+  if (S.state === 'off'){
+    sum.textContent = '';
+    body.innerHTML = '<div class="blank"><b>The work list is not available in this view</b>Open this page signed in to claude.ai to see what has been built for each module.</div>';
+    return;
+  }
+  var mods = {}; S.rows.forEach(function(r){ mods[r.module] = 1; });
+  sum.textContent = all ? plural(S.rows.length, 'item') + ' across ' + plural(Object.keys(mods).length, 'module')
+                        : plural(count(S.cur), 'item') + ' built for this module';
+
+  if (!rows.length){
+    body.innerHTML = '<div class="blank">' + (q
+      ? '<b>Nothing matches “' + esc(S.q.trim()) + '”</b>Try a page name, a file name or a module.'
+      : all ? '<b>No work added yet</b>Each prototype, page or flow built for a module is listed here as it is created.'
+            : '<b>Nothing built for ' + esc(m.name) + ' yet</b>Work created for this module is added here, with its file and a link to open it.') + '</div>';
+    return;
+  }
+  if (!all){ body.innerHTML = '<div class="sec">' + rows.map(itemHTML).join('') + '</div>'; return; }
+  var h = '';
+  ORDER.forEach(function(slug){
+    var rs = rows.filter(function(r){ return r.module === slug; });
+    if (rs.length) h += '<section class="sec"><div class="sech"><button data-m="' + slug + '">' + esc(MOD[slug].name) + '</button><span>' + plural(rs.length, 'item') + '</span></div>' + rs.map(itemHTML).join('') + '</section>';
+  });
+  var other = rows.filter(function(r){ return !MOD[r.module]; });
+  if (other.length) h += '<section class="sec"><div class="sech"><button disabled>Other</button><span>' + plural(other.length, 'item') + '</span></div>' + other.map(itemHTML).join('') + '</section>';
+  body.innerHTML = h;
+}
+function paint(){ paintNav(); paintMain(); }
+
+function go(slug){
+  S.cur = (slug === 'all' || MOD[slug]) ? slug : 'all';
+  var want = S.cur === 'all' ? '' : '#m-' + S.cur;
+  if (location.hash !== want){ try { history.replaceState(null, '', want || location.pathname + location.search); } catch (e) { location.hash = want; } }
+  paint();
+}
+function fromHash(){ var m = /^#m-([a-z0-9-]+)$/.exec(location.hash); S.cur = m && MOD[m[1]] ? m[1] : 'all'; paint(); }
+
+/* collapse / expand the sidebar (remembered per browser) */
+function railSet(min, save){
+  document.querySelector('.app').classList.toggle('is-railmin', min);
+  var b = document.getElementById('railBtn'), t = min ? 'Expand sidebar' : 'Collapse sidebar';
+  b.title = t; b.setAttribute('aria-label', t);
+  if (save){ try { localStorage.setItem('mw-railmin', min ? '1' : '0'); } catch (e) {} }
+}
+function railMin(){ return document.querySelector('.app').classList.contains('is-railmin'); }
+try { if (localStorage.getItem('mw-railmin') === '1') railSet(true); } catch (e) {}
+
+document.addEventListener('click', function(e){
+  if (e.target.closest('#railBtn')){ railSet(!railMin(), true); return; }
+  if (railMin() && e.target.closest('.find, [data-exp]')){
+    var wasFind = !!e.target.closest('.find'); railSet(false, true);
+    if (wasFind){ e.preventDefault(); document.getElementById('find').focus(); return; }
+    S.exp = true; paint(); return;
+  }
+  var x = e.target.closest('[data-exp]'); if (x){ S.exp = !(S.exp || (MOD[S.cur] && MOD[S.cur].kid)); if (MOD[S.cur] && MOD[S.cur].kid && !S.exp) S.cur = 'all'; paint(); return; }
+  var b = e.target.closest('[data-m]'); if (b) go(b.getAttribute('data-m'));
+});
+document.addEventListener('input', function(e){ if (e.target.id === 'find'){ S.q = e.target.value; paintMain(); } });
+window.addEventListener('hashchange', fromHash);
+fromHash();
+
+/* The records live in the artifact's database (collection "work"), not in this file. */
+(async function(){
+  var db = null;
+  try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db){ S.state = 'off'; paint(); return; }
+  var timer = setTimeout(function(){ if (S.state === 'loading') S.state = 'ready'; S.stale = true; paint(); }, 10000);
+  db.collection('work').onSnapshot(function(snap){
+    S.rows = snap.docs.map(function(d){ var o = d.data() || {}; return Object.assign({}, o, { id:d.id }); });
+    S.state = 'ready';
+    if (!snap.metadata.fromCache){ clearTimeout(timer); S.stale = false; }
+    paint();
+  }, function(){ clearTimeout(timer); S.state = S.rows.length ? 'ready' : 'off'; S.stale = !!S.rows.length; paint(); });
+})();
+</script>
+
+</body></html>

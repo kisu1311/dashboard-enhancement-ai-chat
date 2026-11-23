@@ -35,6 +35,12 @@ drv = r"""<script>
         if(!mw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no tile'; return; }
         var ms=scroller(mw); if(ms){ ms.scrollTop+=mw.getBoundingClientRect().top-ms.getBoundingClientRect().top-90; }
         wSelect(mw); document.title='READY'; return; }
+      if(S.key==='wtbintro'){ window.__WTBOPT=window.__CVOPT; try{ ['oo-wtb-seen','oo-wtb-uses'].forEach(function(k){localStorage.removeItem(k)}); }catch(e){}
+        var wl=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], wi=-1; for(var j=0;j<wl.length;j++){ if(wl[j]&&(wl[j].t==='pie'||wl[j].t==='hbars')){ wi=j; break; } }
+        var ww=wi>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+wi+'"]');
+        if(!ww){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no widget'; return; }
+        var ws=scroller(ww); if(ws){ ws.scrollTop+=ww.getBoundingClientRect().top-ws.getBoundingClientRect().top-70; }
+        wSelect(ww); document.title='READY'; return; }
       var want=S.key==='cvcard'?function(m){return m.t==='cmp'}:function(m){return m.t==='pie'||m.t==='hbars'||m.t==='tn'};
       var list=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], idx=-1; for(var i=0;i<list.length;i++){ if(list[i]&&want(list[i])){ idx=i; break; } }
       var w=idx>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+idx+'"]');

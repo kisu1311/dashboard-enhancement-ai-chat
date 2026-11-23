@@ -18,7 +18,7 @@ import subprocess
 sb=open('spec-sidebar.js',encoding='utf-8').read()
 PICK=os.path.expanduser('~/.claude/skills/icon-library/scripts/pick.py')
 sico={}
-for n in ['filter','pin','pinned','pinned-off','folder','folder-open','folder-plus','folder-symlink','folder-off','folders','message','search','plus','pencil','trash','dots','chevron-right','chevron-down','x','check','sparkles']:
+for n in ['filter','pin','pinned','pinned-off','folder','folder-open','folder-plus','folder-symlink','folder-off','folders','message','search','plus','pencil','trash','dots','chevron-right','chevron-down','x','check','sparkles','arrow-up','arrow-down','grip-vertical']:
     out=subprocess.run(['python3',PICK,n,'--set','tabler','--svg'],capture_output=True,text=True).stdout
     m=re.search(r'<svg.*?</svg>',out,re.S); assert m,n
     sico[n]=re.sub(r'\s+xmlns="[^"]*"','',m.group(0))

@@ -27,11 +27,24 @@ function mxsI(n,c){ return '<span class="mxs-ic'+(c?' '+c:'')+'" aria-hidden="tr
 function mxsRows(){ return $$('.mira-recents-list > li.mira-recent').map(function(li){ var a=$('a.mira-side-row.is-chat',li); if(!a) return null; var id=a.getAttribute('data-mx-chat');
     return {li:li,a:a,id:id,name:$('.mira-recent-name',a).textContent.trim(),t:MX.at[id]||Date.now(),hid:li.classList.contains('mx-hide')||li.style.display==='none'}; }).filter(Boolean); }
 function mxsG(id){ return MXS.groups.filter(function(g){ return g.id===id; })[0]||null; }
-function mxsKids(pid){ return MXS.groups.filter(function(g){ return (g.parent||null)===(pid||null); }).sort(function(a,b){ return a.name.localeCompare(b.name); }); }
+/* groups list A-Z until someone reorders them (Move up / Move down, request 23 Nov 2026); from then on by MXS order,
+   and a group made later goes to the end */
+function mxsKids(pid){ return MXS.groups.filter(function(g){ return (g.parent||null)===(pid||null); }).sort(function(a,b){
+  if(MXS.gord){ var ao=a.ord==null?1e9:a.ord, bo=b.ord==null?1e9:b.ord; if(ao!==bo) return ao-bo; } return a.name.localeCompare(b.name); }); }
+function mxsGMoveTo(gid,j){ var g=mxsG(gid); if(!g) return false; var sib=mxsKids(g.parent||null), i=sib.indexOf(g); if(i<0||j<0||j>=sib.length||i===j) return false;
+  sib.splice(j,0,sib.splice(i,1)[0]); sib.forEach(function(x,k){ x.ord=k; }); MXS.gord=true; return true; }
+function mxsGMove(gid,d){ var g=mxsG(gid); if(!g) return; var i=mxsKids(g.parent||null).indexOf(g); if(!mxsGMoveTo(gid,i+d)) return; mxsMenuClose(); mxsPaint();
+  /* the menu stays open on the group, so it can be moved again */
+  var nb=$('.mxs [data-mxs="gmenu"][data-g="'+gid+'"]'); if(nb) mxsGroupMenu(nb,gid); }
 function mxsUnder(gid,anc){ for(var g=mxsG(gid);g;g=mxsG(g.parent)) if(g.id===anc) return true; return false; }
 function mxsPath(gid){ var p=[]; for(var g=mxsG(gid);g;g=mxsG(g.parent)) p.unshift(g.name); return p.join(' › '); }
 function mxsDeep(gid){ var n=0; Object.keys(MXS.of).forEach(function(c){ var g=MXS.of[c]; if(g===gid||mxsUnder(g,gid)) n++; }); return n; }
 function mxsFiltered(){ var f=MXS.filter; return f.show!=='all'||f.time!=='any'; }
+/* EVERY filter style carries the same actions (request, 23 Nov 2026): Show · Last activity · Group by · Sort by · Reset to
+   defaults · New group. Reset puts all four back. */
+function mxsDefault(){ return !mxsFiltered()&&(MXS.sort||'new')==='new'&&(MXS.gby||'none')==='none'; }
+function mxsResetAll(){ MXS.filter={show:'all',time:'any'}; MXS.sort='new'; MXS.gby='none'; }
+var MXS_GBY=[['none','None'],['date','Date'],['group','Group']], MXS_SORT=[['new','Newest first'],['old','Oldest first'],['name','Name (A\u2013Z)']];
 function mxsPass(r){ var f=MXS.filter, age=(Date.now()-r.t)/864e5;
   if(f.show==='pinned'&&!MXS.pin[r.id]) return false;
   if(f.time==='today'&&bandOf(r.t)!=='Today') return false; if(f.time==='7d'&&age>7) return false; if(f.time==='30d'&&age>30) return false; return !r.hid; }
@@ -45,7 +58,11 @@ function mxsNameRow(icon,ph,val,pad,d){ return '<li class="mxs-li'+(d!=null?' is
 /* the section titles open and close (request, 20 Nov 2026: "Pinned, Groups and Recent will expand / collapse", ChatGPT's
    "Pinned ⌄ / Pinned ›"): the title is a button - its name, then a small chevron AFTER it, down when open and right when
    closed. Collapsing hides that section's rows; the title stays. */
-function mxsSec(k,label,tail){ var open=!MXS.fold[k]; return '<li class="mxs-h'+(tail?' has-act':'')+'"><button type="button" class="mxs-hb" data-mxs="sec" data-k="'+k+'" aria-expanded="'+open+'">'+esc(label)+
+/* Section titles (Pinned · Groups · Recent) fold their section from the title (chevron on hover). "Sections without collapse"
+   (request, 23 Nov 2026, added as its own option: MXS.nofold, state o2-nofold) makes them plain labels, every section open. */
+function mxsSec(k,label,tail){
+  if(MXS.nofold) return '<li class="mxs-h'+(tail?' has-act':'')+'" data-sec="'+k+'"><span class="mxs-ht">'+esc(label)+'</span>'+(tail||'')+'</li>';
+  var open=!MXS.fold[k]; return '<li class="mxs-h'+(tail?' has-act':'')+'" data-sec="'+k+'"><button type="button" class="mxs-hb" data-mxs="sec" data-k="'+k+'" aria-expanded="'+open+'">'+esc(label)+
     '<span class="mxs-hc" aria-hidden="true">'+(MXS_ICO[open?'chevron-down':'chevron-right']||'')+'</span></button>'+(tail||'')+'</li>'; }
 /* GROUP ACTION ON THE SECTION TITLE (request, 20 Nov 2026: "the create group action will show on the Groups line, right side,
    as a new option"): New group leaves the Chats header and sits at the right end of the Groups title, where the thing it
@@ -53,6 +70,9 @@ function mxsSec(k,label,tail){ var open=!MXS.fold[k]; return '<li class="mxs-h'+
    MXS.gpos = 'sec' (the stage's "Option 2 · Group action on title"); the header button stays the default. */
 function mxsGAct(){ var on=MXS.ed&&MXS.ed.k==='add'&&!MXS.ed.par;
   return '<button type="button" class="mxs-ha'+(on?' is-open':'')+'" data-mxs="newgroup" title="New group" aria-label="New group">'+(MXS_ICO['folder-plus']||'')+'</button>'; }
+/* the filter button; with MXS.fpos = 'sec' (Sections without collapse, request 23 Nov 2026) it sits at the right end of the
+   Recent title instead of the Chats header, the way New group sits on the Groups title */
+function mxsFBtn(cls,filt,mv){ return '<button type="button" class="'+cls+(filt?' is-on':'')+(MXS.menu&&MXS.menu.f||MXS.fopt==='3'&&MXS.fbar?' is-open':'')+'" data-mxs="filter" title="Filter chats" aria-label="Filter chats'+(filt?' (filtered)':'')+'" aria-haspopup="menu"'+(mv?' disabled':'')+'>'+(MXS_ICO.filter||'')+(filt?'<i class="mxs-dot" aria-hidden="true"></i>':'')+'</button>'; }
 function mxsRowHTML(r,depth,moving){ var on=r.a.classList.contains('is-active'), menu=MXS.menu&&MXS.menu.id===r.id, pad=depth==null?8:32+depth*16;
   if(MXS.ed&&MXS.ed.k==='ren'&&MXS.ed.id===r.id) return mxsNameRow('','Chat name',MXS.val||r.name,pad,depth);
   return '<li class="mxs-li'+(depth!=null?' is-kid':'')+(menu?' is-menu':'')+'"'+(depth!=null?' style="--d:'+depth+'"':'')+'>'+
@@ -65,22 +85,25 @@ function mxsPaint(){ var host=$('.mira-recents'); if(!host||!MXS.on) return; var
   var ae=document.activeElement, hadIn=ae&&ae.classList.contains('mxs-in');
   var rows=mxsRows(), byId={}, pass=rows.filter(mxsPass), f=MXS.filter, filt=mxsFiltered(), mv=MXS.mv, h='';
   rows.forEach(function(r){ byId[r.id]=r; });
-  box.classList.toggle('is-moving',!!mv);
+  box.classList.toggle('is-moving',!!mv); box.classList.toggle('is-cdrag',!!MXS.cdragId);
   h+='<div class="mxs-bar"><span class="mxs-t">Chats</span>'+
-    '<button type="button" class="mxs-ib'+(filt?' is-on':'')+(MXS.menu&&MXS.menu.f||MXS.fopt==='3'&&MXS.fbar?' is-open':'')+'" data-mxs="filter" title="Filter chats" aria-label="Filter chats'+(filt?' (filtered)':'')+'" aria-haspopup="menu"'+(mv?' disabled':'')+'>'+(MXS_ICO.filter||'')+(filt?'<i class="mxs-dot" aria-hidden="true"></i>':'')+'</button>'+
+    (MXS.fpos==='sec'?'':mxsFBtn('mxs-ib',filt,mv))+
     (MXS.gpos==='sec'?'':'<button type="button" class="mxs-ib'+(MXS.ed&&MXS.ed.k==='add'&&!MXS.ed.par?' is-open':'')+'" data-mxs="newgroup" title="New group" aria-label="New group">'+(MXS_ICO['folder-plus']||'')+'</button>')+'</div>';
   if(mv){ var mr=byId[mv.chat], from=MXS.of[mv.chat]||null, ok=mv.sel&&mv.sel!==from;
     h+='<div class="mxs-mv" role="status"><div class="mxs-mvt">Move <b>'+esc(mr?mr.name:'chat')+'</b></div><div class="mxs-mvd">'+(mv.sel?'To '+esc(mxsPath(mv.sel)):'Pick a group below')+(from?' · now in '+esc(mxsPath(from)):'')+'</div>'+
       '<div class="mxs-mvb"><button type="button" class="mxs-btn" data-mxs="mvcancel">Cancel</button><button type="button" class="mxs-btn is-pri" data-mxs="mvgo"'+(ok?'':' disabled')+'>Move</button></div></div>'; }
-  if(MXS.fopt==='3'&&MXS.fbar&&!mv) h+=mxsFilterBar();
+  if(MXS.fopt==='3'&&MXS.fbar&&!mv&&MXS.fpos!=='sec') h+=mxsFilterBar();
   if(false&&filt&&!mv&&MXS.fopt!=='3') h+='<div class="mxs-fs"><span>'+[mxsLab(MXS_SHOW,f.show==='all'?'':f.show),mxsLab(MXS_TIME,f.time==='any'?'':f.time)].filter(Boolean).join(' · ')+' · '+pass.length+' of '+rows.length+'</span><button type="button" data-mxs="clear">Clear</button></div>';
   h+='<ul class="mxs-list">';
   var isMv=function(id){ return !!(mv&&mv.chat===id); }, moved=function(id){ return isMv(id)&&!!mv.sel; };
   /* in move mode the moving chat leaves its place and shows (previewed) under the picked group */
   var pins=pass.filter(function(r){ return MXS.pin[r.id]&&!moved(r.id); });
+  if(!pins.length&&MXS.cdragId) h+=mxsSec('pinned','Pinned')+'<li class="mxs-li mxs-dz">Drop here to pin</li>';
   if(pins.length){ h+=mxsDimLi(mxsSec('pinned','Pinned'),!!mv); if(!MXS.fold.pinned) pins.forEach(function(r){ h+=mxsDimLi(mxsRowHTML(r,null,isMv(r.id)),mv&&!isMv(r.id)); }); }
   var fileOf=function(id){ return moved(id)?mv.sel:MXS.of[id]; };
-  var own=function(g){ return pass.filter(function(r){ return fileOf(r.id)===g.id&&(!MXS.pin[r.id]||moved(r.id)); }); };
+  /* a pinned chat stays listed in its group too: pin and group are independent (request, 23 Nov 2026) */
+  var own=function(g){ var a=pass.filter(function(r){ return fileOf(r.id)===g.id; }), co=MXS.cord||{};
+    return a.map(function(r,i){ return [r,i]; }).sort(function(x,y){ var p=co[x[0].id], q=co[y[0].id]; p=p==null?1e9+x[1]:p; q=q==null?1e9+y[1]:q; return p-q; }).map(function(x){ return x[0]; }); };
   var any=function(g){ return own(g).length||mxsKids(g.id).some(any); };
   var gHTML='';
   if(MXS.ed&&MXS.ed.k==='add'&&!MXS.ed.par) gHTML+=mxsNameRow('folder','Group name',MXS.val,8);
@@ -89,8 +112,8 @@ function mxsPaint(){ var host=$('.mira-recents'); if(!host||!MXS.on) return; var
     if(MXS.ed&&MXS.ed.k==='ren'&&MXS.ed.id===g.id) gHTML+=mxsNameRow(open?'folder-open':'folder','Group name',MXS.val||g.name,pad,d?d-1:null);
     else { var picked=!!(mv&&mv.sel===g.id);
       gHTML+='<li class="mxs-li mxs-g'+(open?' is-open':'')+(menu?' is-menu':'')+(picked?' is-picked':'')+(d?' is-kid':'')+'"'+(d?' style="--d:'+(d-1)+'"':'')+'>'+
-      '<button type="button" class="mxs-row mxs-grow" data-mxs="'+(mv?'gpick':'gtoggle')+'" data-g="'+g.id+'" '+(mv?'aria-pressed="'+picked+'"':'aria-expanded="'+!!open+'"')+' style="padding-left:'+pad+'px">'+
-      mxsI(open?'folder-open':'folder')+'<span class="mxs-name">'+esc(g.name)+'</span>'+(picked?mxsI('check','is-ck'):n?'<span class="mxs-gn" aria-label="'+n+' chats">'+n+'</span>':'')+'</button>'+
+      '<button type="button" class="mxs-row mxs-grow" data-mxs="'+(mv?'gpick':'gtoggle')+'" data-g="'+g.id+'" '+(MXS.gdrag&&!mv?'title="Drag to reorder · Alt + ↑ / ↓" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" ':'')+(mv?'aria-pressed="'+picked+'"':'aria-expanded="'+!!open+'"')+' style="padding-left:'+pad+'px">'+
+      (MXS.gdrag&&!mv&&!MXS.cdrag?'<span class="mxs-gi">'+mxsI(open?'folder-open':'folder')+mxsI('grip-vertical','is-grip')+'</span>':mxsI(open?'folder-open':'folder'))+'<span class="mxs-name">'+esc(g.name)+'</span>'+(picked?mxsI('check','is-ck'):n?'<span class="mxs-gn" aria-label="'+n+' chats">'+n+'</span>':'')+'</button>'+
       (mv?'':'<span class="mxs-gact"><button type="button" class="mxs-gb" data-mxs="gren" data-g="'+g.id+'" title="Rename group" aria-label="Rename group '+esc(g.name)+'">'+(MXS_ICO.pencil||'')+'</button>'+
         /* no Add child group: groups are ONE level (request, 20 Nov 2026: "we can't create a group inside a group") */
         '<button type="button" class="mxs-gb" data-mxs="gmenu" data-g="'+g.id+'" title="More" aria-label="More actions for group '+esc(g.name)+'" aria-haspopup="menu" aria-expanded="'+menu+'">'+(MXS_ICO.dots||'')+'</button></span>')+'</li>'; }
@@ -103,8 +126,20 @@ function mxsPaint(){ var host=$('.mira-recents'); if(!host||!MXS.on) return; var
   else if(gHTML) h+=mxsSec('groups','Groups')+(MXS.fold.groups?'':gHTML);
   /* three sections - 1 Pinned, 2 Groups, 3 RECENT (request, 20 Nov 2026: "Recent - in this show all chats"): Recent is every
      chat, newest first, so a pinned or grouped chat is listed in its section AND here. It replaced the date bands. */
-  var recent=pass.slice().sort(function(a,b){ return b.t-a.t; });
-  if(recent.length){ h+=mxsDimLi(mxsSec('recent','Recent'),!!mv); if(!MXS.fold.recent) recent.forEach(function(r){ h+=mxsDimLi(mxsRowHTML(r,null,false),!!mv); }); }
+  /* Recent lists only the chats that are neither pinned nor in a group (request, 23 Nov 2026) - a pinned or grouped chat
+     is shown in Pinned / its group, not a second time here */
+  var srt=MXS.sort||'new', recent=pass.filter(function(r){ return !MXS.pin[r.id]&&!fileOf(r.id); }).sort(function(a,b){ return srt==='old'?a.t-b.t:srt==='name'?a.name.localeCompare(b.name):b.t-a.t; });
+  var fbLi=MXS.fpos==='sec'&&MXS.fopt==='3'&&MXS.fbar&&!mv?'<li class="mxs-fbli">'+mxsFilterBar()+'</li>':'';
+  if(MXS.fpos==='sec'&&!recent.length) h+=mxsDimLi(mxsSec('recent','Recent',mxsFBtn('mxs-ha',filt,mv)),!!mv)+fbLi;   /* the filter must stay reachable */
+  /* Group by (Filter · Nested menu, 23 Nov 2026): Recent split by Date (Today · Yesterday · Last 7 days · Last 30 days · Older)
+     or by Group (each group's name, then No group); None is one list. Sort by orders the rows inside each heading. */
+  var gby=MXS.gby||'none', bucket=function(r){ if(gby==='group'){ var g=MXS.of[r.id]&&mxsG(MXS.of[r.id]); return g?g.name:'No group'; }
+    var age=(Date.now()-r.t)/864e5; return bandOf(r.t)==='Today'?'Today':age<2?'Yesterday':age<=7?'Last 7 days':age<=30?'Last 30 days':'Older'; };
+  var BK=gby==='date'?['Today','Yesterday','Last 7 days','Last 30 days','Older']:gby==='group'?mxsKids(null).map(function(g){ return g.name; }).concat(['No group']):null;
+  if(recent.length){ h+=mxsDimLi(mxsSec('recent','Recent',MXS.fpos==='sec'?mxsFBtn('mxs-ha',filt,mv):''),!!mv)+fbLi;
+    if(!MXS.fold.recent){ if(!BK) recent.forEach(function(r){ h+=mxsDimLi(mxsRowHTML(r,null,false),!!mv); });
+      else BK.forEach(function(k){ var rs=recent.filter(function(r){ return bucket(r)===k; }); if(!rs.length) return;
+        h+='<li class="mxs-sub">'+esc(k)+'</li>'; rs.forEach(function(r){ h+=mxsDimLi(mxsRowHTML(r,null,false),!!mv); }); }); } }
   h+='</ul>';
   if(!pass.length) h+='<div class="mxs-empty">No chats match these filters. <button type="button" data-mxs="clear">Clear filters</button></div>';
   box.innerHTML=h;
@@ -132,23 +167,28 @@ function mxsSub(item,id){ $$('.mxs-menu.is-sub').forEach(function(x){ x.parentNo
 function mxsRowMenu(btn,id){ var p=!!MXS.pin[id];
   mxsMenu(btn,mxsMI('mpin',p?'Unpin':'Pin',p?'pinned-off':'pin',' data-id="'+id+'"')+mxsMI('mmove','Move to group','folder-symlink',' data-id="'+id+'" aria-haspopup="menu" aria-expanded="false"','','<span class="mxs-ic is-tail" aria-hidden="true">'+(MXS_ICO['chevron-right']||'')+'</span>')+
     mxsMI('mren','Rename','pencil',' data-id="'+id+'"')+'<div class="mxs-ms" role="separator"></div>'+mxsMI('mdel','Delete','trash',' data-id="'+id+'"','is-danger'),{id:id}); }
-function mxsGroupMenu(btn,gid){ var empty=!mxsDeep(gid);
-  mxsMenu(btn,mxsMI('gungroup','Ungroup','folder-off',' data-g="'+gid+'"')+(empty?'<div class="mxs-ms" role="separator"></div>'+mxsMI('gdel','Delete group','trash',' data-g="'+gid+'"','is-danger'):''),{g:gid}); }
+function mxsGroupMenu(btn,gid){ var empty=!mxsDeep(gid), g=mxsG(gid), sib=mxsKids(g&&g.parent||null), gi=sib.indexOf(g);
+  mxsMenu(btn,mxsMI('gup','Move up','arrow-up',' data-g="'+gid+'"'+(gi<=0?' disabled':''))+mxsMI('gdown','Move down','arrow-down',' data-g="'+gid+'"'+(gi<0||gi>=sib.length-1?' disabled':''))+
+    '<div class="mxs-ms" role="separator"></div>'+mxsMI('gungroup','Ungroup','folder-off',' data-g="'+gid+'"')+(empty?'<div class="mxs-ms" role="separator"></div>'+mxsMI('gdel','Delete group','trash',' data-g="'+gid+'"','is-danger'):''),{g:gid}); }
 /* FILTER OPTION 2 (request, 20 Nov 2026: "on this filter create Option 2; the current option is not removed"). Option 1 is the
    list menu below and stays the default. Option 2 is the Mobbin-based popover (Wise, Sketch, Mercury, Wix): a title with
    Reset, Pinned only as a SWITCH, the date range as ONE segmented row, and a live "N of M chats" line; it applies as you
    click and stays open. Picked by MXS.fopt = '2' (the stage's "Option 2 · Filter · Option 2"). */
 var MXS_TCHIP=[['any','Any time'],['today','Today'],['7d','7 days'],['30d','30 days']];
 function mxsFilterHTML(){ var f=MXS.filter, rows=mxsRows(), n=rows.filter(mxsPass).length, on=f.show==='pinned', set=mxsFiltered();
-  return '<div class="mxf-h"><span>Filter chats</span><button type="button" class="mxf-reset" data-mxs="clear"'+(set?'':' disabled')+'>Reset</button></div>'+
+  var seg=function(cls,lab,val,opts){ return '<div class="mxf-l">'+lab+'</div><obs-radio class="'+cls+'" as-button size="small" aria-label="'+lab+'" value="'+val+'" options=\''+JSON.stringify(opts.map(function(x){ return {value:x[0],label:x[2]||x[1]}; }))+'\'></obs-radio>'; };
+  return '<div class="mxf-h"><span>Filter chats</span><button type="button" class="mxf-reset" data-mxs="clear"'+(mxsDefault()?' disabled':'')+'>Reset</button></div>'+
     '<button type="button" class="mxf-sw" data-mxs="fshow" data-v="pinned" role="switch" aria-checked="'+on+'"><span class="mxf-swl">'+mxsI('pin')+'Pinned only</span><span class="mxf-tr'+(on?' is-on':'')+'" aria-hidden="true"><i></i></span></button>'+
-    '<div class="mxf-l" id="mxfDate">Date</div>'+
+    '<div class="mxf-l" id="mxfDate">Last activity</div>'+
     '<obs-radio class="mxf-seg" as-button size="small" aria-label="Date" value="'+f.time+'" options=\''+JSON.stringify(MXS_TCHIP.map(function(x){ return {value:x[0],label:x[1]}; }))+'\'></obs-radio>'+
-    '<div class="mxf-n" aria-live="polite">'+(set?n+' of '+rows.length+' chats':'All '+rows.length+' chats')+'</div>'; }
-document.addEventListener('change',function(e){ var r=e.target; if(!r||!r.classList||!r.classList.contains('mxf-seg')) return;
-  var v=Array.isArray(e.detail)?e.detail[0]:e.detail; if(v==null) return; MXS.filter.time=String(v); mxsPaint();
+    seg('mxf-gby','Group by',MXS.gby||'none',MXS_GBY)+seg('mxf-sort','Sort by',MXS.sort||'new',[['new','','Newest'],['old','','Oldest'],['name','','Name']])+
+    '<div class="mxf-n" aria-live="polite">'+(set?n+' of '+rows.length+' chats':'All '+rows.length+' chats')+'</div>'+
+    '<div class="mxf-ft"><button type="button" class="mxs-mi" data-mxs="newgroup">'+mxsI('folder-plus')+'<span class="mxs-ml">New group</span></button></div>'; }
+document.addEventListener('change',function(e){ var r=e.target, cl=r&&r.classList; if(!cl||!(cl.contains('mxf-seg')||cl.contains('mxf-gby')||cl.contains('mxf-sort'))) return;
+  var v=Array.isArray(e.detail)?e.detail[0]:e.detail; if(v==null) return; v=String(v);
+  if(cl.contains('mxf-gby')) MXS.gby=v; else if(cl.contains('mxf-sort')) MXS.sort=v; else MXS.filter.time=v; mxsPaint();
   var m=$('.mxs-menu.mxf'); if(!m) return; var rows=mxsRows(), n=rows.filter(mxsPass).length, set=mxsFiltered(), c=m.querySelector('.mxf-n'), rs=m.querySelector('.mxf-reset');
-  if(c) c.textContent=set?n+' of '+rows.length+' chats':'All '+rows.length+' chats'; if(rs) rs.disabled=!set; },true);
+  if(c) c.textContent=set?n+' of '+rows.length+' chats':'All '+rows.length+' chats'; if(rs) rs.disabled=mxsDefault(); },true);
 function mxsFilterRefresh(){ var m=$('.mxs-menu.mxf'); if(m) m.innerHTML=mxsFilterHTML(); }
 /* FILTER OPTION 3 (request, 20 Nov 2026: "create Option 3; the current options are not removed"): no popover - the funnel
    opens a row of CHIPS inside the sidebar, under the Chats header: Pinned (on / off) and Today · 7 days · 30 days (one at a
@@ -156,15 +196,45 @@ function mxsFilterRefresh(){ var m=$('.mxs-menu.mxf'); if(m) m.innerHTML=mxsFilt
    closes the row. Picked by MXS.fopt = '3' (the stage's "Option 2 · Filter · Option 3"). */
 function mxsFilterBar(){ var f=MXS.filter, c=function(k,label,on){ return '<button type="button" class="mxs-fc'+(on?' is-on':'')+'" data-mxs="fb" data-k="'+k+'" aria-pressed="'+on+'">'+label+'</button>'; };
   return '<div class="mxs-fb" role="group" aria-label="Filter chats">'+c('pinned','Pinned',f.show==='pinned')+c('today','Today',f.time==='today')+c('7d','7 days',f.time==='7d')+c('30d','30 days',f.time==='30d')+
-    (mxsFiltered()?'<button type="button" class="mxs-fx" data-mxs="clear">Clear</button>':'')+'</div>'; }
+    ['gby','sort'].map(function(k){ var d=MXS_F4[k], v=mxsF4Val(k), o=d.o.filter(function(x){ return x[0]===v; })[0]||d.o[0], dv=v!==(k==='gby'?'none':'new');
+      return '<button type="button" class="mxs-fc mxs-fcd'+(dv?' is-on':'')+'" data-mxs="f4row" data-k="'+k+'" aria-haspopup="menu">'+(k==='gby'?'Group':'Sort')+': '+o[2]+'<span class="mxs-ic" aria-hidden="true">'+(MXS_ICO['chevron-down']||'')+'</span></button>'; }).join('')+
+    (mxsDefault()?'':'<button type="button" class="mxs-fx" data-mxs="clear">Reset</button>')+'</div>'; }
 function mxsFilterMenu(btn){ if(MXS.fopt==='3'){ MXS.fbar=!MXS.fbar; mxsPaint(); return; }
+  if(MXS.fopt==='4'){ mxsF4Menu(btn); return; }
   if(MXS.fopt==='2'){ mxsMenu(btn,mxsFilterHTML(),{f:1}); var m=$('.mxs-menu'); if(m) m.classList.add('mxf'); return; }
-  var f=MXS.filter, h='<div class="mxs-mh">Show</div>';
+  /* the list scrolls in a short box; Reset and New group stay pinned under it (request, 23 Nov 2026: "small, the rest scrollable") */
+  var f=MXS.filter, h='<div class="mxs-msc">', gb=MXS.gby||'none', so=MXS.sort||'new';   /* no "Show" title over Pinned (request, 23 Nov 2026) */
   MXS_SHOW.forEach(function(x){ var on=f.show===x[0]; h+=mxsMI('fshow',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemcheckbox" aria-checked="'+on+'"',on?'is-on':''); });
-  h+='<div class="mxs-mh">Time</div>';   /* no divider between Show and Time (request, 20 Nov 2026) */
+  h+='<div class="mxs-mh">Last activity</div>';   /* no divider between Show and Time (request, 20 Nov 2026) */
   MXS_TIME.forEach(function(x){ var on=f.time===x[0]; h+=mxsMI('ftime',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':''); });
-  if(mxsFiltered()) h+='<div class="mxs-ms" role="separator"></div>'+mxsMI('clear','Clear filters','x');
-  mxsMenu(btn,h,{f:1}); }
+  h+='<div class="mxs-ms" role="separator"></div><div class="mxs-mh">Group by</div>';
+  MXS_GBY.forEach(function(x){ var on=gb===x[0]; h+=mxsMI('fgby',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':''); });
+  h+='<div class="mxs-mh">Sort by</div>';
+  MXS_SORT.forEach(function(x){ var on=so===x[0]; h+=mxsMI('fsort',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':''); });
+  h+='</div><div class="mxs-ms" role="separator"></div>'+mxsMI('clear','Reset to defaults','x',mxsDefault()?' disabled':'')+mxsMI('newgroup','New group','folder-plus');
+  mxsMenu(btn,h,{f:1});
+  var sc=$('.mxs-menu .mxs-msc'), on=sc&&sc.querySelector('.mxs-mi.is-on'); if(on&&on.offsetTop>sc.clientHeight-40) sc.scrollTop=on.offsetTop-sc.clientHeight/2; }
+/* FILTER · NESTED MENU (request, 23 Nov 2026, Claude's chat-list filter as the reference): no section titles - each filter is
+   ONE row with its current value on the right and a submenu (Show · Last activity, then Sort by), then Reset to defaults and
+   New group (Claude's "New section"). Picking a value applies it and closes the menu. MXS.fopt = '4', state o2-filter4. */
+var MXS_F4={ show:{t:'Show',o:[['all','All chats','All'],['pinned','Pinned','Pinned']]},
+  time:{t:'Last activity',o:[['any','Any time','Any'],['today','Today','Today'],['7d','Last 7 days','7 days'],['30d','Last 30 days','30 days']]},
+  gby:{t:'Group by',o:[['none','None','None'],['date','Date','Date'],['group','Group','Group']]},
+  sort:{t:'Sort by',o:[['new','Newest first','Newest'],['old','Oldest first','Oldest'],['name','Name (A\u2013Z)','Name']]} };
+function mxsF4Val(k){ return k==='sort'?(MXS.sort||'new'):k==='gby'?(MXS.gby||'none'):MXS.filter[k]; }
+function mxsF4Row(k){ var d=MXS_F4[k], v=mxsF4Val(k), o=d.o.filter(function(x){ return x[0]===v; })[0]||d.o[0];
+  return '<button type="button" role="menuitem" class="mxs-mi mxs-f4r" data-mxs="f4row" data-k="'+k+'" aria-haspopup="menu" aria-expanded="false"><span class="mxs-ml">'+d.t+'</span><span class="mxs-fv">'+o[2]+'</span><span class="mxs-ic is-tail" aria-hidden="true">'+(MXS_ICO['chevron-right']||'')+'</span></button>'; }
+function mxsF4Menu(btn){ var dflt=!mxsFiltered()&&(MXS.sort||'new')==='new'&&(MXS.gby||'none')==='none';
+  var h=mxsF4Row('show')+mxsF4Row('time')+'<div class="mxs-ms" role="separator"></div>'+mxsF4Row('gby')+mxsF4Row('sort')+'<div class="mxs-ms" role="separator"></div>'+
+    mxsMI('f4reset','Reset to defaults','',dflt?' disabled':'')+'<div class="mxs-ms" role="separator"></div>'+mxsMI('newgroup','New group','');
+  mxsMenu(btn,h,{f:1}); var m=$('.mxs-menu'); if(m) m.classList.add('mxf4'); }
+function mxsF4Sub(item,k){ $$('.mxs-menu.is-sub').forEach(function(x){ x.parentNode.removeChild(x); }); $$('.mxs-mi.is-open').forEach(function(x){ x.classList.remove('is-open'); x.setAttribute('aria-expanded','false'); });
+  var d=MXS_F4[k], v=mxsF4Val(k), h='';
+  d.o.forEach(function(x){ var on=x[0]===v; h+=mxsMI('f4set',x[1],'',' data-k="'+k+'" data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':'',on?'<span class="mxs-ic is-tail" aria-hidden="true">'+(MXS_ICO.check||'')+'</span>':''); });
+  if(!MXS.menu) MXS.menu={fsub:1};
+  var m=document.createElement('div'); m.className='mxs-menu is-sub mxf4'; m.setAttribute('role','menu'); m.innerHTML=h; document.body.appendChild(m);
+  var r=item.getBoundingClientRect(), w=m.offsetWidth, hh=m.offsetHeight, x=r.right+4, y=r.top-5; if(x+w>innerWidth-8) x=r.left-w-4; if(y+hh>innerHeight-8) y=Math.max(8,innerHeight-hh-8);
+  m.style.left=Math.max(8,x)+'px'; m.style.top=y+'px'; item.classList.add('is-open'); item.setAttribute('aria-expanded','true'); }
 /* A switch + date-chips popover (Wise / Sketch / Mercury / Wix on Mobbin) was built and REVERTED on request, 20 Nov 2026 -
    the list menu above is the one to keep. */
 
@@ -180,7 +250,7 @@ function mxsEdSave(){ var inp=$('.mxs .mxs-in'), ed=MXS.ed; if(!inp||!ed) return
   var par=ed.k==='add'?(ed.par||null):(g.parent||null);
   if(MXS.groups.some(function(x){ return (x.parent||null)===par&&x.name.toLowerCase()===v.toLowerCase()&&(!g||x.id!==g.id); })){ MXS.err='A group with this name already exists here'; mxsPaint(); return; }
   if(g) g.name=v;
-  else { var ng={id:'g'+(++MXS.gseq),name:v,parent:par,open:true}; MXS.groups.push(ng); if(par) mxsG(par).open=true; if(MXS.mv) MXS.mv.sel=ng.id; if(ed.move){ MXS.of[ed.move]=ng.id; delete MXS.pin[ed.move]; toast('Group “'+v+'” created, chat moved in'); } else toast('Group “'+v+'” created'); }
+  else { var ng={id:'g'+(++MXS.gseq),name:v,parent:par,open:true}; MXS.groups.push(ng); if(par) mxsG(par).open=true; if(MXS.mv) MXS.mv.sel=ng.id; if(ed.move){ MXS.of[ed.move]=ng.id; toast('Group “'+v+'” created, chat moved in'); } else toast('Group “'+v+'” created'); }
   MXS.ed=null; MXS.err=''; MXS.val=''; mxsPaint(); }
 
 
@@ -208,7 +278,7 @@ function mxsHovOn(row){ var id=row.getAttribute('data-id'); if(MXS.hovFor===id) 
     document.body.appendChild(el); var as=$('aside.mira-sidebar'), sr=as?as.getBoundingClientRect():{right:0}, rr=row.getBoundingClientRect(), w=el.offsetWidth;
     el.style.left=Math.min(innerWidth-w-8,sr.right+8)+'px'; el.style.top=Math.max(8,Math.min(rr.top-6,innerHeight-el.offsetHeight-8))+'px'; },260); }
 /* ── actions ── */
-function mxsMoveGo(){ var mv=MXS.mv; if(!mv||!mv.sel||mv.sel===(MXS.of[mv.chat]||null)) return; MXS.of[mv.chat]=mv.sel; delete MXS.pin[mv.chat]; for(var q=mxsG(mv.sel);q;q=mxsG(q.parent)) q.open=true;
+function mxsMoveGo(){ var mv=MXS.mv; if(!mv||!mv.sel||mv.sel===(MXS.of[mv.chat]||null)) return; MXS.of[mv.chat]=mv.sel; for(var q=mxsG(mv.sel);q;q=mxsG(q.parent)) q.open=true;
   var nm=(mxsRows().filter(function(r){ return r.id===mv.chat; })[0]||{}).name||'Chat'; MXS.mv=null; MXS.ed=null; toast('“'+nm+'” moved to '+mxsPath(mv.sel)); mxsPaint(); }
 function mxsAct(b){ var a=b.getAttribute('data-mxs'), id=b.getAttribute('data-id'), gid=b.getAttribute('data-g'), g=gid&&mxsG(gid);
   if(a==='edok'){ mxsEdSave(); return; }
@@ -217,11 +287,15 @@ function mxsAct(b){ var a=b.getAttribute('data-mxs'), id=b.getAttribute('data-id
   if(a==='filter'){ if(MXS.menu&&MXS.menu.f){ mxsMenuClose(); return; } mxsFilterMenu(b); return; }
   if(a==='rmenu'){ if(MXS.menu&&MXS.menu.id===id){ mxsMenuClose(); return; } mxsRowMenu(b,id); return; }
   if(a==='gmenu'){ if(MXS.menu&&MXS.menu.g===gid){ mxsMenuClose(); return; } mxsGroupMenu(b,gid); return; }
+  if(a==='gup'||a==='gdown'){ mxsGMove(gid,a==='gup'?-1:1); return; }
   if(a==='mvgo'){ mxsMoveGo(); return; }
   if(a==='mmove'){ mxsSub(b,id); return; }
+  if(a==='f4row'){ mxsF4Sub(b,b.getAttribute('data-k')); return; }
+  if(a==='f4set'||a==='f4reset'){ if(a==='f4reset'){ MXS.filter={show:'all',time:'any'}; MXS.sort='new'; MXS.gby='none'; } else { var fk=b.getAttribute('data-k'), fv=b.getAttribute('data-v'); if(fk==='sort') MXS.sort=fv; else if(fk==='gby') MXS.gby=fv; else MXS.filter[fk]=fv; }
+    mxsMenuClose(); mxsPaint(); return; }
   if(a==='mmto'){ mxsMenuClose(); var tg=mxsG(gid), nm=(mxsRows().filter(function(r){ return r.id===id; })[0]||{}).name||'Chat';
-    if(MXS.of[id]===gid){ toast('“'+nm+'” is already in '+tg.name); return; } MXS.of[id]=gid; delete MXS.pin[id]; tg.open=true; toast('“'+nm+'” moved to '+tg.name); mxsPaint(); return; }
-  if((a==='fshow'||a==='ftime'||a==='clear')&&b.closest('.mxs-menu.mxf')){ if(a==='fshow') MXS.filter.show=MXS.filter.show==='pinned'?'all':'pinned'; else if(a==='ftime') MXS.filter.time=b.getAttribute('data-v'); else MXS.filter={show:'all',time:'any'}; mxsPaint(); mxsFilterRefresh(); return; }
+    if(MXS.of[id]===gid){ toast('“'+nm+'” is already in '+tg.name); return; } MXS.of[id]=gid; tg.open=true; toast('“'+nm+'” moved to '+tg.name); mxsPaint(); return; }
+  if((a==='fshow'||a==='ftime'||a==='clear')&&b.closest('.mxs-menu.mxf')){ if(a==='fshow') MXS.filter.show=MXS.filter.show==='pinned'?'all':'pinned'; else if(a==='ftime') MXS.filter.time=b.getAttribute('data-v'); else mxsResetAll(); mxsPaint(); mxsFilterRefresh(); return; }
   if(b.closest('.mxs-menu')){ $$('.mxs-menu').forEach(function(x){ x.remove(); }); MXS.menu=null; }
   MXS.err='';
   if(a==='sec'){ var k=b.getAttribute('data-k'); MXS.fold[k]=!MXS.fold[k]; mxsPaint(); return; }
@@ -240,13 +314,28 @@ function mxsAct(b){ var a=b.getAttribute('data-mxs'), id=b.getAttribute('data-id
   else if(a==='fb'){ var k=b.getAttribute('data-k'); if(k==='pinned') MXS.filter.show=MXS.filter.show==='pinned'?'all':'pinned'; else MXS.filter.time=MXS.filter.time===k?'any':k; }
   else if(a==='fshow') MXS.filter.show=MXS.filter.show===b.getAttribute('data-v')?'all':b.getAttribute('data-v');
   else if(a==='ftime') MXS.filter.time=b.getAttribute('data-v');
-  else if(a==='clear') MXS.filter={show:'all',time:'any'};
+  else if(a==='fgby') MXS.gby=b.getAttribute('data-v');
+  else if(a==='fsort') MXS.sort=b.getAttribute('data-v');
+  else if(a==='clear') mxsResetAll();
   mxsPaint(); }
 
 /* geometry: .mxs has a 4px side inset and rows 8px inner padding, so every text starts on one x; a folder's icon is
    16px + 8px gap, so its chats indent to the folder NAME; each level adds 16px. Rows 32px, 2px apart, 6px radius. */
 var MXS_CSS='.mxs-on .mira-recents-list{display:none!important}'+
- '.mxs{--mxs-in:8px;display:flex;flex-direction:column;min-height:0;padding:0 4px 12px}'+
+ '.mxs{--mxs-in:8px;position:relative;display:flex;flex-direction:column;min-height:0;padding:0 4px 12px}'+
+ '.mxs-gi{position:relative;display:inline-grid}.mxs-gi .is-grip{position:absolute;inset:0;opacity:0}'+
+ '.mxs-g:not(.is-kid)>.mxs-grow:hover .mxs-gi>.mxs-ic:first-child,.mxs-g.is-drag .mxs-gi>.mxs-ic:first-child{opacity:0}'+
+ '.mxs-g:not(.is-kid)>.mxs-grow:hover .mxs-gi .is-grip,.mxs-g.is-drag .mxs-gi .is-grip{opacity:1;color:var(--mira-text-toned)}'+
+ '.mxs-g:not(.is-kid)>.mxs-grow:has(.mxs-gi){cursor:grab}'+
+ '.mxs-g.is-drag{position:relative;z-index:5;border-radius:6px;background:var(--mira-surface-raised);box-shadow:0 0 0 1px var(--mira-accent-25);pointer-events:none}'+
+ 'body.mxs-dragging,body.mxs-dragging *{cursor:grabbing!important;user-select:none}'+
+ '.mxs-row.is-src{opacity:.4}'+
+ '.mxs-ghost{position:fixed;z-index:7000;display:flex;align-items:center;gap:6px;max-width:220px;height:28px;padding:0 10px;border:1px solid var(--mira-panel-edge);border-radius:6px;background:var(--mira-surface-raised);box-shadow:var(--mira-menu-shadow);color:var(--mira-text-strong);font-size:12.5px;pointer-events:none;opacity:.92}'+
+ '.mxs-ghost span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mxs-ghost .mxs-ic{color:var(--mira-text-muted)}.mxs-ghost.is-ok{border-color:var(--mira-accent)}'+
+ '.mxs-list>li.is-drop{border-radius:6px;background:var(--mira-accent-08);box-shadow:inset 0 0 0 1px var(--mira-accent-25)}.mxs-list>li.mxs-h.is-drop{color:var(--mira-name)}'+
+ '.mxs-dz{margin:2px 0 4px;padding:8px var(--mxs-in);border:1px dashed var(--mira-panel-edge);border-radius:6px;font-size:12px;color:var(--mira-text-muted);list-style:none}.mxs-dz.is-drop{border-color:var(--mira-accent)}'+
+ '.mxs-drop{position:absolute;z-index:6;left:8px;right:8px;height:2px;border-radius:1px;background:var(--mira-accent);pointer-events:none}'+
+ '.mxs-g.is-landed>.mxs-grow{background:var(--mira-accent-08);transition:background .6s}'+
  '.mxs-bar{display:flex;align-items:center;gap:2px;height:32px;margin:4px 0 2px;padding:0 2px 0 var(--mxs-in)}'+
  '.mxs-t{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--mira-text-strong)}'+
  '.mxs-ib{position:relative;display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:var(--mira-row-hover);color:var(--mira-text-toned);cursor:pointer}'+
@@ -263,10 +352,14 @@ var MXS_CSS='.mxs-on .mira-recents-list{display:none!important}'+
  '.mxs-hb{display:inline-flex;align-items:center;gap:4px;margin:-2px -6px;padding:2px 6px;border:0;border-radius:4px;background:none;color:inherit;font:inherit;line-height:inherit;cursor:pointer}'+
  '.mxs-hb:hover{color:var(--mira-text-strong)}.mxs-hc{display:inline-grid;place-items:center;width:12px;height:12px;opacity:0;transition:opacity .12s}.mxs-hc svg{width:12px;height:12px}'+
  /* the chevron shows ONLY while the title is hovered or focused (request, 20 Nov 2026); it keeps its 12px so the title never shifts */
- '.mxs-hb:hover .mxs-hc,.mxs-hb:focus-visible .mxs-hc{opacity:1}'+
+ '.mxs-h:hover .mxs-hc,.mxs-hb:focus-visible .mxs-hc{opacity:1}'+
  '.mxs-h.has-act{display:flex;align-items:center;justify-content:space-between;padding-right:2px}'+
- '.mxs-ha{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;margin:-6px 0;padding:0;border:0;border-radius:6px;background:var(--mira-row-hover);color:var(--mira-text-toned);cursor:pointer}'+
+ '.mxs-ha{position:relative;display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;margin:-6px 0;padding:0;border:0;border-radius:6px;background:var(--mira-row-hover);color:var(--mira-text-toned);cursor:pointer}'+
  '.mxs-ha svg{width:16px;height:16px}.mxs-ha:hover,.mxs-ha.is-open{color:var(--mira-text-strong);background:var(--mira-surface-raised)}'+
+ '.mxs-fbli{list-style:none}.mxs-sub{list-style:none;padding:8px var(--mxs-in) 2px;font-size:11px;line-height:16px;color:var(--mira-text-muted);opacity:.8}'+
+ '.mxs-h .mxs-ha{opacity:0;transition:opacity .12s}'+
+ '.mxs-h:hover .mxs-ha,.mxs-h:focus-within .mxs-ha,.mxs-ha.is-open{opacity:1}'+
+ '.mxs-ha.is-on{color:var(--mira-name)}.mxs-ha:disabled{opacity:.35;cursor:default}'+
  '.mxs-li{position:relative;list-style:none}'+
  '.mxs-li.is-kid::before{content:"";position:absolute;left:calc(var(--d,0) * 16px + 15.5px);top:-2px;bottom:-2px;width:1px;background:var(--mira-border);pointer-events:none}'+
  '.mxs-row{display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 var(--mxs-in);border:0;border-radius:6px;background:none;color:var(--mira-text-toned);font:inherit;font-size:.84375rem;line-height:20px;text-align:left;text-decoration:none;cursor:pointer}'+
@@ -312,11 +405,15 @@ var MXS_CSS='.mxs-on .mira-recents-list{display:none!important}'+
  '.mxs-hov p{margin:0;font-size:12px;line-height:1.55;color:var(--mira-text-toned)}'+
  '.mxs-hovf{margin-top:9px;padding-top:8px;border-top:1px solid var(--mira-hairline);font-size:11px;color:var(--mira-text-muted)}'+
  '.mxs-empty{padding:12px var(--mxs-in);font-size:12.5px;line-height:1.5;color:var(--mira-text-muted)}'+
+ '.mxs-menu.mxf4{min-width:224px}.mxf4 .mxs-mi>.mxs-ic:first-child:empty{display:none}.mxf4 .mxs-mi{padding:0 10px}'+
+ '.mxs-fv{flex:0 0 auto;margin-left:12px;font-size:12px;color:var(--mira-text-muted)}.mxf4 .mxs-mi:disabled{opacity:.4;cursor:default}'+
+ '.mxs-msc{max-height:256px;overflow-y:auto;margin:-4px -4px 0;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mira-panel-edge) transparent}'+
  '.mxs-menu{position:fixed;z-index:6000;min-width:188px;max-width:240px;padding:4px;border:1px solid var(--mira-panel-edge);border-radius:10px;background:var(--mira-surface-raised);box-shadow:var(--mira-menu-shadow)}'+
  '.mxs-mi{display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 8px;border:0;border-radius:6px;background:none;color:var(--mira-text);font:inherit;font-size:13px;text-align:left;cursor:pointer}'+
  '.mxs-mi .mxs-ic{color:var(--mira-text-muted)}.mxs-ml{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
  '.mxs-mi .is-tail{flex:0 0 14px;width:14px;height:14px;color:var(--mira-text-muted)}.mxs-mi .is-tail svg{width:14px;height:14px}.mxs-mi.is-on .is-tail{color:var(--mira-name)}'+
  '.mxs-mi.is-open{color:var(--mira-text-strong);background:var(--mira-row-hover)}.mxs-mnone{padding:6px 8px;font-size:12px;color:var(--mira-text-muted)}'+
+ '.mxs-mi:disabled{opacity:.4;cursor:default}.mxs-mi:disabled:hover{color:var(--mira-text);background:none}'+
  '.mxs-mi:hover,.mxs-mi:focus-visible{color:var(--mira-text-strong);background:var(--mira-row-hover)}.mxs-mi.is-on,.mxs-mi.is-on .mxs-ic{color:var(--mira-name)}'+
  '.mxs-mi.is-danger,.mxs-mi.is-danger .mxs-ic{color:var(--mira-ask-danger)}.mxs-mi.is-danger:hover{background:var(--mira-ask-danger-soft)}'+
  '.mxs-fb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px var(--mxs-in) 8px}'+
@@ -335,11 +432,88 @@ var MXS_CSS='.mxs-on .mira-recents-list{display:none!important}'+
  '.mxf-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px;border:1px solid var(--mira-kbd-edge);border-radius:8px}'+
  '.mxf-chip{height:26px;padding:0 2px;border:0;border-radius:6px;background:none;color:var(--mira-text-toned);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}'+
  '.mxf-chip:hover{color:var(--mira-text-strong);background:var(--mira-row-hover)}.mxf-chip.is-on,.mxf-chip.is-on:hover{background:var(--mira-accent-12);box-shadow:inset 0 0 0 1px var(--mira-accent-45);color:var(--mira-name);font-weight:500}'+
- '.mxf-seg{display:block}'+
+ '.mxf-seg,.mxf-gby,.mxf-sort{display:block}.mxf-ft{margin:10px -8px -4px;padding-top:4px;border-top:1px solid var(--mira-panel-edge)}'+
+ '.mxs-fcd{display:inline-flex;align-items:center;gap:2px;padding-right:6px}.mxs-fcd .mxs-ic{width:14px;height:14px}.mxs-fcd .mxs-ic svg{width:14px;height:14px}'+
  '.mxf-n{margin-top:12px;font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--mira-text-muted)}'+
  '.mxs-menu.mxf button:focus-visible{outline:2px solid var(--mira-accent);outline-offset:1px}'+
  '.mxs-mh{padding:8px 8px 4px 34px;font-size:12px;font-weight:500;color:var(--mira-text-muted)}.mxs-ms{height:1px;margin:4px -4px;background:var(--mira-hairline)}';
 
+/* REORDER GROUPS · OPTION 2 - DRAG (request, 23 Nov 2026: "I can click the group and easily move it up or down"; the menu's
+   Move up / Move down stays as Option 1). MXS.gdrag, state o2-gdrag. Press a group row and drag: the row follows the pointer,
+   a line shows where it will land, release drops it there. A press without movement is still a click (open / close).
+   Keyboard: Alt + Up / Down on a focused group row. */
+function mxsGDragWire(){ if(mxsGDragWire.on) return; mxsGDragWire.on=1; var D=null;
+  var slots=function(){ var heads=$$('.mxs .mxs-g:not(.is-kid)'), ys=heads.map(function(li){ return li.getBoundingClientRect().top; }), last=heads[heads.length-1], end=null, n=last;
+    while(n&&(n=n.nextElementSibling)){ if(n.classList.contains('mxs-h')){ end=n.getBoundingClientRect().top; break; } }
+    if(end==null&&last){ var lr=last; while(lr.nextElementSibling&&!lr.nextElementSibling.classList.contains('mxs-h')) lr=lr.nextElementSibling; end=lr.getBoundingClientRect().bottom; }
+    ys.push(end); return { heads:heads, ys:ys }; };
+  document.addEventListener('pointerdown',function(e){ if(!MXS.gdrag||MXS.mv||e.button!==0) return; var b=e.target.closest('.mxs .mxs-g:not(.is-kid)>.mxs-grow'); if(!b) return;
+    D={ b:b, li:b.parentNode, g:b.getAttribute('data-g'), y0:e.clientY, on:false }; },true);
+  document.addEventListener('pointermove',function(e){ if(!D) return; var dy=e.clientY-D.y0;
+    if(!D.on){ if(Math.abs(dy)<4) return; D.on=true; var S=slots(); D.S=S; D.from=S.heads.indexOf(D.li); mxsMenuClose();
+      D.li.classList.add('is-drag'); document.body.classList.add('mxs-dragging'); D.ln=document.createElement('div'); D.ln.className='mxs-drop'; $('.mxs').appendChild(D.ln); }
+    D.li.style.transform='translateY('+dy+'px)';
+    var ys=D.S.ys, best=0, bd=1e9; ys.forEach(function(y,i){ var d=Math.abs(e.clientY-y); if(d<bd){ bd=d; best=i; } }); D.slot=best;
+    var box=$('.mxs').getBoundingClientRect(), same=best===D.from||best===D.from+1; D.ln.style.top=(ys[best]-box.top-1)+'px'; D.ln.hidden=same; },true);
+  var end=function(){ if(!D) return; var d=D; D=null; if(!d.on) return;
+    d.li.classList.remove('is-drag'); d.li.style.transform=''; document.body.classList.remove('mxs-dragging'); if(d.ln) d.ln.remove();
+    /* the click that ends a drag must not also open / close the group */
+    var eat=function(ev){ ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click',eat,true); }; window.addEventListener('click',eat,true); setTimeout(function(){ window.removeEventListener('click',eat,true); },0);
+    var to=d.slot>d.from?d.slot-1:d.slot; if(d.slot!=null&&mxsGMoveTo(d.g,to)){ mxsPaint(); var nb=$('.mxs [data-mxs="gtoggle"][data-g="'+d.g+'"]'); if(nb){ var li=nb.parentNode; li.classList.add('is-landed'); setTimeout(function(){ li.classList.remove('is-landed'); },700); } } };
+  document.addEventListener('pointerup',end,true); document.addEventListener('pointercancel',end,true);
+  document.addEventListener('keydown',function(e){ if(!MXS.gdrag||!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown')) return; var b=e.target.closest&&e.target.closest('.mxs .mxs-g:not(.is-kid)>.mxs-grow'); if(!b) return;
+    e.preventDefault(); e.stopPropagation(); var gid=b.getAttribute('data-g'), g=mxsG(gid), i=mxsKids(null).indexOf(g);
+    if(mxsGMoveTo(gid,i+(e.key==='ArrowUp'?-1:1))){ mxsPaint(); var nb=$('.mxs [data-mxs="gtoggle"][data-g="'+gid+'"]'); if(nb) nb.focus(); } },true); }
+/* DRAG A CHAT INTO PINNED OR A GROUP (request, 23 Nov 2026: "click and hold any chat, then easily move it into the Pin section
+   or a group section - every chat"). MXS.cdrag, state o2-cdrag. Press a chat row (in Pinned, a group or Recent) and drag: a
+   chip with its name follows the pointer and the target lights up - the Pinned section pins it, a group row (or any chat
+   inside that group) files it there, the Recent section takes it out of its group and unpins it. Release to drop; Esc
+   cancels. A press without movement is still a click (opens the chat). */
+function mxsCDropAt(x,y){ var el=document.elementFromPoint(x,y), li=el&&el.closest&&el.closest('.mxs-list>li'); if(!li) return null;
+  if(li.classList.contains('mxs-g')){ var gb=li.querySelector('[data-g]'); return gb?{g:gb.getAttribute('data-g'),li:li}:null; }
+  for(var n=li;n;n=n.previousElementSibling){
+    if(n.classList.contains('mxs-g')&&li.classList.contains('is-kid')){ var b2=n.querySelector('[data-g]'); if(!b2) return null;
+      var ra=li.querySelector('a.mxs-row[data-id]'), rr=li.getBoundingClientRect();
+      return ra?{g:b2.getAttribute('data-g'),li:n,ref:ra.getAttribute('data-id'),after:y>rr.top+rr.height/2,row:li}:{g:b2.getAttribute('data-g'),li:n}; }
+    if(n.classList.contains('mxs-h')){ var k=n.getAttribute('data-sec'); return k==='pinned'?{pin:1,li:n}:k==='recent'?{out:1,li:n}:null; } }
+  return null; }
+function mxsCDragWire(){ if(mxsCDragWire.on) return; mxsCDragWire.on=1; var D=null;
+  var clear=function(){ $$('.mxs .is-drop').forEach(function(x){ x.classList.remove('is-drop'); }); };
+  var stop=function(drop){ if(!D) return; var d=D; D=null; if(d.gh) d.gh.remove(); if(d.ln) d.ln.remove(); document.body.classList.remove('mxs-dragging'); clear(); MXS.cdragId=null;
+    if(!d.on){ return; }
+    var eat=function(ev){ ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click',eat,true); }; window.addEventListener('click',eat,true); setTimeout(function(){ window.removeEventListener('click',eat,true); },0);
+    var t=drop?d.t:null, id=d.id, nm=d.name;
+    if(t&&t.pin){ if(MXS.pin[id]) toast('“'+nm+'” is already pinned'); else { MXS.pin[id]=1; toast('“'+nm+'” pinned'); } }
+    else if(t&&t.g){ var g=mxsG(t.g), inG=MXS.of[id]===t.g;
+      if(t.ref){ /* a position inside the group: the members in their shown order, this chat put before / after the one under it */
+        var ids=d.order[t.g].filter(function(x){ return x!==id; }), at=ids.indexOf(t.ref); if(at<0) at=ids.length; else if(t.after) at++;
+        var same=inG&&d.order[t.g].indexOf(id)===at; ids.splice(at,0,id); MXS.cord=MXS.cord||{}; ids.forEach(function(x,i){ MXS.cord[x]=i; });
+        MXS.of[id]=t.g; g.open=true; if(!same) toast(inG?'Order updated in '+g.name:'“'+nm+'” moved to '+g.name); }
+      else if(inG) toast('“'+nm+'” is already in '+g.name); else { MXS.of[id]=t.g; g.open=true; toast('“'+nm+'” moved to '+g.name); } }
+    else if(t&&t.out){ var src=d.src||{};
+      if(src.pin&&MXS.pin[id]){ delete MXS.pin[id]; toast('“'+nm+'” unpinned'); }
+      else if(src.g&&MXS.of[id]){ var was=mxsG(MXS.of[id]); delete MXS.of[id]; toast('“'+nm+'” taken out of '+(was?was.name:'its group')); }
+      else toast('“'+nm+'” is already in Recent'); }
+    mxsPaint(); };
+  document.addEventListener('dragstart',function(e){ if(MXS.cdrag&&e.target.closest&&e.target.closest('.mxs a.mxs-row')) e.preventDefault(); },true);
+  document.addEventListener('pointerdown',function(e){ if(!MXS.cdrag||MXS.mv||e.button!==0) return; var a=e.target.closest('.mxs a.mxs-row[data-id]'); if(!a) return;
+    var sr=a.getBoundingClientRect(); D={ id:a.getAttribute('data-id'), name:(a.querySelector('.mxs-name')||a).textContent, x0:e.clientX, y0:e.clientY, on:false, src:mxsCDropAt(sr.left+4,sr.top+sr.height/2) }; },true);
+  document.addEventListener('pointermove',function(e){ if(!D) return;
+    if(!D.on){ if(Math.abs(e.clientX-D.x0)+Math.abs(e.clientY-D.y0)<5) return; D.on=true; mxsMenuClose(); if(MXS.hovFor) mxsHovOff();
+      D.order={}; $$('.mxs .mxs-g:not(.is-kid)').forEach(function(h){ var gb=h.querySelector('[data-g]'), ids=[]; if(!gb) return;
+        for(var n=h.nextElementSibling;n&&n.classList.contains('is-kid');n=n.nextElementSibling){ var a=n.querySelector('a.mxs-row[data-id]'); if(a) ids.push(a.getAttribute('data-id')); }
+        D.order[gb.getAttribute('data-g')]=ids; });
+      MXS.cdragId=D.id; mxsPaint(); document.body.classList.add('mxs-dragging'); $$('.mxs a.mxs-row[data-id="'+D.id+'"]').forEach(function(x){ x.classList.add('is-src'); });
+      D.gh=document.createElement('div'); D.gh.className='mxs-ghost'; D.gh.innerHTML=mxsI('message')+'<span>'+esc(D.name)+'</span>'; document.body.appendChild(D.gh); }
+    D.gh.style.left=(e.clientX+12)+'px'; D.gh.style.top=(e.clientY+10)+'px';
+    clear(); D.t=mxsCDropAt(e.clientX,e.clientY); if(D.t) D.t.li.classList.add('is-drop');
+    if(D.t&&D.t.ref===D.id) D.t.ref=null;   /* over itself: no line */
+    if(!D.ln){ D.ln=document.createElement('div'); D.ln.className='mxs-drop'; $('.mxs').appendChild(D.ln); }
+    if(D.t&&D.t.ref){ var bx=$('.mxs').getBoundingClientRect(), rr=D.t.row.getBoundingClientRect(); D.ln.style.top=((D.t.after?rr.bottom:rr.top)-bx.top-1)+'px'; D.ln.style.left='28px'; D.ln.hidden=false; } else D.ln.hidden=true;
+    D.gh.classList.toggle('is-ok',!!D.t); },true);
+  document.addEventListener('pointerup',function(){ stop(true); },true);
+  document.addEventListener('pointercancel',function(){ stop(false); },true);
+  document.addEventListener('keydown',function(e){ if(D&&D.on&&e.key==='Escape'){ e.stopPropagation(); stop(false); } },true); }
 function mxsWire(){ if(mxsWire.on) return; mxsWire.on=1; var st=document.createElement('style'); st.id='mxs-css'; st.textContent=MXS_CSS; document.head.appendChild(st);
   document.addEventListener('click',function(e){ var b=e.target.closest('[data-mxs]'), inMenu=e.target.closest('.mxs-menu');
     if(!b){ if(!inMenu&&MXS.menu) mxsMenuClose(); return; } if(!b.closest('.mxs')&&!inMenu) return; e.preventDefault(); e.stopPropagation(); mxsAct(b); },true);
@@ -350,7 +524,9 @@ function mxsWire(){ if(mxsWire.on) return; mxsWire.on=1; var st=document.createE
   document.addEventListener('pointerdown',function(){ if(MXS.hovFor) mxsHovOff(); },true);
   document.addEventListener('mouseover',function(e){ var it=e.target.closest&&e.target.closest('.mxs-menu:not(.is-sub) .mxs-mi'); if(!it) return;
     if(it.getAttribute('data-mxs')==='mmove'){ if(!it.classList.contains('is-open')) mxsSub(it,it.getAttribute('data-id')); }
+    else if(it.getAttribute('data-mxs')==='f4row'){ if(!it.classList.contains('is-open')) mxsF4Sub(it,it.getAttribute('data-k')); }
     else { $$('.mxs-menu.is-sub').forEach(function(x){ x.parentNode.removeChild(x); }); $$('.mxs-mi.is-open').forEach(function(x){ x.classList.remove('is-open'); x.setAttribute('aria-expanded','false'); }); } });
+  document.addEventListener('keydown',function(e){ var r4=e.target.closest&&e.target.closest('.mxs-menu [data-mxs="f4row"]'); if(r4&&e.key==='ArrowRight'){ e.preventDefault(); mxsF4Sub(r4,r4.getAttribute('data-k')); var f4=$('.mxs-menu.is-sub .mxs-mi'); if(f4) f4.focus(); } },true);
   document.addEventListener('keydown',function(e){ var it=e.target.closest&&e.target.closest('.mxs-menu [data-mxs="mmove"]'); if(it&&e.key==='ArrowRight'){ e.preventDefault(); mxsSub(it,it.getAttribute('data-id')); var f=$('.mxs-menu.is-sub .mxs-mi'); if(f) f.focus(); } },true);
   document.addEventListener('dblclick',function(e){ var b=MXS.mv&&e.target.closest('.mxs [data-mxs="gpick"]'); if(!b) return; MXS.mv.sel=b.getAttribute('data-g'); mxsMoveGo(); },true);
   document.addEventListener('input',function(e){ if(e.target.classList&&e.target.classList.contains('mxs-in')){ MXS.val=e.target.value; if(MXS.err){ MXS.err=''; e.target.classList.remove('is-err'); var er=$('.mxs-err'); if(er) er.remove(); } } },true);
@@ -363,14 +539,23 @@ function mxsInit(v){ mxsWire(); MXS.on=true; var as=$('aside.mira-sidebar'); if(
   [['Disk usage on Linux hosts',3*D+4*36e5],['Interface flaps on core-sw-01',5*D+2*36e5],['Monthly SLA report',12*D+7*36e5]].forEach(function(s){ var id=fileChat(s[0]); MX.at[id]=now-s[1]; MXS[s[0]]=id; });
   bandPaint(); show('new');
   var disk=MXS['Disk usage on Linux hosts'], net=MXS['Interface flaps on core-sw-01'];
+  /* the filter lives on the Recent title in EVERY Option 2 state, shown on hover of that title (request, 23 Nov 2026) */
+  MXS.fpos='sec';
+  /* ...and New group lives on the Groups title in every Option 2 state, shown on hover of that title (request, 23 Nov 2026) */
+  MXS.gpos='sec';
   MXS.pin.c3=1; MXS.groups=[{id:'g1',name:'Runbooks',parent:null,open:true},{id:'g2',name:'Network',parent:null,open:false}]; MXS.gseq=2;
   MXS.of={c1:'g1',c2:'g1'}; MXS.of[net]='g2';
   try{ new MutationObserver(mxsRepaint).observe($('.mira-recents-list'),{childList:true,subtree:true,attributes:true,characterData:true,attributeFilter:['class','style','title']}); }catch(e){}
   mxsPaint();
   setTimeout(function(){ if(v==='o2-menu'){ var b=$('.mxs [data-mxs="rmenu"][data-id="'+disk+'"]'); if(b) mxsRowMenu(b,disk); }
+    else if(v==='o2-nofold'){ MXS.nofold=true; MXS.fold={}; MXS.gpos='sec'; MXS.fpos='sec'; mxsPaint(); }   /* + New group on the Groups title (23 Nov 2026) */
+    else if(v==='o2-cdrag'){ MXS.cdrag=true; mxsCDragWire(); MXS.gdrag=true; mxsGDragWire(); mxsPaint(); }   /* groups drag up / down here too (23 Nov 2026) */
+    else if(v==='o2-gdrag'){ MXS.gdrag=true; mxsGDragWire(); mxsPaint(); }
+    else if(v==='o2-gorder'){ var gb=$('.mxs [data-mxs="gmenu"][data-g="g1"]'); if(gb) mxsGroupMenu(gb,'g1'); }   /* Runbooks' menu: Move up / Move down */
     else if(v==='o2-gsec'){ MXS.gpos='sec'; mxsPaint(); }
     else if(v==='o2-gsec-new'){ MXS.gpos='sec'; MXS.ed={k:'add',par:null}; mxsPaint(); }
     else if(v==='o2-filter3'){ MXS.fopt='3'; MXS.fbar=true; MXS.filter.time='7d'; mxsPaint(); }
+    else if(v==='o2-filter4'){ MXS.fopt='4'; MXS.filter.time='7d'; mxsPaint(); var f4=$('.mxs [data-mxs="filter"]'); if(f4){ mxsF4Menu(f4); var r4=$('.mxs-menu [data-mxs="f4row"][data-k="time"]'); if(r4) mxsF4Sub(r4,'time'); } }
     else if(v==='o2-filter2'){ MXS.fopt='2'; MXS.filter.time='7d'; mxsPaint(); var f2=$('.mxs [data-mxs="filter"]'); if(f2) mxsFilterMenu(f2); }
     else if(v==='o2-filter'){ MXS.filter.time='7d'; mxsPaint(); var f=$('.mxs [data-mxs="filter"]'); if(f) mxsFilterMenu(f); }
     else if(v==='o2-move'){ var rb=$('.mxs [data-mxs="rmenu"][data-id="'+disk+'"]'); if(rb){ mxsRowMenu(rb,disk); var it=$('.mxs-menu [data-mxs="mmove"]'); if(it) mxsSub(it,disk); } }
