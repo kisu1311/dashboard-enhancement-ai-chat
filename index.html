@@ -10548,6 +10548,10 @@ obs-button.cwqbtn{flex:0 0 auto}
 .cwhmst button:last-child{border-radius:0 4px 4px 0}
 .cwhmst button:only-child{border-radius:4px}
 /* Shape: Hexagon · Circle · Square — a labelled tile row under the style tiles, same tile chrome */
+.cwhmcv{margin-top:4px}
+.cwhmcv .cwhml{margin-bottom:7px}
+.cwhmcv + .cwhmshp,.cwhmcv + .cwhmsty{margin-top:24px}
+.cwhmcv + .cwhmrow2{margin-top:24px}
 .cwhmshp{margin-top:4px}
 .cwhmshp .cwhml,.cwhmsty .cwhml{margin-bottom:7px}
 .cwhmsty{margin-top:24px}
@@ -26760,6 +26764,9 @@ function wTbViews(m){
     items:CW_SHAPE.map((x, n) => ({ v:String(n), label:(typeof CW_CH_NAMES !== 'undefined' && CW_CH_NAMES[n]) || x[0], svg:'<svg viewBox="0 0 48 38">' +
       (n === 0 && typeof TN_TILE !== 'undefined' ? TN_TILE.Area : x[1]).replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>' })).filter(x => !CW_CH_HIDE.includes(+x.v)) };
   if ((m.t === 'pie' || m.t === 'hbars') && (m.items || []).length) return { cur:m.t === 'pie' ? 'Pie' : 'HorizontalBar', items:tnItems() };
+  /* a placed Heat Map (t:'hm') offers its editor's Chart view — Heat map · Weekday × hour (21 Nov 2026). SLO has no tiles, so no button */
+  if (m.t === 'hm' && m.hm && m.hm.grp !== 'SLO' && typeof HM_CV_TILE !== 'undefined')
+    return { cur:m.hm.style === 'week' ? 'week' : 'hm', items:[{ v:'hm', label:'Heat map', svg:HM_CV_TILE }, { v:'week', label:'Weekday × hour', svg:HM_TILE.week }] };
   return null;
 }
 /* ── Chart view popover, OPTION 2 (request, 19 Nov 2026: "a better option for the icon selection") ─────────────────────
@@ -26915,6 +26922,9 @@ function wTbViewPick(v, noSel){
   histDo('Change chart view to ' + (it ? it.label : v));
   const k = TN_TYPES.findIndex(x => x[0] === v), roundish = /Pie|Donut|Funnel|Pyramid/.test(v), barish = /Bar|Lollipop|Polar/.test(v);
   if (m.t === 'cmp') m.cmpView = v;
+  else if (m.t === 'hm'){ const hs = m.hm, hq = m.hmq || {};
+    if (v === 'week'){ hs.view0 = hs.style; hs.style = 'week'; hq.view0 = hq.style; hq.style = 'week'; }
+    else { hs.style = hs.view0 || 'plain'; hq.style = hq.view0 || 'plain'; } }
   else if (m.t === 'ch') m.ch = Object.assign({}, m.ch, { style:Object.assign({}, m.ch.style, { shape:+v }) });
   else if (m.t === 'pie' || m.t === 'hbars'){
     /* converted the way the editor's Update converts it: a Top N widget carrying the card's own rows, so nothing
@@ -40018,6 +40028,12 @@ const HM_TILE = {
 /* the third View tile — Weekday × hour (20 Nov 2026): a 4×3 grid of rounded cells, ramped, the same weight as the others */
 HM_TILE.week = '<svg viewBox="0 0 48 38" aria-hidden="true">' + [0,1,2].map(r => [0,1,2,3].map(c =>
   '<rect x="' + (9 + c * 8) + '" y="' + (8 + r * 8) + '" width="6.4" height="6.4" rx="1.4" style="fill:currentColor;opacity:' + [.25,.45,.7,1,.55,.85,.4,.6,.9,.3,.5,.75][r * 4 + c] + '"/>').join('')).join('') + '</svg>';
+/* the Chart view's "Heat map" tile (21 Nov 2026): a small honeycomb of seven ramped hexagons, the week tile's weight */
+const HM_CV_TILE = (() => { const hx = (cx, cy, o) => { const r = 5.2, p = [0,1,2,3,4,5].map(i => { const a = Math.PI / 180 * (60 * i - 90);
+    return (cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2); }).join(' ');
+    return '<polygon points="' + p + '" style="fill:currentColor;opacity:' + o + '"/>'; };
+  return '<svg viewBox="0 0 48 38" aria-hidden="true">' +
+    [[19,10,.35],[29,10,.6],[14,19,.5],[24,19,1],[34,19,.75],[19,28,.85],[29,28,.4]].map(a => hx(...a)).join('') + '</svg>'; })();
 /* the shape tiles — the hexagon is the plain tile's outline; circle and square are the same weight */
 const HM_SHAPE = [
   ['hex','Hexagon','<svg viewBox="0 0 48 38" aria-hidden="true"><path d="M24,3.08l13.79,7.96v15.92l-13.79,7.96-13.79-7.96v-15.92l13.79-7.96Z" style="opacity:.1;fill:currentColor"/><path d="M24,4.26l-12.76,7.37v14.74l12.76,7.37,12.76-7.37v-14.74l-12.76-7.37ZM38.72,10.5L24,2l-14.72,8.5v17l14.72,8.5,14.72-8.5V10.5Z" style="fill-rule:evenodd;fill:currentColor"/></svg>'],
@@ -40159,7 +40175,7 @@ function cwHmInit(load){
   CW.hm = load ? JSON.parse(JSON.stringify(load))
                : { grp:'Alert', style:'plain', shape:'hex', counts:false, pal:'Sky Blue Slate', f:cwHmBlank('Alert'), filters:'' };
 }
-function cwHmSpec(){ const h = CW.hm; return { grp:h.grp, style:h.style, shape:h.shape || 'hex', counts:h.counts, pal:h.pal, ctr:h.f.ctr || '' }; }
+function cwHmSpec(){ const h = CW.hm; return { grp:h.grp, style:h.style, view0:h.view0 || '', shape:h.shape || 'hex', counts:h.counts, pal:h.pal, ctr:h.f.ctr || '' }; }
 
 /* ── the dropdown: the editor's own searchable list (cwFtDD's markup and state), with a
    placeholder for an empty value and an optional swatch. Its paint/set go through DD_OWN. */
@@ -40198,14 +40214,20 @@ function cwHmPanel(){
   if (!b) return;
   if (!g){ b.innerHTML = ''; return; }
   b.innerHTML = '<div class="cwhmp">' +
-    /* Shape leads; the style tiles under it are drawn IN the chosen shape, so they never disagree */
+    /* Chart view leads (request, 21 Nov 2026): 1 · Heat map  2 · Weekday × hour. Shape and View (plain / with names)
+       belong to the heat map only, so they show under it and go away for Weekday × hour */
+    (g.notiles ? '' : '<div class="cwhmcv"><div class="cwhml">Chart view</div><div class="cwhmst" role="radiogroup" aria-label="Chart view">' +
+      [['hm','Heat map', HM_CV_TILE],['week','Weekday × hour', HM_TILE.week]].map(([k, n, svg]) => {
+        const on = k === 'week' ? h.style === 'week' : h.style !== 'week';
+        return '<button role="radio" aria-checked="' + on + '" class="' + (on ? 'on' : '') + '" data-tip="' + n + '" aria-label="' + n + '" ' +
+          'onclick="cwHmView(\'' + k + '\')">' + svg + '</button>'; }).join('') + '</div></div>') +
     (h.style === 'week' ? '' : '<div class="cwhmshp"><div class="cwhml">Shape</div>' +
       '<div class="cwhmst" role="radiogroup" aria-label="Heat map shape">' + HM_SHAPE.map(([k, n, svg]) => {
         const on = (h.shape || 'hex') === k;
         return '<button role="radio" aria-checked="' + on + '" class="' + (on ? 'on' : '') + '" data-tip="' + n + '" aria-label="' + n + '" ' +
           'onclick="cwHmShape(\'' + k + '\')">' + svg + '</button>'; }).join('') + '</div></div>') +
-    (g.notiles ? '' : '<div class="cwhmsty"><div class="cwhml">View</div><div class="cwhmst" role="radiogroup" aria-label="Heat map style">' +
-      [['plain','Plain heat map'],['host','Heat map with monitor names'],['week','Weekday × hour']].map(([k, n]) =>
+    (g.notiles || h.style === 'week' ? '' : '<div class="cwhmsty"><div class="cwhml">View</div><div class="cwhmst" role="radiogroup" aria-label="Heat map style">' +
+      [['plain','Plain heat map'],['host','Heat map with monitor names']].map(([k, n]) =>
         '<button role="radio" aria-checked="' + (h.style === k) + '" class="' + (h.style === k ? 'on' : '') + '" data-tip="' + n + '" aria-label="' + n + '" ' +
         'onclick="cwHmStyle(\'' + k + '\')">' + hmTile(k, h.shape) + '</button>').join('') + '</div></div>') +
     '<div class="cwhmrow2">' +
@@ -40218,6 +40240,11 @@ function cwHmPanel(){
   if (sw) sw.addEventListener('change', () => { CW.hm.counts = !CW.hm.counts; sw.checked = CW.hm.counts; cwPreview(); });
 }
 function cwHmStyle(k){ CW.hm.style = k; cwHmPanel(); cwPreview(); }
+/* Chart view: Weekday × hour remembers the heat map's own View (plain / with names) so switching back restores it */
+function cwHmView(k){ const h = CW.hm;
+  if (k === 'week'){ if (h.style !== 'week'){ h.view0 = h.style; h.style = 'week'; } }
+  else if (h.style === 'week') h.style = h.view0 || 'plain';
+  cwHmPanel(); cwPreview(); }
 function cwHmShape(k){ CW.hm.shape = k; cwHmPanel(); cwPreview(); }
 
 /* ── the query row(s) under the editor ──────────────────────────────────── */

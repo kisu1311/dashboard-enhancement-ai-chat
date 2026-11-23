@@ -15386,6 +15386,11 @@ redirects to `/setup/` until `.setup-skip-link` is clicked, and the SPA needs a 
   labelled every 3rd, a Fewer → More ramp with the busiest count, and hatched "not shown" cells for the rest of today after
   `TL_NOW` (never counted as zero). Counts are seeded per group, the unit is the group's (alerts, slow traces…). Shape is
   hidden for it and the palette is offered for every group; hover uses the heat map's own card (`.hmwc[data-t]`).
+  **Chart view** (21 Nov 2026, request): the Style tab now LEADS with a `Chart view` row — **Heat map** (a honeycomb tile,
+  `HM_CV_TILE`) · **Weekday × hour** (`HM_TILE.week`), `cwHmView(k)`. Shape and View (Plain · With names — the week tile
+  left that row) show only under Heat map. Going to Weekday × hour remembers the View in `view0` (saved in the spec too),
+  so switching back restores it. A placed `t:'hm'` widget gets the same two in the selected-widget toolbar's Chart view
+  button (`wTbViews` / `wTbViewPick`, ⌘Z undoes); SLO has no tiles and gets neither.
 - **Shape: Hexagon · Circle · Square** (8 Nov 2026, beyond live): a labelled `Shape` tile row under the style tiles
   (`HM_SHAPE`, `cwHmShape`, `CW.hm.shape`, default `hex`), shown for every group incl. SLO. `hmHTML` adds `shp-circle` /
   `shp-square` to `.hmx`; those drop the hex clip-path, the negative row overlap and the odd-row float, so cells sit on a
