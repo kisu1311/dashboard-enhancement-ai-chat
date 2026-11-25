@@ -17,23 +17,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Auto-connect variant pages
         run: node _sync_variants.js
       # Shrink the PUBLISHED copy only (strips comments + whitespace, renames nothing).
       # index.html goes ~3 MB -> ~1.5 MB; the source on main keeps every comment.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
       - name: Minify site for Pages
         run: |
           npm install --no-save --no-package-lock html-minifier-terser@7.2.0 terser@5.36.0
           node _build/minify-site.mjs .
           rm -rf node_modules
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         with:
           enablement: true
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: .
       # ⚠️ If this step fails instantly with "Timeout reached, aborting!", read the real
@@ -44,5 +44,5 @@ jobs:
       # the generic timeout text hides that. It is NOT the workflow, the artifact size or
       # the action version. Cancel the stuck deployment (repo -> Deployments /
       # Environments -> github-pages) or wait for GitHub to time it out.
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
