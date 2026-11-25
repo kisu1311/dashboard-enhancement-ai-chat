@@ -8452,10 +8452,14 @@ html[data-theme="light"] .mreai{--primary-button-bg:var(--ai);--primary-button-t
 .mdssg:hover{border-color:var(--ai-2,var(--teal))}.mdssg b{display:block;font-weight:500;font-size:12.5px}.mdssg small{font-size:11px;color:var(--text-dim)}
 .mdssgi svg{width:14px;height:14px}
 .mdsf{padding:8px 14px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text-dim)}
-.waesg{height:auto!important;min-height:40px;align-items:flex-start!important;padding-top:6px!important;padding-bottom:6px!important}
-.waesgt{display:flex;flex-direction:column;gap:1px;min-width:0;text-align:left}
-.waesgt b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.waesgt small{font-size:11px;color:var(--text-dim)}
+.waesg{height:auto!important;min-height:48px;align-items:center!important;gap:10px!important;padding-top:7px!important;padding-bottom:7px!important}
+.waesg > .waesgi{align-self:flex-start;margin-top:1px}
+.waesgi{flex:0 0 28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--ai-2,var(--teal));background:color-mix(in srgb,var(--ai-2,var(--teal)) 14%,transparent)}
+.waesgt{flex:1 1 auto;display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left}
+.waesgt b{font-weight:500;line-height:1.35;white-space:normal}
+.waesgt small{font-size:11px;line-height:1.35;color:var(--text-dim);white-space:normal}
+.waesgk{flex:0 0 auto;font:500 10.5px Inter,sans-serif;color:var(--text-dim);padding:2px 6px;border-radius:4px;background:var(--chip)}
+.waemhm{display:flex;align-items:center;gap:6px}.waemhm .waeai svg{width:12px;height:12px}.waemhm em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400;opacity:.8}
 .waem{position:fixed;z-index:121;display:none;width:300px;padding:8px;border-radius:var(--btn-radius,4px);
   background:var(--page-background-color,var(--pop));border:1px solid var(--border-color,var(--border));
   color:var(--page-text-color,var(--text));box-shadow:0 6px 18px rgba(0,0,0,.28)}
@@ -22453,19 +22457,22 @@ BOARDS['Application Performance'] = { tabs: [''], widgets: [[
       /* option 4 (the RUM-style tile) joins them by default, the 4th card — it lands under option 1 (request, 7 Nov 2026) */
       cmpTbl:o < 3, cmpopt:o, ctr2:o === 3 ? 'system.memory.used.percent' : '',
       cmpDemo:o === 6 ? 'flat' : 'ok' })),   /* option 6 shows the Max = Min case (Steady) by default (19 Nov 2026) */
-  /* option 7 (request, 23 Nov 2026): the three option 4 / 5 / 6 cards cloned as option 7, on their own row - same counter, seed and
-     demo state as the card each one copies (the third keeps the flat "No change" case) */
+  /* ⚠️ THE OPTION 7 AND 8 ROWS LEFT THIS BOARD (request, 24 Nov 2026: "move single value options 7 & 8 into the artifact view") - they
+     are shown in the module-work artifact, whose stage adds them (build_dash_stage.py, key sv78). Kept below as a comment for a revert. */
+  /*   /* option 7 (request, 23 Nov 2026): the three option 4 / 5 / 6 cards cloned as option 7, on their own row - same counter, seed and
+     demo state as the card each one copies (the third keeps the flat "No change" case) * /
   ...[4, 5, 6].map(o => ({ t:'cmp', title:'system.cpu.percent', span:4, h:190, seed:42902, trend:.89, color:'#14b8a6', acc:false,
       ctr:'system.cpu.percent', agg:'Avg', src:'Metric', u:'%',
       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
       cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true,
       cmpTbl:false, cmpopt:7, ctr2:'', cmpDemo:o === 6 ? 'flat' : 'ok' })),
-  /* option 8 (request, 23 Nov 2026): a copy of option 7's row, on its own row under it */
+  /* option 8 (request, 23 Nov 2026): a copy of option 7's row, on its own row under it * /
   ...[4, 5, 6].map(o => ({ t:'cmp', title:'system.cpu.percent', span:4, h:190, seed:42902, trend:.89, color:'#14b8a6', acc:false,
       ctr:'system.cpu.percent', agg:'Avg', src:'Metric', u:'%',
       cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
       cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true,
       cmpTbl:false, cmpopt:8, ctr2:'', cmpDemo:o === 6 ? 'flat' : 'ok' })),
+  */
   { t:'honey', title:'Infrastructure Heatmap', span:4, rows:2, seed:8801, n:132,
     pal:[[.62,'#9b1c1c','Critical'],[.72,'#a855f7','Unreachable'],[1,'#e0857a','Major']] },
   { t:'donuts', title:'Monitor Availability', span:4, h:150, items:[
@@ -27840,10 +27847,11 @@ function waeMiraSugg(){
   const ws = (WIDGETS[WAE ? WAE.g : curG] || []).filter(Boolean), txt = ws.map(w => String(w.title || '') + ' ' + JSON.stringify(w.ch || w.tn || '')).join(' ').toLowerCase();
   const has = re => re.test(txt), out = [];
   const add = (p, why, kind) => { if (!ws.some(w => String(w.title || '').toLowerCase() === p.toLowerCase())) out.push({ p, why, kind }); };
-  if (has(/alert/)){ add('Alerts by severity', 'This board tracks alerts - see how they split by severity', 'Donut'); add('Top 10 monitors by alert count', 'Which monitors raise the most alerts', 'Top N · bar'); }
-  if (has(/cpu/)){ add('Memory usage over time', 'You chart CPU here - memory usually explains it', 'Chart'); add('Top 5 hosts by CPU usage', 'The hosts behind the CPU figure', 'Top N · bar'); }
-  if (has(/memory|disk/)) add('Disk usage over time', 'Complete the resource picture with disk', 'Chart');
-  add('CPU and memory usage over time', 'A starting trend for any infrastructure board', 'Chart');
+  /* reasons are one short line each (24 Nov 2026) - they show under the title, not in a tooltip */
+  if (has(/alert/)){ add('Alerts by severity', 'How this board\u2019s alerts split by severity', 'Donut'); add('Top 10 monitors by alert count', 'The monitors raising the most alerts', 'Top N · bar'); }
+  if (has(/cpu/)){ add('Memory usage over time', 'Memory often explains a CPU spike', 'Chart'); add('Top 5 hosts by CPU usage', 'The hosts behind the CPU figure', 'Top N · bar'); }
+  if (has(/memory|disk/)) add('Disk usage over time', 'Completes the resource picture', 'Chart');
+  add('CPU and memory usage over time', 'A starting trend for any board', 'Chart');
   return out.slice(0, 4);
 }
 function waeMiraRun(p){
@@ -27874,9 +27882,13 @@ function waeList(q){
   const row = (x, k) => '<button class="waemi' + (x.act === 'mira' ? ' waemira' : '') + '" role="menuitem" data-k="' + k + '">' + (x.act === 'mira' ? '<span class="waeai">' + MIRA_SPK + '</span>' : '<obs-icon name="' + x.ic + '" size="16" aria-hidden="true"></obs-icon>') + '<span>' + x.n.replace(/</g, '&lt;') + '</span></button>';
   const c = create.map((x, k) => hit(x) ? row(x, 'c' + k) : '').join(''), l = lib.map((x, k) => hit(x) ? row(x, 'l' + k) : '').join('');
   const sg = waeMiraSugg().filter(x => !q || x.p.toLowerCase().includes(q)), esc = v => String(v).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
-  const sgh = sg.map(x => '<button class="waemi waemira waesg" role="menuitem" data-p="' + esc(x.p) + '" data-tip="' + esc(x.why) + '"><span class="waeai">' + MIRA_SPK + '</span>' +
-    '<span class="waesgt"><b>' + esc(x.p) + '</b><small>' + esc(x.kind) + ' \u00b7 built by Mira</small></span></button>').join('');
-  L.innerHTML = (sgh ? '<div class="waemh">Suggested by Mira</div>' + sgh : '') + (c ? '<div class="waemh">Create</div>' + c : '') + (l ? '<div class="waemh">Library</div>' + l : '') ||
+  /* (request, 24 Nov 2026: "suggest a better UI"): no tooltip (it covered the next row) - the reason is the row's own second line; each
+     row leads with its widget TYPE's DS icon in a Mira-tinted tile and ends with the type as a tag; "built by Mira" is said once, in the header */
+  const SG_IC = k => /donut|pie/i.test(k) ? 'pie-chart' : /top n/i.test(k) ? 'chart' : 'trending-up';
+  const sgh = sg.map(x => '<button class="waemi waemira waesg" role="menuitem" data-p="' + esc(x.p) + '" aria-label="' + esc(x.p + ' - ' + x.why) + '">' +
+    '<span class="waesgi"><obs-icon name="' + SG_IC(x.kind) + '" size="16" aria-hidden="true"></obs-icon></span>' +
+    '<span class="waesgt"><b>' + esc(x.p) + '</b><small>' + esc(x.why) + '</small></span></button>').join('');   /* the type is the icon; no tag, so the text has the room */
+  L.innerHTML = (sgh ? '<div class="waemh waemhm"><span class="waeai">' + MIRA_SPK + '</span>Suggested by Mira <em>for this board</em></div>' + sgh : '') + (c ? '<div class="waemh">Create</div>' + c : '') + (l ? '<div class="waemh">Library</div>' + l : '') ||
     '<div class="waeme">No widget types match “' + q.replace(/</g, '&lt;') + '”</div>';
   L.querySelectorAll('.waemi:not(.waesg)').forEach(b => b.addEventListener('click', () => waePick(b.dataset.k)));
   L.querySelectorAll('.waesg').forEach(b => b.addEventListener('click', () => waePickMira(b.dataset.p)));

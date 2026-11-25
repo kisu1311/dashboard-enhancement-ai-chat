@@ -23,7 +23,16 @@ for n in ['filter','pin','pinned','pinned-off','folder','folder-open','folder-pl
     m=re.search(r'<svg.*?</svg>',out,re.S); assert m,n
     sico[n]=re.sub(r'\s+xmlns="[^"]*"','',m.group(0))
 assert sb.count('/*MXS_ICONS*/{}')==1
-spec=spec+'\n'+sb.replace('/*MXS_ICONS*/{}',json.dumps(sico))
+if '/*MXS-SIDEBAR:BEGIN*/' not in d:   # mira.html carries the sidebar itself since 24 Nov 2026 (_mira/add_sidebar.py) - do not load it twice
+    spec=spec+'\n'+sb.replace('/*MXS_ICONS*/{}',json.dumps(sico))
+# Composer · Create an artifact (24 Nov 2026): spec-create.js (mxk*), Tabler icons from the icon library
+ck=open('spec-create.js',encoding='utf-8').read(); kico={}
+for n in ['plus','x','check','paperclip','at','arrow-right','layout-dashboard','file-text','list-check','chart-line','bell-plus','sparkles','chevron-down','settings','brand-github','brand-notion','alert-triangle','server','activity','refresh','message','clock','search','bulb','microphone','stack-2','tool','arrows-maximize','arrows-minimize','router','database','book-2','brain','terminal','chevron-right']:
+    out=subprocess.run(['python3',PICK,n,'--set','tabler','--svg'],capture_output=True,text=True).stdout
+    m=re.search(r'<svg.*?</svg>',out,re.S); assert m,n
+    kico[n]=re.sub(r'\s+xmlns="[^"]*"','',m.group(0))
+assert ck.count('/*MXK_ICONS*/{}')==1
+spec=spec+'\n'+ck.replace('/*MXK_ICONS*/{}',json.dumps(kico))
 # 1 drop the dev-only Agentation loader
 i=d.rfind('<!-- Agentation'); j=d.find('</script>',i)+9; assert i>0; d=d[:i]+d[j:]
 # 2 DS bundle path

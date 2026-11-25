@@ -35,6 +35,30 @@ drv = r"""<script>
         if(!mw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no tile'; return; }
         var ms=scroller(mw); if(ms){ ms.scrollTop+=mw.getBoundingClientRect().top-ms.getBoundingClientRect().top-90; }
         wSelect(mw); document.title='READY'; return; }
+      if(S.key==='sv78'){ var o8=/8/.test(S.v||''), ed=/e/.test(S.v||''), sl=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], si=-1;
+        /* the option 7 and 8 cards are no longer on the board (24 Nov 2026) - the stage adds its three cards at the top, the same values
+           the board shipped (a measured card twice, then the flat "No change" one) */
+        if(!sl.some(function(x){return x&&x.t==='cmp'&&x.cmpopt===(o8?8:7)})){
+          [4,5,6].slice().reverse().forEach(function(o){ sl.unshift({ t:'cmp', title:'system.cpu.percent', span:4, h:190, seed:42902, trend:.89, color:'#14b8a6', acc:false,
+            ctr:'system.cpu.percent', agg:'Avg', src:'Metric', u:'%', cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2,
+            cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true,
+            cmpTbl:false, cmpopt:o8?8:7, ctr2:'', cmpDemo:o===6?'flat':'ok' }); });
+          renderCanvas(); }
+        for(var q=0;q<sl.length;q++){ if(sl[q]&&sl[q].t==='cmp'&&sl[q].cmpopt===(o8?8:7)){ si=q; break; } }
+        var sw=si>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+si+'"]');
+        if(!sw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no card'; return; }
+        var ss=scroller(sw); if(ss){ ss.scrollTop+=sw.getBoundingClientRect().top-ss.getBoundingClientRect().top-90; }
+        if(ed){ cwOpen(curG,si); setTimeout(function(){ var v=document.querySelector('.cwcmp8v'), sb=v&&v.closest('.cwsb'); if(v&&sb) sb.scrollTop+=v.getBoundingClientRect().top-sb.getBoundingClientRect().top-60; document.title='READY'; },700); return; }
+        document.title='READY'; return; }
+      /* Dashboard AI Summary · Mira (24 Nov 2026): Option 1 = the cards design (sumopt 1), Option 2 = the briefing (sumopt 2).
+         Both ship at the top of the board; the stage scrolls to the one asked for (adds it first if the board lacks it). */
+      if(S.key==='aisum'){ var so=/2/.test(S.v||'')?'2':'1', al=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], ai=-1;
+        for(var u=0;u<al.length;u++){ if(al[u]&&al[u].t==='aisum'&&String(al[u].sumopt||'1')===so&&al[u].scope!=='group'){ ai=u; break; } }
+        if(ai<0){ al.unshift({ t:'aisum', title:so==='2'?'Dashboard AI Summary · Mira — briefing':'Dashboard AI Summary · Mira', span:12, h:so==='2'?305:390, scope:'board', sumopt:so }); renderCanvas(); ai=0; }
+        var aw=document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+ai+'"]');
+        if(!aw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no summary'; return; }
+        var as=scroller(aw); if(as){ as.scrollTop+=aw.getBoundingClientRect().top-as.getBoundingClientRect().top-12; }
+        document.title='READY'; return; }
       if(S.key==='wtbintro'){ window.__WTBOPT=window.__CVOPT; try{ ['oo-wtb-seen','oo-wtb-uses'].forEach(function(k){localStorage.removeItem(k)}); }catch(e){}
         var wl=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], wi=-1; for(var j=0;j<wl.length;j++){ if(wl[j]&&(wl[j].t==='pie'||wl[j].t==='hbars')){ wi=j; break; } }
         var ww=wi>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+wi+'"]');

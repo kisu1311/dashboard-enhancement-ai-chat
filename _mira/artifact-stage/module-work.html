@@ -138,16 +138,25 @@ h1{margin:2px 0 0;font:600 22px/1.25 var(--sans);text-wrap:balance}
 .cvars button:hover{color:var(--text)}
 .cvars button.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
 .cvars .n{font:500 11px var(--mono);color:var(--muted);margin-right:6px}
-/* options are grouped (request, 23 Nov 2026: 13 numbered tabs on three lines read as confusing and took the space).
-   The tab row holds one tab per option - the text before the first " · " of a label - with a count when it has states;
-   that option's states sit on ONE chip row under it, labelled State, the option's name no longer repeated in each. */
-.cvars .gc{margin-left:6px;padding:0 5px;border-radius:8px;background:var(--tag);font:500 10.5px/16px var(--mono);color:var(--muted)}
-.cvars button.on .gc{color:var(--text)}
-.cstates{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:12px;color:var(--muted)}
-.cstates .lab{margin-right:2px}
-.cstates button{height:26px;padding:0 10px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--muted);font:500 12px var(--sans);cursor:pointer;white-space:nowrap}
-.cstates button:hover{color:var(--text);border-color:var(--muted)}
-.cstates button.on{background:var(--pill);border-color:var(--pill);color:var(--ink)}
+/* options: ONE bar above the stage (request, 23 Nov 2026 - numbered tabs on three lines, then a list in the left rail, were
+   both too confusing). Option = a segmented control, always visible; its states, when it has several, = one State dropdown.
+   A label's text before the first " · " is the option, the rest is the state. */
+.copt{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin-top:12px;font-size:12px;color:var(--muted)}
+.copt[hidden]{display:none}
+.copt{position:relative}
+.copt .lab{min-width:40px}
+/* the states use the same segmented control as Option (request, 23 Nov 2026: "show like this type of tab"). One long control
+   wrapped into a ragged two-line box ("fix this ui"), so the states are split by feature into SMALL segmented controls -
+   Filter [List menu | Switch + dates | Chip row] - that wrap as whole units with a gap, each one a clean box. */
+.copt .cstr{display:flex;align-items:flex-start;gap:10px;flex:1 0 100%}
+.copt .cstr .lab{line-height:30px}
+.copt .sgw{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.copt .sgw .seg{flex-wrap:nowrap}
+.copt .seg .sl{display:inline-flex;align-items:center;padding:0 10px;border-right:1px solid var(--line);background:var(--rail);font-size:12px;color:var(--muted);white-space:nowrap;cursor:default;user-select:none}
+/* the feature name is a label, not a button: its own quiet fill (--rail), never the selected fill (--tag) (request, 23 Nov 2026) */
+.copt .lab{margin-right:-2px}
+.copt .seg button.on{color:var(--text)}
+.cvpb .ct{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
 .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:4px;overflow:hidden}
 .seg button{height:28px;padding:0 10px;border:0;border-right:1px solid var(--line);background:none;cursor:pointer;font-size:12.5px;white-space:nowrap}
 .seg button:last-child{border-right:0}
@@ -180,13 +189,19 @@ h1{margin:2px 0 0;font:600 22px/1.25 var(--sans);text-wrap:balance}
 .cframe iframe{display:block;width:100%;height:100%;border:0}
 /* a stage with a fixed viewport (Setting: 1920 x 1080) renders at that size and is scaled to the frame's width */
 .cframe.is-vp iframe{position:absolute;left:0;top:0;transform-origin:0 0}
-.cvp{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-top:12px;font-size:12px;color:var(--muted)}
+/* screen size: one small button in the action row opens it (request, 23 Nov 2026: "set on top with minimal ui") */
+.cvpw{position:relative}
+.cvpb{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 6px 0 10px;border:1px solid var(--line);border-radius:4px;background:none;cursor:pointer;font:500 11.5px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cvpb:hover,.cvpw.is-open .cvpb{border-color:var(--accent);color:var(--text)}
+.cvpb svg{width:14px;height:14px;transition:transform .15s}.cvpw.is-open .cvpb svg{transform:rotate(180deg)}
+.cvp{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;flex-direction:column;gap:2px;width:196px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:12px;color:var(--muted)}
+.cvpw.is-open .cvp{display:flex}
+.cvp .vrow{display:flex;align-items:center;gap:6px;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--line)}
 .cvp input{width:64px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--text);font:500 12px var(--mono);font-variant-numeric:tabular-nums}
 .cvp input:focus{outline:0;border-color:var(--accent)}
-.cvp button{height:28px;padding:0 9px;border:1px solid var(--line);border-radius:4px;background:none;color:var(--muted);font:500 11.5px var(--mono);cursor:pointer;white-space:nowrap}
-.cvp button:hover{color:var(--text);border-color:var(--muted)}
-.cvp button.on{background:var(--pill);border-color:var(--pill);color:var(--ink)}
-.cvp .lab{margin-right:2px}
+.cvp button{height:28px;padding:0 8px;border:0;border-radius:4px;background:none;color:var(--muted);font:500 11.5px var(--mono);cursor:pointer;text-align:left;white-space:nowrap}
+.cvp button:hover{color:var(--text);background:var(--tag)}
+.cvp button.on{background:var(--pill);color:var(--ink)}
 .cmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted)}
 .listh{margin:34px 0 0;font:600 15px var(--sans)}
 
@@ -249,9 +264,8 @@ h1{margin:2px 0 0;font:600 22px/1.25 var(--sans);text-wrap:balance}
             <div class="tx"><div class="ctitle" id="cTitle"></div><div class="cdescw" id="cDescW"><div class="cdesc" id="cDesc"></div><button type="button" class="cdesct" id="cDescT" aria-expanded="false" aria-controls="cDesc" title="Show the full description" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg></button></div></div>
             <div class="cact" id="cAct"></div>
           </div>
-          <div class="cvars" id="cBar" role="tablist" aria-label="Options"></div>
-          <div class="cstates" id="cStates" role="group" aria-label="State" hidden></div>
-          <div class="cvp" id="cVp" hidden></div>
+          <div class="copt" id="cOpt" hidden></div>
+          <div id="cMainHold" hidden><div class="cvp" id="cVp" hidden></div></div>
           <div class="cframe" id="cBox"><iframe id="cFrame" title="Mira component stage"></iframe><div class="cmsg" id="cMsg">Loading the Mira components…</div><div class="rz rz-r" data-rz="r" title="Drag to change the width"></div><div class="rz rz-b" data-rz="b" title="Drag to change the height"></div><div class="rz rz-c" data-rz="c" title="Drag to resize"></div></div>
         </div>
       </div>
@@ -348,7 +362,7 @@ var COMPONENTS = [
   { k:'run', t:'Run approval', d:'Shown in its place in the thread. Enter runs, Esc defers.', vs:[['card','Approval'],['result','Run result · Option 1'],['result-o2','Run result · Option 2']] },
   { k:'page', t:'Full page', d:'The whole assistant page: chat list with date bands, search, header menu, composer and effort picker.', vs:[['','New chat'],['c3','Runbook Creation'],['c1','WhatsApp Alert'],['c2','Runbook Creation (UI)']] },
   /* Sidebar (20 Nov 2026): the Mira sidebar on its own - the UI visualization / Artifact view category was removed on request */
-  { k:'sidebar', cat:'Sidebar', t:'Mira sidebar', vp:[1920,1080], d:'The Mira screen as it opens, at a real screen size. Option 1 is the chat list as it is. Option 2 adds PIN, GROUP and FILTER on one text edge (Claude, ChatGPT, Sana, Dropbox Dash on Mobbin), in three sections - Pinned, Groups, then Recent (every chat, newest first) - each opening and closing from its title (Pinned \u2304 / Pinned \u203a, ChatGPT\'s). Rows carry no date or time: hover a chat for Ask AI\'s preview card - its name, what it did, and N messages \u00b7 when. Three tiers: small uppercase section titles, groups with a folder and a count pill, and chats - inside a group they hang off a guide line. Groups follow Topology\'s View Group flow, all inside the sidebar - nothing opens: New group puts a name row with \u2713 / \u2715 at the top of Groups; hovering a group gives rename (in place) and \u22ef (Ungroup, Delete when empty). Groups are one level - no group inside a group. In a chat\'s \u22ef menu, hovering Move to group opens a list of every group (the current one ticked), then New group\u2026 and Remove from group; picking a group moves the chat at once. Filter: Pinned, and a time range.', vs:[['','Option 1'],['o2','Option 2'],['o2-menu','Option 2 \u00b7 Chat actions'],['o2-move','Option 2 \u00b7 Move to group'],['o2-newgroup','Option 2 \u00b7 New group'],['o2-filter','Option 2 \u00b7 Filter'],['o2-filter2','Option 2 \u00b7 Filter \u00b7 Option 2'],['o2-filter3','Option 2 \u00b7 Filter \u00b7 Option 3'],['o2-gsec','Option 2 \u00b7 Group action on title'],['o2-gsec-new','Option 2 \u00b7 Group action \u00b7 New group'],['tog','Collapse in sidebar'],['tog-col','Collapse in sidebar \u00b7 Collapsed'],['o2-tog','Option 2 \u00b7 Collapse in sidebar']] },
+  { k:'sidebar', cat:'Sidebar', t:'Mira sidebar', vp:[1920,1080], d:'The Mira screen as it opens, at a real screen size. Option 1 is the chat list as it is. Option 2 adds PIN, GROUP and FILTER on one text edge (Claude, ChatGPT, Sana, Dropbox Dash on Mobbin), in three sections - Pinned, Groups, then Recent (every chat, newest first) - each opening and closing from its title (Pinned \u2304 / Pinned \u203a, ChatGPT\'s). Rows carry no date or time: hover a chat for Ask AI\'s preview card - its name, what it did, and N messages \u00b7 when. Three tiers: small uppercase section titles, groups with a folder and a count pill, and chats - inside a group they hang off a guide line. Groups follow Topology\'s View Group flow, all inside the sidebar - nothing opens: New group puts a name row with \u2713 / \u2715 at the top of Groups; hovering a group gives rename (in place) and \u22ef (Ungroup, Delete when empty). Groups are one level - no group inside a group. In a chat\'s \u22ef menu, hovering Move to group opens a list of every group (the current one ticked), then New group\u2026 and Remove from group; picking a group moves the chat at once. Filter: Pinned, and a time range.', vs:[['','Option 1'],['o2','Option 2'],['o2-menu','Option 2 \u00b7 Chat actions'],['o2-move','Option 2 \u00b7 Move to group'],['o2-newgroup','Option 2 \u00b7 New group'],['o2-filter','Option 2 \u00b7 Filter \u00b7 List menu'],['o2-filter2','Option 2 \u00b7 Filter \u00b7 Switch + dates'],['o2-filter3','Option 2 \u00b7 Filter \u00b7 Chip row'],['o2-filter4','Option 2 \u00b7 Filter \u00b7 Nested menu'],['o2-gsec','Option 2 \u00b7 Group action on title'],['o2-gsec-new','Option 2 \u00b7 Group action on title \u00b7 New group'],['tog','Collapse in sidebar'],['tog-col','Collapse in sidebar \u00b7 Collapsed'],['o2-tog','Option 2 \u00b7 Collapse in sidebar'],['o2-nofold','Option 2 \u00b7 Sections without collapse'],['o2-gorder','Option 2 \u00b7 Reorder groups \u00b7 Menu'],['o2-gdrag','Option 2 \u00b7 Reorder groups \u00b7 Drag'],['o2-cdrag','Option 2 \u00b7 Drag chats']] },
   { k:'chatmenu', cat:'Sidebar', t:'Chat switcher', d:'The menu under the chat name in the header (New chat ▾), open: a Search AI chats box, then the chats in their date bands (Today, Yesterday, Nov 18) with a chat mark and when each happened. Type to filter; hover a row to rename or delete it; click the chat name to close and reopen it. Options 2-5 are new ideas from Mobbin (Klarna, Dropbox Dash, Klaviyo, Langdock, Canva AI, ElevenLabs): previews, a command palette, Recent | Pinned tabs, and search inside conversations.', vs:[['o1','Option 1'],['o2','Option 2 \u00b7 Previews'],['o3','Option 3 \u00b7 Command palette'],['o4','Option 4 \u00b7 Recent | Pinned'],['o5','Option 5 \u00b7 Smart search']] },
   /* Brand (20 Nov 2026): the Mira mark - Option 2 improved from Mobbin (Gemini, Langdock, Plane, Customer.io, Plain) */
   { k:'brand', cat:'Brand', t:'Mira brand mark', d:'The Mira mark at the top of the sidebar, shown at 2x beside the search field and the chat header. Option 1 is the mark as it is: it sits 8px above the chat header, ALPHA is 8.5px capitals in an outlined pill, and the tile carries a border and a glow. Option 2 follows Gemini, Langdock, Plane, Customer.io and Plain (Mobbin): the brand row on the same line as the chat header, a flat 24px tile on the search field\'s left edge, the name at 15px, Alpha as a readable sentence-case tag in a quiet tint, and a hover state - it is the Mira home button.', vs:[['','Option 1'],['o2','Option 2']] }
@@ -358,6 +372,7 @@ var DASH_COMPONENTS = [
   { k:'mira', t:'Mira AI prompt tile', d:'The tile Add widget › Mira AI prompt puts on the board. Option 1 is the current tile. Option 2 is the Mira AI New chat composer, in the tile: the centred question, the hero prompt box with + and the violet send button, and the Mira next-step chips as suggestions. It fits the tile at any size. Type a prompt or pick a suggestion, then Generate.', vs:[['','Option 1'],['o2','Option 2']] },
   { k:'cvtn', t:'Chart view picker', d:'The widget toolbar\'s Chart view popover, on a Top N widget with its 17 views. Option 1 is the current picker, icons only. Option 2 names every view and groups them by what the chart is for. Option 3 is the simplest: four suggested views as large named tiles, and the rest one click away under All views. Option 4 follows Dynatrace: one searchable list, a name on every row, suggested views first. Pick a view to redraw the widget.', vs:[['','Option 1'],['o2','Option 2'],['o3','Option 3'],['o4','Option 4 · Dynatrace style']] },
   { k:'wtbintro', t:'Widget toolbar onboarding', d:'How a first-time user learns the toolbar that appears when a widget is clicked (Edit, Ask AI, Full screen, Chart view, More). It shows once, then never again. Option 1 is the step-by-step tour: one bubble under each button in turn, 1 of 5 with Skip and Next. Option 2 puts a word under each icon for the first three opens. Option 3 is a small New - What are these? pill beside the toolbar that opens the list. Option 4 is the list card: every button with one line and Got it.', vs:[['','Option 1 · Step-by-step tour'],['o2','Option 2 · Labels under icons'],['o3','Option 3 · Compact pill'],['o4','Option 4 · List card']] },
+  { k:'sv78', t:'Single Value · options 7 & 8', d:'Two Single Value card designs on the board. Option 7: the value centred over a faint Today / Yesterday chart with a rolling-average curve, Max / Min on the left. Option 8 takes option 7\'s layout with three distinct strokes (Today solid, Yesterday dashed, Avg dotted at the period mean, labelled on the left like Max / Min) and its own Value settings in the editor: value alignment, show chart and its opacity, colour by severity with Warning / Major / Critical thresholds, and an icon picked from a DS dropdown. Option 8 · editor opens one of its cards in Edit Widget on those settings.', vs:[['o7','Option 7'],['o8','Option 8'],['o8e','Option 8 · editor']] },
   { k:'cvcard', t:'Chart view · Single Value', d:'The same popover on a Single Value card, which can be drawn two ways (Area, Line).', vs:[['','Option 1'],['o2','Option 2'],['o3','Option 3'],['o4','Option 4 · Dynatrace style']] }
 ];
 /* Setting - setting-stage.html: Settings › Discovery Profile › Create (Other › Backup, Commvault) with the help card in two options */
@@ -381,16 +396,12 @@ function stagePaint(){
   document.getElementById('cFrame').title = ST().name + ' component stage';
   var cat0 = ST().cat0, prevCat = null;
   document.getElementById('cTabs').innerHTML = SC().map(function(x){ var cat = cat0 ? (x.cat || cat0) : '', hd = cat && cat !== prevCat ? '<div class="ccat">' + esc(cat) + '</div>' : ''; prevCat = cat; return hd + '<button class="ctab' + (x.k === CS.k ? ' on' : '') + '" data-c="' + x.k + '"><span>' + esc(x.t) + '</span>' + (x.vs.length > 1 ? '<i title="' + x.vs.length + ' options">' + x.vs.length + '</i>' : '') + '</button>'; }).join('');
-  var bar = document.getElementById('cBar');
-  var gs = vGroups(c), g0 = gs.filter(function(g){ return g.items.some(function(it){ return it.v === CS.v; }); })[0] || gs[0], sts = document.getElementById('cStates');
-  bar.hidden = !c.vs.length;
-  bar.innerHTML = gs.map(function(g){ var on = g === g0, one = g.items.length === 1;
-    return '<button role="tab" aria-selected="' + on + '" class="' + (on ? 'on' : '') + '" data-vg="' + esc(g.name) + '">' + esc(one ? g.items[0].label : g.name) + (one ? '' : '<span class="gc">' + g.items.length + '</span>') + '</button>'; }).join('');
-  sts.hidden = !g0 || g0.items.length < 2;
-  sts.innerHTML = sts.hidden ? '' : '<span class="lab">State</span>' + g0.items.map(function(it){ var on = it.v === CS.v;
-    return '<button aria-pressed="' + on + '" class="' + (on ? 'on' : '') + '" data-v="' + it.v + '">' + esc(it.state) + '</button>'; }).join('');
+  optPaint(c);
+  var vpEl = document.getElementById('cVp'); if (vpEl.parentNode) vpEl.parentNode.removeChild(vpEl);
   document.getElementById('cAct').innerHTML = '<span class="seg"><button class="' + (th === 'dark' ? 'on' : '') + '" data-th="dark">Dark</button><button class="' + (th === 'light' ? 'on' : '') + '" data-th="light">Light</button></span>'
+    + (vpDef() ? '<span class="cvpw' + (CS.vpOpen ? ' is-open' : '') + '"><button type="button" class="cvpb" id="cVpB" data-vpt="1" aria-haspopup="true" aria-expanded="' + !!CS.vpOpen + '" title="Screen size"></button></span>' : '')
     + '<button class="csize" id="cSize" data-rzreset="1" title="Stage size. Click to reset"></button><button class="replay" data-replay="1">Replay</button>';
+  var vw = document.querySelector('#cAct .cvpw'); (vw || document.getElementById('cMainHold')).appendChild(vpEl);
   vpFit(); rzLabel(); vpPaint();
   document.getElementById('cTitle').textContent = c.t;
   document.getElementById('cDesc').textContent = c.d; descReset();
@@ -398,11 +409,25 @@ function stagePaint(){
 
 /* a component's options, grouped by the text before the first " · " of each label; the rest is the state ("Default" when none) */
 function vGroups(c){ var out = [], by = {};
-  c.vs.forEach(function(v){ var i = v[1].indexOf(' · '), name = i < 0 ? v[1] : v[1].slice(0, i), st = i < 0 ? 'Default' : v[1].slice(i + 3);
+  c.vs.forEach(function(v){ var i = v[1].indexOf(' \u00b7 '), name = i < 0 ? v[1] : v[1].slice(0, i), st = i < 0 ? 'Default' : v[1].slice(i + 3);
     if (!by[name]){ by[name] = { name:name, items:[] }; out.push(by[name]); } by[name].items.push({ v:v[0], label:v[1], state:st }); });
   return out; }
-/* the state last picked inside each option, so going back to an option returns to where you were */
+/* the Option / State bar above the stage */
 CS.gsel = {};
+function optPaint(c){ var el = document.getElementById('cOpt'), gs = vGroups(c);
+  el.hidden = c.vs.length < 2; if (el.hidden){ el.innerHTML = ''; return; }
+  var g0 = gs.filter(function(g){ return g.items.some(function(it){ return it.v === CS.v; }); })[0] || gs[0];
+  var h = '<span class="lab">Option</span><span class="seg" role="group" aria-label="Option">' + gs.map(function(g){ var on = g === g0, one = g.items.length === 1;
+    return '<button class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" data-vg="' + esc(g.name) + '">' + esc(one ? g.items[0].label : g.name) + '</button>'; }).join('') + '</span>';
+  /* the selected option's states: all shown, as tabs, by default (request, 23 Nov 2026) - no dropdown to open */
+  if (g0.items.length > 1){ var fs = [], fby = {};
+    g0.items.forEach(function(it){ var i = it.state.indexOf(' \u00b7 '), f = i < 0 ? it.state : it.state.slice(0, i);
+      if (!fby[f]){ fby[f] = { f:f, items:[] }; fs.push(fby[f]); } fby[f].items.push({ v:it.v, sub:i < 0 ? '' : it.state.slice(i + 3) }); });
+    h += '<div class="cstr"><span class="lab">State</span><div class="sgw" role="group" aria-label="' + esc(g0.name) + ' states">' + fs.map(function(f){
+      var btn = function(it, lab){ var on = it.v === CS.v; return '<button class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '" data-v="' + it.v + '">' + esc(lab) + '</button>'; };
+      if (f.items.length === 1) return '<span class="seg">' + btn(f.items[0], f.items[0].sub ? f.f + ' \u00b7 ' + f.items[0].sub : f.f) + '</span>';
+      return '<span class="seg" role="group" aria-label="' + esc(f.f) + '"><span class="sl">' + esc(f.f) + '</span>' + f.items.map(function(it){ return btn(it, it.sub || 'Default'); }).join('') + '</span>'; }).join('') + '</div></div>'; }
+  el.innerHTML = h; }
 
 /* the one-line description: collapsed on every component switch, the chevron shown only when the text is cut */
 function descFit(){ var w=document.getElementById('cDescW'), d=document.getElementById('cDesc'), t=document.getElementById('cDescT'); if(!w||!d||!t) return;
@@ -467,12 +492,16 @@ function vpGet(){ var d = vpDef(); if (!d) return null; CS.vpSize = CS.vpSize ||
 function vpSet(w, h){ var v = vpGet(); if (!v) return; v[0] = Math.max(320, Math.min(3840, Math.round(w) || v[0])); v[1] = Math.max(240, Math.min(2160, Math.round(h) || v[1]));
   try { localStorage.setItem('mw-vp-' + vpKey(), JSON.stringify(v)); } catch (e) {} vpFit(); vpPaint(); rzLabel(); }
 function vpPaint(){ var el = document.getElementById('cVp'), v = vpGet(); if (!el) return; el.hidden = !v; if (!v) return;
-  el.innerHTML = '<span class="lab">Screen</span><input id="cVpW" type="number" min="320" max="3840" aria-label="Screen width" value="' + v[0] + '"><span>\u00d7</span>' +
-    '<input id="cVpH" type="number" min="240" max="2160" aria-label="Screen height" value="' + v[1] + '">' +
+  el.innerHTML = '<div class="vrow"><input id="cVpW" type="number" min="320" max="3840" aria-label="Screen width" value="' + v[0] + '"><span>\u00d7</span>' +
+    '<input id="cVpH" type="number" min="240" max="2160" aria-label="Screen height" value="' + v[1] + '"></div>' +
     VP_PRESETS.map(function(p){ return '<button data-vp="' + p[0] + 'x' + p[1] + '" class="' + (p[0] === v[0] && p[1] === v[1] ? 'on' : '') + '">' + p[0] + '\u00d7' + p[1] + '</button>'; }).join(''); }
 document.addEventListener('change', function(e){ if (e.target.id === 'cVpW' || e.target.id === 'cVpH') vpSet(+document.getElementById('cVpW').value, +document.getElementById('cVpH').value); });
 document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.target.id === 'cVpW' || e.target.id === 'cVpH')) e.target.blur(); });
-document.addEventListener('click', function(e){ var b = e.target.closest('[data-vp]'); if (!b) return; var p = b.getAttribute('data-vp').split('x'); vpSet(+p[0], +p[1]); });
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-vp]'); if (!b) return; var p = b.getAttribute('data-vp').split('x'); vpSet(+p[0], +p[1]); vpClose(); });
+/* the screen popover closes on a preset, an outside click or Esc */
+function vpClose(){ if (!CS.vpOpen) return; CS.vpOpen = false; var w = document.querySelector('#cAct .cvpw'); if (w) w.classList.remove('is-open'); var t = document.getElementById('cVpB'); if (t) t.setAttribute('aria-expanded', 'false'); }
+document.addEventListener('click', function(e){ if (!e.target.closest('#cAct .cvpw')) vpClose(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') vpClose(); });
 function vpFit(){ var b = document.getElementById('cBox'), f = document.getElementById('cFrame'), vp = vpGet();
   if (!b || !f) return; b.classList.toggle('is-vp', !!vp);
   if (!vp){ f.style.width = f.style.height = f.style.transform = f.style.left = f.style.top = ''; b.style.height = RZ.h + 'px'; return; }
@@ -483,9 +512,10 @@ function vpFit(){ var b = document.getElementById('cBox'), f = document.getEleme
   f.style.width = vp[0] + 'px'; f.style.height = vp[1] + 'px'; f.style.transform = 'scale(' + s + ')';
   f.style.left = Math.max(0, Math.round((bw - vp[0] * s) / 2)) + 'px'; f.style.top = Math.max(0, Math.round((bh - vp[1] * s) / 2)) + 'px'; }
 function rzLabel(){ var b = document.getElementById('cBox'), l = document.getElementById('cSize'); if (!b || !l) return;
-  var r = b.getBoundingClientRect(), vp = vpGet();
+  var r = b.getBoundingClientRect(), vp = vpGet(), vb = document.getElementById('cVpB');
+  if (vb && vp) vb.innerHTML = 'Screen ' + vp[0] + ' \u00d7 ' + vp[1] + ' \u00b7 ' + Math.round(Math.min(b.clientWidth / vp[0], b.clientHeight / vp[1]) * 100) + '%<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>';
   /* a sized screen: the frame's own size, then the screen and the scale it is shown at */
-  l.textContent = vp ? Math.round(r.width) + ' \u00d7 ' + Math.round(r.height) + ' \u00b7 ' + vp[0] + ' \u00d7 ' + vp[1] + ' at ' + Math.round(Math.min(b.clientWidth / vp[0], b.clientHeight / vp[1]) * 100) + '%' : Math.round(r.width) + ' \u00d7 ' + Math.round(r.height); }
+  l.textContent = Math.round(r.width) + ' \u00d7 ' + Math.round(r.height); }
 function rzSave(){ try { localStorage.setItem('mw-stage-size', JSON.stringify(RZ)); } catch (e) {} }
 try { var rz0 = JSON.parse(localStorage.getItem('mw-stage-size') || 'null'); if (rz0 && rz0.h){ RZ.w = +rz0.w || 0; RZ.h = Math.max(280, Math.min(1600, +rz0.h)); } } catch (e) {}
 rzApply();
@@ -508,16 +538,18 @@ window.addEventListener('resize', function(){ vpFit(); rzLabel(); });
 try { new ResizeObserver(function(){ vpFit(); rzLabel(); }).observe(document.getElementById('cBox')); } catch (e) {}
 
 document.addEventListener('click', function(e){
-  var b = e.target.closest('#stage button'); if (!b) return;
+  var b = e.target.closest('#stage button'); if (!b || b.closest('#cVp')) return;
+  if (b.hasAttribute('data-vpt')){ CS.vpOpen = !CS.vpOpen; var w = b.parentNode; w.classList.toggle('is-open', CS.vpOpen); b.setAttribute('aria-expanded', String(CS.vpOpen)); return; }
   if (b.hasAttribute('data-c')){ CS.k = b.getAttribute('data-c'); var c = SC().filter(function(x){ return x.k === CS.k; })[0]; CS.v = c.vs.length ? c.vs[0][0] : ''; }
   else if (b.hasAttribute('data-vg')){ var cg = SC().filter(function(x){ return x.k === CS.k; })[0], gn = b.getAttribute('data-vg'), g = vGroups(cg).filter(function(x){ return x.name === gn; })[0];
-    if (!g) return; var kept = CS.gsel[CS.k + '|' + gn]; CS.v = g.items.some(function(it){ return it.v === kept; }) ? kept : g.items[0].v; }
+    if (!g || g.items.some(function(it){ return it.v === CS.v; })) return;
+    var kept = CS.gsel[CS.k + '|' + gn]; CS.v = g.items.some(function(it){ return it.v === kept; }) ? kept : g.items[0].v; }
   else if (b.hasAttribute('data-v')) CS.v = b.getAttribute('data-v');
-  if (b.hasAttribute('data-v') || b.hasAttribute('data-vg')){ var cc = SC().filter(function(x){ return x.k === CS.k; })[0];
-    vGroups(cc).forEach(function(g){ if (g.items.some(function(it){ return it.v === CS.v; })) CS.gsel[CS.k + '|' + g.name] = CS.v; }); }
   else if (b.hasAttribute('data-th')) CS.th = b.getAttribute('data-th');
   else if (b.hasAttribute('data-rzreset')){ RZ.w = 0; RZ.h = 660; rzApply(); rzSave(); return; }
   else if (!b.hasAttribute('data-replay')) return;
+  /* remember the state picked inside each option, so going back to that option returns to it */
+  if (b.hasAttribute('data-v') || b.hasAttribute('data-vg')) vGroups(SC().filter(function(x){ return x.k === CS.k; })[0]).forEach(function(g){ if (g.items.some(function(it){ return it.v === CS.v; })) CS.gsel[CS.k + '|' + g.name] = CS.v; });
   stagePaint(); stageLoad();
 });
 

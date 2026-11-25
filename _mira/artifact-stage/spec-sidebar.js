@@ -178,7 +178,7 @@ var MXS_TCHIP=[['any','Any time'],['today','Today'],['7d','7 days'],['30d','30 d
 function mxsFilterHTML(){ var f=MXS.filter, rows=mxsRows(), n=rows.filter(mxsPass).length, on=f.show==='pinned', set=mxsFiltered();
   var seg=function(cls,lab,val,opts){ return '<div class="mxf-l">'+lab+'</div><obs-radio class="'+cls+'" as-button size="small" aria-label="'+lab+'" value="'+val+'" options=\''+JSON.stringify(opts.map(function(x){ return {value:x[0],label:x[2]||x[1]}; }))+'\'></obs-radio>'; };
   return '<div class="mxf-h"><span>Filter chats</span><button type="button" class="mxf-reset" data-mxs="clear"'+(mxsDefault()?' disabled':'')+'>Reset</button></div>'+
-    '<button type="button" class="mxf-sw" data-mxs="fshow" data-v="pinned" role="switch" aria-checked="'+on+'"><span class="mxf-swl">'+mxsI('pin')+'Pinned only</span><span class="mxf-tr'+(on?' is-on':'')+'" aria-hidden="true"><i></i></span></button>'+
+
     '<div class="mxf-l" id="mxfDate">Last activity</div>'+
     '<obs-radio class="mxf-seg" as-button size="small" aria-label="Date" value="'+f.time+'" options=\''+JSON.stringify(MXS_TCHIP.map(function(x){ return {value:x[0],label:x[1]}; }))+'\'></obs-radio>'+
     seg('mxf-gby','Group by',MXS.gby||'none',MXS_GBY)+seg('mxf-sort','Sort by',MXS.sort||'new',[['new','','Newest'],['old','','Oldest'],['name','','Name']])+
@@ -195,7 +195,7 @@ function mxsFilterRefresh(){ var m=$('.mxs-menu.mxf'); if(m) m.innerHTML=mxsFilt
    time; click the picked one again to drop it), then Clear when anything is on. The list updates as you click; the funnel
    closes the row. Picked by MXS.fopt = '3' (the stage's "Option 2 · Filter · Option 3"). */
 function mxsFilterBar(){ var f=MXS.filter, c=function(k,label,on){ return '<button type="button" class="mxs-fc'+(on?' is-on':'')+'" data-mxs="fb" data-k="'+k+'" aria-pressed="'+on+'">'+label+'</button>'; };
-  return '<div class="mxs-fb" role="group" aria-label="Filter chats">'+c('pinned','Pinned',f.show==='pinned')+c('today','Today',f.time==='today')+c('7d','7 days',f.time==='7d')+c('30d','30 days',f.time==='30d')+
+  return '<div class="mxs-fb" role="group" aria-label="Filter chats">'+c('today','Today',f.time==='today')+c('7d','7 days',f.time==='7d')+c('30d','30 days',f.time==='30d')+
     ['gby','sort'].map(function(k){ var d=MXS_F4[k], v=mxsF4Val(k), o=d.o.filter(function(x){ return x[0]===v; })[0]||d.o[0], dv=v!==(k==='gby'?'none':'new');
       return '<button type="button" class="mxs-fc mxs-fcd'+(dv?' is-on':'')+'" data-mxs="f4row" data-k="'+k+'" aria-haspopup="menu">'+(k==='gby'?'Group':'Sort')+': '+o[2]+'<span class="mxs-ic" aria-hidden="true">'+(MXS_ICO['chevron-down']||'')+'</span></button>'; }).join('')+
     (mxsDefault()?'':'<button type="button" class="mxs-fx" data-mxs="clear">Reset</button>')+'</div>'; }
@@ -204,8 +204,7 @@ function mxsFilterMenu(btn){ if(MXS.fopt==='3'){ MXS.fbar=!MXS.fbar; mxsPaint();
   if(MXS.fopt==='2'){ mxsMenu(btn,mxsFilterHTML(),{f:1}); var m=$('.mxs-menu'); if(m) m.classList.add('mxf'); return; }
   /* the list scrolls in a short box; Reset and New group stay pinned under it (request, 23 Nov 2026: "small, the rest scrollable") */
   var f=MXS.filter, h='<div class="mxs-msc">', gb=MXS.gby||'none', so=MXS.sort||'new';   /* no "Show" title over Pinned (request, 23 Nov 2026) */
-  MXS_SHOW.forEach(function(x){ var on=f.show===x[0]; h+=mxsMI('fshow',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemcheckbox" aria-checked="'+on+'"',on?'is-on':''); });
-  h+='<div class="mxs-mh">Last activity</div>';   /* no divider between Show and Time (request, 20 Nov 2026) */
+  h+='<div class="mxs-mh">Last activity</div>';   /* no Pinned item (request, 24 Nov 2026) */   /* no divider between Show and Time (request, 20 Nov 2026) */
   MXS_TIME.forEach(function(x){ var on=f.time===x[0]; h+=mxsMI('ftime',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':''); });
   h+='<div class="mxs-ms" role="separator"></div><div class="mxs-mh">Group by</div>';
   MXS_GBY.forEach(function(x){ var on=gb===x[0]; h+=mxsMI('fgby',x[1],on?'check':'',' data-v="'+x[0]+'" role="menuitemradio" aria-checked="'+on+'"',on?'is-on':''); });
@@ -225,7 +224,7 @@ function mxsF4Val(k){ return k==='sort'?(MXS.sort||'new'):k==='gby'?(MXS.gby||'n
 function mxsF4Row(k){ var d=MXS_F4[k], v=mxsF4Val(k), o=d.o.filter(function(x){ return x[0]===v; })[0]||d.o[0];
   return '<button type="button" role="menuitem" class="mxs-mi mxs-f4r" data-mxs="f4row" data-k="'+k+'" aria-haspopup="menu" aria-expanded="false"><span class="mxs-ml">'+d.t+'</span><span class="mxs-fv">'+o[2]+'</span><span class="mxs-ic is-tail" aria-hidden="true">'+(MXS_ICO['chevron-right']||'')+'</span></button>'; }
 function mxsF4Menu(btn){ var dflt=!mxsFiltered()&&(MXS.sort||'new')==='new'&&(MXS.gby||'none')==='none';
-  var h=mxsF4Row('show')+mxsF4Row('time')+'<div class="mxs-ms" role="separator"></div>'+mxsF4Row('gby')+mxsF4Row('sort')+'<div class="mxs-ms" role="separator"></div>'+
+  var h=mxsF4Row('time')   /* no Show row (request, 24 Nov 2026) */+'<div class="mxs-ms" role="separator"></div>'+mxsF4Row('gby')+mxsF4Row('sort')+'<div class="mxs-ms" role="separator"></div>'+
     mxsMI('f4reset','Reset to defaults','',dflt?' disabled':'')+'<div class="mxs-ms" role="separator"></div>'+mxsMI('newgroup','New group','');
   mxsMenu(btn,h,{f:1}); var m=$('.mxs-menu'); if(m) m.classList.add('mxf4'); }
 function mxsF4Sub(item,k){ $$('.mxs-menu.is-sub').forEach(function(x){ x.parentNode.removeChild(x); }); $$('.mxs-mi.is-open').forEach(function(x){ x.classList.remove('is-open'); x.setAttribute('aria-expanded','false'); });
@@ -428,7 +427,7 @@ var MXS_CSS='.mxs-on .mira-recents-list{display:none!important}'+
  '.mxf-tr{position:relative;flex:0 0 28px;width:28px;height:16px;border-radius:8px;background:var(--mira-row-on);box-shadow:inset 0 0 0 1px var(--mira-kbd-edge);transition:background .15s}'+
  '.mxf-tr i{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--mira-text-muted);transition:transform .15s,background .15s}'+
  '.mxf-tr.is-on{background:var(--mira-accent);box-shadow:none}.mxf-tr.is-on i{transform:translateX(12px);background:var(--mira-on-accent)}'+
- '.mxf-l{margin:12px 0 8px;font-size:12px;font-weight:500;color:var(--mira-text-muted)}'+
+ '.mxf-h+.mxf-l{margin-top:4px}.mxf-l{margin:12px 0 8px;font-size:12px;font-weight:500;color:var(--mira-text-muted)}'+
  '.mxf-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px;border:1px solid var(--mira-kbd-edge);border-radius:8px}'+
  '.mxf-chip{height:26px;padding:0 2px;border:0;border-radius:6px;background:none;color:var(--mira-text-toned);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}'+
  '.mxf-chip:hover{color:var(--mira-text-strong);background:var(--mira-row-hover)}.mxf-chip.is-on,.mxf-chip.is-on:hover{background:var(--mira-accent-12);box-shadow:inset 0 0 0 1px var(--mira-accent-45);color:var(--mira-name);font-weight:500}'+
@@ -640,7 +639,11 @@ function mxcMenu(btn){ var open=btn.classList.contains('open'); closePops(); if(
   document.body.appendChild(m); mxcPlace(m,btn);
   btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); MX.pop=m; MX.popFor=btn; hdTipHide(); var q=$('[data-mxc-q]',m); if(q) q.focus(); }
 function mxcPlace(m,btn){ var r=btn.getBoundingClientRect();
-  if(MXC.opt==='o3'){ var c=($('.mira-chat')||document.body).getBoundingClientRect(), w=Math.min(520,c.width-32), p=$('.mxc-pal',m); p.style.width=w+'px'; p.style.left=Math.round(c.left+(c.width-w)/2)+'px'; p.style.top=Math.round(r.bottom+18)+'px'; return; }
+  if(MXC.opt==='o3'){ var c=($('.mira-chat')||document.body).getBoundingClientRect(), w=Math.min(520,c.width-32), p=$('.mxc-pal',m); p.style.width=w+'px';
+    /* mira.html opens it as a DROPDOWN under the chat name, with no dimmed / blurred page (request, 24 Nov 2026) - MXC.drop; the artifact
+       keeps the centred palette */
+    if(MXC.drop){ m.classList.add('is-drop'); p.style.left=Math.round(Math.max(8,Math.min(r.left,window.innerWidth-w-8)))+'px'; p.style.top=Math.round(r.bottom+6)+'px'; return; }
+    p.style.left=Math.round(c.left+(c.width-w)/2)+'px'; p.style.top=Math.round(r.bottom+18)+'px'; return; }
   m.style.left=r.left+'px'; m.style.top=(r.bottom+6)+'px'; }
 function mxcGo(id){ closePops(); show(id); }
 function mxcPaletteKey(e){ var m=$('.mxc-o3'); if(!m) return; if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); MXC.hi=(MXC.hi+(e.key==='ArrowDown'?1:-1)+MXC.n)%Math.max(MXC.n,1);
@@ -660,6 +663,9 @@ function mxcRen(row,id){ var nm=$('.mxc-nm',row), old=nm.textContent, inp=docume
 function mxcInit(v){ MXC.opt=v;
   var D=864e5, now=Date.now(); [['Disk usage on Linux hosts',3*D+4*36e5],['Interface flaps on core-sw-01',5*D+2*36e5],['Monthly SLA report',12*D+7*36e5]].forEach(function(s){ var id=fileChat(s[0]); MX.at[id]=now-s[1]; MXC[s[0]]=id; }); bandPaint(); show('new');
   MXC.pin.c3=1; MXC.pin[MXC['Monthly SLA report']]=1;
+  mxcWire(v); }
+/* the switcher's wiring alone (no demo chats) - mira.html turns on Option 3, the command palette, by default with this (24 Nov 2026) */
+function mxcWire(v){ MXC.opt=v; if(mxcWire.on) return; mxcWire.on=1;
   hdMenu=mxcMenu;
   if(v==='o5') setTimeout(function(){ var q=$('.mxc [data-mxc-q]'); if(q){ q.value='90%'; mxcRefresh(); } },700);
   if(!document.getElementById('mxc-css')){ var st=document.createElement('style'); st.id='mxc-css'; st.textContent=MXC_CSS; document.head.appendChild(st); }
@@ -667,7 +673,8 @@ function mxcInit(v){ MXC.opt=v;
     var b=t.closest('[data-mxc]'); if(b&&b.tagName!=='LABEL') mxcAct(b); },true);
   document.addEventListener('input',function(e){ if(e.target.matches&&e.target.matches('.mxc [data-mxc-q]')){ MXC.hi=0; mxcRefresh(); } },true);
   document.addEventListener('keydown',function(e){ if(!$('.mxc')) return; if(MXC.opt==='o3') mxcPaletteKey(e); else if(e.key==='Enter'){ var r=e.target.closest&&e.target.closest('.mxc [data-mxc="open"]'); if(r){ e.preventDefault(); mxcGo(r.getAttribute('data-id')); } } },true); }
-var MXC_CSS='.mxc{position:fixed;z-index:3000;width:360px;max-height:72vh;display:flex;flex-direction:column;padding:8px;background:var(--mira-surface-raised);border:1px solid var(--mira-panel-edge);border-radius:10px;box-shadow:var(--mira-ask-shadow);color:var(--mira-text-strong);font-size:13px}'+
+var MXC_CSS='.mxc-o3.is-drop{pointer-events:none}.mxc-o3.is-drop .mxc-pal{pointer-events:auto}.mxc-o3.is-drop .mxc-scrim{background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto}'+
+'.mxc{position:fixed;z-index:3000;width:360px;max-height:72vh;display:flex;flex-direction:column;padding:8px;background:var(--mira-surface-raised);border:1px solid var(--mira-panel-edge);border-radius:10px;box-shadow:var(--mira-ask-shadow);color:var(--mira-text-strong);font-size:13px}'+
  '.mxc-ic{display:inline-grid;place-items:center;flex:0 0 16px;width:16px;height:16px;color:var(--mira-text-muted)}.mxc-ic svg{width:16px;height:16px}'+
  '.mxc-s{display:flex;align-items:center;gap:8px;flex:0 0 auto;height:34px;margin:0 0 6px;padding:0 10px;border:1px solid var(--mira-panel-edge);border-radius:7px;background:var(--mira-surface)}'+
  '.mxc-s svg{flex:0 0 15px;width:15px;height:15px;fill:none;stroke:var(--mira-text-muted);stroke-width:2;stroke-linecap:round}.mxc-s:focus-within{border-color:var(--mira-accent)}'+
