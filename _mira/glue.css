@@ -39,6 +39,8 @@ body.mx-railopen .mainLayoutContent{padding-left:240px!important}
    @property trick as .aildl; the trough is the head's own muted text colour. */
 @property --mx-sweep{syntax:'<percentage>';inherits:false;initial-value:-14%}
 @property --mx-reveal{syntax:'<percentage>';inherits:false;initial-value:120%}
+/* the title sweep's three brand-ramp stops as names (25 Nov 2026), so other marks can take the same colours */
+:root{--mx-ramp-1:rgb(76,177,254);--mx-ramp-2:rgb(115,30,251);--mx-ramp-3:rgb(249,17,227)}
 .mira-group-title.mx-dia,.mira-group-title.mx-dia-once{--mx-sweep:114%;--mx-reveal:120%;
   -webkit-mask-image:linear-gradient(90deg,#000 0,#000 var(--mx-reveal),transparent var(--mx-reveal));
   mask-image:linear-gradient(90deg,#000 0,#000 var(--mx-reveal),transparent var(--mx-reveal));
@@ -249,7 +251,7 @@ body .mira-sidebar-actions .mira-side-row.is-new{display:none}
 /* Search chats = obs-input type=search (request, 17 Nov 2026); the ⌘K hint sits inside its right edge until you type */
 .mx-srch{position:relative;margin:4px 4px 6px}
 .mx-srch obs-input{display:block;width:100%}
-.mx-srchk{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;padding:0 5px;font-size:10.5px;font-weight:500;line-height:16px;font-family:inherit;color:var(--mira-text-muted);border:1px solid var(--mira-kbd-edge);border-radius:4px}
+.mx-srchk{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;padding:0;font-size:10.5px;font-weight:500;line-height:16px;font-family:inherit;color:var(--mira-text-muted);border:0;opacity:.55}
 .mx-srch.has-q .mx-srchk{display:none}
 
 .mx-hdb svg.mx-fill{width:17px;height:17px;fill:currentColor;stroke:none}
@@ -571,3 +573,13 @@ aside.mira-sidebar .mira-sidebar-head{padding-top:24px!important;padding-bottom:
 /* the rule the thread draws at the header's foot once it is scrolled (.mira-thread.is-scrolled::before) goes too - the header has no border
    of its own any more, and this was the line still showing under it (24 Nov 2026) */
 .mira-thread.is-scrolled::before{opacity:0!important}
+/* SOFT TOP EDGE (request, 25 Nov 2026: "when I scroll, the content under the header should blur out at the top, like the bottom"): the
+   thread cut off hard under the header while the composer's edge faded. The same fade as .mira-footer-fade - 48px of the thread's own
+   surface to transparent, inset 24px - now sits under the header too, shown only once the thread is scrolled (.mx-topfade, set by the
+   glue's scroll listener) so the first message is never dimmed at rest. */
+.mira-thread::after{position:absolute;top:0;right:24px;left:24px;z-index:2;height:48px;pointer-events:none;content:"";background:linear-gradient(to bottom,var(--mira-surface),transparent);opacity:0;transition:opacity .2s}
+.mira-thread.mx-topfade::after{opacity:1}
+@media (prefers-reduced-motion:reduce){.mira-thread::after{transition:none}}
+
+/* no divider under the sidebar search (request, 26 Nov 2026) */
+.mira-sidebar .mira-side-rule{display:none}

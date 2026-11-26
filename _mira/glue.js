@@ -66,7 +66,28 @@ function tblDress(root){ if(runOpt()!=='2'||!window.customElements||!customEleme
     if(long){ var b=document.createElement('button'); b.type='button'; b.className='mx-otblmore';
       var lab=function(){ b.innerHTML='<span>'+(open?'Show fewer rows':'Show all '+rows.length+' rows')+'</span><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M31.4,22.6l-12-12c-.8-.8-2-.8-2.8,0-.8,.8-.8,2,0,2.8l10.6,10.6-10.6,10.6c-.8,.8-.8,2,0,2.8s2,.8,2.8,0l12-12c.8-.8,.8-2,0-2.8Z"/></svg>';
         b.setAttribute('aria-expanded',open); b.classList.toggle('is-open',open); };
-      b.onclick=function(){ open=!open; put(); lab(); }; lab(); w.appendChild(b); } }); }
+      b.onclick=function(){ open=!open; put(); lab(); }; lab(); w.appendChild(b); }
+    /* the grid joins the message's word fade - wordFade may have walked the hidden markdown table first (its first word holds the
+       count the grid starts at), or it reaches the grid later (it picks up g.__mxtf on its walk) */
+    g.__mxtf=1; var f1=$('.mx-w',t); if(f1) tblFade(g,Math.round((parseFloat(f1.style.animationDelay)||0)/38)); }); }
+/* WORD FADE FOR THE OPTION 2 GRID (request, 25 Nov 2026: "the table is not animated - apply the same animation as the text"): obs-table
+   draws its cells in its shadow root, out of wordFade's reach, so the grid arrived whole while the words around it faded in. Here each
+   cell takes the text's own fade (mxwf, .42s, 38 ms apart) - header left to right, then row by row - continuing the message's count;
+   the frame fades in with the first heading and Show all after the last cell. The rules sit under :host(.mx-tf), dropped once the
+   fade is over, so Show all / sorting re-renders the grid without replaying it. Returns the count after the grid. */
+function tblFade(g,n){ if(g.__mxtfd) return n; g.__mxtfd=1; var w=g.closest('.mx-otblw'), nc=(g.columns||[]).length, nr=(g.rows||[]).length, tot=nc*(nr+1),
+    mb=w&&$('.mx-otblmore',w);
+  if(!nc||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)) return n+tot+1;
+  var A='animation:mxwf .42s cubic-bezier(.2,0,0,1) both;animation-delay:', css='@keyframes mxwf{from{opacity:0}to{opacity:1}}', c, r;
+  for(c=0;c<nc;c++) css+=':host(.mx-tf) .grid thead th:nth-child('+(c+1)+')>*{'+A+((n+c)*38)+'ms}';
+  for(r=0;r<nr;r++) for(c=0;c<nc;c++) css+=':host(.mx-tf) .grid tbody tr:nth-child('+(r+1)+') td:nth-child('+(c+1)+') .cell-clip{'+A+((n+nc*(r+1)+c)*38)+'ms}';
+  if(w){ w.classList.add('mx-w'); w.style.animationDelay=(n*38)+'ms'; }
+  if(mb){ mb.classList.add('mx-w'); mb.style.animationDelay=((n+tot)*38)+'ms'; }
+  g.classList.add('mx-tf'); var k=0;
+  (function go(){ var sr=g.shadowRoot; if(!sr){ if(k++<40) setTimeout(go,50); return; }
+    try{ var s=new CSSStyleSheet(); s.replaceSync(css); sr.adoptedStyleSheets=[].concat(sr.adoptedStyleSheets,[s]); }catch(e){} })();
+  setTimeout(function(){ g.classList.remove('mx-tf'); },(n+tot)*38+700);
+  return n+tot+1; }
 var TBL_CV=null; function tblTW(s,font){ TBL_CV=TBL_CV||document.createElement('canvas').getContext('2d'); TBL_CV.font=font; return TBL_CV.measureText(s).width; }
 function TBL_FF(){ return getComputedStyle(document.body).fontFamily||'sans-serif'; }
 function tblSkin(g){ var n=0; (function go(){ var sr=g.shadowRoot; if(!sr){ if(n++<40) setTimeout(go,50); return; }
@@ -221,7 +242,7 @@ function link(id){ closePops(); copy(location.href.split('#')[0]+'#/c/'+id,'Chat
    It replaced a "Search chats" row that toggled a hand-built box. ⌘K focuses it; Esc clears it. */
 function srchMount(){ if($('.mx-srch')) return; var row=$('[data-testid="mira-search-chats"]'); if(!row) return;
   var w=document.createElement('div'); w.className='mx-srch';
-  w.innerHTML='<obs-input class="mx-srchi" type="search" placeholder="Search..." aria-label="Search chats (⌘K)" allow-clear></obs-input><kbd class="mx-srchk">⌘K</kbd>';
+  w.innerHTML='<obs-input class="mx-srchi" type="search" placeholder="Search" aria-label="Search chats (⌘K)" allow-clear></obs-input><kbd class="mx-srchk">⌘K</kbd>';
   row.insertAdjacentElement('afterend',w); row.classList.add('mx-hide');
   var inp=$('obs-input',w); srchSkin(inp);
   inp.addEventListener('input',function(e){ var v=e.detail&&e.detail.length!==undefined?e.detail[0]:inp.value; filter(String(v==null?'':v)); w.classList.toggle('has-q',!!String(v||'')); }); }
@@ -229,9 +250,9 @@ function srchMount(){ if($('.mx-srch')) return; var row=$('[data-testid="mira-se
    box is a soft filled pill on the --mira tokens, and the ⌘K hint sits at its right edge. Adopted, so it is the DS
    element's own markup and behaviour — only its skin changes. */
 function srchSkin(o){ var go=function(){ var sh=o.shadowRoot; if(!sh||!sh.querySelector('.ip')){ return setTimeout(go,30); } if(sh.__mx) return; sh.__mx=1;
-  var c=new CSSStyleSheet(); c.replaceSync('.root,.grp{width:100%}.ip{height:32px;padding:0 44px 0 10px;gap:8px;border:1px solid var(--mira-ask-line);border-radius:var(--btn-radius,4px);background:var(--mira-row-hover);transition:border-color .15s,background .15s}'+
+  var c=new CSSStyleSheet(); c.replaceSync('.root,.grp{width:100%}.ip{height:34px;padding:0 44px 0 12px;gap:8px;border:1px solid var(--mira-panel-edge);border-radius:var(--btn-radius,4px);background:transparent;transition:border-color .15s,background .15s}'+
     '.ip:hover{border-color:var(--mira-kbd-edge)}.ip:focus-within{border-color:var(--mira-accent-45);background:var(--mira-ask-face)}'+
-    '.adorn.suf{order:-1;margin:0;color:var(--mira-text-muted)}.field{font-size:13px}.field::placeholder{color:var(--mira-text-muted)}');
+    '.adorn.suf{order:-1;margin:0;color:var(--mira-text-muted);opacity:.6}.field{font-size:13px}.field::placeholder{color:var(--mira-text-muted);opacity:.6}');
   sh.adoptedStyleSheets=sh.adoptedStyleSheets.concat([c]); }; go(); }
 function srchField(){ var o=$('.mx-srch obs-input'); return o&&o.shadowRoot?o.shadowRoot.querySelector('input'):null; }
 function searchTog(force){ var as=$('aside.mira-sidebar'); if(as.classList.contains('is-collapsed')) sideTog(); srchMount();
@@ -623,9 +644,10 @@ function qaRecord(rec,a){ var CK='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-
   hb.onclick=function(){ var o=box.classList.toggle('is-open'); hb.setAttribute('aria-expanded',o); if(o) fadeIn(box.querySelector('.mx-qa-l')); }; }
 /* Ask AI's Gemini fade (index.html aitw*): each word fades in where it stands, 38ms apart. Real spaces stay as text
    nodes so innerText / copy read normally; code and SVG are left whole. */
-function wordFade(root){ if(!root||root.__wf) return; root.__wf=1; var n=0, w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), list=[], t;
-  while((t=w.nextNode())){ if(!t.nodeValue.trim()||t.parentNode.closest('svg,code,pre,.mx-dmtile,.mx-otblmore,.mx-w')) continue; list.push(t); }
-  list.forEach(function(t){ var f=document.createDocumentFragment(); t.nodeValue.split(/(\s+)/).forEach(function(p){ if(!p) return;
+function wordFade(root){ if(!root||root.__wf) return; root.__wf=1; var n=0, w=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT,null), list=[], t;
+  while((t=w.nextNode())){ if(t.nodeType===1){ if(t.__mxtf) list.push(t); continue; }
+    if(!t.nodeValue.trim()||t.parentNode.closest('svg,code,pre,.mx-dmtile,.mx-otblmore,.mx-w,.mx-otblw>table')) continue; list.push(t); }
+  list.forEach(function(t){ if(t.nodeType===1){ n=tblFade(t,n); return; } var f=document.createDocumentFragment(); t.nodeValue.split(/(\s+)/).forEach(function(p){ if(!p) return;
       if(/^\s+$/.test(p)){ f.appendChild(document.createTextNode(p)); return; }
       var s=document.createElement('span'); s.className='mx-w'; s.style.animationDelay=(n++*38)+'ms'; s.textContent=p; f.appendChild(s); });
     t.parentNode.replaceChild(f,t); }); }
@@ -870,7 +892,7 @@ document.addEventListener('keydown',function(e){ var t=e.target, mod=e.metaKey||
   if(mod&&e.shiftKey&&(e.key==='o'||e.key==='O')){ e.preventDefault(); show('new'); return; }
   if(mod&&(e.key==='k'||e.key==='K')){ e.preventDefault(); searchTog(true); return; }
   if(e.key==='Escape'){ if(MX.pop||$('.mira-chat-menu-list')){ closePops(); return; } if($('.mira-sidebar-search')){ searchTog(false); return; } if($('.mira-pane.is-preview')) closeCode(); } });
-document.addEventListener('scroll',function(e){ if(e.target.classList&&e.target.classList.contains('mira-thread-scroll')) scrollBtn(); },true);
+document.addEventListener('scroll',function(e){ if(e.target.classList&&e.target.classList.contains('mira-thread-scroll')){ scrollBtn(); var th=e.target.parentElement; if(th) th.classList.toggle('mx-topfade',e.target.scrollTop>4); } },true);
 document.addEventListener('mouseover',function(e){ var w=e.target.closest&&e.target.closest('.mira-composer-add-wrap'); if(w) tipShow(w); else tipHide(); });
 window.addEventListener('resize',function(){ if(!window.__mxKeep) closePops(); });
 

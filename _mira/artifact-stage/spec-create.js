@@ -394,7 +394,10 @@ var MXQ_CSS=
  /* compact (fix, 24 Nov 2026): the rim (.mira-composer-frame, 1px gradient, 20px radius) is rounded WITH the box, the bar
     is 48px, and the controls sit on the line's centre; once the text wraps they drop to the last line */
  'body .is-hero.mxq-compact .mira-composer-frame{border-radius:25px}'+
- 'body .is-hero.mxq-compact .mira-composer-box{flex-direction:row;align-items:center;column-gap:6px;min-height:46px;padding:5px 6px 5px 7px;border-radius:24px}'+
+ 'body .is-hero.mxq-compact .mira-composer-box{flex-direction:row;align-items:center;column-gap:6px;min-height:46px;padding:5px 7px!important;border-radius:24px}'+
+ /* the compact box lost its inner padding to a later box rule, so + and the mic touched its edge (fix, 26 Nov 2026); the
+    three round controls keep their 32px and never shrink */
+ 'body .is-hero.mxq-compact .mira-composer-actions>.inline-block,body .is-hero.mxq-compact .mira-effort-pill,body .is-hero.mxq-compact .mxq-mic,body .is-hero.mxq-compact .mira-submit{flex:0 0 32px;width:32px;height:32px}'+
  'body .is-hero.mxq-compact.mxq-multi .mira-composer-box{align-items:flex-end;padding-bottom:6px}'+
  'body .is-hero.mxq-compact .mira-composer-actions{display:contents}'+
  'body .is-hero.mxq-compact .mira-composer-input{order:1;align-self:center;height:var(--mxq-h,36px)!important;min-height:0!important;max-height:160px;padding:7px 4px;overflow-y:auto!important}'+

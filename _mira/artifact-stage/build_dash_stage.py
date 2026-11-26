@@ -25,7 +25,7 @@ shim = ("<script>(function(){try{var k='__t';localStorage.setItem(k,k);localStor
 # 4 the driver
 drv = r"""<script>
 /* the module-work artifact's stage: __DVSPEC = { key, v, theme } opens the board on one state */
-(function(){ var S=window.__DVSPEC; if(!S) return; window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
+(function(){ var S=window.__DVSPEC; if(!S) return; if(S.key==='aisum') document.documentElement.classList.add('dvwait'); window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
   function scroller(el){ for(var p=el.parentElement;p;p=p.parentElement){ var cs=getComputedStyle(p); if(/(auto|scroll)/.test(cs.overflowY)&&p.scrollHeight>p.clientHeight+2) return p; } return null; }
   function go(n){ try{
       if(typeof setTheme==='function') setTheme(S.theme==='light'?'light':'dark');
@@ -52,13 +52,33 @@ drv = r"""<script>
         document.title='READY'; return; }
       /* Dashboard AI Summary · Mira (24 Nov 2026): Option 1 = the cards design (sumopt 1), Option 2 = the briefing (sumopt 2).
          Both ship at the top of the board; the stage scrolls to the one asked for (adds it first if the board lacks it). */
-      if(S.key==='aisum'){ var so=/2/.test(S.v||'')?'2':'1', al=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], ai=-1;
-        for(var u=0;u<al.length;u++){ if(al[u]&&al[u].t==='aisum'&&String(al[u].sumopt||'1')===so&&al[u].scope!=='group'){ ai=u; break; } }
-        if(ai<0){ al.unshift({ t:'aisum', title:so==='2'?'Dashboard AI Summary · Mira — briefing':'Dashboard AI Summary · Mira', span:12, h:so==='2'?305:390, scope:'board', sumopt:so }); renderCanvas(); ai=0; }
+      if(S.key==='aisum'){ var so=/5/.test(S.v||'')?'5':/4/.test(S.v||'')?'4':/2/.test(S.v||'')?'2':'1', al=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], ai=-1;
+        /* ONE summary on the board (fix, 26 Nov 2026: Option 1 showed the board's shipped plain-text summary first, then
+           stacked the cards one above it): the shipped board summary is switched to the option asked for, any other board
+           summary is dropped, and the board stays hidden (html.dvwait) until that is done */
+        for(var u=al.length-1;u>=0;u--){ if(al[u]&&al[u].t==='aisum'&&al[u].scope!=='group'){ if(ai>=0) al.splice(ai,1); ai=u; } }
+        var ash={ title:so==='2'?'Dashboard AI Summary · Mira — briefing':'Dashboard AI Summary · Mira', h:so==='4'?440:so==='2'?305:390, sumopt:so };
+        if(ai<0){ al.unshift({ t:'aisum', span:12, scope:'board' }); ai=0; }
+        if(al[ai].sumopt!==so||al[ai].__dv!==so){ Object.assign(al[ai],ash); al[ai].__dv=so; renderCanvas(); }
         var aw=document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+ai+'"]');
-        if(!aw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no summary'; return; }
+        if(!aw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.documentElement.classList.remove('dvwait'); document.title='ERR no summary'; return; }
+        document.documentElement.classList.remove('dvwait');
         var as=scroller(aw); if(as){ as.scrollTop+=aw.getBoundingClientRect().top-as.getBoundingClientRect().top-12; }
         document.title='READY'; return; }
+      /* Dashboard filter (25 Nov 2026, moved off the board): Option 1 the filter row open, Option 2 with a Monitor and a Group set */
+      if(S.key==='dflt'){ document.body.classList.add('dfstage');
+        if(typeof dfTog!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no filter'; return; }
+        if(/2/.test(S.v||'')){ var f=dfCur(); f.monitor=['fg-firewall.example.com']; f.group=['Network > Firewall','Network > Switch']; dfInit(); dfApply(); }
+        dfTog(true); document.title='READY'; return; }
+      /* Widget hover hint (26 Nov 2026): five designs, window.__WTBHINT; the stage hovers the first chart widget */
+      if(S.key==='wtbhint'){ var ho=(S.v||'').replace('o','')||'1'; window.__WTBHINT=ho;
+        var hl=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], hi=-1; for(var z=0;z<hl.length;z++){ if(hl[z]&&(hl[z].t==='pie'||hl[z].t==='hbars'||hl[z].t==='cmp')){ hi=z; break; } }
+        var hw=hi>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+hi+'"]');
+        if(!hw){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no widget'; return; }
+        var hs=scroller(hw); if(hs){ hs.scrollTop+=hw.getBoundingClientRect().top-hs.getBoundingClientRect().top-70; }
+        setTimeout(function(){ var r=hw.getBoundingClientRect(), x=r.left+r.width*.55, y=r.top+r.height*.5, tgt=document.elementFromPoint(x,y)||hw;
+          tgt.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:x,clientY:y})); tgt.dispatchEvent(new MouseEvent('mousemove',{bubbles:true,clientX:x,clientY:y})); document.title='READY'; },300);
+        return; }
       if(S.key==='wtbintro'){ window.__WTBOPT=window.__CVOPT; try{ ['oo-wtb-seen','oo-wtb-uses'].forEach(function(k){localStorage.removeItem(k)}); }catch(e){}
         var wl=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], wi=-1; for(var j=0;j<wl.length;j++){ if(wl[j]&&(wl[j].t==='pie'||wl[j].t==='hbars')){ wi=j; break; } }
         var ww=wi>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+wi+'"]');
@@ -78,7 +98,7 @@ drv = r"""<script>
 })();
 </script>"""
 stamp = datetime.datetime.now().strftime('%d %b %H:%M')
-css = '<style id="dv-stage-css">.vs-switch{display:none!important}</style><meta name="mx-build" content="' + stamp + '">'
+css = '<style id="dv-stage-css">.vs-switch{display:none!important}html.dvwait #dashGrid{visibility:hidden}</style><meta name="mx-build" content="' + stamp + '">'
 assert d.count('<head>') >= 1
 d = d.replace('<head>', '<head>' + shim, 1).replace('</head>', css + '</head>', 1)
 k = d.rfind('</body>'); d = d[:k] + drv + d[k:]

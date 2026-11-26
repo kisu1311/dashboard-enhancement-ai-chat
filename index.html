@@ -7992,7 +7992,8 @@ html[data-theme="light"] .wcm .ctr{color:var(--text)}
 /* the Timeline Preview picker's list escapes the pane through the OBS-DATE-TIME-PICKER shadow hook (position:fixed) — DS gap 18 */
 /* Legend OFF: its two fields leave the flow so the rows below shift up (request, 19 Nov 2026) */
 #cwCmpLpF.off,#cwCmpLfF.off{display:none}
-#cwModal .cwcmpnb{display:block;margin-top:22px}   /* "How this card reads" at the foot of the Style tab, 22px under Text truncation (the panel's row rhythm) */
+#cwModal .cwcmpnb{display:block;margin-top:22px}
+   /* "How this card reads" at the foot of the Style tab, 22px under Text truncation (the panel's row rhythm) */
 .cwcmpg{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
 .cwcmpg .cwin{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font:400 12.8px Inter,sans-serif;outline:0}
 .cwcmpg .cwin:focus{border-color:var(--cwb,var(--teal))}
@@ -8057,9 +8058,23 @@ html[data-theme="light"] .wcm .ctr{color:var(--text)}
 .wtbtnx{border:0;border-radius:4px;padding:5px 14px;background:var(--action);color:var(--action-fg);font:600 12px Inter,sans-serif;cursor:pointer}
 .chmk{opacity:0;transition:opacity .12s;pointer-events:none}
 .chmk.on{opacity:1}
-.wtbhint{position:fixed;z-index:119;display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;border:1px dashed var(--text-dim);
-  background:var(--card);color:var(--text-dim);font-size:11.5px;pointer-events:none;white-space:nowrap}
-.wtbhint.on{display:flex}.wtbhint svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.wtbhint{position:fixed;z-index:119;display:none;align-items:center;gap:5px;height:22px;padding:0 9px 0 7px;border-radius:11px;border:1px solid var(--pop-line,var(--border));
+  background:var(--pop);color:var(--text);font-size:11px;font-weight:500;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.22)}
+.wtbhint.on{display:flex;animation:wtbhin .16s ease-out}
+/* option 1 - the original dashed box */
+.wtbhint.o1{height:auto;padding:4px 10px;border-radius:6px;border:1px dashed var(--text-dim);background:var(--card);color:var(--text-dim);font-size:11.5px;font-weight:400;box-shadow:none}
+.wtbhint.o1 svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;color:inherit;width:12px;height:12px}
+/* option 3 - a ghost of the toolbar: its icons, faint, where it will appear */
+.wtbhint.o3{gap:2px;height:30px;padding:0 10px 0 4px;border-radius:6px;border:1px dashed var(--text-dim);opacity:.92}
+.wtbhint.o3 svg{width:15px;height:15px;margin:0 5px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:var(--text-dim)}
+.wtbhint.o3 span{margin-left:4px;padding-left:8px;border-left:1px solid var(--pop-line,var(--border));color:var(--text)}
+/* option 4 - a dotted outline on the widget, with a tag in its corner */
+.widget.wtbhl{position:relative}.widget.wtbhl::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:7px;border:1.5px dashed color-mix(in srgb,var(--teal) 75%,transparent)}
+.wtbhint.o4{height:20px;border-radius:4px;font-size:10.5px;background:color-mix(in srgb,var(--teal) 16%,var(--pop));border-color:color-mix(in srgb,var(--teal) 45%,transparent);box-shadow:none}
+/* option 5 - follows the pointer, like a tooltip */
+.wtbhint.o5{height:20px;border-radius:4px;font-size:10.5px;animation:none}.wtbhint svg{width:11px;height:11px;fill:currentColor;stroke:none;color:var(--teal)}
+@keyframes wtbhin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.wtbhint.on{animation:none}}
 .wtb{position:fixed;z-index:120;display:none;align-items:center;gap:2px;padding:4px;border-radius:6px;
   background:var(--pop);border:1px solid var(--pop-line,var(--border));box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .wtb.on{display:flex}
@@ -8403,6 +8418,23 @@ html[data-theme="light"] .mreai{--primary-button-bg:var(--ai);--primary-button-t
 .mdsrt span{font-size:13px;line-height:1.45;color:var(--page-text-color,var(--text))}.mdsrt b{font-weight:600}
 .mdsgo{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--primary-color,var(--teal));font:500 12px Inter,sans-serif;cursor:pointer;padding:4px 6px;border-radius:4px}
 .mdsgo:hover{background:var(--hover)}
+.mds4{font-size:13.5px;line-height:1.6;color:var(--text)}.mds4 p{margin:0 0 8px}.mds4 ul{margin:0 0 8px;padding-left:20px}
+.mds4 li{margin:0 0 6px;padding-left:2px}
+/* OPTION 5 · PLAIN TEXT, FITTED (26 Nov 2026): the widget takes the height its text needs, and half the row when there are 3 findings or fewer */
+#dashGrid .widget:has(>* .mdsfit),#dashGrid .widget:has(.mdsfit){height:auto!important}
+#dashGrid .widget:has(.mdsfit .mds5.half){grid-column:span 6!important}
+.mdsfit .mdsb{overflow:visible!important;flex:0 0 auto!important;height:auto!important}
+.mds5{font-size:13.5px;line-height:1.55;color:var(--page-text-color,var(--text))}
+.mds5 .mds5h{margin:0 0 10px;font-size:14px;font-weight:600}
+.mds5 .mds5m{margin:2px 0 12px;font-size:12px;color:var(--text-dim)}
+.mds5 .mds5s{margin:0 0 8px}
+.mds5 .mds5t{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:12px;font-weight:600;color:var(--text-dim)}
+/* the level dots are the DS Severity atom (obs-severity, request 26 Nov 2026), the label beside them keeps it from being colour-only */
+.mds5 obs-severity{flex:0 0 auto;display:inline-flex}
+.mds5 ul{margin:0;padding-left:20px}.mds5 li{margin:0 0 3px}.mds5 li::marker{color:var(--text-dim)}
+.mds5 .mdsgo.mds5src{display:inline-flex;padding:0 4px;margin-left:4px;font-size:12px;vertical-align:baseline}
+.mds5 .mds5ok{display:flex;align-items:center;gap:6px;margin:0;color:var(--text-dim);font-size:12.5px}
+.mds4 li::marker{color:var(--text-dim)}.mds4 .mds4d{color:var(--text-dim);margin:0}
 .mdsrest{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:12px;color:var(--neutral-light,var(--text-dim))}.mdsrest obs-icon{color:var(--severity-clear,var(--green))}
 .mdsb2{display:grid;grid-template-columns:minmax(200px,260px) 1fr;gap:20px;align-items:start}
 .mdsb2l{display:flex;flex-direction:column;gap:6px;padding:4px 20px 4px 0;border-right:1px solid var(--border-color,var(--border))}
@@ -8431,6 +8463,23 @@ html[data-theme="light"] .mreai{--primary-button-bg:var(--ai);--primary-button-t
 .mds{position:fixed;z-index:118;top:100px;right:16px;width:360px;max-height:calc(100vh - 140px);display:none;flex-direction:column;
   border:1px solid var(--border);border-radius:8px;background:var(--pop,var(--card));box-shadow:var(--pop-shadow);color:var(--text);font-size:12.5px}
 .mds.on{display:flex}
+.mdsopt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px 0}
+.mdsw .mds3all{display:none}
+.mdsw .mds3v,.mdsw .mds3r{max-width:560px}
+.mds3v{display:flex;align-items:center;gap:12px;padding:12px;border-radius:4px;background:color-mix(in srgb,var(--lvc) 10%,transparent);border:1px solid color-mix(in srgb,var(--lvc) 30%,transparent)}
+.mds3v > obs-icon{color:var(--lvc);flex:0 0 auto}.mds3v div{display:flex;flex-direction:column;gap:2px}
+.mds3v b{font-size:15px;font-weight:600;color:var(--page-text-color,var(--text))}.mds3v small{font-size:11.5px;color:var(--neutral-light,var(--text-dim))}
+.mds3k{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 2px 12px;font-size:12px;color:var(--page-text-color,var(--text))}
+.mds3k span{display:inline-flex;align-items:center;gap:6px}.mds3k i{width:8px;height:8px;border-radius:50%;background:var(--lvc)}
+.mds3r{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mds3r .mdsgo{display:flex;align-items:center;gap:10px;width:100%;padding:9px 8px;color:var(--page-text-color,var(--text));font:400 13px Inter,sans-serif;text-align:left}
+.mds3r .mdsgo > i{flex:0 0 8px;height:8px;border-radius:50%;background:var(--lvc)}
+.mds3r .n{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mds3r .v{flex:0 0 auto;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 12.5px 'JetBrains Mono',monospace}
+.mds3r .mdsgo:hover .mdsar{opacity:1}
+.mds3all{margin:10px 0 0;border:0;background:none;padding:4px 8px;color:var(--primary-color,var(--teal));font:500 12px Inter,sans-serif;cursor:pointer;border-radius:4px}.mds3all:hover{background:var(--hover)}
+.mds3v.lv-critical,.mds3k .lv-critical,.mds3r .lv-critical{--lvc:var(--severity-critical,var(--red))}.mds3v.lv-major,.mds3k .lv-major,.mds3r .lv-major{--lvc:var(--severity-major,var(--orange))}
+.mds3k .lv-warning,.mds3r .lv-warning{--lvc:var(--severity-warning,var(--yellow))}.mds3v.lv-clear,.mds3k .lv-clear{--lvc:var(--severity-clear,var(--green))}
 .mds.flash{animation:mdsflash 1.2s ease-out}
 @keyframes mdsflash{0%{box-shadow:0 0 0 2px var(--ai-2,var(--teal)),var(--pop-shadow)}100%{box-shadow:var(--pop-shadow)}}
 .mdshd{display:flex;align-items:center;gap:10px;padding:12px 12px 10px 14px;border-bottom:1px solid var(--border)}
@@ -8476,6 +8525,23 @@ html[data-theme="light"] .mreai{--primary-button-bg:var(--ai);--primary-button-t
 .wtbb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .widget.wds{background:transparent;border:0;border-radius:7px;overflow:visible;position:relative;display:block}
 .widget.wds:hover{box-shadow:none}
+/* HOVER (request 25 Nov 2026: "when I hover the widget show some effect"). The DS card has none of its own and
+   the old .widget:hover shadow was switched off above, so nothing said which widget the pointer was on.
+   A ::before frame (::after is the SELECTED frame) — a 1px --field-border-color edge plus a soft lift. It is
+   quieter than selection (1.5px --primary + halo) so the two never read as the same state. Inset, so a
+   first-row widget is not clipped by the board scroller. */
+.widget.wds::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:7px;
+  box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .15s ease}
+.widget.wds:hover::before{box-shadow:inset 0 0 0 1px var(--field-border-color,var(--border)),0 6px 18px rgba(0,0,0,.28)}
+html[data-theme="light"] .widget.wds:hover::before{box-shadow:inset 0 0 0 1px var(--field-border-color,var(--border)),0 3px 12px rgba(0,0,0,.10)}
+.widget.wds.wsel:hover::before,body.vhprev .widget.wds:hover::before{box-shadow:none}
+/* …and the card's own fill lifts a step (request 25 Nov 2026: "the bg colour will also highlight") — the body's
+   surface token re-pointed to a 7% / 4% wash of the page ink over --widget-background, so content stays put and
+   only the surface changes. Same exclusions as the frame. */
+.widget.wds > obs-widget-card{transition:background-color .15s ease}
+.widget.wds:hover > obs-widget-card{--page-background-color:color-mix(in srgb,var(--page-text-color) 1.4%,var(--widget-background))}
+html[data-theme="light"] .widget.wds:hover > obs-widget-card{--page-background-color:color-mix(in srgb,var(--page-text-color) 0.8%,var(--widget-background))}
+.widget.wds.wsel:hover > obs-widget-card,body.vhprev .widget.wds:hover > obs-widget-card{--page-background-color:var(--widget-background)}
 /* the card's fill is --page-background-color; re-pointed to the DS widget surface --widget-background
    (#0b1627 dark / #fff light). Request 15 Oct 2026 "add the widget background #0b1627" — it was
    --common-widget-bg (#172336) an hour earlier, which merged the body into the #172336 title strip. */
@@ -11038,6 +11104,12 @@ html[data-theme="light"] .mpw{--mp-bubble:rgba(13, 148, 136, 0.5)}
 /* the live colour cell is a swatch and a chevron — no name, no hex code */
 .ggthc .cwftddt > span,.ggthc .cwftddt > .cwftddv{display:none}
 .ggthc .cwftddt{justify-content:space-between;gap:6px}
+/* Single Value › Threshold (25 Nov 2026, "remove the border inside"): the operator, value and colour lose their own frames - the
+   reference row is ONE bordered strip with hairline dividers between its cells. The frames go in the DS controls' shadow roots
+   (the attachShadow hook, .svthx); the dividers are the cells' left edges here. Gauge's identical tab is untouched. */
+.ggthr.svthr > obs-select,.ggthr.svthr > obs-input,.ggthr.svthr > .ggthc{align-self:stretch;display:flex;align-items:center;border-left:1px solid var(--border)}
+.ggthr.svthr > obs-select > *,.ggthr.svthr > obs-input > *{flex:1 1 auto}
+.ggthr.svthr .ggthc .cwftddt,.ggthr.svthr .ggthc .cwftddt:hover{border-color:transparent;background:transparent}
 /* Sankey · the Result By list, reordered by its grip */
 .ggsklist{display:flex;flex-direction:column;gap:6px;max-width:348px}
 .ggski{display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 10px;border-radius:4px;background:var(--panel-2);font-size:13px;color:var(--text)}
@@ -14139,8 +14211,67 @@ body.ntfoff .ntfpos{display:none}   /* notifications off — see NTF_KEY */
 .ntfpos button.on{background:var(--chip);color:var(--text);font-weight:600}
 body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs to the dashboard */
 
+.cwgsh{margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--border-soft);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+#cwModal.cwmira .cwmtop{display:block}
+.cwmtop{display:none;padding:14px 14px 0}
+.cwmh{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px}
+.cwmspk svg,.cwmgo svg,.cwmsg svg{width:14px;height:14px;flex:0 0 14px;color:var(--ai-2,var(--teal))}
+.cwmbox{position:relative;border:1px solid var(--field-border-color,var(--border));border-radius:4px;background:var(--bg)}
+.cwmbox:focus-within{border-color:var(--ai-2,var(--teal))}
+.cwmta{display:block;width:100%;box-sizing:border-box;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:13px/1.5 inherit;font-family:inherit;padding:8px 10px 40px}
+.cwmta::placeholder{color:var(--muted)}
+.cwmgo{position:absolute;right:6px;bottom:6px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:4px;cursor:pointer;
+  background:var(--ai-2,var(--teal));color:var(--ai-fg,#fff);font:600 12px inherit;font-family:inherit}
+.cwmgo svg{color:inherit}.cwmgo:disabled{opacity:.45;cursor:default}.cwmgo.busy{opacity:.7}
+.cwmp{display:flex;flex-direction:column;gap:18px}
+.cwmhint{margin-top:6px;font-size:11px;color:var(--muted)}
+.cwmfu{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.cwmsg{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:4px;cursor:pointer;background:var(--code-tag-background-color,var(--chip));color:var(--text);font:12px inherit;font-family:inherit}
+.cwmsg:hover{background:var(--neutral-button-bg,var(--hover))}
+.cwmkv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12px}.cwmkv span{color:var(--muted)}.cwmkv b{font-weight:600;color:var(--text)}
+.mrtile.mrgen2{flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.mrg2ic{position:relative;width:40px;height:40px;display:grid;place-items:center}
+.mrg2ring{position:absolute;inset:0;width:40px;height:40px;animation:mrg2spin 1.4s linear infinite}
+.mrg2ring circle{fill:none;stroke:var(--ai-2,var(--teal));stroke-width:2;stroke-linecap:round;stroke-dasharray:28 72;opacity:.9}
+.mrg2spk{position:relative;display:grid;place-items:center;width:18px;height:18px;line-height:0}
+.mrg2spk svg{display:block;width:18px;height:18px;color:var(--ai-2,var(--teal));animation:mrg2pulse 1.4s ease-in-out infinite}
+.mrg2t{font-size:12px;color:var(--text-dim)}
+.mrg2dots i{font-style:normal;animation:mrg2dot 1.2s infinite}.mrg2dots i:nth-child(2){animation-delay:.2s}.mrg2dots i:nth-child(3){animation-delay:.4s}
+.mrtile .mrcx.mrg2cx{margin-top:0;border:0;padding:2px 6px;font-size:11px;color:var(--muted);background:transparent}
+.mrtile .mrcx.mrg2cx:hover{color:var(--text);text-decoration:underline}
+@keyframes mrg2spin{to{transform:rotate(360deg)}}
+@keyframes mrg2pulse{0%,100%{transform:scale(.85);opacity:.7}50%{transform:scale(1.1);opacity:1}}
+@keyframes mrg2dot{0%,100%{opacity:.2}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){ .mrgen2 *{animation:none!important} }
+.chhz{position:relative;height:100%;display:flex;flex-direction:column;gap:2px;padding:4px 8px 2px 4px;box-sizing:border-box;font-size:11px}
+.chhzr{flex:1 1 0;min-height:16px;display:grid;grid-template-columns:minmax(120px,210px) 1fr 76px;align-items:stretch;gap:10px}
+.chhzl{display:flex;align-items:center;gap:6px;min-width:0;color:var(--text)}
+.chhzl i{flex:0 0 8px;height:8px;border-radius:2px}.chhzl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--chart-font-family,'JetBrains Mono',monospace)}
+.chhzl small{margin-left:auto;flex:0 0 auto;color:var(--muted);font-size:10px}
+.chhzs{position:relative;min-width:0;overflow:hidden;border-bottom:1px solid var(--chart-grid-line-color,var(--border-soft));background:color-mix(in srgb,var(--page-text-color) 3%,transparent)}
+.chhzs svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.chhzv{align-self:center;text-align:right;font:600 11.5px var(--chart-font-family,'JetBrains Mono',monospace);color:var(--text);white-space:nowrap}
+.chhzm{position:absolute;top:50%;transform:translate(-50%,-50%);font:600 10px var(--chart-font-family,monospace);padding:0 4px;border-radius:3px;white-space:nowrap;pointer-events:none;
+  background:color-mix(in srgb,var(--widget-background) 82%,transparent);color:var(--text)}
+.chhzm.dn{color:var(--severity-major)}
+.chhzax{flex:0 0 18px;min-height:18px}.chhzax .chhzs{border:0;background:none}
+.chhzax em{position:absolute;top:2px;transform:translateX(-50%);font:10px var(--chart-font-family,monospace);font-style:normal;color:var(--neutral-light)}
+.chhzax em.chhzt{display:none;background:var(--chip);color:var(--text);padding:0 4px;border-radius:3px;z-index:2}
+.chhzax .chhzv{font-weight:400;font-size:10px;color:var(--muted)}
+.chhzk{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);white-space:nowrap}.chhzk i{width:10px;height:6px;border-radius:1px}
+.chhzk i.a{background:var(--neutral-light)}.chhzk i.b{background:var(--severity-major);margin-left:6px}
+.chhzc{display:none;position:absolute;top:4px;bottom:20px;width:1px;background:var(--neutral-light);pointer-events:none;z-index:3}
+@container (max-width:560px){.chhz .chhzl small{display:none}.chhzr{grid-template-columns:minmax(80px,130px) 1fr 64px}}
+/* menu section titles: one style, one left edge (the rows' icon column), more space BEFORE a section than after its title */
+.waeml .waemh{font:600 11px/16px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--neutral-light,var(--text-dim));padding:12px 8px 4px}
+.waeml .waemh:first-child{padding-top:4px}
+.waemi.waesg2 .waesgic{color:var(--ai-2,var(--teal))}
+.waemi.waesg.waesg2{height:32px!important;min-height:0;align-items:center!important;padding-top:0!important;padding-bottom:0!important;gap:10px!important}
 </style>
-</head>
+<style id="df-moved">/* MOVED TO THE ARTIFACT (request, 25 Nov 2026): the dashboard filter - the header button and the
+  Monitor · Group · Tag · + Filter row - now lives in the Module work artifact's Dashboard section. The code stays; dash-stage.html
+  puts body.dfstage on to show it there. */
+body:not(.dfstage) #dfTog,body:not(.dfstage) #dashFltRow{display:none!important}</style></head>
 <body>
 <!-- ⚠️ THE AI MARK'S GRADIENT, DEFINED ONCE FOR THE WHOLE DOCUMENT (request, 9 Sep 2026: the
      supplied star "will be use in every where and ai chat interface").
@@ -21189,15 +21320,15 @@ function wCmp4(w){
       `<path d="${sm(cur)}" fill="none" stroke="${c}" stroke-width="${o8 ? 2.2 : 1.6}" vector-effect="non-scaling-stroke" opacity="${o8 ? 1 : .7}"/>`;
   /* option 8's Value properties (24 Nov 2026) - see cwCmp8ValueHTML */
   let c8 = c;
-  const chOff = o8 && w.cmpChOn === false, chOp = o8 && w.cmpChOp != null ? ` style="opacity:${(w.cmpChOp / 100).toFixed(2)}"` : '';
+  const chOff = o8 && w.cmpChOn === false, chOp = o8 ? ` style="opacity:${((w.cmpChOp == null ? 30 : w.cmpChOp) / 100).toFixed(2)}"` : '';   /* a card with no saved opacity draws at the editor's 30% default (25 Nov 2026) - it drew at 100% while the editor said 65 */
   const al8 = o8 && w.cmpVAl && w.cmpVAl !== 'center' ? ' al-' + w.cmpVAl : '';
   /* colour by severity: the shown value (a custom value's own number when it has one) against the three thresholds */
   let sev8 = '';
-  if (o8 && w.cmpSevOn){
+  if (o8){   /* always - the switch left the Style tab (25 Nov 2026); the Threshold tab's rows decide */
     const x = v;
-    const dn = w.cmpSevDir === 'down', hit = t => t != null && (dn ? x <= +t : x >= +t);
-    const lv = hit(w.cmpSevC) ? 'critical' : hit(w.cmpSevM) ? 'major' : hit(w.cmpSevW) ? 'warning' : 'clear';
-    sev8 = lv; c8 = 'var(--severity-' + lv + ')'; }
+    /* the Threshold tab's rows, Critical first - the first row the value meets gives the level and its colour (25 Nov 2026) */
+    const th = cmpThOf(w), ti = cmpThLevel(th, x);
+    if (ti >= 0){ sev8 = cmpThSev()[ti].toLowerCase(); c8 = cmpThColor(th[ti].c); } }
   const ic8 = o8 && w.cmpIc && (w.cmpIcOn == null || w.cmpIcOn) ? `<obs-icon class="wc4ic" name="${w.cmpIc}" size="26" style="color:${c8}"></obs-icon>` : '';
   const vtxt = null;   /* custom value removed (request, 24 Nov 2026: "remove this action") - always the measured value */
   return root7 + (chOff ? '' : `<svg class="wc4s" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"${chOp}>` +
@@ -21808,8 +21939,9 @@ function awAddAiSum(opt){
   const emptyG = !ungrouped && !(WIDGETS[curG] || []).some(x => x && x.t !== 'aisum');
   const grp = !ungrouped && !emptyG;
   if (emptyG) curG = 0;   /* the dashboard summary is drawn ABOVE the groups (wBS); it is filed with the first group, so deleting the empty group cannot take it */
-  const w = { t:'aisum', title: grp ? 'Group AI Summary · Mira' : 'Dashboard AI Summary · Mira', span:12, h: grp ? 380 : 390, scope: grp ? 'group' : 'board', sumopt: String(opt || 1) };
+  const w = { t:'aisum', title: grp ? 'Group AI Summary · Mira' : 'Dashboard AI Summary · Mira', span:12, h: grp ? 380 : 390, scope: grp ? 'group' : 'board', sumopt: String(opt || 4) };
   if (w.sumopt === '2') w.h = grp ? 300 : 305;
+  if (w.sumopt === '4') w.h = 440;
   closeAwDrawer(); AW_AT = null;
   WIDGETS[curG].unshift(w); renderCanvas();
   const pb = document.querySelector('.dwrap .pagebody'), gEl = grp && document.getElementById('grp-' + curG);
@@ -22299,7 +22431,18 @@ const MIRA_SPK = '<svg viewBox="0 0 24 24" aria-hidden="true" style="fill:none;s
        otherwise ranked bars), in the AI accent at low strength, with a light sweep passing over it;
      • three steps ticking off in time with the 1.6s build: Reading your prompt · Picking the counters · Drawing the widget.
    Pure CSS keyframes, run once on insertion; prefers-reduced-motion shows the finished ghost and the steps without motion. */
+/* the building state, SIMPLE (request, 26 Nov 2026: "make it simple and short - an AI icon animation and small text"):
+   one animated Mira mark (a spinning ring round a breathing sparkle), one short line and a quiet Cancel. The earlier
+   ghost-chart + three-step version is kept below as miraGenHTMLSteps, unreferenced. */
 function miraGenHTML(w){
+  const e = v => String(v).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
+  return '<div class="mrtile gen mrgen2" data-mid="' + e(w.mid) + '" role="status" aria-live="polite">' +
+    '<span class="mrg2ic"><svg class="mrg2ring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" pathLength="100"/></svg>' +
+    '<span class="mrg2spk">' + MIRA_SPK + '</span></span>' +
+    '<span class="mrg2t">Mira AI is building this widget<span class="mrg2dots"><i>.</i><i>.</i><i>.</i></span></span>' +
+    '<button type="button" class="mrcx mrg2cx">Cancel</button></div>';
+}
+function miraGenHTMLSteps(w){
   const m = w.mira || {}, q = String(m.prompt || '').toLowerCase(), e = v => String(v).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
   const line = /over time|trend|timeline|per hour|history/.test(q) && !/top|by alert|severity/.test(q);
   const donut = !line && /pie|share|severity|distribution|donut/.test(q) && !/bar chart/.test(q);
@@ -22354,7 +22497,7 @@ function wBody(w, gi, i){
   /* AI SUMMARY widget (request, 24 Nov 2026: "the AI summary in Add New Widget - show the dashboard AI summary card"): the
      Mira dashboard summary as a widget on the board. mdsHTML lives in a later script block, hence the guard. */
   /* a summary added INSIDE A GROUP reads that group only (request, 24 Nov 2026); on a flat board it reads the dashboard */
-  if(w.t==='aisum') return '<div class="mdsw">' + (typeof mdsHTML === 'function' ? mdsHTML(w.scope === 'group' && !ungrouped ? gi : -1, true, w.sumopt) : '') + '</div>';
+  if(w.t==='aisum') return '<div class="mdsw' + (String(w.sumopt) === '5' && !w.userSized ? ' mdsfit' : '') + '">' + (typeof mdsHTML === 'function' ? mdsHTML(w.scope === 'group' && !ungrouped ? gi : -1, true, w.sumopt) : '') + '</div>';
   /* Single Value option 1 turns into option 4's compact card when the widget is made small (request, 23 Nov 2026): both are
      rendered and a size container shows one - the full chart (figure row, axes, legend) needs room the compact card does not */
   if(w.t==='cmp' && !(w.cmpopt > 1)) return '<div class="wcmauto"><div class="wcmfull">' + wCmp(w) + '</div><div class="wcmmini">' + wCmp(Object.assign({}, w, {cmpopt:4})) + '</div></div>';
@@ -22446,8 +22589,8 @@ const AS_STREAM = `<table style="width:100%;font-size:11px">
 UNGROUPED.add('Application Performance');
 BOARDS['Application Performance'] = { tabs: [''], widgets: [[
   /* the Dashboard AI Summary ships ON this board, at the top (request, 24 Nov 2026: "set by default and add in dashboard") */
-  { t:'aisum', title:'Dashboard AI Summary · Mira', span:12, h:390, scope:'board', sumopt:'1' },
-  { t:'aisum', title:'Dashboard AI Summary · Mira — briefing', span:12, h:305, scope:'board', sumopt:'2' },   /* design 2, also by default (24 Nov 2026) */
+  /* designs 1 (cards) and 2 (briefing) MOVED to the Module Work artifact (26 Nov 2026); the board ships the plain-text design 4 */
+  { t:'aisum', title:'Dashboard AI Summary · Mira', span:12, h:440, scope:'board', sumopt:'4' },
   /* the three Trend Compare designs side by side, by default (request, 6 Nov 2026) — option 1, option 2 with its table,
      option 3 — Counter Compare, CPU against memory — without. They lead the board (request, 6 Nov 2026: "show on top first"). Same counter and seed, so the three read the same numbers. */
   ...[1, 2, 3, 4, 5, 6].map(o => ({ t:'cmp', title:o === 3 ? 'CPU vs memory' : 'system.cpu.percent', span:4, h:o >= 4 ? 190 : 310,   /* options 5 and 6 join option 4 on the second row, under options 2 and 3 (request, 7 Nov 2026) */ seed:42902, trend:.89, color:'#14b8a6', acc:false,   /* the seed and colour the editor gives this counter */
@@ -22541,6 +22684,13 @@ BOARDS['Application Performance'] = { tabs: [''], widgets: [[
      height, so the lanes are as squeezed as they get on a real board */
   /* the same counters drawn the new way (request, 23 Nov 2026: "this option is not good, add a new and better UI") */
   /* options 4-6 (request, 23 Nov 2026: "all options are good, I need more") */
+  /* the recommended one (25 Nov 2026, after research) - each size of counter in its own pane, one time axis, one tooltip */
+  { t:'ch', title:'2 high · 8 low counters · grouped by size', span:12, h:460, ch:{ style:{ shape:0, legend:true, chLegPos:'Auto', lw:2, lowView:'unit', gsOutDemo:true },
+      rows:['system.cpu.percent', 'system.memory.used.percent', 'system.disk.used.percent', 'system.network.in.bytes', 'system.network.out.bytes',
+            'system.swap.used.bytes', 'system.disk.read.bytes', 'system.disk.write.bytes', 'system.log.write.bytes', 'system.dns.query.bytes'].map(c => ({ ctr:c, agg:'Avg' })) } },
+  { t:'ch', title:'2 high · 8 low counters · horizon (deviation from normal)', span:12, h:420, ch:{ style:{ shape:0, legend:true, chLegPos:'Auto', lw:2, lowView:'horizon', gsOutDemo:true },
+      rows:['system.cpu.percent', 'system.memory.used.percent', 'system.disk.used.percent', 'system.network.in.bytes', 'system.network.out.bytes',
+            'system.swap.used.bytes', 'system.disk.read.bytes', 'system.disk.write.bytes', 'system.log.write.bytes', 'system.dns.query.bytes'].map(c => ({ ctr:c, agg:'Avg' })) } },
   { t:'ch', title:'2 high · 8 low counters · log scale', span:6, h:340, ch:{ style:{ shape:0, legend:true, chLegPos:'Auto', lw:2, lowView:'log' },
       rows:['system.cpu.percent', 'system.memory.used.percent', 'system.disk.used.percent', 'system.network.in.bytes', 'system.network.out.bytes',
             'system.swap.used.bytes', 'system.disk.read.bytes', 'system.disk.write.bytes', 'system.log.write.bytes', 'system.dns.query.bytes'].map(c => ({ ctr:c, agg:'Avg' })) } },
@@ -25348,7 +25498,7 @@ function awRecentHTML(){
     if (t[1] === 'mira') return `<button class="awcard awmira" onclick="awRecent('${t[0]}');awAddMira()"><span class="awart awmiraart">${MIRA_SPK}</span><span>${t[0]}</span></button>`;
     /* ⚠️ Free Text opens DESIGN OPTION 2 here, the only Free Text design Option 1 still carries (16 Oct 2026) —
        with no option number `cwOpenViz` fell back to design 1, which moved to the Option 2 page */
-    return `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : t[1]==='aisum' ? 'awAddAiSum()' : t[1]==='freetext' ? `cwOpenViz('${t[0]}', 2)` : `cwOpenViz('${t[0]}')`}">` +
+    return `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : t[1]==='aisum' ? 'awAddAiSum(4)' : t[1]==='freetext' ? `cwOpenViz('${t[0]}', 2)` : `cwOpenViz('${t[0]}')`}">` +
       `<span class="awart">${wArt(t[0], 'r'+i)}</span><span>${t[0]}</span></button>`;
   }).join('');
   return tiles ? '<div class="awgrp">Recently used</div><div class="awgrid">' + tiles + '</div>' : '';
@@ -25396,12 +25546,12 @@ function awRender(){
               `<span class="awart">${wArt(t[0], 'c'+gi+'x'+i+'o'+o)}</span><span>${t[0]}</span></button>`).join('')
           : t[1] === 'aisum'
           /* two numbered designs (request, 24 Nov 2026): 1 = the findings cards, 2 = the compact briefing (attention score + list) */
-          ? [1, 2].map(o => `<button class="awcard awgopt" onclick="awRecent('${t[0]}');awAddAiSum(${o})" data-tip="Mira\u2019s summary of this dashboard, updated as it changes \u00b7 design option ${o}"><span class="awgn">${o}</span>` +
+          ? [4].map(o => `<button class="awcard" onclick="awRecent('${t[0]}');awAddAiSum(${o})" data-tip="Mira\u2019s summary of this dashboard, updated as it changes">` +
               `<span class="awart">${wArt(t[0], 'c'+gi+'x'+i+'o'+o)}</span><span>${t[0]}</span></button>`).join('')
           : t[1] === 'mira'
           /* Mira AI Prompt (request, 19 Nov 2026): drops the in-tile prompt widget at the end of the board, like AI Card does */
           /* two numbered tiles (request, 20 Nov 2026: "add new option 2") — 1 = the labelled form, 2 = the Mira composer (miraTileHTML2) */
-          ? [1, 2].map(o => `<button class="awcard awmira awgopt" onclick="awRecent('${t[0]}');awAddMira(${o})" data-tip="Describe a widget in plain English — Mira AI builds it · design option ${o}"><span class="awgn">${o}</span><span class="awart awmiraart">${MIRA_SPK}</span><span>${t[0]}</span></button>`).join('')
+          ? [1, 2, 3].map(o => `<button class="awcard awmira awgopt" onclick="awRecent('${t[0]}');awAddMira(${o})" data-tip="Describe a widget in plain English — Mira AI builds it · design option ${o}"><span class="awgn">${o}</span><span class="awart awmiraart">${MIRA_SPK}</span><span>${t[0]}</span></button>`).join('')
           : `<button class="awcard" onclick="awRecent('${t[0]}');${t[1]==='aicard' ? 'awAddAiCard()' : t[1]==='aisum' ? 'awAddAiSum()' : `cwOpenViz('${t[0]}')`}"` +
           `${t[1]==='aicard' ? ' data-tip="Ask a question in plain English and pin the answer to the board"' : t[1]==='aisum' ? ' data-tip="Mira\u2019s summary of this whole dashboard - updates as the board changes"' : ''}` +
           `><span class="awart">${wArt(t[0], 'c'+gi+'x'+i)}</span><span>${t[0]}</span></button>`).join('') + extra + `</div>`;
@@ -27395,7 +27545,7 @@ function wSelect(w){
     (wTbViews(m) ? '<button class="wtbb" id="wTbViewBtn" data-tip="Change chart view" aria-label="Change chart view" aria-haspopup="true" onclick="wTbView(event)"><obs-icon name="chart" size="16" aria-hidden="true"></obs-icon></button>' : '') +
     '<button class="wtbb" data-tip="More · share, export, move or remove" aria-label="More actions" onclick="wTbMore(event)">' + wtbI('more') + '</button>';
   t.classList.add('on'); wTbPlace();
-  { const h = document.getElementById('wTbHint'); if (h) h.classList.remove('on'); }
+  wtbHintOff();
   if (!wtbSeen()) setTimeout(() => wTbIntro(), 0);
 }
 /* ── the toolbar is NEW, so it explains itself once (request, 23 Nov 2026: "users can't understand this action").
@@ -27419,7 +27569,7 @@ let WTB_TOUR = -1;
 function wTbIntro(){ const o = wtbOpt(), t = document.getElementById('wTb'); if (!t || !t.classList.contains('on')) return;
   if (o === '1'){ WTB_TOUR = 0; wTbTour(); }
   else if (o === '2'){ let n = 0; try { n = +localStorage.getItem('oo-wtb-uses') || 0; localStorage.setItem('oo-wtb-uses', String(n + 1)); } catch (e) {}
-    if (n >= 3){ wtbLearnt(); return; }
+    if (n >= 3 && !WTB_DEMO){ wtbLearnt(); return; }
     t.classList.add('wtblab'); t.querySelectorAll('.wtbb').forEach(b => { if (!b.querySelector('.wtbl')) b.insertAdjacentHTML('beforeend', '<span class="wtbl">' + (WTB_NAME[b.getAttribute('aria-label')] || b.getAttribute('aria-label')) + '</span>'); }); wTbPlace(); }
   else if (o === '3'){ let p = document.getElementById('wTbPill');
     if (!p){ p = document.createElement('button'); p.type = 'button'; p.id = 'wTbPill'; p.className = 'wtbpill';
@@ -27440,8 +27590,12 @@ function wTbTour(){ const t = document.getElementById('wTb'); if (!t) return; co
   c.innerHTML = '<i class="wtbtar"></i><div class="wtbth"><b>' + (k === 'AI summary' ? 'Ask AI' : k) + '</b><span>' + (WTB_TOUR + 1) + ' of ' + bs.length + '</span></div>' +
     '<p>' + (WTB_DESC[k] || '') + '</p><div class="wtbtf"><button type="button" class="wtbtsk">' + (last ? '' : 'Skip') + '</button><button type="button" class="wtbtnx">' + (last ? 'Done' : 'Next') + '</button></div>';
   c.classList.add('on'); wTbCoachPlace(); }
-function wtbSeen(){ try { return localStorage.getItem('oo-wtb-seen') === '1'; } catch (e) { return true; } }
-function wtbLearnt(){ try { localStorage.setItem('oo-wtb-seen', '1'); } catch (e) {} wTbCoachClose(); const h = document.getElementById('wTbHint'); if (h) h.remove();
+/* DEMO MODE (request, 26 Nov 2026): Done / Skip / Got it hide the tour for the rest of THIS page load only - it is kept in
+   memory, not localStorage, so a refresh brings it back for the next demo. Set WTB_DEMO = false to remember it for good. */
+const WTB_DEMO = true;
+let WTB_DONE_MEM = false;
+function wtbSeen(){ if (WTB_DEMO) return WTB_DONE_MEM; try { return localStorage.getItem('oo-wtb-seen') === '1'; } catch (e) { return true; } }
+function wtbLearnt(){ WTB_DONE_MEM = true; if (!WTB_DEMO) try { localStorage.setItem('oo-wtb-seen', '1'); } catch (e) {} wTbCoachClose(); const h = document.getElementById('wTbHint'); if (h) h.remove();
   const t = document.getElementById('wTb'); if (t){ t.classList.remove('wtblab'); t.querySelectorAll('.wtbl').forEach(x => x.remove()); t.querySelectorAll('.wtbtg').forEach(x => x.classList.remove('wtbtg')); if (t.classList.contains('on')) wTbPlace(); } }
 function wTbCoachClose(){ WTB_TOUR = -1; ['wTbCoach', 'wTbTour', 'wTbPill'].forEach(id => { const c = document.getElementById(id); if (c) c.classList.remove('on'); });
   const t = document.getElementById('wTb'); if (t) t.querySelectorAll('.wtbtg').forEach(x => x.classList.remove('wtbtg')); }
@@ -27470,16 +27624,33 @@ function wTbCoachPlace(){ const t = document.getElementById('wTb'); if (!t) retu
   if (u && u.classList.contains('on') && b){ const br = b.getBoundingClientRect(), w = u.offsetWidth; const x = Math.min(Math.max(br.left + br.width / 2 - w / 2, 8), innerWidth - w - 8);
     u.style.left = Math.round(x) + 'px'; u.style.top = Math.round(r.bottom + 10) + 'px'; u.querySelector('.wtbtar').style.left = Math.round(br.left + br.width / 2 - x - 6) + 'px'; } }
 document.addEventListener('scroll', () => wTbCoachPlace(), true);
-/* layer 1: the hover hint, until the toolbar has been learnt */
+/* layer 1: the hover hint, until the toolbar has been learnt.
+   FIVE DESIGNS (26 Nov 2026) - window.__WTBHINT picks one; the board ships '2', the Module Work artifact shows all five:
+   1 the original dashed "Click for quick actions" box · 2 a solid pill "Click for actions" ·
+   3 a ghost toolbar - the toolbar's own icons, faint, where it will appear · 4 a dotted teal outline on the widget with a
+   small "Click for actions" tag in its corner · 5 a hint that follows the pointer */
+const WTBH_ARROW = '<svg viewBox="0 0 24 24"><path d="M3 3l7.07 16.97l2.51 -7.39l7.39 -2.51l-16.97 -7.07z"/></svg>';
+let WTBH_W = null;
+function wtbHintOpt(){ return String(window.__WTBHINT || '2'); }
+function wtbHintOff(){ const h = document.getElementById('wTbHint'); if (h) h.classList.remove('on'); if (WTBH_W){ WTBH_W.classList.remove('wtbhl'); WTBH_W = null; } }
 document.addEventListener('mouseover', e => {
   if (wtbSeen()) return; const t = e.target instanceof Element && e.target.closest('#dashGrid .widget'); let h = document.getElementById('wTbHint');
-  if (!t || t.classList.contains('wsel') || t.querySelector('.mrtile')){ if (h) h.classList.remove('on'); return; }
-  if (!h){ h = document.createElement('div'); h.id = 'wTbHint'; h.className = 'wtbhint'; h.setAttribute('aria-hidden', 'true');
-    h.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 3l7.07 16.97l2.51 -7.39l7.39 -2.51l-16.97 -7.07z"/></svg>Click for quick actions';
+  if (!t || t.classList.contains('wsel') || t.querySelector('.mrtile')){ wtbHintOff(); return; }
+  const o = wtbHintOpt();
+  if (!h || h.dataset.o !== o){ if (h) h.remove(); h = document.createElement('div'); h.id = 'wTbHint'; h.dataset.o = o; h.className = 'wtbhint o' + o; h.setAttribute('aria-hidden', 'true');
+    h.innerHTML = o === '1' ? WTBH_ARROW + 'Click for quick actions'
+      : o === '3' ? ['edit', 'view', 'full', 'more'].map(wtbI).join('') + '<span>Click to use</span>'
+      : o === '5' ? WTBH_ARROW + 'Click for actions'
+      : WTBH_ARROW + 'Click for actions';
     (document.getElementById('view-dashboard') || document.body).appendChild(h); }
+  if (WTBH_W && WTBH_W !== t) WTBH_W.classList.remove('wtbhl');
   const r = t.getBoundingClientRect(); h.classList.add('on');
+  if (o === '4'){ WTBH_W = t; t.classList.add('wtbhl'); h.style.left = Math.round(r.right - h.offsetWidth - 10) + 'px'; h.style.top = Math.round(r.top + 8) + 'px'; return; }
+  if (o === '5'){ h.style.left = Math.round(e.clientX + 14) + 'px'; h.style.top = Math.round(e.clientY + 18) + 'px'; return; }
   h.style.left = Math.round(r.left + r.width / 2 - h.offsetWidth / 2) + 'px'; h.style.top = Math.round(r.top - h.offsetHeight / 2) + 'px';
 });
+document.addEventListener('mousemove', e => { if (wtbHintOpt() !== '5') return; const h = document.getElementById('wTbHint'); if (!h || !h.classList.contains('on')) return;
+  h.style.left = Math.round(e.clientX + 14) + 'px'; h.style.top = Math.round(e.clientY + 18) + 'px'; });
 function wTbPlace(){
   const t = document.getElementById('wTb'); if (!t || !WSEL) return;
   if (!WSEL.isConnected) return wSelClear();
@@ -27836,7 +28007,7 @@ function waeItems(){
     .concat(W_USER.map(t => ({ n:t[0], ic:CW_VIZ_IC[VZ[t[1]]] || 'chart-line', act:'lib', vis:t[1] })));
   /* both Mira AI prompt designs, first, as Dynatrace's Prompt is (20 Nov 2026: "show both options") — the drawer's own
      two numbered tiles, so option 2 (the Mira composer; Edit opens the "Edit Mira AI widget" popup) is reachable from ＋ too */
-  create.unshift({ n:'Mira AI prompt 1', ic:'', act:'mira', opt:'1' }, { n:'Mira AI prompt 2', ic:'', act:'mira', opt:'2' });
+  create.unshift({ n:'Mira AI prompt 1', ic:'', act:'mira', opt:'1' }, { n:'Mira AI prompt 2', ic:'', act:'mira', opt:'2' }, { n:'Mira AI prompt 3', ic:'', act:'mira', opt:'3' });
   return { create, lib };
 }
 /* ── SUGGESTED BY MIRA (request, 23 Nov 2026: "suggest Mira AI widgets in the add menu - AI generated, related to the dashboard; a
@@ -27885,10 +28056,12 @@ function waeList(q){
   /* (request, 24 Nov 2026: "suggest a better UI"): no tooltip (it covered the next row) - the reason is the row's own second line; each
      row leads with its widget TYPE's DS icon in a Mira-tinted tile and ends with the type as a tag; "built by Mira" is said once, in the header */
   const SG_IC = k => /donut|pie/i.test(k) ? 'pie-chart' : /top n/i.test(k) ? 'chart' : 'trending-up';
-  const sgh = sg.map(x => '<button class="waemi waemira waesg" role="menuitem" data-p="' + esc(x.p) + '" aria-label="' + esc(x.p + ' - ' + x.why) + '">' +
-    '<span class="waesgi"><obs-icon name="' + SG_IC(x.kind) + '" size="16" aria-hidden="true"></obs-icon></span>' +
-    '<span class="waesgt"><b>' + esc(x.p) + '</b><small>' + esc(x.why) + '</small></span></button>').join('');   /* the type is the icon; no tag, so the text has the room */
-  L.innerHTML = (sgh ? '<div class="waemh waemhm"><span class="waeai">' + MIRA_SPK + '</span>Suggested by Mira <em>for this board</em></div>' + sgh : '') + (c ? '<div class="waemh">Create</div>' + c : '') + (l ? '<div class="waemh">Library</div>' + l : '') ||
+  /* SIMPLER (request, 26 Nov 2026: "better and simple UI, align the titles"): a suggestion is a ONE-LINE row exactly like the
+     Create rows - same 32px height, same 16px icon column (the chart type's DS icon in Mira's colour), same text start - so the
+     whole menu reads as one list. The reason line is gone from view (it stays in the accessible name). */
+  const sgh = sg.map(x => '<button class="waemi waemira waesg waesg2" role="menuitem" data-p="' + esc(x.p) + '" aria-label="' + esc(x.p + ' - ' + x.why) + '">' +
+    '<obs-icon class="waesgic" name="' + SG_IC(x.kind) + '" size="16" aria-hidden="true"></obs-icon><span>' + esc(x.p) + '</span></button>').join('');   /* the type is the icon; no tag, so the text has the room */
+  L.innerHTML = (sgh ? '<div class="waemh">Suggested by Mira</div>' + sgh : '') + (c ? '<div class="waemh">Create</div>' + c : '') + (l ? '<div class="waemh">Library</div>' + l : '') ||
     '<div class="waeme">No widget types match “' + q.replace(/</g, '&lt;') + '”</div>';
   L.querySelectorAll('.waemi:not(.waesg)').forEach(b => b.addEventListener('click', () => waePick(b.dataset.k)));
   L.querySelectorAll('.waesg').forEach(b => b.addEventListener('click', () => waePickMira(b.dataset.p)));
@@ -28999,19 +29172,19 @@ function mdsFinding(w){
   if ((t === 'pie' || t === 'hbars') && w.items && w.items.length){
     const it = w.items.map(x => [String(x[0]), +x[1]]).sort((a, b) => b[1] - a[1]), tot = it.reduce((a, x) => a + x[1], 0), top = it[0], sh = pct(top[1], tot);
     const what = /policy/i.test(nm) ? 'policy' : 'monitor', g0 = mdsShort(nm).toLowerCase(), grp = g0 ? g0 + ' ' : '';
-    if (it.length === 1) return { lv:'major', text:`<b>${top[0]}</b> is the only ${what} raising ${grp}alerts (${fmt(top[1])}).` };
+    if (it.length === 1) return { lv:'major', short:`${top[0]} · all ${fmt(top[1])}`, text:`<b>${top[0]}</b> is the only ${what} raising ${grp}alerts (${fmt(top[1])}).` };
     const share = sh >= 60 ? 'most' : sh >= 40 ? 'almost half' : sh >= 25 ? 'about a quarter' : sh + '%';
-    return { lv: sh >= 40 ? 'major' : 'warning', text:`<b>${top[0]}</b> raises ${share} of all ${grp}alerts — ${fmt(top[1])} of ${fmt(tot)}.` };
+    return { lv: sh >= 40 ? 'major' : 'warning', short:`${sh}% · ${top[0]}`, text:`<b>${top[0]}</b> raises ${share} of all ${grp}alerts — ${fmt(top[1])} of ${fmt(tot)}.` };
   }
   if (t === 'donuts' && w.items && w.items.length){
     const it = w.items.map(x => [String(x[1]), +x[0]]), tot = it.reduce((a, x) => a + x[1], 0), by = k => (it.find(x => x[0].toLowerCase() === k) || [0, 0])[1];
     if (/avail/i.test(nm) || by('up')){ const up = by('up'), dn = by('down'), u = pct(up, tot);
-      return { lv: u < 80 ? 'critical' : u < 95 ? 'warning' : 'clear', text: dn ? `Only <b>${u}%</b> of monitors are up — <b>${fmt(dn)}</b> of ${fmt(tot)} are down.` : `<b>${u}%</b> of ${fmt(tot)} monitors are up.` }; }
+      return { lv: u < 80 ? 'critical' : u < 95 ? 'warning' : 'clear', short: dn ? `${u}% up · ${fmt(dn)} down` : `${u}% up`, text: dn ? `Only <b>${u}%</b> of monitors are up — <b>${fmt(dn)}</b> of ${fmt(tot)} are down.` : `<b>${u}%</b> of ${fmt(tot)} monitors are up.` }; }
     const cr = by('critical');
-    return { lv: cr ? 'critical' : 'warning', text: cr ? `<b>${fmt(cr)}</b> of ${fmt(tot)} open alerts are critical (${pct(cr, tot)}%).` : `${fmt(tot)} open alerts in this range.` };
+    return { lv: cr ? 'critical' : 'warning', short: cr ? `${fmt(cr)} critical · ${pct(cr, tot)}%` : `${fmt(tot)} open`, text: cr ? `<b>${fmt(cr)}</b> of ${fmt(tot)} open alerts are critical (${pct(cr, tot)}%).` : `${fmt(tot)} open alerts in this range.` };
   }
-  if (t === 'honey') return { lv:'clear', text:`Most monitors in the heatmap are healthy — check the coloured cells first.` };
-  if (t === 'stat') return { lv:'info', text:`<b>${nm}</b> is ${mdsTxt(w.v)}${w.d ? ' (' + mdsTxt(w.d) + ')' : ''}.` };
+  if (t === 'honey') return { lv:'clear', short:'Mostly healthy', text:`Most monitors in the heatmap are healthy — check the coloured cells first.` };
+  if (t === 'stat') return { lv:'info', short: mdsTxt(w.v), text:`<b>${nm}</b> is ${mdsTxt(w.v)}${w.d ? ' (' + mdsTxt(w.d) + ')' : ''}.` };
   return null;
 }
 function mdsTag(lv, n){ return '<obs-tag variant="' + ({ critical:'tag-red', major:'tag-orange', warning:'tag-yellow', clear:'tag-green', info:'tag-primary' })[lv] + '">' + n + ' ' + MDS_LV[lv][2] + '</obs-tag>'; }
@@ -29058,6 +29231,48 @@ function mdsBody(sc, esc){
       '<button class="mdsgo" data-g="' + r.g + '" data-i="' + r.i + '" data-tip="Show this widget on the board">View<obs-icon name="long-arrow-right" size="14"></obs-icon></button></li>').join('') + '</ul>' +
     (rest > 0 ? '<p class="mdsrest"><obs-icon name="check-circle" size="14"></obs-icon>' + rest + ' other widget' + (rest === 1 ? '' : 's') + ' checked — nothing unusual.</p>' : '');
 }
+/* ── CARD OPTION 2 · SHORT (request, 25 Nov 2026: "another user-friendly and short option"). One verdict line, a one-line
+   severity count, then the three strongest findings as single rows - widget name left, the key figure right, the whole row
+   the View door. "See all N" switches back to the detailed list. Same reader (mdsRows) as option 1. */
+function mdsShortBody(sc, esc){
+  const rows = mdsRows(sc), cnt = {}; rows.forEach(r => cnt[r.lv] = (cnt[r.lv] || 0) + 1);
+  const bad = (cnt.critical || 0) + (cnt.major || 0), lvs = ['critical','major','warning','clear'];
+  const lv = cnt.critical ? 'critical' : cnt.major ? 'major' : 'clear';
+  const sub = lvs.filter(l => cnt[l]).map(l => '<span class="lv-' + l + '"><i></i>' + cnt[l] + ' ' + ({ critical:'critical', major:'need attention', warning:'to watch', clear:'healthy' })[l] + '</span>').join('');
+  const top = rows.filter(r => r.lv !== 'clear' && r.lv !== 'info').slice(0, 3);
+  return '<div class="mds3v lv-' + lv + '"><obs-icon name="' + MDS_LV[lv][1] + '" size="20"></obs-icon><div><b>' +
+      (bad ? bad + ' ' + (bad === 1 ? 'issue needs' : 'issues need') + ' you' : 'All clear') + '</b><small>' + sc.length + ' widgets checked</small></div></div>' +
+    (sub ? '<div class="mds3k">' + sub + '</div>' : '') +
+    (top.length ? '<ul class="mds3r">' + top.map(r => '<li class="lv-' + r.lv + '"><button class="mdsgo" data-g="' + r.g + '" data-i="' + r.i + '" data-tip="Show ' + esc(r.title) + ' on the board">' +
+      '<i></i><span class="n">' + esc(mdsShort(r.title) || r.title) + '</span><span class="v">' + esc(r.short || '') + '</span><obs-icon class="mdsar" name="long-arrow-right" size="14"></obs-icon></button></li>').join('') + '</ul>' : '') +
+    (rows.length > top.length ? '<button class="mds3all">See all ' + rows.length + ' findings</button>' : '');
+}
+/* ── OPTION 4 · PLAIN TEXT (request, 26 Nov 2026: "only simple text, point-wise"). One lead sentence, then each finding as a
+   plain bullet in priority order, then one closing line. No cards, tags, icons, counts or buttons - designs 1 and 2 moved
+   to the Module Work artifact. Same reader (mdsRows) as every other option. */
+function mdsPlain(sc, esc, gi, tr){
+  const rows = mdsRows(sc).filter(r => r.lv !== 'clear' && r.lv !== 'info'), rest = sc.length - rows.length, where = gi < 0 ? 'dashboard' : 'group';
+  return '<div class="mds4">' +
+    '<p>Mira read the ' + sc.length + ' widget' + (sc.length === 1 ? '' : 's') + ' on this ' + where + ' (' + esc(tr) + '). ' +
+      (rows.length ? rows.length + (rows.length === 1 ? ' thing needs' : ' things need') + ' your attention:' : 'Nothing needs your attention.') + '</p>' +
+    (rows.length ? '<ul>' + rows.map(r => '<li>' + r.text + '</li>').join('') + '</ul>' : '') +
+    (rest > 0 ? '<p class="mds4d">' + (rows.length ? 'The other ' + rest + ' widget' + (rest === 1 ? '' : 's') + ' look' + (rest === 1 ? 's' : '') + ' normal.' : '') + '</p>' : '') + '</div>';
+}
+/* ── OPTION 5 · PLAIN TEXT, FITTED (request, 26 Nov 2026: "option 3 is good, but the widget height and width depend on the
+   data, and the text user friendly"). Researched (ServiceNow Now Assist dashboard summary, Xurrent, Grafana, incident-comms
+   guides): lead with ONE verdict line, group by what to do (Act now · Check soon · Keep an eye on), keep each point one plain
+   sentence, and cite the widget it came from so it can be checked in one click. The widget sizes itself to that text. */
+function mdsPlainFit(sc, esc, gi, tr){
+  const rows = mdsRows(sc).filter(r => r.lv !== 'clear' && r.lv !== 'info'), n = sc.length, rest = n - rows.length, where = gi < 0 ? 'dashboard' : 'group';
+  const by = l => rows.filter(r => r.lv === l), urgent = by('critical').length;
+  const head = !rows.length ? 'All ' + n + ' widget' + (n === 1 ? '' : 's') + ' look normal — nothing needs you right now.'
+    : rows.length + ' of ' + n + ' widgets need a look' + (urgent ? ' — ' + urgent + ' urgent.' : '.');
+  const sec = (l, t) => { const rs = by(l); return rs.length ? '<div class="mds5s"><p class="mds5t"><obs-severity severity="' + l + '"></obs-severity>' + t + ' · ' + rs.length + '</p><ul>' +
+    rs.map(r => '<li>' + r.text + '</li>').join('') + '</ul></div>' : ''; };   /* view only - no links (request, 26 Nov 2026) */
+  return '<div class="mds5' + (rows.length <= 3 ? ' half' : '') + '"><p class="mds5h">' + head + '</p>' +
+        sec('critical', 'Act now') + sec('major', 'Check soon') + sec('warning', 'Keep an eye on') +
+    (rows.length && rest > 0 ? '<p class="mds5ok"><obs-severity severity="clear"></obs-severity>The other ' + rest + ' widget' + (rest === 1 ? '' : 's') + ' look' + (rest === 1 ? 's' : '') + ' normal.</p>' : '') + '</div>';
+}
 const mdsHead = { g:-1 };
 function mdsHTML(g0, asWidget, opt){
   const gi = g0 != null ? g0 : MDS.gi, sc = mdsScope(gi), esc = v => String(v).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
@@ -29075,7 +29290,11 @@ function mdsHTML(g0, asWidget, opt){
     mdsHead.g = gi;
     body = '<div class="mdsscope"><obs-tag variant="tag-primary">' + sc.length + ' widget' + (sc.length === 1 ? '' : 's') + '</obs-tag>' +
       (groups ? '<obs-tag variant="tag-primary">' + groups + ' groups</obs-tag>' : '') + '<obs-tag variant="tag-primary">' + esc(tr) + '</obs-tag></div>' + mdsBody(sc, esc);
+    if (!asWidget && MDS && MDS.opt === '2') body = mdsShortBody(sc, esc);
     if (asWidget && String(opt) === '2') body = mdsBrief(sc, esc, sc.length, groups, tr);
+    if (asWidget && String(opt) === '3') body = mdsShortBody(sc, esc);
+    if (asWidget && String(opt) === '4') body = mdsPlain(sc, esc, gi, tr);
+    if (asWidget && String(opt) === '5') body = mdsPlainFit(sc, esc, gi, tr);   /* plain text, no scope tags either */   /* the card's Short option, pinned (25 Nov 2026) */
   }
   /* the AI Summary WIDGET (24 Nov 2026) is the same body on the board - no header (the widget has its own) and no close; it is
      redrawn with every board render, so it is always current */
@@ -29083,6 +29302,8 @@ function mdsHTML(g0, asWidget, opt){
   const ch = MDS.chg ? '<div class="mdschg"><span>Updated</span>' + esc(MDS.chg) + '</div>' : '';
   return '<div class="mdshd"><span class="mdsmk">' + MIRA_SPK + '</span><div class="mdst"><b>' + (gi < 0 ? 'Dashboard summary' : 'Group summary') + '</b><small>' + esc(name) + ' \u00b7 Mira AI</small></div>' +
       '<span class="mdslive" data-tip="Re-reads the board whenever it changes"><i></i>Live</span><button class="mdsx" aria-label="Close" data-tip="Close">\u2715</button></div>' +
+    (sc.length ? '<div class="mdsopt"><obs-radio id="mdsOpt" as-button size="small" options=\'[{"value":"1","label":"Detailed"},{"value":"2","label":"Short"}]\'></obs-radio>' +
+      '<obs-button id="mdsPin" size="small" data-tip="Pin this summary to the board as a live widget"><obs-icon name="plus" size="14"></obs-icon>Add as widget</obs-button></div>' : '') +
     ch + '<div class="mdsb">' + body + '</div>' +
     '<div class="mdsf">Updated ' + (MDS.at || 'just now') + ' \u00b7 AI-generated, check the widgets before acting</div>';
 }
@@ -29095,10 +29316,31 @@ function mdsPaint(){
       if (x) mdsClose(); else if (sg && typeof waeMiraRun === 'function'){ if (MDS && MDS.gi >= 0) curG = MDS.gi; waeMiraRun(sg.dataset.p); } }); }
 
   c.innerHTML = mdsHTML(); c.classList.add('on');
+  const r = c.querySelector('#mdsOpt');
+  if (r){ setTimeout(() => { r.value = MDS.opt || '1'; }, 0);
+    r.addEventListener('change', e => { const v = String((e.detail && (Array.isArray(e.detail) ? e.detail[0] : e.detail)) || r.value);
+      if (MDS && v && v !== MDS.opt){ MDS.opt = v; mdsPaint(); } }); }
+  const all = c.querySelector('.mds3all'); if (all) all.addEventListener('click', () => { MDS.opt = '1'; mdsPaint(); });
+  const pin = c.querySelector('#mdsPin'); if (pin) pin.addEventListener('click', () => { const t = Date.now(); if (t - (mdsPin.t || 0) < 400) return; mdsPin.t = t; mdsPin(); });
+}
+/* "Add as widget" (request, 25 Nov 2026) - pins the card AS IT IS: same scope (dashboard or this group) and same option (Detailed →
+   AI Summary design 1, Short → design 3). It lands at the top of its scope, like the drawer's AI Summary tile; obs-button fires its
+   click twice, hence the 400ms guard above. */
+function mdsPin(){
+  if (!MDS) return;
+  const grp = MDS.gi >= 0 && !ungrouped, g = grp ? MDS.gi : 0, opt = MDS.opt === '2' ? '3' : '1';
+  if (!WIDGETS[g]) return;
+  histDo('Add AI Summary');
+  WIDGETS[g].unshift({ t:'aisum', title: (grp ? 'Group' : 'Dashboard') + ' AI Summary · Mira' + (opt === '3' ? ' — short' : ''), span:12,
+    h: opt === '3' ? 300 : (grp ? 380 : 390), scope: grp ? 'group' : 'board', sumopt: opt });
+  renderCanvas();
+  const pb = document.querySelector('.dwrap .pagebody'), gEl = grp && document.getElementById('grp-' + g);
+  if (pb) pb.scrollTop = gEl ? pb.scrollTop + gEl.getBoundingClientRect().top - pb.getBoundingClientRect().top - 8 : 0;
+  toast('Summary added as a widget - it keeps updating as ' + (grp ? 'this group' : 'the dashboard') + ' changes');
 }
 function mdsOpen(gi){
   if (gi >= 0 && ungrouped) gi = -1;
-  MDS = { gi, sig:null, chg:'', at:'just now' }; MDS.sig = mdsSig(); mdsPaint();
+  MDS = { gi, sig:null, chg:'', at:'just now', opt:(MDS && MDS.opt) || '1' }; MDS.sig = mdsSig(); mdsPaint();
 }
 function mdsClose(){ MDS = null; const c = document.getElementById('mdsCard'); if (c) c.classList.remove('on'); }
 /* the live part: after every board render, re-read the scope; a change in its widgets is named and the card flashes */
@@ -37814,6 +38056,7 @@ acHistRender();
       <div class="cwpb" id="cwPrev"></div>
     </div>
     <div class="cwset">
+      <div class="cwmtop" id="cwMiraTop"></div>
       <div class="cwnames">
         <!-- ⚠️ obs-input, the DS's default bordered text field (request, 26 Oct 2026), not the underlined native inputs.
              `input` is a custom event with detail [value], bound in cwNamesBind — an inline oninput would also catch the
@@ -38256,13 +38499,73 @@ function cwBlank(){ return { ctr:'', agg:'Avg', sf:'Everywhere', src:'', by:'' }
 function cwSrcOf(k){ return CW_SRC.find(s => s.k === k) || CW_SRC[0]; }
 function cwVizOf(k){ return CW_VIZ.find(v => v.k === k) || CW_VIZ[0]; }
 
+/* ══ MIRA AI PROMPT · OPTION 3 — edit in the Create Widget editor (request, 26 Nov 2026) ═════════════════════════════
+   Option 3 is option 1's tile. What differs is EDIT: a built option-3 widget opens this editor (not the centre popup) with
+     • a Mira AI prompt box ABOVE Widget Name / Description, and
+     • a "Mira AI" tab (first) holding the same prompt, Regenerate, follow-up prompts and what Mira built.
+   ONE prompt (CW.mira.prompt): typing in either field updates the other. Regenerate runs miraMake on a COPY, writes it into
+   the board model WITHOUT a render and reopens the editor on it (so its own Style / Sorting tabs edit what Mira just built);
+   Cancel / ✕ / Esc put the original back, Update Widget keeps it as ONE undo step. */
+function cwMiraEsc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
+function cwMiraTopPaint(){
+  const host = document.getElementById('cwMiraTop'), m = document.getElementById('cwModal'); if (!host) return;
+  const on = !!CW.mira && !cwFtOn() && !cwHmOn();
+  if (m) m.classList.toggle('cwmira', on);
+  if (!on){ host.innerHTML = ''; return; }
+  host.innerHTML = '<div class="cwmh"><span class="cwmspk">' + MIRA_SPK + '</span>Mira AI prompt</div>' +
+    '<div class="cwmbox"><textarea class="cwmta" rows="2" placeholder="Describe the widget you want to see" aria-label="Mira AI prompt">' + cwMiraEsc(CW.mira.prompt) + '</textarea>' +
+    '<button type="button" class="cwmgo"' + (CW.mira.prompt.trim() ? '' : ' disabled') + '>' + MIRA_SPK + 'Regenerate</button></div>';
+  cwMiraBind(host);
+}
+function cwMiraPanel(){
+  const f = miraFind(CW.mira.mid), w = f ? f.w : CW.mira.orig, m = w.mira || {}, fu = typeof miraFollow === 'function' ? miraFollow(w) : [];
+  return '<div class="cwmp"><div class="cwf"><div class="k">Prompt</div><div class="cwmbox"><textarea class="cwmta" rows="4" placeholder="Describe the widget you want to see" aria-label="Mira AI prompt">' +
+      cwMiraEsc(CW.mira.prompt) + '</textarea><button type="button" class="cwmgo"' + (CW.mira.prompt.trim() ? '' : ' disabled') + '>' + MIRA_SPK + 'Regenerate</button></div>' +
+      '<div class="cwmhint">Enter to regenerate · Shift+Enter for a new line. The other tabs edit what Mira built.</div></div>' +
+    '<div class="cwf"><div class="k">Try a follow-up</div><div class="cwmfu">' + fu.map(x => '<button type="button" class="cwmsg" data-p="' + cwMiraEsc(x) + '">' + MIRA_SPK + cwMiraEsc(x) + '</button>').join('') + '</div></div>' +
+    '<div class="cwf"><div class="k">What Mira built</div><div class="cwmkv">' +
+      '<span>Widget</span><b>' + cwMiraEsc(m.kind || (w.t === 'ch' ? 'Chart' : 'Top N')) + '</b>' +
+      '<span>Records</span><b>' + (m.records != null ? (+m.records).toLocaleString() : '—') + '</b>' +
+      '<span>Built</span><b>' + cwMiraEsc(m.at || '—') + (CW.mira.dirty ? ' · not saved yet' : '') + '</b></div></div></div>';
+}
+function cwMiraBind(root){
+  root.querySelectorAll('.cwmta').forEach(ta => {
+    ta.addEventListener('input', () => { CW.mira.prompt = ta.value;
+      document.querySelectorAll('#cwModal .cwmta').forEach(o => { if (o !== ta) o.value = ta.value; });
+      document.querySelectorAll('#cwModal .cwmgo').forEach(b => { b.disabled = !ta.value.trim(); }); });
+    ta.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); cwMiraRegen(); } }); });
+  root.querySelectorAll('.cwmgo').forEach(b => b.addEventListener('click', () => cwMiraRegen()));
+  root.querySelectorAll('.cwmsg').forEach(b => b.addEventListener('click', () => { CW.mira.prompt = b.dataset.p; cwMiraRegen(); }));
+}
+function cwMiraRegen(){
+  const M = CW.mira; if (!M || !M.prompt.trim()) return;
+  const f = miraFind(M.mid); if (!f) return;
+  document.querySelectorAll('#cwModal .cwmgo').forEach(b => { b.disabled = true; b.classList.add('busy'); b.lastChild.textContent = 'Building…'; });
+  setTimeout(() => {
+    const cur = miraFind(M.mid); if (!cur || !CW.open) return;
+    const draft = JSON.parse(JSON.stringify(cur.w)); draft.mira = Object.assign({}, draft.mira, { prompt:M.prompt, opt:'3' });
+    miraMake(draft, cur.w);
+    const d = new Date(); draft.mira.at = d.toLocaleDateString([], { month:'short', day:'numeric' }) + ', ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); draft.mira.state = 'done';
+    WIDGETS[cur.g][cur.i] = draft; M.dirty = true;
+    CW.miraKeep = M; cwOpen(cur.g, cur.i); CW.tab = 'Mira AI'; cwRender();
+    if (typeof toast === 'function') toast('Mira AI rebuilt it as ' + (draft.mira.kind || 'a widget') + ' — Update Widget to keep it');
+  }, 700);
+}
+/* Cancel puts the original back; Update keeps the draft as one undo step */
+function cwMiraUndo(){ const M = CW.mira; if (!M || !M.dirty || M.saved) return; const f = miraFind(M.mid); if (f) WIDGETS[f.g][f.i] = M.orig; M.dirty = false; }
 /* ── open / close ──────────────────────────────────────────────────────────── */
 function cwOpen(gi, i){
   /* an option-2 Mira AI widget edits in its own popup, shaped like this editor (20 Nov 2026) */
   { const w = typeof gi === 'number' && typeof i === 'number' ? (WIDGETS[gi] || [])[i] : null;
     /* BOTH options edit in the centre popup now (request, 23 Nov 2026, option 1: "a centre popup with 2 tabs - 1 prompt-based
        edit, 2 the Create Widget flow for that chart"). Option 1's in-tile prompt edit (miraPromptEdit) is kept, unreferenced. */
-    if (w && w.mira && w.t !== 'mira' && typeof miraEdOpen === 'function'){ miraEdOpen(w.mid, true); return; } }
+    if (w && w.mira && w.t !== 'mira' && w.mira.opt !== '3' && typeof miraEdOpen === 'function'){ miraEdOpen(w.mid, true); return; }
+    /* OPTION 3 (request, 26 Nov 2026): a built Mira AI widget edits in THIS editor, with its prompt above Name / Description
+       and a "Mira AI" tab. CW.mira carries the original (for Cancel) across a Regenerate, which reopens the editor on a draft. */
+    CW.mira = w && w.mira && w.t !== 'mira' && w.mira.opt === '3'
+      ? (CW.miraKeep || { g:gi, i, mid:w.mid, prompt:w.mira.prompt || '', orig:JSON.parse(JSON.stringify(w)), dirty:false })
+      : null;
+    CW.miraKeep = null; }
   if (gi != null){ CW_FLOW = 1; cwFlowPaint(); }   /* editing a placed widget is flow 1 — see CW_FLOW */
   CW.edit = null;
   if (typeof gi === 'number' && typeof i === 'number'){
@@ -38294,8 +38597,8 @@ function cwOpen(gi, i){
                                         cmpLeg:w.cmpLeg !== false, cmpAx:w.cmpAx !== false, cmpGrid:w.cmpGrid !== false, cmpLw:w.cmpLw || 2,
                                         cmpXtOn:!!w.cmpXtOn, cmpXt:w.cmpXt || '', cmpYtOn:!!w.cmpYtOn, cmpYt:w.cmpYt || '',
                                         cmpZtOn:!!w.cmpZtOn, cmpZt:w.cmpZt || '', cmpGr:w.cmpGr || 5, cmpGu:w.cmpGu || 'Minute', cmpWin:CMP_WIN[w.cmpWin] ? w.cmpWin : '24h', cmpPts:!!w.cmpPts, cmpPs:w.cmpPs || 4,
-                                        cmpCvOn:!!w.cmpCvOn, cmpCv:w.cmpCv || '', cmpVAl:w.cmpVAl || 'center', cmpChOn:w.cmpChOn !== false, cmpChOp:w.cmpChOp == null ? 65 : w.cmpChOp, cmpIc:w.cmpIc || '', cmpIcOn:w.cmpIcOn == null ? !!w.cmpIc : !!w.cmpIcOn,
-                                        cmpSevOn:!!w.cmpSevOn, cmpSevDir:w.cmpSevDir || 'up', cmpSevW:w.cmpSevW == null ? 60 : w.cmpSevW, cmpSevM:w.cmpSevM == null ? 75 : w.cmpSevM, cmpSevC:w.cmpSevC == null ? 90 : w.cmpSevC, cmpBand:w.cmpBand !== false, cmpStats:w.cmpStats !== false, cmpTbl:w.cmpTbl !== false};
+                                        cmpCvOn:!!w.cmpCvOn, cmpCv:w.cmpCv || '', cmpVAl:w.cmpVAl || 'center', cmpChOn:w.cmpChOn !== false, cmpChOp:w.cmpChOp == null ? 30 : w.cmpChOp, cmpIc:w.cmpIc || '', cmpIcOn:w.cmpIcOn == null ? !!w.cmpIc : !!w.cmpIcOn,
+                                        cmpSevOn:!!w.cmpSevOn, cmpSevDir:w.cmpSevDir || 'up', cmpSevW:w.cmpSevW == null ? 60 : w.cmpSevW, cmpSevM:w.cmpSevM == null ? 75 : w.cmpSevM, cmpSevC:w.cmpSevC == null ? 90 : w.cmpSevC, cmpTh:Array.isArray(w.cmpTh) ? JSON.parse(JSON.stringify(w.cmpTh)) : null, cmpBand:w.cmpBand !== false, cmpStats:w.cmpStats !== false, cmpTbl:w.cmpTbl !== false};
                           CW.cmpQ = w.ctr ? {src:w.src||'Metric', ctr:w.ctr, agg:w.agg||'Avg', ctr2:w.ctr2||'', agg2:w.agg2||'Avg'} : null; }
       if (w.t === 'freetext') CW.ftLoad = {text:w.text||'', size:w.size||'Auto',
                                            color:w.color||'Default', align:w.align||'center',
@@ -38327,7 +38630,7 @@ function cwOpen(gi, i){
                sort:'Descending', limit:10, markers:false, range:'Follow dashboard', mk:90,
                cmpWith:'yesterday', cmpAs:'Percent', cmpUp:'Good', cmpLine:true, cmpView:'Area', cmpLeg:true, cmpAx:true, cmpGrid:true, cmpLw:2, cmpXtOn:false, cmpXt:'', cmpYtOn:false, cmpYt:'', cmpZtOn:false, cmpZt:'', cmpGr:5, cmpGu:'Minute', cmpWin:'24h', cmpPts:false, cmpPs:4, cmpBand:true, cmpStats:true, cmpTbl:true };
   if (CW.cmpLoad){ Object.assign(CW.style, CW.cmpLoad); CW.cmpLoad = null; }
-  CW.tab = 'Style';
+  CW.tab = CW.mira ? 'Mira AI' : 'Style';   /* an option-3 Mira AI widget opens on its prompt */
   /* The live editor opens with a counter ALREADY selected (system.cpu.percent / Avg /
      Everywhere) so the preview draws and the create buttons are live from the first
      frame — it does not open in an error state. Same on create and on edit. */
@@ -38354,6 +38657,7 @@ function cwOpen(gi, i){
   setTimeout(()=>{ if (!CW.edit) cwNameFocus(); }, 60);
 }
 function cwClose(){
+  if (CW.mira){ cwMiraUndo(); CW.mira = null; }
   CW.open = false;
   /* an edge-＋ insertion point lives only until the editor closes — cwSave places synchronously after this call, so a
      cancelled editor cannot leave it armed for an unrelated add later */
@@ -38362,7 +38666,7 @@ function cwClose(){
   document.getElementById('cwModal').classList.remove('on');
 }
 function cwReset(){
-  const wasEdit = CW.edit;
+  const wasEdit = CW.edit; cwMiraUndo();
   cwOpen(wasEdit ? wasEdit.g : undefined, wasEdit ? wasEdit.i : undefined);
   toast('Reset — the form is back to how it opened');
 }
@@ -38454,6 +38758,7 @@ function cwRender(){
   document.getElementById('cwModal').classList.toggle('cwft2', cwFtOn() && CW_FT_OPT === 2);
   document.getElementById('cwModal').classList.toggle('cwhm', cwHmOn());
   if (!cwHmOn()) document.getElementById('cwModal').classList.remove('cwhm0');   /* Free Text OPTION 2 — a clone of option 1 for now; this class is its hook */
+  cwMiraTopPaint();
   if (cwFtOn()){
     document.getElementById('cwTabs').innerHTML = '';
     document.getElementById('cwBody').innerHTML = cwFtPanelHTML();
@@ -38464,21 +38769,27 @@ function cwRender(){
   if (cwHmOn()){ cwHmRender(); return; }
 
   /* right-panel tabs come from the visualization */
-  const vtabs = cwTnOn() ? cwTnTabs() : cwGgOn() ? GG_TAB[CW.viz] : viz.tabs;    /* Top N's Grid style adds a Column Setting tab */
+  const vtabs0 = cwTnOn() ? cwTnTabs() : cwGgOn() ? GG_TAB[CW.viz] : (CW.viz === 'cmp' && CW_CMP_OPT === 8) ? ['Style','Threshold','Timeline Preference'] : viz.tabs;   /* Single Value option 8 has a Threshold tab (25 Nov 2026) */    /* Top N's Grid style adds a Column Setting tab */
+  /* option-3 Mira AI widget: its prompt tab leads (a COPY - the tab lists are shared constants) */
+  const vtabs = CW.mira ? ['Mira AI'].concat(vtabs0) : vtabs0;
   if (vtabs.indexOf(CW.tab) < 0) CW.tab = vtabs[0];
+  cwMiraTopPaint();
   if (cwTnOn() || CW.viz === 'grid') CW.rows.forEach(r => { if (!r.by) r.by = src.by.includes('monitor') ? 'monitor' : src.by[0]; });  /* live opens on Result By Monitor */
   document.getElementById('cwTabs').innerHTML = vtabs.map(t =>
     '<button class="cwtb' + (t===CW.tab?' on':'') + '" onclick="cwTab(\'' + t + '\')">' + t + '</button>').join('');
-  document.getElementById('cwBody').innerHTML = cwTnOn() ? cwTnPanel() : cwGgOn() ? cwGgPanel() : cwPanelHTML(viz);
+  document.getElementById('cwBody').innerHTML = CW.tab === 'Mira AI' ? cwMiraPanel() : cwTnOn() ? cwTnPanel() : cwGgOn() ? cwGgPanel() : cwPanelHTML(viz);
+  if (CW.tab === 'Mira AI') cwMiraBind(document.getElementById('cwBody'));
+  else {
   /* Text truncation in every chart editor that names series (request, 19 Nov 2026): Top N (not Grid, a table) and Single Value */
   if (CW.tab === 'Style' && ((cwTnOn() && (CW.style.tn || 0) !== 6) || CW.viz === 'cmp')) document.getElementById('cwBody').insertAdjacentHTML('beforeend', cwTruncHTML());
-  if (CW.tab === 'Style' && CW.viz === 'cmp') document.getElementById('cwBody').insertAdjacentHTML('beforeend',
-    '<obs-banner id="cwCmpNote" class="cwcmpn cwcmpnb" variant="info" title="How this card reads">' + cwCmpNote() + '</obs-banner>');
+  /* "How this card reads" is no longer a second banner at the foot — it joined the period note at the top (25 Nov 2026) */
   if (cwGgOn()) cwGgBind();
   if (CW.viz === 'cmp') cwCmpBind();
+  if (CW.viz === 'cmp' && CW.tab === 'Threshold') cwCmpThBind();
   if (cwTnOn()) cwTnBind();
   if (CW.tab === 'Style' && (cwTnOn() || CW.viz === 'cmp')) cwTruncBind(document.getElementById('cwBody'));
   if (CW.viz === 'chart' && CW.tab === 'Style') cwChartBind();
+  }
 
   /* query builder */
   const qt = document.getElementById('cwQTab');
@@ -38633,14 +38944,19 @@ function cmpIcMask(host, name){ cmpIcUrl(name).then(u => { if (u) host.style.set
 function cmpIcMenu(host, lbl){
   const sr = host.shadowRoot; if (!sr || host.__icmo) return; host.__icmo = 1;
   const byLabel = {}; CMP8_IC.filter(Boolean).forEach(n => byLabel[lbl(n)] = n);
-  const paint = () => sr.querySelectorAll('.mopt').forEach(r => { const n = byLabel[(r.textContent || '').trim()]; if (!n || r.__icn === n) return;
-    r.__icn = n; r.classList.add('cwicrow'); cmpIcUrl(n).then(u => { if (u) r.style.setProperty('--icm', u); }); });
-  new MutationObserver(paint).observe(sr, { childList:true, subtree:true }); paint();
+  /* ⚠️ HOVER RE-RENDERS A ROW (25 Nov 2026: "when I hover, the icon hides"): the component re-writes the row's class and style for its
+     active state, which wiped .cwicrow and --icm - and the old once-per-row guard (__icn) never put them back. The row is checked for
+     BOTH on every pass now, and the observer also watches class / style changes. Re-adding them is itself an attribute change, but the
+     second pass finds both present and writes nothing, so it settles. */
+  const paint = () => sr.querySelectorAll('.mopt').forEach(r => { const n = byLabel[(r.textContent || '').trim()]; if (!n) return;
+    if (!r.classList.contains('cwicrow')) r.classList.add('cwicrow');
+    if (r.__icn !== n || !r.style.getPropertyValue('--icm')){ r.__icn = n; cmpIcUrl(n).then(u => { if (u && r.style.getPropertyValue('--icm') !== u) r.style.setProperty('--icm', u); }); } });
+  new MutationObserver(paint).observe(sr, { childList:true, subtree:true, attributes:true, attributeFilter:['class','style'] }); paint();
 }
 function cwCmp8ValueHTML(){
   const st = CW.style; if (st.cmpChOn === undefined) st.cmpChOn = true;
   if (st.cmpIcOn === undefined) st.cmpIcOn = !!st.cmpIc; if (!st.cmpIc) st.cmpIc = 'server';
-  if (!st.cmpSevDir) st.cmpSevDir = 'up'; if (st.cmpSevW == null) st.cmpSevW = 60; if (st.cmpSevM == null) st.cmpSevM = 75; if (st.cmpSevC == null) st.cmpSevC = 90; if (!st.cmpVAl) st.cmpVAl = 'center'; if (st.cmpChOp == null) st.cmpChOp = 65;
+  if (!st.cmpSevDir) st.cmpSevDir = 'up'; if (st.cmpSevW == null) st.cmpSevW = 60; if (st.cmpSevM == null) st.cmpSevM = 75; if (st.cmpSevC == null) st.cmpSevC = 90; if (!st.cmpVAl) st.cmpVAl = 'center'; if (st.cmpChOp == null) st.cmpChOp = 30;   /* default 30% (request, 25 Nov 2026) - it was 65 */
   const esc = v => String(v || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
   const al = JSON.stringify(CMP8_AL.map(a => ({ value:a[0], label:'Align ' + a[0], icon:'<svg width="18" height="18" viewBox="0 0 24 24" style="display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round">' +
     a[1].split('|').map(d => '<path d="' + d + '"/>').join('') + '</svg>' }))).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
@@ -38650,23 +38966,20 @@ function cwCmp8ValueHTML(){
   return '<div class="cwcmp8v"><div class="cwgrid">' +   /* no "Value" heading (request, 24 Nov 2026: "remove this text") */
     /* CUSTOM VALUE WAS REMOVED (request, 24 Nov 2026: "remove this action") - the card always shows the measured value */
 
-    '<div class="cwf"><div class="k">Value alignment</div><obs-radio class="cwcmpseg cwcmpwt cwtnlpr" data-k="cmpVAl" as-button aria-label="Value alignment" options="' + al + '"></obs-radio></div>' +
+    /* ALIGN VALUE (request, 25 Nov 2026, with a reference): the icon-only segment became a WORDED one - Left · Center · Right - the DS
+       radio's own button segment, as "Data" uses. Same field (cmpVAl); the icon options (al, CMP8_AL) are kept, unreferenced. */
+    '<div class="cwf"><div class="k">Align value</div><obs-radio class="cwcmpseg" data-k="cmpVAl" as-button aria-label="Align value" options="' +
+      JSON.stringify([{ value:'left', label:'Left' }, { value:'center', label:'Center' }, { value:'right', label:'Right' }]).replace(/"/g,'&quot;') + '"></obs-radio></div>' +
 '</div><div class="cwgrid">' +
     '<div class="cwf"><div class="k">Show chart</div>' + cwCmpSw('cmpChOn') + '</div>' +
     '<div class="cwf' + (st.cmpChOn ? '' : ' off') + '" id="cwCmpOpF"><div class="k">Chart opacity</div><div class="cwrange"><span class="cwslot"><input type="range" min="10" max="100" step="5" value="' + st.cmpChOp +
       '" aria-label="Chart opacity" oninput="CW.style.cmpChOp=+this.value;this.closest(\'.cwrange\').querySelector(\'.cwlwv\').textContent=this.value+\'%\';cwPreview()" /></span><span class="cwlwv">' + st.cmpChOp + '%</span></div></div>' +
     /* COLOUR BY SEVERITY (request, 24 Nov 2026: "the count colour changes by severity - when the value changes, the severity changes").
        ON: the value and its icon take the DS severity colour of the band the value is in. Direction says which way is worse. */
-'</div><div class="cwgrid">' +
-    '<div class="cwf"><div class="k">Colour by severity</div>' + cwCmpSw('cmpSevOn') + '</div>' +
-    '<div class="cwf' + (st.cmpSevOn ? '' : ' off') + '" id="cwCmpSevD"><div class="k">Worse when the value is</div><obs-radio class="cwcmpseg" data-k="cmpSevDir" as-button aria-label="Worse when" options="' +
-      JSON.stringify([{ value:'up', label:'Higher' }, { value:'down', label:'Lower' }]).replace(/"/g,'&quot;') + '"></obs-radio></div>' +
-'</div><div class="cwgrid">' +
-    '<div class="cwf wide' + (st.cmpSevOn ? '' : ' off') + '" id="cwCmpSevT"><div class="k">Thresholds <span class="cwsevh">' + (st.cmpSevDir === 'down' ? 'at or below' : 'at or above') + '</span></div><div class="cwsevr">' +
-      [['cmpSevW','Warning','warning'], ['cmpSevM','Major','major'], ['cmpSevC','Critical','critical']].map(x =>
-        '<label class="cwsevf"><span><i style="background:var(--severity-' + x[2] + ')"></i>' + x[1] + '</span><input class="cwin" type="number" step="any" aria-label="' + x[1] + ' threshold" value="' + st[x[0]] +
-        '" oninput="if(this.value!==\'\'){CW.style.' + x[0] + '=+this.value;cwPreview()}" /></label>').join('') +
-      '</div><p class="cwsevn">Below Warning the value shows in green (Clear).</p></div>' +
+    /* COLOUR BY SEVERITY AND "WORSE WHEN THE VALUE IS" LEFT THE STYLE TAB (request, 25 Nov 2026: "remove this"): the Threshold tab
+       decides the colour now, so option 8's value ALWAYS takes the colour of the first threshold row it meets (wCmp4, o8) */
+    /* THRESHOLDS LEFT THE STYLE TAB (request, 25 Nov 2026: "remove the Thresholds at or above") - they are the Threshold tab's
+       four rows now (cwCmpThHTML), each with its own operator, value and colour */
     /* ICON (request, 24 Nov 2026: "show the icon as ON/OFF, and when ON a dropdown like the obs design system"): an obs-switch, and while
        ON an obs-select of the icon names with the chosen glyph previewed beside it (the bundled obs-select draws text-only options) */
 '</div><div class="cwgrid">' +
@@ -38694,6 +39007,7 @@ function cwTogHTML(key, label){
     '<span class="sw"></span><span>' + (on?'ON':'OFF') + '</span></button></div>';
 }
 function cwPanelHTML(viz){
+  if (CW.tab === 'Threshold' && CW.viz === 'cmp') return cwCmpThHTML();
   if (CW.tab === 'Timeline Preference' && CW.viz === 'cmp')
     /* Single Value, every option (19 Nov 2026): the live product's one field + its (i) tooltip, the editor's DS switch */
     return '<div class="cwgrid cwcmpopt"><div class="cwf"><div class="k">Use Custom Sticky Timeline <i class="tninfo" data-tip="When enabled, this widget will display data based on its own selected timeline, overriding the global dashboard timeline.">i</i></div>' +
@@ -38773,7 +39087,10 @@ function cwPanelHTML(viz){
        CHART VIEW took their place: only the shapes this card can draw (CMP_VIEWS), as a segmented obs-radio. */
     return '<div class="cwcmpp">' +
       /* ⚠️ "Compare with" REMOVED (18 Nov 2026) — the header's time range sets both periods; a note says how they pair */
-      (CW_CMP_OPT === 3 ? '' : '<obs-banner id="cwCmpTlNote" class="cwcmpn" variant="info" title="' + cmpNoteTitle() + '">' + cmpNoteHTML() + '</obs-banner>') +
+      /* ONE note at the top (request, 25 Nov 2026): the period pairing and "How this card reads" used to be two banners,
+         one here and one at the foot of the tab — combined here. Option 3 has no period note, so it carries the second line only. */
+      '<obs-banner id="cwCmpNote" class="cwcmpn" variant="note" title="' + (CW_CMP_OPT === 3 ? 'How this card reads' : cmpNoteTitle()) + '">' +
+        (CW_CMP_OPT === 3 ? '' : cmpNoteHTML() + '<br>') + cwCmpNote() + '</obs-banner>' +   /* DS "note" variant — the blue callout (request, 25 Nov 2026) */
       /* Data — review chrome (19 Nov 2026): shows the two missing-data reads, since the prototype's data is always there */
       '<div class="cwf cwcmpdata"><div class="k">Data</div><obs-radio class="cwcmpseg" data-k="cmpDemo" as-button aria-label="Data" options="' +
         JSON.stringify((CW_CMP_OPT === 3 ? [['ok','Measured'],['nodata','No data']] : [['ok','Measured']].concat(CW_CMP_OPT >= 4 ? [['flat','Steady']] : [], [['noprev','No previous'],['nodata','No data']])).map(x => ({ value:x[0], label:x[1] }))).replace(/"/g,'&quot;') + '"></obs-radio></div>' +
@@ -38892,6 +39209,7 @@ function cwPanelHTML(viz){
        name is shortened in the legend AND the tooltip: A… end · A…B middle · …B start. A name that fits
        (CW_CH_TRUNC_N characters) is left whole. */
     h += cwTruncHTML();
+    if (CW.style.lowView === 'unit') h += cwGsHTML();   /* only the grouped-by-size widget gets these */
     /* Granularity LAST in the tab, after Text truncation (request, 23 Nov 2026) */
     h += '<div class="cwgrid cwchgr">' +
 /* Granularity (request, 23 Nov 2026) - Single Value's field, reused: a required step, the number and its unit (a searchable
@@ -40640,7 +40958,7 @@ function cwChHcCfg(spec){
        number printed above it in the series' OWN unit (the unit rides in its legend name). Line / area / column only:
        stacked, range, percentage and horizontal views keep every series on one axis. */
     const gMax = Math.max(1e-9, ...ser.flatMap(x => x.data.map(p => p[1])));
-    const minorOK = ser.length > 1 && !['log', 'norm', 'tiles'].includes(st.lowView) && !ty[1] && ty[0] !== 'bar' && (!mode || mode === 'step' || mode === 'zones');
+    const minorOK = ser.length > 1 && !['log', 'norm', 'tiles', 'unit', 'horizon'].includes(st.lowView) && !ty[1] && ty[0] !== 'bar' && (!mode || mode === 'step' || mode === 'zones');
     const isMinor = x => minorOK && !x.dashStyle && Math.max(...x.data.map(p => p[1])) < gMax * .02;
     /* lanes in DESCENDING order top to bottom (request, 19 Nov 2026): sorted smallest-first, so lane 0 (the floor) holds the
        smallest counter and the biggest sits on top; the tooltip lists them biggest first, the same order you read the lanes */
@@ -40766,6 +41084,100 @@ function cwChHcCfg(spec){
     else Object.assign(cfg.yAxis, { min:0, max:100, tickInterval:25, labels:Object.assign({}, cfg.yAxis.labels, { formatter:undefined, format:'{value}%' }),
       title:{ text:'% of each counter\u2019s own range', style:{ color:'var(--neutral-light)', fontSize:'10px', fontWeight:'normal' } } });
   }
+  /* ── GROUPED BY SIZE (request, 25 Nov 2026: "lots of options - I need a better, user-friendly one, research it"). What the
+     monitoring products do when counters differ by orders of magnitude: they do not squeeze them onto one axis, they give each
+     UNIT its own axis (Grafana: an override per unit puts it on its own axis; Dynatrace Data Explorer: one y-axis per unit;
+     Datadog: split graph). Here: counters are grouped by size (a new group starts when a peak is under 1/20 of the group's
+     largest), and each group gets its own pane STACKED in the one chart, with its own axis in its own unit (GB / MB / KB / %).
+     One time axis at the bottom, ONE crosshair through every pane and ONE tooltip listing every counter, grouped by pane, in
+     its real value. Nothing is hidden, rescaled or turned into dots: every line is a real line you can read off its axis. */
+  if (st.lowView === 'unit' && mode !== 'range' && mode !== 'crange'){
+    /* SIZE-AWARE (request, 26 Nov 2026: "small, medium or large - hide some and show, with proper alignment"). gsTier picks
+       S / M / L from the chart box (or the editor's Layout choice); each tier decides what is worth its room:
+         L  pane title "GB · 2 counters" · 4 / 3 axis ticks · legend when it fits
+         M  pane title "GB · 2"          · 3 ticks          · legend only if the panes keep 240px
+         S  pane title "GB"              · 2 ticks (0, max)  · no legend, tighter gaps
+       The pane title is a chip INSIDE the plot's top-left corner (it sat above the axis' own top label and the two collided). */
+    const GW = (spec ? spec.w : pv && pv.offsetWidth) || 900, GH = (spec ? spec.h : pv && pv.offsetHeight) || 400, TIER = gsTier(st, GW, GH);
+    /* ⚠️ A COUNTER IS PLACED BY ITS TYPICAL LEVEL, NOT ITS PEAK (request, 26 Nov 2026: "a TB counter shows KB / MB for one
+       point, then continues at GB / TB"). Grouping by the peak let ONE spike move a KB counter into the GB pane, and one dip
+       could not be read at all. Now: the level is the 90th percentile of the counter's own values, the pane's axis stops at
+       its counters' 98th percentile, and anything outside is an OUTLIER - a spike clips at the pane's top with a ▲ marker
+       and its real value, a dip (under 1/20 of the counter's level) gets a ▼ marker with its value. The tooltip always shows
+       the real number. */
+    const qt = (x, p) => { if (!x._q) x._q = x.data.map(q => q[1]).filter(v => v != null).sort((a, b) => a - b); const a = x._q; return a.length ? a[Math.min(a.length - 1, Math.floor(p * (a.length - 1)))] : 0; };
+    if (st.gsOutDemo){   /* demo: one dip on the biggest counter and one spike on a KB counter, to show the handling */
+      const by = ser.filter(x => !x.dashStyle).slice().sort((a, b) => qt(b, .9) - qt(a, .9)); by.forEach(x => { delete x._q; });
+      const big = by[0], small = by[by.length - 2] || by[by.length - 1];
+      if (big){ big.data = big.data.map(q => q.slice()); const k = Math.floor(big.data.length * .42); big.data[k][1] = 12 * 1024; delete big._q; }
+      if (small && small !== big){ small.data = small.data.map(q => q.slice()); const k = Math.floor(small.data.length * .7); small.data[k][1] = 2.1 * 1024 ** 3; delete small._q; } }
+    const UN = ['B','KB','MB','GB','TB','PB'], pk = x => Math.max(1e-9, qt(x, .9)), RATIO = +st.gsRatio || 20;
+    const real = ser.filter(x => !x.dashStyle).sort((a, b) => pk(b) - pk(a)), groups = [];
+    real.forEach(x => { const g = groups[groups.length - 1]; if (g && pk(x) >= g.top / RATIO && !!x.pct === !!g.pct && !!(x.byte || byteAll) === g.byte) g.list.push(x);
+      else groups.push({ top:pk(x), list:[x], pct:!!x.pct && !x.byte, byte:!!(x.byte || byteAll) }); });
+    groups.forEach(g => { g.unit = g.byte ? UN[Math.min(5, Math.floor(Math.log(Math.max(1, pk(g.list[g.list.length - 1]))) / Math.log(1024)))] : g.pct ? '%' : ''; });
+    /* two neighbouring groups in the SAME unit become one pane - "KB" twice reads as a bug, and each line keeps its tooltip value */
+    for (let i = groups.length - 1; i > 0; i--) if (groups[i].unit === groups[i - 1].unit){ groups[i - 1].list = groups[i - 1].list.concat(groups[i].list); groups.splice(i, 1); }
+    /* legend (Auto only): it shows when its rows leave the panes at least 240px; never on a compact widget */
+    if ((st.chLegPos || 'Bottom') === 'Auto' && LA.pos === 'Bottom'){
+      const per = Math.max(1, Math.floor(GW / 230)), legH = Math.ceil(real.length / per) * 18 + 14;
+      cfg.legend.enabled = !!st.legend && TIER !== 'S' && GH - legH >= (TIER === 'M' ? 240 : 260);
+    }
+    const GAP = groups.length > 1 ? (TIER === 'S' ? 5 : 7) : 0, eq = !!st.gsEq, wts = groups.map((g, i) => !eq && i === 0 ? (TIER === 'S' ? 1.3 : 1.6) : 1),
+      wsum = wts.reduce((a, b) => a + b, 0), room = 100 - GAP * (groups.length - 1);
+    let y0 = 0; const fmt = g => v => g.byte ? cwBytes(v) : g.pct ? Math.round(v * 10) / 10 + '%' : (Math.round(v * 10) / 10).toLocaleString();
+    const TK = i => TIER === 'S' ? 2 : TIER === 'M' ? 3 : (groups.length > 2 && i ? 3 : 4);
+    cfg.yAxis = groups.map((g, i) => { const h = room * wts[i] / wsum, ax = { top:y0 + '%', height:h + '%', offset:0, min:0, max:(g.cap = Math.max(...g.list.map(x => qt(x, .98))) * 1.22), startOnTick:false, endOnTick:false,
+        tickAmount:TK(i), gridLineColor:'var(--chart-grid-line-color)', lineColor:'var(--bottom-line-color)', lineWidth:1,
+        /* compact: only each pane's top value - a pane's "0" sat on the next pane's top label */
+        showFirstLabel:TIER !== 'S' || i === groups.length - 1,
+        labels:{ style:lab, x:-6, formatter(){ return fmt(g)(this.value); } }, title:{ text:null } };
+      y0 += h + GAP; return ax; });
+    const FILL = st.gsFill !== false;
+    cfg.series = [];
+    groups.forEach((g, gi) => g.list.forEach(x => cfg.series.push({ name:x.name, data:x.data, color:x.color, yAxis:gi, byte:g.byte, pct:g.pct, type:FILL ? 'areaspline' : 'spline',
+      lineWidth:gi ? (TIER === 'S' ? 1.25 : 1.5) : (+st.lw || 2), fillColor:{ linearGradient:{ x1:0, y1:0, x2:0, y2:1 }, stops:[[0, 'color-mix(in srgb,' + x.color + ' ' + (gi ? 28 : 60) + '%,transparent)'], [1, 'color-mix(in srgb,' + x.color + ' 0%,transparent)']] } })));
+    if (st.gsOut !== false) groups.forEach((g, gi) => g.list.forEach(x => {
+      const lv = pk(x), hi = [], lo = [];
+      x.data.forEach(q => { if (q[1] == null) return; if (q[1] > g.cap) hi.push(q); else if (q[1] < lv / 20) lo.push(q); });
+      const mk = (pts, up) => ({ type:'scatter', name:x.name + (up ? ' spike' : ' dip'), yAxis:gi, color:x.color, showInLegend:false, enableMouseTracking:false, zIndex:7,
+        marker:{ symbol:up ? 'triangle' : 'triangle-down', radius:5, lineWidth:1, lineColor:'var(--widget-background)' },
+        data:pts.slice(0, 8).map(q => ({ x:q[0], y:up ? g.cap * .93 : g.cap * .07, real:q[1] })),
+        dataLabels:{ enabled:true, y:up ? 16 : -10, crop:false, overflow:'allow', formatter(){ return (up ? '\u25b2 ' : '\u25bc ') + fmt(g)(this.point.options.real); },
+          style:{ color:x.color, fontSize:'10px', fontWeight:'600', textOutline:'none' } } });
+      if (hi.length) cfg.series.push(mk(hi, true));
+      if (lo.length && lo.length < x.data.length / 4) cfg.series.push(mk(lo, false)); }));
+    cfg.chart.alignTicks = false; cfg.subtitle = { text:null }; cfg.chart.spacing = TIER === 'S' ? [6, 8, 4, 0] : [10, 10, 6, 0];
+    /* the pane chips: drawn on every render from the chart's REAL size, so a resize re-decides them without a rebuild */
+    const prevR = cfg.chart.events && cfg.chart.events.render;
+    cfg.chart.events = Object.assign({}, cfg.chart.events, { render(){ if (prevR) prevR.call(this);
+      const ct = this.container; ct.querySelectorAll('.gspt').forEach(n => n.remove());
+      const tm = st.gsTitle || 'auto', tier = gsTier(st, this.chartWidth, this.chartHeight); if (tm === 'off') return;
+      this.yAxis.forEach((ax, i) => { const g = groups[i]; if (!g || ax.height < 26) return;
+        const u = g.unit || 'Value', n = g.list.length, full = tm === 'full' || (tm === 'auto' && tier === 'L'), unitOnly = tm === 'unit' || (tm === 'auto' && tier === 'S');
+        const d = document.createElement('div'); d.className = 'gspt';
+        d.textContent = unitOnly ? u : full ? u + ' · ' + n + ' counter' + (n === 1 ? '' : 's') : u + ' · ' + n;
+        d.style.cssText = 'position:absolute;z-index:2;pointer-events:none;left:' + (this.plotLeft + 6) + 'px;top:' + (ax.top + 3) + 'px;font:600 10.5px/16px var(--chart-font-family);' +
+          'color:var(--neutral-light);background:color-mix(in srgb,var(--widget-background) 86%,transparent);padding:0 6px;border-radius:4px;white-space:nowrap';
+        ct.appendChild(d); }); } });
+    cfg.gsKey = TIER + (cfg.legend.enabled ? 1 : 0);
+    /* one crosshair through every pane */
+    cfg.xAxis.crosshair = st.gsCross === false ? false : { color:'var(--neutral-light)', width:1, dashStyle:'Dash' };
+    cfg.tooltip.shared = true;
+    cfg.tooltip.formatter = function(){ const pts = this.points || [this.point]; let h = '<div style="font-weight:700;font-size:11px">' + cwChFmt(this.x) + '</div>';
+      groups.forEach((g, gi) => { const ps = pts.filter(pt => pt.series.options.yAxis === gi); if (!ps.length) return;
+        h += '<div style="margin-top:7px;font-size:10px;font-weight:600;color:var(--neutral-light);letter-spacing:.04em;text-transform:uppercase">' + (g.unit || 'Value') + '</div>' +
+          ps.map(pt => '<div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-top:4px"><svg height="8" width="8" style="flex:0 0 8px;margin-right:4px"><rect width="8" height="8" fill="' + pt.color + '"/></svg>' +
+            '<span style="margin-right:auto">' + CUT(pt.series.name) + '</span><b style="margin-left:24px;font-size:12.5px">' + fmt(g)(pt.y) + '</b></div>').join(''); });
+      return h; };
+  }
+  if (st.lowView === 'horizon'){   /* horizon rows: no Highcharts chart - chMount draws chHorizonHTML */
+    const L = ser.filter(x => !x.dashStyle).map(x => ({ name:x.name, color:x.color, data:x.data.map(q => q.slice()), byte:!!(byteAll || x.byte), pct:!!x.pct && !x.byte }));
+    if (st.gsOutDemo && L.length > 1){   /* the same demo outliers as grouped-by-size: one dip on the biggest, one spike on a small one */
+      const md = x => { const a = x.data.map(q => q[1]).sort((a, b) => a - b); return a[a.length >> 1] || 0; };
+      const by = L.slice().sort((a, b) => md(b) - md(a)), big = by[0], small = by[by.length - 2];
+      big.data[Math.floor(big.data.length * .42)][1] = 12 * 1024; if (small && small !== big) small.data[Math.floor(small.data.length * .7)][1] = 2.1 * 1024 ** 3; }
+    cfg.horizonAll = L; }
   if (st.lowView === 'tiles') cfg.tilesAll = ser.filter(x => !x.dashStyle).map(x => ({ name:x.name, color:x.color, data:x.data, byte:byteAll || x.byte, pct:x.pct }));
   if (minorSer.length && st.lowView === 'list'){
     cfg.lowList = minorSer.map(x => ({ name:x.name, color:x.color, data:x.data, byte:byteAll || x.byte, pct:x.pct }));
@@ -40853,6 +41265,65 @@ function chLowListHTML(list){
 }
 /* one card per counter (the 'tiles' view): name, latest value in its own unit, an area trend on its own scale. A grid of
    auto-filled 150px+ columns, so the widget can be any size - the cards wrap, and a short widget scrolls. */
+/* ══ HORIZON ROWS (request, 26 Nov 2026: "the grouped-by-size view is good, copy it as another option - I need the BEST idea,
+   use deep research") ══════════════════════════════════════════════════════════════════════════════════════════════
+   The research answer for MANY counters of VERY different size with spikes and dips is a HORIZON CHART (Heer, Kong &
+   Agrawala, "Sizing the Horizon", CHI 2009, Best Paper): every counter gets one thin row on its OWN scale, so a KB counter is
+   as readable as a TB one, and the rows share one time axis so a moment can be compared down the whole column. Layered
+   bands keep a short row accurate (their study: 2 bands hold accuracy at small heights).
+   This variant draws DEVIATION FROM NORMAL: the baseline is each counter's median; above it the counter's own colour in
+   two bands (light, dark), below it the warning colour in two bands. A calm counter is a calm, near-empty strip; a dip or a
+   spike is a dark block you see without reading an axis - which is exactly the "TB that shows KB once" case. Anything past
+   both bands is clipped dark and labelled with its REAL value (▲ / ▼). The value column shows the latest value in its own
+   unit; hovering anywhere draws one cursor through every row and every value cell follows it. */
+function chHzFmt(x, v){ if (v == null) return '—'; return x.byte ? cwBytes(v) : x.pct ? (Math.round(v * 10) / 10) + '%' : (Math.round(v * 10) / 10).toLocaleString(); }
+function chHorizonHTML(list){
+  const W = 1000, N = 240, e = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  const q = (a, p) => a[Math.min(a.length - 1, Math.max(0, Math.floor(p * (a.length - 1))))];
+  /* the NORMAL RANGE is p5..p95 of the counter's own values: inside it the strip is calm (only a thin trend line on the counter's
+     own scale); OUTSIDE it the horizon bands appear - above in the counter's colour, below in the warning colour, two bands each,
+     band size = the distance from p90 to p99 (p10 to p1). A true outlier (past 1.5 x p98, or under 1/20 of the median) is labelled. */
+  const rows = list.map(x => { const v = x.data.map(p => p[1]).filter(n => n != null), a = v.slice().sort((m, n) => m - n), med = q(a, .5);
+    const hi = q(a, .95), lo = q(a, .05);
+    return Object.assign({}, x, { med, hi, lo, p98:q(a, .98), up:Math.max(1e-9, (q(a, .995) - hi) / 2), dn:Math.max(1e-9, (lo - q(a, .005)) / 2), tmin:q(a, .02), tmax:q(a, .98) }); }).sort((a, b) => b.med - a.med);
+  const t0 = (list[0] && list[0].data[0] || [0])[0], t1 = (list[0] && list[0].data[list[0].data.length - 1] || [1])[0];
+  window.CH_HZ_ROWS = window.CH_HZ_ROWS || {}; const key = 'hz' + Math.random().toString(36).slice(2, 8); CH_HZ_ROWS[key] = rows;
+  const strip = x => { const d = x.data, n = d.length, step = n / N, pos = [[], []], neg = [[], []], line = [], marks = [], rg = (x.tmax - x.tmin) || 1;
+    for (let k = 0; k < N; k++){ let hiV = -Infinity, loV = Infinity, sum = 0, c = 0;
+      for (let j = Math.floor(k * step); j < Math.max(Math.floor(k * step) + 1, Math.floor((k + 1) * step)) && j < n; j++){ const v = d[j][1]; if (v == null) continue; hiV = Math.max(hiV, v); loV = Math.min(loV, v); sum += v; c++; }
+      const X = (k / (N - 1) * W).toFixed(1), avg = c ? sum / c : x.med;
+      const up = hiV > x.hi ? (hiV - x.hi) / x.up : 0, dn = loV < x.lo ? (x.lo - loV) / x.dn : 0;
+      for (let b = 0; b < 2; b++){ pos[b].push(X + ',' + (100 - Math.min(1, Math.max(0, up - b)) * 100).toFixed(1)); neg[b].push(X + ',' + (100 - Math.min(1, Math.max(0, dn - b)) * 100).toFixed(1)); }
+      line.push(X + ',' + (92 - Math.min(1, Math.max(0, (avg - x.tmin) / rg)) * 84).toFixed(1));
+      const spike = hiV > x.p98 * 1.5, dip = x.med > 0 && loV < x.med / 20;
+      if ((spike || dip) && marks.length < 3 && (!marks.length || k - marks[marks.length - 1].k > 16)) marks.push({ k, v:spike ? hiV : loV, up:spike }); }
+    const poly = (pts, fill, op) => '<polygon points="0,100 ' + pts.join(' ') + ' ' + W + ',100" style="fill:' + fill + ';opacity:' + op + '"/>';
+    return '<svg viewBox="0 0 ' + W + ' 100" preserveAspectRatio="none" aria-hidden="true">' +
+      poly(pos[0], x.color, .35) + poly(pos[1], x.color, .9) + poly(neg[0], 'var(--severity-major)', .35) + poly(neg[1], 'var(--severity-major)', .9) +
+      '<polyline points="' + line.join(' ') + '" style="fill:none;stroke:' + x.color + ';stroke-width:1.25;opacity:.75" vector-effect="non-scaling-stroke"/></svg>' +
+      marks.map(m => '<span class="chhzm ' + (m.up ? 'up' : 'dn') + '" style="left:' + Math.min(94, Math.max(6, m.k / (N - 1) * 100)).toFixed(2) + '%">' + (m.up ? '▲ ' : '▼ ') + e(chHzFmt(x, m.v)) + '</span>').join(''); };
+  const hrs = [], span = t1 - t0, stepH = span > 16 * 36e5 ? 3 : span > 6 * 36e5 ? 2 : 1;
+  for (let h = Math.ceil(t0 / 36e5) * 36e5; h <= t1; h += 36e5 * stepH) hrs.push(h);
+  return '<div class="chhz" data-k="' + key + '" data-t0="' + t0 + '" data-t1="' + t1 + '">' +
+    rows.map((x, i) => { const nm = String(x.name).replace(/\.avg$/, '').replace(/^system\./, ''), last = x.data[x.data.length - 1][1];
+      return '<div class="chhzr" data-i="' + i + '"><div class="chhzl" data-tip="' + e(x.name) + '"><i style="background:' + x.color + '"></i><span>' + e(nm) + '</span>' +
+        '<small>typ ' + e(chHzFmt(x, x.med)) + '</small></div><div class="chhzs">' + strip(x) + '</div><b class="chhzv" data-last="' + e(chHzFmt(x, last)) + '">' + e(chHzFmt(x, last)) + '</b></div>'; }).join('') +
+    '<div class="chhzr chhzax"><div class="chhzl"><span class="chhzk"><i class="a"></i>above normal <i class="b"></i>below normal</span></div><div class="chhzs">' +
+      hrs.map(h => '<em style="left:' + ((h - t0) / (span || 1) * 100).toFixed(2) + '%">' + new Date(h).toTimeString().slice(0, 5) + '</em>').join('') +
+      '<em class="chhzt"></em></div><b class="chhzv chhzvh">latest</b></div><span class="chhzc"></span></div>';
+}
+function chHorizonBind(host){
+  const box = host.querySelector('.chhz'); if (!box) return; const rows = (window.CH_HZ_ROWS || {})[box.dataset.k] || [];
+  const cur = box.querySelector('.chhzc'), tl = box.querySelector('.chhzt'), hd = box.querySelector('.chhzvh'), t0 = +box.dataset.t0, t1 = +box.dataset.t1;
+  box.addEventListener('mousemove', ev => { const s = box.querySelector('.chhzr .chhzs'); if (!s) return; const r = s.getBoundingClientRect(), f = (ev.clientX - r.left) / r.width;
+    if (f < 0 || f > 1){ box.dispatchEvent(new Event('mouseleave')); return; }
+    const br = box.getBoundingClientRect(); cur.style.left = (ev.clientX - br.left) + 'px'; cur.style.display = 'block';
+    const t = t0 + f * (t1 - t0); tl.textContent = new Date(t).toTimeString().slice(0, 5); tl.style.left = (f * 100) + '%'; tl.style.display = 'block'; hd.textContent = 'at ' + tl.textContent;
+    box.querySelectorAll('.chhzr[data-i]').forEach(rw => { const x = rows[+rw.dataset.i]; if (!x) return; const d = x.data, j = Math.min(d.length - 1, Math.max(0, Math.round(f * (d.length - 1))));
+      rw.querySelector('.chhzv').textContent = chHzFmt(x, d[j][1]); }); });
+  box.addEventListener('mouseleave', () => { cur.style.display = 'none'; tl.style.display = 'none'; hd.textContent = 'latest';
+    box.querySelectorAll('.chhzr[data-i] .chhzv').forEach(v => { v.textContent = v.dataset.last; }); });
+}
 function chTilesHTML(list){
   return '<div class="chti">' + list.map(x => { const v = x.data.map(p => p[1]), lo = Math.min(...v), hi = Math.max(...v), rg = hi - lo || 1, last = v[v.length - 1], first = v[0];
     const step = Math.max(1, Math.floor(v.length / 60)), a = v.filter((q, i) => i % step === 0), pts = a.map((q, i) => (i / (a.length - 1) * 100).toFixed(1) + ',' + (30 - (q - lo) / rg * 26).toFixed(1)).join(' ');
@@ -40875,9 +41346,10 @@ function chMount(){
       host.innerHTML = '<div class="chwc"></div>'; let el = host.firstChild;
       const cfg0 = cwChHcCfg(Object.assign({}, spec, { w:el.offsetWidth, h:el.offsetHeight }));
       if (cfg0.tilesAll){ host.innerHTML = chTilesHTML(cfg0.tilesAll); return; }   /* tiles: no chart */
+      if (cfg0.horizonAll){ host.innerHTML = chHorizonHTML(cfg0.horizonAll); chHorizonBind(host); return; }   /* horizon rows: no chart */
       if (cfg0.lowList){ host.innerHTML = '<div class="chlw"><div class="chlc"><div class="chwc"></div></div>' + chLowListHTML(cfg0.lowList) + '</div>'; el = host.querySelector('.chwc');
         Object.assign(cfg0, cwChHcCfg(Object.assign({}, spec, { w:el.offsetWidth, h:el.offsetHeight }))); }
-      const c = H.chart(el, cfg0); CH_LIVE.add(c); wLegRoom(c);
+      const c = H.chart(el, cfg0); CH_LIVE.add(c); wLegRoom(c); c.gsKey = cfg0.gsKey;
       let lk = '';
       const ro = new ResizeObserver(() => { if (!el.isConnected || !el.offsetWidth) return;
         c.setSize(el.offsetWidth, el.offsetHeight, false);
@@ -40885,6 +41357,10 @@ function chMount(){
         if (c.yAxis[1] && Math.abs(el.offsetHeight - (c.laneH0 || 0)) > 24){ c.laneH0 = el.offsetHeight;
           const y = cwChHcCfg(Object.assign({}, spec, { w:el.offsetWidth, h:el.offsetHeight })).yAxis;
           if (Array.isArray(y)){ y.forEach((a, k) => { if (c.yAxis[k]) c.yAxis[k].update({ top:a.top, height:a.height }, false); }); c.redraw(); } }
+        /* grouped by size: a new tier (or legend fit) re-applies the panes, legend and spacing in one update */
+        if ((spec.style || {}).lowView === 'unit'){ const nc = cwChHcCfg(Object.assign({}, spec, { w:el.offsetWidth, h:el.offsetHeight }));
+          if (nc.gsKey && nc.gsKey !== c.gsKey){ c.gsKey = nc.gsKey; c.update({ yAxis:nc.yAxis, legend:nc.legend, chart:{ spacing:nc.chart.spacing } }, true, true, false); c.wRoom = 0; wLegRoom(c); }
+          return; }
         /* Auto legend: re-resolved per size, updated only when the answer changes (an update per pixel would thrash) */
         if ((spec.style || {}).chLegPos === 'Auto'){ const a = cwChLegAuto(el.offsetWidth, el.offsetHeight), k = a.pos + a.on;
           if (k !== lk){ lk = k; c.update({ legend:cwChHcCfg(Object.assign({}, spec, { w:el.offsetWidth, h:el.offsetHeight })).legend }, true, false); c.wRoom = 0; wLegRoom(c); } } });
@@ -40919,6 +41395,14 @@ function cwChCut(t, how, n){
   if (how === 'middle'){ const a = Math.ceil((n - 1) / 2), b = Math.floor((n - 1) / 2); return t.slice(0, a) + '\u2026' + t.slice(t.length - b); }
   return t.slice(0, n - 1) + '\u2026';
 }
+/* Grouped-by-size view: the size tier (S compact · M standard · L detailed). Auto reads the chart box; the editor's
+   Layout control can pin one. */
+function gsTier(st, W, H){ const f = (st && st.gsSize) || 'Auto';
+  if (f !== 'Auto') return { Compact:'S', Standard:'M', Detailed:'L' }[f] || 'L';
+  if (!W || !H) return 'L';
+  if (W < 520 || H < 260) return 'S';
+  if (W < 900 || H < 380) return 'M';
+  return 'L'; }
 function cwChLegAuto(W, H){
   if (!W || !H) return { pos:'Bottom', on:true };
   if (W < 380 || H < 160) return { pos:'Bottom', on:false };
@@ -41072,8 +41556,8 @@ function cwCmpW(){
            cmpLeg:CW.style.cmpLeg, cmpAx:CW.style.cmpAx, cmpGrid:CW.style.cmpGrid, cmpLw:CW.style.cmpLw,
            cmpXtOn:CW.style.cmpXtOn, cmpXt:CW.style.cmpXt, cmpYtOn:CW.style.cmpYtOn, cmpYt:CW.style.cmpYt,
            cmpZtOn:CW.style.cmpZtOn, cmpZt:CW.style.cmpZt, cmpGr:CW.style.cmpGr, cmpGu:CW.style.cmpGu, cmpWin:CW.style.cmpWin, cmpPts:CW.style.cmpPts, cmpPs:CW.style.cmpPs,
-           cmpCvOn:!!CW.style.cmpCvOn, cmpCv:CW.style.cmpCv || '', cmpVAl:CW.style.cmpVAl || 'center', cmpChOn:CW.style.cmpChOn !== false, cmpChOp:CW.style.cmpChOp == null ? 65 : CW.style.cmpChOp, cmpIc:CW.style.cmpIc || '', cmpIcOn:!!CW.style.cmpIcOn,
-           cmpSevOn:!!CW.style.cmpSevOn, cmpSevDir:CW.style.cmpSevDir || 'up', cmpSevW:CW.style.cmpSevW == null ? 60 : CW.style.cmpSevW, cmpSevM:CW.style.cmpSevM == null ? 75 : CW.style.cmpSevM, cmpSevC:CW.style.cmpSevC == null ? 90 : CW.style.cmpSevC, cmpTbl:CW.style.cmpTbl !== false, cmpBand:CW.style.cmpBand !== false, cmpStats:CW.style.cmpStats !== false, cmpopt:CW_CMP_OPT,
+           cmpCvOn:!!CW.style.cmpCvOn, cmpCv:CW.style.cmpCv || '', cmpVAl:CW.style.cmpVAl || 'center', cmpChOn:CW.style.cmpChOn !== false, cmpChOp:CW.style.cmpChOp == null ? 30 : CW.style.cmpChOp, cmpIc:CW.style.cmpIc || '', cmpIcOn:!!CW.style.cmpIcOn,
+           cmpSevOn:!!CW.style.cmpSevOn, cmpSevDir:CW.style.cmpSevDir || 'up', cmpSevW:CW.style.cmpSevW == null ? 60 : CW.style.cmpSevW, cmpSevM:CW.style.cmpSevM == null ? 75 : CW.style.cmpSevM, cmpSevC:CW.style.cmpSevC == null ? 90 : CW.style.cmpSevC, cmpTh:Array.isArray(CW.style.cmpTh) ? JSON.parse(JSON.stringify(CW.style.cmpTh)) : undefined, cmpTbl:CW.style.cmpTbl !== false, cmpBand:CW.style.cmpBand !== false, cmpStats:CW.style.cmpStats !== false, cmpopt:CW_CMP_OPT,
            ctr2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).ctr || '') : '', agg2:CW_CMP_OPT === 3 ? ((CW.rows.filter(r => r.ctr)[1] || {}).agg || 'Avg') : '' };
 }
 /* ── validate + save ───────────────────────────────────────────────────────── */
@@ -41130,6 +41614,12 @@ function cwValid(){
    place=true  → "Create & Add Widget": save it AND drop it on the open dashboard. */
 function cwSave(place){
   if (!cwValid()) return;
+  if (CW.mira && CW.mira.dirty && CW.edit){   /* option-3 Mira AI: snapshot the ORIGINAL so ⌘Z goes back to it, in one step */
+    const M = CW.mira, g = CW.edit.g, i = CW.edit.i, draft = WIDGETS[g][i];
+    WIDGETS[g][i] = M.orig; histDo('Mira AI rebuilt widget'); WIDGETS[g][i] = draft; M.saved = true;
+    const H = histDo; histDo = () => {}; try { return cwSaveInner(place); } finally { histDo = H; } }
+  return cwSaveInner(place); }
+function cwSaveInner(place){
   /* ⚠️ CREATE WIDGET ADDS IT TOO (request, 19 Nov 2026: "create widget — by default add in bottom", "please add the
      widget"): both buttons save the definition to User Define AND place the widget at the bottom of the dashboard. It used
      to only save. Editing is unaffected — every branch below handles CW.edit before it reads `place`. */
@@ -41890,6 +42380,35 @@ function tnHcCfg(s){
   }
   /* polar-radial-bar: an inverted polar column, pane 85% with a 20% hole, ending at 270°; names right-aligned at the
      start of each ring. polar: a polar column, one wedge per monitor, pointPlacement between */
+  /* RADIAL BAR (request, 26 Nov 2026): the ring starts show each monitor's VALUE (not its name), the names move to a real
+     legend ("name: value", with the Legend Position / Font Size controls), and the circle carries its own value scale round
+     the outside, like Highcharts' polar-radial-bar demo. One series per monitor (grouping off) is what gives the legend one
+     entry per ring - a single colorByPoint series has one legend item. */
+  if (ty === 'Radial Bar'){
+    const rot = +s.rotation || 0, VL = v => (Math.round(v * 100) / 100) + U;
+    /* ROUNDED RING ENDS (request, 26 Nov 2026: "curve the ends", like the polar-radial-bar demo): Highcharts 10 cannot round a
+       polar column, so after every render each ring is re-drawn as ONE stroked arc along its middle radius - stroke width =
+       the ring's thickness, round line caps. Same colour, same hover; a resize re-renders and re-applies it. */
+    const prevR = base.chart.events && base.chart.events.render;
+    const roundRings = function(){ if (prevR) prevR.call(this);
+      this.series.forEach(sr => sr.points.forEach(pt => { const a = pt.shapeArgs, gr = pt.graphic; if (!a || !gr || a.r == null) return;
+        const w = a.r - a.innerR, rm = (a.r + a.innerR) / 2, s0 = a.start, e0 = a.end; if (!(w > 0) || !(e0 - s0 > 1e-3)) return;
+        const X = a.x, Y = a.y, d = ['M', X + rm * Math.cos(s0), Y + rm * Math.sin(s0), 'A', rm, rm, 0, (e0 - s0) > Math.PI ? 1 : 0, 1, X + rm * Math.cos(e0), Y + rm * Math.sin(e0)];
+        gr.attr({ d }); const st = gr.element.style;   /* INLINE style: the page's .highcharts-color-N rules would beat SVG attributes and fill the open arc */
+        st.fill = 'none'; st.stroke = pt.color; st.strokeWidth = w + 'px'; st.strokeLinecap = 'round'; })); };
+    return Object.assign(base, { chart:Object.assign(base.chart, { type:'column', polar:true, inverted:true, animation:false, events:Object.assign({}, base.chart.events, { render:roundRings }) }),
+      legend:Object.assign(base.legend, { labelFormatter(){ const v = VL(this.options.v); return legFit(this.chart, this.name, TRM, v.length + 2) + ': ' + v; } }),
+      pane:{ size:'82%', innerSize:'20%', startAngle:rot, endAngle:rot + 270, background:[] },
+      tooltip:Object.assign(base.tooltip, { shared:false, headerFormat:'', pointFormatter(){ return '<b>' + this.series.name + '</b><br/>' + VL(this.y); } }),
+      xAxis:{ categories:rows.map(r => r[1]), tickInterval:1, lineWidth:0, gridLineWidth:0,
+        labels:{ align:'right', useHTML:true, allowOverlap:true, step:1, x:-8, y:3, style:Object.assign({}, lab, { fontFamily:"'JetBrains Mono', monospace" }),
+          formatter(){ const r = rows[this.pos]; return r ? VL(r[0]) : ''; } } },
+      yAxis:{ min:0, lineWidth:0, gridLineWidth:0, endOnTick:true, showLastLabel:true, tickAmount:9,
+        labels:{ enabled:true, style:lab, format:'{value}' + U, distance:14 }, title:{ text:null } },
+      plotOptions:Object.assign(base.plotOptions, { column:{ grouping:false, borderWidth:0, pointPadding:0, groupPadding:.15, showInLegend:!!s.legend, animation:false,
+        dataLabels:{ enabled:false } } }),
+      series:rows.map((r, i) => ({ name:r[1], v:r[0], data:[{ x:i, y:r[0] }] })) });
+  }
   if (ty === 'Radial Bar' || ty === 'Polar Column'){
     const radial = ty === 'Radial Bar', rot = +s.rotation || 0;
     return Object.assign(base, { chart:Object.assign(base.chart, { type:'column', polar:true, inverted:radial }), legend:{ enabled:false },
@@ -42105,7 +42624,7 @@ function cwTnPanel(){
   if ([4, 9, 10, 16].includes(k)) return h + '<div class="cwgrid cwtng">' + sw('legend','Legend') + sw('tnDl','Data Labels') + rot + '<div class="cwf"></div>' + lpos + '</div>';
   if (k === 11 || k === 12) return h + '<div class="cwgrid cwtng"><div class="tnpair">' + sw('legend','Legend') + sw('tnDl','Data Labels') + '</div>' + lpos + '</div>';
   /* Radial Bar / Polar Column: Rotation turns the pane; Values labels each bar */
-  if (k === 13) return h + '<div class="cwgrid cwtng">' + rot + '</div>';   /* value labels pile up at the ring starts — the tooltip carries them */
+  if (k === 13) return h + '<div class="cwgrid cwtng">' + rot + '<div class="cwf"></div>' + sw('legend','Legend').replace('class="cwf"', 'class="cwf wide"') + lpos + '</div>';   /* Radial Bar: Legend + its position / font size (26 Nov 2026) */
   if (k === 14) return h + '<div class="cwgrid cwtng">' + rot + sw('tnVal','Values') + '</div>';
   /* Lollipop: the bar fields */
   if (k === 15) return h + '<div class="cwgrid cwtng">' + rot + sw('legend','Legend') + sw('xt','X-Axis Title') + sw('yt','Y-Axis Title') + sw('zt','Z-Axis Title') + sw('tnVal','Values') + lpos + '</div>';
@@ -42136,7 +42655,7 @@ function cwTnBind(){
         l.removeAttribute('title'); t.setAttribute('data-tip', NM[n]);
         l.addEventListener('mouseenter', () => { if (typeof tipShow === 'function') tipShow(t); });
         l.addEventListener('mouseleave', () => { if (typeof tipHide === 'function') tipHide(); }); }); }, 0));
-    r.addEventListener('change', e => { const v = det(e); if (v != null && +v !== (CW.style.tn || 0)) cwStyle('tn', +v); }); }
+    r.addEventListener('change', e => { const v = det(e); if (v != null && +v !== (CW.style.tn || 0)){ if (+v === 13) CW.style.legend = true; cwStyle('tn', +v); } }); }   /* Radial Bar opens with its legend on */
   const lr = b.querySelector('obs-radio.cwtnlpr');
   if (lr){ lr.value = CW.style.tnLegPos || 'Right';
     customElements.whenDefined('obs-radio').then(() => setTimeout(() => {
@@ -42167,6 +42686,30 @@ function cwTruncBind(b){
         if (!l.__tip){ l.__tip = 1; l.addEventListener('mouseenter', () => tipShow(l)); l.addEventListener('mouseleave', tipHide); } });
     }, 0)); }
 }
+/* ── Grouped by size · its own options (request, 26 Nov 2026: "if any action is available, add it in the edit flow - only for
+   this widget"). Shown in the Chart Style tab ONLY when the widget's view is grouped by size; every value lives on CW.style
+   (gs*) and travels with the widget. */
+const GS_OPTS = {
+  gsSize:['Layout', 'How much the chart shows. Auto follows the widget size', [['Auto','Auto'],['Compact','Compact'],['Standard','Standard'],['Detailed','Detailed']], 'Auto'],
+  gsTitle:['Pane title', 'The unit chip in each pane’s top-left corner', [['auto','Auto'],['full','Unit + count'],['unit','Unit only'],['off','Off']], 'auto'],
+  gsRatio:['New pane when a counter is', 'How much smaller a counter must be to start its own pane', [['10','10× smaller'],['20','20× smaller'],['100','100× smaller']], '20'],
+  gsEq:['Pane height', 'Weighted gives the largest counters more room', [['0','Weighted'],['1','Equal']], '0'] };
+function cwGsHTML(){
+  const seg = k => { const [lb, tip, opts] = GS_OPTS[k];
+    return '<div class="cwf"><div class="k">' + lb + '<span class="cwchvzi" data-tip="' + tip + '" aria-label="' + tip + '" role="img"><obs-icon name="info-circle" size="13" aria-hidden="true"></obs-icon></span></div>' +
+      '<obs-radio class="cwgsr" data-k="' + k + '" as-button aria-label="' + lb + '" options="' + JSON.stringify(opts.map(o => ({ value:o[0], label:o[1] }))).replace(/"/g,'&quot;') + '"></obs-radio></div>'; };
+  const sw = (k, lb, on) => '<div class="cwf"><div class="k">' + lb + '</div><obs-switch class="cwgss" data-k="' + k + '"' + (on ? ' checked' : '') + ' checked-text="ON" unchecked-text="OFF" aria-label="' + lb + '"></obs-switch></div>';
+  return '<div class="cwgsh">Grouped by size</div><div class="cwgrid cwgsg">' + seg('gsSize') + seg('gsTitle') + seg('gsRatio') + seg('gsEq') +
+    sw('gsFill', 'Area fill', CW.style.gsFill !== false) + sw('gsCross', 'Crosshair', CW.style.gsCross !== false) + sw('gsOut', 'Mark spikes & dips', CW.style.gsOut !== false) + '</div>'; }
+function cwGsVal(k){ const v = CW.style[k]; return k === 'gsEq' ? (v ? '1' : '0') : String(v == null ? GS_OPTS[k][3] : v); }
+function cwGsBind(b){
+  b.querySelectorAll('obs-radio.cwgsr').forEach(r => { const k = r.dataset.k;
+    customElements.whenDefined('obs-radio').then(() => setTimeout(() => { r.value = cwGsVal(k); }, 0));
+    r.addEventListener('change', e => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail, v = typeof d === 'string' ? d : r.value;
+      if (!v || v === cwGsVal(k)) return; CW.style[k] = k === 'gsEq' ? v === '1' : k === 'gsRatio' ? +v : v; r.value = v; cwPreview(); }); });
+  b.querySelectorAll('obs-switch.cwgss').forEach(w => { const k = w.dataset.k;
+    w.addEventListener('change', e => { const d = e.detail, on = !!(Array.isArray(d) ? d[0] : typeof d === 'boolean' ? d : w.checked);
+      if (on === (CW.style[k] !== false)) return; CW.style[k] = on; cwPreview(); }); }); }
 function cwChartBind(){
   const b = document.getElementById('cwBody'); if (!b) return;
   const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
@@ -42176,7 +42719,7 @@ function cwChartBind(){
   const lf = b.querySelector('obs-radio.cwchlfs');
   if (lf){ lf.value = CW.style.chLegFs || 'Auto';
     lf.addEventListener('change', e => { const v = det(e); if (v && v !== (CW.style.chLegFs || 'Auto')){ CW.style.chLegFs = v; lf.value = v; cwPreview(); } }); }
-  cwTruncBind(b);
+  cwTruncBind(b); cwGsBind(b);
   const rel = b.querySelector('obs-radio.cwchrel');
   if (rel){ customElements.whenDefined('obs-radio').then(() => setTimeout(() => { rel.value = CW.style.chRel ? 'rel' : 'abs';
       /* each segment explains itself on hover, through the page tooltip (the delegated engine cannot see inside the shadow root) */
@@ -42390,6 +42933,48 @@ function ggSkDrop(e, i){ e.preventDefault(); const s = ggSt(); if (GG_DRAG < 0 |
 function ggThColor(val, key){ const s = ggSt(), i = +String(key).slice(3); s.ggTh[i] = Object.assign({}, s.ggTh[i], { c:val }); cwRender(); }
 function ggThPaint(){ cwRender(); }
 [0,1,2,3].forEach(i => { if (typeof DD_OWN !== 'undefined') DD_OWN['ggc' + i] = { paint:'ggThPaint', set:'ggThColor' }; });
+/* ── SINGLE VALUE OPTION 8 · THRESHOLD TAB (request, 25 Nov 2026, with the product's Threshold tab as the reference) ──────────
+   Style · Threshold · Timeline Preference, as Gauge has. Four rows - Critical · Major · Warning · Clear - each a severity label,
+   an operator (Equals · Less Than · Greater Than · Less Than or Equal · Greater Than or Equal), a value and a colour from the
+   editor's own colour dropdown (swatches + the picker). The SAME row markup as Gauge's tab (.ggth*), its own store CW.style.cmpTh
+   and its own colour keys (svc0-3). The card takes the colour of the first row its value meets (always, since the Colour by severity switch left the Style tab),
+   Critical first; no match keeps the card's own colour. A widget saved before this tab existed gets its rows from its old
+   Warning / Major / Critical numbers and direction (cmpThOf), so nothing on the board changes colour. Option 8 only.
+   ⚠️ Plain arrays here, not GG_SEV / GG_OPS: the card renders through cmpThOf at board paint, and those consts are declared
+   further down this script. */
+function cmpThSev(){ return ['Critical','Major','Warning','Clear']; }   /* a function, not a const: the board can paint before this line runs */
+function cmpThOf(w){
+  if (Array.isArray(w.cmpTh) && w.cmpTh.length === 4) return w.cmpTh;
+  const dn = w.cmpSevDir === 'down', ge = dn ? 'Less Than or Equal' : 'Greater Than or Equal', lt = dn ? 'Greater Than' : 'Less Than',
+        W = w.cmpSevW == null ? 60 : w.cmpSevW, M = w.cmpSevM == null ? 75 : w.cmpSevM, C = w.cmpSevC == null ? 90 : w.cmpSevC;
+  return [{ op:ge, v:String(C), c:'Critical' }, { op:ge, v:String(M), c:'Major' }, { op:ge, v:String(W), c:'Warning' }, { op:lt, v:String(W), c:'Clear' }];
+}
+function cmpThLevel(th, v){
+  for (let i = 0; i < th.length; i++){ const x = th[i]; if (!x || !x.op || x.v === '' || x.v == null || isNaN(+x.v)) continue; const n = +x.v;
+    if (x.op === 'Equals' ? v === n : x.op === 'Less Than' ? v < n : x.op === 'Greater Than' ? v > n : x.op === 'Less Than or Equal' ? v <= n : v >= n) return i; }
+  return -1;
+}
+function cmpThColor(c){ return cmpThSev().includes(c) ? 'var(--severity-' + c.toLowerCase() + ')' : c; }
+function cwCmpThHTML(){
+  const st = CW.style; if (!Array.isArray(st.cmpTh) || st.cmpTh.length !== 4) st.cmpTh = JSON.parse(JSON.stringify(cmpThOf(st)));
+  return '<div class="ggth">' + st.cmpTh.map((t, i) =>
+    '<div class="ggthr svthr"><span class="ggths" style="--sev:' + GG_SEV[i][1] + '">' + GG_SEV[i][0] + '</span>' +
+    '<obs-select class="ggthop svthx" data-i="' + i + '" block placeholder="Select" aria-label="' + GG_SEV[i][0] + ' operator" options="' +
+      JSON.stringify(GG_OPS.map(o => ({ value:o, label:o }))).replace(/"/g,'&quot;') + '"></obs-select>' +
+    '<obs-input class="ggthv svthx" data-i="' + i + '" block type="number" value="' + tnEsc(t.v) + '" aria-label="' + GG_SEV[i][0] + ' value"></obs-input>' +
+    '<span class="ggthc">' + cwFtDD('svc' + i, GG_SEV, t.c, true, true) + '</span></div>').join('') + '</div>';
+}
+function cwCmpThBind(){
+  const b = document.getElementById('cwBody'), st = CW.style; if (!b || !Array.isArray(st.cmpTh)) return;
+  const det = e => Array.isArray(e.detail) ? e.detail[0] : e.detail;
+  b.querySelectorAll('obs-select.ggthop').forEach(el => { const i = +el.dataset.i; if (st.cmpTh[i].op) el.value = st.cmpTh[i].op;
+    el.addEventListener('change', e => { st.cmpTh[i] = Object.assign({}, st.cmpTh[i], { op:det(e) || '' }); cwPreview(); }); });
+  b.querySelectorAll('obs-input.ggthv').forEach(el => { const i = +el.dataset.i;
+    el.addEventListener('change', e => { const v = det(e) ?? el.value; st.cmpTh[i] = Object.assign({}, st.cmpTh[i], { v:String(v) }); cwPreview(); }); });
+}
+function svThColor(val, key){ const i = +String(key).slice(3); CW.style.cmpTh[i] = Object.assign({}, CW.style.cmpTh[i], { c:val }); cwRender(); }
+function svThPaint(){ cwRender(); }
+[0,1,2,3].forEach(i => { if (typeof DD_OWN !== 'undefined') DD_OWN['svc' + i] = { paint:'svThPaint', set:'svThColor' }; });
 /* bind the DS controls — a custom element's inline on-attribute is inert */
 function cwGgBind(){
   const b = document.getElementById('cwBody'); if (!b || !cwGgOn()) return;
@@ -44581,7 +45166,10 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
       ':host(.cwtnlpr) .rg.seg .opt{width:38px;height:30px;min-width:0;padding:0;margin:0;display:grid;place-items:center;border:0;border-radius:0;border-right:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);box-shadow:none}' +
       ':host(.cwtnlpr) .rg.seg .opt:last-child{border-right:0}:host(.cwtnlpr) .rg.seg .opt:hover{background:var(--hover);color:var(--text)}' +
       ':host(.cwtnlpr) .rg.seg .opt.on{background:var(--chip);color:var(--white)}:host(.cwtnlpr) .rg.seg .ic svg{width:15px;height:15px}',
-    'OBS-INPUT':':host(.cwfilin) .ip{padding-left:32px}',
+    'OBS-INPUT':':host(.cwfilin) .ip{padding-left:32px}' +
+      /* Single Value › Threshold rows (25 Nov 2026, "remove the border inside"): the value box has no frame of its own - the row's cell
+         dividers do that job; keyboard focus still shows */
+      ':host(.svthx) .ip,:host(.svthx) .ip:hover{border-color:transparent;background:transparent}',
     'OBS-BUTTON':':host(.cwqbtn) .btn{width:32px;min-width:32px;height:32px;min-height:32px;padding:0}:host(.cwqbtn.rm:hover) .btn{color:var(--severity-critical);border-color:var(--severity-critical)}',
     'OBS-MODAL':':host(.apv-ok) .title{color:var(--secondary-green)}:host(.apv-no) .title{color:var(--secondary-red)}',
     /* Approval's Columns chooser: the eye trigger takes the toolbar squares' own neutral-lightest fill (the select's icon
@@ -44594,6 +45182,8 @@ function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.hos
       ':host(.cwcmpgu){display:block;width:100%}:host(.cwcmpgu) .sel{width:100%;max-width:none}' +
       /* Create Widget query row: a missing Counter marks its trigger like the live required field */
       ':host(.cwqsel.err) .trig{border-color:var(--severity-critical)}' +
+      /* Single Value › Threshold rows: the operator has no frame of its own (see OBS-INPUT) */
+      ':host(.svthx) .trig,:host(.svthx) .trig:hover{border-color:transparent;background:transparent}:host(.svthx) .trig:focus-visible{border-color:var(--primary)}' +
       /* the dashboard filter pills: a picked value never widens the pill past 180px — it ellipsises */
       ':host(.dfpill) .t-btn{max-width:180px}:host(.dfpill) .t-btn > span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
     /* Compare Value › Compare with: the preset list escapes the scrolling settings pane — fixed with auto offsets keeps
