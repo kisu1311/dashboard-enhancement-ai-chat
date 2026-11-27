@@ -947,7 +947,7 @@ rep(".ip-ks { font-size: .75rem; color: var(--neutral-light); }",
     ".ip-ks { font-size: .75rem; color: var(--neutral-light); }\n"
     ".sn-kpis .ip-sev-box { text-align: left; }\n"
     ".sn-kpis .ip-sev-body { display: flex; flex-direction: column; gap: 4px; padding: var(--ip-padding-sm) var(--ip-padding-md); }\n"
-    ".sn-kpis .ip-sev-box.ip-stat-click:hover { border-color: var(--field-border-color, var(--border-color)); background: var(--code-tag-background-color); }")
+    ".sn-kpis .ip-sev-box.ip-stat-click:hover { border-color: var(--field-border-color, var(--border-color)); }  /* the fill is the shared widget hover, _ds/card-hover.js (27 Nov 2026) */")
 
 
 # ── 19. IP side panel (1 Oct 2026) ──

@@ -275,6 +275,8 @@ const ST_TREE = [
      thumb ring = the page's own --bg, so the knob reads as cut out of the surface it sits on
    ⚠️ The fill needs `--rp` (the value as a %), which CSS cannot read off an <input>: a delegated `input` listener keeps
    it current and a MutationObserver seeds every slider a page renders later (drawers, the widget editor, …). */
+/* CARD HOVER moved to _ds/card-hover.js (27 Nov 2026) - every page loads it beside _ds/colresize.js, the iframe modules too. */
+
 (function(){
   if (document.getElementById('ds-range')) return;
   const st = document.createElement('style'); st.id = 'ds-range';

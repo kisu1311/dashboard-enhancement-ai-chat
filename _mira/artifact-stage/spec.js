@@ -112,6 +112,36 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
      variant 'lav6' runs Option 3 (lav5) unchanged, except that a Thought step - the AI's own reasoning - and the finished
      "Thought for 1s, used ..." line show Tabler's sparkles (MXS_ICO, the AI mark the Working line already uses) instead
      of the Thought glyph. Skill, Question card and Runbook steps keep their product icons. */
+  /* THINKING LINE OPTION 6 (request, 27 Nov 2026: "copy Option 5; the first icon is removed and shows a 3-dot animation like
+     Claude"): variant 'lav7' runs Option 5 (lav6) unchanged, except that while a step runs its leading icon gives way to three
+     dots pulsing in turn (Claude's own working mark: small dots that swell and brighten one after another, in the accent).
+     The trailing dots after the text are dropped here - one working mark per line. Finished, the line keeps its icon. */
+  if(v==='lav7'){ document.body.classList.add('mxo5dots'); var c7=document.createElement('style'); c7.id='mxo5dots-css'; c7.textContent=
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic>*{display:none}'+
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic{flex:0 0 20px;width:20px;animation:none;opacity:1;transform:none}'+
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic::before,body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic::after,body.mxo5dots .mxo5-cd{content:"";width:4px;height:4px;border-radius:50%;background:var(--mira-accent);animation:mxo5cd 1.2s ease-in-out infinite}'+
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic{display:inline-flex;align-items:center;justify-content:center;gap:3px}'+
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic .mxo5-cd{display:block;animation-delay:.15s}'+
+    'body.mxo5dots .mira-group-head:not(.mxo5-done) .mxo5-ic::after{animation-delay:.3s}'+
+    'body.mxo5dots .mira-group-head.mxo5-done .mxo5-cd{display:none}'+
+    '@keyframes mxo5cd{0%,70%,100%{opacity:.3;transform:scale(.75)}35%{opacity:1;transform:scale(1.15)}}'+
+    'body.mxo5dots .mxo5-dots{display:none!important}'+
+    '@media (prefers-reduced-motion:reduce){body.mxo5dots .mxo5-ic::before,body.mxo5dots .mxo5-ic::after,body.mxo5dots .mxo5-cd{animation:none;opacity:.7}}';
+    document.head.appendChild(c7);
+    /* the FINISHED line arrives word by word (request, 27 Nov 2026: "Thought for 1s, used ..." showed instantly): when a head
+       turns done, its title's words fade and rise in 35ms apart and its icon fades in. Each title animates once (__wf). */
+    c7.textContent+='body.mxo5dots .mxo5-wf{display:inline-block;white-space:pre;animation:mxo5wf .32s ease-out both}'+
+      'body.mxo5dots .mira-group-head.mxo5-done.mxo5-win .mxo5-ic{animation:mxo5wi .3s ease-out both}'+
+      '@keyframes mxo5wf{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@keyframes mxo5wi{from{opacity:0}to{opacity:1}}'+
+      '@media (prefers-reduced-motion:reduce){body.mxo5dots .mxo5-wf,body.mxo5dots .mxo5-ic{animation:none!important}}';
+    var o7wf=function(){ $$('.mira-group-head.mxo5-done').forEach(function(h){ var ti=$('.mira-group-title:not(.mxo5-t)',h); if(!ti) return; var tx=ti.textContent;
+        if(!tx.trim()||ti.__wf===tx) return; ti.__wf=tx; h.classList.add('mxo5-win');
+        ti.innerHTML=tx.split(/(\s+)/).map(function(w,i){ return /^\s+$/.test(w)||!w?w:'<span class="mxo5-wf" style="animation-delay:'+(Math.floor(i/2)*35)+'ms">'+w.replace(/[&<>]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; })+'</span>'; }).join('');
+        ti.__wf=ti.textContent; }); };
+    var o7q=false, o7mo=new MutationObserver(function(){ $$('.mxo5-ic').forEach(function(ic){ if(!$('.mxo5-cd',ic)){ var d=document.createElement('i'); d.className='mxo5-cd'; ic.appendChild(d); } });
+        if(o7q) return; o7q=true; setTimeout(function(){ o7q=false; o7mo.disconnect(); try{ o7wf(); }finally{ o7mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']}); } },20); });
+    o7mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    v='lav6'; }
   if(v==='lav5'||v==='lav6'){ var o6=v==='lav6', o6ai=function(){ return (typeof MXS_ICO!=='undefined'&&MXS_ICO.sparkles)||(typeof MXK_ICO!=='undefined'&&MXK_ICO.sparkles)||''; }; document.body.classList.add('mxo5'); var c5=document.createElement('style'); c5.id='mxo5-css'; c5.textContent=
     'body.mxo5 .mira-group-head>.mx-dmtile{display:none}'+
     /* the icon takes the step rows' own geometry (fix, 24 Nov 2026): 14px glyph in a 14px box, the head's 10px gap to the text - it was an 18px box + 2px margin, so the text sat 14px away */
@@ -133,12 +163,16 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
     'body.mxo5 .mira-group-title.mx-dia-once{-webkit-mask-image:none;mask-image:none;background:none;color:var(--mira-text-muted);animation:none!important}'+
     'body.mxo5 .mxo5-t{color:transparent;background-image:linear-gradient(90deg,var(--mira-text-muted) 0%,var(--mira-text-muted) 40%,var(--mira-text-strong) 50%,var(--mira-text-muted) 60%,var(--mira-text-muted) 100%);background-size:250% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;animation:mxo5s 1.8s linear infinite}'+
     'body.mxo5 .mxo5-t .mxo5-d{opacity:.85}'+
+    'body.mxo5 .mxo5-dots{display:inline-flex;margin-left:-8px;color:var(--mira-text-muted);letter-spacing:1px}'+
+    'body.mxo5 .mxo5-dots i{font-style:normal;opacity:.15;animation:mxo5dt 1.2s ease-in-out infinite}'+
+    'body.mxo5 .mxo5-dots i:nth-child(2){animation-delay:.2s}body.mxo5 .mxo5-dots i:nth-child(3){animation-delay:.4s}'+
+    '@keyframes mxo5dt{0%,80%,100%{opacity:.15}40%{opacity:1}}'+
     '@keyframes mxo5s{from{background-position:100% 0}to{background-position:0 0}}'+
     /* the icon breathes with the text while the step runs (fix, 24 Nov 2026: "the text animates but the icon does not"):
        same 1.8s beat - it brightens to the shimmer's highlight colour and settles back to muted; still once finished */
     'body.mxo5 .mira-group-head:not(.mxo5-done) .mxo5-ic{animation:mxo5i 1.8s ease-in-out infinite}'+
     '@keyframes mxo5i{0%,100%{color:var(--mira-text-muted);opacity:.55;transform:scale(.92)}50%{color:var(--mira-text-strong);opacity:1;transform:scale(1)}}'+
-    '@media (prefers-reduced-motion:reduce){body.mxo5 .mxo5-t{animation:none;background:none;color:var(--mira-text-muted)}body.mxo5 .mxo5-ic{animation:none!important}}';
+    '@media (prefers-reduced-motion:reduce){body.mxo5 .mxo5-dots i{animation:none;opacity:.6}body.mxo5 .mxo5-t{animation:none;background:none;color:var(--mira-text-muted)}body.mxo5 .mxo5-ic{animation:none!important}}';
     document.head.appendChild(c5);
     var o5ai=function(row){ var t=row&&$('.mira-step-title',row); return !!(t&&/^\s*Thought\s*$/.test(t.textContent)); };
     var o5svg=function(row){ if(o6&&o6ai()&&o5ai(row)) return o6ai(); var sv=row&&$('.mira-step-icon svg',row); return sv?sv.outerHTML:''; };
@@ -150,8 +184,13 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
       var t5=$('.mxo5-t',h); h.classList.toggle('mxo5-done',!live);
       if(live&&cur){ var tt=$('.mira-step-title',cur), dd=$('.mira-step-detail',cur), label=(tt?'<span>'+tt.textContent.trim()+'</span>':'')+(dd?(tt?'<span class="mxo5-d"> · ':'<span class="mxo5-d">')+dd.textContent.trim()+'</span>':'');
         var key=cur.textContent; if(!t5){ t5=document.createElement('span'); t5.className='mira-group-title mxo5-t'; h.insertBefore(t5,ti.nextSibling); }
-        if(t5.__k!==key){ t5.__k=key; t5.innerHTML=label; } ti.classList.add('mxo5-off'); var sv=o5svg(cur); if(ic.__s!==sv){ ic.__s=sv; ic.innerHTML=sv; } }
-      else { if(t5) t5.remove(); ti.classList.remove('mxo5-off'); var sv2=o5thought()||o5svg(cur); if(ic.__s!==sv2){ ic.__s=sv2; ic.innerHTML=sv2; } } }); };
+        if(t5.__k!==key){ t5.__k=key; t5.innerHTML=label; }
+        /* three animated dots at the end of the running step (request, 27 Nov 2026) - a sibling, not inside .mxo5-t, whose
+           background-clip:text shimmer would swallow their own fade */
+        var dt=$('.mxo5-dots',h); if(!dt){ dt=document.createElement('span'); dt.className='mxo5-dots'; dt.setAttribute('aria-hidden','true'); dt.innerHTML='<i>.</i><i>.</i><i>.</i>'; }
+        if(dt.previousSibling!==t5) h.insertBefore(dt,t5.nextSibling);
+        ti.classList.add('mxo5-off'); var sv=o5svg(cur); if(ic.__s!==sv){ ic.__s=sv; ic.innerHTML=sv; } }
+      else { if(t5) t5.remove(); var dt2=$('.mxo5-dots',h); if(dt2) dt2.remove(); ti.classList.remove('mxo5-off'); var sv2=o5thought()||o5svg(cur); if(ic.__s!==sv2){ ic.__s=sv2; ic.innerHTML=sv2; } } }); };
     /* the watcher pauses while it paints, so its own edits never re-trigger it; repaints are batched to one per frame */
     var o5opt={childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']}, o5q=false, o5mo=new MutationObserver(function(){ if(o5q) return; o5q=true;
       setTimeout(function(){ o5q=false; o5mo.disconnect(); try{ o5paint(); }finally{ o5mo.observe(document.body,o5opt); } },30); });
@@ -240,7 +279,7 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
      steps sit in a soft panel (no lines between them): each finished step is a check + its icon + its name; a Thought is ONE
      italic line of its own reasoning, cut with an ellipsis, in a row that takes an outline when opened, with the full reasoning
      under it in italic. While the group works, the pill's text shimmers. Variant 'pill'. Icons: MXK_ICO tool / check / chevron-down. */
-  if(v==='pill'||v==='thought'){ document.body.classList.add('mxpl');   /* Option 9 · Thought only takes Option 10's look too (request, 26 Nov 2026) - it ends with the group open, so its one thought line shows */ var plc=document.createElement('style'); plc.id='mxpl-css'; plc.textContent=
+  if(v==='pill'||v==='thought'||v==='pillfx'){ document.body.classList.add('mxpl'); if(v==='pillfx') document.body.classList.add('mxpf');   /* Option 9 · Thought only takes Option 10's look too (request, 26 Nov 2026) - it ends with the group open, so its one thought line shows */ var plc=document.createElement('style'); plc.id='mxpl-css'; plc.textContent=
       'body.mxpl .mira-group-head{width:fit-content;max-width:100%;padding:0;background:none}'+
       'body.mxpl .mira-group-head>.mx-dmtile,body.mxpl .mira-group-head>.mira-group-title,body.mxpl .mira-group-head>.mira-step-chevron{display:none!important}'+
       'body.mxpl .mxpl-pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;background:transparent;color:var(--mira-text-muted);font-size:13px;min-width:0;max-width:100%;transition:background-color .12s,color .12s}'+
@@ -310,7 +349,65 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
       'body.mxpl .mxpl-kv{display:grid;grid-template-columns:minmax(120px,36%) minmax(0,1fr);column-gap:16px;row-gap:6px;margin:0;font-family:var(--font-sans);font-size:13px;line-height:1.45;white-space:normal}'+
       'body.mxpl .mxpl-kv dt{margin:0;color:var(--mira-text-muted);word-break:break-word}'+
       'body.mxpl .mxpl-kv dd{margin:0;min-width:0;color:var(--mira-text-strong);word-break:break-word}body.mxpl .mxpl-kv dd.n{color:var(--mira-text-muted)}'+
-      '@media (prefers-reduced-motion:reduce){body.mxpl .mxpl-live .mxpl-l{animation:none;background:none;color:inherit}}';
+      'body.mxpl .mxpl-l{transition:opacity .17s ease,transform .17s ease}body.mxpl .mxpl-l.mxpl-out{opacity:0;transform:translateY(-4px)}'+
+      'body.mxpl .mxpl-nm,body.mxpl .mxpl-sep{display:inline-block;white-space:pre}'+
+      'body.mxpl .mxpl-in{color:var(--mira-text-muted);-webkit-text-fill-color:var(--mira-text-muted);animation:mxplin .28s ease-out both}'+
+      '@keyframes mxplin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}'+
+      /* three animated dots after the running label (request, 27 Nov 2026), only while the group works */
+      'body.mxpl .mxpl-dots{display:none;margin-left:-5px;letter-spacing:1px;color:var(--mira-text-muted)}body.mxpl .mxpl-live .mxpl-dots{display:inline-flex}'+
+      'body.mxpl .mxpl-dots i{font-style:normal;opacity:.15;animation:mxpldt 1.2s ease-in-out infinite}body.mxpl .mxpl-dots i:nth-child(2){animation-delay:.2s}body.mxpl .mxpl-dots i:nth-child(3){animation-delay:.4s}'+
+      '@keyframes mxpldt{0%,80%,100%{opacity:.15}40%{opacity:1}}'+
+      '@media (prefers-reduced-motion:reduce){body.mxpl .mxpl-live .mxpl-l{animation:none;background:none;color:inherit}body.mxpl .mxpl-dots i{animation:none;opacity:.6}body.mxpl .mxpl-in{animation:none}body.mxpl .mxpl-l{transition:none}}'+
+      /* THINKING GROUP OPTION 11 = Option 10 + LIVE STEPS IN A FIXED AREA (request, 27 Nov 2026: while the AI thinks it was hard to
+         tell it is working - show the steps one by one under the thinking line, in a fixed-height area). Variant 'pillfx', body.mxpf.
+         While the group works its step panel stays OPEN under the shimmering pill at a fixed 132px (about four rows): each step slides
+         in as it lands, the panel scrolls itself to the newest one (plPaint), the step being worked on is in strong ink and the ones
+         before it step back. When the group finishes the panel folds away and the pill behaves exactly like Option 10. */
+      'body.mxpl.mxpf .mira-activity-group.mxpl-glive.mxpl-glive>.mira-group-fold{display:block!important}'+
+      /* (fix, 27 Nov 2026: a row scrolling up slid UNDER the pill's text) the dashed frame moves to the fold while live, so the
+         scrolling list starts BELOW the pill and rows are clipped at the list's own top edge, not in the frame's padding */
+      /* (fix, 27 Nov 2026: "this box alignment and visualization") the live box no longer straddles the pill: the pill sits ON TOP,
+         the box 6px under it with a quiet solid frame on the page's surface, its rows' check marks on the pill icon's x (box 1px border
+         + 1px padding + the row's 8px = the pill's 10px), and the list grows with its steps up to four rows, then scrolls */
+      /* (request, 27 Nov 2026: "while it works the box is separate, finished it is combined - make it the same") the opened FINISHED
+         group takes the live box too: pill on top, the box 6px under it - Option 10's dashed panel under the pill is gone here */
+      'body.mxpf .mira-activity-group>.mira-group-fold{margin:6px 0 0;padding:4px 1px;border:1px solid var(--mira-border);border-radius:8px;background:var(--mira-surface);animation:mxpfrow .24s ease-out both}'+
+      'body.mxpf .mira-group-steps{margin:0;padding:0;border:0;border-radius:0;background:none}'+
+      'body.mxpf .mxpl-glive .mira-group-steps{max-height:200px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;scroll-behavior:smooth}'+
+      /* …and the Thought's reasoning shows WHILE it thinks, streaming in word by word under its row (request, 27 Nov 2026) */
+      'body.mxpf .mxpl-glive .mxpl-th .mira-step-reasoning{display:block!important}'+
+      'body.mxpf .mxpl-glive .mxpl-th .mira-step-reasoning .mx-w{display:inline-block;animation:mxpfw .26s ease-out both!important;animation-delay:calc(var(--mxpf-w,0) * 22ms + 150ms)!important}'+
+      /* opening a finished group (request, 27 Nov 2026: "inside the group, expand shows all the text with animation"): the rows
+         slide in one after another (--mxpf-i, 50ms apart); opening one step slides its Request / Response or reasoning in.
+         Keyed on .mxpf-anim, set by a click on the head, so the end of the live play never replays it. */
+      '@keyframes mxpfrow{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}'+
+      'body.mxpf .mira-activity-group.mxpf-anim:not(.mxpl-glive)>.mira-group-head[aria-expanded="true"]~.mira-group-fold .mira-group-step{animation:mxpfrow .32s ease-out both;animation-delay:calc(var(--mxpf-i,0) * 50ms)}'+
+      'body.mxpf .mira-activity-group:not(.mxpl-glive) .mira-step-row[aria-expanded="true"]~*{animation:mxpfrow .28s ease-out both}'+
+      /* …and the SUB-POINTS inside an opened step (request, 27 Nov 2026: "only the main points animate - the text inside, with its
+         points and sub-points, should animate too"): the Request / Response tab bar first, then each label | value row of its table
+         60ms apart (--mxpf-j), and a Thought's reasoning word by word (--mxpf-w, 16ms apart). ⚠️ Option 10 pins those words at
+         opacity:1 !important (an important declaration beats an animation), so the words fade with filter:opacity() + a 4px rise,
+         which that rule does not touch. Indexes are set on the click that opens the group or the step (mxpfIdx). */
+      '@keyframes mxpfw{from{filter:opacity(0);transform:translateY(4px)}to{filter:none;transform:none}}'+
+      /* EVERY open and close animates (request, 27 Nov 2026: "all group expand and collapse show the animation like the step text"):
+         opening the group fades each row's own words in, one after another through the group (--mxpf-gw, filter only so the
+         one-line ellipsis rows keep their cut); closing the group plays the rows OUT last-to-first (.mxpf-out, --mxpf-r) and then
+         the box, before Mira folds it; closing a step plays its content out (.mxpf-sout) first. mxpfToggle holds the click. */
+      '@keyframes mxpfw2{from{filter:opacity(0)}to{filter:none}}'+
+      '@keyframes mxpfout{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px)}}'+
+      'body.mxpf .mira-activity-group.mxpf-anim:not(.mxpl-glive)>.mira-group-head[aria-expanded="true"]~.mira-group-fold .mira-step-row .mx-w{animation:mxpfw2 .3s ease-out both!important;animation-delay:calc(var(--mxpf-gw,0) * 14ms + 80ms)!important}'+
+      'body.mxpf .mira-activity-group.mxpf-out>.mira-group-fold .mira-group-step{animation:mxpfout .18s ease-in both!important;animation-delay:calc(var(--mxpf-r,0) * 35ms)!important}'+
+      'body.mxpf .mira-activity-group.mxpf-out>.mira-group-fold{animation:mxpfout .16s ease-in both!important;animation-delay:var(--mxpf-fd,0ms)!important}'+
+      'body.mxpf .mira-group-step.mxpf-sout .mira-step-row~*{animation:mxpfout .18s ease-in both!important}'+
+      'body.mxpf .mira-activity-group:not(.mxpl-glive) .mira-step-row[aria-expanded="true"]~* .mxpl-kv>*{animation:mxpfrow .3s ease-out both;animation-delay:calc(var(--mxpf-j,0) * 60ms + 120ms)}'+
+      'body.mxpf .mira-activity-group:not(.mxpl-glive) .mira-step-row[aria-expanded="true"]~* .mxpl-tbar{animation:mxpfrow .28s ease-out both}'+
+      'body.mxpf .mira-activity-group:not(.mxpl-glive) .mira-step-row[aria-expanded="true"]~* .mx-w{display:inline-block;animation:mxpfw .26s ease-out both!important;animation-delay:calc(var(--mxpf-w,0) * 16ms + 80ms)!important}'+
+      '@media (prefers-reduced-motion:reduce){body.mxpf .mira-group-step,body.mxpf .mira-step-row~*,body.mxpf .mira-step-row~* .mxpl-kv>*,body.mxpf .mira-step-row~* .mxpl-tbar,body.mxpf .mira-step-row~* .mx-w,body.mxpf .mira-step-row .mx-w,body.mxpf .mxpf-out .mira-group-fold,body.mxpf .mxpf-sout .mira-step-row~*{animation:none!important}}'+
+      'body.mxpf .mxpl-glive .mira-group-steps::-webkit-scrollbar{display:none}'+
+      'body.mxpf .mxpl-glive .mira-group-step:not(.mx-hide){animation:mxplin .28s ease-out both}'+
+      'body.mxpf .mxpl-glive .mira-group-step{transition:opacity .2s}body.mxpf .mxpl-glive .mira-group-step:not(.mxpf-cur){opacity:.55}'+
+      'body.mxpf .mxpl-glive .mira-group-step.mxpf-cur .mira-step-title{color:var(--mira-text-strong)}'+
+      '@media (prefers-reduced-motion:reduce){body.mxpf .mxpl-glive .mira-group-step:not(.mx-hide){animation:none}body.mxpf .mxpl-glive .mira-group-steps{scroll-behavior:auto}}';
     document.head.appendChild(plc);
     var plIco=function(n){ return (typeof MXK_ICO!=='undefined'&&MXK_ICO[n])||''; };
     /* JSON tree -> rows: nested keys flattened into one label ("Args intro"), list items numbered from 1, strings unquoted,
@@ -353,12 +450,52 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
            no chevron at its right and no commas between the names (a middle dot separates them); while the group works only
            the shimmering pill shows - the step panel stays shut until it is opened */
         var lab=names.length?names.join(' \u00b7 '):'Thought'; g.classList.toggle('mxpl-glive',live);
+        /* Option 11: the newest visible step is the current one, and the fixed panel follows it */
+        if(document.body.classList.contains('mxpf')){ var vis=$$('.mira-group-step:not(.mx-hide)',g), cur=vis[vis.length-1];
+          vis.forEach(function(x){ x.classList.toggle('mxpf-cur',live&&x===cur); });
+          $$('.mira-group-step',g).forEach(function(x,i){ x.style.setProperty('--mxpf-i',i); });
+          $$('.mxpl-th',g).forEach(function(t){ if(!t.__mxi){ t.__mxi=1; $$('.mira-step-reasoning .mx-w',t).forEach(function(w,i){ w.style.setProperty('--mxpf-w',Math.min(i,120)); }); } });
+          var sl=$('.mira-group-steps',g); if(live&&sl&&sl.__n!==vis.length){ sl.__n=vis.length; sl.scrollTop=sl.scrollHeight;
+            /* a Thought's words stream in for ~2s: follow them down as they land */
+            if(cur&&cur.classList.contains('mxpl-th')){ var n=0, ft=setInterval(function(){ sl.scrollTop=sl.scrollHeight; if(++n>14) clearInterval(ft); },150); } } }
         var tsv=$('.mxpl-th .mira-step-icon svg',g), tic=tsv?tsv.outerHTML:plIco('brain');
-        var p=$('.mxpl-pill',h); if(!p){ p=document.createElement('span'); p.className='mxpl-pill'; p.innerHTML='<span class="mxpl-ic" aria-hidden="true"></span><span class="mxpl-l"></span><span class="mxpl-cv" aria-hidden="true">'+plIco('chevron-down')+'</span>'; h.appendChild(p); }
+        var p=$('.mxpl-pill',h); if(!p){ p=document.createElement('span'); p.className='mxpl-pill'; p.innerHTML='<span class="mxpl-ic" aria-hidden="true"></span><span class="mxpl-l"></span><span class="mxpl-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span><span class="mxpl-cv" aria-hidden="true">'+plIco('chevron-down')+'</span>'; h.appendChild(p); }
         var pic=$('.mxpl-ic',p); if(pic.__s!==tic){ pic.__s=tic; pic.innerHTML=tic; }
-        var l=$('.mxpl-l',p); if(l.textContent!==lab) l.textContent=lab; p.classList.toggle('mxpl-live',live); }); };
+        var l=$('.mxpl-l',p); plLabel(l, names.length ? names : ['Thought']); p.classList.toggle('mxpl-live',live); }); };
+    /* the label animates as it changes (request, 27 Nov 2026: "the new text shows instantly - add an in and an out animation").
+       One span per name: a name ADDED to the end slides up and fades in; when the list is REPLACED (not just extended) the old
+       label slides up and fades out first, then the new one comes in. A name entering wears its own muted ink for the 280ms of
+       its entrance (the shimmer's background-clip:text cannot fade a child), then joins the shimmer. */
+    function plLabel(l, list){ var old=l.__n||[], key=list.join('\u0001'); if(l.__k===key) return; l.__k=key;
+      var ext=old.length&&list.length>old.length&&old.every(function(x,i){ return list[i]===x; });
+      var span=function(x,i,anim){ return (i?'<span class="mxpl-sep'+(anim?' mxpl-in':'')+'"> \u00b7 </span>':'')+'<span class="mxpl-nm'+(anim?' mxpl-in':'')+'">'+x.replace(/[&<>]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; })+'</span>'; };
+      var settle=function(){ clearTimeout(l.__ts); l.__ts=setTimeout(function(){ $$('.mxpl-in',l).forEach(function(e){ e.classList.remove('mxpl-in'); }); },300); };
+      clearTimeout(l.__to); l.classList.remove('mxpl-out');
+      if(!old.length){ l.innerHTML=list.map(function(x,i){ return span(x,i,true); }).join(''); l.__n=list.slice(); settle(); return; }
+      if(ext){ l.insertAdjacentHTML('beforeend',list.slice(old.length).map(function(x,j){ return span(x,old.length+j,true); }).join('')); l.__n=list.slice(); settle(); return; }
+      l.classList.add('mxpl-out'); l.__to=setTimeout(function(){ l.classList.remove('mxpl-out'); l.innerHTML=list.map(function(x,i){ return span(x,i,true); }).join(''); l.__n=list.slice(); settle(); },170); }
     var plq=false, plmo=new MutationObserver(function(){ if(plq) return; plq=true; setTimeout(function(){ plq=false; plmo.disconnect(); try{ plPaint(); }finally{ plmo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']}); } },30); });
-    plmo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']}); }
+    plmo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']});
+    /* Option 11: number the sub-points of a step so they can follow one another (rows of its table in pairs, words of its reasoning) */
+    var mxpfIdx=function(st){ $$('.mxpl-kv',st).forEach(function(dl){ [].slice.call(dl.children).forEach(function(c,i){ c.style.setProperty('--mxpf-j',Math.floor(i/2)); }); });
+      $$('.mira-step-row~* .mx-w',st).forEach(function(w,i){ w.style.setProperty('--mxpf-w',Math.min(i,90)); }); };
+    var mxpfRM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(v==='pillfx') document.addEventListener('click',function(e){ if(!e.target.closest) return; var h=e.target.closest('.mira-group-head');
+      if(h&&h.parentElement){ var g=h.parentElement;
+        if(h.__pass) return;
+        /* closing a finished, open group: rows out last-to-first, then the box, then the real click */
+        if(h.getAttribute('aria-expanded')==='true'&&!g.classList.contains('mxpl-glive')&&!mxpfRM){ e.preventDefault(); e.stopPropagation(); if(g.classList.contains('mxpf-out')) return;
+          var sts=$$('.mira-group-step:not(.mx-hide)',g), n=sts.length; sts.forEach(function(x,i){ x.style.setProperty('--mxpf-r',n-1-i); });
+          var fd=Math.max(0,n-1)*35+140; g.style.setProperty('--mxpf-fd',fd+'ms'); g.classList.add('mxpf-out');
+          setTimeout(function(){ h.__pass=1; h.click(); h.__pass=0; g.classList.remove('mxpf-out'); },fd+170); return; }
+        /* opening: number every row's words through the group, and the sub-points of each step */
+        g.classList.add('mxpf-anim'); $$('.mira-group-step',g).forEach(mxpfIdx); $$('.mira-step-row .mx-w',g).forEach(function(w,i){ w.style.setProperty('--mxpf-gw',Math.min(i,140)); }); return; }
+      var r=e.target.closest('.mira-step-row'), st=r&&r.closest('.mira-group-step'); if(!st) return;
+      if(r.__pass) return;
+      /* closing an open step: its content out first, then the real click */
+      if(r.getAttribute('aria-expanded')==='true'&&!mxpfRM&&r.closest('.mira-activity-group:not(.mxpl-glive)')){ e.preventDefault(); e.stopPropagation(); if(st.classList.contains('mxpf-sout')) return;
+        st.classList.add('mxpf-sout'); setTimeout(function(){ r.__pass=1; r.click(); r.__pass=0; st.classList.remove('mxpf-sout'); },190); return; }
+      mxpfIdx(st); },true); }
   if(/^tg[234]d?$/.test(v)){ var tn=v.charAt(2); document.body.classList.add('mxt','mxt'+tn); var tc=document.createElement('style'); tc.id='mxt-css';
     var SH='color:transparent;background-image:linear-gradient(90deg,var(--mira-text-muted) 0%,var(--mira-text-muted) 40%,var(--mira-text-strong) 50%,var(--mira-text-muted) 60%,var(--mira-text-muted) 100%);background-size:250% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;animation:mxts 1.8s linear infinite';
     tc.textContent=
@@ -468,7 +605,7 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
       if(c){ if(g.classList.contains('mxt-open')&&g.__mxtk===c.__k){ g.classList.remove('mxt-open'); g.__mxtk=''; } else { g.__mxtk=c.__k; g.classList.add('mxt-open'); } tPaint();
         if(g.__mxtk) $$('.mira-group-step:not(.mxt-off):not(.mx-hide)',g).forEach(function(s,i){ var r=$('button.mira-step-row[aria-expanded]',s); if(!r) return; var o=r.getAttribute('aria-expanded')==='true'; if(o!==(i===0)) toggle(r); }); }
       else { g.__mxtk=''; g.classList.toggle('mxt-open'); tPaint(); } hd.setAttribute('aria-expanded',String(g.classList.contains('mxt-open'))); },true); }
-  if(/lav/.test(v)&&v!=='lav4'&&v!=='lav5'&&v!=='lav6'){ document.body.classList.add('mxdia-lav'); var lc=document.createElement('style'); lc.id='mxdia-lav-css'; lc.textContent=
+  if(/lav/.test(v)&&v!=='lav4'&&v!=='lav5'&&v!=='lav6'&&v!=='lav7'){ document.body.classList.add('mxdia-lav'); var lc=document.createElement('style'); lc.id='mxdia-lav-css'; lc.textContent=
     'body.mxdia-lav .mira-group-title.mx-dia,body.mxdia-lav .mira-group-title.mx-dia-once{background-image:linear-gradient(90deg,var(--mira-text-muted) 0%,var(--mira-text-muted) calc(var(--mx-sweep) - 14%),var(--ai-accent) var(--mx-sweep),var(--mira-text-muted) calc(var(--mx-sweep) + 14%),var(--mira-text-muted) 100%)}'+
     'body.mxdia-lav .mira-shimmer{background-image:linear-gradient(90deg,transparent calc(50% - var(--mira-shimmer-spread)),var(--ai-accent),transparent calc(50% + var(--mira-shimmer-spread))),linear-gradient(var(--mira-text-muted),var(--mira-text-muted))}';
     document.head.appendChild(lc); }
@@ -497,6 +634,7 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
       'body.mxb3 .mira-sidebar-head{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:4px!important}'+
       'body.mxb3 .mira-sidebar-close{order:-1!important;display:inline-flex!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;margin:0 0 0 -6px!important;position:static!important}'+
       'body.mxb3 .mira-brand{order:0;padding-left:6px!important;margin-left:0!important}'+
+      'body.mxb2.mxb3 .mira-brand:hover,body.mxb2.mxb3 .mira-brand:focus-visible{background:transparent!important}'+   /* no hover fill on the wordmark (27 Nov 2026) - .mxb2 .mxb3 outranks option 2's own hover, which came later in the cascade and won */
       /* the page hides the sidebar's own Collapse button (the chat header carries the toggle) - here it is the one shown, and
          the header's copy steps aside while the sidebar is open; collapsed, the header's button is the way back */
       'body.mxb3 aside.mira-sidebar .mira-icon-button[aria-label="Collapse sidebar"]{display:inline-flex!important}'+
@@ -535,6 +673,67 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
     if(v==='move'){ var mb=A.querySelector('[data-all=move]'); if(mb) mb.click(); }
     if(v==='search'){ MXS_ALL.q='runbook'; var q=A.querySelector('obs-input.mxs-alq'); if(q) q.value='runbook'; mxsAllPaint(); }
     return; }
+  /* ALL FILES · OPTION 3 · GALLERY CARDS (request, 27 Nov 2026, from the claude.ai artifact gallery): each file is a card with a
+     large preview on top - the file's page set INSET in a quiet frame, cropped at the bottom - and its name + "TYPE · when" under it,
+     the type icon at the right. Hovering a card raises its page a little and shows two square buttons at the top right: ⋯ (Preview,
+     Go to chat, Download) and a pin; a pinned file keeps its pin lit and sorts to the front. Variants gal / gal-hov / gal-menu
+     (not o3 - /o[23]/ switches runbook features in this driver). Repaints through mira.html's own mxsFpPaint, wrapped. */
+  if(key==='files'&&/^gal/.test(v)){ mxFinal(); MXS_FP.view='gallery'; mxgInit(); mxsFpOpen();
+    if(v!=='gal') setTimeout(function(){ var c=document.querySelector('.mxg-c'); if(!c) return; c.classList.add('is-hov'); if(v==='gal-menu') mxgMenu(c.querySelector('[data-mxg=more]')); },300); return; }
+  function mxgInit(){ if(window.__mxg) return; window.__mxg={pins:{}};
+    var DOTS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>', PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4" /><path d="M9 15l-4.5 4.5" /><path d="M14.5 4l5.5 5.5" /></svg>';
+    var st=document.createElement('style'); st.id='mxg-css'; st.textContent=
+      '.mxs-fpg.mxg-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}'+
+      '.mxg-c{position:relative;display:flex;flex-direction:column;border:1px solid var(--mira-panel-edge);border-radius:12px;background:var(--mira-surface-raised);color:inherit;text-decoration:none!important;transition:border-color .15s}'+
+      '.mxg-c:hover,.mxg-c.is-hov{border-color:var(--mira-text-muted)}.mxg-c:focus-visible{outline:2px solid var(--mira-accent);outline-offset:2px}'+
+      '.mxg-pv{position:relative;display:block;height:156px;overflow:hidden;border-radius:11px 11px 0 0;background:var(--mira-surface);border-bottom:1px solid var(--mira-hairline)}'+
+      '.mxg-pg{position:absolute;left:12%;right:12%;top:26px;bottom:-14px;transition:transform .2s ease-out}.mxg-c:hover .mxg-pg,.mxg-c.is-hov .mxg-pg{transform:translateY(-4px)}'+
+      '.mxg-pg .mxa-pv{height:100%;box-shadow:var(--mira-float-shadow)}'+
+      '.mxg-ft{display:flex;align-items:flex-end;gap:10px;padding:12px 14px 14px}'+
+      '.mxg-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}'+
+      '.mxg-tx b{font-size:15px;font-weight:500;color:var(--mira-text-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+      '.mxg-tx small{font-size:12.5px;color:var(--mira-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+      '.mxg-ty{flex:0 0 18px;display:grid;place-items:center;color:var(--mira-text-muted)}.mxg-ty svg{width:18px;height:18px}'+
+      '.mxg-acts{position:absolute;top:10px;right:10px;z-index:3;display:flex;gap:6px}'+
+      '.mxg-b{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--mira-panel-edge);border-radius:8px;background:var(--mira-shell);color:var(--mira-text-strong);cursor:pointer;opacity:0;transition:opacity .15s,background-color .15s}'+
+      '.mxg-c:hover .mxg-b,.mxg-c.is-hov .mxg-b,.mxg-c:focus-within .mxg-b,.mxg-b.on,.mxg-b.is-open{opacity:1}'+
+      '.mxg-b:hover,.mxg-b.is-open{background:var(--mira-surface-raised)}.mxg-b:focus-visible{outline:2px solid var(--mira-accent);outline-offset:1px}.mxg-b svg{width:16px;height:16px}'+
+      '.mxg-b.on{color:var(--mira-accent)}'+
+      '.mxg-m{position:absolute;top:48px;right:10px;z-index:6;min-width:176px;padding:4px;border:1px solid var(--mira-panel-edge);border-radius:8px;background:var(--mira-surface-raised);box-shadow:var(--mira-menu-shadow);animation:mxgm .14s ease-out both}'+
+      '@keyframes mxgm{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}'+
+      '.mxg-mi{display:flex;align-items:center;gap:9px;height:32px;padding:0 10px;border-radius:6px;font-size:13px;color:var(--mira-text);cursor:pointer;white-space:nowrap}'+
+      '.mxg-mi:hover,.mxg-mi:focus-visible{background:var(--mira-row-hover);color:var(--mira-text-strong);outline:none}.mxg-mi svg{width:15px;height:15px;color:var(--mira-text-muted)}'+
+      '@media (prefers-reduced-motion:reduce){.mxg-pg,.mxg-b{transition:none}.mxg-m{animation:none}}';
+    document.head.appendChild(st);
+    var orig=mxsFpPaint;
+    mxsFpPaint=function(){ if(MXS_FP.view!=='gallery'){ var g0=$('.mxs-fp .mxs-fpg'); if(g0) g0.classList.remove('mxg-grid'); return orig.apply(this,arguments); }
+      var el=$('.mxs-fp'); if(!el) return; var P=window.__mxg.pins, q=MXS_FP.q.trim().toLowerCase(), all=mxsRows().filter(function(r){ return mxsArt(r); }).sort(function(a,b){ return b.t-a.t; });
+      var rs=all.filter(function(r){ var a=mxsArt(r); return (MXS_FP.k==='all'||a.k===MXS_FP.k)&&(!q||a.t.toLowerCase().indexOf(q)>=0||r.name.toLowerCase().indexOf(q)>=0); });
+      rs.sort(function(a,b){ return (P[b.id]?1:0)-(P[a.id]?1:0)||b.t-a.t; });
+      $('.mxs-fpn',el).textContent=(rs.length===all.length?all.length:rs.length+' of '+all.length)+' file'+(all.length===1?'':'s');
+      var g=$('.mxs-fpg',el); g.classList.remove('is-list'); g.classList.add('mxg-grid');
+      g.innerHTML=rs.length?rs.map(function(r){ var a=mxsArt(r), on=!!P[r.id];
+          return '<a href="#" class="mxg-c'+(on?' is-pin':'')+'" data-fp="open" data-id="'+r.id+'" title="'+esc(a.t)+' — from '+esc(r.name)+'">'+
+            '<span class="mxg-pv"><span class="mxg-pg">'+mxsArtPrev(a,r)+'</span></span>'+
+            '<span class="mxg-acts"><span role="button" tabindex="0" class="mxg-b" data-mxg="more" data-id="'+r.id+'" aria-label="More actions" aria-haspopup="menu" title="More">'+DOTS+'</span>'+
+            '<span role="button" tabindex="0" class="mxg-b'+(on?' on':'')+'" data-mxg="pin" data-id="'+r.id+'" aria-pressed="'+on+'" aria-label="'+(on?'Unpin':'Pin')+'" title="'+(on?'Unpin':'Pin')+'">'+PIN+'</span></span>'+
+            '<span class="mxg-ft"><span class="mxg-tx"><b>'+esc(a.t)+'</b><small>'+MXS_ART_LAB[a.k]+' · '+esc(mxsAgo(r.t))+'</small></span><span class="mxg-ty" title="'+MXS_ART_LAB[a.k]+'">'+mxsArtIco(a.k)+'</span></span></a>'; }).join('')
+        :'<p class="mxs-fpe">'+(q?'No files match “'+esc(MXS_FP.q)+'”':'No files of this type')+'</p>'; };
+    /* the card's own buttons, caught before the page's [data-fp] handler so they never open the chat */
+    document.addEventListener('click',function(e){ if(!e.target.closest) return; var b=e.target.closest('[data-mxg]');
+      if(!b){ if(!e.target.closest('.mxg-m')) mxgMenuClose(); else setTimeout(mxgMenuClose,0); return; }
+      e.preventDefault(); e.stopPropagation(); var id=b.getAttribute('data-id');
+      if(b.getAttribute('data-mxg')==='pin'){ var P=window.__mxg.pins; if(P[id]) delete P[id]; else P[id]=1; mxgMenuClose(); mxsFpPaint(); toast(P[id]?'Pinned':'Unpinned'); return; }
+      if(b.classList.contains('is-open')) mxgMenuClose(); else mxgMenu(b); },true);
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('.mxg-m')){ e.stopPropagation(); mxgMenuClose(); return; }
+      var b=e.target.closest&&e.target.closest('[data-mxg]'); if(b&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); b.click(); } },true); }
+  function mxgMenuClose(){ var m=$('.mxg-m'); if(m) m.remove(); $$('.mxg-b.is-open').forEach(function(x){ x.classList.remove('is-open'); x.setAttribute('aria-expanded','false'); }); }
+  function mxgMenu(b){ if(!b) return; mxgMenuClose(); var c=b.closest('.mxg-c'), id=b.getAttribute('data-id'); b.classList.add('is-open'); b.setAttribute('aria-expanded','true');
+    var m=document.createElement('div'); m.className='mxg-m'; m.setAttribute('role','menu');
+    m.innerHTML='<span role="menuitem" tabindex="0" class="mxg-mi" data-fp="pv" data-id="'+id+'">'+MXS_EYE+'Preview</span>'+
+      '<span role="menuitem" tabindex="0" class="mxg-mi" data-fp="open" data-id="'+id+'">'+mxsAllIco('msg')+'Go to chat</span>'+
+      '<span role="menuitem" tabindex="0" class="mxg-mi" data-fp="dl" data-id="'+id+'">'+MXS_DL+'Download</span>';
+    c.appendChild(m); }
   if(key==='files'){ mxFinal(); MXS_FP.view=/2/.test(v)?'list':'grid'; mxsFpOpen(); if(/pv/.test(v)) setTimeout(function(){ var b=document.querySelectorAll('.mxs-fp [data-fp=pv]')[3]; if(b) b.click(); },300); return; }
   if(key==='sidebar'){ show('new'); if(/^o2/.test(v)) mxsInit(v); if(/tog/.test(v)) mxsTog(v); return; }   /* Option 2: pin, group and filter on the chat list - spec-sidebar.js */   /* Sidebar category (20 Nov 2026): the whole mira.html screen as it opens - product rail, Mira sidebar, chat panel and hero - shown at a chosen screen size (a crop to the sidebar read as broken) */
   if(key==='artifact'){ document.body.classList.add('mx-spec-page'); mxaSpec(v); return; }   /* UI visualization · Artifact view - spec-artifact.js; the FULL page: sidebar, header, hero */
@@ -646,7 +845,7 @@ function mxSpec(o){ var key=o.key, v=o.v||''; if(/o[23]/.test(v)){ MX.runOpt='2'
     /* …and the same for EVERY option (request, 25 Nov 2026: "fix this in all options of Thinking group"): each Playing state ends
        open, with no replay. Two stay as they were: Option 1 · Finished, folded ('done') shows the folded end on purpose, and
        Option 4 · Tool chips (tg3) opens its steps from its own chips (.mxt-open), not from the head's state. */
-    playGroup(k[0],P).then(function(){ var hd=$('.mira-group-head',k[0]); if(v==='done'||v==='lavd'||/^tg3/.test(v)||v==='pill') return;
+    playGroup(k[0],P).then(function(){ var hd=$('.mira-group-head',k[0]); if(v==='done'||v==='lavd'||/^tg3/.test(v)||v==='pill'||v==='pillfx') return;
       hd.setAttribute('aria-expanded','true'); var hc=$('.mira-step-chevron',hd); if(hc) hc.classList.add('is-open');
       /* the head as live words it: two skills read as one clause ("used the runbook-guide and observeops-rca skills"), and the
          failure count follows the title OUTSIDE its ellipsis, so a long summary can never cut "· 1 failed" off */

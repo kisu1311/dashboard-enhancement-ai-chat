@@ -13,7 +13,7 @@ d = re.sub(r'<script src="_variants\.js"></script>', '', d)
 # 2 the DS bundle is the artifact's mira-ds.js; the two small helpers are inlined
 assert d.count('src="_ds/observeops-elements.umd.js"') == 1
 d = d.replace('src="_ds/observeops-elements.umd.js"', 'src="mira-ds.js"')
-for f in ['setting-nav.js', '_ds/colresize.js']:
+for f in ['setting-nav.js', '_ds/colresize.js', '_ds/card-hover.js']:
     tag = '<script src="%s"></script>' % f
     assert d.count(tag) == 1, f
     body = open(D + f, encoding='utf-8').read().replace('</script', '<\\/script')
@@ -25,7 +25,7 @@ shim = ("<script>(function(){try{var k='__t';localStorage.setItem(k,k);localStor
 # 4 the driver
 drv = r"""<script>
 /* the module-work artifact's stage: __DVSPEC = { key, v, theme } opens the board on one state */
-(function(){ var S=window.__DVSPEC; if(!S) return; if(S.key==='aisum') document.documentElement.classList.add('dvwait'); window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
+(function(){ var S=window.__DVSPEC; if(!S) return; if(S.key==='aisum') document.documentElement.classList.add('dvwait'); document.documentElement.classList.add('dvhide'); /* EVERY component (27 Nov 2026): the page stays hidden until the driver has reached the asked state - it signals that by setting document.title to READY or ERR; a failsafe shows it after 6s regardless. Without this a reload flashed the default board for ~1s. */ (function(){ var de=document.documentElement, done=false; function show(){ if(done) return; done=true; de.classList.remove('dvhide'); } setTimeout(show,6000); var t0=setInterval(function(){ if(/^(READY|ERR)/.test(document.title)){ clearInterval(t0); requestAnimationFrame(show); } else if(done) clearInterval(t0); },50); })(); window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
   function scroller(el){ for(var p=el.parentElement;p;p=p.parentElement){ var cs=getComputedStyle(p); if(/(auto|scroll)/.test(cs.overflowY)&&p.scrollHeight>p.clientHeight+2) return p; } return null; }
   function go(n){ try{
       if(typeof setTheme==='function') setTheme(S.theme==='light'?'light':'dark');
@@ -85,6 +85,18 @@ drv = r"""<script>
         if(!ww){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no widget'; return; }
         var ws=scroller(ww); if(ws){ ws.scrollTop+=ww.getBoundingClientRect().top-ws.getBoundingClientRect().top-70; }
         wSelect(ww); document.title='READY'; return; }
+      /* Compliance › Policies › the policy card (27 Nov 2026): Option 1 the 'gauges' card (the user's screenshot), Options 2 & 3 the device-led designs */
+      if(S.key==='cplpc'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no compliance'; return; }
+        CPLS.polView='grid'; CPLS.polOpen=false; CPLS.pcView=/5/.test(S.v||'')?'g5':/4/.test(S.v||'')?'g4':/3/.test(S.v||'')?'n3':/2/.test(S.v||'')?'n2':'gauges'; selectModuleByName('Compliance'); cplInit('Policies');
+        setTimeout(function(){ document.title=document.querySelector('.cplpb')?'READY':'ERR no card'; },300); return; }
+      /* Compliance › Policies › a policy's page, the KPI row (27 Nov 2026): Options 1-3 moved off the page; Option 4 is the page */
+      if(S.key==='cplpd'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no compliance'; return; }
+        var m=/(\d)/.exec(S.v||''); CPLS.pdView=m?m[1]:'4'; selectModuleByName('Compliance'); cplInit('Policies'); cplPolOpen();
+        setTimeout(function(){ document.title=document.getElementById('cplPolDet')?'READY':'ERR no policy page'; },300); return; }
+      /* Compliance › Overview › Compliance Score (27 Nov 2026): Option 2 was moved off the board; the stage sets the view */
+      if(S.key==='cplsc'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.documentElement.classList.remove('dvhide'); document.title='ERR no compliance'; return; }
+        CPLS.scView=/2/.test(S.v||'')?'2':'1'; selectModuleByName('Compliance'); cplInit('Overview'); document.documentElement.classList.remove('dvhide');
+        setTimeout(function(){ document.title=document.getElementById('cplOv')?'READY':'ERR no overview'; },300); return; }
       var want=S.key==='cvcard'?function(m){return m.t==='cmp'}:function(m){return m.t==='pie'||m.t==='hbars'||m.t==='tn'};
       var list=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], idx=-1; for(var i=0;i<list.length;i++){ if(list[i]&&want(list[i])){ idx=i; break; } }
       var w=idx>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+idx+'"]');
@@ -94,11 +106,12 @@ drv = r"""<script>
       setTimeout(function(){ var b=document.getElementById('wTbViewBtn'); if(!b){ document.title='ERR no button'; return; }
         wTbView({stopPropagation:function(){},currentTarget:b}); document.title='READY'; },250);
     }catch(e){ document.title='ERR '+e.message; } }
-  window.addEventListener('load',function(){ setTimeout(function(){go(0)},900); });
+  window.addEventListener('load',function(){ setTimeout(function(){go(0)},S.key==='cplsc'?0:900); });
+  /* Compliance stage (27 Nov 2026): the page is hidden (html.dvhide) until it has switched off the default board - it used to flash Application Performance for ~1s */
 })();
 </script>"""
 stamp = datetime.datetime.now().strftime('%d %b %H:%M')
-css = '<style id="dv-stage-css">.vs-switch{display:none!important}html.dvwait #dashGrid{visibility:hidden}</style><meta name="mx-build" content="' + stamp + '">'
+css = '<style id="dv-stage-css">.vs-switch{display:none!important}html.dvwait #dashGrid{visibility:hidden}html.dvhide body{visibility:hidden}html.dvhide::after{content:"Loading\\2026";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:13px Inter,system-ui,sans-serif;opacity:.6}</style><meta name="mx-build" content="' + stamp + '">'
 assert d.count('<head>') >= 1
 d = d.replace('<head>', '<head>' + shim, 1).replace('</head>', css + '</head>', 1)
 k = d.rfind('</body>'); d = d[:k] + drv + d[k:]

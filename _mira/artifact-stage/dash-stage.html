@@ -469,15 +469,17 @@ body.fs .exitfs{display:inline-flex}
 .wrz{right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize}
 .wrz::after{content:'';position:absolute;right:4px;bottom:4px;width:8px;height:8px;
   border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);border-radius:0 0 3px 0}
-.wrz:hover::after{border-color:var(--teal)}
+.wrz:hover::after{border-color:var(--primary,var(--teal))}
 .wrzE{top:8px;right:-2px;width:5px;bottom:18px;cursor:col-resize;border-radius:3px}
 .wrzS{left:8px;right:18px;bottom:-2px;height:5px;cursor:row-resize;border-radius:3px}
-.wrzE:hover,.wrzS:hover{background:var(--teal);opacity:1}
-.widget.rzing,.dwidget.rzing{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+/* the resize grips' active colour is the DS --primary (27 Nov 2026, "update using the ObserveOps design system"): the DS has no
+   resize-handle token; --primary is its active / selected ink, the same the selected-widget frame uses on this board */
+.wrzE:hover,.wrzS:hover{background:var(--primary,var(--teal));opacity:1}
+.widget.rzing,.dwidget.rzing{border-color:var(--primary,var(--teal));box-shadow:0 0 0 1px var(--primary,var(--teal))}
 body.rzing-body{user-select:none}
 /* live size readout, so the drag is not guesswork */
 .wrzbadge{position:fixed;z-index:2147482100;pointer-events:none;padding:3px 8px;border-radius:4px;
-  background:var(--pop);border:1px solid var(--teal);color:var(--text);font-size:11px;font-weight:600;
+  background:var(--pop);border:1px solid var(--primary,var(--teal));color:var(--text);font-size:11px;font-weight:600;
   font-family:"JetBrains Mono",monospace;box-shadow:var(--pop-shadow);white-space:nowrap}
 /* ⚠️ IT IS OUT OF THE FLOW TOO, IN THE END — and a probe is what settled it. The glyph was
    removed from `WGRIP` on 21 Sep 2026, which left an EMPTY span: `flex:0 0 auto` on no content
@@ -3642,7 +3644,7 @@ body:has(#view-dashboard.on) .gnav{display:block}
 /* ⚠️ THE WHOLE GROUP LIGHTS WHILE IT IS BEING DRAGGED, which is what it now is — the band's
    own `border-style:solid` went with the marker. (0,3,0) beats `.dgroup:has(.ghead)`'s (0,2,0)
    border, so the group's own hairline turns teal without !important. */
-.dgroup.gdrs.rzing{border-color:var(--teal)}
+.dgroup.gdrs.rzing{border-color:var(--primary,var(--teal))}
 /* ⚠️ RESTATED AT (0,4,0) ON PURPOSE. `.dgrid12.dropinto .gdrop` is (0,2,0) and is declared
    ABOVE `.dgroup.gdrs .gdrop`, so at equal weight the transparent rule would win on source
    order and a drag over an option-2 band would light nothing. */
@@ -8859,7 +8861,13 @@ html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:
 :is(#cplOv,#cplPolDet) .cpldon .n{fill:var(--page-text-color);font-family:var(--chart-font-family)}
 :is(#cplOv,#cplPolDet) .cpldon .l{fill:var(--neutral-light)}
 :is(#cplOv,#cplPolDet) .cpldon obs-metric-list{flex:1 1 auto;max-width:260px}
-:is(#cplOv,#cplPolDet) .cpldon2{display:flex;align-items:center;justify-content:center;gap:36px;height:100%}   /* donut + legend centred AS A GROUP in the card */
+:is(#cplOv,#cplPolDet) .cpldon2{display:flex;align-items:center;justify-content:center;gap:36px;height:100%}
+#cplOv .cpldon2.go .cplds,#cplOv .cpldlg.go{cursor:pointer}
+/* Resource Severity: legend to the RIGHT, one band per line (request, 27 Nov 2026 - under the donut the four entries wrapped
+   to two lines each in this narrow card); a smaller ring so ring + legend fit a quarter-width card */
+#cplOv .cpldon2.under{gap:20px}
+#cplOv .cpldon2.under .cpldwrap{flex:0 0 140px;width:140px;height:140px}
+#cplOv .cpldon2.under .cpldleg{gap:10px;white-space:nowrap}   /* donut + legend centred AS A GROUP in the card */
 :is(#cplOv,#cplPolDet) .cpldwrap{position:relative;flex:0 0 180px;width:180px;height:180px}
 :is(#cplOv,#cplPolDet) .cpldwrap svg{width:100%;height:100%;overflow:visible}
 :is(#cplOv,#cplPolDet) .cpldh,:is(#cplOv,#cplPolDet) .cplds{fill:none;transition:stroke-width .15s,opacity .15s}
@@ -8898,10 +8906,58 @@ html[data-theme="light"] .lhtok{--lh-line:#e3e8f2;--lh-arrow:#6a7fa0;--lh-title:
 /* ⚠️ obs-gauge is a FIXED 82px ring with no size prop — the DS says to scale it "via the container/zoom", so it is zoomed.
    A member at 0 is dimmed, as the product's own dial rows do, so the eye lands on the levels that have failures. */
 #cplOv .cplgw{display:flex;flex-direction:column;align-items:center;gap:6px}
-#cplOv .cplgw obs-gauge{zoom:1.75}
-#cplOv .cplgw span{font-size:13px;color:var(--page-text-color)}
+/* the dials fill the card (27 Nov 2026, the product's grouped dial widgets as the reference): each cell an equal share of the
+   row, the dial 17.5% of the row's width up to 120px (obs-gauge has no size prop - the hook makes its ring follow the host),
+   ring stroke 8 */
+#cplOv .cplgw obs-gauge.cplgg{width:min(calc((100cqw - 29px) * .186),128px)}
+/* the dial rows use the card's side space (27 Nov 2026): the inner box's 16px side padding and the row's 6px go, cells keep 2px */
+#cplOv .cplovb:has(> .cplgauges){padding-left:2px;padding-right:2px}
+#cplOv .cplgauges{justify-content:space-between;gap:0;padding:0}
+#cplOv .cplgauges > .cplgw{flex:1 1 0;min-width:0;box-sizing:border-box;padding:6px 2px}   /* EVERY cell the same padding (27 Nov 2026: the clickable cells carried 8px a side the zero cells did not, so the equal-share row was uneven and the zero dials touched) */
+#cplOv .cplgw span{font-size:13px;color:var(--neutral-light,var(--text-dim))}   /* the product's text-neutral label under each dial */
 #cplOv .cplgw.z{opacity:.4}
+#cplOv .cplgw.go{cursor:pointer;border-radius:8px}
+#cplOv .cplgsep{flex:0 0 1px;align-self:stretch;margin:24px 14px;background:var(--border-color)}   /* 14px either side (27 Nov 2026): the divider sat flush against Vulnerable and Repeat failures */
+/* its label wraps to two lines; hung under the dial (out of flow) so the five dials share one centre line */
+#cplOv .cplgcf{position:relative;min-width:84px;padding-bottom:23px}   /* = one label line (17) + the column gap (6), like its neighbours */
+/* clickable (.go adds 6px padding all round, which outranked the 23px): keep the room under the dial for the hung label */
+#cplOv .cplgw.cplgcf.go{padding-bottom:29px}
+#cplOv .cplgw.cplgcf.go span{top:calc(100% - 23px)}
+#cplOv .cplgcf span{position:absolute;top:calc(100% - 17px);left:50%;transform:translateX(-50%);width:max-content;max-width:110px;text-align:center;line-height:1.25}
+/* hover (request, 27 Nov 2026: the filled box + dark outline was heavy): no box - the dial lifts and grows a touch and its label
+   darkens and underlines; the outline is for keyboard focus only, in the DS focus colour */
+#cplOv .cplgw.go obs-gauge,#cplOv .cplgw.go span{transition:transform .15s ease,color .15s ease}
+#cplOv .cplgw.go:hover obs-gauge{transform:translateY(-2px) scale(1.04)}
+#cplOv .cplgw.go:focus{outline:none}
+#cplOv .cplgw.go:focus-visible{outline:2px solid var(--primary-color,#099dd9);outline-offset:2px}
 .cplov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);grid-auto-rows:280px;gap:8px}
+/* CLICKABLE TEXT ACROSS THE COMPLIANCE MODULE (request, 27 Nov 2026: "text that is clickable shows an underline, and a hover
+   effect"): no underline at rest (request, 27 Nov 2026, revised: "the underline shows only on hover"); on hover an underline fades in
+   and the text darkens (lightens in dark theme). Covers the Overview legend rows and dial labels, a policy card's name, the device rows on the
+   cards, every table row that opens a device / rule (its name cell), the rule rows on the device page, and the drawer's
+   rows. Demo cards open nothing, so their names are left plain. */
+:is(#view-compliance,#cplDr) :is(tr[onclick] td.nm,.cplbr.rule .nmr,.cplgw.go > span,.cpldlg.go,.dr .dn,.pdr .nm,.cplpc[onclick*="cplPolOpen"] .hd .ttl b,.cplocv[onclick*="cplPolOpen"] .hd .nm){text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:transparent;transition:color .12s,text-decoration-color .12s}
+:is(#view-compliance,#cplDr) :is(tr[onclick]:hover td.nm,.cplbr.rule:hover .nmr,.cplgw.go:hover > span,.cpldlg.go:hover,.dr:hover .dn,.pdr:hover .nm,.cplpc[onclick*="cplPolOpen"]:hover .hd .ttl b,.cplocv[onclick*="cplPolOpen"]:hover .hd .nm){text-decoration-color:currentColor;color:var(--primary-alt,var(--page-text-color))}
+/* Row 2 is Rule Assessment | Failed by Severity | Device Posture (request, 27 Nov 2026): eight tracks - row 1 Score (2) | Trend (6),
+   row 2 Rule Assessment (2) | Failed by Severity (3) | Device Posture (3); the two dial cards share one width */
+#cplOv.cplov{grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:260px}   /* every Overview widget 20px shorter (request, 27 Nov 2026; was 280) */
+#cplOv.cplov > :nth-child(1),#cplOv.cplov > :nth-child(3){grid-column:span 2}
+#cplOv.cplov > :nth-child(2){grid-column:span 6}
+#cplOv.cplov > :nth-child(4),#cplOv.cplov > :nth-child(5){grid-column:span 3}
+#cplOv.cplov{grid-template-rows:260px 260px auto}
+#cplOv.cplov > :nth-child(6){grid-column:1 / -1;grid-row:span 1}   /* its row takes its content's height (search + table + foot), the two rows above stay 260px */
+/* Last scan vs previous scan (27 Nov 2026): one row per device, previous % -> last % as two thin bars, the change as an obs-tag,
+   newly failing / fixed rule counts. A declared composition - the DS ships no comparison list; every colour is a token. */
+/* inner margins on the DS scale (27 Nov 2026, "update using the obs design system"): the widget card's own body padding (12px) is
+   the only inset, so the search box and the table start on the title's left edge; @padding-xs 8px between search, table and foot */
+#cplOv .cplovb:has(> .cplsc){padding:0}
+#cplOv .cplsc{height:100%;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--page-text-color)}
+#cplOv .cplsctb{flex:0 0 auto;display:block}   /* its own height: shrunk as a flex item it painted under the foot line */
+#cplOv .cplsctl{flex:0 0 auto}
+#cplOv .cplscf{font-size:12px;color:var(--neutral-light,var(--text-dim))}
+#cplOv .cplscnone{flex:1;display:grid;place-items:center;color:var(--neutral-light,var(--text-dim))}
+/* the five dials now share a half-width card: scale them to it (obs-gauge has no size prop; the DS says zoom) */
+#cplOv .cplgauges{container-type:inline-size}
 .cplscore{display:flex;flex-direction:column;justify-content:center;height:100%}
 .cplbig{font-size:46px;font-weight:500;line-height:1;color:var(--lh-title);font-family:var(--mono,'JetBrains Mono',monospace)}
 .cplbig small{font-size:18px;margin-left:6px}
@@ -9233,6 +9289,33 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplpb .pr4 em{font-style:normal;font:400 12px var(--numeric-font-family,'JetBrains Mono',monospace);color:var(--neutral-light);text-align:right}
 .cplpb .pr4 .r.z{opacity:.45}
 .cplpb .ft{display:flex;align-items:center;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-color)}
+/* policy card Options 2 & 3 (27 Nov 2026, artifact view) - see cplPolCardDevHTML */
+.cplpd .pdtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cplpd .pdcmp{display:flex;align-items:baseline;gap:16px;margin-top:16px;padding-bottom:14px;border-bottom:1px solid var(--border-color)}
+.cplpd .pdc{font-size:12.8px;color:var(--neutral-light);white-space:nowrap}
+.cplpd .pdc b{font:600 18px var(--numeric-font-family,'JetBrains Mono',monospace);margin-right:4px}
+.cplpd .pdc.ok b,.cplpd .t.ok b{color:var(--secondary-green)}
+.cplpd .pdc.bad b,.cplpd .t.bad b{color:var(--secondary-red)}
+.cplpd .sec{margin-top:14px}
+.cplpd .pdn{font-style:normal;font:500 12px var(--numeric-font-family,'JetBrains Mono',monospace);margin-left:6px;padding:1px 7px;border-radius:4px;background:var(--neutral-lightest);color:var(--page-text-color)}
+.cplpd .pdlist{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.cplpd .pdr{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;height:34px;padding:0 8px;border-radius:4px}
+.cplpd .pdr:hover{background:var(--neutral-lightest)}
+.cplpd .pdr .nm{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cplpd .pdr .ip{font:12px var(--numeric-font-family,'JetBrains Mono',monospace);color:var(--neutral-light)}
+.cplpd .pdcmp3{margin-top:16px}
+.cplpd .pdt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.cplpd .pdt .t{display:flex;align-items:baseline;justify-content:space-between;padding:10px 12px;border-radius:4px;background:var(--neutral-lightest);font-size:12.8px;color:var(--neutral-light)}
+.cplpd .pdt .t b{font:600 20px var(--numeric-font-family,'JetBrains Mono',monospace)}
+.cplpd .pddev{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;margin-top:16px}
+.cplpd .pdtot{display:flex;flex-direction:column;align-items:flex-start;padding-right:20px;border-right:1px solid var(--border-color)}
+.cplpd .pdtot b{font:600 32px/1 var(--numeric-font-family,'JetBrains Mono',monospace);color:var(--page-text-color)}
+.cplpd .pdtot span{font-size:12px;color:var(--neutral-light);margin-top:4px}
+.cplpd .pdsv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+.cplpd .pdsc{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.8px}
+.cplpd .pdsc .k{display:inline-flex;align-items:center;gap:6px;color:var(--page-text-color)}
+.cplpd .pdsc b{font:600 16px var(--numeric-font-family,'JetBrains Mono',monospace)}
+.cplpd .pdsc.z{opacity:.45}
 /* Overview card's device rows (6 Oct 2026) */
 .cplocv .dvl{display:flex;flex-direction:column;gap:2px;margin-top:6px}
 .cplocv .dr{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(60px,38%) 44px;align-items:center;gap:8px;width:100%;
@@ -9273,6 +9356,23 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplsc2 .sb i{display:block;height:100%;min-width:0;border-radius:2px}
 /* the policy card's Gauges view on the .cplpb frame (6 Oct 2026) */
 .cplpg2 .kp{margin-top:12px}
+.cplpg2 .kpc{display:flex;align-items:center;gap:16px;margin-top:14px;padding-bottom:12px}   /* the rule under it was removed (27 Nov 2026) */
+.cplpg2 .kpc .sp{flex:1 1 auto}
+.cplpg2 .kpc{min-height:39px;box-sizing:border-box}   /* the same height with or without the 18px figures, so dials line up across cards */
+.cplpg2 .kpc .rr.none{font-style:italic}
+.cplpg2.demo{cursor:default}
+.cplpc.cplpcdemo{position:relative;cursor:default}
+/* the violet Demo label on each demo card's top edge was removed on request (27 Nov 2026); data-demo stays on the card */
+.cplpc .hd .ttl,.cplpc .hd .nm{min-width:0}.cplpc .hd .ttl b,.cplpc .hd .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cplpc .hd .ttl b{display:block}
+.cplpc .hd obs-tag{flex:0 0 auto;white-space:nowrap}
+.cplpd .pdmore{display:block;padding:6px 8px 0}
+.cplpg2 .hd obs-tag{flex:0 0 auto;white-space:nowrap}
+.cplpg2 .hd .ttl{flex:0 1 auto}
+.cplpg2 .ttl{min-width:0}.cplpg2 .ttl b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* (27 Nov 2026, "short and simple") one quiet line: 13 Pass | 72 Fail, the figures at body size and semibold, a hairline between */
+.cplpg2 .kpc .rr{display:flex;align-items:center;gap:10px;margin:0;font-size:12.8px;color:var(--neutral-light)}
+.cplpg2 .kpc .rr .dv{width:1px;height:12px;background:var(--border-color)}
+.cplpg2 .kpc .rr b{font-size:13px;font-weight:600;margin-right:3px}
 .cplpg2 .ring{flex:0 0 auto;display:grid;place-items:center}
 .cplpg2 .ring obs-gauge{zoom:1}
 .cplpg2 .kp{align-items:center}
@@ -9282,13 +9382,44 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplpg2 .gr4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
 /* MINIMAL (request, 6 Oct 2026: "in this card ui will be minimal"): no cell boxes, no "N of 3" repeat (the dial shows N,
    the header says 3 devices), no icon tile, no hairlines between the rule counts, no footer rule — only what carries data */
-.cplpg2 .ic{flex:0 0 auto;width:auto;height:auto;background:transparent;color:var(--neutral-light)}
+/* (27 Nov 2026) the icon tile and the footer rule are BACK, like the Bars card: the 6 Oct "minimal" removal is reversed for these two */
 .cplpg2 .rc{border-left:0;padding-left:20px}
-.cplpg2 .ft{border-top:0;padding-top:0;margin-top:16px}
 .cplpg2 .gc{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 0;min-width:0}
 .cplpg2 .gc obs-gauge{zoom:.72;margin-bottom:2px}
 .cplpg2 .gc .gn{font-size:12px;color:var(--neutral-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .cplpg2 .gc.z{opacity:.45}
+/* name + count cells (27 Nov 2026) */
+.cplpg2 .gr4:has(.gcn){display:flex;align-items:stretch;gap:12px;margin-top:6px}
+.cplpg2 .gcn{flex:1 1 0;align-items:flex-start;gap:4px;padding:6px 0}
+.cplpg2 .gcn .gn{display:flex;align-items:center;gap:6px}
+.cplpg2 .gcn .gn i{flex:0 0 8px;width:8px;height:8px;border-radius:50%}
+.cplpg2 .gcn b{font:600 20px/1.2 var(--numeric-font-family,'JetBrains Mono',monospace);max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.cplpg2 .gr4 .gsep{flex:0 0 1px;background:var(--border-color);margin:4px 0}
+.cplpg2 .gcr{flex:1.3 1 0;padding-left:4px}
+/* OPTION 4 of the policy card (27 Nov 2026: "add new as option"; it was briefly Option 1) - short and simple like the Pass | Fail line: each posture is ONE line, dot · name · count, the count at
+   body size and semibold in its colour; the items sit in a wrapping row instead of five equal columns of big figures */
+.cplpg2.pcmin .gr4:has(.gcn){flex-wrap:wrap;align-items:center;gap:6px 14px}
+.cplpg2.pcmin .gcn{flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;padding:2px 0;font-size:12.8px}
+.cplpg2.pcmin .gcn b{font:600 13px/1.2 var(--numeric-font-family,'JetBrains Mono',monospace)}
+.cplpg2.pcmin .gr4 .gsep{align-self:stretch;height:auto;margin:2px 0}
+.cplpg2.pcmin .gcr{flex:0 0 auto;padding-left:0}
+:is(.cplpg2.pcmin,.cplpg2.pc5) .hd .rr{display:flex;align-items:center;gap:10px;margin:0;font-size:12.8px;color:var(--neutral-light);white-space:nowrap}
+:is(.cplpg2.pcmin,.cplpg2.pc5) .hd .rr .dv{width:1px;height:12px;background:var(--border-color)}
+:is(.cplpg2.pcmin,.cplpg2.pc5) .hd .rr b{font-size:13px;font-weight:600;margin-right:3px}
+:is(.cplpg2.pcmin,.cplpg2.pc5) .hd .rr.none{font-style:italic}
+.cplpg2.pcmin .gr4:has(.gcn){margin-top:14px}
+.cplpg2.pc5 .gr4:has(.gcn){margin-top:14px}
+.cplpg2.pc5 .gcn .gn{font-weight:600}
+.cplpg2.pc5 .gcn .gn i{display:none}   /* Compact 2: no severity dot before the name (27 Nov 2026) - the count is already in its colour */
+/* Compact 2: the tags sit UNDER the policy name (27 Nov 2026), on the name's left edge, 4px below it; the icon tile centres on the pair */
+.cplpg2.pc5 .ttl .tg{display:flex;gap:4px;margin-top:4px;line-height:normal}
+.cplpg2.pc5 .ttl .tg obs-tag{flex:0 0 auto}
+.cplpg2.pc5 .ttl .tg obs-tag+obs-tag{margin-left:0}   /* .cplpb .hd obs-tag+obs-tag pulls header tags 4px together; under the name the 4px gap is wanted */
+.cplpg2.pc5 .hd .ic{flex:0 0 46px;height:46px}
+.cplpg2.pc5 .hd .ic svg{width:24px;height:24px}
+.cplpg2.pc5 .ttl b{font-weight:700;font-size:14.5px}   /* Compact 2: the policy name in bold (27 Nov 2026) */
+.cplpg2.pc5 .hd .rr > span{font-weight:600}
+.cplpg2.pc5 .gcn b{font-weight:700}   /* Compact 2: the posture counts bolder (27 Nov 2026) */   /* Compact 2: the Pass / Fail words semibold too, like their counts */   /* the glyph grows with the tile (17px left it lost in 46px) - about half the tile, like the 32px tile's 17px */   /* = the name (20) + 4 + the tag row (22), so the tile's top is the name's top and its bottom the tags' bottom */   /* Compact 2: the posture names in semibold (27 Nov 2026) */
 /* the policy card's Overview view — obs-overview-card v0.1.240's frame and classes, copied (6 Oct 2026) */
 .cplpc.cplocv{display:flex;flex-direction:column;padding:16px;min-height:178px;border:1px solid var(--widget-border-color);border-radius:7px;
   box-shadow:0 0 0 1px var(--widget-box-shadow,transparent);background:var(--widget-background,var(--page-background-color));
@@ -9489,6 +9620,23 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplpd3 .bar{flex:1 1 auto;height:6px;border-radius:3px;background:var(--widget-border-color);overflow:hidden}
 .cplpd3 .bar i{display:block;height:100%;border-radius:3px}
 .cplpd3 .c.z{opacity:.45}
+.cpldv5 .pfg:focus-visible{outline:2px solid var(--primary-color,#099dd9);outline-offset:-2px}
+.cpldv5 .pm4>div.go.z.on{opacity:1}
+.cpldv5 .pfg{display:inline-flex;align-items:baseline;gap:6px;cursor:pointer;border-radius:4px;padding:0 4px;margin:0 -4px}
+.cpldv5 .pfg:hover{background:var(--grid-row-hover-bg,color-mix(in srgb,var(--page-text-color) 5%,transparent))}
+.cpldv5 .pfg:hover .w{text-decoration:underline;text-underline-offset:3px}
+.cpldv5 .pfg.on{background:color-mix(in srgb,var(--white) 7%,transparent);box-shadow:inset 0 -2px 0 var(--white)}
+.cplbrkh .cpldvfc{margin-left:12px;height:26px;padding:0 10px;font-size:12px}
+/* posture / severity cards that filter (27 Nov 2026, hover reworked on request): no grey slab and no underline - on hover a 2px
+   line in the card's own colour (--pc) runs along its foot; selected = that line plus a faint wash of the same colour */
+.cplpd3 .c.go,.cpldv5 .pm4>div.go{cursor:pointer;transition:box-shadow .15s,background .15s;outline:none}
+.cplpd3 .c.go:hover,.cpldv5 .pm4>div.go:hover{background:transparent;box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--pc) 60%,transparent)}
+.cplpd3 .c.go:hover .k,.cpldv5 .pm4>div.go:hover .k{text-decoration:none}
+.cplpd3 .c.go:focus-visible,.cpldv5 .pm4>div.go:focus-visible{box-shadow:inset 0 -2px 0 var(--pc),inset 0 0 0 1px color-mix(in srgb,var(--pc) 50%,transparent)}
+.cplpd3 .c.go.on,.cplpd3 .pm4>div.go.on{background:color-mix(in srgb,var(--pc) 8%,transparent);box-shadow:inset 0 -2px 0 var(--pc);opacity:1}
+.cplchip.on{display:inline-flex;align-items:center;gap:6px;background:var(--white);color:var(--bg)}   /* this page's own ink pair - --primary is not defined outside the DS scope */
+.cplemp{display:flex;flex-direction:column;align-items:center;gap:6px;padding:40px 16px;color:var(--neutral-light,var(--text-dim));text-align:center}
+.cplemp b{color:var(--page-text-color);font-size:14px;font-weight:600}.cplemp span{font-size:12.8px}.cplemp obs-button{margin-top:6px}
 .cplpd3:has(> .pm4){grid-template-columns:minmax(0,1.6fr) minmax(0,4fr)}
 .cplpd3 .pm4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0}
 .cplpd3 .pm4>div{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;padding:16px 20px;min-width:0;border:0;border-radius:0;background:transparent}
@@ -9522,13 +9670,17 @@ html[data-theme="light"] .cplpg select{color-scheme:light}
 .cplfbn{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--severity-critical);color:var(--active-text-color,#fff);font:600 10px/16px var(--numeric-font-family,'JetBrains Mono',monospace);text-align:center}
 /* the facet search box — its own class: it was `.cplfs`, which is also the device page's severity CELL (a padded flex
    column with a left border), so the magnifier sat outside the field (6 Oct 2026) */
-.cplfsrch{width:100%;margin:6px 0 4px}
+.cplfsrch{display:block;width:100%;margin:6px 0 4px}
 .cplfg[hidden],.cplfi[hidden]{display:none}
 .cplfgh{display:flex;align-items:center;gap:8px;height:32px;border:0;background:transparent;color:var(--lh-title);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:0;width:100%}
-.cplfgh svg{width:13px;height:13px;fill:currentColor;transition:transform .15s}
-.cplfg.shut .cplfgh svg{transform:rotate(-90deg)}
+.cplfgh obs-icon{display:inline-flex;transition:transform .15s;color:var(--neutral-light,var(--text-dim))}
+.cplfg.shut .cplfgh obs-icon{transform:rotate(-90deg)}
 .cplfg.shut .cplfi{display:none}
-.cplfi{display:flex;align-items:center;gap:8px;height:26px;cursor:pointer;color:var(--lh-text)}
+.cplfi{display:flex;align-items:center;gap:8px;height:30px;padding:0 6px;margin:0 -6px;border-radius:4px;cursor:pointer;color:var(--lh-text);outline:none}
+.cplfi:hover{background:var(--grid-row-hover-bg,color-mix(in srgb,var(--page-text-color) 5%,transparent))}
+.cplfi:focus-visible{box-shadow:inset 0 0 0 2px var(--primary-color,#099dd9)}
+.cplfi obs-checkbox{pointer-events:none;flex:0 0 auto}
+.cplfi.z span,.cplfi.z em{opacity:.6}
 .cplfi input{width:17px;height:17px;margin:0;accent-color:var(--teal);color-scheme:dark}
 html[data-theme="light"] .cplfi input{color-scheme:light}
 .cplfi i{width:16px;height:10px;border-radius:2px;background:var(--c)}
@@ -13379,7 +13531,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
    stopped loading it — so the Formatting help modal fell back to the DS's LIGHT defaults in dark theme.
    Copied verbatim from setting.html (dark block, light block, the Inter/card re-point), selectors
    narrowed to the three elements on this page. Change one copy, change both. */
-#view-apm,#view-approval,#apvDrawer,#apvModal,#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#view-dashboard,#wFullView,#cwFab,#cwFab2,.highcharts-tooltip-container{
+#view-apm,#view-approval,#apvDrawer,#apvModal,#cwMdHelp,#gDelMd,#drawer-gedit,#cwModal,#grpBtn,#cplOv,#cplPolList,#cplDr,#cplPolDet,#cplPcView,#cplFacets,#view-dashboard,#wFullView,#cwFab,#cwFab2,.highcharts-tooltip-container{
 
   --action-dropdown-divider:rgba(255, 255, 255, 0.2);
   --action-dropdown-hover-bg:#172336;
@@ -13771,7 +13923,7 @@ html[data-theme="light"] #dpanel{--ds-primary:#111c2c;--ds-primary-alt:#1d2a3e;-
   --widget-box-shadow:#000;
   --widget-type-selector-border-color:'transparent';
 }
-html[data-theme="light"] #view-apm,html[data-theme="light"] #view-approval,html[data-theme="light"] #apvDrawer,html[data-theme="light"] #apvModal,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] #cwFab2,html[data-theme="light"] .highcharts-tooltip-container{
+html[data-theme="light"] #view-apm,html[data-theme="light"] #view-approval,html[data-theme="light"] #apvDrawer,html[data-theme="light"] #apvModal,html[data-theme="light"] #cwMdHelp,html[data-theme="light"] #gDelMd,html[data-theme="light"] #drawer-gedit,html[data-theme="light"] #cwModal,html[data-theme="light"] #grpBtn,html[data-theme="light"] #cplOv,html[data-theme="light"] #cplPolList,html[data-theme="light"] #cplDr,html[data-theme="light"] #cplPolDet,html[data-theme="light"] #cplPcView,html[data-theme="light"] #cplFacets,html[data-theme="light"] #view-dashboard,html[data-theme="light"] #wFullView,html[data-theme="light"] #cwFab,html[data-theme="light"] #cwFab2,html[data-theme="light"] .highcharts-tooltip-container{
   /* ⚠️ THE SELECTED ROW AND A HOVERED ROW WERE THE SAME COLOUR IN LIGHT THEME — a DS
      collision, and the reason two rail rows read as selected at once (reported 1 Sep 2026
      with a screenshot). `obs-side-menu` paints `.row.leaf.active` with
@@ -14271,7 +14423,7 @@ body:not(:has(#view-dashboard.on)) .ntfpos{display:none}   /* the switch belongs
 <style id="df-moved">/* MOVED TO THE ARTIFACT (request, 25 Nov 2026): the dashboard filter - the header button and the
   Monitor · Group · Tag · + Filter row - now lives in the Module work artifact's Dashboard section. The code stays; dash-stage.html
   puts body.dfstage on to show it there. */
-body:not(.dfstage) #dfTog,body:not(.dfstage) #dashFltRow{display:none!important}</style><style id="dv-stage-css">.vs-switch{display:none!important}html.dvwait #dashGrid{visibility:hidden}</style><meta name="mx-build" content="26 Nov 19:01"></head>
+body:not(.dfstage) #dfTog,body:not(.dfstage) #dashFltRow{display:none!important}</style><style id="dv-stage-css">.vs-switch{display:none!important}html.dvwait #dashGrid{visibility:hidden}html.dvhide body{visibility:hidden}html.dvhide::after{content:"Loading\2026";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:13px Inter,system-ui,sans-serif;opacity:.6}</style><meta name="mx-build" content="27 Nov 19:12"></head>
 <body>
 <!-- ⚠️ THE AI MARK'S GRADIENT, DEFINED ONCE FOR THE WHOLE DOCUMENT (request, 9 Sep 2026: the
      supplied star "will be use in every where and ai chat interface").
@@ -18596,13 +18748,79 @@ function cplInit(sub){
   const h = document.getElementById('cplHdIc'); if (h && !h.innerHTML) h.innerHTML = `<path fill="currentColor" d="${CPL_IC.shield}"/>`;
   cplPaint();
 }
+/* Rule Assessment Results -> Explorer (request, 27 Nov 2026): a Pass / Fail slice or legend row opens Explorer grouped by
+   Rules with only that Evaluation ticked, the search and every other facet cleared */
+function cplEvalGo(v){ CPLS.grp = 'Rules'; CPLS.f = { Evaluation:[v] }; CPLS.q = ''; CPLS.page = 0; CPLS.facets = true; cplTab('Explorer'); }
+/* Failed by Severity -> Explorer (request, 27 Nov 2026): a dial opens Explorer on Rules with Evaluation = Fail and that
+   Rule severity ticked, so the rows are exactly the failures the dial counts. A dial at 0 is not clickable. */
+function cplSevGo(sev){ CPLS.grp = 'Rules'; CPLS.f = { Evaluation:['Fail'], 'Rule severity':[sev] }; CPLS.q = ''; CPLS.page = 0; CPLS.facets = true; cplTab('Explorer'); }
+/* Device Posture -> Explorer: a band dial opens Explorer grouped by Resources with that Asset severity ticked */
+function cplDevCont(d){ return (CPL_DEV_STREAK[d.n] || 0) >= CPL_STREAK_N; }
+/* Repeat failures (was "Continuously failed") -> Explorer › Resources with only those devices (request, 27 Nov 2026) */
+function cplContGo(){ CPLS.grp = 'Resources'; CPLS.f = { 'Scan history':['Repeat failures'] }; CPLS.q = ''; CPLS.page = 0; CPLS.facets = true; cplTab('Explorer'); }
+/* a resource row in Last Scan vs Previous Scan -> Explorer grouped by Resources, searched to that device, its drawer open */
+/* (27 Nov 2026) it lands as an APPLIED FILTER - the Resource facet ticked on that device, the search left empty, no drawer opened */
+function cplResGo(i){ const d = CPL.devs[i]; if (!d) return; CPLS.grp = 'Resources'; CPLS.f = { Resource:[d.n] }; CPLS.q = ''; CPLS.page = 0; CPLS.facets = true; cplTab('Explorer'); }
+function cplPostGo(b){ CPLS.grp = 'Resources'; CPLS.f = { 'Asset severity':[b] }; CPLS.q = ''; CPLS.page = 0; CPLS.facets = true; cplTab('Explorer'); }
+/* LAST SCAN vs PREVIOUS SCAN (request, 27 Nov 2026; reworked the same day: compare the SCAN RUN, not the compliance).
+   Did each device's scan run and collect the config - previous scan against the last one. Three cases are listed:
+   Newly failed (previous Success -> last Failed), Still failing (Failed both times) and Recovered (Failed -> Success).
+   A device that succeeded both times is NOT listed - the foot line counts them.
+   ⚠️ DEMO HISTORY, like CPL_DEV_STREAK: the instance holds one assessment, so the previous scan and the failure messages are
+   invented; the policy page's device table reads its Last Scan Status from the same record, so the two cannot disagree. */
+const CPL_SCAN_RUN = {
+  'ospf1.example.com':{ prev:'Success', last:'Failed', why:'SSH timeout after 30 s' },
+  'ospf2.example.com':{ prev:'Failed', last:'Success', why:'Scan Completed Successfully' },
+  'ospf3.example.com':{ prev:'Failed', last:'Failed', why:'Device unreachable (ping failed)' } };
+const CPL_PREV_DAYS = 7;   /* the scan before the last one ran a week earlier (weekly schedule) */
+const cplScanRun = d => CPL_SCAN_RUN[d.n] || { prev:'Success', last:'Success', why:'Scan Completed Successfully' };
+const CPL_SC_CASE = {   /* [label, tag variant, order] */
+  'Success>Failed':['Newly failed','tag-red',0], 'Failed>Failed':['Still failing','tag-orange',1], 'Failed>Success':['Recovered','tag-green',2] };
+const CPL_SC_COLS = [
+  { key:'dev',  title:'Resource',          type:'link', width:'30%' },
+  { key:'prev', title:'Previous scan',     type:'tags', width:'20%' },
+  { key:'last', title:'Last scan',         type:'tags', width:'20%' },   /* (27 Nov 2026) the Result column and the dates in these two titles are removed */
+  { key:'at',   title:'Last scan time',    width:'30%' } ];   /* (27 Nov 2026) the message column is gone; the time is a text cell in the product's date format - obs-table ships no date/time cell type */
+function cplScBind(b){ const t = b && b.querySelector('#cplScTb'); if (!t) return;
+  const go = e => { const d = Array.isArray(e.detail) ? e.detail[0] : e.detail; const row = d && (d.row || d); if (row && row.id != null) cplResGo(row.id); };
+  t.addEventListener('rowclick', go); t.addEventListener('cellaction', go);
+  const q = b.querySelector('#cplScQ'); if (q){ const f = e => cplScFilter(Array.isArray(e.detail) ? e.detail[0] : (e.detail != null && typeof e.detail !== 'object' ? e.detail : q.value)); q.addEventListener('input', f); q.addEventListener('change', f); q.addEventListener('clear', () => cplScFilter('')); } }
+/* (27 Nov 2026, later) the dates + count line above the grid is GONE: the two scan dates are the Previous / Last scan column
+   titles, and a DS search toolbar (obs-toolbar + obs-input search) sits over the obs-table. Search filters device, status,
+   result and message in place - only the table's `rows` change, so the field keeps focus. */
+let CPL_SC_Q = '';
+function cplScData(){
+  const P = CPL_DATA.policy, last = new Date(P.ts.replace(/^\w+, /, '')), prev = new Date(last - CPL_PREV_DAYS * 864e5);
+  const fd = d => d.toLocaleString('en-US', { month:'short', day:'2-digit' });
+  const st = v => [{ label:v, variant: v === 'Success' ? 'tag-green' : 'tag-red' }];
+  const all = CPL.devs.map((d, i) => ({ d, i, s: cplScanRun(d) }));
+  const rows = all.map(x => Object.assign(x, { k: CPL_SC_CASE[x.s.prev + '>' + x.s.last] })).filter(x => x.k).sort((a, b) => a.k[2] - b.k[2])
+    .map(x => ({ id:x.i, dev:{ text:x.d.n }, prev:st(x.s.prev), last:st(x.s.last), res:[{ label:x.k[0], variant:x.k[1] }], at:P.ts,
+      _q:[x.d.n, x.s.prev, x.s.last, x.k[0], P.ts].join(' ').toLowerCase() }));
+  const cols = CPL_SC_COLS;
+  return { rows, cols, ok: all.length - rows.length };
+}
+function cplScFilter(q){ CPL_SC_Q = q || ''; const t = document.getElementById('cplScTb'); if (!t) return;
+  const v = CPL_SC_Q.trim().toLowerCase(), R = cplScData().rows.filter(r => !v || r._q.includes(v));
+  t.rows = R; }   /* a search with no match shows the table's own empty row */
+function cplScanCmpHTML(){
+  const D = cplScData(), v = CPL_SC_Q.trim().toLowerCase(), rows = D.rows.filter(r => !v || r._q.includes(v));   /* (27 Nov 2026) the foot line counting the both-success resources is removed */
+  return `<div class="cplsc" title="">
+    <obs-toolbar class="cplsctl"><obs-input slot="start" id="cplScQ" type="search" allow-clear placeholder="Search resources" aria-label="Search resources" value="${cplEsc(CPL_SC_Q)}"></obs-input></obs-toolbar>
+    <obs-table class="cplsctb" id="cplScTb" header-style="default" sortable="false" columns="${cplEsc(JSON.stringify(D.cols))}" rows="${cplEsc(JSON.stringify(rows))}"></obs-table>
+    ${D.rows.length ? '' : '<div class="cplscnone">Every device scanned successfully both times.</div>'}
+  </div>`;
+}
+const CPL_STREAK_N = 3, CPL_DEV_STREAK = { 'ospf2.example.com':6, 'ospf1.example.com':4, 'ospf3.example.com':2 };   /* demo: consecutive non-compliant scans */
 function cplTab(t){ CPLS.tab = t; CPLS.polOpen = false; CPLS.polDev = null; cplPaint(); }
 function cplPaint(){
   const tb = document.getElementById('cplTabs'), b = document.getElementById('cplBody'); if (!tb || !b) return;
   tb.innerHTML = ['Overview','Policies','Explorer'].map(t => `<button class="mntab${t === CPLS.tab ? ' on' : ''}" type="button" role="tab" aria-selected="${t === CPLS.tab}" onclick="cplTab('${t}')">${t}</button>`).join('');
   b.classList.toggle('flush', CPLS.tab === 'Explorer');
   b.innerHTML = CPLS.tab === 'Overview' ? cplOvHTML() : CPLS.tab === 'Policies' ? (CPLS.polOpen ? (CPLS.polDev != null ? cplPolDevHTML() : cplPolDetHTML()) : cplPolHTML()) : cplExHTML();
-  if (CPLS.tab === 'Explorer') cplTbl();
+  if (CPLS.tab === 'Explorer'){ cplTbl(); const fq = b.querySelector('#cplFacQ');
+    if (fq){ const f = e => cplFacetQ(String(Array.isArray(e.detail) ? e.detail[0] : (e.detail != null && typeof e.detail !== 'object' ? e.detail : (fq.value || '')))); fq.addEventListener('input', f); fq.addEventListener('clear', () => cplFacetQ('')); } }
+  if (CPLS.tab === 'Overview') cplScBind(b);
   /* obs-page-header's back arrow dispatches a composed `back` CustomEvent — bound here, an inline on-attribute is inert */
   const ph = b.querySelector('.cplph'); if (ph) ph.addEventListener('back', () => { CPLS.polOpen = false; cplPaint(); });
   const pv = b.querySelector('#cplPcView'); if (pv){ pv.value = CPLS.pcView;
@@ -18622,8 +18840,9 @@ function cplOvHTML(){
      The product severities are the DS's --severity-* scale: High → major, Medium → warning, Low → clear, Info → maintenance (blue). */
   const SEVMAP = { Critical:'critical', High:'major', Medium:'warning', Low:'clear', Info:'maintenance' };
   const gauges = Object.keys(CPL_SEV).map(s => { const n = R.filter(r => r.sev === s && r.fails).length;
-    return `<div class="cplgw${n ? '' : ' z'}"><obs-gauge value="${n}" total="${fail}" severity="${SEVMAP[s]}" role="img" aria-label="${s}: ${n} of ${fail} open failures (${Math.round(cplPct(n, fail))}%)"></obs-gauge><span>${s}</span></div>`; }).join('');
-  const w = (t, body) => `<obs-widget-card static title="${t}"><div class="cplovb">${body}</div></obs-widget-card>`;
+    return `<div class="cplgw${n ? ' go' : ' z'}"${n ? ` role="button" tabindex="0" data-tip="Show the ${n} failed ${s} rules in Explorer" onclick="cplSevGo('${s}')" onkeydown="if(event.key==='Enter')cplSevGo('${s}')"` : ''}><obs-gauge class="cplgg" value="${n}" total="${fail}" severity="${SEVMAP[s]}" role="img" aria-label="${s}: ${n} of ${fail} open failures (${Math.round(cplPct(n, fail))}%)"></obs-gauge><span>${s}</span></div>`; }).join('');
+  /* a count chip after the title (27 Nov 2026, the product's grouped dial widgets as the reference: "Database 1") */
+  const w = (t, body, cnt) => `<obs-widget-card static ${cnt != null ? `class="cplwcn" style="--wcount:'${Number(cnt).toLocaleString('en-US')}'" ` : ''}title="${t}"><div class="cplovb">${body}</div></obs-widget-card>`;
   return `<div class="cplov" id="cplOv">
     ${(() => { /* Compliance Score on obs-kpi-card's layout (DS v0.1.240, 6 Oct 2026 — the same build as the policy page's tiles):
          a 45px icon chip coloured by the score's band, the title, the Pass / Fail counts as obs-tag, then the big mono value + bar */
@@ -18641,8 +18860,22 @@ function cplOvHTML(){
         <div class="foot"><div class="fval"><span class="num">${sc}</span><span class="unit">%</span></div>
           <div class="bar" role="img" aria-label="${sc}% of rules passing on every device"><i style="width:${sc}%"></i></div></div></div>`); })()}
     ${w('Compliance Trend', cplTrendHTML(sc, pass, R.length))}
-    ${w('Rule Assessment Results', cplDonutHTML([['Pass', pass, '--severity-clear'], ['Fail', fail, '--severity-critical']]))}
-    ${w('Failed by Severity', `<div class="cplgauges">${gauges}</div>`)}
+    ${w('Rule Assessment Results', cplDonutHTML([['Pass', pass, '--severity-clear'], ['Fail', fail, '--severity-critical']], false, { go:'cplEvalGo' }))}
+    ${w('Failed by Severity', `<div class="cplgauges" title="">${gauges}</div>`, fail)}
+    ${(() => { /* Device Posture (request, 27 Nov 2026 - was "Resource Severity", a donut): dials like Failed by Severity, one per
+         posture band against the device count (Secure clear · Moderate warning · Poor major · Vulnerable critical), then a fifth,
+         CONTINUOUSLY FAILED - devices non-compliant in each of the last CPL_STREAK_N scans. That is not a severity, so its dial
+         carries none: obs-gauge then paints var(--primary), the DS neutral ink.
+         ⚠️ DEMO HISTORY: the instance has ONE assessment, so each device's run of failed scans is CPL_DEV_STREAK (invented,
+         deterministic, like CPL_TREND_DEMO); the dial's tooltip says so. A band dial opens Explorer › Resources on that band;
+         the continuous dial opens Explorer › Resources on its own Scan history facet. */
+      const D = CPL.devs, N = D.length, PB = { Secure:'clear', Moderate:'warning', Poor:'major', Vulnerable:'critical' };
+      const band = ['Secure','Moderate','Poor','Vulnerable'].map(b => { const n = D.filter(d => d.band === b).length;
+        return `<div class="cplgw${n ? ' go' : ' z'}"${n ? ` role="button" tabindex="0" data-tip="Show the ${n} ${b} device${n > 1 ? 's' : ''} in Explorer" onclick="cplPostGo('${b}')" onkeydown="if(event.key==='Enter')cplPostGo('${b}')"` : ''}><obs-gauge class="cplgg" value="${n}" total="${N}" severity="${PB[b]}" role="img" aria-label="${b}: ${n} of ${N} devices"></obs-gauge><span>${b}</span></div>`; }).join('');
+      const cf = D.filter(d => (CPL_DEV_STREAK[d.n] || 0) >= CPL_STREAK_N);
+      const cont = `<div class="cplgw cplgcf${cf.length ? ' go' : ' z'}"${cf.length ? ` role="button" tabindex="0" onclick="cplContGo()" onkeydown="if(event.key==='Enter')cplContGo()"` : ''} data-tip="${cf.length ? `Show the ${cf.length} repeat-failure devices in Explorer · ` + cplEsc(cf.map(d => `${d.n} · ${CPL_DEV_STREAK[d.n]} scans`).join(', ')) + ' · ' : ''}Non-compliant in each of the last ${CPL_STREAK_N} scans (demo scan history)"><obs-gauge class="cplgg" value="${cf.length}" total="${N}" severity="cf" style="--severity-cf:var(--chart-indigo,#8b5cf6)" role="img" aria-label="Repeat failures: ${cf.length} of ${N} devices"></obs-gauge><span>Repeat failures</span></div>`;
+      return w('Device Posture', `<div class="cplgauges" title="">${band}<i class="cplgsep" aria-hidden="true"></i>${cont}</div>`, N); })()}
+    ${w('Last Scan vs Previous Scan', cplScanCmpHTML())}
   </div>`;
 }
 /* ── Rule Assessment donut, in the product dashboard's donut style (6 Oct 2026: the "Metric Alert Overview" widget as
@@ -18651,19 +18884,20 @@ function cplOvHTML(){
    plus the share, as asked ("in hover show count with % value"). The legend rows drive the same highlight.
    ⚠️ A declared DS gap (no chart element ships); every colour is a token. One circle per slice, swept with
    stroke-dasharray from 12 o'clock — the arc length IS the share, so it cannot disagree with the tooltip. */
-function cplDonutHTML(sl, pct){
+function cplDonutHTML(sl, pct, o){
+  o = o || {}; const id = o.id || 'cplDon', lbl = o.label || 'Total';
   const T = sl.reduce((a, x) => a + x[1], 0), r = 66, C = 2 * Math.PI * r; let at = 0;
   const arcs = sl.map(([n, v, tok], i) => { const len = T ? C * v / T : 0, off = -at; at += len;
-    const ev = `onmouseenter="cplDonHi(${i},event)" onmousemove="cplDonMv(event)" onmouseleave="cplDonHi(-1)"`;
+    const ev = `${o.go ? `onclick="${o.go}('${n}')" ` : ''}onmouseenter="cplDonHi(${i},event,'${id}')" onmousemove="cplDonMv(event,'${id}Tip')" onmouseleave="cplDonHi(-1,null,'${id}')"`;
     return `<circle class="cpldh" data-i="${i}" cx="90" cy="90" r="${r}" stroke="var(${tok})" stroke-dasharray="${len} ${C}" stroke-dashoffset="${off}"/>` +
       `<circle class="cplds" data-i="${i}" cx="90" cy="90" r="${r}" stroke="var(${tok})" stroke-dasharray="${len} ${C}" stroke-dashoffset="${off}" ${ev}><title>${n}: ${v} (${cplFix(cplPct(v, T))}%)</title></circle>`; }).join('');
-  const leg = sl.map(([n, v, tok], i) => `<div class="cpldlg" data-i="${i}" onmouseenter="cplDonHi(${i})" onmouseleave="cplDonHi(-1)"><i style="background:var(${tok})"></i>${n}: ${v}${pct ? `<em> · ${Math.round(cplPct(v, T))}%</em>` : ''}</div>`).join('');
-  return `<div class="cpldon2" id="cplDon" data-tot="${T}" data-sl='${JSON.stringify(sl).replace(/'/g, '&#39;')}'>
+  const leg = sl.map(([n, v, tok], i) => `<div class="cpldlg${o.go ? ' go' : ''}" data-i="${i}"${o.go ? ` role="button" tabindex="0" onclick="${o.go}('${n}')" onkeydown="if(event.key==='Enter')${o.go}('${n}')" data-tip="Show ${n} rules in Explorer"` : ''} onmouseenter="cplDonHi(${i},null,'${id}')" onmouseleave="cplDonHi(-1,null,'${id}')"><i style="background:var(${tok})"></i>${n}: ${v}${pct ? `<em> · ${Math.round(cplPct(v, T))}%</em>` : ''}</div>`).join('');
+  return `<div class="cpldon2${o.under ? ' under' : ''}${o.go ? ' go' : ''}" id="${id}" data-tot="${T}" data-sl='${JSON.stringify(sl).replace(/'/g, '&#39;')}'>
     <div class="cpldwrap"><svg class="cplchart" viewBox="0 0 180 180" role="img" aria-label="${sl.map(x => `${x[0]} ${x[1]} of ${T}`).join(', ')}">
       <circle cx="90" cy="90" r="${r}" fill="none" stroke="var(--gauge-base-color)" stroke-width="18" opacity=".35"/>
       <g transform="rotate(-90 90 90)">${arcs}</g>
-      <text class="t" x="90" y="80" text-anchor="middle">Total</text><text class="n" x="90" y="110" text-anchor="middle">${T}</text></svg>
-      <div class="cpldtip" id="cplDonTip" hidden></div></div>
+      <text class="t" x="90" y="80" text-anchor="middle">${lbl}</text><text class="n" x="90" y="110" text-anchor="middle">${T}</text></svg>
+      <div class="cpldtip" id="${id}Tip" hidden></div></div>
     <div class="cpldleg">${leg}</div></div>`;
 }
 /* ── Compliance Trend as a column chart (6 Oct 2026: "show the trend like this", with the dashboard's Top-N column widget
@@ -18713,16 +18947,16 @@ function cplTrHi(i, e){
   tip.hidden = false; if (e) cplDonMv(e, 'cplTrTip');
 }
 
-function cplDonHi(i, e){
-  const d = document.getElementById('cplDon'); if (!d) return;
+function cplDonHi(i, e, id){
+  id = id || 'cplDon'; const d = document.getElementById(id); if (!d) return;
   d.classList.toggle('hot', i >= 0);
   d.querySelectorAll('[data-i]').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
-  const tip = document.getElementById('cplDonTip');
+  const tip = document.getElementById(id + 'Tip');
   if (i < 0){ tip.hidden = true; return; }
   const sl = JSON.parse(d.dataset.sl)[i], T = +d.dataset.tot;
   tip.innerHTML = `<i style="background:var(${sl[2]})"></i><span>${sl[0]}</span><b>${sl[1]}</b><em>${cplFix(cplPct(sl[1], T))}%</em>`;
   tip.hidden = false;
-  if (e) cplDonMv(e); else { tip.style.left = '50%'; tip.style.top = '0px'; }
+  if (e) cplDonMv(e, id + 'Tip'); else { tip.style.left = '50%'; tip.style.top = '0px'; }
 }
 function cplDonMv(e, id){
   const tip = document.getElementById(id || 'cplDonTip'), w = tip && tip.parentNode; if (!w || tip.hidden) return;
@@ -18762,8 +18996,35 @@ function cplPolListHTML(P, s, show){
     <td><span class="cplcbar" style="--c:${cplPctC(s.pct)}"><span class="t"><i style="width:${s.pct}%"></i></span><b>${s.pct}%</b></span></td><td>${s.n}</td><td>${P.ago}</td></tr></tbody></table>`;
   /* ⚠️ REVERTED to the original card on request (6 Oct 2026) — the obs-overview-card-shaped version (Benchmark, passed /
      failed checks, DS severity dots) was built and taken back out; its `.cplovc` CSS is kept, unreferenced. */
-  if (CPLS.pcView === 'gauges') return cplPolCardGaugesHTML(P, s);
+  /* the Gauges card also shows three DEMO cards after the real one (request, 27 Nov 2026) so the layout can be judged on
+     empty, half and overloaded data. They are canned (CPL_PC_DEMO), marked with a Demo tag, and open nothing. */
+  /* every card view (Bars · Gauges · Overview · Option 4, and the artifact's n2 / n3) is followed by the three DEMO cards
+     (request, 27 Nov 2026: empty, half and overloaded data, "add in all option"). cplPcDemo renders the SAME card function
+     against canned rules / devices, so each view shows exactly how it copes with no data and with too much. */
+  return `<div class="cplcards">${cplPcUnwrap(cplPcOne(P, s))}${CPL_PC_DEMO.map(cplPcDemo).join('')}</div>`;
+}
+function cplPcOne(P, s){
+  if (CPLS.pcView === 'gauges' || CPLS.pcView === 'g4' || CPLS.pcView === 'g5') return cplPolCardGaugesHTML(P, s);
   if (CPLS.pcView === 'overview') return cplPolCardOvHTML(P, s);
+  if (CPLS.pcView === 'n2' || CPLS.pcView === 'n3') return cplPolCardDevHTML(P, s, CPLS.pcView);
+  return cplPolCardBarsHTML(P, s);
+}
+const cplPcUnwrap = h => h.replace(/^\s*<div class="cplcards">/, '').replace(/<\/div>\s*$/, '');
+function cplPcDemo(d){
+  if (!d.R){ const a = d.s.post.map(p => p[2]), PCT = { Secure:92, Moderate:70, Poor:35, Vulnerable:12 }, N = d.s.rp + d.s.rf;
+    d.R = Array.from({ length:N }, (_, i) => ({ i, fails: i < d.s.rp ? 0 : 1, sev:'High' }));
+    d.devs = []; d.s.post.forEach(p => { for (let k = 0; k < p[2]; k++){ const n = d.devs.length, pc = PCT[p[0]];
+      d.devs.push({ n:`${d.host}-${String(n + 1).padStart(String(d.s.n).length, '0')}.example.com`, ip:`198.51.100.${n % 254 + 1}`, band:p[0], pct:pc,
+        pass:Math.round(N * pc / 100), fail:N - Math.round(N * pc / 100) }); } }); }
+  const R0 = CPL.R, D0 = CPL.devs; let h;
+  try { CPL.R = d.R; CPL.devs = d.devs; h = cplPcOne(d.P, d.s); } finally { CPL.R = R0; CPL.devs = D0; }
+  return cplPcUnwrap(h).replace(/onclick="event\.stopPropagation\(\);cplPolOpen\(\);cplPolDev\(\d+\)"/g, 'onclick="event.stopPropagation()"')
+    .replace(/onclick="cplPolOpen\(\)"/g, '').replace(/onkeydown="if\(event\.key==='Enter'\)cplPolOpen\(\)"/g, '')
+    .replace(/<div class="cplpc /, `<div data-demo="Demo · ${d.P.demo}" class="cplpc cplpcdemo `);
+}
+function cplPolCardBarsHTML(P, s){
+  const PSV = { Secure:'--severity-clear', Moderate:'--severity-warning', Poor:'--severity-major', Vulnerable:'--severity-critical' };
+  const pctTok = PSV[CPL_POST.find(b => s.pct >= b[2])[0]], nf = v => Number(v).toLocaleString('en-US');
   /* ⚠️ THE DEFAULT 'bars' CARD, REBUILT ON THE DS (request, 6 Oct 2026: "this card better visualization with the design
      system"). Same facts, clearer hierarchy: an icon tile + name with a rules caption; obs-tag for the type, the extra
      tags and the posture band; the % in mono beside the policy's passed / failed rule counts; the posture as a segmented
@@ -18775,18 +19036,18 @@ function cplPolListHTML(P, s, show){
      the count and its % — so the split reads as proportions, not four equal boxes; zero bands dimmed. */
   const lg4 = CPLS.pcView === 'bars2'
     ? `<div class="pr4">${s.post.map(p => { const pc = Math.round(cplPct(p[2], s.n));
-        return `<div class="r${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(${PSV[p[0]]})"></i>${p[0]}</span><span class="t"><i style="width:${pc}%;background:var(${PSV[p[0]]})"></i></span><b>${p[2]}</b><em>${pc}%</em></div>`; }).join('')}</div>`
-    : s.post.map(p => `<div class="c${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(${PSV[p[0]]})"></i>${p[0]}</span><b>${p[2]}</b></div>`).join('');
+        return `<div class="r${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(${PSV[p[0]]})"></i>${p[0]}</span><span class="t"><i style="width:${pc}%;background:var(${PSV[p[0]]})"></i></span><b>${nf(p[2])}</b><em>${pc}%</em></div>`; }).join('')}</div>`
+    : s.post.map(p => `<div class="c${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(${PSV[p[0]]})"></i>${p[0]}</span><b>${nf(p[2])}</b></div>`).join('');
   return `<div class="cplcards"><div class="cplpc cplpb" onclick="cplPolOpen()" tabindex="0" role="button" aria-label="Open policy ${cplEsc(P.name)}" onkeydown="if(event.key==='Enter')cplPolOpen()">
-    <div class="hd"><span class="ic">${cplSvg('net')}</span><div class="ttl"><b>${cplEsc(P.name)}</b><span>${R.length} rules</span></div><span class="sp"></span>
-      <obs-tag>${P.type}</obs-tag><obs-tag data-tip="${cplEsc(P.more.join(', '))}">+${P.more.length}</obs-tag></div>
+    <div class="hd"><span class="ic">${cplSvg('net')}</span><div class="ttl"><b>${cplEsc(P.name)}</b><span>${nf(R.length)} rules</span></div><span class="sp"></span>
+      <obs-tag>${P.type}</obs-tag>${P.more.length ? `<obs-tag data-tip="${cplEsc(P.more.join(', '))}">+${P.more.length}</obs-tag>` : ''}</div>
     <!-- MINIMAL (6 Oct 2026, "use minimalist ui"): label · % · band tag, the bar under it, and the rule counts as one quiet
          line at the right. The dots, the third "evaluated" row and "of checks passing" went (the header already says 85 rules). -->
     <div class="kp3"><div class="kl3"><span class="lb">Compliance</span>
         <div class="row"><span class="num" style="color:var(${pctTok})">${s.pct}</span><span class="u">%</span><obs-tag variant="${CPL_BAND_TAG[band]}">${band}</obs-tag></div></div>
-      <div class="rr"><span><b class="ok">${rp}</b> passed</span><span><b class="bad">${rf}</b> failed</span></div></div>
+      <div class="rr"><span><b class="ok">${nf(rp)}</b> passed</span><span><b class="bad">${nf(rf)}</b> failed</span></div></div>
     <div class="bar" role="img" aria-label="${s.pct}% compliant"><i style="width:${s.pct}%;background:var(${pctTok})"></i></div>
-    <div class="sec"><span>Device posture</span><span class="lb">${s.n} devices</span></div>
+    <div class="sec"><span>Device posture</span><span class="lb">${nf(s.n)} devices</span></div>
     <!-- the segmented posture bar was removed on request (6 Oct 2026) — the four legend cells below carry the same counts -->
     ${CPLS.pcView === 'bars2' ? lg4 : `<div class="lg4">${lg4}</div>`}
     <div class="ft"><span class="lb">Last scan</span><span data-tip="${cplEsc(P.ts)}">${P.ago}</span></div></div></div>`;
@@ -18794,7 +19055,44 @@ function cplPolListHTML(P, s, show){
 /* ⚠️ THE POLICY CARD HAS TWO VISUALIZATIONS (request, 6 Oct 2026: "in this widget other visualization option add using the
    design system"). 'bars' = the original card (big %, bar, stacked posture bar + legend); 'gauges' = the DS's obs-gauge —
    one ring for the policy's compliance, then one dial per posture band against the device count. Same header and footer. */
-const CPL_PC_VIEWS = JSON.stringify([{ value:'bars', label:'Bars' }, { value:'gauges', label:'Gauges' }, { value:'overview', label:'Overview' }, { value:'bars2', label:'Option 4' }]).replace(/"/g, '&quot;');
+/* POLICY CARD OPTIONS 2 & 3 (request, 27 Nov 2026) - shown in the artifact view only (ObserveOps Module Work › Compliance;
+   the stage sets CPLS.pcView = 'n2' / 'n3'); the board keeps Option 1, the 'bars' card. The brief: the policy name with its
+   tags (no "85 rules"), Compliance as the passed / failed counts only (no % and no bar), and the card led by the DEVICES -
+   how many, and each device's severity, read off that device's own posture band (CPL_BAND_SEV: Secure clear · Moderate
+   warning · Poor major · Vulnerable critical).
+     Option 2 · Device list - every device as a row, worst first: severity dot · name · IP · its severity tag.
+     Option 3 · Severity summary - the device count large, then one cell per severity with how many devices sit there
+     (zero dimmed), the device names as each cell's tooltip; Compliance as two Passed / Failed tiles. */
+const CPL_SEV_LBL = { critical:'Critical', major:'Major', warning:'Warning', clear:'Clear' };
+const CPL_SEV_TAGV = { critical:'tag-red', major:'tag-orange', warning:'tag-yellow', clear:'tag-green' };
+function cplPolCardDevHTML(P, s, v){
+  const R = CPL.R, rp = R.filter(r => !r.fails).length, rf = R.length - rp;
+  const RANK = { critical:0, major:1, warning:2, clear:3 };
+  const D = CPL.devs.map((d, i) => ({ d, i, sv: CPL_BAND_SEV[d.band] })).sort((a, b) => RANK[a.sv] - RANK[b.sv] || a.d.pct - b.d.pct);
+  const tags = [P.type].concat(P.more || []).map(t => `<obs-tag>${cplEsc(t)}</obs-tag>`).join('');
+  const hd = `<div class="hd"><span class="ic">${cplSvg('net')}</span><div class="ttl"><b>${cplEsc(P.name)}</b></div></div>
+    <div class="pdtags">${tags}</div>`;
+  const ft = `<div class="ft"><span class="lb">Last scan</span><span data-tip="${cplEsc(P.ts)}">${P.ago}</span></div>`;
+  let body;
+  if (v === 'n2'){
+    body = `<div class="pdcmp"><span class="lb">Compliance</span><span class="sp"></span>
+        <span class="pdc ok"><b>${rp.toLocaleString('en-US')}</b> passed</span><span class="pdc bad"><b>${rf.toLocaleString('en-US')}</b> failed</span></div>
+      <div class="sec"><span>Devices <em class="pdn">${D.length.toLocaleString('en-US')}</em></span><span class="lb">Severity</span></div>
+      <div class="pdlist">${D.slice(0, 6).map(x => `<div class="pdr" onclick="event.stopPropagation();cplPolOpen();cplPolDev(${x.i})" data-tip="${cplEsc(x.d.n)} · ${x.d.pass} passed · ${x.d.fail} failed">
+          <obs-severity severity="${x.sv}"></obs-severity><span class="nm">${cplEsc(x.d.n)}</span><span class="ip">${cplEsc(x.d.ip || '')}</span>
+          <obs-tag variant="${CPL_SEV_TAGV[x.sv]}">${CPL_SEV_LBL[x.sv]}</obs-tag></div>`).join('')}${D.length > 6 ? `<span class="lb pdmore">+${(D.length - 6).toLocaleString('en-US')} more devices</span>` : ''}</div>`;
+  } else {
+    const cells = ['critical','major','warning','clear'].map(k => { const ds = D.filter(x => x.sv === k);
+      return `<div class="pdsc${ds.length ? '' : ' z'}"${ds.length ? ` data-tip="${cplEsc(ds.slice(0, 8).map(x => x.d.n).join(', ') + (ds.length > 8 ? ` +${ds.length - 8} more` : ''))}"` : ''}>
+        <span class="k"><obs-severity severity="${k}"></obs-severity>${CPL_SEV_LBL[k]}</span><b>${ds.length.toLocaleString('en-US')}</b></div>`; }).join('');
+    body = `<div class="pdcmp3"><span class="lb">Compliance</span>
+        <div class="pdt"><div class="t ok"><span>Passed</span><b>${rp.toLocaleString('en-US')}</b></div><div class="t bad"><span>Failed</span><b>${rf.toLocaleString('en-US')}</b></div></div></div>
+      <div class="pddev"><div class="pdtot"><b>${D.length.toLocaleString('en-US')}</b><span>devices</span></div><div class="pdsv">${cells}</div></div>`;
+  }
+  return `<div class="cplcards"><div class="cplpc cplpb cplpd${v === 'n3' ? ' o3' : ''}" onclick="cplPolOpen()" tabindex="0" role="button" aria-label="Open policy ${cplEsc(P.name)}" onkeydown="if(event.key==='Enter')cplPolOpen()">
+    ${hd}${body}${ft}</div></div>`;
+}
+const CPL_PC_VIEWS = JSON.stringify([{ value:'bars', label:'Bars' }, { value:'gauges', label:'Gauges' }, { value:'overview', label:'Overview' }, { value:'bars2', label:'Option 4' }, { value:'g4', label:'Compact' }, { value:'g5', label:'Compact 2' }]).replace(/"/g, '&quot;');
 /* ⚠️ THE 'overview' CARD IS obs-overview-card's LAYOUT (DS v0.1.240, read off localhost:3000/overview-card, 6 Oct 2026 —
    its shadow CSS copied, not guessed). The ELEMENT is not in the vendored 0.1.166 bundle, so it is rebuilt from the parts
    that bundle has (obs-severity, obs-tag) on the card's own frame and classes:
@@ -18815,40 +19113,54 @@ function cplPolCardOvHTML(P, s){
   const strip = DV.slice(0, CAP).map(({ d, i }) => { const sv = CPL_BAND_SEV[d.band], pc = Math.round(d.pct);
     return `<button type="button" class="dr" data-tip="${d.band}" aria-label="${cplEsc(d.n)}: ${pc}% compliant, ${d.band}" onclick="event.stopPropagation();cplPolOpen();cplPolDev(${i})">
       <obs-severity severity="${sv}"></obs-severity><span class="dn">${cplEsc(d.n)}</span><span class="dt"><i style="width:${pc}%;background:var(--severity-${sv})"></i></span><b>${pc}%</b></button>`; }).join('')
-    + (DV.length > CAP ? `<span class="lb dmore">+${DV.length - CAP} more devices</span>` : '');
+    + (DV.length > CAP ? `<span class="lb dmore">+${(DV.length - CAP).toLocaleString('en-US')} more devices</span>` : '');
   return `<div class="cplcards"><div class="cplpc cplocv" onclick="cplPolOpen()" tabindex="0" role="button" aria-label="Open policy ${cplEsc(P.name)}" onkeydown="if(event.key==='Enter')cplPolOpen()">
     <div class="hd"><obs-severity severity="${bs}"></obs-severity><span class="nm">${cplEsc(P.name)}</span><span class="sp"></span><obs-tag variant="${CPL_BAND_TAG[band]}" rounded>${band}</obs-tag></div>
     <!-- the Type | Tags pair was removed (6 Oct 2026, "remove the extra details") -->
     <div class="trio"><div class="cell"><span class="big" style="color:var(--severity-${bs})">${s.pct}%</span><span class="lb">Compliance</span></div>
-      <div class="cell"><span class="big t-ok">${pass}</span><span class="lb">Passed rules</span></div>
-      <div class="cell"><span class="big t-bad">${fail}</span><span class="lb">Failed rules</span></div></div>
-    <div class="av-hd"><span class="lb">Device posture</span><span class="lb">${s.n} devices</span></div>
+      <div class="cell"><span class="big t-ok">${pass.toLocaleString('en-US')}</span><span class="lb">Passed rules</span></div>
+      <div class="cell"><span class="big t-bad">${fail.toLocaleString('en-US')}</span><span class="lb">Failed rules</span></div></div>
+    <div class="av-hd"><span class="lb">Device posture</span><span class="lb">${s.n.toLocaleString('en-US')} devices</span></div>
     <div class="dvl">${strip}</div>
     <div class="rule"></div>
     <div class="ft"><span class="lb">Last scan</span><span data-tip="${cplEsc(P.ts)}">${P.ago}</span></div></div></div>`;
 }
-function cplPolCardGaugesHTML(P, s){
+const CPL_PC_DEMO = (() => { const st = (n, a) => ({ n, pct: n ? Math.floor(100 * a[0] / n) : 0, post: CPL_POST.map((b, i) => [b[0], b[1], a[i]]) });
+  return [
+    { host:'lnx', P:{ demo:'Empty', name:'Linux Server Baseline', type:'Server', more:[], ts:'Not scanned yet', ago:'Never scanned' }, s:Object.assign(st(0, [0,0,0,0]), { rp:0, rf:0, rep:0 }) },
+    { host:'win', P:{ demo:'Half', name:'Windows Server 2022 Hardening', type:'Server', more:['Windows'], ts:'27 Nov 2026 10:14', ago:'2 hours ago' }, s:Object.assign(st(18, [6,5,4,3]), { rp:42, rf:43, rep:4 }) },
+    { host:'core-sw', P:{ demo:'Overloaded', name:'CIS Cisco IOS XE 17.x Benchmark - Core and Distribution Switches, All Regions', type:'Network', more:['Router','Switch','Core','DC-East','DC-West','PCI-DSS'], ts:'27 Nov 2026 12:31', ago:'3 minutes ago' }, s:Object.assign(st(18078, [1203,2487,4512,9876]), { rp:1248, rf:18734, rep:6214 }) }
+  ]; })();
+function cplPolCardGaugesHTML(P, s, bare){
   /* ⚠️ REBUILT ON THE DS (request, 6 Oct 2026: "this card better visualization with the design system"). It shares the
      Bars card's frame (.cplpb — icon tile header, obs-tag type/tags, hairline-split rule counts, footer) so the two views
      read as one card in two shapes. Fixes: the ring's own number IS the compliance % (it no longer sits beside a second
      "22%"); the policy's passed / failed rule counts are back; each posture dial sits in its own bordered cell with
      "N of 3" under its band name, zero bands dimmed, so the four read as a set rather than four loose rings. */
-  const R = CPL.R, rp = R.filter(r => !r.fails).length, rf = R.length - rp, band = CPL_POST.find(b => s.pct >= b[2])[0];
-  const cells = s.post.map(p => `<div class="gc${p[2] ? '' : ' z'}"><obs-gauge value="${p[2]}" total="${s.n || 1}" severity="${CPL_BAND_SEV[p[0]]}" role="img" aria-label="${p[0]}: ${p[2]} of ${s.n} devices"></obs-gauge>
-      <span class="gn">${p[0]}</span></div>`).join('');
-  return `<div class="cplcards"><div class="cplpc cplpb cplpg2" onclick="cplPolOpen()" tabindex="0" role="button" aria-label="Open policy ${cplEsc(P.name)}" onkeydown="if(event.key==='Enter')cplPolOpen()">
-    <div class="hd"><span class="ic">${cplSvg('net')}</span><div class="ttl"><b>${cplEsc(P.name)}</b><span>${R.length} rules</span></div><span class="sp"></span>
-      <obs-tag>${P.type}</obs-tag><obs-tag data-tip="${cplEsc(P.more.join(', '))}">+${P.more.length}</obs-tag></div>
-    <div class="kp"><div class="ring"><obs-gauge value="${s.pct}" total="100" severity="${CPL_BAND_SEV[band]}" role="img" aria-label="Compliance ${s.pct}%"></obs-gauge></div>
-      <div class="kl"><span class="lb">Compliance %</span><obs-tag variant="${CPL_BAND_TAG[band]}">${band}</obs-tag>
-        <div class="rr"><span><b class="ok">${rp}</b> passed</span><span><b class="bad">${rf}</b> failed</span></div></div></div>
+  /* demo cards (27 Nov 2026) pass their own rule counts in s.rp / s.rf; the real policy reads them off CPL.R */
+  const R = CPL.R, rp = s.rp != null ? s.rp : R.filter(r => !r.fails).length, rf = s.rf != null ? s.rf : R.length - rp, band = CPL_POST.find(b => s.pct >= b[2])[0], nf = v => Number(v).toLocaleString('en-US');
+  /* (27 Nov 2026, request) the posture dials became NAME + COUNT cells - a severity dot and the band name over its device
+     count in the band's colour - and a fifth cell, Repeat failures (devices non-compliant in each of the last
+     CPL_STREAK_N scans, demo history; violet, as on the Overview's Device Posture widget), after a hairline. */
+  const rep = s.rep != null ? s.rep : CPL.devs.filter(cplDevCont).length;
+  const cell = (k, name, v, col) => `<div class="gc gcn${v ? '' : ' z'}" aria-label="${name}: ${v} of ${s.n} devices"><span class="gn"><i style="background:${col}"></i>${name}</span><b style="color:${col}">${nf(v)}</b></div>`;
+  const cells = s.post.map(p => cell(p[0], p[0], p[2], `var(--severity-${CPL_BAND_SEV[p[0]]})`)).join('')
+    + `<i class="gsep" aria-hidden="true"></i>` + cell('rep', 'Repeat failures', rep, 'var(--chart-indigo,#8b5cf6)').replace('class="gc gcn', `data-tip="Non-compliant in each of the last ${CPL_STREAK_N} scans (demo scan history)" class="gc gcn gcr`);
+  /* g5 = Option 5, a copy of Option 4 (27 Nov 2026) with ONE change: the posture row is Option 1's - each count large under its name */
+  const g4 = CPLS.pcView === 'g4' || CPLS.pcView === 'g5', pf = rp + rf ? `<span class="rr" aria-label="${nf(rp)} rules passed, ${nf(rf)} failed"><span><b class="ok">${nf(rp)}</b> Pass</span><i class="dv" aria-hidden="true"></i><span><b class="bad">${nf(rf)}</b> Fail</span></span>` : '<span class="rr none">No results yet</span>';
+  return `${bare ? '' : '<div class="cplcards">'}<div class="cplpc cplpb cplpg2${CPLS.pcView === 'g4' ? ' pcmin' : ''}${CPLS.pcView === 'g5' ? ' pc5' : ''}${P.demo ? ' demo' : ''}" onclick="${P.demo ? '' : 'cplPolOpen()'}" tabindex="0" role="button" aria-label="Open policy ${cplEsc(P.name)}" onkeydown="if(event.key==='Enter')cplPolOpen()">
+    <div class="hd"><span class="ic">${cplSvg('net')}</span><div class="ttl"><b data-tip="${cplEsc(P.name)}">${cplEsc(P.name)}</b>${CPLS.pcView === 'g5' ? `<span class="tg"><obs-tag>${P.type}</obs-tag>${P.more.length ? `<obs-tag data-tip="${cplEsc(P.more.join(', '))}">+${P.more.length}</obs-tag>` : ''}</span>` : ''}</div><span class="sp"></span>
+      ${g4 ? (rp + rf ? pf : '') /* empty data: nothing at the top right (27 Nov 2026) */ : `<obs-tag>${P.type}</obs-tag>${P.more.length ? `<obs-tag data-tip="${cplEsc(P.more.join(', '))}">+${P.more.length}</obs-tag>` : ''}`}</div>
+    <!-- (27 Nov 2026, request) no "85 rules"; Compliance is the passed / failed counts only - the % ring and the band tag are gone.
+         OPTION 4 (g4): no "Compliance" row and no tags - the Pass | Fail line sits at the header's right instead -->
+    ${g4 ? '' : `<div class="kpc"><span class="lb">Compliance</span><span class="sp"></span>${pf}</div>`}
     <div class="gr4" role="group" aria-label="Device posture, ${s.n} devices">${cells}</div>
-    <div class="ft"><span class="lb">Last scan</span><span data-tip="${cplEsc(P.ts)}">${P.ago}</span></div></div></div>`;
+    <div class="ft"><span class="lb">Last scan</span><span data-tip="${cplEsc(P.ts)}">${P.ago}</span></div></div>${bare ? '' : '</div>'}`;
 }
-function cplPolOpen(){ CPLS.polOpen = true; CPLS.polDev = null; CPLS.devQ = ''; cplPaint(); }
+function cplPolOpen(){ CPLS.polOpen = true; CPLS.polDev = null; CPLS.devQ = ''; CPLS.devBand = null; cplPaint(); }
 /* a device row on the policy page opens the DEVICE-IN-POLICY page (live: /compliance/policies/<policy>/<device>), not the
    resource drawer — 6 Oct 2026, reported as "opens the wrong page" */
-function cplPolDev(i){ CPLS.polDev = i; cplPaint(); document.getElementById('cplBody').scrollTop = 0; }
+function cplPolDev(i){ CPLS.polDev = i; CPLS.dvF = null; cplPaint(); document.getElementById('cplBody').scrollTop = 0; }
 function cplPolDevHTML(){
   const d = CPL.devs[CPLS.polDev], P = CPL_DATA.policy, R = CPL.R;
   /* ⚠️ THE HEADER IS THE POLICY PAGE'S KPI TILES (cplTile — obs-kpi-card's layout) plus a fourth DS widget for the
@@ -18876,8 +19188,8 @@ function cplPolDevHTML(){
         <div class="t"><b>${n}</b><span>Total</span></div>
         <div class="pf"><div><span class="ok">Pass</span><b class="ok">${d.pass}</b></div><div><span class="bad">Fail</span><b class="bad">${d.fail}</b></div></div></div></div></obs-widget-card>
       <obs-widget-card static title="Failed Rule by Severity"><div class="cplovb cplsevc" role="group" aria-label="Failed rules by severity">${sevc.join('')}</div></obs-widget-card></div>`}
-    <div class="cplbrkw"><div class="cplbrkh"><span>Compliance Breakdown</span><span class="sp"></span><span>Status</span></div>
-      <div class="cplbrk">${cplTreeHTML(d, 'pg' + CPLS.polDev, 'cplPaint()', true)}</div></div></div>`;
+    <div class="cplbrkw"><div class="cplbrkh"><span>Compliance Breakdown</span>${CPLS.dvF ? cplDvFChip(d) : ''}<span class="sp"></span><span>Status</span></div>
+      <div class="cplbrk">${CPLS.dvF ? cplDvFList(d) : cplTreeHTML(d, 'pg' + CPLS.polDev, 'cplPaint()', true)}</div></div></div>`;
 }
 /* ⚠️ THE DEVICE HEADER HAS TWO VISUALIZATIONS (request, 6 Oct 2026: "add other visualization option for this widget
    using the design system"). `CPLS.dvView` picks: 'tiles' = the cplTile KPI cards + the severity bars; 'gauges' = the DS's
@@ -18960,16 +19272,35 @@ function cplDvCardsHTML(d, merged){
   const R = CPL.R, n = R.length, bs = CPL_BAND_SEV[d.band];
   const card = (lab, val, cap, cls) => `<div class="${cls || ''}"><span class="k">${lab}</span><div class="row"><b${val[1] ? ` style="color:var(${val[1]})"` : ''}>${val[0]}</b></div><div class="ft"><span class="lb">${cap}</span></div></div>`;
   const sev = Object.keys(CPL_SEV).map(s => { const all = R.filter(r => r.sev === s), f = all.filter(r => d.st[r.i] === 'F').length;
-    return card(`<i style="background:var(--severity-${CPL_SEV_DS[s]})"></i>${s}`, [Math.round(cplPct(f, all.length)) + '%'], `${f} of ${all.length} failed`, f ? '' : 'z'); }).join('');
+    const on = CPLS.dvF && CPLS.dvF.k === 'sev' && CPLS.dvF.v === s;
+    return card(`<i style="background:var(--severity-${CPL_SEV_DS[s]})"></i>${s}`, [Math.round(cplPct(f, all.length)) + '%'], `${f} of ${all.length} failed`, `go${f ? '' : ' z'}${on ? ' on' : ''}" style="--pc:var(--severity-${CPL_SEV_DS[s]})" role="button" tabindex="0" aria-pressed="${!!on}" data-tip="${on ? 'Clear the filter' : `Show the ${f} failed ${s} rules below`}" onclick="cplDvF('sev','${s}')" onkeydown="if(event.key==='Enter')cplDvF('sev','${s}')`); }).join('');
   return `<div class="cplpd3 cpldv5" role="group" aria-label="Compliance ${cplFix(d.pct)}%, ${d.pass} pass, ${d.fail} fail">
     <!-- the Compliance card is the policy page's Option 3 card (request, 7 Oct 2026): % · band tag · bar in the footer row -->
     <div class="cc"><span class="k">Compliance</span><div class="row"><b style="color:var(--severity-${bs})">${cplFix(d.pct)}%</b><obs-tag variant="${CPL_BAND_TAG[d.band]}">${d.band}</obs-tag></div>
       <div class="ft"><div class="bar"><i style="width:${Math.round(d.pct)}%;background:var(--severity-${bs})"></i></div></div></div>
     <!-- Pass and Fail are ONE card (request, 7 Oct 2026: "combine the two widgets"): both counts on the value row, split by
          a hairline, each with its word; the same three rows as every other card, so the row stays aligned -->
-    <div class="pf5"><span class="k">Rules</span><div class="row"><b style="color:var(--secondary-green)">${d.pass}</b><span class="w">passed</span><i class="dv"></i><b style="color:var(--secondary-red)">${d.fail}</b><span class="w">failed</span></div><div class="ft"><span class="lb">of ${n} rules evaluated</span></div></div>
+    <div class="pf5"><span class="k">Rules</span><div class="row"><span class="pfg${CPLS.dvF && CPLS.dvF.k === 'pass' ? ' on' : ''}" role="button" tabindex="0" data-tip="Show the ${d.pass} passed rules below" onclick="cplDvF('pass')" onkeydown="if(event.key==='Enter')cplDvF('pass')"><b style="color:var(--secondary-green)">${d.pass}</b><span class="w">passed</span></span><i class="dv"></i><span class="pfg${CPLS.dvF && CPLS.dvF.k === 'fail' ? ' on' : ''}" role="button" tabindex="0" data-tip="Show the ${d.fail} failed rules below" onclick="cplDvF('fail')" onkeydown="if(event.key==='Enter')cplDvF('fail')"><b style="color:var(--secondary-red)">${d.fail}</b><span class="w">failed</span></span></div><div class="ft"><span class="lb">of ${n} rules evaluated</span></div></div>
     ${merged ? `<div class="pm4 pm5" role="group" aria-label="Failed rules by severity">${sev}</div>` : sev}</div>`;
 }
+/* (27 Nov 2026) the device page's Rules and severity cards are FILTERS for the Compliance Breakdown below: passed / failed /
+   one severity's failed rules. With a filter on, the breakdown is the matching rules as a flat list (each keeps its tree number
+   and opens its drawer), a chip names the filter with an x; a second click or the x clears it. A filter with nothing in it
+   (Low 0 of 0) shows an empty state rather than refusing the click. */
+function cplDvF(k, v){ const f = CPLS.dvF, same = f && f.k === k && f.v === v; CPLS.dvF = same ? null : { k, v }; cplPaint(); if (!same) setTimeout(cplDvToBreakdown, 0); }
+function cplRulePaths(){ if (cplRulePaths.m) return cplRulePaths.m; const m = {};
+  const walk = (n, path) => { if (typeof n === 'number'){ m[n] = path; return; } n.kids.forEach((k, j) => walk(k, path + '.' + (j + 1))); };
+  CPL_TREE.forEach((p, k) => walk(p, String(k + 1))); return (cplRulePaths.m = m); }
+function cplDvFRules(d){ const f = CPLS.dvF, R = CPL.R;
+  return R.filter(r => f.k === 'pass' ? d.st[r.i] === 'P' : f.k === 'fail' ? d.st[r.i] === 'F' : r.sev === f.v && d.st[r.i] === 'F'); }
+function cplDvFName(){ const f = CPLS.dvF; return f.k === 'pass' ? 'Passed rules' : f.k === 'fail' ? 'Failed rules' : 'Failed ' + f.v + ' rules'; }
+function cplDvFChip(d){ return `<button class="cplchip on cpldvfc" type="button" onclick="CPLS.dvF=null;cplPaint()" data-tip="Clear the filter">${cplDvFName()} · ${cplDvFRules(d).length} <span aria-hidden="true">✕</span></button>`; }
+function cplDvFList(d){ const L = cplDvFRules(d), P = cplRulePaths();
+  if (!L.length) return `<div class="cplemp"><obs-icon name="search" size="24"></obs-icon><b>No ${cplDvFName().toLowerCase()}</b><span>This device has no rules in this group.</span><obs-button size="small" variant="default" onclick="CPLS.dvF=null;cplPaint()">Clear filter</obs-button></div>`;
+  return L.map(r => { const p = d.st[r.i] === 'P';
+    return `<div class="cplbr rule" style="--dp:0;--c:${CPL_SEV[r.sev]}" onclick="cplDrOpen('rule',${r.i})"><span class="nmr"><b>${P[r.i] || ''}</b> ${cplEsc(r.n)}</span>
+      <span class="hist" title="Previous → current result">${cplSvg(p ? 'ok' : 'xc', p ? 'okc' : 'xx')}${cplSvg('arr', 'ar')}${cplSvg(p ? 'ok' : 'xc', p ? 'okc' : 'xx')}</span>
+      <obs-tag variant="${p ? 'tag-green' : 'tag-red'}">${p ? 'Pass' : 'Fail'}</obs-tag></div>`; }).join(''); }
 function cplDvToBreakdown(){ const b = document.getElementById('cplBody'), t = document.querySelector('#cplPolDet .cplbrkw');
   if (b && t) b.scrollTop += t.getBoundingClientRect().top - b.getBoundingClientRect().top - 8; }
 function cplCsvDev(i){ const d = CPL.devs[i]; const rows = [['rule','severity','plane','status']].concat(CPL.R.map(r => [r.n, r.sev, CPL_TREE[r.planeIx].g, d.st[r.i] === 'P' ? 'Pass' : 'Fail']));
@@ -18990,7 +19321,10 @@ const CPL_SEV_DS = { Critical:'critical', High:'major', Medium:'warning', Low:'c
    no slot). Option 1 = the KPI layout; Option 2 = the DS's obs-gauge ring carrying the score, the band as obs-tag, then
    the rule split as two labelled rows (count · share · token bar) and a single pass|fail split bar. */
 const CPL_SC_VIEWS = JSON.stringify([{ value:'1', label:'Option 1' }, { value:'2', label:'Option 2' }]).replace(/"/g, '&quot;');
-function cplScSwHTML(){ return `<obs-radio id="cplScView" class="cplscsw" as-button size="small" aria-label="Compliance Score design" options="${CPL_SC_VIEWS}" value="${CPLS.scView}"></obs-radio>`; }
+/* (27 Nov 2026) Option 2 of Compliance Score MOVED TO THE ARTIFACT VIEW (ObserveOps Module Work › Compliance): the board shows
+   Option 1 only and the switch is gone. cplScore2HTML is kept - the artifact's stage sets CPLS.scView = '2' to render it. */
+function cplScSwHTML(){ return ''; }
+function cplScSwHTML_parked(){ return `<obs-radio id="cplScView" class="cplscsw" as-button size="small" aria-label="Compliance Score design" options="${CPL_SC_VIEWS}" value="${CPLS.scView}"></obs-radio>`; }
 function cplScore2HTML(sc, pass, fail, band, sev){
   /* (later, 6 Oct 2026) Option 2 is the product's KPI VALUE widget ("Overall Compliance" reference): the score large and
      centred, and the change since the previous assessment at the foot-right with a trend glyph. Only one assessment
@@ -19011,7 +19345,8 @@ const CPL_PD_VIEWS = JSON.stringify([{ value:'1', label:'Option 1' }, { value:'2
 function cplPd3HTML(s, band, merged){
   const SEVK = { Secure:'clear', Moderate:'warning', Poor:'major', Vulnerable:'critical' }, sv = SEVK[band];
   const cols = s.post.map(p => { const pc = Math.round(cplPct(p[2], s.n));
-    return `<div class="c${p[2] ? '' : ' z'}"><span class="k"><i style="background:var(--severity-${SEVK[p[0]]})"></i>${p[0]}</span><div class="row"><b>${p[2]}</b></div><div class="ft"><span class="lb">${pc}% of devices</span></div></div>`; }).join('');
+    const on = CPLS.devBand === p[0];
+    return `<div class="c go${p[2] ? '' : ' z'}${on ? ' on' : ''}" style="--pc:var(--severity-${SEVK[p[0]]})" role="button" tabindex="0" aria-pressed="${on}" data-tip="${on ? 'Clear the ' + p[0] + ' filter' : 'Show ' + p[0] + ' devices in the table below'}" onclick="cplDevBand('${p[0]}')" onkeydown="if(event.key==='Enter')cplDevBand('${p[0]}')"><span class="k"><i style="background:var(--severity-${SEVK[p[0]]})"></i>${p[0]}</span><div class="row"><b>${p[2]}</b></div><div class="ft"><span class="lb">${pc}% of devices</span></div></div>`; }).join('');
   return `<div class="cplpd3" role="group" aria-label="Compliance ${s.pct}%, ${band}; ${s.post.map(p => p[0] + ' ' + p[2]).join(', ')} of ${s.n} devices">
     <div class="cc"><span class="k">Compliance</span><div class="row"><b style="color:var(--severity-${sv})">${s.pct}%</b><obs-tag variant="${CPL_BAND_TAG[band]}">${band}</obs-tag></div>
       <div class="ft"><div class="bar"><i style="width:${s.pct}%;background:var(--severity-${sv})"></i></div></div></div>${merged ? `<div class="pm4" role="group" aria-label="Device posture, ${s.n} devices">${cols}</div>` : cols}</div>`;
@@ -19041,24 +19376,42 @@ function cplPolDetHTML(){
         <div class="t"><b>${R.length}</b><span>Total</span></div>
         <div class="pf"><div><span class="ok">Pass</span><b class="ok">${rp}</b></div><div><span class="bad">Fail</span><b class="bad">${rf}</b></div></div></div></div></obs-widget-card></div>`;
   return `<div id="cplPolDet"><obs-page-header class="cplph" heading="${cplEsc(P.name)}" back><obs-icon slot="before" name="network" size="17"></obs-icon>
-      <obs-radio id="cplPdView" as-button size="small" aria-label="KPI row design" options="${CPL_PD_VIEWS}" value="${CPLS.pdView}"></obs-radio></obs-page-header>
+      <!-- (27 Nov 2026) the Option 1-4 switch left the page for the artifact view; Option 4 is the page's design (CPLS.pdView) --></obs-page-header>
     ${CPLS.pdView === '2' ? op2 : CPLS.pdView === '3' ? cplPd3HTML(s, band) : CPLS.pdView === '4' ? cplPd3HTML(s, band, true) : `<div class="cplkpis">${kp}</div>`}</div>
     <!-- no widget frame (6 Oct 2026, on request): the device grid sits straight on the page, as the Monitor list does -->
     <div class="cpldevs">
       <div class="cpltb"><label class="cplsr">${cplSvg('search')}<input type="text" placeholder="Search" oninput="CPLS.devQ=this.value;cplDevRows()"/></label><span class="sp"></span>
         <button class="lhsq" type="button" data-tip="Columns" onclick="toast('The column chooser is not built in this prototype')">${cplSvg('eye')}</button><button class="lhsq" type="button" data-tip="Export As PDF" onclick="toast('Export as PDF is not built in this prototype')">${cplSvg('pdf')}</button><button class="lhsq" type="button" data-tip="Export As CSV" onclick="cplCsv('devices')">${cplSvg('csv')}</button><button class="lhsq on" type="button" data-tip="Filter" aria-pressed="true">${cplSvg('filter')}</button></div>
-      <div class="cplchips"><button class="cplchip" type="button" onclick="toast('Severity filter — pick from the Explorer facets')">Severity</button><button class="cplchip" type="button" onclick="toast('Every scan on this policy succeeded')">Last Scan Status</button><button class="cplchip add" type="button" onclick="toast('Add filter is not built in this prototype')">${cplSvg('plus')}Filter</button></div>
-      <table class="cpltbl"><thead><tr><th style="width:15%">Device ↑</th><th style="width:12%">Severity</th><th style="width:16%">Compliance</th><th style="width:10%">Scanned rule</th><th style="width:18%">Last scan</th><th style="width:12%">Last scan status</th><th style="width:17%">Remarks</th></tr></thead><tbody id="cplDevRows">${cplDevRowsHTML()}</tbody></table>
-      <div class="cplpg" style="border-top:0"><span class="sp"></span>1 - ${CPL.devs.length} of ${CPL.devs.length} items</div></div>`;
+      <div class="cplchips"><span id="cplSevChip">${cplSevChipHTML()}</span><button class="cplchip" type="button" onclick="toast('Every scan on this policy succeeded')">Last Scan Status</button><button class="cplchip add" type="button" onclick="toast('Add filter is not built in this prototype')">${cplSvg('plus')}Filter</button></div>
+      <table class="cpltbl"><thead><tr><th style="width:15%">Device ↑</th><th style="width:12%">Severity</th><th style="width:16%">Compliance</th><th style="width:10%">Scanned rule</th><th style="width:18%">Last scan</th><th style="width:12%">Last scan status</th><th style="width:17%">Remarks</th></tr></thead><tbody id="cplDevRows">${cplDevRowsHTML()}</tbody></table><div id="cplDevEmpty">${cplDevEmptyHTML()}</div>
+      <div class="cplpg" style="border-top:0"><span class="sp"></span><span id="cplDevCnt">${cplDevCntText()}</span></div></div>`;
 }
 function cplDevRowsHTML(){
   const q = CPLS.devQ.toLowerCase();
-  return CPL.devs.filter(d => !q || d.n.toLowerCase().includes(q)).sort((a, b) => a.n.localeCompare(b.n)).map(d => `<tr onclick="cplPolDev(${CPL.devs.indexOf(d)})">
+  const B = CPLS.devBand;
+  return cplDevList().map(d => `<tr onclick="cplPolDev(${CPL.devs.indexOf(d)})">
     <td class="nm" style="--c:${d.bc}">${d.n}</td><td><span class="cpldot ring" style="--c:${d.bc}"><i></i>${d.band}</span></td>
     <td><span class="cplcbar" style="--c:${d.bc}"><span class="t"><i style="width:${d.pct}%"></i></span><b>${Math.floor(d.pct)}%</b></span></td>
-    <td>${CPL.R.length}</td><td>${CPL_DATA.policy.ts}</td><td><span class="cplok">${cplSvg('ok')}Success</span></td><td>Scan Completed Successfully</td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--text-dim)">No devices match</td></tr>`;
+    <td>${CPL.R.length}</td><td>${CPL_DATA.policy.ts}</td>${(r => `<td>${r.last === 'Success' ? `<span class="cplok">${cplSvg('ok')}Success</span>` : `<obs-tag variant="tag-red">Failed</obs-tag>`}</td><td>${r.last === 'Success' ? 'Scan Completed Successfully' : cplEsc(r.why)}</td>`)(cplScanRun(d))}</tr>`).join('') || '';
 }
-function cplDevRows(){ const el = document.getElementById('cplDevRows'); if (el) el.innerHTML = cplDevRowsHTML(); }
+function cplDevEmptyHTML(){ if (cplDevList().length) return ''; const B = CPLS.devBand;
+  return B ? `<div class="cplemp"><obs-icon name="search" size="24"></obs-icon><b>No ${B} devices</b><span>No device in this policy is ${B} right now.</span><obs-button size="small" variant="default" onclick="cplDevBand(null)">Clear filter</obs-button></div>`
+           : `<div class="cplemp"><obs-icon name="search" size="24"></obs-icon><b>No devices match</b><span>Try a different search.</span></div>`; }
+function cplDevRows(){ const el = document.getElementById('cplDevRows'); if (el) el.innerHTML = cplDevRowsHTML();
+  const em = document.getElementById('cplDevEmpty'); if (em) em.innerHTML = cplDevEmptyHTML();
+  const c = document.getElementById('cplDevCnt'); if (c) c.textContent = cplDevCntText(); const h = document.getElementById('cplSevChip'); if (h) h.innerHTML = cplSevChipHTML(); }
+/* (27 Nov 2026) the posture tiles on the policy page (Options 3 / 4) are FILTERS for the device table below: a click sets
+   CPLS.devBand, the tile lights, the Severity chip names it with an x, a second click (or the x) clears it. A band with no
+   devices still filters - the table then shows its empty state rather than refusing the click. */
+function cplDevList(){ const q = (CPLS.devQ || '').toLowerCase(), B = CPLS.devBand;
+  return CPL.devs.filter(d => (!q || d.n.toLowerCase().includes(q)) && (!B || d.band === B)).sort((a, b) => a.n.localeCompare(b.n)); }
+function cplDevCntText(){ const n = cplDevList().length, T = CPL.devs.length; return n ? `1 - ${n} of ${n} items${n < T ? ` (filtered from ${T})` : ''}` : `0 of ${T} items`; }
+function cplSevChipHTML(){ const B = CPLS.devBand;
+  return B ? `<button class="cplchip on" type="button" onclick="cplDevBand(null)" data-tip="Clear the Severity filter">Severity: ${B} <span aria-hidden="true">✕</span></button>`
+           : `<button class="cplchip" type="button" onclick="toast('Pick a posture tile above to filter by severity')">Severity</button>`; }
+function cplDevBand(b){ CPLS.devBand = (b && CPLS.devBand !== b) ? b : null;
+  document.querySelectorAll('#cplPolDet .cplpd3 .c.go').forEach(t => { const on = t.querySelector('.k').textContent.trim() === CPLS.devBand; t.classList.toggle('on', on); t.setAttribute('aria-pressed', on); });
+  cplDevRows(); }
 
 /* ── Explorer ── */
 function cplFacetDefs(){
@@ -19067,21 +19420,28 @@ function cplFacetDefs(){
     ['Policy', [[P, null, R.length]]],
     ['Evaluation', [['Pass','var(--green)', R.filter(r => r.fails < D.length).length], ['Fail','var(--red)', R.filter(r => r.fails).length]]],
     ['Rule severity', Object.keys(CPL_SEV).map(s => [s, CPL_SEV[s], R.filter(r => r.sev === s).length])]];
-  return [['Policy', [[P, null, D.length]]], ['Type', [['Router', null, D.length]]],
-    ['Asset severity', CPL_POST.map(b => [b[0], b[1], D.filter(d => d.band === b[0]).length])]];
+  return [['Resource', D.map(d => [d.n, null, 1])], ['Policy', [[P, null, D.length]]], ['Type', [['Router', null, D.length]]],
+    ['Asset severity', CPL_POST.map(b => [b[0], b[1], D.filter(d => d.band === b[0]).length])],
+    ['Scan history', [['Repeat failures', null, D.filter(cplDevCont).length]]]];   /* devices failed in each of the last CPL_STREAK_N scans (demo history) */
 }
 function cplRows(){
   const f = CPLS.f, q = CPLS.q.toLowerCase(), on = g => f[g] && f[g].length;
   if (CPLS.grp === 'Rules') return CPL.R.filter(r => (!q || r.n.toLowerCase().includes(q)) && (!on('Rule severity') || f['Rule severity'].includes(r.sev)) &&
     (!on('Evaluation') || f['Evaluation'].some(e => e === 'Fail' ? r.fails : r.fails < CPL.devs.length)));
-  return CPL.devs.filter(d => (!q || d.n.toLowerCase().includes(q)) && (!on('Asset severity') || f['Asset severity'].includes(d.band)));
+  return CPL.devs.filter(d => (!q || d.n.toLowerCase().includes(q)) && (!on('Resource') || f['Resource'].includes(d.n)) && (!on('Asset severity') || f['Asset severity'].includes(d.band)) &&
+    (!on('Scan history') || cplDevCont(d)));
 }
 function cplExHTML(){
-  const fac = `<label class="cplsr cplfsrch">${cplSvg('search')}<input type="text" placeholder="Search" oninput="cplFacetQ(this.value)"/></label>` +
-    cplFacetDefs().map(([g, items]) => `<div class="cplfg"><button class="cplfgh" type="button" onclick="this.parentNode.classList.toggle('shut')">${cplSvg('down')}${g}</button>
-    ${items.map(([n, c, k]) => `<label class="cplfi" data-n="${cplEsc(n.toLowerCase())}"><input type="checkbox" ${(CPLS.f[g] || []).includes(n) ? 'checked' : ''} onchange="cplFacet('${g}','${cplEsc(n)}',this.checked)"/>${c ? `<i style="--c:${c}"></i>` : ''}<span>${cplEsc(n)}</span><em>${k}</em></label>`).join('')}</div>`).join('');
+  /* (27 Nov 2026, "update using the obs design system") the facet panel is DS parts: obs-input (type=search) for its search, an
+     obs-icon chevron on each group header, and obs-checkbox per row. The DS's own vertical filter (obs-filters kind=vertical) is a
+     visual reference only - it takes no data - so the panel is composed from its atoms. The whole ROW is the hit target: the
+     checkbox ignores the pointer and the row toggles it, so a click on the label, the swatch or the count all filter. */
+  const fac = `<obs-input id="cplFacQ" class="cplfsrch" type="search" placeholder="Search" aria-label="Search filters"></obs-input>` +
+    cplFacetDefs().map(([g, items]) => `<div class="cplfg"><button class="cplfgh" type="button" aria-expanded="true" onclick="const s=this.parentNode.classList.toggle('shut');this.setAttribute('aria-expanded',!s)"><obs-icon name="chevron-down" size="14"></obs-icon>${g}</button>
+    ${items.map(([n, c, k]) => { const on = (CPLS.f[g] || []).includes(n);
+      return `<div class="cplfi${k ? '' : ' z'}" role="checkbox" tabindex="0" aria-checked="${on}" data-n="${cplEsc(n.toLowerCase())}" onclick="cplFacRow(this,'${g}','${cplEsc(n)}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();cplFacRow(this,'${g}','${cplEsc(n)}')}"><obs-checkbox${on ? ' checked' : ''} aria-hidden="true"></obs-checkbox>${c ? `<i style="--c:${c}"></i>` : ''}<span>${cplEsc(n)}</span><em>${k}</em></div>`; }).join('')}</div>`).join('');
   const rules = CPLS.grp === 'Rules';
-  return `<aside class="cplfacets"${CPLS.facets ? '' : ' hidden'}>${fac}</aside><div class="cplmain">
+  return `<aside class="cplfacets" id="cplFacets"${CPLS.facets ? '' : ' hidden'}>${fac}</aside><div class="cplmain">
     <div class="cpltb" style="margin-top:0"><span class="cplgb">Group by <span class="cplseg">${['Rules','Resources'].map(g => `<button type="button" class="${g === CPLS.grp ? 'on' : ''}" onclick="cplGrp('${g}')">${g}</button>`).join('')}</span></span>
       <label class="cplsr">${cplSvg('search')}<input type="text" placeholder="Search ${rules ? 'rules' : 'resources'}" value="${cplEsc(CPLS.q)}" oninput="CPLS.q=this.value;CPLS.page=0;cplTbl()"/></label><span class="sp"></span>
       <button class="lhsq${CPLS.facets ? ' on' : ''}" type="button" id="cplFacetBtn" data-tip="${CPLS.facets ? 'Hide filters' : 'Show filters'}" aria-pressed="${CPLS.facets}" onclick="cplFacetsTog()">${cplSvg('filter')}${cplFacetN() ? `<span class="cplfbn">${cplFacetN()}</span>` : ''}</button>
@@ -19102,6 +19462,9 @@ function cplFacetQ(v){ const q = v.trim().toLowerCase();
   document.querySelectorAll('.cplfacets .cplfg').forEach(g => { let any = false;
     g.querySelectorAll('.cplfi').forEach(r => { const hit = !q || r.dataset.n.includes(q); r.hidden = !hit; any = any || hit; });
     g.hidden = !any; if (q && any) g.classList.remove('shut'); }); }
+function cplFacRow(row, g, n){ const on = row.getAttribute('aria-checked') !== 'true'; row.setAttribute('aria-checked', on);
+  const ck = row.querySelector('obs-checkbox'); if (ck){ ck.checked = on; on ? ck.setAttribute('checked', '') : ck.removeAttribute('checked'); }
+  cplFacet(g, n, on); }
 function cplGrp(g){ CPLS.grp = g; CPLS.f = {}; CPLS.q = ''; CPLS.page = 0; cplPaint(); }
 function cplFacet(g, n, on){ const a = CPLS.f[g] = (CPLS.f[g] || []).filter(x => x !== n); if (on) a.push(n); CPLS.page = 0; cplTbl();
   const b = document.getElementById('cplFacetBtn'); if (b){ const k = cplFacetN(); let e = b.querySelector('.cplfbn');   /* keep the filter button's count live */
@@ -20254,6 +20617,9 @@ function tipFor(el){
      it is the same trap already recorded for obs-drawer, which was worked around one call site at
      a time. Guarding it here fixes the whole class: a DS component keeps its title, and anything
      wanting a real tooltip on one uses `data-tip`, which is still honoured. */
+  /* an EMPTY title is a deliberate blocker for an ancestor's native tooltip (27 Nov 2026: the Compliance dials sat inside
+     obs-widget-card, whose title showed as a second, browser tooltip) - leave it in place and show nothing */
+  if (t.hasAttribute('title') && !t.getAttribute('title') && !t.getAttribute('data-tip')) return null;
   if (t.hasAttribute('title') && !/^OBS-/.test(t.tagName)){  /* adopt, then silence the OS tooltip */
     const v = t.getAttribute('title');
     if (v && !t.getAttribute('data-tip')) t.setAttribute('data-tip', v);
@@ -45149,7 +45515,12 @@ function lxLtPaint(){
 function dsTap(el){ const r = el.getRootNode && el.getRootNode(); if (r && r.host) el = r.host; const t = performance.now(); if (el._dsT && t - el._dsT < 60) return false; el._dsT = t; return true; }
 (function(){
   const at = Element.prototype.attachShadow;
-  const CSS = { 'OBS-WIDGET-CARD':':host(.wdscard) .wkebab{display:none}:host(.wdsfl) .wbody{padding:0}:host(.apxwc) .wkebab{visibility:hidden;pointer-events:none}:host(.wdscard) .wactions{padding-right:48px}',
+  const CSS = { /* the Compliance dials take the product's own grouped-dial proportions (27 Nov 2026, from its markup: ant-progress circle, r 47 in a
+       100 box, stroke 6, trail --border-color, number 24px/600 at a 108px dial). obs-gauge draws r 42 and sizes its arc dasharray from
+       that, so the circles are SCALED by 47/42 (stroke 6/1.119) instead of re-radiused - the arc length stays right */
+    'OBS-GAUGE':':host(.cplgg){display:block}:host(.cplgg) .gauge,:host(.cplgg) .ring{width:100%;height:auto;aspect-ratio:1/1}'+
+      ':host(.cplgg) .track,:host(.cplgg) .arc{transform-box:view-box;transform-origin:50% 50%;stroke-width:5.36}:host(.cplgg) .track{transform:scale(1.119);stroke:var(--border-color,#e3e8f2)}:host(.cplgg) .arc{transform:rotate(-90deg) scale(1.119)}:host(.cplgg) .num{font-size:22.2px;font-weight:600}',
+    'OBS-WIDGET-CARD':':host(.cplwcn) .wtitle{display:inline-flex;align-items:center;gap:8px}:host(.cplwcn) .wtitle::after{content:var(--wcount);font-size:11px;font-weight:500;line-height:18px;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--page-text-color,#1d2a3e) 10%,transparent);color:var(--page-text-color,#1d2a3e)}:host(.wdscard) .wkebab{display:none}:host(.wdsfl) .wbody{padding:0}:host(.apxwc) .wkebab{visibility:hidden;pointer-events:none}:host(.wdscard) .wactions{padding-right:48px}',
     /* Approval: the grid fills the screen and its pager sits at the foot (the box is sized by apvFit → --apv-h);
        the Approve / Reject notes title in green / red, as the live dialogs do */
     'OBS-TABLE':':host(.tnhS) thead th{font-size:10.5px}:host(.tnhM) thead th{font-size:12px}:host(.tnhL) thead th{font-size:13.5px}:host(#apvTable) .box{display:flex;flex-direction:column;height:var(--apv-h,auto);max-height:var(--apv-h,none);overflow:auto}:host(#apvTable) .box > table{flex:0 0 auto}:host(#apvTable) tbody td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}:host(#apvTable) tbody td .cell-clip{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:host(#apvTable) tbody tr{cursor:pointer}:host(#apvTable) .pager{margin-top:auto;position:sticky;bottom:0;z-index:2;background:var(--page-background-color);flex:0 0 auto}',
@@ -45478,6 +45849,8 @@ const ST_TREE = [
      thumb ring = the page's own --bg, so the knob reads as cut out of the surface it sits on
    ⚠️ The fill needs `--rp` (the value as a %), which CSS cannot read off an <input>: a delegated `input` listener keeps
    it current and a MutationObserver seeds every slider a page renders later (drawers, the widget editor, …). */
+/* CARD HOVER moved to _ds/card-hover.js (27 Nov 2026) - every page loads it beside _ds/colresize.js, the iframe modules too. */
+
 (function(){
   if (document.getElementById('ds-range')) return;
   const st = document.createElement('style'); st.id = 'ds-range';
@@ -45976,10 +46349,62 @@ apvRender();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
 
+</script><script>/* inlined _ds/card-hover.js */
+/* ObserveOps prototypes - the Dashboard widget hover on every card in every module. */
+/* (the ring and the wash are written at the use site, not as :root custom properties - a var() inside a custom property
+   resolves where it is DECLARED, so at :root it missed the DS tokens that are only scoped around the cards) */
+/* CARD HOVER — the Dashboard widget's hover, on every widget and card in every module (request, 27 Nov 2026: "i created
+   the dashboard hover effect, apply it overall in all my modules where there is a widget or card").
+   The Dashboard's own rule is `.widget.wds:hover` in index.html: a 1px --field-border-color edge, a soft lift, and the
+   card's fill raised by a 1.4% (dark) / 0.8% (light) wash of the page ink. This is the same effect, written once here,
+   for the cards outside the Dashboard board:
+     · DS cards (obs-widget-card / obs-stat-card / obs-kpi-card / obs-overview-card) — the fill through the card's own
+       --page-background-color, exactly as the Dashboard does it, and the edge + lift as a box-shadow on the host;
+     · hand-built cards (Compliance, License, Mira AI connectors, Agentic AI providers, Log Explorer KPIs, APM cards) — the
+       edge + lift as a box-shadow and the fill as a background-image wash over whatever surface the card already paints.
+   ⚠️ The Dashboard board's widgets (`.widget.wds`) are EXCLUDED — they already carry the original and would get it twice.
+   ⚠️ Add a new card type to HV_SEL below, not a second rule.
+   Loaded by EVERY page beside _ds/colresize.js (the option pages, setting / topology / apm, and the IPAM, Firewall and
+   Topology iframes) - one source, so the modules cannot drift. */
+(function(){
+  if (document.getElementById('ds-card-hover')) return;
+  const DS = 'obs-widget-card,obs-stat-card,obs-kpi-card,obs-overview-card';
+  const HV_SEL = '.cplpb,.cplpc,.cplkpi,.lxkpi,.licqbox,.licovc,.licg4>.licg4c,.licm4,.lic4,.lice5c,.mracard,.myccard,.agpc,.apxcard,.apsc,'
+    /* IPAM (_ipam/ipam.html): its widget cards (not the frameless grid card) and the KPI tiles */
+    + '.ip-card:not(.ip-sncard),.sn-kpis .ip-sev-box';
+  const ds = ':is(' + DS + '):not(.widget.wds *)', hc = ':is(' + HV_SEL + ')';
+  const st = document.createElement('style'); st.id = 'ds-card-hover';
+  st.textContent =
+    ':root{--hv-lift:0 6px 18px rgba(0,0,0,.24);--hv-pct:1.4%}' +
+    'html.hv-light{--hv-lift:0 3px 12px rgba(0,0,0,.10);--hv-pct:.8%}' +
+    ds + '{display:block;border-radius:var(--widget-border-radius,7px);transition:box-shadow .15s ease}' +
+    ds + ':hover{box-shadow:inset 0 0 0 1px var(--field-border-color,var(--border)),var(--hv-lift);--page-background-color:color-mix(in srgb,var(--page-text-color) 1.4%,var(--widget-background))}' +
+    'html.hv-light ' + ds + ':hover{--page-background-color:color-mix(in srgb,var(--page-text-color) .8%,var(--widget-background))}' +
+    hc + '{transition:box-shadow .15s ease}' +
+    hc + ':hover{box-shadow:inset 0 0 0 1px var(--field-border-color,var(--border)),var(--hv-lift);background-image:linear-gradient(color-mix(in srgb,var(--page-text-color,var(--text)) var(--hv-pct),transparent),color-mix(in srgb,var(--page-text-color,var(--text)) var(--hv-pct),transparent))}';
+  (document.head || document.documentElement).appendChild(st);
+  /* THE THEME IS READ OFF THE PAGE, NOT ONE ATTRIBUTE (fix, 27 Nov 2026: "IPAM does not change the theme"). The option
+     pages mark light with data-theme="light"; the IPAM / Firewall / Topology frames use the DS convention - dark is
+     data-theme="dark-theme" and light is NO attribute - so a [data-theme="light"] test never matched there and their light
+     theme hovered with the dark shadow and tint. html.hv-light is set from the luminance of the page's own background
+     and re-checked whenever <html> or <body> changes theme or class. */
+  const lum = c => { const m = /rgba?\(([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)(?:[,/ ]+([\d.]+))?/.exec(c || '');
+    return m && (m[4] === undefined || +m[4] > 0) ? (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 : null; };
+  const paint = () => { const de = document.documentElement, b = document.body;
+    let L = b ? lum(getComputedStyle(b).backgroundColor) : null; if (L === null) L = lum(getComputedStyle(de).backgroundColor);
+    if (L === null) { const t = de.getAttribute('data-theme'); L = t === 'light' || (t !== null && t !== 'dark' && t !== 'dark-theme' && t !== '') ? 1 : (t === null && /dark-theme/.test(st.textContent) ? 1 : 0); }
+    if (de.classList.contains('hv-light') !== L > 0.5) de.classList.toggle('hv-light', L > 0.5); };
+  const watch = () => { paint(); const o = new MutationObserver(() => { setTimeout(paint, 0); setTimeout(paint, 450); });   /* again after a background transition settles */
+    o.observe(document.documentElement, { attributes:true, attributeFilter:['data-theme','class'] });
+    if (document.body) o.observe(document.body, { attributes:true, attributeFilter:['data-theme','class'] }); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
+})();
+
+
 </script>   <!-- adjustable column widths, every table (5 Nov 2026) -->
 <script>
 /* the module-work artifact's stage: __DVSPEC = { key, v, theme } opens the board on one state */
-(function(){ var S=window.__DVSPEC; if(!S) return; if(S.key==='aisum') document.documentElement.classList.add('dvwait'); window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
+(function(){ var S=window.__DVSPEC; if(!S) return; if(S.key==='aisum') document.documentElement.classList.add('dvwait'); document.documentElement.classList.add('dvhide'); /* EVERY component (27 Nov 2026): the page stays hidden until the driver has reached the asked state - it signals that by setting document.title to READY or ERR; a failsafe shows it after 6s regardless. Without this a reload flashed the default board for ~1s. */ (function(){ var de=document.documentElement, done=false; function show(){ if(done) return; done=true; de.classList.remove('dvhide'); } setTimeout(show,6000); var t0=setInterval(function(){ if(/^(READY|ERR)/.test(document.title)){ clearInterval(t0); requestAnimationFrame(show); } else if(done) clearInterval(t0); },50); })(); window.__CVOPT=/4/.test(S.v||'')?'4':/3/.test(S.v||'')?'3':/2/.test(S.v||'')?'2':'1';
   function scroller(el){ for(var p=el.parentElement;p;p=p.parentElement){ var cs=getComputedStyle(p); if(/(auto|scroll)/.test(cs.overflowY)&&p.scrollHeight>p.clientHeight+2) return p; } return null; }
   function go(n){ try{
       if(typeof setTheme==='function') setTheme(S.theme==='light'?'light':'dark');
@@ -46039,6 +46464,18 @@ apvRender();
         if(!ww){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no widget'; return; }
         var ws=scroller(ww); if(ws){ ws.scrollTop+=ww.getBoundingClientRect().top-ws.getBoundingClientRect().top-70; }
         wSelect(ww); document.title='READY'; return; }
+      /* Compliance › Policies › the policy card (27 Nov 2026): Option 1 the 'gauges' card (the user's screenshot), Options 2 & 3 the device-led designs */
+      if(S.key==='cplpc'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no compliance'; return; }
+        CPLS.polView='grid'; CPLS.polOpen=false; CPLS.pcView=/5/.test(S.v||'')?'g5':/4/.test(S.v||'')?'g4':/3/.test(S.v||'')?'n3':/2/.test(S.v||'')?'n2':'gauges'; selectModuleByName('Compliance'); cplInit('Policies');
+        setTimeout(function(){ document.title=document.querySelector('.cplpb')?'READY':'ERR no card'; },300); return; }
+      /* Compliance › Policies › a policy's page, the KPI row (27 Nov 2026): Options 1-3 moved off the page; Option 4 is the page */
+      if(S.key==='cplpd'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.title='ERR no compliance'; return; }
+        var m=/(\d)/.exec(S.v||''); CPLS.pdView=m?m[1]:'4'; selectModuleByName('Compliance'); cplInit('Policies'); cplPolOpen();
+        setTimeout(function(){ document.title=document.getElementById('cplPolDet')?'READY':'ERR no policy page'; },300); return; }
+      /* Compliance › Overview › Compliance Score (27 Nov 2026): Option 2 was moved off the board; the stage sets the view */
+      if(S.key==='cplsc'){ if(typeof cplInit!=='function'){ if(n<40) return setTimeout(function(){go(n+1)},150); document.documentElement.classList.remove('dvhide'); document.title='ERR no compliance'; return; }
+        CPLS.scView=/2/.test(S.v||'')?'2':'1'; selectModuleByName('Compliance'); cplInit('Overview'); document.documentElement.classList.remove('dvhide');
+        setTimeout(function(){ document.title=document.getElementById('cplOv')?'READY':'ERR no overview'; },300); return; }
       var want=S.key==='cvcard'?function(m){return m.t==='cmp'}:function(m){return m.t==='pie'||m.t==='hbars'||m.t==='tn'};
       var list=(typeof WIDGETS!=='undefined'&&WIDGETS[curG])||[], idx=-1; for(var i=0;i<list.length;i++){ if(list[i]&&want(list[i])){ idx=i; break; } }
       var w=idx>=0&&document.querySelector('#dashGrid .widget[data-g="'+curG+'"][data-i="'+idx+'"]');
@@ -46048,7 +46485,8 @@ apvRender();
       setTimeout(function(){ var b=document.getElementById('wTbViewBtn'); if(!b){ document.title='ERR no button'; return; }
         wTbView({stopPropagation:function(){},currentTarget:b}); document.title='READY'; },250);
     }catch(e){ document.title='ERR '+e.message; } }
-  window.addEventListener('load',function(){ setTimeout(function(){go(0)},900); });
+  window.addEventListener('load',function(){ setTimeout(function(){go(0)},S.key==='cplsc'?0:900); });
+  /* Compliance stage (27 Nov 2026): the page is hidden (html.dvhide) until it has switched off the default board - it used to flash Application Performance for ~1s */
 })();
 </script></body>
 </html>
